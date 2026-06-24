@@ -55,14 +55,16 @@ YsabelleStore is a desktop inventory management and recommendation system for Ys
 
 | Layer | Technology |
 | --- | --- |
-| Frontend/UI | React, TypeScript, Tailwind CSS, shadcn/ui |
+| Frontend/UI | React, Vite, TypeScript, Tailwind CSS, shadcn/ui |
 | Desktop App | Electron |
 | Backend | Node.js, Express.js |
 | Database | MySQL Community Server |
 | ORM and Migrations | Prisma |
-| Forecasting Engine | Python, statsmodels |
+| Forecasting Engine | Python 3.12+, statsmodels SARIMA/SARIMAX |
 | Charts and Analytics | Recharts |
 | Fallback Charts | Chart.js |
+| Validation | Zod |
+| Authentication | JWT |
 | Packaging | electron-builder |
 | Development Tools | Git, GitHub, npm, npx, ESLint, Prettier, Husky, GitHub Actions |
 
@@ -98,6 +100,16 @@ YsabelleStore/
       repository-governance.yml
   docs/
     GITHUB-WORKFLOW.md
+    architecture/
+      01-system-framework.md
+      02-system-architecture.md
+      03-folder-architecture.md
+      04-database-architecture.md
+      05-api-architecture.md
+      06-forecasting-architecture.md
+      07-electron-architecture.md
+      08-module-ownership.md
+      09-implementation-roadmap.md
     implementation-artifacts/
       m1-abarado/
       m2-ramos/
@@ -138,6 +150,9 @@ YsabelleStore/
 
 | Document | Purpose |
 | --- | --- |
+| [Architecture Blueprint](docs/architecture/01-system-framework.md) | Official framework and system blueprint before Sprint 1 implementation |
+| [System Architecture](docs/architecture/02-system-architecture.md) | Approved Electron, React, Express, Prisma, MySQL, SARIMA, and recommendation flow |
+| [Implementation Roadmap](docs/architecture/09-implementation-roadmap.md) | Sprint sequence from governance through packaging and defense preparation |
 | [GitHub Workflow](docs/GITHUB-WORKFLOW.md) | Branch, commit, PR, merge, and release workflow |
 | [Naming Rules](docs/standards/05-naming-rules.md) | Naming standards for branches, code, database, and environment variables |
 | [Coding Standards](docs/standards/06-coding-standards.md) | Engineering rules for React, TypeScript, Express, Prisma, Electron, and Python |
@@ -151,8 +166,8 @@ YsabelleStore/
 | --- | --- |
 | Repository foundation | Complete |
 | Documentation standards | Complete |
+| Architecture blueprint | Complete |
 | Implementation artifact templates | Complete |
 | Application code | Not started |
 | Database schema | Not started |
 | Forecasting engine | Not started |
-
