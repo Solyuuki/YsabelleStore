@@ -1,0 +1,24 @@
+{
+  "name": "@ysabellestore/electron",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "dev": "npm run build && cross-env ELECTRON_RENDERER_DEV_URL=http://localhost:5173 electron .",
+    "build": "tsc -p tsconfig.json",
+    "package": "electron-builder --config electron-builder.config.cjs",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "electron": "^34.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "cross-env": "^7.0.3",
+    "electron-builder": "^25.1.8",
+    "tsx": "^4.19.2"
+  }
+}

@@ -98,6 +98,21 @@ YsabelleStore/
     PULL_REQUEST_TEMPLATE.md
     workflows/
       repository-governance.yml
+  backend/
+    src/
+      config/
+      controllers/
+      middleware/
+      routes/
+      services/
+      types/
+      utils/
+      validators/
+  database/
+    prisma/
+      schema.prisma
+    migrations/
+    seed/
   docs/
     GITHUB-WORKFLOW.md
     architecture/
@@ -125,8 +140,48 @@ YsabelleStore/
       08-merge-collisions.md
       09-edge-cases.md
       010-golden-rules.md
+  electron/
+    src/
+      ipc/
+      main/
+      preload/
+  forecasting-service/
+    app/
+    data/
+    models/
+    outputs/
+    services/
+    tests/
+  frontend/
+    public/
+    src/
+      app/
+      assets/
+      components/
+      hooks/
+      layouts/
+      lib/
+      pages/
+      schemas/
+      services/
+      types/
+  package.json
   README.md
 ```
+
+## Sprint 1 Scaffold Status
+
+| Scaffold Area | Status | Details |
+| --- | --- | --- |
+| Root Workspace | Complete | npm workspaces configured for `frontend`, `backend`, and `electron` |
+| Frontend | Complete | React, Vite, TypeScript, Tailwind CSS, shadcn/ui-ready structure, Recharts, Chart.js fallback, and Zod prepared |
+| Backend | Complete | Express, TypeScript, Zod, JWT dependency preparation, middleware boundary, route boundary, and environment validation prepared |
+| Database | Complete | Prisma schema foundation prepared for MySQL Community Server without feature models |
+| Electron | Complete | Main process, preload boundary, IPC boundary, electron-builder configuration, and secure renderer settings prepared |
+| Forecasting Service | Complete | Python service folders and requirements prepared for pandas, numpy, statsmodels, and python-dotenv |
+| Quality Tooling | Complete | ESLint, Prettier, Husky, TypeScript base config, environment templates, and workspace scripts added |
+
+Sprint 1 creates framework boundaries only. Authentication, product management, inventory, sales, forecasting logic, recommendation logic, and dashboard features remain unimplemented until their approved sprint tasks.
 
 ## Team Members
 
@@ -167,7 +222,8 @@ YsabelleStore/
 | Repository foundation | Complete |
 | Documentation standards | Complete |
 | Architecture blueprint | Complete |
+| Sprint 1 application scaffold | Complete |
 | Implementation artifact templates | Complete |
-| Application code | Not started |
+| Business modules | Not started |
 | Database schema | Not started |
 | Forecasting engine | Not started |

@@ -1,0 +1,40 @@
+{
+  "name": "ysabellestore",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop inventory recommender system for Ysabelle's Store.",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "electron"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev": "concurrently -n frontend,backend,electron -c cyan,green,magenta \"npm:dev --workspace frontend\" \"npm:dev --workspace backend\" \"npm:dev --workspace electron\"",
+    "build": "npm run build --workspaces && npm run prisma:validate",
+    "lint": "npm run lint --workspaces",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "prisma:validate": "prisma validate --schema database/prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema database/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.4.2",
+    "prisma": "^6.2.1",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0"
+  },
+  "engines": {
+    "node": ">=20.11.0",
+    "npm": ">=10.0.0"
+  }
+}

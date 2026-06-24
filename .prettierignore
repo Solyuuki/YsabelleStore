@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+coverage
+database/prisma/generated
+frontend/dist
+backend/dist
+electron/dist
+forecasting-service/.venv
+forecasting-service/data
+forecasting-service/outputs
