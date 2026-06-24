@@ -213,7 +213,7 @@ Sprint 1 creates framework boundaries only. Authentication, product management, 
 | [Coding Standards](docs/standards/06-coding-standards.md) | Engineering rules for React, TypeScript, Express, Prisma, Electron, and Python |
 | [Member Ownership](docs/standards/07-member-ownership.md) | Team responsibilities and approval workflow |
 | [Merge Collisions](docs/standards/08-merge-collisions.md) | Conflict prevention and resolution process |
-| [AI Operating System](docs/standards/010-golden-rules.md) | Mandatory rules for AI-assisted development |
+| [Development Execution Framework](docs/standards/010-golden-rules.md) | Mandatory execution standards for repository development |
 
 ## Current Status
 

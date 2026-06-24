@@ -1,6 +1,8 @@
-# AI Operating System for YsabelleStore
+# Development Execution Framework for YsabelleStore
 
-This file governs AI-assisted development for YsabelleStore. Any AI-generated change must follow these rules before it is accepted.
+This document defines the mandatory execution standards, quality requirements, ownership boundaries, validation rules, and delivery expectations for all contributors working on the YsabelleStore repository.
+
+All implementation changes must comply with these standards before acceptance.
 
 ## Critical Rules Table
 
@@ -25,7 +27,7 @@ This file governs AI-assisted development for YsabelleStore. Any AI-generated ch
 | Production-Company-Enterprise-Grade-Level quality only | Critical | Treat thesis output as evaluator-facing |
 | Target 10/10 quality | High | Prefer polished, consistent, reviewable work |
 
-## AI Work Process
+## Development Workflow
 
 | Stage | Required Behavior |
 | --- | --- |
@@ -35,7 +37,7 @@ This file governs AI-assisted development for YsabelleStore. Any AI-generated ch
 | Validate | Run available checks or document why unavailable |
 | Report | Provide summary, tests, risks, and next step |
 
-# Development Execution Framework
+## Execution Capability Framework
 
 This framework defines the required execution capabilities for development assistants, automation tools, and contributors working on YsabelleStore. Apply the capability that matches the task type before changing files or reporting completion.
 
@@ -126,7 +128,7 @@ This framework defines the required execution capabilities for development assis
 | What evidence supports it? | Mention logs, tests, code path, or reproduction |
 | What is the smallest complete fix? | Define focused correction |
 
-## AI Completion Checklist
+## Implementation Completion Checklist
 
 - [ ] Build Passed
 - [ ] Lint Passed
