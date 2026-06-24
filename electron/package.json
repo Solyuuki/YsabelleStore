@@ -13,12 +13,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "electron": "^34.0.0"
+    "electron": "^42.5.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
     "cross-env": "^7.0.3",
-    "electron-builder": "^25.1.8",
+    "electron-builder": "^26.15.3",
     "tsx": "^4.19.2"
   }
 }

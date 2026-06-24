@@ -8,65 +8,65 @@ YsabelleStore is a desktop inventory management and recommendation system for Ys
 
 ## Thesis Overview
 
-| Field | Details |
-| --- | --- |
-| Thesis Title | Inventory Recommender System Using Seasonal Autoregressive Integrated Moving Average (SARIMA) for Ysabelle's Store |
-| Project Name | YsabelleStore |
-| Deployment Target | Windows desktop application |
-| Forecasting Method | Seasonal Autoregressive Integrated Moving Average |
-| Primary Users | Store owner, staff, and thesis evaluators |
-| Current Status | Repository foundation established before application development |
+| Field              | Details                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Thesis Title       | Inventory Recommender System Using Seasonal Autoregressive Integrated Moving Average (SARIMA) for Ysabelle's Store |
+| Project Name       | YsabelleStore                                                                                                      |
+| Deployment Target  | Windows desktop application                                                                                        |
+| Forecasting Method | Seasonal Autoregressive Integrated Moving Average                                                                  |
+| Primary Users      | Store owner, staff, and thesis evaluators                                                                          |
+| Current Status     | Repository foundation established before application development                                                   |
 
 ## Objectives
 
-| Objective | Outcome |
-| --- | --- |
-| Product and inventory tracking | Maintain accurate product, stock, batch, and expiration records |
-| Sales monitoring | Record sales data used by reporting and forecasting workflows |
-| Forecasting | Generate SARIMA-based demand forecasts from historical sales |
-| Recommendation support | Convert forecasts and inventory data into restock and risk alerts |
-| Desktop deployment | Package the system as a Windows `.exe` using Electron |
+| Objective                      | Outcome                                                           |
+| ------------------------------ | ----------------------------------------------------------------- |
+| Product and inventory tracking | Maintain accurate product, stock, batch, and expiration records   |
+| Sales monitoring               | Record sales data used by reporting and forecasting workflows     |
+| Forecasting                    | Generate SARIMA-based demand forecasts from historical sales      |
+| Recommendation support         | Convert forecasts and inventory data into restock and risk alerts |
+| Desktop deployment             | Package the system as a Windows `.exe` using Electron             |
 
 ## Included Features
 
-| Area | Features |
-| --- | --- |
-| Product Management | Product records, categories, pricing, product status |
-| Sales Recording | Sales entries, item quantities, historical sales data |
-| Inventory Monitoring | Current stock, batch quantities, low stock detection |
-| Batch Management | Batch-level stock and expiration tracking |
-| Import Tools | CSV import and Excel import |
-| Forecasting | SARIMA forecasting with Python and statsmodels |
-| Recommendations | Restock, low stock, overstock, near expiry, expiry risk |
-| Desktop Packaging | Electron desktop application and Windows installer |
+| Area                 | Features                                                |
+| -------------------- | ------------------------------------------------------- |
+| Product Management   | Product records, categories, pricing, product status    |
+| Sales Recording      | Sales entries, item quantities, historical sales data   |
+| Inventory Monitoring | Current stock, batch quantities, low stock detection    |
+| Batch Management     | Batch-level stock and expiration tracking               |
+| Import Tools         | CSV import and Excel import                             |
+| Forecasting          | SARIMA forecasting with Python and statsmodels          |
+| Recommendations      | Restock, low stock, overstock, near expiry, expiry risk |
+| Desktop Packaging    | Electron desktop application and Windows installer      |
 
 ## Out of Scope
 
-| Excluded Area | Reason |
-| --- | --- |
-| PHP and XAMPP | Final stack uses Node.js, Express.js, MySQL Community Server, and Prisma |
-| MongoDB | Relational inventory records require MySQL and Prisma migrations |
-| Supplier Management | Thesis scope focuses on inventory, forecasting, and recommendations |
-| Purchase Orders and Procurement | Not part of the approved feature set |
-| GCash API | Payment integration is outside the thesis system scope |
-| Cloud Infrastructure | Deployment target is a local desktop application |
+| Excluded Area                   | Reason                                                                   |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| PHP and XAMPP                   | Final stack uses Node.js, Express.js, MySQL Community Server, and Prisma |
+| MongoDB                         | Relational inventory records require MySQL and Prisma migrations         |
+| Supplier Management             | Thesis scope focuses on inventory, forecasting, and recommendations      |
+| Purchase Orders and Procurement | Not part of the approved feature set                                     |
+| GCash API                       | Payment integration is outside the thesis system scope                   |
+| Cloud Infrastructure            | Deployment target is a local desktop application                         |
 
 ## Final Technology Stack
 
-| Layer | Technology |
-| --- | --- |
-| Frontend/UI | React, Vite, TypeScript, Tailwind CSS, shadcn/ui |
-| Desktop App | Electron |
-| Backend | Node.js, Express.js |
-| Database | MySQL Community Server |
-| ORM and Migrations | Prisma |
-| Forecasting Engine | Python 3.12+, statsmodels SARIMA/SARIMAX |
-| Charts and Analytics | Recharts |
-| Fallback Charts | Chart.js |
-| Validation | Zod |
-| Authentication | JWT |
-| Packaging | electron-builder |
-| Development Tools | Git, GitHub, npm, npx, ESLint, Prettier, Husky, GitHub Actions |
+| Layer                | Technology                                                     |
+| -------------------- | -------------------------------------------------------------- |
+| Frontend/UI          | React, Vite, TypeScript, Tailwind CSS, shadcn/ui               |
+| Desktop App          | Electron                                                       |
+| Backend              | Node.js, Express.js                                            |
+| Database             | MySQL Community Server                                         |
+| ORM and Migrations   | Prisma                                                         |
+| Forecasting Engine   | Python 3.12+, statsmodels SARIMA/SARIMAX                       |
+| Charts and Analytics | Recharts                                                       |
+| Fallback Charts      | Chart.js                                                       |
+| Validation           | Zod                                                            |
+| Authentication       | JWT                                                            |
+| Packaging            | electron-builder                                               |
+| Development Tools    | Git, GitHub, npm, npx, ESLint, Prettier, Husky, GitHub Actions |
 
 ## System Architecture
 
@@ -82,13 +82,13 @@ Electron Desktop App
 
 ## Recommendation Outputs
 
-| Output | Purpose |
-| --- | --- |
+| Output                 | Purpose                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------- |
 | Restock Recommendation | Suggests replenishment quantity based on forecasted demand and stock position |
-| Low Stock Alert | Flags products below the approved stock threshold |
-| Overstock Alert | Flags products with stock above forecast-based movement expectations |
-| Near Expiry Alert | Flags batches approaching expiration |
-| Expiry Risk Alert | Flags products likely to expire before projected demand consumes them |
+| Low Stock Alert        | Flags products below the approved stock threshold                             |
+| Overstock Alert        | Flags products with stock above forecast-based movement expectations          |
+| Near Expiry Alert      | Flags batches approaching expiration                                          |
+| Expiry Risk Alert      | Flags products likely to expire before projected demand consumes them         |
 
 ## Repository Structure
 
@@ -171,59 +171,59 @@ YsabelleStore/
 
 ## Sprint 1 Scaffold Status
 
-| Scaffold Area | Status | Details |
-| --- | --- | --- |
-| Root Workspace | Complete | npm workspaces configured for `frontend`, `backend`, and `electron` |
-| Frontend | Complete | React, Vite, TypeScript, Tailwind CSS, shadcn/ui-ready structure, Recharts, Chart.js fallback, and Zod prepared |
-| Backend | Complete | Express, TypeScript, Zod, JWT dependency preparation, middleware boundary, route boundary, and environment validation prepared |
-| Database | Complete | Prisma schema foundation prepared for MySQL Community Server without feature models |
-| Electron | Complete | Main process, preload boundary, IPC boundary, electron-builder configuration, and secure renderer settings prepared |
-| Forecasting Service | Complete | Python service folders and requirements prepared for pandas, numpy, statsmodels, and python-dotenv |
-| Quality Tooling | Complete | ESLint, Prettier, Husky, TypeScript base config, environment templates, and workspace scripts added |
+| Scaffold Area       | Status   | Details                                                                                                                        |
+| ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Root Workspace      | Complete | npm workspaces configured for `frontend`, `backend`, and `electron`                                                            |
+| Frontend            | Complete | React, Vite, TypeScript, Tailwind CSS, shadcn/ui-ready structure, Recharts, Chart.js fallback, and Zod prepared                |
+| Backend             | Complete | Express, TypeScript, Zod, JWT dependency preparation, middleware boundary, route boundary, and environment validation prepared |
+| Database            | Complete | Prisma schema foundation prepared for MySQL Community Server without feature models                                            |
+| Electron            | Complete | Main process, preload boundary, IPC boundary, electron-builder configuration, and secure renderer settings prepared            |
+| Forecasting Service | Complete | Python service folders and requirements prepared for pandas, numpy, statsmodels, and python-dotenv                             |
+| Quality Tooling     | Complete | ESLint, Prettier, Husky, TypeScript base config, environment templates, and workspace scripts added                            |
 
 Sprint 1 creates framework boundaries only. Authentication, product management, inventory, sales, forecasting logic, recommendation logic, and dashboard features remain unimplemented until their approved sprint tasks.
 
 ## Team Members
 
-| Member Code | Member | Primary Ownership |
-| --- | --- | --- |
-| m1 | Abarado | Repository governance, frontend shell, Electron packaging, documentation quality |
-| m2 | Ramos | Express API, Prisma models, MySQL migrations, import endpoints |
-| m3 | Vito | Python SARIMA engine, analytics, recommendation logic, chart validation |
+| Member Code | Member  | Primary Ownership                                                                |
+| ----------- | ------- | -------------------------------------------------------------------------------- |
+| m1          | Abarado | Repository governance, frontend shell, Electron packaging, documentation quality |
+| m2          | Ramos   | Express API, Prisma models, MySQL migrations, import endpoints                   |
+| m3          | Vito    | Python SARIMA engine, analytics, recommendation logic, chart validation          |
 
 ## Workflow Overview
 
-| Step | Standard |
-| --- | --- |
-| Branch | Use `member/version/type/task-name` format |
-| Commit | Use Conventional Commits |
-| Pull Request | Keep scope small and document affected files |
-| Review | Require ownership validation and test evidence |
-| Merge | Merge only after checks pass and conflicts are resolved |
+| Step         | Standard                                                |
+| ------------ | ------------------------------------------------------- |
+| Branch       | Use `member/version/type/task-name` format              |
+| Commit       | Use Conventional Commits                                |
+| Pull Request | Keep scope small and document affected files            |
+| Review       | Require ownership validation and test evidence          |
+| Merge        | Merge only after checks pass and conflicts are resolved |
 
 ## Documentation Entry Points
 
-| Document | Purpose |
-| --- | --- |
-| [Architecture Blueprint](docs/architecture/01-system-framework.md) | Official framework and system blueprint before Sprint 1 implementation |
-| [System Architecture](docs/architecture/02-system-architecture.md) | Approved Electron, React, Express, Prisma, MySQL, SARIMA, and recommendation flow |
-| [Implementation Roadmap](docs/architecture/09-implementation-roadmap.md) | Sprint sequence from governance through packaging and defense preparation |
-| [GitHub Workflow](docs/GITHUB-WORKFLOW.md) | Branch, commit, PR, merge, and release workflow |
-| [Naming Rules](docs/standards/05-naming-rules.md) | Naming standards for branches, code, database, and environment variables |
-| [Coding Standards](docs/standards/06-coding-standards.md) | Engineering rules for React, TypeScript, Express, Prisma, Electron, and Python |
-| [Member Ownership](docs/standards/07-member-ownership.md) | Team responsibilities and approval workflow |
-| [Merge Collisions](docs/standards/08-merge-collisions.md) | Conflict prevention and resolution process |
-| [Development Execution Framework](docs/standards/010-golden-rules.md) | Mandatory execution standards for repository development |
+| Document                                                                 | Purpose                                                                           |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| [Architecture Blueprint](docs/architecture/01-system-framework.md)       | Official framework and system blueprint before Sprint 1 implementation            |
+| [System Architecture](docs/architecture/02-system-architecture.md)       | Approved Electron, React, Express, Prisma, MySQL, SARIMA, and recommendation flow |
+| [Implementation Roadmap](docs/architecture/09-implementation-roadmap.md) | Sprint sequence from governance through packaging and defense preparation         |
+| [GitHub Workflow](docs/GITHUB-WORKFLOW.md)                               | Branch, commit, PR, merge, and release workflow                                   |
+| [Naming Rules](docs/standards/05-naming-rules.md)                        | Naming standards for branches, code, database, and environment variables          |
+| [Coding Standards](docs/standards/06-coding-standards.md)                | Engineering rules for React, TypeScript, Express, Prisma, Electron, and Python    |
+| [Member Ownership](docs/standards/07-member-ownership.md)                | Team responsibilities and approval workflow                                       |
+| [Merge Collisions](docs/standards/08-merge-collisions.md)                | Conflict prevention and resolution process                                        |
+| [Development Execution Framework](docs/standards/010-golden-rules.md)    | Mandatory execution standards for repository development                          |
 
 ## Current Status
 
-| Area | Status |
-| --- | --- |
-| Repository foundation | Complete |
-| Documentation standards | Complete |
-| Architecture blueprint | Complete |
-| Sprint 1 application scaffold | Complete |
-| Implementation artifact templates | Complete |
-| Business modules | Not started |
-| Database schema | Not started |
-| Forecasting engine | Not started |
+| Area                              | Status      |
+| --------------------------------- | ----------- |
+| Repository foundation             | Complete    |
+| Documentation standards           | Complete    |
+| Architecture blueprint            | Complete    |
+| Sprint 1 application scaffold     | Complete    |
+| Implementation artifact templates | Complete    |
+| Business modules                  | Not started |
+| Database schema                   | Not started |
+| Forecasting engine                | Not started |

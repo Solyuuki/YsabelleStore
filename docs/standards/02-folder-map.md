@@ -48,28 +48,28 @@ YsabelleStore/
 
 ## Folder Ownership Map
 
-| Folder | Owner | Purpose |
-| --- | --- | --- |
-| `.github/` | m1 | Pull request template and GitHub Actions governance |
-| `docs/` | m1 | Project standards, workflow, and thesis implementation artifacts |
-| `app/electron/` | m1 | Electron main process, preload scripts, desktop packaging integration |
-| `app/frontend/` | m1 | React, TypeScript, Tailwind CSS, shadcn/ui screens and UI shell |
-| `app/backend/` | m2 | Express API, services, validators, and backend tests |
-| `app/forecasting/` | m3 | Python SARIMA scripts, model validation, forecast outputs |
-| `prisma/` | m2 | Prisma schema, migrations, seed data, database rules |
-| `scripts/` | Shared | Developer automation approved by task owner |
-| `tests/` | Shared | Cross-layer tests and fixtures |
+| Folder             | Owner  | Purpose                                                               |
+| ------------------ | ------ | --------------------------------------------------------------------- |
+| `.github/`         | m1     | Pull request template and GitHub Actions governance                   |
+| `docs/`            | m1     | Project standards, workflow, and thesis implementation artifacts      |
+| `app/electron/`    | m1     | Electron main process, preload scripts, desktop packaging integration |
+| `app/frontend/`    | m1     | React, TypeScript, Tailwind CSS, shadcn/ui screens and UI shell       |
+| `app/backend/`     | m2     | Express API, services, validators, and backend tests                  |
+| `app/forecasting/` | m3     | Python SARIMA scripts, model validation, forecast outputs             |
+| `prisma/`          | m2     | Prisma schema, migrations, seed data, database rules                  |
+| `scripts/`         | Shared | Developer automation approved by task owner                           |
+| `tests/`           | Shared | Cross-layer tests and fixtures                                        |
 
 ## Decision Table
 
-| Question | Standard |
-| --- | --- |
-| Where do React components go? | `app/frontend/src/components/` |
-| Where do pages go? | `app/frontend/src/pages/` or router-specific equivalent |
-| Where do API routes go? | `app/backend/src/routes/` |
-| Where do Prisma models live? | `prisma/schema.prisma` |
-| Where do SARIMA scripts live? | `app/forecasting/` |
-| Where do thesis progress artifacts go? | `docs/implementation-artifacts/<member-folder>/` |
+| Question                               | Standard                                                |
+| -------------------------------------- | ------------------------------------------------------- |
+| Where do React components go?          | `app/frontend/src/components/`                          |
+| Where do pages go?                     | `app/frontend/src/pages/` or router-specific equivalent |
+| Where do API routes go?                | `app/backend/src/routes/`                               |
+| Where do Prisma models live?           | `prisma/schema.prisma`                                  |
+| Where do SARIMA scripts live?          | `app/forecasting/`                                      |
+| Where do thesis progress artifacts go? | `docs/implementation-artifacts/<member-folder>/`        |
 
 ## Validation Checklist
 
@@ -77,4 +77,3 @@ YsabelleStore/
 - [ ] Shared files list affected owners in the task record
 - [ ] New folders are documented before they become active development areas
 - [ ] Generated files are not committed unless required by the project standard
-

@@ -36,7 +36,7 @@ export default [
     }
   },
   {
-    files: ["backend/**/*.ts", "electron/**/*.ts"],
+    files: ["backend/**/*.ts", "electron/**/*.ts", "electron/**/*.cjs"],
     languageOptions: {
       globals: {
         ...globals.node,

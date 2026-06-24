@@ -4,25 +4,25 @@ This is the primary conflict-prevention guide for the three-member YsabelleStore
 
 ## Required Stages
 
-| Stage | Action |
-| --- | --- |
+| Stage         | Action                                                                              |
+| ------------- | ----------------------------------------------------------------------------------- |
 | Before Branch | Pull latest `main` and confirm no local unfinished work conflicts with the new task |
-| Before Coding | Confirm task owner, affected files, and branch name |
-| Before Commit | Review changed files and remove unrelated edits |
-| Before Push | Pull/rebase latest `main` when appropriate and run available checks |
-| Before PR | Document affected files, tests, and ownership |
-| Before Merge | Confirm checks pass, review is complete, and conflicts are resolved |
+| Before Coding | Confirm task owner, affected files, and branch name                                 |
+| Before Commit | Review changed files and remove unrelated edits                                     |
+| Before Push   | Pull/rebase latest `main` when appropriate and run available checks                 |
+| Before PR     | Document affected files, tests, and ownership                                       |
+| Before Merge  | Confirm checks pass, review is complete, and conflicts are resolved                 |
 
 ## Conflict Prevention Rules
 
-| Rule | Requirement |
-| --- | --- |
-| Pull Latest Main | Start branches from the newest `main` |
-| Feature Branches Only | Never code directly on `main` |
-| Small PR Rule | Keep PRs focused on one task |
-| Ownership Validation | Do not edit another member's files without approval |
-| Affected Files Documentation | List touched files in PR and member artifact |
-| Review Requirement | At least one appropriate reviewer must approve |
+| Rule                          | Requirement                                                |
+| ----------------------------- | ---------------------------------------------------------- |
+| Pull Latest Main              | Start branches from the newest `main`                      |
+| Feature Branches Only         | Never code directly on `main`                              |
+| Small PR Rule                 | Keep PRs focused on one task                               |
+| Ownership Validation          | Do not edit another member's files without approval        |
+| Affected Files Documentation  | List touched files in PR and member artifact               |
+| Review Requirement            | At least one appropriate reviewer must approve             |
 | Conflict Resolution Procedure | Resolve with owner involvement and document final decision |
 
 ## Process Flow
@@ -41,21 +41,21 @@ Need a change
 
 ## Conflict Escalation Flow
 
-| Level | Trigger | Action |
-| --- | --- | --- |
-| Level 1 | Conflict only in assigned files | Assigned member resolves and documents |
-| Level 2 | Conflict touches another member's files | Pause and request owner review |
-| Level 3 | Conflict changes schema/API/forecast contract | Team review required before merge |
-| Level 4 | Conflict blocks sprint work | Record blocker and decide task priority as a team |
+| Level   | Trigger                                       | Action                                            |
+| ------- | --------------------------------------------- | ------------------------------------------------- |
+| Level 1 | Conflict only in assigned files               | Assigned member resolves and documents            |
+| Level 2 | Conflict touches another member's files       | Pause and request owner review                    |
+| Level 3 | Conflict changes schema/API/forecast contract | Team review required before merge                 |
+| Level 4 | Conflict blocks sprint work                   | Record blocker and decide task priority as a team |
 
 ## Good vs Bad Examples
 
-| Good Example | Bad Example |
-| --- | --- |
-| Pull `main`, create `m2/v0.3/feat/inventory-api`, edit backend files only | Work on `main` and push directly |
-| Split UI and API changes into separate PRs when possible | Bundle UI redesign, API changes, and migration fixes |
-| Ask m2 before editing `schema.prisma` | Edit migration files without owner approval |
-| Document affected files in PR | Submit PR with no test notes |
+| Good Example                                                              | Bad Example                                          |
+| ------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Pull `main`, create `m2/v0.3/feat/inventory-api`, edit backend files only | Work on `main` and push directly                     |
+| Split UI and API changes into separate PRs when possible                  | Bundle UI redesign, API changes, and migration fixes |
+| Ask m2 before editing `schema.prisma`                                     | Edit migration files without owner approval          |
+| Document affected files in PR                                             | Submit PR with no test notes                         |
 
 ## PR Checklist
 
@@ -78,12 +78,11 @@ Need a change
 
 ## Resolution Procedure
 
-| Step | Action |
-| --- | --- |
-| 1 | Identify conflicted files |
-| 2 | Identify file owners |
-| 3 | Preserve both valid changes when possible |
-| 4 | Run related tests or validation |
-| 5 | Document final decision in PR |
-| 6 | Request re-review before merge |
-
+| Step | Action                                    |
+| ---- | ----------------------------------------- |
+| 1    | Identify conflicted files                 |
+| 2    | Identify file owners                      |
+| 3    | Preserve both valid changes when possible |
+| 4    | Run related tests or validation           |
+| 5    | Document final decision in PR             |
+| 6    | Request re-review before merge            |

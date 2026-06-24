@@ -4,23 +4,23 @@ Primary ownership: repository governance, documentation quality, React UI shell,
 
 ## Ownership Summary
 
-| Area | Responsibility |
-| --- | --- |
-| Repository Governance | Maintain standards, workflow docs, and PR quality rules |
-| Frontend Foundation | React, TypeScript, Tailwind CSS, shadcn/ui structure |
-| Electron Desktop | Main process, preload boundary, desktop packaging |
+| Area                  | Responsibility                                           |
+| --------------------- | -------------------------------------------------------- |
+| Repository Governance | Maintain standards, workflow docs, and PR quality rules  |
+| Frontend Foundation   | React, TypeScript, Tailwind CSS, shadcn/ui structure     |
+| Electron Desktop      | Main process, preload boundary, desktop packaging        |
 | Documentation Quality | Keep repository standards consistent and evaluator-ready |
 
 ## Artifact Index
 
-| File | Purpose |
-| --- | --- |
-| `SPRINT-PLANNING.md` | Sprint goals and planned tasks |
-| `SPRINT-PROGRESS.md` | Sprint execution status |
-| `TASKS.md` | Detailed task register |
-| `BLOCKERS.md` | Blocker tracking and resolution |
-| `DAILY-NOTES.md` | Daily implementation notes |
-| `TESTING-REPORTS.md` | Test and validation evidence |
+| File                  | Purpose                             |
+| --------------------- | ----------------------------------- |
+| `SPRINT-PLANNING.md`  | Sprint goals and planned tasks      |
+| `SPRINT-PROGRESS.md`  | Sprint execution status             |
+| `TASKS.md`            | Detailed task register              |
+| `BLOCKERS.md`         | Blocker tracking and resolution     |
+| `DAILY-NOTES.md`      | Daily implementation notes          |
+| `TESTING-REPORTS.md`  | Test and validation evidence        |
 | `DEPLOYMENT-NOTES.md` | Desktop packaging and release notes |
 
 ## Member Checklist
@@ -30,4 +30,3 @@ Primary ownership: repository governance, documentation quality, React UI shell,
 - [ ] Get approval before editing backend, database, or forecasting files
 - [ ] Keep UI and Electron changes modular
 - [ ] Attach validation evidence to every completed task
-
