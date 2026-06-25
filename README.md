@@ -114,6 +114,18 @@ YsabelleStore/
     migrations/
     seed/
   docs/
+    api/
+      API-CHECKLIST.md
+      API-CONTRACT-FOUNDATION.md
+      DTO-STANDARDS.md
+      ERROR-STANDARD.md
+      FORECASTING-CONTRACT.md
+      README.md
+      REQUEST-STANDARD.md
+      RESPONSE-STANDARD.md
+      ROUTE-NAMING.md
+      STATUS-CODES.md
+      VERSIONING.md
     GITHUB-WORKFLOW.md
     architecture/
       01-system-framework.md
@@ -225,6 +237,7 @@ Sprint 1 creates framework boundaries only. Authentication, product management, 
 | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
 | [Architecture Blueprint](docs/architecture/01-system-framework.md)       | Official framework and system blueprint before Sprint 1 implementation            |
 | [System Architecture](docs/architecture/02-system-architecture.md)       | Approved Electron, React, Express, Prisma, MySQL, SARIMA, and recommendation flow |
+| [API Contract Foundation](docs/api/README.md)                            | Central API request, response, error, DTO, and versioning contract reference      |
 | [Implementation Roadmap](docs/architecture/09-implementation-roadmap.md) | Sprint sequence from governance through packaging and defense preparation         |
 | [GitHub Workflow](docs/GITHUB-WORKFLOW.md)                               | Branch, commit, PR, merge, and release workflow                                   |
 | [Configuration Foundation](config/README.md)                             | Repository-wide configuration strategy and documentation                          |

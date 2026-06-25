@@ -2,6 +2,8 @@
 
 This document defines the planned Express.js API structure for YsabelleStore. The API must support the local desktop application, database operations, forecasting requests, imports, reports, and recommendation workflows.
 
+The canonical API contract reference now lives in [docs/api/README.md](../api/README.md).
+
 ## Planned Route Groups
 
 | Route Group            | Purpose                                                           | Owner Layer           |
@@ -40,11 +42,11 @@ backend/
 
 ## API Response Standard
 
-| Response Type    | Expected Shape                                                                                             |
-| ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| Success          | `{ "success": true, "data": {}, "message": "Action completed" }`                                           |
-| Validation Error | `{ "success": false, "error": { "code": "VALIDATION_ERROR", "message": "Invalid input", "details": [] } }` |
-| Server Error     | `{ "success": false, "error": { "code": "SERVER_ERROR", "message": "Unexpected server error" } }`          |
+| Reference                                        | Purpose                          |
+| ------------------------------------------------ | -------------------------------- |
+| [Response Standard](../api/RESPONSE-STANDARD.md) | Canonical success response shape |
+| [Error Standard](../api/ERROR-STANDARD.md)       | Canonical error payload shape    |
+| [Status Codes](../api/STATUS-CODES.md)           | Canonical HTTP status usage      |
 
 ## Good vs Bad API Design
 

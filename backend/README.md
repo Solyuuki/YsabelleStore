@@ -66,14 +66,16 @@ route
 | Service     | Owns business workflow decisions                  | No service logic in this phase        |
 | Data access | Uses future Prisma Client calls                   | No database integration in this phase |
 
-## API Response Contract
+## API Contract Reference
 
-All backend responses must use the shared response contract from `src/types/apiResponse.ts`.
+The canonical API contract lives in `docs/api/`. Backend implementations must follow the shared request, response, error, DTO, route, versioning, and status code standards defined there.
 
-| Response Type | Shape                                                  |
-| ------------- | ------------------------------------------------------ |
-| Success       | `{ success: true, message: string, data?: unknown }`   |
-| Error         | `{ success: false, message: string, error?: unknown }` |
+| Reference                       | Purpose                             |
+| ------------------------------- | ----------------------------------- |
+| `docs/api/README.md`            | Central API contract entry point    |
+| `docs/api/RESPONSE-STANDARD.md` | Shared success response structure   |
+| `docs/api/ERROR-STANDARD.md`    | Shared error response structure     |
+| `docs/api/DTO-STANDARDS.md`     | DTO naming and responsibility rules |
 
 ## Error Handling Standard
 
@@ -97,13 +99,13 @@ Create `backend/.env` from `backend/.env.example` for local development.
 
 ## Validation Pattern
 
-| Validation Area | Current Standard                                      |
-| --------------- | ----------------------------------------------------- |
-| Environment     | Validate with Zod in `src/config/env.ts`              |
-| Request body    | Future Zod schemas in `src/validators`                |
-| Route params    | Future route-specific validator middleware            |
-| API responses   | Shared response helpers in `src/utils/apiResponse.ts` |
-| Errors          | Centralized Express error middleware                  |
+| Validation Area | Current Standard                           |
+| --------------- | ------------------------------------------ |
+| Environment     | Validate with Zod in `src/config/env.ts`   |
+| Request body    | Future Zod schemas in `src/validators`     |
+| Route params    | Future route-specific validator middleware |
+| API responses   | Follow `docs/api/RESPONSE-STANDARD.md`     |
+| Errors          | Follow `docs/api/ERROR-STANDARD.md`        |
 
 ## Future Module Roadmap
 
