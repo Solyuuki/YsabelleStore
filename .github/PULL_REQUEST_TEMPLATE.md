@@ -5,7 +5,13 @@
 - Describe the change in clear bullets before requesting review.
 - Keep this PR focused on one task or one tightly related fix.
 
-## Affected Files
+## Task Metadata
+
+- Member code:
+- Branch:
+- Issue or task reference:
+
+## Files Changed
 
 - List each affected file or folder in the PR description.
 - Identify the owner for every shared or cross-member file.
@@ -14,10 +20,17 @@
 ## Validation
 
 - Record branch naming result.
-- Record build result when an application build exists.
+- Record format check result.
 - Record lint result when lint tooling exists.
-- Record test result when tests exist.
+- Record build result.
+- Record security audit result.
+- Record Prisma validation result when applicable.
 - Record manual review result for documentation-only changes.
+- Include screenshots if the change affects UI.
+
+## Risks
+
+- Note any known tradeoffs, follow-up work, or reviewer concerns.
 
 ## Ownership
 

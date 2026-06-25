@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   branch-name:
     name: Validate branch name
@@ -43,6 +46,7 @@ jobs:
             "docs/standards/07-member-ownership.md"
             "docs/standards/08-merge-collisions.md"
             "docs/standards/09-edge-cases.md"
+            "docs/standards/CI-GUARDRAILS.md"
             "docs/standards/010-golden-rules.md"
           )
 

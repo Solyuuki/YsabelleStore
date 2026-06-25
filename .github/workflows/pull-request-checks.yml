@@ -1,0 +1,46 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  pr-guardrails:
+    name: PR guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|docs|refactor|test|chore)(\([a-z0-9-]+\))?: .+'
+          if [[ ! "$PR_TITLE" =~ $pattern ]]; then
+            echo "PR title must follow Conventional Commit style."
+            echo "Received: $PR_TITLE"
+            exit 1
+          fi
+
+      - name: Validate PR body structure
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          required_sections=(
+            "## Summary"
+            "## Task Metadata"
+            "## Files Changed"
+            "## Validation"
+            "## Risks"
+            "## Ownership"
+            "## Merge Checklist"
+          )
+
+          for section in "${required_sections[@]}"; do
+            if [[ "$PR_BODY" != *"$section"* ]]; then
+              echo "Missing required PR section: $section"
+              exit 1
+            fi
+          done

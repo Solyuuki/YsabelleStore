@@ -2,6 +2,42 @@
 
 This guide defines the required GitHub process for YsabelleStore. Every contribution must follow this workflow before it can be merged into `main`.
 
+## CI Overview
+
+| Workflow                    | Purpose                                                          |
+| --------------------------- | ---------------------------------------------------------------- |
+| `repository-governance.yml` | Enforces branch naming and repository documentation hygiene      |
+| `ci.yml`                    | Runs the main quality gates for push and pull request validation |
+| `pull-request-checks.yml`   | Verifies PR title and required PR body sections                  |
+
+## Local Validation Commands
+
+Run these before opening a pull request:
+
+```bash
+npm run format
+npm run format:check
+npm run lint
+npm run build
+npm audit --audit-level=high
+npx prisma validate --schema=database/prisma/schema.prisma
+```
+
+## GitHub Validation Commands
+
+GitHub Actions runs the same quality gates with a clean install:
+
+```bash
+npm ci
+npm run format:check
+npm run lint
+npm run build
+npm audit --audit-level=high
+npx prisma validate --schema=database/prisma/schema.prisma
+```
+
+The CI workflow also validates the `frontend`, `backend`, and `electron` workspaces individually.
+
 ## Branch Creation
 
 | Step              | Command                                           | Standard                               |
@@ -12,12 +48,12 @@ This guide defines the required GitHub process for YsabelleStore. Every contribu
 
 ## Branch Naming
 
-| Field     | Example              | Rule                              |
-| --------- | -------------------- | --------------------------------- |
-| Member    | `m1`                 | Must be `m1`, `m2`, or `m3`       |
-| Version   | `v0.2`               | Must match sprint/project version |
-| Type      | `feat`               | Must be an allowed work type      |
-| Task name | `product-management` | Lowercase kebab-case              |
+| Field     | Example              | Rule                                 |
+| --------- | -------------------- | ------------------------------------ |
+| Member    | `m1`                 | Must be `m1`, `m2`, or `m3`          |
+| Version   | `v0.2`               | Must match sprint or project version |
+| Type      | `feat`               | Must be an allowed work type         |
+| Task name | `product-management` | Lowercase kebab-case                 |
 
 Required format:
 
@@ -44,14 +80,15 @@ Valid examples:
 | `test`      | Test coverage          | `test(forecast): cover sarima validation`    |
 | `chore`     | Maintenance            | `chore(repo): configure prettier`            |
 
-## Push Rules
+## Pull Request Workflow
 
-| Rule               | Requirement                                           |
-| ------------------ | ----------------------------------------------------- |
-| Pull first         | Run `git pull origin main` before creating a branch   |
-| Push branch only   | Never push direct commits to `main`                   |
-| Keep scope focused | One branch equals one task or one tightly related fix |
-| Verify locally     | Run available checks before pushing                   |
+| Step             | Requirement                                                                    |
+| ---------------- | ------------------------------------------------------------------------------ |
+| Open PR          | Use the repository PR template                                                 |
+| Describe work    | Summarize the task, files changed, validation, risks, and owner or member code |
+| Validate locally | Run the required quality commands before review                                |
+| Review scope     | Keep one PR focused on one task or one tightly related fix                     |
+| Merge            | Merge only after checks pass and reviewers approve                             |
 
 ## Pull Request Creation
 
@@ -60,7 +97,7 @@ Valid examples:
 | Title          | Use Conventional Commit style, such as `feat(inventory): add product stock table` |
 | Summary        | Explain what changed in 2-5 bullets                                               |
 | Affected Files | List folders or files touched                                                     |
-| Tests          | Record commands and results                                                       |
+| Validation     | Record commands and results                                                       |
 | Ownership      | Identify member ownership and reviewer                                            |
 
 ## Review Process
@@ -73,15 +110,15 @@ Valid examples:
 | Test check      | Confirm evidence is provided                                      |
 | Merge approval  | Approve only after all required checks pass                       |
 
-## Merge Process
+## Merge Safety Rules
 
-| Step                | Requirement                                                           |
-| ------------------- | --------------------------------------------------------------------- |
-| Resolve comments    | All requested changes must be addressed                               |
-| Pass checks         | GitHub Actions must be green                                          |
-| Confirm branch name | Branch validation must pass                                           |
-| Confirm no conflict | PR must be mergeable                                                  |
-| Merge               | Use squash merge for a clean history unless the team agrees otherwise |
+| Rule                | Requirement                                       |
+| ------------------- | ------------------------------------------------- |
+| Pass checks first   | GitHub Actions must be green                      |
+| Confirm branch name | Branch validation must pass                       |
+| Confirm no conflict | PR must be mergeable                              |
+| Keep history clean  | Use squash merge unless the team agrees otherwise |
+| Protect ownership   | Do not merge unapproved cross-owner edits         |
 
 ## Conflict Handling
 
@@ -92,6 +129,31 @@ Valid examples:
 | Migration conflict                | Coordinate with m2 before changing Prisma migrations              |
 | Forecasting conflict              | Coordinate with m3 before changing Python model logic             |
 | UI shell conflict                 | Coordinate with m1 before changing layout or Electron entry files |
+
+## Failed CI Troubleshooting
+
+| Symptom               | First Check                                                             |
+| --------------------- | ----------------------------------------------------------------------- |
+| Build fails           | Re-run `npm run build` locally and inspect the first failing package    |
+| Lint fails            | Re-run `npm run lint` and review the reported file path                 |
+| Format check fails    | Re-run `npm run format:check` and format the listed file                |
+| Prisma validate fails | Verify `DATABASE_URL` is set for validation only                        |
+| Audit fails           | Inspect the dependency report and update or replace vulnerable packages |
+
+## Foundation Phase Note
+
+During the foundation phase, main-branch setup work may exist in the current workflow, so CI should not create extra friction beyond the required validation gates.
+
+## Implementation Phase Branch Workflow
+
+When feature work starts, use this sequence:
+
+1. Pull the latest `main`.
+2. Create a branch that matches `member/version/type/task-name`.
+3. Keep the branch focused on one task.
+4. Run local validation before opening the PR.
+5. Open a PR using the template.
+6. Address CI failures before requesting merge.
 
 ## Release Workflow
 
@@ -107,6 +169,7 @@ Valid examples:
 
 - [ ] Branch name follows `member/version/type/task-name`
 - [ ] PR title follows Conventional Commit style
+- [ ] Summary, files changed, validation, risks, and ownership are documented
 - [ ] Affected files are listed
 - [ ] Ownership has been checked
 - [ ] Build, lint, and tests were run when available
