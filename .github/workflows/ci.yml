@@ -20,7 +20,7 @@ jobs:
     name: Repository quality gates
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: mysql://placeholder:placeholder@127.0.0.1:3306/placeholder
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
