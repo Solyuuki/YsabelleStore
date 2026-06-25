@@ -152,6 +152,18 @@ YsabelleStore/
       08-merge-collisions.md
       09-edge-cases.md
       010-golden-rules.md
+  testing/
+    COVERAGE-STANDARDS.md
+    E2E-TESTING.md
+    FORECAST-VALIDATION.md
+    INTEGRATION-TESTING.md
+    README.md
+    TEST-CHECKLIST.md
+    TEST-DATA-POLICY.md
+    TEST-NAMING.md
+    TESTING-FOUNDATION.md
+    UNIT-TESTING.md
+    VALIDATION-WORKFLOW.md
   config/
     APPLICATION-CONFIG.md
     CONFIG-CHECKLIST.md
@@ -242,6 +254,7 @@ Sprint 1 creates framework boundaries only. Authentication, product management, 
 | [GitHub Workflow](docs/GITHUB-WORKFLOW.md)                               | Branch, commit, PR, merge, and release workflow                                   |
 | [Configuration Foundation](config/README.md)                             | Repository-wide configuration strategy and documentation                          |
 | [Deployment Foundation](deployment/README.md)                            | Deployment workflow, installer, validation, versioning, and release planning      |
+| [Testing Foundation](testing/README.md)                                  | Testing philosophy, naming, coverage, and validation strategy                     |
 | [Naming Rules](docs/standards/05-naming-rules.md)                        | Naming standards for branches, code, database, and environment variables          |
 | [Coding Standards](docs/standards/06-coding-standards.md)                | Engineering rules for React, TypeScript, Express, Prisma, Electron, and Python    |
 | [Member Ownership](docs/standards/07-member-ownership.md)                | Team responsibilities and approval workflow                                       |
