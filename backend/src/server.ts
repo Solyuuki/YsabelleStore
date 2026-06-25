@@ -5,6 +5,6 @@ import { env } from "./config/env.js";
 
 const app = createApp();
 
-app.listen(env.API_PORT, () => {
-  console.info(`YsabelleStore backend scaffold listening on port ${env.API_PORT}`);
+app.listen(env.PORT, () => {
+  console.info(`YsabelleStore backend foundation listening on port ${env.PORT}`);
 });
