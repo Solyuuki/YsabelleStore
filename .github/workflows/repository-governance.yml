@@ -19,19 +19,25 @@ jobs:
         env:
           BRANCH_NAME: ${{ github.head_ref }}
         run: |
-          member_pattern='^(m1|m2|m3)/v[0-9]+\.[0-9]+/(feat|fix|docs|refactor|test|chore)/[a-z0-9]+(-[a-z0-9]+)*$'
-          sprint_pattern='^sprint/v[0-9]+\.[0-9]+/sprint-[0-9]+$'
+          main_pattern='^main$'
           staging_pattern='^staging$'
-          if [[ ! "$BRANCH_NAME" =~ $member_pattern && ! "$BRANCH_NAME" =~ $sprint_pattern && ! "$BRANCH_NAME" =~ $staging_pattern ]]; then
+          sprint_pattern='^sprint/v[0-9]+\.[0-9]+/sprint-[0-9]+$'
+          member_feat_pattern='^(m1|m2|m3)/v[0-9]+\.[0-9]+/feat/[a-z0-9]+(-[a-z0-9]+)*$'
+          member_support_pattern='^(m1|m2|m3)/v[0-9]+\.[0-9]+/(fix|docs|refactor|test|chore)/[a-z0-9]+(-[a-z0-9]+)*$'
+          if [[ ! "$BRANCH_NAME" =~ $main_pattern && ! "$BRANCH_NAME" =~ $staging_pattern && ! "$BRANCH_NAME" =~ $sprint_pattern && ! "$BRANCH_NAME" =~ $member_feat_pattern && ! "$BRANCH_NAME" =~ $member_support_pattern ]]; then
             echo "Invalid branch name: $BRANCH_NAME"
             echo "Expected one of:"
+            echo "- main"
+            echo "- staging"
             echo "- member/version/type/task-name"
             echo "- sprint/version/sprint-number"
-            echo "- staging"
             echo "Examples:"
-            echo "- m1/v0.1/feat/frontend-app-shell"
-            echo "- sprint/v0.1/sprint-1"
+            echo "- main"
             echo "- staging"
+            echo "- sprint/v0.1/sprint-1"
+            echo "- m1/v0.1/feat/frontend-app-shell"
+            echo "- m2/v0.1/feat/backend-core"
+            echo "- m3/v0.1/feat/database-foundation"
             exit 1
           fi
 

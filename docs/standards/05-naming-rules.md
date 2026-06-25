@@ -31,6 +31,8 @@ sprint/version/sprint-number
 
 The `staging` branch is allowed only as the pre-release validation branch.
 
+The `main` branch is the stable, protected, always deployable branch and is not used for direct feature work.
+
 ## Allowed Branch Types
 
 | Type       | Purpose       |
@@ -70,13 +72,26 @@ The `staging` branch is allowed only as the pre-release validation branch.
 
 ## Branch Validation Rule
 
-| Rule                                                      | Enforcement                                       |
-| --------------------------------------------------------- | ------------------------------------------------- |
-| Member branch names must match the member branch regex    | GitHub Actions blocks invalid PR branches         |
-| Sprint branch names must match the sprint branch regex    | GitHub Actions allows sprint integration branches |
-| The `staging` branch is allowed for pre-release promotion | GitHub Actions allows staging-to-main PRs         |
-| Improper branch names must not be merged                  | Reviewer must reject PR                           |
-| Branch name must match task ownership                     | Owner approval required for cross-member files    |
+| Rule                                                   | Enforcement                                       |
+| ------------------------------------------------------ | ------------------------------------------------- |
+| `main` is allowed only as the stable branch            | Direct feature work must not target `main`        |
+| `staging` is allowed only as the pre-release branch    | GitHub Actions allows staging-to-main PRs         |
+| Member branch names must match the member branch regex | GitHub Actions blocks invalid PR branches         |
+| Sprint branch names must match the sprint branch regex | GitHub Actions allows sprint integration branches |
+| Improper branch names must not be merged               | Reviewer must reject PR                           |
+| Branch name must match task ownership                  | Owner approval required for cross-member files    |
+
+Main branch regex:
+
+```text
+^main$
+```
+
+Staging branch regex:
+
+```text
+^staging$
+```
 
 Member branch regex:
 
@@ -89,6 +104,22 @@ Sprint branch regex:
 ```text
 ^sprint/v[0-9]+\.[0-9]+/sprint-[0-9]+$
 ```
+
+## Official Branch Governance Allowlist
+
+| Allowed Branch Name  | Purpose                       |
+| -------------------- | ----------------------------- |
+| `main`               | Stable deployable branch      |
+| `staging`            | Pre-release validation branch |
+| `sprint/v*/sprint-*` | Sprint integration branch     |
+| `m1/v*/feat/*`       | m1 assigned feature work      |
+| `m2/v*/feat/*`       | m2 assigned feature work      |
+| `m3/v*/feat/*`       | m3 assigned feature work      |
+| `m*/v*/fix/*`        | Member bug fix work           |
+| `m*/v*/docs/*`       | Member documentation work     |
+| `m*/v*/refactor/*`   | Member refactor work          |
+| `m*/v*/test/*`       | Member test work              |
+| `m*/v*/chore/*`      | Member maintenance work       |
 
 ## Pull Request Naming
 

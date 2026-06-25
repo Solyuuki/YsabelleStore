@@ -46,6 +46,45 @@ The CI workflow also validates the `frontend`, `backend`, and `electron` workspa
 | Create branch     | `git checkout -b m1/v0.1/docs/project-foundation` | Use the required branch format         |
 | Confirm branch    | `git branch --show-current`                       | Verify name before coding              |
 
+## Official Sprint 1 Branch Commands
+
+Create `staging`:
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b staging
+git push -u origin staging
+```
+
+Create `sprint/v0.1/sprint-1`:
+
+```bash
+git checkout staging
+git pull origin staging
+git checkout -b sprint/v0.1/sprint-1
+git push -u origin sprint/v0.1/sprint-1
+```
+
+Create member branches:
+
+```bash
+git checkout sprint/v0.1/sprint-1
+git pull origin sprint/v0.1/sprint-1
+git checkout -b m1/v0.1/feat/frontend-app-shell
+git push -u origin m1/v0.1/feat/frontend-app-shell
+
+git checkout sprint/v0.1/sprint-1
+git pull origin sprint/v0.1/sprint-1
+git checkout -b m2/v0.1/feat/backend-core
+git push -u origin m2/v0.1/feat/backend-core
+
+git checkout sprint/v0.1/sprint-1
+git pull origin sprint/v0.1/sprint-1
+git checkout -b m3/v0.1/feat/database-foundation
+git push -u origin m3/v0.1/feat/database-foundation
+```
+
 ## Sprint 1 Branch Flow
 
 Sprint 1 uses `sprint/v0.1/sprint-1` as the integration branch and `staging` as the pre-release branch.
@@ -72,14 +111,14 @@ sprint/v0.1/sprint-1
 | `sprint/v0.1/sprint-1`             | `staging`              | Sprint review integration                |
 | `staging`                          | `main`                 | Release validation promotion             |
 
-| Rule                 | Requirement                                        |
-| -------------------- | -------------------------------------------------- |
-| Direct commits       | Do not commit directly to `main` or `staging`      |
-| Feature merge target | Feature branches must not merge directly to `main` |
-| Pull requests        | Every branch promotion requires a PR               |
-| Sprint branch        | Active integration branch for Sprint 1             |
-| Staging branch       | Pre-release validation branch                      |
-| Main branch          | Stable branch only                                 |
+| Rule                 | Requirement                                                                 |
+| -------------------- | --------------------------------------------------------------------------- |
+| Main                 | Stable, always deployable, protected, and closed to direct feature work     |
+| Staging              | Protected pre-release integration branch for final validation before `main` |
+| Sprint branch        | Sprint 1 integration branch for member feature branches only                |
+| Direct commits       | Do not commit directly to `main` or `staging`                               |
+| Feature merge target | Feature branches must not merge directly to `main`                          |
+| Pull requests        | Every branch promotion requires a PR                                        |
 
 ## Branch Naming
 
@@ -114,6 +153,22 @@ Valid examples:
 | `m1/v0.1/docs/project-foundation`  | Documentation foundation   |
 | `m2/v0.3/feat/inventory-api`       | Inventory API feature      |
 | `m3/v0.4/feat/sarima-engine`       | Forecasting engine feature |
+
+GitHub governance accepts only:
+
+| Allowed Branch Name  | Purpose                       |
+| -------------------- | ----------------------------- |
+| `main`               | Stable deployable branch      |
+| `staging`            | Pre-release validation branch |
+| `sprint/v*/sprint-*` | Sprint integration branch     |
+| `m1/v*/feat/*`       | m1 assigned feature work      |
+| `m2/v*/feat/*`       | m2 assigned feature work      |
+| `m3/v*/feat/*`       | m3 assigned feature work      |
+| `m*/v*/fix/*`        | Member bug fix work           |
+| `m*/v*/docs/*`       | Member documentation work     |
+| `m*/v*/refactor/*`   | Member refactor work          |
+| `m*/v*/test/*`       | Member test work              |
+| `m*/v*/chore/*`      | Member maintenance work       |
 
 ## Commit Rules
 
