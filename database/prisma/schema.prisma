@@ -1,9 +1,92 @@
+// ==================================================
+// YsabelleStore Database Foundation Blueprint
+// ==================================================
+//
+// Scope:
+// - Establish Prisma generator and MySQL datasource only.
+// - Reserve architecture sections for future schema implementation.
+// - Keep this file free from business models until the approved schema phase.
+//
+// Out of scope for this foundation phase:
+// - Models
+// - Relations
+// - Indexes
+// - Constraints
+// - Migrations
+// - Seed data
+// - Prisma Client generation
+//
+
+// ==================================================
+// Prisma Client Generator
+// ==================================================
+//
+// The generator declaration is present so future implementation can validate
+// the Prisma project shape. The client must not be generated during this phase.
+
 generator client {
   provider = "prisma-client-js"
   output   = "./generated/client"
 }
 
+// ==================================================
+// Database Datasource
+// ==================================================
+//
+// MySQL is the target relational database for future production use.
+// DATABASE_URL must stay environment-driven and must not be hardcoded here.
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+// ==================================================
+// Future Domain Model Sections
+// ==================================================
+//
+// These sections are architecture markers only. They document the expected
+// ordering for future schema work without declaring Prisma models.
+
+//
+// User
+//
+
+//
+// Product
+//
+
+//
+// Inventory
+//
+
+//
+// BatchInventory
+//
+
+//
+// Sales
+//
+
+//
+// Forecast
+//
+
+//
+// Recommendation
+//
+
+// ==================================================
+// Future Cross-Cutting Sections
+// ==================================================
+//
+// Auditability
+//
+// Referential integrity
+//
+// Reporting support
+//
+// Forecasting input support
+//
+// Recommendation output support
+//
