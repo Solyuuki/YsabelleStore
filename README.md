@@ -140,6 +140,15 @@ YsabelleStore/
       08-merge-collisions.md
       09-edge-cases.md
       010-golden-rules.md
+  deployment/
+    BUILD-VALIDATION.md
+    BUILD-WORKFLOW.md
+    RELEASE-CHECKLIST.md
+    RELEASE-FOLDER-STRUCTURE.md
+    README.md
+    TROUBLESHOOTING.md
+    VERSIONING.md
+    WINDOWS-INSTALLER.md
   electron/
     src/
       ipc/
@@ -209,6 +218,7 @@ Sprint 1 creates framework boundaries only. Authentication, product management, 
 | [System Architecture](docs/architecture/02-system-architecture.md)       | Approved Electron, React, Express, Prisma, MySQL, SARIMA, and recommendation flow |
 | [Implementation Roadmap](docs/architecture/09-implementation-roadmap.md) | Sprint sequence from governance through packaging and defense preparation         |
 | [GitHub Workflow](docs/GITHUB-WORKFLOW.md)                               | Branch, commit, PR, merge, and release workflow                                   |
+| [Deployment Foundation](deployment/README.md)                            | Deployment workflow, installer, validation, versioning, and release planning      |
 | [Naming Rules](docs/standards/05-naming-rules.md)                        | Naming standards for branches, code, database, and environment variables          |
 | [Coding Standards](docs/standards/06-coding-standards.md)                | Engineering rules for React, TypeScript, Express, Prisma, Electron, and Python    |
 | [Member Ownership](docs/standards/07-member-ownership.md)                | Team responsibilities and approval workflow                                       |
