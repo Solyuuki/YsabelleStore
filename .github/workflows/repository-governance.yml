@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - main
+      - staging
+      - "sprint/**"
 
 permissions:
   contents: read
@@ -17,11 +19,19 @@ jobs:
         env:
           BRANCH_NAME: ${{ github.head_ref }}
         run: |
-          pattern='^(m1|m2|m3)/v[0-9]+\.[0-9]+/(feat|fix|docs|refactor|test|chore)/[a-z0-9]+(-[a-z0-9]+)*$'
-          if [[ ! "$BRANCH_NAME" =~ $pattern ]]; then
+          member_pattern='^(m1|m2|m3)/v[0-9]+\.[0-9]+/(feat|fix|docs|refactor|test|chore)/[a-z0-9]+(-[a-z0-9]+)*$'
+          sprint_pattern='^sprint/v[0-9]+\.[0-9]+/sprint-[0-9]+$'
+          staging_pattern='^staging$'
+          if [[ ! "$BRANCH_NAME" =~ $member_pattern && ! "$BRANCH_NAME" =~ $sprint_pattern && ! "$BRANCH_NAME" =~ $staging_pattern ]]; then
             echo "Invalid branch name: $BRANCH_NAME"
-            echo "Expected: member/version/type/task-name"
-            echo "Example: m1/v0.1/docs/project-foundation"
+            echo "Expected one of:"
+            echo "- member/version/type/task-name"
+            echo "- sprint/version/sprint-number"
+            echo "- staging"
+            echo "Examples:"
+            echo "- m1/v0.1/feat/frontend-app-shell"
+            echo "- sprint/v0.1/sprint-1"
+            echo "- staging"
             exit 1
           fi
 
@@ -48,6 +58,15 @@ jobs:
             "docs/standards/09-edge-cases.md"
             "docs/standards/CI-GUARDRAILS.md"
             "docs/standards/010-golden-rules.md"
+            "docs/sprints/sprint-1/README.md"
+            "docs/sprints/sprint-1/SPRINT-GOAL.md"
+            "docs/sprints/sprint-1/SPRINT-BACKLOG.md"
+            "docs/sprints/sprint-1/MEMBER-ASSIGNMENTS.md"
+            "docs/sprints/sprint-1/BRANCH-PLAN.md"
+            "docs/sprints/sprint-1/DEFINITION-OF-DONE.md"
+            "docs/sprints/sprint-1/RISK-PLAN.md"
+            "docs/sprints/sprint-1/DAILY-WORKFLOW.md"
+            "docs/sprints/sprint-1/SPRINT-REVIEW.md"
           )
 
           for file in "${required_files[@]}"; do

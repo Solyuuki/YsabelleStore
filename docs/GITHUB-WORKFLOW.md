@@ -1,6 +1,6 @@
 # GitHub Workflow
 
-This guide defines the required GitHub process for YsabelleStore. Every contribution must follow this workflow before it can be merged into `main`.
+This guide defines the required GitHub process for YsabelleStore. Every contribution must follow this workflow before it can be merged into `main`, `staging`, or an active sprint branch.
 
 ## CI Overview
 
@@ -46,6 +46,41 @@ The CI workflow also validates the `frontend`, `backend`, and `electron` workspa
 | Create branch     | `git checkout -b m1/v0.1/docs/project-foundation` | Use the required branch format         |
 | Confirm branch    | `git branch --show-current`                       | Verify name before coding              |
 
+## Sprint 1 Branch Flow
+
+Sprint 1 uses `sprint/v0.1/sprint-1` as the integration branch and `staging` as the pre-release branch.
+
+```text
+main
+|
+v
+staging
+|
+v
+sprint/v0.1/sprint-1
+|
+|-- m1/v0.1/feat/frontend-app-shell
+|-- m2/v0.1/feat/backend-core
+`-- m3/v0.1/feat/database-foundation
+```
+
+| Source Branch                      | Pull Request Target    | Purpose                                  |
+| ---------------------------------- | ---------------------- | ---------------------------------------- |
+| `m1/v0.1/feat/frontend-app-shell`  | `sprint/v0.1/sprint-1` | Frontend shell and integration readiness |
+| `m2/v0.1/feat/backend-core`        | `sprint/v0.1/sprint-1` | Backend core infrastructure              |
+| `m3/v0.1/feat/database-foundation` | `sprint/v0.1/sprint-1` | Database foundation implementation start |
+| `sprint/v0.1/sprint-1`             | `staging`              | Sprint review integration                |
+| `staging`                          | `main`                 | Release validation promotion             |
+
+| Rule                 | Requirement                                        |
+| -------------------- | -------------------------------------------------- |
+| Direct commits       | Do not commit directly to `main` or `staging`      |
+| Feature merge target | Feature branches must not merge directly to `main` |
+| Pull requests        | Every branch promotion requires a PR               |
+| Sprint branch        | Active integration branch for Sprint 1             |
+| Staging branch       | Pre-release validation branch                      |
+| Main branch          | Stable branch only                                 |
+
 ## Branch Naming
 
 | Field     | Example              | Rule                                 |
@@ -61,13 +96,24 @@ Required format:
 member/version/type/task-name
 ```
 
+Sprint branch format:
+
+```text
+sprint/version/sprint-number
+```
+
 Valid examples:
 
-| Branch                            | Use                        |
-| --------------------------------- | -------------------------- |
-| `m1/v0.1/docs/project-foundation` | Documentation foundation   |
-| `m2/v0.3/feat/inventory-api`      | Inventory API feature      |
-| `m3/v0.4/feat/sarima-engine`      | Forecasting engine feature |
+| Branch                             | Use                        |
+| ---------------------------------- | -------------------------- |
+| `sprint/v0.1/sprint-1`             | Sprint 1 integration       |
+| `staging`                          | Pre-release validation     |
+| `m1/v0.1/feat/frontend-app-shell`  | Sprint 1 frontend shell    |
+| `m2/v0.1/feat/backend-core`        | Sprint 1 backend core      |
+| `m3/v0.1/feat/database-foundation` | Sprint 1 database work     |
+| `m1/v0.1/docs/project-foundation`  | Documentation foundation   |
+| `m2/v0.3/feat/inventory-api`       | Inventory API feature      |
+| `m3/v0.4/feat/sarima-engine`       | Forecasting engine feature |
 
 ## Commit Rules
 
@@ -140,20 +186,18 @@ Valid examples:
 | Prisma validate fails | Verify `DATABASE_URL` is set for validation only                        |
 | Audit fails           | Inspect the dependency report and update or replace vulnerable packages |
 
-## Foundation Phase Note
-
-During the foundation phase, main-branch setup work may exist in the current workflow, so CI should not create extra friction beyond the required validation gates.
-
 ## Implementation Phase Branch Workflow
 
 When feature work starts, use this sequence:
 
-1. Pull the latest `main`.
+1. Pull the latest active sprint branch.
 2. Create a branch that matches `member/version/type/task-name`.
 3. Keep the branch focused on one task.
 4. Run local validation before opening the PR.
-5. Open a PR using the template.
+5. Open a PR into the active sprint branch using the template.
 6. Address CI failures before requesting merge.
+7. Promote the sprint branch to `staging` only after sprint review.
+8. Promote `staging` to `main` only after release validation.
 
 ## Release Workflow
 
@@ -167,7 +211,7 @@ When feature work starts, use this sequence:
 
 ## PR Checklist
 
-- [ ] Branch name follows `member/version/type/task-name`
+- [ ] Branch name follows the approved member, sprint, or staging format
 - [ ] PR title follows Conventional Commit style
 - [ ] Summary, files changed, validation, risks, and ownership are documented
 - [ ] Affected files are listed

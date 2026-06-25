@@ -4,7 +4,7 @@ Naming consistency is mandatory. Improper branch names, unclear file names, and 
 
 ## Branch Naming Standard
 
-Required format:
+Required member branch format:
 
 ```text
 member/version/type/task-name
@@ -16,6 +16,20 @@ member/version/type/task-name
 | `version`   | Must use `v` plus major/minor number | `v0.2`               |
 | `type`      | Must be an allowed type              | `feat`               |
 | `task-name` | Must be lowercase kebab-case         | `product-management` |
+
+Required sprint branch format:
+
+```text
+sprint/version/sprint-number
+```
+
+| Segment         | Rule                                 | Example    |
+| --------------- | ------------------------------------ | ---------- |
+| `sprint`        | Literal branch prefix                | `sprint`   |
+| `version`       | Must use `v` plus major/minor number | `v0.1`     |
+| `sprint-number` | Must use `sprint-` plus a number     | `sprint-1` |
+
+The `staging` branch is allowed only as the pre-release validation branch.
 
 ## Allowed Branch Types
 
@@ -30,13 +44,18 @@ member/version/type/task-name
 
 ## Valid Branch Examples
 
-| Valid Branch                      | Reason                                    |
-| --------------------------------- | ----------------------------------------- |
-| `m1/v0.1/docs/project-foundation` | Member, version, type, and task are clear |
-| `m1/v0.2/feat/product-management` | UI feature assigned to m1                 |
-| `m2/v0.3/feat/inventory-api`      | Backend feature assigned to m2            |
-| `m3/v0.4/feat/sarima-engine`      | Forecasting feature assigned to m3        |
-| `m1/v0.5/fix/login-validation`    | Focused bug fix                           |
+| Valid Branch                       | Reason                                    |
+| ---------------------------------- | ----------------------------------------- |
+| `sprint/v0.1/sprint-1`             | Sprint integration branch is clear        |
+| `staging`                          | Pre-release validation branch             |
+| `m1/v0.1/feat/frontend-app-shell`  | Sprint 1 frontend assignment is clear     |
+| `m2/v0.1/feat/backend-core`        | Sprint 1 backend assignment is clear      |
+| `m3/v0.1/feat/database-foundation` | Sprint 1 database assignment is clear     |
+| `m1/v0.1/docs/project-foundation`  | Member, version, type, and task are clear |
+| `m1/v0.2/feat/product-management`  | UI feature assigned to m1                 |
+| `m2/v0.3/feat/inventory-api`       | Backend feature assigned to m2            |
+| `m3/v0.4/feat/sarima-engine`       | Forecasting feature assigned to m3        |
+| `m1/v0.5/fix/login-validation`     | Focused bug fix                           |
 
 ## Invalid Branch Examples
 
@@ -51,11 +70,25 @@ member/version/type/task-name
 
 ## Branch Validation Rule
 
-| Rule                                     | Enforcement                                    |
-| ---------------------------------------- | ---------------------------------------------- | -------------------------- | --- | ---- | -------- | ---- | -------------------------------- | ----------------------------------------- |
-| Branch name must match `^(m1             | m2                                             | m3)/v[0-9]+\\.[0-9]+/(feat | fix | docs | refactor | test | chore)/[a-z0-9]+(-[a-z0-9]+)\*$` | GitHub Actions blocks invalid PR branches |
-| Improper branch names must not be merged | Reviewer must reject PR                        |
-| Branch name must match task ownership    | Owner approval required for cross-member files |
+| Rule                                                      | Enforcement                                       |
+| --------------------------------------------------------- | ------------------------------------------------- |
+| Member branch names must match the member branch regex    | GitHub Actions blocks invalid PR branches         |
+| Sprint branch names must match the sprint branch regex    | GitHub Actions allows sprint integration branches |
+| The `staging` branch is allowed for pre-release promotion | GitHub Actions allows staging-to-main PRs         |
+| Improper branch names must not be merged                  | Reviewer must reject PR                           |
+| Branch name must match task ownership                     | Owner approval required for cross-member files    |
+
+Member branch regex:
+
+```text
+^(m1|m2|m3)/v[0-9]+\.[0-9]+/(feat|fix|docs|refactor|test|chore)/[a-z0-9]+(-[a-z0-9]+)*$
+```
+
+Sprint branch regex:
+
+```text
+^sprint/v[0-9]+\.[0-9]+/sprint-[0-9]+$
+```
 
 ## Pull Request Naming
 
@@ -107,7 +140,7 @@ member/version/type/task-name
 
 ## Naming Checklist
 
-- [ ] Branch follows the mandatory format
+- [ ] Branch follows the mandatory member, sprint, or staging format
 - [ ] PR title follows Conventional Commit style
 - [ ] Files use the correct case for their layer
 - [ ] API paths are stable and kebab-case
