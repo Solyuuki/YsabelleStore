@@ -23,3 +23,4 @@ forecasting-service/data/*
 forecasting-service/outputs/*
 !forecasting-service/data/.gitkeep
 !forecasting-service/outputs/.gitkeep
+!forecasting-service/outputs/README.md
