@@ -1,5 +1,3 @@
-import { contextBridge } from "electron";
+import { exposeDesktopApi } from "./api.js";
 
-contextBridge.exposeInMainWorld("ysabelleStore", {
-  platform: process.platform
-});
+exposeDesktopApi();

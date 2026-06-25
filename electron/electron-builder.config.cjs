@@ -12,7 +12,7 @@ module.exports = {
     }
   ],
   win: {
-    target: "nsis"
+    target: ["nsis"]
   },
   nsis: {
     oneClick: false,
