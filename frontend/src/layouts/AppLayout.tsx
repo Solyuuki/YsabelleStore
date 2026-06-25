@@ -1,13 +1,15 @@
 import type { ReactNode } from "react";
 
 type AppLayoutProps = {
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <main className="min-h-screen bg-background px-6 py-8 text-foreground">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">{children}</div>
-    </main>
+    <div className="min-h-screen bg-background text-foreground">
+      <main className="min-h-screen" data-layout="app">
+        {children}
+      </main>
+    </div>
   );
 }
