@@ -23,6 +23,30 @@ npm audit --audit-level=high
 npx prisma validate --schema=database/prisma/schema.prisma
 ```
 
+## Local Git Hooks
+
+Husky protects the repository before commit and before push:
+
+| Hook         | Local Commands                                                                                                                                                                                                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pre-commit` | `npm run lint`, then `npm run format:check`                                                                                                                                                                                                                                           |
+| `pre-push`   | `npm run typecheck` or the repository equivalent, `npm run build` with the temporary validation `DATABASE_URL`, `npx prisma validate --schema=database/prisma/schema.prisma` with the same temporary `DATABASE_URL`, `npm audit --audit-level=high`, and optional tests if they exist |
+
+The `pre-push` hook uses the same temporary validation database URL already used by repository validation:
+
+```text
+mysql://root:password@localhost:3306/ysabellestore_validation
+```
+
+If repository policy allows an intentional bypass, developers can skip Husky hooks with:
+
+```bash
+git commit --no-verify
+git push --no-verify
+```
+
+Use `--no-verify` only when the bypass is explicitly allowed.
+
 ## GitHub Validation Commands
 
 GitHub Actions runs the same quality gates with a clean install:
