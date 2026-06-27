@@ -29,6 +29,64 @@ body {
     sans-serif;
 }
 
+.welcome-shell {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: min(100%, 1600px);
+  min-height: 100%;
+  margin-inline: auto;
+  padding: clamp(2rem, 4vh, 4.5rem) clamp(2rem, 5vw, 6rem);
+  gap: clamp(1.75rem, 2.6vh, 2.5rem);
+  transition:
+    padding 220ms ease-out,
+    gap 220ms ease-out,
+    width 220ms ease-out,
+    max-width 220ms ease-out,
+    transform 220ms ease-out,
+    opacity 220ms ease-out;
+}
+
+.welcome-content {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(clamp(25rem, 30vw, 35rem), 0.78fr);
+  gap: clamp(3rem, 5vw, 6rem);
+  transition:
+    gap 220ms ease-out,
+    transform 220ms ease-out,
+    opacity 220ms ease-out;
+}
+
+.welcome-card {
+  min-width: 0;
+  width: 100%;
+  max-width: clamp(25rem, 32vw, 37rem);
+  justify-self: end;
+  transition:
+    width 220ms ease-out,
+    max-width 220ms ease-out,
+    transform 220ms ease-out,
+    opacity 220ms ease-out;
+}
+
+.welcome-footer {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1rem, 2vw, 2.5rem);
+  padding-top: clamp(0.75rem, 1.4vh, 1.25rem);
+  transition:
+    gap 220ms ease-out,
+    transform 220ms ease-out,
+    opacity 220ms ease-out;
+}
+
 .welcome-ambient {
   background:
     radial-gradient(circle at 14% 18%, rgba(167, 243, 208, 0.5), transparent 30%),
