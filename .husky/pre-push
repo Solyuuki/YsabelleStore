@@ -1,0 +1,84 @@
+#!/usr/bin/env sh
+
+set -u
+
+VALIDATION_DATABASE_URL="mysql://root:password@localhost:3306/ysabellestore_validation"
+DEFAULT_PRISMA_SCHEMA="database/prisma/schema.prisma"
+
+print_step() {
+  printf '%s\n\n' "$1"
+}
+
+print_pass() {
+  printf 'PASS\n\n'
+}
+
+fail_push() {
+  printf '%s\nPush aborted.\n' "$1"
+  exit 1
+}
+
+has_root_typecheck() {
+  node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); process.exit(pkg.scripts && pkg.scripts.typecheck ? 0 : 1)"
+}
+
+run_typecheck() {
+  if has_root_typecheck; then
+    npm run typecheck
+    return $?
+  fi
+
+  npm run typecheck --workspace frontend &&
+    npm run typecheck --workspace backend &&
+    npm run typecheck --workspace electron
+}
+
+find_prisma_schema() {
+  if [ -f "$DEFAULT_PRISMA_SCHEMA" ]; then
+    printf '%s\n' "$DEFAULT_PRISMA_SCHEMA"
+    return 0
+  fi
+
+  find . -path '*/schema.prisma' -print -quit 2>/dev/null
+}
+
+print_step "Running TypeScript validation..."
+if run_typecheck; then
+  print_pass
+else
+  fail_push "TypeScript validation failed."
+fi
+
+print_step "Running Build..."
+if DATABASE_URL="$VALIDATION_DATABASE_URL" npm run build; then
+  print_pass
+else
+  fail_push "Build failed."
+fi
+
+print_step "Running Prisma validation..."
+PRISMA_SCHEMA_PATH="$(find_prisma_schema)"
+if [ -n "$PRISMA_SCHEMA_PATH" ] && [ -f "$PRISMA_SCHEMA_PATH" ]; then
+  if DATABASE_URL="$VALIDATION_DATABASE_URL" npx prisma validate --schema="$PRISMA_SCHEMA_PATH"; then
+    print_pass
+  else
+    fail_push "Prisma validation failed."
+  fi
+else
+  fail_push "Prisma validation failed."
+fi
+
+print_step "Running Security Audit..."
+if npm audit --audit-level=high; then
+  print_pass
+else
+  fail_push "Security audit failed."
+fi
+
+if npm test --if-present --workspaces; then
+  :
+else
+  fail_push "Automated tests failed."
+fi
+
+printf 'Ready to push.\n'
