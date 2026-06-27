@@ -14,7 +14,7 @@
 }
 
 body {
-  min-width: 320px;
+  min-width: 1024px;
   min-height: 100vh;
   margin: 0;
   background: hsl(var(--background));

@@ -1,14 +1,1 @@
-export type PlannedRouteGroup = {
-  segment:
-    | "authentication"
-    | "dashboard"
-    | "products"
-    | "inventory"
-    | "sales"
-    | "forecasts"
-    | "recommendations"
-    | "reports"
-    | "settings";
-  path: string;
-  status: "planned";
-};
+export type RouteStatus = "available" | "protected" | "planned";
