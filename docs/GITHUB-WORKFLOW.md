@@ -217,13 +217,27 @@ GitHub governance accepts only:
 
 ## Pull Request Creation
 
-| PR Field       | Requirement                                                                       |
-| -------------- | --------------------------------------------------------------------------------- |
-| Title          | Use Conventional Commit style, such as `feat(inventory): add product stock table` |
-| Summary        | Explain what changed in 2-5 bullets                                               |
-| Affected Files | List folders or files touched                                                     |
-| Validation     | Record commands and results                                                       |
-| Ownership      | Identify member ownership and reviewer                                            |
+| PR Field       | Requirement                                                                                                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Title          | Use Conventional Commit style or member-prefixed Conventional Commit style, such as `feat(inventory): add product stock table` or `m1/feat(inventory): add product stock table` |
+| Summary        | Explain what changed in 2-5 bullets                                                                                                                                             |
+| Affected Files | List folders or files touched                                                                                                                                                   |
+| Validation     | Record commands and results                                                                                                                                                     |
+| Ownership      | Identify member ownership and reviewer                                                                                                                                          |
+
+### Valid PR Titles
+
+- `feat: implement frontend shell`
+- `m1/feat: implement frontend shell`
+- `m2/fix(backend): resolve validation issue`
+- `m3/docs(database): update schema notes`
+
+### Invalid PR Titles
+
+- `M1/v0.1/feat/frontend app shell`
+- `m1/v0.1/feat/frontend-app-shell`
+- `update`
+- `random title`
 
 ## Review Process
 
@@ -291,7 +305,7 @@ When feature work starts, use this sequence:
 ## PR Checklist
 
 - [ ] Branch name follows the approved member, sprint, or staging format
-- [ ] PR title follows Conventional Commit style
+- [ ] PR title follows Conventional Commit style or member-prefixed Conventional Commit style
 - [ ] Summary, files changed, validation, risks, and ownership are documented
 - [ ] Affected files are listed
 - [ ] Ownership has been checked

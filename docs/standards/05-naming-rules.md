@@ -172,7 +172,7 @@ Sprint branch regex:
 ## Naming Checklist
 
 - [ ] Branch follows the mandatory member, sprint, or staging format
-- [ ] PR title follows Conventional Commit style
+- [ ] PR title follows Conventional Commit style or member-prefixed Conventional Commit style
 - [ ] Files use the correct case for their layer
 - [ ] API paths are stable and kebab-case
 - [ ] Database names are readable and consistent
