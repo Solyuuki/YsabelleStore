@@ -23,7 +23,7 @@ const ambientParticles = [
 
 export function WelcomePage({ onNavigate }: WelcomePageProps) {
   return (
-    <main className="welcome-ambient relative min-h-screen overflow-hidden px-[clamp(2.25rem,5vw,6rem)] py-[clamp(2rem,4vh,4.5rem)] text-slate-950">
+    <main className="welcome-ambient relative flex min-h-screen flex-col overflow-hidden px-[clamp(2.25rem,5vw,6rem)] py-[clamp(2rem,4vh,4.5rem)] text-slate-950">
       <div className="welcome-ambient-blob left-[8%] top-[12%] h-[clamp(15rem,24vw,28rem)] w-[clamp(15rem,24vw,28rem)] bg-emerald-200" />
       <div className="welcome-ambient-blob right-[7%] top-[8%] h-[clamp(16rem,26vw,32rem)] w-[clamp(16rem,26vw,32rem)] bg-blue-200 animation-delay-7000" />
       <div className="welcome-ambient-blob bottom-[2%] left-[38%] h-[clamp(14rem,22vw,26rem)] w-[clamp(14rem,22vw,26rem)] bg-violet-200 animation-delay-14000" />
@@ -33,7 +33,7 @@ export function WelcomePage({ onNavigate }: WelcomePageProps) {
         ))}
       </div>
 
-      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-clamp(4rem,8vh,9rem))] max-w-[min(90vw,1500px)] grid-cols-[minmax(0,1fr)_minmax(clamp(25rem,30vw,35rem),0.78fr)] items-center gap-[clamp(3rem,6vw,7.5rem)]">
+      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-clamp(7rem,12vh,13rem))] max-w-[min(90vw,1500px)] grid-cols-[minmax(0,1fr)_minmax(clamp(25rem,30vw,35rem),0.78fr)] items-center gap-[clamp(3rem,6vw,7.5rem)]">
         <section className="max-w-[min(58vw,55rem)]">
           <StatusBadge variant="success">Checking session</StatusBadge>
           <h1 className="mt-[clamp(1.5rem,2.4vw,2.5rem)] text-[clamp(2.75rem,5vw,5rem)] font-semibold leading-[1.02] tracking-normal">
@@ -85,6 +85,20 @@ export function WelcomePage({ onNavigate }: WelcomePageProps) {
           </CardContent>
         </Card>
       </div>
+
+      <footer className="relative z-10 mt-auto flex w-full items-center justify-between gap-6 px-8 pb-0 text-[13px] font-medium text-slate-700/80">
+        <p>
+          YsabelleStore <span className="text-slate-500">v0.1.0</span>
+        </p>
+        <p className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+          System Secure
+        </p>
+        <p className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+          All Systems Normal
+        </p>
+      </footer>
     </main>
   );
 }

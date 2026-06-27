@@ -30,6 +30,17 @@
 | Operational pages       | Done   | Dashboard, POS, module shells, protected pages, sidebar, and topbar were not redesigned                          |
 | Business logic          | None   | No authentication, CRUD, POS transaction, forecasting, reporting, database, backend, or Electron IPC logic added |
 
+## 2026-06-27 Welcome Footer Restore Update
+
+| Area                    | Status | Evidence                                                                                       |
+| ----------------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| Footer restored         | Done   | Welcome screen has a bottom-aligned translucent footer/status strip                            |
+| Version display         | Done   | Footer shows `YsabelleStore v0.1.0` on the left                                                |
+| Security state          | Done   | Footer shows `System Secure` with a lucide-react `ShieldCheck` icon in the center              |
+| System status           | Done   | Footer shows a green status dot and `All Systems Normal` on the right                          |
+| Adaptive desktop layout | Done   | Footer uses clamp-based spacing, typography, and max-width to stay balanced on desktop windows |
+| Business logic          | None   | Status text is UI-only and does not read backend, database, or Electron state                  |
+
 ## Status Rules
 
 | Status      | Meaning                                               |
