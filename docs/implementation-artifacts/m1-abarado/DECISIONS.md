@@ -8,3 +8,5 @@
 | DEC-M1-002  | 2026-06-27 | UI      | Use local shadcn-style Button, Card, and Badge primitives                | The repo is shadcn/ui-ready but had no generated primitives yet                                  |
 | DEC-M1-003  | 2026-06-27 | UX      | Keep the shell desktop-first with a 1024px minimum width                 | The target runtime is a Windows Electron desktop app, not a mobile web app                       |
 | DEC-M1-004  | 2026-06-27 | Scope   | Keep all modules static and business-logic-free                          | Sprint 1 M1 scope is navigation, layout, and UI foundation only                                  |
+| DEC-M1-005  | 2026-06-27 | UX      | Use clamp-based desktop scaling for the Welcome screen                   | The Welcome view needed to feel balanced from 1366px through fullscreen desktop sizes            |
+| DEC-M1-006  | 2026-06-27 | Motion  | Limit ambient animation to the Welcome screen only                       | Operational modules must remain static, fast, and work-focused                                   |

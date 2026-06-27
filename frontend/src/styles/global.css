@@ -28,3 +28,100 @@ body {
     "Segoe UI",
     sans-serif;
 }
+
+.welcome-ambient {
+  background:
+    radial-gradient(circle at 14% 18%, rgba(167, 243, 208, 0.5), transparent 30%),
+    radial-gradient(circle at 78% 16%, rgba(191, 219, 254, 0.48), transparent 32%),
+    radial-gradient(circle at 56% 88%, rgba(221, 214, 254, 0.42), transparent 34%),
+    linear-gradient(135deg, #f8fafc 0%, #eefcf7 46%, #f5f3ff 100%);
+}
+
+.welcome-ambient-blob {
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+  border-radius: 9999px;
+  opacity: 0.34;
+  filter: blur(72px);
+  animation: welcome-blob-drift 34s ease-in-out infinite;
+}
+
+.welcome-particle {
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+  display: block;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.34);
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.2);
+  animation: welcome-particle-pulse 28s ease-in-out infinite;
+}
+
+.animation-delay-0 {
+  animation-delay: 0ms;
+}
+
+.animation-delay-700 {
+  animation-delay: 700ms;
+}
+
+.animation-delay-1400 {
+  animation-delay: 1400ms;
+}
+
+.animation-delay-2100 {
+  animation-delay: 2100ms;
+}
+
+.animation-delay-2800 {
+  animation-delay: 2800ms;
+}
+
+.animation-delay-3500 {
+  animation-delay: 3500ms;
+}
+
+.animation-delay-4200 {
+  animation-delay: 4200ms;
+}
+
+.animation-delay-4900 {
+  animation-delay: 4900ms;
+}
+
+.animation-delay-7000 {
+  animation-delay: 7000ms;
+}
+
+.animation-delay-14000 {
+  animation-delay: 14000ms;
+}
+
+@keyframes welcome-blob-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  45% {
+    transform: translate3d(2.5vw, -1.6vh, 0) scale(1.08);
+  }
+
+  72% {
+    transform: translate3d(-1.8vw, 1.4vh, 0) scale(0.96);
+  }
+}
+
+@keyframes welcome-particle-pulse {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    opacity: 0.38;
+    transform: translate3d(0.75vw, -0.8vh, 0);
+  }
+}

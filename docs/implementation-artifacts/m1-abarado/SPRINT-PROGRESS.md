@@ -20,6 +20,16 @@
 | Shared components   | Done   | AppSidebar, AppTopbar, PageHeader, StatCard, EmptyState, LoadingState, ProtectedModuleCard, StatusBadge, and shadcn-style UI primitives added       |
 | Feedback foundation | Done   | Loading state and top-right notification style foundation added with lucide-react icons                                                             |
 
+## 2026-06-27 Welcome Screen Polish Update
+
+| Area                    | Status | Evidence                                                                                                         |
+| ----------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
+| Adaptive desktop sizing | Done   | Welcome title, copy, card, buttons, layout spacing, and session area now use clamp-based sizing                  |
+| Ambient background      | Done   | Welcome screen has subtle mint, blue, and violet ambient gradients, blurred blobs, and 8 slow particles          |
+| Redundant UI removal    | Done   | Removed the duplicate Retail counter workstation card from the Welcome panel                                     |
+| Operational pages       | Done   | Dashboard, POS, module shells, protected pages, sidebar, and topbar were not redesigned                          |
+| Business logic          | None   | No authentication, CRUD, POS transaction, forecasting, reporting, database, backend, or Electron IPC logic added |
+
 ## Status Rules
 
 | Status      | Meaning                                               |
