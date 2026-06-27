@@ -60,7 +60,6 @@ export function AppShell() {
       collapsed={sidebarCollapsed}
       onNavigate={navigate}
       onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
-      routeLabel={routeForLayout?.label ?? "Not Found"}
     >
       {renderRoute(path, routeForLayout, navigate)}
     </AppLayout>

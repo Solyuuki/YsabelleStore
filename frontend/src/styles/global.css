@@ -29,6 +29,24 @@ body {
     sans-serif;
 }
 
+.app-shell-ambient {
+  background:
+    radial-gradient(circle at 12% 20%, rgba(167, 243, 208, 0.16), transparent 28%),
+    radial-gradient(circle at 82% 14%, rgba(220, 252, 231, 0.18), transparent 30%),
+    radial-gradient(circle at 62% 86%, rgba(245, 245, 244, 0.85), transparent 32%),
+    linear-gradient(135deg, #fafcf9 0%, #f2f8f3 52%, #edf3ee 100%);
+}
+
+.app-shell-orb {
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+  border-radius: 9999px;
+  opacity: 0.22;
+  filter: blur(88px);
+  animation: app-shell-blob-drift 48s ease-in-out infinite;
+}
+
 .welcome-shell {
   position: relative;
   z-index: 10;
@@ -181,5 +199,16 @@ body {
   50% {
     opacity: 0.38;
     transform: translate3d(0.75vw, -0.8vh, 0);
+  }
+}
+
+@keyframes app-shell-blob-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(1.2vw, -0.8vh, 0) scale(1.04);
   }
 }

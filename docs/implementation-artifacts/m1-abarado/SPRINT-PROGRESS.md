@@ -41,6 +41,40 @@
 | Adaptive desktop layout | Done   | Footer uses clamp-based spacing, typography, and max-width to stay balanced on desktop windows |
 | Business logic          | None   | Status text is UI-only and does not read backend, database, or Electron state                  |
 
+## 2026-06-27 App Shell Cohesion Polish Update
+
+| Area              | Status | Evidence                                                                          |
+| ----------------- | ------ | --------------------------------------------------------------------------------- |
+| Sidebar structure | Done   | Main, Owner Area, and System headers group the existing navigation items          |
+| Logout UI         | Done   | Added a UI-only Logout item at the bottom of the sidebar                          |
+| Account cleanup   | Done   | Removed the redundant top-right account button from the app topbar                |
+| Counter mode card | Done   | Preserved the card and replaced active state treatment with subtle version text   |
+| Palette alignment | Done   | Sidebar and shell background were aligned to the approved premium desktop palette |
+| Navigation badges | Done   | Category attention was treated as placeholder-only and not shown permanently      |
+| Business logic    | None   | No authentication, API, database, or notification logic was added                 |
+
+## 2026-06-27 Enterprise UI Theme Polish Update
+
+| Area                  | Status | Evidence                                                                           |
+| --------------------- | ------ | ---------------------------------------------------------------------------------- |
+| Background palette    | Done   | App shell retuned to soft mint, sage, warm white, and very light neutral gray      |
+| Sidebar palette       | Done   | Sidebar retuned to a lighter premium surface with emerald active state             |
+| Top bar               | Done   | User pill remains removed while search, session status, and notification bell stay |
+| Notification strategy | Done   | Removed always-on menu badges so attention markers only appear when meaningful     |
+| Motion                | Done   | Background and sidebar transitions remain smooth without new animation systems     |
+| Business logic        | None   | No routing, data, auth, or API behavior changed                                    |
+
+## 2026-06-27 Final App Shell Micro Polish Update
+
+| Area                      | Status | Evidence                                                                         |
+| ------------------------- | ------ | -------------------------------------------------------------------------------- |
+| Current module label      | Done   | Removed the redundant `CURRENT MODULE` block from the top controls               |
+| Session badge wording     | Done   | Kept the session badge as `Session check ready`                                  |
+| Sidebar mint tint         | Done   | Soft mint shell surface keeps the ambient Welcome palette visible                |
+| Collapse handle placement | Done   | Chevron handle is anchored to the header/nav divider line                        |
+| Collapsed overflow safety | Done   | Collapsed sidebar remains icon-radial with no counter card, label wrap, or spill |
+| Business logic            | None   | Only shell styling and layout behavior changed                                   |
+
 ## Status Rules
 
 | Status      | Meaning                                               |
