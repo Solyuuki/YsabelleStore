@@ -4,15 +4,15 @@ This document defines naming standards for future YsabelleStore database impleme
 
 ## Naming Decision Matrix
 
-| Layer         | Standard                           | Example                         |
-| ------------- | ---------------------------------- | ------------------------------- |
-| Prisma models | PascalCase singular                | `Product`, `BatchInventory`     |
-| Prisma fields | camelCase                          | `createdAt`, `expirationDate`   |
-| MySQL tables  | snake_case plural                  | `products`, `batch_inventory`   |
-| MySQL columns | snake_case                         | `created_at`, `expiration_date` |
-| Foreign keys  | snake_case with referenced entity  | `product_id`, `forecast_id`     |
-| Indexes       | descriptive snake_case with prefix | `idx_sales_product_id`          |
-| Migrations    | sequential repository folder name  | `0001-m3-product-schema`        |
+| Layer         | Standard                           | Example                             |
+| ------------- | ---------------------------------- | ----------------------------------- |
+| Prisma models | PascalCase singular                | `Product`, `BatchInventory`         |
+| Prisma fields | camelCase                          | `createdAt`, `expirationDate`       |
+| MySQL tables  | snake_case plural                  | `products`, `batch_inventory`       |
+| MySQL columns | snake_case                         | `created_at`, `expiration_date`     |
+| Foreign keys  | snake_case with referenced entity  | `product_id`, `forecast_id`         |
+| Indexes       | descriptive snake_case with prefix | `idx_sales_product_id`              |
+| Migrations    | sequential repository folder name  | `0001_sprint_1_database_foundation` |
 
 ## Table Naming
 
@@ -75,16 +75,16 @@ This document defines naming standards for future YsabelleStore database impleme
 
 ## Migration Naming
 
-| Rule                             | Pattern                       | Example                                   |
-| -------------------------------- | ----------------------------- | ----------------------------------------- |
-| Use sequential repository names  | `<sequence>-<member>-<task>`  | `0001-m3-product-schema`                  |
-| Use four-digit sequence numbers  | Zero-padded and unique        | `0002-m2-auth-module`                     |
-| Use lowercase member identifiers | `m1`, `m2`, or `m3`           | `0003-m1-dashboard-layout`                |
-| Use kebab-case task names        | Lowercase and specific        | `0004-m3-sales-indexes`                   |
-| Describe one focused change      | Avoid bundled migration names | `0005-m3-inventory-batches`               |
-| Avoid vague wording              | No generic labels             | `0006-m2-update-schema` is not acceptable |
+| Rule                            | Pattern                       | Example                                            |
+| ------------------------------- | ----------------------------- | -------------------------------------------------- |
+| Use sequential repository names | `<sequence>_<task>`           | `0001_sprint_1_database_foundation`                |
+| Use four-digit sequence numbers | Zero-padded and unique        | `0002_add_product_categories`                      |
+| Use snake_case task names       | Lowercase and specific        | `0003_create_inventory_tables`                     |
+| Describe one focused change     | Avoid bundled migration names | `0004_add_sales_indexes`                           |
+| Avoid vague wording             | No generic labels             | `0005_update_schema` is not acceptable             |
+| Avoid timestamps                | Never use timestamp folders   | `20260628120000_create_products` is not acceptable |
 
-The existing shared folder `20260628120000_sprint_1_database_foundation` is preserved for migration integrity. Future migration folders must follow the sequential standard documented in `database/docs/MIGRATION-GUIDE.md`.
+Migration folders must follow the sequential standard documented in `database/docs/MIGRATION-GUIDE.md`. Never rename an applied migration after repository sharing.
 
 ## Consistency Checklist
 

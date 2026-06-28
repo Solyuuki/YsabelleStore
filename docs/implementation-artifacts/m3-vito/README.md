@@ -17,7 +17,7 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | Area                      | Responsibility                                                     | Sprint 1 Evidence                                                                     |
 | ------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
 | Prisma schema             | Core foundation models, enums, relationships, constraints, indexes | `database/prisma/schema.prisma`                                                       |
-| Migration readiness       | Reviewable SQL migration artifact                                  | `database/migrations/20260628120000_sprint_1_database_foundation/migration.sql`       |
+| Migration readiness       | Reviewable SQL migration artifact                                  | `database/migrations/0001_sprint_1_database_foundation/migration.sql`                 |
 | Seed strategy             | Deterministic future seed rules without fake production data       | `database/seed/README.md`                                                             |
 | Database documentation    | Schema, ERD, migration, naming, and validation docs                | `database/README.md`, `database/docs/**`                                              |
 | Backend database boundary | Prisma client and database health check foundation                 | `backend/src/database/prismaClient.ts`, `backend/src/controllers/healthController.ts` |
@@ -27,7 +27,7 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | Deliverable                      | Status    | Evidence                                                                                                                      |
 | -------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Core Prisma schema foundation    | Completed | `database/prisma/schema.prisma`, commit `1a732c3`, sprint merge `dd53be7`                                                     |
-| Initial SQL migration artifact   | Completed | `database/migrations/20260628120000_sprint_1_database_foundation/migration.sql`                                               |
+| Initial SQL migration artifact   | Completed | `database/migrations/0001_sprint_1_database_foundation/migration.sql`                                                         |
 | Database documentation alignment | Completed | `database/README.md`, `database/docs/DATABASE-FOUNDATION.md`, `database/docs/ERD-PLAN.md`, `database/docs/MIGRATION-GUIDE.md` |
 | Seed strategy documentation      | Completed | `database/seed/README.md`                                                                                                     |
 | Backend Prisma boundary          | Completed | `backend/src/database/prismaClient.ts`, health controller database check                                                      |

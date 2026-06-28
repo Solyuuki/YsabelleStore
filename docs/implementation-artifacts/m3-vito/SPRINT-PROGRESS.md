@@ -2,16 +2,16 @@
 
 ## Sprint Status From Evidence
 
-| Area                                | Status                                           | Evidence                                                                        |
-| ----------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------- |
-| Prisma schema foundation            | Complete                                         | `database/prisma/schema.prisma`                                                 |
-| Relationships, constraints, indexes | Complete                                         | Prisma model relations, mapped tables, unique fields, and indexes in schema     |
-| Migration artifact                  | Complete as review artifact                      | `database/migrations/20260628120000_sprint_1_database_foundation/migration.sql` |
-| Seed strategy                       | Complete as documentation                        | `database/seed/README.md`                                                       |
-| Backend Prisma boundary             | Complete for foundation                          | `backend/src/database/prismaClient.ts` and health controller database check     |
-| Migration naming standard           | Complete after this update for future migrations | `database/docs/MIGRATION-GUIDE.md` and related standards docs                   |
-| Local MySQL migration application   | Pending                                          | No migration status/application output exists in repository evidence            |
-| SARIMA execution                    | Pending future sprint                            | No forecasting implementation added in Sprint 1 database work                   |
+| Area                                | Status                                           | Evidence                                                                    |
+| ----------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------- |
+| Prisma schema foundation            | Complete                                         | `database/prisma/schema.prisma`                                             |
+| Relationships, constraints, indexes | Complete                                         | Prisma model relations, mapped tables, unique fields, and indexes in schema |
+| Migration artifact                  | Complete as review artifact                      | `database/migrations/0001_sprint_1_database_foundation/migration.sql`       |
+| Seed strategy                       | Complete as documentation                        | `database/seed/README.md`                                                   |
+| Backend Prisma boundary             | Complete for foundation                          | `backend/src/database/prismaClient.ts` and health controller database check |
+| Migration naming standard           | Complete after this update for future migrations | `database/docs/MIGRATION-GUIDE.md` and related standards docs               |
+| Local MySQL migration application   | Pending                                          | No migration status/application output exists in repository evidence        |
+| SARIMA execution                    | Pending future sprint                            | No forecasting implementation added in Sprint 1 database work               |
 
 ## Backlog Mapping
 

@@ -2,21 +2,21 @@
 
 ## Completed
 
-| Task ID        | Date       | Scope                                                | Affected Files/Modules                                                                                     | Evidence                                 | Validation                                                           |
-| -------------- | ---------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------- |
-| YSB-M3-DB-001  | 2026-06-25 | Initial database foundation structure                | `database/**`                                                                                              | Commit `bbbfdc7` in shared history       | Later Prisma validation confirms schema path validity.               |
-| YSB-S1-009     | 2026-06-28 | Initial Prisma schema foundation                     | `database/prisma/schema.prisma`                                                                            | Commit `1a732c3`, sprint merge `dd53be7` | Prisma validation recorded by M3 and re-run on 2026-06-29.           |
-| YSB-S1-010     | 2026-06-28 | Relationships, constraints, and indexes              | `database/prisma/schema.prisma`                                                                            | Commit `1a732c3`                         | Schema review and Prisma validation.                                 |
-| YSB-S1-011     | 2026-06-28 | Migration readiness and seed strategy                | `database/migrations/20260628120000_sprint_1_database_foundation/migration.sql`, `database/seed/README.md` | Commit `1a732c3`, sprint merge `dd53be7` | Migration SQL review recorded; local MySQL application not recorded. |
-| YSB-S1-012     | 2026-06-28 | Database documentation alignment                     | `database/README.md`, `database/docs/**`, `database/prisma/README.md`                                      | Commit `1a732c3`, sprint merge `dd53be7` | Documentation review; final format check pending this update.        |
-| YSB-M3-BE-001  | 2026-06-29 | Backend Prisma boundary support                      | `backend/src/database/prismaClient.ts`, `backend/src/controllers/healthController.ts`                      | Sprint branch `dd53be7`                  | Backend build and Prisma validation passed on 2026-06-29.            |
-| YSB-M3-DOC-001 | 2026-06-29 | M3 artifact reconstruction and migration naming rule | `docs/implementation-artifacts/m3-vito/**`, `database/docs/**`                                             | Current documentation-only work          | Final validation pending after docs update.                          |
+| Task ID        | Date       | Scope                                                | Affected Files/Modules                                                                           | Evidence                                 | Validation                                                           |
+| -------------- | ---------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------- | -------------------------------------------------------------------- |
+| YSB-M3-DB-001  | 2026-06-25 | Initial database foundation structure                | `database/**`                                                                                    | Commit `bbbfdc7` in shared history       | Later Prisma validation confirms schema path validity.               |
+| YSB-S1-009     | 2026-06-28 | Initial Prisma schema foundation                     | `database/prisma/schema.prisma`                                                                  | Commit `1a732c3`, sprint merge `dd53be7` | Prisma validation recorded by M3 and re-run on 2026-06-29.           |
+| YSB-S1-010     | 2026-06-28 | Relationships, constraints, and indexes              | `database/prisma/schema.prisma`                                                                  | Commit `1a732c3`                         | Schema review and Prisma validation.                                 |
+| YSB-S1-011     | 2026-06-28 | Migration readiness and seed strategy                | `database/migrations/0001_sprint_1_database_foundation/migration.sql`, `database/seed/README.md` | Commit `1a732c3`, sprint merge `dd53be7` | Migration SQL review recorded; local MySQL application not recorded. |
+| YSB-S1-012     | 2026-06-28 | Database documentation alignment                     | `database/README.md`, `database/docs/**`, `database/prisma/README.md`                            | Commit `1a732c3`, sprint merge `dd53be7` | Documentation review; final format check pending this update.        |
+| YSB-M3-BE-001  | 2026-06-29 | Backend Prisma boundary support                      | `backend/src/database/prismaClient.ts`, `backend/src/controllers/healthController.ts`            | Sprint branch `dd53be7`                  | Backend build and Prisma validation passed on 2026-06-29.            |
+| YSB-M3-DOC-001 | 2026-06-29 | M3 artifact reconstruction and migration naming rule | `docs/implementation-artifacts/m3-vito/**`, `database/docs/**`                                   | Current documentation-only work          | Final validation pending after docs update.                          |
 
 ## In Progress
 
-| Task ID            | Scope                                | Status      | Evidence                                                                      | Next Action                     |
-| ------------------ | ------------------------------------ | ----------- | ----------------------------------------------------------------------------- | ------------------------------- |
-| YSB-M3-MIG-STD-001 | Sequential migration naming standard | In progress | Existing timestamp migration cannot be renamed safely; docs are being updated | Complete validation and review. |
+| Task ID            | Scope                              | Status | Evidence                                                                               | Next Action                           |
+| ------------------ | ---------------------------------- | ------ | -------------------------------------------------------------------------------------- | ------------------------------------- |
+| YSB-M3-MIG-STD-001 | Numbered migration naming standard | Done   | Sprint 1 migration folder renamed to `0001_sprint_1_database_foundation`; docs updated | Validate Prisma and backend commands. |
 
 ## Pending
 

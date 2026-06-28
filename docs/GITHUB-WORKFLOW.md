@@ -276,10 +276,10 @@ GitHub governance accepts only:
 Future Prisma migration artifacts must use sequential repository folder names:
 
 ```text
-<sequence>-<member>-<task>
+<sequence>_<task>
 ```
 
-Before creating a migration, inspect `database/migrations/`, determine the highest existing four-digit sequence, increment it, and use a unique kebab-case name such as `0001-m3-product-schema`. Existing shared timestamp-based migrations must not be renamed directly; document any preservation or mapping decision in `database/docs/MIGRATION-GUIDE.md`.
+Before creating a migration, inspect `database/migrations/`, determine the highest existing four-digit sequence, increment it by one, and use a unique snake_case name such as `0002_add_products`. Never reuse numbers, never use timestamp-based folder names, and never rename an applied migration after the repository is shared.
 
 ## Failed CI Troubleshooting
 

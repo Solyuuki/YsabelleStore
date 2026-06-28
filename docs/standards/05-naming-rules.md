@@ -161,24 +161,24 @@ Sprint branch regex:
 Future database migration artifacts must use the repository sequence format:
 
 ```text
-<sequence>-<member>-<task>
+<sequence>_<task>
 ```
 
-| Segment    | Rule                                                                     | Example          |
-| ---------- | ------------------------------------------------------------------------ | ---------------- |
-| `sequence` | Four digits, zero-padded, incremented from the highest existing sequence | `0001`           |
-| `member`   | Lowercase owner identifier                                               | `m3`             |
-| `task`     | Lowercase kebab-case description                                         | `product-schema` |
+| Segment    | Rule                                                                     | Example        |
+| ---------- | ------------------------------------------------------------------------ | -------------- |
+| `sequence` | Four digits, zero-padded, incremented from the highest existing sequence | `0001`         |
+| `task`     | Lowercase snake_case description                                         | `add_products` |
 
 Valid migration folder examples:
 
-| Folder                     | Reason                                                                      |
-| -------------------------- | --------------------------------------------------------------------------- |
-| `0001-m3-product-schema`   | First future sequential database migration owned by M3                      |
-| `0002-m2-auth-module`      | Next migration number, backend-owned auth schema support                    |
-| `0003-m1-dashboard-layout` | Valid format if a future UI-owned migration artifact is explicitly approved |
+| Folder                              | Reason                                         |
+| ----------------------------------- | ---------------------------------------------- |
+| `0001_sprint_1_database_foundation` | Initial Sprint 1 database foundation migration |
+| `0002_add_products`                 | Next migration number for product schema work  |
+| `0003_add_batches`                  | Next migration number for batch schema work    |
+| `0004_add_forecast_tables`          | Next migration number for forecast table work  |
 
-Existing shared timestamp-based migration folders must not be renamed directly. Preserve migration integrity and document the mapping or preservation decision in `database/docs/MIGRATION-GUIDE.md`.
+Never use timestamp-based migration folder names, never reuse sequence numbers, and never rename an applied migration after the repository is shared.
 
 ## File Naming Decision Table
 

@@ -141,10 +141,10 @@ A task is not complete until code, schema, migration, validation, and documentat
 Future database migrations must follow the repository sequential naming standard:
 
 ```text
-<sequence>-<member>-<task>
+<sequence>_<task>
 ```
 
-Before creating a migration, determine the highest existing four-digit sequence under `database/migrations/`, increment it, and never duplicate a number. Existing shared timestamp migrations must not be renamed directly; preserve migration integrity and document any required mapping in `database/docs/MIGRATION-GUIDE.md`.
+Before creating a migration, determine the highest existing four-digit sequence under `database/migrations/`, increment it by one, and never duplicate a number. Use snake_case task names such as `0002_add_products`. Never use timestamp-based folder names, and never rename an applied migration after the repository is shared.
 
 ## Dependency Security Validation
 

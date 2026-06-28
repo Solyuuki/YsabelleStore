@@ -20,7 +20,7 @@ database/
 |   |-- schema.prisma
 |   `-- README.md
 |-- migrations/
-|   |-- 20260628120000_sprint_1_database_foundation/
+|   |-- 0001_sprint_1_database_foundation/
 |   |   `-- migration.sql
 |   `-- .gitkeep
 |-- seed/
@@ -37,27 +37,28 @@ database/
 
 ## Migration Naming Standard
 
-The existing Sprint 1 migration folder keeps its timestamp name because it is already shared in branch history:
+The Sprint 1 migration folder uses the numbered repository convention:
 
 ```text
-database/migrations/20260628120000_sprint_1_database_foundation/
+database/migrations/0001_sprint_1_database_foundation/
 ```
 
-Do not rename this folder directly. Future migrations must use the repository sequential standard defined in `database/docs/MIGRATION-GUIDE.md`:
+Future migrations must use the same sequential standard defined in `database/docs/MIGRATION-GUIDE.md`:
 
 ```text
-<sequence>-<member>-<task>
+<sequence>_<task>
 ```
 
 Examples:
 
 ```text
-0001-m3-product-schema
-0002-m2-auth-module
-0003-m1-dashboard-layout
+0001_sprint_1_database_foundation
+0002_add_products
+0003_add_batches
+0004_add_forecast_tables
 ```
 
-Before creating a new migration, determine the highest existing four-digit sequence under `database/migrations/`, increment it, and never reuse a number.
+Before creating a new migration, determine the highest existing four-digit sequence under `database/migrations/`, increment it by one, never reuse a number, and never use timestamp-based migration folder names.
 
 ## Implemented Foundation
 

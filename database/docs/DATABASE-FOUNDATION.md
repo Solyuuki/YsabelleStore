@@ -57,7 +57,7 @@ Electron desktop shell
 The first migration artifact is stored at:
 
 ```text
-database/migrations/20260628120000_sprint_1_database_foundation/migration.sql
+database/migrations/0001_sprint_1_database_foundation/migration.sql
 ```
 
 This SQL is generated from the current Prisma schema for review. It should be applied only against an approved local MySQL database after the team confirms the schema and environment.

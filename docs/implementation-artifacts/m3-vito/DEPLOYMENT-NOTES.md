@@ -2,23 +2,23 @@
 
 ## Database Runtime Readiness
 
-| Area                             | Status               | Evidence                                                                        |
-| -------------------------------- | -------------------- | ------------------------------------------------------------------------------- |
-| Prisma schema                    | Ready for foundation | `database/prisma/schema.prisma` validates                                       |
-| Prisma Client generation         | Historically passed  | Existing M3 report records `npm.cmd run prisma:generate` passed                 |
-| Migration SQL artifact           | Ready for review     | `database/migrations/20260628120000_sprint_1_database_foundation/migration.sql` |
-| Migration application            | Not verified         | No local MySQL application/status output exists                                 |
-| Seed data                        | Strategy only        | `database/seed/README.md`; no executable seed script                            |
-| Backend database health boundary | Ready for foundation | `backend/src/database/prismaClient.ts`, health controller database check        |
+| Area                             | Status               | Evidence                                                                 |
+| -------------------------------- | -------------------- | ------------------------------------------------------------------------ |
+| Prisma schema                    | Ready for foundation | `database/prisma/schema.prisma` validates                                |
+| Prisma Client generation         | Historically passed  | Existing M3 report records `npm.cmd run prisma:generate` passed          |
+| Migration SQL artifact           | Ready for review     | `database/migrations/0001_sprint_1_database_foundation/migration.sql`    |
+| Migration application            | Not verified         | No local MySQL application/status output exists                          |
+| Seed data                        | Strategy only        | `database/seed/README.md`; no executable seed script                     |
+| Backend database health boundary | Ready for foundation | `backend/src/database/prismaClient.ts`, health controller database check |
 
 ## Deployment Log
 
-| Version / Branch             | Date       | Database Target                    | Status                           | Notes                                                                   |
-| ---------------------------- | ---------- | ---------------------------------- | -------------------------------- | ----------------------------------------------------------------------- |
-| Foundation history           | 2026-06-25 | Database folder and docs           | Completed                        | Initial database foundation structure created.                          |
-| M3 branch                    | 2026-06-28 | Sprint 1 Prisma foundation         | Completed                        | Schema, migration artifact, seed strategy, and database docs aligned.   |
-| Sprint branch                | 2026-06-29 | Database integration into Sprint 1 | Completed for source integration | Current branch includes M3 database/backend database-boundary work.     |
-| Documentation reconstruction | 2026-06-29 | Migration naming and artifacts     | In review                        | Sequential migration rule documented without renaming shared migration. |
+| Version / Branch             | Date       | Database Target                    | Status                           | Notes                                                                 |
+| ---------------------------- | ---------- | ---------------------------------- | -------------------------------- | --------------------------------------------------------------------- |
+| Foundation history           | 2026-06-25 | Database folder and docs           | Completed                        | Initial database foundation structure created.                        |
+| M3 branch                    | 2026-06-28 | Sprint 1 Prisma foundation         | Completed                        | Schema, migration artifact, seed strategy, and database docs aligned. |
+| Sprint branch                | 2026-06-29 | Database integration into Sprint 1 | Completed for source integration | Current branch includes M3 database/backend database-boundary work.   |
+| Documentation reconstruction | 2026-06-29 | Migration naming and artifacts     | In review                        | Numbered migration rule documented and Sprint 1 folder renamed.       |
 
 ## Release Checklist
 
@@ -34,9 +34,9 @@
 
 ## Known Deployment Limits
 
-| Limit                                          | Impact                                                                    |
-| ---------------------------------------------- | ------------------------------------------------------------------------- |
-| Existing migration folder keeps timestamp name | Preserved for audit/history; future migrations must use sequential names. |
-| Migration not proven applied                   | Database runtime deployment remains pending.                              |
-| No seed script                                 | Development demo data cannot be generated yet.                            |
-| No forecasting execution                       | Database stores future outputs only.                                      |
+| Limit                        | Impact                                                                                                                             |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Migration folder naming      | Sprint 1 migration now uses `0001_sprint_1_database_foundation`; future migrations must increment by one and never use timestamps. |
+| Migration not proven applied | Database runtime deployment remains pending.                                                                                       |
+| No seed script               | Development demo data cannot be generated yet.                                                                                     |
+| No forecasting execution     | Database stores future outputs only.                                                                                               |

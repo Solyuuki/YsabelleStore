@@ -14,13 +14,13 @@
 
 ## Migration Validation Status
 
-| Item                             | Status                           | Evidence                                                                          |
-| -------------------------------- | -------------------------------- | --------------------------------------------------------------------------------- |
-| Prisma schema validation         | Passed                           | Current `database/prisma/schema.prisma` validates.                                |
-| Migration SQL artifact exists    | Passed                           | `database/migrations/20260628120000_sprint_1_database_foundation/migration.sql`   |
-| Migration SQL manual review      | Passed as recorded               | Existing M3 report says Prisma migrate diff review passed.                        |
-| Migration applied to local MySQL | Not verified                     | No migration status/application transcript exists in repository.                  |
-| Sequential migration naming      | Documented for future migrations | Current timestamp folder preserved for integrity; future naming standard updated. |
+| Item                             | Status                     | Evidence                                                                                                                      |
+| -------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Prisma schema validation         | Passed                     | Current `database/prisma/schema.prisma` validates.                                                                            |
+| Migration SQL artifact exists    | Passed                     | `database/migrations/0001_sprint_1_database_foundation/migration.sql`                                                         |
+| Migration SQL manual review      | Passed as recorded         | Existing M3 report says Prisma migrate diff review passed.                                                                    |
+| Migration applied to local MySQL | Not verified               | No migration status/application transcript exists in repository.                                                              |
+| Numbered migration naming        | Implemented and documented | Sprint 1 folder renamed to `0001_sprint_1_database_foundation`; future migrations must increment by one and avoid timestamps. |
 
 ## Tests Not Present
 
