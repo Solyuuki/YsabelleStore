@@ -1,6 +1,6 @@
 # ERD Plan
 
-This document describes the planned future database relationships for YsabelleStore. It is a design plan only and does not implement Prisma models, fields, constraints, indexes, or migrations.
+This document describes the Sprint 1 database relationship plan implemented in `database/prisma/schema.prisma`. It remains a foundation design and does not implement API workflows or business logic.
 
 ## Planned Data Flow
 
@@ -34,17 +34,18 @@ Product
           `-- future Recommendation outputs
 ```
 
-## Planned Entity Responsibilities
+## Entity Responsibilities
 
-| Future Entity  | Planned Responsibility                                  | Relationship Intent                                                       |
-| -------------- | ------------------------------------------------------- | ------------------------------------------------------------------------- |
-| User           | Represents future local system users and accountability | May own or trigger future sales and audit events                          |
-| Product        | Represents the item master list                         | Anchors sales, inventory, batch inventory, forecasts, and recommendations |
-| Sales          | Represents historical demand records                    | Feeds forecasting and reporting workflows                                 |
-| Inventory      | Represents current stock state                          | Supports stock health and recommendation decisions                        |
-| BatchInventory | Represents expiration-aware stock groups                | Supports expiry risk reasoning                                            |
-| Forecast       | Represents future SARIMA demand output                  | Converts historical sales into demand expectations                        |
-| Recommendation | Represents future inventory action guidance             | Combines forecast and inventory signals into explainable outputs          |
+| Entity               | Responsibility                                        | Relationship Intent                                                        |
+| -------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
+| User                 | Represents local owner/staff users and accountability | May own or trigger future sales, movements, forecasts, and recommendations |
+| Category             | Represents product grouping                           | Organizes product records for browsing and reporting                       |
+| Product              | Represents the item master list                       | Anchors sales, inventory, batch inventory, forecasts, and recommendations  |
+| Sale/SaleItem        | Represents historical demand records                  | Feeds forecasting and reporting workflows                                  |
+| InventoryBatch       | Represents expiration-aware stock groups              | Supports expiry risk reasoning                                             |
+| InventoryMovement    | Represents stock movement history                     | Preserves stock-in, stock-out, sale, adjustment, and loss events           |
+| ForecastRecord       | Represents future SARIMA demand output                | Converts historical sales into demand expectations                         |
+| RecommendationRecord | Represents future inventory action guidance           | Combines forecast and inventory signals into explainable outputs           |
 
 ## Expected Relationship Direction
 
@@ -82,10 +83,10 @@ Product
 
 ## Out-of-Scope Relationship Areas
 
-| Area                             | Reason                                                     |
-| -------------------------------- | ---------------------------------------------------------- |
-| Supplier management              | Not part of the current thesis database scope              |
-| Purchase orders                  | Procurement workflow is not part of this foundation        |
-| Payment integrations             | GCash or payment storage is outside database foundation    |
-| Authentication schema            | User model implementation is reserved for a later phase    |
-| Physical indexes and constraints | These belong to schema implementation and migration review |
+| Area                         | Reason                                                  |
+| ---------------------------- | ------------------------------------------------------- |
+| Supplier management          | Not part of the current thesis database scope           |
+| Purchase orders              | Procurement workflow is not part of this foundation     |
+| Payment integrations         | GCash or payment storage is outside database foundation |
+| Authentication schema        | User model implementation is reserved for a later phase |
+| Business workflow automation | These belong to feature implementation sprints          |
