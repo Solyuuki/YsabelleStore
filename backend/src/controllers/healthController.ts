@@ -1,9 +1,12 @@
 import type { RequestHandler } from "express";
 
 import { env } from "../config/env.js";
+import { checkDatabaseHealth } from "../database/prismaClient.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 
-export const getHealth: RequestHandler = (_request, response) => {
+export const getHealth: RequestHandler = async (_request, response) => {
+  const database = await checkDatabaseHealth();
+
   response.status(200).json(
     createSuccessResponse("Backend service is running.", {
       service: "ysabellestore-backend",
@@ -14,8 +17,11 @@ export const getHealth: RequestHandler = (_request, response) => {
         jwtSecretLoaded: Boolean(env.JWT_SECRET)
       },
       checks: {
-        database: "not_configured_for_foundation",
-        prisma: "not_configured_for_foundation"
+        database: database.status,
+        prisma: "client_ready"
+      },
+      database: {
+        message: database.message
       }
     })
   );

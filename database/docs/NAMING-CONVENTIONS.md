@@ -1,18 +1,18 @@
 # Database Naming Conventions
 
-This document defines naming standards for future YsabelleStore database implementation. It aligns Prisma readability with MySQL consistency while keeping the current foundation free from implemented models.
+This document defines naming standards for future YsabelleStore database implementation. It aligns Prisma readability with MySQL consistency and the repository migration sequence standard.
 
 ## Naming Decision Matrix
 
-| Layer         | Standard                           | Example                          |
-| ------------- | ---------------------------------- | -------------------------------- |
-| Prisma models | PascalCase singular                | `Product`, `BatchInventory`      |
-| Prisma fields | camelCase                          | `createdAt`, `expirationDate`    |
-| MySQL tables  | snake_case plural                  | `products`, `batch_inventory`    |
-| MySQL columns | snake_case                         | `created_at`, `expiration_date`  |
-| Foreign keys  | snake_case with referenced entity  | `product_id`, `forecast_id`      |
-| Indexes       | descriptive snake_case with prefix | `idx_sales_product_id`           |
-| Migrations    | timestamp plus snake_case purpose  | `20260701090000_create_products` |
+| Layer         | Standard                           | Example                             |
+| ------------- | ---------------------------------- | ----------------------------------- |
+| Prisma models | PascalCase singular                | `Product`, `BatchInventory`         |
+| Prisma fields | camelCase                          | `createdAt`, `expirationDate`       |
+| MySQL tables  | snake_case plural                  | `products`, `batch_inventory`       |
+| MySQL columns | snake_case                         | `created_at`, `expiration_date`     |
+| Foreign keys  | snake_case with referenced entity  | `product_id`, `forecast_id`         |
+| Indexes       | descriptive snake_case with prefix | `idx_sales_product_id`              |
+| Migrations    | sequential repository folder name  | `0001_sprint_1_database_foundation` |
 
 ## Table Naming
 
@@ -75,12 +75,16 @@ This document defines naming standards for future YsabelleStore database impleme
 
 ## Migration Naming
 
-| Rule                           | Pattern                       | Example                           |
-| ------------------------------ | ----------------------------- | --------------------------------- |
-| Use generated timestamp prefix | `YYYYMMDDHHMMSS_description`  | `20260701090000_create_products`  |
-| Use snake_case description     | Lowercase and specific        | `add_sales_history_indexes`       |
-| Describe one focused change    | Avoid bundled migration names | `create_inventory_tables`         |
-| Avoid vague wording            | No generic labels             | `update_schema` is not acceptable |
+| Rule                            | Pattern                       | Example                                            |
+| ------------------------------- | ----------------------------- | -------------------------------------------------- |
+| Use sequential repository names | `<sequence>_<task>`           | `0001_sprint_1_database_foundation`                |
+| Use four-digit sequence numbers | Zero-padded and unique        | `0002_add_product_categories`                      |
+| Use snake_case task names       | Lowercase and specific        | `0003_create_inventory_tables`                     |
+| Describe one focused change     | Avoid bundled migration names | `0004_add_sales_indexes`                           |
+| Avoid vague wording             | No generic labels             | `0005_update_schema` is not acceptable             |
+| Avoid timestamps                | Never use timestamp folders   | `20260628120000_create_products` is not acceptable |
+
+Migration folders must follow the sequential standard documented in `database/docs/MIGRATION-GUIDE.md`. Never rename an applied migration after repository sharing.
 
 ## Consistency Checklist
 

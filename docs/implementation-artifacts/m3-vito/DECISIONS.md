@@ -1,0 +1,17 @@
+# m3 Decisions
+
+## Engineering Decisions
+
+| Decision ID | Date       | Area                | Decision                                                                                                                | Reason                                                                                                                | Evidence                                                                |
+| ----------- | ---------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| DEC-M3-001  | 2026-06-25 | Database foundation | Keep Prisma schema, migrations, seed strategy, and database docs under `database/`.                                     | Gives database work a controlled ownership boundary.                                                                  | `database/**`, `docs/architecture/03-folder-architecture.md`            |
+| DEC-M3-002  | 2026-06-28 | Schema modeling     | Model authentication, catalog, inventory batches, movements, sales, forecasts, and recommendations at foundation level. | Future inventory, POS, reporting, SARIMA, and recommendation modules need durable relational tables.                  | `database/prisma/schema.prisma`                                         |
+| DEC-M3-003  | 2026-06-28 | Data integrity      | Use explicit relations, unique fields, indexes, mapped table names, and decimal money fields.                           | Inventory and sales records require explainable constraints for thesis review.                                        | `database/prisma/schema.prisma`, `database/docs/DATABASE-FOUNDATION.md` |
+| DEC-M3-004  | 2026-06-28 | Migration readiness | Add reviewable SQL generated from Prisma schema instead of applying directly to shared data.                            | Sprint 1 should provide auditable migration readiness without unreviewed database mutation.                           | `database/migrations/0001_sprint_1_database_foundation/migration.sql`   |
+| DEC-M3-005  | 2026-06-28 | Seed strategy       | Document seed rules but do not commit fake production-like seed data.                                                   | Thesis evidence must not present invented operational data as real work.                                              | `database/seed/README.md`                                               |
+| DEC-M3-006  | 2026-06-29 | Merge scope         | Preserve M3 database/backend database-boundary work and reject M3 frontend replacements from Sprint 1 source.           | Frontend shell/pages/components are M1-owned and M3 frontend edits risk route breakage.                               | Diff between M1 branch and M3 branch; current sprint branch source      |
+| DEC-M3-007  | 2026-06-29 | Migration naming    | Rename the Sprint 1 repository migration folder to `0001_sprint_1_database_foundation` after safety verification.       | `prisma migrate status` passed and showed no applied Prisma migration history tied to the old repository folder name. | `database/docs/MIGRATION-GUIDE.md` after this update                    |
+
+## Decision Review Rule
+
+Future M3 schema or migration decisions must include the migration number, member/task name, affected models, validation result, and whether data loss is possible.

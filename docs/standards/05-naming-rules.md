@@ -156,6 +156,30 @@ Sprint branch regex:
 | Database Columns      | snake_case                                           | `expiration_date`        | `expirationDateColumn`        |
 | Environment Variables | UPPER_SNAKE_CASE                                     | `DATABASE_URL`           | `databaseUrl`                 |
 
+## Migration Naming Standard
+
+Future database migration artifacts must use the repository sequence format:
+
+```text
+<sequence>_<task>
+```
+
+| Segment    | Rule                                                                     | Example        |
+| ---------- | ------------------------------------------------------------------------ | -------------- |
+| `sequence` | Four digits, zero-padded, incremented from the highest existing sequence | `0001`         |
+| `task`     | Lowercase snake_case description                                         | `add_products` |
+
+Valid migration folder examples:
+
+| Folder                              | Reason                                         |
+| ----------------------------------- | ---------------------------------------------- |
+| `0001_sprint_1_database_foundation` | Initial Sprint 1 database foundation migration |
+| `0002_add_products`                 | Next migration number for product schema work  |
+| `0003_add_batches`                  | Next migration number for batch schema work    |
+| `0004_add_forecast_tables`          | Next migration number for forecast table work  |
+
+Never use timestamp-based migration folder names, never reuse sequence numbers, and never rename an applied migration after the repository is shared.
+
 ## File Naming Decision Table
 
 | File Type            | Naming Rule                   |
@@ -172,8 +196,9 @@ Sprint branch regex:
 ## Naming Checklist
 
 - [ ] Branch follows the mandatory member, sprint, or staging format
-- [ ] PR title follows Conventional Commit style
+- [ ] PR title follows Conventional Commit style or member-prefixed Conventional Commit style
 - [ ] Files use the correct case for their layer
 - [ ] API paths are stable and kebab-case
 - [ ] Database names are readable and consistent
+- [ ] Migration folders use the sequential repository standard when new migrations are created
 - [ ] Environment variables are uppercase snake case

@@ -8,24 +8,24 @@ Deliver a stable implementation base that allows the team to start feature work 
 
 ## Primary Deliverables
 
-| Deliverable                    | Owner        | Expected Outcome                                                                                                                      |
-| ------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| React application shell        | m1 - Abarado | App shell, layout, sidebar, header, shared UI foundation, and dashboard placeholder are ready for later modules                       |
-| Backend core                   | m2 - Ramos   | Express structure, route registry, controllers, services, validators, error handling, and Prisma integration boundary are ready       |
-| Database implementation start  | m3 - Vito    | Prisma schema, relationships, constraints, indexes, migration strategy, seed strategy, and validation path begin from approved design |
-| Electron integration readiness | m1 - Abarado | Renderer and desktop integration assumptions are documented and prepared without unsafe IPC expansion                                 |
-| Branch workflow                | m1 - Abarado | Sprint branch, member branches, staging flow, and PR rules are clear                                                                  |
-| Team workflow                  | m1, m2, m3   | Daily workflow, review flow, and completion standards are aligned                                                                     |
+| Deliverable                    | Owner        | Expected Outcome                                                                                                                                           |
+| ------------------------------ | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React application shell        | m1 - Abarado | App shell, layout, sidebar, topbar, shared UI foundation, dashboard, POS shell, module shells, and protected owner-area shells are ready for later modules |
+| Backend core                   | m2 - Ramos   | Express structure, route registry, controllers, services, validators, error handling, and Prisma integration boundary are ready                            |
+| Database implementation start  | m3 - Vito    | Prisma schema, relationships, constraints, indexes, migration strategy, seed strategy, and validation path begin from approved design                      |
+| Electron integration readiness | m1 - Abarado | Renderer and desktop integration assumptions are documented and prepared without unsafe IPC expansion                                                      |
+| Branch workflow                | m1 - Abarado | Sprint branch, member branches, staging flow, and PR rules are clear                                                                                       |
+| Team workflow                  | m1, m2, m3   | Daily workflow, review flow, and completion standards are aligned                                                                                          |
 
 ## In Scope
 
-| Area       | Scope                                                                                                                         |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Frontend   | Application shell, navigation structure, shared UI foundation, dashboard placeholder, API client readiness                    |
-| Backend    | Core Express architecture, validation pattern, route registry, service boundaries, error handling, Prisma connection boundary |
-| Database   | Initial approved Prisma schema work, migration plan, seed strategy, indexes, constraints, validation                          |
-| Electron   | Integration readiness and secure desktop shell alignment                                                                      |
-| Governance | Branch naming, sprint branch integration, staging flow, definition of done, daily workflow                                    |
+| Area       | Scope                                                                                                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend   | Application shell, navigation structure, shared UI foundation, static dashboard, POS shell, module shells, protected owner-area shells, API client readiness |
+| Backend    | Core Express architecture, validation pattern, route registry, service boundaries, error handling, Prisma connection boundary                                |
+| Database   | Initial approved Prisma schema work, migration plan, seed strategy, indexes, constraints, validation                                                         |
+| Electron   | Integration readiness and secure desktop shell alignment                                                                                                     |
+| Governance | Branch naming, sprint branch integration, staging flow, definition of done, daily workflow                                                                   |
 
 ## Out of Scope
 
