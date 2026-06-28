@@ -4,14 +4,14 @@ The frontend folder contains the React, TypeScript, Vite, Tailwind CSS, and shad
 
 ## Purpose
 
-| Area        | Purpose                                    | Current Scope                     |
-| ----------- | ------------------------------------------ | --------------------------------- |
-| App shell   | Hosts the root React application structure | Foundation only                   |
-| Layouts     | Defines reusable screen wrappers           | `AppLayout` and `AuthLayout` only |
-| Routing     | Documents future route groups              | Planning metadata only            |
-| API layer   | Provides a typed request wrapper           | No endpoint-specific calls        |
-| Environment | Validates frontend runtime configuration   | Vite environment values only      |
-| UI modules  | Reserves folders for future implementation | No feature pages                  |
+| Area        | Purpose                                    | Current Scope                       |
+| ----------- | ------------------------------------------ | ----------------------------------- |
+| App shell   | Hosts the root React application structure | Foundation only                     |
+| Layouts     | Defines reusable screen wrappers           | `AppLayout` and `AuthLayout` only   |
+| Routing     | Registers Sprint 1 shell routes            | Dashboard plus planned placeholders |
+| API layer   | Provides a typed request wrapper           | No endpoint-specific calls          |
+| Environment | Validates frontend runtime configuration   | Vite environment values only        |
+| UI modules  | Reserves folders for future implementation | No feature pages                    |
 
 ## Folder Structure
 
@@ -59,7 +59,7 @@ Layouts must not contain business logic, API calls, authentication decisions, or
 
 ## Routing Philosophy
 
-Future routes are planned in `src/app/routes.ts` and remain inactive until their implementation phase.
+Future module routes are listed in `src/app/routes.ts`. Sprint 1 renders them as planned placeholders while `/dashboard` provides the non-business landing surface.
 
 | Future Group    | Planned Path       | Status  |
 | --------------- | ------------------ | ------- |
@@ -151,4 +151,4 @@ npm run typecheck --workspace frontend
 - Do not add endpoint-specific API calls until the matching feature module is approved.
 - Do not hardcode backend URLs outside environment validation.
 - Keep layout, route planning, services, schemas, and shared types separated.
-- Keep future route groups planned but inactive until their implementation phase.
+- Keep future route groups as placeholders until their implementation phase.

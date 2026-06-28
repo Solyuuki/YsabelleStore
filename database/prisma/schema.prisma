@@ -1,92 +1,286 @@
 // ==================================================
-// YsabelleStore Database Foundation Blueprint
+// YsabelleStore Sprint 1 Database Foundation
 // ==================================================
 //
 // Scope:
-// - Establish Prisma generator and MySQL datasource only.
-// - Reserve architecture sections for future schema implementation.
-// - Keep this file free from business models until the approved schema phase.
-//
-// Out of scope for this foundation phase:
-// - Models
-// - Relations
-// - Indexes
-// - Constraints
-// - Migrations
-// - Seed data
-// - Prisma Client generation
-//
-
-// ==================================================
-// Prisma Client Generator
-// ==================================================
-//
-// The generator declaration is present so future implementation can validate
-// the Prisma project shape. The client must not be generated during this phase.
+// - Define the approved core data model for future product, inventory, sales,
+//   forecasting, recommendation, and local authentication modules.
+// - Keep this schema focused on persistence contracts only.
+// - Do not add feature CRUD behavior, SARIMA execution, or recommendation logic here.
 
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated/client"
 }
-
-// ==================================================
-// Database Datasource
-// ==================================================
-//
-// MySQL is the target relational database for future production use.
-// DATABASE_URL must stay environment-driven and must not be hardcoded here.
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-// ==================================================
-// Future Domain Model Sections
-// ==================================================
-//
-// These sections are architecture markers only. They document the expected
-// ordering for future schema work without declaring Prisma models.
+enum UserRole {
+  OWNER
+  STAFF
+}
 
-//
-// User
-//
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
 
-//
-// Product
-//
+enum ProductUnit {
+  PIECE
+  PACK
+  BOX
+  BOTTLE
+  SACHET
+  KILOGRAM
+  GRAM
+  LITER
+  MILLILITER
+}
 
-//
-// Inventory
-//
+enum InventoryBatchStatus {
+  AVAILABLE
+  LOW_STOCK
+  DEPLETED
+  EXPIRED
+  REMOVED
+}
 
-//
-// BatchInventory
-//
+enum InventoryMovementType {
+  STOCK_IN
+  STOCK_OUT
+  SALE
+  ADJUSTMENT
+  RETURN
+  EXPIRED
+  DAMAGED
+}
 
-//
-// Sales
-//
+enum SaleStatus {
+  DRAFT
+  COMPLETED
+  VOIDED
+}
 
-//
-// Forecast
-//
+enum ForecastStatus {
+  PENDING
+  GENERATED
+  FAILED
+}
 
-//
-// Recommendation
-//
+enum RecommendationType {
+  RESTOCK
+  LOW_STOCK
+  OVERSTOCK
+  NEAR_EXPIRY
+  EXPIRY_RISK
+}
 
-// ==================================================
-// Future Cross-Cutting Sections
-// ==================================================
-//
-// Auditability
-//
-// Referential integrity
-//
-// Reporting support
-//
-// Forecasting input support
-//
-// Recommendation output support
-//
+enum RecommendationSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RecommendationStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id                  String              @id @default(cuid()) @db.VarChar(191)
+  name                String              @db.VarChar(120)
+  email               String              @unique(map: "uq_users_email") @db.VarChar(191)
+  passwordHash        String              @map("password_hash") @db.VarChar(255)
+  role                UserRole            @default(STAFF)
+  status              UserStatus          @default(ACTIVE)
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  sales               Sale[]
+  inventoryMovements  InventoryMovement[]
+  forecastRecords     ForecastRecord[]
+  recommendationNotes RecommendationRecord[]
+
+  @@index([role, status], map: "idx_users_role_status")
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(cuid()) @db.VarChar(191)
+  name        String    @unique(map: "uq_categories_name") @db.VarChar(120)
+  slug        String    @unique(map: "uq_categories_slug") @db.VarChar(140)
+  description String?   @db.VarChar(255)
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  products    Product[]
+
+  @@index([isActive], map: "idx_categories_is_active")
+  @@map("categories")
+}
+
+model Product {
+  id                    String                 @id @default(cuid()) @db.VarChar(191)
+  categoryId            String                 @map("category_id") @db.VarChar(191)
+  sku                   String                 @unique(map: "uq_products_sku") @db.VarChar(80)
+  barcode               String?                @unique(map: "uq_products_barcode") @db.VarChar(80)
+  name                  String                 @db.VarChar(160)
+  description           String?                @db.VarChar(255)
+  unit                  ProductUnit            @default(PIECE)
+  costPrice             Decimal                @map("cost_price") @db.Decimal(10, 2)
+  sellingPrice          Decimal                @map("selling_price") @db.Decimal(10, 2)
+  reorderLevel          Int                    @default(0) @map("reorder_level") @db.UnsignedInt
+  targetStockLevel      Int                    @default(0) @map("target_stock_level") @db.UnsignedInt
+  isActive              Boolean                @default(true) @map("is_active")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  category              Category               @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  inventoryBatches      InventoryBatch[]
+  inventoryMovements    InventoryMovement[]
+  saleItems             SaleItem[]
+  forecastRecords       ForecastRecord[]
+  recommendationRecords RecommendationRecord[]
+
+  @@index([categoryId, isActive], map: "idx_products_category_active")
+  @@index([name], map: "idx_products_name")
+  @@index([barcode], map: "idx_products_barcode")
+  @@map("products")
+}
+
+model InventoryBatch {
+  id                 String                  @id @default(cuid()) @db.VarChar(191)
+  productId          String                  @map("product_id") @db.VarChar(191)
+  batchCode          String                  @map("batch_code") @db.VarChar(80)
+  quantityReceived   Int                     @map("quantity_received") @db.UnsignedInt
+  quantityRemaining  Int                     @map("quantity_remaining") @db.UnsignedInt
+  unitCost           Decimal                 @map("unit_cost") @db.Decimal(10, 2)
+  receivedAt         DateTime                @default(now()) @map("received_at")
+  expiresAt          DateTime?               @map("expires_at") @db.Date
+  status             InventoryBatchStatus    @default(AVAILABLE)
+  createdAt          DateTime                @default(now()) @map("created_at")
+  updatedAt          DateTime                @updatedAt @map("updated_at")
+  product            Product                 @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  inventoryMovements InventoryMovement[]
+  saleItems          SaleItem[]
+
+  @@unique([productId, batchCode], map: "uq_inventory_batches_product_batch")
+  @@index([productId, status], map: "idx_inventory_batches_product_status")
+  @@index([productId, expiresAt], map: "idx_inventory_batches_product_expiry")
+  @@index([expiresAt], map: "idx_inventory_batches_expires_at")
+  @@map("inventory_batches")
+}
+
+model InventoryMovement {
+  id            String                @id @default(cuid()) @db.VarChar(191)
+  productId     String                @map("product_id") @db.VarChar(191)
+  batchId       String?               @map("batch_id") @db.VarChar(191)
+  performedById String?               @map("performed_by_id") @db.VarChar(191)
+  type          InventoryMovementType
+  quantity      Int                   @db.UnsignedInt
+  reason        String?               @db.VarChar(255)
+  referenceType String?               @map("reference_type") @db.VarChar(80)
+  referenceId   String?               @map("reference_id") @db.VarChar(191)
+  createdAt     DateTime              @default(now()) @map("created_at")
+  product       Product               @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  batch         InventoryBatch?       @relation(fields: [batchId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  performedBy   User?                 @relation(fields: [performedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([productId, createdAt], map: "idx_inventory_movements_product_created")
+  @@index([batchId], map: "idx_inventory_movements_batch")
+  @@index([type, createdAt], map: "idx_inventory_movements_type_created")
+  @@index([performedById], map: "idx_inventory_movements_performed_by")
+  @@map("inventory_movements")
+}
+
+model Sale {
+  id             String     @id @default(cuid()) @db.VarChar(191)
+  saleNumber     String     @unique(map: "uq_sales_sale_number") @map("sale_number") @db.VarChar(80)
+  cashierId      String?    @map("cashier_id") @db.VarChar(191)
+  saleDate       DateTime   @default(now()) @map("sale_date")
+  subtotalAmount Decimal    @map("subtotal_amount") @db.Decimal(12, 2)
+  discountAmount Decimal    @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  totalAmount    Decimal    @map("total_amount") @db.Decimal(12, 2)
+  status         SaleStatus @default(COMPLETED)
+  notes          String?    @db.VarChar(255)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  cashier        User?      @relation(fields: [cashierId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  items          SaleItem[]
+
+  @@index([saleDate], map: "idx_sales_sale_date")
+  @@index([status, saleDate], map: "idx_sales_status_date")
+  @@index([cashierId], map: "idx_sales_cashier")
+  @@map("sales")
+}
+
+model SaleItem {
+  id          String          @id @default(cuid()) @db.VarChar(191)
+  saleId      String          @map("sale_id") @db.VarChar(191)
+  productId   String          @map("product_id") @db.VarChar(191)
+  batchId     String?         @map("batch_id") @db.VarChar(191)
+  quantity    Int             @db.UnsignedInt
+  unitPrice   Decimal         @map("unit_price") @db.Decimal(10, 2)
+  totalAmount Decimal         @map("total_amount") @db.Decimal(12, 2)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  sale        Sale            @relation(fields: [saleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product     Product         @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  batch       InventoryBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([saleId], map: "idx_sale_items_sale")
+  @@index([productId], map: "idx_sale_items_product")
+  @@index([batchId], map: "idx_sale_items_batch")
+  @@map("sale_items")
+}
+
+model ForecastRecord {
+  id                    String                 @id @default(cuid()) @db.VarChar(191)
+  productId             String                 @map("product_id") @db.VarChar(191)
+  generatedById         String?                @map("generated_by_id") @db.VarChar(191)
+  forecastPeriodStart   DateTime               @map("forecast_period_start") @db.Date
+  forecastPeriodEnd     DateTime               @map("forecast_period_end") @db.Date
+  forecastedDemand      Decimal                @map("forecasted_demand") @db.Decimal(12, 3)
+  modelName             String                 @default("SARIMA") @map("model_name") @db.VarChar(80)
+  confidenceLevel       Decimal?               @map("confidence_level") @db.Decimal(5, 2)
+  confidenceNotes       String?                @map("confidence_notes") @db.VarChar(255)
+  status                ForecastStatus         @default(PENDING)
+  generatedAt           DateTime               @default(now()) @map("generated_at")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  product               Product                @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  generatedBy           User?                  @relation(fields: [generatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  recommendationRecords RecommendationRecord[]
+
+  @@unique([productId, forecastPeriodStart, forecastPeriodEnd, modelName], map: "uq_forecasts_product_period_model")
+  @@index([productId, generatedAt], map: "idx_forecasts_product_generated")
+  @@index([status, generatedAt], map: "idx_forecasts_status_generated")
+  @@index([generatedById], map: "idx_forecasts_generated_by")
+  @@map("forecast_records")
+}
+
+model RecommendationRecord {
+  id                  String                 @id @default(cuid()) @db.VarChar(191)
+  productId           String                 @map("product_id") @db.VarChar(191)
+  forecastRecordId    String?                @map("forecast_record_id") @db.VarChar(191)
+  generatedById       String?                @map("generated_by_id") @db.VarChar(191)
+  type                RecommendationType
+  severity            RecommendationSeverity @default(MEDIUM)
+  recommendedQuantity Int?                   @map("recommended_quantity") @db.UnsignedInt
+  reason              String                 @db.Text
+  status              RecommendationStatus   @default(OPEN)
+  generatedAt         DateTime               @default(now()) @map("generated_at")
+  resolvedAt          DateTime?              @map("resolved_at")
+  createdAt           DateTime               @default(now()) @map("created_at")
+  product             Product                @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  forecastRecord      ForecastRecord?        @relation(fields: [forecastRecordId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  generatedBy         User?                  @relation(fields: [generatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([productId, severity], map: "idx_recommendations_product_severity")
+  @@index([type, status], map: "idx_recommendations_type_status")
+  @@index([forecastRecordId], map: "idx_recommendations_forecast")
+  @@index([generatedAt], map: "idx_recommendations_generated_at")
+  @@index([generatedById], map: "idx_recommendations_generated_by")
+  @@map("recommendation_records")
+}

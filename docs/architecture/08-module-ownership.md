@@ -2,6 +2,8 @@
 
 This document defines recommended team ownership for architecture and implementation planning.
 
+Sprint-specific assignments override this long-term module map when a sprint document assigns a different owner. In Sprint 1, m3 - Vito owns the database foundation branch and m2 supports backend Prisma integration review.
+
 ## Primary Ownership
 
 | Member       | Primary Ownership                                                               |

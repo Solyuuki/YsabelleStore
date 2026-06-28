@@ -218,7 +218,7 @@ YsabelleStore/
 | Root Workspace      | Complete | npm workspaces configured for `frontend`, `backend`, and `electron`                                                            |
 | Frontend            | Complete | React, Vite, TypeScript, Tailwind CSS, shadcn/ui-ready structure, Recharts, Chart.js fallback, and Zod prepared                |
 | Backend             | Complete | Express, TypeScript, Zod, JWT dependency preparation, middleware boundary, route boundary, and environment validation prepared |
-| Database            | Complete | Prisma schema foundation prepared for MySQL Community Server without feature models                                            |
+| Database            | Complete | Prisma schema foundation prepared for MySQL Community Server with core entities, relationships, constraints, and indexes       |
 | Electron            | Complete | Main process, preload boundary, IPC boundary, electron-builder configuration, and secure renderer settings prepared            |
 | Forecasting Service | Complete | Python service folders and requirements prepared for pandas, numpy, statsmodels, and python-dotenv                             |
 | Quality Tooling     | Complete | ESLint, Prettier, Husky, TypeScript base config, environment templates, and workspace scripts added                            |
@@ -227,11 +227,11 @@ Sprint 1 creates framework boundaries only. Authentication, product management, 
 
 ## Team Members
 
-| Member Code | Member  | Primary Ownership                                                                |
-| ----------- | ------- | -------------------------------------------------------------------------------- |
-| m1          | Abarado | Repository governance, frontend shell, Electron packaging, documentation quality |
-| m2          | Ramos   | Express API, Prisma models, MySQL migrations, import endpoints                   |
-| m3          | Vito    | Python SARIMA engine, analytics, recommendation logic, chart validation          |
+| Member Code | Member  | Primary Ownership                                                                 |
+| ----------- | ------- | --------------------------------------------------------------------------------- |
+| m1          | Abarado | Repository governance, frontend shell, Electron packaging, documentation quality  |
+| m2          | Ramos   | Express API, Prisma models, MySQL migrations, import endpoints                    |
+| m3          | Vito    | Sprint 1 database foundation; later SARIMA engine, analytics, and recommendations |
 
 ## Workflow Overview
 
@@ -263,13 +263,13 @@ Sprint 1 creates framework boundaries only. Authentication, product management, 
 
 ## Current Status
 
-| Area                              | Status      |
-| --------------------------------- | ----------- |
-| Repository foundation             | Complete    |
-| Documentation standards           | Complete    |
-| Architecture blueprint            | Complete    |
-| Sprint 1 application scaffold     | Complete    |
-| Implementation artifact templates | Complete    |
-| Business modules                  | Not started |
-| Database schema                   | Not started |
-| Forecasting engine                | Not started |
+| Area                              | Status              |
+| --------------------------------- | ------------------- |
+| Repository foundation             | Complete            |
+| Documentation standards           | Complete            |
+| Architecture blueprint            | Complete            |
+| Sprint 1 application scaffold     | Complete            |
+| Implementation artifact templates | Complete            |
+| Business modules                  | Not started         |
+| Database schema                   | Foundation complete |
+| Forecasting engine                | Not started         |

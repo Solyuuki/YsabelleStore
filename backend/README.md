@@ -10,8 +10,8 @@ The backend folder contains the Express and TypeScript foundation for YsabelleSt
 | API routes      | Provides `/api/health` and planned future route groups | Health only       |
 | Controllers     | Handles request and response coordination              | Health only       |
 | Services        | Reserved for future business workflows                 | No implementation |
-| Validators      | Reserved for future request validation schemas         | No implementation |
-| Database access | Reserved for future Prisma integration                 | Not connected     |
+| Validators      | Provides reusable Zod request validation middleware    | Foundation only   |
+| Database access | Provides a Prisma client access boundary               | Health check only |
 
 ## Folder Structure
 
@@ -22,6 +22,7 @@ backend/
 |   |-- server.ts
 |   |-- config/
 |   |-- controllers/
+|   |-- database/
 |   |-- middleware/
 |   |-- routes/
 |   |-- services/
@@ -58,13 +59,13 @@ route
   -> repository or Prisma client
 ```
 
-| Layer       | Responsibility                                    | Foundation Rule                       |
-| ----------- | ------------------------------------------------- | ------------------------------------- |
-| Route       | Maps URLs and HTTP verbs to controllers           | Keep route files thin                 |
-| Controller  | Coordinates request input and API response output | Do not place business rules here      |
-| Validator   | Validates request body, params, and query values  | Add only when a real endpoint exists  |
-| Service     | Owns business workflow decisions                  | No service logic in this phase        |
-| Data access | Uses future Prisma Client calls                   | No database integration in this phase |
+| Layer       | Responsibility                                    | Foundation Rule                        |
+| ----------- | ------------------------------------------------- | -------------------------------------- |
+| Route       | Maps URLs and HTTP verbs to controllers           | Keep route files thin                  |
+| Controller  | Coordinates request input and API response output | Do not place business rules here       |
+| Validator   | Validates request body, params, and query values  | Use shared Zod middleware              |
+| Service     | Owns business workflow decisions                  | No service logic in this phase         |
+| Data access | Uses Prisma Client through one database boundary  | Health verification only in this phase |
 
 ## API Contract Reference
 
@@ -89,23 +90,23 @@ The canonical API contract lives in `docs/api/`. Backend implementations must fo
 
 Create `backend/.env` from `backend/.env.example` for local development.
 
-| Variable       | Required For                        | Example                                              |
-| -------------- | ----------------------------------- | ---------------------------------------------------- |
-| `NODE_ENV`     | Runtime mode                        | `development`                                        |
-| `PORT`         | Backend HTTP port                   | `3001`                                               |
-| `CORS_ORIGIN`  | Frontend development origin         | `http://localhost:5173`                              |
-| `DATABASE_URL` | Future Prisma and MySQL integration | `mysql://user:password@localhost:3306/ysabellestore` |
-| `JWT_SECRET`   | Future authentication signing       | `change_this_development_secret`                     |
+| Variable       | Required For                  | Example                                              |
+| -------------- | ----------------------------- | ---------------------------------------------------- |
+| `NODE_ENV`     | Runtime mode                  | `development`                                        |
+| `PORT`         | Backend HTTP port             | `3001`                                               |
+| `CORS_ORIGIN`  | Frontend development origin   | `http://localhost:5173`                              |
+| `DATABASE_URL` | Prisma and MySQL integration  | `mysql://user:password@localhost:3306/ysabellestore` |
+| `JWT_SECRET`   | Future authentication signing | `change_this_development_secret`                     |
 
 ## Validation Pattern
 
-| Validation Area | Current Standard                           |
-| --------------- | ------------------------------------------ |
-| Environment     | Validate with Zod in `src/config/env.ts`   |
-| Request body    | Future Zod schemas in `src/validators`     |
-| Route params    | Future route-specific validator middleware |
-| API responses   | Follow `docs/api/RESPONSE-STANDARD.md`     |
-| Errors          | Follow `docs/api/ERROR-STANDARD.md`        |
+| Validation Area | Current Standard                                    |
+| --------------- | --------------------------------------------------- |
+| Environment     | Validate with Zod in `src/config/env.ts`            |
+| Request body    | Shared Zod validator middleware in `src/validators` |
+| Route params    | Shared Zod validator middleware in `src/validators` |
+| API responses   | Follow `docs/api/RESPONSE-STANDARD.md`              |
+| Errors          | Follow `docs/api/ERROR-STANDARD.md`                 |
 
 ## Future Module Roadmap
 
@@ -137,7 +138,7 @@ npm run typecheck --workspace backend
 ## Foundation Guardrails
 
 - Do not implement business endpoints during foundation work.
-- Do not add Prisma queries until database integration is approved.
+- Keep Prisma access behind `src/database/prismaClient.ts`.
 - Do not hardcode secrets or database URLs in source files.
 - Keep routes, controllers, services, validators, and utilities separated.
 - Keep future route groups planned but inactive until their implementation phase.

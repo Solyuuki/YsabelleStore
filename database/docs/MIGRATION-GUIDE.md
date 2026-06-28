@@ -1,6 +1,6 @@
 # Migration Guide
 
-This guide defines how YsabelleStore will manage future database migrations. The current foundation phase creates no migrations.
+This guide defines how YsabelleStore manages database migrations. Sprint 1 includes an initial reviewable migration artifact generated from the approved Prisma foundation schema.
 
 ## Migration Philosophy
 
@@ -12,7 +12,7 @@ This guide defines how YsabelleStore will manage future database migrations. The
 | Small changes are safer | Prefer focused migrations over bundled schema changes             |
 | Validation is mandatory | Schema and migration checks must pass before reporting completion |
 
-## Future Migration Workflow
+## Migration Workflow
 
 ```text
 Update approved Prisma schema
@@ -62,18 +62,18 @@ Update approved Prisma schema
 | Application build    | `npm run build`                        | Build passes after schema integration          |
 | Security check       | `npm audit`                            | No unresolved high or critical vulnerabilities |
 
-## Current Foundation Rule
+## Current Foundation Artifact
 
-| Item                     | Status                     |
-| ------------------------ | -------------------------- |
-| Migration files          | Not created in this phase  |
-| Migration commands       | Not executed in this phase |
-| MySQL connection         | Not required in this phase |
-| Prisma Client generation | Not executed in this phase |
+| Item                     | Status                                                                 |
+| ------------------------ | ---------------------------------------------------------------------- |
+| Migration SQL            | `database/migrations/20260628120000_sprint_1_database_foundation`      |
+| Migration source         | Generated from `database/prisma/schema.prisma` using Prisma diff       |
+| MySQL connection         | Required only when applying the migration locally                      |
+| Prisma Client generation | Required before backend build when schema-dependent code is introduced |
 
 ## Migration Readiness Checklist
 
-- [x] Migration folder exists for future use
+- [x] Initial migration artifact exists for review
 - [x] Old migrations are protected by policy
 - [x] New changes require new migrations
 - [x] Naming rules are defined before implementation
