@@ -1,0 +1,17 @@
+# m2 Decisions
+
+## Engineering Decisions
+
+| Decision ID | Date       | Area               | Decision                                                                                                         | Reason                                                                      | Evidence                                                                                      |
+| ----------- | ---------- | ------------------ | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| DEC-M2-001  | 2026-06-25 | Backend structure  | Use a modular Express structure with app, server, routes, controllers, middleware, utils, and types separated.   | Keeps future business APIs maintainable and testable.                       | `backend/src/**`, `backend/README.md`                                                         |
+| DEC-M2-002  | 2026-06-25 | API responses      | Use shared response helpers and a documented API contract foundation.                                            | Frontend/backend integration needs predictable response shapes.             | `backend/src/utils/apiResponse.ts`, `docs/api/RESPONSE-STANDARD.md`                           |
+| DEC-M2-003  | 2026-06-25 | Error handling     | Centralize unknown errors and not-found handling through middleware.                                             | Prevents route files from owning final error formatting.                    | `backend/src/middleware/errorHandler.ts`, `backend/src/middleware/notFoundHandler.ts`         |
+| DEC-M2-004  | 2026-06-25 | Route planning     | Register future product, sales, inventory, batch, forecast, and report route groups as planned, not implemented. | Sprint 1 should expose structure without pretending business APIs exist.    | `backend/src/routes/index.ts`, `backend/README.md`                                            |
+| DEC-M2-005  | 2026-06-25 | Security           | Add security header and rate-limit placeholder foundations without implementing full auth.                       | Security posture is needed early, while auth is future scope.               | `backend/src/middleware/securityHeaders.ts`, `backend/src/middleware/rateLimitPlaceholder.ts` |
+| DEC-M2-006  | 2026-06-29 | Prisma boundary    | Keep Prisma access behind a backend database client module and expose only a health check at foundation stage.   | Business services should not spread direct Prisma setup across controllers. | `backend/src/database/prismaClient.ts`, `backend/src/controllers/healthController.ts`         |
+| DEC-M2-007  | 2026-06-29 | Evidence reporting | Mark M2 branch-specific implementation as unverifiable when no unique branch commits exist.                      | Documentation must remain repository-auditable and avoid fabricated work.   | `git log origin/m2/v0.1/feat/backend-core --not origin/staging` returned no commits           |
+
+## Decision Review Rule
+
+M2 decisions that affect Prisma schema, migrations, frontend contracts, or Electron startup must include cross-owner review before merge.

@@ -156,6 +156,30 @@ Sprint branch regex:
 | Database Columns      | snake_case                                           | `expiration_date`        | `expirationDateColumn`        |
 | Environment Variables | UPPER_SNAKE_CASE                                     | `DATABASE_URL`           | `databaseUrl`                 |
 
+## Migration Naming Standard
+
+Future database migration artifacts must use the repository sequence format:
+
+```text
+<sequence>-<member>-<task>
+```
+
+| Segment    | Rule                                                                     | Example          |
+| ---------- | ------------------------------------------------------------------------ | ---------------- |
+| `sequence` | Four digits, zero-padded, incremented from the highest existing sequence | `0001`           |
+| `member`   | Lowercase owner identifier                                               | `m3`             |
+| `task`     | Lowercase kebab-case description                                         | `product-schema` |
+
+Valid migration folder examples:
+
+| Folder                     | Reason                                                                      |
+| -------------------------- | --------------------------------------------------------------------------- |
+| `0001-m3-product-schema`   | First future sequential database migration owned by M3                      |
+| `0002-m2-auth-module`      | Next migration number, backend-owned auth schema support                    |
+| `0003-m1-dashboard-layout` | Valid format if a future UI-owned migration artifact is explicitly approved |
+
+Existing shared timestamp-based migration folders must not be renamed directly. Preserve migration integrity and document the mapping or preservation decision in `database/docs/MIGRATION-GUIDE.md`.
+
 ## File Naming Decision Table
 
 | File Type            | Naming Rule                   |
@@ -176,4 +200,5 @@ Sprint branch regex:
 - [ ] Files use the correct case for their layer
 - [ ] API paths are stable and kebab-case
 - [ ] Database names are readable and consistent
+- [ ] Migration folders use the sequential repository standard when new migrations are created
 - [ ] Environment variables are uppercase snake case

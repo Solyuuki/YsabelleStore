@@ -15,7 +15,7 @@ YsabelleStore is a desktop inventory management and recommendation system for Ys
 | Deployment Target  | Windows desktop application                                                                                        |
 | Forecasting Method | Seasonal Autoregressive Integrated Moving Average                                                                  |
 | Primary Users      | Store owner, staff, and thesis evaluators                                                                          |
-| Current Status     | Repository foundation established before application development                                                   |
+| Current Status     | Sprint 1 foundation integrated with static frontend shell and database foundation                                  |
 
 ## Objectives
 
@@ -218,20 +218,20 @@ YsabelleStore/
 | Root Workspace      | Complete | npm workspaces configured for `frontend`, `backend`, and `electron`                                                            |
 | Frontend            | Complete | React, Vite, TypeScript, Tailwind CSS, shadcn/ui-ready structure, Recharts, Chart.js fallback, and Zod prepared                |
 | Backend             | Complete | Express, TypeScript, Zod, JWT dependency preparation, middleware boundary, route boundary, and environment validation prepared |
-| Database            | Complete | Prisma schema foundation prepared for MySQL Community Server without feature models                                            |
+| Database            | Complete | Prisma schema foundation, relationships, indexes, and reviewable migration artifact prepared for MySQL Community Server        |
 | Electron            | Complete | Main process, preload boundary, IPC boundary, electron-builder configuration, and secure renderer settings prepared            |
 | Forecasting Service | Complete | Python service folders and requirements prepared for pandas, numpy, statsmodels, and python-dotenv                             |
 | Quality Tooling     | Complete | ESLint, Prettier, Husky, TypeScript base config, environment templates, and workspace scripts added                            |
 
-Sprint 1 creates framework boundaries only. Authentication, product management, inventory, sales, forecasting logic, recommendation logic, and dashboard features remain unimplemented until their approved sprint tasks.
+Sprint 1 creates framework boundaries and static shell surfaces only. Authentication, product management CRUD, live inventory workflows, sales recording, forecasting logic, recommendation logic, and data-connected dashboard features remain unimplemented until their approved sprint tasks.
 
 ## Team Members
 
 | Member Code | Member  | Primary Ownership                                                                |
 | ----------- | ------- | -------------------------------------------------------------------------------- |
 | m1          | Abarado | Repository governance, frontend shell, Electron packaging, documentation quality |
-| m2          | Ramos   | Express API, Prisma models, MySQL migrations, import endpoints                   |
-| m3          | Vito    | Python SARIMA engine, analytics, recommendation logic, chart validation          |
+| m2          | Ramos   | Express API, backend validation, Prisma integration boundary, import endpoints   |
+| m3          | Vito    | Prisma schema, MySQL migrations, seed strategy, SARIMA and recommendations later |
 
 ## Workflow Overview
 
@@ -263,13 +263,13 @@ Sprint 1 creates framework boundaries only. Authentication, product management, 
 
 ## Current Status
 
-| Area                              | Status      |
-| --------------------------------- | ----------- |
-| Repository foundation             | Complete    |
-| Documentation standards           | Complete    |
-| Architecture blueprint            | Complete    |
-| Sprint 1 application scaffold     | Complete    |
-| Implementation artifact templates | Complete    |
-| Business modules                  | Not started |
-| Database schema                   | Not started |
-| Forecasting engine                | Not started |
+| Area                          | Status                                 |
+| ----------------------------- | -------------------------------------- |
+| Repository foundation         | Complete                               |
+| Documentation standards       | Complete                               |
+| Architecture blueprint        | Complete                               |
+| Sprint 1 application scaffold | Complete                               |
+| Implementation artifacts      | Reconstructed from repository evidence |
+| Business modules              | Not started                            |
+| Database schema               | Complete for Sprint 1 foundation       |
+| Forecasting engine            | Not started                            |

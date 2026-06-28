@@ -1,18 +1,38 @@
 # m3 Task Register
 
-| Task ID        | Sprint   | Assigned Member | Scope                                   | Affected Files                                    | Status  | Test Result                      | Notes                                             |
-| -------------- | -------- | --------------- | --------------------------------------- | ------------------------------------------------- | ------- | -------------------------------- | ------------------------------------------------- |
-| YSB-S1-009     | Sprint 1 | m3 - Vito       | Initial Prisma schema foundation        | `database/prisma/schema.prisma`                   | Done    | Prisma validation passed         | Models prepared for core future modules           |
-| YSB-S1-010     | Sprint 1 | m3 - Vito       | Relationships, constraints, and indexes | `database/prisma/schema.prisma`                   | Done    | Schema review ready              | Relations and lookup indexes are explicit         |
-| YSB-S1-011     | Sprint 1 | m3 - Vito       | Migration readiness and seed strategy   | `database/migrations/`, `database/seed/README.md` | Done    | Documentation reviewed           | SQL artifact is reviewable; seed is strategy-only |
-| YSB-S1-012     | Sprint 1 | m3 - Vito       | Database documentation alignment        | `database/README.md`, `database/docs/`            | Done    | Format check pending final suite | Docs now match implemented schema decisions       |
-| YSB-M3-FOR-002 | Future   | m3 - Vito       | SARIMA forecasting module               | `forecasting-service/`                            | Planned | Not run                          | Later-sprint scope                                |
-| YSB-M3-REC-001 | Future   | m3 - Vito       | Recommendation calculation rules        | Forecasting and analytics modules                 | Planned | Not run                          | Later-sprint scope                                |
+## Completed
 
-## Task Quality Checklist
+| Task ID        | Date       | Scope                                                | Affected Files/Modules                                                                                     | Evidence                                 | Validation                                                           |
+| -------------- | ---------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------- |
+| YSB-M3-DB-001  | 2026-06-25 | Initial database foundation structure                | `database/**`                                                                                              | Commit `bbbfdc7` in shared history       | Later Prisma validation confirms schema path validity.               |
+| YSB-S1-009     | 2026-06-28 | Initial Prisma schema foundation                     | `database/prisma/schema.prisma`                                                                            | Commit `1a732c3`, sprint merge `dd53be7` | Prisma validation recorded by M3 and re-run on 2026-06-29.           |
+| YSB-S1-010     | 2026-06-28 | Relationships, constraints, and indexes              | `database/prisma/schema.prisma`                                                                            | Commit `1a732c3`                         | Schema review and Prisma validation.                                 |
+| YSB-S1-011     | 2026-06-28 | Migration readiness and seed strategy                | `database/migrations/20260628120000_sprint_1_database_foundation/migration.sql`, `database/seed/README.md` | Commit `1a732c3`, sprint merge `dd53be7` | Migration SQL review recorded; local MySQL application not recorded. |
+| YSB-S1-012     | 2026-06-28 | Database documentation alignment                     | `database/README.md`, `database/docs/**`, `database/prisma/README.md`                                      | Commit `1a732c3`, sprint merge `dd53be7` | Documentation review; final format check pending this update.        |
+| YSB-M3-BE-001  | 2026-06-29 | Backend Prisma boundary support                      | `backend/src/database/prismaClient.ts`, `backend/src/controllers/healthController.ts`                      | Sprint branch `dd53be7`                  | Backend build and Prisma validation passed on 2026-06-29.            |
+| YSB-M3-DOC-001 | 2026-06-29 | M3 artifact reconstruction and migration naming rule | `docs/implementation-artifacts/m3-vito/**`, `database/docs/**`                                             | Current documentation-only work          | Final validation pending after docs update.                          |
 
-- [x] Branch name starts with `m3/`
-- [x] Prisma schema validates
-- [x] Schema supports inventory, sales, forecast, and recommendation data contracts
-- [x] Seed strategy avoids production-like data
-- [x] Forecasting execution remains out of Sprint 1
+## In Progress
+
+| Task ID            | Scope                                | Status      | Evidence                                                                      | Next Action                     |
+| ------------------ | ------------------------------------ | ----------- | ----------------------------------------------------------------------------- | ------------------------------- |
+| YSB-M3-MIG-STD-001 | Sequential migration naming standard | In progress | Existing timestamp migration cannot be renamed safely; docs are being updated | Complete validation and review. |
+
+## Pending
+
+| Task ID              | Scope                                            | Reason Pending                                                   | Required Evidence Before Completion                                              |
+| -------------------- | ------------------------------------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| YSB-M3-MIG-APPLY-001 | Apply migration to approved local MySQL database | Current migration is a reviewable SQL artifact only.             | Prisma migration/status output or documented local database application result.  |
+| YSB-M3-SEED-001      | Executable deterministic seed script             | Sprint 1 only documents seed strategy.                           | Approved seed data policy, script, and validation result.                        |
+| YSB-M3-FOR-001       | SARIMA forecasting execution                     | Later sprint scope; requires approved sales history flow.        | Forecasting service implementation, validation dataset, and explainable results. |
+| YSB-M3-REC-001       | Recommendation calculation rules                 | Later sprint scope; depends on forecast and inventory workflows. | Formula documentation, tests, and database/API integration.                      |
+
+## Cancelled
+
+| Task ID       | Scope                         | Reason                                                                     | Evidence                                                                                        |
+| ------------- | ----------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| YSB-M3-FE-001 | M3 frontend replacement files | Frontend shell/pages/components are M1-owned and out of M3 database scope. | M3 branch diff shows frontend replacements; current sprint branch preserves M1 frontend source. |
+
+## Completion Rule
+
+M3 database tasks require schema, migration, documentation, validation, and implementation artifacts before they can be marked complete.

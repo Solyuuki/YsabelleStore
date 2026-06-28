@@ -116,7 +116,35 @@ This framework defines the required execution capabilities for development assis
 - [ ] Development run was performed or marked not applicable
 - [ ] Prisma validation was performed or marked not applicable
 - [ ] Migration check was performed or marked not applicable
+- [ ] Implementation artifacts were updated when task work changed code, schema, workflow, validation, or deployment status
 - [ ] Final report was provided
+
+## Implementation Artifact Maintenance Rule
+
+Every completed task must synchronize implementation evidence and member artifacts before it is reported complete.
+
+| Artifact              | Update Required When                                                                                 |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| `DAILY-NOTES.md`      | Any implementation, validation, blocker, or merge-relevant work occurs                               |
+| `TASKS.md`            | A task changes status, scope, evidence, or validation result                                         |
+| `SPRINT-PROGRESS.md`  | Sprint completion status changes                                                                     |
+| `TESTING-REPORTS.md`  | A validation command, manual review, failure, or skipped check occurs                                |
+| `DEPLOYMENT-NOTES.md` | Runtime, packaging, migration, environment, or release readiness changes                             |
+| `DECISIONS.md`        | An engineering choice affects architecture, ownership, migration, routing, deployment, or validation |
+| `BLOCKERS.md`         | A blocker, risk, merge conflict, validation failure, or evidence gap is found or resolved            |
+| `README.md`           | Member responsibilities, deliverables, or artifact index changes                                     |
+
+A task is not complete until code, schema, migration, validation, and documentation evidence are synchronized.
+
+## Migration Naming Rule
+
+Future database migrations must follow the repository sequential naming standard:
+
+```text
+<sequence>-<member>-<task>
+```
+
+Before creating a migration, determine the highest existing four-digit sequence under `database/migrations/`, increment it, and never duplicate a number. Existing shared timestamp migrations must not be renamed directly; preserve migration integrity and document any required mapping in `database/docs/MIGRATION-GUIDE.md`.
 
 ## Dependency Security Validation
 

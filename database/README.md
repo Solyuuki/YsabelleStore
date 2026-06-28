@@ -35,6 +35,30 @@ database/
 `-- README.md
 ```
 
+## Migration Naming Standard
+
+The existing Sprint 1 migration folder keeps its timestamp name because it is already shared in branch history:
+
+```text
+database/migrations/20260628120000_sprint_1_database_foundation/
+```
+
+Do not rename this folder directly. Future migrations must use the repository sequential standard defined in `database/docs/MIGRATION-GUIDE.md`:
+
+```text
+<sequence>-<member>-<task>
+```
+
+Examples:
+
+```text
+0001-m3-product-schema
+0002-m2-auth-module
+0003-m1-dashboard-layout
+```
+
+Before creating a new migration, determine the highest existing four-digit sequence under `database/migrations/`, increment it, and never reuse a number.
+
 ## Implemented Foundation
 
 | Area             | Implemented Contract                                                            |
@@ -67,3 +91,4 @@ database/
 - [x] Initial migration artifact is present for review
 - [x] Seed strategy is documented without adding production-like data
 - [x] Documentation reflects implemented schema decisions
+- [x] Future migration naming standard is documented

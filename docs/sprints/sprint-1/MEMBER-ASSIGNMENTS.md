@@ -12,19 +12,19 @@ Sprint 1 assigns infrastructure ownership by layer. Cross-layer edits require co
 
 ## m1 - Abarado
 
-| Responsibility        | Output                                                        |
-| --------------------- | ------------------------------------------------------------- |
-| React Router          | Route shell prepared for future pages                         |
-| App Shell             | Stable top-level renderer structure                           |
-| Sidebar               | Navigation pattern ready for module links                     |
-| Header                | Shared application header pattern                             |
-| Layout                | Reusable authenticated layout foundation                      |
-| Shared UI Components  | Common UI primitives for later screens                        |
-| Dashboard placeholder | Non-business placeholder landing surface                      |
-| API client            | Frontend request boundary ready for services                  |
-| Backend integration   | Coordinate frontend/backend contract assumptions              |
-| Integration support   | Resolve sprint branch conflicts and review integration issues |
-| Sprint supervision    | Maintain sprint progress and review readiness                 |
+| Responsibility       | Output                                                                  |
+| -------------------- | ----------------------------------------------------------------------- |
+| Route shell          | Minimal browser-history route shell prepared for current Sprint 1 pages |
+| App Shell            | Stable top-level renderer structure                                     |
+| Sidebar              | Navigation pattern ready for module links                               |
+| Topbar               | Shared application topbar pattern                                       |
+| Layout               | Reusable authenticated layout foundation                                |
+| Shared UI Components | Common UI primitives for later screens                                  |
+| Dashboard shell      | Static non-business dashboard surface                                   |
+| API client           | Frontend request boundary ready for services                            |
+| Backend integration  | Coordinate frontend/backend contract assumptions                        |
+| Integration support  | Resolve sprint branch conflicts and review integration issues           |
+| Sprint supervision   | Maintain sprint progress and review readiness                           |
 
 ## m2 - Ramos
 
