@@ -1,16 +1,36 @@
 # m2 Task Register
 
-| Task ID        | Sprint   | Assigned Member | Scope                       | Affected Files            | Status  | Test Result                     | Notes                                 |
-| -------------- | -------- | --------------- | --------------------------- | ------------------------- | ------- | ------------------------------- | ------------------------------------- |
-| YSB-M2-API-001 | Sprint 1 | m2 - Ramos      | Express backend scaffold    | `app/backend/`            | Planned | Not run until scaffold exists   | Must use TypeScript                   |
-| YSB-M2-DB-001  | Sprint 1 | m2 - Ramos      | Prisma and MySQL setup      | `prisma/`, `.env.example` | Planned | Not run until schema exists     | Requires `DATABASE_URL` documentation |
-| YSB-M2-INV-001 | Sprint 2 | m2 - Ramos      | Inventory and batch service | `app/backend/`, `prisma/` | Planned | Pending service tests           | Coordinate response contract with m1  |
-| YSB-M2-IMP-001 | Sprint 2 | m2 - Ramos      | CSV and Excel import API    | `app/backend/`            | Planned | Pending import validation tests | Must report invalid rows              |
+## Completed
 
-## Task Quality Checklist
+| Task ID                | Date       | Scope                                      | Affected Files/Modules                                                                                                                       | Evidence                                               | Validation                                                    |
+| ---------------------- | ---------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------- |
+| YSB-M2-API-001         | 2026-06-25 | Express backend foundation                 | `backend/src/app.ts`, `backend/src/server.ts`, `backend/src/routes/**`, `backend/src/controllers/**`                                         | Commit `ac20416` in shared history                     | Backend build passed on 2026-06-29.                           |
+| YSB-M2-API-002         | 2026-06-25 | API response and error contract foundation | `backend/src/utils/apiResponse.ts`, `backend/src/utils/httpError.ts`, `backend/src/types/apiResponse.ts`, `docs/api/**`                      | Commits `ac20416`, `784bdb7`                           | No endpoint tests present; TypeScript build passes.           |
+| YSB-M2-SEC-001         | 2026-06-25 | Backend security middleware foundation     | `backend/src/middleware/securityHeaders.ts`, `backend/src/middleware/rateLimitPlaceholder.ts`, `backend/src/security/**`, `docs/security/**` | Commit `e98a3b6`                                       | Backend build passes.                                         |
+| YSB-M2-DOC-001         | 2026-06-25 | Backend architecture handoff documentation | `backend/README.md`, `docs/api/**`, `docs/sprints/sprint-1/MEMBER-ASSIGNMENTS.md`                                                            | Commits `ac20416`, `784bdb7`, `4431fdb`                | Documentation exists; final format check pending this update. |
+| YSB-M2-DB-BOUNDARY-001 | 2026-06-29 | Prisma client access boundary in backend   | `backend/src/database/prismaClient.ts`, `backend/src/controllers/healthController.ts`                                                        | Current sprint branch `dd53be7` from M3 database merge | Backend build and Prisma validation passed on 2026-06-29.     |
+| YSB-M2-DOC-002         | 2026-06-29 | M2 artifact reconstruction                 | `docs/implementation-artifacts/m2-ramos/**`                                                                                                  | Current documentation-only work                        | Final validation pending after docs update.                   |
 
-- [ ] Branch name starts with `m2/`
-- [ ] Prisma schema changes are reviewed
-- [ ] API inputs are validated
-- [ ] Database writes preserve inventory integrity
-- [ ] Tests or manual API validation are recorded
+## In Progress
+
+| Task ID          | Scope                                          | Status      | Evidence                                                                                     | Next Action                     |
+| ---------------- | ---------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------- | ------------------------------- |
+| YSB-M2-TRACE-001 | Align M2 artifacts with actual branch evidence | In progress | This reconstruction records shared-history backend work and lack of unique M2 branch commits | Complete validation and review. |
+
+## Pending
+
+| Task ID             | Scope                                               | Reason Pending                                                            | Required Evidence Before Completion                                                   |
+| ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| YSB-M2-API-003      | Product, inventory, sales, and import business APIs | Sprint 1 backend only establishes foundation patterns.                    | Approved DTOs, routes, services, validators, tests, and database migration alignment. |
+| YSB-M2-TEST-001     | Backend unit/integration tests                      | No backend test suite exists yet.                                         | Test framework setup and passing tests for controllers/services/validators.           |
+| YSB-M2-DB-APPLY-001 | Migration application through backend workflow      | Migration SQL is reviewable but not documented as applied to local MySQL. | Prisma migration/status evidence against approved local database.                     |
+
+## Cancelled
+
+| Task ID | Scope | Reason                                                     | Evidence        |
+| ------- | ----- | ---------------------------------------------------------- | --------------- |
+| None    | None  | No M2 task is recorded as cancelled in repository history. | Not applicable. |
+
+## Completion Rule
+
+M2 backend tasks require code, API contract documentation, validation output, and implementation artifacts before they can be marked complete.

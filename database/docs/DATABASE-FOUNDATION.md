@@ -1,138 +1,87 @@
 # Database Foundation
 
-This document defines the database foundation for YsabelleStore before schema implementation. It prepares the project for a future MySQL and Prisma database without creating business tables, fields, migrations, seed data, or runtime connections.
-
-## Purpose
-
-| Purpose              | Description                                                                           |
-| -------------------- | ------------------------------------------------------------------------------------- |
-| System persistence   | Prepare the future storage layer for inventory, sales, forecasts, and recommendations |
-| Architecture control | Define where database decisions are recorded before implementation                    |
-| Team alignment       | Give contributors consistent rules for Prisma, MySQL, migrations, and seeds           |
-| Thesis readiness     | Keep database work explainable, auditable, and evaluator-friendly                     |
+This document records the implemented Sprint 1 database foundation for YsabelleStore. The database layer is prepared for future inventory, sales, SARIMA forecasting, and recommendation modules without implementing those business workflows.
 
 ## Architecture Overview
 
 ```text
-Application Layers
-|-- Electron desktop shell
-|-- React renderer
-|-- Express backend
-|-- Future Prisma Client
-|-- MySQL database
-`-- Forecasting service data exchange
+Electron desktop shell
+  -> React renderer
+  -> Express backend
+  -> Prisma Client boundary
+  -> MySQL database
+  -> Future Python SARIMA service data exchange
 ```
 
-## Database Foundation Diagram
+## Implemented Tables
+
+| Table                    | Purpose                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| `users`                  | Owner/staff identity boundary for future authentication                              |
+| `categories`             | Product grouping for grocery/convenience-store catalog organization                  |
+| `products`               | Barcode-ready product master data with cost and selling prices                       |
+| `inventory_batches`      | Batch quantity, cost, received date, and expiry tracking                             |
+| `inventory_movements`    | Stock-in, stock-out, sale, adjustment, return, expired, and damaged movement history |
+| `sales`                  | Sale headers for future POS and historical demand records                            |
+| `sale_items`             | Product-level sale lines for future reporting and forecasting input                  |
+| `forecast_records`       | Future SARIMA forecast output storage                                                |
+| `recommendation_records` | Future restock, stock risk, and expiry-risk recommendation storage                   |
+
+## Data Integrity Decisions
+
+| Decision                    | Implementation                                                                                |
+| --------------------------- | --------------------------------------------------------------------------------------------- |
+| Product identifiers         | `sku` is required and unique; `barcode` is optional, unique, and indexed                      |
+| Money fields                | Cost, price, and totals use Prisma `Decimal` mapped to MySQL `DECIMAL`                        |
+| Quantity fields             | Stock and sale quantities use unsigned integers                                               |
+| Product deletion            | Product-dependent records use restrictive relations to preserve history                       |
+| Sale deletion               | Sale items cascade with their sale header                                                     |
+| Optional user attribution   | Cashier, movement performer, forecast generator, and recommendation generator use `SET NULL`  |
+| Expiry support              | Inventory batches include nullable `expires_at` and expiry-focused indexes                    |
+| Forecast traceability       | Forecasts are unique per product, period, and model name                                      |
+| Recommendation traceability | Recommendations can link to forecast records while remaining valid if the forecast is removed |
+
+## Index Strategy
+
+| Query Need           | Indexes                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| Product lookup       | Product `sku`, `barcode`, `name`, and category/active indexes            |
+| Inventory review     | Batch product/status, product/expiry, and expiry indexes                 |
+| Movement history     | Movement product/date, type/date, batch, and performed-by indexes        |
+| Sales reporting      | Sale number, sale date, status/date, cashier, sale item product indexes  |
+| Forecast review      | Forecast product/generated, status/generated, generated-by indexes       |
+| Recommendation queue | Recommendation product/severity, type/status, forecast, and date indexes |
+
+## Migration Strategy
+
+The first migration artifact is stored at:
 
 ```text
-database/
-|-- prisma/schema.prisma
-|   |-- generator
-|   |-- datasource
-|   `-- future model sections
-|-- migrations/.gitkeep
-|-- seed/.gitkeep
-`-- docs/
-    |-- architecture rules
-    |-- ERD plan
-    |-- naming conventions
-    `-- migration guide
+database/migrations/0001_sprint_1_database_foundation/migration.sql
 ```
 
-## Tool Responsibility Matrix
+This SQL is generated from the current Prisma schema for review. It should be applied only against an approved local MySQL database after the team confirms the schema and environment.
 
-| Tool or Layer | Role                              | Foundation Phase Behavior                              |
-| ------------- | --------------------------------- | ------------------------------------------------------ |
-| Prisma schema | Future schema source of truth     | Holds generator, datasource, and section comments only |
-| Prisma Client | Future typed database access      | Not generated in this phase                            |
-| MySQL         | Future relational database engine | Not connected in this phase                            |
-| Migrations    | Future schema change history      | Folder reserved with `.gitkeep`                        |
-| Seed scripts  | Future development data setup     | Folder reserved with documentation only                |
+## Seed Strategy
 
-## Prisma Role
-
-| Responsibility   | Standard                                                             |
-| ---------------- | -------------------------------------------------------------------- |
-| Model definition | Added only after schema implementation approval                      |
-| Field naming     | Use camelCase in Prisma and map to database naming when required     |
-| Table mapping    | Use stable snake_case table names in MySQL                           |
-| Validation       | Use `npm run prisma:validate` for syntax checks                      |
-| Generation       | Generate Prisma Client only during the approved implementation phase |
-
-## MySQL Role
-
-| Responsibility         | Standard                                                  |
-| ---------------------- | --------------------------------------------------------- |
-| Durable storage        | Store future operational and analytical records           |
-| Relational integrity   | Enforce future relationships after schema approval        |
-| Reporting support      | Preserve sales and inventory history for reporting        |
-| Forecasting support    | Provide clean historical sales input for SARIMA workflows |
-| Recommendation support | Store explainable future recommendation outputs           |
-
-## Decision Matrix
-
-| Decision Area   | Foundation Decision        | Reason                                                        |
-| --------------- | -------------------------- | ------------------------------------------------------------- |
-| ORM             | Prisma                     | Provides typed schema validation and backend integration path |
-| Database engine | MySQL                      | Matches the relational needs of inventory and sales records   |
-| Migrations      | Prisma-managed             | Keeps schema changes reviewable and repeatable                |
-| Seeds           | Controlled project scripts | Prevents inconsistent development data                        |
-| Credentials     | Environment variables      | Avoids hardcoded database secrets                             |
-
-## Migration Philosophy
-
-| Rule                                           | Explanation                                                 |
-| ---------------------------------------------- | ----------------------------------------------------------- |
-| Create migrations from approved schema changes | Keeps history tied to reviewed model changes                |
-| Never edit old migrations                      | Preserves reproducibility and team trust                    |
-| Keep migrations focused                        | Makes review and rollback reasoning simpler                 |
-| Validate before commit                         | Prevents broken schema history from entering the repository |
-
-## Seed Philosophy
-
-| Rule                               | Explanation                                         |
-| ---------------------------------- | --------------------------------------------------- |
-| Seed only after models exist       | Prevents data from driving unapproved schema design |
-| Use deterministic records          | Keeps local verification repeatable                 |
-| Keep seed data small               | Supports fast setup and clear debugging             |
-| Separate fake data from production | Protects thesis and production integrity            |
-
-## Development Workflow
-
-```text
-Foundation docs
-  -> ERD review
-  -> Prisma model implementation
-  -> Prisma validation
-  -> Migration creation
-  -> Seed design
-  -> Backend integration
-```
-
-| Stage      | Required Action                          | Exit Gate                     |
-| ---------- | ---------------------------------------- | ----------------------------- |
-| Foundation | Maintain structure and documentation     | No models or migrations exist |
-| Design     | Review future entities and relationships | ERD plan accepted             |
-| Schema     | Add Prisma models and mappings           | `prisma validate` passes      |
-| Migration  | Create focused migration files           | Migration review passes       |
-| Seed       | Add deterministic development data       | Seed workflow is repeatable   |
+Sprint 1 documents the seed strategy but does not add executable seed data. Future seed work should create deterministic development records only after the first database migration is accepted.
 
 ## Validation Workflow
 
-| Check                     | Command or Review                      | Expected Result                                              |
-| ------------------------- | -------------------------------------- | ------------------------------------------------------------ |
-| Folder structure          | Manual review                          | Required folders and files exist                             |
-| Prisma syntax             | `npm run prisma:validate`              | Schema is valid                                              |
-| Documentation consistency | Manual review                          | Terms and naming match across docs                           |
-| Scope guardrail           | Manual review                          | No models, migrations, seed scripts, or business logic exist |
-| Formatting                | `npm run format:check` when applicable | Markdown and schema formatting are stable                    |
+| Check                     | Command or Review                                          | Expected Result               |
+| ------------------------- | ---------------------------------------------------------- | ----------------------------- |
+| Prisma syntax             | `npm run prisma:validate` with a safe local `DATABASE_URL` | Schema validates successfully |
+| Prisma Client generation  | `npm run prisma:generate` with a safe local `DATABASE_URL` | Client generation succeeds    |
+| Application build         | `npm run build` with a safe local `DATABASE_URL`           | All workspaces compile        |
+| Documentation consistency | Manual review                                              | Docs match implemented schema |
+| Formatting                | `npm run format:check`                                     | Repository is formatted       |
 
 ## Foundation Completion Checklist
 
-- [x] Database folder is structured for Prisma, migrations, seeds, and documentation
-- [x] Prisma schema has generator and datasource only
-- [x] Future domain sections are documented as comments only
-- [x] Migration folder is reserved without migration files
-- [x] Seed folder is reserved without seed scripts or data
-- [x] Database documentation defines workflows and guardrails
+- [x] Core Prisma models are implemented
+- [x] Relationships and delete/update behavior are explicit
+- [x] Unique fields and indexes support common inventory, sales, forecast, and recommendation queries
+- [x] Migration artifact is available for review
+- [x] Seed strategy is documented
+- [x] Backend has a Prisma client access boundary
+- [x] SARIMA execution and recommendation formulas remain later-sprint scope

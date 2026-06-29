@@ -2,26 +2,27 @@
 
 ## Sprint Scope
 
-| Sprint   | Version | Goal                                                  | Status  |
-| -------- | ------- | ----------------------------------------------------- | ------- |
-| Sprint 0 | v0.1    | Review forecasting standards and recommendation scope | Done    |
-| Sprint 1 | v0.2    | Define SARIMA input and output contract               | Planned |
-| Sprint 2 | v0.3    | Implement forecasting engine and recommendation rules | Planned |
+| Sprint   | Version | Goal                                 | Status  |
+| -------- | ------- | ------------------------------------ | ------- |
+| Sprint 1 | v0.1    | Implement database foundation        | Done    |
+| Future   | Later   | Implement SARIMA and recommendations | Planned |
 
-## Planned Tasks
+## Sprint 1 Tasks
 
-| Task ID        | Sprint   | Description                                   | Status  |
-| -------------- | -------- | --------------------------------------------- | ------- |
-| YSB-M3-FOR-001 | Sprint 1 | Define forecast request and response contract | Planned |
-| YSB-M3-FOR-002 | Sprint 2 | Implement SARIMA forecasting module           | Planned |
-| YSB-M3-REC-001 | Sprint 2 | Implement recommendation calculation rules    | Planned |
-| YSB-M3-ANA-001 | Sprint 2 | Prepare chart-ready analytics outputs         | Planned |
+| Task ID    | Description                                      | Status |
+| ---------- | ------------------------------------------------ | ------ |
+| YSB-S1-009 | Draft and implement initial Prisma schema models | Done   |
+| YSB-S1-010 | Define relationships, constraints, and indexes   | Done   |
+| YSB-S1-011 | Create migration readiness and seed strategy     | Done   |
+| YSB-S1-012 | Align database documentation with schema work    | Done   |
 
 ## Acceptance Criteria
 
-| Criterion                       | Evidence                                           |
-| ------------------------------- | -------------------------------------------------- |
-| Forecast contract is documented | Request and response fields reviewed by m1 and m2  |
-| SARIMA validates inputs         | Tests cover insufficient history and invalid dates |
-| Recommendations are explainable | Outputs include reason and supporting values       |
-| Chart data is stable            | Recharts-compatible output shape is documented     |
+| Criterion                         | Evidence                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------ |
+| Core entities are modeled         | User, category, product, batch, movement, sales, forecast, and recommendation models |
+| Relationships are explicit        | Prisma relations use restrict, cascade, or set-null behavior                         |
+| Query-readiness is represented    | Barcode, product, inventory, sales, forecast, and recommendation indexes             |
+| Migration path is reviewable      | Initial SQL artifact in `database/migrations/`                                       |
+| Seed strategy is controlled       | Strategy documented without executable fake data                                     |
+| SARIMA remains later-sprint scope | Forecast table stores outputs only; no model execution                               |

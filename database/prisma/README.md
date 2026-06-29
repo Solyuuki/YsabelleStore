@@ -1,38 +1,37 @@
 # Prisma Foundation
 
-The Prisma folder contains the official Prisma entry point for the future YsabelleStore database schema.
+The Prisma folder contains the official schema entry point for the YsabelleStore MySQL database.
 
 ## Current Contents
 
-| File            | Purpose                                                                                  | Phase Rule                        |
-| --------------- | ---------------------------------------------------------------------------------------- | --------------------------------- |
-| `schema.prisma` | Declares the Prisma Client generator, MySQL datasource, and future architecture sections | No models in the foundation phase |
+| File             | Purpose                                                                                    | Status            |
+| ---------------- | ------------------------------------------------------------------------------------------ | ----------------- |
+| `schema.prisma`  | Declares Prisma Client generation, MySQL datasource, enums, models, relations, and indexes | Implemented       |
+| Generated client | Produced by `npm run prisma:generate` into `node_modules/@prisma/client`                   | Generated locally |
 
-## Prisma Role
+## Implemented Model Groups
 
-| Responsibility    | Description                                                                        |
-| ----------------- | ---------------------------------------------------------------------------------- |
-| Schema authority  | Future models will be declared here after ERD approval                             |
-| Database mapping  | Prisma names will remain application-friendly while database names stay consistent |
-| Validation        | `prisma validate` confirms schema syntax before implementation continues           |
-| Client generation | Future backend code will use generated Prisma Client after schema implementation   |
+| Group           | Models or Enums                                                         |
+| --------------- | ----------------------------------------------------------------------- |
+| Users           | `User`, `UserRole`, `UserStatus`                                        |
+| Catalog         | `Category`, `Product`, `ProductUnit`                                    |
+| Inventory       | `InventoryBatch`, `InventoryMovement`, movement and batch status enums  |
+| Sales           | `Sale`, `SaleItem`, `SaleStatus`                                        |
+| Forecasting     | `ForecastRecord`, `ForecastStatus`                                      |
+| Recommendations | `RecommendationRecord`, recommendation type, severity, and status enums |
 
-## Current Guardrails
+## Guardrails
 
-- Keep `schema.prisma` model-free.
 - Keep credentials out of the schema.
 - Use `env("DATABASE_URL")` for the datasource URL.
-- Do not run `prisma generate` during foundation setup.
-- Do not create or edit migrations during foundation setup.
+- Keep Prisma names TypeScript-friendly and map tables/columns to stable MySQL names.
+- Do not add business logic, SARIMA execution, or recommendation formulas to the schema.
+- Regenerate Prisma Client after schema changes before building backend code.
 
-## Future Model Section Order
+## Validation Commands
 
-| Order | Section        | Reason                                                     |
-| ----- | -------------- | ---------------------------------------------------------- |
-| 1     | User           | Supports future ownership and audit workflows              |
-| 2     | Product        | Anchors inventory, sales, forecasts, and recommendations   |
-| 3     | Inventory      | Represents stock state after product structure is approved |
-| 4     | BatchInventory | Adds expiration-aware stock details                        |
-| 5     | Sales          | Provides historical demand input                           |
-| 6     | Forecast       | Stores future SARIMA demand outputs                        |
-| 7     | Recommendation | Stores future inventory guidance outputs                   |
+```bash
+set DATABASE_URL=mysql://root:password@localhost:3306/ysabelle_store_validation
+npm run prisma:validate
+npm run prisma:generate
+```

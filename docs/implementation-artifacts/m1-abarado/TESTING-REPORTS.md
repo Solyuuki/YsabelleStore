@@ -2,94 +2,48 @@
 
 ## Validation Log
 
-| Test ID    | Date       | Area                  | Command or Method                    | Result | Notes                                                                               |
-| ---------- | ---------- | --------------------- | ------------------------------------ | ------ | ----------------------------------------------------------------------------------- |
-| TST-M1-001 | 2026-06-24 | Repository structure  | Required file validation             | Passed | Standards, README, and member artifacts exist and are non-empty                     |
-| TST-M1-002 | 2026-06-24 | Documentation quality | Search for unfinished markers        | Passed | No unfinished markers found                                                         |
-| TST-M1-003 | 2026-06-27 | Frontend shell        | `npm run build --workspace frontend` | Passed | TypeScript and Vite production build completed for the frontend workspace           |
-| TST-M1-004 | 2026-06-27 | Full validation       | Required validation sequence         | Passed | Full required validation passed after using a temporary local Prisma validation URL |
-| TST-M1-005 | 2026-06-27 | Welcome polish        | `npm run build --workspace frontend` | Passed | Adaptive Welcome screen polish compiled successfully before full validation         |
-| TST-M1-006 | 2026-06-27 | Welcome polish        | Required validation sequence         | Passed | Format, lint, build with temporary Prisma URL, and audit passed                     |
-| TST-M1-007 | 2026-06-27 | Welcome footer        | `npm run build --workspace frontend` | Passed | Restored Welcome footer compiled successfully before full validation                |
-| TST-M1-008 | 2026-06-27 | Welcome footer        | Required validation sequence         | Passed | Format, lint, build with temporary Prisma URL, and audit passed                     |
-| TST-M1-009 | 2026-06-27 | App shell cohesion    | Required validation sequence         | Passed | Format, lint, frontend typecheck, build with temporary Prisma URL, and audit passed |
-| TST-M1-010 | 2026-06-27 | Theme polish          | Required validation sequence         | Passed | Format, lint, frontend typecheck, build with temporary Prisma URL, and audit passed |
-| TST-M1-011 | 2026-06-27 | Final shell polish    | Required validation sequence         | Passed | Format, lint, frontend typecheck, build with temporary Prisma URL, and audit passed |
+| Test ID    | Date       | Area                              | Command or Method                                      | Result | Evidence / Notes                                                                             |
+| ---------- | ---------- | --------------------------------- | ------------------------------------------------------ | ------ | -------------------------------------------------------------------------------------------- |
+| TST-M1-001 | 2026-06-24 | Repository structure              | Required file and standards review                     | Passed | Repository foundation files were created and are present in history.                         |
+| TST-M1-002 | 2026-06-24 | Documentation quality             | Search for unfinished markers                          | Passed | Existing historical report states no unfinished markers were found.                          |
+| TST-M1-003 | 2026-06-27 | Frontend shell                    | `npm run build --workspace frontend`                   | Passed | Existing historical report records TypeScript and Vite production build success.             |
+| TST-M1-004 | 2026-06-27 | Root validation                   | Required validation sequence with temporary Prisma URL | Passed | Existing historical report records full validation passed after `DATABASE_URL` was supplied. |
+| TST-M1-005 | 2026-06-27 | Welcome screen polish             | `npm run build --workspace frontend`                   | Passed | Existing historical report records focused frontend build success.                           |
+| TST-M1-006 | 2026-06-27 | Welcome screen polish             | Format, lint, build, audit                             | Passed | Existing historical report records all checks passed.                                        |
+| TST-M1-007 | 2026-06-27 | Welcome footer                    | `npm run build --workspace frontend`                   | Passed | Existing historical report records focused frontend build success.                           |
+| TST-M1-008 | 2026-06-27 | Welcome footer                    | Format, lint, build, audit                             | Passed | Existing historical report records all checks passed.                                        |
+| TST-M1-009 | 2026-06-27 | App shell cohesion                | Format, lint, frontend typecheck, root build, audit    | Passed | Existing historical report records all checks passed with temporary Prisma URL.              |
+| TST-M1-010 | 2026-06-27 | Theme polish                      | Format, lint, frontend typecheck, root build, audit    | Passed | Existing historical report records all checks passed with temporary Prisma URL.              |
+| TST-M1-011 | 2026-06-27 | Final shell polish                | Format, lint, frontend typecheck, root build, audit    | Passed | Existing historical report records all checks passed with temporary Prisma URL.              |
+| TST-M1-012 | 2026-06-29 | Current frontend source           | `npm run build --workspace frontend`                   | Passed | Verified during artifact reconstruction before file edits.                                   |
+| TST-M1-013 | 2026-06-29 | Current backend source            | `npm run build --workspace backend`                    | Passed | Verified during artifact reconstruction before file edits.                                   |
+| TST-M1-014 | 2026-06-29 | Prisma schema                     | `npm run prisma:validate`                              | Passed | Verified during artifact reconstruction before file edits.                                   |
+| TST-M1-015 | 2026-06-29 | Documentation-only reconstruction | Final validation command set                           | Passed | `format:check`, lint, workspace typecheck, build, Prisma validation, and audit passed.       |
 
-## Sprint 1 Welcome Footer Validation
+## Historical Validation Detail
 
-| Command                                                                                            | Result | Notes                                                                          |
-| -------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------ |
-| `npm run build --workspace frontend`                                                               | Passed | Focused frontend build passed after footer restoration                         |
-| `npm run format`                                                                                   | Passed | Prettier formatted changed frontend and m1 artifact files                      |
-| `npm run format:check`                                                                             | Passed | All matched files use Prettier style                                           |
-| `npm run lint`                                                                                     | Passed | Existing root ESLint module-type warning emitted, no lint errors               |
-| `npm run build`                                                                                    | Failed | First run failed only because `DATABASE_URL` was not set for Prisma validation |
-| `$env:DATABASE_URL='mysql://root:password@localhost:3306/ysabellestore_validation'; npm run build` | Passed | Frontend, backend, Electron, and Prisma validation passed                      |
-| `npm audit --audit-level=high`                                                                     | Passed | Found 0 vulnerabilities                                                        |
+| Date       | Command                                  | Result | Notes                                                                                     |
+| ---------- | ---------------------------------------- | ------ | ----------------------------------------------------------------------------------------- |
+| 2026-06-27 | `npm run build --workspace frontend`     | Passed | Used repeatedly for frontend shell and welcome-screen changes.                            |
+| 2026-06-27 | `npm run format`                         | Passed | Historical report says changed frontend and M1 artifact files were formatted.             |
+| 2026-06-27 | `npm run format:check`                   | Passed | Historical report says matched files used Prettier style.                                 |
+| 2026-06-27 | `npm run lint`                           | Passed | Historical report notes an existing root ESLint module-type warning, with no lint errors. |
+| 2026-06-27 | `npm run build` without `DATABASE_URL`   | Failed | Failure was limited to missing Prisma validation environment variable.                    |
+| 2026-06-27 | Root build with temporary `DATABASE_URL` | Passed | Historical report records frontend, backend, Electron, and Prisma validation passed.      |
+| 2026-06-27 | `npm audit --audit-level=high`           | Passed | Historical report records 0 vulnerabilities.                                              |
 
-## Sprint 1 Welcome Polish Validation
+## Manual Review Evidence
 
-| Command                                                                                            | Result | Notes                                                                          |
-| -------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------ |
-| `npm run build --workspace frontend`                                                               | Passed | Focused frontend build passed after Welcome screen polish                      |
-| `npm run format`                                                                                   | Passed | Prettier formatted changed frontend and m1 artifact files                      |
-| `npm run format:check`                                                                             | Passed | All matched files use Prettier style                                           |
-| `npm run lint`                                                                                     | Passed | Existing root ESLint module-type warning emitted, no lint errors               |
-| `npm run build`                                                                                    | Failed | First run failed only because `DATABASE_URL` was not set for Prisma validation |
-| `$env:DATABASE_URL='mysql://root:password@localhost:3306/ysabellestore_validation'; npm run build` | Passed | Frontend, backend, Electron, and Prisma validation passed                      |
-| `npm audit --audit-level=high`                                                                     | Passed | Found 0 vulnerabilities                                                        |
+| Date       | Area                                          | Result                                                    | Notes                                                                                                                       |
+| ---------- | --------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-27 | Welcome screen and footer                     | Passed by visual review evidence in committed screenshots | Screenshot artifacts were restored from Git history during 2026-06-29 reconstruction.                                       |
+| 2026-06-27 | Dashboard shell collapsed and expanded states | Passed by visual review evidence in committed screenshots | Screenshot artifacts are historical review aids, not runtime dependencies.                                                  |
+| 2026-06-29 | Sidebar route comparison                      | Passed analysis                                           | M1 route/page files are present in current `frontend/src/**`; M3 branch frontend replacement is documented as a merge risk. |
 
-## Required Evidence
+## Validation Limits
 
-| Area          | Evidence                                            |
-| ------------- | --------------------------------------------------- |
-| Documentation | Required files exist and are non-empty              |
-| Workflow      | YAML file exists and branch regex is documented     |
-| Frontend      | Build, lint, and UI smoke test once scaffold exists |
-| Electron      | Package or startup smoke test once app exists       |
-
-## Sprint 1 Frontend Shell Validation
-
-| Command                                                                                            | Result | Notes                                                                          |
-| -------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------ |
-| `npm run build --workspace frontend`                                                               | Passed | Initial focused check before full repo validation                              |
-| `npm run format`                                                                                   | Passed | Prettier formatted changed frontend and m1 artifact files                      |
-| `npm run format:check`                                                                             | Passed | All matched files use Prettier style                                           |
-| `npm run lint`                                                                                     | Passed | Existing root ESLint module-type warning emitted, no lint errors               |
-| `npm run build`                                                                                    | Failed | First run failed only because `DATABASE_URL` was not set for Prisma validation |
-| `$env:DATABASE_URL='mysql://root:password@localhost:3306/ysabellestore_validation'; npm run build` | Passed | Frontend, backend, Electron, and Prisma validation passed                      |
-| `npm audit --audit-level=high`                                                                     | Passed | Found 0 vulnerabilities                                                        |
-
-## Sprint 1 App Shell Cohesion Validation
-
-| Command                                                                                            | Result | Notes                                                            |
-| -------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------- |
-| `npm run format`                                                                                   | Passed | Prettier reformatted the changed frontend and m1 artifact files  |
-| `npm run format:check`                                                                             | Passed | All matched files use Prettier style                             |
-| `npm run lint`                                                                                     | Passed | Existing root ESLint module-type warning emitted, no lint errors |
-| `npm run typecheck --workspace frontend`                                                           | Passed | Frontend TypeScript checked cleanly                              |
-| `$env:DATABASE_URL='mysql://root:password@localhost:3306/ysabellestore_validation'; npm run build` | Passed | Frontend, backend, Electron, and Prisma validation passed        |
-| `npm audit --audit-level=high`                                                                     | Passed | Found 0 vulnerabilities                                          |
-
-## Sprint 1 Theme Polish Validation
-
-| Command                                                                                            | Result | Notes                                                            |
-| -------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------- |
-| `npm run format`                                                                                   | Passed | Prettier reformatted the changed frontend and m1 artifact files  |
-| `npm run format:check`                                                                             | Passed | All matched files use Prettier style                             |
-| `npm run lint`                                                                                     | Passed | Existing root ESLint module-type warning emitted, no lint errors |
-| `npm run typecheck --workspace frontend`                                                           | Passed | Frontend TypeScript checked cleanly                              |
-| `$env:DATABASE_URL='mysql://root:password@localhost:3306/ysabellestore_validation'; npm run build` | Passed | Frontend, backend, Electron, and Prisma validation passed        |
-| `npm audit --audit-level=high`                                                                     | Passed | Found 0 vulnerabilities                                          |
-
-## Sprint 1 Final Shell Polish Validation
-
-| Command                                                                                            | Result | Notes                                                            |
-| -------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------- |
-| `npm run format`                                                                                   | Passed | Prettier reformatted the changed frontend and m1 artifact files  |
-| `npm run format:check`                                                                             | Passed | All matched files use Prettier style                             |
-| `npm run lint`                                                                                     | Passed | Existing root ESLint module-type warning emitted, no lint errors |
-| `npm run typecheck --workspace frontend`                                                           | Passed | Frontend TypeScript checked cleanly                              |
-| `$env:DATABASE_URL='mysql://root:password@localhost:3306/ysabellestore_validation'; npm run build` | Passed | Frontend, backend, Electron, and Prisma validation passed        |
-| `npm audit --audit-level=high`                                                                     | Passed | Found 0 vulnerabilities                                          |
+| Area                          | Status                                     | Reason                                                                             |
+| ----------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| Electron packaged installer   | Not run historically in available evidence | Electron foundation exists, but no packaged `.exe` validation artifact is present. |
+| Browser/Electron console logs | Not available in repository                | No saved console transcript was found.                                             |
+| Automated UI tests            | Not present                                | No Playwright/Cypress test suite exists in repository dependencies.                |

@@ -23,6 +23,8 @@ npm audit --audit-level=high
 npx prisma validate --schema=database/prisma/schema.prisma
 ```
 
+Documentation-only and implementation tasks must also update the responsible member artifacts under `docs/implementation-artifacts/<member>/`. A task is not complete until daily notes, tasks, sprint progress, testing reports, deployment notes, decisions, blockers, and README entries are synchronized when affected.
+
 ## Local Git Hooks
 
 Husky protects the repository before commit and before push:
@@ -268,6 +270,16 @@ GitHub governance accepts only:
 | Migration conflict                | Coordinate with m2 before changing Prisma migrations              |
 | Forecasting conflict              | Coordinate with m3 before changing Python model logic             |
 | UI shell conflict                 | Coordinate with m1 before changing layout or Electron entry files |
+
+## Migration Naming
+
+Future Prisma migration artifacts must use sequential repository folder names:
+
+```text
+<sequence>_<task>
+```
+
+Before creating a migration, inspect `database/migrations/`, determine the highest existing four-digit sequence, increment it by one, and use a unique snake_case name such as `0002_add_products`. Never reuse numbers, never use timestamp-based folder names, and never rename an applied migration after the repository is shared.
 
 ## Failed CI Troubleshooting
 

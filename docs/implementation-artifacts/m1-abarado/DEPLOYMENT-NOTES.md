@@ -1,25 +1,42 @@
 # m1 Deployment Notes
 
-## Desktop Deployment Ownership
+## Deployment Scope
 
-| Area                         | Owner     | Standard                                                   |
-| ---------------------------- | --------- | ---------------------------------------------------------- |
-| Electron packaging           | m1        | Use `electron-builder`                                     |
-| Desktop app name             | m1        | `YsabelleStore`                                            |
-| Backend startup coordination | m1 and m2 | Electron must start or connect to approved Express process |
-| Release validation           | Shared    | Build, lint, tests, and packaging checks                   |
+| Area                               | Status                                  | Evidence                                                                               |
+| ---------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------- |
+| Frontend production build          | Ready for Sprint 1 static shell         | `npm run build --workspace frontend` passed on 2026-06-29 and in historical M1 reports |
+| Electron runtime foundation        | Foundation ready                        | `electron/src/main/**`, `electron/src/preload/**`, `electron/src/security/**`          |
+| Electron packaged installer        | Not yet verified                        | No committed package artifact or installer validation transcript exists                |
+| Backend/database connection for UI | Not implemented in M1 frontend          | UI screens are static and do not call backend APIs yet                                 |
+| Release documentation              | In progress through this reconstruction | Updated implementation artifacts and migration standards                               |
 
 ## Deployment Log
 
-| Version | Date       | Package Target           | Status    | Notes                                                   |
-| ------- | ---------- | ------------------------ | --------- | ------------------------------------------------------- |
-| v0.1    | 2026-06-24 | Documentation foundation | Completed | Application package not created during foundation phase |
+| Version / Branch     | Date       | Target                                                                                  | Status    | Notes                                                                                                        |
+| -------------------- | ---------- | --------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| Foundation history   | 2026-06-24 | Repository documentation and architecture                                               | Completed | No application release package was produced.                                                                 |
+| Sprint 1 foundation  | 2026-06-25 | Frontend, backend, database, Electron, CI, configuration, deployment, testing scaffolds | Completed | Foundations were created as repository structures and docs.                                                  |
+| M1 frontend branch   | 2026-06-27 | Static React frontend shell                                                             | Completed | Frontend build and full validation were recorded as passed.                                                  |
+| Sprint 1 integration | 2026-06-29 | Current sprint branch                                                                   | In review | M1 frontend and M3 database/backend database boundary are present; documentation reconstruction is underway. |
 
 ## Release Checklist
 
-- [ ] Frontend build passes
-- [ ] Backend starts successfully
-- [ ] Prisma migrations are applied
-- [ ] Forecasting engine responds to valid input
-- [ ] Electron package builds successfully
-- [ ] Release notes identify known limitations
+| Check                                        | Status       | Evidence / Required Action                                                             |
+| -------------------------------------------- | ------------ | -------------------------------------------------------------------------------------- |
+| Frontend build passes                        | Passed       | Verified 2026-06-29.                                                                   |
+| Backend build passes                         | Passed       | Verified 2026-06-29.                                                                   |
+| Prisma schema validates                      | Passed       | Verified 2026-06-29.                                                                   |
+| Full root build passes                       | Passed       | `npm run build` passed on 2026-06-29.                                                  |
+| Lint passes                                  | Passed       | `npm run lint` passed on 2026-06-29 with only the existing ESLint module-type warning. |
+| Format check passes                          | Passed       | `npm run format:check` passed on 2026-06-29.                                           |
+| Security audit has no high vulnerabilities   | Passed       | `npm audit --audit-level=high` found 0 vulnerabilities on 2026-06-29.                  |
+| Electron package builds                      | Not verified | Required before a release installer is claimed.                                        |
+| Prisma migrations are applied to local MySQL | Not verified | Migration artifact exists, but application against a real database is not documented.  |
+
+## Known Deployment Limits
+
+| Limit                              | Impact                                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------ |
+| Static frontend only               | UI demonstrates shell readiness, not live business workflows.                              |
+| No packaged desktop artifact       | Sprint 1 cannot claim installer readiness.                                                 |
+| Migration SQL review artifact only | Database deployment to a real environment still requires controlled migration application. |
