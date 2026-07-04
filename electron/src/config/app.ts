@@ -7,7 +7,7 @@ export const appMetadata = Object.freeze({
 
 export const windowDefaults = Object.freeze({
   height: 800,
-  minHeight: 720,
-  minWidth: 1024,
+  minHeight: 760,
+  minWidth: 1200,
   width: 1280
 });

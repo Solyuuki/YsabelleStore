@@ -274,22 +274,22 @@ export function WelcomePage({
                     />
                   </label>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 2xl:grid-cols-2">
                     <label className="block space-y-2 text-sm font-medium text-slate-700">
                       <span>Password</span>
                       <div className="relative">
                         <input
                           autoComplete="new-password"
-                          className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                          className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-14 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                           disabled={loading}
                           onChange={(event) => setPassword(event.target.value)}
-                          placeholder="Minimum 8 characters"
+                          placeholder="At least 8 characters"
                           type={showPassword ? "text" : "password"}
                           value={password}
                         />
                         <button
                           aria-label={showPassword ? "Hide password" : "Show password"}
-                          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
+                          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
                           disabled={loading}
                           onClick={() => setShowPassword((current) => !current)}
                           type="button"
@@ -308,16 +308,16 @@ export function WelcomePage({
                       <div className="relative">
                         <input
                           autoComplete="new-password"
-                          className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                          className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-14 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                           disabled={loading}
                           onChange={(event) => setConfirmPassword(event.target.value)}
-                          placeholder="Repeat password"
+                          placeholder="Confirm password"
                           type={showConfirmPassword ? "text" : "password"}
                           value={confirmPassword}
                         />
                         <button
                           aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
+                          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
                           disabled={loading}
                           onClick={() => setShowConfirmPassword((current) => !current)}
                           type="button"
