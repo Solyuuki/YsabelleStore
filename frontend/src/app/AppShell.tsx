@@ -30,7 +30,18 @@ function getCurrentPath() {
 }
 
 export function AppShell() {
-  const { error, login, logout, register, status, switchUser, user } = useAuth();
+  const {
+    error,
+    login,
+    logout,
+    rememberedAccounts,
+    removeRememberedAccount,
+    register,
+    selectRememberedAccount,
+    status,
+    switchUser,
+    user
+  } = useAuth();
   const [path, setPath] = useState(getCurrentPath);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.innerWidth < 1280);
 
@@ -57,11 +68,14 @@ export function AppShell() {
     return (
       <WelcomePage
         error={error}
+        rememberedAccounts={rememberedAccounts}
         status={status}
         user={user}
         onLogin={login}
         onNavigate={navigate}
         onRegister={register}
+        onRememberedAccountSelect={selectRememberedAccount}
+        onRemoveRememberedAccount={removeRememberedAccount}
         onSwitchUser={switchUser}
       />
     );

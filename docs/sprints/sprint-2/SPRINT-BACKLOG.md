@@ -1,16 +1,16 @@
 # Sprint 2 Backlog
 
-Sprint 2 backlog items are grouped around authentication, local account setup, RBAC, seed users, and validation. Product, inventory, POS, forecasting, recommendations, dashboard analytics, and import features are intentionally out of scope.
+Sprint 2 backlog items are grouped around authentication, remembered local accounts, RBAC, seed users, and validation. Product, inventory, POS, forecasting, recommendations, dashboard analytics, and import features are intentionally out of scope.
 
 ## Authentication and Session Flow
 
-| Task ID         | Owner        | Priority | Description                                 | Expected Output                                           | Status      |
-| --------------- | ------------ | -------- | ------------------------------------------- | --------------------------------------------------------- | ----------- |
-| YSB-S2-AUTH-001 | M1 - Abarado | High     | Replace static welcome/session screen       | Real login/session screen                                 | In Progress |
-| YSB-S2-AUTH-002 | M1 - Abarado | High     | Add password visibility toggle              | Accessible show/hide password button                      | In Progress |
-| YSB-S2-AUTH-003 | M1 - Abarado | High     | Add frontend auth state                     | Loading, authenticated, unauthenticated, and error states | In Progress |
-| YSB-S2-AUTH-004 | M1 - Abarado | High     | Wire login, switch user, and logout         | Token/session is stored and cleared correctly             | In Progress |
-| YSB-S2-AUTH-005 | M2 - Solo    | High     | Implement backend login/current-user/logout | Backend auth endpoints and safe responses                 | In Progress |
+| Task ID         | Owner        | Priority | Description                                 | Expected Output                                                                 | Status      |
+| --------------- | ------------ | -------- | ------------------------------------------- | ------------------------------------------------------------------------------- | ----------- |
+| YSB-S2-AUTH-001 | M1 - Abarado | High     | Replace static welcome/session screen       | Recognized-device welcome screen with quick access                              | In Progress |
+| YSB-S2-AUTH-002 | M1 - Abarado | High     | Add password visibility toggle              | Accessible show/hide password button                                            | In Progress |
+| YSB-S2-AUTH-003 | M1 - Abarado | High     | Add frontend auth state                     | Loading, authenticated, unauthenticated, remembered-account, and error states   | In Progress |
+| YSB-S2-AUTH-004 | M1 - Abarado | High     | Wire login, switch user, and logout         | Token/session is stored and cleared correctly; quick access is verified locally | In Progress |
+| YSB-S2-AUTH-005 | M2 - Solo    | High     | Implement backend login/current-user/logout | Backend auth endpoints and safe responses                                       | In Progress |
 
 ## Registration / Account Setup
 
@@ -38,10 +38,10 @@ Sprint 2 backlog items are grouped around authentication, local account setup, R
 
 ## Documentation and Thesis Alignment
 
-| Task ID        | Owner        | Priority | Description                     | Expected Output                                                   | Status      |
-| -------------- | ------------ | -------- | ------------------------------- | ----------------------------------------------------------------- | ----------- |
-| YSB-S2-DOC-001 | M1 - Abarado | Medium   | Align Sprint 2 docs             | Auth, registration, RBAC, owner/staff responsibilities documented | In Progress |
-| YSB-S2-DOC-002 | M1 - Abarado | Medium   | Add thesis scope alignment note | Chapter 1-2 scope mapped to implementation roadmap                | In Progress |
+| Task ID        | Owner        | Priority | Description                     | Expected Output                                                                            | Status      |
+| -------------- | ------------ | -------- | ------------------------------- | ------------------------------------------------------------------------------------------ | ----------- |
+| YSB-S2-DOC-001 | M1 - Abarado | Medium   | Align Sprint 2 docs             | Auth, remembered accounts, quick access, RBAC, and owner/staff responsibilities documented | In Progress |
+| YSB-S2-DOC-002 | M1 - Abarado | Medium   | Add thesis scope alignment note | Chapter 1-2 scope mapped to implementation roadmap                                         | In Progress |
 
 ## Validation
 

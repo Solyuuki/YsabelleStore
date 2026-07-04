@@ -1,19 +1,23 @@
 # Definition of Done
 
-Sprint 2 work is complete only when authentication, registration/account setup, role-based access control, database seed readiness, documentation, and validation evidence are present.
+Sprint 2 work is complete only when authentication, remembered-account quick access, role-based access control, database seed readiness, documentation, and validation evidence are present.
 
 ## Authentication Done Criteria
 
-| Requirement         | Done Criteria                                                                |
-| ------------------- | ---------------------------------------------------------------------------- |
-| Real login form     | User can enter email and password                                            |
-| Password visibility | Password is hidden by default and can be shown/hidden with accessible labels |
-| Backend login       | Backend verifies credentials using stored password hashes                    |
-| Session check       | App checks current token/session on startup                                  |
-| Loading state       | Session loading resolves to authenticated or unauthenticated state           |
-| Logout              | User can end the authenticated desktop session                               |
-| Switch user         | Existing session clears and returns to the auth screen                       |
-| No hardcoded user   | Current user is loaded from backend/session state                            |
+| Requirement             | Done Criteria                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| Real login form         | User can enter email and password                                                       |
+| Password visibility     | Password is hidden by default and can be shown/hidden with accessible labels            |
+| Backend login           | Backend verifies credentials using stored password hashes                               |
+| Session check           | App checks current token/session on startup and before quick access opens the dashboard |
+| Loading state           | Session loading resolves to authenticated or unauthenticated state                      |
+| Logout                  | User can end the authenticated desktop session without deleting remembered accounts     |
+| Switch user             | Existing session clears and returns to the remembered-account chooser or auth screen    |
+| No hardcoded user       | Current user is loaded from backend/session state                                       |
+| Remembered accounts     | Device stores only id, name, email, role, and lastUsedAt locally                        |
+| Quick access            | Remembered account metadata never bypasses token/session verification                   |
+| RBAC after quick access | Owner/staff route access still applies after device recognition                         |
+| Local removal           | Removing a remembered account clears only local quick-access metadata                   |
 
 ## Registration / Account Setup Done Criteria
 

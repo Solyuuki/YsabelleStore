@@ -8,6 +8,7 @@ import { useToast } from "@/components/shared/ToastProvider";
 import type { ToastInput } from "@/components/shared/toast.types";
 
 const AUTH_TOKEN_KEY = "ysabellestore.authToken";
+const REMEMBERED_ACCOUNTS_KEY = "ysabelle.rememberedAccounts";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -18,10 +19,21 @@ export type RegisterInput = {
   role: "OWNER" | "STAFF";
 };
 
+export type RememberedAccount = {
+  id: string;
+  name: string;
+  email: string;
+  role: AuthUser["role"];
+  lastUsedAt: string;
+};
+
 type AuthContextValue = {
   error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  rememberedAccounts: RememberedAccount[];
+  removeRememberedAccount: (id: string) => void;
+  selectRememberedAccount: (account: RememberedAccount) => Promise<boolean>;
   register: (input: RegisterInput) => Promise<boolean>;
   switchUser: () => Promise<void>;
   status: AuthStatus;
@@ -37,6 +49,65 @@ type AuthErrorPayload = {
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+function sortRememberedAccounts(accounts: RememberedAccount[]) {
+  return [...accounts].sort(
+    (left, right) => new Date(right.lastUsedAt).getTime() - new Date(left.lastUsedAt).getTime()
+  );
+}
+
+function readRememberedAccounts() {
+  try {
+    const rawValue = localStorage.getItem(REMEMBERED_ACCOUNTS_KEY);
+
+    if (!rawValue) {
+      return [] as RememberedAccount[];
+    }
+
+    const parsedValue: unknown = JSON.parse(rawValue);
+
+    if (!Array.isArray(parsedValue)) {
+      return [] as RememberedAccount[];
+    }
+
+    return sortRememberedAccounts(
+      parsedValue.filter((item): item is RememberedAccount => {
+        if (!item || typeof item !== "object") {
+          return false;
+        }
+
+        const candidate = item as Partial<RememberedAccount>;
+
+        return (
+          typeof candidate.id === "string" &&
+          typeof candidate.name === "string" &&
+          typeof candidate.email === "string" &&
+          (candidate.role === "OWNER" || candidate.role === "STAFF") &&
+          typeof candidate.lastUsedAt === "string"
+        );
+      })
+    );
+  } catch {
+    return [] as RememberedAccount[];
+  }
+}
+
+function writeRememberedAccounts(accounts: RememberedAccount[]) {
+  localStorage.setItem(REMEMBERED_ACCOUNTS_KEY, JSON.stringify(sortRememberedAccounts(accounts)));
+}
+
+function buildRememberedAccount(
+  user: AuthUser,
+  lastUsedAt = new Date().toISOString()
+): RememberedAccount {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    lastUsedAt,
+    role: user.role
+  };
+}
 
 function resolveAuthErrorMessage(response: ApiResponse<unknown, AuthErrorPayload>) {
   if (
@@ -97,8 +168,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(AUTH_TOKEN_KEY));
+  const [rememberedAccounts, setRememberedAccounts] = useState<RememberedAccount[]>(() =>
+    readRememberedAccounts()
+  );
   const [error, setError] = useState<string | null>(null);
   const { pushToast } = useToast();
+
+  const rememberAccount = useCallback((account: AuthUser) => {
+    const nextAccount = buildRememberedAccount(account);
+
+    setRememberedAccounts((currentAccounts) => {
+      const filteredAccounts = currentAccounts.filter((item) => item.id !== account.id);
+
+      return sortRememberedAccounts([nextAccount, ...filteredAccounts]);
+    });
+  }, []);
 
   const clearSession = useCallback(() => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
@@ -115,6 +199,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     setStatus("authenticated");
   }, []);
+
+  const clearRememberedAccount = useCallback((id: string) => {
+    setRememberedAccounts((currentAccounts) =>
+      currentAccounts.filter((account) => account.id !== id)
+    );
+  }, []);
+
+  useEffect(() => {
+    writeRememberedAccounts(rememberedAccounts);
+  }, [rememberedAccounts]);
 
   useEffect(() => {
     let active = true;
@@ -142,6 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(response.data.user);
           setError(null);
           setStatus("authenticated");
+          rememberAccount(response.data.user);
           return;
         }
 
@@ -158,7 +253,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, [clearSession, token]);
+  }, [clearSession, rememberAccount, token]);
+
+  const selectRememberedAccount = useCallback(
+    async (account: RememberedAccount) => {
+      const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
+
+      setError(null);
+
+      if (!currentToken) {
+        clearSession();
+        pushToast({
+          message: "Please sign in again to continue.",
+          title: "Login required",
+          variant: "warning"
+        });
+        return false;
+      }
+
+      try {
+        const response = await apiClient.request<CurrentUserResponse>("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${currentToken}`
+          }
+        });
+
+        if (response.success && response.data?.user && response.data.user.id === account.id) {
+          setUser(response.data.user);
+          setError(null);
+          setStatus("authenticated");
+          rememberAccount(response.data.user);
+          pushToast({
+            message: "Welcome back.",
+            title: "Device recognized",
+            variant: "success"
+          });
+          return true;
+        }
+
+        clearSession();
+      } catch {
+        clearSession();
+      }
+
+      pushToast({
+        message: "Please sign in again to continue.",
+        title: "Login required",
+        variant: "warning"
+      });
+      return false;
+    },
+    [clearSession, pushToast, rememberAccount]
+  );
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -188,6 +334,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         applySession(response.data);
+        rememberAccount(response.data.user);
         pushToast({
           message: "Welcome back.",
           title: "Login successful",
@@ -208,7 +355,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
     },
-    [applySession, pushToast]
+    [applySession, pushToast, rememberAccount]
   );
 
   const register = useCallback(
@@ -295,23 +442,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const switchUser = useCallback(async () => {
     await performLogout({
-      message: "Ready for another account.",
-      title: "Switch user",
+      message: "Please sign in with your store credentials.",
+      title: "Use another account",
       variant: "info"
     });
   }, [performLogout]);
+
+  const removeRememberedAccount = useCallback(
+    (id: string) => {
+      clearRememberedAccount(id);
+      pushToast({
+        message: "This account was removed from quick access.",
+        title: "Account removed",
+        variant: "info"
+      });
+    },
+    [clearRememberedAccount, pushToast]
+  );
 
   const value = useMemo<AuthContextValue>(
     () => ({
       error,
       login,
       logout,
+      rememberedAccounts,
+      removeRememberedAccount,
+      selectRememberedAccount,
       register,
       switchUser,
       status,
       user
     }),
-    [error, login, logout, register, status, switchUser, user]
+    [
+      clearRememberedAccount,
+      error,
+      login,
+      logout,
+      pushToast,
+      rememberedAccounts,
+      register,
+      selectRememberedAccount,
+      removeRememberedAccount,
+      status,
+      switchUser,
+      user
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
