@@ -2,24 +2,24 @@
 
 ## Role
 
-Full Stack Auth and Quick Access Lead.
+Full Stack / Auth UI Lead.
 
 ## Sprint Focus
 
-Own the complete frontend-facing authentication flow for Sprint 2: login, remembered-account quick access, owner-only user management, auth state, API integration, route protection, switch user, logout, and frontend role-based access control.
+Own the user-facing authentication flow for Sprint 2: login, remembered-account quick access, owner-only user management, auth state, toast notifications, route protection, switch user, logout, and frontend role-based access control.
 
 ## Assigned Scope
 
-| Area                | Scope                                                                                                      |
-| ------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Login UI            | Real email/password login screen with password show/hide control                                           |
-| Remembered accounts | Safe local metadata for device recognition and quick access                                                |
-| User management     | Owner-only account creation for staff and owner access                                                     |
-| Auth state          | Frontend state for loading, authenticated, unauthenticated, remembered, and error states                   |
-| API integration     | Login, current-user/session, quick access verification, user management, switch user, and logout API calls |
-| Route protection    | Block unauthenticated users from app modules                                                               |
-| Frontend RBAC       | Restrict owner-only modules from staff users                                                               |
-| Thesis alignment    | Keep Sprint 2 access rules aligned with owner/staff thesis scope                                           |
+| Area                | Scope                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| Login UI            | Real email/password login screen with password show/hide control                         |
+| Device recognition  | Safe local metadata for remembered accounts and quick access                             |
+| Toast notifications | Auth success, error, logout, access denied, and device-recognized toasts                 |
+| Auth state          | Frontend state for loading, authenticated, unauthenticated, remembered, and error states |
+| RBAC UI             | Sidebar filtering and direct-route access denied handling                                |
+| User management     | Owner-only Users page and account creation form                                          |
+| Session actions     | Switch user and logout session clearing                                                  |
+| Thesis alignment    | Keep Sprint 2 access rules aligned with owner/staff scope                                |
 
 ## Assigned Tasks
 
@@ -34,6 +34,18 @@ Own the complete frontend-facing authentication flow for Sprint 2: login, rememb
 | 7    | Implement switch user and logout session clearing                          |
 | 8    | Preserve Sprint 1 visual shell while removing hardcoded mock user state    |
 
+## M1 Responsibility Table
+
+| Area                | M1 Responsibility                                                    | Status                    |
+| ------------------- | -------------------------------------------------------------------- | ------------------------- |
+| Login UI            | Login form, loading states, error handling                           | Implemented / In Progress |
+| Device Recognition  | Remembered accounts and quick access UI                              | Implemented / In Progress |
+| Toast Notifications | Auth success, error, logout, access denied, device recognized toasts | Implemented / In Progress |
+| RBAC UI             | Sidebar filtering and access-denied flow                             | Implemented / In Progress |
+| User Management UI  | Owner-only Users page and account creation form                      | Implemented / In Progress |
+
+M1 owns the user-facing authentication flow and owner-only User Management UI. Backend/security blockers discovered from M1 work, such as the public register endpoint, are assigned to M2 because they require server-side enforcement. M1 may handle UI fixes found by M3 during QA.
+
 ## Validation Responsibility
 
 | Validation Area | Responsibility                                                                                                                        |
@@ -42,20 +54,15 @@ Own the complete frontend-facing authentication flow for Sprint 2: login, rememb
 | Integration     | Confirm frontend payloads and responses align with backend auth endpoints, quick access verification, and owner-only account creation |
 | Regression      | Confirm Sprint 1 shell is not redesigned outside auth scope                                                                           |
 
-## Risks / Notes
-
-| Risk or Note                                       | Mitigation                                                                      |
-| -------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Remembered metadata is mistaken for authentication | Keep quick access limited to safe local metadata and token/session verification |
-| Public registration remains visible                | Remove public sign-up from the login page and keep account creation in Users    |
-| Staff bypasses owner-only UI by direct URL         | Route-level role checks must render access denied                               |
-| Backend or DB unavailable                          | Show clear auth service/database/seed messages                                  |
-
 ## Out of Scope
 
-| Item                       | Note                                                       |
-| -------------------------- | ---------------------------------------------------------- |
-| Staff self password change | Future work after owner-managed account creation is stable |
+| Item                                  | Owner                      | Reason                                                |
+| ------------------------------------- | -------------------------- | ----------------------------------------------------- |
+| Backend register endpoint guard       | M2 / Ramos                 | Requires backend auth middleware and server-side RBAC |
+| API-level account creation protection | M2 / Ramos                 | Frontend RBAC is not enough for security              |
+| Full QA validation                    | M3 / Vito                  | M3 owns test evidence and validation                  |
+| Product/inventory/POS modules         | Future sprint/module scope | Not part of Sprint 2 auth ownership                   |
+| SARIMA forecasting                    | Future sprint/module scope | Not part of Sprint 2 auth ownership                   |
 
 ## Status
 
