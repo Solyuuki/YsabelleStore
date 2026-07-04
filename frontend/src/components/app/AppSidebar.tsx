@@ -22,7 +22,13 @@ const mainRoutes: readonly AppRoutePath[] = [
   "/sales"
 ];
 
-const ownerRoutes: readonly AppRoutePath[] = ["/forecast", "/reports", "/settings"];
+// Add owner-only user management to the administrative section.
+const ownerRoutesWithUsers: readonly AppRoutePath[] = [
+  "/forecast",
+  "/reports",
+  "/settings",
+  "/users"
+];
 
 export function AppSidebar({
   activePath,
@@ -37,7 +43,8 @@ export function AppSidebar({
     item.allowedRoles.includes(user?.role ?? "STAFF")
   );
   const ownerItems = appRoutes.filter(
-    (item) => ownerRoutes.includes(item.path) && item.allowedRoles.includes(user?.role ?? "STAFF")
+    (item) =>
+      ownerRoutesWithUsers.includes(item.path) && item.allowedRoles.includes(user?.role ?? "STAFF")
   );
 
   return (

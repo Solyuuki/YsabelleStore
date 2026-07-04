@@ -1,6 +1,6 @@
 # Sprint 2 Backlog
 
-Sprint 2 backlog items are grouped around authentication, remembered local accounts, RBAC, seed users, and validation. Product, inventory, POS, forecasting, recommendations, dashboard analytics, and import features are intentionally out of scope.
+Sprint 2 backlog items are grouped around authentication, remembered local accounts, owner-only user management, RBAC, seed users, and validation. Product, inventory, POS, forecasting, recommendations, dashboard analytics, and import features are intentionally out of scope.
 
 ## Authentication and Session Flow
 
@@ -14,11 +14,11 @@ Sprint 2 backlog items are grouped around authentication, remembered local accou
 
 ## Registration / Account Setup
 
-| Task ID        | Owner        | Priority | Description                        | Expected Output                                          | Status      |
-| -------------- | ------------ | -------- | ---------------------------------- | -------------------------------------------------------- | ----------- |
-| YSB-S2-REG-001 | M1 - Abarado | High     | Build local account setup UI       | Name, email, password, confirm password, role selection  | In Progress |
-| YSB-S2-REG-002 | M2 - Solo    | High     | Implement `/api/auth/register`     | Hashed local owner/staff account creation                | In Progress |
-| YSB-S2-REG-003 | M1, M2       | High     | Connect registration UI to backend | Successful registration creates an authenticated session | In Progress |
+| Task ID        | Owner        | Priority | Description                         | Expected Output                                                                   | Status      |
+| -------------- | ------------ | -------- | ----------------------------------- | --------------------------------------------------------------------------------- | ----------- |
+| YSB-S2-REG-001 | M1 - Abarado | High     | Build owner-only User Management UI | Name, email, password, confirm password, role selection                           | In Progress |
+| YSB-S2-REG-002 | M2 - Solo    | High     | Implement `/api/auth/register`      | Hashed local owner/staff account creation                                         | In Progress |
+| YSB-S2-REG-003 | M1, M2       | High     | Connect User Management to backend  | Successful registration preserves the owner session and creates a managed account | In Progress |
 
 ## Role-Based Access Control
 
@@ -38,10 +38,10 @@ Sprint 2 backlog items are grouped around authentication, remembered local accou
 
 ## Documentation and Thesis Alignment
 
-| Task ID        | Owner        | Priority | Description                     | Expected Output                                                                            | Status      |
-| -------------- | ------------ | -------- | ------------------------------- | ------------------------------------------------------------------------------------------ | ----------- |
-| YSB-S2-DOC-001 | M1 - Abarado | Medium   | Align Sprint 2 docs             | Auth, remembered accounts, quick access, RBAC, and owner/staff responsibilities documented | In Progress |
-| YSB-S2-DOC-002 | M1 - Abarado | Medium   | Add thesis scope alignment note | Chapter 1-2 scope mapped to implementation roadmap                                         | In Progress |
+| Task ID        | Owner        | Priority | Description                     | Expected Output                                                                                                        | Status      |
+| -------------- | ------------ | -------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------- |
+| YSB-S2-DOC-001 | M1 - Abarado | Medium   | Align Sprint 2 docs             | Auth, remembered accounts, owner-only user management, quick access, RBAC, and owner/staff responsibilities documented | In Progress |
+| YSB-S2-DOC-002 | M1 - Abarado | Medium   | Add thesis scope alignment note | Chapter 1-2 scope mapped to implementation roadmap                                                                     | In Progress |
 
 ## Validation
 

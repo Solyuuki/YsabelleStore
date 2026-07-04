@@ -6,18 +6,17 @@ import {
   LogIn,
   ShieldCheck,
   Trash2,
-  UserPlus,
   UsersRound
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
 import type { AppRoutePath } from "@/app/routes";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import type { RegisterInput, RememberedAccount } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { RememberedAccount } from "@/context/AuthContext";
 import type { AuthUser } from "@/types/auth";
 
 type WelcomePageProps = {
@@ -25,7 +24,6 @@ type WelcomePageProps = {
   rememberedAccounts: RememberedAccount[];
   onLogin: (email: string, password: string) => Promise<boolean>;
   onNavigate: (path: AppRoutePath) => void;
-  onRegister: (input: RegisterInput) => Promise<boolean>;
   onRememberedAccountSelect: (account: RememberedAccount) => Promise<boolean>;
   onRemoveRememberedAccount: (id: string) => void;
   onSwitchUser: () => Promise<void>;
@@ -56,26 +54,21 @@ export function WelcomePage({
   rememberedAccounts,
   onLogin,
   onNavigate,
-  onRegister,
   onRememberedAccountSelect,
   onRemoveRememberedAccount,
   onSwitchUser,
   status,
   user
 }: WelcomePageProps) {
-  const [panelMode, setPanelMode] = useState<"remembered" | "login" | "register">(
+  const [panelMode, setPanelMode] = useState<"remembered" | "login">(
     rememberedAccounts.length > 0 ? "remembered" : "login"
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<RegisterInput["role"]>("STAFF");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitState, setSubmitState] = useState<"idle" | "verifying" | "verified">("idle");
-  const [submitMode, setSubmitMode] = useState<"login" | "register" | null>(null);
+  const [submitMode, setSubmitMode] = useState<"login" | null>(null);
   const [quickAccessState, setQuickAccessState] = useState<"idle" | "verifying" | "verified">(
     "idle"
   );
@@ -113,13 +106,9 @@ export function WelcomePage({
     }
   }
 
-  function resetAuthForm(nextMode: "login" | "register") {
-    setPanelMode(nextMode);
+  function resetLoginForm() {
     setPassword("");
-    setConfirmPassword("");
     setShowPassword(false);
-    setShowConfirmPassword(false);
-    setSelectedRememberedAccount(null);
     setFormError(null);
     setSubmitState("idle");
     setSubmitMode(null);
@@ -128,15 +117,17 @@ export function WelcomePage({
 
   function showRememberedAccountsPanel() {
     setPanelMode("remembered");
-    setPassword("");
-    setConfirmPassword("");
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    setFormError(null);
-    setSubmitState("idle");
-    setSubmitMode(null);
-    setQuickAccessState("idle");
+    resetLoginForm();
     setSelectedRememberedAccount(null);
+  }
+
+  function showLoginForm(prefillEmail = "", preserveSelectedAccount = false) {
+    setPanelMode("login");
+    resetLoginForm();
+    if (!preserveSelectedAccount) {
+      setSelectedRememberedAccount(null);
+    }
+    setEmail(prefillEmail);
   }
 
   async function handleRememberedAccountSelect(account: RememberedAccount) {
@@ -162,29 +153,17 @@ export function WelcomePage({
     }
 
     setQuickAccessState("idle");
-    setPanelMode("login");
-    setPassword("");
-    setConfirmPassword("");
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    setEmail(account.email);
+    showLoginForm(account.email, true);
   }
 
   async function handleUseAnotherAccount() {
-    setPanelMode("login");
-    setPassword("");
-    setConfirmPassword("");
-    setEmail("");
-    setSelectedRememberedAccount(null);
-    setFormError(null);
-    setQuickAccessState("idle");
-    setSubmitState("idle");
-    setSubmitMode(null);
+    showLoginForm();
     await onSwitchUser();
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     if (isSubmitting) {
       return;
     }
@@ -209,53 +188,6 @@ export function WelcomePage({
     setSubmitMode(null);
   }
 
-  async function handleRegister(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (isSubmitting) {
-      return;
-    }
-
-    setFormError(null);
-
-    if (name.trim().length < 2) {
-      setFormError("Name must be at least 2 characters.");
-      return;
-    }
-
-    if (password.length < 8) {
-      setFormError("Password must be at least 8 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setFormError("Password and confirm password must match.");
-      return;
-    }
-
-    setSubmitMode("register");
-    setSubmitState("verifying");
-
-    const startedAt = performance.now();
-
-    const registerSucceeded = await onRegister({
-      name,
-      email,
-      password,
-      role
-    });
-    await ensureMinimumSubmitDuration(startedAt);
-
-    if (registerSucceeded) {
-      setSubmitState("verified");
-      await sleep(300);
-      onNavigate("/dashboard");
-      return;
-    }
-
-    setSubmitState("idle");
-    setSubmitMode(null);
-  }
-
   function renderStatusText() {
     if (authenticated) {
       return "Session ready";
@@ -267,10 +199,6 @@ export function WelcomePage({
 
     if (showRememberedAccounts) {
       return "Recognized device";
-    }
-
-    if (panelMode === "register") {
-      return "Account setup";
     }
 
     if (selectedRememberedAccount && panelMode === "login") {
@@ -297,10 +225,6 @@ export function WelcomePage({
       return "Choose a recognized account on this device to continue. Each selection still verifies the active session before opening the dashboard.";
     }
 
-    if (panelMode === "register") {
-      return "Create a local store account for development access. This stays separate from quick access.";
-    }
-
     if (selectedRememberedAccount && panelMode === "login") {
       return `Please sign in again to continue as ${selectedAccountEmail}.`;
     }
@@ -317,10 +241,6 @@ export function WelcomePage({
       return "Known accounts";
     }
 
-    if (panelMode === "register") {
-      return "Account setup";
-    }
-
     return "Sign in";
   }
 
@@ -331,10 +251,6 @@ export function WelcomePage({
 
     if (showRememberedAccounts || isVerifyingQuickAccess) {
       return <StatusBadge variant="info">Recognized device</StatusBadge>;
-    }
-
-    if (panelMode === "register") {
-      return <StatusBadge variant="info">Local account</StatusBadge>;
     }
 
     return <StatusBadge variant="warning">Store login</StatusBadge>;
@@ -401,12 +317,6 @@ export function WelcomePage({
                 <LoadingState
                   helper="Please wait while YsabelleStore checks your login details."
                   label="Verifying credentials"
-                />
-              ) : submitState === "verifying" && submitMode === "register" ? (
-                <LoadingState
-                  badge="Creating account"
-                  helper="Please wait while YsabelleStore sets up the account."
-                  label="Checking account details"
                 />
               ) : submitState === "verified" ? (
                 <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm">
@@ -498,7 +408,7 @@ export function WelcomePage({
                     Use another account
                   </Button>
                 </div>
-              ) : panelMode === "login" ? (
+              ) : (
                 <form className="space-y-[clamp(1rem,1.6vw,1.5rem)]" onSubmit={handleSubmit}>
                   {selectedRememberedAccount ? (
                     <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
@@ -579,142 +489,6 @@ export function WelcomePage({
                       Back to saved accounts
                     </Button>
                   ) : null}
-
-                  <Button
-                    className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
-                    onClick={() => resetAuthForm("register")}
-                    type="button"
-                    variant="secondary"
-                  >
-                    <UserPlus className="h-4 w-4" aria-hidden="true" />
-                    Set up store account
-                  </Button>
-                </form>
-              ) : (
-                <form className="space-y-[clamp(1rem,1.6vw,1.5rem)]" onSubmit={handleRegister}>
-                  <label className="block space-y-2 text-sm font-medium text-slate-700">
-                    <span>Name</span>
-                    <input
-                      autoComplete="name"
-                      className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                      disabled={loading}
-                      onChange={(event) => setName(event.target.value)}
-                      placeholder="Store user name"
-                      type="text"
-                      value={name}
-                    />
-                  </label>
-
-                  <label className="block space-y-2 text-sm font-medium text-slate-700">
-                    <span>Email</span>
-                    <input
-                      autoComplete="username"
-                      className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                      disabled={loading}
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder="user@ysabellestore.local"
-                      type="email"
-                      value={email}
-                    />
-                  </label>
-
-                  <div className="grid gap-3 2xl:grid-cols-2">
-                    <label className="block space-y-2 text-sm font-medium text-slate-700">
-                      <span>Password</span>
-                      <div className="relative">
-                        <input
-                          autoComplete="new-password"
-                          className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-14 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                          disabled={loading || isSubmitting}
-                          onChange={(event) => setPassword(event.target.value)}
-                          placeholder="At least 8 characters"
-                          type={showPassword ? "text" : "password"}
-                          value={password}
-                        />
-                        <button
-                          aria-label={showPassword ? "Hide password" : "Show password"}
-                          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
-                          disabled={loading || isSubmitting}
-                          onClick={() => setShowPassword((current) => !current)}
-                          type="button"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" aria-hidden="true" />
-                          ) : (
-                            <Eye className="h-4 w-4" aria-hidden="true" />
-                          )}
-                        </button>
-                      </div>
-                    </label>
-
-                    <label className="block space-y-2 text-sm font-medium text-slate-700">
-                      <span>Confirm password</span>
-                      <div className="relative">
-                        <input
-                          autoComplete="new-password"
-                          className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-14 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                          disabled={loading || isSubmitting}
-                          onChange={(event) => setConfirmPassword(event.target.value)}
-                          placeholder="Confirm password"
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={confirmPassword}
-                        />
-                        <button
-                          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
-                          disabled={loading || isSubmitting}
-                          onClick={() => setShowConfirmPassword((current) => !current)}
-                          type="button"
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" aria-hidden="true" />
-                          ) : (
-                            <Eye className="h-4 w-4" aria-hidden="true" />
-                          )}
-                        </button>
-                      </div>
-                    </label>
-                  </div>
-
-                  <label className="block space-y-2 text-sm font-medium text-slate-700">
-                    <span>Role</span>
-                    <select
-                      className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                      disabled={loading || isSubmitting}
-                      onChange={(event) => setRole(event.target.value as RegisterInput["role"])}
-                      value={role}
-                    >
-                      <option value="OWNER">Owner</option>
-                      <option value="STAFF">Staff</option>
-                    </select>
-                  </label>
-
-                  {formError || error ? (
-                    <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                      {formError ?? error}
-                    </div>
-                  ) : null}
-
-                  <Button
-                    className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
-                    disabled={
-                      loading || isSubmitting || !name || !email || !password || !confirmPassword
-                    }
-                    type="submit"
-                  >
-                    <UserPlus className="h-4 w-4" aria-hidden="true" />
-                    {submitState === "verifying" && submitMode === "register"
-                      ? "Creating..."
-                      : "Create account"}
-                  </Button>
-                  <Button
-                    className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
-                    onClick={() => resetAuthForm("login")}
-                    type="button"
-                    variant="secondary"
-                  >
-                    Back to login
-                  </Button>
                 </form>
               )}
             </CardContent>

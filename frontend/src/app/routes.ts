@@ -7,7 +7,8 @@ import {
   Package,
   ReceiptText,
   ScanBarcode,
-  Settings
+  Settings,
+  UsersRound
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import type { AuthUserRole } from "@/types/auth";
@@ -21,6 +22,7 @@ export type AppRoutePath =
   | "/sales"
   | "/forecast"
   | "/reports"
+  | "/users"
   | "/settings"
   | "/not-found";
 
@@ -84,6 +86,13 @@ export const appRoutes: readonly AppRoute[] = [
     icon: FileBarChart,
     allowedRoles: ["OWNER"],
     protected: true
+  },
+  {
+    path: "/users",
+    label: "Users",
+    description: "User management module",
+    icon: UsersRound,
+    allowedRoles: ["OWNER"]
   },
   {
     path: "/settings",

@@ -10,6 +10,7 @@ import { ModulePage } from "@/pages/ModulePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
 import { ProtectedPage } from "@/pages/ProtectedPage";
+import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
 
 const validRoutePaths = new Set<string>([
@@ -21,6 +22,7 @@ const validRoutePaths = new Set<string>([
   "/sales",
   "/forecast",
   "/reports",
+  "/users",
   "/settings",
   "/not-found"
 ]);
@@ -73,7 +75,6 @@ export function AppShell() {
         user={user}
         onLogin={login}
         onNavigate={navigate}
-        onRegister={register}
         onRememberedAccountSelect={selectRememberedAccount}
         onRemoveRememberedAccount={removeRememberedAccount}
         onSwitchUser={switchUser}
@@ -92,7 +93,7 @@ export function AppShell() {
       onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
       user={user}
     >
-      {renderRoute(path, routeForLayout, navigate, user)}
+      {renderRoute(path, routeForLayout, navigate, user, error, register)}
     </AppLayout>
   );
 }
@@ -101,7 +102,9 @@ function renderRoute(
   path: string,
   route: AppRoute | undefined,
   navigate: (path: AppRoutePath) => void,
-  user: ReturnType<typeof useAuth>["user"]
+  user: ReturnType<typeof useAuth>["user"],
+  error: ReturnType<typeof useAuth>["error"],
+  register: ReturnType<typeof useAuth>["register"]
 ) {
   if (!route || path === "/not-found") {
     return <NotFoundPage onNavigate={navigate} />;
@@ -169,6 +172,8 @@ function renderRoute(
           title={route.label}
         />
       );
+    case "/users":
+      return <UserManagementPage error={error} onRegister={register} user={user} />;
     default:
       return <NotFoundPage onNavigate={navigate} />;
   }

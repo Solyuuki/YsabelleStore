@@ -34,10 +34,14 @@ type AuthContextValue = {
   rememberedAccounts: RememberedAccount[];
   removeRememberedAccount: (id: string) => void;
   selectRememberedAccount: (account: RememberedAccount) => Promise<boolean>;
-  register: (input: RegisterInput) => Promise<boolean>;
+  register: (input: RegisterInput, options?: RegisterOptions) => Promise<boolean>;
   switchUser: () => Promise<void>;
   status: AuthStatus;
   user: AuthUser | null;
+};
+
+type RegisterOptions = {
+  preserveSession?: boolean;
 };
 
 type CurrentUserResponse = {
@@ -359,7 +363,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const register = useCallback(
-    async (input: RegisterInput) => {
+    async (input: RegisterInput, options?: RegisterOptions) => {
+      const previousToken = localStorage.getItem(AUTH_TOKEN_KEY);
+      const previousUser = user;
+
       setStatus("loading");
       setError(null);
 
@@ -376,13 +383,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const errorMessage = resolveAuthErrorMessage(response);
 
           setError(errorMessage);
-          setUser(null);
-          setStatus("unauthenticated");
+
+          if (options?.preserveSession && previousToken && previousUser) {
+            localStorage.setItem(AUTH_TOKEN_KEY, previousToken);
+            setToken(previousToken);
+            setUser(previousUser);
+            setStatus("authenticated");
+          } else {
+            setUser(null);
+            setStatus("unauthenticated");
+          }
+
           pushToast(resolveRegisterToast(response));
           return false;
         }
 
-        applySession(response.data);
+        rememberAccount(response.data.user);
+
+        if (options?.preserveSession && previousToken && previousUser) {
+          localStorage.setItem(AUTH_TOKEN_KEY, previousToken);
+          setToken(previousToken);
+          setUser(previousUser);
+          setError(null);
+          setStatus("authenticated");
+        } else {
+          applySession(response.data);
+        }
+
         pushToast({
           message: "Store account has been created.",
           title: "Account created",
@@ -393,8 +420,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const message = "Please make sure the backend server is running.";
 
         setError("Authentication service is unavailable. Please check the backend server.");
-        setUser(null);
-        setStatus("unauthenticated");
+
+        if (options?.preserveSession && previousToken && previousUser) {
+          localStorage.setItem(AUTH_TOKEN_KEY, previousToken);
+          setToken(previousToken);
+          setUser(previousUser);
+          setStatus("authenticated");
+        } else {
+          setUser(null);
+          setStatus("unauthenticated");
+        }
+
         pushToast({
           message,
           title: "Authentication service unavailable",
@@ -403,7 +439,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
     },
-    [applySession, pushToast]
+    [applySession, rememberAccount, pushToast, user]
   );
 
   const performLogout = useCallback(

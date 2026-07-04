@@ -2,6 +2,8 @@
 
 Sprint 2 work is complete only when authentication, remembered-account quick access, role-based access control, database seed readiness, documentation, and validation evidence are present.
 
+Public registration is removed from the login page. Account creation is handled only from owner-only User Management, and staff self password change remains future work.
+
 ## Authentication Done Criteria
 
 | Requirement             | Done Criteria                                                                           |
@@ -23,7 +25,7 @@ Sprint 2 work is complete only when authentication, remembered-account quick acc
 
 | Requirement         | Done Criteria                                                                       |
 | ------------------- | ----------------------------------------------------------------------------------- |
-| Local account setup | Authorized owner/staff store users can be created                                   |
+| Local account setup | Authorized owner-only user management can create store users                        |
 | Fields              | Name, email, password, confirm password, and role are present                       |
 | Validation          | Email format, password length, confirm password match, and role value are validated |
 | Backend register    | `/api/auth/register` creates users through the existing auth structure              |

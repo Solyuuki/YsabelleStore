@@ -1,17 +1,17 @@
 # Sprint 2 Planning Index
 
-Sprint 2 moves YsabelleStore from a static authentication mockup into a working authentication, remembered-account quick access, and role-based access control foundation. The sprint supports the thesis requirement that owner and staff users have different access levels before inventory, sales, reports, and SARIMA forecasting features are implemented.
+Sprint 2 moves YsabelleStore from a static authentication mockup into a working authentication, remembered-account quick access, owner-only user management, and role-based access control foundation. The sprint supports the thesis requirement that owner and staff users have different access levels before inventory, sales, reports, and SARIMA forecasting features are implemented.
 
 ## Sprint Metadata
 
-| Field         | Details                                                                                                                    |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Sprint        | Sprint 2                                                                                                                   |
-| Version       | `v0.2`                                                                                                                     |
-| Sprint branch | `sprint/v0.2/sprint-2`                                                                                                     |
-| Sprint status | Implementation in progress                                                                                                 |
-| Primary focus | Authentication, remembered local accounts, session handling, frontend RBAC, backend auth API, database seed users          |
-| Excluded work | Product CRUD, final POS, inventory movement logic, SARIMA forecasting, recommendation engine, reports, dashboard analytics |
+| Field         | Details                                                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sprint        | Sprint 2                                                                                                                                      |
+| Version       | `v0.2`                                                                                                                                        |
+| Sprint branch | `sprint/v0.2/sprint-2`                                                                                                                        |
+| Sprint status | Implementation in progress                                                                                                                    |
+| Primary focus | Authentication, remembered local accounts, owner-only user management, session handling, frontend RBAC, backend auth API, database seed users |
+| Excluded work | Product CRUD, final POS, inventory movement logic, SARIMA forecasting, recommendation engine, reports, dashboard analytics                    |
 
 ## Planning Documents
 
@@ -27,4 +27,6 @@ Sprint 2 moves YsabelleStore from a static authentication mockup into a working 
 
 ## Sprint Rule
 
-Sprint 2 is authentication, remembered-account quick access, and RBAC foundation only. Product, inventory, POS, forecasting, recommendation, reports, dashboard analytics, and import modules remain out of scope until authorized user access is stable.
+Sprint 2 is authentication, remembered-account quick access, owner-only user management, and RBAC foundation only. Public registration is removed from the login page. Product, inventory, POS, forecasting, recommendation, reports, dashboard analytics, and import modules remain out of scope until authorized user access is stable.
+
+Owner-only User Management handles store account creation and staff administration. Staff self password change remains future work.
