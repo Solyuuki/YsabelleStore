@@ -3,12 +3,15 @@ import { ChevronLeft, Lock, LogOut } from "lucide-react";
 import { appRoutes, type AppRoutePath } from "@/app/routes";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { AuthUser } from "@/types/auth";
 
 type AppSidebarProps = {
   activePath: string;
   collapsed: boolean;
+  onLogout: () => void;
   onToggleSidebar: () => void;
   onNavigate: (path: AppRoutePath) => void;
+  user: AuthUser | null;
 };
 
 const mainRoutes: readonly AppRoutePath[] = [
@@ -24,8 +27,10 @@ const ownerRoutes: readonly AppRoutePath[] = ["/forecast", "/reports", "/setting
 export function AppSidebar({
   activePath,
   collapsed,
+  onLogout,
   onNavigate,
-  onToggleSidebar
+  onToggleSidebar,
+  user
 }: AppSidebarProps) {
   const mainItems = appRoutes.filter((item) => mainRoutes.includes(item.path));
   const ownerItems = appRoutes.filter((item) => ownerRoutes.includes(item.path));
@@ -91,14 +96,14 @@ export function AppSidebar({
       <div className="border-t border-slate-200/80 p-3">
         <div className="space-y-3">
           <SectionLabel collapsed={collapsed} title="SYSTEM" />
-          {collapsed ? null : <FullCounterModeCard />}
+          {collapsed ? null : <FullCounterModeCard user={user} />}
 
           <Button
             className={cn(
               "h-11 w-full justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-colors duration-300 ease-out hover:bg-emerald-50 hover:text-slate-950",
               collapsed && "justify-center px-0"
             )}
-            onClick={() => onNavigate("/")}
+            onClick={onLogout}
             title="Logout"
             type="button"
             variant="ghost"
@@ -193,12 +198,14 @@ function SectionLabel({ collapsed, title }: SectionLabelProps) {
   );
 }
 
-function FullCounterModeCard() {
+function FullCounterModeCard({ user }: { user: AuthUser | null }) {
   return (
     <div className="rounded-xl border border-slate-200/80 bg-white/75 p-3 text-slate-700 shadow-sm backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 ease-out">
-      <p className="text-xs font-medium text-slate-900">Counter mode</p>
+      <p className="text-xs font-medium text-slate-900">{user?.name ?? "Counter mode"}</p>
       <p className="mt-1 text-xs leading-5 text-slate-500">
-        Staff workspace for daily retail operations.
+        {user
+          ? `${user.role.toLowerCase()} session active.`
+          : "Staff workspace for daily retail operations."}
       </p>
       <p className="mt-3 text-xs font-medium text-slate-500">YsabelleStore v0.1.0</p>
     </div>

@@ -1,10 +1,10 @@
 import { Router } from "express";
 
+import { authRouter } from "./auth.routes.js";
 import { healthRouter } from "./health.routes.js";
 import type { PlannedRouteGroup } from "../types/routeRegistry.js";
 
 export const plannedRouteGroups: readonly PlannedRouteGroup[] = [
-  { path: "/api/auth", module: "Authentication", status: "planned" },
   { path: "/api/products", module: "Products", status: "planned" },
   { path: "/api/sales", module: "Sales", status: "planned" },
   { path: "/api/inventory", module: "Inventory", status: "planned" },
@@ -17,4 +17,5 @@ export const plannedRouteGroups: readonly PlannedRouteGroup[] = [
 
 export const router = Router();
 
+router.use("/auth", authRouter);
 router.use("/health", healthRouter);

@@ -4,21 +4,26 @@ import type { AppRoutePath } from "@/app/routes";
 import { AppSidebar } from "@/components/app/AppSidebar";
 import { AppTopbar } from "@/components/app/AppTopbar";
 import { NotificationStack } from "@/components/shared/NotificationStack";
+import type { AuthUser } from "@/types/auth";
 
 type AppLayoutProps = {
   activePath: string;
   children: ReactNode;
   collapsed: boolean;
+  onLogout: () => void;
   onNavigate: (path: AppRoutePath) => void;
   onToggleSidebar: () => void;
+  user: AuthUser | null;
 };
 
 export function AppLayout({
   activePath,
   children,
   collapsed,
+  onLogout,
   onNavigate,
-  onToggleSidebar
+  onToggleSidebar,
+  user
 }: AppLayoutProps) {
   return (
     <div className="app-shell-ambient relative flex min-h-screen overflow-hidden text-foreground">
@@ -31,8 +36,10 @@ export function AppLayout({
       <AppSidebar
         activePath={activePath}
         collapsed={collapsed}
+        onLogout={onLogout}
         onNavigate={onNavigate}
         onToggleSidebar={onToggleSidebar}
+        user={user}
       />
       <div className="relative z-10 flex min-h-screen min-w-0 flex-1 flex-col">
         <AppTopbar />

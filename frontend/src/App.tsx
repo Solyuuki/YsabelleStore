@@ -1,5 +1,10 @@
 import { AppShell } from "@/app/AppShell";
+import { AuthProvider } from "@/context/AuthContext";
 
 export function App() {
-  return <AppShell />;
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
+  );
 }

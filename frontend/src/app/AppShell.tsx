@@ -2,6 +2,7 @@ import { Boxes, Package, ReceiptText } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
+import { useAuth } from "@/context/AuthContext";
 import { AppLayout } from "@/layouts/AppLayout";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ModulePage } from "@/pages/ModulePage";
@@ -28,6 +29,7 @@ function getCurrentPath() {
 }
 
 export function AppShell() {
+  const { error, login, logout, status, switchUser, user } = useAuth();
   const [path, setPath] = useState(getCurrentPath);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.innerWidth < 1280);
 
@@ -50,8 +52,17 @@ export function AppShell() {
   const route = useMemo(() => getRouteByPath(path), [path]);
   const routeForLayout = route ?? getRouteByPath("/not-found");
 
-  if (path === "/") {
-    return <WelcomePage onNavigate={navigate} />;
+  if (status !== "authenticated" || path === "/") {
+    return (
+      <WelcomePage
+        error={error}
+        status={status}
+        user={user}
+        onLogin={login}
+        onNavigate={navigate}
+        onSwitchUser={switchUser}
+      />
+    );
   }
 
   return (
@@ -59,9 +70,13 @@ export function AppShell() {
       activePath={validRoutePaths.has(path) ? path : "/not-found"}
       collapsed={sidebarCollapsed}
       onNavigate={navigate}
+      onLogout={() => {
+        void logout().then(() => navigate("/"));
+      }}
       onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
+      user={user}
     >
-      {renderRoute(path, routeForLayout, navigate)}
+      {renderRoute(path, routeForLayout, navigate, user)}
     </AppLayout>
   );
 }
@@ -69,14 +84,22 @@ export function AppShell() {
 function renderRoute(
   path: string,
   route: AppRoute | undefined,
-  navigate: (path: AppRoutePath) => void
+  navigate: (path: AppRoutePath) => void,
+  user: ReturnType<typeof useAuth>["user"]
 ) {
   if (!route || path === "/not-found") {
     return <NotFoundPage onNavigate={navigate} />;
   }
 
   if (route.protected) {
-    return <ProtectedPage description={route.description} icon={route.icon} title={route.label} />;
+    return (
+      <ProtectedPage
+        description={route.description}
+        hasOwnerAccess={user?.role === "OWNER"}
+        icon={route.icon}
+        title={route.label}
+      />
+    );
   }
 
   switch (route.path) {
