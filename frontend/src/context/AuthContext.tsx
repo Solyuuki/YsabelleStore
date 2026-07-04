@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { apiClient } from "@/services/apiClient";
 import type { ApiResponse } from "@/types/api";
 import type { AuthSession, AuthUser } from "@/types/auth";
+import { useToast } from "@/components/shared/ToastProvider";
+import type { ToastInput } from "@/components/shared/toast.types";
 
 const AUTH_TOKEN_KEY = "ysabellestore.authToken";
 
@@ -37,15 +39,58 @@ type AuthErrorPayload = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 function resolveAuthErrorMessage(response: ApiResponse<unknown, AuthErrorPayload>) {
-  if (!response.success && response.error?.code === "ACCOUNT_NOT_FOUND") {
-    return "Account not found. Please run the development seed or register an authorized user.";
-  }
-
-  if (!response.success && response.error?.code === "INVALID_CREDENTIALS") {
+  if (
+    !response.success &&
+    (response.error?.code === "ACCOUNT_NOT_FOUND" || response.error?.code === "INVALID_CREDENTIALS")
+  ) {
     return "Invalid email or password.";
   }
 
+  if (!response.success && response.error?.code === "AUTH_NOT_CONFIGURED") {
+    return "Authentication is not configured. Please check the local development environment.";
+  }
+
   return response.message;
+}
+
+function resolveLoginToast(response: ApiResponse<unknown, AuthErrorPayload>): ToastInput {
+  if (
+    !response.success &&
+    (response.error?.code === "AUTH_NOT_CONFIGURED" ||
+      response.error?.code === "PASSWORD_HASH_UNSUPPORTED")
+  ) {
+    return {
+      message: "Please check the local development environment.",
+      title: "Authentication not configured",
+      variant: "error"
+    };
+  }
+
+  return {
+    message: "Invalid email or password.",
+    title: "Login failed",
+    variant: "error"
+  };
+}
+
+function resolveRegisterToast(response: ApiResponse<unknown, AuthErrorPayload>): ToastInput {
+  if (
+    !response.success &&
+    (response.error?.code === "AUTH_NOT_CONFIGURED" ||
+      response.error?.code === "PASSWORD_HASH_UNSUPPORTED")
+  ) {
+    return {
+      message: "Please check the local development environment.",
+      title: "Authentication not configured",
+      variant: "error"
+    };
+  }
+
+  return {
+    message: "Please check the account details and try again.",
+    title: "Account creation failed",
+    variant: "error"
+  };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -53,11 +98,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(AUTH_TOKEN_KEY));
   const [error, setError] = useState<string | null>(null);
+  const { pushToast } = useToast();
 
   const clearSession = useCallback(() => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     setToken(null);
     setUser(null);
+    setError(null);
     setStatus("unauthenticated");
   }, []);
 
@@ -65,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(AUTH_TOKEN_KEY, session.token);
     setToken(session.token);
     setUser(session.user);
+    setError(null);
     setStatus("authenticated");
   }, []);
 
@@ -130,22 +178,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
 
         if (!response.success || !response.data) {
-          setError(resolveAuthErrorMessage(response));
+          const errorMessage = resolveAuthErrorMessage(response);
+
+          setError(errorMessage);
           setUser(null);
           setStatus("unauthenticated");
+          pushToast(resolveLoginToast(response));
           return false;
         }
 
         applySession(response.data);
+        pushToast({
+          message: "Welcome back.",
+          title: "Login successful",
+          variant: "success"
+        });
         return true;
       } catch {
+        const message = "Please make sure the backend server is running.";
+
         setError("Authentication service is unavailable. Please check the backend server.");
         setUser(null);
         setStatus("unauthenticated");
+        pushToast({
+          message,
+          title: "Authentication service unavailable",
+          variant: "error"
+        });
         return false;
       }
     },
-    [applySession]
+    [applySession, pushToast]
   );
 
   const register = useCallback(
@@ -163,46 +226,80 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
 
         if (!response.success || !response.data) {
-          setError(resolveAuthErrorMessage(response));
+          const errorMessage = resolveAuthErrorMessage(response);
+
+          setError(errorMessage);
           setUser(null);
           setStatus("unauthenticated");
+          pushToast(resolveRegisterToast(response));
           return false;
         }
 
         applySession(response.data);
+        pushToast({
+          message: "Store account has been created.",
+          title: "Account created",
+          variant: "success"
+        });
         return true;
       } catch {
+        const message = "Please make sure the backend server is running.";
+
         setError("Authentication service is unavailable. Please check the backend server.");
         setUser(null);
         setStatus("unauthenticated");
+        pushToast({
+          message,
+          title: "Authentication service unavailable",
+          variant: "error"
+        });
         return false;
       }
     },
-    [applySession]
+    [applySession, pushToast]
+  );
+
+  const performLogout = useCallback(
+    async (toast?: ToastInput) => {
+      const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
+
+      clearSession();
+
+      if (currentToken) {
+        try {
+          await apiClient.request("/api/auth/logout", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${currentToken}`
+            }
+          });
+        } catch {
+          // Local logout is authoritative for the desktop session.
+        }
+      }
+
+      if (toast) {
+        pushToast(toast);
+      }
+    },
+    [clearSession, pushToast]
   );
 
   const logout = useCallback(async () => {
-    const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
-
-    clearSession();
-
-    if (currentToken) {
-      try {
-        await apiClient.request("/api/auth/logout", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${currentToken}`
-          }
-        });
-      } catch {
-        // Local logout is authoritative for the desktop session.
-      }
-    }
-  }, [clearSession]);
+    await performLogout({
+      message: "You have been signed out.",
+      title: "Signed out",
+      variant: "info"
+    });
+  }, [performLogout]);
 
   const switchUser = useCallback(async () => {
-    await logout();
-  }, [logout]);
+    await performLogout({
+      message: "Ready for another account.",
+      title: "Switch user",
+      variant: "info"
+    });
+  }, [performLogout]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

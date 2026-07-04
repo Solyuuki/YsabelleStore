@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import type { AppRoutePath } from "@/app/routes";
 import { AppSidebar } from "@/components/app/AppSidebar";
 import { AppTopbar } from "@/components/app/AppTopbar";
-import { NotificationStack } from "@/components/shared/NotificationStack";
 import type { AuthUser } from "@/types/auth";
 
 type AppLayoutProps = {
@@ -50,7 +49,6 @@ export function AppLayout({
           <div className="mx-auto max-w-[1540px] space-y-6">{children}</div>
         </main>
       </div>
-      <NotificationStack />
     </div>
   );
 }

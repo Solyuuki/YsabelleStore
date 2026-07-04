@@ -212,3 +212,13 @@ body {
     transform: translate3d(1.2vw, -0.8vh, 0) scale(1.04);
   }
 }
+
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}

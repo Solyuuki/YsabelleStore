@@ -1,10 +1,15 @@
 import { AppShell } from "@/app/AppShell";
 import { AuthProvider } from "@/context/AuthContext";
+import { NotificationStack } from "@/components/shared/NotificationStack";
+import { ToastProvider } from "@/components/shared/ToastProvider";
 
 export function App() {
   return (
-    <AuthProvider>
-      <AppShell />
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <AppShell />
+        <NotificationStack />
+      </AuthProvider>
+    </ToastProvider>
   );
 }

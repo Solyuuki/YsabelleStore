@@ -1,8 +1,10 @@
+import { useEffect, useRef } from "react";
 import { ShieldAlert } from "lucide-react";
 
 import type { AppRoutePath } from "@/app/routes";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { useToast } from "@/components/shared/ToastProvider";
 import { Button } from "@/components/ui/button";
 
 type AccessDeniedPageProps = {
@@ -11,6 +13,22 @@ type AccessDeniedPageProps = {
 };
 
 export function AccessDeniedPage({ moduleName, onNavigate }: AccessDeniedPageProps) {
+  const { pushToast } = useToast();
+  const hasAnnouncedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasAnnouncedRef.current) {
+      return;
+    }
+
+    hasAnnouncedRef.current = true;
+    pushToast({
+      message: "You do not have permission to access this area.",
+      title: "Access denied",
+      variant: "warning"
+    });
+  }, [pushToast, moduleName]);
+
   return (
     <>
       <PageHeader

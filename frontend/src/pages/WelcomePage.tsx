@@ -49,23 +49,60 @@ export function WelcomePage({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [submitState, setSubmitState] = useState<"idle" | "verifying" | "verified">("idle");
+  const [submitMode, setSubmitMode] = useState<"login" | "register" | null>(null);
   const loading = status === "loading";
   const authenticated = status === "authenticated" && user;
   const formModeLabel = mode === "login" ? "Sign in" : "Account setup";
+  const isSubmitting = submitState === "verifying";
+
+  function sleep(ms: number) {
+    return new Promise((resolve) => {
+      window.setTimeout(resolve, ms);
+    });
+  }
+
+  async function ensureMinimumSubmitDuration(startedAt: number) {
+    const elapsed = performance.now() - startedAt;
+    const minimumDurationMs = 800;
+
+    if (elapsed < minimumDurationMs) {
+      await sleep(minimumDurationMs - elapsed);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     setFormError(null);
+    setSubmitMode("login");
+    setSubmitState("verifying");
+
+    const startedAt = performance.now();
 
     const loginSucceeded = await onLogin(email, password);
+    await ensureMinimumSubmitDuration(startedAt);
 
     if (loginSucceeded) {
+      setSubmitState("verified");
+      await sleep(300);
       onNavigate("/dashboard");
+      return;
     }
+
+    setSubmitState("idle");
+    setSubmitMode(null);
   }
 
   async function handleRegister(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     setFormError(null);
 
     if (name.trim().length < 2) {
@@ -83,16 +120,28 @@ export function WelcomePage({
       return;
     }
 
+    setSubmitMode("register");
+    setSubmitState("verifying");
+
+    const startedAt = performance.now();
+
     const registerSucceeded = await onRegister({
       name,
       email,
       password,
       role
     });
+    await ensureMinimumSubmitDuration(startedAt);
 
     if (registerSucceeded) {
+      setSubmitState("verified");
+      await sleep(300);
       onNavigate("/dashboard");
+      return;
     }
+
+    setSubmitState("idle");
+    setSubmitMode(null);
   }
 
   function resetAuthForm(nextMode: "login" | "register") {
@@ -100,6 +149,8 @@ export function WelcomePage({
     setPassword("");
     setConfirmPassword("");
     setFormError(null);
+    setSubmitState("idle");
+    setSubmitMode(null);
   }
 
   return (
@@ -116,8 +167,26 @@ export function WelcomePage({
       <div className="welcome-shell">
         <div className="welcome-content">
           <section className="max-w-[min(58vw,55rem)]">
-            <StatusBadge variant={authenticated ? "success" : loading ? "info" : "warning"}>
-              {authenticated ? "Session ready" : loading ? "Checking session" : "Login required"}
+            <StatusBadge
+              variant={
+                authenticated
+                  ? "success"
+                  : submitState === "verifying"
+                    ? "info"
+                    : loading
+                      ? "info"
+                      : "warning"
+              }
+            >
+              {authenticated
+                ? "Session ready"
+                : submitState === "verifying" && submitMode === "login"
+                  ? "Verifying credentials"
+                  : submitState === "verifying" && submitMode === "register"
+                    ? "Creating account"
+                    : loading
+                      ? "Checking session"
+                      : "Login required"}
             </StatusBadge>
             <h1 className="mt-[clamp(1.5rem,2.4vw,2.5rem)] text-[clamp(2.75rem,5vw,5rem)] font-semibold leading-[1.02] tracking-normal">
               YsabelleStore
@@ -127,8 +196,27 @@ export function WelcomePage({
               workspace.
             </p>
             <div className="mt-[clamp(2rem,3.5vw,3.75rem)] max-w-[clamp(34rem,44vw,48rem)]">
-              {loading ? (
-                <LoadingState label="Checking local desktop session" />
+              {submitState === "verifying" && submitMode === "login" ? (
+                <LoadingState
+                  helper="Please wait while YsabelleStore checks your login details."
+                  label="Verifying credentials"
+                />
+              ) : submitState === "verifying" && submitMode === "register" ? (
+                <LoadingState
+                  badge="Creating account"
+                  helper="Please wait while YsabelleStore sets up the account."
+                  label="Checking account details"
+                />
+              ) : loading ? (
+                <LoadingState
+                  badge="Checking session"
+                  helper="Please wait while YsabelleStore verifies your local access."
+                  label="Checking local desktop session"
+                />
+              ) : submitState === "verified" ? (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm">
+                  Verified. Opening the dashboard now.
+                </div>
               ) : authenticated ? (
                 <div className="rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm">
                   Authenticated as {user.name} with {user.role.toLowerCase()} access.
@@ -200,7 +288,7 @@ export function WelcomePage({
                       <input
                         autoComplete="current-password"
                         className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                        disabled={loading}
+                        disabled={loading || isSubmitting}
                         onChange={(event) => setPassword(event.target.value)}
                         placeholder="Enter password"
                         type={showPassword ? "text" : "password"}
@@ -209,7 +297,7 @@ export function WelcomePage({
                       <button
                         aria-label={showPassword ? "Hide password" : "Show password"}
                         className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
-                        disabled={loading}
+                        disabled={loading || isSubmitting}
                         onClick={() => setShowPassword((current) => !current)}
                         type="button"
                       >
@@ -230,11 +318,15 @@ export function WelcomePage({
 
                   <Button
                     className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
-                    disabled={loading || !email || !password}
+                    disabled={loading || isSubmitting || !email || !password}
                     type="submit"
                   >
                     <LogIn className="h-4 w-4" aria-hidden="true" />
-                    Login
+                    {submitState === "verifying" && submitMode === "login"
+                      ? "Verifying..."
+                      : submitState === "verified" && submitMode === "login"
+                        ? "Verified"
+                        : "Login"}
                   </Button>
                   <Button
                     className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
@@ -281,7 +373,7 @@ export function WelcomePage({
                         <input
                           autoComplete="new-password"
                           className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-14 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                          disabled={loading}
+                          disabled={loading || isSubmitting}
                           onChange={(event) => setPassword(event.target.value)}
                           placeholder="At least 8 characters"
                           type={showPassword ? "text" : "password"}
@@ -290,7 +382,7 @@ export function WelcomePage({
                         <button
                           aria-label={showPassword ? "Hide password" : "Show password"}
                           className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
-                          disabled={loading}
+                          disabled={loading || isSubmitting}
                           onClick={() => setShowPassword((current) => !current)}
                           type="button"
                         >
@@ -309,7 +401,7 @@ export function WelcomePage({
                         <input
                           autoComplete="new-password"
                           className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-14 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                          disabled={loading}
+                          disabled={loading || isSubmitting}
                           onChange={(event) => setConfirmPassword(event.target.value)}
                           placeholder="Confirm password"
                           type={showConfirmPassword ? "text" : "password"}
@@ -318,7 +410,7 @@ export function WelcomePage({
                         <button
                           aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                           className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
-                          disabled={loading}
+                          disabled={loading || isSubmitting}
                           onClick={() => setShowConfirmPassword((current) => !current)}
                           type="button"
                         >
@@ -336,7 +428,7 @@ export function WelcomePage({
                     <span>Role</span>
                     <select
                       className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                      disabled={loading}
+                      disabled={loading || isSubmitting}
                       onChange={(event) => setRole(event.target.value as RegisterInput["role"])}
                       value={role}
                     >
@@ -353,11 +445,15 @@ export function WelcomePage({
 
                   <Button
                     className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
-                    disabled={loading || !name || !email || !password || !confirmPassword}
+                    disabled={
+                      loading || isSubmitting || !name || !email || !password || !confirmPassword
+                    }
                     type="submit"
                   >
                     <UserPlus className="h-4 w-4" aria-hidden="true" />
-                    Create account
+                    {submitState === "verifying" && submitMode === "register"
+                      ? "Creating..."
+                      : "Create account"}
                   </Button>
                   <Button
                     className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
