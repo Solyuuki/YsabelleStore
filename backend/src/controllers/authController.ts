@@ -1,10 +1,10 @@
 import type { RequestHandler } from "express";
 
 import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
-import { loginWithPassword } from "../services/authService.js";
+import { loginWithPassword, registerLocalUser } from "../services/authService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
-import { loginRequestSchema } from "../validators/auth.validators.js";
+import { loginRequestSchema, registerRequestSchema } from "../validators/auth.validators.js";
 
 export const login: RequestHandler = async (request, response, next) => {
   try {
@@ -20,6 +20,25 @@ export const login: RequestHandler = async (request, response, next) => {
     const session = await loginWithPassword(parsedBody.data);
 
     response.status(200).json(createSuccessResponse("Login successful.", session));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const register: RequestHandler = async (request, response, next) => {
+  try {
+    const parsedBody = registerRequestSchema.safeParse(request.body);
+
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Registration request is invalid.", {
+        code: "INVALID_REGISTER_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    const session = await registerLocalUser(parsedBody.data);
+
+    response.status(201).json(createSuccessResponse("Registration successful.", session));
   } catch (error) {
     next(error);
   }

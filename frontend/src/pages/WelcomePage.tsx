@@ -1,4 +1,4 @@
-import { ArrowRight, LogIn, ShieldCheck, UsersRound } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LogIn, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
 import { useState } from "react";
 import type { FormEvent } from "react";
 
@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import type { RegisterInput } from "@/context/AuthContext";
 import type { AuthUser } from "@/types/auth";
 
 type WelcomePageProps = {
   error: string | null;
   onLogin: (email: string, password: string) => Promise<boolean>;
   onNavigate: (path: AppRoutePath) => void;
+  onRegister: (input: RegisterInput) => Promise<boolean>;
   onSwitchUser: () => Promise<void>;
   status: "loading" | "authenticated" | "unauthenticated";
   user: AuthUser | null;
@@ -33,23 +35,71 @@ export function WelcomePage({
   error,
   onLogin,
   onNavigate,
+  onRegister,
   onSwitchUser,
   status,
   user
 }: WelcomePageProps) {
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<RegisterInput["role"]>("STAFF");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const loading = status === "loading";
   const authenticated = status === "authenticated" && user;
+  const formModeLabel = mode === "login" ? "Sign in" : "Account setup";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setFormError(null);
 
     const loginSucceeded = await onLogin(email, password);
 
     if (loginSucceeded) {
       onNavigate("/dashboard");
     }
+  }
+
+  async function handleRegister(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError(null);
+
+    if (name.trim().length < 2) {
+      setFormError("Name must be at least 2 characters.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setFormError("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setFormError("Password and confirm password must match.");
+      return;
+    }
+
+    const registerSucceeded = await onRegister({
+      name,
+      email,
+      password,
+      role
+    });
+
+    if (registerSucceeded) {
+      onNavigate("/dashboard");
+    }
+  }
+
+  function resetAuthForm(nextMode: "login" | "register") {
+    setMode(nextMode);
+    setPassword("");
+    setConfirmPassword("");
+    setFormError(null);
   }
 
   return (
@@ -95,7 +145,7 @@ export function WelcomePage({
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-[clamp(1.125rem,1.5vw,1.45rem)]">
-                  {authenticated ? "Welcome back" : "Sign in"}
+                  {authenticated ? "Welcome back" : formModeLabel}
                 </CardTitle>
                 <StatusBadge variant={authenticated ? "success" : "info"}>
                   {authenticated ? user.role : "Local account"}
@@ -129,7 +179,7 @@ export function WelcomePage({
                     Switch user
                   </Button>
                 </div>
-              ) : (
+              ) : mode === "login" ? (
                 <form className="space-y-[clamp(1rem,1.6vw,1.5rem)]" onSubmit={handleSubmit}>
                   <label className="block space-y-2 text-sm font-medium text-slate-700">
                     <span>Email</span>
@@ -146,20 +196,35 @@ export function WelcomePage({
 
                   <label className="block space-y-2 text-sm font-medium text-slate-700">
                     <span>Password</span>
-                    <input
-                      autoComplete="current-password"
-                      className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                      disabled={loading}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="Enter password"
-                      type="password"
-                      value={password}
-                    />
+                    <div className="relative">
+                      <input
+                        autoComplete="current-password"
+                        className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        disabled={loading}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Enter password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                      />
+                      <button
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
+                        disabled={loading}
+                        onClick={() => setShowPassword((current) => !current)}
+                        type="button"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" aria-hidden="true" />
+                        ) : (
+                          <Eye className="h-4 w-4" aria-hidden="true" />
+                        )}
+                      </button>
+                    </div>
                   </label>
 
-                  {error ? (
+                  {formError || error ? (
                     <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                      {error}
+                      {formError ?? error}
                     </div>
                   ) : null}
 
@@ -170,6 +235,137 @@ export function WelcomePage({
                   >
                     <LogIn className="h-4 w-4" aria-hidden="true" />
                     Login
+                  </Button>
+                  <Button
+                    className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
+                    onClick={() => resetAuthForm("register")}
+                    type="button"
+                    variant="secondary"
+                  >
+                    <UserPlus className="h-4 w-4" aria-hidden="true" />
+                    Set up store account
+                  </Button>
+                </form>
+              ) : (
+                <form className="space-y-[clamp(1rem,1.6vw,1.5rem)]" onSubmit={handleRegister}>
+                  <label className="block space-y-2 text-sm font-medium text-slate-700">
+                    <span>Name</span>
+                    <input
+                      autoComplete="name"
+                      className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      disabled={loading}
+                      onChange={(event) => setName(event.target.value)}
+                      placeholder="Store user name"
+                      type="text"
+                      value={name}
+                    />
+                  </label>
+
+                  <label className="block space-y-2 text-sm font-medium text-slate-700">
+                    <span>Email</span>
+                    <input
+                      autoComplete="username"
+                      className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      disabled={loading}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="user@ysabellestore.local"
+                      type="email"
+                      value={email}
+                    />
+                  </label>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block space-y-2 text-sm font-medium text-slate-700">
+                      <span>Password</span>
+                      <div className="relative">
+                        <input
+                          autoComplete="new-password"
+                          className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                          disabled={loading}
+                          onChange={(event) => setPassword(event.target.value)}
+                          placeholder="Minimum 8 characters"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                        />
+                        <button
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
+                          disabled={loading}
+                          onClick={() => setShowPassword((current) => !current)}
+                          type="button"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" aria-hidden="true" />
+                          ) : (
+                            <Eye className="h-4 w-4" aria-hidden="true" />
+                          )}
+                        </button>
+                      </div>
+                    </label>
+
+                    <label className="block space-y-2 text-sm font-medium text-slate-700">
+                      <span>Confirm password</span>
+                      <div className="relative">
+                        <input
+                          autoComplete="new-password"
+                          className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                          disabled={loading}
+                          onChange={(event) => setConfirmPassword(event.target.value)}
+                          placeholder="Repeat password"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                        />
+                        <button
+                          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
+                          disabled={loading}
+                          onClick={() => setShowConfirmPassword((current) => !current)}
+                          type="button"
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" aria-hidden="true" />
+                          ) : (
+                            <Eye className="h-4 w-4" aria-hidden="true" />
+                          )}
+                        </button>
+                      </div>
+                    </label>
+                  </div>
+
+                  <label className="block space-y-2 text-sm font-medium text-slate-700">
+                    <span>Role</span>
+                    <select
+                      className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      disabled={loading}
+                      onChange={(event) => setRole(event.target.value as RegisterInput["role"])}
+                      value={role}
+                    >
+                      <option value="OWNER">Owner</option>
+                      <option value="STAFF">Staff</option>
+                    </select>
+                  </label>
+
+                  {formError || error ? (
+                    <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                      {formError ?? error}
+                    </div>
+                  ) : null}
+
+                  <Button
+                    className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
+                    disabled={loading || !name || !email || !password || !confirmPassword}
+                    type="submit"
+                  >
+                    <UserPlus className="h-4 w-4" aria-hidden="true" />
+                    Create account
+                  </Button>
+                  <Button
+                    className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
+                    onClick={() => resetAuthForm("login")}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Back to login
                   </Button>
                 </form>
               )}

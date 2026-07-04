@@ -1,5 +1,30 @@
 import { randomBytes, scryptSync } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
+
+function loadRootEnv() {
+  if (!existsSync(".env")) {
+    return;
+  }
+
+  const lines = readFileSync(".env", "utf8").split(/\r?\n/);
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) {
+      continue;
+    }
+
+    const [key, ...valueParts] = trimmed.split("=");
+
+    if (key && !process.env[key]) {
+      process.env[key] = valueParts.join("=");
+    }
+  }
+}
+
+loadRootEnv();
 
 const prisma = new PrismaClient();
 

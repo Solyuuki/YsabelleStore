@@ -9,10 +9,18 @@ const AUTH_TOKEN_KEY = "ysabellestore.authToken";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
+export type RegisterInput = {
+  name: string;
+  email: string;
+  password: string;
+  role: "OWNER" | "STAFF";
+};
+
 type AuthContextValue = {
   error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  register: (input: RegisterInput) => Promise<boolean>;
   switchUser: () => Promise<void>;
   status: AuthStatus;
   user: AuthUser | null;
@@ -22,7 +30,23 @@ type CurrentUserResponse = {
   user: AuthUser;
 };
 
+type AuthErrorPayload = {
+  code?: string;
+};
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+function resolveAuthErrorMessage(response: ApiResponse<unknown, AuthErrorPayload>) {
+  if (!response.success && response.error?.code === "ACCOUNT_NOT_FOUND") {
+    return "Account not found. Please run the development seed or register an authorized user.";
+  }
+
+  if (!response.success && response.error?.code === "INVALID_CREDENTIALS") {
+    return "Invalid email or password.";
+  }
+
+  return response.message;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("loading");
@@ -35,6 +59,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUser(null);
     setStatus("unauthenticated");
+  }, []);
+
+  const applySession = useCallback((session: AuthSession) => {
+    localStorage.setItem(AUTH_TOKEN_KEY, session.token);
+    setToken(session.token);
+    setUser(session.user);
+    setStatus("authenticated");
   }, []);
 
   useEffect(() => {
@@ -81,38 +112,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [clearSession, token]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    setStatus("loading");
-    setError(null);
+  const login = useCallback(
+    async (email: string, password: string) => {
+      setStatus("loading");
+      setError(null);
 
-    try {
-      const response: ApiResponse<AuthSession> = await apiClient.request("/api/auth/login", {
-        method: "POST",
-        json: {
-          email,
-          password
+      try {
+        const response: ApiResponse<AuthSession, AuthErrorPayload> = await apiClient.request(
+          "/api/auth/login",
+          {
+            method: "POST",
+            json: {
+              email,
+              password
+            }
+          }
+        );
+
+        if (!response.success || !response.data) {
+          setError(resolveAuthErrorMessage(response));
+          setUser(null);
+          setStatus("unauthenticated");
+          return false;
         }
-      });
 
-      if (!response.success || !response.data) {
-        setError(response.message);
+        applySession(response.data);
+        return true;
+      } catch {
+        setError("Authentication service is unavailable. Please check the backend server.");
         setUser(null);
         setStatus("unauthenticated");
         return false;
       }
+    },
+    [applySession]
+  );
 
-      localStorage.setItem(AUTH_TOKEN_KEY, response.data.token);
-      setToken(response.data.token);
-      setUser(response.data.user);
-      setStatus("authenticated");
-      return true;
-    } catch {
-      setError("Unable to reach the authentication service.");
-      setUser(null);
-      setStatus("unauthenticated");
-      return false;
-    }
-  }, []);
+  const register = useCallback(
+    async (input: RegisterInput) => {
+      setStatus("loading");
+      setError(null);
+
+      try {
+        const response: ApiResponse<AuthSession, AuthErrorPayload> = await apiClient.request(
+          "/api/auth/register",
+          {
+            method: "POST",
+            json: input
+          }
+        );
+
+        if (!response.success || !response.data) {
+          setError(resolveAuthErrorMessage(response));
+          setUser(null);
+          setStatus("unauthenticated");
+          return false;
+        }
+
+        applySession(response.data);
+        return true;
+      } catch {
+        setError("Authentication service is unavailable. Please check the backend server.");
+        setUser(null);
+        setStatus("unauthenticated");
+        return false;
+      }
+    },
+    [applySession]
+  );
 
   const logout = useCallback(async () => {
     const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
@@ -142,11 +209,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       error,
       login,
       logout,
+      register,
       switchUser,
       status,
       user
     }),
-    [error, login, logout, status, switchUser, user]
+    [error, login, logout, register, status, switchUser, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

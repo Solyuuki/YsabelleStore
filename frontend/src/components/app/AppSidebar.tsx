@@ -33,7 +33,12 @@ export function AppSidebar({
   user
 }: AppSidebarProps) {
   const mainItems = appRoutes.filter((item) => mainRoutes.includes(item.path));
-  const ownerItems = appRoutes.filter((item) => ownerRoutes.includes(item.path));
+  const visibleMainItems = mainItems.filter((item) =>
+    item.allowedRoles.includes(user?.role ?? "STAFF")
+  );
+  const ownerItems = appRoutes.filter(
+    (item) => ownerRoutes.includes(item.path) && item.allowedRoles.includes(user?.role ?? "STAFF")
+  );
 
   return (
     <aside
@@ -80,7 +85,7 @@ export function AppSidebar({
         <SidebarSection
           activePath={activePath}
           collapsed={collapsed}
-          items={mainItems}
+          items={visibleMainItems}
           title="MAIN"
           onNavigate={onNavigate}
         />

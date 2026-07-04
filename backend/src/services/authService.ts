@@ -4,8 +4,8 @@ import type { User, UserRole } from "@prisma/client";
 import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
-import type { LoginRequestBody } from "../validators/auth.validators.js";
-import { verifyPassword } from "./passwordHashService.js";
+import type { LoginRequestBody, RegisterRequestBody } from "../validators/auth.validators.js";
+import { hashPassword, verifyPassword } from "./passwordHashService.js";
 
 const TOKEN_EXPIRES_IN = "8h";
 
@@ -70,9 +70,23 @@ export async function loginWithPassword(credentials: LoginRequestBody): Promise<
   });
 
   if (!user) {
-    throw new HttpError(401, "Invalid email or password.", {
-      code: "INVALID_CREDENTIALS"
-    });
+    throw new HttpError(
+      404,
+      "Account not found. Please run the development seed or register an authorized user.",
+      {
+        code: "ACCOUNT_NOT_FOUND"
+      }
+    );
+  }
+
+  if (!user.passwordHash.startsWith("scrypt$")) {
+    throw new HttpError(
+      409,
+      "Account password is not ready. Please run the development seed or reset this account.",
+      {
+        code: "PASSWORD_HASH_UNSUPPORTED"
+      }
+    );
   }
 
   if (user.status !== "ACTIVE") {
@@ -88,6 +102,37 @@ export async function loginWithPassword(credentials: LoginRequestBody): Promise<
       code: "INVALID_CREDENTIALS"
     });
   }
+
+  const safeUser = toSafeUser(user);
+
+  return {
+    token: signAuthToken(safeUser),
+    user: safeUser
+  };
+}
+
+export async function registerLocalUser(input: RegisterRequestBody): Promise<AuthSession> {
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      email: input.email
+    }
+  });
+
+  if (existingUser) {
+    throw new HttpError(409, "An account with this email already exists.", {
+      code: "EMAIL_ALREADY_REGISTERED"
+    });
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      name: input.name,
+      email: input.email,
+      passwordHash: await hashPassword(input.password),
+      role: input.role,
+      status: "ACTIVE"
+    }
+  });
 
   const safeUser = toSafeUser(user);
 

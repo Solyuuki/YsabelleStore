@@ -1,74 +1,57 @@
-# m1 - Abarado
+# M1 - Abarado
 
 ## Role
 
-Full-stack Authentication Lead / Integration Lead.
+Full Stack Auth Flow Lead.
 
 ## Sprint Focus
 
-Make the login page and authentication flow work end-to-end through planning, integration coordination, and frontend auth behavior.
+Own the complete frontend-facing authentication flow for Sprint 2: login, account setup, auth state, API integration, route protection, switch user, logout, and frontend role-based access control.
 
 ## Assigned Scope
 
-| Area                     | Scope                                                             |
-| ------------------------ | ----------------------------------------------------------------- |
-| Login UI                 | Plan real login page integration                                  |
-| Auth state               | Plan Auth Context and `useAuth`                                   |
-| API integration          | Plan frontend calls to backend auth APIs                          |
-| Protected routes         | Plan authenticated and role-aware route behavior                  |
-| Logout                   | Plan logout behavior and session cleanup                          |
-| Mock session UI          | Plan removal or replacement of fake session and hardcoded user UI |
-| Integration coordination | Coordinate frontend-backend authentication flow                   |
+| Area             | Scope                                                                        |
+| ---------------- | ---------------------------------------------------------------------------- |
+| Login UI         | Real email/password login screen with password show/hide control             |
+| Account setup UI | Local owner/staff user registration form                                     |
+| Auth state       | Frontend state for loading, authenticated, unauthenticated, and error states |
+| API integration  | Login, register, current-user/session, switch user, and logout API calls     |
+| Route protection | Block unauthenticated users from app modules                                 |
+| Frontend RBAC    | Restrict owner-only modules from staff users                                 |
+| Thesis alignment | Keep Sprint 2 access rules aligned with owner/staff thesis scope             |
 
 ## Assigned Tasks
 
-| Task | Description                                 |
-| ---- | ------------------------------------------- |
-| 1    | Plan the real Login Page integration        |
-| 2    | Plan Auth Context / `useAuth`               |
-| 3    | Plan frontend calls to backend auth APIs    |
-| 4    | Plan protected route behavior               |
-| 5    | Plan logout behavior                        |
-| 6    | Plan removal/replacement of mock session UI |
-| 7    | Preserve Sprint 1 UI style where possible   |
-| 8    | Coordinate frontend-backend integration     |
-
-## Expected Output
-
-| Output                            | Description                                         |
-| --------------------------------- | --------------------------------------------------- |
-| Login UI plan                     | Login form, validation, loading, and error behavior |
-| Auth state plan                   | Session loading, current user, and logout state     |
-| Protected routes plan             | Dashboard and owner/staff route behavior            |
-| Frontend-backend integration plan | API call flow for login, logout, and session checks |
-
-## Dependencies
-
-| Dependency        | Reason                                             |
-| ----------------- | -------------------------------------------------- |
-| Backend auth API  | Frontend login and session flow needs API contract |
-| Prisma user data  | Displayed user state must come from database       |
-| Sprint 1 UI shell | Auth UI must preserve existing visual foundation   |
+| Task | Description                                                                   |
+| ---- | ----------------------------------------------------------------------------- |
+| 1    | Replace static welcome/session screen with real auth flow                     |
+| 2    | Add login form and password visibility toggle                                 |
+| 3    | Add account setup form with name, email, password, confirm password, and role |
+| 4    | Connect login/register/session state to backend auth API                      |
+| 5    | Protect dashboard and module routes behind authenticated session              |
+| 6    | Enforce owner/staff route-level RBAC in the frontend                          |
+| 7    | Implement switch user and logout session clearing                             |
+| 8    | Preserve Sprint 1 visual shell while removing hardcoded mock user state       |
 
 ## Validation Responsibility
 
-| Validation Area | Responsibility                                                  |
-| --------------- | --------------------------------------------------------------- |
-| Frontend        | Login UI, auth state, protected routes, and logout smoke review |
-| Integration     | Confirm frontend calls align with backend auth responses        |
-| Regression      | Confirm Sprint 1 UI shell is not unintentionally redesigned     |
+| Validation Area | Responsibility                                                            |
+| --------------- | ------------------------------------------------------------------------- |
+| Frontend        | Login/register UI, session restoration, route guard, RBAC behavior        |
+| Integration     | Confirm frontend payloads and responses align with backend auth endpoints |
+| Regression      | Confirm Sprint 1 shell is not redesigned outside auth scope               |
 
 ## Risks / Notes
 
-| Risk or Note                       | Mitigation                                           |
-| ---------------------------------- | ---------------------------------------------------- |
-| UI remains mock-auth based         | Replace hardcoded session text with backend state    |
-| Protected routes only hide UI      | Coordinate with m2 so backend middleware also exists |
-| Sprint 1 visual style is disrupted | Reuse existing layout and shared UI components       |
+| Risk or Note                                      | Mitigation                                                       |
+| ------------------------------------------------- | ---------------------------------------------------------------- |
+| Account setup is mistaken for public registration | Label it as local store account setup for owner/staff users only |
+| Staff bypasses owner-only UI by direct URL        | Route-level role checks must render access denied                |
+| Backend or DB unavailable                         | Show clear auth service/database/seed messages                   |
 
 ## Status
 
-| Item           | Status                                |
-| -------------- | ------------------------------------- |
-| Sprint 2 role  | Planned                               |
-| Implementation | Not started in this planning document |
+| Item           | Status      |
+| -------------- | ----------- |
+| Sprint 2 role  | Active      |
+| Implementation | In progress |

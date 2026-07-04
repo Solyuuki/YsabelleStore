@@ -1,72 +1,54 @@
-# m3 - Vito
+# M3 - James
 
 ## Role
 
-Database and Prisma Lead.
+Database Seed/User Foundation Lead.
 
 ## Sprint Focus
 
-Prepare database support for authentication.
+Prepare and verify the Prisma user foundation needed for owner/staff authentication and role-based access.
 
 ## Assigned Scope
 
-| Area                    | Scope                                              |
-| ----------------------- | -------------------------------------------------- |
-| Prisma user integration | Plan user lookup and role/status usage             |
-| Seed users              | Plan owner and staff development users             |
-| Migration validation    | Plan migration and Prisma validation evidence      |
-| Password hash storage   | Plan safe password hash storage                    |
-| Database verification   | Plan database verification for auth readiness      |
-| Product data planning   | Support product backend data planning after auth   |
-| Inventory data planning | Support inventory backend data planning after auth |
+| Area                       | Scope                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------- |
+| Prisma user integration    | Verify user lookup, role, status, and password hash support                      |
+| Seed users                 | Maintain development owner and staff accounts                                    |
+| Password hash seed support | Ensure seeded users store hashed passwords, not plaintext                        |
+| Database verification      | Confirm seed user existence, active status, role correctness, and hash readiness |
+| Migration validation       | Confirm Prisma schema remains valid after auth work                              |
+| Seed documentation         | Document safe development-only credentials and seed workflow                     |
 
 ## Assigned Tasks
 
-| Task | Description                                                          |
-| ---- | -------------------------------------------------------------------- |
-| 1    | Plan Prisma user integration                                         |
-| 2    | Plan owner/staff seed users                                          |
-| 3    | Plan migration validation                                            |
-| 4    | Plan password hash storage                                           |
-| 5    | Plan database verification                                           |
-| 6    | Support product/inventory backend data planning after authentication |
-
-## Expected Output
-
-| Output                       | Description                                      |
-| ---------------------------- | ------------------------------------------------ |
-| Database authentication plan | User, role, status, and password hash plan       |
-| Seed user plan               | Development owner/staff account plan             |
-| Prisma validation plan       | Prisma schema and client readiness plan          |
-| Migration verification notes | Migration status and database verification notes |
-
-## Dependencies
-
-| Dependency          | Reason                                           |
-| ------------------- | ------------------------------------------------ |
-| Existing User model | Auth planning depends on Prisma user schema      |
-| Backend auth plan   | m2 service logic depends on database access plan |
-| Seed policy         | Development accounts must remain non-production  |
+| Task | Description                                                             |
+| ---- | ----------------------------------------------------------------------- |
+| 1    | Verify the `User` model supports login, role, status, and password hash |
+| 2    | Add or maintain owner/staff development seed users                      |
+| 3    | Ensure seeded passwords are hashed                                      |
+| 4    | Verify owner/staff records without exposing password hashes             |
+| 5    | Run Prisma validation after authentication changes                      |
+| 6    | Keep seed documentation development-only and non-production             |
 
 ## Validation Responsibility
 
-| Validation Area | Responsibility                                          |
-| --------------- | ------------------------------------------------------- |
-| Prisma          | Prisma validation and user model readiness              |
-| Seed users      | Seed account documentation and credential safety review |
-| Migration       | Migration verification and database readiness notes     |
+| Validation Area | Responsibility                                                |
+| --------------- | ------------------------------------------------------------- |
+| Prisma          | Prisma validation and user model readiness                    |
+| Seed users      | Owner/staff development accounts and credential safety review |
+| Database        | Verify roles, statuses, and password hash existence           |
 
 ## Risks / Notes
 
-| Risk or Note                           | Mitigation                                              |
-| -------------------------------------- | ------------------------------------------------------- |
-| Seed credentials treated as production | Mark seed users development-only and document overrides |
-| Migration status is unclear            | Record migration validation before sprint close         |
-| Backend assumptions mismatch schema    | Coordinate product/inventory planning with m2           |
+| Risk or Note                           | Mitigation                                                   |
+| -------------------------------------- | ------------------------------------------------------------ |
+| Seed credentials treated as production | Mark accounts as development-only                            |
+| JWT secret missing locally             | Document environment requirement without exposing values     |
+| Database unavailable                   | Treat auth integration as blocked until local MySQL is ready |
 
 ## Status
 
-| Item           | Status                                |
-| -------------- | ------------------------------------- |
-| Sprint 2 role  | Planned                               |
-| Implementation | Not started in this planning document |
+| Item           | Status      |
+| -------------- | ----------- |
+| Sprint 2 role  | Active      |
+| Implementation | In progress |

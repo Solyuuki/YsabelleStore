@@ -1,64 +1,51 @@
 # Sprint 2 Backlog
 
-Sprint 2 backlog items are grouped by module. This is planning only and does not implement the listed items.
+Sprint 2 backlog items are grouped around authentication, local account setup, RBAC, seed users, and validation. Product, inventory, POS, forecasting, recommendations, dashboard analytics, and import features are intentionally out of scope.
 
-## Authentication
+## Authentication and Session Flow
 
-| Task ID         | Owner        | Priority | Description                                            | Expected Output                                       | Status  |
-| --------------- | ------------ | -------- | ------------------------------------------------------ | ----------------------------------------------------- | ------- |
-| YSB-S2-AUTH-001 | m1 - Abarado | High     | Plan real Login Page integration                       | Login UI plan with loading, validation, and errors    | Planned |
-| YSB-S2-AUTH-002 | m2 - Ramos   | High     | Plan backend login, logout, and current-user endpoints | Backend auth endpoint plan                            | Planned |
-| YSB-S2-AUTH-003 | m2 - Ramos   | High     | Plan authentication and role middleware                | Middleware plan for authenticated and role-gated APIs | Planned |
-| YSB-S2-AUTH-004 | m1 - Abarado | High     | Plan mock session UI removal or replacement            | Mock-auth replacement plan                            | Planned |
+| Task ID         | Owner        | Priority | Description                                 | Expected Output                                           | Status      |
+| --------------- | ------------ | -------- | ------------------------------------------- | --------------------------------------------------------- | ----------- |
+| YSB-S2-AUTH-001 | M1 - Abarado | High     | Replace static welcome/session screen       | Real login/session screen                                 | In Progress |
+| YSB-S2-AUTH-002 | M1 - Abarado | High     | Add password visibility toggle              | Accessible show/hide password button                      | In Progress |
+| YSB-S2-AUTH-003 | M1 - Abarado | High     | Add frontend auth state                     | Loading, authenticated, unauthenticated, and error states | In Progress |
+| YSB-S2-AUTH-004 | M1 - Abarado | High     | Wire login, switch user, and logout         | Token/session is stored and cleared correctly             | In Progress |
+| YSB-S2-AUTH-005 | M2 - Solo    | High     | Implement backend login/current-user/logout | Backend auth endpoints and safe responses                 | In Progress |
 
-## Backend API Foundation
+## Registration / Account Setup
 
-| Task ID       | Owner      | Priority | Description                                         | Expected Output                              | Status  |
-| ------------- | ---------- | -------- | --------------------------------------------------- | -------------------------------------------- | ------- |
-| YSB-S2-BE-001 | m2 - Ramos | High     | Plan auth controller/service/route structure        | Controller/service/route pattern plan        | Planned |
-| YSB-S2-BE-002 | m2 - Ramos | High     | Plan reusable request validation                    | Validation plan for auth, product, inventory | Planned |
-| YSB-S2-BE-003 | m2 - Ramos | Medium   | Plan standardized API response and error handling   | Response and error handling readiness notes  | Planned |
-| YSB-S2-BE-004 | m2 - Ramos | Medium   | Plan backend middleware usage across protected APIs | Middleware usage notes                       | Planned |
+| Task ID        | Owner        | Priority | Description                        | Expected Output                                          | Status      |
+| -------------- | ------------ | -------- | ---------------------------------- | -------------------------------------------------------- | ----------- |
+| YSB-S2-REG-001 | M1 - Abarado | High     | Build local account setup UI       | Name, email, password, confirm password, role selection  | In Progress |
+| YSB-S2-REG-002 | M2 - Solo    | High     | Implement `/api/auth/register`     | Hashed local owner/staff account creation                | In Progress |
+| YSB-S2-REG-003 | M1, M2       | High     | Connect registration UI to backend | Successful registration creates an authenticated session | In Progress |
+
+## Role-Based Access Control
+
+| Task ID         | Owner        | Priority | Description                                    | Expected Output                                           | Status      |
+| --------------- | ------------ | -------- | ---------------------------------------------- | --------------------------------------------------------- | ----------- |
+| YSB-S2-RBAC-001 | M1 - Abarado | High     | Add route-level role metadata                  | Owner/staff access rules are centralized                  | In Progress |
+| YSB-S2-RBAC-002 | M1 - Abarado | High     | Filter navigation by role                      | Staff users do not see owner-only modules where practical | In Progress |
+| YSB-S2-RBAC-003 | M1 - Abarado | High     | Block direct owner-only route access for staff | Access denied page or redirect                            | In Progress |
 
 ## Database and Seed Users
 
-| Task ID       | Owner     | Priority | Description                              | Expected Output                             | Status  |
-| ------------- | --------- | -------- | ---------------------------------------- | ------------------------------------------- | ------- |
-| YSB-S2-DB-001 | m3 - Vito | High     | Plan Prisma user integration             | Prisma user lookup and persistence plan     | Planned |
-| YSB-S2-DB-002 | m3 - Vito | High     | Plan owner and staff seed users          | Development seed user plan                  | Planned |
-| YSB-S2-DB-003 | m3 - Vito | High     | Plan password hash storage               | Password hash storage and safety notes      | Planned |
-| YSB-S2-DB-004 | m3 - Vito | Medium   | Plan migration and database verification | Migration validation and verification notes | Planned |
+| Task ID       | Owner      | Priority | Description                        | Expected Output                                       | Status      |
+| ------------- | ---------- | -------- | ---------------------------------- | ----------------------------------------------------- | ----------- |
+| YSB-S2-DB-001 | M3 - James | High     | Verify Prisma User model           | User supports login, role, status, and password hash  | In Progress |
+| YSB-S2-DB-002 | M3 - James | High     | Add owner and staff dev seed users | Local test accounts with hashed passwords             | In Progress |
+| YSB-S2-DB-003 | M3 - James | High     | Verify seed user state             | Owner/staff exist, active, role-correct, hash present | In Progress |
 
-## Frontend-Backend Integration
+## Documentation and Thesis Alignment
 
-| Task ID        | Owner        | Priority | Description                                      | Expected Output                                | Status  |
-| -------------- | ------------ | -------- | ------------------------------------------------ | ---------------------------------------------- | ------- |
-| YSB-S2-INT-001 | m1 - Abarado | High     | Plan Auth Context and `useAuth`                  | Auth state plan                                | Planned |
-| YSB-S2-INT-002 | m1 - Abarado | High     | Plan frontend calls to backend auth APIs         | Login/logout/session API integration plan      | Planned |
-| YSB-S2-INT-003 | m1 - Abarado | High     | Plan protected route behavior                    | Protected route and role-aware access plan     | Planned |
-| YSB-S2-INT-004 | m1, m2       | High     | Plan end-to-end authentication flow verification | Frontend-backend integration verification plan | Planned |
+| Task ID        | Owner        | Priority | Description                     | Expected Output                                                   | Status      |
+| -------------- | ------------ | -------- | ------------------------------- | ----------------------------------------------------------------- | ----------- |
+| YSB-S2-DOC-001 | M1 - Abarado | Medium   | Align Sprint 2 docs             | Auth, registration, RBAC, owner/staff responsibilities documented | In Progress |
+| YSB-S2-DOC-002 | M1 - Abarado | Medium   | Add thesis scope alignment note | Chapter 1-2 scope mapped to implementation roadmap                | In Progress |
 
-## Product Backend Planning
+## Validation
 
-| Task ID         | Owner      | Priority | Description                                      | Expected Output                    | Status  |
-| --------------- | ---------- | -------- | ------------------------------------------------ | ---------------------------------- | ------- |
-| YSB-S2-PROD-001 | m2 - Ramos | Medium   | Plan product API route structure                 | Product route planning notes       | Planned |
-| YSB-S2-PROD-002 | m2 - Ramos | Medium   | Plan product controller, service, and validation | Product backend pattern plan       | Planned |
-| YSB-S2-PROD-003 | m2, m3     | Medium   | Plan product Prisma data access assumptions      | Product database integration notes | Planned |
-
-## Inventory Backend Planning
-
-| Task ID        | Owner      | Priority | Description                                        | Expected Output                      | Status  |
-| -------------- | ---------- | -------- | -------------------------------------------------- | ------------------------------------ | ------- |
-| YSB-S2-INV-001 | m2 - Ramos | Medium   | Plan inventory API route structure                 | Inventory route planning notes       | Planned |
-| YSB-S2-INV-002 | m2 - Ramos | Medium   | Plan inventory controller, service, and validation | Inventory backend pattern plan       | Planned |
-| YSB-S2-INV-003 | m2, m3     | Medium   | Plan inventory Prisma and stock data assumptions   | Inventory database integration notes | Planned |
-
-## Validation / Checkers Green
-
-| Task ID        | Owner        | Priority | Description                                  | Expected Output                                  | Status  |
-| -------------- | ------------ | -------- | -------------------------------------------- | ------------------------------------------------ | ------- |
-| YSB-S2-VAL-001 | m1, m2, m3   | High     | Plan full validation command set             | Build, lint, typecheck, Prisma, audit checklist  | Planned |
-| YSB-S2-VAL-002 | m1, m2, m3   | High     | Plan authentication flow verification        | Login, logout, session, protected route evidence | Planned |
-| YSB-S2-VAL-003 | m1 - Abarado | Medium   | Plan regression review for Sprint 1 UI shell | No unrelated UI regression notes                 | Planned |
-| YSB-S2-VAL-004 | m1, m2, m3   | Medium   | Plan documentation update requirements       | Sprint 2 evidence and artifact checklist         | Planned |
+| Task ID        | Owner      | Priority | Description                   | Expected Output                                   | Status      |
+| -------------- | ---------- | -------- | ----------------------------- | ------------------------------------------------- | ----------- |
+| YSB-S2-VAL-001 | M1, M2, M3 | High     | Run required validation gates | Format, lint, typecheck, audit, Prisma validation | In Progress |
+| YSB-S2-VAL-002 | M1, M2, M3 | Medium   | Run build when safe           | Full workspace build validation                   | Pending     |

@@ -1,9 +1,10 @@
 import { Boxes, Package, ReceiptText } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
+import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
 import { useAuth } from "@/context/AuthContext";
 import { AppLayout } from "@/layouts/AppLayout";
+import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ModulePage } from "@/pages/ModulePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -29,7 +30,7 @@ function getCurrentPath() {
 }
 
 export function AppShell() {
-  const { error, login, logout, status, switchUser, user } = useAuth();
+  const { error, login, logout, register, status, switchUser, user } = useAuth();
   const [path, setPath] = useState(getCurrentPath);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.innerWidth < 1280);
 
@@ -60,6 +61,7 @@ export function AppShell() {
         user={user}
         onLogin={login}
         onNavigate={navigate}
+        onRegister={register}
         onSwitchUser={switchUser}
       />
     );
@@ -89,6 +91,10 @@ function renderRoute(
 ) {
   if (!route || path === "/not-found") {
     return <NotFoundPage onNavigate={navigate} />;
+  }
+
+  if (!canRoleAccessRoute(route, user?.role)) {
+    return <AccessDeniedPage moduleName={route.label} onNavigate={navigate} />;
   }
 
   if (route.protected) {
