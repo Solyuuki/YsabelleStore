@@ -6,7 +6,7 @@ Full Stack / Auth UI Lead.
 
 ## Sprint Focus
 
-Own the user-facing authentication flow for Sprint 2 and keep shared local setup/validation documentation aligned: login, remembered-account quick access, owner-only user management, auth state, toast notifications, route protection, switch user, logout, frontend role-based access control, Docker development setup, and one-command healthcheck validation.
+Own the user-facing authentication flow for Sprint 2 and keep shared local setup/validation documentation aligned: login, remembered-account quick access, owner-only user management, auth state, toast notifications, route protection, switch user, logout, frontend role-based access control, local MySQL setup, and one-command healthcheck validation.
 
 ## Assigned Scope
 
@@ -19,7 +19,7 @@ Own the user-facing authentication flow for Sprint 2 and keep shared local setup
 | RBAC UI             | Sidebar filtering and direct-route access denied handling                                |
 | User management     | Owner-only Users page and account creation form                                          |
 | Session actions     | Switch user and logout session clearing                                                  |
-| Docker setup        | Database-only MySQL Docker Compose development environment                               |
+| Local MySQL setup   | Local MySQL Community Server development environment                                     |
 | Healthcheck         | Root `npm run healthcheck` command for sequential local validation                       |
 | Artifact automation | Git-change based artifact check and update scripts                                       |
 | Thesis alignment    | Keep Sprint 2 access rules aligned with owner/staff scope                                |
@@ -36,7 +36,7 @@ Own the user-facing authentication flow for Sprint 2 and keep shared local setup
 | 6    | Enforce owner/staff route-level RBAC in the frontend                       |
 | 7    | Implement switch user and logout session clearing                          |
 | 8    | Preserve Sprint 1 visual shell while removing hardcoded mock user state    |
-| 9    | Add Docker Development Setup for shared MySQL local environment            |
+| 9    | Add Local MySQL Development Setup for shared local environment             |
 | 10   | Add Project Healthcheck Script for one-command validation                  |
 | 11   | Keep Sprint 2 setup/documentation alignment current                        |
 | 12   | Backfill M1 Sprint 2 implementation artifacts from source evidence         |
@@ -52,17 +52,17 @@ Own the user-facing authentication flow for Sprint 2 and keep shared local setup
 | Owner-Controlled Staff Account Creation |                      Verified | `UserManagementPage` creates owner/staff accounts from owner-side Users route                       |
 | Protected Access / Access Denied UX     |                      Verified | Role-based route metadata, `canRoleAccessRoute`, `AccessDeniedPage`, and warning toast              |
 | User Management Direction/Page          |                      Verified | `/users` route is OWNER-only and renders `UserManagementPage`                                       |
-| Docker Development Setup                | Completed / Runtime Validated | MySQL Docker Compose setup and healthy `ysabelle-mysql` container                                   |
+| Local MySQL Development Setup           | Completed / Runtime Validated | Local MySQL Community Server setup and healthy `ysabellestore` database                             |
 | Project Healthcheck Script              |                   Implemented | `npm run healthcheck` and `scripts/healthcheck.mjs`                                                 |
 | Sprint 2 Documentation Alignment        |                       Updated | Sprint 2 docs and M1 implementation artifacts backfilled                                            |
 | Future Artifact Automation              |                   Implemented | `artifacts:check`, `artifacts:update`, and pre-commit artifact gate                                 |
 
 ## Sprint 2 Setup Tasks
 
-| Task                       |                                     Status | Notes                                                  |
-| -------------------------- | -----------------------------------------: | ------------------------------------------------------ |
-| Docker Development Setup   |              Completed / Runtime Validated | MySQL Docker Compose setup added and verified healthy  |
-| Project Healthcheck Script | Implemented / Needs final clean validation | `npm run healthcheck` added with terminal report table |
+| Task                          |                                     Status | Notes                                                         |
+| ----------------------------- | -----------------------------------------: | ------------------------------------------------------------- |
+| Local MySQL Development Setup |              Completed / Runtime Validated | Local MySQL Community Server setup added and verified healthy |
+| Project Healthcheck Script    | Implemented / Needs final clean validation | `npm run healthcheck` added with terminal report table        |
 
 ## M1 Responsibility Table
 
@@ -73,7 +73,7 @@ Own the user-facing authentication flow for Sprint 2 and keep shared local setup
 | Toast Notifications | Auth success, error, logout, access denied, device recognized toasts | Implemented / In Progress             |
 | RBAC UI             | Sidebar filtering and access-denied flow                             | Implemented / In Progress             |
 | User Management UI  | Owner-only Users page and account creation form                      | Implemented / In Progress             |
-| Docker Setup        | Database-only MySQL Docker Compose setup                             | Completed / Runtime Validated         |
+| Local MySQL Setup   | Local MySQL Community Server setup                                   | Completed / Runtime Validated         |
 | Healthcheck Script  | One-command local validation report                                  | Implemented / Needs clean build rerun |
 | Artifact Automation | Require/update M1 artifact evidence from Git changes                 | Implemented                           |
 
@@ -81,23 +81,23 @@ M1 owns the user-facing authentication flow and owner-only User Management UI. B
 
 ## Validation Responsibility
 
-| Validation Area | Responsibility                                                                                                                        |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Frontend        | Login UI, remembered accounts, user management, session restoration, route guard, RBAC behavior                                       |
-| Integration     | Confirm frontend payloads and responses align with backend auth endpoints, quick access verification, and owner-only account creation |
-| Regression      | Confirm Sprint 1 shell is not redesigned outside auth scope                                                                           |
-| Docker Runtime  | Confirm Docker CLI, Docker Compose, config, startup, and MySQL health                                                                 |
-| Healthcheck     | Confirm command sequence, report table, failure continuation, and exit code behavior                                                  |
+| Validation Area     | Responsibility                                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend            | Login UI, remembered accounts, user management, session restoration, route guard, RBAC behavior                                       |
+| Integration         | Confirm frontend payloads and responses align with backend auth endpoints, quick access verification, and owner-only account creation |
+| Regression          | Confirm Sprint 1 shell is not redesigned outside auth scope                                                                           |
+| Local MySQL Runtime | Confirm MySQL Community Server service, config, startup, and Prisma health                                                            |
+| Healthcheck         | Confirm command sequence, report table, failure continuation, and exit code behavior                                                  |
 
 ## Validation Status
 
 | Validation                |                Result | Notes                                 |
 | ------------------------- | --------------------: | ------------------------------------- |
-| Docker CLI                |                Passed | Docker `29.6.1` available             |
-| Docker Compose            |                Passed | Docker Compose `v5.1.4` available     |
-| Docker Compose Config     |                Passed | Compose file valid                    |
-| Docker Compose Up         |                Passed | MySQL container started               |
-| Docker Compose PS         |                Passed | `ysabelle-mysql` healthy              |
+| MySQL Service             |                Passed | MySQL80 service available             |
+| Prisma Generate           |                Passed | Prisma client generated               |
+| Prisma Validate           |                Passed | Prisma schema validated               |
+| Prisma DB Push            |                Passed | Local database schema synced          |
+| Seed Users                |                Passed | Owner and staff dev accounts ready    |
 | Healthcheck Sequence      |                Passed | All checks executed in order          |
 | Healthcheck Report Table  |                Passed | Final table appeared                  |
 | Healthcheck Exit Behavior |                Passed | Exits `1` when a check fails          |

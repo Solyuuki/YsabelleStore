@@ -11,7 +11,7 @@ The backend folder contains the Express and TypeScript foundation for YsabelleSt
 | Controllers     | Handles request and response coordination              | Health only       |
 | Services        | Reserved for future business workflows                 | No implementation |
 | Validators      | Reserved for future request validation schemas         | No implementation |
-| Database access | Reserved for future Prisma integration                 | Not connected     |
+| Database access | Uses Prisma against local MySQL Community Server       | Active via Prisma |
 
 ## Folder Structure
 
@@ -91,28 +91,32 @@ The backend loads the root `.env` file for local development. Create it from the
 
 ```bash
 cp .env.example .env
-docker compose up -d
 ```
 
 For Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
+Start-Service MySQL80
 ```
 
-Docker currently provides MySQL only. Run the backend through the existing npm workspace command:
+Make sure the local MySQL Community Server is running, the `ysabellestore` database exists, and Prisma is synchronized before starting the backend:
 
 ```bash
+npm run prisma:generate
+npm run prisma:validate
+npx prisma db push --schema database/prisma/schema.prisma
+npm run db:seed
 npm run dev --workspace backend
 ```
 
-| Variable       | Required For                        | Example                                                                 |
-| -------------- | ----------------------------------- | ----------------------------------------------------------------------- |
-| `NODE_ENV`     | Runtime mode                        | `development`                                                           |
-| `PORT`         | Backend HTTP port                   | `3001`                                                                  |
-| `CORS_ORIGIN`  | Frontend development origin         | `http://localhost:5173`                                                 |
-| `DATABASE_URL` | Prisma and Docker MySQL integration | `mysql://ysabelle_user:ysabelle_password@localhost:3306/ysabelle_store` |
-| `JWT_SECRET`   | Future authentication signing       | `change_this_development_secret`                                        |
+| Variable       | Required For                       | Example                                                         |
+| -------------- | ---------------------------------- | --------------------------------------------------------------- |
+| `NODE_ENV`     | Runtime mode                       | `development`                                                   |
+| `PORT`         | Backend HTTP port                  | `3001`                                                          |
+| `CORS_ORIGIN`  | Frontend development origin        | `http://localhost:5173`                                         |
+| `DATABASE_URL` | Prisma and local MySQL integration | `mysql://root:your_mysql_password@localhost:3306/ysabellestore` |
+| `JWT_SECRET`   | Future authentication signing      | `change_this_development_secret`                                |
 
 Validate Prisma from the repository root:
 

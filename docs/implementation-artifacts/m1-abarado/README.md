@@ -11,7 +11,7 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | Pull request evidence    | Public GitHub PR #2 merged `m1/v0.1/feat/frontend-app-shell` into `main`; public PR #1 was closed                                                                                                    |
 | Source evidence          | `frontend/src/**`, `frontend/package.json`, `electron/src/**`, `.github/**`, `docs/**`                                                                                                               |
 | Validation evidence      | Existing M1 testing reports plus 2026-06-29 local validation in this artifact update                                                                                                                 |
-| Sprint 2 setup evidence  | Docker runtime checks, `docker compose ps`, `npm run healthcheck` report behavior                                                                                                                    |
+| Sprint 2 setup evidence  | Local MySQL Community Server setup checks, `npm run prisma:validate`, `npx prisma db push`, and `npm run healthcheck` report behavior                                                                |
 | Sprint 2 source evidence | `frontend/src/context/AuthContext.tsx`, `frontend/src/pages/WelcomePage.tsx`, `frontend/src/pages/UserManagementPage.tsx`, `frontend/src/app/**`, `backend/src/routes/**`, `backend/src/services/**` |
 
 ## Primary Ownership
@@ -22,7 +22,7 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | Frontend UI shell      | React app shell, sidebar, topbar, dashboard, POS shell, module shells, shared UI components | `frontend/src/app/**`, `frontend/src/components/**`, `frontend/src/pages/**`     |
 | Electron readiness     | Secure Electron main/preload/window foundation and renderer loading assumptions             | `electron/src/**`, `electron/README.md`                                          |
 | Integration leadership | Sprint branch coordination and ownership protection                                         | Sprint branch history and Sprint 1 governance docs                               |
-| Docker setup           | Database-only MySQL Docker Compose setup for local development                              | Docker CLI, Compose, config, startup, and health checks                          |
+| Local MySQL setup      | Database-only MySQL Community Server setup for local development                            | MySQL80 service, Prisma generate/validate, db push, seed, and health checks      |
 | Healthcheck validation | One-command local validation report                                                         | `npm run healthcheck` sequence, table, duration, and exit behavior               |
 | Artifact automation    | Git-change based evidence guard and update helper                                           | `scripts/artifact-check.mjs`, `scripts/artifact-update.mjs`, `.husky/pre-commit` |
 
@@ -41,7 +41,7 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | Login Page Flow Update                       | Verified                              | Login, remembered account quick access, loading, and password visibility flows exist              |
 | Owner-Controlled Staff Account Creation      | Verified                              | OWNER-only `/users` page handles account creation from owner-side flow                            |
 | Protected Access / Access Denied UX          | Verified                              | Role metadata, sidebar filtering, and access denied page/toast exist                              |
-| Docker Development Setup                     | Completed / Runtime Validated         | MySQL Docker Compose setup added and verified healthy on port `3306`                              |
+| Local MySQL Development Setup                | Completed / Runtime Validated         | Local MySQL Community Server setup added and verified healthy on port `3306`                      |
 | Project Healthcheck Script                   | Implemented / Needs clean build rerun | `npm run healthcheck` runs all checks and reports results; build is blocked by Prisma EPERM lock  |
 | Future Artifact Automation                   | Implemented                           | `artifacts:check` and `artifacts:update` prevent future implementation evidence gaps              |
 

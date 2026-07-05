@@ -4,22 +4,22 @@ Sprint 2 moves YsabelleStore from static auth mockups into a working authenticat
 
 ## Sprint 2 Member Ownership
 
-| Member       | Role                 | Updated Scope                                                                                                                                                    | Status Target          |
-| ------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| M1 / Abarado | Full Stack / Auth UI | Login UI, auth state, device recognition, quick access, toast notifications, RBAC UI, owner-only Users page, Docker setup, healthcheck docs, artifact automation | Feature implementation |
-| M2 / Ramos   | Testing / QA         | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing, validation evidence                                            | QA validation          |
-| M3 / Vito    | Backend Security     | Protect register endpoint, owner-only backend guard, backend auth/RBAC hardening, safe API responses, backend/security blocker resolution                        | Security hardening     |
+| Member       | Role                 | Updated Scope                                                                                                                                                         | Status Target          |
+| ------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| M1 / Abarado | Full Stack / Auth UI | Login UI, auth state, device recognition, quick access, toast notifications, RBAC UI, owner-only Users page, local MySQL setup, healthcheck docs, artifact automation | Feature implementation |
+| M2 / Ramos   | Testing / QA         | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing, validation evidence                                                 | QA validation          |
+| M3 / Vito    | Backend Security     | Protect register endpoint, owner-only backend guard, backend auth/RBAC hardening, safe API responses, backend/security blocker resolution                             | Security hardening     |
 
 ## Sprint Metadata
 
-| Field         | Details                                                                                                                                                                                   |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sprint        | Sprint 2                                                                                                                                                                                  |
-| Version       | `v0.2`                                                                                                                                                                                    |
-| Sprint branch | `sprint/v0.2/sprint-2`                                                                                                                                                                    |
-| Sprint status | Implementation in progress                                                                                                                                                                |
-| Primary focus | Authentication, remembered local accounts, owner-only user management, backend auth security, frontend RBAC, Docker MySQL setup, healthcheck validation, artifact evidence, QA validation |
-| Excluded work | Product CRUD, final POS, inventory movement logic, SARIMA forecasting, recommendation engine, reports, dashboard analytics                                                                |
+| Field         | Details                                                                                                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sprint        | Sprint 2                                                                                                                                                                                 |
+| Version       | `v0.2`                                                                                                                                                                                   |
+| Sprint branch | `sprint/v0.2/sprint-2`                                                                                                                                                                   |
+| Sprint status | Implementation in progress                                                                                                                                                               |
+| Primary focus | Authentication, remembered local accounts, owner-only user management, backend auth security, frontend RBAC, local MySQL setup, healthcheck validation, artifact evidence, QA validation |
+| Excluded work | Product CRUD, final POS, inventory movement logic, SARIMA forecasting, recommendation engine, reports, dashboard analytics                                                               |
 
 ## Sprint 2 Priority Order
 
@@ -28,7 +28,7 @@ Sprint 2 moves YsabelleStore from static auth mockups into a working authenticat
 | 1     | M3     | Protect `/api/auth/register` with owner-only backend guard       |
 | 2     | M2     | Test M1 auth flows and M3 backend guard                          |
 | 3     | M1     | Fix UI bugs found by M2                                          |
-| 4     | M1     | Maintain Docker setup and `npm run healthcheck` evidence         |
+| 4     | M1     | Maintain local MySQL setup and `npm run healthcheck` evidence    |
 | 5     | M1     | Keep M1 implementation artifacts synchronized through automation |
 | 6     | All    | Prepare PR to `sprint/v0.2/sprint-2`                             |
 
@@ -70,7 +70,7 @@ M1 already moved account creation to the owner-only User Management UI, but comp
 
 | Task                       |                                     Status | Notes                                                                             |
 | -------------------------- | -----------------------------------------: | --------------------------------------------------------------------------------- |
-| Docker Development Setup   |              Completed / Runtime Validated | MySQL Docker Compose setup is healthy on port `3306`                              |
+| Local MySQL Setup          |              Completed / Runtime Validated | Local MySQL Community Server setup is healthy on port `3306`                      |
 | Project Healthcheck Script | Implemented / Needs final clean validation | `npm run healthcheck` runs all required local checks and reports pass/fail status |
 | Future Artifact Automation |                                Implemented | Pre-commit artifact check requires M1 evidence for future implementation changes  |
 

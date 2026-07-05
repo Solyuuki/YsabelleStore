@@ -8,15 +8,15 @@ Deliver a functional authentication and RBAC foundation that supports owner and 
 
 ## Sprint Overview
 
-| Area          | Sprint 2 Focus                                                                                                                    |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Frontend      | Login UI, password visibility toggle, registration UI, auth state, protected route behavior, RBAC navigation                      |
-| Backend       | Auth routes, controllers, services, validation, JWT/session response, password verification                                       |
-| Database      | Seed users, Prisma user lookup, role/status support, password hash storage                                                        |
-| Integration   | Frontend login/register/session checks connected to backend auth responses                                                        |
-| Documentation | Sprint 2 docs and thesis scope alignment for authentication, RBAC, Docker setup, validation workflow, and implementation evidence |
-| Dev Setup     | Database-only Docker Compose MySQL environment for shared local development                                                       |
-| Validation    | Format, lint, typecheck, audit, Prisma validation, build when safe, and root `npm run healthcheck` reporting                      |
+| Area          | Sprint 2 Focus                                                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend      | Login UI, password visibility toggle, registration UI, auth state, protected route behavior, RBAC navigation                           |
+| Backend       | Auth routes, controllers, services, validation, JWT/session response, password verification                                            |
+| Database      | Seed users, Prisma user lookup, role/status support, password hash storage                                                             |
+| Integration   | Frontend login/register/session checks connected to backend auth responses                                                             |
+| Documentation | Sprint 2 docs and thesis scope alignment for authentication, RBAC, local MySQL setup, validation workflow, and implementation evidence |
+| Dev Setup     | Local MySQL Community Server environment for shared development                                                                        |
+| Validation    | Format, lint, typecheck, audit, Prisma validation, build when safe, and root `npm run healthcheck` reporting                           |
 
 ## In Scope
 
@@ -31,7 +31,7 @@ Deliver a functional authentication and RBAC foundation that supports owner and 
 | Protected Routes      | Unauthenticated users cannot open app modules                               |
 | RBAC                  | Staff cannot open owner-only modules; owner can open administrative modules |
 | Seed Users            | Development owner/staff accounts for local testing                          |
-| Docker MySQL          | Local MySQL container started through Docker Compose                        |
+| Local MySQL           | Local MySQL Community Server started and synchronized with Prisma           |
 | Healthcheck Command   | One npm command that runs local validation gates and prints a report table  |
 | Artifact Automation   | Scripts that require or generate M1 artifact updates from Git changes       |
 
@@ -55,10 +55,10 @@ Deliver a functional authentication and RBAC foundation that supports owner and 
 | Backend auth core                           | M3 - Vito    | Auth routes, controller/service logic, validation, token response, middleware                    |
 | QA validation and evidence                  | M2 - Ramos   | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing |
 | Thesis scope alignment                      | M1 - Abarado | Architecture note tying Sprint 2 auth/RBAC to Chapter 1-2 scope                                  |
-| Docker development setup                    | M1 - Abarado | Database-only MySQL Compose setup verified healthy for shared local development                  |
+| Local MySQL development setup               | M1 - Abarado | Local MySQL Community Server setup verified healthy for shared local development                 |
 | Project healthcheck script                  | M1 - Abarado | `npm run healthcheck` executes validation gates and records pass/fail outcomes                   |
 | Implementation artifact automation          | M1 - Abarado | Future commits are checked for matching M1 implementation artifact evidence                      |
 
 ## Expected Sprint Outcome
 
-After Sprint 2, owner and staff users can authenticate, register local store accounts, restore a session, switch user, logout, and access only the routes permitted by their role. The team also has a shared Docker MySQL development setup, a one-command healthcheck for local validation, and artifact automation to keep future implementation evidence synchronized. Remaining inventory, POS, SARIMA, recommendation, report, and dashboard business logic stays explicitly out of scope.
+After Sprint 2, owner and staff users can authenticate, register local store accounts, restore a session, switch user, logout, and access only the routes permitted by their role. The team also has a shared local MySQL Community Server setup, a one-command healthcheck for local validation, and artifact automation to keep future implementation evidence synchronized. Remaining inventory, POS, SARIMA, recommendation, report, and dashboard business logic stays explicitly out of scope.

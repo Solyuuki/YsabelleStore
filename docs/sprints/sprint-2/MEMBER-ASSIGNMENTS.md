@@ -12,15 +12,15 @@ Sprint 2 member assignments are separated by member under `members/`. Authentica
 
 ## Ownership Rule
 
-M1 owns login UI, account setup UI, auth state, frontend API integration, route protection, switch user, logout, frontend RBAC, Docker development setup, healthcheck script, Sprint 2 setup/documentation alignment, and implementation artifact automation. M2 owns QA validation, seed verification, auth/RBAC testing, device recognition testing, backend guard evidence, and bug reporting. M3 owns backend auth routes, controller/service logic, validation, token handling, and middleware.
+M1 owns login UI, account setup UI, auth state, frontend API integration, route protection, switch user, logout, frontend RBAC, local MySQL setup, healthcheck script, Sprint 2 setup/documentation alignment, and implementation artifact automation. M2 owns QA validation, seed verification, auth/RBAC testing, device recognition testing, backend guard evidence, and bug reporting. M3 owns backend auth routes, controller/service logic, validation, token handling, and middleware.
 
 ## M1 Setup Ownership
 
 | Area                                   | Owner        |                                     Status | Notes                                                                        |
 | -------------------------------------- | ------------ | -----------------------------------------: | ---------------------------------------------------------------------------- |
-| Docker development setup               | M1 / Abarado |              Completed / Runtime Validated | MySQL Compose service is healthy on port `3306`                              |
+| Local MySQL setup                      | M1 / Abarado |              Completed / Runtime Validated | Local MySQL Community Server is healthy on port `3306`                       |
 | Healthcheck script                     | M1 / Abarado | Implemented / Needs final clean validation | `npm run healthcheck` reports sequence, status, duration, and final verdict  |
-| Sprint 2 setup/documentation alignment | M1 / Abarado |                                In Progress | Sprint docs and M1 artifacts record Docker and healthcheck evidence          |
+| Sprint 2 setup/documentation alignment | M1 / Abarado |                                In Progress | Sprint docs and M1 artifacts record local MySQL and healthcheck evidence     |
 | Implementation artifact automation     | M1 / Abarado |                                Implemented | Pre-commit check requires artifact updates for future implementation changes |
 
 <!-- artifact-signature:m1:unstaged changes:2026-07-05:.husky/pre-commit|docs/implementation-artifacts/m1-abarado/BLOCKERS.md|docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md|docs/implementation-artifacts/m1-abarado/DECISIONS.md|docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md|docs/implementation-artifacts/m1-abarado/README.md|docs/implementation-artifacts/m1-abarado/SPRINT-PLANNING.md|docs/implementation-artifacts/m1-abarado/SPRINT-PROGRESS.md|docs/implementation-artifacts/m1-abarado/TASKS.md|docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md|docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md|docs/sprints/sprint-2/README.md|docs/sprints/sprint-2/SPRINT-BACKLOG.md|docs/sprints/sprint-2/SPRINT-GOAL.md|docs/sprints/sprint-2/members/m1-abarado.md|package.json:Git Hook Update|Implementation Artifact Update|Sprint Documentation Update|Project Healthcheck Script -->

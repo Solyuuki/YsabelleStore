@@ -181,8 +181,7 @@ function classifyFile(file) {
   if (file.startsWith("database/migrations/")) return "Database Migration";
   if (file.startsWith("forecasting-service/")) return "Forecasting";
   if (file.startsWith("scripts/")) return "Tooling / Scripts";
-  if (file === "docker-compose.yml" || file === ".dockerignore") return "Docker / DevOps";
-  if (file === ".env.example") return "Environment Setup";
+  if (file === ".env.example") return "Local MySQL / Environment Setup";
   if (file === "package.json") return "Project Scripts / Dependencies";
   if (file === "package-lock.json") return "Dependencies";
   if (file.startsWith("docs/sprints/")) return "Sprint Documentation";
@@ -209,12 +208,8 @@ function taskLabelForFiles(files) {
   ) {
     return "Auth Backend Update";
   }
-  if (
-    has(
-      (file) => file === "docker-compose.yml" || file === ".dockerignore" || file === ".env.example"
-    )
-  ) {
-    return "Docker Development Setup";
+  if (has((file) => file === ".env.example")) {
+    return "Local MySQL Development Setup";
   }
   if (has((file) => file === "scripts/update-artifacts.mjs")) {
     return "Automatic Artifact Log Generator";
@@ -348,8 +343,8 @@ function blockerFix(blocker) {
   if (lower.includes("eaddrinuse") || lower.includes("port already in use")) {
     return "Stop the process using the port and rerun validation";
   }
-  if (lower.includes("docker")) {
-    return "Start Docker Desktop or verify the Docker daemon before rerunning validation";
+  if (lower.includes("mysql") || lower.includes("database")) {
+    return "Start the local MySQL service or verify the database password before rerunning validation";
   }
   if (lower.includes("migration")) {
     return "Review migration output and rerun database validation";
@@ -379,8 +374,8 @@ function validationBlocker(validationReport) {
     "failed",
     "cannot find module",
     "port already in use",
-    "Docker not installed",
-    "Docker daemon",
+    "MySQL service",
+    "database credentials",
     "migration failed",
     "typecheck failed",
     "build failed"
@@ -524,11 +519,9 @@ function buildDecisionSection({ timestamp, decision }) {
 function hasDeploymentChange(files) {
   return files.some(
     (file) =>
-      file === "docker-compose.yml" ||
-      file === ".dockerignore" ||
       file === ".env.example" ||
       file.startsWith("deployment/") ||
-      file.toLowerCase().includes("docker")
+      file.toLowerCase().includes("mysql")
   );
 }
 
@@ -537,7 +530,7 @@ function buildDeploymentSection(timestamp) {
 
 | Area | Update | Notes |
 | --- | --- | --- |
-| Docker / DevOps | Docker-related files changed | Review Docker Desktop and \`docker compose up -d\` setup instructions |`;
+| Local MySQL / DevOps | Database-related files changed | Review the local MySQL Community Server and \`npx prisma db push --schema database/prisma/schema.prisma\` setup instructions |`;
 }
 
 function buildReadmeLatestSection({ timestamp, source }) {

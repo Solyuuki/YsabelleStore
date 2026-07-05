@@ -18,7 +18,7 @@
 | YSB-M1-ELC-001       | Sprint 1 | Scaffold Electron main and preload structure           | Done        |
 | YSB-M1-S2-AUTH-001   | Sprint 2 | Verify and document auth fullstack flow foundation     | Verified    |
 | YSB-M1-S2-USERS-001  | Sprint 2 | Verify and document owner-controlled account creation  | Verified    |
-| YSB-M1-S2-DOCKER-001 | Sprint 2 | Verify and document Docker MySQL development setup     | Done        |
+| YSB-M1-S2-MYSQL-001  | Sprint 2 | Verify and document local MySQL Community Server setup | Done        |
 | YSB-M1-S2-HEALTH-001 | Sprint 2 | Add and document project healthcheck command           | Implemented |
 | YSB-M1-S2-AUTO-001   | Sprint 2 | Add implementation artifact automation                 | Implemented |
 

@@ -12,7 +12,7 @@
 | Login and remembered access      | Verified from source                            | `WelcomePage` login form, password visibility, remembered-account quick access, switch user, and session restore                             |
 | Owner Users page and RBAC        | Verified from source                            | `/users`, `UserManagementPage`, route role metadata, sidebar filtering, and `AccessDeniedPage`                                               |
 | Electron readiness               | Foundation complete; package validation pending | `electron/src/**` exists and builds, but no packaged release artifact is recorded                                                            |
-| Docker development setup         | Complete / Runtime validated                    | Docker CLI `29.6.1`, Docker Compose `v5.1.4`, valid config, and healthy `ysabelle-mysql` container on port `3306`                            |
+| Local MySQL development setup    | Complete / Runtime validated                    | MySQL80 service, Prisma generate/validate, `npx prisma db push`, and healthy local database on port `3306`                                   |
 | Project healthcheck script       | Implemented / Needs clean build rerun           | `npm run healthcheck` executes all checks in order, prints a report table, and exits `1` when build fails                                    |
 | Artifact automation              | Implemented                                     | `npm run artifacts:check`, `npm run artifacts:update`, and pre-commit artifact gate                                                          |
 | Business workflows               | Not implemented by design                       | No CRUD, authentication, sales transaction, forecasting execution, or reporting business logic in M1 scope                                   |
@@ -27,7 +27,7 @@
 | 2026-06-27 | M1 frontend shell implemented and polished through PR-ready branch work.                                                                   | Commits `68fabf4`, `f1edd82`, `a4bd881`, `15ea425`, `ff8a2c7`, `c83060e`, `a189f14`, `b3edf99`, `a17922f`                                                 |
 | 2026-06-29 | Sprint branch contains M1 frontend plus M3 database/backend database boundary work; M3 frontend overlap identified as risk and documented. | Current branch `sprint/v0.1/sprint-1` at `dd53be7`                                                                                                        |
 | 2026-07-05 | M1 Sprint 2 auth work backfilled from repository source evidence.                                                                          | Auth context, login flow, remembered accounts, owner Users page, RBAC route metadata, access denied UX, and backend auth foundation verified.             |
-| 2026-07-05 | Docker Development Setup completed and runtime validated for shared local MySQL.                                                           | `docker --version`, `docker compose version`, `docker compose config`, `docker compose up -d`, and `docker compose ps` passed.                            |
+| 2026-07-05 | Local MySQL Development Setup completed and runtime validated for shared local MySQL.                                                      | `npm run prisma:generate`, `npm run prisma:validate`, `npx prisma db push --schema database/prisma/schema.prisma`, and `npm run db:seed` passed.          |
 | 2026-07-05 | Project Healthcheck Script implemented for one-command local validation.                                                                   | `npm run healthcheck` ran all checks in order and printed the final report table; build failed from Prisma EPERM file lock and audit still ran afterward. |
 | 2026-07-05 | Future Artifact Automation added for M1 implementation evidence.                                                                           | `artifacts:check` gates commits with implementation/setup changes; `artifacts:update` generates a Git-derived queue in M1 artifacts.                      |
 
@@ -49,9 +49,9 @@
 
 ## Scope Boundaries
 
-| Included                                                                                                                                                                                    | Excluded                                                                                                                                          |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Static route shells, layout, visual hierarchy, shared UI primitives, auth UI foundation, RBAC UX, guardrails, Docker MySQL setup, healthcheck reporting, artifact automation, documentation | Live POS transactions, product CRUD, inventory writes, SARIMA execution, packaged installer, server-side owner guard for public register endpoint |
+| Included                                                                                                                                                                                   | Excluded                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Static route shells, layout, visual hierarchy, shared UI primitives, auth UI foundation, RBAC UX, guardrails, local MySQL setup, healthcheck reporting, artifact automation, documentation | Live POS transactions, product CRUD, inventory writes, SARIMA execution, packaged installer, server-side owner guard for public register endpoint |
 
 ## Sprint Completion Statement
 

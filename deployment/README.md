@@ -42,15 +42,17 @@ Development
 
 ## Local Development Deployment Notes
 
-Docker Compose is used only to provide the local MySQL database during development. It does not replace the npm workspace commands for the backend, frontend, or Electron app.
+Local MySQL Community Server is used to provide the development database. It does not replace the npm workspace commands for the backend, frontend, or Electron app.
 
 Recommended local setup after pulling the repository:
 
 ```bash
 npm ci
 cp .env.example .env
-docker compose up -d
+npm run prisma:generate
 npm run prisma:validate
+npx prisma db push --schema database/prisma/schema.prisma
+npm run db:seed
 npm run dev --workspace backend
 npm run dev --workspace frontend
 ```
@@ -59,20 +61,10 @@ For Windows PowerShell, copy the environment file with:
 
 ```powershell
 Copy-Item .env.example .env
+Start-Service MySQL80
 ```
 
-Stop the local database:
-
-```bash
-docker compose down
-```
-
-Reset the local database volume only when local data can be deleted:
-
-```bash
-docker compose down -v
-docker compose up -d
-```
+If the local database needs to be restarted, use the MySQL80 service controls and recreate the `ysabellestore` database only when local data can be deleted.
 
 ## Validation Checklist
 

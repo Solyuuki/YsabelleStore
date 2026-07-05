@@ -2,41 +2,41 @@
 
 ## Validation Log
 
-| Test ID    | Date       | Area                              | Command or Method                                      | Result           | Evidence / Notes                                                                              |
-| ---------- | ---------- | --------------------------------- | ------------------------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------- |
-| TST-M1-001 | 2026-06-24 | Repository structure              | Required file and standards review                     | Passed           | Repository foundation files were created and are present in history.                          |
-| TST-M1-002 | 2026-06-24 | Documentation quality             | Search for unfinished markers                          | Passed           | Existing historical report states no unfinished markers were found.                           |
-| TST-M1-003 | 2026-06-27 | Frontend shell                    | `npm run build --workspace frontend`                   | Passed           | Existing historical report records TypeScript and Vite production build success.              |
-| TST-M1-004 | 2026-06-27 | Root validation                   | Required validation sequence with temporary Prisma URL | Passed           | Existing historical report records full validation passed after `DATABASE_URL` was supplied.  |
-| TST-M1-005 | 2026-06-27 | Welcome screen polish             | `npm run build --workspace frontend`                   | Passed           | Existing historical report records focused frontend build success.                            |
-| TST-M1-006 | 2026-06-27 | Welcome screen polish             | Format, lint, build, audit                             | Passed           | Existing historical report records all checks passed.                                         |
-| TST-M1-007 | 2026-06-27 | Welcome footer                    | `npm run build --workspace frontend`                   | Passed           | Existing historical report records focused frontend build success.                            |
-| TST-M1-008 | 2026-06-27 | Welcome footer                    | Format, lint, build, audit                             | Passed           | Existing historical report records all checks passed.                                         |
-| TST-M1-009 | 2026-06-27 | App shell cohesion                | Format, lint, frontend typecheck, root build, audit    | Passed           | Existing historical report records all checks passed with temporary Prisma URL.               |
-| TST-M1-010 | 2026-06-27 | Theme polish                      | Format, lint, frontend typecheck, root build, audit    | Passed           | Existing historical report records all checks passed with temporary Prisma URL.               |
-| TST-M1-011 | 2026-06-27 | Final shell polish                | Format, lint, frontend typecheck, root build, audit    | Passed           | Existing historical report records all checks passed with temporary Prisma URL.               |
-| TST-M1-012 | 2026-06-29 | Current frontend source           | `npm run build --workspace frontend`                   | Passed           | Verified during artifact reconstruction before file edits.                                    |
-| TST-M1-013 | 2026-06-29 | Current backend source            | `npm run build --workspace backend`                    | Passed           | Verified during artifact reconstruction before file edits.                                    |
-| TST-M1-014 | 2026-06-29 | Prisma schema                     | `npm run prisma:validate`                              | Passed           | Verified during artifact reconstruction before file edits.                                    |
-| TST-M1-015 | 2026-06-29 | Documentation-only reconstruction | Final validation command set                           | Passed           | `format:check`, lint, workspace typecheck, build, Prisma validation, and audit passed.        |
-| TST-M1-016 | 2026-07-05 | Auth Fullstack Flow Foundation    | Source review                                          | Verified         | Frontend auth context/API client and backend auth routes/controller/service/middleware exist. |
-| TST-M1-017 | 2026-07-05 | Login Page Flow Update            | Source review                                          | Verified         | Login form, remembered-account flow, password visibility, and loading states exist.           |
-| TST-M1-018 | 2026-07-05 | Protected Access / Access Denied  | Source review                                          | Verified         | Route role metadata, sidebar filtering, and access denied page/toast exist.                   |
-| TST-M1-019 | 2026-07-05 | User Management Direction/Page    | Source review                                          | Verified         | OWNER-only `/users` route and owner-side account creation page exist.                         |
-| TST-M1-020 | 2026-07-05 | Docker Development Setup          | Docker CLI, Compose, config, startup, and PS checks    | Passed           | Docker MySQL service `ysabelle-mysql` was running and healthy on port `3306`.                 |
-| TST-M1-021 | 2026-07-05 | Project Healthcheck Script        | `npm run healthcheck`                                  | Partial / Exit 1 | Sequence and report worked; build failed due to Prisma EPERM lock.                            |
-| TST-M1-022 | 2026-07-05 | Future Artifact Automation        | `npm run artifacts:check`                              | Passed           | Artifact check runs and accepts this change set because M1 artifact updates are present.      |
+| Test ID    | Date       | Area                              | Command or Method                                                   | Result           | Evidence / Notes                                                                              |
+| ---------- | ---------- | --------------------------------- | ------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------- |
+| TST-M1-001 | 2026-06-24 | Repository structure              | Required file and standards review                                  | Passed           | Repository foundation files were created and are present in history.                          |
+| TST-M1-002 | 2026-06-24 | Documentation quality             | Search for unfinished markers                                       | Passed           | Existing historical report states no unfinished markers were found.                           |
+| TST-M1-003 | 2026-06-27 | Frontend shell                    | `npm run build --workspace frontend`                                | Passed           | Existing historical report records TypeScript and Vite production build success.              |
+| TST-M1-004 | 2026-06-27 | Root validation                   | Required validation sequence with temporary Prisma URL              | Passed           | Existing historical report records full validation passed after `DATABASE_URL` was supplied.  |
+| TST-M1-005 | 2026-06-27 | Welcome screen polish             | `npm run build --workspace frontend`                                | Passed           | Existing historical report records focused frontend build success.                            |
+| TST-M1-006 | 2026-06-27 | Welcome screen polish             | Format, lint, build, audit                                          | Passed           | Existing historical report records all checks passed.                                         |
+| TST-M1-007 | 2026-06-27 | Welcome footer                    | `npm run build --workspace frontend`                                | Passed           | Existing historical report records focused frontend build success.                            |
+| TST-M1-008 | 2026-06-27 | Welcome footer                    | Format, lint, build, audit                                          | Passed           | Existing historical report records all checks passed.                                         |
+| TST-M1-009 | 2026-06-27 | App shell cohesion                | Format, lint, frontend typecheck, root build, audit                 | Passed           | Existing historical report records all checks passed with temporary Prisma URL.               |
+| TST-M1-010 | 2026-06-27 | Theme polish                      | Format, lint, frontend typecheck, root build, audit                 | Passed           | Existing historical report records all checks passed with temporary Prisma URL.               |
+| TST-M1-011 | 2026-06-27 | Final shell polish                | Format, lint, frontend typecheck, root build, audit                 | Passed           | Existing historical report records all checks passed with temporary Prisma URL.               |
+| TST-M1-012 | 2026-06-29 | Current frontend source           | `npm run build --workspace frontend`                                | Passed           | Verified during artifact reconstruction before file edits.                                    |
+| TST-M1-013 | 2026-06-29 | Current backend source            | `npm run build --workspace backend`                                 | Passed           | Verified during artifact reconstruction before file edits.                                    |
+| TST-M1-014 | 2026-06-29 | Prisma schema                     | `npm run prisma:validate`                                           | Passed           | Verified during artifact reconstruction before file edits.                                    |
+| TST-M1-015 | 2026-06-29 | Documentation-only reconstruction | Final validation command set                                        | Passed           | `format:check`, lint, workspace typecheck, build, Prisma validation, and audit passed.        |
+| TST-M1-016 | 2026-07-05 | Auth Fullstack Flow Foundation    | Source review                                                       | Verified         | Frontend auth context/API client and backend auth routes/controller/service/middleware exist. |
+| TST-M1-017 | 2026-07-05 | Login Page Flow Update            | Source review                                                       | Verified         | Login form, remembered-account flow, password visibility, and loading states exist.           |
+| TST-M1-018 | 2026-07-05 | Protected Access / Access Denied  | Source review                                                       | Verified         | Route role metadata, sidebar filtering, and access denied page/toast exist.                   |
+| TST-M1-019 | 2026-07-05 | User Management Direction/Page    | Source review                                                       | Verified         | OWNER-only `/users` route and owner-side account creation page exist.                         |
+| TST-M1-020 | 2026-07-05 | Local MySQL Development Setup     | MySQL80 service, Prisma generate/validate, db push, and seed checks | Passed           | Local MySQL Community Server setup was documented and verified on port `3306`.                |
+| TST-M1-021 | 2026-07-05 | Project Healthcheck Script        | `npm run healthcheck`                                               | Partial / Exit 1 | Sequence and report worked; build failed due to Prisma EPERM lock.                            |
+| TST-M1-022 | 2026-07-05 | Future Artifact Automation        | `npm run artifacts:check`                                           | Passed           | Artifact check runs and accepts this change set because M1 artifact updates are present.      |
 
 ## Sprint 2 Setup Validation Summary
 
-| Command                  |           Result | Notes                                                             |
-| ------------------------ | ---------------: | ----------------------------------------------------------------- |
-| `docker --version`       |           Passed | Docker CLI available                                              |
-| `docker compose version` |           Passed | Compose available                                                 |
-| `docker compose config`  |           Passed | Config valid                                                      |
-| `docker compose up -d`   |           Passed | MySQL container started                                           |
-| `docker compose ps`      |           Passed | MySQL container healthy                                           |
-| `npm run healthcheck`    | Partial / Exit 1 | Sequence and report worked; build failed due to Prisma EPERM lock |
+| Command                                                     |           Result | Notes                                                             |
+| ----------------------------------------------------------- | ---------------: | ----------------------------------------------------------------- |
+| `npm run prisma:generate`                                   |           Passed | Prisma client generated                                           |
+| `npm run prisma:validate`                                   |           Passed | Prisma schema validated                                           |
+| `npx prisma db push --schema database/prisma/schema.prisma` |           Passed | Local database schema synced                                      |
+| `npm run db:seed`                                           |           Passed | Development owner/staff users seeded                              |
+| `Start-Service MySQL80`                                     |           Passed | Local MySQL Community Server started                              |
+| `npm run healthcheck`                                       | Partial / Exit 1 | Sequence and report worked; build failed due to Prisma EPERM lock |
 
 ## Historical Validation Detail
 

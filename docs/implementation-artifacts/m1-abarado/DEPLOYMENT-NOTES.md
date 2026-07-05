@@ -8,21 +8,21 @@
 | Electron runtime foundation        | Foundation ready                        | `electron/src/main/**`, `electron/src/preload/**`, `electron/src/security/**`                        |
 | Electron packaged installer        | Not yet verified                        | No committed package artifact or installer validation transcript exists                              |
 | Backend/database connection for UI | Not implemented in M1 frontend          | UI screens are static and do not call backend APIs yet                                               |
-| Docker MySQL development runtime   | Ready for local development             | Docker Compose starts `ysabelle-mysql` and reports healthy on port `3306`                            |
+| Local MySQL development runtime    | Ready for local development             | MySQL80 starts locally and Prisma syncs against `ysabellestore` on port `3306`                       |
 | Healthcheck validation command     | Implemented / build rerun needed        | `npm run healthcheck` reports all checks; current build can hit Prisma EPERM file lock               |
 | Artifact automation                | Ready for local commits                 | Pre-commit runs `npm run artifacts:check`; generator is available through `npm run artifacts:update` |
 | Release documentation              | In progress through this reconstruction | Updated implementation artifacts and migration standards                                             |
 
 ## Deployment Log
 
-| Version / Branch     | Date       | Target                                                                                  | Status    | Notes                                                                                                        |
-| -------------------- | ---------- | --------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
-| Foundation history   | 2026-06-24 | Repository documentation and architecture                                               | Completed | No application release package was produced.                                                                 |
-| Sprint 1 foundation  | 2026-06-25 | Frontend, backend, database, Electron, CI, configuration, deployment, testing scaffolds | Completed | Foundations were created as repository structures and docs.                                                  |
-| M1 frontend branch   | 2026-06-27 | Static React frontend shell                                                             | Completed | Frontend build and full validation were recorded as passed.                                                  |
-| Sprint 1 integration | 2026-06-29 | Current sprint branch                                                                   | In review | M1 frontend and M3 database/backend database boundary are present; documentation reconstruction is underway. |
-| Sprint 2 setup       | 2026-07-05 | Docker MySQL and project healthcheck                                                    | In review | Docker runtime is healthy; healthcheck works but needs a clean rerun after Prisma EPERM lock is cleared.     |
-| Sprint 2 artifacts   | 2026-07-05 | M1 artifact backfill and automation                                                     | In review | Existing M1 Sprint 2 auth/setup work is backfilled; future implementation changes are guarded by pre-commit. |
+| Version / Branch     | Date       | Target                                                                                  | Status    | Notes                                                                                                          |
+| -------------------- | ---------- | --------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------- |
+| Foundation history   | 2026-06-24 | Repository documentation and architecture                                               | Completed | No application release package was produced.                                                                   |
+| Sprint 1 foundation  | 2026-06-25 | Frontend, backend, database, Electron, CI, configuration, deployment, testing scaffolds | Completed | Foundations were created as repository structures and docs.                                                    |
+| M1 frontend branch   | 2026-06-27 | Static React frontend shell                                                             | Completed | Frontend build and full validation were recorded as passed.                                                    |
+| Sprint 1 integration | 2026-06-29 | Current sprint branch                                                                   | In review | M1 frontend and M3 database/backend database boundary are present; documentation reconstruction is underway.   |
+| Sprint 2 setup       | 2026-07-05 | Local MySQL and project healthcheck                                                     | In review | Local MySQL setup is documented; healthcheck works but needs a clean rerun after Prisma EPERM lock is cleared. |
+| Sprint 2 artifacts   | 2026-07-05 | M1 artifact backfill and automation                                                     | In review | Existing M1 Sprint 2 auth/setup work is backfilled; future implementation changes are guarded by pre-commit.   |
 
 ## Release Checklist
 
@@ -35,8 +35,8 @@
 | Lint passes                                  | Passed       | `npm run lint` passed on 2026-06-29 with only the existing ESLint module-type warning.    |
 | Format check passes                          | Passed       | `npm run format:check` passed on 2026-06-29.                                              |
 | Security audit has no high vulnerabilities   | Passed       | `npm audit --audit-level=high` found 0 vulnerabilities on 2026-06-29.                     |
-| Docker Desktop available                     | Passed       | Docker CLI and Docker Compose were available during Sprint 2 setup validation.            |
-| MySQL container healthy                      | Passed       | `ysabelle-mysql` reported healthy on port `3306`.                                         |
+| MySQL service available                      | Passed       | MySQL80 service was available during Sprint 2 setup validation.                           |
+| Local database synchronized                  | Passed       | `ysabellestore` is the target local database on port `3306`.                              |
 | Healthcheck sequence and report              | Passed       | `npm run healthcheck` ran all checks in order and printed a final report table.           |
 | Healthcheck clean build                      | Blocked      | Prisma EPERM file lock must be cleared, then `npm run healthcheck` should be rerun.       |
 | Artifact check command                       | Passed       | `npm run artifacts:check` passes when implementation changes include M1 artifact updates. |
@@ -45,11 +45,11 @@
 
 ## Sprint 2 Local Setup Notes
 
-| Note                              | Detail                                              |
-| --------------------------------- | --------------------------------------------------- |
-| Docker Desktop required           | Docker Desktop is required once per member machine. |
-| Manual MySQL install not required | Members do not need to manually install MySQL.      |
-| Start shared MySQL                | Use `docker compose up -d` to start shared MySQL.   |
+| Note                              | Detail                                                         |
+| --------------------------------- | -------------------------------------------------------------- |
+| MySQL Community Server required   | Members install MySQL Community Server once per machine.       |
+| Manual database creation possible | Members create the `ysabellestore` database locally if needed. |
+| Start local MySQL                 | Use `Start-Service MySQL80` to start the local MySQL service.  |
 
 ## Known Deployment Limits
 

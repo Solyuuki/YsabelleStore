@@ -95,48 +95,42 @@ For Windows PowerShell:
 Copy-Item .env.example .env
 ```
 
-### Docker MySQL
+### Local MySQL Community Server
 
-Docker is used for the local MySQL database only. The frontend, backend, and Electron development workflow still runs through npm workspaces.
+YsabelleStore uses a local MySQL Community Server installation for database development. The frontend, backend, and Electron development workflow still runs through npm workspaces.
 
-Start MySQL:
+Before starting, make sure the `MySQL80` service is running and the `ysabellestore` database exists.
 
-```bash
-docker compose up -d
-```
-
-Check the container:
+Recommended setup:
 
 ```bash
-docker compose ps
-```
-
-Stop MySQL:
-
-```bash
-docker compose down
-```
-
-Reset MySQL data:
-
-Warning: this deletes the local Docker database volume and all local database data.
-
-```bash
-docker compose down -v
-docker compose up -d
-```
-
-Validate Prisma:
-
-```bash
+npm ci
+cp .env.example .env
+npm run prisma:generate
 npm run prisma:validate
+npx prisma db push --schema database/prisma/schema.prisma
+npm run db:seed
 ```
 
-Run the backend and frontend:
+For Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+Start-Service MySQL80
+```
+
+Start the app:
 
 ```bash
-npm run dev --workspace backend
-npm run dev --workspace frontend
+npm run dev
+```
+
+If you change the Prisma schema, rerun:
+
+```bash
+npm run prisma:generate
+npm run prisma:validate
+npx prisma db push --schema database/prisma/schema.prisma
 ```
 
 Recommended team pull workflow:
@@ -145,10 +139,12 @@ Recommended team pull workflow:
 git pull
 npm ci
 cp .env.example .env
-docker compose up -d
+Start-Service MySQL80
+npm run prisma:generate
 npm run prisma:validate
-npm run dev --workspace backend
-npm run dev --workspace frontend
+npx prisma db push --schema database/prisma/schema.prisma
+npm run db:seed
+npm run dev
 ```
 
 ## Recommendation Outputs

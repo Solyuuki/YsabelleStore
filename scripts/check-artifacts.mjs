@@ -44,8 +44,6 @@ function isImplementationFile(file) {
     file.startsWith("scripts/") ||
     file.startsWith(".github/workflows/") ||
     file.startsWith(".husky/") ||
-    file === "docker-compose.yml" ||
-    file === ".dockerignore" ||
     file === "package.json" ||
     file === "package-lock.json" ||
     file === ".env.example"

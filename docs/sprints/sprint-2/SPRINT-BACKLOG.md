@@ -4,26 +4,26 @@ Sprint 2 backlog items are grouped around authentication, remembered local accou
 
 ## Sprint Ownership Summary
 
-| Member       | Role                 | Updated Scope                                                                                                                                                    | Status Target          |
-| ------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| M1 / Abarado | Full Stack / Auth UI | Login UI, auth state, device recognition, quick access, toast notifications, RBAC UI, owner-only Users page, Docker setup, healthcheck docs, artifact automation | Feature implementation |
-| M2 / Ramos   | Testing / QA         | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing, validation evidence                                            | QA validation          |
-| M3 / Vito    | Backend Security     | Protect register endpoint, owner-only backend guard, backend auth/RBAC hardening, safe API responses, backend/security blocker resolution                        | Security hardening     |
+| Member       | Role                 | Updated Scope                                                                                                                                                         | Status Target          |
+| ------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| M1 / Abarado | Full Stack / Auth UI | Login UI, auth state, device recognition, quick access, toast notifications, RBAC UI, owner-only Users page, local MySQL setup, healthcheck docs, artifact automation | Feature implementation |
+| M2 / Ramos   | Testing / QA         | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing, validation evidence                                                 | QA validation          |
+| M3 / Vito    | Backend Security     | Protect register endpoint, owner-only backend guard, backend auth/RBAC hardening, safe API responses, backend/security blocker resolution                             | Security hardening     |
 
 ## M1 - Auth UI and User Management
 
-| Task ID       | Owner        | Priority | Description                                                 | Expected Output                                                      | Status                                |
-| ------------- | ------------ | -------- | ----------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------- |
-| YSB-S2-M1-001 | M1 / Abarado | P0       | Build login UI and login states                             | Email/password login form with loading and error handling            | Verified / Implemented                |
-| YSB-S2-M1-002 | M1 / Abarado | P0       | Implement remembered accounts and device recognition        | Safe quick access cards using local metadata only                    | Verified / Implemented                |
-| YSB-S2-M1-003 | M1 / Abarado | P0       | Add toast notifications for auth flows                      | Success, error, logout, access denied, and device-recognized toasts  | Verified / Implemented                |
-| YSB-S2-M1-004 | M1 / Abarado | P0       | Enforce frontend RBAC                                       | Sidebar filtering and access-denied route handling                   | Verified / Implemented                |
-| YSB-S2-M1-005 | M1 / Abarado | P0       | Build owner-only User Management UI                         | Name, email, password, confirm password, and role fields             | Verified / Implemented                |
-| YSB-S2-M1-006 | M1 / Abarado | P1       | Keep docs aligned with auth scope                           | README, backlog, DoD, and member docs stay consistent                | Updated                               |
-| YSB-S2-M1-007 | M1 / Abarado | P1       | Docker Development Setup for shared MySQL local environment | Database-only Docker Compose setup for local MySQL                   | Completed / Runtime Validated         |
-| YSB-S2-M1-008 | M1 / Abarado | P1       | Project Healthcheck Script for one-command validation       | `npm run healthcheck` runs format, lint, typecheck, build, and audit | Implemented / Needs clean build rerun |
-| YSB-S2-M1-009 | M1 / Abarado | P1       | Sprint 2 setup/documentation alignment                      | Sprint docs and M1 implementation artifacts reflect setup evidence   | Updated                               |
-| YSB-S2-M1-010 | M1 / Abarado | P1       | Future Artifact Automation                                  | Git-change based artifact check and update scripts                   | Implemented                           |
+| Task ID       | Owner        | Priority | Description                                                      | Expected Output                                                      | Status                                |
+| ------------- | ------------ | -------- | ---------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------- |
+| YSB-S2-M1-001 | M1 / Abarado | P0       | Build login UI and login states                                  | Email/password login form with loading and error handling            | Verified / Implemented                |
+| YSB-S2-M1-002 | M1 / Abarado | P0       | Implement remembered accounts and device recognition             | Safe quick access cards using local metadata only                    | Verified / Implemented                |
+| YSB-S2-M1-003 | M1 / Abarado | P0       | Add toast notifications for auth flows                           | Success, error, logout, access denied, and device-recognized toasts  | Verified / Implemented                |
+| YSB-S2-M1-004 | M1 / Abarado | P0       | Enforce frontend RBAC                                            | Sidebar filtering and access-denied route handling                   | Verified / Implemented                |
+| YSB-S2-M1-005 | M1 / Abarado | P0       | Build owner-only User Management UI                              | Name, email, password, confirm password, and role fields             | Verified / Implemented                |
+| YSB-S2-M1-006 | M1 / Abarado | P1       | Keep docs aligned with auth scope                                | README, backlog, DoD, and member docs stay consistent                | Updated                               |
+| YSB-S2-M1-007 | M1 / Abarado | P1       | Local MySQL Development Setup for shared development environment | Local MySQL Community Server setup with Prisma validation and seed   | Completed / Runtime Validated         |
+| YSB-S2-M1-008 | M1 / Abarado | P1       | Project Healthcheck Script for one-command validation            | `npm run healthcheck` runs format, lint, typecheck, build, and audit | Implemented / Needs clean build rerun |
+| YSB-S2-M1-009 | M1 / Abarado | P1       | Sprint 2 setup/documentation alignment                           | Sprint docs and M1 implementation artifacts reflect setup evidence   | Updated                               |
+| YSB-S2-M1-010 | M1 / Abarado | P1       | Future Artifact Automation                                       | Git-change based artifact check and update scripts                   | Implemented                           |
 
 ## M2 - Testing and QA
 
@@ -39,7 +39,7 @@ Sprint 2 backlog items are grouped around authentication, remembered local accou
 | YSB-S2-M2-008 | M2 / Ramos | P0       | Verify staff access denied         | Staff cannot access `/users`                                                                | Pending |
 | YSB-S2-M2-009 | M2 / Ramos | P0       | Verify backend register protection | No-token, invalid-token, staff-token, inactive-user, and owner-token behavior after M3 work | Pending |
 | YSB-S2-M2-010 | M2 / Ramos | P1       | Verify seed users                  | Owner and staff seed accounts are active and usable                                         | Pending |
-| YSB-S2-M2-011 | M2 / Ramos | P1       | Run validation commands            | Format, lint, typecheck, audit, Prisma validate, and build                                  | Pending |
+| YSB-S2-M2-011 | M2 / Ramos | P1       | Run validation commands            | Format, lint, typecheck, audit, Prisma validate, db push, seed, and build                   | Pending |
 | YSB-S2-M2-012 | M2 / Ramos | P1       | Capture bug reports                | Issues are listed with severity and reproduction notes                                      | Pending |
 
 ## M3 - Backend Security Hardening

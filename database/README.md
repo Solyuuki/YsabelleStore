@@ -12,48 +12,34 @@ This folder is the controlled database foundation for YsabelleStore. Sprint 1 no
 | Database docs | Records schema decisions, naming, migration workflow, and validation rules | Keep aligned with `schema.prisma`            |
 | Environment   | Documents the `DATABASE_URL` contract                                      | Never hardcode credentials in committed code |
 
-## Local Docker MySQL
+## Local MySQL Community Server
 
-Sprint 2 adds a database-only Docker Compose setup so every member can use the same local MySQL version and credentials without manually creating a database first.
+Sprint 2 uses a direct MySQL Community Server setup so every member can use the same local database path.
 
-The root `.env` file is the main development environment file. Create it from `.env.example`, then start MySQL:
+The root `.env` file is the main development environment file. Create it from `.env.example`, then prepare MySQL:
 
 ```bash
 npm ci
 cp .env.example .env
-docker compose up -d
 ```
 
 For Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
+Start-Service MySQL80
 ```
 
-The Docker MySQL settings are:
-
-| Variable              | Development Value                                                       |
-| --------------------- | ----------------------------------------------------------------------- |
-| `MYSQL_DATABASE`      | `ysabelle_store`                                                        |
-| `MYSQL_USER`          | `ysabelle_user`                                                         |
-| `MYSQL_PASSWORD`      | `ysabelle_password`                                                     |
-| `MYSQL_ROOT_PASSWORD` | `ysabelle_root_password`                                                |
-| `DATABASE_URL`        | `mysql://ysabelle_user:ysabelle_password@localhost:3306/ysabelle_store` |
-
-Stop MySQL:
+Create the `ysabellestore` database if it does not exist, then validate and sync Prisma:
 
 ```bash
-docker compose down
+npm run prisma:generate
+npm run prisma:validate
+npx prisma db push --schema database/prisma/schema.prisma
+npm run db:seed
 ```
 
-Reset MySQL data:
-
-Warning: this deletes the local Docker database volume and all local database data.
-
-```bash
-docker compose down -v
-docker compose up -d
-```
+If you need to stop or restart the local database service, use the MySQL80 service controls.
 
 Validate the Prisma schema after MySQL is running:
 
