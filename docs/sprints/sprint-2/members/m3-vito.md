@@ -2,87 +2,78 @@
 
 ## Role
 
-Testing / QA Lead.
+Backend Security Lead.
 
 ## Sprint Focus
 
-Validate the Sprint 2 authentication, RBAC, backend guard, and seed behavior through repeatable QA evidence.
+Implement and harden the backend authentication and authorization controls used by the Sprint 2 frontend flow.
 
 ## Assigned Scope
 
-| Area                       | Scope                                                                  |
-| -------------------------- | ---------------------------------------------------------------------- |
-| Seed verification          | Confirm owner and staff development accounts are active and usable     |
-| Auth testing               | Validate login, logout, switch user, and invalid login behavior        |
-| RBAC testing               | Verify owner-only Users access and staff denial behavior               |
-| Device recognition testing | Confirm remembered-account quick access and token/session verification |
-| Backend guard testing      | Validate register endpoint behavior after M2 hardening                 |
-| Validation evidence        | Capture terminal output, screenshots, and API responses                |
-| Bug reports                | Document issues with severity and reproduction steps                   |
+| Area              | Scope                                                                                                            |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Auth routes       | `/api/auth/login`, `/api/auth/register`, `/api/auth/me`, and logout/session-related route                        |
+| Register security | Protect account creation with authentication and owner-only authorization                                        |
+| Controller logic  | Safe request handling for login, registration, current user, and logout                                          |
+| Auth service      | Password verification, safe user response, token/session generation                                              |
+| Middleware        | Token/session middleware and owner-only guard patterns for protected backend APIs                                |
+| Error handling    | Clear standardized auth errors for invalid credentials, missing accounts, invalid sessions, and forbidden access |
 
 ## Assigned Tasks
 
-| Task | Description                                                   |
-| ---- | ------------------------------------------------------------- |
-| 1    | Verify owner login and dashboard access                       |
-| 2    | Verify staff login with limited access                        |
-| 3    | Verify invalid login and logout behavior                      |
-| 4    | Verify switch user and remembered-account quick access        |
-| 5    | Verify owner-only Users page and staff access denied behavior |
-| 6    | Validate backend register protection after M2 work            |
-| 7    | Confirm seed user readiness and Prisma validation results     |
-| 8    | Record bugs, evidence, and final QA notes                     |
+| Task | Description                                                         |
+| ---- | ------------------------------------------------------------------- |
+| 1    | Protect the register endpoint with owner-only backend enforcement   |
+| 2    | Reuse auth middleware for authenticated API access                  |
+| 3    | Return safe error responses for unauthorized and forbidden requests |
+| 4    | Validate active owner status before allowing account creation       |
+| 5    | Keep password hashing secure for any created account                |
+| 6    | Document backend auth and RBAC behavior for Sprint 2                |
 
-## M3 Test Area Table
+## M3 Responsibility Table
 
-| Priority | M3 Test Area                | Description                                                                                        | Expected Evidence      |
-| -------- | --------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------- |
-| P0       | Owner login                 | Verify owner can log in and reach dashboard                                                        | Screenshot / test note |
-| P0       | Staff login                 | Verify staff can log in with limited access                                                        | Screenshot / test note |
-| P0       | Invalid login               | Verify wrong credentials show error toast                                                          | Screenshot             |
-| P0       | Logout                      | Verify session clears properly                                                                     | Screenshot / test note |
-| P0       | Switch user                 | Verify remembered account and login fallback behavior                                              | Screenshot             |
-| P0       | Device recognition          | Verify quick access flow and device recognized toast                                               | Screenshot             |
-| P0       | Owner-only Users page       | Verify owner can access `/users`                                                                   | Screenshot             |
-| P0       | Staff access denied         | Verify staff cannot access `/users`                                                                | Screenshot             |
-| P0       | Backend register protection | Verify no-token, invalid-token, staff-token, inactive-user, and owner-token behavior after M2 work | API result             |
-| P1       | Seed verification           | Confirm owner and staff seed accounts are active and usable                                        | Terminal output        |
-| P1       | Validation commands         | Run format, lint, typecheck, audit, Prisma validate, and build                                     | Terminal output        |
-| P1       | Bug reporting               | List issues with severity and reproduction steps                                                   | QA report              |
+| Priority | M3 Task                           | Description                                                                           | Expected Output                                       |
+| -------- | --------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| P0       | Protect register endpoint         | Require authentication before account creation                                        | Public users cannot call `/api/auth/register`         |
+| P0       | Add owner-only guard              | Only OWNER users can create accounts                                                  | Staff cannot create accounts through direct API calls |
+| P0       | Reuse auth middleware             | Apply existing JWT/session validation pattern                                         | Backend auth stays consistent                         |
+| P0       | Safe error responses              | Return clear `401` and `403` responses                                                | No sensitive backend details exposed                  |
+| P1       | Validate active owner status      | Reject inactive users and non-owner roles                                             | Only active owners can create accounts                |
+| P1       | Preserve password hashing         | Keep secure password hashing for created accounts                                     | No plaintext passwords                                |
+| P1       | API test evidence                 | Document no-token, staff-token, invalid-token, inactive-user, and owner-token results | Security behavior is proven                           |
+| P1       | Update backend auth documentation | Document owner-only register behavior                                                 | Sprint 2 docs match implementation                    |
 
-## M2 Blocker Validation
+## M1 Blockers Assigned to M3
 
-After M2 completes backend auth hardening, M3 must validate that the blockers are resolved.
+The following M1 blockers are backend/security-related and are assigned to M3:
 
-| Blocker Tested                 | Expected Result                                    | Evidence Required                       |
-| ------------------------------ | -------------------------------------------------- | --------------------------------------- |
-| No-token register request      | `401 Unauthorized`                                 | API response screenshot/terminal output |
-| Invalid-token register request | `401 Unauthorized`                                 | API response screenshot/terminal output |
-| Staff-token register request   | `403 Forbidden`                                    | API response screenshot/terminal output |
-| Inactive-user register request | `403 Forbidden`                                    | API response screenshot/terminal output |
-| Owner-token register request   | Account creation succeeds                          | API response screenshot/terminal output |
-| Staff direct `/users` route    | Access Denied page                                 | UI screenshot                           |
-| Owner `/users` route           | User Management page opens                         | UI screenshot                           |
-| Device recognition             | Remembered account flow verifies session           | UI screenshot                           |
-| Wrong password                 | Error toast appears and user remains on login page | UI screenshot                           |
+| M1 Blocker                                                                   | Why It Belongs to M3                                   | M3 Expected Fix                                                               |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Owner-only User Management is currently protected mainly through frontend UI | Backend register endpoint can still be called directly | Protect `/api/auth/register` with authentication and owner-only authorization |
+| Staff is blocked in UI but not guaranteed server-side                        | Frontend RBAC is not enough for API security           | Reject STAFF role with `403 Forbidden`                                        |
+| No-token users may still access register API                                 | Account creation must not be public                    | Reject missing/invalid token with `401 Unauthorized`                          |
+| Inactive users should not create accounts                                    | Account creation requires active owner status          | Reject inactive users with `403 Forbidden`                                    |
+| M1 cannot fully close auth security without backend guard                    | This is backend middleware/API responsibility          | Add reusable backend guard and document API behavior                          |
 
 ## Validation Responsibility
 
-| Validation Area   | Responsibility                                                                                        |
-| ----------------- | ----------------------------------------------------------------------------------------------------- |
-| QA                | Auth behavior, RBAC behavior, device recognition, backend guard verification, and evidence collection |
-| Seed verification | Owner/staff development account readiness and role correctness                                        |
-| Documentation     | Record results clearly for Sprint 2 sign-off review                                                   |
+| Validation Area | Responsibility                                           |
+| --------------- | -------------------------------------------------------- |
+| Backend         | Auth API, middleware, validation, and error smoke review |
+| API contract    | Standardized response and error behavior review          |
+| Security        | Confirm password hashes are never exposed                |
 
 ## Out of Scope
 
-| Out of Scope                          | Reason                                |
-| ------------------------------------- | ------------------------------------- |
-| Main feature implementation           | M3 is QA/testing focused for Sprint 2 |
-| Backend register guard implementation | Owned by M2                           |
-| Frontend auth UI implementation       | Owned by M1                           |
-| Product/inventory/POS modules         | Future sprint/module scope            |
-| SARIMA forecasting                    | Future sprint/module scope            |
+| Out of Scope               | Reason                       |
+| -------------------------- | ---------------------------- |
+| Frontend redesign          | Owned by M1                  |
+| Device recognition UI      | Owned by M1                  |
+| Toast UI                   | Owned by M1                  |
+| UI bug fixing from QA      | M1 handles UI-specific fixes |
+| Product/inventory/POS APIs | Future module work           |
+| SARIMA forecasting         | Future module work           |
+| Staff self-password change | Future auth/settings task    |
 
 ## Status
 

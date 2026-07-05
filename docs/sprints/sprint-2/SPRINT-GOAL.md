@@ -49,15 +49,15 @@ Deliver a functional authentication and RBAC foundation that supports owner and 
 
 ## Deliverables
 
-| Deliverable                                 | Owner        | Expected Outcome                                                                  |
-| ------------------------------------------- | ------------ | --------------------------------------------------------------------------------- |
-| Login UI, auth state, registration UI, RBAC | M1 - Abarado | Functional login/register/session flow and frontend route restrictions            |
-| Backend auth core                           | M2 - Solo    | Auth routes, controller/service logic, validation, token response, middleware     |
-| Database seed/user foundation               | M3 - James   | Owner/staff seed users, password hashes, Prisma validation and seed documentation |
-| Thesis scope alignment                      | M1 - Abarado | Architecture note tying Sprint 2 auth/RBAC to Chapter 1-2 scope                   |
-| Docker development setup                    | M1 - Abarado | Database-only MySQL Compose setup verified healthy for shared local development   |
-| Project healthcheck script                  | M1 - Abarado | `npm run healthcheck` executes validation gates and records pass/fail outcomes    |
-| Implementation artifact automation          | M1 - Abarado | Future commits are checked for matching M1 implementation artifact evidence       |
+| Deliverable                                 | Owner        | Expected Outcome                                                                                 |
+| ------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ |
+| Login UI, auth state, registration UI, RBAC | M1 - Abarado | Functional login/register/session flow and frontend route restrictions                           |
+| Backend auth core                           | M3 - Vito    | Auth routes, controller/service logic, validation, token response, middleware                    |
+| QA validation and evidence                  | M2 - Ramos   | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing |
+| Thesis scope alignment                      | M1 - Abarado | Architecture note tying Sprint 2 auth/RBAC to Chapter 1-2 scope                                  |
+| Docker development setup                    | M1 - Abarado | Database-only MySQL Compose setup verified healthy for shared local development                  |
+| Project healthcheck script                  | M1 - Abarado | `npm run healthcheck` executes validation gates and records pass/fail outcomes                   |
+| Implementation artifact automation          | M1 - Abarado | Future commits are checked for matching M1 implementation artifact evidence                      |
 
 ## Expected Sprint Outcome
 

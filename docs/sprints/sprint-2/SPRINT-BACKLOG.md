@@ -7,8 +7,8 @@ Sprint 2 backlog items are grouped around authentication, remembered local accou
 | Member       | Role                 | Updated Scope                                                                                                                                                    | Status Target          |
 | ------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | M1 / Abarado | Full Stack / Auth UI | Login UI, auth state, device recognition, quick access, toast notifications, RBAC UI, owner-only Users page, Docker setup, healthcheck docs, artifact automation | Feature implementation |
-| M2 / Ramos   | Backend Security     | Protect register endpoint, owner-only backend guard, backend auth/RBAC hardening, safe API responses, backend/security blocker resolution                        | Security hardening     |
-| M3 / Vito    | Testing / QA         | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing, validation evidence                                            | QA validation          |
+| M2 / Ramos   | Testing / QA         | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing, validation evidence                                            | QA validation          |
+| M3 / Vito    | Backend Security     | Protect register endpoint, owner-only backend guard, backend auth/RBAC hardening, safe API responses, backend/security blocker resolution                        | Security hardening     |
 
 ## M1 - Auth UI and User Management
 
@@ -25,46 +25,46 @@ Sprint 2 backlog items are grouped around authentication, remembered local accou
 | YSB-S2-M1-009 | M1 / Abarado | P1       | Sprint 2 setup/documentation alignment                      | Sprint docs and M1 implementation artifacts reflect setup evidence   | Updated                               |
 | YSB-S2-M1-010 | M1 / Abarado | P1       | Future Artifact Automation                                  | Git-change based artifact check and update scripts                   | Implemented                           |
 
-## M2 - Backend Security Hardening
+## M2 - Testing and QA
 
-| Task ID       | Owner      | Priority | Description                   | Expected Output                                   | Status  |
-| ------------- | ---------- | -------- | ----------------------------- | ------------------------------------------------- | ------- |
-| YSB-S2-M2-001 | M2 / Ramos | P0       | Protect register endpoint     | Public users cannot call `/api/auth/register`     | Pending |
-| YSB-S2-M2-002 | M2 / Ramos | P0       | Add owner-only guard          | Only OWNER users can create accounts              | Pending |
-| YSB-S2-M2-003 | M2 / Ramos | P0       | Reuse auth middleware         | Apply existing JWT/session validation pattern     | Pending |
-| YSB-S2-M2-004 | M2 / Ramos | P0       | Safe error responses          | Return clear `401` and `403` responses            | Pending |
-| YSB-S2-M2-005 | M2 / Ramos | P1       | Validate active owner status  | Reject inactive users and non-owner roles         | Pending |
-| YSB-S2-M2-006 | M2 / Ramos | P1       | Preserve password hashing     | Keep secure password hashing for created accounts | Pending |
-| YSB-S2-M2-007 | M2 / Ramos | P1       | Document backend access rules | Owner-only register behavior is documented        | Pending |
+| Task ID       | Owner      | Priority | Description                        | Expected Output                                                                             | Status  |
+| ------------- | ---------- | -------- | ---------------------------------- | ------------------------------------------------------------------------------------------- | ------- |
+| YSB-S2-M2-001 | M2 / Ramos | P0       | Verify owner login                 | Owner can log in and reach dashboard                                                        | Pending |
+| YSB-S2-M2-002 | M2 / Ramos | P0       | Verify staff login                 | Staff can log in with limited access                                                        | Pending |
+| YSB-S2-M2-003 | M2 / Ramos | P0       | Verify invalid login handling      | Wrong credentials show an error toast                                                       | Pending |
+| YSB-S2-M2-004 | M2 / Ramos | P0       | Verify logout                      | Session clears properly                                                                     | Pending |
+| YSB-S2-M2-005 | M2 / Ramos | P0       | Verify switch user                 | Remembered account and login fallback behave correctly                                      | Pending |
+| YSB-S2-M2-006 | M2 / Ramos | P0       | Verify device recognition          | Quick access flow and device recognized toast work                                          | Pending |
+| YSB-S2-M2-007 | M2 / Ramos | P0       | Verify owner-only Users page       | Owner can access `/users`                                                                   | Pending |
+| YSB-S2-M2-008 | M2 / Ramos | P0       | Verify staff access denied         | Staff cannot access `/users`                                                                | Pending |
+| YSB-S2-M2-009 | M2 / Ramos | P0       | Verify backend register protection | No-token, invalid-token, staff-token, inactive-user, and owner-token behavior after M3 work | Pending |
+| YSB-S2-M2-010 | M2 / Ramos | P1       | Verify seed users                  | Owner and staff seed accounts are active and usable                                         | Pending |
+| YSB-S2-M2-011 | M2 / Ramos | P1       | Run validation commands            | Format, lint, typecheck, audit, Prisma validate, and build                                  | Pending |
+| YSB-S2-M2-012 | M2 / Ramos | P1       | Capture bug reports                | Issues are listed with severity and reproduction notes                                      | Pending |
 
-## M3 - Testing and QA
+## M3 - Backend Security Hardening
 
-| Task ID       | Owner     | Priority | Description                        | Expected Output                                                                             | Status  |
-| ------------- | --------- | -------- | ---------------------------------- | ------------------------------------------------------------------------------------------- | ------- |
-| YSB-S2-M3-001 | M3 / Vito | P0       | Verify owner login                 | Owner can log in and reach dashboard                                                        | Pending |
-| YSB-S2-M3-002 | M3 / Vito | P0       | Verify staff login                 | Staff can log in with limited access                                                        | Pending |
-| YSB-S2-M3-003 | M3 / Vito | P0       | Verify invalid login handling      | Wrong credentials show an error toast                                                       | Pending |
-| YSB-S2-M3-004 | M3 / Vito | P0       | Verify logout                      | Session clears properly                                                                     | Pending |
-| YSB-S2-M3-005 | M3 / Vito | P0       | Verify switch user                 | Remembered account and login fallback behave correctly                                      | Pending |
-| YSB-S2-M3-006 | M3 / Vito | P0       | Verify device recognition          | Quick access flow and device recognized toast work                                          | Pending |
-| YSB-S2-M3-007 | M3 / Vito | P0       | Verify owner-only Users page       | Owner can access `/users`                                                                   | Pending |
-| YSB-S2-M3-008 | M3 / Vito | P0       | Verify staff access denied         | Staff cannot access `/users`                                                                | Pending |
-| YSB-S2-M3-009 | M3 / Vito | P0       | Verify backend register protection | No-token, invalid-token, staff-token, inactive-user, and owner-token behavior after M2 work | Pending |
-| YSB-S2-M3-010 | M3 / Vito | P1       | Verify seed users                  | Owner and staff seed accounts are active and usable                                         | Pending |
-| YSB-S2-M3-011 | M3 / Vito | P1       | Run validation commands            | Format, lint, typecheck, audit, Prisma validate, and build                                  | Pending |
-| YSB-S2-M3-012 | M3 / Vito | P1       | Capture bug reports                | Issues are listed with severity and reproduction notes                                      | Pending |
+| Task ID       | Owner     | Priority | Description                   | Expected Output                                   | Status  |
+| ------------- | --------- | -------- | ----------------------------- | ------------------------------------------------- | ------- |
+| YSB-S2-M3-001 | M3 / Vito | P0       | Protect register endpoint     | Public users cannot call `/api/auth/register`     | Pending |
+| YSB-S2-M3-002 | M3 / Vito | P0       | Add owner-only guard          | Only OWNER users can create accounts              | Pending |
+| YSB-S2-M3-003 | M3 / Vito | P0       | Reuse auth middleware         | Apply existing JWT/session validation pattern     | Pending |
+| YSB-S2-M3-004 | M3 / Vito | P0       | Safe error responses          | Return clear `401` and `403` responses            | Pending |
+| YSB-S2-M3-005 | M3 / Vito | P1       | Validate active owner status  | Reject inactive users and non-owner roles         | Pending |
+| YSB-S2-M3-006 | M3 / Vito | P1       | Preserve password hashing     | Keep secure password hashing for created accounts | Pending |
+| YSB-S2-M3-007 | M3 / Vito | P1       | Document backend access rules | Owner-only register behavior is documented        | Pending |
 
 ## Sprint 2 Blockers and Ownership
 
 | Blocker                                        | Affected Work                           | Severity | Owner             | Required Action                                                                    | Status                  |
 | ---------------------------------------------- | --------------------------------------- | -------- | ----------------- | ---------------------------------------------------------------------------------- | ----------------------- |
-| Backend `/api/auth/register` is still public   | M1 owner-only User Management security  | High     | M2 / Ramos        | Add owner-only backend guard so only authenticated OWNER users can create accounts | Pending                 |
-| No-token register request must be blocked      | Backend auth security                   | High     | M2 / Ramos        | Return `401 Unauthorized` for unauthenticated register attempts                    | Pending                 |
-| Invalid-token register request must be blocked | Backend auth security                   | High     | M2 / Ramos        | Return `401 Unauthorized` for invalid tokens                                       | Pending                 |
-| Staff-token register request must be blocked   | Backend RBAC enforcement                | High     | M2 / Ramos        | Return `403 Forbidden` for STAFF users attempting account creation                 | Pending                 |
-| Inactive-user register request must be blocked | Backend account safety                  | Medium   | M2 / Ramos        | Reject inactive users even if token exists                                         | Pending                 |
-| Owner-token register request must still work   | Owner User Management flow              | High     | M2 / Ramos        | Allow active OWNER users to create accounts through `/api/auth/register`           | Pending                 |
-| M1 UI needs backend confirmation               | User Management end-to-end validation   | Medium   | M2 then M3        | M2 protects endpoint, then M3 verifies owner/staff/no-token behavior               | Pending                 |
+| Backend `/api/auth/register` is still public   | M1 owner-only User Management security  | High     | M3 / Vito         | Add owner-only backend guard so only authenticated OWNER users can create accounts | Pending                 |
+| No-token register request must be blocked      | Backend auth security                   | High     | M3 / Vito         | Return `401 Unauthorized` for unauthenticated register attempts                    | Pending                 |
+| Invalid-token register request must be blocked | Backend auth security                   | High     | M3 / Vito         | Return `401 Unauthorized` for invalid tokens                                       | Pending                 |
+| Staff-token register request must be blocked   | Backend RBAC enforcement                | High     | M3 / Vito         | Return `403 Forbidden` for STAFF users attempting account creation                 | Pending                 |
+| Inactive-user register request must be blocked | Backend account safety                  | Medium   | M3 / Vito         | Reject inactive users even if token exists                                         | Pending                 |
+| Owner-token register request must still work   | Owner User Management flow              | High     | M3 / Vito         | Allow active OWNER users to create accounts through `/api/auth/register`           | Pending                 |
+| M1 UI needs backend confirmation               | User Management end-to-end validation   | Medium   | M3 then M2        | M3 protects endpoint, then M2 verifies owner/staff/no-token behavior               | Pending                 |
 | Prisma DLL lock during build                   | Local Windows validation                | Low      | All / Environment | Close Node/Electron processes, regenerate Prisma client, rerun build               | Known environment issue |
 | Missing implementation artifact updates        | Sprint evidence and thesis traceability | Medium   | M1 / Abarado      | Run `npm run artifacts:update` or update M1 artifacts before commit                | Guarded by pre-commit   |
 
@@ -77,7 +77,7 @@ Sprint 2 backlog items are grouped around authentication, remembered local accou
 
 ## Ownership Note
 
-M1 already moved account creation to the owner-only User Management UI, but complete security requires M2 backend enforcement. M1 should not be responsible for fixing backend register protection unless explicitly reassigned. M2 owns backend auth hardening, and M3 validates the final behavior through API and UI tests.
+M1 already moved account creation to the owner-only User Management UI, but complete security requires M3 backend enforcement. M1 should not be responsible for fixing backend register protection unless explicitly reassigned. M3 owns backend auth hardening, and M2 validates the final behavior through API and UI tests.
 
 <!-- artifact-signature:m1:unstaged changes:2026-07-05:.husky/pre-commit|docs/implementation-artifacts/m1-abarado/BLOCKERS.md|docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md|docs/implementation-artifacts/m1-abarado/DECISIONS.md|docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md|docs/implementation-artifacts/m1-abarado/README.md|docs/implementation-artifacts/m1-abarado/SPRINT-PLANNING.md|docs/implementation-artifacts/m1-abarado/SPRINT-PROGRESS.md|docs/implementation-artifacts/m1-abarado/TASKS.md|docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md|docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md|docs/sprints/sprint-2/README.md|docs/sprints/sprint-2/SPRINT-BACKLOG.md|docs/sprints/sprint-2/SPRINT-GOAL.md|docs/sprints/sprint-2/members/m1-abarado.md|package.json:Git Hook Update|Implementation Artifact Update|Sprint Documentation Update|Project Healthcheck Script -->
 
@@ -137,3 +137,12 @@ M1 already moved account creation to the owner-only User Management UI, but comp
 | ------------ | ------------------------------ | ---------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | M1 / Abarado | Implementation Artifact Update | Documented | `docs/implementation-artifacts/m1-abarado/BLOCKERS.md`, `docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md`, `docs/implementation-artifacts/m1-abarado/DECISIONS.md`, `docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md`, `docs/implementation-artifacts/m1-abarado/README.md`, and 4 more |
 | M1 / Abarado | Sprint Documentation Update    | Documented | `docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md`, `docs/sprints/sprint-2/README.md`, `docs/sprints/sprint-2/SPRINT-BACKLOG.md`, `docs/sprints/sprint-2/SPRINT-GOAL.md`, `docs/sprints/sprint-2/members/m1-abarado.md`                                                                                           |
+
+<!-- artifact-signature:m1:unstaged changes:2026-07-05:docs/implementation-artifacts/m1-abarado/BLOCKERS.md|docs/sprints/sprint-2/DEFINITION-OF-DONE.md|docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md|docs/sprints/sprint-2/README.md|docs/sprints/sprint-2/SPRINT-BACKLOG.md|docs/sprints/sprint-2/SPRINT-GOAL.md|docs/sprints/sprint-2/members/m1-abarado.md|docs/sprints/sprint-2/members/m2-ramos.md|docs/sprints/sprint-2/members/m3-vito.md:Implementation Artifact Update|Sprint Documentation Update -->
+
+## Auto-Tracked Backlog Update — 2026-07-05 21:21:52 Asia/Manila
+
+| Member       | Task Area                      |     Status | Evidence                                                                                                                                                                                                                       |
+| ------------ | ------------------------------ | ---------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M1 / Abarado | Implementation Artifact Update | Documented | `docs/implementation-artifacts/m1-abarado/BLOCKERS.md`                                                                                                                                                                         |
+| M1 / Abarado | Sprint Documentation Update    | Documented | `docs/sprints/sprint-2/DEFINITION-OF-DONE.md`, `docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md`, `docs/sprints/sprint-2/README.md`, `docs/sprints/sprint-2/SPRINT-BACKLOG.md`, `docs/sprints/sprint-2/SPRINT-GOAL.md`, and 3 more |

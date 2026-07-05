@@ -7,8 +7,8 @@ Sprint 2 moves YsabelleStore from static auth mockups into a working authenticat
 | Member       | Role                 | Updated Scope                                                                                                                                                    | Status Target          |
 | ------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | M1 / Abarado | Full Stack / Auth UI | Login UI, auth state, device recognition, quick access, toast notifications, RBAC UI, owner-only Users page, Docker setup, healthcheck docs, artifact automation | Feature implementation |
-| M2 / Ramos   | Backend Security     | Protect register endpoint, owner-only backend guard, backend auth/RBAC hardening, safe API responses, backend/security blocker resolution                        | Security hardening     |
-| M3 / Vito    | Testing / QA         | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing, validation evidence                                            | QA validation          |
+| M2 / Ramos   | Testing / QA         | Seed verification, auth testing, RBAC testing, device recognition testing, backend guard testing, validation evidence                                            | QA validation          |
+| M3 / Vito    | Backend Security     | Protect register endpoint, owner-only backend guard, backend auth/RBAC hardening, safe API responses, backend/security blocker resolution                        | Security hardening     |
 
 ## Sprint Metadata
 
@@ -25,9 +25,9 @@ Sprint 2 moves YsabelleStore from static auth mockups into a working authenticat
 
 | Order | Member | Task                                                             |
 | ----- | ------ | ---------------------------------------------------------------- |
-| 1     | M2     | Protect `/api/auth/register` with owner-only backend guard       |
-| 2     | M3     | Test M1 auth flows and M2 backend guard                          |
-| 3     | M1     | Fix UI bugs found by M3                                          |
+| 1     | M3     | Protect `/api/auth/register` with owner-only backend guard       |
+| 2     | M2     | Test M1 auth flows and M3 backend guard                          |
+| 3     | M1     | Fix UI bugs found by M2                                          |
 | 4     | M1     | Maintain Docker setup and `npm run healthcheck` evidence         |
 | 5     | M1     | Keep M1 implementation artifacts synchronized through automation |
 | 6     | All    | Prepare PR to `sprint/v0.2/sprint-2`                             |
@@ -41,8 +41,8 @@ Sprint 2 moves YsabelleStore from static auth mockups into a working authenticat
 | [DEFINITION-OF-DONE.md](DEFINITION-OF-DONE.md) | Defines completion requirements for Sprint 2 work                            |
 | [MEMBER-ASSIGNMENTS.md](MEMBER-ASSIGNMENTS.md) | Indexes the per-member Sprint 2 assignment files                             |
 | [members/m1-abarado.md](members/m1-abarado.md) | M1 auth UI, remembered accounts, RBAC UI, and owner-only Users scope         |
-| [members/m2-ramos.md](members/m2-ramos.md)     | M2 backend auth security hardening scope                                     |
-| [members/m3-vito.md](members/m3-vito.md)       | M3 testing and QA scope                                                      |
+| [members/m2-ramos.md](members/m2-ramos.md)     | M2 testing and QA scope                                                      |
+| [members/m3-vito.md](members/m3-vito.md)       | M3 backend auth security hardening scope                                     |
 
 ## Sprint Rule
 
@@ -54,17 +54,17 @@ Owner-only User Management handles store account creation and staff administrati
 
 | Blocker                                        | Owner             | Status                      |
 | ---------------------------------------------- | ----------------- | --------------------------- |
-| Backend `/api/auth/register` is still public   | M2 / Ramos        | Pending                     |
-| No-token register request must be blocked      | M2 / Ramos        | Pending                     |
-| Invalid-token register request must be blocked | M2 / Ramos        | Pending                     |
-| Staff-token register request must be blocked   | M2 / Ramos        | Pending                     |
-| Inactive-user register request must be blocked | M2 / Ramos        | Pending                     |
-| Owner-token register request must still work   | M2 / Ramos        | Pending                     |
-| M1 UI needs backend confirmation               | M2 then M3        | Pending                     |
+| Backend `/api/auth/register` is still public   | M3 / Vito         | Pending                     |
+| No-token register request must be blocked      | M3 / Vito         | Pending                     |
+| Invalid-token register request must be blocked | M3 / Vito         | Pending                     |
+| Staff-token register request must be blocked   | M3 / Vito         | Pending                     |
+| Inactive-user register request must be blocked | M3 / Vito         | Pending                     |
+| Owner-token register request must still work   | M3 / Vito         | Pending                     |
+| M1 UI needs backend confirmation               | M3 then M2        | Pending                     |
 | Prisma DLL lock during build                   | All / Environment | Known environment issue     |
 | Prisma EPERM during healthcheck build          | All / Environment | Active / Needs verification |
 
-M1 already moved account creation to the owner-only User Management UI, but complete security requires M2 backend enforcement. M1 should not be responsible for fixing backend register protection unless explicitly reassigned. M2 owns backend auth hardening, and M3 validates the final behavior through API and UI tests.
+M1 already moved account creation to the owner-only User Management UI, but complete security requires M3 backend enforcement. M1 should not be responsible for fixing backend register protection unless explicitly reassigned. M3 owns backend auth hardening, and M2 validates the final behavior through API and UI tests.
 
 ## M1 Setup and Validation Additions
 
@@ -80,7 +80,7 @@ M1 already moved account creation to the owner-only User Management UI, but comp
 | --------------------------------------- | --------------------: | -------------------------------------------------------------------------------------------- |
 | Auth Fullstack Flow Foundation          |              Verified | Frontend auth context/API client and backend auth routes/controller/service/middleware exist |
 | Login Page Flow Update                  |              Verified | `WelcomePage` contains login, remembered account, loading, and password visibility flows     |
-| Register Flow Security Decision         | Documented / Verified | Public registration is removed from login UI; backend endpoint remains a tracked M2 blocker  |
+| Register Flow Security Decision         | Documented / Verified | Public registration is removed from login UI; backend endpoint remains a tracked M3 blocker  |
 | Owner-Controlled Staff Account Creation |              Verified | `UserManagementPage` handles owner-side account creation and preserves owner session         |
 | Protected Access / Access Denied UX     |              Verified | Route role metadata, sidebar filtering, and `AccessDeniedPage` are present                   |
 | User Management Direction/Page          |              Verified | `/users` is OWNER-only and points to `UserManagementPage`                                    |
@@ -173,3 +173,12 @@ Generated artifact logs must be reviewed before push.
 | ------------ | ------------------------------ | ---------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | M1 / Abarado | Implementation Artifact Update | Documented | `docs/implementation-artifacts/m1-abarado/BLOCKERS.md`, `docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md`, `docs/implementation-artifacts/m1-abarado/DECISIONS.md`, `docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md`, `docs/implementation-artifacts/m1-abarado/README.md`, and 4 more |
 | M1 / Abarado | Sprint Documentation Update    | Documented | `docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md`, `docs/sprints/sprint-2/README.md`, `docs/sprints/sprint-2/SPRINT-BACKLOG.md`, `docs/sprints/sprint-2/SPRINT-GOAL.md`, `docs/sprints/sprint-2/members/m1-abarado.md`                                                                                           |
+
+<!-- artifact-signature:m1:unstaged changes:2026-07-05:docs/implementation-artifacts/m1-abarado/BLOCKERS.md|docs/sprints/sprint-2/DEFINITION-OF-DONE.md|docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md|docs/sprints/sprint-2/README.md|docs/sprints/sprint-2/SPRINT-BACKLOG.md|docs/sprints/sprint-2/SPRINT-GOAL.md|docs/sprints/sprint-2/members/m1-abarado.md|docs/sprints/sprint-2/members/m2-ramos.md|docs/sprints/sprint-2/members/m3-vito.md:Implementation Artifact Update|Sprint Documentation Update -->
+
+## Auto-Tracked Backlog Update — 2026-07-05 21:21:52 Asia/Manila
+
+| Member       | Task Area                      |     Status | Evidence                                                                                                                                                                                                                       |
+| ------------ | ------------------------------ | ---------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M1 / Abarado | Implementation Artifact Update | Documented | `docs/implementation-artifacts/m1-abarado/BLOCKERS.md`                                                                                                                                                                         |
+| M1 / Abarado | Sprint Documentation Update    | Documented | `docs/sprints/sprint-2/DEFINITION-OF-DONE.md`, `docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md`, `docs/sprints/sprint-2/README.md`, `docs/sprints/sprint-2/SPRINT-BACKLOG.md`, `docs/sprints/sprint-2/SPRINT-GOAL.md`, and 3 more |

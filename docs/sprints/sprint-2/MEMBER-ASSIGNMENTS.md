@@ -4,15 +4,15 @@ Sprint 2 member assignments are separated by member under `members/`. Authentica
 
 ## Member Files
 
-| Member       | Assignment File                                | Sprint Responsibility              |
-| ------------ | ---------------------------------------------- | ---------------------------------- |
-| M1 - Abarado | [members/m1-abarado.md](members/m1-abarado.md) | Full Stack Auth Flow Lead          |
-| M2 - Solo    | [members/m2-ramos.md](members/m2-ramos.md)     | Backend Auth Core Lead             |
-| M3 - James   | [members/m3-vito.md](members/m3-vito.md)       | Database Seed/User Foundation Lead |
+| Member       | Assignment File                                | Sprint Responsibility     |
+| ------------ | ---------------------------------------------- | ------------------------- |
+| M1 - Abarado | [members/m1-abarado.md](members/m1-abarado.md) | Full Stack Auth Flow Lead |
+| M2 - Ramos   | [members/m2-ramos.md](members/m2-ramos.md)     | Testing / QA Lead         |
+| M3 - Vito    | [members/m3-vito.md](members/m3-vito.md)       | Backend Security Lead     |
 
 ## Ownership Rule
 
-M1 owns login UI, account setup UI, auth state, frontend API integration, route protection, switch user, logout, frontend RBAC, Docker development setup, healthcheck script, Sprint 2 setup/documentation alignment, and implementation artifact automation. M2 owns backend auth routes, controller/service logic, validation, token handling, and middleware. M3 owns Prisma user readiness, seed users, role/status checks, password hash seed support, and database validation evidence.
+M1 owns login UI, account setup UI, auth state, frontend API integration, route protection, switch user, logout, frontend RBAC, Docker development setup, healthcheck script, Sprint 2 setup/documentation alignment, and implementation artifact automation. M2 owns QA validation, seed verification, auth/RBAC testing, device recognition testing, backend guard evidence, and bug reporting. M3 owns backend auth routes, controller/service logic, validation, token handling, and middleware.
 
 ## M1 Setup Ownership
 
@@ -81,3 +81,12 @@ M1 owns login UI, account setup UI, auth state, frontend API integration, route 
 | ------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | M1 / Abarado | Implementation Artifacts | `docs/implementation-artifacts/m1-abarado/BLOCKERS.md`, `docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md`, `docs/implementation-artifacts/m1-abarado/DECISIONS.md`, `docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md`, `docs/implementation-artifacts/m1-abarado/README.md`, and 4 more |
 | M1 / Abarado | Sprint Documentation     | `docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md`, `docs/sprints/sprint-2/README.md`, `docs/sprints/sprint-2/SPRINT-BACKLOG.md`, `docs/sprints/sprint-2/SPRINT-GOAL.md`, `docs/sprints/sprint-2/members/m1-abarado.md`                                                                                           |
+
+<!-- artifact-signature:m1:unstaged changes:2026-07-05:docs/implementation-artifacts/m1-abarado/BLOCKERS.md|docs/sprints/sprint-2/DEFINITION-OF-DONE.md|docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md|docs/sprints/sprint-2/README.md|docs/sprints/sprint-2/SPRINT-BACKLOG.md|docs/sprints/sprint-2/SPRINT-GOAL.md|docs/sprints/sprint-2/members/m1-abarado.md|docs/sprints/sprint-2/members/m2-ramos.md|docs/sprints/sprint-2/members/m3-vito.md:Implementation Artifact Update|Sprint Documentation Update -->
+
+## Auto-Tracked Assignment Update — 2026-07-05 21:21:52 Asia/Manila
+
+| Member       | Ownership Area           | Evidence                                                                                                                                                                                                                       |
+| ------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M1 / Abarado | Implementation Artifacts | `docs/implementation-artifacts/m1-abarado/BLOCKERS.md`                                                                                                                                                                         |
+| M1 / Abarado | Sprint Documentation     | `docs/sprints/sprint-2/DEFINITION-OF-DONE.md`, `docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md`, `docs/sprints/sprint-2/README.md`, `docs/sprints/sprint-2/SPRINT-BACKLOG.md`, `docs/sprints/sprint-2/SPRINT-GOAL.md`, and 3 more |

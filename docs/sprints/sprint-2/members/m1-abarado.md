@@ -77,7 +77,7 @@ Own the user-facing authentication flow for Sprint 2 and keep shared local setup
 | Healthcheck Script  | One-command local validation report                                  | Implemented / Needs clean build rerun |
 | Artifact Automation | Require/update M1 artifact evidence from Git changes                 | Implemented                           |
 
-M1 owns the user-facing authentication flow and owner-only User Management UI. Backend/security blockers discovered from M1 work, such as the public register endpoint, are assigned to M2 because they require server-side enforcement. M1 may handle UI fixes found by M3 during QA.
+M1 owns the user-facing authentication flow and owner-only User Management UI. Backend/security blockers discovered from M1 work, such as the public register endpoint, are assigned to M3 because they require server-side enforcement. M1 may handle UI fixes found by M2 during QA.
 
 ## Validation Responsibility
 
@@ -107,9 +107,9 @@ M1 owns the user-facing authentication flow and owner-only User Management UI. B
 
 | Item                                  | Owner                      | Reason                                                |
 | ------------------------------------- | -------------------------- | ----------------------------------------------------- |
-| Backend register endpoint guard       | M2 / Ramos                 | Requires backend auth middleware and server-side RBAC |
-| API-level account creation protection | M2 / Ramos                 | Frontend RBAC is not enough for security              |
-| Full QA validation                    | M3 / Vito                  | M3 owns test evidence and validation                  |
+| Backend register endpoint guard       | M3 / Vito                  | Requires backend auth middleware and server-side RBAC |
+| API-level account creation protection | M3 / Vito                  | Frontend RBAC is not enough for security              |
+| Full QA validation                    | M2 / Ramos                 | M2 owns test evidence and validation                  |
 | Product/inventory/POS modules         | Future sprint/module scope | Not part of Sprint 2 auth ownership                   |
 | SARIMA forecasting                    | Future sprint/module scope | Not part of Sprint 2 auth ownership                   |
 
@@ -178,3 +178,12 @@ M1 owns the user-facing authentication flow and owner-only User Management UI. B
 | ------------------------------ | ---------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
 | Implementation Artifact Update | Documented | `docs/implementation-artifacts/m1-abarado/BLOCKERS.md`, `docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md`, `docs/implementation-artifacts/m1-abarado/DECISIONS.md`, `docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md`, `docs/implementation-artifacts/m1-abarado/README.md`, and 4 more | Pending validation |
 | Sprint Documentation Update    | Documented | `docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md`, `docs/sprints/sprint-2/README.md`, `docs/sprints/sprint-2/SPRINT-BACKLOG.md`, `docs/sprints/sprint-2/SPRINT-GOAL.md`, `docs/sprints/sprint-2/members/m1-abarado.md`                                                                                           | Pending validation |
+
+<!-- artifact-signature:m1:unstaged changes:2026-07-05:docs/implementation-artifacts/m1-abarado/BLOCKERS.md|docs/sprints/sprint-2/DEFINITION-OF-DONE.md|docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md|docs/sprints/sprint-2/README.md|docs/sprints/sprint-2/SPRINT-BACKLOG.md|docs/sprints/sprint-2/SPRINT-GOAL.md|docs/sprints/sprint-2/members/m1-abarado.md|docs/sprints/sprint-2/members/m2-ramos.md|docs/sprints/sprint-2/members/m3-vito.md:Implementation Artifact Update|Sprint Documentation Update -->
+
+## Auto-Tracked Sprint 2 Update — 2026-07-05 21:21:52 Asia/Manila
+
+| Work Area                      |     Status | Evidence                                                                                                                                                                                                                       | Notes              |
+| ------------------------------ | ---------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
+| Implementation Artifact Update | Documented | `docs/implementation-artifacts/m1-abarado/BLOCKERS.md`                                                                                                                                                                         | Pending validation |
+| Sprint Documentation Update    | Documented | `docs/sprints/sprint-2/DEFINITION-OF-DONE.md`, `docs/sprints/sprint-2/MEMBER-ASSIGNMENTS.md`, `docs/sprints/sprint-2/README.md`, `docs/sprints/sprint-2/SPRINT-BACKLOG.md`, `docs/sprints/sprint-2/SPRINT-GOAL.md`, and 3 more | Pending validation |

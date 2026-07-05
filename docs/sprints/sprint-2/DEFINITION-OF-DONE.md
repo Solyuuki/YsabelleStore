@@ -16,9 +16,9 @@ Public registration is removed from the login page. Account creation is handled 
 | Backend register protected        | `/api/auth/register` requires owner authentication                                    |
 | API access tested                 | No-token, invalid-token, inactive-user, and staff-token register attempts are blocked |
 | Owner account creation tested     | Owner-token register attempt works                                                    |
-| M1 blockers assigned              | Backend/security blockers from M1 are assigned to M2                                  |
-| M2 backend hardening complete     | Backend owner-only guard behavior is documented                                       |
-| M3 QA checklist completed         | Auth, RBAC, quick access, and backend guard tests are documented                      |
+| M1 blockers assigned              | Backend/security blockers from M1 are assigned to M3                                  |
+| M3 backend hardening complete     | Backend owner-only guard behavior is documented                                       |
+| M2 QA checklist completed         | Auth, RBAC, quick access, and backend guard tests are documented                      |
 | Validation recorded               | Format, lint, typecheck, audit, Prisma validate, and build are documented             |
 | Prisma DLL lock documented        | If build fails due Windows Prisma DLL lock, it is classified as environment-only      |
 
