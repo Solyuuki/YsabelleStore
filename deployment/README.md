@@ -40,6 +40,40 @@ Development
 - The deployment process should support local MySQL and offline use.
 - No cloud hosting, release publishing, or auto-update logic belongs here.
 
+## Local Development Deployment Notes
+
+Docker Compose is used only to provide the local MySQL database during development. It does not replace the npm workspace commands for the backend, frontend, or Electron app.
+
+Recommended local setup after pulling the repository:
+
+```bash
+npm ci
+cp .env.example .env
+docker compose up -d
+npm run prisma:validate
+npm run dev --workspace backend
+npm run dev --workspace frontend
+```
+
+For Windows PowerShell, copy the environment file with:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Stop the local database:
+
+```bash
+docker compose down
+```
+
+Reset the local database volume only when local data can be deleted:
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
 ## Validation Checklist
 
 - [x] Purpose is defined

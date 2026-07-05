@@ -12,6 +12,55 @@ This folder is the controlled database foundation for YsabelleStore. Sprint 1 no
 | Database docs | Records schema decisions, naming, migration workflow, and validation rules | Keep aligned with `schema.prisma`            |
 | Environment   | Documents the `DATABASE_URL` contract                                      | Never hardcode credentials in committed code |
 
+## Local Docker MySQL
+
+Sprint 2 adds a database-only Docker Compose setup so every member can use the same local MySQL version and credentials without manually creating a database first.
+
+The root `.env` file is the main development environment file. Create it from `.env.example`, then start MySQL:
+
+```bash
+npm ci
+cp .env.example .env
+docker compose up -d
+```
+
+For Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+The Docker MySQL settings are:
+
+| Variable              | Development Value                                                       |
+| --------------------- | ----------------------------------------------------------------------- |
+| `MYSQL_DATABASE`      | `ysabelle_store`                                                        |
+| `MYSQL_USER`          | `ysabelle_user`                                                         |
+| `MYSQL_PASSWORD`      | `ysabelle_password`                                                     |
+| `MYSQL_ROOT_PASSWORD` | `ysabelle_root_password`                                                |
+| `DATABASE_URL`        | `mysql://ysabelle_user:ysabelle_password@localhost:3306/ysabelle_store` |
+
+Stop MySQL:
+
+```bash
+docker compose down
+```
+
+Reset MySQL data:
+
+Warning: this deletes the local Docker database volume and all local database data.
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+Validate the Prisma schema after MySQL is running:
+
+```bash
+npm run prisma:validate
+```
+
 ## Structure Overview
 
 ```text

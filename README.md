@@ -80,6 +80,77 @@ Electron Desktop App
   -> Recommendation Engine
 ```
 
+## Local Development Setup
+
+The root `.env` file is the main development environment file. Create it from the committed example before starting the app:
+
+```bash
+npm ci
+cp .env.example .env
+```
+
+For Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### Docker MySQL
+
+Docker is used for the local MySQL database only. The frontend, backend, and Electron development workflow still runs through npm workspaces.
+
+Start MySQL:
+
+```bash
+docker compose up -d
+```
+
+Check the container:
+
+```bash
+docker compose ps
+```
+
+Stop MySQL:
+
+```bash
+docker compose down
+```
+
+Reset MySQL data:
+
+Warning: this deletes the local Docker database volume and all local database data.
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+Validate Prisma:
+
+```bash
+npm run prisma:validate
+```
+
+Run the backend and frontend:
+
+```bash
+npm run dev --workspace backend
+npm run dev --workspace frontend
+```
+
+Recommended team pull workflow:
+
+```bash
+git pull
+npm ci
+cp .env.example .env
+docker compose up -d
+npm run prisma:validate
+npm run dev --workspace backend
+npm run dev --workspace frontend
+```
+
 ## Recommendation Outputs
 
 | Output                 | Purpose                                                                       |

@@ -87,15 +87,38 @@ The canonical API contract lives in `docs/api/`. Backend implementations must fo
 
 ## Environment Setup
 
-Create `backend/.env` from `backend/.env.example` for local development.
+The backend loads the root `.env` file for local development. Create it from the committed root `.env.example` before starting the backend:
 
-| Variable       | Required For                        | Example                                              |
-| -------------- | ----------------------------------- | ---------------------------------------------------- |
-| `NODE_ENV`     | Runtime mode                        | `development`                                        |
-| `PORT`         | Backend HTTP port                   | `3001`                                               |
-| `CORS_ORIGIN`  | Frontend development origin         | `http://localhost:5173`                              |
-| `DATABASE_URL` | Future Prisma and MySQL integration | `mysql://user:password@localhost:3306/ysabellestore` |
-| `JWT_SECRET`   | Future authentication signing       | `change_this_development_secret`                     |
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+For Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Docker currently provides MySQL only. Run the backend through the existing npm workspace command:
+
+```bash
+npm run dev --workspace backend
+```
+
+| Variable       | Required For                        | Example                                                                 |
+| -------------- | ----------------------------------- | ----------------------------------------------------------------------- |
+| `NODE_ENV`     | Runtime mode                        | `development`                                                           |
+| `PORT`         | Backend HTTP port                   | `3001`                                                                  |
+| `CORS_ORIGIN`  | Frontend development origin         | `http://localhost:5173`                                                 |
+| `DATABASE_URL` | Prisma and Docker MySQL integration | `mysql://ysabelle_user:ysabelle_password@localhost:3306/ysabelle_store` |
+| `JWT_SECRET`   | Future authentication signing       | `change_this_development_secret`                                        |
+
+Validate Prisma from the repository root:
+
+```bash
+npm run prisma:validate
+```
 
 ## Validation Pattern
 
