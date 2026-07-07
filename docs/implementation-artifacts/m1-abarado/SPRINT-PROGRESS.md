@@ -50,8 +50,8 @@ M1 Sprint 1 frontend shell and governance responsibilities are complete based on
 
 <!-- AUTO-UPDATE:START -->
 
-| Date       | Branch                           | Member     | Progress Summary                                                           | Changed Areas        | Validation Status |
-| ---------- | -------------------------------- | ---------- | -------------------------------------------------------------------------- | -------------------- | ----------------- |
-| 2026-07-07 | m1/v0.2/feat/auth-fullstack-flow | M1 Abarado | Automation / validation scripts<br>Sprint and implementation documentation | Docs<br>Scripts / CI | Passed            |
+| Date       | Branch                           | Member     | Progress Summary                                                                        | Changed Areas    | Validation Status |
+| ---------- | -------------------------------- | ---------- | --------------------------------------------------------------------------------------- | ---------------- | ----------------- |
+| 2026-07-07 | m1/v0.2/feat/auth-fullstack-flow | M1 Abarado | Authentication / trusted device login / RBAC<br>Sprint and implementation documentation | Docs<br>Frontend | Passed            |
 
 <!-- AUTO-UPDATE:END -->

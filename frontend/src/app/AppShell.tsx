@@ -2,8 +2,8 @@ import { Boxes, Package, ReceiptText } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
-import { useAuth } from "@/context/AuthContext";
 import { AppLayout } from "@/layouts/AppLayout";
+import { useAuth } from "@/context/AuthContext";
 import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ModulePage } from "@/pages/ModulePage";
@@ -34,18 +34,20 @@ function getCurrentPath() {
 export function AppShell() {
   const {
     error,
+    continueWithTrustedDevice,
+    isAuthReady,
     login,
     logout,
     rememberedAccounts,
     removeRememberedAccount,
     register,
-    selectRememberedAccount,
     status,
     switchUser,
     user
   } = useAuth();
   const [path, setPath] = useState(getCurrentPath);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.innerWidth < 1280);
+  const [showLaunchSplash, setShowLaunchSplash] = useState(false);
 
   useEffect(() => {
     const handlePopState = () => setPath(getCurrentPath());
@@ -72,6 +74,10 @@ export function AppShell() {
   }, [logout, navigate]);
 
   useEffect(() => {
+    if (!isAuthReady) {
+      return;
+    }
+
     if (status === "authenticated" && path === "/") {
       navigate("/dashboard");
     }
@@ -79,7 +85,26 @@ export function AppShell() {
     if (status === "unauthenticated" && path !== "/") {
       navigate("/");
     }
-  }, [navigate, path, status]);
+  }, [isAuthReady, navigate, path, status]);
+
+  useEffect(() => {
+    if (isAuthReady) {
+      setShowLaunchSplash(false);
+      return;
+    }
+
+    const splashTimer = window.setTimeout(() => {
+      setShowLaunchSplash(true);
+    }, 180);
+
+    return () => {
+      window.clearTimeout(splashTimer);
+    };
+  }, [isAuthReady]);
+
+  if (!isAuthReady || (status === "authenticated" && path === "/")) {
+    return showLaunchSplash ? <LaunchSplash /> : null;
+  }
 
   if (status !== "authenticated" || path === "/") {
     return (
@@ -90,7 +115,7 @@ export function AppShell() {
         user={user}
         onLogin={login}
         onNavigate={navigate}
-        onRememberedAccountSelect={selectRememberedAccount}
+        onContinueWithTrustedDevice={continueWithTrustedDevice}
         onRemoveRememberedAccount={removeRememberedAccount}
         onSwitchUser={switchUser}
       />
@@ -108,6 +133,28 @@ export function AppShell() {
     >
       {renderRoute(path, routeForLayout, navigate, user, error, register)}
     </AppLayout>
+  );
+}
+
+function LaunchSplash() {
+  return (
+    <main className="welcome-ambient relative flex min-h-screen overflow-hidden text-slate-950">
+      <div className="welcome-ambient-blob left-[8%] top-[12%] h-[clamp(15rem,24vw,28rem)] w-[clamp(15rem,24vw,28rem)] bg-emerald-200" />
+      <div className="welcome-ambient-blob right-[7%] top-[8%] h-[clamp(16rem,26vw,32rem)] w-[clamp(16rem,26vw,32rem)] bg-blue-200 animation-delay-7000" />
+      <div className="welcome-ambient-blob bottom-[2%] left-[38%] h-[clamp(14rem,22vw,26rem)] w-[clamp(14rem,22vw,26rem)] bg-violet-200 animation-delay-14000" />
+
+      <div className="relative z-10 flex flex-1 items-center justify-center px-6">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-white/75 shadow-[0_18px_48px_rgba(15,23,42,0.12)] backdrop-blur-md">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
+          </div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-700/90">
+            Checking session
+          </p>
+          <p className="text-sm font-medium text-slate-700">Opening YsabelleStore...</p>
+        </div>
+      </div>
+    </main>
   );
 }
 

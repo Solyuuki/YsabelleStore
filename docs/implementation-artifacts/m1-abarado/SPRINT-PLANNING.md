@@ -30,8 +30,8 @@
 
 <!-- AUTO-UPDATE:START -->
 
-| Date       | Next Recommended Task                            | QA Focus                                               | Affected Module      | Priority |
-| ---------- | ------------------------------------------------ | ------------------------------------------------------ | -------------------- | -------- |
-| 2026-07-07 | Review generated artifact updates before commit. | Backend/database validation and migration application. | Docs<br>Scripts / CI | High     |
+| Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module  | Priority |
+| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | ---------------- | -------- |
+| 2026-07-07 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend | High     |
 
 <!-- AUTO-UPDATE:END -->

@@ -25,6 +25,9 @@ const TRUSTED_DEVICE_USER_INACTIVE_MESSAGE =
   "Account access is inactive. Please contact the owner.";
 const TRUSTED_DEVICE_SUCCESS_MESSAGE = "Device recognized. Welcome back.";
 const SAVED_ACCOUNT_MESSAGE = "Saved account found. Please sign in to continue.";
+const SESSION_RESTORED_TITLE = "Session restored";
+const SESSION_RESTORED_MESSAGE = "You were returned to where you left off.";
+const SESSION_RESTORED_DURATION_MS = 11000;
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -47,11 +50,12 @@ export type RememberedAccount = {
 
 type AuthContextValue = {
   error: string | null;
+  isAuthReady: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  continueWithTrustedDevice: (account: RememberedAccount) => Promise<boolean>;
   rememberedAccounts: RememberedAccount[];
   removeRememberedAccount: (id: string) => Promise<void>;
-  selectRememberedAccount: (account: RememberedAccount) => Promise<boolean>;
   register: (input: RegisterInput, options?: RegisterOptions) => Promise<boolean>;
   switchUser: () => Promise<void>;
   status: AuthStatus;
@@ -72,7 +76,18 @@ type AuthErrorPayload = {
   code?: string;
 };
 
+type StartupAuthResolution = {
+  sourceToken: string | null;
+  user: AuthUser | null;
+  valid: boolean;
+};
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+const STARTUP_AUTH_NONE_KEY = "__startup_auth_none__";
+const startupAuthResolutionCache = new Map<string, StartupAuthResolution>();
+const startupAuthResolutionPromiseCache = new Map<string, Promise<StartupAuthResolution>>();
+let startupRestoreToastToken: string | null = null;
 
 function logAuthDiagnostic(event: string, details: Record<string, unknown>) {
   if (!import.meta.env.DEV) {
@@ -176,31 +191,6 @@ function writeTrustedDeviceTokens(tokens: TrustedDeviceTokenStore) {
   localStorage.setItem(TRUSTED_DEVICE_TOKENS_KEY, JSON.stringify(tokens));
 }
 
-function findTrustedDeviceTokenForRestore() {
-  const accounts = readRememberedAccounts();
-  const tokens = readTrustedDeviceTokens();
-  const account = accounts.find((item) => tokens[item.id]);
-
-  if (!account) {
-    logAuthDiagnostic("trusted-device restore skipped", {
-      rememberedAccountCount: accounts.length,
-      reason: "missing_trusted_device_token"
-    });
-    return null;
-  }
-
-  logAuthDiagnostic("trusted-device restore candidate found", {
-    accountId: account.id,
-    email: account.email,
-    trustedDeviceTokenExists: true
-  });
-
-  return {
-    accountId: account.id,
-    trustedDeviceToken: tokens[account.id]
-  };
-}
-
 function buildRememberedAccount(
   user: AuthUser,
   lastUsedAt = new Date().toISOString()
@@ -270,10 +260,94 @@ function resolveRegisterToast(response: ApiResponse<unknown, AuthErrorPayload>):
   };
 }
 
+function getStartupAuthCacheKey(token: string | null) {
+  return token ?? STARTUP_AUTH_NONE_KEY;
+}
+
+function getCachedStartupAuthResolution(token: string | null) {
+  return startupAuthResolutionCache.get(getStartupAuthCacheKey(token)) ?? null;
+}
+
+async function getStartupAuthResolution(token: string | null): Promise<StartupAuthResolution> {
+  const cacheKey = getStartupAuthCacheKey(token);
+  const cachedResolution = startupAuthResolutionCache.get(cacheKey);
+
+  if (cachedResolution) {
+    return cachedResolution;
+  }
+
+  const cachedPromise = startupAuthResolutionPromiseCache.get(cacheKey);
+
+  if (cachedPromise) {
+    return cachedPromise;
+  }
+
+  const resolutionPromise = (async () => {
+    if (!token) {
+      const resolution = {
+        sourceToken: null,
+        user: null,
+        valid: false
+      } satisfies StartupAuthResolution;
+
+      startupAuthResolutionCache.set(cacheKey, resolution);
+      return resolution;
+    }
+
+    try {
+      const response = await apiClient.request<CurrentUserResponse>("/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.success && response.data?.user) {
+        const resolution = {
+          sourceToken: token,
+          user: response.data.user,
+          valid: true
+        } satisfies StartupAuthResolution;
+
+        startupAuthResolutionCache.set(cacheKey, resolution);
+        return resolution;
+      }
+    } catch {
+      // Falling through to the unauthenticated resolution keeps startup deterministic.
+    }
+
+    const resolution = {
+      sourceToken: token,
+      user: null,
+      valid: false
+    } satisfies StartupAuthResolution;
+
+    startupAuthResolutionCache.set(cacheKey, resolution);
+    return resolution;
+  })().finally(() => {
+    startupAuthResolutionPromiseCache.delete(cacheKey);
+  });
+
+  startupAuthResolutionPromiseCache.set(cacheKey, resolutionPromise);
+  return resolutionPromise;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<AuthStatus>("loading");
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem(AUTH_TOKEN_KEY));
+  const storedAuthToken = localStorage.getItem(AUTH_TOKEN_KEY);
+  const cachedStartupResolution = getCachedStartupAuthResolution(storedAuthToken);
+  const [status, setStatus] = useState<AuthStatus>(() =>
+    cachedStartupResolution?.valid
+      ? "authenticated"
+      : storedAuthToken
+        ? "loading"
+        : "unauthenticated"
+  );
+  const [isAuthReady, setIsAuthReady] = useState(
+    () => storedAuthToken === null || Boolean(cachedStartupResolution?.valid)
+  );
+  const [user, setUser] = useState<AuthUser | null>(() => cachedStartupResolution?.user ?? null);
+  const [token, setToken] = useState<string | null>(() =>
+    cachedStartupResolution?.valid ? cachedStartupResolution.sourceToken : storedAuthToken
+  );
   const [rememberedAccounts, setRememberedAccounts] = useState<RememberedAccount[]>(() =>
     readRememberedAccounts()
   );
@@ -281,8 +355,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     readTrustedDeviceTokens()
   );
   const [error, setError] = useState<string | null>(null);
-  const skipAutomaticTrustedRestoreRef = useRef(false);
   const { clearToastScope, pushToast } = useToast();
+  const initialAuthTokenRef = useRef(token);
 
   const pushAuthToast = useCallback(
     (toast: ToastInput) => {
@@ -318,7 +392,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearAuthToken]);
 
   const applySession = useCallback((session: AuthSession) => {
-    skipAutomaticTrustedRestoreRef.current = false;
     localStorage.setItem(AUTH_TOKEN_KEY, session.token);
     setToken(session.token);
     setUser(session.user);
@@ -372,144 +445,99 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-
-    async function restoreFromTrustedDevice() {
-      if (skipAutomaticTrustedRestoreRef.current) {
-        logAuthDiagnostic("trusted-device restore skipped", {
-          reason: "manual_logout"
-        });
-
-        if (active) {
-          setStatus("unauthenticated");
-        }
-
-        return;
-      }
-
-      const trustedDevice = findTrustedDeviceTokenForRestore();
-
-      if (!trustedDevice) {
-        if (active) {
-          setStatus("unauthenticated");
-        }
-
-        return;
-      }
-
-      try {
-        const response: ApiResponse<AuthSession, AuthErrorPayload> = await apiClient.request(
-          "/api/auth/trusted-device/session",
-          {
-            method: "POST",
-            json: {
-              trustedDeviceToken: trustedDevice.trustedDeviceToken
-            }
-          }
-        );
-
-        if (!active) {
-          return;
-        }
-
-        if (response.success && response.data) {
-          applySession(response.data);
-          rememberAccount(response.data.user);
-          logAuthDiagnostic("trusted-device restore succeeded", {
-            accountId: response.data.user.id,
-            email: response.data.user.email
-          });
-          return;
-        }
-
-        {
-          const failureMessage = resolveTrustedDeviceFailureMessage(getAuthErrorCode(response));
-
-          clearTrustedDeviceToken(trustedDevice.accountId);
-          setError(failureMessage);
-          pushAuthToast({
-            message: failureMessage,
-            title:
-              failureMessage === TRUSTED_DEVICE_FORGOTTEN_MESSAGE
-                ? "Device forgotten"
-                : "Device verification failed",
-            variant: "warning"
-          });
-        }
-        setStatus("unauthenticated");
-        logAuthDiagnostic("trusted-device restore rejected", {
-          accountId: trustedDevice.accountId,
-          code: getAuthErrorCode(response) ?? "UNKNOWN_REJECTION"
-        });
-      } catch {
-        if (active) {
-          clearTrustedDeviceToken(trustedDevice.accountId);
-          setError(TRUSTED_DEVICE_FAILED_MESSAGE);
-          setStatus("unauthenticated");
-          pushAuthToast({
-            message: TRUSTED_DEVICE_FAILED_MESSAGE,
-            title: "Device verification failed",
-            variant: "warning"
-          });
-          logAuthDiagnostic("trusted-device restore failed", {
-            accountId: trustedDevice.accountId,
-            code: "BACKEND_OR_NETWORK_ERROR"
-          });
-        }
-      }
-    }
+    const isStartupToken = token !== null && token === initialAuthTokenRef.current;
 
     async function loadCurrentUser() {
-      if (!token) {
-        await restoreFromTrustedDevice();
+      const resolution = await getStartupAuthResolution(token);
+
+      if (!active) {
         return;
       }
 
-      setStatus("loading");
+      if (resolution.valid && resolution.user) {
+        setUser(resolution.user);
+        setError(null);
+        setStatus("authenticated");
+        setIsAuthReady(true);
+        rememberAccount(resolution.user);
 
-      try {
-        const response = await apiClient.request<CurrentUserResponse>("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        if (!active) {
-          return;
+        if (isStartupToken && startupRestoreToastToken !== resolution.sourceToken) {
+          startupRestoreToastToken = resolution.sourceToken;
+          pushAuthToast({
+            durationMs: SESSION_RESTORED_DURATION_MS,
+            message: SESSION_RESTORED_MESSAGE,
+            title: SESSION_RESTORED_TITLE,
+            variant: "info"
+          });
         }
 
-        if (response.success && response.data?.user) {
-          setUser(response.data.user);
-          setError(null);
-          setStatus("authenticated");
-          rememberAccount(response.data.user);
-          return;
-        }
-
-        clearAuthToken();
-        await restoreFromTrustedDevice();
-      } catch {
-        if (active) {
-          clearAuthToken();
-          await restoreFromTrustedDevice();
-        }
+        return;
       }
+
+      if (resolution.sourceToken) {
+        clearAuthToken();
+      }
+
+      setUser(null);
+      setError(null);
+      setStatus("unauthenticated");
+      setIsAuthReady(true);
     }
 
+    const cachedResolution = getCachedStartupAuthResolution(token);
+
+    if (cachedResolution) {
+      if (cachedResolution.valid && cachedResolution.user) {
+        setUser(cachedResolution.user);
+        setError(null);
+        setStatus("authenticated");
+        setIsAuthReady(true);
+        rememberAccount(cachedResolution.user);
+
+        if (isStartupToken && startupRestoreToastToken !== cachedResolution.sourceToken) {
+          startupRestoreToastToken = cachedResolution.sourceToken;
+          pushAuthToast({
+            durationMs: SESSION_RESTORED_DURATION_MS,
+            message: SESSION_RESTORED_MESSAGE,
+            title: SESSION_RESTORED_TITLE,
+            variant: "info"
+          });
+        }
+      } else {
+        if (cachedResolution.sourceToken) {
+          clearAuthToken();
+        }
+
+        setUser(null);
+        setError(null);
+        setStatus("unauthenticated");
+        setIsAuthReady(true);
+      }
+
+      return () => {
+        active = false;
+      };
+    }
+
+    if (!token) {
+      setUser(null);
+      setError(null);
+      setStatus("unauthenticated");
+      setIsAuthReady(true);
+      return () => {
+        active = false;
+      };
+    }
+
+    setStatus("loading");
     void loadCurrentUser();
 
     return () => {
       active = false;
     };
-  }, [
-    applySession,
-    clearAuthToken,
-    clearTrustedDeviceToken,
-    pushAuthToast,
-    rememberAccount,
-    token
-  ]);
+  }, [clearAuthToken, pushAuthToast, rememberAccount, token]);
 
-  const selectRememberedAccount = useCallback(
+  const continueWithTrustedDevice = useCallback(
     async (account: RememberedAccount) => {
       const trustedDeviceToken = trustedDeviceTokens[account.id];
       let trustedDeviceFailureMessage = TRUSTED_DEVICE_FAILED_MESSAGE;
@@ -535,7 +563,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        skipAutomaticTrustedRestoreRef.current = false;
+        // Trusted devices are intentionally user-initiated. A remembered trusted device must not
+        // auto-login on startup.
         const response: ApiResponse<AuthSession, AuthErrorPayload> = await apiClient.request(
           "/api/auth/trusted-device/session",
           {
@@ -589,7 +618,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           trustedDeviceFailureMessage === TRUSTED_DEVICE_FORGOTTEN_MESSAGE
             ? "Device forgotten"
             : "Device verification failed",
-        variant: "warning"
+        variant: "error"
       });
       return false;
     },
@@ -605,7 +634,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string) => {
-      skipAutomaticTrustedRestoreRef.current = false;
       setStatus("loading");
       setError(null);
 
@@ -753,7 +781,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Logout signs out the current JWT session only.
       // Forget device revokes the trusted-device token used for passwordless restore.
-      skipAutomaticTrustedRestoreRef.current = true;
       clearSession();
 
       if (currentToken) {
@@ -780,7 +807,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await performLogout({
       message: "Signed out.",
       title: "Signed out",
-      variant: "info"
+      variant: "warning"
     });
   }, [performLogout]);
 
@@ -814,7 +841,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       pushAuthToast({
         message: "This device will require a password for that account.",
         title: "Device forgotten",
-        variant: "info"
+        variant: "warning"
       });
     },
     [clearRememberedAccount, clearTrustedDeviceToken, pushAuthToast, trustedDeviceTokens]
@@ -832,11 +859,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       error,
+      continueWithTrustedDevice,
+      isAuthReady,
       login,
       logout,
       rememberedAccounts: rememberedAccountsForDisplay,
       removeRememberedAccount,
-      selectRememberedAccount,
       register,
       switchUser,
       status,
@@ -844,13 +872,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }),
     [
       clearRememberedAccount,
+      continueWithTrustedDevice,
       error,
+      isAuthReady,
       login,
       logout,
-      pushAuthToast,
       rememberedAccountsForDisplay,
       register,
-      selectRememberedAccount,
       removeRememberedAccount,
       status,
       switchUser,
