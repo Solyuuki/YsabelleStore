@@ -1,72 +1,92 @@
-# m3 - Vito
+# M3 - Vito
 
 ## Role
 
-Database and Prisma Lead.
+Testing / QA Lead.
 
 ## Sprint Focus
 
-Prepare database support for authentication.
+Validate the Sprint 2 authentication, RBAC, backend guard, and seed behavior through repeatable QA evidence.
 
 ## Assigned Scope
 
-| Area                    | Scope                                              |
-| ----------------------- | -------------------------------------------------- |
-| Prisma user integration | Plan user lookup and role/status usage             |
-| Seed users              | Plan owner and staff development users             |
-| Migration validation    | Plan migration and Prisma validation evidence      |
-| Password hash storage   | Plan safe password hash storage                    |
-| Database verification   | Plan database verification for auth readiness      |
-| Product data planning   | Support product backend data planning after auth   |
-| Inventory data planning | Support inventory backend data planning after auth |
+| Area                       | Scope                                                                  |
+| -------------------------- | ---------------------------------------------------------------------- |
+| Seed verification          | Confirm owner and staff development accounts are active and usable     |
+| Auth testing               | Validate login, logout, switch user, and invalid login behavior        |
+| RBAC testing               | Verify owner-only Users access and staff denial behavior               |
+| Device recognition testing | Confirm remembered-account quick access and token/session verification |
+| Backend guard testing      | Validate register endpoint behavior after M2 hardening                 |
+| Validation evidence        | Capture terminal output, screenshots, and API responses                |
+| Bug reports                | Document issues with severity and reproduction steps                   |
 
 ## Assigned Tasks
 
-| Task | Description                                                          |
-| ---- | -------------------------------------------------------------------- |
-| 1    | Plan Prisma user integration                                         |
-| 2    | Plan owner/staff seed users                                          |
-| 3    | Plan migration validation                                            |
-| 4    | Plan password hash storage                                           |
-| 5    | Plan database verification                                           |
-| 6    | Support product/inventory backend data planning after authentication |
+| Task | Description                                                   |
+| ---- | ------------------------------------------------------------- |
+| 1    | Verify owner login and dashboard access                       |
+| 2    | Verify staff login with limited access                        |
+| 3    | Verify invalid login and logout behavior                      |
+| 4    | Verify switch user and remembered-account quick access        |
+| 5    | Verify owner-only Users page and staff access denied behavior |
+| 6    | Validate backend register protection after M2 work            |
+| 7    | Confirm seed user readiness and Prisma validation results     |
+| 8    | Record bugs, evidence, and final QA notes                     |
 
-## Expected Output
+## M3 Test Area Table
 
-| Output                       | Description                                      |
-| ---------------------------- | ------------------------------------------------ |
-| Database authentication plan | User, role, status, and password hash plan       |
-| Seed user plan               | Development owner/staff account plan             |
-| Prisma validation plan       | Prisma schema and client readiness plan          |
-| Migration verification notes | Migration status and database verification notes |
+| Priority | M3 Test Area                | Description                                                                                        | Expected Evidence      |
+| -------- | --------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------- |
+| P0       | Owner login                 | Verify owner can log in and reach dashboard                                                        | Screenshot / test note |
+| P0       | Staff login                 | Verify staff can log in with limited access                                                        | Screenshot / test note |
+| P0       | Invalid login               | Verify wrong credentials show error toast                                                          | Screenshot             |
+| P0       | Logout                      | Verify session clears properly                                                                     | Screenshot / test note |
+| P0       | Switch user                 | Verify remembered account and login fallback behavior                                              | Screenshot             |
+| P0       | Device recognition          | Verify quick access flow and device recognized toast                                               | Screenshot             |
+| P0       | Owner-only Users page       | Verify owner can access `/users`                                                                   | Screenshot             |
+| P0       | Staff access denied         | Verify staff cannot access `/users`                                                                | Screenshot             |
+| P0       | Backend register protection | Verify no-token, invalid-token, staff-token, inactive-user, and owner-token behavior after M2 work | API result             |
+| P1       | Seed verification           | Confirm owner and staff seed accounts are active and usable                                        | Terminal output        |
+| P1       | Validation commands         | Run format, lint, typecheck, audit, Prisma validate, and build                                     | Terminal output        |
+| P1       | Bug reporting               | List issues with severity and reproduction steps                                                   | QA report              |
 
-## Dependencies
+## M2 Blocker Validation
 
-| Dependency          | Reason                                           |
-| ------------------- | ------------------------------------------------ |
-| Existing User model | Auth planning depends on Prisma user schema      |
-| Backend auth plan   | m2 service logic depends on database access plan |
-| Seed policy         | Development accounts must remain non-production  |
+After M2 completes backend auth hardening, M3 must validate that the blockers are resolved.
+
+| Blocker Tested                 | Expected Result                                    | Evidence Required                       |
+| ------------------------------ | -------------------------------------------------- | --------------------------------------- |
+| No-token register request      | `401 Unauthorized`                                 | API response screenshot/terminal output |
+| Invalid-token register request | `401 Unauthorized`                                 | API response screenshot/terminal output |
+| Staff-token register request   | `403 Forbidden`                                    | API response screenshot/terminal output |
+| Inactive-user register request | `403 Forbidden`                                    | API response screenshot/terminal output |
+| Owner-token register request   | Account creation succeeds                          | API response screenshot/terminal output |
+| Staff direct `/users` route    | Access Denied page                                 | UI screenshot                           |
+| Owner `/users` route           | User Management page opens                         | UI screenshot                           |
+| Device recognition             | Remembered account flow verifies session           | UI screenshot                           |
+| Wrong password                 | Error toast appears and user remains on login page | UI screenshot                           |
 
 ## Validation Responsibility
 
-| Validation Area | Responsibility                                          |
-| --------------- | ------------------------------------------------------- |
-| Prisma          | Prisma validation and user model readiness              |
-| Seed users      | Seed account documentation and credential safety review |
-| Migration       | Migration verification and database readiness notes     |
+| Validation Area   | Responsibility                                                                                        |
+| ----------------- | ----------------------------------------------------------------------------------------------------- |
+| QA                | Auth behavior, RBAC behavior, device recognition, backend guard verification, and evidence collection |
+| Seed verification | Owner/staff development account readiness and role correctness                                        |
+| Documentation     | Record results clearly for Sprint 2 sign-off review                                                   |
 
-## Risks / Notes
+## Out of Scope
 
-| Risk or Note                           | Mitigation                                              |
-| -------------------------------------- | ------------------------------------------------------- |
-| Seed credentials treated as production | Mark seed users development-only and document overrides |
-| Migration status is unclear            | Record migration validation before sprint close         |
-| Backend assumptions mismatch schema    | Coordinate product/inventory planning with m2           |
+| Out of Scope                          | Reason                                |
+| ------------------------------------- | ------------------------------------- |
+| Main feature implementation           | M3 is QA/testing focused for Sprint 2 |
+| Backend register guard implementation | Owned by M2                           |
+| Frontend auth UI implementation       | Owned by M1                           |
+| Product/inventory/POS modules         | Future sprint/module scope            |
+| SARIMA forecasting                    | Future sprint/module scope            |
 
 ## Status
 
-| Item           | Status                                |
-| -------------- | ------------------------------------- |
-| Sprint 2 role  | Planned                               |
-| Implementation | Not started in this planning document |
+| Item           | Status    |
+| -------------- | --------- |
+| Sprint 2 role  | Completed |
+| Implementation | Completed |

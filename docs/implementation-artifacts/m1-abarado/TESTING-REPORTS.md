@@ -31,6 +31,22 @@
 | 2026-06-27 | `npm run build` without `DATABASE_URL`   | Failed | Failure was limited to missing Prisma validation environment variable.                    |
 | 2026-06-27 | Root build with temporary `DATABASE_URL` | Passed | Historical report records frontend, backend, Electron, and Prisma validation passed.      |
 | 2026-06-27 | `npm audit --audit-level=high`           | Passed | Historical report records 0 vulnerabilities.                                              |
+| 2026-07-07 | `npm run format`                         | Passed | Completed successfully.                                                                   |
+| 2026-07-07 | `npm run format:check`                   | Passed | Completed successfully.                                                                   |
+| 2026-07-07 | `npm run lint`                           | Passed | Passed with existing Node module-type warning only.                                       |
+| 2026-07-07 | `npm run typecheck --workspace frontend` | Passed | Completed successfully.                                                                   |
+| 2026-07-07 | `npm run typecheck --workspace backend`  | Passed | Completed successfully.                                                                   |
+| 2026-07-07 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                                                                   |
+| 2026-07-07 | `npm run build`                          | Passed | Build completed successfully.                                                             |
+| 2026-07-07 | `npm audit --audit-level=high`           | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run format`                         | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run format:check`                   | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run lint`                           | Passed | Passed with existing Node module-type warning only.                                       |
+| 2026-07-08 | `npm run typecheck --workspace frontend` | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run typecheck --workspace backend`  | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run build`                          | Passed | Build completed successfully.                                                             |
+| 2026-07-08 | `npm audit --audit-level=high`           | Passed | Completed successfully.                                                                   |
 
 ## Manual Review Evidence
 
@@ -39,6 +55,8 @@
 | 2026-06-27 | Welcome screen and footer                     | Passed by visual review evidence in committed screenshots | Screenshot artifacts were restored from Git history during 2026-06-29 reconstruction.                                       |
 | 2026-06-27 | Dashboard shell collapsed and expanded states | Passed by visual review evidence in committed screenshots | Screenshot artifacts are historical review aids, not runtime dependencies.                                                  |
 | 2026-06-29 | Sidebar route comparison                      | Passed analysis                                           | M1 route/page files are present in current `frontend/src/**`; M3 branch frontend replacement is documented as a merge risk. |
+| 2026-07-07 | Changed files                                 | Not required by changed files                             | No changed user-facing flow was detected by the artifact update.                                                            |
+| 2026-07-08 | Changed files                                 | Not required by changed files                             | No changed user-facing flow was detected by the artifact update.                                                            |
 
 ## Validation Limits
 
@@ -47,3 +65,111 @@
 | Electron packaged installer   | Not run historically in available evidence | Electron foundation exists, but no packaged `.exe` validation artifact is present. |
 | Browser/Electron console logs | Not available in repository                | No saved console transcript was found.                                             |
 | Automated UI tests            | Not present                                | No Playwright/Cypress test suite exists in repository dependencies.                |
+
+## Historical Validation Detail
+
+| Date       | Command          | Result | Notes                   |
+| ---------- | ---------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run format` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command                | Result | Notes                   |
+| ---------- | ---------------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run format:check` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command        | Result | Notes                                               |
+| ---------- | -------------- | ------ | --------------------------------------------------- |
+| 2026-07-07 | `npm run lint` | Passed | Passed with existing Node module-type warning only. |
+
+## Historical Validation Detail
+
+| Date       | Command                                  | Result | Notes                   |
+| ---------- | ---------------------------------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run typecheck --workspace frontend` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command                                 | Result | Notes                   |
+| ---------- | --------------------------------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run typecheck --workspace backend` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command                                  | Result | Notes                   |
+| ---------- | ---------------------------------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run typecheck --workspace electron` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command         | Result | Notes                         |
+| ---------- | --------------- | ------ | ----------------------------- |
+| 2026-07-07 | `npm run build` | Passed | Build completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command                        | Result | Notes                   |
+| ---------- | ------------------------------ | ------ | ----------------------- |
+| 2026-07-07 | `npm audit --audit-level=high` | Passed | Completed successfully. |
+
+## Manual Review Evidence
+
+| Date       | Area                                                                   | Result                    | Notes                                                                                                                                                               |
+| ---------- | ---------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-07 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+
+## Historical Validation Detail
+
+| Date       | Command          | Result | Notes                   |
+| ---------- | ---------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run format` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command                | Result | Notes                   |
+| ---------- | ---------------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run format:check` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command        | Result | Notes                                               |
+| ---------- | -------------- | ------ | --------------------------------------------------- |
+| 2026-07-07 | `npm run lint` | Passed | Passed with existing Node module-type warning only. |
+
+## Historical Validation Detail
+
+| Date       | Command                                  | Result | Notes                   |
+| ---------- | ---------------------------------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run typecheck --workspace frontend` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command                                 | Result | Notes                   |
+| ---------- | --------------------------------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run typecheck --workspace backend` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command                                  | Result | Notes                   |
+| ---------- | ---------------------------------------- | ------ | ----------------------- |
+| 2026-07-07 | `npm run typecheck --workspace electron` | Passed | Completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command         | Result | Notes                         |
+| ---------- | --------------- | ------ | ----------------------------- |
+| 2026-07-07 | `npm run build` | Passed | Build completed successfully. |
+
+## Historical Validation Detail
+
+| Date       | Command                        | Result | Notes                   |
+| ---------- | ------------------------------ | ------ | ----------------------- |
+| 2026-07-07 | `npm audit --audit-level=high` | Passed | Completed successfully. |
+
+## Manual Review Evidence
+
+| Date       | Area                                                                   | Result                    | Notes                                                                                                                                                               |
+| ---------- | ---------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-07 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |

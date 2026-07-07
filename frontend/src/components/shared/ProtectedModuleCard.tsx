@@ -5,11 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
 type ProtectedModuleCardProps = {
+  hasOwnerAccess: boolean;
   moduleName: string;
   reason: string;
 };
 
-export function ProtectedModuleCard({ moduleName, reason }: ProtectedModuleCardProps) {
+export function ProtectedModuleCard({
+  hasOwnerAccess,
+  moduleName,
+  reason
+}: ProtectedModuleCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-5">
@@ -17,7 +22,9 @@ export function ProtectedModuleCard({ moduleName, reason }: ProtectedModuleCardP
           <CardTitle className="text-base">{moduleName} requires owner access</CardTitle>
           <CardDescription className="mt-2 leading-6">{reason}</CardDescription>
         </div>
-        <StatusBadge variant="protected">Protected</StatusBadge>
+        <StatusBadge variant={hasOwnerAccess ? "success" : "protected"}>
+          {hasOwnerAccess ? "Owner verified" : "Protected"}
+        </StatusBadge>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
@@ -25,9 +32,13 @@ export function ProtectedModuleCard({ moduleName, reason }: ProtectedModuleCardP
             <div className="flex items-start gap-3">
               <Lock className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" />
               <div>
-                <p className="text-sm font-medium text-amber-900">Owner verification screen</p>
+                <p className="text-sm font-medium text-amber-900">
+                  {hasOwnerAccess ? "Owner access verified" : "Owner verification required"}
+                </p>
                 <p className="mt-1 text-sm leading-6 text-amber-800">
-                  Owner approval is required before this area can be opened on the workstation.
+                  {hasOwnerAccess
+                    ? "The authenticated owner session can open owner-only modules when they are implemented."
+                    : "Owner approval is required before this area can be opened on the workstation."}
                 </p>
               </div>
             </div>
@@ -37,17 +48,19 @@ export function ProtectedModuleCard({ moduleName, reason }: ProtectedModuleCardP
               <ShieldCheck className="h-5 w-5 text-slate-600" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium text-slate-950">Owner PIN</p>
-                <p className="text-xs text-slate-500">Awaiting verification</p>
+                <p className="text-xs text-slate-500">
+                  {hasOwnerAccess ? "Verified through login" : "Awaiting verification"}
+                </p>
               </div>
             </div>
             <input
               className="mt-4 h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-500"
               disabled
-              value="Not connected"
+              value={hasOwnerAccess ? "Owner session active" : "Not connected"}
               readOnly
             />
             <Button className="mt-3 w-full" disabled>
-              Verify owner
+              {hasOwnerAccess ? "Verified" : "Verify owner"}
             </Button>
           </div>
         </div>

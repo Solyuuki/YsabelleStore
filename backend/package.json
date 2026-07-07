@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "prisma:generate": "npm run prisma:generate --prefix ..",
+    "prebuild": "npm run prisma:generate",
+    "pretypecheck": "npm run prisma:generate",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "lint": "eslint .",

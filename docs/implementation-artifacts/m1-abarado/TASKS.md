@@ -16,9 +16,12 @@
 
 ## In Progress
 
-| Task ID        | Scope                                                    | Status      | Evidence                                                             | Next Action                                           |
-| -------------- | -------------------------------------------------------- | ----------- | -------------------------------------------------------------------- | ----------------------------------------------------- |
-| YSB-M1-INT-001 | Sprint 1 integration documentation and ownership cleanup | In progress | Current `sprint/v0.1/sprint-1` branch and 2026-06-29 artifact update | Complete validation, commit docs, and prepare review. |
+| Task ID                 | Scope                                                      | Status       | Evidence                                                             | Next Action                                                |
+| ----------------------- | ---------------------------------------------------------- | ------------ | -------------------------------------------------------------------- | ---------------------------------------------------------- |
+| YSB-M1-INT-001          | Sprint 1 integration documentation and ownership cleanup   | In progress  | Current `sprint/v0.1/sprint-1` branch and 2026-06-29 artifact update | Complete validation, commit docs, and prepare review.      |
+| YSB-M1-ABARADO-20260707 | Maintain current implementation and documentation evidence | Needs Review | m1/v0.2/feat/auth-fullstack-flow                                     | Review generated artifact updates before commit.           |
+| YSB-M1-BIZ-20260708     | Sprint 3 planning and integration preparation              | Planned      | docs/sprints/sprint-3/\*\*                                           | Review new Sprint 3 scope and keep UI integration focused. |
+| YSB-M1-ABARADO-20260708 | Maintain current implementation and documentation evidence | Completed    | m1/v0.2/feat/auth-fullstack-flow                                     | Review generated artifact updates before commit.           |
 
 ## Pending
 

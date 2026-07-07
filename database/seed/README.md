@@ -24,11 +24,26 @@ The seed folder documents the controlled development data strategy for YsabelleS
 
 ## Current Folder State
 
-| Item        | Status       | Reason                                         |
-| ----------- | ------------ | ---------------------------------------------- |
-| `.gitkeep`  | Present      | Preserves the seed folder in version control   |
-| Seed script | Not included | Future task after migration application review |
-| Seed data   | Not included | Avoids fake production data in Sprint 1        |
+| Item        | Status      | Reason                                       |
+| ----------- | ----------- | -------------------------------------------- |
+| `.gitkeep`  | Present     | Preserves the seed folder in version control |
+| Seed script | Present     | `development.mjs` creates local auth users   |
+| Seed data   | Development | Owner/staff accounts are local-only fixtures |
+
+## Development Login Accounts
+
+Run the seed script only against a local development database:
+
+```bash
+npm run db:seed
+```
+
+| Role  | Email                       | Password         | Scope            |
+| ----- | --------------------------- | ---------------- | ---------------- |
+| Owner | `owner@ysabellestore.local` | `OwnerPass#2026` | Development only |
+| Staff | `staff@ysabellestore.local` | `StaffPass#2026` | Development only |
+
+Passwords are written to the database as `scrypt` hashes. These accounts are fixtures for local authentication testing only and must not be used as production credentials.
 
 ## Future Seed Entry Criteria
 

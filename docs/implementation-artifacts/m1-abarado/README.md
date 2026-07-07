@@ -49,3 +49,78 @@ This artifact set is reconstructed from repository evidence available on `sprint
 ## Maintenance Rule
 
 M1 work is not complete until code and documentation are synchronized. Any completed frontend, Electron, governance, or integration task must update daily notes, tasks, sprint progress, testing reports, deployment notes, decisions, blockers, and this README when applicable.
+
+## Current Work Snapshot
+
+| Item                 | Value                                                                            |
+| -------------------- | -------------------------------------------------------------------------------- |
+| Last update          | 2026-07-08                                                                       |
+| Current branch       | m1/v0.2/feat/auth-fullstack-flow                                                 |
+| Current work areas   | Docs                                                                             |
+| Current work summary | Updated the implementation evidence and validation notes for the current branch. |
+| Validation status    | Passed                                                                           |
+
+## Current Work Snapshot
+
+| Item        | Value      |
+| ----------- | ---------- |
+| Last update | 2026-07-07 |
+
+## Current Work Snapshot
+
+| Item           | Value                            |
+| -------------- | -------------------------------- |
+| Current branch | m1/v0.2/feat/auth-fullstack-flow |
+
+## Current Work Snapshot
+
+| Item               | Value                            |
+| ------------------ | -------------------------------- |
+| Current work areas | Docs<br>Frontend<br>Scripts / CI |
+
+## Current Work Snapshot
+
+| Item                 | Value                                                                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
+
+## Current Work Snapshot
+
+| Item              | Value  |
+| ----------------- | ------ |
+| Validation status | Passed |
+
+## Current Work Snapshot
+
+| Item | Value |
+| ---- | ----- |
+
+## Current Work Snapshot
+
+| Item        | Value      |
+| ----------- | ---------- |
+| Last update | 2026-07-07 |
+
+## Current Work Snapshot
+
+| Item           | Value                            |
+| -------------- | -------------------------------- |
+| Current branch | m1/v0.2/feat/auth-fullstack-flow |
+
+## Current Work Snapshot
+
+| Item               | Value                            |
+| ------------------ | -------------------------------- |
+| Current work areas | Docs<br>Frontend<br>Scripts / CI |
+
+## Current Work Snapshot
+
+| Item                 | Value                                                                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
+
+## Current Work Snapshot
+
+| Item              | Value  |
+| ----------------- | ------ |
+| Validation status | Passed |

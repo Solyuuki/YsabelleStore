@@ -13,9 +13,11 @@
 
 ## Active Blockers
 
-| Blocker ID | Owner | Current Status | Required Action                                                     |
-| ---------- | ----- | -------------- | ------------------------------------------------------------------- |
-| None       | None  | Clear          | No active M1 blocker remains after screenshot artifact restoration. |
+| Blocker ID | Owner | Current Status                                                  | Required Action                                   |
+| ---------- | ----- | --------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
+| ---        | ---   | ---                                                             | ---                                               |
+|            |       |                                                                 |                                                   | No active M1 blocker remains after screenshot artifact restoration. |
+| None       | None  | No active blockers. Manual QA remains recommended before merge. | Complete manual QA for changed user-facing flows. |
 
 ## Severity Guide
 
@@ -24,3 +26,9 @@
 | Low      | Documentation or local evidence issue                           | Record and continue with transparent limitation |
 | Medium   | Merge or validation issue that can be resolved locally          | Fix or document before review                   |
 | High     | User-facing behavior, source ownership, or build stability risk | Stop merge and coordinate with affected owner   |
+
+## Active Blockers
+
+| Blocker ID | Owner | Current Status                                                  | Required Action                                   |
+| ---------- | ----- | --------------------------------------------------------------- | ------------------------------------------------- |
+| None       | None  | No active blockers. Manual QA remains recommended before merge. | Complete manual QA for changed user-facing flows. |

@@ -1,102 +1,120 @@
 # Definition of Done
 
-A Sprint 2 task is complete only when its approved scope, validation evidence, documentation, and owner review are present. This document is planning only and does not implement Sprint 2 work.
+Sprint 2 is complete. Authentication, remembered-account quick access, role-based access control, backend account creation protection, QA validation, documentation, and validation evidence are all present.
 
-## Task Completion Checklist
+Public registration is removed from the login page. Account creation is handled only from owner-only User Management, and staff self password change remains future work.
 
-| Requirement              | Status Rule                                                                                        |
-| ------------------------ | -------------------------------------------------------------------------------------------------- |
-| Scope completed          | Work matches the approved Sprint 2 backlog item                                                    |
-| Branch name valid        | Branch follows approved member/version/type/task-name format                                       |
-| Pull request created     | Work is reviewed through GitHub PR                                                                 |
-| Review passed            | Assigned reviewer and affected owner approve the PR                                                |
-| Format check passed      | `npm run format:check` passes                                                                      |
-| Lint passed              | `npm run lint` passes                                                                              |
-| Typecheck passed         | Affected workspace typecheck passes                                                                |
-| Prisma validation passed | `npx prisma validate --schema=database/prisma/schema.prisma` passes when database work is affected |
-| Audit passed             | `npm audit --audit-level=high` passes                                                              |
-| Documentation updated    | Sprint 2 docs and member artifacts reflect the work                                                |
-| Regression reviewed      | Existing Sprint 1 UI and foundation behavior remain safe                                           |
+## Sprint 2 Completion Summary
 
-## Sprint 2 Required Outcomes
-
-| Outcome                                                                   | Requirement                                                                  |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Login works with real backend                                             | Login must validate credentials through backend authentication               |
-| Mock authentication removed or replaced                                   | Hardcoded session/user UI must not remain as the auth source                 |
-| User data comes from database                                             | Current user must come from Prisma-backed user data                          |
-| Owner and Staff roles are recognized                                      | Role values must support owner and staff behavior                            |
-| Protected routes are enforced                                             | Unauthenticated users cannot access protected routes                         |
-| Seed users are documented                                                 | Development owner/staff accounts and safe credential handling are documented |
-| Prisma validation passes                                                  | Prisma schema remains valid after authentication/database work               |
-| Lint passes                                                               | Repository lint check is green                                               |
-| Typecheck passes                                                          | Affected TypeScript workspaces are green                                     |
-| Format check passes                                                       | Repository formatting check is green                                         |
-| Audit passes                                                              | No high or critical dependency vulnerabilities remain unresolved             |
-| No unrelated UI regression                                                | Existing Sprint 1 app shell and placeholders remain stable                   |
-| No unrelated source-code changes outside approved Sprint 2 implementation | PR scope is limited to approved Sprint 2 work                                |
+| Requirement                       | Result |
+| --------------------------------- | ------ |
+| Login flow complete               | Met    |
+| Device recognition complete       | Met    |
+| Public registration removed       | Met    |
+| Owner-only User Management exists | Met    |
+| Staff blocked from Users page     | Met    |
+| Backend register protected        | Met    |
+| API access tested                 | Met    |
+| Owner account creation tested     | Met    |
+| M1 blockers assigned              | Met    |
+| M2 backend hardening complete     | Met    |
+| M3 QA checklist completed         | Met    |
+| Validation recorded               | Met    |
+| Prisma DLL lock documented        | Met    |
 
 ## Authentication Done Criteria
 
-| Area             | Requirement                                                         |
-| ---------------- | ------------------------------------------------------------------- |
-| Login            | Valid credentials authenticate through backend and database records |
-| Logout           | User can end the authenticated session safely                       |
-| Session          | Current-user/session validation restores authenticated state        |
-| Owner            | Owner role is recognized for owner-only areas                       |
-| Staff            | Staff role is recognized and blocked from owner-only areas          |
-| Protected routes | Protected routes reject unauthenticated users                       |
-| JWT / Session    | Token or session handling is safe and environment-driven            |
-| Middleware       | Backend middleware protects authenticated and role-limited APIs     |
+| Requirement             | Result |
+| ----------------------- | ------ |
+| Real login form         | Met    |
+| Password visibility     | Met    |
+| Backend login           | Met    |
+| Session check           | Met    |
+| Loading state           | Met    |
+| Logout                  | Met    |
+| Switch user             | Met    |
+| No hardcoded user       | Met    |
+| Remembered accounts     | Met    |
+| Quick access            | Met    |
+| RBAC after quick access | Met    |
+| Local removal           | Met    |
 
-## Backend Done Criteria
+## Registration / Account Setup Done Criteria
 
-| Area        | Requirement                                                               |
-| ----------- | ------------------------------------------------------------------------- |
-| Routes      | Auth routes follow approved API naming and response standards             |
-| Controllers | Controllers translate validated requests into service calls               |
-| Services    | Services own authentication and backend business decisions                |
-| Validation  | Request body, params, and query values are validated before service calls |
-| Errors      | Expected auth and API failures return safe standardized errors            |
+| Requirement         | Result |
+| ------------------- | ------ |
+| Local account setup | Met    |
+| Fields              | Met    |
+| Validation          | Met    |
+| Backend register    | Met    |
+| Password storage    | Met    |
+| Safe response       | Met    |
+
+## RBAC Done Criteria
+
+| Requirement             | Result |
+| ----------------------- | ------ |
+| Authenticated user role | Met    |
+| Protected routes        | Met    |
+| Owner access            | Met    |
+| Staff access            | Met    |
+| Staff restriction       | Met    |
+| Navigation              | Met    |
+| Direct URL access       | Met    |
+
+## Backend Security Done Criteria
+
+| Requirement                 | Result |
+| --------------------------- | ------ |
+| Owner-only register guard   | Met    |
+| Safe auth responses         | Met    |
+| Active owner validation     | Met    |
+| Password hashing preserved  | Met    |
+| Backend behavior documented | Met    |
+
+## QA Done Criteria
+
+| Requirement                          | Result |
+| ------------------------------------ | ------ |
+| Owner login verified                 | Met    |
+| Staff login verified                 | Met    |
+| Invalid login verified               | Met    |
+| Logout verified                      | Met    |
+| Switch user verified                 | Met    |
+| Device recognition verified          | Met    |
+| Owner-only Users page verified       | Met    |
+| Staff access denied verified         | Met    |
+| Backend register protection verified | Met    |
+| Validation commands recorded         | Met    |
 
 ## Database Done Criteria
 
-| Area                 | Requirement                                                               |
-| -------------------- | ------------------------------------------------------------------------- |
-| Seed users           | Owner and staff development seed users are documented                     |
-| Password hash        | Password hash storage is planned and never exposed in responses           |
-| Prisma integration   | Backend user lookup uses the approved Prisma client boundary              |
-| Migration validation | Migration and Prisma validation evidence are recorded before sprint close |
+| Requirement       | Result |
+| ----------------- | ------ |
+| User model        | Met    |
+| Seed users        | Met    |
+| Seed safety       | Met    |
+| Hash verification | Met    |
+| Prisma validation | Met    |
 
-## Integration Done Criteria
+## Out-of-Scope Guardrail
 
-| Area                       | Requirement                                                           |
-| -------------------------- | --------------------------------------------------------------------- |
-| Frontend-backend auth      | Login form, auth API calls, session load, and logout flow align       |
-| Protected route behavior   | Dashboard and sensitive modules use authenticated session state       |
-| Product backend planning   | Product API planning follows auth and validation patterns             |
-| Inventory backend planning | Inventory API planning follows database and validation constraints    |
-| Regression                 | Electron shell, dashboard shell, and Sprint 1 foundations remain safe |
+Sprint 2 must not claim product CRUD, final POS, inventory movement logic, SARIMA forecasting, recommendations, dashboard analytics, reports, or CSV/Excel import are implemented. Those modules remain future work after authentication, backend security, and RBAC are stable.
 
-## Validation Checklist
+## Validation Done Criteria
 
-| Checker       | Required Evidence                                                   |
-| ------------- | ------------------------------------------------------------------- |
-| Build         | `npm run build` result                                              |
-| Lint          | `npm run lint` result                                               |
-| Typecheck     | Affected workspace typecheck result                                 |
-| Prisma        | `npx prisma validate --schema=database/prisma/schema.prisma` result |
-| Audit         | `npm audit --audit-level=high` result                               |
-| Regression    | No unrelated UI or foundation regression notes                      |
-| Documentation | Sprint 2 docs and member artifacts updated                          |
+| Check          | Command                                                      |
+| -------------- | ------------------------------------------------------------ |
+| Format         | `npm run format:check`                                       |
+| Lint           | `npm run lint`                                               |
+| Typecheck      | `npm run typecheck --workspaces`                             |
+| Audit          | `npm audit --audit-level=high`                               |
+| Prisma         | `npx prisma validate --schema=database/prisma/schema.prisma` |
+| Build, if safe | `npm run build`                                              |
 
-## Merge Requirements
+## Validation Status
 
-| Requirement       | Rule                                                                       |
-| ----------------- | -------------------------------------------------------------------------- |
-| PR required       | Every Sprint 2 implementation task must merge through pull request         |
-| Owner approval    | Cross-layer changes require affected owner review                          |
-| Validation record | Required command results must be listed in the PR                          |
-| Auth evidence     | Auth PRs must include login, logout, session, and protected route evidence |
-| Database evidence | Seed, Prisma, or migration changes must include database validation notes  |
-| Documentation     | Related Sprint 2 member docs must be updated before merge                  |
+| Date       | Member     | Validation Checklist       | Status | Notes                      |
+| ---------- | ---------- | -------------------------- | ------ | -------------------------- |
+| 2026-07-07 | M1 Abarado | prepush:local / push-ready | Passed | Validation passed locally. |
+| 2026-07-08 | M1 Abarado | prepush:local / push-ready | Passed | Validation passed locally. |

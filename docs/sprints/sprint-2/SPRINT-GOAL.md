@@ -1,80 +1,84 @@
 # Sprint 2 Goal
 
-Sprint 2 focuses on moving YsabelleStore from a foundation-only repository into a working authentication and backend API foundation.
+Sprint 2 completed the working authentication foundation for YsabelleStore. It replaced the static welcome/session screen with real login, local store account setup, session checking, logout, switch-user behavior, and owner/staff role-based access control.
 
 ## Goal Statement
 
-Plan and deliver the work needed for real authentication, backend authentication APIs, frontend-backend authentication integration, session validation, owner and staff roles, protected routes, database seed users, Prisma user integration, and checkers-green validation.
+Deliver a functional authentication and RBAC foundation that supports owner and staff accounts, backend authentication routes, password hashing, development seed users, frontend auth state, protected routes, and thesis-aligned role restrictions.
 
-## Sprint Overview
+## Sprint 2 Closure Summary
 
-| Area        | Sprint 2 Focus                                                                           |
-| ----------- | ---------------------------------------------------------------------------------------- |
-| Frontend    | Login page planning, auth state planning, protected route behavior, API calls            |
-| Backend     | Authentication API planning, middleware planning, validation, controller/service pattern |
-| Database    | Seed users, Prisma user integration, password hash storage, migration validation         |
-| Integration | Frontend login to backend auth endpoints, current-user/session validation                |
-| Validation  | Build, lint, typecheck, Prisma, audit, regression, and documentation evidence            |
-
-## Objectives
-
-| Objective                         | Expected Result                                                     |
-| --------------------------------- | ------------------------------------------------------------------- |
-| Authentication planning           | Login, logout, session, owner/staff roles, JWT/session, middleware  |
-| Backend API foundation planning   | Auth controller/service/routes, validation, responses, errors       |
-| Database integration planning     | Seed users, Prisma user lookup, password hashes, migration evidence |
-| Frontend-backend integration plan | Auth context, `useAuth`, API calls, protected routes, logout        |
-| Checkers green planning           | Required validation is clear before Sprint 2 work closes            |
+| Area                  | Status    |
+| --------------------- | --------- |
+| Login UI              | Completed |
+| Account setup         | Completed |
+| Backend auth API      | Completed |
+| Password security     | Completed |
+| Session validation    | Completed |
+| Owner and staff roles | Completed |
+| Protected routes      | Completed |
+| RBAC                  | Completed |
+| Seed users            | Completed |
 
 ## In Scope
 
-| Area                         | Scope                                                                  |
-| ---------------------------- | ---------------------------------------------------------------------- |
-| Authentication / Login Page  | Real login page planning and removal or replacement of mock session UI |
-| Backend authentication API   | Login, logout, current-user/session endpoint planning                  |
-| Frontend-backend integration | Frontend auth state connected to backend auth responses                |
-| Session validation           | Current user comes from backend/database, not hardcoded frontend text  |
-| Owner and Staff roles        | Role recognition and protected access planning                         |
-| Protected routes             | Unauthenticated users cannot access protected areas                    |
-| Database seed users          | Development owner/staff accounts planned and documented                |
-| Prisma user integration      | User model access and migration validation planned                     |
-| Product backend planning     | Product backend API planning after authentication foundation           |
-| Inventory backend planning   | Inventory backend API planning after authentication foundation         |
+| Area                  | Scope                                                                       |
+| --------------------- | --------------------------------------------------------------------------- |
+| Login Page            | Real email/password form with clear loading and error states                |
+| Account Setup         | Local owner/staff account registration for authorized store users           |
+| Backend Auth API      | Login, register, logout, and current-user/session endpoints                 |
+| Password Security     | Hashed passwords for seeded and registered users                            |
+| Session Validation    | Current user loaded through backend token/session validation                |
+| Owner and Staff Roles | Role recognition available in the frontend authenticated user object        |
+| Protected Routes      | Unauthenticated users cannot open app modules                               |
+| RBAC                  | Staff cannot open owner-only modules; owner can open administrative modules |
+| Seed Users            | Development owner/staff accounts for local testing                          |
+
+## Completed Outcome
+
+| Area                        | Completed Outcome                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| Authentication flow         | Owner and staff can log in, restore a session, switch user, and logout                 |
+| Device recognition          | Remembered account quick access works safely without bypassing verification            |
+| Owner-only account creation | Store account creation is handled from owner-only User Management                      |
+| RBAC                        | Staff and owner access are separated consistently in the frontend and backend workflow |
+| Validation                  | Sprint 2 validation and documentation evidence are recorded                            |
 
 ## Out of Scope
 
-| Area                           | Reason                                                           |
-| ------------------------------ | ---------------------------------------------------------------- |
-| SARIMA forecasting             | Forecasting belongs to a later sprint                            |
-| Recommendation engine          | Recommendations depend on completed inventory and forecast flows |
-| Reports                        | Reports require stable data flows from later modules             |
-| Dashboard analytics            | Analytics require completed backend data and reporting scope     |
-| Full product CRUD frontend     | Sprint 2 focuses on backend planning, not full frontend CRUD     |
-| Full inventory CRUD frontend   | Sprint 2 focuses on backend planning, not full frontend CRUD     |
-| Sales/POS final implementation | POS completion belongs to a later operational module sprint      |
-
-## Sprint Goals
-
-| Goal                     | Result                                                                      |
-| ------------------------ | --------------------------------------------------------------------------- |
-| Remove mock auth path    | Mock session UI is planned for replacement with real backend auth           |
-| Establish auth contract  | Backend auth endpoints and frontend auth state have a shared contract       |
-| Protect application flow | Dashboard and protected modules require authenticated session planning      |
-| Prepare database auth    | Owner/staff users, password hash storage, and Prisma validation are planned |
-| Prepare backend modules  | Product and inventory backend planning follows auth and validation patterns |
+| Area                     | Reason                                            |
+| ------------------------ | ------------------------------------------------- |
+| Product CRUD             | Requires authenticated foundation first           |
+| Inventory movement logic | Requires user/session tracking                    |
+| POS stock deduction      | Requires authenticated cashier/staff flow         |
+| SARIMA forecasting       | Requires stable sales and inventory data          |
+| Recommendation engine    | Depends on inventory and forecasting              |
+| Dashboard real KPIs      | Depends on backend modules and authenticated data |
+| CSV/Excel import         | Comes after auth and validation foundation        |
 
 ## Deliverables
 
-| Deliverable                       | Owner        | Expected Outcome                                              |
-| --------------------------------- | ------------ | ------------------------------------------------------------- |
-| Login UI and auth state plan      | m1 - Abarado | Login page, auth context, `useAuth`, logout, protected routes |
-| Backend auth API plan             | m2 - Ramos   | Auth routes, controllers, services, validators, middleware    |
-| Database authentication plan      | m3 - Vito    | Seed users, Prisma user integration, migration verification   |
-| Integration plan                  | m1, m2       | Frontend calls backend auth APIs and handles sessions         |
-| Product backend planning          | m2           | Product API route/controller/service planning                 |
-| Inventory backend planning        | m2, m3       | Inventory API route/service/data planning                     |
-| Checkers-green validation package | m1, m2, m3   | Validation commands and documentation evidence are defined    |
+| Deliverable                                 | Owner        | Expected Outcome                                                                  |
+| ------------------------------------------- | ------------ | --------------------------------------------------------------------------------- |
+| Login UI, auth state, registration UI, RBAC | M1 - Abarado | Functional login/register/session flow and frontend route restrictions            |
+| Backend auth core                           | M2 - Solo    | Auth routes, controller/service logic, validation, token response, middleware     |
+| Database seed/user foundation               | M3 - James   | Owner/staff seed users, password hashes, Prisma validation and seed documentation |
+| Thesis scope alignment                      | M1 - Abarado | Architecture note tying Sprint 2 auth/RBAC to Chapter 1-2 scope                   |
 
 ## Expected Sprint Outcome
 
-After Sprint 2 completes, the repository should have a real authentication path planned and implemented through approved Sprint 2 work, backend auth APIs, database-backed users, protected frontend routes, and a clean validation record. Product and inventory backend planning should be ready to move into implementation without pulling in forecasting, recommendations, reports, analytics, or final POS work.
+After Sprint 2, owner and staff users can authenticate, register local store accounts, restore a session, switch user, logout, and access only the routes permitted by their role. Remaining inventory, POS, SARIMA, recommendation, report, and dashboard business logic stays explicitly out of scope.
+
+## Version Rule
+
+Sprint completions follow the repository version ladder:
+
+| Sprint                       | Version |
+| ---------------------------- | ------- |
+| Sprint 1 completed           | v0.1.0  |
+| Sprint 2 completed           | v0.2.0  |
+| Sprint 3 completed           | v0.3.0  |
+| Sprint 4 completed           | v0.4.0  |
+| Final MVP/demo-ready release | v1.0.0  |
+
+Sprint 3 must not be bumped to `v0.3.0` during planning. The bump happens only after Sprint 3 work is complete and accepted.
