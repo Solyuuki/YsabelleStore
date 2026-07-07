@@ -1,7 +1,8 @@
 import { Boxes, Package, ReceiptText } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
+import { LogoutConfirmationModal } from "@/components/shared/LogoutConfirmationModal";
 import { AppLayout } from "@/layouts/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
@@ -12,8 +13,10 @@ import { PosPage } from "@/pages/PosPage";
 import { ProtectedPage } from "@/pages/ProtectedPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
+import { wait } from "@/utils/timing";
 
 const LAUNCH_SPLASH_DELAY_MS = 250;
+const LOGOUT_CONFIRMATION_MINIMUM_MS = 700;
 
 const validRoutePaths = new Set<string>([
   "/",
@@ -51,6 +54,9 @@ export function AppShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.innerWidth < 1280);
   const shouldHoldForAuth = !isAuthReady || (status === "authenticated" && path === "/");
   const [showLaunchSplash, setShowLaunchSplash] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [logoutSubmitting, setLogoutSubmitting] = useState(false);
+  const logoutSubmittingRef = useRef(false);
 
   useEffect(() => {
     const handlePopState = () => setPath(getCurrentPath());
@@ -72,7 +78,31 @@ export function AppShell() {
   const routeForLayout = route ?? getRouteByPath("/not-found");
 
   const handleLogout = useCallback(() => {
-    void logout();
+    setLogoutModalOpen(true);
+  }, []);
+
+  const handleCancelLogout = useCallback(() => {
+    if (logoutSubmitting) {
+      return;
+    }
+
+    setLogoutModalOpen(false);
+  }, [logoutSubmitting]);
+
+  const handleConfirmLogout = useCallback(async () => {
+    if (logoutSubmittingRef.current) {
+      return;
+    }
+
+    logoutSubmittingRef.current = true;
+    setLogoutSubmitting(true);
+
+    await wait(LOGOUT_CONFIRMATION_MINIMUM_MS);
+    await logout();
+
+    logoutSubmittingRef.current = false;
+    setLogoutModalOpen(false);
+    setLogoutSubmitting(false);
     navigate("/");
   }, [logout, navigate]);
 
@@ -126,18 +156,27 @@ export function AppShell() {
   }
 
   return (
-    <AppLayout
-      activePath={validRoutePaths.has(path) ? path : "/not-found"}
-      collapsed={sidebarCollapsed}
-      onNavigate={navigate}
-      onLogout={handleLogout}
-      onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
-      user={user}
-    >
-      <div className="auth-panel-enter" key={path}>
-        {renderRoute(path, routeForLayout, navigate, user, error, register)}
-      </div>
-    </AppLayout>
+    <>
+      <AppLayout
+        activePath={validRoutePaths.has(path) ? path : "/not-found"}
+        collapsed={sidebarCollapsed}
+        onNavigate={navigate}
+        onLogout={handleLogout}
+        onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
+        user={user}
+      >
+        <div className="auth-panel-enter" key={path}>
+          {renderRoute(path, routeForLayout, navigate, user, error, register)}
+        </div>
+      </AppLayout>
+      {logoutModalOpen ? (
+        <LogoutConfirmationModal
+          isLoggingOut={logoutSubmitting}
+          onCancel={handleCancelLogout}
+          onConfirm={() => void handleConfirmLogout()}
+        />
+      ) : null}
+    </>
   );
 }
 
