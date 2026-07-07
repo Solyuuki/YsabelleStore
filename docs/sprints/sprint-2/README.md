@@ -67,8 +67,8 @@ M1 already moved account creation to the owner-only User Management UI, but comp
 
 <!-- AUTO-UPDATE:START -->
 
-| Date       | Member     | Branch                           | Latest Activity                                                                         | Validation Status |
-| ---------- | ---------- | -------------------------------- | --------------------------------------------------------------------------------------- | ----------------- |
-| 2026-07-07 | M1 Abarado | m1/v0.2/feat/auth-fullstack-flow | Authentication / trusted device login / RBAC<br>Sprint and implementation documentation | Passed            |
+| Date       | Member     | Branch                           | Latest Activity                                                                                                         | Validation Status |
+| ---------- | ---------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 2026-07-07 | M1 Abarado | m1/v0.2/feat/auth-fullstack-flow | Authentication / trusted device login / RBAC<br>Toast notification lifecycle<br>Sprint and implementation documentation | Passed            |
 
 <!-- AUTO-UPDATE:END -->

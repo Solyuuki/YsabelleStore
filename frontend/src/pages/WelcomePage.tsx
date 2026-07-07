@@ -3,26 +3,27 @@ import {
   Clock3,
   Eye,
   EyeOff,
+  LoaderCircle,
   LogIn,
   ShieldCheck,
   Trash2,
   UsersRound
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 import type { AppRoutePath } from "@/app/routes";
-import { LoadingState } from "@/components/shared/LoadingState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { RememberedAccount } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
+import type { LoginResult, RememberedAccount } from "@/context/AuthContext";
 import type { AuthUser } from "@/types/auth";
 
 type WelcomePageProps = {
   error: string | null;
   rememberedAccounts: RememberedAccount[];
-  onLogin: (email: string, password: string) => Promise<boolean>;
+  onLogin: (email: string, password: string) => Promise<LoginResult>;
   onNavigate: (path: AppRoutePath) => void;
   onContinueWithTrustedDevice: (account: RememberedAccount) => Promise<boolean>;
   onRemoveRememberedAccount: (id: string) => Promise<void>;
@@ -41,6 +42,12 @@ const ambientParticles = [
   "left-[88%] top-[28%] h-1 w-1 animation-delay-4200",
   "left-[91%] top-[78%] h-1.5 w-1.5 animation-delay-4900"
 ];
+
+const trustedDeviceMessages = new Set([
+  "Device verification failed. Please sign in again.",
+  "This device was forgotten. Please sign in again.",
+  "Account access is inactive. Please contact the owner."
+]);
 
 function formatLastUsedAt(lastUsedAt: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -67,11 +74,18 @@ export function WelcomePage({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [submitState, setSubmitState] = useState<"idle" | "verifying" | "verified">("idle");
-  const [submitMode, setSubmitMode] = useState<"login" | null>(null);
+  const [submitState, setSubmitState] = useState<"idle" | "verifying">("idle");
   const [verifyingAccountId, setVerifyingAccountId] = useState<string | null>(null);
   const [selectedRememberedAccount, setSelectedRememberedAccount] =
     useState<RememberedAccount | null>(null);
+  const [emailHasError, setEmailHasError] = useState(false);
+  const [passwordHasError, setPasswordHasError] = useState(false);
+  const [validationBump, setValidationBump] = useState(0);
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const reducedMotionRef = useRef(false);
 
   const loading = status === "loading";
   const authenticated = status === "authenticated" && user;
@@ -84,9 +98,25 @@ export function WelcomePage({
   const showRememberedAccounts =
     hasRememberedAccounts && !authenticated && panelMode === "remembered";
   const trustedDeviceFailureMessage =
-    error && error !== "Saved account found. Please sign in to continue."
+    error && trustedDeviceMessages.has(error)
       ? error
       : "Device verification failed. Please sign in again.";
+  const loginButtonLabel = isSubmitting ? "Signing in..." : "Sign in";
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const updateReducedMotion = () => {
+      reducedMotionRef.current = mediaQuery.matches;
+    };
+
+    updateReducedMotion();
+    mediaQuery.addEventListener("change", updateReducedMotion);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateReducedMotion);
+    };
+  }, []);
 
   useEffect(() => {
     if (!hasRememberedAccounts && panelMode === "remembered") {
@@ -96,27 +126,38 @@ export function WelcomePage({
     }
   }, [hasRememberedAccounts, panelMode]);
 
-  function sleep(ms: number) {
-    return new Promise((resolve) => {
-      window.setTimeout(resolve, ms);
-    });
-  }
-
-  async function ensureMinimumSubmitDuration(startedAt: number) {
-    const elapsed = performance.now() - startedAt;
-    const minimumDurationMs = 800;
-
-    if (elapsed < minimumDurationMs) {
-      await sleep(minimumDurationMs - elapsed);
+  useEffect(() => {
+    if (!validationBump || reducedMotionRef.current) {
+      return;
     }
+
+    cardRef.current?.animate(
+      [
+        { transform: "translateX(0)" },
+        { transform: "translateX(-6px)" },
+        { transform: "translateX(6px)" },
+        { transform: "translateX(-4px)" },
+        { transform: "translateX(4px)" },
+        { transform: "translateX(0)" }
+      ],
+      {
+        duration: 320,
+        easing: "cubic-bezier(0.36, 0.07, 0.19, 0.97)"
+      }
+    );
+  }, [validationBump]);
+
+  function clearLoginFeedback() {
+    setFormError(null);
+    setEmailHasError(false);
+    setPasswordHasError(false);
   }
 
   function resetLoginForm() {
     setPassword("");
     setShowPassword(false);
-    setFormError(null);
+    clearLoginFeedback();
     setSubmitState("idle");
-    setSubmitMode(null);
   }
 
   function showRememberedAccountsPanel() {
@@ -137,12 +178,34 @@ export function WelcomePage({
     }
   }
 
+  function handleLoginFieldChange(setter: (value: string) => void, value: string) {
+    setter(value);
+    clearLoginFeedback();
+
+    if (selectedRememberedAccount) {
+      setSelectedRememberedAccount(null);
+    }
+  }
+
+  function markLoginFieldsAsInvalid() {
+    setEmailHasError(true);
+    setPasswordHasError(true);
+    setValidationBump((current) => current + 1);
+
+    if (passwordInputRef.current) {
+      passwordInputRef.current.focus({ preventScroll: true });
+      return;
+    }
+
+    emailInputRef.current?.focus({ preventScroll: true });
+  }
+
   async function handleRememberedAccountSelect(account: RememberedAccount) {
     if (isVerifyingAnyAccount) {
       return;
     }
 
-    setFormError(null);
+    clearLoginFeedback();
     setSelectedRememberedAccount(account);
 
     if (!account.trustedDeviceAvailable) {
@@ -152,12 +215,10 @@ export function WelcomePage({
 
     setVerifyingAccountId(account.id);
     setSubmitState("idle");
-    setSubmitMode(null);
 
     const verified = await onContinueWithTrustedDevice(account);
 
     if (verified) {
-      onNavigate("/dashboard");
       return;
     }
 
@@ -181,44 +242,56 @@ export function WelcomePage({
       return;
     }
 
-    setFormError(null);
-    setSubmitMode("login");
+    const nextEmail = email.trim();
+
+    clearLoginFeedback();
+
+    if (!nextEmail || !password) {
+      setFormError("Please enter your email and password.");
+      setEmailHasError(!nextEmail);
+      setPasswordHasError(!password);
+      setSubmitState("idle");
+      setValidationBump((current) => current + 1);
+
+      if (!nextEmail) {
+        emailInputRef.current?.focus({ preventScroll: true });
+      } else {
+        passwordInputRef.current?.focus({ preventScroll: true });
+      }
+
+      return;
+    }
+
     setSubmitState("verifying");
 
-    const startedAt = performance.now();
+    const loginResult = await onLogin(nextEmail, password);
 
-    const loginSucceeded = await onLogin(email, password);
-    await ensureMinimumSubmitDuration(startedAt);
-
-    if (loginSucceeded) {
-      setSubmitState("verified");
-      await sleep(300);
-      onNavigate("/dashboard");
+    if (loginResult.success) {
       return;
     }
 
     setSubmitState("idle");
-    setSubmitMode(null);
-  }
+    setFormError(loginResult.message ?? "Login failed. Please try again.");
 
-  function renderStatusText() {
-    if (authenticated) {
-      return "Session ready";
+    if (loginResult.fieldError) {
+      markLoginFieldsAsInvalid();
+      return;
     }
 
-    if (showRememberedAccounts) {
-      return hasTrustedDeviceAccounts ? "Trusted device" : "Saved account";
+    if (!reducedMotionRef.current) {
+      cardRef.current?.animate(
+        [
+          { transform: "translateX(0)" },
+          { transform: "translateX(-3px)" },
+          { transform: "translateX(3px)" },
+          { transform: "translateX(0)" }
+        ],
+        {
+          duration: 220,
+          easing: "ease-out"
+        }
+      );
     }
-
-    if (selectedRememberedAccount && panelMode === "login") {
-      return "Login required";
-    }
-
-    if (loading) {
-      return "Checking session";
-    }
-
-    return "Login required";
   }
 
   function renderHeroCopy() {
@@ -227,7 +300,7 @@ export function WelcomePage({
     }
 
     if (showRememberedAccounts) {
-      if (error && hasTrustedDeviceAccounts) {
+      if (error && trustedDeviceMessages.has(error)) {
         return trustedDeviceFailureMessage;
       }
 
@@ -237,7 +310,9 @@ export function WelcomePage({
     }
 
     if (selectedRememberedAccount && panelMode === "login") {
-      return selectedRememberedAccount.trustedDeviceAvailable
+      return selectedRememberedAccount.trustedDeviceAvailable &&
+        error &&
+        trustedDeviceMessages.has(error)
         ? trustedDeviceFailureMessage
         : "Saved account found. Please sign in to continue.";
     }
@@ -270,11 +345,11 @@ export function WelcomePage({
       );
     }
 
-    return <StatusBadge variant="warning">Store login</StatusBadge>;
+    return null;
   }
 
   return (
-    <main className="welcome-ambient relative flex min-h-screen flex-col overflow-hidden text-slate-950">
+    <main className="welcome-ambient auth-page-enter relative flex min-h-screen flex-col overflow-hidden text-slate-950">
       <div className="welcome-ambient-blob left-[8%] top-[12%] h-[clamp(15rem,24vw,28rem)] w-[clamp(15rem,24vw,28rem)] bg-emerald-200" />
       <div className="welcome-ambient-blob right-[7%] top-[8%] h-[clamp(16rem,26vw,32rem)] w-[clamp(16rem,26vw,32rem)] bg-blue-200 animation-delay-7000" />
       <div className="welcome-ambient-blob bottom-[2%] left-[38%] h-[clamp(14rem,22vw,26rem)] w-[clamp(14rem,22vw,26rem)] bg-violet-200 animation-delay-14000" />
@@ -286,20 +361,11 @@ export function WelcomePage({
 
       <div className="welcome-shell">
         <div className="welcome-content">
-          <section className="max-w-[min(58vw,55rem)]">
-            <StatusBadge
-              variant={
-                authenticated
-                  ? "success"
-                  : showRememberedAccounts
-                    ? "info"
-                    : loading
-                      ? "info"
-                      : "warning"
-              }
-            >
-              {renderStatusText()}
-            </StatusBadge>
+          <section className="auth-hero-enter max-w-[min(58vw,55rem)]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[13px] font-semibold text-emerald-800 shadow-sm">
+              <ShieldCheck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+              System Secure
+            </div>
             <h1 className="mt-[clamp(1.5rem,2.4vw,2.5rem)] text-[clamp(2.75rem,5vw,5rem)] font-semibold leading-[1.02] tracking-normal">
               YsabelleStore
             </h1>
@@ -307,28 +373,14 @@ export function WelcomePage({
               {renderHeroCopy()}
             </p>
             <div className="mt-[clamp(2rem,3.5vw,3.75rem)] max-w-[clamp(34rem,44vw,48rem)]">
-              {loading ? (
-                <LoadingState
-                  badge="Checking session"
-                  helper="Please wait while YsabelleStore verifies your local access."
-                  label="Checking local desktop session"
-                />
-              ) : showRememberedAccounts ? (
-                <div className="rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm">
-                  {error && hasTrustedDeviceAccounts
+              {showRememberedAccounts && (error || !hasTrustedDeviceAccounts) ? (
+                <div
+                  className="auth-panel-enter rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm"
+                  key="remembered-panel"
+                >
+                  {error && trustedDeviceMessages.has(error)
                     ? trustedDeviceFailureMessage
-                    : hasTrustedDeviceAccounts
-                      ? "Trusted device available. Choose a saved account to verify it, or use another account."
-                      : "Saved account found. Please sign in to continue."}
-                </div>
-              ) : submitState === "verifying" && submitMode === "login" ? (
-                <LoadingState
-                  helper="Please wait while YsabelleStore checks your login details."
-                  label="Verifying credentials"
-                />
-              ) : submitState === "verified" ? (
-                <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm">
-                  Verified. Opening the dashboard now.
+                    : "Saved account found. Please sign in to continue."}
                 </div>
               ) : authenticated ? (
                 <div className="rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm">
@@ -336,19 +388,20 @@ export function WelcomePage({
                 </div>
               ) : selectedRememberedAccount && panelMode === "login" ? (
                 <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
-                  {selectedRememberedAccount.trustedDeviceAvailable
+                  {selectedRememberedAccount.trustedDeviceAvailable &&
+                  error &&
+                  trustedDeviceMessages.has(error)
                     ? trustedDeviceFailureMessage
                     : "Saved account found. Please sign in to continue."}
                 </div>
-              ) : (
-                <div className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-                  Enter your assigned development credentials to continue.
-                </div>
-              )}
+              ) : null}
             </div>
           </section>
 
-          <Card className="welcome-card border-white/70 bg-white/90 shadow-xl shadow-slate-200/70 backdrop-blur-sm">
+          <Card
+            className="auth-card-enter welcome-card border-white/70 bg-white/90 shadow-xl shadow-slate-200/70 backdrop-blur-sm"
+            ref={cardRef}
+          >
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-[clamp(1.125rem,1.5vw,1.45rem)]">
@@ -387,12 +440,13 @@ export function WelcomePage({
               ) : showRememberedAccounts ? (
                 <div className="space-y-4">
                   <div className="grid gap-3">
-                    {rememberedAccounts.map((account) => (
+                    {rememberedAccounts.map((account, index) => (
                       <RememberedAccountCard
                         account={account}
-                        key={account.id}
+                        enterDelayMs={index * 70 + 80}
                         isBusy={isVerifyingAnyAccount}
                         isVerifying={verifyingAccountId === account.id}
+                        key={account.id}
                         onContinue={() => void handleRememberedAccountSelect(account)}
                         onRemove={() => void onRemoveRememberedAccount(account.id)}
                       />
@@ -414,7 +468,9 @@ export function WelcomePage({
                 <form className="space-y-[clamp(1rem,1.6vw,1.5rem)]" onSubmit={handleSubmit}>
                   {selectedRememberedAccount ? (
                     <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
-                      {selectedRememberedAccount.trustedDeviceAvailable
+                      {selectedRememberedAccount.trustedDeviceAvailable &&
+                      error &&
+                      trustedDeviceMessages.has(error)
                         ? trustedDeviceFailureMessage
                         : "Saved account found. Please sign in to continue."}
                     </div>
@@ -423,11 +479,18 @@ export function WelcomePage({
                   <label className="block space-y-2 text-sm font-medium text-slate-700">
                     <span>Email</span>
                     <input
+                      aria-invalid={emailHasError}
                       autoComplete="username"
-                      className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      className={cn(
+                        "h-11 w-full rounded-md border bg-white px-3 text-sm text-slate-950 outline-none transition-[border-color,box-shadow,transform,background-color] duration-200 ease-out placeholder:text-slate-400 focus-visible:shadow-sm",
+                        emailHasError
+                          ? "border-red-300 bg-red-50/35 ring-1 ring-red-100 focus-visible:border-red-500 focus-visible:ring-2 focus-visible:ring-red-100"
+                          : "border-slate-200 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-100"
+                      )}
                       disabled={loading}
-                      onChange={(event) => setEmail(event.target.value)}
+                      onChange={(event) => handleLoginFieldChange(setEmail, event.target.value)}
                       placeholder="owner@ysabellestore.local"
+                      ref={emailInputRef}
                       type="email"
                       value={email}
                     />
@@ -437,17 +500,26 @@ export function WelcomePage({
                     <span>Password</span>
                     <div className="relative">
                       <input
+                        aria-invalid={passwordHasError}
                         autoComplete="current-password"
-                        className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        className={cn(
+                          "h-11 w-full rounded-md border bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-[border-color,box-shadow,transform,background-color] duration-200 ease-out placeholder:text-slate-400 focus-visible:shadow-sm",
+                          passwordHasError
+                            ? "border-red-300 bg-red-50/35 ring-1 ring-red-100 focus-visible:border-red-500 focus-visible:ring-2 focus-visible:ring-red-100"
+                            : "border-slate-200 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-100"
+                        )}
                         disabled={loading || isSubmitting}
-                        onChange={(event) => setPassword(event.target.value)}
+                        onChange={(event) =>
+                          handleLoginFieldChange(setPassword, event.target.value)
+                        }
                         placeholder="Enter password"
+                        ref={passwordInputRef}
                         type={showPassword ? "text" : "password"}
                         value={password}
                       />
                       <button
                         aria-label={showPassword ? "Hide password" : "Show password"}
-                        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition-colors hover:text-slate-950"
+                        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 transition-colors duration-200 hover:text-slate-950"
                         disabled={loading || isSubmitting}
                         onClick={() => setShowPassword((current) => !current)}
                         type="button"
@@ -461,23 +533,32 @@ export function WelcomePage({
                     </div>
                   </label>
 
-                  {formError || error ? (
-                    <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                      {formError ?? error}
+                  {formError ? (
+                    <div
+                      aria-live="assertive"
+                      className={cn(
+                        "rounded-md border px-3 py-2 text-sm shadow-sm",
+                        emailHasError || passwordHasError
+                          ? "border-red-200 bg-red-50 text-red-700"
+                          : "border-slate-200 bg-slate-50 text-slate-700"
+                      )}
+                      role="alert"
+                    >
+                      {formError}
                     </div>
                   ) : null}
 
                   <Button
                     className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"
-                    disabled={loading || isSubmitting || !email || !password}
+                    disabled={loading || isSubmitting || !email.trim() || !password}
                     type="submit"
                   >
-                    <LogIn className="h-4 w-4" aria-hidden="true" />
-                    {submitState === "verifying" && submitMode === "login"
-                      ? "Verifying..."
-                      : submitState === "verified" && submitMode === "login"
-                        ? "Verified"
-                        : "Login"}
+                    {isSubmitting ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <LogIn className="h-4 w-4" aria-hidden="true" />
+                    )}
+                    {loginButtonLabel}
                   </Button>
 
                   {hasRememberedAccounts ? (
@@ -497,15 +578,11 @@ export function WelcomePage({
           </Card>
         </div>
 
-        <footer className="welcome-footer text-[13px] font-medium text-slate-700/80">
+        <footer className="auth-footer-enter welcome-footer text-[13px] font-medium text-slate-700/80">
           <p className="min-w-0 justify-self-start whitespace-nowrap">
             YsabelleStore <span className="text-slate-500">v0.1.0</span>
           </p>
-          <p className="hidden min-w-0 items-center justify-self-center gap-2 whitespace-nowrap lg:flex">
-            <ShieldCheck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
-            System Secure
-          </p>
-          <p className="hidden min-w-0 items-center justify-self-end gap-2 whitespace-nowrap lg:flex">
+          <p className="hidden min-w-0 items-center justify-self-end gap-2 whitespace-nowrap lg:col-start-3 lg:flex">
             <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
             All Systems Normal
           </p>
@@ -517,19 +594,24 @@ export function WelcomePage({
 
 function RememberedAccountCard({
   account,
+  enterDelayMs,
   isBusy,
   isVerifying,
   onContinue,
   onRemove
 }: {
   account: RememberedAccount;
+  enterDelayMs: number;
   isBusy: boolean;
   isVerifying: boolean;
   onContinue: () => void;
   onRemove: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-white/80 p-4 text-slate-700 shadow-sm transition-[background-color,border-color,box-shadow] duration-300 ease-out">
+    <div
+      className="auth-panel-enter rounded-xl border border-slate-200/80 bg-white/80 p-4 text-slate-700 shadow-sm transition-[background-color,border-color,box-shadow,transform] duration-300 ease-out"
+      style={{ animationDelay: `${enterDelayMs}ms` }}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-slate-950">{account.name}</p>
@@ -547,8 +629,12 @@ function RememberedAccountCard({
 
       <div className="mt-4 flex gap-2">
         <Button className="flex-1" disabled={isBusy} onClick={onContinue} type="button">
+          {isVerifying ? (
+            <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          )}
           {isVerifying ? "Verifying..." : "Continue"}
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Button>
         <Button disabled={isBusy} onClick={onRemove} type="button" variant="secondary">
           <Trash2 className="h-4 w-4" aria-hidden="true" />

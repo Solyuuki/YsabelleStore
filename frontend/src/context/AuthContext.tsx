@@ -14,6 +14,7 @@ import type { ApiResponse } from "@/types/api";
 import type { AuthSession, AuthUser } from "@/types/auth";
 import { useToast } from "@/components/shared/ToastProvider";
 import type { ToastInput } from "@/components/shared/toast.types";
+import { wait } from "@/utils/timing";
 
 const AUTH_TOKEN_KEY = "ysabellestore.authToken";
 const REMEMBERED_ACCOUNTS_KEY = "ysabelle.rememberedAccounts";
@@ -28,6 +29,8 @@ const SAVED_ACCOUNT_MESSAGE = "Saved account found. Please sign in to continue."
 const SESSION_RESTORED_TITLE = "Session restored";
 const SESSION_RESTORED_MESSAGE = "You were returned to where you left off.";
 const SESSION_RESTORED_DURATION_MS = 11000;
+const PASSWORD_LOGIN_MINIMUM_MS = 800;
+const TRUSTED_DEVICE_CONTINUE_MINIMUM_MS = 700;
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -51,7 +54,7 @@ export type RememberedAccount = {
 type AuthContextValue = {
   error: string | null;
   isAuthReady: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   continueWithTrustedDevice: (account: RememberedAccount) => Promise<boolean>;
   rememberedAccounts: RememberedAccount[];
@@ -71,6 +74,12 @@ type CurrentUserResponse = {
 };
 
 type TrustedDeviceTokenStore = Record<string, string>;
+
+export type LoginResult = {
+  fieldError: boolean;
+  message: string | null;
+  success: boolean;
+};
 
 type AuthErrorPayload = {
   code?: string;
@@ -541,10 +550,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (account: RememberedAccount) => {
       const trustedDeviceToken = trustedDeviceTokens[account.id];
       let trustedDeviceFailureMessage = TRUSTED_DEVICE_FAILED_MESSAGE;
+      const minimumDuration = wait(TRUSTED_DEVICE_CONTINUE_MINIMUM_MS);
 
       setError(null);
 
       if (!trustedDeviceToken) {
+        await minimumDuration;
         logAuthDiagnostic("saved account selected without trusted token", {
           accountId: account.id,
           email: account.email,
@@ -565,15 +576,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Trusted devices are intentionally user-initiated. A remembered trusted device must not
         // auto-login on startup.
-        const response: ApiResponse<AuthSession, AuthErrorPayload> = await apiClient.request(
-          "/api/auth/trusted-device/session",
-          {
+        const [response]: [ApiResponse<AuthSession, AuthErrorPayload>, void] = await Promise.all([
+          apiClient.request<AuthSession, AuthErrorPayload>("/api/auth/trusted-device/session", {
             method: "POST",
             json: {
               trustedDeviceToken
             }
-          }
-        );
+          }),
+          minimumDuration
+        ]);
 
         if (response.success && response.data && response.data.user.id === account.id) {
           applySession(response.data);
@@ -606,6 +617,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: account.email,
           code: "BACKEND_OR_NETWORK_ERROR"
         });
+        await minimumDuration;
       }
 
       clearAuthToken();
@@ -634,29 +646,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string) => {
-      setStatus("loading");
+      const minimumDuration = wait(PASSWORD_LOGIN_MINIMUM_MS);
+
       setError(null);
 
       try {
-        const response: ApiResponse<AuthSession, AuthErrorPayload> = await apiClient.request(
-          "/api/auth/login",
-          {
+        const [response]: [ApiResponse<AuthSession, AuthErrorPayload>, void] = await Promise.all([
+          apiClient.request<AuthSession, AuthErrorPayload>("/api/auth/login", {
             method: "POST",
             json: {
               email,
               password
             }
-          }
-        );
+          }),
+          minimumDuration
+        ]);
 
         if (!response.success || !response.data) {
           const errorMessage = resolveAuthErrorMessage(response);
+          const isCredentialError = errorMessage === "Invalid email or password.";
 
           setError(errorMessage);
           setUser(null);
           setStatus("unauthenticated");
           pushAuthToast(resolveLoginToast(response));
-          return false;
+          return {
+            fieldError: isCredentialError,
+            message: errorMessage,
+            success: false
+          };
         }
 
         applySession(response.data);
@@ -672,10 +690,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           title: "Login successful",
           variant: "success"
         });
-        return true;
+        return {
+          fieldError: false,
+          message: null,
+          success: true
+        };
       } catch {
         const message = "Please make sure the backend server is running.";
 
+        await minimumDuration;
         setError("Authentication service is unavailable. Please check the backend server.");
         setUser(null);
         setStatus("unauthenticated");
@@ -684,7 +707,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           title: "Authentication service unavailable",
           variant: "error"
         });
-        return false;
+        return {
+          fieldError: false,
+          message: "Authentication service is unavailable. Please check the backend server.",
+          success: false
+        };
       }
     },
     [applySession, pushAuthToast, rememberAccount, storeTrustedDeviceToken]

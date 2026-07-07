@@ -54,12 +54,12 @@ M1 work is not complete until code and documentation are synchronized. Any compl
 
 <!-- AUTO-UPDATE:START -->
 
-| Item                  | Value                                                                                   |
-| --------------------- | --------------------------------------------------------------------------------------- |
-| Last automated update | 2026-07-07                                                                              |
-| Current branch        | m1/v0.2/feat/auth-fullstack-flow                                                        |
-| Current work areas    | Docs<br>Frontend                                                                        |
-| Latest detected tasks | Authentication / trusted device login / RBAC<br>Sprint and implementation documentation |
-| Validation status     | Passed                                                                                  |
+| Item                  | Value                                                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Last automated update | 2026-07-07                                                                                                              |
+| Current branch        | m1/v0.2/feat/auth-fullstack-flow                                                                                        |
+| Current work areas    | Docs<br>Frontend                                                                                                        |
+| Latest detected tasks | Authentication / trusted device login / RBAC<br>Toast notification lifecycle<br>Sprint and implementation documentation |
+| Validation status     | Passed                                                                                                                  |
 
 <!-- AUTO-UPDATE:END -->

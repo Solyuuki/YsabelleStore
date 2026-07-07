@@ -13,6 +13,8 @@ import { ProtectedPage } from "@/pages/ProtectedPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
 
+const LAUNCH_SPLASH_DELAY_MS = 250;
+
 const validRoutePaths = new Set<string>([
   "/",
   "/dashboard",
@@ -47,6 +49,7 @@ export function AppShell() {
   } = useAuth();
   const [path, setPath] = useState(getCurrentPath);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.innerWidth < 1280);
+  const shouldHoldForAuth = !isAuthReady || (status === "authenticated" && path === "/");
   const [showLaunchSplash, setShowLaunchSplash] = useState(false);
 
   useEffect(() => {
@@ -88,21 +91,21 @@ export function AppShell() {
   }, [isAuthReady, navigate, path, status]);
 
   useEffect(() => {
-    if (isAuthReady) {
+    if (!shouldHoldForAuth) {
       setShowLaunchSplash(false);
       return;
     }
 
-    const splashTimer = window.setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       setShowLaunchSplash(true);
-    }, 180);
+    }, LAUNCH_SPLASH_DELAY_MS);
 
     return () => {
-      window.clearTimeout(splashTimer);
+      window.clearTimeout(timeoutId);
     };
-  }, [isAuthReady]);
+  }, [shouldHoldForAuth]);
 
-  if (!isAuthReady || (status === "authenticated" && path === "/")) {
+  if (shouldHoldForAuth) {
     return showLaunchSplash ? <LaunchSplash /> : null;
   }
 
@@ -131,14 +134,16 @@ export function AppShell() {
       onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
       user={user}
     >
-      {renderRoute(path, routeForLayout, navigate, user, error, register)}
+      <div className="auth-panel-enter" key={path}>
+        {renderRoute(path, routeForLayout, navigate, user, error, register)}
+      </div>
     </AppLayout>
   );
 }
 
 function LaunchSplash() {
   return (
-    <main className="welcome-ambient relative flex min-h-screen overflow-hidden text-slate-950">
+    <main className="welcome-ambient auth-page-enter relative flex min-h-screen overflow-hidden text-slate-950">
       <div className="welcome-ambient-blob left-[8%] top-[12%] h-[clamp(15rem,24vw,28rem)] w-[clamp(15rem,24vw,28rem)] bg-emerald-200" />
       <div className="welcome-ambient-blob right-[7%] top-[8%] h-[clamp(16rem,26vw,32rem)] w-[clamp(16rem,26vw,32rem)] bg-blue-200 animation-delay-7000" />
       <div className="welcome-ambient-blob bottom-[2%] left-[38%] h-[clamp(14rem,22vw,26rem)] w-[clamp(14rem,22vw,26rem)] bg-violet-200 animation-delay-14000" />
@@ -149,7 +154,7 @@ function LaunchSplash() {
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
           </div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-700/90">
-            Checking session
+            Restoring session
           </p>
           <p className="text-sm font-medium text-slate-700">Opening YsabelleStore...</p>
         </div>

@@ -55,9 +55,9 @@ export function Toast({ onDismiss, toast }: ToastProps) {
     <article
       aria-atomic="true"
       className={cn(
-        "pointer-events-auto relative overflow-hidden rounded-md border shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm transition-all duration-200 ease-out",
+        "pointer-events-auto relative overflow-hidden rounded-md border shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm",
         variant.surfaceClassName,
-        toast.closing ? "translate-x-3 opacity-0 scale-[0.98]" : "translate-x-0 opacity-100"
+        toast.closing ? "toast-exit" : "toast-enter"
       )}
       role={isAlert ? "alert" : "status"}
     >
