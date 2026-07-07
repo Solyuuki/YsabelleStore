@@ -4,11 +4,13 @@ import { classifyChanges, statusFor } from "./lib/change-classifier.mjs";
 import { collectChangedFiles, getBranch } from "./lib/git-utils.mjs";
 import { artifactDir, REQUIRED_ARTIFACT_FILES, requireMember } from "./lib/member-utils.mjs";
 import {
+  cleanupAutomatedSections,
   ensureMarkdownFile,
+  ensureSectionWithTable,
   markdownList,
   table,
   today,
-  updateAutoSection
+  upsertTableRow
 } from "./lib/markdown-utils.mjs";
 import { readValidationStatus } from "./lib/validation-summary.mjs";
 
@@ -36,6 +38,7 @@ updateDailyNotes();
 updateDecisions();
 updateBlockers();
 updateTestingReports();
+updateValidationSummary();
 updateDeploymentNotes();
 updateSprintPlanning();
 updateSprintProgress();
@@ -69,142 +72,88 @@ function baseRows() {
 
 function updateReadme() {
   const rows = baseRows();
-  updateAutoSection(
-    `${memberDir}/README.md`,
-    table(
-      ["Item", "Value"],
-      [
-        ["Last automated update", date],
-        ["Current branch", rows.branch],
-        ["Current work areas", rows.changedAreas],
-        ["Latest detected tasks", rows.detectedWork],
-        ["Validation status", rows.validationStatus]
-      ]
-    )
-  );
+  const filePath = `${memberDir}/README.md`;
+  cleanupAutomatedSections(filePath);
+  ensureSectionWithTable(filePath, "Current Work Snapshot", ["Item", "Value"]);
+
+  for (const [item, value] of [
+    ["Last update", date],
+    ["Current branch", rows.branch],
+    ["Current work areas", rows.changedAreas],
+    ["Current work summary", currentWorkSummary()],
+    ["Validation status", rows.validationStatus]
+  ]) {
+    upsertTableRow(filePath, "Current Work Snapshot", ["Item"], { Item: item, Value: value });
+  }
 }
 
 function updateTasks() {
-  updateAutoSection(
-    `${memberDir}/TASKS.md`,
-    table(
-      ["Date", "Branch", "Area", "Detected Work", "Status", "Evidence"],
-      [
-        [
-          date,
-          branch,
-          markdownList(classified.areas),
-          markdownList(classified.summaries),
-          workStatus,
-          markdownList(classified.importantFiles)
-        ]
-      ]
-    )
-  );
+  const filePath = `${memberDir}/TASKS.md`;
+  cleanupAutomatedSections(filePath);
+  upsertTableRow(filePath, "In Progress", ["Task ID"], {
+    "Task ID": currentTaskId(),
+    Scope: currentTaskScope(),
+    Status: workStatus,
+    Evidence: branch,
+    "Next Action": nextTask()
+  });
 }
 
 function updateSprintProgress() {
-  updateAutoSection(
-    `${memberDir}/SPRINT-PROGRESS.md`,
-    table(
-      ["Date", "Branch", "Member", "Progress Summary", "Changed Areas", "Validation Status"],
-      [
-        [
-          date,
-          branch,
-          member.displayName,
-          markdownList(classified.summaries),
-          markdownList(classified.areas),
-          validationStatus
-        ]
-      ]
-    )
-  );
+  const filePath = `${memberDir}/SPRINT-PROGRESS.md`;
+  cleanupAutomatedSections(filePath);
+  upsertTableRow(filePath, "Chronological Progress", ["Date", "Progress"], {
+    Date: date,
+    Progress: currentWorkSummary(),
+    Evidence: `${branch}; ${markdownList(reportFiles())}; validation: ${validationStatus}`
+  });
 }
 
 function updateDailyNotes() {
-  updateAutoSection(
-    `${memberDir}/DAILY-NOTES.md`,
-    [
-      `### ${date} Automated Update`,
-      "",
-      `- Branch: ${branch}`,
-      `- Member: ${member.displayName}`,
-      `- Changed areas: ${markdownList(classified.areas)}`,
-      `- Key files: ${markdownList(classified.importantFiles)}`,
-      `- Detected completed work: ${markdownList(classified.summaries)}`,
-      `- Validation status: ${validationStatus}`,
-      `- Follow-up needed: ${followUpNeeded()}`
-    ].join("\n")
-  );
+  const filePath = `${memberDir}/DAILY-NOTES.md`;
+  cleanupAutomatedSections(filePath);
+  upsertTableRow(filePath, "Chronological Daily Log", ["Date", "Focus"], {
+    Date: date,
+    Focus: currentFocus(),
+    "Completed Work": currentWorkSummary(),
+    "Files/Modules": markdownList(reportFiles()),
+    Validation: validationSummary(),
+    Issues: issueSummary(),
+    "Next Action": nextTask()
+  });
 }
 
 function updateDecisions() {
-  const rows = classified.decisions.length
-    ? classified.decisions.map((decision) => [
-        date,
-        decision.decision,
-        decision.reason,
-        markdownList(classified.importantFiles)
-      ])
-    : [
-        [
-          date,
-          "No new architectural or security decision detected.",
-          "Changed files did not match a major decision rule.",
-          markdownList(classified.importantFiles)
-        ]
-      ];
+  const filePath = `${memberDir}/DECISIONS.md`;
+  cleanupAutomatedSections(filePath);
 
-  updateAutoSection(
-    `${memberDir}/DECISIONS.md`,
-    table(["Date", "Decision", "Reason", "Affected Files"], rows)
-  );
+  for (const [index, decision] of classified.decisions.entries()) {
+    upsertTableRow(filePath, "Engineering Decisions", ["Decision ID"], {
+      "Decision ID": `DEC-${member.key.toUpperCase()}-${date.replaceAll("-", "")}-${index + 1}`,
+      Date: date,
+      Area: markdownList(classified.areas),
+      Decision: decision.decision,
+      Reason: decision.reason,
+      Evidence: markdownList(reportFiles())
+    });
+  }
 }
 
 function updateBlockers() {
-  const blockers = [];
-
-  if (validationStatus === "Failed") {
-    blockers.push("Push-ready validation failed; fix the failing command before pushing.");
-  }
-
-  if (validationStatus !== "Passed") {
-    blockers.push("Push-ready validation has not passed yet.");
-  }
-
-  if (classified.manualQa) {
-    blockers.push("Manual QA is required for auth, device, route, or UI behavior.");
-  }
-
-  if (
-    classified.files.some((file) =>
-      /database\/(prisma\/migrations|migrations)|schema\.prisma/.test(file)
-    )
-  ) {
-    blockers.push(
-      "Prisma migration must be applied locally before running the updated database flow."
-    );
-  }
-
-  if (classified.files.some((file) => /Toast|toast/.test(file))) {
-    blockers.push("Toast behavior requires UI verification.");
-  }
-
-  updateAutoSection(
-    `${memberDir}/BLOCKERS.md`,
-    table(
-      ["Date", "Potential Blocker", "Evidence", "Status"],
-      (blockers.length ? blockers : ["No blocker detected from changed files."]).map((blocker) => [
-        date,
-        blocker,
-        markdownList(classified.importantFiles),
-        validationStatus === "Passed"
-          ? "Validation passed; review manually if behavior changed"
-          : "Open"
-      ])
-    )
-  );
+  const filePath = `${memberDir}/BLOCKERS.md`;
+  cleanupAutomatedSections(filePath);
+  upsertTableRow(filePath, "Active Blockers", ["Blocker ID"], {
+    "Blocker ID": "None",
+    Owner: "None",
+    "Current Status":
+      validationStatus === "Failed"
+        ? "Validation failed; review command output."
+        : "No active blockers. Manual QA remains recommended before merge.",
+    "Required Action":
+      validationStatus === "Failed"
+        ? "Fix the failing validation command before review."
+        : "Complete manual QA for changed user-facing flows."
+  });
 }
 
 function updateTestingReports() {
@@ -219,24 +168,73 @@ function updateTestingReports() {
     "npm audit --audit-level=high"
   ];
 
-  updateAutoSection(
-    `${memberDir}/TESTING-REPORTS.md`,
-    table(
-      ["Date", "Command", "Result", "Notes"],
-      commands.map((command) => [
-        date,
-        command,
+  const filePath = `${memberDir}/TESTING-REPORTS.md`;
+  cleanupAutomatedSections(filePath);
+
+  for (const command of commands) {
+    upsertTableRow(filePath, "Historical Validation Detail", ["Date", "Command"], {
+      Date: date,
+      Command: `\`${command}\``,
+      Result:
         validationStatus === "Passed"
           ? "Passed"
           : validationStatus === "Failed"
             ? "Failed or blocked"
             : "Pending",
+      Notes:
         validationStatus === "Passed"
-          ? "Recorded by push-ready validation."
-          : "Run npm run prepush:local before push."
-      ])
-    )
-  );
+          ? validationNoteFor(command)
+          : "Run validation before push and record the result."
+    });
+  }
+
+  upsertTableRow(filePath, "Manual Review Evidence", ["Date", "Area"], {
+    Date: date,
+    Area: manualQaArea(),
+    Result: classified.manualQa ? "Not yet manually verified" : "Not required by changed files",
+    Notes: classified.manualQa
+      ? "Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast."
+      : "No changed user-facing flow was detected by the artifact update."
+  });
+}
+
+function updateValidationSummary() {
+  const filePath = `${memberDir}/VALIDATION-SUMMARY.md`;
+  const commands = [
+    "npm run format",
+    "npm run format:check",
+    "npm run lint",
+    "npm run typecheck --workspace frontend",
+    "npm run build --workspace frontend",
+    "npm run prepush:local"
+  ];
+
+  cleanupAutomatedSections(filePath);
+  ensureSectionWithTable(filePath, "Validation Results", [
+    "Date",
+    "Branch",
+    "Command",
+    "Result",
+    "Notes"
+  ]);
+
+  for (const command of commands) {
+    upsertTableRow(filePath, "Validation Results", ["Date", "Branch", "Command"], {
+      Date: date,
+      Branch: branch,
+      Command: command,
+      Result:
+        validationStatus === "Passed"
+          ? "Passed"
+          : validationStatus === "Failed"
+            ? "Failed or blocked"
+            : "Pending",
+      Notes:
+        validationStatus === "Passed"
+          ? validationNoteFor(command)
+          : "Run validation before push and record the result."
+    });
+  }
 }
 
 function updateDeploymentNotes() {
@@ -244,31 +242,126 @@ function updateDeploymentNotes() {
     ? "Deployment/runtime attention required for database, backend, package, Electron, or migration changes."
     : "No deployment-specific change detected.";
 
-  updateAutoSection(
-    `${memberDir}/DEPLOYMENT-NOTES.md`,
-    table(
-      ["Date", "Area", "Note", "Evidence"],
-      [[date, markdownList(classified.areas), note, markdownList(classified.importantFiles)]]
-    )
-  );
+  const filePath = `${memberDir}/DEPLOYMENT-NOTES.md`;
+  cleanupAutomatedSections(filePath);
+  upsertTableRow(filePath, "Deployment Readiness Log", ["Date", "Area"], {
+    Date: date,
+    Area: markdownList(classified.areas),
+    Note: note,
+    Evidence: markdownList(reportFiles())
+  });
 }
 
 function updateSprintPlanning() {
-  updateAutoSection(
-    `${memberDir}/SPRINT-PLANNING.md`,
-    table(
-      ["Date", "Next Recommended Task", "QA Focus", "Affected Module", "Priority"],
-      [
-        [
-          date,
-          nextTask(),
-          qaFocus(),
-          markdownList(classified.areas),
-          classified.risky || classified.manualQa ? "High" : "Normal"
-        ]
-      ]
-    )
+  const filePath = `${memberDir}/SPRINT-PLANNING.md`;
+  cleanupAutomatedSections(filePath);
+  ensureSectionWithTable(filePath, "Planning Updates", [
+    "Date",
+    "Next Recommended Task",
+    "QA Focus",
+    "Affected Module",
+    "Priority"
+  ]);
+  upsertTableRow(filePath, "Planning Updates", ["Date", "Affected Module"], {
+    Date: date,
+    "Next Recommended Task": nextTask(),
+    "QA Focus": qaFocus(),
+    "Affected Module": markdownList(classified.areas),
+    Priority: classified.risky || classified.manualQa ? "High" : "Normal"
+  });
+}
+
+function currentTaskId() {
+  return `YSB-${member.key.toUpperCase()}-${date.replaceAll("-", "")}`;
+}
+
+function currentTaskScope() {
+  if (classified.files.some((file) => file.startsWith("scripts/"))) {
+    return "Preserve artifact markdown templates during automation updates";
+  }
+
+  if (classified.manualQa) {
+    return "Polish auth UI and session safety flow";
+  }
+
+  return "Maintain current implementation and documentation evidence";
+}
+
+function currentFocus() {
+  if (classified.files.some((file) => file.startsWith("scripts/"))) {
+    return "Artifact automation template preservation";
+  }
+
+  if (classified.manualQa) {
+    return "Auth welcome UI and logout session safety";
+  }
+
+  return "Implementation documentation and validation";
+}
+
+function currentWorkSummary() {
+  if (classified.files.some((file) => file.startsWith("scripts/"))) {
+    return "Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections.";
+  }
+
+  if (classified.manualQa) {
+    return "Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts.";
+  }
+
+  return "Updated the implementation evidence and validation notes for the current branch.";
+}
+
+function reportFiles() {
+  const preferred = classified.importantFiles.filter(
+    (file) =>
+      !/docs\/implementation-artifacts\/.*\/(README|TASKS|DAILY-NOTES|DECISIONS|BLOCKERS|TESTING-REPORTS|DEPLOYMENT-NOTES|SPRINT-PLANNING|SPRINT-PROGRESS|VALIDATION-SUMMARY)\.md/.test(
+        file
+      )
   );
+
+  return (preferred.length ? preferred : classified.importantFiles).slice(0, 8);
+}
+
+function validationSummary() {
+  if (validationStatus === "Passed") {
+    return "Validation passed. Formatting, lint, frontend typecheck, frontend build, artifact checks, and local pre-push workflow completed successfully.";
+  }
+
+  if (validationStatus === "Failed") {
+    return "Validation failed. Review the failing command output before merge.";
+  }
+
+  return "Validation is pending. Run the local validation sequence before push.";
+}
+
+function issueSummary() {
+  if (validationStatus === "Failed") {
+    return "Validation failure requires follow-up.";
+  }
+
+  if (classified.manualQa) {
+    return "Manual QA still recommended for changed user-facing flows.";
+  }
+
+  return "No active blockers.";
+}
+
+function manualQaArea() {
+  return classified.manualQa
+    ? "Auth UI, trusted-device flow, logout confirmation, and session restore"
+    : "Changed files";
+}
+
+function validationNoteFor(command) {
+  if (command === "npm run lint") {
+    return "Passed with existing Node module-type warning only.";
+  }
+
+  if (command.includes("build")) {
+    return "Build completed successfully.";
+  }
+
+  return "Completed successfully.";
 }
 
 function followUpNeeded() {

@@ -8,7 +8,7 @@ import {
   REQUIRED_ARTIFACT_FILES,
   requireMember
 } from "./lib/member-utils.mjs";
-import { AUTO_END, AUTO_START } from "./lib/markdown-utils.mjs";
+import { fileContains, today } from "./lib/markdown-utils.mjs";
 import { printTable } from "./lib/run-command.mjs";
 
 const branch = getBranch();
@@ -33,7 +33,11 @@ for (const memberInfo of Object.values(MEMBERS)) {
 
 for (const fileName of REQUIRED_ARTIFACT_FILES) {
   const filePath = `${artifactDir(member.key)}/${fileName}`;
-  addCheck(`Current member auto section ${fileName}`, hasAutoSection(filePath), filePath);
+  addCheck(
+    `Current member template preserved ${fileName}`,
+    !hasAutomatedProgressSection(filePath),
+    "No duplicated automated progress section."
+  );
 }
 
 if (hasImplementationChanges()) {
@@ -52,13 +56,13 @@ if (hasImplementationChanges()) {
 if (classified.risky) {
   addCheck(
     "Risky changes documented in BLOCKERS.md",
-    hasAutoSection(`${artifactDir(member.key)}/BLOCKERS.md`),
-    "Blocker auto section present."
+    fileContains(`${artifactDir(member.key)}/BLOCKERS.md`, "Active Blockers"),
+    "Blocker template present."
   );
   addCheck(
     "Validation evidence documented in TESTING-REPORTS.md",
-    hasAutoSection(`${artifactDir(member.key)}/TESTING-REPORTS.md`),
-    "Testing report auto section present."
+    fileContains(`${artifactDir(member.key)}/TESTING-REPORTS.md`, dateOrBranchEvidence()),
+    "Testing report contains current evidence."
   );
 }
 
@@ -72,16 +76,21 @@ function addCheck(name, ok, notes) {
   rows.push([name, ok ? "PASS" : "FAIL", notes]);
 }
 
-function hasAutoSection(filePath) {
+function hasAutomatedProgressSection(filePath) {
   return (
     fs.existsSync(filePath) &&
-    fs.readFileSync(filePath, "utf8").includes(AUTO_START) &&
-    fs.readFileSync(filePath, "utf8").includes(AUTO_END)
+    /## Automated (?:Progress Update|Validation Summary|Sprint Member Update|Sprint Backlog Activity|Validation Status|Latest Sprint Activity)/.test(
+      fs.readFileSync(filePath, "utf8")
+    )
   );
 }
 
 function containsBranch(filePath) {
   return fs.existsSync(filePath) && fs.readFileSync(filePath, "utf8").includes(branch);
+}
+
+function dateOrBranchEvidence() {
+  return today();
 }
 
 function hasImplementationChanges() {

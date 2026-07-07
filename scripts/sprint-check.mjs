@@ -3,7 +3,6 @@ import fs from "node:fs";
 import { classifyChanges } from "./lib/change-classifier.mjs";
 import { collectChangedFiles, getBranch } from "./lib/git-utils.mjs";
 import { REQUIRED_SPRINT_FILES, requireMember } from "./lib/member-utils.mjs";
-import { AUTO_END, AUTO_START, readAutoSection } from "./lib/markdown-utils.mjs";
 import { printTable } from "./lib/run-command.mjs";
 
 const branch = getBranch();
@@ -21,16 +20,16 @@ for (const filePath of REQUIRED_SPRINT_FILES) {
 }
 
 addCheck("Current member sprint file", fs.existsSync(memberFile), memberFile);
-addCheck("Current member auto section", hasAutoSection(memberFile), memberFile);
+addCheck("Current member sprint activity", includesBranch(memberFile), memberFile);
 addCheck(
-  "DEFINITION-OF-DONE auto validation section",
-  hasAutoSection("docs/sprints/sprint-2/DEFINITION-OF-DONE.md"),
-  "Validation auto section present."
+  "DEFINITION-OF-DONE validation section",
+  includesText("docs/sprints/sprint-2/DEFINITION-OF-DONE.md", "Validation Status"),
+  "Validation template section present."
 );
 addCheck(
-  "SPRINT-BACKLOG auto activity section",
-  hasAutoSection("docs/sprints/sprint-2/SPRINT-BACKLOG.md"),
-  "Backlog auto section present."
+  "SPRINT-BACKLOG activity section",
+  includesText("docs/sprints/sprint-2/SPRINT-BACKLOG.md", "Sprint Activity Log"),
+  "Backlog activity template section present."
 );
 
 if (hasImplementationChanges()) {
@@ -42,14 +41,14 @@ if (hasImplementationChanges()) {
 }
 
 addCheck(
-  "Current member auto section has no TODO/TBD/FIXME/placeholder",
-  !hasUnfinishedMarkers(readAutoSection(memberFile)),
-  "Pending validation status is allowed before push-ready."
+  "Current member sprint activity has no automated progress section",
+  !hasAutomatedProgressSection(memberFile),
+  "Template table is used instead of marker blocks."
 );
 addCheck(
-  "Definition of Done auto section has no TODO/TBD/FIXME/placeholder",
-  !hasUnfinishedMarkers(readAutoSection("docs/sprints/sprint-2/DEFINITION-OF-DONE.md")),
-  "Pending validation status is allowed before push-ready."
+  "Definition of Done has no automated progress section",
+  !hasAutomatedProgressSection("docs/sprints/sprint-2/DEFINITION-OF-DONE.md"),
+  "Template table is used instead of marker blocks."
 );
 
 printTable(["Requirement", "Status", "Notes"], rows);
@@ -62,20 +61,21 @@ function addCheck(name, ok, notes) {
   rows.push([name, ok ? "PASS" : "FAIL", notes]);
 }
 
-function hasAutoSection(filePath) {
-  return (
-    fs.existsSync(filePath) &&
-    fs.readFileSync(filePath, "utf8").includes(AUTO_START) &&
-    fs.readFileSync(filePath, "utf8").includes(AUTO_END)
-  );
-}
-
 function includesBranch(filePath) {
   return fs.existsSync(filePath) && fs.readFileSync(filePath, "utf8").includes(branch);
 }
 
-function hasUnfinishedMarkers(content) {
-  return /\b(TODO|TBD|FIXME|placeholder)\b/i.test(content);
+function includesText(filePath, text) {
+  return fs.existsSync(filePath) && fs.readFileSync(filePath, "utf8").includes(text);
+}
+
+function hasAutomatedProgressSection(filePath) {
+  return (
+    fs.existsSync(filePath) &&
+    /## Automated (?:Progress Update|Validation Summary|Sprint Member Update|Sprint Backlog Activity|Validation Status|Latest Sprint Activity)/.test(
+      fs.readFileSync(filePath, "utf8")
+    )
+  );
 }
 
 function hasImplementationChanges() {

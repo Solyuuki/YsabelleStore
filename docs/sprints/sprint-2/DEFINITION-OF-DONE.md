@@ -112,12 +112,8 @@ Sprint 2 must not claim product CRUD, final POS, inventory movement logic, SARIM
 | Prisma         | `npx prisma validate --schema=database/prisma/schema.prisma` |
 | Build, if safe | `npm run build`                                              |
 
-## Automated Validation Status
-
-<!-- AUTO-UPDATE:START -->
+## Validation Status
 
 | Date       | Member     | Validation Checklist       | Status | Notes                      |
 | ---------- | ---------- | -------------------------- | ------ | -------------------------- |
 | 2026-07-07 | M1 Abarado | prepush:local / push-ready | Passed | Validation passed locally. |
-
-<!-- AUTO-UPDATE:END -->

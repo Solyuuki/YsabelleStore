@@ -63,12 +63,8 @@ Owner-only User Management handles store account creation and staff administrati
 
 M1 already moved account creation to the owner-only User Management UI, but complete security requires M2 backend enforcement. M1 should not be responsible for fixing backend register protection unless explicitly reassigned. M2 owns backend auth hardening, and M3 validates the final behavior through API and UI tests.
 
-## Automated Latest Sprint Activity
+## Latest Sprint Activity
 
-<!-- AUTO-UPDATE:START -->
-
-| Date       | Member     | Branch                           | Latest Activity                                                                         | Validation Status |
-| ---------- | ---------- | -------------------------------- | --------------------------------------------------------------------------------------- | ----------------- |
-| 2026-07-07 | M1 Abarado | m1/v0.2/feat/auth-fullstack-flow | Authentication / trusted device login / RBAC<br>Sprint and implementation documentation | Passed            |
-
-<!-- AUTO-UPDATE:END -->
+| Date       | Member     | Branch                           | Latest Activity                                                                                                  | Validation Status |
+| ---------- | ---------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 2026-07-07 | M1 Abarado | m1/v0.2/feat/auth-fullstack-flow | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |

@@ -1,7 +1,12 @@
 import fs from "node:fs";
 
 import { artifactDir } from "./member-utils.mjs";
-import { today, updateAutoSection, table } from "./markdown-utils.mjs";
+import {
+  cleanupAutomatedSections,
+  ensureSectionWithTable,
+  today,
+  upsertTableRow
+} from "./markdown-utils.mjs";
 
 export function validationSummaryPath(memberKey) {
   return `${artifactDir(memberKey)}/VALIDATION-SUMMARY.md`;
@@ -9,16 +14,29 @@ export function validationSummaryPath(memberKey) {
 
 export function writeValidationSummary(member, branch, rows) {
   const filePath = validationSummaryPath(member.key);
-  const content = table(
-    ["Date", "Branch", "Command", "Result", "Notes"],
-    rows.map((row) => [today(), branch, row.command, row.result, row.notes ?? ""])
-  );
 
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, "# Validation Summary\n\n", "utf8");
   }
 
-  updateAutoSection(filePath, content, "Automated Validation Summary");
+  cleanupAutomatedSections(filePath);
+  ensureSectionWithTable(filePath, "Validation Results", [
+    "Date",
+    "Branch",
+    "Command",
+    "Result",
+    "Notes"
+  ]);
+
+  for (const row of rows) {
+    upsertTableRow(filePath, "Validation Results", ["Date", "Branch", "Command"], {
+      Date: today(),
+      Branch: branch,
+      Command: row.command,
+      Result: row.result,
+      Notes: row.notes ?? ""
+    });
+  }
 }
 
 export function readValidationStatus(memberKey) {

@@ -13,9 +13,11 @@
 
 ## Active Blockers
 
-| Blocker ID | Owner | Current Status | Required Action                                                     |
-| ---------- | ----- | -------------- | ------------------------------------------------------------------- |
-| None       | None  | Clear          | No active M1 blocker remains after screenshot artifact restoration. |
+| Blocker ID | Owner | Current Status                                                  | Required Action                                   |
+| ---------- | ----- | --------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
+| ---        | ---   | ---                                                             | ---                                               |
+|            |       |                                                                 |                                                   | No active M1 blocker remains after screenshot artifact restoration. |
+| None       | None  | No active blockers. Manual QA remains recommended before merge. | Complete manual QA for changed user-facing flows. |
 
 ## Severity Guide
 
@@ -25,12 +27,8 @@
 | Medium   | Merge or validation issue that can be resolved locally          | Fix or document before review                   |
 | High     | User-facing behavior, source ownership, or build stability risk | Stop merge and coordinate with affected owner   |
 
-## Automated Progress Update
+## Active Blockers
 
-<!-- AUTO-UPDATE:START -->
-
-| Date       | Potential Blocker                                              | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Status                                                 |
-| ---------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| 2026-07-07 | Manual QA is required for auth, device, route, or UI behavior. | docs/implementation-artifacts/m1-abarado/BLOCKERS.md<br>docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md<br>docs/implementation-artifacts/m1-abarado/DECISIONS.md<br>docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md<br>docs/implementation-artifacts/m1-abarado/README.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PLANNING.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PROGRESS.md<br>docs/implementation-artifacts/m1-abarado/TASKS.md<br>docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md<br>docs/implementation-artifacts/m1-abarado/VALIDATION-SUMMARY.md | Validation passed; review manually if behavior changed |
-
-<!-- AUTO-UPDATE:END -->
+| Blocker ID | Owner | Current Status                                                  | Required Action                                   |
+| ---------- | ----- | --------------------------------------------------------------- | ------------------------------------------------- |
+| None       | None  | No active blockers. Manual QA remains recommended before merge. | Complete manual QA for changed user-facing flows. |

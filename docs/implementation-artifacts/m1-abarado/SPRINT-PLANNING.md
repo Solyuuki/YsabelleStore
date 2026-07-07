@@ -26,12 +26,25 @@
 | Member artifacts are ready          | m1, m2, and m3 folders include reporting files      |
 | No unrelated app code is introduced | Repository foundation remains documentation-focused |
 
-## Automated Progress Update
+## Planning Updates
 
-<!-- AUTO-UPDATE:START -->
+| Date       | Next Recommended Task                            | QA Focus                             | Affected Module      | Priority |
+| ---------- | ------------------------------------------------ | ------------------------------------ | -------------------- | -------- |
+| 2026-07-07 | Review generated artifact updates before commit. | Documentation and validation review. | Docs<br>Scripts / CI | Normal   |
 
-| Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module  | Priority |
-| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | ---------------- | -------- |
-| 2026-07-07 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend | High     |
+## Planning Updates
 
-<!-- AUTO-UPDATE:END -->
+| Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module                  | Priority |
+| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------- | -------- |
+| 2026-07-07 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend<br>Scripts / CI | High     |
+
+## Planning Updates
+
+| Date | Next Recommended Task | QA Focus | Affected Module | Priority |
+| ---- | --------------------- | -------- | --------------- | -------- |
+
+## Planning Updates
+
+| Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module                  | Priority |
+| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------- | -------- |
+| 2026-07-07 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend<br>Scripts / CI | High     |

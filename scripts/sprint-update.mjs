@@ -2,11 +2,12 @@ import { classifyChanges } from "./lib/change-classifier.mjs";
 import { collectChangedFiles, getBranch } from "./lib/git-utils.mjs";
 import { REQUIRED_SPRINT_FILES, requireMember } from "./lib/member-utils.mjs";
 import {
+  cleanupAutomatedSections,
   ensureMarkdownFile,
+  ensureSectionWithTable,
   markdownList,
-  table,
   today,
-  updateAutoSection
+  upsertTableRow
 } from "./lib/markdown-utils.mjs";
 import { readValidationStatus } from "./lib/validation-summary.mjs";
 
@@ -43,72 +44,84 @@ function getValidationStatus() {
 }
 
 function updateMemberFile() {
-  updateAutoSection(
-    `docs/sprints/sprint-2/members/${member.key}.md`,
-    table(
-      ["Date", "Branch", "Work Areas", "Completed / Updated Work", "Evidence", "Next QA"],
-      [
-        [
-          date,
-          branch,
-          markdownList(classified.areas),
-          markdownList(classified.summaries),
-          markdownList(classified.importantFiles),
-          nextQa()
-        ]
-      ]
-    ),
-    "Automated Sprint Member Update"
-  );
+  const filePath = `docs/sprints/sprint-2/members/${member.key}.md`;
+  cleanupAutomatedSections(filePath);
+  ensureSectionWithTable(filePath, "Current Sprint Activity", [
+    "Date",
+    "Branch",
+    "Work Areas",
+    "Completed / Updated Work",
+    "Evidence",
+    "Next QA"
+  ]);
+  upsertTableRow(filePath, "Current Sprint Activity", ["Date", "Branch"], {
+    Date: date,
+    Branch: branch,
+    "Work Areas": markdownList(classified.areas),
+    "Completed / Updated Work": sprintWorkSummary(),
+    Evidence: markdownList(reportFiles()),
+    "Next QA": nextQa()
+  });
 }
 
 function updateBacklog() {
-  updateAutoSection(
-    "docs/sprints/sprint-2/SPRINT-BACKLOG.md",
-    table(
-      ["Date", "Member", "Detected Item", "Status", "Evidence"],
-      classified.summaries.map((summary) => [
-        date,
-        member.displayName,
-        summary,
-        validationStatus,
-        markdownList(classified.importantFiles)
-      ])
-    ),
-    "Automated Sprint Backlog Activity"
-  );
+  const filePath = "docs/sprints/sprint-2/SPRINT-BACKLOG.md";
+  cleanupAutomatedSections(filePath);
+  ensureSectionWithTable(filePath, "Sprint Activity Log", [
+    "Date",
+    "Member",
+    "Work Item",
+    "Status",
+    "Evidence"
+  ]);
+  upsertTableRow(filePath, "Sprint Activity Log", ["Date", "Member", "Work Item"], {
+    Date: date,
+    Member: member.displayName,
+    "Work Item": sprintWorkSummary(),
+    Status: validationStatus,
+    Evidence: markdownList(reportFiles())
+  });
 }
 
 function updateDefinitionOfDone() {
-  updateAutoSection(
-    "docs/sprints/sprint-2/DEFINITION-OF-DONE.md",
-    table(
-      ["Date", "Member", "Validation Checklist", "Status", "Notes"],
-      [
-        [
-          date,
-          member.displayName,
-          "prepush:local / push-ready",
-          validationStatus,
-          validationStatus === "Passed"
-            ? "Validation passed locally."
-            : "Validation must pass before push."
-        ]
-      ]
-    ),
-    "Automated Validation Status"
-  );
+  const filePath = "docs/sprints/sprint-2/DEFINITION-OF-DONE.md";
+  cleanupAutomatedSections(filePath);
+  ensureSectionWithTable(filePath, "Validation Status", [
+    "Date",
+    "Member",
+    "Validation Checklist",
+    "Status",
+    "Notes"
+  ]);
+  upsertTableRow(filePath, "Validation Status", ["Date", "Member", "Validation Checklist"], {
+    Date: date,
+    Member: member.displayName,
+    "Validation Checklist": "prepush:local / push-ready",
+    Status: validationStatus,
+    Notes:
+      validationStatus === "Passed"
+        ? "Validation passed locally."
+        : "Validation must pass before push."
+  });
 }
 
 function updateReadme() {
-  updateAutoSection(
-    "docs/sprints/sprint-2/README.md",
-    table(
-      ["Date", "Member", "Branch", "Latest Activity", "Validation Status"],
-      [[date, member.displayName, branch, markdownList(classified.summaries), validationStatus]]
-    ),
-    "Automated Latest Sprint Activity"
-  );
+  const filePath = "docs/sprints/sprint-2/README.md";
+  cleanupAutomatedSections(filePath);
+  ensureSectionWithTable(filePath, "Latest Sprint Activity", [
+    "Date",
+    "Member",
+    "Branch",
+    "Latest Activity",
+    "Validation Status"
+  ]);
+  upsertTableRow(filePath, "Latest Sprint Activity", ["Date", "Member", "Branch"], {
+    Date: date,
+    Member: member.displayName,
+    Branch: branch,
+    "Latest Activity": sprintWorkSummary(),
+    "Validation Status": validationStatus
+  });
 }
 
 function nextQa() {
@@ -121,6 +134,29 @@ function nextQa() {
   }
 
   return "Review generated sprint docs.";
+}
+
+function sprintWorkSummary() {
+  if (classified.files.some((file) => file.startsWith("scripts/"))) {
+    return "Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections.";
+  }
+
+  if (classified.manualQa) {
+    return "Auth UI and session UX were updated while preserving trusted-device and route-guard behavior.";
+  }
+
+  return "Sprint documentation and validation evidence were updated for the current branch.";
+}
+
+function reportFiles() {
+  const preferred = classified.importantFiles.filter(
+    (file) =>
+      !/docs\/implementation-artifacts\/.*\/(README|TASKS|DAILY-NOTES|DECISIONS|BLOCKERS|TESTING-REPORTS|DEPLOYMENT-NOTES|SPRINT-PLANNING|SPRINT-PROGRESS|VALIDATION-SUMMARY)\.md/.test(
+        file
+      )
+  );
+
+  return (preferred.length ? preferred : classified.importantFiles).slice(0, 8);
 }
 
 function sprintHeading(filePath) {
