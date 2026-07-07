@@ -87,7 +87,7 @@ The following M1 blockers are backend/security-related and are assigned to M2:
 
 ## Status
 
-| Item           | Status      |
-| -------------- | ----------- |
-| Sprint 2 role  | Active      |
-| Implementation | In progress |
+| Item           | Status    |
+| -------------- | --------- |
+| Sprint 2 role  | Completed |
+| Implementation | Completed |

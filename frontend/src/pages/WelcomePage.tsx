@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 import type { AppRoutePath } from "@/app/routes";
+import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -624,7 +625,7 @@ export function WelcomePage({
 
         <footer className="auth-footer-enter welcome-footer text-[13px] font-medium text-slate-700/80">
           <p className="min-w-0 justify-self-start whitespace-nowrap">
-            YsabelleStore <span className="text-slate-500">v0.1.0</span>
+            YsabelleStore <span className="text-slate-500">{APP_VERSION_LABEL}</span>
           </p>
           <p className="hidden min-w-0 items-center justify-self-end gap-2 whitespace-nowrap lg:col-start-3 lg:flex">
             <span

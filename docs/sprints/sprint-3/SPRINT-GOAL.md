@@ -53,3 +53,17 @@ By the end of Sprint 3:
 | Perfect SARIMA tuning               | Foundation and data flow come before model optimization      |
 | Complete enterprise reporting suite | Sprint 3 only starts the reporting layer                     |
 | Broad visual redesign               | The sprint should focus on usable, clean, integrated modules |
+
+## Version Rule
+
+Sprint completions follow the repository version ladder:
+
+| Sprint                       | Version |
+| ---------------------------- | ------- |
+| Sprint 1 completed           | v0.1.0  |
+| Sprint 2 completed           | v0.2.0  |
+| Sprint 3 completed           | v0.3.0  |
+| Sprint 4 completed           | v0.4.0  |
+| Final MVP/demo-ready release | v1.0.0  |
+
+Do not bump to `v0.3.0` during Sprint 3 planning. Only bump after Sprint 3 implementation is complete and accepted.

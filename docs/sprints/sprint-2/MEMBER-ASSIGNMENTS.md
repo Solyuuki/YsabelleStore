@@ -1,6 +1,6 @@
 # Member Assignments
 
-Sprint 2 member assignments are separated by member under `members/`. Authentication, registration, and RBAC touch frontend, backend, and database boundaries, so cross-owner review is required.
+Sprint 2 member assignments are separated by member under `members/`. Authentication, registration, and RBAC touched frontend, backend, and database boundaries, and the sprint is now closed with cross-owner completion recorded.
 
 ## Member Files
 
@@ -12,4 +12,4 @@ Sprint 2 member assignments are separated by member under `members/`. Authentica
 
 ## Ownership Rule
 
-M1 owns login UI, account setup UI, auth state, frontend API integration, route protection, switch user, logout, and frontend RBAC. M2 owns backend auth routes, controller/service logic, validation, token handling, and middleware. M3 owns Prisma user readiness, seed users, role/status checks, password hash seed support, and database validation evidence.
+M1 owned login UI, account setup UI, auth state, frontend API integration, route protection, switch user, logout, and frontend RBAC. M2 owned backend auth routes, controller/service logic, validation, token handling, and middleware. M3 owned Prisma user readiness, seed users, role/status checks, password hash seed support, and database validation evidence.

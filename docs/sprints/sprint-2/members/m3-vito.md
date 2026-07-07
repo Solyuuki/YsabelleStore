@@ -86,7 +86,7 @@ After M2 completes backend auth hardening, M3 must validate that the blockers ar
 
 ## Status
 
-| Item           | Status      |
-| -------------- | ----------- |
-| Sprint 2 role  | Active      |
-| Implementation | In progress |
+| Item           | Status    |
+| -------------- | --------- |
+| Sprint 2 role  | Completed |
+| Implementation | Completed |

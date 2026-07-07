@@ -21,6 +21,7 @@
     "artifact-check": "node scripts/artifact-check.mjs",
     "sprint-update": "node scripts/sprint-update.mjs",
     "sprint-check": "node scripts/sprint-check.mjs",
+    "version:bump": "node scripts/version-bump.mjs",
     "push-ready": "node scripts/push-ready.mjs",
     "prepush:local": "node scripts/prepush-local.mjs",
     "prepare": "husky",

@@ -1,6 +1,7 @@
 import { ChevronLeft, Lock, LogOut } from "lucide-react";
 
 import { appRoutes, type AppRoutePath } from "@/app/routes";
+import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AuthUser } from "@/types/auth";
@@ -219,7 +220,7 @@ function FullCounterModeCard({ user }: { user: AuthUser | null }) {
           ? `${user.role.toLowerCase()} session active.`
           : "Staff workspace for daily retail operations."}
       </p>
-      <p className="mt-3 text-xs font-medium text-slate-500">YsabelleStore v0.1.0</p>
+      <p className="mt-3 text-xs font-medium text-slate-500">YsabelleStore {APP_VERSION_LABEL}</p>
     </div>
   );
 }
