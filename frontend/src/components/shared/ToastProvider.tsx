@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import type { ToastInput, ToastItem } from "@/components/shared/toast.types";
 
 type ToastContextValue = {
+  clearToastScope: (scope: string) => void;
   clearToasts: () => void;
   dismissToast: (id: string) => void;
   pushToast: (toast: ToastInput) => string;
@@ -69,11 +70,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const restartToastTimer = useCallback(
-    (id: string, durationMs: number) => {
+    (toast: ToastItem) => {
+      const { durationMs, id, persistent } = toast;
       const existingTimeout = timersRef.current[id];
 
       if (existingTimeout) {
         window.clearTimeout(existingTimeout);
+        delete timersRef.current[id];
+      }
+
+      if (persistent) {
+        return;
       }
 
       timersRef.current[id] = window.setTimeout(() => dismissToast(id), durationMs);
@@ -87,35 +94,44 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         (currentToast) =>
           currentToast.title === toast.title &&
           currentToast.message === toast.message &&
-          currentToast.variant === toast.variant
+          currentToast.variant === toast.variant &&
+          currentToast.scope === toast.scope
       );
       const id = createToastId();
       const durationMs = toast.durationMs ?? DEFAULT_TOAST_DURATION_MS;
       const nextToast: ToastItem = {
         closing: false,
+        createdAt: Date.now(),
         durationMs,
         id,
         message: toast.message,
+        persistent: toast.persistent,
+        scope: toast.scope,
         title: toast.title,
         variant: toast.variant
       };
 
       if (matchingToast) {
+        const refreshedToast = {
+          ...nextToast,
+          id: matchingToast.id
+        };
+
         setToasts((currentToasts) =>
           currentToasts.map((currentToast) =>
-            currentToast.id === matchingToast.id ? { ...currentToast, ...nextToast } : currentToast
+            currentToast.id === matchingToast.id ? refreshedToast : currentToast
           )
         );
-        restartToastTimer(matchingToast.id, durationMs);
+        restartToastTimer(refreshedToast);
         return matchingToast.id;
       }
 
       setToasts((currentToasts) => [nextToast, ...currentToasts]);
-      restartToastTimer(id, durationMs);
+      restartToastTimer(nextToast);
 
       return id;
     },
-    [dismissToast, restartToastTimer, toasts]
+    [restartToastTimer, toasts]
   );
 
   const clearToasts = useCallback(() => {
@@ -126,6 +142,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     });
 
     timersRef.current = {};
+  }, []);
+
+  const clearToastScope = useCallback((scope: string) => {
+    setToasts((currentToasts) => {
+      const toastIdsToClear = currentToasts
+        .filter((toast) => toast.scope === scope)
+        .map((toast) => toast.id);
+
+      toastIdsToClear.forEach((toastId) => {
+        const existingTimeout = timersRef.current[toastId];
+
+        if (existingTimeout) {
+          window.clearTimeout(existingTimeout);
+          delete timersRef.current[toastId];
+        }
+      });
+
+      return currentToasts.filter((toast) => toast.scope !== scope);
+    });
   }, []);
 
   useEffect(
@@ -139,12 +174,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<ToastContextValue>(
     () => ({
+      clearToastScope,
       clearToasts,
       dismissToast,
       pushToast,
       toasts
     }),
-    [clearToasts, dismissToast, pushToast, toasts]
+    [clearToastScope, clearToasts, dismissToast, pushToast, toasts]
   );
 
   return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>;

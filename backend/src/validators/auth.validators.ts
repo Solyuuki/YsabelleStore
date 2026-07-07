@@ -5,6 +5,10 @@ export const loginRequestSchema = z.object({
   password: z.string().min(1)
 });
 
+export const trustedDeviceRequestSchema = z.object({
+  trustedDeviceToken: z.string().trim().min(32)
+});
+
 export const registerRequestSchema = z.object({
   name: z.string().trim().min(2).max(120),
   email: z.string().trim().email(),
@@ -14,3 +18,4 @@ export const registerRequestSchema = z.object({
 
 export type LoginRequestBody = z.infer<typeof loginRequestSchema>;
 export type RegisterRequestBody = z.infer<typeof registerRequestSchema>;
+export type TrustedDeviceRequestBody = z.infer<typeof trustedDeviceRequestSchema>;

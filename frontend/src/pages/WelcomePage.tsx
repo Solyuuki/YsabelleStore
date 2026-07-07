@@ -25,7 +25,7 @@ type WelcomePageProps = {
   onLogin: (email: string, password: string) => Promise<boolean>;
   onNavigate: (path: AppRoutePath) => void;
   onRememberedAccountSelect: (account: RememberedAccount) => Promise<boolean>;
-  onRemoveRememberedAccount: (id: string) => void;
+  onRemoveRememberedAccount: (id: string) => Promise<void>;
   onSwitchUser: () => Promise<void>;
   status: "loading" | "authenticated" | "unauthenticated";
   user: AuthUser | null;
@@ -78,11 +78,20 @@ export function WelcomePage({
   const loading = status === "loading";
   const authenticated = status === "authenticated" && user;
   const hasRememberedAccounts = rememberedAccounts.length > 0;
+  const hasTrustedDeviceAccounts = rememberedAccounts.some(
+    (account) => account.trustedDeviceAvailable
+  );
   const isSubmitting = submitState === "verifying";
   const isVerifyingQuickAccess = quickAccessState === "verifying";
   const showRememberedAccounts =
     hasRememberedAccounts && !authenticated && panelMode === "remembered";
-  const selectedAccountEmail = selectedRememberedAccount?.email ?? "";
+  const selectedAccountHasTrustedDevice = Boolean(
+    selectedRememberedAccount?.trustedDeviceAvailable
+  );
+  const trustedDeviceFailureMessage =
+    error && error !== "Saved account found. Please sign in to continue."
+      ? error
+      : "Device verification failed. Please sign in again.";
 
   useEffect(() => {
     if (!hasRememberedAccounts && panelMode === "remembered") {
@@ -121,13 +130,16 @@ export function WelcomePage({
     setSelectedRememberedAccount(null);
   }
 
-  function showLoginForm(prefillEmail = "", preserveSelectedAccount = false) {
+  function showLoginForm(prefillEmail = "", preserveSelectedAccount = false, message?: string) {
     setPanelMode("login");
     resetLoginForm();
     if (!preserveSelectedAccount) {
       setSelectedRememberedAccount(null);
     }
     setEmail(prefillEmail);
+    if (message) {
+      setFormError(message);
+    }
   }
 
   async function handleRememberedAccountSelect(account: RememberedAccount) {
@@ -137,6 +149,12 @@ export function WelcomePage({
 
     setFormError(null);
     setSelectedRememberedAccount(account);
+
+    if (!account.trustedDeviceAvailable) {
+      showLoginForm(account.email, true, "Saved account found. Please sign in to continue.");
+      return;
+    }
+
     setQuickAccessState("verifying");
     setSubmitState("idle");
     setSubmitMode(null);
@@ -194,11 +212,11 @@ export function WelcomePage({
     }
 
     if (isVerifyingQuickAccess) {
-      return "Verifying local access";
+      return "Trusted device";
     }
 
     if (showRememberedAccounts) {
-      return "Recognized device";
+      return hasTrustedDeviceAccounts ? "Trusted device" : "Saved account";
     }
 
     if (selectedRememberedAccount && panelMode === "login") {
@@ -218,15 +236,23 @@ export function WelcomePage({
     }
 
     if (isVerifyingQuickAccess && selectedRememberedAccount) {
-      return `Checking local access for ${selectedRememberedAccount.name} (${selectedRememberedAccount.email}).`;
+      return `Verifying trusted device for ${selectedRememberedAccount.email}...`;
     }
 
     if (showRememberedAccounts) {
-      return "Choose a recognized account on this device to continue. Each selection still verifies the active session before opening the dashboard.";
+      if (error && hasTrustedDeviceAccounts) {
+        return trustedDeviceFailureMessage;
+      }
+
+      return hasTrustedDeviceAccounts
+        ? "Choose a saved account to verify this trusted device and continue."
+        : "Saved account found. Please sign in to continue.";
     }
 
     if (selectedRememberedAccount && panelMode === "login") {
-      return `Please sign in again to continue as ${selectedAccountEmail}.`;
+      return selectedAccountHasTrustedDevice
+        ? trustedDeviceFailureMessage
+        : "Saved account found. Please sign in to continue.";
     }
 
     return "Sign in with a development owner or staff account to open the local desktop inventory workspace.";
@@ -249,8 +275,16 @@ export function WelcomePage({
       return <StatusBadge variant="success">{user.role}</StatusBadge>;
     }
 
-    if (showRememberedAccounts || isVerifyingQuickAccess) {
-      return <StatusBadge variant="info">Recognized device</StatusBadge>;
+    if (isVerifyingQuickAccess) {
+      return null;
+    }
+
+    if (showRememberedAccounts) {
+      return (
+        <StatusBadge variant="info">
+          {hasTrustedDeviceAccounts ? "Trusted device" : "Saved account"}
+        </StatusBadge>
+      );
     }
 
     return <StatusBadge variant="warning">Store login</StatusBadge>;
@@ -293,15 +327,9 @@ export function WelcomePage({
             </p>
             <div className="mt-[clamp(2rem,3.5vw,3.75rem)] max-w-[clamp(34rem,44vw,48rem)]">
               {isVerifyingQuickAccess ? (
-                <LoadingState
-                  badge="Checking local access"
-                  helper={
-                    selectedRememberedAccount
-                      ? `Please wait while YsabelleStore verifies ${selectedRememberedAccount.email}.`
-                      : "Please wait while YsabelleStore verifies your saved session."
-                  }
-                  label="Verifying local access"
-                />
+                <div className="rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm">
+                  Please wait while YsabelleStore checks this device.
+                </div>
               ) : loading ? (
                 <LoadingState
                   badge="Checking session"
@@ -310,8 +338,11 @@ export function WelcomePage({
                 />
               ) : showRememberedAccounts ? (
                 <div className="rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm">
-                  Recognized device. Choose a saved account to continue, or use another account to
-                  sign in manually.
+                  {error && hasTrustedDeviceAccounts
+                    ? trustedDeviceFailureMessage
+                    : hasTrustedDeviceAccounts
+                      ? "Trusted device available. Choose a saved account to verify it, or use another account."
+                      : "Saved account found. Please sign in to continue."}
                 </div>
               ) : submitState === "verifying" && submitMode === "login" ? (
                 <LoadingState
@@ -328,8 +359,9 @@ export function WelcomePage({
                 </div>
               ) : selectedRememberedAccount && panelMode === "login" ? (
                 <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
-                  Signed out from local access. The email for {selectedRememberedAccount.email} is
-                  ready for a full sign-in.
+                  {selectedAccountHasTrustedDevice
+                    ? trustedDeviceFailureMessage
+                    : "Saved account found. Please sign in to continue."}
                 </div>
               ) : (
                 <div className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
@@ -375,16 +407,11 @@ export function WelcomePage({
                     Switch user
                   </Button>
                 </div>
-              ) : isVerifyingQuickAccess ? (
-                <LoadingState
-                  badge="Verifying local access"
-                  helper={
-                    selectedRememberedAccount
-                      ? `Please wait while YsabelleStore checks the session for ${selectedRememberedAccount.name}.`
-                      : "Please wait while YsabelleStore checks the saved session."
-                  }
-                  label="Verifying local access"
-                />
+              ) : isVerifyingQuickAccess && selectedRememberedAccount ? (
+                <div className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                  <p className="font-medium text-slate-950">{selectedRememberedAccount.name}</p>
+                  <p className="mt-1">{selectedRememberedAccount.email}</p>
+                </div>
               ) : showRememberedAccounts ? (
                 <div className="space-y-4">
                   <div className="grid gap-3">
@@ -393,7 +420,7 @@ export function WelcomePage({
                         account={account}
                         key={account.id}
                         onContinue={() => void handleRememberedAccountSelect(account)}
-                        onRemove={() => onRemoveRememberedAccount(account.id)}
+                        onRemove={() => void onRemoveRememberedAccount(account.id)}
                       />
                     ))}
                   </div>
@@ -412,9 +439,9 @@ export function WelcomePage({
                 <form className="space-y-[clamp(1rem,1.6vw,1.5rem)]" onSubmit={handleSubmit}>
                   {selectedRememberedAccount ? (
                     <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
-                      Signing in as{" "}
-                      <span className="font-medium">{selectedRememberedAccount.email}</span> on this
-                      device.
+                      {selectedAccountHasTrustedDevice
+                        ? trustedDeviceFailureMessage
+                        : "Saved account found. Please sign in to continue."}
                     </div>
                   ) : null}
 
@@ -546,7 +573,7 @@ function RememberedAccountCard({
         </Button>
         <Button onClick={onRemove} type="button" variant="secondary">
           <Trash2 className="h-4 w-4" aria-hidden="true" />
-          Remove
+          Forget
         </Button>
       </div>
     </div>

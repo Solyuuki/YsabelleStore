@@ -66,6 +66,21 @@ export function AppShell() {
   const route = useMemo(() => getRouteByPath(path), [path]);
   const routeForLayout = route ?? getRouteByPath("/not-found");
 
+  const handleLogout = useCallback(() => {
+    void logout();
+    navigate("/");
+  }, [logout, navigate]);
+
+  useEffect(() => {
+    if (status === "authenticated" && path === "/") {
+      navigate("/dashboard");
+    }
+
+    if (status === "unauthenticated" && path !== "/") {
+      navigate("/");
+    }
+  }, [navigate, path, status]);
+
   if (status !== "authenticated" || path === "/") {
     return (
       <WelcomePage
@@ -87,9 +102,7 @@ export function AppShell() {
       activePath={validRoutePaths.has(path) ? path : "/not-found"}
       collapsed={sidebarCollapsed}
       onNavigate={navigate}
-      onLogout={() => {
-        void logout().then(() => navigate("/"));
-      }}
+      onLogout={handleLogout}
       onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
       user={user}
     >

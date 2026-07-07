@@ -11,5 +11,6 @@ export type AuthUser = {
 
 export type AuthSession = {
   token: string;
+  trustedDeviceToken?: string;
   user: AuthUser;
 };

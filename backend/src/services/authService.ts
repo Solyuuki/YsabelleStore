@@ -1,10 +1,16 @@
+import { createHash, randomBytes } from "node:crypto";
+
 import jwt from "jsonwebtoken";
 import type { User, UserRole } from "@prisma/client";
 
 import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
-import type { LoginRequestBody, RegisterRequestBody } from "../validators/auth.validators.js";
+import type {
+  LoginRequestBody,
+  RegisterRequestBody,
+  TrustedDeviceRequestBody
+} from "../validators/auth.validators.js";
 import { hashPassword, verifyPassword } from "./passwordHashService.js";
 
 const TOKEN_EXPIRES_IN = "8h";
@@ -20,6 +26,7 @@ export type SafeUser = {
 export type AuthSession = {
   token: string;
   user: SafeUser;
+  trustedDeviceToken?: string;
 };
 
 export type AuthTokenPayload = {
@@ -62,7 +69,34 @@ function signAuthToken(user: SafeUser): string {
   );
 }
 
-export async function loginWithPassword(credentials: LoginRequestBody): Promise<AuthSession> {
+function generateTrustedDeviceToken(): string {
+  return randomBytes(32).toString("base64url");
+}
+
+function hashTrustedDeviceToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+async function createTrustedDeviceSession(userId: string, userAgent?: string) {
+  const trustedDeviceToken = generateTrustedDeviceToken();
+
+  await prisma.trustedDevice.create({
+    data: {
+      userId,
+      tokenHash: hashTrustedDeviceToken(trustedDeviceToken),
+      deviceLabel: "This device",
+      userAgent: userAgent?.slice(0, 255),
+      expiresAt: null
+    }
+  });
+
+  return trustedDeviceToken;
+}
+
+export async function loginWithPassword(
+  credentials: LoginRequestBody,
+  options: { userAgent?: string } = {}
+): Promise<AuthSession> {
   const user = await prisma.user.findUnique({
     where: {
       email: credentials.email
@@ -107,6 +141,7 @@ export async function loginWithPassword(credentials: LoginRequestBody): Promise<
 
   return {
     token: signAuthToken(safeUser),
+    trustedDeviceToken: await createTrustedDeviceSession(user.id, options.userAgent),
     user: safeUser
   };
 }
@@ -140,6 +175,76 @@ export async function registerLocalUser(input: RegisterRequestBody): Promise<Aut
     token: signAuthToken(safeUser),
     user: safeUser
   };
+}
+
+export async function restoreTrustedDeviceSession(
+  input: TrustedDeviceRequestBody
+): Promise<AuthSession> {
+  const tokenHash = hashTrustedDeviceToken(input.trustedDeviceToken);
+  const trustedDevice = await prisma.trustedDevice.findUnique({
+    include: {
+      user: true
+    },
+    where: {
+      tokenHash
+    }
+  });
+
+  if (!trustedDevice) {
+    throw new HttpError(401, "Device verification failed. Please sign in again.", {
+      code: "TRUSTED_DEVICE_INVALID"
+    });
+  }
+
+  if (trustedDevice.revokedAt) {
+    throw new HttpError(401, "This device was forgotten. Please sign in again.", {
+      code: "TRUSTED_DEVICE_REVOKED"
+    });
+  }
+
+  if (!trustedDevice.user || trustedDevice.user.status !== "ACTIVE") {
+    throw new HttpError(401, "Account access is inactive. Please contact the owner.", {
+      code: "TRUSTED_DEVICE_USER_UNAVAILABLE"
+    });
+  }
+
+  const safeUser = toSafeUser(trustedDevice.user);
+
+  await prisma.trustedDevice.update({
+    data: {
+      lastUsedAt: new Date()
+    },
+    where: {
+      id: trustedDevice.id
+    }
+  });
+
+  return {
+    token: signAuthToken(safeUser),
+    user: safeUser
+  };
+}
+
+export async function revokeTrustedDevice(input: TrustedDeviceRequestBody): Promise<void> {
+  const tokenHash = hashTrustedDeviceToken(input.trustedDeviceToken);
+  const trustedDevice = await prisma.trustedDevice.findUnique({
+    where: {
+      tokenHash
+    }
+  });
+
+  if (!trustedDevice || trustedDevice.revokedAt) {
+    return;
+  }
+
+  await prisma.trustedDevice.update({
+    data: {
+      revokedAt: new Date()
+    },
+    where: {
+      id: trustedDevice.id
+    }
+  });
 }
 
 export async function getUserFromToken(token: string): Promise<SafeUser> {

@@ -90,14 +90,17 @@ export function Toast({ onDismiss, toast }: ToastProps) {
           <X className="h-4 w-4" aria-hidden="true" />
         </Button>
       </div>
-      <div className="h-1 overflow-hidden bg-white/60" aria-hidden="true">
-        <div
-          className={cn("h-full w-full origin-left", variant.accentClassName)}
-          style={{
-            animation: `toast-progress ${toast.durationMs}ms linear forwards`
-          }}
-        />
-      </div>
+      {toast.persistent ? null : (
+        <div className="h-1 overflow-hidden bg-white/60" aria-hidden="true">
+          <div
+            className={cn("h-full w-full origin-left", variant.accentClassName)}
+            key={toast.createdAt}
+            style={{
+              animation: `toast-progress ${toast.durationMs}ms linear forwards`
+            }}
+          />
+        </div>
+      )}
     </article>
   );
 }

@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import type { ReactNode } from "react";
 
 import { apiClient } from "@/services/apiClient";
@@ -9,6 +17,14 @@ import type { ToastInput } from "@/components/shared/toast.types";
 
 const AUTH_TOKEN_KEY = "ysabellestore.authToken";
 const REMEMBERED_ACCOUNTS_KEY = "ysabelle.rememberedAccounts";
+const TRUSTED_DEVICE_TOKENS_KEY = "ysabellestore.trustedDeviceTokens";
+const AUTH_TOAST_SCOPE = "auth";
+const TRUSTED_DEVICE_FAILED_MESSAGE = "Device verification failed. Please sign in again.";
+const TRUSTED_DEVICE_FORGOTTEN_MESSAGE = "This device was forgotten. Please sign in again.";
+const TRUSTED_DEVICE_USER_INACTIVE_MESSAGE =
+  "Account access is inactive. Please contact the owner.";
+const TRUSTED_DEVICE_SUCCESS_MESSAGE = "Device recognized. Welcome back.";
+const SAVED_ACCOUNT_MESSAGE = "Saved account found. Please sign in to continue.";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -25,6 +41,8 @@ export type RememberedAccount = {
   email: string;
   role: AuthUser["role"];
   lastUsedAt: string;
+  deviceLabel?: string;
+  trustedDeviceAvailable?: boolean;
 };
 
 type AuthContextValue = {
@@ -32,7 +50,7 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   rememberedAccounts: RememberedAccount[];
-  removeRememberedAccount: (id: string) => void;
+  removeRememberedAccount: (id: string) => Promise<void>;
   selectRememberedAccount: (account: RememberedAccount) => Promise<boolean>;
   register: (input: RegisterInput, options?: RegisterOptions) => Promise<boolean>;
   switchUser: () => Promise<void>;
@@ -48,11 +66,37 @@ type CurrentUserResponse = {
   user: AuthUser;
 };
 
+type TrustedDeviceTokenStore = Record<string, string>;
+
 type AuthErrorPayload = {
   code?: string;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+function logAuthDiagnostic(event: string, details: Record<string, unknown>) {
+  if (!import.meta.env.DEV) {
+    return;
+  }
+
+  console.info(`[auth] ${event}`, details);
+}
+
+function getAuthErrorCode(response: ApiResponse<unknown, AuthErrorPayload>) {
+  return response.success ? undefined : response.error?.code;
+}
+
+function resolveTrustedDeviceFailureMessage(code: string | undefined) {
+  switch (code) {
+    case "TRUSTED_DEVICE_REVOKED":
+      return TRUSTED_DEVICE_FORGOTTEN_MESSAGE;
+    case "TRUSTED_DEVICE_USER_UNAVAILABLE":
+      return TRUSTED_DEVICE_USER_INACTIVE_MESSAGE;
+    case "TRUSTED_DEVICE_INVALID":
+    default:
+      return TRUSTED_DEVICE_FAILED_MESSAGE;
+  }
+}
 
 function sortRememberedAccounts(accounts: RememberedAccount[]) {
   return [...accounts].sort(
@@ -87,7 +131,10 @@ function readRememberedAccounts() {
           typeof candidate.name === "string" &&
           typeof candidate.email === "string" &&
           (candidate.role === "OWNER" || candidate.role === "STAFF") &&
-          typeof candidate.lastUsedAt === "string"
+          typeof candidate.lastUsedAt === "string" &&
+          (candidate.deviceLabel === undefined || typeof candidate.deviceLabel === "string") &&
+          (candidate.trustedDeviceAvailable === undefined ||
+            typeof candidate.trustedDeviceAvailable === "boolean")
         );
       })
     );
@@ -100,6 +147,60 @@ function writeRememberedAccounts(accounts: RememberedAccount[]) {
   localStorage.setItem(REMEMBERED_ACCOUNTS_KEY, JSON.stringify(sortRememberedAccounts(accounts)));
 }
 
+function readTrustedDeviceTokens(): TrustedDeviceTokenStore {
+  try {
+    const rawValue = localStorage.getItem(TRUSTED_DEVICE_TOKENS_KEY);
+
+    if (!rawValue) {
+      return {};
+    }
+
+    const parsedValue: unknown = JSON.parse(rawValue);
+
+    if (!parsedValue || typeof parsedValue !== "object" || Array.isArray(parsedValue)) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      Object.entries(parsedValue).filter(
+        (entry): entry is [string, string] =>
+          typeof entry[0] === "string" && typeof entry[1] === "string" && entry[1].length >= 32
+      )
+    );
+  } catch {
+    return {};
+  }
+}
+
+function writeTrustedDeviceTokens(tokens: TrustedDeviceTokenStore) {
+  localStorage.setItem(TRUSTED_DEVICE_TOKENS_KEY, JSON.stringify(tokens));
+}
+
+function findTrustedDeviceTokenForRestore() {
+  const accounts = readRememberedAccounts();
+  const tokens = readTrustedDeviceTokens();
+  const account = accounts.find((item) => tokens[item.id]);
+
+  if (!account) {
+    logAuthDiagnostic("trusted-device restore skipped", {
+      rememberedAccountCount: accounts.length,
+      reason: "missing_trusted_device_token"
+    });
+    return null;
+  }
+
+  logAuthDiagnostic("trusted-device restore candidate found", {
+    accountId: account.id,
+    email: account.email,
+    trustedDeviceTokenExists: true
+  });
+
+  return {
+    accountId: account.id,
+    trustedDeviceToken: tokens[account.id]
+  };
+}
+
 function buildRememberedAccount(
   user: AuthUser,
   lastUsedAt = new Date().toISOString()
@@ -108,6 +209,7 @@ function buildRememberedAccount(
     id: user.id,
     name: user.name,
     email: user.email,
+    deviceLabel: "This device",
     lastUsedAt,
     role: user.role
   };
@@ -175,8 +277,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [rememberedAccounts, setRememberedAccounts] = useState<RememberedAccount[]>(() =>
     readRememberedAccounts()
   );
+  const [trustedDeviceTokens, setTrustedDeviceTokens] = useState<TrustedDeviceTokenStore>(() =>
+    readTrustedDeviceTokens()
+  );
   const [error, setError] = useState<string | null>(null);
-  const { pushToast } = useToast();
+  const skipAutomaticTrustedRestoreRef = useRef(false);
+  const { clearToastScope, pushToast } = useToast();
+
+  const pushAuthToast = useCallback(
+    (toast: ToastInput) => {
+      clearToastScope(AUTH_TOAST_SCOPE);
+      pushToast({
+        ...toast,
+        scope: AUTH_TOAST_SCOPE
+      });
+    },
+    [clearToastScope, pushToast]
+  );
 
   const rememberAccount = useCallback((account: AuthUser) => {
     const nextAccount = buildRememberedAccount(account);
@@ -188,20 +305,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const clearSession = useCallback(() => {
+  const clearAuthToken = useCallback(() => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     setToken(null);
+  }, []);
+
+  const clearSession = useCallback(() => {
+    clearAuthToken();
     setUser(null);
     setError(null);
     setStatus("unauthenticated");
-  }, []);
+  }, [clearAuthToken]);
 
   const applySession = useCallback((session: AuthSession) => {
+    skipAutomaticTrustedRestoreRef.current = false;
     localStorage.setItem(AUTH_TOKEN_KEY, session.token);
     setToken(session.token);
     setUser(session.user);
     setError(null);
     setStatus("authenticated");
+  }, []);
+
+  const storeTrustedDeviceToken = useCallback((accountId: string, trustedDeviceToken?: string) => {
+    if (!trustedDeviceToken) {
+      logAuthDiagnostic("trusted-device token missing after password login", {
+        accountId
+      });
+      return;
+    }
+
+    setTrustedDeviceTokens((currentTokens) => {
+      const nextTokens = {
+        ...currentTokens,
+        [accountId]: trustedDeviceToken
+      };
+
+      writeTrustedDeviceTokens(nextTokens);
+
+      return nextTokens;
+    });
+  }, []);
+
+  const clearTrustedDeviceToken = useCallback((accountId: string) => {
+    setTrustedDeviceTokens((currentTokens) => {
+      const remainingTokens = { ...currentTokens };
+      delete remainingTokens[accountId];
+      writeTrustedDeviceTokens(remainingTokens);
+
+      return remainingTokens;
+    });
   }, []);
 
   const clearRememberedAccount = useCallback((id: string) => {
@@ -215,11 +367,100 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [rememberedAccounts]);
 
   useEffect(() => {
+    writeTrustedDeviceTokens(trustedDeviceTokens);
+  }, [trustedDeviceTokens]);
+
+  useEffect(() => {
     let active = true;
+
+    async function restoreFromTrustedDevice() {
+      if (skipAutomaticTrustedRestoreRef.current) {
+        logAuthDiagnostic("trusted-device restore skipped", {
+          reason: "manual_logout"
+        });
+
+        if (active) {
+          setStatus("unauthenticated");
+        }
+
+        return;
+      }
+
+      const trustedDevice = findTrustedDeviceTokenForRestore();
+
+      if (!trustedDevice) {
+        if (active) {
+          setStatus("unauthenticated");
+        }
+
+        return;
+      }
+
+      try {
+        const response: ApiResponse<AuthSession, AuthErrorPayload> = await apiClient.request(
+          "/api/auth/trusted-device/session",
+          {
+            method: "POST",
+            json: {
+              trustedDeviceToken: trustedDevice.trustedDeviceToken
+            }
+          }
+        );
+
+        if (!active) {
+          return;
+        }
+
+        if (response.success && response.data) {
+          applySession(response.data);
+          rememberAccount(response.data.user);
+          logAuthDiagnostic("trusted-device restore succeeded", {
+            accountId: response.data.user.id,
+            email: response.data.user.email
+          });
+          return;
+        }
+
+        {
+          const failureMessage = resolveTrustedDeviceFailureMessage(getAuthErrorCode(response));
+
+          clearTrustedDeviceToken(trustedDevice.accountId);
+          setError(failureMessage);
+          pushAuthToast({
+            message: failureMessage,
+            title:
+              failureMessage === TRUSTED_DEVICE_FORGOTTEN_MESSAGE
+                ? "Device forgotten"
+                : "Device verification failed",
+            variant: "warning"
+          });
+        }
+        setStatus("unauthenticated");
+        logAuthDiagnostic("trusted-device restore rejected", {
+          accountId: trustedDevice.accountId,
+          code: getAuthErrorCode(response) ?? "UNKNOWN_REJECTION"
+        });
+      } catch {
+        if (active) {
+          clearTrustedDeviceToken(trustedDevice.accountId);
+          setError(TRUSTED_DEVICE_FAILED_MESSAGE);
+          setStatus("unauthenticated");
+          pushAuthToast({
+            message: TRUSTED_DEVICE_FAILED_MESSAGE,
+            title: "Device verification failed",
+            variant: "warning"
+          });
+          logAuthDiagnostic("trusted-device restore failed", {
+            accountId: trustedDevice.accountId,
+            code: "BACKEND_OR_NETWORK_ERROR"
+          });
+        }
+      }
+    }
 
     async function loadCurrentUser() {
       if (!token) {
-        setStatus("unauthenticated");
+        await restoreFromTrustedDevice();
         return;
       }
 
@@ -244,10 +485,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        clearSession();
+        clearAuthToken();
+        await restoreFromTrustedDevice();
       } catch {
         if (active) {
-          clearSession();
+          clearAuthToken();
+          await restoreFromTrustedDevice();
         }
       }
     }
@@ -257,18 +500,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, [clearSession, rememberAccount, token]);
+  }, [
+    applySession,
+    clearAuthToken,
+    clearTrustedDeviceToken,
+    pushAuthToast,
+    rememberAccount,
+    token
+  ]);
 
   const selectRememberedAccount = useCallback(
     async (account: RememberedAccount) => {
-      const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
+      const trustedDeviceToken = trustedDeviceTokens[account.id];
+      let trustedDeviceFailureMessage = TRUSTED_DEVICE_FAILED_MESSAGE;
 
       setError(null);
 
-      if (!currentToken) {
-        clearSession();
-        pushToast({
-          message: "Please sign in again to continue.",
+      if (!trustedDeviceToken) {
+        logAuthDiagnostic("saved account selected without trusted token", {
+          accountId: account.id,
+          email: account.email,
+          trustedDeviceTokenExists: false
+        });
+        clearAuthToken();
+        setUser(null);
+        setStatus("unauthenticated");
+        setError(SAVED_ACCOUNT_MESSAGE);
+        pushAuthToast({
+          message: SAVED_ACCOUNT_MESSAGE,
           title: "Login required",
           variant: "warning"
         });
@@ -276,42 +535,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const response = await apiClient.request<CurrentUserResponse>("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${currentToken}`
+        skipAutomaticTrustedRestoreRef.current = false;
+        const response: ApiResponse<AuthSession, AuthErrorPayload> = await apiClient.request(
+          "/api/auth/trusted-device/session",
+          {
+            method: "POST",
+            json: {
+              trustedDeviceToken
+            }
           }
-        });
+        );
 
-        if (response.success && response.data?.user && response.data.user.id === account.id) {
-          setUser(response.data.user);
-          setError(null);
-          setStatus("authenticated");
+        if (response.success && response.data && response.data.user.id === account.id) {
+          applySession(response.data);
           rememberAccount(response.data.user);
-          pushToast({
-            message: "Welcome back.",
+          logAuthDiagnostic("trusted-device selected account succeeded", {
+            accountId: response.data.user.id,
+            email: response.data.user.email
+          });
+          pushAuthToast({
+            message: TRUSTED_DEVICE_SUCCESS_MESSAGE,
             title: "Device recognized",
             variant: "success"
           });
           return true;
         }
 
-        clearSession();
+        clearTrustedDeviceToken(account.id);
+        trustedDeviceFailureMessage = resolveTrustedDeviceFailureMessage(
+          getAuthErrorCode(response)
+        );
+        logAuthDiagnostic("trusted-device selected account rejected", {
+          accountId: account.id,
+          email: account.email,
+          code: getAuthErrorCode(response) ?? "UNKNOWN_REJECTION"
+        });
       } catch {
-        clearSession();
+        clearTrustedDeviceToken(account.id);
+        logAuthDiagnostic("trusted-device selected account failed", {
+          accountId: account.id,
+          email: account.email,
+          code: "BACKEND_OR_NETWORK_ERROR"
+        });
       }
 
-      pushToast({
-        message: "Please sign in again to continue.",
-        title: "Login required",
+      clearAuthToken();
+      setUser(null);
+      setError(trustedDeviceFailureMessage);
+      setStatus("unauthenticated");
+      pushAuthToast({
+        message: trustedDeviceFailureMessage,
+        title:
+          trustedDeviceFailureMessage === TRUSTED_DEVICE_FORGOTTEN_MESSAGE
+            ? "Device forgotten"
+            : "Device verification failed",
         variant: "warning"
       });
       return false;
     },
-    [clearSession, pushToast, rememberAccount]
+    [
+      applySession,
+      clearAuthToken,
+      clearTrustedDeviceToken,
+      pushAuthToast,
+      rememberAccount,
+      trustedDeviceTokens
+    ]
   );
 
   const login = useCallback(
     async (email: string, password: string) => {
+      skipAutomaticTrustedRestoreRef.current = false;
       setStatus("loading");
       setError(null);
 
@@ -333,13 +627,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setError(errorMessage);
           setUser(null);
           setStatus("unauthenticated");
-          pushToast(resolveLoginToast(response));
+          pushAuthToast(resolveLoginToast(response));
           return false;
         }
 
         applySession(response.data);
+        storeTrustedDeviceToken(response.data.user.id, response.data.trustedDeviceToken);
         rememberAccount(response.data.user);
-        pushToast({
+        logAuthDiagnostic("password login trusted-device token result", {
+          accountId: response.data.user.id,
+          email: response.data.user.email,
+          trustedDeviceTokenReturned: Boolean(response.data.trustedDeviceToken)
+        });
+        pushAuthToast({
           message: "Welcome back.",
           title: "Login successful",
           variant: "success"
@@ -351,7 +651,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError("Authentication service is unavailable. Please check the backend server.");
         setUser(null);
         setStatus("unauthenticated");
-        pushToast({
+        pushAuthToast({
           message,
           title: "Authentication service unavailable",
           variant: "error"
@@ -359,7 +659,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
     },
-    [applySession, pushToast, rememberAccount]
+    [applySession, pushAuthToast, rememberAccount, storeTrustedDeviceToken]
   );
 
   const register = useCallback(
@@ -375,6 +675,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "/api/auth/register",
           {
             method: "POST",
+            headers: previousToken
+              ? {
+                  Authorization: `Bearer ${previousToken}`
+                }
+              : undefined,
             json: input
           }
         );
@@ -394,11 +699,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setStatus("unauthenticated");
           }
 
-          pushToast(resolveRegisterToast(response));
+          pushAuthToast(resolveRegisterToast(response));
           return false;
         }
-
-        rememberAccount(response.data.user);
 
         if (options?.preserveSession && previousToken && previousUser) {
           localStorage.setItem(AUTH_TOKEN_KEY, previousToken);
@@ -408,9 +711,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setStatus("authenticated");
         } else {
           applySession(response.data);
+          storeTrustedDeviceToken(response.data.user.id, response.data.trustedDeviceToken);
+          rememberAccount(response.data.user);
         }
 
-        pushToast({
+        pushAuthToast({
           message: "Store account has been created.",
           title: "Account created",
           variant: "success"
@@ -431,7 +736,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setStatus("unauthenticated");
         }
 
-        pushToast({
+        pushAuthToast({
           message,
           title: "Authentication service unavailable",
           variant: "error"
@@ -439,13 +744,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
     },
-    [applySession, rememberAccount, pushToast, user]
+    [applySession, rememberAccount, pushAuthToast, storeTrustedDeviceToken, user]
   );
 
   const performLogout = useCallback(
     async (toast?: ToastInput) => {
       const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
 
+      // Logout signs out the current JWT session only.
+      // Forget device revokes the trusted-device token used for passwordless restore.
+      skipAutomaticTrustedRestoreRef.current = true;
       clearSession();
 
       if (currentToken) {
@@ -462,15 +770,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (toast) {
-        pushToast(toast);
+        pushAuthToast(toast);
       }
     },
-    [clearSession, pushToast]
+    [clearSession, pushAuthToast]
   );
 
   const logout = useCallback(async () => {
     await performLogout({
-      message: "You have been signed out.",
+      message: "Signed out.",
       title: "Signed out",
       variant: "info"
     });
@@ -485,15 +793,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [performLogout]);
 
   const removeRememberedAccount = useCallback(
-    (id: string) => {
+    async (id: string) => {
+      const trustedDeviceToken = trustedDeviceTokens[id];
+
+      if (trustedDeviceToken) {
+        try {
+          await apiClient.request("/api/auth/trusted-device/revoke", {
+            method: "POST",
+            json: {
+              trustedDeviceToken
+            }
+          });
+        } catch {
+          // Local forget remains authoritative if the backend is unavailable.
+        }
+      }
+
+      clearTrustedDeviceToken(id);
       clearRememberedAccount(id);
-      pushToast({
-        message: "This account was removed from quick access.",
-        title: "Account removed",
+      pushAuthToast({
+        message: "This device will require a password for that account.",
+        title: "Device forgotten",
         variant: "info"
       });
     },
-    [clearRememberedAccount, pushToast]
+    [clearRememberedAccount, clearTrustedDeviceToken, pushAuthToast, trustedDeviceTokens]
+  );
+
+  const rememberedAccountsForDisplay = useMemo(
+    () =>
+      rememberedAccounts.map((account) => ({
+        ...account,
+        trustedDeviceAvailable: Boolean(trustedDeviceTokens[account.id])
+      })),
+    [rememberedAccounts, trustedDeviceTokens]
   );
 
   const value = useMemo<AuthContextValue>(
@@ -501,7 +834,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       error,
       login,
       logout,
-      rememberedAccounts,
+      rememberedAccounts: rememberedAccountsForDisplay,
       removeRememberedAccount,
       selectRememberedAccount,
       register,
@@ -514,8 +847,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       error,
       login,
       logout,
-      pushToast,
-      rememberedAccounts,
+      pushAuthToast,
+      rememberedAccountsForDisplay,
       register,
       selectRememberedAccount,
       removeRememberedAccount,
