@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { LoginResult, RememberedAccount } from "@/context/AuthContext";
+import { checkSystemHealth } from "@/services/systemHealthService";
+import type { SystemHealthState } from "@/services/systemHealthService";
 import type { AuthUser } from "@/types/auth";
 
 type WelcomePageProps = {
@@ -48,6 +50,24 @@ const trustedDeviceMessages = new Set([
   "This device was forgotten. Please sign in again.",
   "Account access is inactive. Please contact the owner."
 ]);
+
+const SYSTEM_HEALTH_REFRESH_MS = 45_000;
+
+const systemHealthFooterCopy: Record<SystemHealthState, string> = {
+  checking: "Checking system...",
+  healthy: "All Systems Normal",
+  warning: "Service Warning",
+  "database-unavailable": "Database Unavailable",
+  offline: "System Offline"
+};
+
+const systemHealthFooterDotClass: Record<SystemHealthState, string> = {
+  checking: "bg-sky-400",
+  healthy: "bg-emerald-500",
+  warning: "bg-amber-500",
+  "database-unavailable": "bg-orange-500",
+  offline: "bg-red-500"
+};
 
 function formatLastUsedAt(lastUsedAt: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -81,6 +101,7 @@ export function WelcomePage({
   const [emailHasError, setEmailHasError] = useState(false);
   const [passwordHasError, setPasswordHasError] = useState(false);
   const [validationBump, setValidationBump] = useState(0);
+  const [systemHealth, setSystemHealth] = useState<SystemHealthState>("checking");
 
   const cardRef = useRef<HTMLDivElement>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -115,6 +136,29 @@ export function WelcomePage({
 
     return () => {
       mediaQuery.removeEventListener("change", updateReducedMotion);
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function refreshSystemHealth() {
+      setSystemHealth("checking");
+      const nextHealth = await checkSystemHealth();
+
+      if (mounted) {
+        setSystemHealth(nextHealth);
+      }
+    }
+
+    void refreshSystemHealth();
+    const intervalId = window.setInterval(() => {
+      void refreshSystemHealth();
+    }, SYSTEM_HEALTH_REFRESH_MS);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(intervalId);
     };
   }, []);
 
@@ -583,8 +627,15 @@ export function WelcomePage({
             YsabelleStore <span className="text-slate-500">v0.1.0</span>
           </p>
           <p className="hidden min-w-0 items-center justify-self-end gap-2 whitespace-nowrap lg:col-start-3 lg:flex">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-            All Systems Normal
+            <span
+              className={cn(
+                "h-2 w-2 rounded-full",
+                systemHealth === "checking" ? "animate-pulse" : "",
+                systemHealthFooterDotClass[systemHealth]
+              )}
+              aria-hidden="true"
+            />
+            {systemHealthFooterCopy[systemHealth]}
           </p>
         </footer>
       </div>

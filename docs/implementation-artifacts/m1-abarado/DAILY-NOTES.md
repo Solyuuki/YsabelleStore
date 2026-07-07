@@ -31,7 +31,7 @@
 - Member: M1 Abarado
 - Changed areas: Docs<br>Frontend
 - Key files: docs/implementation-artifacts/m1-abarado/BLOCKERS.md<br>docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md<br>docs/implementation-artifacts/m1-abarado/DECISIONS.md<br>docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md<br>docs/implementation-artifacts/m1-abarado/README.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PLANNING.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PROGRESS.md<br>docs/implementation-artifacts/m1-abarado/TASKS.md<br>docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md<br>docs/implementation-artifacts/m1-abarado/VALIDATION-SUMMARY.md
-- Detected completed work: Authentication / trusted device login / RBAC<br>Toast notification lifecycle<br>Sprint and implementation documentation
+- Detected completed work: Authentication / trusted device login / RBAC<br>Sprint and implementation documentation
 - Validation status: Passed
 - Follow-up needed: Complete manual QA for the affected UI/auth/device flow.
 <!-- AUTO-UPDATE:END -->
