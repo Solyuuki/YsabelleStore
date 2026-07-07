@@ -2,51 +2,39 @@
 
 ## Sprint Scope
 
-| Sprint   | Version | Goal                                                         | Status  |
-| -------- | ------- | ------------------------------------------------------------ | ------- |
-| Sprint 0 | v0.1    | Establish repository foundation and documentation governance | Done    |
-| Sprint 1 | v0.2    | Prepare frontend and Electron application shell              | Planned |
-| Sprint 2 | v0.3    | Build product and inventory UI workflows                     | Planned |
+| Sprint   | Version | Goal                                                                                             | Status  |
+| -------- | ------- | ------------------------------------------------------------------------------------------------ | ------- |
+| Sprint 0 | v0.1    | Establish repository foundation and documentation governance                                     | Done    |
+| Sprint 1 | v0.2    | Prepare frontend and Electron application shell                                                  | Done    |
+| Sprint 2 | v0.3    | Build auth, trusted-device, and RBAC foundation                                                  | Done    |
+| Sprint 3 | v0.3    | Build the first functional business workflow for Products, Inventory, Sales, SARIMA, and Reports | Planned |
 
 ## Planned Tasks
 
-| Task ID        | Sprint   | Description                                            | Status  |
-| -------------- | -------- | ------------------------------------------------------ | ------- |
-| YSB-M1-DOC-001 | Sprint 0 | Create repository standards and workflow documentation | Done    |
-| YSB-M1-GOV-001 | Sprint 0 | Add PR template and branch validation workflow         | Done    |
-| YSB-M1-UI-001  | Sprint 1 | Scaffold React TypeScript frontend structure           | Planned |
-| YSB-M1-ELC-001 | Sprint 1 | Scaffold Electron main and preload structure           | Planned |
+| Task ID         | Sprint   | Description                                            | Status  |
+| --------------- | -------- | ------------------------------------------------------ | ------- |
+| YSB-M1-DOC-001  | Sprint 0 | Create repository standards and workflow documentation | Done    |
+| YSB-M1-GOV-001  | Sprint 0 | Add PR template and branch validation workflow         | Done    |
+| YSB-M1-UI-001   | Sprint 1 | Scaffold React TypeScript frontend structure           | Done    |
+| YSB-M1-ELC-001  | Sprint 1 | Scaffold Electron main and preload structure           | Done    |
+| YSB-M1-AUTH-001 | Sprint 2 | Build auth UI, remembered accounts, and RBAC shell     | Done    |
+| YSB-M1-AUTH-002 | Sprint 2 | Preserve trusted-device and logout behavior            | Done    |
+| YSB-M1-BIZ-001  | Sprint 3 | Clean up dashboard and module shell spacing/alignment  | Planned |
+| YSB-M1-BIZ-002  | Sprint 3 | Wire POS and Sales integration foundations             | Planned |
+| YSB-M1-BIZ-003  | Sprint 3 | Handle merge conflicts and integration validation      | Planned |
 
 ## Sprint Acceptance Criteria
 
-| Criterion                           | Evidence                                            |
-| ----------------------------------- | --------------------------------------------------- |
-| Standards are complete              | Required standards files exist and are readable     |
-| Workflow is enforceable             | GitHub branch validation workflow exists            |
-| Member artifacts are ready          | m1, m2, and m3 folders include reporting files      |
-| No unrelated app code is introduced | Repository foundation remains documentation-focused |
+| Criterion                                   | Evidence                                              |
+| ------------------------------------------- | ----------------------------------------------------- |
+| UI remains production-grade                 | Dashboard and module shells are visually balanced     |
+| POS and Sales become functional foundations | Product selection and transaction flow are connected  |
+| Integration work stays mergeable            | Conflicts are resolved continuously                   |
+| Sprint 2 behavior is preserved              | Auth, trusted-device, and role handling remain intact |
 
 ## Planning Updates
 
-| Date       | Next Recommended Task                               | QA Focus                                               | Affected Module                 | Priority |
-| ---------- | --------------------------------------------------- | ------------------------------------------------------ | ------------------------------- | -------- |
-| 2026-07-07 | Review generated artifact updates before commit.    | Documentation and validation review.                   | Docs<br>Scripts / CI            | Normal   |
-| 2026-07-07 | Run push-ready validation and resolve any failures. | Backend/database validation and migration application. | Backend<br>Scripts / CI         | High     |
-| 2026-07-07 | Review generated artifact updates before commit.    | Backend/database validation and migration application. | Backend<br>Docs<br>Scripts / CI | High     |
-
-## Planning Updates
-
-| Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module                  | Priority |
-| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------- | -------- |
-| 2026-07-07 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend<br>Scripts / CI | High     |
-
-## Planning Updates
-
-| Date | Next Recommended Task | QA Focus | Affected Module | Priority |
-| ---- | --------------------- | -------- | --------------- | -------- |
-
-## Planning Updates
-
-| Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module                  | Priority |
-| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------- | -------- |
-| 2026-07-07 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend<br>Scripts / CI | High     |
+| Date       | Next Recommended Task                               | QA Focus                              | Affected Module             | Priority |
+| ---------- | --------------------------------------------------- | ------------------------------------- | --------------------------- | -------- |
+| 2026-07-08 | Review Sprint 3 planning docs and shared contracts. | Data contract clarity across modules. | Docs<br>Frontend<br>Backend | High     |
+| 2026-07-08 | Review generated artifact updates before commit.    | Documentation and validation review.  | Docs                        | Normal   |

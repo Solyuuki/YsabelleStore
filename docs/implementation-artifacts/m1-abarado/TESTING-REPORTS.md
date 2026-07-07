@@ -39,6 +39,14 @@
 | 2026-07-07 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                                                                   |
 | 2026-07-07 | `npm run build`                          | Passed | Build completed successfully.                                                             |
 | 2026-07-07 | `npm audit --audit-level=high`           | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run format`                         | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run format:check`                   | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run lint`                           | Passed | Passed with existing Node module-type warning only.                                       |
+| 2026-07-08 | `npm run typecheck --workspace frontend` | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run typecheck --workspace backend`  | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                                                                   |
+| 2026-07-08 | `npm run build`                          | Passed | Build completed successfully.                                                             |
+| 2026-07-08 | `npm audit --audit-level=high`           | Passed | Completed successfully.                                                                   |
 
 ## Manual Review Evidence
 
@@ -48,6 +56,7 @@
 | 2026-06-27 | Dashboard shell collapsed and expanded states | Passed by visual review evidence in committed screenshots | Screenshot artifacts are historical review aids, not runtime dependencies.                                                  |
 | 2026-06-29 | Sidebar route comparison                      | Passed analysis                                           | M1 route/page files are present in current `frontend/src/**`; M3 branch frontend replacement is documented as a merge risk. |
 | 2026-07-07 | Changed files                                 | Not required by changed files                             | No changed user-facing flow was detected by the artifact update.                                                            |
+| 2026-07-08 | Changed files                                 | Not required by changed files                             | No changed user-facing flow was detected by the artifact update.                                                            |
 
 ## Validation Limits
 
