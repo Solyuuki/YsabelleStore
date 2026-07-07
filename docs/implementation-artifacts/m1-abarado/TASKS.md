@@ -36,3 +36,13 @@
 ## Completion Rule
 
 A task is complete only when implementation evidence and the matching artifact updates are both present.
+
+## Automated Progress Update
+
+<!-- AUTO-UPDATE:START -->
+
+| Date       | Branch                           | Area                 | Detected Work                                                              | Status       | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ---------- | -------------------------------- | -------------------- | -------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-07-07 | m1/v0.2/feat/auth-fullstack-flow | Docs<br>Scripts / CI | Automation / validation scripts<br>Sprint and implementation documentation | Needs Review | docs/implementation-artifacts/m1-abarado/BLOCKERS.md<br>docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md<br>docs/implementation-artifacts/m1-abarado/DECISIONS.md<br>docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md<br>docs/implementation-artifacts/m1-abarado/README.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PLANNING.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PROGRESS.md<br>docs/implementation-artifacts/m1-abarado/TASKS.md<br>docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md<br>docs/implementation-artifacts/m1-abarado/VALIDATION-SUMMARY.md |
+
+<!-- AUTO-UPDATE:END -->

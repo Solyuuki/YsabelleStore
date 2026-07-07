@@ -20,3 +20,13 @@
 ## Decision Review Rule
 
 Any decision that changes another member's owned files must be recorded with cause, owner impact, validation, and resolution before merge.
+
+## Automated Progress Update
+
+<!-- AUTO-UPDATE:START -->
+
+| Date       | Decision                                                                 | Reason                                                                                                   | Affected Files                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-07-07 | Local push readiness is automated through deterministic Node.js scripts. | Members need repeatable artifact updates, sprint updates, Prisma cleanup, and validation before pushing. | docs/implementation-artifacts/m1-abarado/BLOCKERS.md<br>docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md<br>docs/implementation-artifacts/m1-abarado/DECISIONS.md<br>docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md<br>docs/implementation-artifacts/m1-abarado/README.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PLANNING.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PROGRESS.md<br>docs/implementation-artifacts/m1-abarado/TASKS.md<br>docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md<br>docs/implementation-artifacts/m1-abarado/VALIDATION-SUMMARY.md |
+
+<!-- AUTO-UPDATE:END -->

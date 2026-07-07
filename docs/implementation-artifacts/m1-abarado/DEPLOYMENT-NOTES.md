@@ -40,3 +40,13 @@
 | Static frontend only               | UI demonstrates shell readiness, not live business workflows.                              |
 | No packaged desktop artifact       | Sprint 1 cannot claim installer readiness.                                                 |
 | Migration SQL review artifact only | Database deployment to a real environment still requires controlled migration application. |
+
+## Automated Progress Update
+
+<!-- AUTO-UPDATE:START -->
+
+| Date       | Area                 | Note                                                                                                  | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ---------- | -------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-07-07 | Docs<br>Scripts / CI | Deployment/runtime attention required for database, backend, package, Electron, or migration changes. | docs/implementation-artifacts/m1-abarado/BLOCKERS.md<br>docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md<br>docs/implementation-artifacts/m1-abarado/DECISIONS.md<br>docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md<br>docs/implementation-artifacts/m1-abarado/README.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PLANNING.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PROGRESS.md<br>docs/implementation-artifacts/m1-abarado/TASKS.md<br>docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md<br>docs/implementation-artifacts/m1-abarado/VALIDATION-SUMMARY.md |
+
+<!-- AUTO-UPDATE:END -->

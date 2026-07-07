@@ -25,3 +25,13 @@
 | Workflow is enforceable             | GitHub branch validation workflow exists            |
 | Member artifacts are ready          | m1, m2, and m3 folders include reporting files      |
 | No unrelated app code is introduced | Repository foundation remains documentation-focused |
+
+## Automated Progress Update
+
+<!-- AUTO-UPDATE:START -->
+
+| Date       | Next Recommended Task                            | QA Focus                                               | Affected Module      | Priority |
+| ---------- | ------------------------------------------------ | ------------------------------------------------------ | -------------------- | -------- |
+| 2026-07-07 | Review generated artifact updates before commit. | Backend/database validation and migration application. | Docs<br>Scripts / CI | High     |
+
+<!-- AUTO-UPDATE:END -->

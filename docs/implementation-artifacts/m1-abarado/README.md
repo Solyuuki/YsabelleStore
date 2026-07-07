@@ -49,3 +49,17 @@ This artifact set is reconstructed from repository evidence available on `sprint
 ## Maintenance Rule
 
 M1 work is not complete until code and documentation are synchronized. Any completed frontend, Electron, governance, or integration task must update daily notes, tasks, sprint progress, testing reports, deployment notes, decisions, blockers, and this README when applicable.
+
+## Automated Progress Update
+
+<!-- AUTO-UPDATE:START -->
+
+| Item                  | Value                                                                      |
+| --------------------- | -------------------------------------------------------------------------- |
+| Last automated update | 2026-07-07                                                                 |
+| Current branch        | m1/v0.2/feat/auth-fullstack-flow                                           |
+| Current work areas    | Docs<br>Scripts / CI                                                       |
+| Latest detected tasks | Automation / validation scripts<br>Sprint and implementation documentation |
+| Validation status     | Passed                                                                     |
+
+<!-- AUTO-UPDATE:END -->

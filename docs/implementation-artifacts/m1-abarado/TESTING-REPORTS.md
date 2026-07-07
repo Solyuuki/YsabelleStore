@@ -47,3 +47,20 @@
 | Electron packaged installer   | Not run historically in available evidence | Electron foundation exists, but no packaged `.exe` validation artifact is present. |
 | Browser/Electron console logs | Not available in repository                | No saved console transcript was found.                                             |
 | Automated UI tests            | Not present                                | No Playwright/Cypress test suite exists in repository dependencies.                |
+
+## Automated Progress Update
+
+<!-- AUTO-UPDATE:START -->
+
+| Date       | Command                                | Result | Notes                              |
+| ---------- | -------------------------------------- | ------ | ---------------------------------- |
+| 2026-07-07 | npm run format                         | Passed | Recorded by push-ready validation. |
+| 2026-07-07 | npm run format:check                   | Passed | Recorded by push-ready validation. |
+| 2026-07-07 | npm run lint                           | Passed | Recorded by push-ready validation. |
+| 2026-07-07 | npm run typecheck --workspace frontend | Passed | Recorded by push-ready validation. |
+| 2026-07-07 | npm run typecheck --workspace backend  | Passed | Recorded by push-ready validation. |
+| 2026-07-07 | npm run typecheck --workspace electron | Passed | Recorded by push-ready validation. |
+| 2026-07-07 | npm run build                          | Passed | Recorded by push-ready validation. |
+| 2026-07-07 | npm audit --audit-level=high           | Passed | Recorded by push-ready validation. |
+
+<!-- AUTO-UPDATE:END -->
