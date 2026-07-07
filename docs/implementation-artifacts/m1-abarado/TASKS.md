@@ -16,10 +16,10 @@
 
 ## In Progress
 
-| Task ID                 | Scope                                                          | Status      | Evidence                                                             | Next Action                                           |
-| ----------------------- | -------------------------------------------------------------- | ----------- | -------------------------------------------------------------------- | ----------------------------------------------------- |
-| YSB-M1-INT-001          | Sprint 1 integration documentation and ownership cleanup       | In progress | Current `sprint/v0.1/sprint-1` branch and 2026-06-29 artifact update | Complete validation, commit docs, and prepare review. |
-| YSB-M1-ABARADO-20260707 | Preserve artifact markdown templates during automation updates | Completed   | m1/v0.2/feat/auth-fullstack-flow                                     | Review generated artifact updates before commit.      |
+| Task ID                 | Scope                                                      | Status       | Evidence                                                             | Next Action                                           |
+| ----------------------- | ---------------------------------------------------------- | ------------ | -------------------------------------------------------------------- | ----------------------------------------------------- |
+| YSB-M1-INT-001          | Sprint 1 integration documentation and ownership cleanup   | In progress  | Current `sprint/v0.1/sprint-1` branch and 2026-06-29 artifact update | Complete validation, commit docs, and prepare review. |
+| YSB-M1-ABARADO-20260707 | Maintain current implementation and documentation evidence | Needs Review | m1/v0.2/feat/auth-fullstack-flow                                     | Review generated artifact updates before commit.      |
 
 ## Pending
 

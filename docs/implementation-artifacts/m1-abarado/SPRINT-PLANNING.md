@@ -28,9 +28,11 @@
 
 ## Planning Updates
 
-| Date       | Next Recommended Task                            | QA Focus                             | Affected Module      | Priority |
-| ---------- | ------------------------------------------------ | ------------------------------------ | -------------------- | -------- |
-| 2026-07-07 | Review generated artifact updates before commit. | Documentation and validation review. | Docs<br>Scripts / CI | Normal   |
+| Date       | Next Recommended Task                               | QA Focus                                               | Affected Module                 | Priority |
+| ---------- | --------------------------------------------------- | ------------------------------------------------------ | ------------------------------- | -------- |
+| 2026-07-07 | Review generated artifact updates before commit.    | Documentation and validation review.                   | Docs<br>Scripts / CI            | Normal   |
+| 2026-07-07 | Run push-ready validation and resolve any failures. | Backend/database validation and migration application. | Backend<br>Scripts / CI         | High     |
+| 2026-07-07 | Review generated artifact updates before commit.    | Backend/database validation and migration application. | Backend<br>Docs<br>Scripts / CI | High     |
 
 ## Planning Updates
 
