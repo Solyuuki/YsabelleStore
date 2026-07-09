@@ -42,3 +42,9 @@ Sprint 3 is done only if:
 | Stock movement logic exists                                 | Stock changes can be recorded or represented   |
 | Seed/sample product and inventory data exists               | Clean support data is available for the sprint |
 | Data is clean enough for POS, Sales, and SARIMA integration | Shared data contracts are usable by M1 and M2  |
+
+## Validation Status
+
+| Date       | Member     | Validation Checklist       | Status | Notes                      |
+| ---------- | ---------- | -------------------------- | ------ | -------------------------- |
+| 2026-07-10 | M1 Abarado | prepush:local / push-ready | Passed | Validation passed locally. |

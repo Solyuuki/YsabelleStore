@@ -41,7 +41,7 @@ export function AppLayout({
         user={user}
       />
       <div className="relative z-10 flex min-h-screen min-w-0 flex-1 flex-col">
-        <AppTopbar />
+        <AppTopbar onNavigate={onNavigate} />
         <main
           className="min-h-0 flex-1 overflow-auto px-[clamp(1.25rem,2vw,1.5rem)] pb-[clamp(1.25rem,2vw,1.5rem)] pt-[6rem]"
           data-layout="app"
