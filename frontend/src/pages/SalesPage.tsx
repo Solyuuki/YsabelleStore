@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ReceiptText } from "lucide-react";
 
+import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -16,11 +17,14 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency"
 });
 
+const SALES_PAGE_SIZE = 10;
+
 export function SalesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sales, setSales] = useState<PosSale[]>([]);
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
+  const [salesPage, setSalesPage] = useState(1);
 
   useEffect(() => {
     let active = true;
@@ -30,7 +34,7 @@ export function SalesPage() {
       setError(null);
 
       try {
-        const response = await listRecentSales();
+        const response = await listRecentSales(50);
 
         if (!response.success || !response.data) {
           if (!active) {
@@ -49,6 +53,7 @@ export function SalesPage() {
         const salesData = response.data;
 
         setSales(salesData.sales);
+        setSalesPage(1);
         setSelectedSaleId((current) => current ?? salesData.sales[0]?.id ?? null);
       } catch {
         if (!active) {
@@ -76,6 +81,28 @@ export function SalesPage() {
     [sales, selectedSaleId]
   );
 
+  const totalSalesPages = Math.max(1, Math.ceil(sales.length / SALES_PAGE_SIZE));
+  const currentSalesPage = Math.min(salesPage, totalSalesPages);
+  const salesPageStartIndex = sales.length === 0 ? 0 : (currentSalesPage - 1) * SALES_PAGE_SIZE;
+  const salesPageEndIndex = Math.min(salesPageStartIndex + SALES_PAGE_SIZE, sales.length);
+  const paginatedSales = useMemo(
+    () => sales.slice(salesPageStartIndex, salesPageEndIndex),
+    [sales, salesPageEndIndex, salesPageStartIndex]
+  );
+
+  useEffect(() => {
+    if (sales.length === 0) {
+      setSelectedSaleId(null);
+      return;
+    }
+
+    const selectedSaleIsVisible = paginatedSales.some((sale) => sale.id === selectedSaleId);
+
+    if (!selectedSaleIsVisible) {
+      setSelectedSaleId(paginatedSales[0]?.id ?? null);
+    }
+  }, [paginatedSales, sales.length, selectedSaleId]);
+
   return (
     <>
       <PageHeader
@@ -91,7 +118,9 @@ export function SalesPage() {
               <div>
                 <CardTitle>Recent sales</CardTitle>
                 <p className="mt-1 text-sm text-slate-500">
-                  Use this view to confirm checkout writes are being persisted.
+                  {sales.length > 0
+                    ? `Showing ${salesPageStartIndex + 1}–${salesPageEndIndex} of ${sales.length} sales`
+                    : "Use this view to confirm checkout writes are being persisted."}
                 </p>
               </div>
               <StatusBadge variant={sales.length > 0 ? "success" : "warning"}>
@@ -119,49 +148,65 @@ export function SalesPage() {
                 title="No sales recorded yet"
               />
             ) : (
-              <div className="overflow-hidden rounded-md border border-slate-200">
-                <table className="w-full table-fixed border-collapse text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">Receipt</th>
-                      <th className="px-4 py-3 font-medium">Date</th>
-                      <th className="px-4 py-3 font-medium">Items</th>
-                      <th className="px-4 py-3 font-medium">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sales.map((sale) => {
-                      const isSelected = sale.id === selectedSale?.id;
-
-                      return (
-                        <tr
-                          className={`cursor-pointer border-t border-slate-200 transition-colors ${
-                            isSelected ? "bg-emerald-50" : "hover:bg-slate-50"
-                          }`}
-                          key={sale.id}
-                          onClick={() => setSelectedSaleId(sale.id)}
-                        >
-                          <td className="px-4 py-3">
-                            <p className="font-medium text-slate-950">{sale.saleNumber}</p>
-                            <p className="text-xs text-slate-500">
-                              {sale.cashierName ?? "Unassigned cashier"}
-                            </p>
-                          </td>
-                          <td className="px-4 py-3 text-slate-600">
-                            {new Intl.DateTimeFormat("en-PH", {
-                              dateStyle: "medium",
-                              timeStyle: "short"
-                            }).format(new Date(sale.saleDate))}
-                          </td>
-                          <td className="px-4 py-3 text-slate-600">{sale.itemCount}</td>
-                          <td className="px-4 py-3 font-semibold text-slate-950">
-                            {currencyFormatter.format(Number(sale.totalAmount))}
-                          </td>
+              <div className="space-y-3">
+                <div className="overflow-hidden rounded-md border border-slate-200">
+                  <div className="max-h-[31rem] overflow-auto">
+                    <table className="w-full table-fixed border-collapse text-left text-sm">
+                      <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3 font-medium">Receipt</th>
+                          <th className="px-4 py-3 font-medium">Date</th>
+                          <th className="px-4 py-3 font-medium">Items</th>
+                          <th className="px-4 py-3 font-medium">Total</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody>
+                        {paginatedSales.map((sale) => {
+                          const isSelected = sale.id === selectedSale?.id;
+
+                          return (
+                            <tr
+                              className={`cursor-pointer border-t border-slate-200 transition-colors ${
+                                isSelected ? "bg-emerald-50" : "hover:bg-slate-50"
+                              }`}
+                              key={sale.id}
+                              onClick={() => setSelectedSaleId(sale.id)}
+                            >
+                              <td className="px-4 py-3">
+                                <p className="font-medium text-slate-950">{sale.saleNumber}</p>
+                                <p className="text-xs text-slate-500">
+                                  {sale.cashierName ?? "Unassigned cashier"}
+                                </p>
+                              </td>
+                              <td className="px-4 py-3 text-slate-600">
+                                {new Intl.DateTimeFormat("en-PH", {
+                                  dateStyle: "medium",
+                                  timeStyle: "short"
+                                }).format(new Date(sale.saleDate))}
+                              </td>
+                              <td className="px-4 py-3 text-slate-600">{sale.itemCount}</td>
+                              <td className="px-4 py-3 font-semibold text-slate-950">
+                                {currencyFormatter.format(Number(sale.totalAmount))}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-slate-500">
+                    Showing {salesPageStartIndex + 1}–{salesPageEndIndex} of {sales.length} sales
+                  </p>
+                  <AppPagination
+                    onPageChange={setSalesPage}
+                    page={currentSalesPage}
+                    pageSize={SALES_PAGE_SIZE}
+                    totalItems={sales.length}
+                  />
+                </div>
               </div>
             )}
           </CardContent>

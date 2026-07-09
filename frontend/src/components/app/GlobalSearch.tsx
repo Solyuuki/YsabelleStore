@@ -13,15 +13,13 @@ import {
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { ComponentType, SVGProps } from "react";
 
-import { appRoutes, type AppRoutePath } from "@/app/routes";
+import { type AppRoutePath } from "@/app/routes";
 import { cn } from "@/lib/utils";
 import { searchSystem } from "@/services/searchService";
 import type { SearchResponseData } from "@/types/search";
-import type { AuthUserRole } from "@/types/auth";
 
 type GlobalSearchProps = {
   onNavigate: (path: AppRoutePath) => void;
-  userRole: AuthUserRole | undefined;
 };
 
 type SearchStatus = "idle" | "loading" | "ready" | "error";
@@ -36,48 +34,21 @@ type SearchResultDisplayItem = {
 };
 
 const SEARCH_DEBOUNCE_MS = 220;
-const PANEL_CLOSE_MS = 150;
 const RECENT_SEARCHES_KEY = "ysabellestore.globalSearch.recentSearches";
 const RECENT_SEARCHES_LIMIT = 5;
 
-export function GlobalSearch({ onNavigate, userRole }: GlobalSearchProps) {
+export function GlobalSearch({ onNavigate }: GlobalSearchProps) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<SearchStatus>("idle");
   const [data, setData] = useState<SearchResponseData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [isPanelRendered, setIsPanelRendered] = useState(false);
-  const [isPanelAnimated, setIsPanelAnimated] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => loadRecentSearches());
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const normalizedQuery = query.trim();
   const hasQuery = normalizedQuery.length > 0;
-
-  const suggestions = useMemo(() => {
-    const backendPaths = new Set([
-      ...(data?.actions ?? []).map((item) => item.path),
-      ...(data?.products ?? []).map((item) => item.path),
-      ...(data?.batches ?? []).map((item) => item.path),
-      ...(data?.receipts ?? []).map((item) => item.path)
-    ]);
-
-    return appRoutes
-      .filter((route) => route.path !== "/" && route.path !== "/not-found")
-      .filter((route) => route.allowedRoles.includes(userRole ?? "STAFF"))
-      .map<SearchResultDisplayItem>((route) => ({
-        id: route.path,
-        label: route.label,
-        description: route.description,
-        icon: route.icon,
-        path: route.path
-      }))
-      .filter((item) => !backendPaths.has(item.path))
-      .filter((item) =>
-        matchesQuery(item.label, item.description ?? "", item.path, normalizedQuery)
-      );
-  }, [data?.actions, data?.batches, data?.products, data?.receipts, normalizedQuery, userRole]);
 
   const backendProductItems = useMemo(
     () =>
@@ -137,7 +108,13 @@ export function GlobalSearch({ onNavigate, userRole }: GlobalSearchProps) {
     backendReceiptItems.length > 0 ||
     backendActionItems.length > 0;
 
-  const showPanel = isPanelRendered || isOpen;
+  const showPanel =
+    isOpen &&
+    (hasQuery ||
+      recentSearches.length > 0 ||
+      status === "loading" ||
+      status === "error" ||
+      Boolean(data));
   const showLoading = isOpen && hasQuery && status === "loading";
   const showError = isOpen && status === "error";
   const showIdle = isOpen && !hasQuery && status === "idle";
@@ -145,6 +122,7 @@ export function GlobalSearch({ onNavigate, userRole }: GlobalSearchProps) {
   const showNoResults = Boolean(
     data && hasQuery && data.hasSearchableRecords && !hasBackendResults
   );
+  const showRecentSearches = isOpen && !hasQuery && recentSearches.length > 0;
 
   useEffect(() => {
     function handleGlobalShortcut(event: globalThis.KeyboardEvent) {
@@ -199,28 +177,6 @@ export function GlobalSearch({ onNavigate, userRole }: GlobalSearchProps) {
     return () => {
       window.removeEventListener("keydown", handleGlobalShortcut);
       document.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setIsPanelAnimated(false);
-      const timeoutId = window.setTimeout(() => {
-        setIsPanelRendered(false);
-      }, PANEL_CLOSE_MS);
-
-      return () => {
-        window.clearTimeout(timeoutId);
-      };
-    }
-
-    setIsPanelRendered(true);
-    const frameId = window.requestAnimationFrame(() => {
-      setIsPanelAnimated(true);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
     };
   }, [isOpen]);
 
@@ -302,10 +258,6 @@ export function GlobalSearch({ onNavigate, userRole }: GlobalSearchProps) {
     onNavigate(path);
   }
 
-  function handleSuggestionSelect(item: SearchResultDisplayItem) {
-    handleResultSelect(item.path, item.label);
-  }
-
   function handleRecentSearchSelect(term: string) {
     setQuery(term);
     setError(null);
@@ -323,7 +275,7 @@ export function GlobalSearch({ onNavigate, userRole }: GlobalSearchProps) {
     <div ref={containerRef} className="relative z-50 w-[min(22rem,42vw)]">
       <label
         className={cn(
-          "group/search pointer-events-auto flex h-11 items-center gap-3 rounded-full border border-slate-200/80 bg-white/75 px-4 text-sm text-slate-600 shadow-[0_12px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-[border-color,background-color,box-shadow,transform] duration-150 ease-out hover:-translate-y-px hover:border-emerald-200 hover:bg-white hover:shadow-[0_16px_36px_rgba(15,23,42,0.1)] focus-within:-translate-y-px focus-within:border-emerald-300 focus-within:bg-white focus-within:shadow-[0_18px_40px_rgba(16,185,129,0.14)] focus-within:ring-2 focus-within:ring-emerald-500/15"
+          "group/search pointer-events-auto flex h-11 items-center gap-3 rounded-full border border-slate-200/80 bg-white px-4 text-sm text-slate-600 shadow-sm transition-[border-color,background-color,box-shadow,transform] duration-150 ease-out hover:-translate-y-px hover:border-emerald-200 hover:bg-white hover:shadow-md focus-within:-translate-y-px focus-within:border-emerald-300 focus-within:bg-white focus-within:shadow-md focus-within:ring-2 focus-within:ring-emerald-500/15"
         )}
       >
         <Search
@@ -339,7 +291,7 @@ export function GlobalSearch({ onNavigate, userRole }: GlobalSearchProps) {
           className="w-full min-w-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
           placeholder="Search products, batches, receipts"
           ref={inputRef}
-          type="search"
+          type="text"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -380,32 +332,34 @@ export function GlobalSearch({ onNavigate, userRole }: GlobalSearchProps) {
         <div
           id="global-search-panel"
           className={cn(
-            "absolute left-0 top-[calc(100%+0.65rem)] w-full overflow-hidden rounded-2xl border border-emerald-100/70 bg-gradient-to-b from-white to-emerald-50/30 shadow-[0_20px_44px_rgba(15,23,42,0.16)] backdrop-blur-xl transition-[opacity,transform] duration-150 ease-out",
-            isPanelAnimated
-              ? "translate-y-0 scale-100 opacity-100"
-              : "translate-y-2 scale-[0.99] opacity-0"
+            "pointer-events-auto absolute left-0 top-[calc(100%+0.65rem)] w-full overflow-hidden rounded-2xl border border-emerald-100/70 bg-gradient-to-b from-white to-emerald-50/30 shadow-[0_20px_44px_rgba(15,23,42,0.16)] backdrop-blur-xl"
           )}
           role="dialog"
           aria-label="Global search results"
+          onMouseDownCapture={(event) => {
+            event.stopPropagation();
+          }}
+          onPointerDownCapture={(event) => {
+            event.stopPropagation();
+          }}
         >
           <div className="max-h-[22.5rem] overflow-auto overscroll-contain">
             <SearchPanelBody
               actions={backendActionItems}
-              noRecords={showNoRecords}
-              noResults={showNoResults}
-              onNavigate={handleResultSelect}
-              onSuggestionSelect={handleSuggestionSelect}
-              recentSearches={recentSearches}
-              products={backendProductItems}
               batches={backendBatchItems}
-              receipts={backendReceiptItems}
               error={error}
-              isLoading={showLoading}
               isError={showError}
               isIdle={showIdle}
-              suggestions={suggestions}
+              isLoading={showLoading}
+              noRecords={showNoRecords}
+              noResults={showNoResults}
               onClearRecents={handleClearRecents}
+              onNavigate={handleResultSelect}
               onRecentSearchSelect={handleRecentSearchSelect}
+              products={backendProductItems}
+              recentSearches={recentSearches}
+              receipts={backendReceiptItems}
+              showRecentSearches={showRecentSearches}
             />
           </div>
         </div>
@@ -426,11 +380,10 @@ type SearchPanelBodyProps = {
   onClearRecents: () => void;
   onNavigate: (path: AppRoutePath, searchLabel?: string) => void;
   onRecentSearchSelect: (term: string) => void;
-  onSuggestionSelect: (item: SearchResultDisplayItem) => void;
   products: readonly SearchResultDisplayItem[];
   recentSearches: readonly string[];
   receipts: readonly SearchResultDisplayItem[];
-  suggestions: readonly SearchResultDisplayItem[];
+  showRecentSearches: boolean;
 };
 
 function SearchPanelBody({
@@ -445,11 +398,10 @@ function SearchPanelBody({
   onClearRecents,
   onNavigate,
   onRecentSearchSelect,
-  onSuggestionSelect,
   products,
   recentSearches,
   receipts,
-  suggestions
+  showRecentSearches
 }: SearchPanelBodyProps) {
   const hasAnyResults =
     actions.length > 0 || batches.length > 0 || products.length > 0 || receipts.length > 0;
@@ -467,14 +419,6 @@ function SearchPanelBody({
 
       {isError ? (
         <CompactEmptyState title="Search unavailable" description={error ?? "Please try again."} />
-      ) : null}
-
-      {!isLoading && !isError && isIdle ? (
-        <CompactSuggestionsSection
-          items={suggestions}
-          title="SUGGESTIONS"
-          onSelect={onSuggestionSelect}
-        />
       ) : null}
 
       {!isLoading && !isError && !isIdle && hasAnyResults ? (
@@ -508,15 +452,7 @@ function SearchPanelBody({
         />
       ) : null}
 
-      {!isLoading && !isError && !isIdle ? (
-        <CompactSuggestionsSection
-          items={suggestions}
-          title="SUGGESTIONS"
-          onSelect={onSuggestionSelect}
-        />
-      ) : null}
-
-      {!isLoading && !isError ? (
+      {showRecentSearches ? (
         <RecentSearchesSection
           recentSearches={recentSearches}
           onClear={onClearRecents}
@@ -524,38 +460,6 @@ function SearchPanelBody({
         />
       ) : null}
     </div>
-  );
-}
-
-function CompactSuggestionsSection({
-  items,
-  onSelect,
-  title
-}: {
-  items: readonly SearchResultDisplayItem[];
-  onSelect: (item: SearchResultDisplayItem) => void;
-  title: string;
-}) {
-  if (items.length === 0) {
-    return null;
-  }
-
-  return (
-    <section className="space-y-2">
-      <SectionHeading label={title} />
-      <div className="space-y-1">
-        {items.map((item) => (
-          <CompactRow
-            key={item.id}
-            icon={item.icon}
-            title={item.label}
-            subtitle={item.description}
-            badge={item.badge}
-            onClick={() => onSelect(item)}
-          />
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -610,6 +514,9 @@ function RecentSearchesSection({
         <SectionHeading label="RECENT SEARCHES" />
         <button
           className="rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700 transition-colors hover:bg-emerald-50 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
           onClick={onClear}
           type="button"
         >
@@ -621,6 +528,9 @@ function RecentSearchesSection({
           <button
             key={term}
             className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50/70 px-3 py-1.5 text-xs font-medium text-emerald-800 transition-colors hover:border-emerald-200 hover:bg-emerald-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+            onMouseDown={(event) => {
+              event.preventDefault();
+            }}
             onClick={() => onSelect(term)}
             type="button"
           >
@@ -649,6 +559,9 @@ function CompactRow({
   return (
     <button
       className="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors duration-150 ease-out hover:bg-emerald-50/70 focus-visible:bg-emerald-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+      onMouseDown={(event) => {
+        event.preventDefault();
+      }}
       onClick={onClick}
       type="button"
     >
@@ -722,15 +635,6 @@ function SectionHeading({ label }: { label: string }) {
       </p>
     </div>
   );
-}
-
-function matchesQuery(label: string, description: string, path: AppRoutePath, query: string) {
-  if (!query) {
-    return true;
-  }
-
-  const haystack = `${label} ${description} ${path}`.toLowerCase();
-  return haystack.includes(query.toLowerCase());
 }
 
 function loadRecentSearches() {

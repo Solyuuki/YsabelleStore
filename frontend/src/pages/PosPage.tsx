@@ -12,6 +12,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useToast } from "@/components/shared/ToastProvider";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { AppPagination } from "@/components/shared/AppPagination";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { checkoutPosSale, searchPosProducts } from "@/services/posService";
 import type { PosProduct, PosSale } from "@/types/pos";
+import { wait } from "@/utils/timing";
 
 type CartLine = {
   product: PosProduct;
@@ -42,6 +44,8 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency"
 });
 
+const PRODUCT_RESULTS_PAGE_SIZE = 10;
+
 const initialSearchState: SearchState = {
   catalogCount: 0,
   error: null,
@@ -52,10 +56,13 @@ const initialSearchState: SearchState = {
   status: "ready"
 };
 
+const MIN_SEARCH_LOADING_MS = 300;
+
 export function PosPage() {
   const [searchState, setSearchState] = useState<SearchState>(initialSearchState);
   const [searchInput, setSearchInput] = useState("");
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
+  const [productResultsPage, setProductResultsPage] = useState(1);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [checkoutSale, setCheckoutSale] = useState<PosSale | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -84,6 +91,26 @@ export function PosPage() {
       total: subtotal
     };
   }, [cartLines]);
+
+  const totalProductPages = Math.max(
+    1,
+    Math.ceil(searchState.products.length / PRODUCT_RESULTS_PAGE_SIZE)
+  );
+  const currentProductPage = Math.min(productResultsPage, totalProductPages);
+  const productPageStartIndex =
+    searchState.products.length === 0 ? 0 : (currentProductPage - 1) * PRODUCT_RESULTS_PAGE_SIZE;
+  const productPageEndIndex = Math.min(
+    productPageStartIndex + PRODUCT_RESULTS_PAGE_SIZE,
+    searchState.products.length
+  );
+  const paginatedProducts = useMemo(
+    () => searchState.products.slice(productPageStartIndex, productPageEndIndex),
+    [productPageEndIndex, productPageStartIndex, searchState.products]
+  );
+
+  useEffect(() => {
+    setProductResultsPage(1);
+  }, [searchState.query]);
 
   const shouldShowNoResults = searchState.status === "no-match";
 
@@ -218,6 +245,7 @@ export function PosPage() {
 
   async function handleSearch(options: { autoAddExactMatch?: boolean } = {}) {
     const trimmedQuery = searchInput.trim();
+    const startedAt = window.performance.now();
 
     setCheckoutError(null);
     setSearchState((current) => ({
@@ -252,6 +280,12 @@ export function PosPage() {
 
       const exactMatch = resolveExactProductMatch(trimmedQuery, response.data.products);
       const nextStatus = response.data.products.length > 0 ? "found" : "no-match";
+      const elapsedMs = window.performance.now() - startedAt;
+      const remainingMs = Math.max(0, MIN_SEARCH_LOADING_MS - elapsedMs);
+
+      if (remainingMs > 0) {
+        await wait(remainingMs);
+      }
 
       setSearchState({
         catalogCount: response.data.catalogCount,
@@ -271,6 +305,12 @@ export function PosPage() {
       }
     } catch {
       const message = "The POS product search service is unavailable.";
+      const elapsedMs = window.performance.now() - startedAt;
+      const remainingMs = Math.max(0, MIN_SEARCH_LOADING_MS - elapsedMs);
+
+      if (remainingMs > 0) {
+        await wait(remainingMs);
+      }
 
       setSearchState((current) => ({
         ...current,
@@ -490,104 +530,122 @@ export function PosPage() {
               ) : shouldShowNoResults ? (
                 <EmptyState description="No match found." icon={PackageSearch} title="No match" />
               ) : searchState.products.length > 0 ? (
-                <div className="overflow-hidden rounded-md border border-slate-200">
-                  <table className="w-full table-fixed border-collapse text-left text-sm">
-                    <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
-                      <tr>
-                        <th className="px-4 py-3 font-medium">Barcode / SKU</th>
-                        <th className="px-4 py-3 font-medium">Product</th>
-                        <th className="px-4 py-3 font-medium">Stock</th>
-                        <th className="px-4 py-3 font-medium">Unit price</th>
-                        <th className="px-4 py-3 font-medium text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {searchState.products.map((product) => {
-                        const isOutOfStock = product.availableStock <= 0;
-
-                        return (
-                          <tr
-                            className={`border-t border-slate-200 transition-colors ${
-                              isOutOfStock
-                                ? "bg-slate-50/70 text-slate-400"
-                                : "hover:bg-emerald-50/60"
-                            }`}
-                            key={product.id}
-                          >
-                            <td className="px-4 py-3">
-                              <button
-                                className="text-left"
-                                disabled={isOutOfStock}
-                                type="button"
-                                onClick={() =>
-                                  addProductToCart(product, {
-                                    announceAdded: true,
-                                    clearScannerAfterAction: true
-                                  })
-                                }
-                              >
-                                <p className="font-medium text-slate-900">
-                                  {product.barcode ?? product.sku}
-                                </p>
-                                <p className="text-xs text-slate-500">{product.sku}</p>
-                              </button>
-                            </td>
-                            <td className="px-4 py-3">
-                              <button
-                                className="text-left"
-                                disabled={isOutOfStock}
-                                type="button"
-                                onClick={() =>
-                                  addProductToCart(product, {
-                                    announceAdded: true,
-                                    clearScannerAfterAction: true
-                                  })
-                                }
-                              >
-                                <p className="font-medium text-slate-900">{product.name}</p>
-                                <p className="text-xs text-slate-500">{product.categoryName}</p>
-                              </button>
-                            </td>
-                            <td className="px-4 py-3">
-                              <StatusBadge
-                                variant={
-                                  isOutOfStock
-                                    ? "error"
-                                    : product.availableStock <= 5
-                                      ? "warning"
-                                      : "success"
-                                }
-                              >
-                                {isOutOfStock
-                                  ? "Out of stock"
-                                  : `${product.availableStock} in stock`}
-                              </StatusBadge>
-                            </td>
-                            <td className="px-4 py-3 font-medium text-slate-900">
-                              {currencyFormatter.format(Number(product.sellingPrice))}
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <Button
-                                disabled={isOutOfStock}
-                                size="sm"
-                                type="button"
-                                variant="secondary"
-                                onClick={() =>
-                                  addProductToCart(product, {
-                                    announceAdded: true,
-                                    clearScannerAfterAction: true
-                                  })
-                                }
-                              >
-                                <Plus className="h-4 w-4" aria-hidden="true" />
-                                Add
-                              </Button>
-                            </td>
+                <div className="space-y-3">
+                  <div className="overflow-hidden rounded-md border border-slate-200">
+                    <div className="max-h-[32rem] overflow-auto">
+                      <table className="w-full table-fixed border-collapse text-left text-sm">
+                        <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
+                          <tr>
+                            <th className="px-4 py-3 font-medium">Barcode / SKU</th>
+                            <th className="px-4 py-3 font-medium">Product</th>
+                            <th className="px-4 py-3 font-medium">Stock</th>
+                            <th className="px-4 py-3 font-medium">Unit price</th>
+                            <th className="px-4 py-3 font-medium text-right">Action</th>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                        </thead>
+                        <tbody>
+                          {paginatedProducts.map((product) => {
+                            const isOutOfStock = product.availableStock <= 0;
+
+                            return (
+                              <tr
+                                className={`border-t border-slate-200 transition-colors ${
+                                  isOutOfStock
+                                    ? "bg-slate-50/70 text-slate-400"
+                                    : "hover:bg-emerald-50/60"
+                                }`}
+                                key={product.id}
+                              >
+                                <td className="px-4 py-3">
+                                  <button
+                                    className="text-left"
+                                    disabled={isOutOfStock}
+                                    type="button"
+                                    onClick={() =>
+                                      addProductToCart(product, {
+                                        announceAdded: true,
+                                        clearScannerAfterAction: true
+                                      })
+                                    }
+                                  >
+                                    <p className="font-medium text-slate-900">
+                                      {product.barcode ?? product.sku}
+                                    </p>
+                                    <p className="text-xs text-slate-500">{product.sku}</p>
+                                  </button>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <button
+                                    className="text-left"
+                                    disabled={isOutOfStock}
+                                    type="button"
+                                    onClick={() =>
+                                      addProductToCart(product, {
+                                        announceAdded: true,
+                                        clearScannerAfterAction: true
+                                      })
+                                    }
+                                  >
+                                    <p className="font-medium text-slate-900">{product.name}</p>
+                                    <p className="text-xs text-slate-500">{product.categoryName}</p>
+                                  </button>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <StatusBadge
+                                    variant={
+                                      isOutOfStock
+                                        ? "error"
+                                        : product.availableStock <= 5
+                                          ? "warning"
+                                          : "success"
+                                    }
+                                  >
+                                    {isOutOfStock
+                                      ? "Out of stock"
+                                      : `${product.availableStock} in stock`}
+                                  </StatusBadge>
+                                </td>
+                                <td className="px-4 py-3 font-medium text-slate-900">
+                                  {currencyFormatter.format(Number(product.sellingPrice))}
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  <Button
+                                    disabled={isOutOfStock}
+                                    size="sm"
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={() =>
+                                      addProductToCart(product, {
+                                        announceAdded: true,
+                                        clearScannerAfterAction: true
+                                      })
+                                    }
+                                  >
+                                    <Plus className="h-4 w-4" aria-hidden="true" />
+                                    Add
+                                  </Button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm text-slate-500">
+                      {searchState.products.length > 0
+                        ? `Showing ${productPageStartIndex + 1}–${productPageEndIndex} of ${searchState.products.length} matches`
+                        : "No matches"}
+                    </p>
+                    <AppPagination
+                      onPageChange={setProductResultsPage}
+                      page={currentProductPage}
+                      pageSize={PRODUCT_RESULTS_PAGE_SIZE}
+                      totalItems={searchState.products.length}
+                    />
+                  </div>
                 </div>
               ) : (
                 <EmptyState
