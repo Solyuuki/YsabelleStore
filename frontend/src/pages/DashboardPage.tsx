@@ -45,7 +45,7 @@ const dashboardStats = [
 
 export function DashboardPage() {
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
         eyebrow="Store overview"
         title="Dashboard"
@@ -103,6 +103,6 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </section>
-    </>
+    </div>
   );
 }

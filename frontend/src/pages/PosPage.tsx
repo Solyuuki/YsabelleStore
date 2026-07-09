@@ -78,6 +78,44 @@ export function PosPage() {
   const shouldShowNoResults =
     searchState.hasSearched && !searchState.isLoading && !hasSearchResults;
   const isSearchIdle = !searchState.hasSearched && !searchState.isLoading;
+  const searchBadge = searchState.isLoading
+    ? {
+        label: "Searching",
+        variant: "info" as const
+      }
+    : searchState.error
+      ? {
+          label: "Error",
+          variant: "error" as const
+        }
+      : hasSearchResults
+        ? {
+            label: "Ready",
+            variant: "success" as const
+          }
+        : {
+            label: isSearchIdle ? "Idle" : "Ready",
+            variant: "info" as const
+          };
+  const cartBadge = isCheckingOut
+    ? {
+        label: "Processing",
+        variant: "info" as const
+      }
+    : checkoutError
+      ? {
+          label: "Error",
+          variant: "error" as const
+        }
+      : cartLines.length > 0
+        ? {
+            label: "Active",
+            variant: "success" as const
+          }
+        : {
+            label: "Empty",
+            variant: "warning" as const
+          };
 
   async function handleSearch() {
     const trimmedQuery = searchInput.trim();
@@ -250,14 +288,6 @@ export function PosPage() {
     }));
   }
 
-  const statusLabel = searchState.isLoading
-    ? "Searching"
-    : isSearchIdle
-      ? "Ready"
-      : hasSearchResults
-        ? "Results ready"
-        : "No matches";
-
   return (
     <>
       <PageHeader
@@ -277,13 +307,7 @@ export function PosPage() {
                     Search by product name, barcode, or SKU.
                   </p>
                 </div>
-                <StatusBadge
-                  variant={
-                    searchState.isLoading ? "info" : hasSearchResults ? "success" : "warning"
-                  }
-                >
-                  {statusLabel}
-                </StatusBadge>
+                <StatusBadge variant={searchBadge.variant}>{searchBadge.label}</StatusBadge>
               </div>
             </CardHeader>
             <CardContent>
@@ -458,11 +482,7 @@ export function PosPage() {
                   Live cart, quantity controls, and checkout.
                 </p>
               </div>
-              <StatusBadge variant={cartLines.length > 0 ? "info" : "warning"}>
-                {cartLines.length > 0
-                  ? `${cartLines.length} item${cartLines.length === 1 ? "" : "s"}`
-                  : "Empty"}
-              </StatusBadge>
+              <StatusBadge variant={cartBadge.variant}>{cartBadge.label}</StatusBadge>
             </div>
           </CardHeader>
           <CardContent>
