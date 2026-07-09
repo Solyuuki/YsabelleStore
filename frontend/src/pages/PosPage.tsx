@@ -9,15 +9,15 @@ import {
   Search,
   Trash2
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useToast } from "@/components/shared/ToastProvider";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/shared/ToastProvider";
 import { checkoutPosSale, searchPosProducts } from "@/services/posService";
 import type { PosProduct, PosSale } from "@/types/pos";
 
@@ -29,10 +29,11 @@ type CartLine = {
 type SearchState = {
   catalogCount: number;
   error: string | null;
-  isLoading: boolean;
   hasSearched: boolean;
+  isLoading: boolean;
   products: PosProduct[];
   query: string;
+  status: "ready" | "searching" | "found" | "no-match" | "error";
 };
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
@@ -48,7 +49,8 @@ const initialSearchState: SearchState = {
   hasSearched: false,
   isLoading: false,
   products: [],
-  query: ""
+  query: "",
+  status: "ready"
 };
 
 export function PosPage() {
@@ -58,7 +60,18 @@ export function PosPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [checkoutSale, setCheckoutSale] = useState<PosSale | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const scannerInputRef = useRef<HTMLInputElement | null>(null);
   const { pushToast } = useToast();
+
+  useEffect(() => {
+    const rafId = window.requestAnimationFrame(() => {
+      scannerInputRef.current?.focus({ preventScroll: true });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   const cartSummary = useMemo(() => {
     const subtotal = cartLines.reduce(
@@ -74,29 +87,34 @@ export function PosPage() {
     };
   }, [cartLines]);
 
-  const hasSearchResults = searchState.products.length > 0;
-  const shouldShowNoResults =
-    searchState.hasSearched && !searchState.isLoading && !hasSearchResults;
-  const isSearchIdle = !searchState.hasSearched && !searchState.isLoading;
-  const searchBadge = searchState.isLoading
-    ? {
-        label: "Searching",
-        variant: "info" as const
-      }
-    : searchState.error
+  const shouldShowNoResults = searchState.status === "no-match";
+
+  const searchBadge =
+    searchState.status === "searching"
       ? {
-          label: "Error",
-          variant: "error" as const
+          label: "Searching",
+          variant: "info" as const
         }
-      : hasSearchResults
+      : searchState.status === "error"
         ? {
-            label: "Ready",
-            variant: "success" as const
+            label: "Error",
+            variant: "error" as const
           }
-        : {
-            label: isSearchIdle ? "Idle" : "Ready",
-            variant: "info" as const
-          };
+        : searchState.status === "found"
+          ? {
+              label: "Found",
+              variant: "success" as const
+            }
+          : searchState.status === "no-match"
+            ? {
+                label: "No match",
+                variant: "warning" as const
+              }
+            : {
+                label: "Scanner ready",
+                variant: "info" as const
+              };
+
   const cartBadge = isCheckingOut
     ? {
         label: "Processing",
@@ -117,7 +135,90 @@ export function PosPage() {
             variant: "warning" as const
           };
 
-  async function handleSearch() {
+  function focusScannerInput() {
+    scannerInputRef.current?.focus({ preventScroll: true });
+  }
+
+  function clearScannerInput() {
+    setSearchInput("");
+  }
+
+  function resolveExactProductMatch(query: string, products: PosProduct[]) {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return (
+      products.find((product) => product.barcode?.toLowerCase() === normalizedQuery) ??
+      products.find((product) => product.sku.toLowerCase() === normalizedQuery) ??
+      null
+    );
+  }
+
+  function addProductToCart(
+    product: PosProduct,
+    options: { announceAdded?: boolean; clearScannerAfterAction?: boolean } = {}
+  ) {
+    if (product.availableStock <= 0) {
+      const message = "This product is out of stock.";
+      setCheckoutError(message);
+      setSearchState((current) => ({
+        ...current,
+        error: message,
+        status: "error"
+      }));
+      return false;
+    }
+
+    setCheckoutError(null);
+    setSearchState((current) => ({
+      ...current,
+      error: null,
+      status: "found"
+    }));
+
+    let added = false;
+
+    setCartLines((currentLines) => {
+      const existingLine = currentLines.find((line) => line.product.id === product.id);
+
+      if (!existingLine) {
+        added = true;
+        return [...currentLines, { product, quantity: 1 }];
+      }
+
+      if (existingLine.quantity >= product.availableStock) {
+        const message = `Only ${product.availableStock} units are available for ${product.name}.`;
+        setCheckoutError(message);
+        setSearchState((current) => ({
+          ...current,
+          error: message,
+          status: "error"
+        }));
+        return currentLines;
+      }
+
+      added = true;
+      return currentLines.map((line) =>
+        line.product.id === product.id ? { ...line, quantity: line.quantity + 1 } : line
+      );
+    });
+
+    if (added && options.clearScannerAfterAction !== false) {
+      clearScannerInput();
+      focusScannerInput();
+    }
+
+    if (added && options.announceAdded) {
+      pushToast({
+        message: `${product.name} added to the current sale.`,
+        title: "Product added",
+        variant: "success"
+      });
+    }
+
+    return added;
+  }
+
+  async function handleSearch(options: { autoAddExactMatch?: boolean } = {}) {
     const trimmedQuery = searchInput.trim();
 
     setCheckoutError(null);
@@ -127,7 +228,8 @@ export function PosPage() {
       hasSearched: trimmedQuery.length > 0,
       isLoading: trimmedQuery.length > 0,
       products: trimmedQuery.length > 0 ? current.products : [],
-      query: trimmedQuery
+      query: trimmedQuery,
+      status: trimmedQuery.length > 0 ? "searching" : "ready"
     }));
 
     if (!trimmedQuery) {
@@ -144,10 +246,14 @@ export function PosPage() {
           hasSearched: true,
           isLoading: false,
           products: [],
-          query: trimmedQuery
+          query: trimmedQuery,
+          status: "error"
         }));
         return;
       }
+
+      const exactMatch = resolveExactProductMatch(trimmedQuery, response.data.products);
+      const nextStatus = response.data.products.length > 0 ? "found" : "no-match";
 
       setSearchState({
         catalogCount: response.data.catalogCount,
@@ -155,43 +261,29 @@ export function PosPage() {
         hasSearched: true,
         isLoading: false,
         products: response.data.products,
-        query: response.data.query
+        query: response.data.query,
+        status: nextStatus
       });
+
+      if (options.autoAddExactMatch && exactMatch) {
+        addProductToCart(exactMatch, {
+          announceAdded: true,
+          clearScannerAfterAction: true
+        });
+      }
     } catch {
+      const message = "The POS product search service is unavailable.";
+
       setSearchState((current) => ({
         ...current,
-        error: "The POS product search service is unavailable.",
+        error: message,
         hasSearched: true,
         isLoading: false,
         products: [],
-        query: trimmedQuery
+        query: trimmedQuery,
+        status: "error"
       }));
     }
-  }
-
-  function addProductToCart(product: PosProduct) {
-    if (product.availableStock <= 0) {
-      setCheckoutError("This product is out of stock.");
-      return;
-    }
-
-    setCheckoutError(null);
-    setCartLines((currentLines) => {
-      const existingLine = currentLines.find((line) => line.product.id === product.id);
-
-      if (!existingLine) {
-        return [...currentLines, { product, quantity: 1 }];
-      }
-
-      if (existingLine.quantity >= product.availableStock) {
-        setCheckoutError(`Only ${product.availableStock} units are available for ${product.name}.`);
-        return currentLines;
-      }
-
-      return currentLines.map((line) =>
-        line.product.id === product.id ? { ...line, quantity: line.quantity + 1 } : line
-      );
-    });
   }
 
   function updateLineQuantity(productId: string, delta: number) {
@@ -248,6 +340,11 @@ export function PosPage() {
       if (!response.success || !response.data) {
         const message = response.message || "Checkout failed.";
         setCheckoutError(message);
+        setSearchState((current) => ({
+          ...current,
+          error: message,
+          status: "error"
+        }));
         pushToast({
           message,
           title: "Checkout failed",
@@ -258,6 +355,9 @@ export function PosPage() {
 
       setCheckoutSale(response.data.sale);
       setCartLines([]);
+      clearScannerInput();
+      focusScannerInput();
+
       pushToast({
         message: `Sale ${response.data.sale.saleNumber} was saved successfully.`,
         title: "Sale completed",
@@ -270,6 +370,11 @@ export function PosPage() {
     } catch {
       const message = "The POS checkout service is unavailable.";
       setCheckoutError(message);
+      setSearchState((current) => ({
+        ...current,
+        error: message,
+        status: "error"
+      }));
       pushToast({
         message,
         title: "Checkout failed",
@@ -284,8 +389,11 @@ export function PosPage() {
     clearCart();
     setSearchState((current) => ({
       ...current,
-      error: null
+      error: null,
+      status: "ready"
     }));
+    clearScannerInput();
+    focusScannerInput();
   }
 
   return (
@@ -304,7 +412,7 @@ export function PosPage() {
                 <div>
                   <CardTitle>Product search</CardTitle>
                   <p className="mt-1 text-sm text-slate-500">
-                    Search by product name, barcode, or SKU.
+                    Use a USB barcode scanner or manually search by product name, barcode, or SKU.
                   </p>
                 </div>
                 <StatusBadge variant={searchBadge.variant}>{searchBadge.label}</StatusBadge>
@@ -315,16 +423,30 @@ export function PosPage() {
                 className="grid gap-3 lg:grid-cols-[1fr_180px]"
                 onSubmit={(event) => {
                   event.preventDefault();
-                  void handleSearch();
+                  void handleSearch({ autoAddExactMatch: true });
                 }}
               >
                 <label className="flex h-12 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-4 shadow-sm focus-within:border-emerald-400 focus-within:bg-white">
                   <ScanBarcode className="h-5 w-5 text-slate-500" aria-hidden="true" />
                   <input
+                    aria-label="Scan barcode or search product"
                     className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-                    placeholder="Scan barcode or search product name"
+                    placeholder="Scan barcode or type product name / SKU"
+                    ref={scannerInputRef}
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        void handleSearch({ autoAddExactMatch: true });
+                      }
+
+                      if (event.key === "Escape" && searchInput) {
+                        event.preventDefault();
+                        clearScannerInput();
+                        focusScannerInput();
+                      }
+                    }}
                   />
                 </label>
                 <Button disabled={searchState.isLoading} type="submit" variant="secondary">
@@ -350,9 +472,9 @@ export function PosPage() {
                 <div>
                   <CardTitle>Product results</CardTitle>
                   <p className="mt-1 text-sm text-slate-500">
-                    {searchState.hasSearched
-                      ? `${searchState.products.length} match${searchState.products.length === 1 ? "" : "es"}`
-                      : "Search to load current inventory matches."}
+                    {searchState.status === "ready"
+                      ? "No search yet"
+                      : `${searchState.products.length} match${searchState.products.length === 1 ? "" : "es"}`}
                   </p>
                 </div>
                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
@@ -368,15 +490,7 @@ export function PosPage() {
                   label="Loading product matches"
                 />
               ) : shouldShowNoResults ? (
-                <EmptyState
-                  description={
-                    searchState.query
-                      ? "No products found."
-                      : "Enter a barcode, SKU, or product name to search inventory."
-                  }
-                  icon={PackageSearch}
-                  title={searchState.query ? "No products found" : "Search inventory"}
-                />
+                <EmptyState description="No match found." icon={PackageSearch} title="No match" />
               ) : searchState.products.length > 0 ? (
                 <div className="overflow-hidden rounded-md border border-slate-200">
                   <table className="w-full table-fixed border-collapse text-left text-sm">
@@ -407,7 +521,12 @@ export function PosPage() {
                                 className="text-left"
                                 disabled={isOutOfStock}
                                 type="button"
-                                onClick={() => addProductToCart(product)}
+                                onClick={() =>
+                                  addProductToCart(product, {
+                                    announceAdded: true,
+                                    clearScannerAfterAction: true
+                                  })
+                                }
                               >
                                 <p className="font-medium text-slate-900">
                                   {product.barcode ?? product.sku}
@@ -420,7 +539,12 @@ export function PosPage() {
                                 className="text-left"
                                 disabled={isOutOfStock}
                                 type="button"
-                                onClick={() => addProductToCart(product)}
+                                onClick={() =>
+                                  addProductToCart(product, {
+                                    announceAdded: true,
+                                    clearScannerAfterAction: true
+                                  })
+                                }
                               >
                                 <p className="font-medium text-slate-900">{product.name}</p>
                                 <p className="text-xs text-slate-500">{product.categoryName}</p>
@@ -450,7 +574,12 @@ export function PosPage() {
                                 size="sm"
                                 type="button"
                                 variant="secondary"
-                                onClick={() => addProductToCart(product)}
+                                onClick={() =>
+                                  addProductToCart(product, {
+                                    announceAdded: true,
+                                    clearScannerAfterAction: true
+                                  })
+                                }
                               >
                                 <Plus className="h-4 w-4" aria-hidden="true" />
                                 Add
@@ -464,9 +593,9 @@ export function PosPage() {
                 </div>
               ) : (
                 <EmptyState
-                  description="Search by barcode, SKU, or product name to see the live store catalog."
+                  description="Enter a barcode, SKU, or product name to search inventory."
                   icon={PackageSearch}
-                  title="No search yet"
+                  title={searchState.status === "ready" ? "No search yet" : "No match"}
                 />
               )}
             </CardContent>
