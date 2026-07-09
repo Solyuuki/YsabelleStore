@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import { authRouter } from "./auth.routes.js";
 import { healthRouter } from "./health.routes.js";
+import { searchRouter } from "./search.routes.js";
 import type { PlannedRouteGroup } from "../types/routeRegistry.js";
 
 export const plannedRouteGroups: readonly PlannedRouteGroup[] = [
@@ -19,3 +20,4 @@ export const router = Router();
 
 router.use("/auth", authRouter);
 router.use("/health", healthRouter);
+router.use("/search", searchRouter);

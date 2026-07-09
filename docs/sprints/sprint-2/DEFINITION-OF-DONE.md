@@ -103,18 +103,21 @@ Sprint 2 must not claim product CRUD, final POS, inventory movement logic, SARIM
 
 ## Validation Done Criteria
 
-| Check          | Command                                                      |
-| -------------- | ------------------------------------------------------------ |
-| Format         | `npm run format:check`                                       |
-| Lint           | `npm run lint`                                               |
-| Typecheck      | `npm run typecheck --workspaces`                             |
-| Audit          | `npm audit --audit-level=high`                               |
-| Prisma         | `npx prisma validate --schema=database/prisma/schema.prisma` |
-| Build, if safe | `npm run build`                                              |
+| Check      | Command                                                   |
+| ---------- | --------------------------------------------------------- | -------------------------- | ------- | --------------------------------- | --------------------- | ----- |
+| Format     | `npm run format:check`                                    |
+| Lint       | `npm run lint`                                            |
+| Typecheck  | `npm run typecheck --workspaces`                          |
+| Audit      | `npm audit --audit-level=high`                            |
+| Prisma     | `npx prisma validate --schema=database/prisma/schema.pris | Date                       | Member  | Validation Checklist              | Status                | Notes |
+| ---        | ---                                                       | ---                        | ---     | ---                               |
+| 2026-07-07 | M1 Abarado                                                | prepush:local / push-ready | Passed  | Validation passed locally.        |
+| 2026-07-08 | M1 Abarado                                                | prepush:local / push-ready | Passed  | Validation passed locally.        |
+| 2026-07-09 | M1 Abarado                                                | prepush:local / push-ready | Pending | Validation must pass before push. | ation passed locally. |
+| 2026-07-08 | M1 Abarado                                                | prepush:local / push-ready | Passed  | Validation passed locally.        |
 
 ## Validation Status
 
 | Date       | Member     | Validation Checklist       | Status | Notes                      |
 | ---------- | ---------- | -------------------------- | ------ | -------------------------- |
-| 2026-07-07 | M1 Abarado | prepush:local / push-ready | Passed | Validation passed locally. |
-| 2026-07-08 | M1 Abarado | prepush:local / push-ready | Passed | Validation passed locally. |
+| 2026-07-09 | M1 Abarado | prepush:local / push-ready | Passed | Validation passed locally. |

@@ -89,7 +89,7 @@ export const appRoutes: readonly AppRoute[] = [
   },
   {
     path: "/users",
-    label: "Users",
+    label: "User Management",
     description: "User management module",
     icon: UsersRound,
     allowedRoles: ["OWNER"]
