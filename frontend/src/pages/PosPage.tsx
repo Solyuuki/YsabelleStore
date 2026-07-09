@@ -1,5 +1,4 @@
 import {
-  CreditCard,
   LoaderCircle,
   Minus,
   PackageSearch,
@@ -80,7 +79,6 @@ export function PosPage() {
     );
 
     return {
-      discount: 0,
       itemCount: cartLines.reduce((sum, line) => sum + line.quantity, 0),
       subtotal,
       total: subtotal
@@ -732,19 +730,13 @@ export function PosPage() {
                         {currencyFormatter.format(cartSummary.subtotal)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Discount</span>
-                      <span className="font-medium text-slate-950">
-                        {currencyFormatter.format(cartSummary.discount)}
-                      </span>
-                    </div>
                     <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-semibold">
                       <span>Total</span>
                       <span>{currencyFormatter.format(cartSummary.total)}</span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Button
                       disabled={cartLines.length === 0 || isCheckingOut}
                       type="button"
@@ -752,16 +744,8 @@ export function PosPage() {
                     >
                       {isCheckingOut ? (
                         <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-                      ) : (
-                        <CreditCard className="h-4 w-4" aria-hidden="true" />
-                      )}
+                      ) : null}
                       Cash
-                    </Button>
-                    <Button disabled type="button" variant="secondary">
-                      Card
-                    </Button>
-                    <Button disabled type="button" variant="secondary">
-                      E-wallet
                     </Button>
                     <Button
                       disabled={cartLines.length === 0 || isCheckingOut}
