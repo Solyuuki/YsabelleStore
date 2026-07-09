@@ -1,6 +1,6 @@
 import { classifyChanges } from "./lib/change-classifier.mjs";
 import { collectChangedFiles, getBranch } from "./lib/git-utils.mjs";
-import { REQUIRED_SPRINT_FILES, requireMember } from "./lib/member-utils.mjs";
+import { getRequiredSprintFiles, requireMember, requireSprint } from "./lib/member-utils.mjs";
 import {
   cleanupAutomatedSections,
   ensureMarkdownFile,
@@ -13,12 +13,18 @@ import { readValidationStatus } from "./lib/validation-summary.mjs";
 
 const branch = getBranch();
 const member = requireMember(branch);
+const sprint = requireSprint(branch);
 const changes = collectChangedFiles();
 const classified = classifyChanges(changes);
 const validationStatus = getValidationStatus();
 const date = today();
 
-for (const filePath of REQUIRED_SPRINT_FILES) {
+console.log(`branch: ${branch}`);
+console.log(`member: ${member.key}`);
+console.log(`sprintVersion: ${sprint.sprintVersion}`);
+console.log(`sprintDir: ${sprint.sprintDir}`);
+
+for (const filePath of getRequiredSprintFiles(sprint.sprintDir)) {
   ensureMarkdownFile(filePath, sprintHeading(filePath));
 }
 
@@ -27,7 +33,7 @@ updateBacklog();
 updateDefinitionOfDone();
 updateReadme();
 
-console.log(`Updated Sprint 2 docs for ${member.key}.`);
+console.log(`Updated ${sprint.sprintSlug} docs for ${member.key}.`);
 
 function getValidationStatus() {
   const flag = process.argv.find((arg) => arg.startsWith("--validation="));
@@ -44,7 +50,7 @@ function getValidationStatus() {
 }
 
 function updateMemberFile() {
-  const filePath = `docs/sprints/sprint-2/members/${member.key}.md`;
+  const filePath = `${sprint.sprintDir}/members/${member.key}.md`;
   cleanupAutomatedSections(filePath);
   ensureSectionWithTable(filePath, "Current Sprint Activity", [
     "Date",
@@ -65,7 +71,7 @@ function updateMemberFile() {
 }
 
 function updateBacklog() {
-  const filePath = "docs/sprints/sprint-2/SPRINT-BACKLOG.md";
+  const filePath = `${sprint.sprintDir}/SPRINT-BACKLOG.md`;
   cleanupAutomatedSections(filePath);
   ensureSectionWithTable(filePath, "Sprint Activity Log", [
     "Date",
@@ -84,7 +90,7 @@ function updateBacklog() {
 }
 
 function updateDefinitionOfDone() {
-  const filePath = "docs/sprints/sprint-2/DEFINITION-OF-DONE.md";
+  const filePath = `${sprint.sprintDir}/DEFINITION-OF-DONE.md`;
   cleanupAutomatedSections(filePath);
   ensureSectionWithTable(filePath, "Validation Status", [
     "Date",
@@ -106,7 +112,7 @@ function updateDefinitionOfDone() {
 }
 
 function updateReadme() {
-  const filePath = "docs/sprints/sprint-2/README.md";
+  const filePath = `${sprint.sprintDir}/README.md`;
   cleanupAutomatedSections(filePath);
   ensureSectionWithTable(filePath, "Latest Sprint Activity", [
     "Date",

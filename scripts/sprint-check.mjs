@@ -2,20 +2,26 @@ import fs from "node:fs";
 
 import { classifyChanges } from "./lib/change-classifier.mjs";
 import { collectChangedFiles, getBranch } from "./lib/git-utils.mjs";
-import { REQUIRED_SPRINT_FILES, requireMember } from "./lib/member-utils.mjs";
+import { getRequiredSprintFiles, requireMember, requireSprint } from "./lib/member-utils.mjs";
 import { printTable } from "./lib/run-command.mjs";
 
 const branch = getBranch();
 const member = requireMember(branch);
+const sprint = requireSprint(branch);
 const classified = classifyChanges(collectChangedFiles());
 const rows = [];
-const memberFile = `docs/sprints/sprint-2/members/${member.key}.md`;
+const memberFile = `${sprint.sprintDir}/members/${member.key}.md`;
 
-for (const filePath of REQUIRED_SPRINT_FILES) {
+console.log(`branch: ${branch}`);
+console.log(`member: ${member.key}`);
+console.log(`sprintVersion: ${sprint.sprintVersion}`);
+console.log(`sprintDir: ${sprint.sprintDir}`);
+
+for (const filePath of getRequiredSprintFiles(sprint.sprintDir)) {
   addCheck(
     filePath,
     fs.existsSync(filePath) && fs.statSync(filePath).size > 0,
-    "Required Sprint 2 doc exists and is not empty."
+    "Required sprint doc exists and is not empty."
   );
 }
 
@@ -23,12 +29,12 @@ addCheck("Current member sprint file", fs.existsSync(memberFile), memberFile);
 addCheck("Current member sprint activity", includesBranch(memberFile), memberFile);
 addCheck(
   "DEFINITION-OF-DONE validation section",
-  includesText("docs/sprints/sprint-2/DEFINITION-OF-DONE.md", "Validation Status"),
+  includesText(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`, "Validation Status"),
   "Validation template section present."
 );
 addCheck(
   "SPRINT-BACKLOG activity section",
-  includesText("docs/sprints/sprint-2/SPRINT-BACKLOG.md", "Sprint Activity Log"),
+  includesText(`${sprint.sprintDir}/SPRINT-BACKLOG.md`, "Sprint Activity Log"),
   "Backlog activity template section present."
 );
 
@@ -47,7 +53,7 @@ addCheck(
 );
 addCheck(
   "Definition of Done has no automated progress section",
-  !hasAutomatedProgressSection("docs/sprints/sprint-2/DEFINITION-OF-DONE.md"),
+  !hasAutomatedProgressSection(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`),
   "Template table is used instead of marker blocks."
 );
 

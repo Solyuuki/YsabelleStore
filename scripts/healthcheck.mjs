@@ -2,10 +2,11 @@ import fs from "node:fs";
 
 import { getBranch, getStatusShort, getUpstream } from "./lib/git-utils.mjs";
 import {
+  getRequiredSprintFiles,
   inferMemberFromBranch,
   MEMBERS,
   REQUIRED_ARTIFACT_FILES,
-  REQUIRED_SPRINT_FILES,
+  requireSprint,
   artifactDir
 } from "./lib/member-utils.mjs";
 import { printTable, runCommand } from "./lib/run-command.mjs";
@@ -13,6 +14,7 @@ import { printTable, runCommand } from "./lib/run-command.mjs";
 const branch = getBranch();
 const upstream = getUpstream();
 const member = inferMemberFromBranch(branch);
+const sprint = requireSprint(branch);
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const requiredScripts = [
   "healthcheck",
@@ -50,6 +52,7 @@ addCheck(
   runCommand("npm", ["--version"]).stdout.trim()
 );
 addCheck("Root package.json", fs.existsSync("package.json"), "package.json");
+addCheck("Sprint folder", fs.existsSync(sprint.sprintDir), sprint.sprintDir);
 
 for (const script of requiredScripts) {
   addCheck(
@@ -93,8 +96,8 @@ for (const memberInfo of Object.values(MEMBERS)) {
   }
 }
 
-for (const filePath of REQUIRED_SPRINT_FILES) {
-  addCheck(filePath, fs.existsSync(filePath), "Required Sprint 2 file.");
+for (const filePath of getRequiredSprintFiles(sprint.sprintDir)) {
+  addCheck(filePath, fs.existsSync(filePath), `Required ${sprint.sprintSlug} file.`);
 }
 
 const prismaValidate = runCommand("npm", ["run", "prisma:validate"]);

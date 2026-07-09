@@ -73,6 +73,8 @@ data reliability. Shared contracts should be finalized early so each branch can 
 
 ## Latest Sprint Activity
 
-| Date       | Member     | Branch                             | Latest Activity                                                                     | Validation Status |
-| ---------- | ---------- | ---------------------------------- | ----------------------------------------------------------------------------------- | ----------------- |
-| 2026-07-08 | M1 Abarado | `m1/v0.2/feat/auth-fullstack-flow` | Sprint 3 planning documentation was created from the current Sprint 2 system state. | Pending           |
+| Date       | Member     | Branch                               | Latest Activity                                                                                                  | Validation Status |
+| ---------- | ---------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 2026-07-08 | M1 Abarado | `m1/v0.2/feat/auth-fullstack-flow`   | Sprint 3 planning documentation was created from the current Sprint 2 system state.                              | Pending           |
+| 2026-07-09 | M1 Abarado | `m1/v0.3/feat/pos-sales-integration` | Auth UI and session UX were updated while preserving trusted-device and route-guard behavior.                    | Passed            |
+| 2026-07-10 | M1 Abarado | m1/v0.3/feat/pos-sales-integration   | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |
