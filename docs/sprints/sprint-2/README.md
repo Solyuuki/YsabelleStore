@@ -115,6 +115,6 @@ Do not bump to `v0.3.0` at Sprint 3 planning start. Only bump to `v0.3.0` when S
 
 ## Latest Sprint Activity
 
-| Date       | Member     | Branch                             | Latest Activity                                                                                                  | Validation Status |
-| ---------- | ---------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
-| 2026-07-09 | M1 Abarado | m1/v0.3/feat/pos-sales-integration | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |
+| Date       | Member     | Branch                             | Latest Activity                                                                               | Validation Status |
+| ---------- | ---------- | ---------------------------------- | --------------------------------------------------------------------------------------------- | ----------------- |
+| 2026-07-09 | M1 Abarado | m1/v0.3/feat/pos-sales-integration | Auth UI and session UX were updated while preserving trusted-device and route-guard behavior. | Passed            |

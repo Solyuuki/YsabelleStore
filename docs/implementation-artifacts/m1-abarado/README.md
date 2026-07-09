@@ -73,13 +73,13 @@ This artifact set is reconstructed from repository evidence available on `sprint
 
 ## Current Work Snapshot
 
-| Item                 | Value                                                                                                                                                           |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validation status    | Passed                                                                                                                                                          |
-| Last update          | 2026-07-09                                                                                                                                                      |
-| Current branch       | m1/v0.3/feat/pos-sales-integration                                                                                                                              |
-| Current work areas   | Backend<br>Database<br>Docs<br>Electron<br>Frontend<br>Scripts / CI                                                                                             |
-| Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
+| Item                 | Value                                                                                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation status    | Passed                                                                                                                                                         |
+| Last update          | 2026-07-09                                                                                                                                                     |
+| Current branch       | m1/v0.3/feat/pos-sales-integration                                                                                                                             |
+| Current work areas   | Backend<br>Database<br>Docs<br>Frontend                                                                                                                        |
+| Current work summary | Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts. |
 
 ## Current Work Snapshot
 

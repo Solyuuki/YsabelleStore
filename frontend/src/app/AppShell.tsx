@@ -1,4 +1,4 @@
-import { Boxes, Package, ReceiptText } from "lucide-react";
+import { Boxes, Package } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
@@ -10,6 +10,7 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { ModulePage } from "@/pages/ModulePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
+import { SalesPage } from "@/pages/SalesPage";
 import { ProtectedPage } from "@/pages/ProtectedPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
@@ -263,19 +264,7 @@ function renderRoute(
         />
       );
     case "/sales":
-      return (
-        <ModulePage
-          description={route.description}
-          focusItems={[
-            "Receipt history table area",
-            "Date and cashier filters",
-            "Sale detail panel reserved",
-            "Export action reserved"
-          ]}
-          icon={ReceiptText}
-          title={route.label}
-        />
-      );
+      return <SalesPage />;
     case "/users":
       return <UserManagementPage error={error} onRegister={register} user={user} />;
     default:

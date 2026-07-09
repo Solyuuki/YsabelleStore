@@ -61,6 +61,55 @@ const users = [
   }
 ];
 
+const categories = [
+  {
+    name: "Pantry",
+    slug: "pantry",
+    description: "Shelf-stable grocery items"
+  },
+  {
+    name: "Beverages",
+    slug: "beverages",
+    description: "Drinks and hydration items"
+  }
+];
+
+const products = [
+  {
+    barcode: "4800041123456",
+    batchCode: "PANTRY-UBE-001",
+    categorySlug: "pantry",
+    name: "Ube Condensed Milk",
+    quantityRemaining: 18,
+    reorderLevel: 6,
+    sku: "PAN-UBE-001",
+    sellingPrice: "89.50",
+    unitCost: "63.00"
+  },
+  {
+    barcode: "4800041123463",
+    batchCode: "BEV-WATER-001",
+    categorySlug: "beverages",
+    name: "Mineral Water 500mL",
+    quantityRemaining: 36,
+    reorderLevel: 12,
+    sku: "BEV-WAT-500",
+    sellingPrice: "18.00",
+    unitCost: "10.50"
+  },
+  {
+    barcode: "4800041123470",
+    batchCode: "PAN-BREAD-001",
+    categorySlug: "pantry",
+    name: "Classic Bread Loaf",
+    quantityRemaining: 0,
+    reorderLevel: 10,
+    sku: "PAN-BRD-001",
+    sellingPrice: "45.00",
+    unitCost: "29.00"
+  }
+];
+
 async function main() {
   for (const user of users) {
     await prisma.user.upsert({
@@ -83,7 +132,95 @@ async function main() {
     });
   }
 
+  const categoryRecords = new Map();
+
+  for (const category of categories) {
+    const record = await prisma.category.upsert({
+      where: {
+        slug: category.slug
+      },
+      create: {
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        isActive: true
+      },
+      update: {
+        name: category.name,
+        description: category.description,
+        isActive: true
+      }
+    });
+
+    categoryRecords.set(category.slug, record);
+  }
+
+  for (const product of products) {
+    const category = categoryRecords.get(product.categorySlug);
+
+    if (!category) {
+      continue;
+    }
+
+    const record = await prisma.product.upsert({
+      where: {
+        sku: product.sku
+      },
+      create: {
+        categoryId: category.id,
+        sku: product.sku,
+        barcode: product.barcode,
+        name: product.name,
+        description: null,
+        unit: "PIECE",
+        costPrice: product.unitCost,
+        sellingPrice: product.sellingPrice,
+        reorderLevel: product.reorderLevel,
+        targetStockLevel: product.reorderLevel * 2,
+        isActive: true
+      },
+      update: {
+        categoryId: category.id,
+        barcode: product.barcode,
+        name: product.name,
+        description: null,
+        unit: "PIECE",
+        costPrice: product.unitCost,
+        sellingPrice: product.sellingPrice,
+        reorderLevel: product.reorderLevel,
+        targetStockLevel: product.reorderLevel * 2,
+        isActive: true
+      }
+    });
+
+    await prisma.inventoryBatch.upsert({
+      where: {
+        productId_batchCode: {
+          productId: record.id,
+          batchCode: product.batchCode
+        }
+      },
+      create: {
+        productId: record.id,
+        batchCode: product.batchCode,
+        quantityReceived: product.quantityRemaining,
+        quantityRemaining: product.quantityRemaining,
+        unitCost: product.unitCost,
+        expiresAt: null,
+        status: product.quantityRemaining > 0 ? "AVAILABLE" : "DEPLETED"
+      },
+      update: {
+        quantityReceived: product.quantityRemaining,
+        quantityRemaining: product.quantityRemaining,
+        unitCost: product.unitCost,
+        expiresAt: null,
+        status: product.quantityRemaining > 0 ? "AVAILABLE" : "DEPLETED"
+      }
+    });
+  }
+
   console.info("Development auth seed users are ready.");
+  console.info("Development POS catalog fixtures are ready.");
 }
 
 main()

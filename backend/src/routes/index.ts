@@ -2,6 +2,9 @@ import { Router } from "express";
 
 import { authRouter } from "./auth.routes.js";
 import { healthRouter } from "./health.routes.js";
+import { posRouter } from "./pos.routes.js";
+import { productsRouter } from "./products.routes.js";
+import { salesRouter } from "./sales.routes.js";
 import { searchRouter } from "./search.routes.js";
 import type { PlannedRouteGroup } from "../types/routeRegistry.js";
 
@@ -20,4 +23,7 @@ export const router = Router();
 
 router.use("/auth", authRouter);
 router.use("/health", healthRouter);
+router.use("/products", productsRouter);
+router.use("/pos", posRouter);
+router.use("/sales", salesRouter);
 router.use("/search", searchRouter);
