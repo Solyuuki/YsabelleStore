@@ -2,7 +2,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 
 import { Prisma, type ProductStatus, type ProductUnit } from "@prisma/client";
-import * as XLSX from "xlsx";
+import { readSheet } from "read-excel-file/node";
 
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
@@ -34,7 +34,7 @@ const REQUIRED_IMPORT_HEADERS = [
   "initialStock"
 ] as const;
 
-const SUPPORTED_EXTENSIONS = new Set([".csv", ".xlsx", ".xls"]);
+const SUPPORTED_EXTENSIONS = new Set([".csv", ".xlsx"]);
 const SUPPORTED_MIME_TYPES = new Set([
   "text/csv",
   "application/csv",
@@ -98,7 +98,7 @@ type PreviewRow = {
 
 export type ProductImportPreview = {
   fileName: string;
-  fileType: "csv" | "xlsx" | "xls";
+  fileType: "csv" | "xlsx";
   totalRows: number;
   validRows: number;
   invalidRows: number;
@@ -112,7 +112,7 @@ export type ProductImportPreview = {
 export type ProductImportSummary = {
   importId: string;
   fileName: string;
-  fileType: "csv" | "xlsx" | "xls";
+  fileType: "csv" | "xlsx";
   totalRows: number;
   importedRows: number;
   failedRows: number;
@@ -197,98 +197,203 @@ function isFormulaInjectionValue(value: string) {
   return /^[=+@]/.test(value.trim());
 }
 
-function normalizeSheetCellValue(cell: XLSX.CellObject | undefined): SpreadsheetCell {
-  if (!cell) {
+function normalizeParsedCellValue(value: unknown): SpreadsheetCell {
+  if (value === null || value === undefined) {
     return {
       text: "",
       hasFormula: false
     };
   }
 
-  const rawValue = cell.v;
-  let text = "";
-
-  if (typeof rawValue === "string") {
-    text = rawValue;
-  } else if (typeof rawValue === "number") {
-    text = Number.isInteger(rawValue)
-      ? rawValue.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 0 })
-      : rawValue.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 20 });
-  } else if (rawValue instanceof Date) {
-    text = rawValue.toISOString();
-  } else if (rawValue !== null && rawValue !== undefined) {
-    text = String(rawValue);
+  if (value instanceof Date) {
+    return {
+      text: value.toISOString(),
+      hasFormula: false
+    };
   }
 
-  if (cell.w !== undefined && cell.w !== null && String(cell.w).trim().length > 0) {
-    text = String(cell.w);
+  if (typeof value === "string") {
+    return {
+      text: value,
+      hasFormula: false
+    };
+  }
+
+  if (typeof value === "number") {
+    return {
+      text: Number.isInteger(value)
+        ? value.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 0 })
+        : value.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 20 }),
+      hasFormula: false
+    };
+  }
+
+  if (typeof value === "boolean") {
+    return {
+      text: value ? "TRUE" : "FALSE",
+      hasFormula: false
+    };
   }
 
   return {
-    text: text.trim(),
-    hasFormula: typeof cell.f === "string" && cell.f.trim().length > 0
+    text: String(value),
+    hasFormula: false
   };
 }
 
-function readSpreadsheetTable(file: UploadFile): SpreadsheetTable {
-  const workbook = XLSX.read(file.buffer, {
-    cellFormula: true,
-    cellHTML: false,
-    cellStyles: false,
-    type: "buffer"
-  });
+function parseCsvRows(text: string) {
+  const rows: string[][] = [];
+  const normalizedText = text.replace(/^\uFEFF/, "");
+  let currentRow: string[] = [];
+  let currentCell = "";
+  let inQuotes = false;
 
-  if (workbook.SheetNames.length === 0) {
+  for (let index = 0; index < normalizedText.length; index += 1) {
+    const char = normalizedText[index];
+    const nextChar = normalizedText[index + 1];
+
+    if (inQuotes) {
+      if (char === '"') {
+        if (nextChar === '"') {
+          currentCell += '"';
+          index += 1;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        currentCell += char;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      if (currentCell.length === 0) {
+        inQuotes = true;
+      } else {
+        currentCell += char;
+      }
+      continue;
+    }
+
+    if (char === ",") {
+      currentRow.push(currentCell);
+      currentCell = "";
+      continue;
+    }
+
+    if (char === "\r") {
+      currentRow.push(currentCell);
+      rows.push(currentRow);
+      currentRow = [];
+      currentCell = "";
+
+      if (nextChar === "\n") {
+        index += 1;
+      }
+
+      continue;
+    }
+
+    if (char === "\n") {
+      currentRow.push(currentCell);
+      rows.push(currentRow);
+      currentRow = [];
+      currentCell = "";
+      continue;
+    }
+
+    currentCell += char;
+  }
+
+  if (inQuotes) {
+    throw new HttpError(400, "The uploaded CSV file contains an unterminated quoted field.", {
+      code: "INVALID_IMPORT_CSV"
+    });
+  }
+
+  currentRow.push(currentCell);
+  rows.push(currentRow);
+
+  return rows;
+}
+
+function buildSpreadsheetTableFromRows(rawRows: Array<Array<unknown>>): SpreadsheetTable {
+  if (rawRows.length === 0) {
     throw new HttpError(400, "The uploaded file does not contain any worksheets.", {
       code: "EMPTY_IMPORT_WORKBOOK"
     });
   }
 
-  const firstSheetName = workbook.SheetNames[0];
+  const columnCount = rawRows.reduce((maximum, row) => Math.max(maximum, row.length), 0);
 
-  if (!firstSheetName) {
-    throw new HttpError(400, "The uploaded file does not contain any worksheets.", {
-      code: "EMPTY_IMPORT_WORKBOOK"
-    });
-  }
-
-  const worksheet = workbook.Sheets[firstSheetName];
-
-  if (!worksheet || !worksheet["!ref"]) {
+  if (columnCount === 0) {
     throw new HttpError(400, "The uploaded file does not contain any rows.", {
       code: "EMPTY_IMPORT_WORKSHEET"
     });
   }
 
-  const range = XLSX.utils.decode_range(worksheet["!ref"]);
-  const headers: string[] = [];
-  const rows: SpreadsheetRow[] = [];
+  const headers = Array.from(
+    { length: columnCount },
+    (_value, columnIndex) => normalizeParsedCellValue(rawRows[0]?.[columnIndex]).text
+  );
 
-  for (let column = range.s.c; column <= range.e.c; column += 1) {
-    const address = XLSX.utils.encode_cell({ r: range.s.r, c: column });
-    headers.push(normalizeSheetCellValue(worksheet[address] as XLSX.CellObject | undefined).text);
-  }
-
-  for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex += 1) {
-    const cells: SpreadsheetCell[] = [];
-
-    for (let column = range.s.c; column <= range.e.c; column += 1) {
-      const address = XLSX.utils.encode_cell({ r: rowIndex, c: column });
-      cells.push(normalizeSheetCellValue(worksheet[address] as XLSX.CellObject | undefined));
-    }
-
-    rows.push({
-      rowNumber: rowIndex + 1,
-      cells,
-      isBlank: cells.every((cell) => isBlank(cell.text))
+  if (headers.every((header) => isBlank(header))) {
+    throw new HttpError(400, "The uploaded file does not contain any rows.", {
+      code: "EMPTY_IMPORT_WORKSHEET"
     });
   }
+
+  const rows = rawRows.slice(1).map((rawRow, index) => {
+    const cells = Array.from({ length: columnCount }, (_value, columnIndex) =>
+      normalizeParsedCellValue(rawRow?.[columnIndex])
+    );
+
+    return {
+      rowNumber: index + 2,
+      cells,
+      isBlank: cells.every((cell) => isBlank(cell.text))
+    };
+  });
 
   return {
     headers,
     rows,
     sourceRows: rows.filter((row) => !row.isBlank).length
   };
+}
+
+async function readExcelTable(file: UploadFile): Promise<SpreadsheetTable> {
+  let rows: Array<Array<unknown>>;
+
+  try {
+    rows = await readSheet(file.buffer, {
+      trim: false
+    });
+  } catch {
+    throw new HttpError(400, "The uploaded Excel file could not be read.", {
+      code: "INVALID_IMPORT_WORKBOOK"
+    });
+  }
+
+  return buildSpreadsheetTableFromRows(rows);
+}
+
+function readCsvTable(file: UploadFile): SpreadsheetTable {
+  const text = file.buffer.toString("utf8");
+  const rows = parseCsvRows(text);
+
+  return buildSpreadsheetTableFromRows(rows);
+}
+
+async function readSpreadsheetTable(
+  file: UploadFile,
+  fileType: "csv" | "xlsx"
+): Promise<SpreadsheetTable> {
+  if (fileType === "csv") {
+    return readCsvTable(file);
+  }
+
+  return readExcelTable(file);
 }
 
 function sanitizeCsvValue(value: string) {
@@ -299,7 +404,7 @@ function sanitizeCsvValue(value: string) {
   return value;
 }
 
-function detectFileType(file: UploadFile): "csv" | "xlsx" | "xls" {
+function detectFileType(file: UploadFile): "csv" | "xlsx" {
   const extension = path.extname(file.originalname).toLowerCase();
 
   if (!SUPPORTED_EXTENSIONS.has(extension)) {
@@ -320,7 +425,7 @@ function detectFileType(file: UploadFile): "csv" | "xlsx" | "xls" {
     });
   }
 
-  return extension.slice(1) as "csv" | "xlsx" | "xls";
+  return extension.slice(1) as "csv" | "xlsx";
 }
 
 function mapHeaders(headers: string[]) {
@@ -992,7 +1097,7 @@ async function validateSpreadsheetImport(file: UploadFile): Promise<ProductImpor
     });
   }
 
-  const table = readSpreadsheetTable(file);
+  const table = await readSpreadsheetTable(file, fileType);
   const {
     columnIndexByCanonical,
     detectedColumns,

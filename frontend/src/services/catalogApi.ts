@@ -116,7 +116,7 @@ export type ProductImportRow = {
 
 export type ProductImportPreview = {
   fileName: string;
-  fileType: "csv" | "xlsx" | "xls";
+  fileType: "csv" | "xlsx";
   totalRows: number;
   validRows: number;
   invalidRows: number;
@@ -130,7 +130,7 @@ export type ProductImportPreview = {
 export type ProductImportSummary = {
   importId: string;
   fileName: string;
-  fileType: "csv" | "xlsx" | "xls";
+  fileType: "csv" | "xlsx";
   totalRows: number;
   importedRows: number;
   failedRows: number;

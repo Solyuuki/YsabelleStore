@@ -357,8 +357,8 @@ export function ProductsPage() {
               <div className="rounded-xl border border-dashed border-emerald-200 bg-emerald-50/70 p-4">
                 <p className="text-sm font-semibold text-emerald-900">Accepted files</p>
                 <p className="mt-1 text-sm leading-6 text-emerald-800">
-                  `.csv`, `.xlsx`, and `.xls` up to {MAX_IMPORT_FILE_SIZE_MB} MB. The import is
-                  previewed first, then confirmed by the owner.
+                  `.csv` and `.xlsx` up to {MAX_IMPORT_FILE_SIZE_MB} MB. The import is previewed
+                  first, then confirmed by the owner.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button
@@ -388,7 +388,7 @@ export function ProductsPage() {
                     Cancel
                   </Button>
                   <input
-                    accept=".csv,.xlsx,.xls"
+                    accept=".csv,.xlsx"
                     className="hidden"
                     onChange={(event) => void handleFileSelection(event.target.files?.[0] ?? null)}
                     ref={fileInputRef}

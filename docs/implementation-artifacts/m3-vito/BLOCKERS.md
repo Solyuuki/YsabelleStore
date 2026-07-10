@@ -12,9 +12,10 @@
 
 ## Active Blockers
 
-| Blocker ID | Owner   | Current Status | Required Action                                                                          |
-| ---------- | ------- | -------------- | ---------------------------------------------------------------------------------------- |
-| BLK-M3-005 | m3 / m2 | Open           | Apply migration to approved local MySQL or record migration status/application evidence. |
+| Blocker ID | Owner   | Current Status                                                  | Required Action                                                                          |
+| ---------- | ------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| BLK-M3-005 | m3 / m2 | Open                                                            | Apply migration to approved local MySQL or record migration status/application evidence. |
+| None       | None    | No active blockers. Manual QA remains recommended before merge. | Complete manual QA for changed user-facing flows.                                        |
 
 ## Watch Items
 

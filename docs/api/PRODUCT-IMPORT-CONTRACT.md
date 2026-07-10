@@ -15,7 +15,7 @@ The contract is owner-only and is used to create products, inventory rows, and i
 
 ## File Rules
 
-- Supported file types: `.csv`, `.xlsx`, `.xls`
+- Supported file types: `.csv`, `.xlsx`
 - Maximum upload size: `5MB`
 - Maximum data rows: `1,000`
 - The upload field name must be `file`
