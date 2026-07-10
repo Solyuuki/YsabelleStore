@@ -14,10 +14,10 @@
 
 ## In Progress
 
-| Task ID              | Scope                                  | Status             | Evidence                                                                               | Next Action                                           |
-| -------------------- | -------------------------------------- | ------------------ | -------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| YSB-M3-MIG-STD-001   | Numbered migration naming standard     | Done               | Sprint 1 migration folder renamed to `0001_sprint_1_database_foundation`; docs updated | Validate Prisma and backend commands.                 |
-| YSB-M3-VITO-20260710 | Polish auth UI and session safety flow | Manual QA Required | m3/v0.3/feat/products-inventory-foundation                                             | Perform manual QA on the changed auth/device/UI flow. |
+| Task ID              | Scope                                                          | Status             | Evidence                                                                               | Next Action                                           |
+| -------------------- | -------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| YSB-M3-MIG-STD-001   | Numbered migration naming standard                             | Done               | Sprint 1 migration folder renamed to `0001_sprint_1_database_foundation`; docs updated | Validate Prisma and backend commands.                 |
+| YSB-M3-VITO-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3                                                                   | Perform manual QA on the changed auth/device/UI flow. |
 
 ## Pending
 

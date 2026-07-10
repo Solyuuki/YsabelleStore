@@ -44,4 +44,4 @@ A task is complete only when implementation evidence and the matching artifact u
 | Task ID                 | Scope                                                          | Status             | Evidence                           | Next Action                                           |
 | ----------------------- | -------------------------------------------------------------- | ------------------ | ---------------------------------- | ----------------------------------------------------- |
 | YSB-M1-ABARADO-20260709 | Polish auth UI and session safety flow                         | Manual QA Required | m1/v0.3/feat/pos-sales-integration | Perform manual QA on the changed auth/device/UI flow. |
-| YSB-M1-ABARADO-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | m1/v0.3/feat/pos-sales-integration | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |

@@ -52,10 +52,10 @@ M3 database work is not complete until schema, migration artifacts, seed notes, 
 
 ## Current Work Snapshot
 
-| Item                 | Value                                                                                                                                                          |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Last update          | 2026-07-10                                                                                                                                                     |
-| Current branch       | m3/v0.3/feat/products-inventory-foundation                                                                                                                     |
-| Current work areas   | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI                                                                                                        |
-| Current work summary | Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts. |
-| Validation status    | Passed                                                                                                                                                         |
+| Item                 | Value                                                                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Last update          | 2026-07-10                                                                                                                                                      |
+| Current branch       | sprint/v0.3/sprint-3                                                                                                                                            |
+| Current work areas   | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI                                                                                                         |
+| Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
+| Validation status    | Passed                                                                                                                                                          |
