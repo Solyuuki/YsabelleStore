@@ -23,8 +23,16 @@
 ## Acceptance Criteria
 
 | Criterion                           | Evidence                                                  |
-| ----------------------------------- | --------------------------------------------------------- |
+| ----------------------------------- | --------------------------------------------------------- | ------------------------------------ | --------------------- | -------- | --------------- | -------- | --- | --- | --- |
 | Backend starts locally              | Startup command and result recorded                       |
 | Prisma validates schema             | Prisma validation command passes                          |
 | Forecasting has a clear foundation  | SARIMA service structure and data contract are documented |
-| Reports can consume structured data | Forecast and sales summary shape is documented            |
+| Reports can consume structured data | Forecast and sales summary shape is documented            | Date                                 | Next Recommended Task | QA Focus | Affected Module | Priority |
+| ---                                 | ---                                                       | ---                                  | ---                   | ---      |
+| 2026-07-09                          | Run push-ready validation and resolve any failures.       | Documentation and validation review. | None detected         | Normal   | ---             | ---      | --- | --- | --- |
+
+## Planning Updates
+
+| Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module                                                                             | Priority |
+| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------- |
+| 2026-07-10 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Scripts / CI<br>Other<br>Backend<br>Docs<br>Database<br>Electron<br>Forecasting<br>Frontend | High     |

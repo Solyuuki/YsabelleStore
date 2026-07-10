@@ -27,7 +27,12 @@
     "prepare": "husky",
     "prisma:validate": "prisma validate --schema database/prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema database/prisma/schema.prisma",
-    "db:seed": "node database/seed/development.mjs"
+    "db:seed": "node database/seed/development.mjs",
+    "forecast:validate-data": "tsx backend/src/scripts/forecastValidateData.ts",
+    "forecast:import": "npm run forecast:validate-data",
+    "forecast:generate": "tsx backend/src/scripts/forecastGenerate.ts",
+    "forecast:smoke": "tsx backend/src/scripts/forecastSmoke.ts",
+    "forecast:test": "python -m pytest forecasting-service/tests"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"

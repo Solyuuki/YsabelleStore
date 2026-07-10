@@ -11,11 +11,11 @@
 | YSB-M2-DB-BOUNDARY-001 | 2026-06-29 | Prisma client access boundary in backend   | `backend/src/database/prismaClient.ts`, `backend/src/controllers/healthController.ts`                                                        | Current sprint branch `dd53be7` from M3 database merge | Backend build and Prisma validation passed on 2026-06-29.     |
 | YSB-M2-DOC-002         | 2026-06-29 | M2 artifact reconstruction                 | `docs/implementation-artifacts/m2-ramos/**`                                                                                                  | Current documentation-only work                        | Final validation pending after docs update.                   |
 
-## In Progress
+## | Task ID | Scope | Status | Evidence | Next Action |
 
-| Task ID          | Scope                                          | Status      | Evidence                                                                                     | Next Action                     |
-| ---------------- | ---------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------- | ------------------------------- |
+| --- | --- | --- | --- | --- |
 | YSB-M2-TRACE-001 | Align M2 artifacts with actual branch evidence | In progress | This reconstruction records shared-history backend work and lack of unique M2 branch commits | Complete validation and review. |
+| YSB-M2-RAMOS-20260709 | Maintain current implementation and documentation evidence | In Progress | m2/v0.3/feat/sarima-forecast-reports | Run push-ready validation and resolve any failures. |ion and review. |
 
 ## Pending
 
@@ -36,3 +36,9 @@
 ## Completion Rule
 
 M2 backend tasks require code, API contract documentation, validation output, and implementation artifacts before they can be marked complete.
+
+## In Progress
+
+| Task ID               | Scope                                                          | Status             | Evidence                             | Next Action                                           |
+| --------------------- | -------------------------------------------------------------- | ------------------ | ------------------------------------ | ----------------------------------------------------- |
+| YSB-M2-RAMOS-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | m2/v0.3/feat/sarima-forecast-reports | Perform manual QA on the changed auth/device/UI flow. |

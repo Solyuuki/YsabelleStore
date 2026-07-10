@@ -28,3 +28,47 @@
 | Import workflow              | Valid/invalid CSV and Excel file tests with non-corrupting error reports                     |
 | Prisma-backed services       | Prisma validation, backend build, service tests, and migration status against local database |
 | Authentication               | Positive/negative auth tests, safe error responses, and security audit                       |
+
+## H| Date | Command | Result | Notes |
+
+| --- | --- | --- | --- |
+| 2026-07-09 | `npm run format` | Pending | Run validation before push and record the result. |
+| 2026-07-09 | `npm run format:check` | Pending | Run validation before push and record the result. |push and record the result. |
+
+## H| Date | Command | Result | Notes |
+
+| --- | --- | --- | --- |
+| 2026-07-09 | `npm run lint` | Pending | Run validation before push and record the result. |
+| 2026-07-09 | `npm run typecheck --workspace frontend` | Pending | Run validation before push and record the result. |push and record the result. |
+
+## H| Date | Command | Result | Notes |
+
+| --- | --- | --- | --- |
+| 2026-07-09 | `npm run typecheck --workspace backend` | Pending | Run validation before push and record the result. |
+| 2026-07-09 | `npm run typecheck --workspace electron` | Pending | Run validation before push and record the result. |push and record the result. |
+
+## H| Date | Command | Result | Notes |
+
+| --- | --- | --- | --- |
+| 2026-07-09 | `npm run build` | Pending | Run validation before push and record the result. |
+| 2026-07-09 | `npm audit --audit-level=high` | Pending | Run validation before push and record the result. |push and record the result. |
+
+## Manual Review Evidence
+
+| Date       | Area                                                                   | Result                        | Notes                                                                                                                                                               |
+| ---------- | ---------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-09 | Changed files                                                          | Not required by changed files | No changed user-facing flow was detected by the artifact update.                                                                                                    |
+| 2026-07-10 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+
+## Historical Validation Detail
+
+| Date       | Command                                  | Result | Notes                                               |
+| ---------- | ---------------------------------------- | ------ | --------------------------------------------------- |
+| 2026-07-10 | `npm run format`                         | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run format:check`                   | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run lint`                           | Passed | Passed with existing Node module-type warning only. |
+| 2026-07-10 | `npm run typecheck --workspace frontend` | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run typecheck --workspace backend`  | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run build`                          | Passed | Build completed successfully.                       |
+| 2026-07-10 | `npm audit --audit-level=high`           | Passed | Completed successfully.                             |

@@ -15,7 +15,12 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3001),
   CORS_ORIGIN: z.string().url().default("http://localhost:5173"),
   DATABASE_URL: z.string().url().optional(),
-  JWT_SECRET: z.string().min(1).optional()
+  JWT_SECRET: z.string().min(1).optional(),
+  PYTHON_EXECUTABLE: z.string().min(1).default("python"),
+  FORECAST_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
+  FORECAST_MAX_CONCURRENCY: z.coerce.number().int().positive().default(2),
+  FORECAST_DEFAULT_HORIZON: z.coerce.number().int().positive().default(12),
+  FORECAST_SEASONAL_PERIOD: z.coerce.number().int().positive().default(12)
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

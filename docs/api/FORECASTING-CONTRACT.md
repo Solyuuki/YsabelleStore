@@ -2,70 +2,100 @@
 
 ## Purpose
 
-This document defines the communication contract between the Express API and the forecasting service.
+The Forecast API exposes owner-only access to validated historical sales, generated 2026 product forecasts, and report
+summaries. The backend owns Excel parsing, validation, authorization, process orchestration, response shaping, and cache
+management. The Python service owns SARIMA fitting, deterministic fallback generation, and model diagnostics.
 
-## Scope
+## Source Data
 
-- Request payload
-- Response payload
-- Forecast metadata
-- Forecast horizon
-- Confidence interval
-- Error handling
+Default development inputs:
 
-## Communication Flow
+- `data/forecasting/historical-sales-2024.xlsx`
+- `data/forecasting/historical-sales-2025.xlsx`
 
-```text
-Express API
-  -> Forecast Service
-  -> Forecast response
-  -> Express response
+Required workbook columns:
+
+`Product ID`, `Category`, `Product Name`, `Product Price`, `Jan` through `Dec`, `Total Quantity Sold`, `Annual Sales`.
+
+The forecast target is monthly quantity sold. Annual sales, product price, and total annual quantity are not forecast
+observations.
+
+## Normalized Historical Point
+
+```ts
+type HistoricalSalesPoint = {
+  productId: string;
+  productName: string;
+  category: string;
+  productPrice: number;
+  period: string;
+  quantitySold: number;
+};
 ```
 
-## Future Request Payload
+`period` is always `YYYY-MM`, with accepted historical points covering `2024-01` through `2025-12`.
 
-| Field             | Purpose                                                 |
-| ----------------- | ------------------------------------------------------- |
-| `productId`       | Identifies the product being forecasted                 |
-| `salesHistory`    | Historical sales values used by the forecasting service |
-| `dateRange`       | Start and end dates for the request                     |
-| `forecastHorizon` | Number of future periods requested                      |
+## Forecast Point
 
-## Future Response Payload
+```ts
+type ForecastPoint = {
+  period: string;
+  predictedQuantity: number;
+  recommendedQuantity: number;
+  lowerConfidence: number | null;
+  upperConfidence: number | null;
+  sameMonthLastYear: number | null;
+  differenceVersus2025: number | null;
+  percentageChangeVersus2025: number | null;
+};
+```
 
-| Field                | Purpose                                                  |
-| -------------------- | -------------------------------------------------------- |
-| `predictedDemand`    | Forecasted demand output                                 |
-| `confidenceInterval` | Forecast uncertainty bounds                              |
-| `forecastHorizon`    | Requested or approved time span                          |
-| `metadata`           | Supporting context such as source and generation details |
+Forecast periods cover `2026-01` through `2026-12`. Recommended quantity is non-negative and rounded up.
 
-## Metadata Expectations
+## Model Labels
 
-| Field         | Purpose                         |
-| ------------- | ------------------------------- |
-| `generatedAt` | Timestamp for forecast creation |
-| `source`      | Forecast service identifier     |
-| `modelName`   | Model label or version          |
-| `requestId`   | Request tracking reference      |
+```ts
+type ForecastModel = "SARIMA" | "SEASONAL_NAIVE" | "MOVING_AVERAGE";
+```
 
-## Error Contract
+Fallback output must use `SEASONAL_NAIVE` or `MOVING_AVERAGE`; it must not be labeled as `SARIMA`.
 
-| Error Type                   | Expected Handling                                      |
-| ---------------------------- | ------------------------------------------------------ |
-| Invalid request              | Return API validation error before calling the service |
-| Forecast service unavailable | Return `503` with a forecast service error             |
-| Forecast generation failure  | Return structured failure data with a safe message     |
+## API Endpoints
 
-## Future Implementation Notes
+| Method | Route                                | Authorization | Query/body              | Purpose                            |
+| ------ | ------------------------------------ | ------------- | ----------------------- | ---------------------------------- |
+| GET    | `/api/forecasts/validation`          | OWNER         | none                    | Validate source workbooks          |
+| POST   | `/api/forecasts/generate`            | OWNER         | `{ force?: boolean }`   | Generate or refresh forecast cache |
+| GET    | `/api/forecasts/products`            | OWNER         | search/filter/sort/page | Paginated product summaries        |
+| GET    | `/api/forecasts/products/:productId` | OWNER         | path product ID         | Product detail, history, forecast  |
+| GET    | `/api/forecasts/summary`             | OWNER         | none                    | Reports summary                    |
+| GET    | `/api/forecasts/generation-summary`  | OWNER         | none                    | Batch diagnostics                  |
 
-- Express should treat forecast communication as a bounded service contract.
-- The forecasting service should not reach back into Express state.
-- Response metadata should help trace and validate forecast runs.
+## Product List Query
 
-## Validation Checklist
+Supported query fields:
 
-- [x] Request payload is documented
-- [x] Response payload is documented
-- [x] Metadata expectations are documented
-- [x] Error handling is documented
+- `search`
+- `category`
+- `model`
+- `status`
+- `sortBy`
+- `sortDirection`
+- `page`
+- `pageSize`
+
+`pageSize` is capped at 50. Sort fields are whitelisted by Zod validation.
+
+## Security
+
+- Forecast endpoints require a valid JWT and owner role.
+- Clients cannot submit arbitrary workbook paths.
+- Python execution uses `spawn` with controlled arguments and JSON over stdin/stdout.
+- Raw Python stack traces are not returned to clients.
+- The vulnerable `xlsx` package is not used.
+
+## Limited-Data Notes
+
+Only 24 monthly observations and two seasonal cycles are available. SARIMA diagnostics are provided as a Sprint 3
+foundation, not a guarantee of operational purchasing accuracy. Forecasts do not directly model promotions, price
+changes, supplier disruptions, stockouts, lost demand, or economic shocks.
