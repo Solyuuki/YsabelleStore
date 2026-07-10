@@ -21,16 +21,16 @@ POS, Sales, and SARIMA forecasting.
 
 ## Task Table
 
-| Task ID   | Task                                                   | Type         | Priority | Dependencies                      | Status  |
-| --------- | ------------------------------------------------------ | ------------ | -------- | --------------------------------- | ------- |
-| S3-M3-001 | Implement product data model and API foundation        | Data / API   | P0       | Existing Prisma/backend structure | Planned |
-| S3-M3-002 | Implement product CRUD foundation                      | Feature      | P0       | S3-M3-001                         | Planned |
-| S3-M3-003 | Implement inventory data model and API foundation      | Data / API   | P0       | Existing Prisma/backend structure | Planned |
-| S3-M3-004 | Implement stock movement records                       | Feature      | P0       | S3-M3-003                         | Planned |
-| S3-M3-005 | Add sample products and inventory data                 | Data / QA    | P0       | S3-M3-001, S3-M3-003              | Planned |
-| S3-M3-006 | Support POS stock lookup and stock deduction           | Integration  | P0       | S3-M3-002, S3-M3-004              | Planned |
-| S3-M3-007 | Provide clean product and inventory data for M2 SARIMA | Data support | P0       | S3-M3-005                         | Planned |
-| S3-M3-008 | Coordinate with M2 on sales aggregation requirements   | Coordination | P1       | M2 input format work              | Planned |
+| Task ID   | Task                                                   | Type         | Priority | Dependencies                      | Status         |
+| --------- | ------------------------------------------------------ | ------------ | -------- | --------------------------------- | -------------- |
+| S3-M3-001 | Implement product data model and API foundation        | Data / API   | P0       | Existing Prisma/backend structure | Implemented    |
+| S3-M3-002 | Implement product CRUD foundation                      | Feature      | P0       | S3-M3-001                         | Implemented    |
+| S3-M3-003 | Implement inventory data model and API foundation      | Data / API   | P0       | Existing Prisma/backend structure | Implemented    |
+| S3-M3-004 | Implement stock movement records                       | Feature      | P0       | S3-M3-003                         | Implemented    |
+| S3-M3-005 | Add sample products and inventory data                 | Data / QA    | P0       | S3-M3-001, S3-M3-003              | Implemented    |
+| S3-M3-006 | Support POS stock lookup and stock deduction           | Integration  | P0       | S3-M3-002, S3-M3-004              | Implemented    |
+| S3-M3-007 | Provide clean product and inventory data for M2 SARIMA | Data support | P0       | S3-M3-005                         | Implemented    |
+| S3-M3-008 | Coordinate with M2 on sales aggregation requirements   | Coordination | P1       | M2 input format work              | Contract ready |
 
 ## Dependencies
 
@@ -52,22 +52,24 @@ POS, Sales, and SARIMA forecasting.
 
 ## Validation Checklist
 
-| Check                  | Expected Result                                                                                 |
-| ---------------------- | ----------------------------------------------------------------------------------------------- |
-| Product model review   | Product data shape is usable by M1 and M2                                                       |
-| Inventory model review | Stock movement and stock level data are clearly represented                                     |
-| Seed review            | Sample data is consistent and not fake completion noise                                         |
-| Integration review     | POS and forecasting consumers can use the data foundation                                       |
-| Repo validation        | `npm run format`, `npm run lint`, and `npm run prepush:local` pass when sprint work is complete |
+| Check                  | Expected Result                                                                                                                                                                                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product model review   | Product data shape is usable by M1 and M2                                                                                                                                                                                                                      |
+| Inventory model review | Stock movement and stock level data are clearly represented                                                                                                                                                                                                    |
+| Seed review            | Sample data is consistent and not fake completion noise                                                                                                                                                                                                        |
+| Integration review     | POS and forecasting consumers can use the data foundation                                                                                                                                                                                                      |
+| Repo validation        | `npm run lint`, `npm run build`, `npm run prisma:validate`, `npm run prisma:generate`, `npx prisma migrate reset --force --schema database/prisma/schema.prisma`, and `npx prisma migrate dev --schema database/prisma/schema.prisma` pass on a fresh database |
 
 ## Risks / Blockers
 
-| Risk                                     | Impact                           | Mitigation                                                  |
-| ---------------------------------------- | -------------------------------- | ----------------------------------------------------------- |
-| Product and inventory shape changes late | POS and SARIMA may need rework   | Define the data model early and communicate it to M1 and M2 |
-| Stock deduction logic is incomplete      | POS checkout may not be reliable | Keep stock movement logic explicit and testable             |
-| Seed data is inconsistent                | Validation becomes noisy         | Use a clean, deterministic sample data set                  |
-| Cross-team contract drift                | Integration may break            | Document product/inventory changes immediately              |
+| Risk                                     | Impact                                    | Mitigation                                                  |
+| ---------------------------------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| Product and inventory shape changes late | POS and SARIMA may need rework            | Define the data model early and communicate it to M1 and M2 |
+| Stock deduction logic is incomplete      | POS checkout may not be reliable          | Keep stock movement logic explicit and testable             |
+| Seed data is inconsistent                | Validation becomes noisy                  | Use a clean, deterministic sample data set                  |
+| Cross-team contract drift                | Integration may break                     | Document product/inventory changes immediately              |
+| Local MySQL database is unavailable      | Seed and manual API validation cannot run | Report the exact blocker and keep code validation green     |
+| Import contract drifts from samples      | Preview/import QA becomes noisy           | Keep the template, examples, and docs in sync               |
 
 ## Notes for PR
 
@@ -77,3 +79,9 @@ POS, Sales, and SARIMA forecasting.
 | Data reliability   | Explain how the data shape supports POS and SARIMA                        |
 | Integration points | Mention any API or model changes M1 and M2 need to know about             |
 | Validation         | Include sample data and stock movement notes in review evidence           |
+
+## Review Evidence
+
+- Product import sample files are checked into `docs/samples/product-import/`
+- Seed data includes deterministic product, inventory, and movement fixtures
+- Migration history is replayable from an empty MySQL database

@@ -1,0 +1,2 @@
+name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description
+Unknown Drink,BEV-UNK-401,4800099994001,Unknown Category,BOTTLE,20.00,25.00,10,30,20,ACTIVE,Category should fail

@@ -1,0 +1,1230 @@
+import path from "node:path";
+import { randomUUID } from "node:crypto";
+
+import { Prisma, type ProductStatus, type ProductUnit } from "@prisma/client";
+import * as XLSX from "xlsx";
+
+import { prisma } from "../database/prismaClient.js";
+import { HttpError } from "../utils/httpError.js";
+import { normalizeCode, normalizeWhitespace } from "../utils/normalizers.js";
+
+const PRODUCT_IMPORT_TEMPLATE_HEADERS = [
+  "name",
+  "sku",
+  "barcode",
+  "category",
+  "unit",
+  "costPrice",
+  "sellingPrice",
+  "reorderLevel",
+  "targetStockLevel",
+  "initialStock",
+  "status",
+  "description"
+] as const;
+
+const REQUIRED_IMPORT_HEADERS = [
+  "name",
+  "sku",
+  "category",
+  "unit",
+  "costPrice",
+  "sellingPrice",
+  "reorderLevel",
+  "initialStock"
+] as const;
+
+const SUPPORTED_EXTENSIONS = new Set([".csv", ".xlsx", ".xls"]);
+const SUPPORTED_MIME_TYPES = new Set([
+  "text/csv",
+  "application/csv",
+  "text/plain",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/octet-stream"
+]);
+
+const ALLOWED_STATUSES = new Set<ProductStatus>(["ACTIVE", "INACTIVE", "DISCONTINUED"]);
+const ALLOWED_UNITS = new Set<ProductUnit>([
+  "PIECE",
+  "PACK",
+  "BOX",
+  "BOTTLE",
+  "SACHET",
+  "KILOGRAM",
+  "GRAM",
+  "LITER",
+  "MILLILITER"
+]);
+
+type UploadFile = {
+  originalname: string;
+  mimetype: string;
+  buffer: Buffer;
+};
+
+type ImportIssue = {
+  rowNumber?: number;
+  field?: string;
+  code: string;
+  message: string;
+  value?: string | null;
+  existingProductId?: string;
+};
+
+type NormalizedImportRow = {
+  name: string;
+  sku: string;
+  barcode: string | null;
+  category: string;
+  categoryId: string;
+  unit: ProductUnit;
+  costPrice: string;
+  sellingPrice: string;
+  reorderLevel: number;
+  targetStockLevel: number;
+  initialStock: number;
+  status: ProductStatus;
+  description: string | null;
+};
+
+type PreviewRow = {
+  rowNumber: number;
+  normalizedData: NormalizedImportRow | null;
+  valid: boolean;
+  errors: ImportIssue[];
+  warnings: ImportIssue[];
+};
+
+export type ProductImportPreview = {
+  fileName: string;
+  fileType: "csv" | "xlsx" | "xls";
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  ignoredColumns: string[];
+  detectedColumns: string[];
+  rows: PreviewRow[];
+  errors: ImportIssue[];
+  warnings: ImportIssue[];
+};
+
+export type ProductImportSummary = {
+  importId: string;
+  fileName: string;
+  fileType: "csv" | "xlsx" | "xls";
+  totalRows: number;
+  importedRows: number;
+  failedRows: number;
+  skippedRows: number;
+  productsCreated: number;
+  inventoryRowsCreated: number;
+  initialMovementsCreated: number;
+  errors: ImportIssue[];
+  warnings: ImportIssue[];
+};
+
+type SpreadsheetCell = {
+  text: string;
+  hasFormula: boolean;
+};
+
+type SpreadsheetRow = {
+  rowNumber: number;
+  cells: SpreadsheetCell[];
+  isBlank: boolean;
+};
+
+type SpreadsheetTable = {
+  headers: string[];
+  rows: SpreadsheetRow[];
+  sourceRows: number;
+};
+
+const headerAliasEntries: Array<[string, string]> = [
+  ["name", "name"],
+  ["productname", "name"],
+  ["product name", "name"],
+  ["product_name", "name"],
+  ["sku", "sku"],
+  ["productsku", "sku"],
+  ["product code", "sku"],
+  ["productcode", "sku"],
+  ["product_code", "sku"],
+  ["barcode", "barcode"],
+  ["barcode number", "barcode"],
+  ["barcodenumber", "barcode"],
+  ["category", "category"],
+  ["category name", "category"],
+  ["categoryname", "category"],
+  ["unit", "unit"],
+  ["costprice", "costPrice"],
+  ["cost price", "costPrice"],
+  ["cost_price", "costPrice"],
+  ["sellingprice", "sellingPrice"],
+  ["selling price", "sellingPrice"],
+  ["selling_price", "sellingPrice"],
+  ["reorderlevel", "reorderLevel"],
+  ["reorder level", "reorderLevel"],
+  ["reorder_level", "reorderLevel"],
+  ["targetstocklevel", "targetStockLevel"],
+  ["target stock", "targetStockLevel"],
+  ["target stock level", "targetStockLevel"],
+  ["target_stock_level", "targetStockLevel"],
+  ["initialstock", "initialStock"],
+  ["initial stock", "initialStock"],
+  ["initial_stock", "initialStock"],
+  ["status", "status"],
+  ["description", "description"]
+];
+
+const headerAliasMap = new Map<string, string>(
+  headerAliasEntries.map(([key, value]) => [normalizeHeaderKey(key), value] as [string, string])
+);
+
+function normalizeHeaderKey(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function isBlank(value: string) {
+  return value.trim().length === 0;
+}
+
+function isFormulaInjectionValue(value: string) {
+  return /^[=+@]/.test(value.trim());
+}
+
+function normalizeSheetCellValue(cell: XLSX.CellObject | undefined): SpreadsheetCell {
+  if (!cell) {
+    return {
+      text: "",
+      hasFormula: false
+    };
+  }
+
+  const rawValue = cell.v;
+  let text = "";
+
+  if (typeof rawValue === "string") {
+    text = rawValue;
+  } else if (typeof rawValue === "number") {
+    text = Number.isInteger(rawValue)
+      ? rawValue.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 0 })
+      : rawValue.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 20 });
+  } else if (rawValue instanceof Date) {
+    text = rawValue.toISOString();
+  } else if (rawValue !== null && rawValue !== undefined) {
+    text = String(rawValue);
+  }
+
+  if (cell.w !== undefined && cell.w !== null && String(cell.w).trim().length > 0) {
+    text = String(cell.w);
+  }
+
+  return {
+    text: text.trim(),
+    hasFormula: typeof cell.f === "string" && cell.f.trim().length > 0
+  };
+}
+
+function readSpreadsheetTable(file: UploadFile): SpreadsheetTable {
+  const workbook = XLSX.read(file.buffer, {
+    cellFormula: true,
+    cellHTML: false,
+    cellStyles: false,
+    type: "buffer"
+  });
+
+  if (workbook.SheetNames.length === 0) {
+    throw new HttpError(400, "The uploaded file does not contain any worksheets.", {
+      code: "EMPTY_IMPORT_WORKBOOK"
+    });
+  }
+
+  const firstSheetName = workbook.SheetNames[0];
+
+  if (!firstSheetName) {
+    throw new HttpError(400, "The uploaded file does not contain any worksheets.", {
+      code: "EMPTY_IMPORT_WORKBOOK"
+    });
+  }
+
+  const worksheet = workbook.Sheets[firstSheetName];
+
+  if (!worksheet || !worksheet["!ref"]) {
+    throw new HttpError(400, "The uploaded file does not contain any rows.", {
+      code: "EMPTY_IMPORT_WORKSHEET"
+    });
+  }
+
+  const range = XLSX.utils.decode_range(worksheet["!ref"]);
+  const headers: string[] = [];
+  const rows: SpreadsheetRow[] = [];
+
+  for (let column = range.s.c; column <= range.e.c; column += 1) {
+    const address = XLSX.utils.encode_cell({ r: range.s.r, c: column });
+    headers.push(normalizeSheetCellValue(worksheet[address] as XLSX.CellObject | undefined).text);
+  }
+
+  for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex += 1) {
+    const cells: SpreadsheetCell[] = [];
+
+    for (let column = range.s.c; column <= range.e.c; column += 1) {
+      const address = XLSX.utils.encode_cell({ r: rowIndex, c: column });
+      cells.push(normalizeSheetCellValue(worksheet[address] as XLSX.CellObject | undefined));
+    }
+
+    rows.push({
+      rowNumber: rowIndex + 1,
+      cells,
+      isBlank: cells.every((cell) => isBlank(cell.text))
+    });
+  }
+
+  return {
+    headers,
+    rows,
+    sourceRows: rows.filter((row) => !row.isBlank).length
+  };
+}
+
+function sanitizeCsvValue(value: string) {
+  if (/[",\r\n]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+
+  return value;
+}
+
+function detectFileType(file: UploadFile): "csv" | "xlsx" | "xls" {
+  const extension = path.extname(file.originalname).toLowerCase();
+
+  if (!SUPPORTED_EXTENSIONS.has(extension)) {
+    throw new HttpError(400, "Unsupported product import file type.", {
+      code: "UNSUPPORTED_IMPORT_FILE_TYPE",
+      details: {
+        extension
+      }
+    });
+  }
+
+  if (file.mimetype && !SUPPORTED_MIME_TYPES.has(file.mimetype)) {
+    throw new HttpError(400, "Unsupported product import MIME type.", {
+      code: "UNSUPPORTED_IMPORT_FILE_MIME",
+      details: {
+        mimetype: file.mimetype
+      }
+    });
+  }
+
+  return extension.slice(1) as "csv" | "xlsx" | "xls";
+}
+
+function mapHeaders(headers: string[]) {
+  const detectedColumns: string[] = [];
+  const ignoredColumns: string[] = [];
+  const columnIndexByCanonical = new Map<string, number>();
+  const duplicateHeaders: string[] = [];
+
+  headers.forEach((header, index) => {
+    const trimmedHeader = header.trim();
+
+    if (trimmedHeader.length === 0) {
+      return;
+    }
+
+    const canonical = headerAliasMap.get(normalizeHeaderKey(trimmedHeader));
+
+    if (!canonical) {
+      ignoredColumns.push(trimmedHeader);
+      return;
+    }
+
+    if (columnIndexByCanonical.has(canonical)) {
+      duplicateHeaders.push(trimmedHeader);
+      return;
+    }
+
+    columnIndexByCanonical.set(canonical, index);
+    detectedColumns.push(canonical);
+  });
+
+  const missingRequiredHeaders = REQUIRED_IMPORT_HEADERS.filter(
+    (requiredHeader) => !columnIndexByCanonical.has(requiredHeader)
+  );
+
+  return {
+    columnIndexByCanonical,
+    detectedColumns,
+    duplicateHeaders,
+    ignoredColumns,
+    missingRequiredHeaders
+  };
+}
+
+function normalizeTextCell(value: string | undefined) {
+  const normalized = value === undefined ? "" : normalizeWhitespace(value);
+
+  return normalized.length > 0 ? normalized : "";
+}
+
+function parseMoney(value: string, field: string, rowNumber: number, errors: ImportIssue[]) {
+  if (isBlank(value)) {
+    errors.push({
+      code: "MISSING_REQUIRED_FIELD",
+      field,
+      message: `${field} is required.`,
+      rowNumber,
+      value
+    });
+    return null;
+  }
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(value)) {
+    errors.push({
+      code: "INVALID_MONEY_VALUE",
+      field,
+      message: `${field} must be a non-negative amount with up to two decimal places.`,
+      rowNumber,
+      value
+    });
+    return null;
+  }
+
+  try {
+    return new Prisma.Decimal(value).toFixed(2);
+  } catch {
+    errors.push({
+      code: "INVALID_MONEY_VALUE",
+      field,
+      message: `${field} is not a valid decimal amount.`,
+      rowNumber,
+      value
+    });
+    return null;
+  }
+}
+
+function parseWholeNumber(value: string, field: string, rowNumber: number, errors: ImportIssue[]) {
+  if (isBlank(value)) {
+    errors.push({
+      code: "MISSING_REQUIRED_FIELD",
+      field,
+      message: `${field} is required.`,
+      rowNumber,
+      value
+    });
+    return null;
+  }
+
+  if (!/^\d+$/.test(value)) {
+    errors.push({
+      code: "INVALID_INTEGER_VALUE",
+      field,
+      message: `${field} must be a whole number.`,
+      rowNumber,
+      value
+    });
+    return null;
+  }
+
+  return Number.parseInt(value, 10);
+}
+
+function parseOptionalText(value: string) {
+  const normalized = normalizeTextCell(value);
+
+  if (normalized.length === 0) {
+    return null;
+  }
+
+  return normalized;
+}
+
+function resolveStatus(value: string, rowNumber: number, errors: ImportIssue[]) {
+  if (isBlank(value)) {
+    return "ACTIVE" satisfies ProductStatus;
+  }
+
+  const normalized = value.trim().toUpperCase();
+
+  if (!ALLOWED_STATUSES.has(normalized as ProductStatus)) {
+    errors.push({
+      code: "INVALID_STATUS",
+      field: "status",
+      message: "Status must be ACTIVE, INACTIVE, or DISCONTINUED.",
+      rowNumber,
+      value
+    });
+    return null;
+  }
+
+  return normalized as ProductStatus;
+}
+
+function resolveUnit(value: string, rowNumber: number, errors: ImportIssue[]) {
+  const normalized = value.trim().toUpperCase();
+
+  if (!ALLOWED_UNITS.has(normalized as ProductUnit)) {
+    errors.push({
+      code: "INVALID_UNIT",
+      field: "unit",
+      message:
+        "Unit must be one of PIECE, PACK, BOX, BOTTLE, SACHET, KILOGRAM, GRAM, LITER, or MILLILITER.",
+      rowNumber,
+      value
+    });
+    return null;
+  }
+
+  return normalized as ProductUnit;
+}
+
+function buildImportIssue(
+  rowNumber: number,
+  field: string,
+  code: string,
+  message: string,
+  value?: string | null,
+  existingProductId?: string
+): ImportIssue {
+  return {
+    rowNumber,
+    field,
+    code,
+    message,
+    value,
+    existingProductId
+  };
+}
+
+function summarizeWarnings(ignoredColumns: string[]): ImportIssue[] {
+  return ignoredColumns.map((column) =>
+    buildImportIssue(
+      0,
+      "column",
+      "IGNORED_COLUMN",
+      `Ignored column "${column}" because it is not part of the product import contract.`,
+      column
+    )
+  );
+}
+
+function buildTemplateCsv() {
+  const rows = [
+    [
+      "Classic Cola 1.5L",
+      "BEV-COLA-101",
+      "4800099991001",
+      "Beverages",
+      "BOTTLE",
+      "22.00",
+      "28.00",
+      "12",
+      "36",
+      "30",
+      "ACTIVE",
+      "Large bottle cola"
+    ],
+    [
+      "Cheese Crackers",
+      "SNK-CRACK-101",
+      "4800099991002",
+      "Snacks",
+      "PACK",
+      "11.00",
+      "15.00",
+      "8",
+      "24",
+      "18",
+      "ACTIVE",
+      ""
+    ]
+  ];
+
+  return [
+    PRODUCT_IMPORT_TEMPLATE_HEADERS.join(","),
+    ...rows.map((row) => row.map(sanitizeCsvValue).join(","))
+  ].join("\n");
+}
+
+function validateFormulaCells(
+  row: SpreadsheetRow,
+  canonicalHeaders: string[],
+  rowErrors: ImportIssue[]
+) {
+  row.cells.forEach((cell, index) => {
+    const header = canonicalHeaders[index];
+
+    if (cell.hasFormula) {
+      rowErrors.push(
+        buildImportIssue(
+          row.rowNumber,
+          header ?? `column-${index + 1}`,
+          "FORMULA_NOT_ALLOWED",
+          "Spreadsheet formulas are not allowed in product import files.",
+          cell.text
+        )
+      );
+    }
+  });
+}
+
+async function resolveCategoryLookup() {
+  const categories = await prisma.category.findMany({
+    select: {
+      id: true,
+      name: true,
+      slug: true
+    }
+  });
+
+  const lookup = new Map<string, string>();
+
+  categories.forEach((category) => {
+    lookup.set(normalizeWhitespace(category.name).toLowerCase(), category.id);
+    lookup.set(normalizeWhitespace(category.slug).toLowerCase(), category.id);
+  });
+
+  return lookup;
+}
+
+function resolveCellValue(
+  row: SpreadsheetRow,
+  columnIndexByCanonical: Map<string, number>,
+  field: string
+) {
+  const index = columnIndexByCanonical.get(field);
+
+  return index === undefined ? "" : (row.cells[index]?.text ?? "");
+}
+
+function normalizeImportRow(
+  row: SpreadsheetRow,
+  columnIndexByCanonical: Map<string, number>,
+  categoryLookup: Map<string, string>
+) {
+  const errors: ImportIssue[] = [];
+  const warnings: ImportIssue[] = [];
+
+  const name = normalizeWhitespace(resolveCellValue(row, columnIndexByCanonical, "name"));
+  const sku = normalizeCode(resolveCellValue(row, columnIndexByCanonical, "sku"));
+  const barcodeRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "barcode"));
+  const category = normalizeWhitespace(resolveCellValue(row, columnIndexByCanonical, "category"));
+  const unitRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "unit"));
+  const costPriceRaw = normalizeTextCell(
+    resolveCellValue(row, columnIndexByCanonical, "costPrice")
+  );
+  const sellingPriceRaw = normalizeTextCell(
+    resolveCellValue(row, columnIndexByCanonical, "sellingPrice")
+  );
+  const reorderLevelRaw = normalizeTextCell(
+    resolveCellValue(row, columnIndexByCanonical, "reorderLevel")
+  );
+  const targetStockLevelRaw = normalizeTextCell(
+    resolveCellValue(row, columnIndexByCanonical, "targetStockLevel")
+  );
+  const initialStockRaw = normalizeTextCell(
+    resolveCellValue(row, columnIndexByCanonical, "initialStock")
+  );
+  const statusRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "status"));
+  const descriptionRaw = normalizeTextCell(
+    resolveCellValue(row, columnIndexByCanonical, "description")
+  );
+
+  if (!name) {
+    errors.push(
+      buildImportIssue(row.rowNumber, "name", "MISSING_REQUIRED_FIELD", "Product name is required.")
+    );
+  } else if (name.length > 160) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "name",
+        "NAME_TOO_LONG",
+        "Product name must be 160 characters or fewer.",
+        name
+      )
+    );
+  } else if (isFormulaInjectionValue(name)) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "name",
+        "DANGEROUS_CELL_VALUE",
+        "Product name cannot begin with a spreadsheet formula marker.",
+        name
+      )
+    );
+  }
+
+  if (!sku) {
+    errors.push(
+      buildImportIssue(row.rowNumber, "sku", "MISSING_REQUIRED_FIELD", "SKU is required.")
+    );
+  } else if (sku.length > 80) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "sku",
+        "SKU_TOO_LONG",
+        "SKU must be 80 characters or fewer.",
+        sku
+      )
+    );
+  } else if (isFormulaInjectionValue(sku)) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "sku",
+        "DANGEROUS_CELL_VALUE",
+        "SKU cannot begin with a spreadsheet formula marker.",
+        sku
+      )
+    );
+  }
+
+  if (barcodeRaw && barcodeRaw.length > 80) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "barcode",
+        "BARCODE_TOO_LONG",
+        "Barcode must be 80 characters or fewer.",
+        barcodeRaw
+      )
+    );
+  }
+
+  if (barcodeRaw && isFormulaInjectionValue(barcodeRaw)) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "barcode",
+        "DANGEROUS_CELL_VALUE",
+        "Barcode cannot begin with a spreadsheet formula marker.",
+        barcodeRaw
+      )
+    );
+  }
+
+  if (!category) {
+    errors.push(
+      buildImportIssue(row.rowNumber, "category", "MISSING_REQUIRED_FIELD", "Category is required.")
+    );
+  } else if (category.length > 140) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "category",
+        "CATEGORY_TOO_LONG",
+        "Category must be 140 characters or fewer.",
+        category
+      )
+    );
+  }
+
+  if (unitRaw && isFormulaInjectionValue(unitRaw)) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "unit",
+        "DANGEROUS_CELL_VALUE",
+        "Unit cannot begin with a spreadsheet formula marker.",
+        unitRaw
+      )
+    );
+  }
+
+  if (costPriceRaw && isFormulaInjectionValue(costPriceRaw)) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "costPrice",
+        "DANGEROUS_CELL_VALUE",
+        "Cost price cannot begin with a spreadsheet formula marker.",
+        costPriceRaw
+      )
+    );
+  }
+
+  if (sellingPriceRaw && isFormulaInjectionValue(sellingPriceRaw)) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "sellingPrice",
+        "DANGEROUS_CELL_VALUE",
+        "Selling price cannot begin with a spreadsheet formula marker.",
+        sellingPriceRaw
+      )
+    );
+  }
+
+  const costPrice = parseMoney(costPriceRaw, "costPrice", row.rowNumber, errors);
+  const sellingPrice = parseMoney(sellingPriceRaw, "sellingPrice", row.rowNumber, errors);
+  const reorderLevel = parseWholeNumber(reorderLevelRaw, "reorderLevel", row.rowNumber, errors);
+  const initialStock = parseWholeNumber(initialStockRaw, "initialStock", row.rowNumber, errors);
+
+  let targetStockLevel = parseWholeNumber(
+    targetStockLevelRaw.length > 0 ? targetStockLevelRaw : reorderLevelRaw,
+    "targetStockLevel",
+    row.rowNumber,
+    errors
+  );
+
+  if (targetStockLevel === null && reorderLevel !== null && isBlank(targetStockLevelRaw)) {
+    targetStockLevel = reorderLevel;
+  }
+
+  const status = resolveStatus(statusRaw, row.rowNumber, errors);
+  const unit = resolveUnit(unitRaw, row.rowNumber, errors);
+  const description = parseOptionalText(descriptionRaw);
+  const barcode = parseOptionalText(barcodeRaw);
+
+  if (barcodeRaw.length > 0 && barcode === null) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "barcode",
+        "INVALID_BARCODE",
+        "Barcode must not be blank after trimming.",
+        barcodeRaw
+      )
+    );
+  }
+
+  if (descriptionRaw.length > 255) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "description",
+        "DESCRIPTION_TOO_LONG",
+        "Description must be 255 characters or fewer.",
+        descriptionRaw
+      )
+    );
+  }
+
+  if (descriptionRaw.length > 0 && description === null) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "description",
+        "INVALID_DESCRIPTION",
+        "Description must not be blank after trimming.",
+        descriptionRaw
+      )
+    );
+  }
+
+  if (category) {
+    const categoryId = categoryLookup.get(category.toLowerCase());
+
+    if (!categoryId) {
+      errors.push(
+        buildImportIssue(
+          row.rowNumber,
+          "category",
+          "UNKNOWN_CATEGORY",
+          `Category "${category}" was not found.`,
+          category
+        )
+      );
+    }
+
+    if (
+      name &&
+      sku &&
+      costPrice !== null &&
+      sellingPrice !== null &&
+      reorderLevel !== null &&
+      initialStock !== null &&
+      targetStockLevel !== null &&
+      status !== null &&
+      unit !== null &&
+      categoryId
+    ) {
+      return {
+        errors,
+        warnings,
+        normalized: {
+          name,
+          sku,
+          barcode,
+          category,
+          categoryId,
+          unit,
+          costPrice,
+          sellingPrice,
+          reorderLevel,
+          targetStockLevel,
+          initialStock,
+          status,
+          description
+        } satisfies NormalizedImportRow
+      };
+    }
+  }
+
+  return {
+    errors,
+    warnings,
+    normalized: null
+  };
+}
+
+function addConflictIssues(
+  previewRows: PreviewRow[],
+  conflicts: Array<{ id: string; sku: string; barcode: string | null }>
+) {
+  const skuConflictMap = new Map(conflicts.map((conflict) => [conflict.sku, conflict.id]));
+  const barcodeConflictMap = new Map(
+    conflicts
+      .filter((conflict) => conflict.barcode)
+      .map((conflict) => [conflict.barcode as string, conflict.id])
+  );
+
+  previewRows.forEach((row) => {
+    if (!row.normalizedData) {
+      return;
+    }
+
+    const skuConflict = skuConflictMap.get(row.normalizedData.sku);
+
+    if (skuConflict) {
+      row.errors.push(
+        buildImportIssue(
+          row.rowNumber,
+          "sku",
+          "SKU_ALREADY_EXISTS",
+          "This SKU already exists in the database.",
+          row.normalizedData.sku,
+          skuConflict
+        )
+      );
+    }
+
+    if (row.normalizedData.barcode) {
+      const barcodeConflict = barcodeConflictMap.get(row.normalizedData.barcode);
+
+      if (barcodeConflict) {
+        row.errors.push(
+          buildImportIssue(
+            row.rowNumber,
+            "barcode",
+            "BARCODE_ALREADY_EXISTS",
+            "This barcode already exists in the database.",
+            row.normalizedData.barcode,
+            barcodeConflict
+          )
+        );
+      }
+    }
+  });
+}
+
+function addWithinFileDuplicates(previewRows: PreviewRow[]) {
+  const skuCounts = new Map<string, PreviewRow[]>();
+  const barcodeCounts = new Map<string, PreviewRow[]>();
+
+  previewRows.forEach((row) => {
+    if (!row.normalizedData) {
+      return;
+    }
+
+    const skuRows = skuCounts.get(row.normalizedData.sku) ?? [];
+    skuRows.push(row);
+    skuCounts.set(row.normalizedData.sku, skuRows);
+
+    if (row.normalizedData.barcode) {
+      const barcodeRows = barcodeCounts.get(row.normalizedData.barcode) ?? [];
+      barcodeRows.push(row);
+      barcodeCounts.set(row.normalizedData.barcode, barcodeRows);
+    }
+  });
+
+  for (const [sku, rows] of skuCounts.entries()) {
+    if (rows.length <= 1) {
+      continue;
+    }
+
+    rows.forEach((row) =>
+      row.errors.push(
+        buildImportIssue(
+          row.rowNumber,
+          "sku",
+          "DUPLICATE_SKU_IN_FILE",
+          "This SKU appears more than once in the uploaded file.",
+          sku
+        )
+      )
+    );
+  }
+
+  for (const [barcode, rows] of barcodeCounts.entries()) {
+    if (rows.length <= 1) {
+      continue;
+    }
+
+    rows.forEach((row) =>
+      row.errors.push(
+        buildImportIssue(
+          row.rowNumber,
+          "barcode",
+          "DUPLICATE_BARCODE_IN_FILE",
+          "This barcode appears more than once in the uploaded file.",
+          barcode
+        )
+      )
+    );
+  }
+}
+
+async function validateSpreadsheetImport(file: UploadFile): Promise<ProductImportPreview> {
+  const fileType = detectFileType(file);
+
+  if (file.buffer.length === 0) {
+    throw new HttpError(400, "The uploaded file is empty.", {
+      code: "EMPTY_IMPORT_FILE"
+    });
+  }
+
+  const table = readSpreadsheetTable(file);
+  const {
+    columnIndexByCanonical,
+    detectedColumns,
+    duplicateHeaders,
+    ignoredColumns,
+    missingRequiredHeaders
+  } = mapHeaders(table.headers);
+
+  const fileErrors: ImportIssue[] = [];
+
+  if (duplicateHeaders.length > 0) {
+    fileErrors.push(
+      ...duplicateHeaders.map((header) =>
+        buildImportIssue(
+          0,
+          "header",
+          "DUPLICATE_HEADER",
+          `Duplicate header "${header}" was found in the import file.`,
+          header
+        )
+      )
+    );
+  }
+
+  if (missingRequiredHeaders.length > 0) {
+    fileErrors.push(
+      ...missingRequiredHeaders.map((header) =>
+        buildImportIssue(
+          0,
+          "header",
+          "MISSING_REQUIRED_HEADER",
+          `Required column "${header}" is missing from the import file.`,
+          header
+        )
+      )
+    );
+  }
+
+  const filteredRows = table.rows.filter((row) => !row.isBlank);
+
+  if (filteredRows.length === 0) {
+    fileErrors.push(
+      buildImportIssue(
+        0,
+        "rows",
+        "NO_DATA_ROWS",
+        "The import file does not contain any product rows."
+      )
+    );
+  }
+
+  if (filteredRows.length > 1000) {
+    fileErrors.push(
+      buildImportIssue(
+        0,
+        "rowLimit",
+        "TOO_MANY_ROWS",
+        "The product import file exceeds the maximum supported row count of 1,000."
+      )
+    );
+  }
+
+  const categoryLookup = await resolveCategoryLookup();
+  const previewRows: PreviewRow[] = filteredRows.map((row) => {
+    const rowErrors: ImportIssue[] = [];
+    const rowWarnings: ImportIssue[] = [];
+
+    validateFormulaCells(row, table.headers, rowErrors);
+
+    const normalizedResult = normalizeImportRow(row, columnIndexByCanonical, categoryLookup);
+    rowErrors.push(...normalizedResult.errors);
+    rowWarnings.push(...normalizedResult.warnings);
+
+    return {
+      rowNumber: row.rowNumber,
+      normalizedData: normalizedResult.normalized,
+      valid: normalizedResult.errors.length === 0 && normalizedResult.normalized !== null,
+      errors: rowErrors,
+      warnings: rowWarnings
+    };
+  });
+
+  addWithinFileDuplicates(previewRows);
+
+  const skuValues = [
+    ...new Set(previewRows.flatMap((row) => (row.normalizedData ? [row.normalizedData.sku] : [])))
+  ];
+  const barcodeValues = [
+    ...new Set(
+      previewRows.flatMap((row) =>
+        row.normalizedData?.barcode ? [row.normalizedData.barcode] : []
+      )
+    )
+  ];
+
+  if (skuValues.length > 0 || barcodeValues.length > 0) {
+    const conflicts = await prisma.product.findMany({
+      select: {
+        id: true,
+        sku: true,
+        barcode: true
+      },
+      where: {
+        OR: [
+          skuValues.length > 0 ? { sku: { in: skuValues } } : undefined,
+          barcodeValues.length > 0 ? { barcode: { in: barcodeValues } } : undefined
+        ].filter(Boolean) as Prisma.ProductWhereInput[]
+      }
+    });
+
+    addConflictIssues(previewRows, conflicts);
+  }
+
+  const rows = previewRows.map((row) => ({
+    ...row,
+    valid: row.errors.length === 0 && row.normalizedData !== null
+  }));
+
+  const errors = [...fileErrors, ...rows.flatMap((row) => row.errors)];
+  const warnings = [...summarizeWarnings(ignoredColumns), ...rows.flatMap((row) => row.warnings)];
+
+  const validRows = rows.filter((row) => row.valid).length;
+  const invalidRows = rows.length - validRows;
+
+  return {
+    fileName: file.originalname,
+    fileType,
+    totalRows: rows.length,
+    validRows,
+    invalidRows,
+    ignoredColumns,
+    detectedColumns,
+    rows,
+    errors,
+    warnings
+  };
+}
+
+export async function previewProductImport(file: UploadFile): Promise<ProductImportPreview> {
+  return validateSpreadsheetImport(file);
+}
+
+export async function importProductsFromFile(
+  file: UploadFile,
+  performedById?: string
+): Promise<ProductImportSummary> {
+  const preview = await validateSpreadsheetImport(file);
+
+  if (preview.invalidRows > 0 || preview.errors.length > 0) {
+    throw new HttpError(422, "Product import contains validation errors.", {
+      code: "PRODUCT_IMPORT_INVALID",
+      details: preview
+    });
+  }
+
+  const importId = randomUUID();
+  const now = new Date();
+  const importRows = preview.rows
+    .filter((row) => row.valid && row.normalizedData)
+    .map((row) => row.normalizedData as NormalizedImportRow);
+
+  let inventoryRowsCreated = 0;
+  let initialMovementsCreated = 0;
+
+  await prisma.$transaction(async (tx) => {
+    for (const row of importRows) {
+      const product = await tx.product.create({
+        data: {
+          name: row.name,
+          sku: row.sku,
+          barcode: row.barcode,
+          categoryId: row.categoryId,
+          unit: row.unit,
+          costPrice: new Prisma.Decimal(row.costPrice),
+          sellingPrice: new Prisma.Decimal(row.sellingPrice),
+          reorderLevel: row.reorderLevel,
+          targetStockLevel: row.targetStockLevel,
+          status: row.status,
+          description: row.description
+        }
+      });
+
+      const inventory = await tx.inventory.create({
+        data: {
+          productId: product.id,
+          quantityOnHand: row.initialStock,
+          lastStockUpdatedAt: now,
+          version: 0
+        }
+      });
+
+      inventoryRowsCreated += 1;
+
+      if (row.initialStock > 0) {
+        await tx.inventoryMovement.create({
+          data: {
+            inventoryId: inventory.id,
+            productId: product.id,
+            type: "INITIAL_STOCK",
+            quantity: row.initialStock,
+            quantityBefore: 0,
+            quantityAfter: row.initialStock,
+            reason: "Initial stock from product import",
+            referenceType: "PRODUCT_IMPORT",
+            referenceId: importId,
+            performedById
+          }
+        });
+
+        initialMovementsCreated += 1;
+      }
+    }
+  });
+
+  return {
+    importId,
+    fileName: preview.fileName,
+    fileType: preview.fileType,
+    totalRows: preview.totalRows,
+    importedRows: importRows.length,
+    failedRows: 0,
+    skippedRows: 0,
+    productsCreated: importRows.length,
+    inventoryRowsCreated,
+    initialMovementsCreated,
+    errors: [],
+    warnings: preview.warnings
+  };
+}
+
+export function getProductImportTemplateCsv() {
+  return buildTemplateCsv();
+}
+
+export const productImportTemplateHeaders = PRODUCT_IMPORT_TEMPLATE_HEADERS;
