@@ -853,7 +853,6 @@ function ImportProductsDialog({
   triggerRef: RefObject<HTMLButtonElement | null>;
 }) {
   const [isDragging, setIsDragging] = useState(false);
-  const [showAllInvalidRows, setShowAllInvalidRows] = useState(false);
   const preview = importState.preview;
   const isProcessingFile = importState.phase === "processing-file";
   const isPreviewing = importState.phase === "previewing";
@@ -865,9 +864,7 @@ function ImportProductsDialog({
   const canConfirm = Boolean(hasPreview && preview.invalidRows === 0 && !importState.error);
   const invalidRows = useMemo(() => preview?.rows.filter((row) => !row.valid) ?? [], [preview]);
   const issueEntries = useMemo(() => collectImportIssueEntries(preview), [preview]);
-  const issueGroups = useMemo(() => groupImportIssueEntries(issueEntries), [issueEntries]);
-  const visibleInvalidRowLimit = showAllInvalidRows ? 20 : 10;
-  const visibleInvalidRows = invalidRows.slice(0, visibleInvalidRowLimit);
+  const visibleInvalidRows = invalidRows.slice(0, 10);
   const canDownloadErrorReport = issueEntries.length > 0;
   const fileStatusLabel =
     importState.phase === "preview-ready"
@@ -890,10 +887,6 @@ function ImportProductsDialog({
           : importState.phase === "success" && importState.summary
             ? `Import completed. ${importState.summary.importedRows} rows imported and the catalog refreshed.`
             : (importState.error ?? "");
-
-  useEffect(() => {
-    setShowAllInvalidRows(false);
-  }, [preview?.fileName, preview?.totalRows, preview?.invalidRows]);
 
   function getImportFileType(file: File) {
     const extension = file.name.split(".").pop()?.toLowerCase();
@@ -999,7 +992,7 @@ function ImportProductsDialog({
     >
       <DialogContent
         aria-describedby="import-products-description"
-        className="flex h-[88vh] w-[calc(100vw-40px)] max-w-[700px] flex-col overflow-hidden p-0"
+        className="flex max-h-[88vh] w-[calc(100vw-40px)] max-w-[700px] flex-col overflow-hidden p-0"
         onEscapeKeyDown={(event) => {
           if (isImporting) {
             event.preventDefault();
@@ -1041,7 +1034,14 @@ function ImportProductsDialog({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
+        <div
+          className={[
+            "px-6 py-5",
+            hasPreview && preview ? "max-h-[calc(88vh-10rem)] overflow-y-auto" : ""
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <div className="space-y-4">
             <p className="sr-only" aria-live="polite" aria-atomic="true">
               {liveAnnouncement}
@@ -1213,69 +1213,20 @@ function ImportProductsDialog({
                   </div>
                 </div>
 
-                {issueGroups.length > 0 ? (
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-950">Validation issues</p>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">
-                          Grouped by issue type so the problems are easier to scan.
-                        </p>
-                      </div>
-                      <p className="text-xs font-medium text-slate-500">
-                        {issueEntries.length} issue{issueEntries.length === 1 ? "" : "s"} across{" "}
-                        {issueGroups.length} group{issueGroups.length === 1 ? "" : "s"}
-                      </p>
-                    </div>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      {issueGroups.map((group) => (
-                        <div
-                          className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-                          key={group.code}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-slate-950">{group.label}</p>
-                              <p className="mt-1 text-xs text-slate-500">{group.code}</p>
-                            </div>
-                            <StatusBadge
-                              variant={group.severity === "warning" ? "warning" : "error"}
-                            >
-                              {String(group.count)}
-                            </StatusBadge>
-                          </div>
-                          <p className="mt-2 text-sm leading-6 text-slate-600">
-                            {group.fields.length > 0
-                              ? `Fields: ${group.fields.slice(0, 3).join(", ")}${
-                                  group.fields.length > 3 ? ` +${group.fields.length - 3} more` : ""
-                                }`
-                              : "File-level validation issue"}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
                 {invalidRows.length > 0 ? (
-                  <div className="rounded-2xl border border-slate-200">
-                    <div className="flex flex-col gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-3 rounded-2xl border border-slate-200">
+                    <div className="flex flex-col gap-1 border-b border-slate-200 bg-slate-50 px-4 py-3">
                       <div>
-                        <p className="text-sm font-semibold text-slate-950">Invalid row preview</p>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">
-                          Showing {visibleInvalidRows.length} of {invalidRows.length} invalid row
-                          {invalidRows.length === 1 ? "" : "s"}. The CSV report contains all issues.
+                        <p className="text-sm font-medium text-slate-600">
+                          <span className="font-semibold text-slate-950">
+                            {preview.invalidRows}
+                          </span>{" "}
+                          invalid rows · {issueEntries.length} issues found
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Showing the first 10 invalid rows
                         </p>
                       </div>
-                      {invalidRows.length > 10 ? (
-                        <Button
-                          onClick={() => setShowAllInvalidRows((current) => !current)}
-                          type="button"
-                          variant="ghost"
-                        >
-                          {showAllInvalidRows ? "Show 10 rows" : "Show 20 rows"}
-                        </Button>
-                      ) : null}
                     </div>
                     <div className="overflow-x-auto">
                       <table className="min-w-full border-collapse text-left text-sm">
@@ -1316,9 +1267,6 @@ function ImportProductsDialog({
                                         ? getReadableIssueLabel(primaryIssue)
                                         : "Invalid row"}
                                     </p>
-                                    <p className="text-xs leading-5 text-slate-600">
-                                      {primaryIssue?.message ?? "Review the row values."}
-                                    </p>
                                     {extraIssueCount > 0 ? (
                                       <p className="text-xs font-medium text-slate-500">
                                         +{extraIssueCount} more issue
@@ -1328,14 +1276,7 @@ function ImportProductsDialog({
                                   </div>
                                 </td>
                                 <td className="px-4 py-3">
-                                  <div className="space-y-2">
-                                    <StatusBadge variant="error">Invalid</StatusBadge>
-                                    <p className="text-xs leading-5 text-red-700">
-                                      {primaryIssue
-                                        ? getSuggestedFix(primaryIssue)
-                                        : "Review required."}
-                                    </p>
-                                  </div>
+                                  <StatusBadge variant="error">Invalid</StatusBadge>
                                 </td>
                               </tr>
                             );
@@ -1352,13 +1293,6 @@ function ImportProductsDialog({
                     </p>
                   </div>
                 )}
-
-                {preview.invalidRows > 0 ? (
-                  <p className="text-sm text-slate-600">
-                    Fix the invalid rows before importing, or download the full CSV report for the
-                    complete list of issues.
-                  </p>
-                ) : null}
               </div>
             ) : importState.phase === "success" && importState.summary ? (
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
@@ -1373,7 +1307,7 @@ function ImportProductsDialog({
           </div>
         </div>
 
-        <DialogFooter className="shrink-0 border-t border-slate-200 bg-slate-50/90 px-6 py-4 backdrop-blur">
+        <DialogFooter className="sticky bottom-0 shrink-0 border-t border-slate-200 bg-slate-50/90 px-6 py-4 backdrop-blur">
           {importState.phase === "success" ? (
             <Button onClick={onCancel} type="button">
               Close
@@ -1445,14 +1379,6 @@ type ImportIssueEntry = {
   suggestedFix: string;
 };
 
-type ImportIssueGroup = {
-  code: string;
-  label: string;
-  count: number;
-  fields: string[];
-  severity: "error" | "warning";
-};
-
 function collectImportIssueEntries(preview: ProductImportPreview | null) {
   if (!preview) {
     return [];
@@ -1484,41 +1410,6 @@ function collectImportIssueEntries(preview: ProductImportPreview | null) {
 
     seen.add(key);
     return true;
-  });
-}
-
-function groupImportIssueEntries(entries: ImportIssueEntry[]) {
-  const groups = new Map<string, ImportIssueGroup>();
-
-  for (const entry of entries) {
-    const existing = groups.get(entry.code);
-
-    if (!existing) {
-      groups.set(entry.code, {
-        code: entry.code,
-        label: getReadableIssueLabel({ code: entry.code, message: entry.message }),
-        count: 1,
-        fields: entry.field ? [entry.field] : [],
-        severity: entry.severity
-      });
-      continue;
-    }
-
-    existing.count += 1;
-    if (entry.field && !existing.fields.includes(entry.field)) {
-      existing.fields.push(entry.field);
-    }
-    if (entry.severity === "error") {
-      existing.severity = "error";
-    }
-  }
-
-  return [...groups.values()].sort((left, right) => {
-    if (left.severity !== right.severity) {
-      return left.severity === "error" ? -1 : 1;
-    }
-
-    return right.count - left.count;
   });
 }
 
