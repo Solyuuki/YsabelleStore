@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { env } from "../../config/env.js";
 import { HttpError } from "../../utils/httpError.js";
 import type { ProductForecastDetail, ProductHistoricalSeries } from "./forecast.types.js";
+import { getActiveForecastMonth } from "./forecast-window.js";
 import { resolveRepositoryPath } from "./repository-paths.js";
 
 type PythonForecastResponse = {
@@ -33,6 +34,7 @@ export async function runPythonForecast(products: ProductHistoricalSeries[]) {
   const timeoutMs = env.FORECAST_PROCESS_TIMEOUT_MS;
   const pythonExecutable = env.PYTHON_EXECUTABLE;
   const requestBody = JSON.stringify({
+    forecastStartPeriod: getActiveForecastMonth(),
     horizon: env.FORECAST_DEFAULT_HORIZON,
     products,
     seasonalPeriod: env.FORECAST_SEASONAL_PERIOD

@@ -1,5 +1,5 @@
 import { AlertTriangle, RefreshCw, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
   Legend,
@@ -12,30 +12,36 @@ import {
 } from "recharts";
 
 import { PageHeader } from "@/components/shared/PageHeader";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   generateForecasts,
   getForecastProduct,
-  getForecastProducts
+  getForecastProductCollection
 } from "@/services/forecastService";
 import type {
-  ForecastFilters,
   ForecastPoint,
-  ForecastStatus,
-  HistoricalSalesPoint,
   PaginatedForecastProductsResponse,
   ProductForecastDetail
 } from "@/types/forecast";
+import {
+  deriveForecastProducts,
+  FORECAST_PRODUCTS_DESKTOP_QUERY,
+  forecastSortOptions,
+  formatForecastVariance,
+  formatMonthLabel,
+  getForecastProductsPageSize,
+  getLocalMonthKey,
+  paginateForecastProducts,
+  type ForecastSortOption
+} from "@/utils/forecastPresentation";
 
-const DEFAULT_FILTERS: ForecastFilters = {
-  page: 1,
-  pageSize: 12,
-  sortBy: "productId",
-  sortDirection: "asc",
-  status: "ALL"
-};
+const MONTH_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+const EMPTY_FORECAST_ROWS: ForecastPoint[] = [];
+
+function getInitialForecastProductsPageSize() {
+  return getForecastProductsPageSize(window.matchMedia(FORECAST_PRODUCTS_DESKTOP_QUERY).matches);
+}
 
 function formatNumber(value: number | null | undefined, digits = 0) {
   if (value === null || value === undefined || !Number.isFinite(value)) {
@@ -48,115 +54,148 @@ function formatNumber(value: number | null | undefined, digits = 0) {
   }).format(value);
 }
 
-function formatPercent(value: number | null | undefined) {
+function expectedChangeClassName(value: number | null | undefined) {
   if (value === null || value === undefined || !Number.isFinite(value)) {
-    return "-";
+    return "text-slate-500";
   }
 
-  return `${formatNumber(value, 1)}%`;
+  if (value > 0) {
+    return "text-emerald-700";
+  }
+
+  if (value < 0) {
+    return "text-red-700";
+  }
+
+  return "text-slate-700";
 }
 
-function formatStatusLabel(status: ForecastStatus) {
-  switch (status) {
-    case "READY":
-      return "Ready";
-    case "WARNING":
-      return "Needs review";
-    case "FAILED":
-      return "Unavailable";
-  }
-}
-
-function statusVariant(status: ForecastStatus) {
-  switch (status) {
-    case "READY":
-      return "success";
-    case "WARNING":
-      return "warning";
-    case "FAILED":
-      return "error";
-  }
-}
-
-function formatForecastNote(warning: string) {
-  if (warning.includes("Only 24 monthly observations") || warning.includes("Only two seasonal")) {
-    return "Forecast is based on the available two years of monthly sales history.";
-  }
-
-  if (warning.toLowerCase().includes("fallback")) {
-    return "A backup forecasting method was used for this product.";
-  }
-
-  if (warning.includes("Confidence interval unavailable")) {
-    return "Estimated range is unavailable for this product.";
-  }
-
-  return warning
-    .replace(/SARIMA/gi, "forecast")
-    .replace(/model/gi, "forecast")
-    .replace(/convergence/gi, "calculation");
-}
-
-function buildChartData(historical: HistoricalSalesPoint[], forecast: ForecastPoint[]) {
-  return [
-    ...historical.map((point) => ({
-      actual: point.quantitySold,
-      forecast: null,
-      lower: null,
-      period: point.period,
-      upper: null
-    })),
-    ...forecast.map((point) => ({
-      actual: null,
-      forecast: point.predictedQuantity,
-      lower: point.lowerConfidence,
-      period: point.period,
-      upper: point.upperConfidence
-    }))
-  ];
+function buildChartData(forecast: ForecastPoint[]) {
+  return forecast.map((point) => ({
+    forecastedDemand: point.predictedQuantity,
+    month: formatMonthLabel(point.period),
+    salesLastYear: point.comparisonSalesQuantity
+  }));
 }
 
 export function ForecastPage() {
-  const [filters, setFilters] = useState<ForecastFilters>(DEFAULT_FILTERS);
-  const [data, setData] = useState<PaginatedForecastProductsResponse | null>(null);
+  const [forecastData, setForecastData] = useState<PaginatedForecastProductsResponse | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductForecastDetail | null>(null);
-  const [loadingList, setLoadingList] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [sortBy, setSortBy] = useState<ForecastSortOption>("alphabeticalAsc");
+  const [productsPage, setProductsPage] = useState(1);
+  const [productsPageSize, setProductsPageSize] = useState(getInitialForecastProductsPageSize);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const activeMonthRef = useRef(getLocalMonthKey());
+  const loadingRef = useRef(false);
 
-  const loadProducts = useCallback(async (nextFilters: ForecastFilters) => {
-    setLoadingList(true);
-    setError(null);
-
-    try {
-      const response = await getForecastProducts(nextFilters);
-
-      if (!response.success || !response.data) {
-        setError(response.message);
-        setData(null);
+  const loadForecasts = useCallback(
+    async (options: { background?: boolean; forceRefresh?: boolean } = {}) => {
+      if (loadingRef.current) {
         return;
       }
 
-      const productData = response.data;
+      loadingRef.current = true;
 
-      setData(productData);
-      setSelectedProductId((current) => current ?? productData.items[0]?.productId ?? null);
-    } catch {
-      setError("Forecast API is unavailable. Please make sure the backend is running.");
-    } finally {
-      setLoadingList(false);
-    }
+      if (options.background) {
+        setRefreshing(true);
+      } else {
+        setInitialLoading(true);
+      }
+
+      setError(null);
+
+      try {
+        if (options.forceRefresh) {
+          const generationResponse = await generateForecasts(true);
+
+          if (!generationResponse.success) {
+            setError(generationResponse.message);
+            return;
+          }
+        }
+
+        const response = await getForecastProductCollection();
+
+        if (!response.success || !response.data) {
+          setError(response.message);
+          setForecastData(null);
+          return;
+        }
+
+        setForecastData(response.data);
+      } catch {
+        setError("Forecast data could not be loaded. Please make sure the backend is running.");
+      } finally {
+        loadingRef.current = false;
+        setInitialLoading(false);
+        setRefreshing(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    void loadForecasts();
+  }, [loadForecasts]);
+
+  const allProducts = forecastData?.items ?? [];
+  const categories = forecastData?.categories ?? [];
+  const visibleProducts = useMemo(
+    () =>
+      deriveForecastProducts(allProducts, {
+        category: selectedCategory,
+        searchQuery,
+        sortBy
+      }),
+    [allProducts, searchQuery, selectedCategory, sortBy]
+  );
+  const productPagination = useMemo(
+    () =>
+      paginateForecastProducts(visibleProducts, {
+        page: productsPage,
+        pageSize: productsPageSize
+      }),
+    [productsPage, productsPageSize, visibleProducts]
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(FORECAST_PRODUCTS_DESKTOP_QUERY);
+    const updatePageSize = () => {
+      setProductsPageSize(getForecastProductsPageSize(mediaQuery.matches));
+    };
+
+    updatePageSize();
+    mediaQuery.addEventListener("change", updatePageSize);
+
+    return () => mediaQuery.removeEventListener("change", updatePageSize);
   }, []);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      void loadProducts(filters);
-    }, 250);
+    setProductsPage(1);
+  }, [searchQuery, selectedCategory, sortBy]);
 
-    return () => window.clearTimeout(timeoutId);
-  }, [filters, loadProducts]);
+  useEffect(() => {
+    setProductsPage(productPagination.page);
+  }, [productPagination.page]);
+
+  useEffect(() => {
+    if (visibleProducts.length === 0) {
+      setSelectedProductId(null);
+      return;
+    }
+
+    setSelectedProductId((current) =>
+      current && visibleProducts.some((product) => product.productId === current)
+        ? current
+        : (visibleProducts.at(0)?.productId ?? null)
+    );
+  }, [visibleProducts]);
 
   useEffect(() => {
     if (!selectedProductId) {
@@ -164,8 +203,8 @@ export function ForecastPage() {
       return;
     }
 
-    const productId = selectedProductId;
     let active = true;
+    const productId = selectedProductId;
 
     async function loadDetail() {
       setLoadingDetail(true);
@@ -188,41 +227,36 @@ export function ForecastPage() {
     return () => {
       active = false;
     };
-  }, [selectedProductId]);
+  }, [forecastData?.generatedAt, selectedProductId]);
 
-  const chartData = useMemo(
-    () =>
-      selectedProduct ? buildChartData(selectedProduct.historical, selectedProduct.forecast) : [],
-    [selectedProduct]
-  );
+  const refreshIfMonthChanged = useCallback(() => {
+    const currentMonth = getLocalMonthKey();
 
-  async function handleGenerate() {
-    setGenerating(true);
-    setError(null);
-
-    try {
-      const response = await generateForecasts(true);
-
-      if (!response.success) {
-        setError(response.message);
-        return;
-      }
-
-      await loadProducts(filters);
-    } catch {
-      setError("Forecast generation could not be completed. Please try again.");
-    } finally {
-      setGenerating(false);
+    if (currentMonth === activeMonthRef.current) {
+      return;
     }
-  }
 
-  function updateFilter<K extends keyof ForecastFilters>(key: K, value: ForecastFilters[K]) {
-    setFilters((current) => ({
-      ...current,
-      [key]: value,
-      page: key === "page" ? Number(value) : 1
-    }));
-  }
+    activeMonthRef.current = currentMonth;
+    void loadForecasts({ background: true, forceRefresh: true });
+  }, [loadForecasts]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(refreshIfMonthChanged, MONTH_CHECK_INTERVAL_MS);
+    const handleFocus = () => refreshIfMonthChanged();
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [refreshIfMonthChanged]);
+
+  const forecastRows = selectedProduct?.forecast ?? EMPTY_FORECAST_ROWS;
+  const chartData = useMemo(() => buildChartData(forecastRows), [forecastRows]);
+
+  const currentForecast = forecastRows[0] ?? null;
+  const twelveMonthForecast = forecastRows.reduce((sum, point) => sum + point.predictedQuantity, 0);
 
   return (
     <>
@@ -230,163 +264,186 @@ export function ForecastPage() {
         eyebrow="Owner forecast"
         title="Demand Forecast"
         description="View this year's product demand forecast from verified sales history."
-        actions={
-          <Button disabled={generating} onClick={() => void handleGenerate()} type="button">
-            <RefreshCw className={generating ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-            Generate
-          </Button>
-        }
       />
 
       {error ? (
-        <div className="mb-4 flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          <AlertTriangle className="mt-0.5 h-4 w-4" />
-          <span>{error}</span>
+        <div className="mb-4 flex items-start justify-between gap-3 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-4 w-4" />
+            <span>{error}</span>
+          </div>
+          <Button onClick={() => void loadForecasts()} type="button" variant="secondary">
+            Retry
+          </Button>
         </div>
       ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
-        <div className="space-y-4">
-          <ForecastFiltersPanel
-            categories={data?.categories ?? []}
-            filters={filters}
-            onChange={updateFilter}
-          />
-          <ProductTable
-            data={data}
-            loading={loadingList}
-            selectedProductId={selectedProductId}
-            onSelect={setSelectedProductId}
-            onPageChange={(page) => updateFilter("page", page)}
-          />
-        </div>
+      <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr] xl:items-stretch">
+        <ForecastedProductsCard
+          categories={categories}
+          dataLoaded={Boolean(forecastData)}
+          loading={initialLoading}
+          matchingProductsCount={visibleProducts.length}
+          pagination={productPagination}
+          searchQuery={searchQuery}
+          selectedCategory={selectedCategory}
+          selectedProductId={selectedProductId}
+          sortBy={sortBy}
+          totalProducts={allProducts.length}
+          onCategoryChange={setSelectedCategory}
+          onProductSelect={setSelectedProductId}
+          onProductsPageChange={setProductsPage}
+          onSearchChange={setSearchQuery}
+          onSortChange={setSortBy}
+        />
 
-        <div className="space-y-4">
-          <SelectedProductDetail
-            chartData={chartData}
-            loading={loadingDetail}
-            product={selectedProduct}
-          />
-        </div>
+        <MonthlyForecastCard
+          chartData={chartData}
+          currentForecast={currentForecast}
+          forecastRows={forecastRows}
+          loading={initialLoading || loadingDetail}
+          product={selectedProduct}
+          refreshing={refreshing}
+          twelveMonthForecast={twelveMonthForecast ?? null}
+        />
       </section>
     </>
   );
 }
 
-function ForecastFiltersPanel({
+function ForecastedProductsCard({
   categories,
-  filters,
-  onChange
+  dataLoaded,
+  loading,
+  matchingProductsCount,
+  onCategoryChange,
+  onProductSelect,
+  onProductsPageChange,
+  onSearchChange,
+  onSortChange,
+  pagination,
+  searchQuery,
+  selectedCategory,
+  selectedProductId,
+  sortBy,
+  totalProducts
 }: {
   categories: string[];
-  filters: ForecastFilters;
-  onChange: <K extends keyof ForecastFilters>(key: K, value: ForecastFilters[K]) => void;
-}) {
-  return (
-    <Card>
-      <CardContent className="grid gap-3 pt-5 md:grid-cols-[1.3fr_1fr_1fr]">
-        <label className="relative block">
-          <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
-          <input
-            className="h-10 w-full rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            onChange={(event) => onChange("search", event.target.value)}
-            placeholder="Search product, ID, or category"
-            value={filters.search ?? ""}
-          />
-        </label>
-
-        <select
-          className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
-          onChange={(event) => onChange("category", event.target.value || undefined)}
-          value={filters.category ?? ""}
-        >
-          <option value="">All categories</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
-          onChange={(event) => onChange("status", event.target.value as ForecastStatus | "ALL")}
-          value={filters.status}
-        >
-          <option value="ALL">All forecasts</option>
-          <option value="READY">Ready</option>
-          <option value="WARNING">Needs review</option>
-          <option value="FAILED">Unavailable</option>
-        </select>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ProductTable({
-  data,
-  loading,
-  onPageChange,
-  onSelect,
-  selectedProductId
-}: {
-  data: PaginatedForecastProductsResponse | null;
+  dataLoaded: boolean;
   loading: boolean;
-  onPageChange: (page: number) => void;
-  onSelect: (productId: string) => void;
+  matchingProductsCount: number;
+  onCategoryChange: (category: string) => void;
+  onProductSelect: (productId: string) => void;
+  onProductsPageChange: (page: number) => void;
+  onSearchChange: (searchQuery: string) => void;
+  onSortChange: (sortBy: ForecastSortOption) => void;
+  pagination: ReturnType<typeof paginateForecastProducts>;
+  searchQuery: string;
+  selectedCategory: string;
   selectedProductId: string | null;
+  sortBy: ForecastSortOption;
+  totalProducts: number;
 }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Forecasted products</CardTitle>
-        <StatusBadge variant="info">{data ? `${data.totalItems} products` : "Loading"}</StatusBadge>
+    <Card className="flex h-full min-h-0 flex-col">
+      <CardHeader className="shrink-0">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <CardTitle>Forecasted Products</CardTitle>
+            <p className="mt-1 text-sm text-slate-500">
+              {dataLoaded
+                ? `${matchingProductsCount} matching products out of ${totalProducts}`
+                : "Loading forecasted products"}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3">
+          <label className="relative block" aria-label="Search forecasted products">
+            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
+            <input
+              aria-label="Search product by name or SKU"
+              className="h-10 w-full rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              onChange={(event) => onSearchChange(event.target.value)}
+              placeholder="Search product by name or SKU..."
+              value={searchQuery}
+            />
+          </label>
+        </div>
+
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <select
+            className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950"
+            onChange={(event) => onCategoryChange(event.target.value)}
+            value={selectedCategory}
+          >
+            <option value="">All categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+
+          <select
+            className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950"
+            onChange={(event) => onSortChange(event.target.value as ForecastSortOption)}
+            value={sortBy}
+          >
+            {forecastSortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="min-h-0 flex-1 pt-0">
         {loading ? (
           <div className="space-y-2">
-            {Array.from({ length: 8 }, (_, index) => (
-              <div className="loading-shimmer h-12 rounded-md bg-slate-100" key={index} />
+            {Array.from({ length: 9 }, (_, index) => (
+              <div className="loading-shimmer h-14 rounded-md bg-slate-100" key={index} />
             ))}
           </div>
-        ) : data && data.items.length > 0 ? (
-          <>
+        ) : pagination.items.length > 0 ? (
+          <div className="flex h-full min-h-[32rem] flex-col justify-between gap-3">
             <div className="overflow-hidden rounded-md border border-slate-200">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
                     <th className="px-3 py-2">Product</th>
-                    <th className="px-3 py-2">Status</th>
-                    <th className="px-3 py-2 text-right">This year</th>
+                    <th className="px-3 py-2 text-right">Current Month</th>
+                    <th className="px-3 py-2 text-right">12 Months</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.items.map((item) => (
+                  {pagination.items.map((product) => (
                     <tr
                       className={
-                        selectedProductId === item.productId
+                        selectedProductId === product.productId
                           ? "cursor-pointer bg-emerald-50"
                           : "cursor-pointer hover:bg-slate-50"
                       }
-                      key={item.productId}
-                      onClick={() => onSelect(item.productId)}
+                      key={product.productId}
+                      onClick={() => onProductSelect(product.productId)}
                     >
                       <td className="px-3 py-3">
-                        <p className="font-medium text-slate-950">{item.productName}</p>
+                        <p className="font-medium text-slate-950">{product.productName}</p>
                         <p className="text-xs text-slate-500">
-                          {item.productId} - {item.category}
+                          {product.productCode} - {product.category}
                         </p>
-                      </td>
-                      <td className="px-3 py-3">
-                        <StatusBadge variant={statusVariant(item.status)}>
-                          {formatStatusLabel(item.status)}
-                        </StatusBadge>
+                        <p
+                          className={`mt-1 text-xs font-medium ${expectedChangeClassName(product.forecastVariancePercentage)}`}
+                        >
+                          {formatForecastVariance(product.forecastVariancePercentage)}
+                        </p>
                       </td>
                       <td className="px-3 py-3 text-right font-medium">
-                        {formatNumber(item.totalForecast2026)}
-                        <p className="text-xs text-slate-500">
-                          {formatPercent(item.growthVersus2025)}
-                        </p>
+                        {formatNumber(product.currentMonthForecastQuantity)}
+                      </td>
+                      <td className="px-3 py-3 text-right font-medium">
+                        {formatNumber(product.twelveMonthForecastTotal)}
                       </td>
                     </tr>
                   ))}
@@ -394,22 +451,22 @@ function ProductTable({
               </table>
             </div>
 
-            <div className="mt-3 flex items-center justify-between">
-              <p className="text-xs text-slate-500">
-                Page {data.page} of {data.totalPages}
-              </p>
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+              <span>
+                {pagination.startItem}-{pagination.endItem} of {pagination.totalItems} products
+              </span>
               <div className="flex gap-2">
                 <Button
-                  disabled={data.page <= 1}
-                  onClick={() => onPageChange(data.page - 1)}
+                  disabled={pagination.page <= 1}
+                  onClick={() => onProductsPageChange(pagination.page - 1)}
                   type="button"
                   variant="secondary"
                 >
                   Previous
                 </Button>
                 <Button
-                  disabled={data.page >= data.totalPages}
-                  onClick={() => onPageChange(data.page + 1)}
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => onProductsPageChange(pagination.page + 1)}
                   type="button"
                   variant="secondary"
                 >
@@ -417,10 +474,11 @@ function ProductTable({
                 </Button>
               </div>
             </div>
-          </>
+          </div>
         ) : (
-          <div className="rounded-md border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-            No forecast products match the current filters.
+          <div className="flex h-full min-h-[18rem] items-center justify-center rounded-md border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
+            No products match{" "}
+            {searchQuery.trim() ? `"${searchQuery.trim()}"` : "the selected filters"}.
           </div>
         )}
       </CardContent>
@@ -428,193 +486,157 @@ function ProductTable({
   );
 }
 
-function SelectedProductDetail({
+function MonthlyForecastCard({
   chartData,
+  currentForecast,
+  forecastRows,
   loading,
-  product
+  product,
+  refreshing,
+  twelveMonthForecast
 }: {
   chartData: ReturnType<typeof buildChartData>;
+  currentForecast: ForecastPoint | null;
+  forecastRows: ForecastPoint[];
   loading: boolean;
   product: ProductForecastDetail | null;
+  refreshing: boolean;
+  twelveMonthForecast: number | null;
 }) {
   if (loading) {
     return (
-      <Card>
+      <Card className="flex h-full min-h-[34rem] flex-col">
         <CardContent className="space-y-4 pt-5">
           <div className="loading-shimmer h-8 rounded-md bg-slate-100" />
+          <div className="loading-shimmer h-24 rounded-md bg-slate-100" />
           <div className="loading-shimmer h-72 rounded-md bg-slate-100" />
-          <div className="loading-shimmer h-52 rounded-md bg-slate-100" />
+          <div className="loading-shimmer h-40 rounded-md bg-slate-100" />
         </CardContent>
       </Card>
     );
   }
 
-  if (!product) {
+  if (!product || !currentForecast) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center text-sm text-slate-500">
-          Select a product to view sales history, this year's forecast, and suggested quantities.
+      <Card className="flex h-full min-h-[34rem] flex-col">
+        <CardContent className="flex flex-1 items-center justify-center p-8 text-center text-sm text-slate-500">
+          Select a product to view its 12-month forecast.
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <CardTitle>{product.productName}</CardTitle>
-              <p className="mt-1 text-sm text-slate-500">
-                {product.productId} - {product.category}
-              </p>
+    <Card className="flex h-full min-h-0 flex-col">
+      <CardHeader className="shrink-0">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <CardTitle>{product.productName}</CardTitle>
+            <p className="mt-1 text-sm text-slate-500">
+              {product.productCode} - {product.category}
+            </p>
+          </div>
+          {refreshing ? (
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              Refreshing
             </div>
-            <StatusBadge variant={statusVariant(product.status)}>
-              {formatStatusLabel(product.status)}
-            </StatusBadge>
-          </div>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <Metric
-            label="2025 sales"
-            value={formatNumber(
-              product.historical
-                .filter((point) => point.period.startsWith("2025-"))
-                .reduce((sum, point) => sum + point.quantitySold, 0)
-            )}
-          />
-          <Metric
-            label="Forecast this year"
-            value={formatNumber(
-              product.forecast.reduce((sum, point) => sum + point.recommendedQuantity, 0)
-            )}
-          />
-          <Metric label="Forecast variance" value={formatPercent(product.metrics.wape)} />
-        </CardContent>
-      </Card>
+          ) : null}
+        </div>
+      </CardHeader>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Sales history and forecast</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer height="100%" width="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="period" minTickGap={24} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Legend />
-                <Line
-                  connectNulls={false}
-                  dataKey="actual"
-                  name="Actual sales"
-                  stroke="#047857"
-                  strokeWidth={2}
-                />
-                <Line
-                  connectNulls={false}
-                  dataKey="forecast"
-                  name="Forecast"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                />
-                <Line
-                  connectNulls={false}
-                  dataKey="lower"
-                  name="Low range"
-                  stroke="#94a3b8"
-                  strokeDasharray="4 4"
-                />
-                <Line
-                  connectNulls={false}
-                  dataKey="upper"
-                  name="High range"
-                  stroke="#94a3b8"
-                  strokeDasharray="4 4"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-4 pt-0">
+        <div className="grid gap-3 md:grid-cols-3">
+          <Metric
+            label="Current Month Forecast"
+            value={formatNumber(currentForecast.predictedQuantity, 1)}
+          />
+          <Metric label="12-Month Forecast" value={formatNumber(twelveMonthForecast, 1)} />
+          <Metric
+            label="Expected Change"
+            supportingText="Compared with the same month last year"
+            value={formatForecastVariance(currentForecast.forecastVariancePercentage)}
+            valueClassName={expectedChangeClassName(currentForecast.forecastVariancePercentage)}
+          />
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>2026 monthly forecast</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-hidden rounded-md border border-slate-200">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                <tr>
-                  <th className="px-3 py-2 text-left">Month</th>
-                  <th className="px-3 py-2 text-right">Forecast</th>
-                  <th className="px-3 py-2 text-right">Suggested qty</th>
-                  <th className="px-3 py-2 text-right">Low range</th>
-                  <th className="px-3 py-2 text-right">High range</th>
-                  <th className="px-3 py-2 text-right">2025</th>
-                  <th className="px-3 py-2 text-right">Change</th>
+        <div className="min-h-[20rem] flex-1">
+          <ResponsiveContainer height="100%" width="100%">
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" minTickGap={16} />
+              <YAxis allowDecimals={false} />
+              <Tooltip formatter={(value) => formatNumber(Number(value), 1)} />
+              <Legend />
+              <Line
+                connectNulls={false}
+                dataKey="forecastedDemand"
+                name="Forecasted Demand"
+                stroke="#2563eb"
+                strokeWidth={2}
+              />
+              <Line
+                connectNulls={false}
+                dataKey="salesLastYear"
+                name="Sales Last Year"
+                stroke="#047857"
+                strokeWidth={2}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="rounded-md border border-slate-200">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-3 py-2 text-left">Month</th>
+                <th className="px-3 py-2 text-right">Forecasted Demand</th>
+                <th className="px-3 py-2 text-right">Sales Last Year</th>
+                <th className="px-3 py-2 text-right">Expected Change</th>
+              </tr>
+            </thead>
+            <tbody>
+              {forecastRows.map((point) => (
+                <tr className="border-t border-slate-100" key={point.period}>
+                  <td className="px-3 py-2 font-medium">{formatMonthLabel(point.period)}</td>
+                  <td className="px-3 py-2 text-right">
+                    {formatNumber(point.predictedQuantity, 1)}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    {formatNumber(point.comparisonSalesQuantity)}
+                  </td>
+                  <td
+                    className={`px-3 py-2 text-right font-medium ${expectedChangeClassName(point.forecastVariancePercentage)}`}
+                  >
+                    {formatForecastVariance(point.forecastVariancePercentage)}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {product.forecast.map((point) => (
-                  <tr className="border-t border-slate-100" key={point.period}>
-                    <td className="px-3 py-2 font-medium">{point.period}</td>
-                    <td className="px-3 py-2 text-right">
-                      {formatNumber(point.predictedQuantity, 2)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {formatNumber(point.recommendedQuantity)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {formatNumber(point.lowerConfidence, 2)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {formatNumber(point.upperConfidence, 2)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {formatNumber(point.sameMonthLastYear)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {formatPercent(point.percentageChangeVersus2025)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {product.warnings.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Forecast notes</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {product.warnings.slice(0, 6).map((warning) => (
-              <div
-                className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800"
-                key={warning}
-              >
-                {formatForecastNote(warning)}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ) : null}
-    </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({
+  label,
+  supportingText,
+  value,
+  valueClassName
+}: {
+  label: string;
+  supportingText?: string;
+  value: string;
+  valueClassName?: string;
+}) {
   return (
     <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
       <p className="text-xs uppercase text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-950">{value}</p>
+      <p className={`mt-1 text-sm font-semibold ${valueClassName ?? "text-slate-950"}`}>{value}</p>
+      {supportingText ? <p className="mt-1 text-xs text-slate-500">{supportingText}</p> : null}
     </div>
   );
 }

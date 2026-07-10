@@ -37,6 +37,8 @@ export type ForecastPoint = {
   sameMonthLastYear: number | null;
   differenceVersus2025: number | null;
   percentageChangeVersus2025: number | null;
+  comparisonSalesQuantity: number | null;
+  forecastVariancePercentage: number | null;
 };
 
 export type ForecastMetrics = {
@@ -57,6 +59,9 @@ export type ForecastModelDetails = {
 
 export type ProductForecastDetail = {
   productId: string;
+  sku: string;
+  barcode: string | null;
+  productCode: string;
   productName: string;
   category: string;
   productPrice: number;
@@ -73,14 +78,19 @@ export type ProductForecastDetail = {
 
 export type ForecastProductSummary = {
   productId: string;
+  sku: string;
+  barcode: string | null;
+  productCode: string;
   productName: string;
   category: string;
-  status: ForecastStatus;
-  model: ForecastModel | null;
   totalHistorical2024: number;
   totalHistorical2025: number;
   totalForecast2026: number;
   growthVersus2025: number | null;
+  currentMonthForecastQuantity: number | null;
+  recentHistoricalSalesTotal: number;
+  twelveMonthForecastTotal: number;
+  forecastVariancePercentage: number | null;
   warningCount: number;
 };
 
@@ -88,16 +98,12 @@ export type ForecastSort =
   | "productId"
   | "productName"
   | "category"
-  | "model"
-  | "status"
   | "totalForecast2026"
   | "growthVersus2025";
 
 export type ForecastFilters = {
   search?: string;
   category?: string;
-  model?: ForecastModel | "ALL";
-  status?: ForecastStatus | "ALL";
   sortBy: ForecastSort;
   sortDirection: "asc" | "desc";
   page: number;
@@ -111,8 +117,6 @@ export type PaginatedForecastProductsResponse = {
   totalItems: number;
   totalPages: number;
   categories: string[];
-  models: ForecastModel[];
-  statuses: ForecastStatus[];
   generatedAt: string | null;
 };
 
@@ -145,6 +149,7 @@ export type ForecastSummary = {
 
 export type ForecastGenerationSummary = {
   generatedAt: string | null;
+  forecastStartMonth: string | null;
   durationMs: number;
   totalProductsProcessed: number;
   sarimaProducts: number;

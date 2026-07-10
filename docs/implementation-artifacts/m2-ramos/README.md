@@ -63,8 +63,8 @@ This artifact set is reconstructed from repository evidence available on `sprint
 
 | Item                 | Value                                                                                                                                                           |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Last update          | 2026-07-10                                                                                                                                                      |
+| Last update          | 2026-07-11                                                                                                                                                      |
 | Current branch       | m2/v0.3/feat/sarima-forecast-reports                                                                                                                            |
-| Current work areas   | Scripts / CI<br>Other<br>Backend<br>Docs<br>Database<br>Electron<br>Forecasting<br>Frontend                                                                     |
+| Current work areas   | Backend<br>Docs<br>Forecasting<br>Frontend<br>Scripts / CI                                                                                                      |
 | Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
 | Validation status    | Passed                                                                                                                                                          |

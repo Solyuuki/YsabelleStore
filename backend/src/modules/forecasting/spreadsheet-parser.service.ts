@@ -4,6 +4,7 @@ import path from "node:path";
 import readXlsxFile from "read-excel-file/node";
 
 import type { HistoricalImportIssue, HistoricalSalesPoint } from "./forecast.types.js";
+import { normalizeProductName } from "../../utils/productNameNormalizer.js";
 
 const MONTH_HEADERS = [
   "Jan",
@@ -83,6 +84,10 @@ function decodeSpreadsheetText(value: RawCell) {
     .replace(/&amp;/g, "&")
     .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ");
+}
+
+function decodeProductName(value: RawCell) {
+  return normalizeProductName(decodeSpreadsheetText(value));
 }
 
 function toNumber(value: RawCell) {
@@ -246,7 +251,7 @@ export async function parseHistoricalWorkbook(sourcePath: string, workbookYear: 
   dataRows.forEach((row, index) => {
     const rowNumber = headerRowIndex + index + 2;
     const productId = decodeSpreadsheetText(getCell(row, headers, "Product ID"));
-    const productName = decodeSpreadsheetText(getCell(row, headers, "Product Name"));
+    const productName = decodeProductName(getCell(row, headers, "Product Name"));
     const category = decodeSpreadsheetText(getCell(row, headers, "Category"));
     const productPrice = toNumber(getCell(row, headers, "Product Price"));
     const totalQuantitySold = toNumber(getCell(row, headers, "Total Quantity Sold"));

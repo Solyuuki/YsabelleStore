@@ -5,10 +5,10 @@ import type {
   ForecastModel,
   ForecastPoint,
   ForecastProductSummary,
-  ForecastStatus,
   ForecastSummary,
   ProductForecastDetail
 } from "./forecast.types.js";
+import { getActiveForecastMonth, monthStartIso } from "./forecast-window.js";
 import { loadHistoricalSalesData } from "./historical-sales.service.js";
 import { runPythonForecast } from "./python-forecast-runner.service.js";
 import { HttpError } from "../../utils/httpError.js";
@@ -26,6 +26,10 @@ function sumHistorical(product: ProductForecastDetail, year: number) {
     .reduce((sum, point) => sum + point.quantitySold, 0);
 }
 
+function sumRecentHistorical(product: ProductForecastDetail, months = 12) {
+  return product.historical.slice(-months).reduce((sum, point) => sum + point.quantitySold, 0);
+}
+
 function percentageChange(current: number, previous: number) {
   if (previous === 0) {
     return null;
@@ -37,14 +41,20 @@ function percentageChange(current: number, previous: number) {
 function summarizeProduct(product: ProductForecastDetail): ForecastProductSummary {
   const totalHistorical2025 = sumHistorical(product, 2025);
   const totalForecast2026 = sumForecast(product.forecast);
+  const currentForecastPoint = product.forecast[0];
 
   return {
+    barcode: product.barcode,
     category: product.category,
+    currentMonthForecastQuantity: currentForecastPoint?.recommendedQuantity ?? null,
+    forecastVariancePercentage: currentForecastPoint?.forecastVariancePercentage ?? null,
     growthVersus2025: percentageChange(totalForecast2026, totalHistorical2025),
-    model: product.model,
+    productCode: product.productCode,
     productId: product.productId,
     productName: product.productName,
-    status: product.status,
+    recentHistoricalSalesTotal: sumRecentHistorical(product),
+    sku: product.sku,
+    twelveMonthForecastTotal: totalForecast2026,
     totalForecast2026,
     totalHistorical2024: sumHistorical(product, 2024),
     totalHistorical2025,
@@ -97,6 +107,7 @@ function buildGenerationSummary(
   products: ProductForecastDetail[],
   durationMs: number,
   generatedAt: string,
+  forecastStartMonth: string,
   validation: ForecastBatch["validation"]
 ): ForecastGenerationSummary {
   const problemCounts = countProblemValues(products);
@@ -109,6 +120,7 @@ function buildGenerationSummary(
     durationMs,
     failedProducts: products.filter((product) => product.status === "FAILED").length,
     firstForecastMonth: sortedForecastPeriods[0] ?? null,
+    forecastStartMonth: monthStartIso(forecastStartMonth),
     forecastPointsGenerated: forecastPeriods.length,
     generatedAt,
     lastForecastMonth: sortedForecastPeriods.at(-1) ?? null,
@@ -123,7 +135,14 @@ function buildGenerationSummary(
 }
 
 export async function generateForecastBatch(options: { force?: boolean } = {}) {
-  if (forecastCache && !options.force) {
+  const activeForecastMonth = getActiveForecastMonth();
+  const activeForecastStart = monthStartIso(activeForecastMonth);
+
+  if (
+    forecastCache &&
+    !options.force &&
+    forecastCache.generation.forecastStartMonth === activeForecastStart
+  ) {
     return forecastCache;
   }
 
@@ -149,6 +168,7 @@ export async function generateForecastBatch(options: { force?: boolean } = {}) {
       pythonResponse.products,
       durationMs,
       generatedAt,
+      activeForecastMonth,
       historicalImport.validation
     );
 
@@ -182,10 +202,8 @@ export async function getForecastProductList(filters: ForecastFilters) {
       ? `${item.productId} ${item.productName} ${item.category}`.toLowerCase().includes(search)
       : true;
     const matchesCategory = filters.category ? item.category === filters.category : true;
-    const matchesModel = filters.model === "ALL" ? true : item.model === filters.model;
-    const matchesStatus = filters.status === "ALL" ? true : item.status === filters.status;
 
-    return matchesSearch && matchesCategory && matchesModel && matchesStatus;
+    return matchesSearch && matchesCategory;
   });
 
   filtered.sort((left, right) => {
@@ -217,10 +235,8 @@ export async function getForecastProductList(filters: ForecastFilters) {
     categories,
     generatedAt: batch.generation.generatedAt,
     items: filtered.slice(start, start + filters.pageSize),
-    models: ["SARIMA", "SEASONAL_NAIVE", "MOVING_AVERAGE"] as ForecastModel[],
     page,
     pageSize: filters.pageSize,
-    statuses: ["READY", "WARNING", "FAILED"] as ForecastStatus[],
     totalItems,
     totalPages
   };
@@ -275,7 +291,7 @@ export async function getForecastSummary(): Promise<ForecastSummary> {
     categorySummaries: [...categories.values()].sort((left, right) =>
       left.category.localeCompare(right.category)
     ),
-    failedProducts: summaries.filter((item) => item.status === "FAILED").length,
+    failedProducts: batch.products.filter((item) => item.status === "FAILED").length,
     forecastGrowthVersus2025: percentageChange(forecastUnits2026, actualUnits2025),
     forecastUnits2026,
     generatedAt: batch.generation.generatedAt,
@@ -317,7 +333,7 @@ export async function getForecastSummary(): Promise<ForecastSummary> {
     topForecastedProducts: [...summaries]
       .sort((left, right) => right.totalForecast2026 - left.totalForecast2026)
       .slice(0, 8),
-    totalProductsForecasted: summaries.filter((item) => item.status !== "FAILED").length,
+    totalProductsForecasted: batch.products.filter((item) => item.status !== "FAILED").length,
     warningProducts: summaries.filter((item) => item.warningCount > 0).length
   };
 }

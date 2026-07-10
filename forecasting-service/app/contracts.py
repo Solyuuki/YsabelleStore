@@ -24,6 +24,7 @@ class ForecastRequest(TypedDict):
     products: list[ProductSeries]
     horizon: int
     seasonalPeriod: int
+    forecastStartPeriod: str
 
 
 JsonDict = dict[str, Any]

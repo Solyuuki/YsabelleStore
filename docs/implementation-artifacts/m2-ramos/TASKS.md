@@ -42,3 +42,4 @@ M2 backend tasks require code, API contract documentation, validation output, an
 | Task ID               | Scope                                                          | Status             | Evidence                             | Next Action                                           |
 | --------------------- | -------------------------------------------------------------- | ------------------ | ------------------------------------ | ----------------------------------------------------- |
 | YSB-M2-RAMOS-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | m2/v0.3/feat/sarima-forecast-reports | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M2-RAMOS-20260711 | Preserve artifact markdown templates during automation updates | Manual QA Required | m2/v0.3/feat/sarima-forecast-reports | Perform manual QA on the changed auth/device/UI flow. |

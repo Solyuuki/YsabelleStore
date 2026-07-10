@@ -48,6 +48,15 @@ export async function getForecastProducts(filters: ForecastFilters) {
   );
 }
 
+export async function getForecastProductCollection() {
+  return await getForecastProducts({
+    page: 1,
+    pageSize: 500,
+    sortBy: "productId",
+    sortDirection: "asc"
+  });
+}
+
 export async function getForecastProduct(productId: string) {
   return await apiClient.request<ProductForecastDetail>(
     `/api/forecasts/products/${encodeURIComponent(productId)}`,
