@@ -191,11 +191,13 @@ export async function fetchProducts(
     status?: string;
     page?: number;
     pageSize?: number;
-  } = {}
+  } = {},
+  options: Pick<RequestInit, "signal"> = {}
 ): Promise<{ items: ProductRecord[]; meta: PaginationMeta }> {
   const queryString = buildQueryString(query);
   const response = await apiClient.request<ProductRecord[], never, PaginationMeta>(
-    `/api/catalog/products${queryString ? `?${queryString}` : ""}`
+    `/api/catalog/products${queryString ? `?${queryString}` : ""}`,
+    options
   );
 
   if (!response.success || !response.data) {

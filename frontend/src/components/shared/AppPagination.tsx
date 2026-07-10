@@ -1,3 +1,4 @@
+import { LoaderCircle } from "lucide-react";
 import { useMemo } from "react";
 
 import {
@@ -71,7 +72,13 @@ export function AppPagination({
       <p className="text-sm text-slate-600">
         {totalItems === 0
           ? `Showing 0 ${itemLabel}`
-          : `Showing ${startItem}–${endItem} of ${totalItems} ${itemLabel}`}
+          : `Showing ${startItem}-${endItem} of ${totalItems} ${itemLabel}`}
+        {isLoading ? (
+          <span className="ml-3 inline-flex items-center gap-1 font-medium text-emerald-700">
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+            Updating...
+          </span>
+        ) : null}
       </p>
 
       <div className="flex flex-wrap items-center justify-end gap-3">
@@ -141,9 +148,9 @@ export function AppPagination({
                       type="button"
                     >
                       <button
+                        aria-label={`Page ${token}`}
                         disabled={isLoading || isActive}
                         type="button"
-                        aria-label={`Page ${token}`}
                       >
                         {token}
                       </button>

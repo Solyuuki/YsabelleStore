@@ -45,13 +45,29 @@ import {
   type ProductImportSummary,
   type ProductRecord
 } from "@/services/catalogApi";
+import { waitForMinimumDuration } from "@/utils/timing";
 
 const MAX_IMPORT_FILE_SIZE_MB = 5;
 const DEFAULT_PAGE_SIZE = 20;
 const PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
 const SEARCH_DEBOUNCE_MS = 300;
+const CATALOG_SEARCH_MINIMUM_MS = 400;
+const CATALOG_FILTER_MINIMUM_MS = 450;
+const CATALOG_PAGINATION_MINIMUM_MS = 400;
+const CATALOG_PAGE_SIZE_MINIMUM_MS = 400;
+const CATALOG_REFRESH_MINIMUM_MS = 350;
+const TEMPLATE_DOWNLOAD_MINIMUM_MS = 600;
 const PREVIEW_LOADING_MINIMUM_MS = 500;
 const IMPORT_LOADING_MINIMUM_MS = 700;
+
+type CatalogLoadingReason =
+  | "initial"
+  | "search"
+  | "filter"
+  | "pagination"
+  | "page-size"
+  | "refresh"
+  | null;
 
 type ImportPhase =
   | "idle"
@@ -85,8 +101,9 @@ export function ProductsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [catalogLoadingReason, setCatalogLoadingReason] = useState<CatalogLoadingReason>("initial");
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [importState, setImportState] = useState<ImportState>({
     file: null,
     preview: null,
@@ -98,6 +115,21 @@ export function ProductsPage() {
   const importTriggerRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const importSessionRef = useRef(0);
+  const catalogRequestIdRef = useRef(0);
+  const catalogAbortControllerRef = useRef<AbortController | null>(null);
+  const previousCatalogParamsRef = useRef<{
+    debouncedSearch: string;
+    page: number;
+    pageSize: number;
+    statusFilter: typeof statusFilter;
+    initialized: boolean;
+  }>({
+    debouncedSearch: "",
+    page: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
+    statusFilter: "ALL",
+    initialized: false
+  });
   const { pushToast } = useToast();
 
   const selectedProduct = useMemo(
@@ -107,6 +139,7 @@ export function ProductsPage() {
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
+      setPage(1);
       setDebouncedSearch(searchInput);
     }, SEARCH_DEBOUNCE_MS);
 
@@ -115,23 +148,52 @@ export function ProductsPage() {
     };
   }, [searchInput]);
 
-  async function loadCatalog(nextPage = page, nextPageSize = pageSize) {
-    setLoading(true);
-    setLoadError(null);
+  useEffect(() => {
+    return () => {
+      catalogAbortControllerRef.current?.abort();
+    };
+  }, []);
+
+  async function loadCatalog(options: {
+    reason: Exclude<CatalogLoadingReason, null>;
+    page: number;
+    pageSize: number;
+    search: string;
+    status: typeof statusFilter;
+  }) {
+    const requestId = ++catalogRequestIdRef.current;
+    catalogAbortControllerRef.current?.abort();
+
+    const controller = new AbortController();
+    catalogAbortControllerRef.current = controller;
+    setCatalogLoadingReason(options.reason);
+    setCatalogError(null);
 
     try {
-      const response = await fetchProducts({
-        page: nextPage,
-        pageSize: nextPageSize,
-        search: debouncedSearch.trim() || undefined,
-        status: statusFilter === "ALL" ? undefined : statusFilter
-      });
+      const response = await waitForMinimumDuration(
+        fetchProducts(
+          {
+            page: options.page,
+            pageSize: options.pageSize,
+            search: options.search.trim() || undefined,
+            status: options.status === "ALL" ? undefined : options.status
+          },
+          {
+            signal: controller.signal
+          }
+        ),
+        getCatalogMinimumDuration(options.reason)
+      );
+
+      if (requestId !== catalogRequestIdRef.current) {
+        return;
+      }
 
       if (!response.meta) {
         throw new Error("Product pagination metadata is unavailable.");
       }
 
-      if (response.meta.totalPages > 0 && nextPage > response.meta.totalPages) {
+      if (response.meta.totalPages > 0 && options.page > response.meta.totalPages) {
         setPage(response.meta.totalPages);
         return;
       }
@@ -139,20 +201,56 @@ export function ProductsPage() {
       setProducts(response.items);
       setPaginationMeta(response.meta);
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : "Unable to load products.");
-      setPaginationMeta(null);
-      setProducts([]);
-      setSelectedProductId(null);
-      setMovements([]);
-      setMovementError(null);
+      if (requestId !== catalogRequestIdRef.current) {
+        return;
+      }
+
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      setCatalogError(
+        error instanceof Error ? error.message : getCatalogErrorMessage(options.reason)
+      );
     } finally {
-      setLoading(false);
+      if (requestId === catalogRequestIdRef.current) {
+        setCatalogLoadingReason(null);
+      }
     }
   }
 
   useEffect(() => {
-    void loadCatalog();
-  }, [debouncedSearch, statusFilter, page, pageSize]);
+    const previous = previousCatalogParamsRef.current;
+    let reason: Exclude<CatalogLoadingReason, null> = previous.initialized ? "refresh" : "initial";
+
+    if (previous.initialized) {
+      if (debouncedSearch !== previous.debouncedSearch) {
+        reason = "search";
+      } else if (statusFilter !== previous.statusFilter) {
+        reason = "filter";
+      } else if (pageSize !== previous.pageSize) {
+        reason = "page-size";
+      } else if (page !== previous.page) {
+        reason = "pagination";
+      }
+    }
+
+    previousCatalogParamsRef.current = {
+      debouncedSearch,
+      page,
+      pageSize,
+      statusFilter,
+      initialized: true
+    };
+
+    void loadCatalog({
+      reason,
+      page,
+      pageSize,
+      search: debouncedSearch,
+      status: statusFilter
+    });
+  }, [debouncedSearch, page, pageSize, statusFilter]);
 
   useEffect(() => {
     if (!selectedProductId) {
@@ -216,7 +314,13 @@ export function ProductsPage() {
   }, [products, selectedProductId]);
 
   async function refreshCatalog() {
-    await loadCatalog(page, pageSize);
+    await loadCatalog({
+      reason: "refresh",
+      page,
+      pageSize,
+      search: debouncedSearch,
+      status: statusFilter
+    });
   }
 
   function resetImportFlow() {
@@ -245,8 +349,17 @@ export function ProductsPage() {
   }
 
   async function handleTemplateDownload() {
+    if (isDownloadingTemplate) {
+      return;
+    }
+
+    setIsDownloadingTemplate(true);
+
     try {
-      const csv = await downloadProductImportTemplate();
+      const csv = await waitForMinimumDuration(
+        downloadProductImportTemplate(),
+        TEMPLATE_DOWNLOAD_MINIMUM_MS
+      );
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
       const url = window.URL.createObjectURL(blob);
       const anchor = document.createElement("a");
@@ -255,29 +368,20 @@ export function ProductsPage() {
       anchor.download = "product-import-template.csv";
       anchor.click();
       window.URL.revokeObjectURL(url);
+      pushToast({
+        message: "The product import template is ready.",
+        title: "Template downloaded",
+        variant: "success"
+      });
     } catch {
       pushToast({
-        message: "Unable to download the template right now.",
-        title: "Template unavailable",
+        message: "The product import template could not be downloaded. Please try again.",
+        title: "Download failed",
         variant: "error"
       });
+    } finally {
+      setIsDownloadingTemplate(false);
     }
-  }
-
-  async function waitForMinimumDuration<T>(promise: Promise<T>, minimumDurationMs: number) {
-    const [result] = await Promise.all([
-      promise.then(
-        (value) => ({ status: "fulfilled" as const, value }),
-        (error) => ({ status: "rejected" as const, error })
-      ),
-      new Promise((resolve) => window.setTimeout(resolve, minimumDurationMs))
-    ]);
-
-    if (result.status === "rejected") {
-      throw result.error;
-    }
-
-    return result.value;
   }
 
   function getImportFileValidationError(file: File) {
@@ -555,6 +659,14 @@ export function ProductsPage() {
     clearSelection();
   }
 
+  const isCatalogLoading = catalogLoadingReason !== null;
+  const hasCatalogRows = products.length > 0;
+  const showCatalogSkeleton = isCatalogLoading && !hasCatalogRows;
+  const showCatalogOverlay = isCatalogLoading && hasCatalogRows;
+  const searchIsLoading = catalogLoadingReason === "search";
+  const filterIsLoading = catalogLoadingReason === "filter";
+  const catalogLoadingLabel = getCatalogLoadingLabel(catalogLoadingReason, page);
+
   return (
     <>
       <ImportProductsDialog
@@ -574,9 +686,18 @@ export function ProductsPage() {
         description="Import products, verify catalog state, and keep current stock aligned with inventory and POS."
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="secondary" onClick={handleTemplateDownload} type="button">
-              <Download className="h-4 w-4" aria-hidden="true" />
-              Template
+            <Button
+              disabled={isDownloadingTemplate}
+              variant="secondary"
+              onClick={handleTemplateDownload}
+              type="button"
+            >
+              {isDownloadingTemplate ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Download className="h-4 w-4" aria-hidden="true" />
+              )}
+              {isDownloadingTemplate ? "Downloading..." : "Template"}
             </Button>
             <Button
               onClick={openImportDialog}
@@ -601,19 +722,31 @@ export function ProductsPage() {
           <CardContent>
             <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-[1fr_180px]">
-                <label className="flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
+                <label className="relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
                   <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <input
-                    className="w-full bg-transparent text-sm outline-none"
+                    aria-busy={searchIsLoading}
+                    className={[
+                      "w-full bg-transparent text-sm outline-none",
+                      searchIsLoading ? "pr-8" : ""
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     placeholder="Search name, SKU, barcode"
                     value={searchInput}
                     onChange={(event) => handleSearchChange(event.target.value)}
                   />
+                  {searchIsLoading ? (
+                    <LoaderCircle className="absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
+                  ) : null}
                 </label>
-                <label className="flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
+                <label className="relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
                   <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <select
-                    className="w-full bg-transparent outline-none"
+                    aria-busy={filterIsLoading}
+                    className={["w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
+                      .filter(Boolean)
+                      .join(" ")}
                     value={statusFilter}
                     onChange={(event) =>
                       handleStatusFilterChange(event.target.value as typeof statusFilter)
@@ -624,24 +757,33 @@ export function ProductsPage() {
                     <option value="INACTIVE">Inactive</option>
                     <option value="DISCONTINUED">Discontinued</option>
                   </select>
+                  {filterIsLoading ? (
+                    <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
+                  ) : null}
                 </label>
               </div>
-
-              {loading ? (
-                <LoadingState
-                  badge="Loading"
-                  helper="Refreshing the current page while keeping the catalog layout stable."
-                  label="Loading product page"
-                />
-              ) : null}
-
-              {loadError ? (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                  {loadError}
+              {catalogError ? (
+                <div
+                  aria-live="polite"
+                  className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+                >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p>{catalogError}</p>
+                    <Button
+                      disabled={isCatalogLoading}
+                      onClick={() => {
+                        void refreshCatalog();
+                      }}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Retry
+                    </Button>
+                  </div>
                 </div>
               ) : null}
 
-              {!loading && !loadError && paginationMeta?.totalItems === 0 ? (
+              {paginationMeta?.totalItems === 0 && !isCatalogLoading && !catalogError ? (
                 <EmptyState
                   description="Import a CSV or Excel file to populate the catalog."
                   icon={ShieldCheck}
@@ -649,96 +791,117 @@ export function ProductsPage() {
                 />
               ) : null}
 
-              {products.length > 0 ? (
-                <div className="overflow-x-auto rounded-xl border border-slate-200">
-                  <table className="min-w-[1080px] border-collapse text-left text-sm">
-                    <thead className="bg-slate-100 text-slate-700">
-                      <tr>
-                        <th className="w-[28%] px-3 py-2">Product</th>
-                        <th className="w-[14%] px-3 py-2">SKU</th>
-                        <th className="w-[14%] px-3 py-2">Barcode</th>
-                        <th className="w-[14%] px-3 py-2">Category</th>
-                        <th className="w-[11%] px-3 py-2">Status</th>
-                        <th className="w-[11%] px-3 py-2">Selling price</th>
-                        <th className="w-[8%] px-3 py-2">Stock</th>
-                        <th className="w-[10%] px-3 py-2">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {products.map((product) => {
-                        const isSelected = selectedProductId === product.id;
-
-                        return (
-                          <tr
-                            aria-selected={isSelected}
-                            className={[
-                              "border-t border-slate-200 transition-colors",
-                              "cursor-pointer focus-within:bg-emerald-50/70",
-                              isSelected
-                                ? "bg-emerald-50/70 ring-1 ring-inset ring-emerald-200"
-                                : "bg-white hover:bg-emerald-50/40",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
-                            ].join(" ")}
-                            key={product.id}
-                            onClick={() => toggleSelection(product.id)}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                toggleSelection(product.id);
-                              }
-                            }}
-                            tabIndex={0}
-                          >
-                            <td className="px-3 py-2 align-top">
-                              <div className="font-medium text-slate-950">{product.name}</div>
-                              <div className="text-xs text-slate-500">
-                                {product.description ?? "No description"}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 align-top">{product.sku}</td>
-                            <td className="px-3 py-2 align-top">{product.barcode ?? "-"}</td>
-                            <td className="px-3 py-2 align-top">{product.category.name}</td>
-                            <td className="px-3 py-2 align-top">
-                              <StatusBadge variant={product.isActive ? "success" : "warning"}>
-                                {product.status}
-                              </StatusBadge>
-                            </td>
-                            <td className="px-3 py-2 align-top">
-                              PHP {Number(product.sellingPrice).toFixed(2)}
-                            </td>
-                            <td className="px-3 py-2 align-top">
-                              {product.inventory.currentQuantity}
-                            </td>
-                            <td className="px-3 py-2 align-top">
-                              {product.isActive ? (
-                                <Button
-                                  size="sm"
-                                  type="button"
-                                  variant="secondary"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    void handleDeactivate(product.id);
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" aria-hidden="true" />
-                                  Deactivate
-                                </Button>
-                              ) : (
-                                <StatusBadge variant="warning">Inactive</StatusBadge>
-                              )}
-                            </td>
+              <div
+                aria-busy={isCatalogLoading}
+                aria-live="polite"
+                className="relative overflow-hidden rounded-xl border border-slate-200"
+              >
+                {showCatalogSkeleton ? (
+                  <CatalogTableSkeleton rowCount={pageSize} />
+                ) : hasCatalogRows ? (
+                  <div className={showCatalogOverlay ? "pointer-events-none opacity-70" : ""}>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-[1080px] border-collapse text-left text-sm">
+                        <thead className="bg-slate-100 text-slate-700">
+                          <tr>
+                            <th className="w-[28%] px-3 py-2">Product</th>
+                            <th className="w-[14%] px-3 py-2">SKU</th>
+                            <th className="w-[14%] px-3 py-2">Barcode</th>
+                            <th className="w-[14%] px-3 py-2">Category</th>
+                            <th className="w-[11%] px-3 py-2">Status</th>
+                            <th className="w-[11%] px-3 py-2">Selling price</th>
+                            <th className="w-[8%] px-3 py-2">Stock</th>
+                            <th className="w-[10%] px-3 py-2">Action</th>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : null}
+                        </thead>
+                        <tbody>
+                          {products.map((product) => {
+                            const isSelected = selectedProductId === product.id;
+
+                            return (
+                              <tr
+                                aria-selected={isSelected}
+                                className={[
+                                  "border-t border-slate-200 transition-colors",
+                                  "cursor-pointer focus-within:bg-emerald-50/70",
+                                  isSelected
+                                    ? "bg-emerald-50/70 ring-1 ring-inset ring-emerald-200"
+                                    : "bg-white hover:bg-emerald-50/40",
+                                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
+                                ].join(" ")}
+                                key={product.id}
+                                onClick={() => toggleSelection(product.id)}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    toggleSelection(product.id);
+                                  }
+                                }}
+                                tabIndex={0}
+                              >
+                                <td className="px-3 py-2 align-top">
+                                  <div className="font-medium text-slate-950">{product.name}</div>
+                                  <div className="text-xs text-slate-500">
+                                    {product.description ?? "No description"}
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2 align-top">{product.sku}</td>
+                                <td className="px-3 py-2 align-top">{product.barcode ?? "-"}</td>
+                                <td className="px-3 py-2 align-top">{product.category.name}</td>
+                                <td className="px-3 py-2 align-top">
+                                  <StatusBadge variant={product.isActive ? "success" : "warning"}>
+                                    {product.status}
+                                  </StatusBadge>
+                                </td>
+                                <td className="px-3 py-2 align-top">
+                                  PHP {Number(product.sellingPrice).toFixed(2)}
+                                </td>
+                                <td className="px-3 py-2 align-top">
+                                  {product.inventory.currentQuantity}
+                                </td>
+                                <td className="px-3 py-2 align-top">
+                                  {product.isActive ? (
+                                    <Button
+                                      size="sm"
+                                      type="button"
+                                      variant="secondary"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        void handleDeactivate(product.id);
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                      Deactivate
+                                    </Button>
+                                  ) : (
+                                    <StatusBadge variant="warning">Inactive</StatusBadge>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : null}
+
+                {showCatalogOverlay ? (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/55 px-4 py-6 backdrop-blur-[1px]">
+                    <div className="w-full max-w-md">
+                      <LoadingState
+                        badge="Catalog"
+                        helper="Updating the table while keeping the current results visible."
+                        label={catalogLoadingLabel}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
 
               {paginationMeta ? (
                 <AppPagination
-                  className={loading ? "pointer-events-none opacity-60" : undefined}
-                  isLoading={loading}
+                  isLoading={isCatalogLoading}
                   itemLabel="products"
                   onPageChange={handlePageChange}
                   onPageSizeChange={handlePageSizeChange}
@@ -1611,6 +1774,130 @@ function DetailLine({ label, value }: { label: string; value: string }) {
     <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-1 text-sm font-medium text-slate-950">{value}</p>
+    </div>
+  );
+}
+
+function getCatalogMinimumDuration(reason: Exclude<CatalogLoadingReason, null>) {
+  switch (reason) {
+    case "search":
+      return CATALOG_SEARCH_MINIMUM_MS;
+    case "filter":
+      return CATALOG_FILTER_MINIMUM_MS;
+    case "pagination":
+      return CATALOG_PAGINATION_MINIMUM_MS;
+    case "page-size":
+      return CATALOG_PAGE_SIZE_MINIMUM_MS;
+    case "refresh":
+      return CATALOG_REFRESH_MINIMUM_MS;
+    case "initial":
+      return CATALOG_SEARCH_MINIMUM_MS;
+  }
+}
+
+function getCatalogErrorMessage(reason: Exclude<CatalogLoadingReason, null>) {
+  switch (reason) {
+    case "search":
+      return "Unable to search products.";
+    case "filter":
+      return "Unable to apply the selected filter.";
+    case "pagination":
+      return "Unable to load the requested page.";
+    case "page-size":
+      return "Unable to update the page size.";
+    case "refresh":
+      return "Unable to refresh products.";
+    case "initial":
+      return "Unable to load products.";
+  }
+}
+
+function getCatalogLoadingLabel(reason: CatalogLoadingReason, page: number) {
+  switch (reason) {
+    case "search":
+      return "Searching products...";
+    case "filter":
+      return "Applying status filter...";
+    case "pagination":
+      return `Loading page ${page}...`;
+    case "page-size":
+      return "Updating page size...";
+    case "refresh":
+      return "Updating results...";
+    case "initial":
+      return "Loading products...";
+    default:
+      return "Updating...";
+  }
+}
+
+function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
+  const skeletonRows = Array.from(
+    { length: Math.min(Math.max(rowCount, 1), 8) },
+    (_, index) => index
+  );
+
+  return (
+    <div className="relative">
+      <div className="overflow-x-auto">
+        <table className="min-w-[1080px] border-collapse text-left text-sm">
+          <thead className="bg-slate-100 text-slate-700">
+            <tr>
+              <th className="w-[28%] px-3 py-2">Product</th>
+              <th className="w-[14%] px-3 py-2">SKU</th>
+              <th className="w-[14%] px-3 py-2">Barcode</th>
+              <th className="w-[14%] px-3 py-2">Category</th>
+              <th className="w-[11%] px-3 py-2">Status</th>
+              <th className="w-[11%] px-3 py-2">Selling price</th>
+              <th className="w-[8%] px-3 py-2">Stock</th>
+              <th className="w-[10%] px-3 py-2">Action</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white">
+            {skeletonRows.map((rowIndex) => (
+              <tr className="border-t border-slate-200" key={rowIndex}>
+                <td className="px-3 py-3">
+                  <div className="space-y-2">
+                    <div className="loading-shimmer h-4 w-44 rounded-full bg-slate-100" />
+                    <div className="loading-shimmer h-3 w-56 rounded-full bg-slate-100" />
+                  </div>
+                </td>
+                <td className="px-3 py-3">
+                  <div className="loading-shimmer h-4 w-24 rounded-full bg-slate-100" />
+                </td>
+                <td className="px-3 py-3">
+                  <div className="loading-shimmer h-4 w-28 rounded-full bg-slate-100" />
+                </td>
+                <td className="px-3 py-3">
+                  <div className="loading-shimmer h-4 w-32 rounded-full bg-slate-100" />
+                </td>
+                <td className="px-3 py-3">
+                  <div className="loading-shimmer h-6 w-20 rounded-full bg-slate-100" />
+                </td>
+                <td className="px-3 py-3">
+                  <div className="loading-shimmer h-4 w-20 rounded-full bg-slate-100" />
+                </td>
+                <td className="px-3 py-3">
+                  <div className="loading-shimmer h-4 w-12 rounded-full bg-slate-100" />
+                </td>
+                <td className="px-3 py-3">
+                  <div className="loading-shimmer h-10 w-28 rounded-md bg-slate-100" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">
+        <div className="max-w-md px-4">
+          <LoadingState
+            badge="Catalog"
+            helper="Preparing the table without collapsing the layout."
+            label="Loading products..."
+          />
+        </div>
+      </div>
     </div>
   );
 }
