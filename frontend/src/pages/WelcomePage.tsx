@@ -529,7 +529,7 @@ export function WelcomePage({
 
                   {totalRememberedAccountPages > 1 ? (
                     <AppPagination
-                      className="justify-center"
+                      itemLabel="accounts"
                       onPageChange={setRememberedAccountsPage}
                       page={currentRememberedAccountsPage}
                       pageSize={KNOWN_ACCOUNTS_PAGE_SIZE}

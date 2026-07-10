@@ -633,19 +633,13 @@ export function PosPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm text-slate-500">
-                      {searchState.products.length > 0
-                        ? `Showing ${productPageStartIndex + 1}–${productPageEndIndex} of ${searchState.products.length} matches`
-                        : "No matches"}
-                    </p>
-                    <AppPagination
-                      onPageChange={setProductResultsPage}
-                      page={currentProductPage}
-                      pageSize={PRODUCT_RESULTS_PAGE_SIZE}
-                      totalItems={searchState.products.length}
-                    />
-                  </div>
+                  <AppPagination
+                    itemLabel="products"
+                    onPageChange={setProductResultsPage}
+                    page={currentProductPage}
+                    pageSize={PRODUCT_RESULTS_PAGE_SIZE}
+                    totalItems={searchState.products.length}
+                  />
                 </div>
               ) : (
                 <EmptyState

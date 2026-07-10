@@ -196,17 +196,13 @@ export function SalesPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm text-slate-500">
-                    Showing {salesPageStartIndex + 1}–{salesPageEndIndex} of {sales.length} sales
-                  </p>
-                  <AppPagination
-                    onPageChange={setSalesPage}
-                    page={currentSalesPage}
-                    pageSize={SALES_PAGE_SIZE}
-                    totalItems={sales.length}
-                  />
-                </div>
+                <AppPagination
+                  itemLabel="sales"
+                  onPageChange={setSalesPage}
+                  page={currentSalesPage}
+                  pageSize={SALES_PAGE_SIZE}
+                  totalItems={sales.length}
+                />
               </div>
             )}
           </CardContent>

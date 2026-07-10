@@ -6,12 +6,14 @@ import { forwardRef, type ComponentProps, type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 const paginationLinkVariants = cva(
-  "inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-transparent px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex h-9 min-w-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-transparent text-slate-700 hover:bg-slate-100 hover:text-slate-950",
-        active: "bg-emerald-700 text-white shadow-sm hover:bg-emerald-800"
+        default:
+          "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950",
+        active:
+          "border-emerald-700 bg-emerald-700 text-white shadow-sm hover:border-emerald-800 hover:bg-emerald-800"
       },
       size: {
         default: "h-9 px-3",
@@ -26,18 +28,12 @@ const paginationLinkVariants = cva(
 );
 
 export function Pagination({ className, ...props }: ComponentProps<"nav">) {
-  return (
-    <nav
-      aria-label="pagination"
-      className={cn("mx-auto flex w-full justify-center", className)}
-      {...props}
-    />
-  );
+  return <nav aria-label="pagination" className={cn("flex w-full", className)} {...props} />;
 }
 
 export const PaginationContent = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListElement>>(
   function PaginationContent({ className, ...props }, ref) {
-    return <ul ref={ref} className={cn("flex items-center gap-1", className)} {...props} />;
+    return <ul ref={ref} className={cn("flex items-center gap-1.5", className)} {...props} />;
   }
 );
 

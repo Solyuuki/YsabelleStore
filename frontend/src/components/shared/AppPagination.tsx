@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import {
   Pagination,
   PaginationContent,
@@ -11,81 +13,165 @@ import { cn } from "@/lib/utils";
 
 type AppPaginationProps = {
   className?: string;
+  isLoading?: boolean;
+  itemLabel?: string;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
   page: number;
   pageSize: number;
+  pageSizeOptions?: readonly number[];
   siblingCount?: number;
   totalItems: number;
+  totalPages?: number;
 };
 
 type PageToken = number | "start-ellipsis" | "end-ellipsis";
 
+const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
+
 export function AppPagination({
   className,
+  isLoading = false,
+  itemLabel = "items",
   onPageChange,
+  onPageSizeChange,
   page,
   pageSize,
+  pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
   siblingCount = 1,
-  totalItems
+  totalItems,
+  totalPages
 }: AppPaginationProps) {
-  const totalPages = Math.ceil(totalItems / pageSize);
-
-  if (totalPages <= 1) {
-    return null;
-  }
-
-  const currentPage = clampPage(page, totalPages);
-  const pageTokens = getPaginationTokens(currentPage, totalPages, siblingCount);
+  const normalizedPageSize = Math.max(pageSize, 1);
+  const derivedTotalPages =
+    totalItems === 0 ? 0 : Math.max(1, Math.ceil(totalItems / normalizedPageSize));
+  const resolvedTotalPages = Math.max(0, totalPages ?? derivedTotalPages);
+  const currentPage = resolvedTotalPages === 0 ? 1 : clampPage(page, resolvedTotalPages);
+  const startItem = totalItems === 0 ? 0 : (currentPage - 1) * normalizedPageSize + 1;
+  const endItem = totalItems === 0 ? 0 : Math.min(currentPage * normalizedPageSize, totalItems);
+  const pageTokens = useMemo(
+    () =>
+      resolvedTotalPages > 0
+        ? getPaginationTokens(currentPage, resolvedTotalPages, siblingCount)
+        : [],
+    [currentPage, resolvedTotalPages, siblingCount]
+  );
+  const showPageControls = resolvedTotalPages > 0;
+  const showPageSizeSelector =
+    Boolean(onPageSizeChange) && pageSizeOptions.length > 0 && totalItems > 0;
 
   return (
-    <Pagination className={cn("w-full", className)}>
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            disabled={currentPage === 1}
-            onClick={() => onPageChange(currentPage - 1)}
-            type="button"
-          />
-        </PaginationItem>
+    <div
+      className={cn(
+        "flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3",
+        "sm:flex-row sm:items-center sm:justify-between",
+        className
+      )}
+    >
+      <p className="text-sm text-slate-600">
+        {totalItems === 0
+          ? `Showing 0 ${itemLabel}`
+          : `Showing ${startItem}–${endItem} of ${totalItems} ${itemLabel}`}
+      </p>
 
-        {pageTokens.map((token) => {
-          if (token === "start-ellipsis" || token === "end-ellipsis") {
-            return (
-              <PaginationItem key={token}>
-                <PaginationEllipsis />
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        {showPageSizeSelector ? (
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <span className="whitespace-nowrap font-medium">Rows per page</span>
+            <select
+              aria-label="Rows per page"
+              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none transition-colors hover:border-slate-300 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isLoading}
+              value={pageSize}
+              onChange={(event) => {
+                onPageSizeChange?.(Number(event.target.value));
+              }}
+            >
+              {pageSizeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
+        {showPageControls ? (
+          <Pagination aria-label={`${itemLabel} pagination`} className="w-auto justify-end">
+            <PaginationContent className="flex-wrap gap-1">
+              <PaginationItem>
+                <PaginationPrevious
+                  aria-label="Previous page"
+                  disabled={isLoading || currentPage === 1}
+                  size="icon"
+                  onClick={() => {
+                    if (!isLoading && currentPage > 1) {
+                      onPageChange(currentPage - 1);
+                    }
+                  }}
+                  type="button"
+                >
+                  <span className="sr-only">Previous page</span>
+                </PaginationPrevious>
               </PaginationItem>
-            );
-          }
 
-          const isActive = token === currentPage;
+              {pageTokens.map((token) => {
+                if (token === "start-ellipsis" || token === "end-ellipsis") {
+                  return (
+                    <PaginationItem key={token}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
 
-          return (
-            <PaginationItem key={token}>
-              <PaginationLink
-                asChild
-                isActive={isActive}
-                onClick={() => {
-                  if (!isActive) {
-                    onPageChange(token);
-                  }
-                }}
-                type="button"
-              >
-                <button type="button">{token}</button>
-              </PaginationLink>
-            </PaginationItem>
-          );
-        })}
+                const isActive = token === currentPage;
 
-        <PaginationItem>
-          <PaginationNext
-            disabled={currentPage === totalPages}
-            onClick={() => onPageChange(currentPage + 1)}
-            type="button"
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+                return (
+                  <PaginationItem key={token}>
+                    <PaginationLink
+                      asChild
+                      isActive={isActive}
+                      onClick={(event) => {
+                        event.preventDefault();
+
+                        if (!isLoading && !isActive) {
+                          onPageChange(token);
+                        }
+                      }}
+                      type="button"
+                    >
+                      <button
+                        disabled={isLoading || isActive}
+                        type="button"
+                        aria-label={`Page ${token}`}
+                      >
+                        {token}
+                      </button>
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+
+              <PaginationItem>
+                <PaginationNext
+                  aria-label="Next page"
+                  disabled={isLoading || currentPage === resolvedTotalPages}
+                  size="icon"
+                  onClick={() => {
+                    if (!isLoading && currentPage < resolvedTotalPages) {
+                      onPageChange(currentPage + 1);
+                    }
+                  }}
+                  type="button"
+                >
+                  <span className="sr-only">Next page</span>
+                </PaginationNext>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -98,6 +184,10 @@ function getPaginationTokens(
   totalPages: number,
   siblingCount: number
 ): PageToken[] {
+  if (totalPages <= 1) {
+    return totalPages === 1 ? [1] : [];
+  }
+
   const totalPageNumbers = siblingCount * 2 + 5;
 
   if (totalPageNumbers >= totalPages) {
