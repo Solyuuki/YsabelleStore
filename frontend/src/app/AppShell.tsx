@@ -1,4 +1,4 @@
-import { Boxes, Package } from "lucide-react";
+import { Boxes } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
@@ -7,6 +7,7 @@ import { AppLayout } from "@/layouts/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { ProductsPage } from "@/pages/ProductsPage";
 import { ModulePage } from "@/pages/ModulePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
@@ -236,19 +237,7 @@ function renderRoute(
     case "/pos":
       return <PosPage />;
     case "/products":
-      return (
-        <ModulePage
-          description={route.description}
-          focusItems={[
-            "Catalog table area",
-            "Product search and filters",
-            "Create and edit actions reserved",
-            "Category and unit fields reserved"
-          ]}
-          icon={Package}
-          title={route.label}
-        />
-      );
+      return <ProductsPage />;
     case "/inventory":
       return (
         <ModulePage

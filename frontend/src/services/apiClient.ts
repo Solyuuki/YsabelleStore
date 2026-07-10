@@ -3,6 +3,7 @@ import type { ApiResponse } from "@/types/api";
 
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
   json?: unknown;
+  formData?: FormData;
 };
 
 export type ApiRequestContext = {
@@ -53,12 +54,16 @@ export class ApiClient {
     };
   }
 
-  public async request<TData = unknown, TError = unknown>(
+  public async request<TData = unknown, TError = unknown, TMeta = unknown>(
     path: string,
     options: ApiRequestOptions = {}
-  ): Promise<ApiResponse<TData, TError>> {
-    const { json, headers, ...initOptions } = options;
+  ): Promise<ApiResponse<TData, TError, TMeta>> {
+    const { formData, json, headers, ...initOptions } = options;
     const requestHeaders = new Headers(headers);
+
+    if (json !== undefined && formData !== undefined) {
+      throw new Error("ApiClient request cannot include both json and formData.");
+    }
 
     if (json !== undefined) {
       requestHeaders.set("Content-Type", "application/json");
@@ -69,7 +74,8 @@ export class ApiClient {
       init: {
         ...initOptions,
         headers: requestHeaders,
-        body: json === undefined ? undefined : JSON.stringify(json)
+        body:
+          json !== undefined ? JSON.stringify(json) : formData !== undefined ? formData : undefined
       }
     };
 
@@ -86,12 +92,12 @@ export class ApiClient {
       interceptedPayload = await interceptor(interceptedPayload);
     }
 
-    return interceptedPayload as ApiResponse<TData, TError>;
+    return interceptedPayload as ApiResponse<TData, TError, TMeta>;
   }
 
   private async parseResponse<TData, TError>(
     response: Response
-  ): Promise<ApiResponse<TData, TError>> {
+  ): Promise<ApiResponse<TData, TError, unknown>> {
     const contentType = response.headers.get("content-type") ?? "";
 
     if (contentType.includes("application/json")) {

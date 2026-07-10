@@ -38,3 +38,22 @@
 | New migration            | Highest sequence lookup, sequential folder name, Prisma validation, SQL review, migration status/application evidence |
 | Seed script              | Deterministic seed run, rollback/cleanup guidance, no production-like fake data                                       |
 | Forecasting tables usage | Data contract tests with sales history and forecast records                                                           |
+
+## Historical Validation Detail
+
+| Date       | Command                                  | Result | Notes                                               |
+| ---------- | ---------------------------------------- | ------ | --------------------------------------------------- |
+| 2026-07-10 | `npm run format`                         | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run format:check`                   | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run lint`                           | Passed | Passed with existing Node module-type warning only. |
+| 2026-07-10 | `npm run typecheck --workspace frontend` | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run typecheck --workspace backend`  | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                             |
+| 2026-07-10 | `npm run build`                          | Passed | Build completed successfully.                       |
+| 2026-07-10 | `npm audit --audit-level=high`           | Passed | Completed successfully.                             |
+
+## Manual Review Evidence
+
+| Date       | Area                                                                   | Result                    | Notes                                                                                                                                                               |
+| ---------- | ---------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-10 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |

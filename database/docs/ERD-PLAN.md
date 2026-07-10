@@ -26,7 +26,7 @@ Recommendation
 Product
   |\
   | \-- future Sales history
-  | \-- future Inventory summary
+  | \-- current Inventory summary
   | \-- future Batch inventory with expiration context
   |
   `-- future Forecast outputs
@@ -41,24 +41,26 @@ Product
 | User                 | Represents local owner/staff users and accountability | May own or trigger future sales, movements, forecasts, and recommendations |
 | Category             | Represents product grouping                           | Organizes product records for browsing and reporting                       |
 | Product              | Represents the item master list                       | Anchors sales, inventory, batch inventory, forecasts, and recommendations  |
+| Inventory            | Represents current per-product stock state            | Tracks quantity on hand and last stock update                              |
 | Sale/SaleItem        | Represents historical demand records                  | Feeds forecasting and reporting workflows                                  |
 | InventoryBatch       | Represents expiration-aware stock groups              | Supports expiry risk reasoning                                             |
-| InventoryMovement    | Represents stock movement history                     | Preserves stock-in, stock-out, sale, adjustment, and loss events           |
+| InventoryMovement    | Represents stock movement history                     | Preserves stock-in, sale, adjustment, and loss events                      |
 | ForecastRecord       | Represents future SARIMA demand output                | Converts historical sales into demand expectations                         |
 | RecommendationRecord | Represents future inventory action guidance           | Combines forecast and inventory signals into explainable outputs           |
 
 ## Expected Relationship Direction
 
-| Source    | Target         | Expected Meaning                                                     |
-| --------- | -------------- | -------------------------------------------------------------------- |
-| User      | Sales          | A future user may record or be associated with sales activity        |
-| Product   | Sales          | A future product may have many historical sales records              |
-| Product   | Inventory      | A future product may have stock summary data                         |
-| Product   | BatchInventory | A future product may have multiple stock batches                     |
-| Sales     | Forecast       | Historical sales will provide forecasting input                      |
-| Product   | Forecast       | Forecasts will be generated per product or product group             |
-| Forecast  | Recommendation | Forecast output will support future recommendation decisions         |
-| Inventory | Recommendation | Current and batch stock state will influence recommendation severity |
+| Source    | Target            | Expected Meaning                                                     |
+| --------- | ----------------- | -------------------------------------------------------------------- |
+| User      | Sales             | A future user may record or be associated with sales activity        |
+| Product   | Sales             | A future product may have many historical sales records              |
+| Product   | Inventory         | A future product may have stock summary data                         |
+| Product   | BatchInventory    | A future product may have multiple stock batches                     |
+| Inventory | InventoryMovement | Stock changes attach to current inventory rows                       |
+| Sales     | Forecast          | Historical sales will provide forecasting input                      |
+| Product   | Forecast          | Forecasts will be generated per product or product group             |
+| Forecast  | Recommendation    | Forecast output will support future recommendation decisions         |
+| Inventory | Recommendation    | Current and batch stock state will influence recommendation severity |
 
 ## Future Relationship Review Checklist
 

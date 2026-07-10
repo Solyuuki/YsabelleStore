@@ -13,6 +13,10 @@ type PosProductRecord = {
   category: {
     name: string;
   };
+  inventory: {
+    id: string;
+    quantityOnHand: number;
+  } | null;
   id: string;
   inventoryBatches: Array<{
     createdAt: Date;
@@ -21,10 +25,10 @@ type PosProductRecord = {
     quantityRemaining: number;
     status: InventoryBatchStatus;
   }>;
-  isActive: boolean;
   name: string;
   reorderLevel: number;
   sku: string;
+  status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   sellingPrice: Prisma.Decimal;
 };
 
@@ -98,49 +102,49 @@ export async function searchPosProducts(query: string): Promise<{
 }> {
   const normalizedQuery = query.trim();
 
-  const [catalogCount, products] = await Promise.all([
-    prisma.product.count({
-      where: {
-        isActive: true
-      }
-    }),
-    normalizedQuery
-      ? prisma.product.findMany({
-          include: {
-            category: true,
-            inventoryBatches: {
-              select: {
-                createdAt: true,
-                expiresAt: true,
-                id: true,
-                quantityRemaining: true,
-                status: true
-              }
+  const catalogCount = await prisma.product.count({
+    where: {
+      status: "ACTIVE"
+    }
+  });
+
+  const products = normalizedQuery
+    ? await prisma.product.findMany({
+        include: {
+          category: true,
+          inventory: true,
+          inventoryBatches: {
+            select: {
+              createdAt: true,
+              expiresAt: true,
+              id: true,
+              quantityRemaining: true,
+              status: true
             }
-          },
-          orderBy: {
-            updatedAt: "desc"
-          },
-          take: PRODUCT_SEARCH_LIMIT,
-          where: {
-            isActive: true,
-            OR: [
-              { name: { contains: normalizedQuery } },
-              { sku: { contains: normalizedQuery } },
-              { barcode: { contains: normalizedQuery } },
-              { description: { contains: normalizedQuery } },
-              {
-                category: {
-                  name: {
-                    contains: normalizedQuery
-                  }
+          }
+        },
+        orderBy: {
+          updatedAt: "desc"
+        },
+        take: PRODUCT_SEARCH_LIMIT,
+        where: {
+          status: "ACTIVE",
+          OR: [
+            { name: { contains: normalizedQuery } },
+            { sku: { contains: normalizedQuery } },
+            { barcode: { contains: normalizedQuery } },
+            { description: { contains: normalizedQuery } },
+            {
+              category: {
+                name: {
+                  contains: normalizedQuery
                 }
               }
-            ]
-          }
-        })
-      : Promise.resolve([])
-  ]);
+            }
+          ]
+        }
+      })
+    : [];
 
   return {
     catalogCount,
@@ -150,7 +154,7 @@ export async function searchPosProducts(query: string): Promise<{
       barcode: product.barcode,
       categoryName: product.category.name,
       id: product.id,
-      isActive: product.isActive,
+      isActive: product.status === "ACTIVE",
       name: product.name,
       sku: product.sku,
       sellingPrice: product.sellingPrice.toString(),
@@ -180,6 +184,7 @@ export async function checkoutPosSale(input: {
     const products = await tx.product.findMany({
       include: {
         category: true,
+        inventory: true,
         inventoryBatches: {
           orderBy: [
             {
@@ -203,7 +208,7 @@ export async function checkoutPosSale(input: {
         id: {
           in: normalizedItems.map((item) => item.productId)
         },
-        isActive: true
+        status: "ACTIVE"
       }
     });
 
@@ -276,8 +281,19 @@ export async function checkoutPosSale(input: {
     const saleItems: SaleItemRecord[] = [];
 
     for (const line of checkoutLines) {
+      if (!line.product.inventory) {
+        throw new HttpError(404, "Inventory record was not found for the selected product.", {
+          code: "INVENTORY_NOT_FOUND",
+          details: {
+            productId: line.product.id
+          }
+        });
+      }
+
       for (const allocation of line.allocations) {
         const lineTotal = line.unitPrice.mul(allocation.quantity);
+        const quantityBefore = line.product.inventory.quantityOnHand;
+        const quantityAfter = quantityBefore - allocation.quantity;
         const createdSaleItem = await tx.saleItem.create({
           data: {
             batchId: allocation.batch.id,
@@ -319,9 +335,25 @@ export async function checkoutPosSale(input: {
           }
         });
 
+        await tx.inventory.update({
+          data: {
+            lastStockUpdatedAt: saleDate,
+            quantityOnHand: quantityAfter,
+            version: {
+              increment: 1
+            }
+          },
+          where: {
+            id: line.product.inventory.id
+          }
+        });
+
         await tx.inventoryMovement.create({
           data: {
+            inventoryId: line.product.inventory.id,
             batchId: allocation.batch.id,
+            quantityAfter,
+            quantityBefore,
             performedById: input.cashierId,
             productId: line.product.id,
             quantity: allocation.quantity,
@@ -331,6 +363,8 @@ export async function checkoutPosSale(input: {
             type: InventoryMovementType.SALE
           }
         });
+
+        line.product.inventory.quantityOnHand = quantityAfter;
       }
     }
 

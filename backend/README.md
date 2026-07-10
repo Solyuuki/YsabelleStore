@@ -4,14 +4,14 @@ The backend folder contains the Express and TypeScript foundation for YsabelleSt
 
 ## Purpose
 
-| Area            | Purpose                                                | Current Scope     |
-| --------------- | ------------------------------------------------------ | ----------------- |
-| Express app     | Hosts API middleware and route registration            | Active            |
-| API routes      | Provides `/api/health` and planned future route groups | Health only       |
-| Controllers     | Handles request and response coordination              | Health only       |
-| Services        | Reserved for future business workflows                 | No implementation |
-| Validators      | Reserved for future request validation schemas         | No implementation |
-| Database access | Reserved for future Prisma integration                 | Not connected     |
+| Area            | Purpose                                              | Current Scope                     |
+| --------------- | ---------------------------------------------------- | --------------------------------- |
+| Express app     | Hosts API middleware and route registration          | Active                            |
+| API routes      | Provides health, auth, product, and inventory routes | Health, auth, products, inventory |
+| Controllers     | Handles request and response coordination            | Health, auth, products, inventory |
+| Services        | Coordinates business workflows and Prisma access     | Auth, products, inventory         |
+| Validators      | Validates request bodies, params, and queries        | Auth, products, inventory         |
+| Database access | Prisma client access boundary                        | Connected for current modules     |
 
 ## Folder Structure
 
@@ -35,18 +35,18 @@ backend/
 
 ## Route Registry
 
-| Route Group            | Status  | Purpose                                                   |
-| ---------------------- | ------- | --------------------------------------------------------- |
-| `GET /api/health`      | Active  | Confirms backend and environment configuration are loaded |
-| `/api/auth`            | Planned | Future authentication and session workflows               |
-| `/api/products`        | Planned | Future product management APIs                            |
-| `/api/sales`           | Planned | Future sales history APIs                                 |
-| `/api/inventory`       | Planned | Future inventory summary APIs                             |
-| `/api/batches`         | Planned | Future batch and expiration APIs                          |
-| `/api/forecasts`       | Planned | Future forecasting APIs                                   |
-| `/api/recommendations` | Planned | Future recommendation APIs                                |
-| `/api/imports`         | Planned | Future data import APIs                                   |
-| `/api/reports`         | Planned | Future reporting APIs                                     |
+| Route Group            | Status  | Purpose                                                                 |
+| ---------------------- | ------- | ----------------------------------------------------------------------- |
+| `GET /api/health`      | Active  | Confirms backend and environment configuration are loaded               |
+| `/api/auth`            | Active  | Authentication and session workflows                                    |
+| `/api/products`        | Active  | Product creation, updates, listing, status changes, and import workflow |
+| `/api/inventory`       | Active  | Inventory summary, movement, lookup, and deduction routes               |
+| `/api/sales`           | Planned | Future sales history APIs                                               |
+| `/api/batches`         | Planned | Future batch and expiration APIs                                        |
+| `/api/forecasts`       | Planned | Future forecasting APIs                                                 |
+| `/api/recommendations` | Planned | Future recommendation APIs                                              |
+| `/api/imports`         | Planned | Future data import APIs                                                 |
+| `/api/reports`         | Planned | Future reporting APIs                                                   |
 
 ## Route-Controller-Service Pattern
 
@@ -58,13 +58,13 @@ route
   -> repository or Prisma client
 ```
 
-| Layer       | Responsibility                                    | Foundation Rule                       |
-| ----------- | ------------------------------------------------- | ------------------------------------- |
-| Route       | Maps URLs and HTTP verbs to controllers           | Keep route files thin                 |
-| Controller  | Coordinates request input and API response output | Do not place business rules here      |
-| Validator   | Validates request body, params, and query values  | Add only when a real endpoint exists  |
-| Service     | Owns business workflow decisions                  | No service logic in this phase        |
-| Data access | Uses future Prisma Client calls                   | No database integration in this phase |
+| Layer       | Responsibility                                    | Foundation Rule                      |
+| ----------- | ------------------------------------------------- | ------------------------------------ |
+| Route       | Maps URLs and HTTP verbs to controllers           | Keep route files thin                |
+| Controller  | Coordinates request input and API response output | Do not place business rules here     |
+| Validator   | Validates request body, params, and query values  | Add only when a real endpoint exists |
+| Service     | Owns business workflow decisions                  | Keep product/inventory logic here    |
+| Data access | Uses Prisma Client calls                          | Keep database interaction isolated   |
 
 ## API Contract Reference
 
@@ -89,23 +89,23 @@ The canonical API contract lives in `docs/api/`. Backend implementations must fo
 
 Create `backend/.env` from `backend/.env.example` for local development.
 
-| Variable       | Required For                        | Example                                              |
-| -------------- | ----------------------------------- | ---------------------------------------------------- |
-| `NODE_ENV`     | Runtime mode                        | `development`                                        |
-| `PORT`         | Backend HTTP port                   | `3001`                                               |
-| `CORS_ORIGIN`  | Frontend development origin         | `http://localhost:5173`                              |
-| `DATABASE_URL` | Future Prisma and MySQL integration | `mysql://user:password@localhost:3306/ysabellestore` |
-| `JWT_SECRET`   | Future authentication signing       | `change_this_development_secret`                     |
+| Variable       | Required For                 | Example                                              |
+| -------------- | ---------------------------- | ---------------------------------------------------- |
+| `NODE_ENV`     | Runtime mode                 | `development`                                        |
+| `PORT`         | Backend HTTP port            | `3001`                                               |
+| `CORS_ORIGIN`  | Frontend development origin  | `http://localhost:5173`                              |
+| `DATABASE_URL` | Prisma and MySQL integration | `mysql://user:password@localhost:3306/ysabellestore` |
+| `JWT_SECRET`   | Authentication signing       | `change_this_development_secret`                     |
 
 ## Validation Pattern
 
-| Validation Area | Current Standard                           |
-| --------------- | ------------------------------------------ |
-| Environment     | Validate with Zod in `src/config/env.ts`   |
-| Request body    | Future Zod schemas in `src/validators`     |
-| Route params    | Future route-specific validator middleware |
-| API responses   | Follow `docs/api/RESPONSE-STANDARD.md`     |
-| Errors          | Follow `docs/api/ERROR-STANDARD.md`        |
+| Validation Area | Current Standard                         |
+| --------------- | ---------------------------------------- |
+| Environment     | Validate with Zod in `src/config/env.ts` |
+| Request body    | Zod schemas in `src/validators`          |
+| Route params    | Route-specific validation helpers        |
+| API responses   | Follow `docs/api/RESPONSE-STANDARD.md`   |
+| Errors          | Follow `docs/api/ERROR-STANDARD.md`      |
 
 ## Future Module Roadmap
 
@@ -134,10 +134,19 @@ npm run build --workspace backend
 npm run typecheck --workspace backend
 ```
 
+## Product Import Workflow
+
+The product routes now include an owner-only CSV and Excel import workflow:
+
+- `GET /api/products/import/template`
+- `POST /api/products/import/preview`
+- `POST /api/products/import`
+
+The canonical contract, validation rules, and sample files live in `docs/api/PRODUCT-IMPORT-CONTRACT.md`.
+
 ## Foundation Guardrails
 
-- Do not implement business endpoints during foundation work.
-- Do not add Prisma queries until database integration is approved.
-- Do not hardcode secrets or database URLs in source files.
-- Keep routes, controllers, services, validators, and utilities separated.
-- Keep future route groups planned but inactive until their implementation phase.
+- Keep route files thin and delegate business logic to services.
+- Use Prisma client access only from the service layer.
+- Keep product and inventory validation close to the request boundary.
+- Keep not-yet-implemented route groups planned but inactive until their implementation phase.

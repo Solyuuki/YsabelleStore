@@ -18,11 +18,13 @@ This folder is the controlled database foundation for YsabelleStore. Sprint 1 no
 database/
 |-- prisma/
 |   |-- schema.prisma
-|   `-- README.md
-|-- migrations/
-|   |-- 0001_sprint_1_database_foundation/
-|   |   `-- migration.sql
-|   `-- .gitkeep
+|   |-- README.md
+|   `-- migrations/
+|       |-- 0001_sprint_1_database_foundation/
+|       |   `-- migration.sql
+|       |-- 0002_products_inventory_foundation/
+|       |   `-- migration.sql
+|       `-- migration_lock.toml
 |-- seed/
 |   |-- README.md
 |   `-- .gitkeep
@@ -40,7 +42,7 @@ database/
 The Sprint 1 migration folder uses the numbered repository convention:
 
 ```text
-database/migrations/0001_sprint_1_database_foundation/
+database/prisma/migrations/0001_sprint_1_database_foundation/
 ```
 
 Future migrations must use the same sequential standard defined in `database/docs/MIGRATION-GUIDE.md`:
@@ -58,20 +60,20 @@ Examples:
 0004_add_forecast_tables
 ```
 
-Before creating a new migration, determine the highest existing four-digit sequence under `database/migrations/`, increment it by one, never reuse a number, and never use timestamp-based migration folder names.
+Before creating a new migration, determine the highest existing four-digit sequence under `database/prisma/migrations/`, increment it by one, never reuse a number, and never use timestamp-based migration folder names.
 
 ## Implemented Foundation
 
-| Area             | Implemented Contract                                                            |
-| ---------------- | ------------------------------------------------------------------------------- |
-| Authentication   | `User`, `UserRole`, and `UserStatus` support owner/staff boundaries             |
-| Product catalog  | `Category` and `Product` support 300+ grocery/convenience-store products        |
-| Barcode lookup   | Product `barcode` is unique and indexed while remaining optional                |
-| Inventory        | `InventoryBatch` tracks received quantity, remaining quantity, cost, and expiry |
-| Stock movement   | `InventoryMovement` records stock-in, stock-out, sale, adjustment, and loss     |
-| Sales history    | `Sale` and `SaleItem` preserve future sales records for reporting and SARIMA    |
-| Forecast storage | `ForecastRecord` stores future SARIMA output metadata and demand values         |
-| Recommendations  | `RecommendationRecord` stores future restock and risk outputs                   |
+| Area             | Implemented Contract                                                         |
+| ---------------- | ---------------------------------------------------------------------------- |
+| Authentication   | `User`, `UserRole`, and `UserStatus` support owner/staff boundaries          |
+| Product catalog  | `Category` and `Product` support product status, units, barcode, and pricing |
+| Barcode lookup   | Product `barcode` is unique and indexed while remaining optional             |
+| Inventory        | `Inventory` stores current stock while `InventoryBatch` remains batch-aware  |
+| Stock movement   | `InventoryMovement` records stock-in, sale, adjustment, and audit history    |
+| Sales history    | `Sale` and `SaleItem` preserve future sales records for reporting and SARIMA |
+| Forecast storage | `ForecastRecord` stores future SARIMA output metadata and demand values      |
+| Recommendations  | `RecommendationRecord` stores future restock and risk outputs                |
 
 ## Foundation Boundaries
 

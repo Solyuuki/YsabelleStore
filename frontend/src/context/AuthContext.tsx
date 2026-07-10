@@ -10,13 +10,13 @@ import {
 import type { ReactNode } from "react";
 
 import { apiClient } from "@/services/apiClient";
+import { AUTH_TOKEN_KEY, getStoredAuthToken } from "@/services/authStorage";
 import type { ApiResponse } from "@/types/api";
 import type { AuthSession, AuthUser } from "@/types/auth";
 import { useToast } from "@/components/shared/ToastProvider";
 import type { ToastInput } from "@/components/shared/toast.types";
 import { wait } from "@/utils/timing";
 
-const AUTH_TOKEN_KEY = "ysabellestore.authToken";
 const REMEMBERED_ACCOUNTS_KEY = "ysabelle.rememberedAccounts";
 const TRUSTED_DEVICE_TOKENS_KEY = "ysabellestore.trustedDeviceTokens";
 const AUTH_TOAST_SCOPE = "auth";
@@ -341,7 +341,7 @@ async function getStartupAuthResolution(token: string | null): Promise<StartupAu
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const storedAuthToken = localStorage.getItem(AUTH_TOKEN_KEY);
+  const storedAuthToken = getStoredAuthToken();
   const cachedStartupResolution = getCachedStartupAuthResolution(storedAuthToken);
   const [status, setStatus] = useState<AuthStatus>(() =>
     cachedStartupResolution?.valid
@@ -366,6 +366,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const { clearToastScope, pushToast } = useToast();
   const initialAuthTokenRef = useRef(token);
+
+  useEffect(() => {
+    const removeInterceptor = apiClient.addRequestInterceptor((context) => {
+      const authToken = getStoredAuthToken();
+
+      if (!authToken || context.init.headers instanceof Headers === false) {
+        return context;
+      }
+
+      if (!context.init.headers.has("Authorization")) {
+        const headers = new Headers(context.init.headers);
+        headers.set("Authorization", `Bearer ${authToken}`);
+
+        return {
+          ...context,
+          init: {
+            ...context.init,
+            headers
+          }
+        };
+      }
+
+      return context;
+    });
+
+    return removeInterceptor;
+  }, []);
 
   const pushAuthToast = useCallback(
     (toast: ToastInput) => {
