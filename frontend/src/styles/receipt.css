@@ -1,0 +1,43 @@
+.receipt-print-page {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #020617;
+}
+
+.receipt-paper {
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+  background: #ffffff;
+  color: #020617;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    color: #020617 !important;
+  }
+
+  body {
+    margin: 0 !important;
+  }
+
+  .receipt-print-page {
+    min-height: auto;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .receipt-paper {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    margin: 0 auto !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .receipt-paper * {
+    box-shadow: none !important;
+  }
+}

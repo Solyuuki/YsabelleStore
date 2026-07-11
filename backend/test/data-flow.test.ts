@@ -7,7 +7,7 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "../src/database/prismaClient.js";
 import { requireRole } from "../src/middleware/roleMiddleware.js";
 import { addStock, adjustStock } from "../src/services/inventoryService.js";
-import { checkoutPosSale, searchPosProducts } from "../src/services/posService.js";
+import { checkoutPosSale, listRecentSales, searchPosProducts } from "../src/services/posService.js";
 import {
   changeProductStatus,
   createCategory,
@@ -486,6 +486,45 @@ test(
     assertInvariant(state);
   }
 );
+
+test(
+  "POS checkout response exposes receipt fields for printing",
+  { concurrency: false },
+  async () => {
+    const product = await createProduct(buildProductInput());
+    await addStock(product.id, { quantity: 2, reason: "Receipt test stock" });
+    const cashier = await createTestCashier();
+    const result = await checkoutPosSale({
+      cashierId: cashier.id,
+      cashierName: cashier.name,
+      items: [{ productId: product.id, quantity: 2 }]
+    });
+
+    assert.equal(result.sale.paymentMethod, "CASH");
+    assert.equal(result.sale.cashReceived, result.sale.totalAmount);
+    assert.equal(result.sale.change, "0");
+    assert.equal(result.sale.itemCount, 2);
+    assert.equal(result.sale.items[0]?.productName, product.name);
+  }
+);
+
+test("Sales list preserves receipt fields for reprint", { concurrency: false }, async () => {
+  const product = await createProduct(buildProductInput());
+  await addStock(product.id, { quantity: 1, reason: "Receipt history stock" });
+  const cashier = await createTestCashier();
+  const sale = await checkoutPosSale({
+    cashierId: cashier.id,
+    cashierName: cashier.name,
+    items: [{ productId: product.id, quantity: 1 }]
+  });
+
+  const recentSales = await listRecentSales(1);
+
+  assert.equal(recentSales.sales[0]?.saleNumber, sale.sale.saleNumber);
+  assert.equal(recentSales.sales[0]?.paymentMethod, "CASH");
+  assert.equal(recentSales.sales[0]?.cashReceived, recentSales.sales[0]?.totalAmount);
+  assert.equal(recentSales.sales[0]?.change, "0");
+});
 
 test("POS checkout rolls back when a later write fails", { concurrency: false }, async () => {
   const first = await createProduct(buildProductInput());

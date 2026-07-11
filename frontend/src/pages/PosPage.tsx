@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { RetailReceiptDialog } from "@/components/receipt/RetailReceiptDialog";
 import { useToast } from "@/components/shared/ToastProvider";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { AppPagination } from "@/components/shared/AppPagination";
@@ -20,7 +21,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { checkoutPosSale, searchPosProducts } from "@/services/posService";
 import type { PosProduct, PosSale } from "@/types/pos";
-import { wait } from "@/utils/timing";
+import { requestReceiptPrint } from "@/services/receiptPrint";
+import { buildRetailReceiptDataFromSale } from "@/utils/receipt";
+import { wait, waitForMinimumDuration } from "@/utils/timing";
 
 type CartLine = {
   product: PosProduct;
@@ -76,7 +79,10 @@ export function PosPage() {
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
   const [productResultsPage, setProductResultsPage] = useState(1);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [checkoutSale, setCheckoutSale] = useState<PosSale | null>(null);
+  const [receiptSale, setReceiptSale] = useState<PosSale | null>(null);
+  const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
+  const [isPrintingReceipt, setIsPrintingReceipt] = useState(false);
+  const [receiptPrintError, setReceiptPrintError] = useState<string | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const scannerInputRef = useRef<HTMLInputElement | null>(null);
   const { pushToast } = useToast();
@@ -367,7 +373,7 @@ export function PosPage() {
 
   function clearCart() {
     setCheckoutError(null);
-    setCheckoutSale(null);
+    setReceiptSale(null);
     setCartLines([]);
   }
 
@@ -404,7 +410,9 @@ export function PosPage() {
         return;
       }
 
-      setCheckoutSale(response.data.sale);
+      setReceiptSale(response.data.sale);
+      setReceiptPrintError(null);
+      setIsReceiptDialogOpen(true);
       setCartLines([]);
       clearScannerInput();
       focusScannerInput();
@@ -445,6 +453,26 @@ export function PosPage() {
     }));
     clearScannerInput();
     focusScannerInput();
+  }
+
+  async function handlePrintReceipt() {
+    if (!receiptSale || isPrintingReceipt) {
+      return;
+    }
+
+    setIsPrintingReceipt(true);
+    setReceiptPrintError(null);
+
+    try {
+      await waitForMinimumDuration(
+        requestReceiptPrint(buildRetailReceiptDataFromSale(receiptSale)),
+        450
+      );
+    } catch {
+      setReceiptPrintError("Sale completed, but the receipt could not be printed.");
+    } finally {
+      setIsPrintingReceipt(false);
+    }
   }
 
   return (
@@ -545,105 +573,103 @@ export function PosPage() {
               ) : searchState.products.length > 0 ? (
                 <div className="space-y-3">
                   <div className="overflow-hidden rounded-md border border-slate-200">
-                    <div className="max-h-[32rem] overflow-auto">
-                      <table className="w-full table-fixed border-collapse text-left text-sm">
-                        <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
-                          <tr>
-                            <th className="px-4 py-3 font-medium">Barcode / SKU</th>
-                            <th className="px-4 py-3 font-medium">Product</th>
-                            <th className="px-4 py-3 font-medium">Stock</th>
-                            <th className="px-4 py-3 font-medium">Unit price</th>
-                            <th className="px-4 py-3 font-medium text-right">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {searchState.products.map((product) => {
-                            const isOutOfStock = product.availableStock <= 0;
+                    <table className="w-full table-fixed border-collapse text-left text-sm">
+                      <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3 font-medium">Barcode / SKU</th>
+                          <th className="px-4 py-3 font-medium">Product</th>
+                          <th className="px-4 py-3 font-medium">Stock</th>
+                          <th className="px-4 py-3 font-medium">Unit price</th>
+                          <th className="px-4 py-3 font-medium text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {searchState.products.map((product) => {
+                          const isOutOfStock = product.availableStock <= 0;
 
-                            return (
-                              <tr
-                                className={`border-t border-slate-200 transition-colors ${
-                                  isOutOfStock
-                                    ? "bg-slate-50/70 text-slate-400"
-                                    : "hover:bg-emerald-50/60"
-                                }`}
-                                key={product.id}
-                              >
-                                <td className="px-4 py-3">
-                                  <button
-                                    className="text-left"
-                                    disabled={isOutOfStock}
-                                    type="button"
-                                    onClick={() =>
-                                      addProductToCart(product, {
-                                        announceAdded: true,
-                                        clearScannerAfterAction: true
-                                      })
-                                    }
-                                  >
-                                    <p className="font-medium text-slate-900">
-                                      {product.barcode ?? product.sku}
-                                    </p>
-                                    <p className="text-xs text-slate-500">{product.sku}</p>
-                                  </button>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <button
-                                    className="text-left"
-                                    disabled={isOutOfStock}
-                                    type="button"
-                                    onClick={() =>
-                                      addProductToCart(product, {
-                                        announceAdded: true,
-                                        clearScannerAfterAction: true
-                                      })
-                                    }
-                                  >
-                                    <p className="font-medium text-slate-900">{product.name}</p>
-                                    <p className="text-xs text-slate-500">{product.categoryName}</p>
-                                  </button>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <StatusBadge
-                                    variant={
-                                      isOutOfStock
-                                        ? "error"
-                                        : product.availableStock <= 5
-                                          ? "warning"
-                                          : "success"
-                                    }
-                                  >
-                                    {isOutOfStock
-                                      ? "Out of stock"
-                                      : `${product.availableStock} in stock`}
-                                  </StatusBadge>
-                                </td>
-                                <td className="px-4 py-3 font-medium text-slate-900">
-                                  {currencyFormatter.format(Number(product.sellingPrice))}
-                                </td>
-                                <td className="px-4 py-3 text-right">
-                                  <Button
-                                    disabled={isOutOfStock}
-                                    size="sm"
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={() =>
-                                      addProductToCart(product, {
-                                        announceAdded: true,
-                                        clearScannerAfterAction: true
-                                      })
-                                    }
-                                  >
-                                    <Plus className="h-4 w-4" aria-hidden="true" />
-                                    Add
-                                  </Button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                          return (
+                            <tr
+                              className={`border-t border-slate-200 transition-colors ${
+                                isOutOfStock
+                                  ? "bg-slate-50/70 text-slate-400"
+                                  : "hover:bg-emerald-50/60"
+                              }`}
+                              key={product.id}
+                            >
+                              <td className="px-4 py-3">
+                                <button
+                                  className="text-left"
+                                  disabled={isOutOfStock}
+                                  type="button"
+                                  onClick={() =>
+                                    addProductToCart(product, {
+                                      announceAdded: true,
+                                      clearScannerAfterAction: true
+                                    })
+                                  }
+                                >
+                                  <p className="font-medium text-slate-900">
+                                    {product.barcode ?? product.sku}
+                                  </p>
+                                  <p className="text-xs text-slate-500">{product.sku}</p>
+                                </button>
+                              </td>
+                              <td className="px-4 py-3">
+                                <button
+                                  className="text-left"
+                                  disabled={isOutOfStock}
+                                  type="button"
+                                  onClick={() =>
+                                    addProductToCart(product, {
+                                      announceAdded: true,
+                                      clearScannerAfterAction: true
+                                    })
+                                  }
+                                >
+                                  <p className="font-medium text-slate-900">{product.name}</p>
+                                  <p className="text-xs text-slate-500">{product.categoryName}</p>
+                                </button>
+                              </td>
+                              <td className="px-4 py-3">
+                                <StatusBadge
+                                  variant={
+                                    isOutOfStock
+                                      ? "error"
+                                      : product.availableStock <= 5
+                                        ? "warning"
+                                        : "success"
+                                  }
+                                >
+                                  {isOutOfStock
+                                    ? "Out of stock"
+                                    : `${product.availableStock} in stock`}
+                                </StatusBadge>
+                              </td>
+                              <td className="px-4 py-3 font-medium text-slate-900">
+                                {currencyFormatter.format(Number(product.sellingPrice))}
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <Button
+                                  disabled={isOutOfStock}
+                                  size="sm"
+                                  type="button"
+                                  variant="secondary"
+                                  onClick={() =>
+                                    addProductToCart(product, {
+                                      announceAdded: true,
+                                      clearScannerAfterAction: true
+                                    })
+                                  }
+                                >
+                                  <Plus className="h-4 w-4" aria-hidden="true" />
+                                  Add
+                                </Button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
 
                   <AppPagination
@@ -683,14 +709,14 @@ export function PosPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {checkoutSale ? (
+              {receiptSale ? (
                 <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
                   <div className="flex items-start gap-3">
                     <ReceiptText className="mt-0.5 h-4 w-4" aria-hidden="true" />
                     <div>
-                      <p className="font-medium">Sale {checkoutSale.saleNumber} completed.</p>
+                      <p className="font-medium">Sale {receiptSale.saleNumber} completed.</p>
                       <p className="mt-1 text-emerald-800">
-                        Total {currencyFormatter.format(Number(checkoutSale.totalAmount))} has been
+                        Total {currencyFormatter.format(Number(receiptSale.totalAmount))} has been
                         saved and inventory has been updated.
                       </p>
                     </div>
@@ -712,7 +738,7 @@ export function PosPage() {
                 />
               ) : (
                 <div className="space-y-3">
-                  <div className="max-h-[420px] space-y-3 overflow-auto pr-1">
+                  <div className="space-y-3">
                     {cartLines.map((line) => (
                       <div
                         className="rounded-md border border-slate-200 bg-white p-4 shadow-sm"
@@ -832,6 +858,23 @@ export function PosPage() {
           </CardContent>
         </Card>
       </section>
+
+      <RetailReceiptDialog
+        error={receiptPrintError}
+        isPrinting={isPrintingReceipt}
+        open={isReceiptDialogOpen}
+        receipt={receiptSale ? buildRetailReceiptDataFromSale(receiptSale) : null}
+        onOpenChange={(open) => {
+          setIsReceiptDialogOpen(open);
+
+          if (!open) {
+            setReceiptSale(null);
+            setReceiptPrintError(null);
+          }
+        }}
+        onPrint={() => void handlePrintReceipt()}
+        title="Sale receipt"
+      />
     </>
   );
 }

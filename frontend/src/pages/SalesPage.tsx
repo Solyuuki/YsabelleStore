@@ -1,14 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { ReceiptText } from "lucide-react";
 
+import { RetailReceiptDialog } from "@/components/receipt/RetailReceiptDialog";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { listRecentSales } from "@/services/posService";
+import { requestReceiptPrint } from "@/services/receiptPrint";
 import type { PosSale } from "@/types/pos";
+import { buildRetailReceiptDataFromSale } from "@/utils/receipt";
+import { waitForMinimumDuration } from "@/utils/timing";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
@@ -25,6 +30,10 @@ export function SalesPage() {
   const [sales, setSales] = useState<PosSale[]>([]);
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
   const [salesPage, setSalesPage] = useState(1);
+  const [receiptSale, setReceiptSale] = useState<PosSale | null>(null);
+  const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
+  const [isPrintingReceipt, setIsPrintingReceipt] = useState(false);
+  const [receiptPrintError, setReceiptPrintError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -103,6 +112,26 @@ export function SalesPage() {
     }
   }, [paginatedSales, sales.length, selectedSaleId]);
 
+  async function handlePrintReceipt() {
+    if (!receiptSale || isPrintingReceipt) {
+      return;
+    }
+
+    setIsPrintingReceipt(true);
+    setReceiptPrintError(null);
+
+    try {
+      await waitForMinimumDuration(
+        requestReceiptPrint(buildRetailReceiptDataFromSale(receiptSale)),
+        450
+      );
+    } catch {
+      setReceiptPrintError("The receipt could not be printed.");
+    } finally {
+      setIsPrintingReceipt(false);
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -150,50 +179,48 @@ export function SalesPage() {
             ) : (
               <div className="space-y-3">
                 <div className="overflow-hidden rounded-md border border-slate-200">
-                  <div className="max-h-[31rem] overflow-auto">
-                    <table className="w-full table-fixed border-collapse text-left text-sm">
-                      <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
-                        <tr>
-                          <th className="px-4 py-3 font-medium">Receipt</th>
-                          <th className="px-4 py-3 font-medium">Date</th>
-                          <th className="px-4 py-3 font-medium">Items</th>
-                          <th className="px-4 py-3 font-medium">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {paginatedSales.map((sale) => {
-                          const isSelected = sale.id === selectedSale?.id;
+                  <table className="w-full table-fixed border-collapse text-left text-sm">
+                    <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
+                      <tr>
+                        <th className="px-4 py-3 font-medium">Receipt</th>
+                        <th className="px-4 py-3 font-medium">Date</th>
+                        <th className="px-4 py-3 font-medium">Items</th>
+                        <th className="px-4 py-3 font-medium">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedSales.map((sale) => {
+                        const isSelected = sale.id === selectedSale?.id;
 
-                          return (
-                            <tr
-                              className={`cursor-pointer border-t border-slate-200 transition-colors ${
-                                isSelected ? "bg-emerald-50" : "hover:bg-slate-50"
-                              }`}
-                              key={sale.id}
-                              onClick={() => setSelectedSaleId(sale.id)}
-                            >
-                              <td className="px-4 py-3">
-                                <p className="font-medium text-slate-950">{sale.saleNumber}</p>
-                                <p className="text-xs text-slate-500">
-                                  {sale.cashierName ?? "Unassigned cashier"}
-                                </p>
-                              </td>
-                              <td className="px-4 py-3 text-slate-600">
-                                {new Intl.DateTimeFormat("en-PH", {
-                                  dateStyle: "medium",
-                                  timeStyle: "short"
-                                }).format(new Date(sale.saleDate))}
-                              </td>
-                              <td className="px-4 py-3 text-slate-600">{sale.itemCount}</td>
-                              <td className="px-4 py-3 font-semibold text-slate-950">
-                                {currencyFormatter.format(Number(sale.totalAmount))}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                        return (
+                          <tr
+                            className={`cursor-pointer border-t border-slate-200 transition-colors ${
+                              isSelected ? "bg-emerald-50" : "hover:bg-slate-50"
+                            }`}
+                            key={sale.id}
+                            onClick={() => setSelectedSaleId(sale.id)}
+                          >
+                            <td className="px-4 py-3">
+                              <p className="font-medium text-slate-950">{sale.saleNumber}</p>
+                              <p className="text-xs text-slate-500">
+                                {sale.cashierName ?? "Unassigned cashier"}
+                              </p>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">
+                              {new Intl.DateTimeFormat("en-PH", {
+                                dateStyle: "medium",
+                                timeStyle: "short"
+                              }).format(new Date(sale.saleDate))}
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">{sale.itemCount}</td>
+                            <td className="px-4 py-3 font-semibold text-slate-950">
+                              {currencyFormatter.format(Number(sale.totalAmount))}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
 
                 <AppPagination
@@ -210,7 +237,26 @@ export function SalesPage() {
 
         <Card className="border-slate-200/80 bg-white/95 shadow-sm">
           <CardHeader>
-            <CardTitle>Receipt details</CardTitle>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle>Receipt details</CardTitle>
+              <Button
+                disabled={!selectedSale}
+                size="sm"
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  if (!selectedSale) {
+                    return;
+                  }
+
+                  setReceiptSale(selectedSale);
+                  setReceiptPrintError(null);
+                  setIsReceiptDialogOpen(true);
+                }}
+              >
+                Print receipt
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {selectedSale ? (
@@ -288,6 +334,23 @@ export function SalesPage() {
           </CardContent>
         </Card>
       </section>
+
+      <RetailReceiptDialog
+        error={receiptPrintError}
+        isPrinting={isPrintingReceipt}
+        open={isReceiptDialogOpen}
+        receipt={receiptSale ? buildRetailReceiptDataFromSale(receiptSale) : null}
+        onOpenChange={(open) => {
+          setIsReceiptDialogOpen(open);
+
+          if (!open) {
+            setReceiptSale(null);
+            setReceiptPrintError(null);
+          }
+        }}
+        onPrint={() => void handlePrintReceipt()}
+        title="Sales receipt"
+      />
     </>
   );
 }

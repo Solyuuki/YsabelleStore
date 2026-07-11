@@ -47,10 +47,13 @@ export type PosSaleItem = {
 
 export type PosSale = {
   cashierName: string | null;
+  cashReceived: string;
+  change: string;
   discountAmount: string;
   id: string;
   itemCount: number;
   items: PosSaleItem[];
+  paymentMethod: "CASH";
   saleDate: string;
   saleNumber: string;
   status: "DRAFT" | "COMPLETED" | "VOIDED";

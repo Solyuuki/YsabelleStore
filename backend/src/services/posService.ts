@@ -47,10 +47,13 @@ type SaleItemRecord = {
 
 type SaleSummaryRecord = {
   cashierName: string | null;
+  cashReceived: string;
   discountAmount: string;
+  change: string;
   id: string;
   itemCount: number;
   items: SaleItemRecord[];
+  paymentMethod: "CASH";
   saleDate: string;
   saleNumber: string;
   status: SaleStatus;
@@ -295,10 +298,13 @@ export async function checkoutPosSale(input: {
     return {
       sale: {
         cashierName: input.cashierName,
+        cashReceived: totalAmount.toString(),
         discountAmount: sale.discountAmount.toString(),
+        change: new Prisma.Decimal(0).toString(),
         id: sale.id,
-        itemCount: saleItems.length,
+        itemCount: saleItems.reduce((sum, item) => sum + item.quantity, 0),
         items: saleItems,
+        paymentMethod: "CASH",
         saleDate: sale.saleDate.toISOString(),
         saleNumber: sale.saleNumber,
         status: sale.status,
@@ -332,9 +338,11 @@ export async function listRecentSales(limit = 20): Promise<SalesListResult> {
   return {
     sales: sales.map((sale) => ({
       cashierName: sale.cashier?.name ?? null,
+      cashReceived: sale.totalAmount.toString(),
       discountAmount: sale.discountAmount.toString(),
+      change: new Prisma.Decimal(0).toString(),
       id: sale.id,
-      itemCount: sale.items.length,
+      itemCount: sale.items.reduce((sum, item) => sum + item.quantity, 0),
       items: sale.items.map((item) => ({
         batchId: item.batchId,
         barcode: item.product.barcode,
@@ -346,6 +354,7 @@ export async function listRecentSales(limit = 20): Promise<SalesListResult> {
         totalAmount: item.totalAmount.toString(),
         unitPrice: item.unitPrice.toString()
       })),
+      paymentMethod: "CASH",
       saleDate: sale.saleDate.toISOString(),
       saleNumber: sale.saleNumber,
       status: sale.status,

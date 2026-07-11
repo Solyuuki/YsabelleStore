@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import { appMetadata } from "../config/app.js";
+import { registerReceiptPrintIpc } from "./receiptPrint.js";
 import { createMainWindow } from "./window.js";
 
 function wireAppLifecycle(): void {
@@ -21,6 +22,7 @@ void app.whenReady().then(() => {
     app.setAppUserModelId(appMetadata.appUserModelId);
   }
 
+  registerReceiptPrintIpc();
   wireAppLifecycle();
   void createMainWindow();
 });

@@ -8,6 +8,7 @@ import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ProductsPage } from "@/pages/ProductsPage";
 import { InventoryPage } from "@/pages/InventoryPage";
+import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
 import { SalesPage } from "@/pages/SalesPage";
@@ -37,6 +38,19 @@ function getCurrentPath() {
   return window.location.pathname || "/";
 }
 
+function getReceiptPrintRequest() {
+  const url = new URL(window.location.href);
+
+  if (url.searchParams.get("print") !== "receipt") {
+    return null;
+  }
+
+  return {
+    payload: url.searchParams.get("data"),
+    requestId: url.searchParams.get("requestId")
+  };
+}
+
 export function AppShell() {
   const {
     error,
@@ -58,6 +72,7 @@ export function AppShell() {
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [logoutSubmitting, setLogoutSubmitting] = useState(false);
   const logoutSubmittingRef = useRef(false);
+  const receiptPrintRequest = getReceiptPrintRequest();
 
   useEffect(() => {
     const handlePopState = () => setPath(getCurrentPath());
@@ -135,6 +150,15 @@ export function AppShell() {
       window.clearTimeout(timeoutId);
     };
   }, [shouldHoldForAuth]);
+
+  if (receiptPrintRequest) {
+    return (
+      <ReceiptPrintPage
+        payload={receiptPrintRequest.payload}
+        requestId={receiptPrintRequest.requestId}
+      />
+    );
+  }
 
   if (shouldHoldForAuth) {
     return showLaunchSplash ? <LaunchSplash /> : null;
