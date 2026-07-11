@@ -5,7 +5,6 @@
   LoaderCircle,
   PencilLine,
   Plus,
-  RefreshCw,
   Search,
   ShieldCheck,
   Upload,
@@ -42,14 +41,6 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle
-} from "@/components/ui/sheet";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -57,14 +48,12 @@ import {
   createProduct,
   fetchCategories,
   fetchProductById,
-  fetchMovements,
   fetchProducts,
   importProducts,
   previewProductImport,
   updateProduct,
   updateProductStatus,
   type ProductImportIssue,
-  type MovementRecord,
   type PaginationMeta,
   type ProductImportPreview,
   type ProductCategorySummary,
@@ -134,9 +123,6 @@ export function ProductsPage() {
   const [pendingAvailabilityProductIds, setPendingAvailabilityProductIds] = useState<Set<string>>(
     () => new Set()
   );
-  const [movements, setMovements] = useState<MovementRecord[]>([]);
-  const [movementLoading, setMovementLoading] = useState(false);
-  const [movementError, setMovementError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
@@ -346,50 +332,6 @@ export function ProductsPage() {
 
   useEffect(() => {
     if (!selectedProductId) {
-      setMovements([]);
-      setMovementError(null);
-      setMovementLoading(false);
-      return;
-    }
-
-    const productId = selectedProductId;
-    let active = true;
-
-    async function loadMovements() {
-      setMovementLoading(true);
-      setMovementError(null);
-
-      try {
-        const result = await fetchMovements(productId, { pageSize: 20 });
-
-        if (!active) {
-          return;
-        }
-
-        setMovements(result.items);
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-
-        setMovements([]);
-        setMovementError(error instanceof Error ? error.message : "Unable to load movements.");
-      } finally {
-        if (active) {
-          setMovementLoading(false);
-        }
-      }
-    }
-
-    void loadMovements();
-
-    return () => {
-      active = false;
-    };
-  }, [selectedProductId]);
-
-  useEffect(() => {
-    if (!selectedProductId) {
       return;
     }
 
@@ -399,9 +341,6 @@ export function ProductsPage() {
 
     if (!selectedProductStillVisible) {
       setSelectedProductId(null);
-      setMovements([]);
-      setMovementError(null);
-      setMovementLoading(false);
     }
   }, [products, selectedProductId]);
 
@@ -867,9 +806,6 @@ export function ProductsPage() {
 
   function clearSelection() {
     setSelectedProductId(null);
-    setMovements([]);
-    setMovementError(null);
-    setMovementLoading(false);
   }
 
   function handleSearchChange(value: string) {
@@ -1237,13 +1173,10 @@ export function ProductsPage() {
           </CardContent>
         </Card>
 
-        <ProductDetailsSheet
+        <ProductDetailsDialog
           categories={categories}
           categoryLoading={categoriesLoading}
           isOpen={Boolean(selectedProduct)}
-          movements={movements}
-          movementError={movementError}
-          movementLoading={movementLoading}
           onClose={clearSelection}
           onSaved={() => void refreshCatalog()}
           product={selectedProduct}
@@ -2198,7 +2131,6 @@ function CreateProductDialog({
     categoryId: "",
     costPrice: "",
     description: "",
-    initialStock: "0",
     name: "",
     reorderLevel: "0",
     sellingPrice: "",
@@ -2238,7 +2170,6 @@ function CreateProductDialog({
         categoryId: form.categoryId,
         costPrice: form.costPrice.trim(),
         description: form.description.trim() || null,
-        initialStock: Number(form.initialStock),
         name: form.name.trim(),
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
@@ -2279,7 +2210,10 @@ function CreateProductDialog({
       <DialogContent className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col overflow-hidden p-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Add Product</DialogTitle>
-          <DialogDescription>Create a catalog record and optional opening stock.</DialogDescription>
+          <DialogDescription>Create a catalog record for the product.</DialogDescription>
+          <p className="text-xs leading-5 text-slate-500">
+            Stock quantities are managed separately in Inventory after the product is created.
+          </p>
         </DialogHeader>
 
         <form
@@ -2435,17 +2369,6 @@ function CreateProductDialog({
                   }
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-initial">Initial stock</Label>
-                <Input
-                  id="product-initial"
-                  inputMode="numeric"
-                  value={form.initialStock}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, initialStock: event.target.value }))
-                  }
-                />
-              </div>
             </div>
 
             <div className="space-y-2">
@@ -2474,13 +2397,10 @@ function CreateProductDialog({
   );
 }
 
-function ProductDetailsSheet({
+function ProductDetailsDialog({
   categories,
   categoryLoading,
   isOpen,
-  movements,
-  movementError,
-  movementLoading,
   onClose,
   onSaved,
   product
@@ -2488,9 +2408,6 @@ function ProductDetailsSheet({
   categories: ProductCategorySummary[];
   categoryLoading: boolean;
   isOpen: boolean;
-  movements: MovementRecord[];
-  movementError: string | null;
-  movementLoading: boolean;
   onClose: () => void;
   onSaved: () => void;
   product: ProductRecord | null;
@@ -2580,7 +2497,7 @@ function ProductDetailsSheet({
   }
 
   return (
-    <Sheet
+    <Dialog
       open={isOpen}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
@@ -2588,19 +2505,42 @@ function ProductDetailsSheet({
         }
       }}
     >
-      <SheetContent aria-describedby="product-details-sheet" className="max-w-[760px]">
-        <SheetHeader className="border-b border-slate-200 px-6 py-5">
-          <SheetTitle>{product ? product.name : "Product details"}</SheetTitle>
-          <SheetDescription id="product-details-sheet">
-            Review the selected product, update catalog fields, and keep stock traceability read
-            only.
-          </SheetDescription>
-        </SheetHeader>
+      <DialogContent
+        aria-describedby="product-details-dialog"
+        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col overflow-hidden p-0"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+        }}
+      >
+        <DialogHeader className="relative border-b border-slate-200 px-6 py-5 pr-14">
+          <DialogClose asChild>
+            <Button
+              aria-label="Close product details dialog"
+              className="absolute right-4 top-4"
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </DialogClose>
+          <DialogTitle>{product ? product.name : "Product details"}</DialogTitle>
+          <DialogDescription id="product-details-dialog">
+            Review the selected product and edit catalog fields when needed.
+          </DialogDescription>
+          <p className="text-xs leading-5 text-slate-500">
+            Stock quantities and movement history are available in Inventory.
+          </p>
+        </DialogHeader>
 
         {product ? (
           <div className="flex-1 overflow-y-auto px-6 py-5">
             {isEditing ? (
-              <form className="space-y-4" onSubmit={(event) => void handleSave(event)}>
+              <form
+                id="product-edit-form"
+                className="space-y-4"
+                onSubmit={(event) => void handleSave(event)}
+              >
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="edit-name">Product name</Label>
@@ -2723,23 +2663,6 @@ function ProductDetailsSheet({
                     />
                   </div>
                 </div>
-
-                <SheetFooter className="px-0 pb-0">
-                  <Button
-                    disabled={saving}
-                    type="button"
-                    variant="secondary"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button disabled={saving} type="submit">
-                    {saving ? (
-                      <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-                    ) : null}
-                    Save changes
-                  </Button>
-                </SheetFooter>
               </form>
             ) : (
               <div className="space-y-5">
@@ -2758,7 +2681,10 @@ function ProductDetailsSheet({
                   />
                   <DetailLine label="Reorder level" value={String(product.reorderLevel)} />
                   <DetailLine label="Target stock level" value={String(product.targetStockLevel)} />
-                  <DetailLine label="Status" value={product.status} />
+                  <DetailLine
+                    label="Status"
+                    value={product.status === "ACTIVE" ? "Available" : "Unavailable"}
+                  />
                   <DetailLine
                     label="Created"
                     value={new Date(product.createdAt).toLocaleString()}
@@ -2766,10 +2692,6 @@ function ProductDetailsSheet({
                   <DetailLine
                     label="Updated"
                     value={new Date(product.updatedAt).toLocaleString()}
-                  />
-                  <DetailLine
-                    label="Current stock"
-                    value={String(product.inventory.currentQuantity)}
                   />
                 </div>
 
@@ -2780,60 +2702,48 @@ function ProductDetailsSheet({
                   </p>
                 </div>
 
-                <div className="space-y-3">
-                  <p className="text-sm font-semibold text-slate-950">Movement history</p>
-                  {movementLoading ? (
-                    <LoadingState
-                      badge="Loading"
-                      helper="Fetching movement history for the selected product."
-                      label="Loading movements"
-                    />
-                  ) : movementError ? (
-                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                      {movementError}
-                    </div>
-                  ) : movements.length > 0 ? (
-                    <div className="space-y-3">
-                      {movements.map((movement) => (
-                        <div
-                          className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm"
-                          key={movement.id}
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <span className="font-medium text-slate-950">{movement.type}</span>
-                            <StatusBadge variant="info">{String(movement.quantity)}</StatusBadge>
-                          </div>
-                          <p className="mt-1 text-slate-600">
-                            {movement.quantityBefore} {"->"} {movement.quantityAfter}
-                            {movement.referenceType ? ` - ${movement.referenceType}` : ""}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <EmptyState
-                      description="Initial stock and future stock changes will appear here."
-                      icon={RefreshCw}
-                      title="No movements yet"
-                    />
-                  )}
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-800">
+                  Stock quantities and movement history are available in Inventory.
                 </div>
               </div>
             )}
           </div>
         ) : null}
 
-        {!isEditing ? (
-          <SheetFooter className="border-t border-slate-200 bg-white/90 px-6 py-4">
-            <Button type="button" variant="secondary" onClick={onClose}>
-              Close
-            </Button>
-            <Button type="button" onClick={() => setIsEditing(true)}>
-              Edit product
-            </Button>
-          </SheetFooter>
-        ) : null}
-      </SheetContent>
-    </Sheet>
+        <DialogFooter className="border-t border-slate-200 bg-white/90 px-6 py-4">
+          {isEditing ? (
+            <>
+              <Button
+                disabled={saving}
+                type="button"
+                variant="secondary"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={saving || !product || !form.name || !form.categoryId}
+                form="product-edit-form"
+                type="submit"
+              >
+                {saving ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : null}
+                Save changes
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button type="button" variant="secondary" onClick={onClose}>
+                Close
+              </Button>
+              <Button type="button" onClick={() => setIsEditing(true)}>
+                Edit product
+              </Button>
+            </>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

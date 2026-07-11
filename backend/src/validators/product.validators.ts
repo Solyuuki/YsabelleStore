@@ -54,7 +54,6 @@ export const createProductSchema = z.object({
   sellingPrice: moneyStringSchema,
   reorderLevel: z.coerce.number().int().min(0).default(0),
   targetStockLevel: z.coerce.number().int().min(0).default(0),
-  initialStock: z.coerce.number().int().min(0).default(0),
   status: productStatusSchema.optional(),
   description: optionalTextSchema(255)
 });

@@ -21,7 +21,7 @@ import {
   type ProductSummary,
   type ProductWithRelations
 } from "./catalogSerializers.js";
-import { assertStockInvariant, createOpeningStockBatch } from "./stockDomainService.js";
+import { assertStockInvariant } from "./stockDomainService.js";
 
 type ProductListResult = {
   items: ProductSummary[];
@@ -54,8 +54,7 @@ function normalizeProductInput(input: CreateProductRequest | UpdateProductReques
     costPrice: input.costPrice ? toDecimal(String(input.costPrice)) : undefined,
     sellingPrice: input.sellingPrice ? toDecimal(String(input.sellingPrice)) : undefined,
     reorderLevel: input.reorderLevel,
-    targetStockLevel: input.targetStockLevel,
-    initialStock: "initialStock" in input ? input.initialStock : undefined
+    targetStockLevel: input.targetStockLevel
   };
 }
 
@@ -224,8 +223,7 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
     costPrice,
     sellingPrice,
     reorderLevel,
-    targetStockLevel,
-    initialStock
+    targetStockLevel
   } = normalized;
 
   if (!name || !sku || !categoryId || costPrice === undefined || sellingPrice === undefined) {
@@ -263,17 +261,6 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
           version: 0
         }
       });
-
-      if ((initialStock ?? 0) > 0) {
-        await createOpeningStockBatch(tx, {
-          performedById: undefined,
-          productId: createdProduct.id,
-          quantity: initialStock ?? 0,
-          reason: "Opening stock created during product setup.",
-          unitCost: costPrice,
-          sku
-        });
-      }
 
       await assertStockInvariant(tx, createdProduct.id);
 

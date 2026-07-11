@@ -32,10 +32,10 @@ test.after(async () => {
 });
 
 test(
-  "create product with zero stock keeps inventory and batches aligned",
+  "create product starts with empty inventory and no opening batches",
   { concurrency: false },
   async () => {
-    const product = await createProduct(buildProductInput({ initialStock: 0 }));
+    const product = await createProduct(buildProductInput());
     const state = await getStockState(product.id);
 
     assert.equal(state.inventory.quantityOnHand, 0);
@@ -45,61 +45,29 @@ test(
   }
 );
 
-test(
-  "create product with opening stock creates batch and movement",
-  { concurrency: false },
-  async () => {
-    const product = await createProduct(buildProductInput({ initialStock: 10 }));
-    const state = await getStockState(product.id);
+test("create product does not require opening stock batches", { concurrency: false }, async () => {
+  const sku = uniqueSku("ROLLBACK");
 
-    assert.equal(state.inventory.quantityOnHand, 10);
-    assert.equal(state.batchTotal, 10);
-    assert.equal(state.movements.length, 1);
-    assert.equal(state.movements[0]?.type, "INITIAL_STOCK");
-    assertInvariant(state);
-  }
-);
-
-test(
-  "create product rolls back when opening stock batch creation fails",
-  { concurrency: false },
-  async () => {
-    const sku = uniqueSku("ROLLBACK");
-
-    await withPatchedTransaction(
-      (tx) => ({
-        ...tx,
-        inventoryBatch: {
-          ...tx.inventoryBatch,
-          create: (async () => {
-            throw new Error("Synthetic opening batch failure.");
-          }) as unknown as typeof tx.inventoryBatch.create
-        }
-      }),
-      async () => {
-        await assert.rejects(() =>
-          createProduct(
-            buildProductInput({
-              initialStock: 5,
-              sku
-            })
-          )
-        );
+  const product = await withPatchedTransaction(
+    (tx) => ({
+      ...tx,
+      inventoryBatch: {
+        ...tx.inventoryBatch,
+        create: (async () => {
+          throw new Error("Synthetic opening batch failure.");
+        }) as unknown as typeof tx.inventoryBatch.create
       }
-    );
+    }),
+    async () => createProduct(buildProductInput({ sku }))
+  );
 
-    const product = await prisma.product.findUnique({
-      where: { sku },
-      include: {
-        inventory: true,
-        inventoryBatches: true,
-        inventoryMovements: true
-      }
-    });
+  const state = await getStockState(product.id);
 
-    assert.equal(product, null);
-  }
-);
+  assert.equal(state.inventory.quantityOnHand, 0);
+  assert.equal(state.batchTotal, 0);
+  assert.equal(state.movements.length, 0);
+  assertInvariant(state);
+});
 
 test(
   "import product with stock creates opening batch and movement",
@@ -198,7 +166,7 @@ test(
   "stock-in synchronization keeps inventory, batch total, and movement aligned",
   { concurrency: false },
   async () => {
-    const product = await createProduct(buildProductInput({ initialStock: 0 }));
+    const product = await createProduct(buildProductInput());
     const result = await addStock(product.id, {
       quantity: 6,
       reason: "Supplier restock"
@@ -217,7 +185,7 @@ test(
   "positive adjustment creates traceable stock and preserves the invariant",
   { concurrency: false },
   async () => {
-    const product = await createProduct(buildProductInput({ initialStock: 0 }));
+    const product = await createProduct(buildProductInput());
     await addStock(product.id, { quantity: 4, reason: "Seed stock" });
     const result = await adjustStock(product.id, {
       movementType: "ADJUSTMENT_IN",
@@ -238,7 +206,7 @@ test(
   "negative adjustment reduces stock without creating negative batches",
   { concurrency: false },
   async () => {
-    const product = await createProduct(buildProductInput({ initialStock: 0 }));
+    const product = await createProduct(buildProductInput());
     await addStock(product.id, { quantity: 6, reason: "Seed stock" });
     const result = await adjustStock(product.id, {
       movementType: "ADJUSTMENT_OUT",
@@ -259,7 +227,7 @@ test(
   "insufficient stock rejection leaves inventory unchanged",
   { concurrency: false },
   async () => {
-    const product = await createProduct(buildProductInput({ initialStock: 0 }));
+    const product = await createProduct(buildProductInput());
     await addStock(product.id, { quantity: 1, reason: "Seed stock" });
 
     await assert.rejects(
@@ -282,7 +250,8 @@ test(
 );
 
 test("POS search availability reflects activation state", { concurrency: false }, async () => {
-  const product = await createProduct(buildProductInput({ initialStock: 3 }));
+  const product = await createProduct(buildProductInput());
+  await addStock(product.id, { quantity: 3, reason: "Seed stock" });
   const found = await searchPosProducts(product.sku, { page: 1, pageSize: 20 });
 
   assert.equal(
@@ -315,13 +284,14 @@ test(
     const query = `POSPAG-${uniqueLabel("Q")}`;
 
     for (const index of Array.from({ length: 21 }, (_, itemIndex) => itemIndex)) {
-      await createProduct(
+      const product = await createProduct(
         buildProductInput({
-          initialStock: 1,
           name: `${query}-${index + 1}`,
           sku: uniqueSku(`POS${index + 1}`)
         })
       );
+
+      await addStock(product.id, { quantity: 1, reason: "Seed stock" });
     }
 
     const pageOne = await searchPosProducts(query, { page: 1, pageSize: 20 });
@@ -337,7 +307,8 @@ test(
   "POS checkout deducts batch stock, inventory, and creates sale records",
   { concurrency: false },
   async () => {
-    const product = await createProduct(buildProductInput({ initialStock: 5 }));
+    const product = await createProduct(buildProductInput());
+    await addStock(product.id, { quantity: 5, reason: "Seed stock" });
     const cashier = await createTestCashier();
     const result = await checkoutPosSale({
       cashierId: cashier.id,
@@ -358,8 +329,10 @@ test(
 );
 
 test("POS checkout rolls back when a later write fails", { concurrency: false }, async () => {
-  const first = await createProduct(buildProductInput({ initialStock: 3 }));
-  const second = await createProduct(buildProductInput({ initialStock: 1 }));
+  const first = await createProduct(buildProductInput());
+  await addStock(first.id, { quantity: 3, reason: "Seed stock" });
+  const second = await createProduct(buildProductInput());
+  await addStock(second.id, { quantity: 1, reason: "Seed stock" });
   const cashier = await createTestCashier();
 
   await withPatchedTransaction(
@@ -400,7 +373,8 @@ test("POS checkout rolls back when a later write fails", { concurrency: false },
 });
 
 test("availability toggles preserve stock and POS visibility", { concurrency: false }, async () => {
-  const product = await createProduct(buildProductInput({ initialStock: 4 }));
+  const product = await createProduct(buildProductInput());
+  await addStock(product.id, { quantity: 4, reason: "Seed stock" });
   const initialState = await getStockState(product.id);
 
   assert.equal(initialState.inventory.quantityOnHand, 4);
@@ -432,9 +406,7 @@ test("availability toggles preserve stock and POS visibility", { concurrency: fa
 });
 
 test("discontinued products reject availability toggles", { concurrency: false }, async () => {
-  const product = await createProduct(
-    buildProductInput({ initialStock: 0, status: "DISCONTINUED" })
-  );
+  const product = await createProduct(buildProductInput({ status: "DISCONTINUED" }));
 
   await assert.rejects(
     () => changeProductStatus(product.id, { status: "ACTIVE" }),
@@ -454,7 +426,8 @@ test("requireRole allows OWNER and blocks STAFF", { concurrency: false }, async 
 });
 
 test("stock audit detects a mismatch without mutating data", { concurrency: false }, async () => {
-  const product = await createProduct(buildProductInput({ initialStock: 4 }));
+  const product = await createProduct(buildProductInput());
+  await addStock(product.id, { quantity: 4, reason: "Seed stock" });
   await prisma.inventory.update({
     data: {
       quantityOnHand: 5
@@ -481,7 +454,6 @@ test("stock audit detects a mismatch without mutating data", { concurrency: fals
 });
 
 type ProductInputOverrides = Partial<{
-  initialStock: number;
   name: string;
   sku: string;
   status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
@@ -495,7 +467,6 @@ function buildProductInput(overrides: ProductInputOverrides = {}) {
     categoryId,
     costPrice: "10.00",
     description: `Test item ${suffix}`,
-    initialStock: overrides.initialStock ?? 0,
     name: overrides.name ?? `DATA FLOW TEST PRODUCT ${suffix}`,
     reorderLevel: 2,
     sellingPrice: "15.00",

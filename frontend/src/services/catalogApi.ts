@@ -52,7 +52,6 @@ export type CreateProductInput = {
   sellingPrice: string;
   reorderLevel: number;
   targetStockLevel: number;
-  initialStock: number;
   status?: ProductRecord["status"];
 };
 
