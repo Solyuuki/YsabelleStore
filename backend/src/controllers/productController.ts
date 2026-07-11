@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
+import { createCategorySchema } from "../validators/category.validators.js";
 import {
   createProductSchema,
   listProductsQuerySchema,
@@ -11,6 +12,7 @@ import {
 } from "../validators/product.validators.js";
 import {
   changeProductStatus,
+  createCategory,
   createProduct,
   listCategories,
   getProductById,
@@ -38,6 +40,21 @@ export const listCategoriesController: RequestHandler = async (_request, respons
     const categories = await listCategories();
 
     response.status(200).json(createSuccessResponse("Categories loaded successfully.", categories));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createCategoryController: RequestHandler = async (request, response, next) => {
+  try {
+    const body = parseOrThrow(createCategorySchema, request.body, {
+      message: "Category request is invalid.",
+      code: "INVALID_CATEGORY_REQUEST"
+    });
+
+    const category = await createCategory(body);
+
+    response.status(201).json(createSuccessResponse("Category created successfully.", category));
   } catch (error) {
     next(error);
   }

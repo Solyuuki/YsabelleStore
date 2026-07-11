@@ -397,14 +397,6 @@ async function readSpreadsheetTable(
   return readExcelTable(file);
 }
 
-function sanitizeCsvValue(value: string) {
-  if (/[",\r\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
-  }
-
-  return value;
-}
-
 function detectFileType(file: UploadFile): "csv" | "xlsx" {
   const extension = path.extname(file.originalname).toLowerCase();
 
@@ -620,41 +612,7 @@ function summarizeWarnings(ignoredColumns: string[]): ImportIssue[] {
 }
 
 function buildTemplateCsv() {
-  const rows = [
-    [
-      "Classic Cola 1.5L",
-      "BEV-COLA-101",
-      "4800099991001",
-      "Beverages",
-      "BOTTLE",
-      "22.00",
-      "28.00",
-      "12",
-      "36",
-      "30",
-      "ACTIVE",
-      "Large bottle cola"
-    ],
-    [
-      "Cheese Crackers",
-      "SNK-CRACK-101",
-      "4800099991002",
-      "Snacks",
-      "PACK",
-      "11.00",
-      "15.00",
-      "8",
-      "24",
-      "18",
-      "ACTIVE",
-      ""
-    ]
-  ];
-
-  return [
-    PRODUCT_IMPORT_TEMPLATE_HEADERS.join(","),
-    ...rows.map((row) => row.map(sanitizeCsvValue).join(","))
-  ].join("\n");
+  return PRODUCT_IMPORT_TEMPLATE_HEADERS.join(",");
 }
 
 function validateFormulaCells(

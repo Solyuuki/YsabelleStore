@@ -111,6 +111,8 @@ The import endpoint returns:
 - CSV examples: `docs/samples/product-import/*.csv`
 - Excel example: `docs/samples/product-import/valid-products.xlsx`
 
+The downloadable template is header-only. Example product rows live in the sample files above and are not embedded in the downloaded CSV.
+
 ## Related Contracts
 
 - [Product and Inventory Contract](./PRODUCT-INVENTORY-CONTRACT.md)

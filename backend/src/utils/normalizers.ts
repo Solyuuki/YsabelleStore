@@ -6,6 +6,14 @@ export function normalizeCode(value: string): string {
   return value.trim().replace(/\s+/g, "");
 }
 
+export function normalizeSlug(value: string): string {
+  return normalizeWhitespace(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-+/g, "-");
+}
+
 export function normalizeOptionalString(value: string | null | undefined): string | undefined {
   if (value === null || value === undefined) {
     return undefined;

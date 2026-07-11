@@ -8,8 +8,13 @@ import { prisma } from "../src/database/prismaClient.js";
 import { requireRole } from "../src/middleware/roleMiddleware.js";
 import { addStock, adjustStock } from "../src/services/inventoryService.js";
 import { checkoutPosSale, searchPosProducts } from "../src/services/posService.js";
-import { changeProductStatus, createProduct } from "../src/services/productService.js";
 import {
+  changeProductStatus,
+  createCategory,
+  createProduct
+} from "../src/services/productService.js";
+import {
+  getProductImportTemplateCsv,
   importProductsFromFile,
   previewProductImport
 } from "../src/services/productImportService.js";
@@ -106,6 +111,92 @@ test(
   }
 );
 
+test(
+  "create category returns a created category and preserves stock data",
+  { concurrency: false },
+  async () => {
+    const beforeCounts = {
+      category: await prisma.category.count(),
+      inventory: await prisma.inventory.count(),
+      product: await prisma.product.count()
+    };
+
+    const name = `Manual Category ${randomUUID().slice(0, 8)}`;
+    const created = await createCategory({
+      description: "Manual category created by test",
+      name
+    });
+
+    assert.equal(created.name, name);
+    assert.ok(created.slug.startsWith("manual-category"));
+    assert.equal(await prisma.category.count(), beforeCounts.category + 1);
+    assert.equal(await prisma.product.count(), beforeCounts.product);
+    assert.equal(await prisma.inventory.count(), beforeCounts.inventory);
+  }
+);
+
+test("create category rejects duplicates", { concurrency: false }, async () => {
+  const name = `Duplicate Category ${randomUUID().slice(0, 8)}`;
+  await createCategory({ name });
+
+  await assert.rejects(
+    () => createCategory({ name }),
+    (error) =>
+      error instanceof Error &&
+      error.message.includes("Category already exists.") &&
+      (error as { code?: string }).code === "CATEGORY_ALREADY_EXISTS"
+  );
+});
+
+test("create category rejects duplicate slug", { concurrency: false }, async () => {
+  const slug = `duplicate-slug-${randomUUID().slice(0, 6)}`;
+  await createCategory({ name: `Slug Category ${randomUUID().slice(0, 8)}`, slug });
+
+  await assert.rejects(
+    () => createCategory({ name: `Slug Category ${randomUUID().slice(0, 8)}`, slug }),
+    (error) =>
+      error instanceof Error &&
+      error.message.includes("Category already exists.") &&
+      (error as { code?: string }).code === "CATEGORY_ALREADY_EXISTS"
+  );
+});
+
+test("create category rejects empty name", { concurrency: false }, async () => {
+  await assert.rejects(
+    () => createCategory({ name: "   " }),
+    (error) =>
+      error instanceof Error &&
+      error.message.includes("Category name is required.") &&
+      (error as { code?: string }).code === "INVALID_CATEGORY_REQUEST"
+  );
+});
+
+test(
+  "product import template is header-only and matches the canonical headers",
+  { concurrency: false },
+  async () => {
+    const template = getProductImportTemplateCsv();
+    const expectedHeaders =
+      "name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description";
+
+    assert.equal(template, expectedHeaders);
+    assert.equal(template.split("\n").length, 1);
+    assert.equal(template.includes("BEV-COLA-101"), false);
+    assert.equal(template.includes("4800099991001"), false);
+  }
+);
+
+test("product import template preview reports zero data rows", { concurrency: false }, async () => {
+  const preview = await previewProductImport(
+    csvFile("product-import-template.csv", getProductImportTemplateCsv())
+  );
+
+  assert.equal(preview.totalRows, 0);
+  assert.equal(preview.validRows, 0);
+  assert.equal(preview.invalidRows, 0);
+  assert.ok(preview.errors.some((issue) => issue.code === "NO_DATA_ROWS"));
+});
+
 test("import preview rejects invalid headers", { concurrency: false }, async () => {
   const preview = await previewProductImport(
     csvFile(
@@ -159,6 +250,74 @@ test("import preview rejects duplicate barcode", { concurrency: false }, async (
     preview.rows
       .flatMap((row) => row.errors)
       .some((issue) => issue.code === "DUPLICATE_BARCODE_IN_FILE")
+  );
+});
+
+test("blank optional barcode passes import preview", { concurrency: false }, async () => {
+  const categoryName = await resolveCategoryName();
+  const sku = uniqueSku("BLANKBAR");
+  const preview = await previewProductImport(
+    csvFile(
+      "blank-barcode.csv",
+      [
+        "name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description",
+        `Blank Barcode Product,${sku},,${categoryName},PIECE,1.00,2.00,0,0,0,ACTIVE,`
+      ].join("\n")
+    )
+  );
+
+  assert.equal(preview.invalidRows, 0);
+  assert.equal(preview.validRows, 1);
+  assert.equal(preview.rows[0]?.normalizedData?.barcode, null);
+});
+
+test("import preview rejects invalid category", { concurrency: false }, async () => {
+  const preview = await previewProductImport(
+    csvFile(
+      "invalid-category.csv",
+      [
+        "name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description",
+        `Unknown Category Product,${uniqueSku("CAT")},${uniqueBarcode()},Unknown Category,PIECE,1.00,2.00,0,0,0,ACTIVE,`
+      ].join("\n")
+    )
+  );
+
+  assert.ok(
+    preview.rows.flatMap((row) => row.errors).some((issue) => issue.code === "UNKNOWN_CATEGORY")
+  );
+});
+
+test("import preview rejects invalid unit", { concurrency: false }, async () => {
+  const categoryName = await resolveCategoryName();
+  const preview = await previewProductImport(
+    csvFile(
+      "invalid-unit.csv",
+      [
+        "name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description",
+        `Invalid Unit Product,${uniqueSku("UNIT")},${uniqueBarcode()},${categoryName},CAN,1.00,2.00,0,0,0,ACTIVE,`
+      ].join("\n")
+    )
+  );
+
+  assert.ok(
+    preview.rows.flatMap((row) => row.errors).some((issue) => issue.code === "INVALID_UNIT")
+  );
+});
+
+test("import preview rejects invalid status", { concurrency: false }, async () => {
+  const categoryName = await resolveCategoryName();
+  const preview = await previewProductImport(
+    csvFile(
+      "invalid-status.csv",
+      [
+        "name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description",
+        `Invalid Status Product,${uniqueSku("STATUS")},${uniqueBarcode()},${categoryName},PIECE,1.00,2.00,0,0,0,PENDING,`
+      ].join("\n")
+    )
+  );
+
+  assert.ok(
+    preview.rows.flatMap((row) => row.errors).some((issue) => issue.code === "INVALID_STATUS")
   );
 });
 

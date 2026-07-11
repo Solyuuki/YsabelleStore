@@ -6,6 +6,7 @@ import {
   normalizeCode,
   normalizeOptionalCode,
   normalizeOptionalString,
+  normalizeSlug,
   normalizeWhitespace
 } from "../utils/normalizers.js";
 import { buildPaginationMeta, type PaginationMeta } from "../utils/pagination.js";
@@ -16,6 +17,7 @@ import type {
   UpdateProductRequest
 } from "../validators/product.validators.js";
 import {
+  serializeCategory,
   computeStockStatus,
   serializeProduct,
   type ProductSummary,
@@ -80,6 +82,28 @@ async function ensureCategoryExists(categoryId: string) {
   return category;
 }
 
+function buildCategorySlug(name: string, slug?: string) {
+  const source = slug ? slug : name;
+  const normalized = normalizeSlug(source);
+
+  if (!normalized) {
+    throw new HttpError(400, "Category slug could not be derived.", {
+      code: "INVALID_CATEGORY_SLUG"
+    });
+  }
+
+  return normalized.slice(0, 140);
+}
+
+function throwDuplicateCategoryError(field: "name" | "slug") {
+  throw new HttpError(409, "Category already exists.", {
+    code: "CATEGORY_ALREADY_EXISTS",
+    details: {
+      field
+    }
+  });
+}
+
 async function ensureProductAvailability(productId: string): Promise<ProductWithRelations> {
   const product = await prisma.product.findUnique({
     include: productInclude,
@@ -128,6 +152,36 @@ async function detectDuplicateProductBarcode(barcode: string | undefined, produc
 
   if (existing && existing.id !== productId) {
     throwDuplicateProductError("barcode");
+  }
+}
+
+async function detectDuplicateCategoryName(name: string) {
+  const existing = await prisma.category.findUnique({
+    where: {
+      name
+    },
+    select: {
+      id: true
+    }
+  });
+
+  if (existing) {
+    throwDuplicateCategoryError("name");
+  }
+}
+
+async function detectDuplicateCategorySlug(slug: string) {
+  const existing = await prisma.category.findUnique({
+    where: {
+      slug
+    },
+    select: {
+      id: true
+    }
+  });
+
+  if (existing) {
+    throwDuplicateCategoryError("slug");
   }
 }
 
@@ -543,4 +597,52 @@ export async function listCategories() {
   });
 
   return categories;
+}
+
+export async function createCategory(input: {
+  description?: string | null;
+  name: string;
+  slug?: string | null;
+}) {
+  const name = normalizeWhitespace(input.name);
+  if (!name) {
+    throw new HttpError(400, "Category name is required.", {
+      code: "INVALID_CATEGORY_REQUEST"
+    });
+  }
+
+  const description =
+    input.description === undefined || input.description === null
+      ? undefined
+      : normalizeOptionalString(input.description);
+  const slug = buildCategorySlug(name, input.slug ?? undefined);
+
+  await detectDuplicateCategoryName(name);
+  await detectDuplicateCategorySlug(slug);
+
+  try {
+    const category = await prisma.category.create({
+      data: {
+        description,
+        name,
+        slug
+      }
+    });
+
+    return serializeCategory(category);
+  } catch (error) {
+    if (isKnownPrismaError(error) && error.code === "P2002") {
+      const fields = Array.isArray(error.meta?.target) ? error.meta?.target : [];
+
+      if (fields.includes("name")) {
+        throwDuplicateCategoryError("name");
+      }
+
+      if (fields.includes("slug")) {
+        throwDuplicateCategoryError("slug");
+      }
+    }
+
+    throw error;
+  }
 }

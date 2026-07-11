@@ -13,6 +13,12 @@ export type ProductCategorySummary = {
 
 export type ProductCategoryRecord = ProductCategorySummary;
 
+export type CreateCategoryInput = {
+  description?: string | null;
+  name: string;
+  slug?: string | null;
+};
+
 export type ProductInventorySummary = {
   inventoryId: string;
   currentQuantity: number;
@@ -443,6 +449,18 @@ export async function fetchCategories() {
   }
 
   return response.data;
+}
+
+export async function createCategory(input: CreateCategoryInput) {
+  const response = await apiClient.request<
+    ProductCategoryRecord,
+    { code?: string; details?: unknown }
+  >("/api/catalog/categories", {
+    method: "POST",
+    json: input
+  });
+
+  return response;
 }
 
 export async function fetchProductById(productId: string) {

@@ -20,6 +20,7 @@ import {
   type RefObject
 } from "react";
 
+import { useAuth } from "@/context/AuthContext";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -46,6 +47,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   downloadProductImportTemplate,
   createProduct,
+  createCategory,
   fetchCategories,
   fetchProductById,
   fetchProducts,
@@ -80,6 +82,7 @@ const CATALOG_REFRESH_MINIMUM_MS = 350;
 const TEMPLATE_DOWNLOAD_MINIMUM_MS = 600;
 const PREVIEW_LOADING_MINIMUM_MS = 500;
 const IMPORT_LOADING_MINIMUM_MS = 700;
+const CATEGORY_CREATE_MINIMUM_MS = 450;
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
   maximumFractionDigits: 2,
@@ -115,6 +118,7 @@ type ImportState = {
 };
 
 export function ProductsPage() {
+  const { user } = useAuth();
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -166,6 +170,7 @@ export function ProductsPage() {
     initialized: false
   });
   const { pushToast } = useToast();
+  const isOwner = user?.role === "OWNER";
 
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId) ?? null,
@@ -847,9 +852,19 @@ export function ProductsPage() {
     <>
       <CreateProductDialog
         categories={categories}
+        categoryLoading={categoriesLoading}
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
+        onCategoryCreated={(category) => {
+          setCategories((current) => {
+            const next = current.filter((entry) => entry.id !== category.id);
+            next.push(category);
+            next.sort((left, right) => left.name.localeCompare(right.name));
+            return next;
+          });
+        }}
         onCreated={() => void refreshCatalog()}
+        isOwner={isOwner}
       />
 
       <ImportProductsDialog
@@ -1408,6 +1423,17 @@ function ImportProductsDialog({
             <p className="sr-only" aria-live="polite" aria-atomic="true">
               {liveAnnouncement}
             </p>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <p className="font-medium text-slate-900">Template tips</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 leading-6">
+                <li>Download the template first, then fill in at least one product row.</li>
+                <li>Keep the headers unchanged.</li>
+                <li>Use unique SKU and barcode values.</li>
+                <li>Barcode is optional.</li>
+                <li>Categories and units must use supported values.</li>
+              </ul>
+            </div>
 
             {importState.error ? (
               <Alert variant="destructive">
@@ -2113,13 +2139,19 @@ function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
 
 function CreateProductDialog({
   categories,
+  categoryLoading,
+  isOwner,
   isOpen,
   onClose,
+  onCategoryCreated,
   onCreated
 }: {
   categories: ProductCategorySummary[];
+  categoryLoading: boolean;
+  isOwner: boolean;
   isOpen: boolean;
   onClose: () => void;
+  onCategoryCreated: (category: ProductCategorySummary) => void;
   onCreated: () => void;
 }) {
   const { pushToast } = useToast();
@@ -2138,6 +2170,13 @@ function CreateProductDialog({
   });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [categoryForm, setCategoryForm] = useState({
+    description: "",
+    name: ""
+  });
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [creatingCategory, setCreatingCategory] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -2150,6 +2189,67 @@ function CreateProductDialog({
       categoryId: current.categoryId || categories[0]?.id || ""
     }));
   }, [categories, isOpen]);
+
+  useEffect(() => {
+    if (!isCategoryDialogOpen) {
+      return;
+    }
+
+    setCategoryError(null);
+  }, [isCategoryDialogOpen]);
+
+  async function handleCreateCategory(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (creatingCategory) {
+      return;
+    }
+
+    const name = categoryForm.name.trim();
+
+    if (!name) {
+      setCategoryError("Category name is required.");
+      return;
+    }
+
+    setCreatingCategory(true);
+    setCategoryError(null);
+
+    try {
+      const response = await waitForMinimumDuration(
+        createCategory({
+          description: categoryForm.description.trim() || null,
+          name
+        }),
+        CATEGORY_CREATE_MINIMUM_MS
+      );
+
+      if (!response.success || !response.data) {
+        setCategoryError(response.message || "Unable to create category.");
+        return;
+      }
+
+      const createdCategory = response.data;
+      onCategoryCreated(createdCategory);
+      setForm((current) => ({ ...current, categoryId: createdCategory.id }));
+      setCategoryForm({
+        description: "",
+        name: ""
+      });
+      setIsCategoryDialogOpen(false);
+      pushToast({
+        message: "The new category is ready to use.",
+        title: "Category created",
+        variant: "success"
+      });
+    } catch (creationError) {
+      setCategoryError(
+        creationError instanceof Error ? creationError.message : "Unable to create category."
+      );
+    } finally {
+      setCreatingCategory(false);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -2258,21 +2358,50 @@ function CreateProductDialog({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="product-category">Category</Label>
-                <Select
-                  id="product-category"
-                  disabled={categories.length === 0}
-                  value={form.categoryId}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, categoryId: event.target.value }))
-                  }
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </Select>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                  <div className="min-w-0 flex-1">
+                    <Select
+                      id="product-category"
+                      disabled={categoryLoading || categories.length === 0}
+                      value={form.categoryId}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, categoryId: event.target.value }))
+                      }
+                    >
+                      {categoryLoading ? (
+                        <option value="">Loading categories...</option>
+                      ) : categories.length === 0 ? (
+                        <option value="">No categories found</option>
+                      ) : (
+                        <>
+                          <option value="">Select a category</option>
+                          {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </>
+                      )}
+                    </Select>
+                    {!categoryLoading && categories.length === 0 ? (
+                      <p className="mt-2 text-xs leading-5 text-slate-500">No categories found</p>
+                    ) : null}
+                  </div>
+                  {isOwner ? (
+                    <Button
+                      className="shrink-0 whitespace-nowrap"
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        setCategoryError(null);
+                        setIsCategoryDialogOpen(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" aria-hidden="true" />
+                      Add category
+                    </Button>
+                  ) : null}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="product-unit">Unit</Label>
@@ -2389,6 +2518,82 @@ function CreateProductDialog({
             </Button>
           </DialogFooter>
         </form>
+
+        <Dialog
+          open={isCategoryDialogOpen}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) {
+              setIsCategoryDialogOpen(false);
+            }
+          }}
+        >
+          <DialogContent className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[460px] flex-col overflow-hidden p-0">
+            <DialogHeader className="border-b border-slate-200 px-6 py-5">
+              <DialogTitle>Create category</DialogTitle>
+              <DialogDescription>
+                Add a new category without closing the Add Product form.
+              </DialogDescription>
+            </DialogHeader>
+
+            <form
+              className="flex-1 space-y-4 overflow-y-auto px-6 py-5"
+              onSubmit={handleCreateCategory}
+            >
+              {categoryError ? (
+                <Alert variant="destructive">
+                  <AlertTitle>Category creation failed</AlertTitle>
+                  <AlertDescription>{categoryError}</AlertDescription>
+                </Alert>
+              ) : null}
+
+              <div className="space-y-2">
+                <Label htmlFor="category-name">Category name</Label>
+                <Input
+                  id="category-name"
+                  autoFocus
+                  value={categoryForm.name}
+                  onChange={(event) =>
+                    setCategoryForm((current) => ({ ...current, name: event.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category-description">Description</Label>
+                <Textarea
+                  id="category-description"
+                  value={categoryForm.description}
+                  onChange={(event) =>
+                    setCategoryForm((current) => ({
+                      ...current,
+                      description: event.target.value
+                    }))
+                  }
+                />
+                <p className="text-xs leading-5 text-slate-500">
+                  Slug will be generated automatically from the category name.
+                </p>
+              </div>
+
+              <DialogFooter className="px-0 pb-0 pt-2">
+                <Button
+                  disabled={creatingCategory}
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsCategoryDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button disabled={creatingCategory || !categoryForm.name.trim()} type="submit">
+                  {creatingCategory ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : null}
+                  {creatingCategory ? "Creating category…" : "Create category"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );
