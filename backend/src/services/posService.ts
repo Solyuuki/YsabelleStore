@@ -1,51 +1,36 @@
 import { randomBytes } from "node:crypto";
 
-import { InventoryBatchStatus, InventoryMovementType, Prisma, SaleStatus } from "@prisma/client";
+import { Prisma, SaleStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import type { PosCheckoutItemInput } from "../validators/pos.validators.js";
+import {
+  allocateStockForSale,
+  assertStockInvariant,
+  createInventoryMovementAfterAllocation,
+  synchronizeInventoryAggregate
+} from "./stockDomainService.js";
 
 type CheckoutCartItem = PosCheckoutItemInput;
 
-type PosProductRecord = {
-  barcode: string | null;
-  category: {
-    name: string;
-  };
-  inventory: {
-    id: string;
-    quantityOnHand: number;
-  } | null;
-  id: string;
-  inventoryBatches: Array<{
-    createdAt: Date;
-    expiresAt: Date | null;
-    id: string;
-    quantityRemaining: number;
-    status: InventoryBatchStatus;
-  }>;
-  name: string;
-  reorderLevel: number;
-  sku: string;
-  status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
-  sellingPrice: Prisma.Decimal;
-};
-
-type BatchAllocation = {
-  batch: {
-    id: string;
-    quantityRemaining: number;
-  };
-  quantity: number;
-};
-
-type CheckoutLine = {
-  allocations: BatchAllocation[];
+type PosProductResult = {
   availableStock: number;
-  product: PosProductRecord;
-  quantity: number;
-  unitPrice: Prisma.Decimal;
+  barcode: string | null;
+  categoryName: string;
+  id: string;
+  isActive: boolean;
+  name: string;
+  sku: string;
+  sellingPrice: string;
+  unit: string;
+};
+
+type PaginationMeta = {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
 };
 
 type SaleItemRecord = {
@@ -73,18 +58,6 @@ type SaleSummaryRecord = {
   totalAmount: string;
 };
 
-type PosProductResult = {
-  availableStock: number;
-  barcode: string | null;
-  categoryName: string;
-  id: string;
-  isActive: boolean;
-  name: string;
-  sku: string;
-  sellingPrice: string;
-  unit: string;
-};
-
 type CheckoutResult = {
   sale: SaleSummaryRecord;
 };
@@ -93,64 +66,69 @@ type SalesListResult = {
   sales: SaleSummaryRecord[];
 };
 
-const PRODUCT_SEARCH_LIMIT = 20;
+function buildPosWhere(query: string) {
+  const normalizedQuery = query.trim();
 
-export async function searchPosProducts(query: string): Promise<{
+  return normalizedQuery
+    ? {
+        status: "ACTIVE" as const,
+        OR: [
+          { name: { contains: normalizedQuery } },
+          { sku: { contains: normalizedQuery } },
+          { barcode: { contains: normalizedQuery } },
+          { description: { contains: normalizedQuery } },
+          {
+            category: {
+              name: {
+                contains: normalizedQuery
+              }
+            }
+          }
+        ]
+      }
+    : {
+        status: "ACTIVE" as const
+      };
+}
+
+export async function searchPosProducts(
+  query: string,
+  options: { page: number; pageSize: number }
+): Promise<{
   catalogCount: number;
   products: PosProductResult[];
   query: string;
+  meta: PaginationMeta;
 }> {
   const normalizedQuery = query.trim();
+  const where = buildPosWhere(normalizedQuery);
+  const totalItems = await prisma.product.count({ where });
+  const totalPages = Math.max(1, Math.ceil(totalItems / options.pageSize));
+  const page = Math.min(Math.max(options.page, 1), totalPages);
 
-  const catalogCount = await prisma.product.count({
-    where: {
-      status: "ACTIVE"
-    }
+  const products = await prisma.product.findMany({
+    include: {
+      category: true,
+      inventory: true
+    },
+    orderBy: [
+      {
+        updatedAt: "desc"
+      },
+      {
+        id: "asc"
+      }
+    ],
+    skip: (page - 1) * options.pageSize,
+    take: options.pageSize,
+    where
   });
 
-  const products = normalizedQuery
-    ? await prisma.product.findMany({
-        include: {
-          category: true,
-          inventory: true,
-          inventoryBatches: {
-            select: {
-              createdAt: true,
-              expiresAt: true,
-              id: true,
-              quantityRemaining: true,
-              status: true
-            }
-          }
-        },
-        orderBy: {
-          updatedAt: "desc"
-        },
-        take: PRODUCT_SEARCH_LIMIT,
-        where: {
-          status: "ACTIVE",
-          OR: [
-            { name: { contains: normalizedQuery } },
-            { sku: { contains: normalizedQuery } },
-            { barcode: { contains: normalizedQuery } },
-            { description: { contains: normalizedQuery } },
-            {
-              category: {
-                name: {
-                  contains: normalizedQuery
-                }
-              }
-            }
-          ]
-        }
-      })
-    : [];
-
   return {
-    catalogCount,
+    catalogCount: totalItems,
     query: normalizedQuery,
     products: products.map((product) => ({
-      availableStock: getAvailableStock(product.inventoryBatches),
+      availableStock: product.inventory?.quantityOnHand ?? 0,
       barcode: product.barcode,
       categoryName: product.category.name,
       id: product.id,
@@ -159,7 +137,13 @@ export async function searchPosProducts(query: string): Promise<{
       sku: product.sku,
       sellingPrice: product.sellingPrice.toString(),
       unit: product.unit
-    }))
+    })),
+    meta: {
+      page,
+      pageSize: options.pageSize,
+      totalItems,
+      totalPages
+    }
   };
 }
 
@@ -184,25 +168,7 @@ export async function checkoutPosSale(input: {
     const products = await tx.product.findMany({
       include: {
         category: true,
-        inventory: true,
-        inventoryBatches: {
-          orderBy: [
-            {
-              expiresAt: "asc"
-            },
-            {
-              createdAt: "asc"
-            }
-          ],
-          select: {
-            createdAt: true,
-            expiresAt: true,
-            id: true,
-            quantityRemaining: true,
-            status: true,
-            unitCost: true
-          }
-        }
+        inventory: true
       },
       where: {
         id: {
@@ -236,26 +202,11 @@ export async function checkoutPosSale(input: {
         });
       }
 
-      const availableStock = getAvailableStock(product.inventoryBatches);
-
-      if (item.quantity > availableStock) {
-        throw new HttpError(409, "Insufficient stock for checkout.", {
-          code: "INSUFFICIENT_STOCK",
-          details: {
-            availableStock,
-            productId: product.id,
-            requestedQuantity: item.quantity
-          }
-        });
-      }
-
       return {
-        allocations: allocateFromBatches(product.inventoryBatches, item.quantity),
-        availableStock,
         product,
         quantity: item.quantity,
         unitPrice
-      } satisfies CheckoutLine;
+      };
     });
 
     const subtotalAmount = checkoutLines.reduce(
@@ -290,13 +241,17 @@ export async function checkoutPosSale(input: {
         });
       }
 
-      for (const allocation of line.allocations) {
+      const quantityBefore = line.product.inventory.quantityOnHand;
+      const allocations = await allocateStockForSale(tx, {
+        productId: line.product.id,
+        quantity: line.quantity
+      });
+
+      for (const allocation of allocations) {
         const lineTotal = line.unitPrice.mul(allocation.quantity);
-        const quantityBefore = line.product.inventory.quantityOnHand;
-        const quantityAfter = quantityBefore - allocation.quantity;
         const createdSaleItem = await tx.saleItem.create({
           data: {
-            batchId: allocation.batch.id,
+            batchId: allocation.batchId,
             productId: line.product.id,
             quantity: allocation.quantity,
             saleId: sale.id,
@@ -306,7 +261,7 @@ export async function checkoutPosSale(input: {
         });
 
         saleItems.push({
-          batchId: allocation.batch.id,
+          batchId: allocation.batchId,
           barcode: line.product.barcode,
           id: createdSaleItem.id,
           productId: line.product.id,
@@ -316,56 +271,25 @@ export async function checkoutPosSale(input: {
           totalAmount: lineTotal.toString(),
           unitPrice: line.unitPrice.toString()
         });
-
-        const remainingQuantity = allocation.batch.quantityRemaining - allocation.quantity;
-        const nextStatus =
-          remainingQuantity <= 0
-            ? InventoryBatchStatus.DEPLETED
-            : line.product.reorderLevel > 0 && remainingQuantity <= line.product.reorderLevel
-              ? InventoryBatchStatus.LOW_STOCK
-              : InventoryBatchStatus.AVAILABLE;
-
-        await tx.inventoryBatch.update({
-          data: {
-            quantityRemaining: remainingQuantity,
-            status: nextStatus
-          },
-          where: {
-            id: allocation.batch.id
-          }
-        });
-
-        await tx.inventory.update({
-          data: {
-            lastStockUpdatedAt: saleDate,
-            quantityOnHand: quantityAfter,
-            version: {
-              increment: 1
-            }
-          },
-          where: {
-            id: line.product.inventory.id
-          }
-        });
-
-        await tx.inventoryMovement.create({
-          data: {
-            inventoryId: line.product.inventory.id,
-            batchId: allocation.batch.id,
-            quantityAfter,
-            quantityBefore,
-            performedById: input.cashierId,
-            productId: line.product.id,
-            quantity: allocation.quantity,
-            reason: `POS sale ${sale.saleNumber}`,
-            referenceId: sale.id,
-            referenceType: "SALE",
-            type: InventoryMovementType.SALE
-          }
-        });
-
-        line.product.inventory.quantityOnHand = quantityAfter;
       }
+
+      const syncResult = await synchronizeInventoryAggregate(tx, line.product.id);
+
+      await createInventoryMovementAfterAllocation(tx, {
+        batchId: allocations[0]?.batchId ?? null,
+        inventoryId: line.product.inventory.id,
+        performedById: input.cashierId,
+        productId: line.product.id,
+        quantity: line.quantity,
+        quantityBefore,
+        quantityAfter: syncResult.inventory.currentQuantity,
+        reason: `POS sale ${sale.saleNumber}`,
+        referenceId: sale.id,
+        referenceType: "SALE",
+        type: "SALE"
+      });
+
+      await assertStockInvariant(tx, line.product.id);
     }
 
     return {
@@ -431,63 +355,6 @@ export async function listRecentSales(limit = 20): Promise<SalesListResult> {
   };
 }
 
-function allocateFromBatches(
-  batches: Array<{ id: string; quantityRemaining: number }>,
-  quantity: number
-) {
-  let remainingQuantity = quantity;
-  const allocations: BatchAllocation[] = [];
-
-  for (const batch of batches) {
-    if (remainingQuantity <= 0) {
-      break;
-    }
-
-    if (batch.quantityRemaining <= 0) {
-      continue;
-    }
-
-    const allocatedQuantity = Math.min(batch.quantityRemaining, remainingQuantity);
-
-    allocations.push({
-      batch,
-      quantity: allocatedQuantity
-    });
-
-    remainingQuantity -= allocatedQuantity;
-  }
-
-  return allocations;
-}
-
-function generateSaleNumber(date: Date) {
-  const timestamp = date
-    .toISOString()
-    .replace(/[-:]/g, "")
-    .replace(/\.\d{3}Z$/, "");
-  const suffix = randomBytes(2).toString("hex").toUpperCase();
-
-  return `SL-${timestamp}-${suffix}`;
-}
-
-function getAvailableStock(
-  batches: Array<{
-    quantityRemaining: number;
-    status: InventoryBatchStatus;
-  }>
-) {
-  return batches.reduce((total, batch) => {
-    if (
-      batch.status === InventoryBatchStatus.REMOVED ||
-      batch.status === InventoryBatchStatus.EXPIRED
-    ) {
-      return total;
-    }
-
-    return total + batch.quantityRemaining;
-  }, 0);
-}
-
 function mergeCartItems(items: CheckoutCartItem[]) {
   const itemMap = new Map<string, number>();
 
@@ -499,6 +366,16 @@ function mergeCartItems(items: CheckoutCartItem[]) {
     productId,
     quantity
   }));
+}
+
+function generateSaleNumber(date: Date) {
+  const timestamp = date
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}Z$/, "");
+  const suffix = randomBytes(2).toString("hex").toUpperCase();
+
+  return `SL-${timestamp}-${suffix}`;
 }
 
 function toDecimal(value: Prisma.Decimal | number | string) {

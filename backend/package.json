@@ -9,6 +9,7 @@
     "prebuild": "npm run prisma:generate",
     "pretypecheck": "npm run prisma:generate",
     "build": "tsc -p tsconfig.json",
+    "test": "tsx --test --test-concurrency=1 test/data-flow.test.ts",
     "start": "node dist/server.js",
     "lint": "eslint .",
     "format": "prettier --write .",

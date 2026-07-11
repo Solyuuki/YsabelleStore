@@ -16,6 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "healthcheck": "node scripts/healthcheck.mjs",
+    "inventory:audit": "node scripts/inventory-audit.mjs",
+    "inventory:reconcile": "tsx scripts/inventory-reconcile.mjs",
     "prisma:clean": "node scripts/prisma-clean.mjs",
     "artifact-update": "node scripts/artifact-update.mjs",
     "artifact-check": "node scripts/artifact-check.mjs",

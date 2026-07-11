@@ -7,6 +7,7 @@ import { readSheet } from "read-excel-file/node";
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { normalizeCode, normalizeWhitespace } from "../utils/normalizers.js";
+import { createOpeningStockBatch, assertStockInvariant } from "./stockDomainService.js";
 
 const PRODUCT_IMPORT_TEMPLATE_HEADERS = [
   "name",
@@ -1280,10 +1281,10 @@ export async function importProductsFromFile(
         }
       });
 
-      const inventory = await tx.inventory.create({
+      await tx.inventory.create({
         data: {
           productId: product.id,
-          quantityOnHand: row.initialStock,
+          quantityOnHand: 0,
           lastStockUpdatedAt: now,
           version: 0
         }
@@ -1292,23 +1293,19 @@ export async function importProductsFromFile(
       inventoryRowsCreated += 1;
 
       if (row.initialStock > 0) {
-        await tx.inventoryMovement.create({
-          data: {
-            inventoryId: inventory.id,
-            productId: product.id,
-            type: "INITIAL_STOCK",
-            quantity: row.initialStock,
-            quantityBefore: 0,
-            quantityAfter: row.initialStock,
-            reason: "Initial stock from product import",
-            referenceType: "PRODUCT_IMPORT",
-            referenceId: importId,
-            performedById
-          }
+        await createOpeningStockBatch(tx, {
+          performedById,
+          productId: product.id,
+          quantity: row.initialStock,
+          reason: "Initial stock from product import",
+          referenceId: importId,
+          unitCost: new Prisma.Decimal(row.costPrice),
+          sku: row.sku
         });
-
         initialMovementsCreated += 1;
       }
+
+      await assertStockInvariant(tx, product.id);
     }
   });
 

@@ -3,14 +3,23 @@
   FileUp,
   Filter,
   LoaderCircle,
+  PencilLine,
+  Plus,
   RefreshCw,
   Search,
   ShieldCheck,
-  Trash2,
   Upload,
   X
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type DragEvent, type RefObject } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+  type FormEvent,
+  type RefObject
+} from "react";
 
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -21,6 +30,18 @@ import { useToast } from "@/components/shared/ToastProvider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogClose,
@@ -32,15 +53,19 @@ import {
 } from "@/components/ui/dialog";
 import {
   downloadProductImportTemplate,
+  createProduct,
+  fetchCategories,
   fetchMovements,
   fetchProducts,
   importProducts,
   previewProductImport,
+  updateProduct,
   updateProductStatus,
   type ProductImportIssue,
   type MovementRecord,
   type PaginationMeta,
   type ProductImportPreview,
+  type ProductCategorySummary,
   type ProductImportRow,
   type ProductImportSummary,
   type ProductRecord
@@ -59,6 +84,12 @@ const CATALOG_REFRESH_MINIMUM_MS = 350;
 const TEMPLATE_DOWNLOAD_MINIMUM_MS = 600;
 const PREVIEW_LOADING_MINIMUM_MS = 500;
 const IMPORT_LOADING_MINIMUM_MS = 700;
+const currencyFormatter = new Intl.NumberFormat("en-PH", {
+  currency: "PHP",
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+  style: "currency"
+});
 
 type CatalogLoadingReason =
   | "initial"
@@ -90,6 +121,10 @@ type ImportState = {
 export function ProductsPage() {
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [categories, setCategories] = useState<ProductCategorySummary[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [statusActionProductId, setStatusActionProductId] = useState<string | null>(null);
   const [movements, setMovements] = useState<MovementRecord[]>([]);
   const [movementLoading, setMovementLoading] = useState(false);
   const [movementError, setMovementError] = useState<string | null>(null);
@@ -136,6 +171,40 @@ export function ProductsPage() {
     () => products.find((product) => product.id === selectedProductId) ?? null,
     [products, selectedProductId]
   );
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadCategories() {
+      setCategoriesLoading(true);
+
+      try {
+        const result = await fetchCategories();
+
+        if (!active) {
+          return;
+        }
+
+        setCategories(result);
+      } catch {
+        if (!active) {
+          return;
+        }
+
+        setCategories([]);
+      } finally {
+        if (active) {
+          setCategoriesLoading(false);
+        }
+      }
+    }
+
+    void loadCategories();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -534,7 +603,9 @@ export function ProductsPage() {
       importState.phase === "importing" ||
       importState.phase !== "preview-ready" ||
       !importState.preview ||
-      importState.preview.invalidRows > 0
+      importState.preview.invalidRows > 0 ||
+      importState.preview.errors.length > 0 ||
+      Boolean(importState.error)
     ) {
       return;
     }
@@ -602,9 +673,11 @@ export function ProductsPage() {
   }
 
   async function handleDeactivate(productId: string) {
+    setStatusActionProductId(productId);
     const response = await updateProductStatus(productId, "INACTIVE");
 
     if (!response.success) {
+      setStatusActionProductId(null);
       pushToast({
         message: response.message,
         title: "Deactivation failed",
@@ -614,11 +687,39 @@ export function ProductsPage() {
     }
 
     await refreshCatalog();
+    setStatusActionProductId(null);
     pushToast({
       message: "The product remains in the database but is inactive for POS use.",
       title: "Product deactivated",
       variant: "warning"
     });
+  }
+
+  async function handleActivate(productId: string) {
+    setStatusActionProductId(productId);
+    const response = await updateProductStatus(productId, "ACTIVE");
+
+    if (!response.success) {
+      setStatusActionProductId(null);
+      pushToast({
+        message: response.message,
+        title: "Activation failed",
+        variant: "error"
+      });
+      return;
+    }
+
+    await refreshCatalog();
+    setStatusActionProductId(null);
+    pushToast({
+      message: "The product is active again and can be sold in POS.",
+      title: "Product activated",
+      variant: "success"
+    });
+  }
+
+  async function handleRestore(productId: string) {
+    await handleActivate(productId);
   }
 
   function toggleSelection(productId: string) {
@@ -669,6 +770,13 @@ export function ProductsPage() {
 
   return (
     <>
+      <CreateProductDialog
+        categories={categories}
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onCreated={() => void refreshCatalog()}
+      />
+
       <ImportProductsDialog
         fileInputRef={fileInputRef}
         importState={importState}
@@ -698,6 +806,10 @@ export function ProductsPage() {
                 <Download className="h-4 w-4" aria-hidden="true" />
               )}
               {isDownloadingTemplate ? "Downloading..." : "Template"}
+            </Button>
+            <Button onClick={() => setIsCreateDialogOpen(true)} type="button" variant="secondary">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Add Product
             </Button>
             <Button
               onClick={openImportDialog}
@@ -808,10 +920,9 @@ export function ProductsPage() {
                             <th className="w-[14%] px-3 py-2">SKU</th>
                             <th className="w-[14%] px-3 py-2">Barcode</th>
                             <th className="w-[14%] px-3 py-2">Category</th>
-                            <th className="w-[11%] px-3 py-2">Status</th>
-                            <th className="w-[11%] px-3 py-2">Selling price</th>
-                            <th className="w-[8%] px-3 py-2">Stock</th>
-                            <th className="w-[10%] px-3 py-2">Action</th>
+                            <th className="w-[12%] px-3 py-2">Status</th>
+                            <th className="w-[14%] px-3 py-2">Selling price</th>
+                            <th className="w-[14%] px-3 py-2">Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -857,25 +968,78 @@ export function ProductsPage() {
                                   PHP {Number(product.sellingPrice).toFixed(2)}
                                 </td>
                                 <td className="px-3 py-2 align-top">
-                                  {product.inventory.currentQuantity}
-                                </td>
-                                <td className="px-3 py-2 align-top">
-                                  {product.isActive ? (
+                                  <div className="flex flex-wrap gap-2">
                                     <Button
                                       size="sm"
                                       type="button"
                                       variant="secondary"
                                       onClick={(event) => {
                                         event.stopPropagation();
-                                        void handleDeactivate(product.id);
+                                        setSelectedProductId(product.id);
                                       }}
                                     >
-                                      <Trash2 className="h-4 w-4" aria-hidden="true" />
-                                      Deactivate
+                                      <PencilLine className="h-4 w-4" aria-hidden="true" />
+                                      Edit
                                     </Button>
-                                  ) : (
-                                    <StatusBadge variant="warning">Inactive</StatusBadge>
-                                  )}
+                                    {product.status === "ACTIVE" ? (
+                                      <Button
+                                        disabled={statusActionProductId === product.id}
+                                        size="sm"
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          void handleDeactivate(product.id);
+                                        }}
+                                      >
+                                        {statusActionProductId === product.id ? (
+                                          <LoaderCircle
+                                            className="h-4 w-4 animate-spin"
+                                            aria-hidden="true"
+                                          />
+                                        ) : null}
+                                        Deactivate
+                                      </Button>
+                                    ) : product.status === "INACTIVE" ? (
+                                      <Button
+                                        disabled={statusActionProductId === product.id}
+                                        size="sm"
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          void handleActivate(product.id);
+                                        }}
+                                      >
+                                        {statusActionProductId === product.id ? (
+                                          <LoaderCircle
+                                            className="h-4 w-4 animate-spin"
+                                            aria-hidden="true"
+                                          />
+                                        ) : null}
+                                        Activate
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        disabled={statusActionProductId === product.id}
+                                        size="sm"
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          void handleRestore(product.id);
+                                        }}
+                                      >
+                                        {statusActionProductId === product.id ? (
+                                          <LoaderCircle
+                                            className="h-4 w-4 animate-spin"
+                                            aria-hidden="true"
+                                          />
+                                        ) : null}
+                                        Restore
+                                      </Button>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -917,80 +1081,17 @@ export function ProductsPage() {
           </CardContent>
         </Card>
 
-        {selectedProduct ? (
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Card className="border-slate-200 bg-slate-50">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-3">
-                  <CardTitle className="text-base">Selected product stock</CardTitle>
-                  <Button onClick={clearSelection} size="sm" type="button" variant="secondary">
-                    <X className="h-4 w-4" aria-hidden="true" />
-                    Clear selection
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <DetailLine label="Product" value={selectedProduct.name} />
-                  <DetailLine label="SKU" value={selectedProduct.sku} />
-                  <DetailLine
-                    label="Stock"
-                    value={String(selectedProduct.inventory.currentQuantity)}
-                  />
-                  <DetailLine label="Reorder level" value={String(selectedProduct.reorderLevel)} />
-                  <DetailLine label="Current status" value={selectedProduct.status} />
-                  <DetailLine
-                    label="Availability"
-                    value={selectedProduct.isActive ? "Available" : "Inactive"}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 bg-slate-50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Movement history</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {movementLoading ? (
-                  <LoadingState
-                    badge="Loading"
-                    helper="Fetching movement history for the selected product."
-                    label="Loading movements"
-                  />
-                ) : movementError ? (
-                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    {movementError}
-                  </div>
-                ) : movements.length > 0 ? (
-                  <div className="space-y-3">
-                    {movements.map((movement) => (
-                      <div
-                        className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm"
-                        key={movement.id}
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="font-medium text-slate-950">{movement.type}</span>
-                          <StatusBadge variant="info">{String(movement.quantity)}</StatusBadge>
-                        </div>
-                        <p className="mt-1 text-slate-600">
-                          {movement.quantityBefore} {"->"} {movement.quantityAfter}
-                          {movement.referenceType ? ` - ${movement.referenceType}` : ""}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState
-                    description="Initial stock and future stock changes will appear here."
-                    icon={RefreshCw}
-                    title="No movements yet"
-                  />
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        ) : null}
+        <ProductDetailsSheet
+          categories={categories}
+          categoryLoading={categoriesLoading}
+          isOpen={Boolean(selectedProduct)}
+          movements={movements}
+          movementError={movementError}
+          movementLoading={movementLoading}
+          onClose={clearSelection}
+          onSaved={() => void refreshCatalog()}
+          product={selectedProduct}
+        />
       </section>
     </>
   );
@@ -1024,7 +1125,19 @@ function ImportProductsDialog({
   const hasFile = Boolean(importState.file);
   const hasPreview = importState.phase === "preview-ready" && preview !== null;
   const canPreview = importState.phase === "file-ready" && hasFile && !isBusy;
-  const canConfirm = Boolean(hasPreview && preview.invalidRows === 0 && !importState.error);
+  const confirmBlockReason =
+    !hasPreview || !preview
+      ? "Preview the file first."
+      : preview.errors.length > 0
+        ? "Resolve blocking preview errors before importing."
+        : preview.invalidRows > 0
+          ? "Fix invalid rows before importing."
+          : importState.error
+            ? "Resolve the current import error before importing."
+            : null;
+  const canConfirm = Boolean(
+    hasPreview && preview.invalidRows === 0 && preview.errors.length === 0 && !importState.error
+  );
   const invalidRows = useMemo(() => preview?.rows.filter((row) => !row.valid) ?? [], [preview]);
   const issueEntries = useMemo(() => collectImportIssueEntries(preview), [preview]);
   const visibleInvalidRows = invalidRows.slice(0, 10);
@@ -1375,6 +1488,12 @@ function ImportProductsDialog({
                     </p>
                   </div>
                 </div>
+
+                {!canConfirm && confirmBlockReason ? (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    {confirmBlockReason}
+                  </div>
+                ) : null}
 
                 {invalidRows.length > 0 ? (
                   <div className="space-y-3 rounded-2xl border border-slate-200">
@@ -1847,10 +1966,9 @@ function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
               <th className="w-[14%] px-3 py-2">SKU</th>
               <th className="w-[14%] px-3 py-2">Barcode</th>
               <th className="w-[14%] px-3 py-2">Category</th>
-              <th className="w-[11%] px-3 py-2">Status</th>
-              <th className="w-[11%] px-3 py-2">Selling price</th>
-              <th className="w-[8%] px-3 py-2">Stock</th>
-              <th className="w-[10%] px-3 py-2">Action</th>
+              <th className="w-[12%] px-3 py-2">Status</th>
+              <th className="w-[14%] px-3 py-2">Selling price</th>
+              <th className="w-[14%] px-3 py-2">Action</th>
             </tr>
           </thead>
           <tbody className="bg-white">
@@ -1878,10 +1996,7 @@ function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
                   <div className="loading-shimmer h-4 w-20 rounded-full bg-slate-100" />
                 </td>
                 <td className="px-3 py-3">
-                  <div className="loading-shimmer h-4 w-12 rounded-full bg-slate-100" />
-                </td>
-                <td className="px-3 py-3">
-                  <div className="loading-shimmer h-10 w-28 rounded-md bg-slate-100" />
+                  <div className="loading-shimmer h-10 w-32 rounded-md bg-slate-100" />
                 </td>
               </tr>
             ))}
@@ -1899,5 +2014,662 @@ function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function CreateProductDialog({
+  categories,
+  isOpen,
+  onClose,
+  onCreated
+}: {
+  categories: ProductCategorySummary[];
+  isOpen: boolean;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { pushToast } = useToast();
+  const [form, setForm] = useState({
+    barcode: "",
+    categoryId: "",
+    costPrice: "",
+    description: "",
+    initialStock: "0",
+    name: "",
+    reorderLevel: "0",
+    sellingPrice: "",
+    sku: "",
+    status: "ACTIVE" as ProductRecord["status"],
+    targetStockLevel: "0",
+    unit: "PIECE" as ProductRecord["unit"]
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setError(null);
+    setForm((current) => ({
+      ...current,
+      categoryId: current.categoryId || categories[0]?.id || ""
+    }));
+  }, [categories, isOpen]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (saving) {
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const response = await createProduct({
+        barcode: form.barcode.trim() || null,
+        categoryId: form.categoryId,
+        costPrice: form.costPrice.trim(),
+        description: form.description.trim() || null,
+        initialStock: Number(form.initialStock),
+        name: form.name.trim(),
+        reorderLevel: Number(form.reorderLevel),
+        sellingPrice: form.sellingPrice.trim(),
+        sku: form.sku.trim(),
+        status: form.status,
+        targetStockLevel: Number(form.targetStockLevel),
+        unit: form.unit
+      });
+
+      if (!response.success || !response.data) {
+        setError(response.message || "Product creation failed.");
+        return;
+      }
+
+      pushToast({
+        message: `${response.data.name} was created successfully.`,
+        title: "Product created",
+        variant: "success"
+      });
+      onCreated();
+      onClose();
+    } catch {
+      setError("The product creation service is unavailable.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          onClose();
+        }
+      }}
+    >
+      <DialogContent className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col overflow-hidden p-0">
+        <DialogHeader className="border-b border-slate-200 px-6 py-5">
+          <DialogTitle>Add Product</DialogTitle>
+          <DialogDescription>Create a catalog record and optional opening stock.</DialogDescription>
+        </DialogHeader>
+
+        <form
+          className="flex-1 overflow-y-auto px-6 py-5"
+          onSubmit={(event) => void handleSubmit(event)}
+        >
+          <div className="space-y-4">
+            {error ? (
+              <Alert variant="destructive">
+                <AlertTitle>Creation failed</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="product-name">Product name</Label>
+                <Input
+                  id="product-name"
+                  value={form.name}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, name: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-sku">SKU</Label>
+                <Input
+                  id="product-sku"
+                  value={form.sku}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, sku: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-barcode">Barcode</Label>
+                <Input
+                  id="product-barcode"
+                  value={form.barcode}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, barcode: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-category">Category</Label>
+                <Select
+                  id="product-category"
+                  disabled={categories.length === 0}
+                  value={form.categoryId}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, categoryId: event.target.value }))
+                  }
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-unit">Unit</Label>
+                <Select
+                  id="product-unit"
+                  value={form.unit}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      unit: event.target.value as ProductRecord["unit"]
+                    }))
+                  }
+                >
+                  {[
+                    "PIECE",
+                    "PACK",
+                    "BOX",
+                    "BOTTLE",
+                    "SACHET",
+                    "KILOGRAM",
+                    "GRAM",
+                    "LITER",
+                    "MILLILITER"
+                  ].map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-status">Status</Label>
+                <Select
+                  id="product-status"
+                  value={form.status}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      status: event.target.value as ProductRecord["status"]
+                    }))
+                  }
+                >
+                  {["ACTIVE", "INACTIVE", "DISCONTINUED"].map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-cost">Cost price</Label>
+                <Input
+                  id="product-cost"
+                  inputMode="decimal"
+                  value={form.costPrice}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, costPrice: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-sell">Selling price</Label>
+                <Input
+                  id="product-sell"
+                  inputMode="decimal"
+                  value={form.sellingPrice}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, sellingPrice: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-reorder">Reorder level</Label>
+                <Input
+                  id="product-reorder"
+                  inputMode="numeric"
+                  value={form.reorderLevel}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, reorderLevel: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-target">Target stock level</Label>
+                <Input
+                  id="product-target"
+                  inputMode="numeric"
+                  value={form.targetStockLevel}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-initial">Initial stock</Label>
+                <Input
+                  id="product-initial"
+                  inputMode="numeric"
+                  value={form.initialStock}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, initialStock: event.target.value }))
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="product-description">Description</Label>
+              <Textarea
+                id="product-description"
+                value={form.description}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, description: event.target.value }))
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter className="mt-6 px-0 pb-0">
+            <Button disabled={saving} type="button" variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button disabled={saving || !form.name || !form.sku || !form.categoryId} type="submit">
+              {saving ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+              Create product
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ProductDetailsSheet({
+  categories,
+  categoryLoading,
+  isOpen,
+  movements,
+  movementError,
+  movementLoading,
+  onClose,
+  onSaved,
+  product
+}: {
+  categories: ProductCategorySummary[];
+  categoryLoading: boolean;
+  isOpen: boolean;
+  movements: MovementRecord[];
+  movementError: string | null;
+  movementLoading: boolean;
+  onClose: () => void;
+  onSaved: () => void;
+  product: ProductRecord | null;
+}) {
+  const { pushToast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    barcode: "",
+    categoryId: "",
+    costPrice: "",
+    description: "",
+    name: "",
+    reorderLevel: "0",
+    sellingPrice: "",
+    targetStockLevel: "0",
+    unit: "PIECE" as ProductRecord["unit"]
+  });
+
+  useEffect(() => {
+    if (!product) {
+      setIsEditing(false);
+      return;
+    }
+
+    setForm({
+      barcode: product.barcode ?? "",
+      categoryId: product.category.id,
+      costPrice: product.costPrice,
+      description: product.description ?? "",
+      name: product.name,
+      reorderLevel: String(product.reorderLevel),
+      sellingPrice: product.sellingPrice,
+      targetStockLevel: String(product.targetStockLevel),
+      unit: product.unit
+    });
+    setIsEditing(false);
+  }, [product]);
+
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!product || saving) {
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const response = await updateProduct(product.id, {
+        barcode: form.barcode.trim() || null,
+        categoryId: form.categoryId,
+        costPrice: form.costPrice.trim(),
+        description: form.description.trim() || null,
+        name: form.name.trim(),
+        reorderLevel: Number(form.reorderLevel),
+        sellingPrice: form.sellingPrice.trim(),
+        targetStockLevel: Number(form.targetStockLevel),
+        unit: form.unit
+      });
+
+      if (!response.success) {
+        pushToast({
+          message: response.message,
+          title: "Edit failed",
+          variant: "error"
+        });
+        return;
+      }
+
+      pushToast({
+        message: `${response.data?.name ?? product.name} was updated successfully.`,
+        title: "Product updated",
+        variant: "success"
+      });
+      setIsEditing(false);
+      onSaved();
+    } catch {
+      pushToast({
+        message: "The product update service is unavailable.",
+        title: "Edit failed",
+        variant: "error"
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open={isOpen}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          onClose();
+        }
+      }}
+    >
+      <SheetContent aria-describedby="product-details-sheet" className="max-w-[760px]">
+        <SheetHeader className="border-b border-slate-200 px-6 py-5">
+          <SheetTitle>{product ? product.name : "Product details"}</SheetTitle>
+          <SheetDescription id="product-details-sheet">
+            Review the selected product, update catalog fields, and keep stock traceability read
+            only.
+          </SheetDescription>
+        </SheetHeader>
+
+        {product ? (
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            {isEditing ? (
+              <form className="space-y-4" onSubmit={(event) => void handleSave(event)}>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-name">Product name</Label>
+                    <Input
+                      id="edit-name"
+                      value={form.name}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, name: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-barcode">Barcode</Label>
+                    <Input
+                      id="edit-barcode"
+                      value={form.barcode}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, barcode: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-category">Category</Label>
+                    <Select
+                      id="edit-category"
+                      disabled={categoryLoading || categories.length === 0}
+                      value={form.categoryId}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, categoryId: event.target.value }))
+                      }
+                    >
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-unit">Unit</Label>
+                    <Select
+                      id="edit-unit"
+                      value={form.unit}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          unit: event.target.value as ProductRecord["unit"]
+                        }))
+                      }
+                    >
+                      {[
+                        "PIECE",
+                        "PACK",
+                        "BOX",
+                        "BOTTLE",
+                        "SACHET",
+                        "KILOGRAM",
+                        "GRAM",
+                        "LITER",
+                        "MILLILITER"
+                      ].map((unit) => (
+                        <option key={unit} value={unit}>
+                          {unit}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="edit-description">Description</Label>
+                    <Textarea
+                      id="edit-description"
+                      value={form.description}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, description: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-cost">Cost price</Label>
+                    <Input
+                      id="edit-cost"
+                      inputMode="decimal"
+                      value={form.costPrice}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, costPrice: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-selling">Selling price</Label>
+                    <Input
+                      id="edit-selling"
+                      inputMode="decimal"
+                      value={form.sellingPrice}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, sellingPrice: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-reorder">Reorder level</Label>
+                    <Input
+                      id="edit-reorder"
+                      inputMode="numeric"
+                      value={form.reorderLevel}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, reorderLevel: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-target">Target stock level</Label>
+                    <Input
+                      id="edit-target"
+                      inputMode="numeric"
+                      value={form.targetStockLevel}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                <SheetFooter className="px-0 pb-0">
+                  <Button
+                    disabled={saving}
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button disabled={saving} type="submit">
+                    {saving ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : null}
+                    Save changes
+                  </Button>
+                </SheetFooter>
+              </form>
+            ) : (
+              <div className="space-y-5">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <DetailLine label="SKU" value={product.sku} />
+                  <DetailLine label="Barcode" value={product.barcode ?? "Not set"} />
+                  <DetailLine label="Category" value={product.category.name} />
+                  <DetailLine label="Unit" value={product.unit} />
+                  <DetailLine
+                    label="Cost price"
+                    value={currencyFormatter.format(Number(product.costPrice))}
+                  />
+                  <DetailLine
+                    label="Selling price"
+                    value={currencyFormatter.format(Number(product.sellingPrice))}
+                  />
+                  <DetailLine label="Reorder level" value={String(product.reorderLevel)} />
+                  <DetailLine label="Target stock level" value={String(product.targetStockLevel)} />
+                  <DetailLine label="Status" value={product.status} />
+                  <DetailLine
+                    label="Created"
+                    value={new Date(product.createdAt).toLocaleString()}
+                  />
+                  <DetailLine
+                    label="Updated"
+                    value={new Date(product.updatedAt).toLocaleString()}
+                  />
+                  <DetailLine
+                    label="Current stock"
+                    value={String(product.inventory.currentQuantity)}
+                  />
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                  <p className="font-medium text-slate-950">Description</p>
+                  <p className="mt-2 leading-6">
+                    {product.description ?? "No description provided."}
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-slate-950">Movement history</p>
+                  {movementLoading ? (
+                    <LoadingState
+                      badge="Loading"
+                      helper="Fetching movement history for the selected product."
+                      label="Loading movements"
+                    />
+                  ) : movementError ? (
+                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                      {movementError}
+                    </div>
+                  ) : movements.length > 0 ? (
+                    <div className="space-y-3">
+                      {movements.map((movement) => (
+                        <div
+                          className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm"
+                          key={movement.id}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-medium text-slate-950">{movement.type}</span>
+                            <StatusBadge variant="info">{String(movement.quantity)}</StatusBadge>
+                          </div>
+                          <p className="mt-1 text-slate-600">
+                            {movement.quantityBefore} {"->"} {movement.quantityAfter}
+                            {movement.referenceType ? ` - ${movement.referenceType}` : ""}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      description="Initial stock and future stock changes will appear here."
+                      icon={RefreshCw}
+                      title="No movements yet"
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {!isEditing ? (
+          <SheetFooter className="border-t border-slate-200 bg-white/90 px-6 py-4">
+            <Button type="button" variant="secondary" onClick={onClose}>
+              Close
+            </Button>
+            <Button type="button" onClick={() => setIsEditing(true)}>
+              Edit product
+            </Button>
+          </SheetFooter>
+        ) : null}
+      </SheetContent>
+    </Sheet>
   );
 }

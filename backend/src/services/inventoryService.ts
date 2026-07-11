@@ -19,6 +19,13 @@ import {
   type PosLookupSummary,
   type ProductWithRelations
 } from "./catalogSerializers.js";
+import {
+  allocateStockForSale,
+  applyStockAdjustment,
+  createInventoryMovementAfterAllocation,
+  stockInBatch,
+  synchronizeInventoryAggregate
+} from "./stockDomainService.js";
 
 type InventoryListResult = {
   items: InventorySummaryRow[];
@@ -275,23 +282,6 @@ async function getOrCreateInventoryRecord(tx: Prisma.TransactionClient, productI
   });
 }
 
-async function getProductForDeduction(tx: Prisma.TransactionClient, productId: string) {
-  const product = await tx.product.findUnique({
-    include: productLookupInclude,
-    where: {
-      id: productId
-    }
-  });
-
-  if (!product) {
-    throw new HttpError(404, "Product not found.", {
-      code: "PRODUCT_NOT_FOUND"
-    });
-  }
-
-  return product;
-}
-
 export async function listInventory(query: InventoryListQuery): Promise<InventoryListResult> {
   const categoryIds = await resolveCategoryIds(query.categoryId, query.category);
 
@@ -306,17 +296,45 @@ export async function listInventory(query: InventoryListQuery): Promise<Inventor
   }
 
   const where = buildInventoryFilter(query, categoryIds);
+  if (query.stockStatus !== "ALL") {
+    const inventoryRows = await prisma.inventory.findMany({
+      include: inventoryInclude,
+      where
+    });
+
+    const normalizedRows = inventoryRows.map(asInventorySummaryRow);
+    const filteredRows = filterInventoryRows(normalizedRows, query);
+    const sortedRows = sortInventoryRows(filteredRows, query);
+    const totalItems = sortedRows.length;
+    const startIndex = (query.page - 1) * query.pageSize;
+    const pageItems = sortedRows.slice(startIndex, startIndex + query.pageSize);
+
+    return {
+      items: pageItems,
+      meta: buildPaginationMeta(totalItems, {
+        page: query.page,
+        pageSize: query.pageSize
+      })
+    };
+  }
+
+  const totalItems = await prisma.inventory.count({ where });
   const inventoryRows = await prisma.inventory.findMany({
     include: inventoryInclude,
+    orderBy: [
+      {
+        [query.sortBy]: query.sortOrder
+      },
+      {
+        id: "asc"
+      }
+    ],
+    skip: (query.page - 1) * query.pageSize,
+    take: query.pageSize,
     where
   });
 
-  const normalizedRows = inventoryRows.map(asInventorySummaryRow);
-  const filteredRows = filterInventoryRows(normalizedRows, query);
-  const sortedRows = sortInventoryRows(filteredRows, query);
-  const totalItems = sortedRows.length;
-  const startIndex = (query.page - 1) * query.pageSize;
-  const pageItems = sortedRows.slice(startIndex, startIndex + query.pageSize);
+  const pageItems = inventoryRows.map(asInventorySummaryRow);
 
   return {
     items: pageItems,
@@ -355,48 +373,20 @@ export async function addStock(
   input: StockInRequest,
   performedById?: string
 ): Promise<InventoryMutationResult> {
-  const updatedAt = new Date();
-
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const product = await getProductForDeduction(tx, productId);
-      const inventory = await getOrCreateInventoryRecord(tx, product.id);
-      const quantityBefore = inventory.quantityOnHand;
-      const quantityAfter = quantityBefore + input.quantity;
-
-      const updatedInventory = await tx.inventory.update({
-        data: {
-          quantityOnHand: quantityAfter,
-          lastStockUpdatedAt: updatedAt,
-          version: {
-            increment: 1
-          }
-        },
-        where: {
-          id: inventory.id
-        },
-        include: inventoryInclude
-      });
-
-      const movement = await tx.inventoryMovement.create({
-        data: {
-          inventoryId: updatedInventory.id,
-          productId: product.id,
-          type: "STOCK_IN",
-          quantity: input.quantity,
-          quantityBefore,
-          quantityAfter,
-          reason: input.reason,
-          referenceType: input.referenceType,
-          referenceId: input.referenceId,
-          performedById
-        },
-        include: movementInclude
+      const batchResult = await stockInBatch(tx, {
+        performedById,
+        productId,
+        quantity: input.quantity,
+        reason: input.reason ?? null,
+        referenceId: input.referenceId ?? null,
+        referenceType: input.referenceType ?? "STOCK_IN"
       });
 
       return {
-        inventory: asInventorySummaryRow(updatedInventory),
-        movement: asMovementSummary(movement)
+        inventory: batchResult.inventory,
+        movement: asMovementSummary(batchResult.movement)
       };
     });
 
@@ -417,56 +407,20 @@ export async function adjustStock(
   input: StockAdjustRequest,
   performedById?: string
 ): Promise<InventoryMutationResult> {
-  const updatedAt = new Date();
-
   return prisma.$transaction(async (tx) => {
-    const product = await getProductForDeduction(tx, productId);
-    const inventory = await getOrCreateInventoryRecord(tx, product.id);
-    const quantityBefore = inventory.quantityOnHand;
-    const quantityAfter =
-      input.movementType === "ADJUSTMENT_IN"
-        ? quantityBefore + input.quantity
-        : quantityBefore - input.quantity;
-
-    if (quantityAfter < 0) {
-      throw new HttpError(409, "Stock adjustment cannot make inventory negative.", {
-        code: "INSUFFICIENT_STOCK"
-      });
-    }
-
-    const updatedInventory = await tx.inventory.update({
-      data: {
-        quantityOnHand: quantityAfter,
-        lastStockUpdatedAt: updatedAt,
-        version: {
-          increment: 1
-        }
-      },
-      where: {
-        id: inventory.id
-      },
-      include: inventoryInclude
-    });
-
-    const movement = await tx.inventoryMovement.create({
-      data: {
-        inventoryId: updatedInventory.id,
-        productId: product.id,
-        type: input.movementType,
-        quantity: input.quantity,
-        quantityBefore,
-        quantityAfter,
-        reason: input.reason,
-        referenceType: input.referenceType,
-        referenceId: input.referenceId,
-        performedById
-      },
-      include: movementInclude
+    const adjustmentResult = await applyStockAdjustment(tx, {
+      direction: input.movementType === "ADJUSTMENT_IN" ? "IN" : "OUT",
+      performedById,
+      productId,
+      quantity: input.quantity,
+      reason: input.reason,
+      referenceId: input.referenceId ?? null,
+      referenceType: input.referenceType ?? "ADJUSTMENT"
     });
 
     return {
-      inventory: asInventorySummaryRow(updatedInventory),
-      movement: asMovementSummary(movement)
+      inventory: adjustmentResult.inventory,
+      movement: asMovementSummary(adjustmentResult.movement)
     };
   });
 }
@@ -486,7 +440,6 @@ export async function deductStock(
   performedById?: string
 ): Promise<DeductionResult> {
   const mergedLineItems = mergeDeductionLineItems(input.lineItems);
-  const updatedAt = new Date();
 
   return prisma.$transaction(
     async (tx) => {
@@ -516,8 +469,9 @@ export async function deductStock(
 
       const productById = new Map(products.map((product) => [product.id, product]));
       const prepared: Array<{
-        product: Awaited<ReturnType<typeof getProductForDeduction>>;
+        product: (typeof products)[number];
         inventory: Awaited<ReturnType<typeof getOrCreateInventoryRecord>>;
+        allocations: Awaited<ReturnType<typeof allocateStockForSale>>;
         quantityBefore: number;
         quantityAfter: number;
       }> = [];
@@ -553,21 +507,15 @@ export async function deductStock(
 
         const resolvedInventory = inventory ?? (await getOrCreateInventoryRecord(tx, product.id));
         const quantityBefore = resolvedInventory.quantityOnHand;
+        const allocations = await allocateStockForSale(tx, {
+          productId: product.id,
+          quantity: lineItem.quantity
+        });
         const quantityAfter = quantityBefore - lineItem.quantity;
-
-        if (quantityAfter < 0) {
-          throw new HttpError(409, "Insufficient stock for one or more products.", {
-            code: "INSUFFICIENT_STOCK",
-            details: {
-              productId: product.id,
-              requested: lineItem.quantity,
-              available: quantityBefore
-            }
-          });
-        }
 
         prepared.push({
           product,
+          allocations,
           inventory: resolvedInventory,
           quantityBefore,
           quantityAfter
@@ -577,40 +525,25 @@ export async function deductStock(
       const lineResults = [];
 
       for (const entry of prepared) {
-        const updatedInventory = await tx.inventory.update({
-          data: {
-            quantityOnHand: entry.quantityAfter,
-            lastStockUpdatedAt: updatedAt,
-            version: {
-              increment: 1
-            }
-          },
-          where: {
-            id: entry.inventory.id
-          },
-          include: inventoryInclude
-        });
-
-        const movement = await tx.inventoryMovement.create({
-          data: {
-            inventoryId: updatedInventory.id,
-            productId: entry.product.id,
-            type: "SALE",
-            quantity: entry.quantityBefore - entry.quantityAfter,
-            quantityBefore: entry.quantityBefore,
-            quantityAfter: entry.quantityAfter,
-            reason: input.reason,
-            referenceType: input.referenceType ?? "POS_CHECKOUT",
-            referenceId: input.referenceId,
-            performedById
-          },
-          include: movementInclude
+        const syncResult = await synchronizeInventoryAggregate(tx, entry.product.id);
+        const movement = await createInventoryMovementAfterAllocation(tx, {
+          batchId: entry.allocations[0]?.batchId ?? null,
+          inventoryId: syncResult.inventory.inventoryId,
+          performedById,
+          productId: entry.product.id,
+          quantity: entry.quantityBefore - entry.quantityAfter,
+          quantityBefore: entry.quantityBefore,
+          quantityAfter: entry.quantityAfter,
+          reason: input.reason,
+          referenceId: input.referenceId ?? null,
+          referenceType: input.referenceType ?? "POS_CHECKOUT",
+          type: "SALE"
         });
 
         lineResults.push({
           productId: entry.product.id,
           quantity: entry.quantityBefore - entry.quantityAfter,
-          inventory: asInventorySummaryRow(updatedInventory),
+          inventory: syncResult.inventory,
           movement: asMovementSummary(movement)
         });
       }

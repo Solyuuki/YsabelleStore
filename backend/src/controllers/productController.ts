@@ -12,6 +12,7 @@ import {
 import {
   changeProductStatus,
   createProduct,
+  listCategories,
   getProductById,
   listProducts,
   updateProduct
@@ -27,6 +28,16 @@ export const createProductController: RequestHandler = async (request, response,
     const product = await createProduct(body);
 
     response.status(201).json(createSuccessResponse("Product created successfully.", product));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listCategoriesController: RequestHandler = async (_request, response, next) => {
+  try {
+    const categories = await listCategories();
+
+    response.status(200).json(createSuccessResponse("Categories loaded successfully.", categories));
   } catch (error) {
     next(error);
   }

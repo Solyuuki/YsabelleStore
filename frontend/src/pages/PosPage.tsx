@@ -32,6 +32,12 @@ type SearchState = {
   error: string | null;
   hasSearched: boolean;
   isLoading: boolean;
+  meta: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  };
   products: PosProduct[];
   query: string;
   status: "ready" | "searching" | "found" | "no-match" | "error";
@@ -51,6 +57,12 @@ const initialSearchState: SearchState = {
   error: null,
   hasSearched: false,
   isLoading: false,
+  meta: {
+    page: 1,
+    pageSize: PRODUCT_RESULTS_PAGE_SIZE,
+    totalItems: 0,
+    totalPages: 0
+  },
   products: [],
   query: "",
   status: "ready"
@@ -91,22 +103,6 @@ export function PosPage() {
       total: subtotal
     };
   }, [cartLines]);
-
-  const totalProductPages = Math.max(
-    1,
-    Math.ceil(searchState.products.length / PRODUCT_RESULTS_PAGE_SIZE)
-  );
-  const currentProductPage = Math.min(productResultsPage, totalProductPages);
-  const productPageStartIndex =
-    searchState.products.length === 0 ? 0 : (currentProductPage - 1) * PRODUCT_RESULTS_PAGE_SIZE;
-  const productPageEndIndex = Math.min(
-    productPageStartIndex + PRODUCT_RESULTS_PAGE_SIZE,
-    searchState.products.length
-  );
-  const paginatedProducts = useMemo(
-    () => searchState.products.slice(productPageStartIndex, productPageEndIndex),
-    [productPageEndIndex, productPageStartIndex, searchState.products]
-  );
 
   useEffect(() => {
     setProductResultsPage(1);
@@ -243,8 +239,9 @@ export function PosPage() {
     return added;
   }
 
-  async function handleSearch(options: { autoAddExactMatch?: boolean } = {}) {
+  async function handleSearch(options: { autoAddExactMatch?: boolean; page?: number } = {}) {
     const trimmedQuery = searchInput.trim();
+    const requestPage = options.page ?? productResultsPage;
     const startedAt = window.performance.now();
 
     setCheckoutError(null);
@@ -263,7 +260,10 @@ export function PosPage() {
     }
 
     try {
-      const response = await searchPosProducts(trimmedQuery);
+      const response = await searchPosProducts(trimmedQuery, {
+        page: requestPage,
+        pageSize: PRODUCT_RESULTS_PAGE_SIZE
+      });
 
       if (!response.success || !response.data) {
         setSearchState((current) => ({
@@ -273,6 +273,12 @@ export function PosPage() {
           isLoading: false,
           products: [],
           query: trimmedQuery,
+          meta: {
+            page: requestPage,
+            pageSize: PRODUCT_RESULTS_PAGE_SIZE,
+            totalItems: 0,
+            totalPages: 0
+          },
           status: "error"
         }));
         return;
@@ -292,6 +298,7 @@ export function PosPage() {
         error: null,
         hasSearched: true,
         isLoading: false,
+        meta: response.data.meta,
         products: response.data.products,
         query: response.data.query,
         status: nextStatus
@@ -319,6 +326,12 @@ export function PosPage() {
         isLoading: false,
         products: [],
         query: trimmedQuery,
+        meta: {
+          page: requestPage,
+          pageSize: PRODUCT_RESULTS_PAGE_SIZE,
+          totalItems: 0,
+          totalPages: 0
+        },
         status: "error"
       }));
     }
@@ -512,7 +525,7 @@ export function PosPage() {
                   <p className="mt-1 text-sm text-slate-500">
                     {searchState.status === "ready"
                       ? "No search yet"
-                      : `${searchState.products.length} match${searchState.products.length === 1 ? "" : "es"}`}
+                      : `${searchState.meta.totalItems} match${searchState.meta.totalItems === 1 ? "" : "es"}`}
                   </p>
                 </div>
                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
@@ -544,7 +557,7 @@ export function PosPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {paginatedProducts.map((product) => {
+                          {searchState.products.map((product) => {
                             const isOutOfStock = product.availableStock <= 0;
 
                             return (
@@ -635,10 +648,14 @@ export function PosPage() {
 
                   <AppPagination
                     itemLabel="products"
-                    onPageChange={setProductResultsPage}
-                    page={currentProductPage}
-                    pageSize={PRODUCT_RESULTS_PAGE_SIZE}
-                    totalItems={searchState.products.length}
+                    onPageChange={(nextPage) => {
+                      setProductResultsPage(nextPage);
+                      void handleSearch({ page: nextPage });
+                    }}
+                    page={searchState.meta.page}
+                    pageSize={searchState.meta.pageSize}
+                    totalItems={searchState.meta.totalItems}
+                    totalPages={searchState.meta.totalPages}
                   />
                 </div>
               ) : (

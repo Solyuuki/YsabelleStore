@@ -54,6 +54,7 @@ export const createProductSchema = z.object({
   sellingPrice: moneyStringSchema,
   reorderLevel: z.coerce.number().int().min(0).default(0),
   targetStockLevel: z.coerce.number().int().min(0).default(0),
+  initialStock: z.coerce.number().int().min(0).default(0),
   status: productStatusSchema.optional(),
   description: optionalTextSchema(255)
 });
@@ -73,7 +74,7 @@ export const updateProductSchema = z.object({
 });
 
 export const deactivateProductSchema = z.object({
-  status: z.enum(["INACTIVE", "DISCONTINUED"])
+  status: productStatusSchema
 });
 
 export const listProductsQuerySchema = z.object({

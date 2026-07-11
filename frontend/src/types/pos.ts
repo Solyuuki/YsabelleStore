@@ -12,6 +12,12 @@ export type PosProduct = {
 
 export type PosProductSearchResponse = {
   catalogCount: number;
+  meta: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  };
   products: PosProduct[];
   query: string;
 };

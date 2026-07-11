@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 export const posProductSearchQuerySchema = z.object({
-  q: z.string().trim().max(120).optional()
+  q: z.string().trim().max(120).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20)
 });
 
 export const posCheckoutItemSchema = z.object({

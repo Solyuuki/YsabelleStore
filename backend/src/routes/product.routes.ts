@@ -5,6 +5,7 @@ import {
   createProductController,
   getProductController,
   listProductsController,
+  listCategoriesController,
   updateProductController
 } from "../controllers/productController.js";
 import {
@@ -33,6 +34,7 @@ productRouter.post(
   productImportUpload.single("file"),
   importProductsController
 );
+productRouter.get("/categories", requireRole("OWNER", "STAFF"), listCategoriesController);
 productRouter.post("/", requireRole("OWNER"), createProductController);
 productRouter.get("/", requireRole("OWNER", "STAFF"), listProductsController);
 productRouter.get("/:id", requireRole("OWNER", "STAFF"), getProductController);

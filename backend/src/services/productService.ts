@@ -21,6 +21,7 @@ import {
   type ProductSummary,
   type ProductWithRelations
 } from "./catalogSerializers.js";
+import { assertStockInvariant, createOpeningStockBatch } from "./stockDomainService.js";
 
 type ProductListResult = {
   items: ProductSummary[];
@@ -53,7 +54,8 @@ function normalizeProductInput(input: CreateProductRequest | UpdateProductReques
     costPrice: input.costPrice ? toDecimal(String(input.costPrice)) : undefined,
     sellingPrice: input.sellingPrice ? toDecimal(String(input.sellingPrice)) : undefined,
     reorderLevel: input.reorderLevel,
-    targetStockLevel: input.targetStockLevel
+    targetStockLevel: input.targetStockLevel,
+    initialStock: "initialStock" in input ? input.initialStock : undefined
   };
 }
 
@@ -222,7 +224,8 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
     costPrice,
     sellingPrice,
     reorderLevel,
-    targetStockLevel
+    targetStockLevel,
+    initialStock
   } = normalized;
 
   if (!name || !sku || !categoryId || costPrice === undefined || sellingPrice === undefined) {
@@ -260,6 +263,19 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
           version: 0
         }
       });
+
+      if ((initialStock ?? 0) > 0) {
+        await createOpeningStockBatch(tx, {
+          performedById: undefined,
+          productId: createdProduct.id,
+          quantity: initialStock ?? 0,
+          reason: "Opening stock created during product setup.",
+          unitCost: costPrice,
+          sku
+        });
+      }
+
+      await assertStockInvariant(tx, createdProduct.id);
 
       return tx.product.findUniqueOrThrow({
         include: productInclude,
@@ -451,4 +467,23 @@ export function summarizeProductStock(product: ProductSummary) {
     currentQuantity,
     stockStatus
   };
+}
+
+export async function listCategories() {
+  const categories = await prisma.category.findMany({
+    orderBy: [
+      {
+        name: "asc"
+      }
+    ],
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      isActive: true
+    }
+  });
+
+  return categories;
 }

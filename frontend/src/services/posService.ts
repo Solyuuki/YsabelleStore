@@ -26,12 +26,20 @@ function getAuthHeaders() {
 
 export async function searchPosProducts(
   query: string,
-  options: { signal?: AbortSignal } = {}
+  options: { page?: number; pageSize?: number; signal?: AbortSignal } = {}
 ): Promise<ApiResponse<PosProductSearchResponse, PosErrorPayload>> {
   const searchParams = new URLSearchParams();
 
   if (query.trim()) {
     searchParams.set("q", query.trim());
+  }
+
+  if (options.page) {
+    searchParams.set("page", String(options.page));
+  }
+
+  if (options.pageSize) {
+    searchParams.set("pageSize", String(options.pageSize));
   }
 
   const suffix = searchParams.toString() ? `?${searchParams.toString()}` : "";

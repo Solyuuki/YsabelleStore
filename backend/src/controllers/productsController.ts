@@ -25,7 +25,10 @@ export const listProductsForPos: RequestHandler = async (request, response, next
       });
     }
 
-    const data = await searchPosProducts(parsedQuery.data.q ?? "");
+    const data = await searchPosProducts(parsedQuery.data.q ?? "", {
+      page: parsedQuery.data.page ?? 1,
+      pageSize: parsedQuery.data.pageSize ?? 20
+    });
 
     response.status(200).json(createSuccessResponse("Product search completed.", data));
   } catch (error) {

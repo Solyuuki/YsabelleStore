@@ -11,6 +11,8 @@ export type ProductCategorySummary = {
   isActive: boolean;
 };
 
+export type ProductCategoryRecord = ProductCategorySummary;
+
 export type ProductInventorySummary = {
   inventoryId: string;
   currentQuantity: number;
@@ -37,6 +39,21 @@ export type ProductRecord = {
   inventory: ProductInventorySummary;
   createdAt: string;
   updatedAt: string;
+};
+
+export type CreateProductInput = {
+  name: string;
+  sku: string;
+  barcode?: string | null;
+  categoryId: string;
+  unit: ProductRecord["unit"];
+  description?: string | null;
+  costPrice: string;
+  sellingPrice: string;
+  reorderLevel: number;
+  targetStockLevel: number;
+  initialStock: number;
+  status?: ProductRecord["status"];
 };
 
 export type InventoryRecord = {
@@ -266,7 +283,29 @@ export async function fetchMovements(
   };
 }
 
-export async function updateProductStatus(productId: string, status: "INACTIVE" | "DISCONTINUED") {
+export async function createProduct(input: CreateProductInput) {
+  return apiClient.request<ProductRecord, { code?: string; details?: unknown }>(
+    "/api/catalog/products",
+    {
+      method: "POST",
+      json: input
+    }
+  );
+}
+
+export async function fetchCategories() {
+  const response = await apiClient.request<ProductCategoryRecord[], never>(
+    "/api/catalog/products/categories"
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function updateProductStatus(productId: string, status: ProductRecord["status"]) {
   const response = await apiClient.request<ProductRecord, { code?: string; details?: unknown }>(
     `/api/catalog/products/${encodeURIComponent(productId)}/status`,
     {
@@ -278,6 +317,32 @@ export async function updateProductStatus(productId: string, status: "INACTIVE" 
   );
 
   return response;
+}
+
+export async function updateProduct(
+  productId: string,
+  input: Partial<
+    Pick<
+      CreateProductInput,
+      | "name"
+      | "barcode"
+      | "categoryId"
+      | "unit"
+      | "description"
+      | "costPrice"
+      | "sellingPrice"
+      | "reorderLevel"
+      | "targetStockLevel"
+    >
+  >
+) {
+  return apiClient.request<ProductRecord, { code?: string; details?: unknown }>(
+    `/api/catalog/products/${encodeURIComponent(productId)}`,
+    {
+      method: "PATCH",
+      json: input
+    }
+  );
 }
 
 export async function previewProductImport(file: File) {
