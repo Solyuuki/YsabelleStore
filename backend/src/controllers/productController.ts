@@ -4,8 +4,8 @@ import { createSuccessResponse } from "../utils/apiResponse.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import {
   createProductSchema,
-  deactivateProductSchema,
   listProductsQuerySchema,
+  productAvailabilityStatusSchema,
   productIdParamSchema,
   updateProductSchema
 } from "../validators/product.validators.js";
@@ -102,9 +102,9 @@ export const changeProductStatusController: RequestHandler = async (request, res
       code: "INVALID_PRODUCT_ID"
     });
 
-    const body = parseOrThrow(deactivateProductSchema, request.body, {
-      message: "Product status request is invalid.",
-      code: "INVALID_PRODUCT_STATUS_REQUEST"
+    const body = parseOrThrow(productAvailabilityStatusSchema, request.body, {
+      message: "Product availability request is invalid.",
+      code: "INVALID_PRODUCT_AVAILABILITY_REQUEST"
     });
 
     const product = await changeProductStatus(params.id, body);

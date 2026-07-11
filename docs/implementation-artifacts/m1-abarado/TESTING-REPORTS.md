@@ -122,9 +122,18 @@
 | Date       | Area                                                                   | Result                    | Notes                                                                                                                                                               |
 | ---------- | ---------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-07-07 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
-| 2026-07-09 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
-| 2026-07-10 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 | 2026-07-11 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+
+## Discontinued Product Normalization
+
+The one-time cleanup script normalized these live products from `DISCONTINUED` to `INACTIVE` without changing inventory, movement, sales, or forecasting history:
+
+- `prd_hand_sanitizer` - Pocket Hand Sanitizer - `TOI-SANI-001`
+- `cmrgb64pg007tibtw4uar02vb` - DATA FLOW TEST PRODUCT e78d9047 - `TEST-9B3A7C4E-0F4`
+- `cmrgb8s9r007tibr4g6j4hezb` - DATA FLOW TEST PRODUCT 4955628f - `TEST-4C43F0A5-0E5`
+  | 2026-07-09 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+  | 2026-07-10 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+  | 2026-07-11 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 
 ## Historical Validation Detail
 

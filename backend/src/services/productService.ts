@@ -11,8 +11,8 @@ import {
 import { buildPaginationMeta, type PaginationMeta } from "../utils/pagination.js";
 import type {
   CreateProductRequest,
-  DeactivateProductRequest,
   ListProductsQuery,
+  ProductAvailabilityStatusRequest,
   UpdateProductRequest
 } from "../validators/product.validators.js";
 import {
@@ -435,11 +435,81 @@ export async function updateProduct(
 
 export async function changeProductStatus(
   productId: string,
-  input: DeactivateProductRequest
+  input: ProductAvailabilityStatusRequest
 ): Promise<ProductSummary> {
-  return updateProduct(productId, {
-    status: input.status
+  const existingProduct = await ensureProductAvailability(productId);
+
+  if (existingProduct.status === "DISCONTINUED") {
+    throw new HttpError(409, "Discontinued products cannot use the availability action.", {
+      code: "INVALID_PRODUCT_STATUS_TRANSITION",
+      details: {
+        currentStatus: existingProduct.status,
+        productId: existingProduct.id,
+        requestedStatus: input.status
+      }
+    });
+  }
+
+  if (existingProduct.status === input.status) {
+    throw new HttpError(409, "The product status changed elsewhere. Refresh and try again.", {
+      code: "INVALID_PRODUCT_STATUS_TRANSITION",
+      details: {
+        currentStatus: existingProduct.status,
+        productId: existingProduct.id,
+        requestedStatus: input.status
+      }
+    });
+  }
+
+  if (
+    (existingProduct.status === "ACTIVE" && input.status !== "INACTIVE") ||
+    (existingProduct.status === "INACTIVE" && input.status !== "ACTIVE")
+  ) {
+    throw new HttpError(409, "The product status changed elsewhere. Refresh and try again.", {
+      code: "INVALID_PRODUCT_STATUS_TRANSITION",
+      details: {
+        currentStatus: existingProduct.status,
+        productId: existingProduct.id,
+        requestedStatus: input.status
+      }
+    });
+  }
+
+  const updateResult = await prisma.product.updateMany({
+    data: {
+      status: input.status
+    },
+    where: {
+      id: existingProduct.id,
+      status: existingProduct.status
+    }
   });
+
+  if (updateResult.count !== 1) {
+    throw new HttpError(409, "The product status changed elsewhere. Refresh and try again.", {
+      code: "INVALID_PRODUCT_STATUS_TRANSITION",
+      details: {
+        currentStatus: existingProduct.status,
+        productId: existingProduct.id,
+        requestedStatus: input.status
+      }
+    });
+  }
+
+  const updatedProduct = await prisma.product.findUnique({
+    include: productInclude,
+    where: {
+      id: existingProduct.id
+    }
+  });
+
+  if (!updatedProduct) {
+    throw new HttpError(404, "Product not found.", {
+      code: "PRODUCT_NOT_FOUND"
+    });
+  }
+
+  return asProductSummary(updatedProduct);
 }
 
 export async function getProductForLookup(barcode: string): Promise<ProductSummary> {

@@ -201,13 +201,13 @@ const products = [
     sku: "TOI-SANI-001",
     barcode: "4800012345684",
     name: "Pocket Hand Sanitizer",
-    description: "Discontinued personal care item kept for historical traceability.",
+    description: "Legacy personal care item kept for historical traceability.",
     unit: "BOTTLE",
     costPrice: "26.00",
     sellingPrice: "34.00",
     reorderLevel: 5,
     targetStockLevel: 10,
-    status: "DISCONTINUED"
+    status: "INACTIVE"
   }
 ];
 

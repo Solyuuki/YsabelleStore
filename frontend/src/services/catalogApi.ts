@@ -305,6 +305,18 @@ export async function fetchCategories() {
   return response.data;
 }
 
+export async function fetchProductById(productId: string) {
+  const response = await apiClient.request<ProductRecord, { code?: string; details?: unknown }>(
+    `/api/catalog/products/${encodeURIComponent(productId)}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
 export async function updateProductStatus(productId: string, status: ProductRecord["status"]) {
   const response = await apiClient.request<ProductRecord, { code?: string; details?: unknown }>(
     `/api/catalog/products/${encodeURIComponent(productId)}/status`,

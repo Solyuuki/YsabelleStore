@@ -34,15 +34,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle
-} from "@/components/ui/sheet";
-import { Textarea } from "@/components/ui/textarea";
-import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -52,9 +43,20 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle
+} from "@/components/ui/sheet";
+import { Tooltip } from "@/components/ui/tooltip";
+import { Textarea } from "@/components/ui/textarea";
+import {
   downloadProductImportTemplate,
   createProduct,
   fetchCategories,
+  fetchProductById,
   fetchMovements,
   fetchProducts,
   importProducts,
@@ -71,6 +73,11 @@ import {
   type ProductRecord
 } from "@/services/catalogApi";
 import { waitForMinimumDuration } from "@/utils/timing";
+import {
+  getAvailabilityAction,
+  getProductStatusLabel,
+  getProductStatusVariant
+} from "@/utils/productAvailability";
 
 const MAX_IMPORT_FILE_SIZE_MB = 5;
 const DEFAULT_PAGE_SIZE = 20;
@@ -124,15 +131,15 @@ export function ProductsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [categories, setCategories] = useState<ProductCategorySummary[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [statusActionProductId, setStatusActionProductId] = useState<string | null>(null);
+  const [pendingAvailabilityProductIds, setPendingAvailabilityProductIds] = useState<Set<string>>(
+    () => new Set()
+  );
   const [movements, setMovements] = useState<MovementRecord[]>([]);
   const [movementLoading, setMovementLoading] = useState(false);
   const [movementError, setMovementError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE" | "DISCONTINUED">(
-    "ALL"
-  );
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
@@ -152,6 +159,13 @@ export function ProductsPage() {
   const importSessionRef = useRef(0);
   const catalogRequestIdRef = useRef(0);
   const catalogAbortControllerRef = useRef<AbortController | null>(null);
+  const availabilityRequestIdsRef = useRef(new Map<string, number>());
+  const currentCatalogViewRef = useRef({
+    debouncedSearch: "",
+    page: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
+    statusFilter: "ALL" as typeof statusFilter
+  });
   const previousCatalogParamsRef = useRef<{
     debouncedSearch: string;
     page: number;
@@ -216,6 +230,15 @@ export function ProductsPage() {
       window.clearTimeout(timeoutId);
     };
   }, [searchInput]);
+
+  useEffect(() => {
+    currentCatalogViewRef.current = {
+      debouncedSearch,
+      page,
+      pageSize,
+      statusFilter
+    };
+  }, [debouncedSearch, page, pageSize, statusFilter]);
 
   useEffect(() => {
     return () => {
@@ -672,54 +695,170 @@ export function ProductsPage() {
     }
   }
 
-  async function handleDeactivate(productId: string) {
-    setStatusActionProductId(productId);
-    const response = await updateProductStatus(productId, "INACTIVE");
-
-    if (!response.success) {
-      setStatusActionProductId(null);
-      pushToast({
-        message: response.message,
-        title: "Deactivation failed",
-        variant: "error"
-      });
-      return;
+  function getAvailabilityFailureMessage(response: {
+    error?: { code?: string };
+    message: string;
+    success: boolean;
+  }) {
+    if (response.success) {
+      return response.message;
     }
 
-    await refreshCatalog();
-    setStatusActionProductId(null);
-    pushToast({
-      message: "The product remains in the database but is inactive for POS use.",
-      title: "Product deactivated",
-      variant: "warning"
+    switch (response.error?.code) {
+      case "PRODUCT_NOT_FOUND":
+        return "Product was not found.";
+      case "INSUFFICIENT_ROLE":
+        return "Only an owner can change product availability.";
+      case "INVALID_PRODUCT_STATUS_TRANSITION":
+        return "The server did not confirm the product status change.";
+      case "INVALID_PRODUCT_AVAILABILITY_REQUEST":
+        return "Unable to update product availability.";
+      default:
+        return response.message || "The server did not confirm the update.";
+    }
+  }
+
+  function applyProductToCatalog(updatedProduct: ProductRecord) {
+    const { statusFilter: visibleStatusFilter, page: visiblePage } = currentCatalogViewRef.current;
+    const statusMatchesFilter =
+      visibleStatusFilter === "ALL" || updatedProduct.status === visibleStatusFilter;
+
+    setProducts((current) => {
+      const index = current.findIndex((product) => product.id === updatedProduct.id);
+
+      if (index === -1) {
+        return current;
+      }
+
+      if (!statusMatchesFilter) {
+        return current.filter((product) => product.id !== updatedProduct.id);
+      }
+
+      const next = [...current];
+      next[index] = updatedProduct;
+      return next;
+    });
+
+    setPaginationMeta((current) => {
+      if (!current) {
+        return current;
+      }
+
+      if (statusMatchesFilter) {
+        return current;
+      }
+
+      const nextTotalItems = Math.max(0, current.totalItems - 1);
+      const nextTotalPages = Math.max(1, Math.ceil(nextTotalItems / current.pageSize));
+      const nextPage = Math.min(visiblePage, nextTotalPages);
+
+      if (nextPage !== current.page) {
+        setPage(nextPage);
+      }
+
+      return {
+        ...current,
+        page: nextPage,
+        totalItems: nextTotalItems,
+        totalPages: nextTotalPages
+      };
     });
   }
 
-  async function handleActivate(productId: string) {
-    setStatusActionProductId(productId);
-    const response = await updateProductStatus(productId, "ACTIVE");
-
-    if (!response.success) {
-      setStatusActionProductId(null);
+  async function refreshProductFromServer(productId: string) {
+    try {
+      const updatedProduct = await fetchProductById(productId);
+      applyProductToCatalog(updatedProduct);
       pushToast({
-        message: response.message,
-        title: "Activation failed",
+        message: "The latest product status has been loaded. Try the action again.",
+        title: "Product status refreshed",
+        variant: "success"
+      });
+    } catch {
+      pushToast({
+        message: "The latest server status could not be loaded.",
+        title: "Product status refreshed",
         variant: "error"
       });
+    }
+  }
+
+  async function handleAvailabilityToggle(product: ProductRecord) {
+    const action = getAvailabilityAction(product.status);
+
+    if (!action || availabilityRequestIdsRef.current.has(product.id)) {
       return;
     }
 
-    await refreshCatalog();
-    setStatusActionProductId(null);
-    pushToast({
-      message: "The product is active again and can be sold in POS.",
-      title: "Product activated",
-      variant: "success"
+    const requestId = (availabilityRequestIdsRef.current.get(product.id) ?? 0) + 1;
+    availabilityRequestIdsRef.current.set(product.id, requestId);
+    setPendingAvailabilityProductIds((current) => {
+      const next = new Set(current);
+      next.add(product.id);
+      return next;
     });
-  }
 
-  async function handleRestore(productId: string) {
-    await handleActivate(productId);
+    try {
+      const response = await waitForMinimumDuration(
+        updateProductStatus(product.id, action.nextStatus),
+        500
+      );
+
+      if (availabilityRequestIdsRef.current.get(product.id) !== requestId) {
+        return;
+      }
+
+      if (!response.success) {
+        if (response.error?.code === "INVALID_PRODUCT_STATUS_TRANSITION") {
+          await refreshProductFromServer(product.id);
+          return;
+        }
+
+        pushToast({
+          message: getAvailabilityFailureMessage(response),
+          title: "Availability update failed",
+          variant: "error"
+        });
+        return;
+      }
+
+      if (!response.data) {
+        pushToast({
+          message: "The server did not confirm the product status change.",
+          title: "Availability update failed",
+          variant: "error"
+        });
+        return;
+      }
+
+      const updatedProduct = response.data;
+      applyProductToCatalog(updatedProduct);
+
+      pushToast({
+        message: action.successMessage,
+        title: action.successTitle,
+        variant: "success"
+      });
+    } catch (error) {
+      if (availabilityRequestIdsRef.current.get(product.id) !== requestId) {
+        return;
+      }
+
+      pushToast({
+        message: error instanceof Error ? error.message : "Unable to update product availability.",
+        title: "Availability update failed",
+        variant: "error"
+      });
+    } finally {
+      if (availabilityRequestIdsRef.current.get(product.id) === requestId) {
+        availabilityRequestIdsRef.current.delete(product.id);
+        setPendingAvailabilityProductIds((current) => {
+          const next = new Set(current);
+          next.delete(product.id);
+          return next;
+        });
+      }
+    }
   }
 
   function toggleSelection(productId: string) {
@@ -831,9 +970,9 @@ export function ProductsPage() {
               <CardTitle>Catalog overview</CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4 pt-2 lg:px-5">
             <div className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-[1fr_180px]">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px]">
                 <label className="relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
                   <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <input
@@ -865,9 +1004,8 @@ export function ProductsPage() {
                     }
                   >
                     <option value="ALL">All statuses</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Inactive</option>
-                    <option value="DISCONTINUED">Discontinued</option>
+                    <option value="ACTIVE">Available</option>
+                    <option value="INACTIVE">Unavailable</option>
                   </select>
                   {filterIsLoading ? (
                     <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
@@ -903,31 +1041,31 @@ export function ProductsPage() {
                 />
               ) : null}
 
-              <div
-                aria-busy={isCatalogLoading}
-                aria-live="polite"
-                className="relative overflow-hidden rounded-xl border border-slate-200"
-              >
+              <div aria-busy={isCatalogLoading} aria-live="polite" className="relative">
                 {showCatalogSkeleton ? (
                   <CatalogTableSkeleton rowCount={pageSize} />
                 ) : hasCatalogRows ? (
                   <div className={showCatalogOverlay ? "pointer-events-none opacity-70" : ""}>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-[1080px] border-collapse text-left text-sm">
+                    <div className="overflow-visible">
+                      <table className="w-full table-fixed border-collapse text-left text-sm">
                         <thead className="bg-slate-100 text-slate-700">
                           <tr>
-                            <th className="w-[28%] px-3 py-2">Product</th>
-                            <th className="w-[14%] px-3 py-2">SKU</th>
-                            <th className="w-[14%] px-3 py-2">Barcode</th>
-                            <th className="w-[14%] px-3 py-2">Category</th>
-                            <th className="w-[12%] px-3 py-2">Status</th>
-                            <th className="w-[14%] px-3 py-2">Selling price</th>
-                            <th className="w-[14%] px-3 py-2">Action</th>
+                            <th className="w-[48%] px-2 py-2.5 lg:w-[32%] xl:w-[28%]">Product</th>
+                            <th className="hidden w-[12%] px-2 py-2.5 lg:table-cell">SKU</th>
+                            <th className="hidden w-[14%] px-2 py-2.5 xl:table-cell">Barcode</th>
+                            <th className="hidden w-[13%] px-2 py-2.5 lg:table-cell">Category</th>
+                            <th className="w-[12%] px-2 py-2.5 lg:w-[11%]">Status</th>
+                            <th className="hidden w-[10%] px-2 py-2.5 lg:table-cell">
+                              Selling price
+                            </th>
+                            <th className="w-[40%] px-2 py-2.5 text-center lg:w-[18%]">Action</th>
                           </tr>
                         </thead>
                         <tbody>
                           {products.map((product) => {
                             const isSelected = selectedProductId === product.id;
+                            const isStatusPending = pendingAvailabilityProductIds.has(product.id);
+                            const availabilityAction = getAvailabilityAction(product.status);
 
                             return (
                               <tr
@@ -950,29 +1088,67 @@ export function ProductsPage() {
                                 }}
                                 tabIndex={0}
                               >
-                                <td className="px-3 py-2 align-top">
-                                  <div className="font-medium text-slate-950">{product.name}</div>
-                                  <div className="text-xs text-slate-500">
+                                <td className="px-2 py-2 align-top lg:py-2.5">
+                                  <div className="font-medium text-slate-950 xl:truncate">
+                                    {product.name}
+                                  </div>
+                                  <div className="mt-0.5 max-h-10 overflow-hidden text-xs leading-5 text-slate-500">
                                     {product.description ?? "No description"}
                                   </div>
+                                  <div className="mt-2 grid gap-1 text-xs text-slate-500 lg:hidden">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <span className="font-medium text-slate-700">SKU</span>
+                                      <span className="text-right break-words text-slate-600">
+                                        {product.sku}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-start justify-between gap-3">
+                                      <span className="font-medium text-slate-700">Barcode</span>
+                                      <span className="text-right break-words text-slate-600">
+                                        {product.barcode ?? "-"}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-start justify-between gap-3">
+                                      <span className="font-medium text-slate-700">Category</span>
+                                      <span className="text-right break-words text-slate-600">
+                                        {product.category.name}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-start justify-between gap-3">
+                                      <span className="font-medium text-slate-700">
+                                        Selling price
+                                      </span>
+                                      <span className="text-right tabular-nums text-slate-600">
+                                        PHP {Number(product.sellingPrice).toFixed(2)}
+                                      </span>
+                                    </div>
+                                  </div>
                                 </td>
-                                <td className="px-3 py-2 align-top">{product.sku}</td>
-                                <td className="px-3 py-2 align-top">{product.barcode ?? "-"}</td>
-                                <td className="px-3 py-2 align-top">{product.category.name}</td>
-                                <td className="px-3 py-2 align-top">
-                                  <StatusBadge variant={product.isActive ? "success" : "warning"}>
-                                    {product.status}
+                                <td className="hidden px-2 py-2 align-top break-words lg:table-cell">
+                                  {product.sku}
+                                </td>
+                                <td className="hidden px-2 py-2 align-top break-words xl:table-cell">
+                                  {product.barcode ?? "-"}
+                                </td>
+                                <td className="hidden px-2 py-2 align-top break-words lg:table-cell">
+                                  {product.category.name}
+                                </td>
+                                <td className="px-2 py-2 align-top lg:py-2.5">
+                                  <StatusBadge variant={getProductStatusVariant(product.status)}>
+                                    {getProductStatusLabel(product.status)}
                                   </StatusBadge>
                                 </td>
-                                <td className="px-3 py-2 align-top">
+                                <td className="hidden px-2 py-2 align-top tabular-nums lg:table-cell">
                                   PHP {Number(product.sellingPrice).toFixed(2)}
                                 </td>
-                                <td className="px-3 py-2 align-top">
-                                  <div className="flex flex-wrap gap-2">
+                                <td className="px-2 py-2 align-top text-center lg:py-2.5">
+                                  <div className="flex flex-col items-stretch justify-center gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-1.5">
                                     <Button
                                       size="sm"
                                       type="button"
                                       variant="secondary"
+                                      className="h-9 w-full shrink-0 px-2 text-xs sm:w-auto sm:px-3 sm:text-sm"
+                                      aria-label={`Edit ${product.name}`}
                                       onClick={(event) => {
                                         event.stopPropagation();
                                         setSelectedProductId(product.id);
@@ -981,64 +1157,44 @@ export function ProductsPage() {
                                       <PencilLine className="h-4 w-4" aria-hidden="true" />
                                       Edit
                                     </Button>
-                                    {product.status === "ACTIVE" ? (
-                                      <Button
-                                        disabled={statusActionProductId === product.id}
-                                        size="sm"
-                                        type="button"
-                                        variant="secondary"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          void handleDeactivate(product.id);
-                                        }}
-                                      >
-                                        {statusActionProductId === product.id ? (
-                                          <LoaderCircle
-                                            className="h-4 w-4 animate-spin"
-                                            aria-hidden="true"
-                                          />
-                                        ) : null}
-                                        Deactivate
-                                      </Button>
-                                    ) : product.status === "INACTIVE" ? (
-                                      <Button
-                                        disabled={statusActionProductId === product.id}
-                                        size="sm"
-                                        type="button"
-                                        variant="secondary"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          void handleActivate(product.id);
-                                        }}
-                                      >
-                                        {statusActionProductId === product.id ? (
-                                          <LoaderCircle
-                                            className="h-4 w-4 animate-spin"
-                                            aria-hidden="true"
-                                          />
-                                        ) : null}
-                                        Activate
-                                      </Button>
-                                    ) : (
-                                      <Button
-                                        disabled={statusActionProductId === product.id}
-                                        size="sm"
-                                        type="button"
-                                        variant="secondary"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          void handleRestore(product.id);
-                                        }}
-                                      >
-                                        {statusActionProductId === product.id ? (
-                                          <LoaderCircle
-                                            className="h-4 w-4 animate-spin"
-                                            aria-hidden="true"
-                                          />
-                                        ) : null}
-                                        Restore
-                                      </Button>
-                                    )}
+                                    {availabilityAction ? (
+                                      <Tooltip content={availabilityAction.tooltip}>
+                                        <Button
+                                          aria-busy={isStatusPending}
+                                          aria-label={`Set ${product.name} to ${
+                                            availabilityAction.nextStatus === "ACTIVE"
+                                              ? "available"
+                                              : "unavailable"
+                                          }`}
+                                          className="h-9 w-full min-w-0 shrink-0 px-2 text-xs sm:w-auto sm:px-3 sm:text-sm lg:min-w-[8.75rem] xl:min-w-[9.75rem]"
+                                          disabled={isStatusPending}
+                                          size="sm"
+                                          type="button"
+                                          variant="secondary"
+                                          onClick={(event) => {
+                                            event.stopPropagation();
+                                            void handleAvailabilityToggle(product);
+                                          }}
+                                        >
+                                          {isStatusPending ? (
+                                            <LoaderCircle
+                                              className="h-4 w-4 animate-spin"
+                                              aria-hidden="true"
+                                            />
+                                          ) : null}
+                                          <span className="hidden xl:inline">
+                                            {isStatusPending
+                                              ? availabilityAction.loadingLabel
+                                              : availabilityAction.buttonLabel}
+                                          </span>
+                                          <span className="xl:hidden">
+                                            {isStatusPending
+                                              ? availabilityAction.compactLoadingLabel
+                                              : availabilityAction.compactButtonLabel}
+                                          </span>
+                                        </Button>
+                                      </Tooltip>
+                                    ) : null}
                                   </div>
                                 </td>
                               </tr>
@@ -1853,7 +2009,7 @@ function getSuggestedFix(issue: ProductImportIssue) {
     case "INVALID_INTEGER_VALUE":
       return "Use a whole number with no decimals.";
     case "INVALID_STATUS":
-      return "Use ACTIVE, INACTIVE, or DISCONTINUED.";
+      return "Use ACTIVE or INACTIVE.";
     case "INVALID_UNIT":
       return "Use one of the accepted unit values.";
     case "DUPLICATE_SKU_IN_FILE":
@@ -1958,45 +2114,53 @@ function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
 
   return (
     <div className="relative">
-      <div className="overflow-x-auto">
-        <table className="min-w-[1080px] border-collapse text-left text-sm">
+      <div className="overflow-visible">
+        <table className="w-full table-fixed border-collapse text-left text-sm">
           <thead className="bg-slate-100 text-slate-700">
             <tr>
-              <th className="w-[28%] px-3 py-2">Product</th>
-              <th className="w-[14%] px-3 py-2">SKU</th>
-              <th className="w-[14%] px-3 py-2">Barcode</th>
-              <th className="w-[14%] px-3 py-2">Category</th>
-              <th className="w-[12%] px-3 py-2">Status</th>
-              <th className="w-[14%] px-3 py-2">Selling price</th>
-              <th className="w-[14%] px-3 py-2">Action</th>
+              <th className="w-[48%] px-2 py-2.5 lg:w-[32%] xl:w-[28%]">Product</th>
+              <th className="hidden w-[12%] px-2 py-2.5 lg:table-cell">SKU</th>
+              <th className="hidden w-[14%] px-2 py-2.5 xl:table-cell">Barcode</th>
+              <th className="hidden w-[13%] px-2 py-2.5 lg:table-cell">Category</th>
+              <th className="w-[12%] px-2 py-2.5 lg:w-[11%]">Status</th>
+              <th className="hidden w-[10%] px-2 py-2.5 lg:table-cell">Selling price</th>
+              <th className="w-[40%] px-2 py-2.5 text-center lg:w-[18%]">Action</th>
             </tr>
           </thead>
           <tbody className="bg-white">
             {skeletonRows.map((rowIndex) => (
               <tr className="border-t border-slate-200" key={rowIndex}>
-                <td className="px-3 py-3">
+                <td className="px-2 py-3 lg:py-3">
                   <div className="space-y-2">
                     <div className="loading-shimmer h-4 w-44 rounded-full bg-slate-100" />
                     <div className="loading-shimmer h-3 w-56 rounded-full bg-slate-100" />
+                    <div className="grid gap-1 pt-1 lg:hidden">
+                      <div className="loading-shimmer h-3 w-full rounded-full bg-slate-100" />
+                      <div className="loading-shimmer h-3 w-5/6 rounded-full bg-slate-100" />
+                      <div className="loading-shimmer h-3 w-11/12 rounded-full bg-slate-100" />
+                    </div>
                   </div>
                 </td>
-                <td className="px-3 py-3">
+                <td className="hidden px-2 py-3 lg:table-cell">
                   <div className="loading-shimmer h-4 w-24 rounded-full bg-slate-100" />
                 </td>
-                <td className="px-3 py-3">
+                <td className="hidden px-2 py-3 xl:table-cell">
                   <div className="loading-shimmer h-4 w-28 rounded-full bg-slate-100" />
                 </td>
-                <td className="px-3 py-3">
+                <td className="hidden px-2 py-3 lg:table-cell">
                   <div className="loading-shimmer h-4 w-32 rounded-full bg-slate-100" />
                 </td>
-                <td className="px-3 py-3">
+                <td className="px-2 py-3 lg:py-3">
                   <div className="loading-shimmer h-6 w-20 rounded-full bg-slate-100" />
                 </td>
-                <td className="px-3 py-3">
+                <td className="hidden px-2 py-3 lg:table-cell">
                   <div className="loading-shimmer h-4 w-20 rounded-full bg-slate-100" />
                 </td>
-                <td className="px-3 py-3">
-                  <div className="loading-shimmer h-10 w-32 rounded-md bg-slate-100" />
+                <td className="px-2 py-3 lg:py-3">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="loading-shimmer h-9 w-full rounded-md bg-slate-100" />
+                    <div className="loading-shimmer h-9 w-full rounded-md bg-slate-100" />
+                  </div>
                 </td>
               </tr>
             ))}
@@ -2220,9 +2384,9 @@ function CreateProductDialog({
                     }))
                   }
                 >
-                  {["ACTIVE", "INACTIVE", "DISCONTINUED"].map((status) => (
+                  {["ACTIVE", "INACTIVE"].map((status) => (
                     <option key={status} value={status}>
-                      {status}
+                      {status === "ACTIVE" ? "Available" : "Unavailable"}
                     </option>
                   ))}
                 </Select>

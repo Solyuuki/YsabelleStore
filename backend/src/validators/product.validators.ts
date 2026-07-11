@@ -77,6 +77,10 @@ export const deactivateProductSchema = z.object({
   status: productStatusSchema
 });
 
+export const productAvailabilityStatusSchema = z.object({
+  status: z.enum(["ACTIVE", "INACTIVE"])
+});
+
 export const listProductsQuerySchema = z.object({
   search: optionalTextSchema(160),
   sku: optionalTextSchema(80),
@@ -95,4 +99,5 @@ export const listProductsQuerySchema = z.object({
 export type CreateProductRequest = z.infer<typeof createProductSchema>;
 export type UpdateProductRequest = z.infer<typeof updateProductSchema>;
 export type DeactivateProductRequest = z.infer<typeof deactivateProductSchema>;
+export type ProductAvailabilityStatusRequest = z.infer<typeof productAvailabilityStatusSchema>;
 export type ListProductsQuery = z.infer<typeof listProductsQuerySchema>;

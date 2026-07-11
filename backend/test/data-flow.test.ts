@@ -5,6 +5,7 @@ import { test } from "node:test";
 import type { Prisma, PrismaClient } from "@prisma/client";
 
 import { prisma } from "../src/database/prismaClient.js";
+import { requireRole } from "../src/middleware/roleMiddleware.js";
 import { addStock, adjustStock } from "../src/services/inventoryService.js";
 import { checkoutPosSale, searchPosProducts } from "../src/services/posService.js";
 import { changeProductStatus, createProduct } from "../src/services/productService.js";
@@ -398,6 +399,60 @@ test("POS checkout rolls back when a later write fails", { concurrency: false },
   assertInvariant(secondState);
 });
 
+test("availability toggles preserve stock and POS visibility", { concurrency: false }, async () => {
+  const product = await createProduct(buildProductInput({ initialStock: 4 }));
+  const initialState = await getStockState(product.id);
+
+  assert.equal(initialState.inventory.quantityOnHand, 4);
+  assert.equal(initialState.batchTotal, 4);
+
+  await changeProductStatus(product.id, { status: "INACTIVE" });
+
+  const inactiveState = await getStockState(product.id);
+  const inactiveLookup = await searchPosProducts(product.sku, { page: 1, pageSize: 20 });
+
+  assert.equal(inactiveState.inventory.quantityOnHand, 4);
+  assert.equal(inactiveState.batchTotal, 4);
+  assert.equal(
+    inactiveLookup.products.some((entry) => entry.id === product.id),
+    false
+  );
+
+  await changeProductStatus(product.id, { status: "ACTIVE" });
+
+  const activeState = await getStockState(product.id);
+  const activeLookup = await searchPosProducts(product.sku, { page: 1, pageSize: 20 });
+
+  assert.equal(activeState.inventory.quantityOnHand, 4);
+  assert.equal(activeState.batchTotal, 4);
+  assert.equal(
+    activeLookup.products.some((entry) => entry.id === product.id),
+    true
+  );
+});
+
+test("discontinued products reject availability toggles", { concurrency: false }, async () => {
+  const product = await createProduct(
+    buildProductInput({ initialStock: 0, status: "DISCONTINUED" })
+  );
+
+  await assert.rejects(
+    () => changeProductStatus(product.id, { status: "ACTIVE" }),
+    (error) => error instanceof Error && error.message.includes("Discontinued products cannot use")
+  );
+});
+
+test("requireRole allows OWNER and blocks STAFF", { concurrency: false }, async () => {
+  const owner = await createTestUser("OWNER");
+  const staff = await createTestUser("STAFF");
+
+  await assert.equal(await runRoleCheck(owner, "OWNER"), undefined);
+
+  const blocked = await runRoleCheck(staff, "OWNER");
+  assert.ok(blocked instanceof Error);
+  assert.ok(blocked.message.includes("permission"));
+});
+
 test("stock audit detects a mismatch without mutating data", { concurrency: false }, async () => {
   const product = await createProduct(buildProductInput({ initialStock: 4 }));
   await prisma.inventory.update({
@@ -429,6 +484,7 @@ type ProductInputOverrides = Partial<{
   initialStock: number;
   name: string;
   sku: string;
+  status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
 }>;
 
 function buildProductInput(overrides: ProductInputOverrides = {}) {
@@ -444,7 +500,7 @@ function buildProductInput(overrides: ProductInputOverrides = {}) {
     reorderLevel: 2,
     sellingPrice: "15.00",
     sku: overrides.sku ?? uniqueSku("TEST"),
-    status: "ACTIVE" as const,
+    status: overrides.status ?? ("ACTIVE" as const),
     targetStockLevel: 5,
     unit: "PIECE" as const
   };
@@ -557,16 +613,33 @@ async function ensureCategoryId() {
 }
 
 async function createTestCashier() {
+  return createTestUser("STAFF", "Test Cashier");
+}
+
+async function createTestUser(role: "OWNER" | "STAFF", namePrefix = "Test User") {
   const suffix = randomUUID().slice(0, 8);
 
   return prisma.user.create({
     data: {
-      email: `cashier-${suffix}@example.com`,
-      name: `Test Cashier ${suffix}`,
+      email: `${role.toLowerCase()}-${suffix}@example.com`,
+      name: `${namePrefix} ${suffix}`,
       passwordHash: "test-password-hash",
-      role: "STAFF",
+      role,
       status: "ACTIVE"
     }
+  });
+}
+
+async function runRoleCheck(
+  user: Awaited<ReturnType<typeof createTestUser>>,
+  requiredRole: "OWNER"
+) {
+  return new Promise<Error | undefined>((resolve) => {
+    const middleware = requireRole(requiredRole);
+
+    middleware({ authUser: user } as never, {} as never, (error) => {
+      resolve(error as Error | undefined);
+    });
   });
 }
 
