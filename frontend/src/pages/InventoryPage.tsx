@@ -1,5 +1,6 @@
 import {
-  Barcode,
+  Download,
+  FileUp,
   Boxes,
   ClipboardList,
   ArrowUpDown,
@@ -7,6 +8,7 @@ import {
   Filter,
   History,
   LoaderCircle,
+  Plus,
   PackagePlus,
   PencilLine,
   Tag,
@@ -52,7 +54,6 @@ import {
   fetchInventory,
   fetchInventoryByProductId,
   fetchMovements,
-  lookupInventoryByBarcode,
   stockInInventory,
   type InventoryListQuery,
   type InventoryMovementType,
@@ -65,6 +66,8 @@ import {
   type StockInRequest
 } from "@/services/catalogApi";
 import { waitForMinimumDuration } from "@/utils/timing";
+import { InventoryImportDialog } from "@/components/inventory/InventoryImportDialog";
+import { downloadInventoryStockImportTemplate } from "@/services/catalogApi";
 
 const DEFAULT_PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 350;
@@ -72,7 +75,7 @@ const INVENTORY_INITIAL_MINIMUM_MS = 500;
 const INVENTORY_UPDATE_MINIMUM_MS = 400;
 const DETAILS_MINIMUM_MS = 450;
 const MOVEMENTS_MINIMUM_MS = 450;
-const LOOKUP_MINIMUM_MS = 450;
+const INVENTORY_TEMPLATE_DOWNLOAD_MINIMUM_MS = 450;
 const MUTATION_MINIMUM_MS = 550;
 
 type LoadingReason =
@@ -105,6 +108,55 @@ const movementTypes: InventoryMovementType[] = [
   "INITIAL_STOCK"
 ];
 
+const adjustmentReasonOptions = [
+  { label: "Damaged", value: "Damaged" },
+  { label: "Expired", value: "Expired" },
+  { label: "Physical count correction", value: "Physical count correction" },
+  { label: "Returned item", value: "Returned item" },
+  { label: "Other", value: "OTHER" }
+] as const;
+
+type AdjustmentReasonPreset = (typeof adjustmentReasonOptions)[number]["value"];
+
+function formatMovementAction(type: string) {
+  switch (type) {
+    case "STOCK_IN":
+      return "Stock added";
+    case "ADJUSTMENT_IN":
+      return "Quantity increased";
+    case "ADJUSTMENT_OUT":
+      return "Quantity reduced";
+    case "SALE":
+      return "Sold through POS";
+    case "RETURN_IN":
+      return "Return received";
+    case "RETURN_OUT":
+      return "Return sent";
+    case "DAMAGE":
+      return "Marked as damaged";
+    case "EXPIRED":
+      return "Marked as expired";
+    case "INITIAL_STOCK":
+      return "Opening stock";
+    default:
+      return type.replaceAll("_", " ");
+  }
+}
+
+function formatMovementReason(item: MovementRecord) {
+  return item.reason ?? "No reason recorded";
+}
+
+function formatMovementChange(item: MovementRecord) {
+  const isReduction =
+    item.type === "SALE" ||
+    item.type === "ADJUSTMENT_OUT" ||
+    item.type === "RETURN_OUT" ||
+    item.type === "DAMAGE" ||
+    item.type === "EXPIRED";
+  return `${isReduction ? "-" : "+"}${item.quantity}`;
+}
+
 export function InventoryPage() {
   const { user } = useAuth();
   const { pushToast } = useToast();
@@ -126,7 +178,8 @@ export function InventoryPage() {
   const [selectedInventory, setSelectedInventory] = useState<InventoryRecord | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
-  const [lookupOpen, setLookupOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [stockInOpen, setStockInOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [movementsOpen, setMovementsOpen] = useState(false);
@@ -312,6 +365,42 @@ export function InventoryPage() {
     setDetailsError(null);
   }
 
+  async function handleTemplateDownload() {
+    if (isDownloadingTemplate) {
+      return;
+    }
+
+    setIsDownloadingTemplate(true);
+
+    try {
+      const csv = await waitForMinimumDuration(
+        downloadInventoryStockImportTemplate(),
+        INVENTORY_TEMPLATE_DOWNLOAD_MINIMUM_MS
+      );
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+
+      anchor.href = url;
+      anchor.download = "inventory-stock-import-template.csv";
+      anchor.click();
+      window.URL.revokeObjectURL(url);
+      pushToast({
+        title: "Template downloaded",
+        message: "The inventory stock import template is ready.",
+        variant: "success"
+      });
+    } catch {
+      pushToast({
+        title: "Download failed",
+        message: "The inventory stock import template could not be downloaded.",
+        variant: "error"
+      });
+    } finally {
+      setIsDownloadingTemplate(false);
+    }
+  }
+
   function updateVisibleInventory(updated: InventoryRecord) {
     const view = viewRef.current;
     const stillMatches =
@@ -366,10 +455,29 @@ export function InventoryPage() {
         title="Inventory"
         description="Monitor stock levels, batches, expiry dates, and inventory movements."
         actions={
-          <Button type="button" variant="secondary" onClick={() => setLookupOpen(true)}>
-            <Barcode className="h-4 w-4" aria-hidden="true" />
-            Barcode lookup
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              disabled={isDownloadingTemplate}
+              onClick={() => void handleTemplateDownload()}
+              type="button"
+              variant="secondary"
+            >
+              {isDownloadingTemplate ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Download className="h-4 w-4" aria-hidden="true" />
+              )}
+              {isDownloadingTemplate ? "Downloading..." : "Template"}
+            </Button>
+            <Button onClick={() => setStockInOpen(true)} type="button" variant="secondary">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Add Stock
+            </Button>
+            <Button onClick={() => setImportOpen(true)} type="button" variant="default">
+              <FileUp className="h-4 w-4" aria-hidden="true" />
+              Import Stock
+            </Button>
+          </div>
         }
       />
 
@@ -547,14 +655,6 @@ export function InventoryPage() {
         onOpenMovements={() => setMovementsOpen(true)}
         onOpenStockIn={() => setStockInOpen(true)}
       />
-      <BarcodeLookupDialog
-        open={lookupOpen}
-        onClose={() => setLookupOpen(false)}
-        onFound={(productId) => {
-          setLookupOpen(false);
-          openDetails(productId);
-        }}
-      />
       <StockInDialog
         inventory={selectedInventory}
         open={stockInOpen}
@@ -590,6 +690,11 @@ export function InventoryPage() {
               )
             : Promise.resolve(false)
         }
+      />
+      <InventoryImportDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => void loadInventory("refresh")}
       />
       <MovementHistoryDialog
         inventory={selectedInventory}
@@ -884,9 +989,8 @@ function InventoryDetailsDialog({
             onClick={onOpenMovements}
             disabled={!inventory || isLoading}
           >
-            {" "}
             <History className="h-4 w-4" />
-            Movement history
+            History
           </Button>
           {isOwner ? (
             <>
@@ -897,7 +1001,7 @@ function InventoryDetailsDialog({
                 disabled={!inventory || isLoading || mutationPending}
               >
                 <PencilLine className="h-4 w-4" />
-                Adjust stock
+                Adjust
               </Button>
               <Button
                 type="button"
@@ -905,7 +1009,7 @@ function InventoryDetailsDialog({
                 disabled={!inventory || isLoading || mutationPending}
               >
                 <PackagePlus className="h-4 w-4" />
-                Stock in
+                Add stock
               </Button>
             </>
           ) : null}
@@ -932,100 +1036,6 @@ function DetailsSkeleton() {
   );
 }
 
-function BarcodeLookupDialog({
-  onClose,
-  onFound,
-  open
-}: {
-  onClose: () => void;
-  onFound: (productId: string) => void;
-  open: boolean;
-}) {
-  const [barcode, setBarcode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const requestRef = useRef(0);
-  useEffect(() => {
-    if (open) window.setTimeout(() => inputRef.current?.focus(), 0);
-  }, [open]);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!barcode.trim() || pending) {
-      if (!barcode.trim()) setError("Enter a barcode to search inventory.");
-      return;
-    }
-    const id = ++requestRef.current;
-    setPending(true);
-    setError(null);
-    try {
-      const result = await waitForMinimumDuration(
-        lookupInventoryByBarcode(barcode.trim()),
-        LOOKUP_MINIMUM_MS
-      );
-      if (id === requestRef.current) onFound(result.productId);
-    } catch (lookupError) {
-      if (id === requestRef.current)
-        setError(
-          lookupError instanceof Error ? lookupError.message : "Unable to search inventory."
-        );
-    } finally {
-      if (id === requestRef.current) setPending(false);
-    }
-  }
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(nextOpen) => {
-        if (!nextOpen && !pending) onClose();
-      }}
-    >
-      <DialogContent aria-describedby="barcode-lookup-description">
-        <DialogHeader>
-          <DialogTitle>Barcode lookup</DialogTitle>
-          <DialogDescription id="barcode-lookup-description">
-            Scan or enter a product barcode to open its inventory record.
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          id="barcode-lookup-form"
-          className="space-y-4 px-6"
-          onSubmit={(event) => void submit(event)}
-        >
-          <div className="space-y-2">
-            <Label htmlFor="inventory-barcode">Barcode</Label>
-            <Input
-              autoComplete="off"
-              id="inventory-barcode"
-              ref={inputRef}
-              value={barcode}
-              onChange={(event) => setBarcode(event.target.value)}
-            />
-          </div>
-          {error ? (
-            <p aria-live="polite" className="text-sm text-red-700">
-              {error}
-            </p>
-          ) : null}
-        </form>
-        <DialogFooter>
-          <Button disabled={pending} type="button" variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button disabled={pending || !barcode.trim()} form="barcode-lookup-form" type="submit">
-            {pending ? (
-              <LoaderCircle className="h-4 w-4 animate-spin" />
-            ) : (
-              <Search className="h-4 w-4" />
-            )}{" "}
-            {pending ? "Searching..." : "Search"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 function StockInDialog({
   inventory,
   onClose,
@@ -1040,16 +1050,16 @@ function StockInDialog({
   pending: boolean;
 }) {
   const [quantity, setQuantity] = useState("");
-  const [reason, setReason] = useState("");
-  const [referenceType, setReferenceType] = useState("");
-  const [referenceId, setReferenceId] = useState("");
+  const [batchCode, setBatchCode] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [noExpirationDate, setNoExpirationDate] = useState(false);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     if (open) {
       setQuantity("");
-      setReason("");
-      setReferenceType("");
-      setReferenceId("");
+      setBatchCode("");
+      setExpiresAt("");
+      setNoExpirationDate(false);
       setError(null);
     }
   }, [open]);
@@ -1060,11 +1070,15 @@ function StockInDialog({
       setError("Quantity must be a positive whole number.");
       return;
     }
+    const trimmedBatchCode = batchCode.trim();
+    if (!trimmedBatchCode) {
+      setError("Batch/Lot number is required.");
+      return;
+    }
     const succeeded = await onSubmit({
       quantity: parsed,
-      reason: reason.trim() || undefined,
-      referenceType: referenceType.trim() || undefined,
-      referenceId: referenceId.trim() || undefined
+      batchCode: trimmedBatchCode,
+      expiresAt: noExpirationDate || !expiresAt ? null : expiresAt
     });
     if (succeeded) onClose();
   }
@@ -1075,22 +1089,27 @@ function StockInDialog({
         if (!nextOpen && !pending) onClose();
       }}
     >
-      <DialogContent aria-describedby="stock-in-description">
-        <DialogHeader>
+      <DialogContent
+        aria-describedby="stock-in-description"
+        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col gap-0 p-0"
+      >
+        <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Stock in</DialogTitle>
           <DialogDescription id="stock-in-description">
-            Add stock through the batch-aware inventory transaction.
+            Record incoming stock without exposing audit details.
           </DialogDescription>
         </DialogHeader>
         <form
           id="stock-in-form"
-          className="space-y-4 px-6"
+          className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5"
           onSubmit={(event) => void submit(event)}
         >
-          <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-700">
-            {inventory?.productName} currently has{" "}
-            <strong>{inventory?.currentQuantity ?? 0}</strong> units.
-          </p>
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+            <p className="font-medium text-slate-900">{inventory?.productName}</p>
+            <p className="mt-1">
+              Current quantity: <strong>{inventory?.currentQuantity ?? 0}</strong>
+            </p>
+          </div>
           <Field
             label="Quantity"
             id="stock-in-quantity"
@@ -1099,34 +1118,41 @@ function StockInDialog({
             onChange={setQuantity}
           />
           <Field
-            label="Reason (optional)"
-            id="stock-in-reason"
-            value={reason}
-            onChange={setReason}
+            label="Batch/Lot number"
+            id="stock-in-batch-code"
+            value={batchCode}
+            onChange={setBatchCode}
           />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Reference type (optional)"
-              id="stock-in-reference-type"
-              value={referenceType}
-              onChange={setReferenceType}
+          <Field
+            disabled={noExpirationDate}
+            label="Expiration date"
+            id="stock-in-expiration-date"
+            type="date"
+            value={expiresAt}
+            onChange={setExpiresAt}
+          />
+          <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+            <input
+              checked={noExpirationDate}
+              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              type="checkbox"
+              onChange={(event) => {
+                const checked = event.target.checked;
+                setNoExpirationDate(checked);
+                if (checked) setExpiresAt("");
+              }}
             />
-            <Field
-              label="Reference ID (optional)"
-              id="stock-in-reference-id"
-              value={referenceId}
-              onChange={setReferenceId}
-            />
-          </div>
+            <span>No expiration date</span>
+          </label>
           {error ? <p className="text-sm text-red-700">{error}</p> : null}
         </form>
-        <DialogFooter>
+        <DialogFooter className="border-t border-slate-200 bg-white/95">
           <Button disabled={pending} type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button disabled={pending} form="stock-in-form" type="submit">
             {pending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-            {pending ? "Adding stock..." : "Add stock"}
+            {pending ? "Adding stock…" : "Add stock"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1150,17 +1176,17 @@ function StockAdjustmentDialog({
   const [movementType, setMovementType] =
     useState<StockAdjustmentRequest["movementType"]>("ADJUSTMENT_IN");
   const [quantity, setQuantity] = useState("");
-  const [reason, setReason] = useState("");
-  const [referenceType, setReferenceType] = useState("");
-  const [referenceId, setReferenceId] = useState("");
+  const [reasonPreset, setReasonPreset] = useState<AdjustmentReasonPreset>(
+    "Physical count correction"
+  );
+  const [customReason, setCustomReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     if (open) {
       setMovementType("ADJUSTMENT_IN");
       setQuantity("");
-      setReason("");
-      setReferenceType("");
-      setReferenceId("");
+      setReasonPreset("Physical count correction");
+      setCustomReason("");
       setError(null);
     }
   }, [open]);
@@ -1171,20 +1197,19 @@ function StockAdjustmentDialog({
       setError("Quantity must be a positive whole number.");
       return;
     }
-    if (!reason.trim()) {
-      setError("A reason is required for an adjustment.");
-      return;
-    }
     if (movementType === "ADJUSTMENT_OUT" && parsed > (inventory?.currentQuantity ?? 0)) {
       setError("Removal quantity cannot exceed current stock.");
+      return;
+    }
+    const selectedReason = reasonPreset === "OTHER" ? customReason.trim() : reasonPreset;
+    if (!selectedReason) {
+      setError("Select or enter a reason.");
       return;
     }
     const succeeded = await onSubmit({
       movementType,
       quantity: parsed,
-      reason: reason.trim(),
-      referenceType: referenceType.trim() || undefined,
-      referenceId: referenceId.trim() || undefined
+      reason: selectedReason
     });
     if (succeeded) onClose();
   }
@@ -1195,22 +1220,27 @@ function StockAdjustmentDialog({
         if (!nextOpen && !pending) onClose();
       }}
     >
-      <DialogContent aria-describedby="stock-adjustment-description">
-        <DialogHeader>
+      <DialogContent
+        aria-describedby="stock-adjustment-description"
+        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col gap-0 p-0"
+      >
+        <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Adjust stock</DialogTitle>
           <DialogDescription id="stock-adjustment-description">
-            Adjustments are recorded in movement history and can be corrected with another audited
-            adjustment.
+            Adjust inventory quantities with a clear reason.
           </DialogDescription>
         </DialogHeader>
         <form
           id="stock-adjustment-form"
-          className="space-y-4 px-6"
+          className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5"
           onSubmit={(event) => void submit(event)}
         >
-          <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-700">
-            Current available quantity: <strong>{inventory?.currentQuantity ?? 0}</strong>
-          </p>
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+            <p className="font-medium text-slate-900">{inventory?.productName}</p>
+            <p className="mt-1">
+              Current quantity: <strong>{inventory?.currentQuantity ?? 0}</strong>
+            </p>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="adjustment-direction">Adjustment type</Label>
             <Select
@@ -1220,8 +1250,8 @@ function StockAdjustmentDialog({
                 setMovementType(event.target.value as StockAdjustmentRequest["movementType"])
               }
             >
-              <option value="ADJUSTMENT_IN">Add stock</option>
-              <option value="ADJUSTMENT_OUT">Remove stock</option>
+              <option value="ADJUSTMENT_IN">Add quantity</option>
+              <option value="ADJUSTMENT_OUT">Remove quantity</option>
             </Select>
           </div>
           <Field
@@ -1231,30 +1261,37 @@ function StockAdjustmentDialog({
             value={quantity}
             onChange={setQuantity}
           />
-          <Field label="Reason" id="adjustment-reason" value={reason} onChange={setReason} />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Reference type (optional)"
-              id="adjustment-reference-type"
-              value={referenceType}
-              onChange={setReferenceType}
-            />
-            <Field
-              label="Reference ID (optional)"
-              id="adjustment-reference-id"
-              value={referenceId}
-              onChange={setReferenceId}
-            />
+          <div className="space-y-2">
+            <Label htmlFor="adjustment-reason">Reason</Label>
+            <Select
+              id="adjustment-reason"
+              value={reasonPreset}
+              onChange={(event) => setReasonPreset(event.target.value as AdjustmentReasonPreset)}
+            >
+              {adjustmentReasonOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
           </div>
+          {reasonPreset === "OTHER" ? (
+            <Field
+              label="Custom reason"
+              id="adjustment-custom-reason"
+              value={customReason}
+              onChange={setCustomReason}
+            />
+          ) : null}
           {error ? <p className="text-sm text-red-700">{error}</p> : null}
         </form>
-        <DialogFooter>
+        <DialogFooter className="border-t border-slate-200 bg-white/95">
           <Button disabled={pending} type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button disabled={pending} form="stock-adjustment-form" type="submit">
             {pending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-            {pending ? "Updating stock..." : "Update stock"}
+            {pending ? "Updating stock…" : "Update stock"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1263,24 +1300,30 @@ function StockAdjustmentDialog({
 }
 
 function Field({
+  disabled,
   id,
   inputMode,
   label,
   onChange,
+  type = "text",
   value
 }: {
+  disabled?: boolean;
   id: string;
   inputMode?: "numeric" | "text";
   label: string;
   onChange: (value: string) => void;
+  type?: "date" | "number" | "text";
   value: string;
 }) {
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       <Input
+        disabled={disabled}
         id={id}
         inputMode={inputMode}
+        type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
@@ -1396,11 +1439,11 @@ function MovementHistoryDialog({
                 <Table>
                   <TableHeader className="bg-slate-100">
                     <TableRow>
-                      <TableHead>Type</TableHead>
+                      <TableHead>Action</TableHead>
                       <TableHead className="text-right">Before</TableHead>
-                      <TableHead className="text-right">Changed</TableHead>
+                      <TableHead className="text-right">Change</TableHead>
                       <TableHead className="text-right">After</TableHead>
-                      <TableHead className="hidden md:table-cell">Reference / reason</TableHead>
+                      <TableHead className="hidden md:table-cell">Reason</TableHead>
                       <TableHead className="hidden lg:table-cell">Actor</TableHead>
                       <TableHead>Date</TableHead>
                     </TableRow>
@@ -1409,16 +1452,13 @@ function MovementHistoryDialog({
                     {items.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">
-                          {item.type.replaceAll("_", " ")}
+                          {formatMovementAction(item.type)}
                         </TableCell>
                         <TableCell className="text-right">{item.quantityBefore}</TableCell>
-                        <TableCell className="text-right">
-                          {item.type === "ADJUSTMENT_OUT" || item.type === "SALE" ? "-" : "+"}
-                          {item.quantity}
-                        </TableCell>
+                        <TableCell className="text-right">{formatMovementChange(item)}</TableCell>
                         <TableCell className="text-right">{item.quantityAfter}</TableCell>
                         <TableCell className="hidden max-w-48 text-xs text-slate-600 md:table-cell">
-                          {item.referenceType ?? item.reason ?? "-"}
+                          {formatMovementReason(item)}
                         </TableCell>
                         <TableCell className="hidden text-xs text-slate-600 lg:table-cell">
                           {item.performedBy?.name ?? "System"}

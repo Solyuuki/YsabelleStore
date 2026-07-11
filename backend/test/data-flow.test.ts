@@ -328,7 +328,8 @@ test(
     const product = await createProduct(buildProductInput());
     const result = await addStock(product.id, {
       quantity: 6,
-      reason: "Supplier restock"
+      batchCode: uniqueLabel("BATCH"),
+      expiresAt: null
     });
     const state = await getStockState(product.id);
 
@@ -336,6 +337,9 @@ test(
     assert.equal(state.inventory.quantityOnHand, 6);
     assert.equal(state.batchTotal, 6);
     assert.equal(state.movements.at(-1)?.type, "STOCK_IN");
+    assert.equal(state.movements.at(-1)?.reason, "Stock in");
+    assert.equal(state.movements.at(-1)?.referenceType, "MANUAL_STOCK_IN");
+    assert.equal(state.product.inventoryBatches.at(-1)?.batchCode.startsWith("BATCH-"), true);
     assertInvariant(state);
   }
 );
@@ -345,7 +349,7 @@ test(
   { concurrency: false },
   async () => {
     const product = await createProduct(buildProductInput());
-    await addStock(product.id, { quantity: 4, reason: "Seed stock" });
+    await addStock(product.id, { quantity: 4, batchCode: uniqueLabel("BATCH"), expiresAt: null });
     const result = await adjustStock(product.id, {
       movementType: "ADJUSTMENT_IN",
       quantity: 3,
@@ -357,6 +361,7 @@ test(
     assert.equal(state.inventory.quantityOnHand, 7);
     assert.equal(state.batchTotal, 7);
     assert.equal(state.movements.at(-1)?.type, "ADJUSTMENT_IN");
+    assert.equal(state.movements.at(-1)?.reason, "Cycle count correction");
     assertInvariant(state);
   }
 );
@@ -366,7 +371,7 @@ test(
   { concurrency: false },
   async () => {
     const product = await createProduct(buildProductInput());
-    await addStock(product.id, { quantity: 6, reason: "Seed stock" });
+    await addStock(product.id, { quantity: 6, batchCode: uniqueLabel("BATCH"), expiresAt: null });
     const result = await adjustStock(product.id, {
       movementType: "ADJUSTMENT_OUT",
       quantity: 2,
@@ -378,6 +383,7 @@ test(
     assert.equal(state.inventory.quantityOnHand, 4);
     assert.equal(state.batchTotal, 4);
     assert.equal(state.movements.at(-1)?.type, "ADJUSTMENT_OUT");
+    assert.equal(state.movements.at(-1)?.reason, "Damage write-off");
     assertInvariant(state);
   }
 );
@@ -387,7 +393,7 @@ test(
   { concurrency: false },
   async () => {
     const product = await createProduct(buildProductInput());
-    await addStock(product.id, { quantity: 1, reason: "Seed stock" });
+    await addStock(product.id, { quantity: 1, batchCode: uniqueLabel("BATCH"), expiresAt: null });
 
     await assert.rejects(
       () =>
@@ -410,7 +416,7 @@ test(
 
 test("POS search availability reflects activation state", { concurrency: false }, async () => {
   const product = await createProduct(buildProductInput());
-  await addStock(product.id, { quantity: 3, reason: "Seed stock" });
+  await addStock(product.id, { quantity: 3, batchCode: uniqueLabel("BATCH"), expiresAt: null });
   const found = await searchPosProducts(product.sku, { page: 1, pageSize: 20 });
 
   assert.equal(
@@ -450,7 +456,7 @@ test(
         })
       );
 
-      await addStock(product.id, { quantity: 1, reason: "Seed stock" });
+      await addStock(product.id, { quantity: 1, batchCode: uniqueLabel("BATCH"), expiresAt: null });
     }
 
     const pageOne = await searchPosProducts(query, { page: 1, pageSize: 20 });
@@ -467,7 +473,7 @@ test(
   { concurrency: false },
   async () => {
     const product = await createProduct(buildProductInput());
-    await addStock(product.id, { quantity: 5, reason: "Seed stock" });
+    await addStock(product.id, { quantity: 5, batchCode: uniqueLabel("BATCH"), expiresAt: null });
     const cashier = await createTestCashier();
     const result = await checkoutPosSale({
       cashierId: cashier.id,
@@ -492,7 +498,7 @@ test(
   { concurrency: false },
   async () => {
     const product = await createProduct(buildProductInput());
-    await addStock(product.id, { quantity: 2, reason: "Receipt test stock" });
+    await addStock(product.id, { quantity: 2, batchCode: uniqueLabel("BATCH"), expiresAt: null });
     const cashier = await createTestCashier();
     const result = await checkoutPosSale({
       cashierId: cashier.id,
@@ -510,7 +516,7 @@ test(
 
 test("Sales list preserves receipt fields for reprint", { concurrency: false }, async () => {
   const product = await createProduct(buildProductInput());
-  await addStock(product.id, { quantity: 1, reason: "Receipt history stock" });
+  await addStock(product.id, { quantity: 1, batchCode: uniqueLabel("BATCH"), expiresAt: null });
   const cashier = await createTestCashier();
   const sale = await checkoutPosSale({
     cashierId: cashier.id,
@@ -528,9 +534,9 @@ test("Sales list preserves receipt fields for reprint", { concurrency: false }, 
 
 test("POS checkout rolls back when a later write fails", { concurrency: false }, async () => {
   const first = await createProduct(buildProductInput());
-  await addStock(first.id, { quantity: 3, reason: "Seed stock" });
+  await addStock(first.id, { quantity: 3, batchCode: uniqueLabel("BATCH"), expiresAt: null });
   const second = await createProduct(buildProductInput());
-  await addStock(second.id, { quantity: 1, reason: "Seed stock" });
+  await addStock(second.id, { quantity: 1, batchCode: uniqueLabel("BATCH"), expiresAt: null });
   const cashier = await createTestCashier();
 
   await withPatchedTransaction(
@@ -572,7 +578,7 @@ test("POS checkout rolls back when a later write fails", { concurrency: false },
 
 test("availability toggles preserve stock and POS visibility", { concurrency: false }, async () => {
   const product = await createProduct(buildProductInput());
-  await addStock(product.id, { quantity: 4, reason: "Seed stock" });
+  await addStock(product.id, { quantity: 4, batchCode: uniqueLabel("BATCH"), expiresAt: null });
   const initialState = await getStockState(product.id);
 
   assert.equal(initialState.inventory.quantityOnHand, 4);
@@ -625,7 +631,7 @@ test("requireRole allows OWNER and blocks STAFF", { concurrency: false }, async 
 
 test("stock audit detects a mismatch without mutating data", { concurrency: false }, async () => {
   const product = await createProduct(buildProductInput());
-  await addStock(product.id, { quantity: 4, reason: "Seed stock" });
+  await addStock(product.id, { quantity: 4, batchCode: uniqueLabel("BATCH"), expiresAt: null });
   await prisma.inventory.update({
     data: {
       quantityOnHand: 5

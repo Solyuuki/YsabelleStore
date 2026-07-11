@@ -78,7 +78,7 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | Validation status    | Passed                                                                                                                                                         |
 | Last update          | 2026-07-12                                                                                                                                                     |
 | Current branch       | sprint/v0.3/sprint-3                                                                                                                                           |
-| Current work areas   | Backend<br>Docs<br>Electron<br>Frontend                                                                                                                        |
+| Current work areas   | Backend<br>Docs<br>Frontend                                                                                                                                    |
 | Current work summary | Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts. |
 
 ## Current Work Snapshot

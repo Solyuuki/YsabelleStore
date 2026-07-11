@@ -62,6 +62,8 @@ export const inventoryListQuerySchema = z.object({
 
 export const stockInSchema = z.object({
   quantity: z.coerce.number().int().min(1),
+  batchCode: z.string().trim().min(1).max(80),
+  expiresAt: z.coerce.date().optional().nullable(),
   reason: optionalTextSchema(255),
   referenceType: optionalTextSchema(80),
   referenceId: optionalTextSchema(191)

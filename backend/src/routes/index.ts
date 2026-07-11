@@ -17,6 +17,7 @@ export const apiRouteGroups: readonly RouteGroup[] = [
   { path: "/api/catalog/categories", module: "Catalog categories", status: "implemented" },
   { path: "/api/sales", module: "Sales", status: "planned" },
   { path: "/api/inventory", module: "Inventory", status: "implemented" },
+  { path: "/api/inventory/import", module: "Inventory stock import", status: "implemented" },
   { path: "/api/batches", module: "Batch inventory", status: "planned" },
   { path: "/api/forecasts", module: "Forecasts", status: "planned" },
   { path: "/api/recommendations", module: "Recommendations", status: "planned" },

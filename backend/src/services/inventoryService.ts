@@ -383,12 +383,14 @@ export async function addStock(
   try {
     const result = await prisma.$transaction(async (tx) => {
       const batchResult = await stockInBatch(tx, {
+        batchCode: input.batchCode,
+        expiresAt: input.expiresAt ?? null,
         performedById,
         productId,
         quantity: input.quantity,
-        reason: input.reason ?? null,
-        referenceId: input.referenceId ?? null,
-        referenceType: input.referenceType ?? "STOCK_IN"
+        reason: "Stock in",
+        referenceId: null,
+        referenceType: "MANUAL_STOCK_IN"
       });
 
       return {

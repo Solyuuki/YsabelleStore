@@ -131,17 +131,62 @@ export type InventoryMovementQuery = {
 
 export type StockInRequest = {
   quantity: number;
-  reason?: string;
-  referenceType?: string;
-  referenceId?: string;
+  batchCode: string;
+  expiresAt?: string | null;
 };
 
 export type StockAdjustmentRequest = {
   movementType: "ADJUSTMENT_IN" | "ADJUSTMENT_OUT";
   quantity: number;
   reason: string;
-  referenceType?: string;
-  referenceId?: string;
+};
+
+export type InventoryImportError = {
+  rowNumber?: number;
+  field?: string;
+  code: string;
+  message: string;
+  value?: string | null;
+  productId?: string | null;
+  productName?: string | null;
+};
+
+export type InventoryImportRowResult = {
+  rowNumber: number;
+  productId: string | null;
+  productName: string | null;
+  valid: boolean;
+  errors: InventoryImportError[];
+  warnings: InventoryImportError[];
+};
+
+export type InventoryImportPreview = {
+  fileName: string;
+  fileType: "csv" | "xlsx";
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  rows: InventoryImportRowResult[];
+  errors: InventoryImportError[];
+  warnings: InventoryImportError[];
+};
+
+export type InventoryImportSummary = {
+  importId: string;
+  fileName: string;
+  fileType: "csv" | "xlsx";
+  totalRows: number;
+  importedRows: number;
+  failedRows: number;
+  productsUpdated: number;
+  batchesCreated: number;
+  batchesUpdated: number;
+  totalUnitsAdded: number;
+  expiryRecordsAdded: number;
+  referenceId: string;
+  completedAt: string;
+  errors: InventoryImportError[];
+  warnings: InventoryImportError[];
 };
 
 export type BarcodeLookupResult = {
@@ -543,4 +588,34 @@ export async function importProducts(file: File) {
 
 export async function downloadProductImportTemplate() {
   return downloadText(buildApiUrl("/api/catalog/products/import/template"));
+}
+
+export async function downloadInventoryStockImportTemplate() {
+  return downloadText(buildApiUrl("/api/inventory/import/template"));
+}
+
+export async function previewInventoryStockImport(file: File) {
+  const formData = new FormData();
+  formData.set("file", file);
+
+  return apiClient.request<InventoryImportPreview, { code?: string; details?: unknown }>(
+    "/api/inventory/import/preview",
+    {
+      method: "POST",
+      formData
+    }
+  );
+}
+
+export async function confirmInventoryStockImport(file: File) {
+  const formData = new FormData();
+  formData.set("file", file);
+
+  return apiClient.request<InventoryImportSummary, { code?: string; details?: unknown }>(
+    "/api/inventory/import/confirm",
+    {
+      method: "POST",
+      formData
+    }
+  );
 }

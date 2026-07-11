@@ -35,6 +35,10 @@ const movementInclude = {
   performedBy: true
 } as const;
 
+function toDateKey(value: Date | null | undefined) {
+  return value ? value.toISOString().slice(0, 10) : null;
+}
+
 async function getProductContext(tx: TransactionClient, productId: string) {
   const product = await tx.product.findUnique({
     include: {
@@ -323,6 +327,7 @@ export async function stockInBatch(
     quantity: number;
     unitCost?: Prisma.Decimal;
     expiresAt?: Date | null;
+    batchCode?: string | null;
     performedById?: string;
     reason?: string | null;
     referenceId?: string | null;
@@ -337,20 +342,45 @@ export async function stockInBatch(
 
   const product = await getProductContext(tx, input.productId);
   const inventory = await getOrCreateInventory(tx, input.productId);
-  const batchCode = `STOCKIN-${product.sku}-${randomUUID().slice(0, 8).toUpperCase()}`;
-
-  const batch = await tx.inventoryBatch.create({
-    data: {
+  const batchCode =
+    input.batchCode?.trim() || `STOCKIN-${product.sku}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  const expiresAt = input.expiresAt ?? null;
+  const existingBatch = await tx.inventoryBatch.findFirst({
+    where: {
       batchCode,
-      expiresAt: input.expiresAt ?? null,
-      productId: product.id,
-      quantityReceived: input.quantity,
-      quantityRemaining: input.quantity,
-      receivedAt: new Date(),
-      status: InventoryBatchStatus.AVAILABLE,
-      unitCost: input.unitCost ?? product.costPrice
+      productId: product.id
     }
   });
+
+  if (existingBatch && toDateKey(existingBatch.expiresAt) !== toDateKey(expiresAt)) {
+    throw new HttpError(409, "The batch code is already linked to a different expiration date.", {
+      code: "BATCH_EXPIRATION_CONFLICT"
+    });
+  }
+
+  const batch = existingBatch
+    ? await tx.inventoryBatch.update({
+        data: {
+          quantityReceived: existingBatch.quantityReceived + input.quantity,
+          quantityRemaining: existingBatch.quantityRemaining + input.quantity,
+          status: InventoryBatchStatus.AVAILABLE
+        },
+        where: {
+          id: existingBatch.id
+        }
+      })
+    : await tx.inventoryBatch.create({
+        data: {
+          batchCode,
+          expiresAt,
+          productId: product.id,
+          quantityReceived: input.quantity,
+          quantityRemaining: input.quantity,
+          receivedAt: new Date(),
+          status: InventoryBatchStatus.AVAILABLE,
+          unitCost: input.unitCost ?? product.costPrice
+        }
+      });
 
   const syncResult = await syncInventoryAggregate(tx, product.id);
 
@@ -375,6 +405,7 @@ export async function stockInBatch(
 
   return {
     batch,
+    batchCreated: existingBatch === null,
     inventory: syncResult.inventory,
     movement
   };
