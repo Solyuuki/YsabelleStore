@@ -28,7 +28,7 @@ export function getAvailabilityAction(
     return {
       buttonLabel: "Set to Unavailable",
       compactButtonLabel: "Unavailable",
-      compactLoadingLabel: "Updating...",
+      compactLoadingLabel: "Updating…",
       loadingLabel: "Setting to Unavailable...",
       nextStatus: "INACTIVE",
       successMessage:
@@ -42,7 +42,7 @@ export function getAvailabilityAction(
     return {
       buttonLabel: "Set to Available",
       compactButtonLabel: "Available",
-      compactLoadingLabel: "Updating...",
+      compactLoadingLabel: "Updating…",
       loadingLabel: "Setting to Available...",
       nextStatus: "ACTIVE",
       successMessage: "The product is available in POS again when valid stock is present.",

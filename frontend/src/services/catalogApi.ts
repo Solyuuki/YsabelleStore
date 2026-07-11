@@ -62,6 +62,8 @@ export type InventoryRecord = {
   stockStatus: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
   lastStockUpdatedAt: string | null;
   version: number;
+  batchCount: number;
+  nearestExpiry: string | null;
   productId: string;
   productName: string;
   sku: string;
@@ -78,6 +80,80 @@ export type InventoryRecord = {
   createdAt: string;
   updatedAt: string;
   availability: boolean;
+};
+
+export type InventoryStockStatus = "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
+export type InventorySortBy =
+  | "productName"
+  | "sku"
+  | "barcode"
+  | "quantityOnHand"
+  | "reorderLevel"
+  | "lastStockUpdatedAt"
+  | "createdAt"
+  | "updatedAt";
+export type InventoryMovementType =
+  | "STOCK_IN"
+  | "SALE"
+  | "ADJUSTMENT_IN"
+  | "ADJUSTMENT_OUT"
+  | "RETURN_IN"
+  | "RETURN_OUT"
+  | "DAMAGE"
+  | "EXPIRED"
+  | "INITIAL_STOCK";
+
+export type InventoryListQuery = {
+  search?: string;
+  categoryId?: string;
+  category?: string;
+  productStatus?: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
+  stockStatus?: "ALL" | InventoryStockStatus;
+  page?: number;
+  pageSize?: number;
+  sortBy?: InventorySortBy;
+  sortOrder?: "asc" | "desc";
+};
+
+export type InventoryMovementQuery = {
+  movementType?: InventoryMovementType;
+  from?: string;
+  to?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export type StockInRequest = {
+  quantity: number;
+  reason?: string;
+  referenceType?: string;
+  referenceId?: string;
+};
+
+export type StockAdjustmentRequest = {
+  movementType: "ADJUSTMENT_IN" | "ADJUSTMENT_OUT";
+  quantity: number;
+  reason: string;
+  referenceType?: string;
+  referenceId?: string;
+};
+
+export type BarcodeLookupResult = {
+  productId: string;
+  productName: string;
+  sku: string;
+  barcode: string | null;
+  sellingPrice: string;
+  currentStock: number;
+  available: boolean;
+  isActive: boolean;
+  stockStatus: InventoryStockStatus;
+  category: ProductCategorySummary;
+};
+
+export type InventoryMutationResult = {
+  inventory: InventoryRecord;
+  movement: MovementRecord;
 };
 
 export type MovementRecord = {
@@ -232,15 +308,13 @@ export async function fetchProducts(
 }
 
 export async function fetchInventory(
-  query: {
-    search?: string;
-    page?: number;
-    pageSize?: number;
-  } = {}
+  query: InventoryListQuery = {},
+  options: Pick<RequestInit, "signal"> = {}
 ): Promise<{ items: InventoryRecord[]; meta: PaginationMeta }> {
   const queryString = buildQueryString(query);
   const response = await apiClient.request<InventoryRecord[], never, PaginationMeta>(
-    `/api/inventory${queryString ? `?${queryString}` : ""}`
+    `/api/inventory${queryString ? `?${queryString}` : ""}`,
+    options
   );
 
   if (!response.success || !response.data) {
@@ -260,11 +334,13 @@ export async function fetchInventory(
 
 export async function fetchMovements(
   productId: string,
-  query: { page?: number; pageSize?: number } = {}
+  query: InventoryMovementQuery = {},
+  options: Pick<RequestInit, "signal"> = {}
 ) {
   const queryString = buildQueryString(query);
   const response = await apiClient.request<MovementRecord[], never, PaginationMeta>(
-    `/api/inventory/${encodeURIComponent(productId)}/movements${queryString ? `?${queryString}` : ""}`
+    `/api/inventory/${encodeURIComponent(productId)}/movements${queryString ? `?${queryString}` : ""}`,
+    options
   );
 
   if (!response.success || !response.data) {
@@ -280,6 +356,71 @@ export async function fetchMovements(
       totalPages: 1
     }
   };
+}
+
+export async function fetchInventoryByProductId(
+  productId: string,
+  options: Pick<RequestInit, "signal"> = {}
+) {
+  const response = await apiClient.request<InventoryRecord, never>(
+    `/api/inventory/product/${encodeURIComponent(productId)}`,
+    options
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function lookupInventoryByBarcode(
+  barcode: string,
+  options: Pick<RequestInit, "signal"> = {}
+) {
+  const queryString = buildQueryString({ barcode });
+  const response = await apiClient.request<BarcodeLookupResult, never>(
+    `/api/inventory/lookup?${queryString}`,
+    options
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function stockInInventory(productId: string, input: StockInRequest) {
+  const response = await apiClient.request<InventoryMutationResult, { code?: string }>(
+    `/api/inventory/${encodeURIComponent(productId)}/stock-in`,
+    {
+      method: "POST",
+      json: input
+    }
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function adjustInventoryStock(productId: string, input: StockAdjustmentRequest) {
+  const response = await apiClient.request<InventoryMutationResult, { code?: string }>(
+    `/api/inventory/${encodeURIComponent(productId)}/adjust`,
+    {
+      method: "POST",
+      json: input
+    }
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
 }
 
 export async function createProduct(input: CreateProductInput) {

@@ -61,7 +61,14 @@ type DeductionResult = {
 const inventoryInclude = {
   product: {
     include: {
-      category: true
+      category: true,
+      inventoryBatches: {
+        where: {
+          quantityRemaining: {
+            gt: 0
+          }
+        }
+      }
     }
   }
 } as const;

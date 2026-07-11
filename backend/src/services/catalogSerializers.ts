@@ -1,4 +1,11 @@
-import type { Category, Inventory, InventoryMovement, Product, User } from "@prisma/client";
+import type {
+  Category,
+  Inventory,
+  InventoryBatch,
+  InventoryMovement,
+  Product,
+  User
+} from "@prisma/client";
 
 export type ProductWithRelations = Product & {
   category: Category;
@@ -9,6 +16,7 @@ export type InventoryWithRelations = Inventory & {
   product: Product & {
     category: Category;
     inventory?: Inventory | null;
+    inventoryBatches?: InventoryBatch[];
   };
 };
 
@@ -39,6 +47,8 @@ export type InventorySummary = {
   stockStatus: StockStatusView;
   lastStockUpdatedAt: Date | null;
   version: number;
+  batchCount: number;
+  nearestExpiry: Date | null;
 };
 
 export type ProductSummary = {
@@ -158,7 +168,9 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
       availableQuantity: quantityOnHand,
       stockStatus,
       lastStockUpdatedAt: inventory?.lastStockUpdatedAt ?? null,
-      version: inventory?.version ?? 0
+      version: inventory?.version ?? 0,
+      batchCount: 0,
+      nearestExpiry: null
     },
     createdAt: product.createdAt,
     updatedAt: product.updatedAt
@@ -168,6 +180,11 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
 export function serializeInventory(inventory: InventoryWithRelations): InventorySummaryRow {
   const product = inventory.product;
   const stockStatus = computeStockStatus(inventory.quantityOnHand, product.reorderLevel);
+  const activeBatches = product.inventoryBatches ?? [];
+  const expiries = activeBatches
+    .map((batch) => batch.expiresAt)
+    .filter((expiry): expiry is Date => expiry !== null)
+    .sort((left, right) => left.getTime() - right.getTime());
 
   return {
     inventoryId: inventory.id,
@@ -176,6 +193,8 @@ export function serializeInventory(inventory: InventoryWithRelations): Inventory
     stockStatus,
     lastStockUpdatedAt: inventory.lastStockUpdatedAt ?? null,
     version: inventory.version,
+    batchCount: activeBatches.length,
+    nearestExpiry: expiries[0] ?? null,
     productId: product.id,
     productName: product.name,
     sku: product.sku,

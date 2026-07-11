@@ -982,7 +982,7 @@ export function ProductsPage() {
                   <CatalogTableSkeleton rowCount={pageSize} />
                 ) : hasCatalogRows ? (
                   <div className={showCatalogOverlay ? "pointer-events-none opacity-70" : ""}>
-                    <div className="overflow-visible">
+                    <div className="overflow-hidden">
                       <table className="w-full table-fixed border-collapse text-left text-sm">
                         <thead className="bg-slate-100 text-slate-700">
                           <tr>
@@ -994,7 +994,9 @@ export function ProductsPage() {
                             <th className="hidden w-[10%] px-2 py-2.5 lg:table-cell">
                               Selling price
                             </th>
-                            <th className="w-[40%] px-2 py-2.5 text-center lg:w-[18%]">Action</th>
+                            <th className="w-[15rem] px-2 py-2.5 text-center lg:w-[15rem]">
+                              Action
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1078,21 +1080,23 @@ export function ProductsPage() {
                                   PHP {Number(product.sellingPrice).toFixed(2)}
                                 </td>
                                 <td className="px-2 py-2 align-top text-center lg:py-2.5">
-                                  <div className="flex flex-col items-stretch justify-center gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-1.5">
-                                    <Button
-                                      size="sm"
-                                      type="button"
-                                      variant="secondary"
-                                      className="h-9 w-full shrink-0 px-2 text-xs sm:w-auto sm:px-3 sm:text-sm"
-                                      aria-label={`Edit ${product.name}`}
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        setSelectedProductId(product.id);
-                                      }}
-                                    >
-                                      <PencilLine className="h-4 w-4" aria-hidden="true" />
-                                      Edit
-                                    </Button>
+                                  <div className="mx-auto inline-flex max-w-full flex-row flex-nowrap items-center justify-center gap-2 whitespace-nowrap">
+                                    <Tooltip content="Edit product">
+                                      <Button
+                                        size="icon"
+                                        type="button"
+                                        variant="secondary"
+                                        className="h-9 w-9 shrink-0"
+                                        disabled={isStatusPending}
+                                        aria-label={`Edit ${product.name}`}
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          setSelectedProductId(product.id);
+                                        }}
+                                      >
+                                        <PencilLine className="h-4 w-4" aria-hidden="true" />
+                                      </Button>
+                                    </Tooltip>
                                     {availabilityAction ? (
                                       <Tooltip content={availabilityAction.tooltip}>
                                         <Button
@@ -1102,7 +1106,7 @@ export function ProductsPage() {
                                               ? "available"
                                               : "unavailable"
                                           }`}
-                                          className="h-9 w-full min-w-0 shrink-0 px-2 text-xs sm:w-auto sm:px-3 sm:text-sm lg:min-w-[8.75rem] xl:min-w-[9.75rem]"
+                                          className="h-9 shrink-0 min-w-[11rem] justify-center px-3 whitespace-nowrap"
                                           disabled={isStatusPending}
                                           size="sm"
                                           type="button"
@@ -1118,16 +1122,9 @@ export function ProductsPage() {
                                               aria-hidden="true"
                                             />
                                           ) : null}
-                                          <span className="hidden xl:inline">
-                                            {isStatusPending
-                                              ? availabilityAction.loadingLabel
-                                              : availabilityAction.buttonLabel}
-                                          </span>
-                                          <span className="xl:hidden">
-                                            {isStatusPending
-                                              ? availabilityAction.compactLoadingLabel
-                                              : availabilityAction.compactButtonLabel}
-                                          </span>
+                                          {isStatusPending
+                                            ? availabilityAction.compactLoadingLabel
+                                            : availabilityAction.buttonLabel}
                                         </Button>
                                       </Tooltip>
                                     ) : null}
@@ -2057,7 +2054,7 @@ function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
               <th className="hidden w-[13%] px-2 py-2.5 lg:table-cell">Category</th>
               <th className="w-[12%] px-2 py-2.5 lg:w-[11%]">Status</th>
               <th className="hidden w-[10%] px-2 py-2.5 lg:table-cell">Selling price</th>
-              <th className="w-[40%] px-2 py-2.5 text-center lg:w-[18%]">Action</th>
+              <th className="w-[15rem] px-2 py-2.5 text-center lg:w-[15rem]">Action</th>
             </tr>
           </thead>
           <tbody className="bg-white">
@@ -2089,10 +2086,10 @@ function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
                 <td className="hidden px-2 py-3 lg:table-cell">
                   <div className="loading-shimmer h-4 w-20 rounded-full bg-slate-100" />
                 </td>
-                <td className="px-2 py-3 lg:py-3">
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <div className="loading-shimmer h-9 w-full rounded-md bg-slate-100" />
-                    <div className="loading-shimmer h-9 w-full rounded-md bg-slate-100" />
+                <td className="px-2 py-3 text-center lg:py-3">
+                  <div className="mx-auto inline-flex max-w-full flex-row flex-nowrap items-center justify-center gap-2 whitespace-nowrap">
+                    <div className="loading-shimmer h-9 w-9 shrink-0 rounded-md bg-slate-100" />
+                    <div className="loading-shimmer h-9 min-w-[11rem] rounded-md bg-slate-100" />
                   </div>
                 </td>
               </tr>

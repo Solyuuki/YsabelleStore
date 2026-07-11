@@ -60,7 +60,7 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/inventory",
     label: "Inventory",
-    description: "Stock monitoring module shell",
+    description: "Stock monitoring and movement workspace",
     icon: Boxes,
     allowedRoles: ["OWNER", "STAFF"]
   },
