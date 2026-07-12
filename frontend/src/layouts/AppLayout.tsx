@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 
 import type { AppRoutePath } from "@/app/routes";
 import { AppSidebar } from "@/components/app/AppSidebar";
-import { AppTopbar } from "@/components/app/AppTopbar";
 import type { AuthUser } from "@/types/auth";
 
 type AppLayoutProps = {
@@ -41,9 +40,8 @@ export function AppLayout({
         user={user}
       />
       <div className="relative z-10 flex min-h-screen min-w-0 flex-1 flex-col">
-        <AppTopbar onNavigate={onNavigate} />
         <main
-          className="min-h-0 flex-1 overflow-auto px-[clamp(1.25rem,2vw,1.5rem)] pb-[clamp(1.25rem,2vw,1.5rem)] pt-[6rem]"
+          className="min-h-0 flex-1 overflow-auto px-[clamp(1.25rem,2vw,1.5rem)] py-[clamp(1.25rem,2vw,1.5rem)]"
           data-layout="app"
         >
           <div className="mx-auto max-w-[1540px] space-y-6">{children}</div>

@@ -12,6 +12,7 @@ import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
 import { SalesPage } from "@/pages/SalesPage";
+import { ForecastPage } from "@/pages/ForecastPage";
 import { ProtectedPage } from "@/pages/ProtectedPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
@@ -243,17 +244,6 @@ function renderRoute(
     return <AccessDeniedPage moduleName={route.label} onNavigate={navigate} />;
   }
 
-  if (route.protected) {
-    return (
-      <ProtectedPage
-        description={route.description}
-        hasOwnerAccess={user?.role === "OWNER"}
-        icon={route.icon}
-        title={route.label}
-      />
-    );
-  }
-
   switch (route.path) {
     case "/dashboard":
       return <DashboardPage />;
@@ -265,9 +255,22 @@ function renderRoute(
       return <InventoryPage />;
     case "/sales":
       return <SalesPage />;
+    case "/forecast":
+      return <ForecastPage />;
     case "/users":
       return <UserManagementPage error={error} onRegister={register} user={user} />;
     default:
+      if (route.protected) {
+        return (
+          <ProtectedPage
+            description={route.description}
+            hasOwnerAccess={user?.role === "OWNER"}
+            icon={route.icon}
+            title={route.label}
+          />
+        );
+      }
+
       return <NotFoundPage onNavigate={navigate} />;
   }
 }
