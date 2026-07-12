@@ -39,6 +39,12 @@ enum ProductUnit {
   MILLILITER
 }
 
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DISCONTINUED
+}
+
 enum InventoryBatchStatus {
   AVAILABLE
   LOW_STOCK
@@ -49,11 +55,17 @@ enum InventoryBatchStatus {
 
 enum InventoryMovementType {
   STOCK_IN
-  STOCK_OUT
   SALE
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  RETURN_IN
+  RETURN_OUT
+  DAMAGE
+  EXPIRED
+  INITIAL_STOCK
+  STOCK_OUT
   ADJUSTMENT
   RETURN
-  EXPIRED
   DAMAGED
 }
 
@@ -104,9 +116,29 @@ model User {
   inventoryMovements  InventoryMovement[]
   forecastRecords     ForecastRecord[]
   recommendationNotes RecommendationRecord[]
+  trustedDevices      TrustedDevice[]
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
+}
+
+model TrustedDevice {
+  id          String    @id @default(cuid()) @db.VarChar(191)
+  userId      String    @map("user_id") @db.VarChar(191)
+  tokenHash   String    @unique(map: "uq_trusted_devices_token_hash") @map("token_hash") @db.VarChar(64)
+  deviceLabel String?   @map("device_label") @db.VarChar(120)
+  userAgent   String?   @map("user_agent") @db.VarChar(255)
+  lastUsedAt  DateTime? @map("last_used_at")
+  expiresAt   DateTime? @map("expires_at")
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId], map: "idx_trusted_devices_user_id")
+  @@index([expiresAt], map: "idx_trusted_devices_expires_at")
+  @@index([revokedAt], map: "idx_trusted_devices_revoked_at")
+  @@map("trusted_devices")
 }
 
 model Category {
@@ -135,20 +167,37 @@ model Product {
   sellingPrice          Decimal                @map("selling_price") @db.Decimal(10, 2)
   reorderLevel          Int                    @default(0) @map("reorder_level") @db.UnsignedInt
   targetStockLevel      Int                    @default(0) @map("target_stock_level") @db.UnsignedInt
-  isActive              Boolean                @default(true) @map("is_active")
+  status                ProductStatus          @default(ACTIVE)
   createdAt             DateTime               @default(now()) @map("created_at")
   updatedAt             DateTime               @updatedAt @map("updated_at")
   category              Category               @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  inventory             Inventory?
   inventoryBatches      InventoryBatch[]
   inventoryMovements    InventoryMovement[]
   saleItems             SaleItem[]
   forecastRecords       ForecastRecord[]
   recommendationRecords RecommendationRecord[]
 
-  @@index([categoryId, isActive], map: "idx_products_category_active")
+  @@index([categoryId, status], map: "idx_products_category_status")
   @@index([name], map: "idx_products_name")
-  @@index([barcode], map: "idx_products_barcode")
+  @@index([status, createdAt], map: "idx_products_status_created")
   @@map("products")
+}
+
+model Inventory {
+  id                 String              @id @default(cuid()) @db.VarChar(191)
+  productId          String              @unique(map: "uq_inventory_product") @map("product_id") @db.VarChar(191)
+  quantityOnHand     Int                 @default(0) @map("quantity_on_hand") @db.UnsignedInt
+  lastStockUpdatedAt DateTime?           @map("last_stock_updated_at")
+  version            Int                 @default(0) @db.UnsignedInt
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  product            Product             @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  movements          InventoryMovement[]
+
+  @@index([quantityOnHand], map: "idx_inventory_quantity_on_hand")
+  @@index([lastStockUpdatedAt], map: "idx_inventory_last_stock_updated_at")
+  @@map("inventory")
 }
 
 model InventoryBatch {
@@ -176,22 +225,28 @@ model InventoryBatch {
 
 model InventoryMovement {
   id            String                @id @default(cuid()) @db.VarChar(191)
+  inventoryId   String                @map("inventory_id") @db.VarChar(191)
   productId     String                @map("product_id") @db.VarChar(191)
   batchId       String?               @map("batch_id") @db.VarChar(191)
   performedById String?               @map("performed_by_id") @db.VarChar(191)
   type          InventoryMovementType
   quantity      Int                   @db.UnsignedInt
+  quantityBefore Int                  @map("quantity_before") @db.UnsignedInt
+  quantityAfter Int                   @map("quantity_after") @db.UnsignedInt
   reason        String?               @db.VarChar(255)
   referenceType String?               @map("reference_type") @db.VarChar(80)
   referenceId   String?               @map("reference_id") @db.VarChar(191)
   createdAt     DateTime              @default(now()) @map("created_at")
+  inventory     Inventory             @relation(fields: [inventoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   product       Product               @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   batch         InventoryBatch?       @relation(fields: [batchId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   performedBy   User?                 @relation(fields: [performedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
+  @@index([inventoryId, createdAt], map: "idx_inventory_movements_inventory_created")
   @@index([productId, createdAt], map: "idx_inventory_movements_product_created")
   @@index([batchId], map: "idx_inventory_movements_batch")
   @@index([type, createdAt], map: "idx_inventory_movements_type_created")
+  @@index([referenceType, referenceId], map: "idx_inventory_movements_reference")
   @@index([performedById], map: "idx_inventory_movements_performed_by")
   @@map("inventory_movements")
 }

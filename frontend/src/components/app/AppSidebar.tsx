@@ -1,14 +1,19 @@
-import { ChevronLeft, Lock, LogOut } from "lucide-react";
+import { ChevronLeft, LogOut } from "lucide-react";
 
 import { appRoutes, type AppRoutePath } from "@/app/routes";
+import { APP_VERSION_LABEL } from "@/config/appVersion";
+import { SidebarNavItem } from "@/components/app/SidebarNavItem";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { AuthUser } from "@/types/auth";
 
 type AppSidebarProps = {
   activePath: string;
   collapsed: boolean;
+  onLogout: () => void;
   onToggleSidebar: () => void;
   onNavigate: (path: AppRoutePath) => void;
+  user: AuthUser | null;
 };
 
 const mainRoutes: readonly AppRoutePath[] = [
@@ -19,16 +24,30 @@ const mainRoutes: readonly AppRoutePath[] = [
   "/sales"
 ];
 
-const ownerRoutes: readonly AppRoutePath[] = ["/forecast", "/reports", "/settings"];
+// Add owner-only user management to the administrative section.
+const ownerRoutesWithUsers: readonly AppRoutePath[] = [
+  "/forecast",
+  "/reports",
+  "/settings",
+  "/users"
+];
 
 export function AppSidebar({
   activePath,
   collapsed,
+  onLogout,
   onNavigate,
-  onToggleSidebar
+  onToggleSidebar,
+  user
 }: AppSidebarProps) {
   const mainItems = appRoutes.filter((item) => mainRoutes.includes(item.path));
-  const ownerItems = appRoutes.filter((item) => ownerRoutes.includes(item.path));
+  const visibleMainItems = mainItems.filter((item) =>
+    item.allowedRoles.includes(user?.role ?? "STAFF")
+  );
+  const ownerItems = appRoutes.filter(
+    (item) =>
+      ownerRoutesWithUsers.includes(item.path) && item.allowedRoles.includes(user?.role ?? "STAFF")
+  );
 
   return (
     <aside
@@ -75,7 +94,7 @@ export function AppSidebar({
         <SidebarSection
           activePath={activePath}
           collapsed={collapsed}
-          items={mainItems}
+          items={visibleMainItems}
           title="MAIN"
           onNavigate={onNavigate}
         />
@@ -91,28 +110,9 @@ export function AppSidebar({
       <div className="border-t border-slate-200/80 p-3">
         <div className="space-y-3">
           <SectionLabel collapsed={collapsed} title="SYSTEM" />
-          {collapsed ? null : <FullCounterModeCard />}
+          {collapsed ? null : <FullCounterModeCard user={user} />}
 
-          <Button
-            className={cn(
-              "h-11 w-full justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-colors duration-300 ease-out hover:bg-emerald-50 hover:text-slate-950",
-              collapsed && "justify-center px-0"
-            )}
-            onClick={() => onNavigate("/")}
-            title="Logout"
-            type="button"
-            variant="ghost"
-          >
-            <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span
-              className={cn(
-                "overflow-hidden transition-all duration-300 ease-out",
-                collapsed ? "max-w-0 opacity-0" : "max-w-24 opacity-100"
-              )}
-            >
-              Logout
-            </span>
-          </Button>
+          <SidebarNavItem collapsed={collapsed} icon={LogOut} label="Logout" onClick={onLogout} />
         </div>
       </div>
     </aside>
@@ -134,38 +134,18 @@ function SidebarSection({ activePath, collapsed, items, onNavigate, title }: Sid
 
       <div className="space-y-1">
         {items.map((item) => {
-          const Icon = item.icon;
           const active = activePath === item.path;
 
           return (
-            <Button
-              className={cn(
-                "group h-11 w-full justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-[background-color,color,transform] duration-300 ease-out hover:bg-emerald-50 hover:text-slate-950",
-                collapsed && "justify-center px-0",
-                active &&
-                  "bg-emerald-500 text-slate-950 shadow-sm shadow-emerald-950/10 hover:bg-emerald-500 hover:text-slate-950"
-              )}
+            <SidebarNavItem
+              active={active}
+              collapsed={collapsed}
+              icon={item.icon}
               key={item.path}
               onClick={() => onNavigate(item.path)}
-              title={item.label}
-              type="button"
-              variant="ghost"
-            >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span
-                className={cn(
-                  "ml-2 overflow-hidden text-left transition-all duration-300 ease-out",
-                  collapsed ? "max-w-0 opacity-0" : "max-w-36 opacity-100"
-                )}
-              >
-                {item.label}
-              </span>
-              {!collapsed ? (
-                <div className="ml-auto flex items-center gap-2">
-                  {item.protected ? <Lock className="h-3.5 w-3.5" aria-hidden="true" /> : null}
-                </div>
-              ) : null}
-            </Button>
+              label={item.label}
+              protectedItem={item.protected}
+            />
           );
         })}
       </div>
@@ -193,14 +173,16 @@ function SectionLabel({ collapsed, title }: SectionLabelProps) {
   );
 }
 
-function FullCounterModeCard() {
+function FullCounterModeCard({ user }: { user: AuthUser | null }) {
   return (
     <div className="rounded-xl border border-slate-200/80 bg-white/75 p-3 text-slate-700 shadow-sm backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 ease-out">
-      <p className="text-xs font-medium text-slate-900">Counter mode</p>
+      <p className="text-xs font-medium text-slate-900">{user?.name ?? "Counter mode"}</p>
       <p className="mt-1 text-xs leading-5 text-slate-500">
-        Staff workspace for daily retail operations.
+        {user
+          ? `${user.role.toLowerCase()} session active.`
+          : "Staff workspace for daily retail operations."}
       </p>
-      <p className="mt-3 text-xs font-medium text-slate-500">YsabelleStore v0.1.0</p>
+      <p className="mt-3 text-xs font-medium text-slate-500">YsabelleStore {APP_VERSION_LABEL}</p>
     </div>
   );
 }

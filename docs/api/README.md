@@ -12,18 +12,20 @@ This folder defines the official API contract standard for YsabelleStore. It giv
 - DTO naming and responsibilities
 - Route naming and versioning
 - Forecasting communication contract
+- Product and inventory contract
 - Status code usage
 
 ## Responsibilities
 
-| Area                 | Responsibility                                          |
-| -------------------- | ------------------------------------------------------- |
-| Request standard     | Define how inputs should be shaped and validated        |
-| Response standard    | Define the shared success response structure            |
-| Error standard       | Define consistent failure payloads                      |
-| DTO standard         | Define future data transfer object naming and ownership |
-| Route naming         | Define REST path conventions and versioning             |
-| Forecasting contract | Define backend-to-forecast-service communication        |
+| Area                           | Responsibility                                              |
+| ------------------------------ | ----------------------------------------------------------- |
+| Request standard               | Define how inputs should be shaped and validated            |
+| Response standard              | Define the shared success response structure                |
+| Error standard                 | Define consistent failure payloads                          |
+| DTO standard                   | Define future data transfer object naming and ownership     |
+| Route naming                   | Define REST path conventions and versioning                 |
+| Forecasting contract           | Define backend-to-forecast-service communication            |
+| Product and inventory contract | Define product, inventory, POS, and forecasting data shapes |
 
 ## Architecture
 
@@ -43,6 +45,11 @@ React
 | Express to Forecasting Service | Forecasting contract                              |
 | Express to Prisma              | DTO and validation discipline                     |
 | Prisma to MySQL                | Schema and persistence layer, not an API contract |
+
+## Additional Domain Contracts
+
+- [Product and Inventory Contract](./PRODUCT-INVENTORY-CONTRACT.md)
+- [Product Import Contract](./PRODUCT-IMPORT-CONTRACT.md)
 
 ## Layer Boundaries
 

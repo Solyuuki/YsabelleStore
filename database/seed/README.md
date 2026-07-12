@@ -1,6 +1,6 @@
 # Seed Strategy
 
-The seed folder documents the controlled development data strategy for YsabelleStore. Sprint 1 defines the schema foundation, but it does not add executable seed scripts or production-like records.
+The seed folder documents the controlled development data strategy for YsabelleStore. Sprint 3 adds an executable development seed script with deterministic product, inventory, and movement fixtures.
 
 ## Seed Philosophy
 
@@ -21,14 +21,52 @@ The seed folder documents the controlled development data strategy for YsabelleS
 | Products          | Representative barcode-ready product examples                 |
 | Inventory batches | Controlled stock and expiry examples                          |
 | Sales history     | Small chronological sales sample for later forecast tests     |
+| Import samples    | Canonical CSV and Excel product import fixtures               |
 
 ## Current Folder State
 
-| Item        | Status       | Reason                                         |
-| ----------- | ------------ | ---------------------------------------------- |
-| `.gitkeep`  | Present      | Preserves the seed folder in version control   |
-| Seed script | Not included | Future task after migration application review |
-| Seed data   | Not included | Avoids fake production data in Sprint 1        |
+| Item        | Status      | Reason                                                                          |
+| ----------- | ----------- | ------------------------------------------------------------------------------- |
+| `.gitkeep`  | Present     | Preserves the seed folder in version control                                    |
+| Seed script | Present     | `development.mjs` creates users, categories, products, inventory, and movements |
+| Seed data   | Development | Deterministic local fixtures for auth and inventory validation                  |
+
+## Development Login Accounts
+
+Run the seed script only against a local development database:
+
+```bash
+npm run db:seed
+```
+
+| Role  | Email                       | Password         | Scope            |
+| ----- | --------------------------- | ---------------- | ---------------- |
+| Owner | `owner@ysabellestore.local` | `OwnerPass#2026` | Development only |
+| Staff | `staff@ysabellestore.local` | `StaffPass#2026` | Development only |
+
+Passwords are written to the database as `scrypt` hashes. These accounts are fixtures for local authentication testing only and must not be used as production credentials.
+
+## Current Seed Coverage
+
+- Deterministic categories for beverages, canned goods, snacks, instant noodles, toiletries, and household products
+- Active, inactive, and discontinued products
+- Barcode and no-barcode examples
+- Current stock examples for normal, low-stock, and out-of-stock conditions
+- Initial stock, stock-in, sale, and manual adjustment movement history
+
+## Sample Import Fixtures
+
+The repo also includes deterministic import examples for validation and QA:
+
+- `docs/samples/product-import/valid-products.csv`
+- `docs/samples/product-import/valid-products.xlsx`
+- `docs/samples/product-import/duplicate-sku.csv`
+- `docs/samples/product-import/duplicate-barcode.csv`
+- `docs/samples/product-import/invalid-category.csv`
+- `docs/samples/product-import/negative-stock.csv`
+- `docs/samples/product-import/missing-required-column.csv`
+
+These files are intentionally small and should be used to verify preview, validation, and successful import behavior.
 
 ## Future Seed Entry Criteria
 

@@ -2,46 +2,43 @@
 
 ## Sprint Status From Evidence
 
-| Sprint Area                      | Status                                          | Evidence                                                                                                                                     |
-| -------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Repository governance            | Complete                                        | `.github/**`, `docs/GITHUB-WORKFLOW.md`, branch naming docs, PR templates, CI workflows                                                      |
-| Frontend shell                   | Complete                                        | M1 branch commits and current `frontend/src/**` files                                                                                        |
-| Shared UI components             | Complete                                        | `Button`, `Card`, `Badge`, `PageHeader`, `StatCard`, `StatusBadge`, `EmptyState`, `LoadingState`, `ProtectedModuleCard`, `NotificationStack` |
-| Dashboard and sidebar routes     | Complete for static Sprint 1 shell              | Routes for `/`, `/dashboard`, `/pos`, `/products`, `/inventory`, `/sales`, `/forecast`, `/reports`, `/settings`, `/not-found`                |
-| Electron readiness               | Foundation complete; package validation pending | `electron/src/**` exists and builds, but no packaged release artifact is recorded                                                            |
-| Business workflows               | Not implemented by design                       | No CRUD, authentication, sales transaction, forecasting execution, or reporting business logic in M1 scope                                   |
-| Sprint integration documentation | Complete after this artifact update             | `docs/implementation-artifacts/**` reconstructed from Git evidence                                                                           |
+| Area                             | Status   | Evidence                                                                                                              | Notes                                                              |
+| -------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Sprint 1 frontend shell          | Complete | `frontend/src/app/**`, `frontend/src/layouts/**`, `frontend/src/pages/**`, `frontend/src/components/**`               | Established the app shell and primary shell routes.                |
+| Sprint 2 auth and RBAC           | Complete | `frontend/src/context/AuthContext.tsx`, `backend/src/services/authService.ts`, `backend/src/database/prismaClient.ts` | Auth, trusted-device, logout, and role-handling work is preserved. |
+| Sprint 3 UI/integration planning | Planned  | `docs/sprints/sprint-3/**`                                                                                            | Sprint 3 shifts M1 toward POS, Sales, and merge integration.       |
 
-## Chronological Progress
+## Backlog Mapping
 
-| Date       | Progress                                                                                                                                   | Evidence                                                                                                                                              |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-06-24 | Repository standards and architecture established.                                                                                         | Commits `2413075`, `b70aa63`, `daca167`, `efdf605`, `bec6382`, `fbe407d`                                                                              |
-| 2026-06-25 | Application foundation folders, CI, deployment, configuration, API, testing, sprint planning, and branch governance established.           | Commits `bbbfdc7`, `ac20416`, `802654b`, `e98a3b6`, `01a6dca`, `35eb033`, `a1061b7`, `8d5a6ed`, `784bdb7`, `a18e0f7`, `c9a8228`, `4431fdb`, `6d845c1` |
-| 2026-06-27 | M1 frontend shell implemented and polished through PR-ready branch work.                                                                   | Commits `68fabf4`, `f1edd82`, `a4bd881`, `15ea425`, `ff8a2c7`, `c83060e`, `a189f14`, `b3edf99`, `a17922f`                                             |
-| 2026-06-29 | Sprint branch contains M1 frontend plus M3 database/backend database boundary work; M3 frontend overlap identified as risk and documented. | Current branch `sprint/v0.1/sprint-1` at `dd53be7`                                                                                                    |
+| Sprint Task                                                | Repository Status | Evidence                                                                     |
+| ---------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------- |
+| YSB-M1-UI-001 - Frontend app shell                         | Complete          | Frontend shell files in current repository                                   |
+| YSB-M1-UI-004 - Shell cohesion and final UI polish         | Complete          | Existing app shell and layout support                                        |
+| YSB-M1-BIZ-001 - Sprint 3 module spacing/alignment cleanup | Planned           | `docs/sprints/sprint-3/README.md`, `docs/sprints/sprint-3/SPRINT-BACKLOG.md` |
+| YSB-M1-BIZ-002 - Sprint 3 POS and Sales integration        | Planned           | Sprint 3 backlog and member assignment docs                                  |
 
-## Route Coverage
+## Chron| Date | Progress | Evidence |
 
-| Route        | Component/Behavior                       | Status   |
-| ------------ | ---------------------------------------- | -------- |
-| `/`          | `WelcomePage` continue screen            | Complete |
-| `/dashboard` | `DashboardPage` static retail overview   | Complete |
-| `/pos`       | `PosPage` barcode-first static POS shell | Complete |
-| `/products`  | `ModulePage` catalog shell               | Complete |
-| `/inventory` | `ModulePage` stock shell                 | Complete |
-| `/sales`     | `ModulePage` receipt-history shell       | Complete |
-| `/forecast`  | `ProtectedPage` owner-area shell         | Complete |
-| `/reports`   | `ProtectedPage` owner-area shell         | Complete |
-| `/settings`  | `ProtectedPage` owner-area shell         | Complete |
-| `/not-found` | `NotFoundPage` recovery path             | Complete |
-
-## Scope Boundaries
-
-| Included                                                                                       | Excluded                                                                                                                                |
-| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Static route shells, layout, visual hierarchy, shared UI primitives, guardrails, documentation | Authentication logic, live POS transactions, product CRUD, inventory writes, backend data fetches, SARIMA execution, packaged installer |
+| --- | --- | --- |
+| 2026-06-24 | Frontend ownership and standards established. | `docs/standards/**`, `docs/architecture/**` |
+| 2026-06-27 | Frontend shell and UI polish completed. | Frontend source tree and validation history |
+| 2026-07-08 | Sprint 3 planning now targets UI cleanup, POS/Sales integration, and merge support. | `docs/sprints/sprint-3/**` |
+| 2026-07-08 | Updated the implementation evidence and validation notes for the current branch. | m1/v0.2/feat/auth-fullstack-flow; docs/implementation-artifacts/m1-abarado/DAILY-NOTES.md<br>docs/implementation-artifacts/m1-abarado/DEPLOYMENT-NOTES.md<br>docs/implementation-artifacts/m1-abarado/README.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PLANNING.md<br>docs/implementation-artifacts/m1-abarado/SPRINT-PROGRESS.md<br>docs/implementation-artifacts/m1-abarado/TASKS.md<br>docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md<br>docs/implementation-artifacts/m1-abarado/VALIDATION-SUMMARY.md; validation: Passed |
+| 2026-07-09 | Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts. | m1/v0.3/feat/pos-sales-integration; backend/src/controllers/searchController.ts<br>backend/src/routes/index.ts<br>backend/src/routes/search.routes.ts<br>backend/src/services/searchService.ts<br>backend/src/types/search.ts<br>backend/src/validators/search.validators.ts<br>frontend/src/app/routes.ts<br>frontend/src/components/app/AppSidebar.tsx; validation: Pending |Y.md; validation: Passed |
 
 ## Sprint Completion Statement
 
-M1 Sprint 1 frontend shell and governance responsibilities are complete based on current repository source and historical validation notes. Remaining M1 work is future release validation and integration of real backend APIs after those APIs are implemented.
+M1 Sprint 2 auth behavior remains intact. Sprint 3 planning now shifts M1 into integration and UI cleanup work across POS and Sales.
+
+## Chronological Progress
+
+| Date       | Progress                                                                                                                                                        | Evidence                                                                                                                                                                                                                                                                                                                                                                                                |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-09 | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. | m1/v0.3/feat/pos-sales-integration; backend/package.json<br>backend/src/config/env.ts<br>backend/src/controllers/authController.ts<br>backend/src/controllers/searchController.ts<br>backend/src/middleware/authMiddleware.ts<br>backend/src/routes/auth.routes.ts<br>backend/src/routes/index.ts<br>backend/src/routes/search.routes.ts; validation: Passed                                            |
+| 2026-07-09 | Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts.  | m1/v0.3/feat/pos-sales-integration; docs/sprints/sprint-2/DEFINITION-OF-DONE.md<br>docs/sprints/sprint-2/members/m1-abarado.md<br>docs/sprints/sprint-2/README.md<br>docs/sprints/sprint-2/SPRINT-BACKLOG.md; validation: Passed                                                                                                                                                                        |
+| 2026-07-10 | Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts.  | m1/v0.3/feat/pos-sales-integration; docs/sprints/sprint-2/DEFINITION-OF-DONE.md<br>docs/sprints/sprint-2/members/m1-abarado.md; validation: Passed                                                                                                                                                                                                                                                      |
+| 2026-07-10 | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. | sprint/v0.3/sprint-3; backend/package.json<br>backend/README.md<br>backend/src/controllers/inventoryController.ts<br>backend/src/controllers/productController.ts<br>backend/src/controllers/productImportController.ts<br>backend/src/middleware/errorHandler.ts<br>backend/src/middleware/roleMiddleware.ts<br>backend/src/middleware/uploadMiddleware.ts; validation: Passed                         |
+| 2026-07-11 | Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts.  | sprint/v0.3/sprint-3; backend/src/services/catalogSerializers.ts<br>backend/src/services/inventoryService.ts; validation: Passed                                                                                                                                                                                                                                                                        |
+| 2026-07-11 | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. | sprint/v0.3/sprint-3; backend/src/controllers/productController.ts<br>backend/src/services/productService.ts<br>backend/src/validators/product.validators.ts<br>backend/test/data-flow.test.ts<br>database/seed/development.mjs; validation: Passed                                                                                                                                                     |
+| 2026-07-12 | Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts.  | sprint/v0.3/sprint-3; backend/src/controllers/inventoryImportController.ts<br>backend/src/routes/index.ts<br>backend/src/routes/inventory.routes.ts<br>backend/src/services/inventoryImportService.ts<br>backend/src/services/inventoryService.ts<br>backend/src/services/stockDomainService.ts<br>backend/src/validators/inventory.validators.ts<br>backend/test/data-flow.test.ts; validation: Passed |
+| 2026-07-12 | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. | sprint/v0.3/sprint-3; .gitignore<br>backend/package.json<br>backend/src/config/env.ts<br>backend/src/modules/forecasting/forecast-window.ts<br>backend/src/modules/forecasting/forecast.auth.ts<br>backend/src/modules/forecasting/forecast.controller.ts<br>backend/src/modules/forecasting/forecast.routes.ts<br>backend/src/modules/forecasting/forecast.schemas.ts; validation: Passed              |

@@ -2,80 +2,79 @@
 
 ## Purpose
 
-This service is the dedicated Python home for future demand forecasting in YsabelleStore. It exists to keep forecasting concerns separate from the Electron shell, Express backend, and database layer.
+This Python service generates product-level monthly demand forecasts for YsabelleStore. It receives normalized JSON from
+the Express backend, fits constrained SARIMA candidates with `statsmodels`, and emits a structured JSON response for the
+owner Forecast page and future reporting consumers.
 
-## Scope
+## Runtime Boundary
 
-This foundation covers service architecture, documentation, folder boundaries, and future validation expectations only. It does not implement SARIMA, preprocessing, recommendation logic, database access, or API integration.
+The backend owns Excel parsing, validation, authorization, process timeout handling, and API serialization. Python owns
+series validation, SARIMA fitting, fallback forecasts, confidence intervals when available, and metrics.
 
-## Responsibilities
+```text
+Express backend
+-> JSON over stdin
+-> forecasting-service/app/main.py
+-> JSON over stdout
+```
 
-| Area                  | Responsibility                                                         |
-| --------------------- | ---------------------------------------------------------------------- |
-| Demand forecasting    | Host future demand forecasting modules and their support files         |
-| Validation            | Define input checks for forecast-ready data before any model runs      |
-| Contracts             | Describe request and response shapes for forecasting workflows         |
-| Outputs               | Define file naming and output formats for generated forecast artifacts |
-| Integration readiness | Provide a stable boundary for future backend and Prisma integration    |
+Diagnostics and failures go to stderr and are translated by the backend.
 
-## Folder Map
+## Main Modules
 
-| Folder        | Purpose                                                                         |
-| ------------- | ------------------------------------------------------------------------------- |
-| `app/`        | Service entry boundary for the forecasting application package                  |
-| `config/`     | Runtime and dependency policy documentation                                     |
-| `contracts/`  | Forecast input and output contract documentation                                |
-| `data/`       | Local input datasets, fixtures, or sample files used by future forecasting work |
-| `docs/`       | Architecture notes and service foundation guidance                              |
-| `models/`     | Future model artifacts and model-related documentation                          |
-| `outputs/`    | Generated forecast artifacts and output naming conventions                      |
-| `services/`   | Future service-layer orchestration responsibilities                             |
-| `validators/` | Forecast input validation rules and boundary checks                             |
-| `tests/`      | Future test strategy and quality gates                                          |
+| File                   | Responsibility                                  |
+| ---------------------- | ----------------------------------------------- |
+| `app/main.py`          | CLI entry, product loop, output serialization   |
+| `app/contracts.py`     | Typed request structures                        |
+| `app/preprocessing.py` | Period validation and forecast month generation |
+| `app/sarima.py`        | Bounded SARIMA candidate fitting                |
+| `app/fallback.py`      | Seasonal naive and moving-average fallback      |
+| `app/evaluation.py`    | MAE, RMSE, MAPE, WAPE metrics                   |
+| `tests/`               | Python unit tests                               |
 
-## Future Workflow
+## Dependencies
 
-1. Validate incoming sales history and request metadata.
-2. Prepare forecasting-ready data structures.
-3. Run the selected forecast engine in the service layer.
-4. Package forecast output and metadata.
-5. Export results for downstream backend and reporting use.
+Install from the repository root:
 
-## Future Integration
+```bash
+python -m pip install -r forecasting-service/requirements.txt
+```
 
-| Integration target | Planned relationship                                                                   |
-| ------------------ | -------------------------------------------------------------------------------------- |
-| Express backend    | Backend will submit approved forecast requests and consume exported results            |
-| Prisma             | Prisma remains outside this service; database access will stay in the backend layer    |
-| Electron           | Electron may surface generated forecast outputs, but it must not own forecasting logic |
+Required packages:
 
-## Build Philosophy
+- `pandas`
+- `numpy`
+- `statsmodels`
+- `python-dotenv`
+- `pytest`
 
-- Keep the service isolated and easy to reason about.
-- Prefer small modules with a single responsibility.
-- Treat forecasting output as data products, not UI state.
-- Keep recommendation logic in a separate layer.
-- Avoid coupling the service to transport, database, or desktop concerns.
+## SARIMA Strategy
 
-## Validation Workflow
+The service uses monthly SARIMA notation `SARIMA(p,d,q)(P,D,Q,12)`.
 
-| Check                          | Expected outcome                           |
-| ------------------------------ | ------------------------------------------ |
-| `npm run lint`                 | Passes without new lint issues             |
-| `npm run build`                | Passes workspace build validation          |
-| `npm audit --audit-level=high` | Returns no unresolved high vulnerabilities |
+Curated candidates:
 
-## Future Implementation Notes
+- `(0,1,1)(0,1,1,12)`
+- `(1,1,0)(0,1,1,12)`
+- `(1,0,0)(1,0,0,12)`
 
-- All forecasting code should stay inside `forecasting-service/`.
-- Contracts and validation should be finalized before any model implementation.
-- Recommendation support must remain separate from demand forecasting.
+The lowest finite AIC candidate is selected. If no candidate produces finite output, the service falls back to seasonal
+naive, then moving average when seasonal history is unavailable.
 
-## Validation Checklist
+## Commands
 
-- [x] Purpose is defined
-- [x] Scope is restricted to forecasting foundation work
-- [x] Responsibilities are separated by concern
-- [x] Future integration points are documented
-- [x] Validation workflow is stated
-- [x] No forecasting logic is implemented
+```bash
+python -m pytest forecasting-service/tests
+npm run forecast:validate-data
+npm run forecast:generate
+npm run forecast:smoke
+```
+
+## Limitations
+
+- Only 24 monthly observations are available per product.
+- Only two seasonal cycles are represented.
+- Low-volume products can produce unstable SARIMA estimates.
+- Confidence intervals may be wide or unavailable for fallback models.
+- Forecasts do not account for promotions, price changes, stockouts, supplier disruptions, lost demand, or economic
+  shocks.

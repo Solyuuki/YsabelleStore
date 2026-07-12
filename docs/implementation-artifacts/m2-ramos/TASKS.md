@@ -24,6 +24,8 @@
 | YSB-M2-API-003      | Product, inventory, sales, and import business APIs | Sprint 1 backend only establishes foundation patterns.                    | Approved DTOs, routes, services, validators, tests, and database migration alignment. |
 | YSB-M2-TEST-001     | Backend unit/integration tests                      | No backend test suite exists yet.                                         | Test framework setup and passing tests for controllers/services/validators.           |
 | YSB-M2-DB-APPLY-001 | Migration application through backend workflow      | Migration SQL is reviewable but not documented as applied to local MySQL. | Prisma migration/status evidence against approved local database.                     |
+| YSB-M2-FOR-001      | SARIMA forecasting foundation                       | Sprint 3 planning only defines the forecast direction.                    | Forecast data contract, service structure, and sample output evidence.                |
+| YSB-M2-FOR-002      | Reports foundation                                  | Reports require structured sales/forecast data first.                     | Reports page contract and data consumption notes.                                     |
 
 ## Cancelled
 

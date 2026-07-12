@@ -14,18 +14,21 @@
 
 ## In Progress
 
-| Task ID            | Scope                              | Status | Evidence                                                                               | Next Action                           |
-| ------------------ | ---------------------------------- | ------ | -------------------------------------------------------------------------------------- | ------------------------------------- |
-| YSB-M3-MIG-STD-001 | Numbered migration naming standard | Done   | Sprint 1 migration folder renamed to `0001_sprint_1_database_foundation`; docs updated | Validate Prisma and backend commands. |
+| Task ID              | Scope                                                          | Status             | Evidence                                                                               | Next Action                                           |
+| -------------------- | -------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| YSB-M3-MIG-STD-001   | Numbered migration naming standard                             | Done               | Sprint 1 migration folder renamed to `0001_sprint_1_database_foundation`; docs updated | Validate Prisma and backend commands.                 |
+| YSB-M3-VITO-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3                                                                   | Perform manual QA on the changed auth/device/UI flow. |
 
 ## Pending
 
-| Task ID              | Scope                                            | Reason Pending                                                   | Required Evidence Before Completion                                              |
-| -------------------- | ------------------------------------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| YSB-M3-MIG-APPLY-001 | Apply migration to approved local MySQL database | Current migration is a reviewable SQL artifact only.             | Prisma migration/status output or documented local database application result.  |
-| YSB-M3-SEED-001      | Executable deterministic seed script             | Sprint 1 only documents seed strategy.                           | Approved seed data policy, script, and validation result.                        |
-| YSB-M3-FOR-001       | SARIMA forecasting execution                     | Later sprint scope; requires approved sales history flow.        | Forecasting service implementation, validation dataset, and explainable results. |
-| YSB-M3-REC-001       | Recommendation calculation rules                 | Later sprint scope; depends on forecast and inventory workflows. | Formula documentation, tests, and database/API integration.                      |
+| Task ID              | Scope                                            | Reason Pending                                                       | Required Evidence Before Completion                                              |
+| -------------------- | ------------------------------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| YSB-M3-MIG-APPLY-001 | Apply migration to approved local MySQL database | Current migration is a reviewable SQL artifact only.                 | Prisma migration/status output or documented local database application result.  |
+| YSB-M3-SEED-001      | Executable deterministic seed script             | Sprint 1 only documents seed strategy.                               | Approved seed data policy, script, and validation result.                        |
+| YSB-M3-FOR-001       | SARIMA forecasting execution                     | Later sprint scope; requires approved sales history flow.            | Forecasting service implementation, validation dataset, and explainable results. |
+| YSB-M3-REC-001       | Recommendation calculation rules                 | Later sprint scope; depends on forecast and inventory workflows.     | Formula documentation, tests, and database/API integration.                      |
+| YSB-M3-BIZ-001       | Product data foundation for Sprint 3             | Sprint 3 planning now shifts product ownership into functional work. | Product model/API foundation and sample product data.                            |
+| YSB-M3-BIZ-002       | Inventory data foundation for Sprint 3           | Inventory must support POS and SARIMA consumers.                     | Inventory model/API foundation and stock movement notes.                         |
 
 ## Cancelled
 

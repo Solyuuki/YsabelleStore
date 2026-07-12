@@ -11,11 +11,12 @@
 | BLK-M1-005 | 2026-06-29 | Sprint branch integration | M3 database branch contained frontend shell replacements and deleted M1 page/component files. | If M3 frontend files are accepted, sidebar routes can render placeholders, mismatch `/forecast` vs `/forecasts`, or white-screen through incompatible component contracts. | Current sprint branch preserves M1 frontend source; issue is documented as ownership risk.            | Resolved for current branch; monitor future merges |
 | BLK-M1-006 | 2026-06-29 | Review artifacts          | Current worktree initially showed deleted M1 screenshot artifact files.                       | Historical screenshot review evidence would be unavailable as live files if the deletion were committed.                                                                   | Restored the screenshot artifacts from Git history during documentation reconstruction.               | Resolved                                           |
 
-## Active Blockers
+## Acti| Blocker ID | Owner | Current Status | Required Action |
 
-| Blocker ID | Owner | Current Status | Required Action                                                     |
-| ---------- | ----- | -------------- | ------------------------------------------------------------------- |
-| None       | None  | Clear          | No active M1 blocker remains after screenshot artifact restoration. |
+| ---  | ---  | ---                                                             | ---                                               |
+| ---- | ---- | --------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
+|      |      |                                                                 |                                                   | No active M1 blocker remains after screenshot artifact restoration. |
+| None | None | No active blockers. Manual QA remains recommended before merge. | Complete manual QA for changed user-facing flows. | ser-facing flows.                                                   |
 
 ## Severity Guide
 
@@ -24,3 +25,9 @@
 | Low      | Documentation or local evidence issue                           | Record and continue with transparent limitation |
 | Medium   | Merge or validation issue that can be resolved locally          | Fix or document before review                   |
 | High     | User-facing behavior, source ownership, or build stability risk | Stop merge and coordinate with affected owner   |
+
+## Active Blockers
+
+| Blocker ID | Owner | Current Status                                                  | Required Action                                   |
+| ---------- | ----- | --------------------------------------------------------------- | ------------------------------------------------- |
+| None       | None  | No active blockers. Manual QA remains recommended before merge. | Complete manual QA for changed user-facing flows. |
