@@ -53,14 +53,14 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/products",
     label: "Products",
-    description: "Product catalog module shell",
+    description: "Product catalog, import, and inventory workspace",
     icon: Package,
     allowedRoles: ["OWNER"]
   },
   {
     path: "/inventory",
     label: "Inventory",
-    description: "Stock monitoring module shell",
+    description: "Stock monitoring and movement workspace",
     icon: Boxes,
     allowedRoles: ["OWNER", "STAFF"]
   },
@@ -89,7 +89,7 @@ export const appRoutes: readonly AppRoute[] = [
   },
   {
     path: "/users",
-    label: "Users",
+    label: "User Management",
     description: "User management module",
     icon: UsersRound,
     allowedRoles: ["OWNER"]

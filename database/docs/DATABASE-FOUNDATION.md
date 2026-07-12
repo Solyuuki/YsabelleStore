@@ -15,25 +15,28 @@ Electron desktop shell
 
 ## Implemented Tables
 
-| Table                    | Purpose                                                                              |
-| ------------------------ | ------------------------------------------------------------------------------------ |
-| `users`                  | Owner/staff identity boundary for future authentication                              |
-| `categories`             | Product grouping for grocery/convenience-store catalog organization                  |
-| `products`               | Barcode-ready product master data with cost and selling prices                       |
-| `inventory_batches`      | Batch quantity, cost, received date, and expiry tracking                             |
-| `inventory_movements`    | Stock-in, stock-out, sale, adjustment, return, expired, and damaged movement history |
-| `sales`                  | Sale headers for future POS and historical demand records                            |
-| `sale_items`             | Product-level sale lines for future reporting and forecasting input                  |
-| `forecast_records`       | Future SARIMA forecast output storage                                                |
-| `recommendation_records` | Future restock, stock risk, and expiry-risk recommendation storage                   |
+| Table                    | Purpose                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| `users`                  | Owner/staff identity boundary for future authentication                         |
+| `categories`             | Product grouping for grocery/convenience-store catalog organization             |
+| `products`               | Barcode-ready product master data with status, cost, and selling prices         |
+| `inventory`              | Current per-product stock state                                                 |
+| `inventory_batches`      | Batch quantity, cost, received date, and expiry tracking                        |
+| `inventory_movements`    | Stock-in, sale, adjustment, return, expired, damaged, and initial stock history |
+| `sales`                  | Sale headers for future POS and historical demand records                       |
+| `sale_items`             | Product-level sale lines for future reporting and forecasting input             |
+| `forecast_records`       | Future SARIMA forecast output storage                                           |
+| `recommendation_records` | Future restock, stock risk, and expiry-risk recommendation storage              |
 
 ## Data Integrity Decisions
 
 | Decision                    | Implementation                                                                                |
 | --------------------------- | --------------------------------------------------------------------------------------------- |
 | Product identifiers         | `sku` is required and unique; `barcode` is optional, unique, and indexed                      |
+| Product status              | `ACTIVE`, `INACTIVE`, and `DISCONTINUED` are supported                                        |
 | Money fields                | Cost, price, and totals use Prisma `Decimal` mapped to MySQL `DECIMAL`                        |
 | Quantity fields             | Stock and sale quantities use unsigned integers                                               |
+| Inventory summary           | One inventory row per product stores current quantity and last stock update                   |
 | Product deletion            | Product-dependent records use restrictive relations to preserve history                       |
 | Sale deletion               | Sale items cascade with their sale header                                                     |
 | Optional user attribution   | Cashier, movement performer, forecast generator, and recommendation generator use `SET NULL`  |
@@ -43,21 +46,21 @@ Electron desktop shell
 
 ## Index Strategy
 
-| Query Need           | Indexes                                                                  |
-| -------------------- | ------------------------------------------------------------------------ |
-| Product lookup       | Product `sku`, `barcode`, `name`, and category/active indexes            |
-| Inventory review     | Batch product/status, product/expiry, and expiry indexes                 |
-| Movement history     | Movement product/date, type/date, batch, and performed-by indexes        |
-| Sales reporting      | Sale number, sale date, status/date, cashier, sale item product indexes  |
-| Forecast review      | Forecast product/generated, status/generated, generated-by indexes       |
-| Recommendation queue | Recommendation product/severity, type/status, forecast, and date indexes |
+| Query Need           | Indexes                                                                         |
+| -------------------- | ------------------------------------------------------------------------------- |
+| Product lookup       | Product `sku`, `barcode`, `name`, category/status, and created-date indexes     |
+| Inventory review     | Inventory product, quantity, and last-update indexes                            |
+| Movement history     | Movement inventory/product/date, type/date, reference, and performed-by indexes |
+| Sales reporting      | Sale number, sale date, status/date, cashier, sale item product indexes         |
+| Forecast review      | Forecast product/generated, status/generated, generated-by indexes              |
+| Recommendation queue | Recommendation product/severity, type/status, forecast, and date indexes        |
 
 ## Migration Strategy
 
 The first migration artifact is stored at:
 
 ```text
-database/migrations/0001_sprint_1_database_foundation/migration.sql
+database/prisma/migrations/0002_products_inventory_foundation/migration.sql
 ```
 
 This SQL is generated from the current Prisma schema for review. It should be applied only against an approved local MySQL database after the team confirms the schema and environment.

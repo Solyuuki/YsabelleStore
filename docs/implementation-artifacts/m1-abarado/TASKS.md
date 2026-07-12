@@ -14,14 +14,13 @@
 | YSB-M1-UI-004    | 2026-06-27 | Enterprise shell cohesion and final UI polish                           | `frontend/src/components/app/**`, `frontend/src/layouts/AppLayout.tsx`, `frontend/src/styles/global.css` | Commit `a189f14`                        | Existing report records format, lint, frontend typecheck, build, and audit passed.                   |
 | YSB-M1-DOC-002   | 2026-06-29 | Implementation artifact reconstruction and migration rule documentation | `docs/implementation-artifacts/**`, `database/docs/**`, `docs/standards/**`                              | Current documentation-only work         | Validation recorded in this update after commands are run.                                           |
 
-## In Progress
-
 | Task ID                 | Scope                                                      | Status       | Evidence                                                             | Next Action                                                |
-| ----------------------- | ---------------------------------------------------------- | ------------ | -------------------------------------------------------------------- | ---------------------------------------------------------- |
+| ----------------------- | ---------------------------------------------------------- | ------------ | -------------------------------------------------------------------- | ---------------------------------------------------------- | ----------- |
 | YSB-M1-INT-001          | Sprint 1 integration documentation and ownership cleanup   | In progress  | Current `sprint/v0.1/sprint-1` branch and 2026-06-29 artifact update | Complete validation, commit docs, and prepare review.      |
 | YSB-M1-ABARADO-20260707 | Maintain current implementation and documentation evidence | Needs Review | m1/v0.2/feat/auth-fullstack-flow                                     | Review generated artifact updates before commit.           |
 | YSB-M1-BIZ-20260708     | Sprint 3 planning and integration preparation              | Planned      | docs/sprints/sprint-3/\*\*                                           | Review new Sprint 3 scope and keep UI integration focused. |
 | YSB-M1-ABARADO-20260708 | Maintain current implementation and documentation evidence | Completed    | m1/v0.2/feat/auth-fullstack-flow                                     | Review generated artifact updates before commit.           |
+| YSB-M1-ABARADO-20260709 | Polish auth UI and session safety flow                     | Needs Review | m1/v0.3/feat/pos-sales-integration                                   | Run push-ready validation and resolve any failures.        | ore commit. |
 
 ## Pending
 
@@ -39,3 +38,12 @@
 ## Completion Rule
 
 A task is complete only when implementation evidence and the matching artifact updates are both present.
+
+## In Progress
+
+| Task ID                 | Scope                                                          | Status             | Evidence                           | Next Action                                           |
+| ----------------------- | -------------------------------------------------------------- | ------------------ | ---------------------------------- | ----------------------------------------------------- |
+| YSB-M1-ABARADO-20260709 | Polish auth UI and session safety flow                         | Manual QA Required | m1/v0.3/feat/pos-sales-integration | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260711 | Polish auth UI and session safety flow                         | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260712 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |

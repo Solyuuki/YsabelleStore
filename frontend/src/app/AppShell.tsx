@@ -1,4 +1,3 @@
-import { Boxes, Package, ReceiptText } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
@@ -7,9 +6,13 @@ import { AppLayout } from "@/layouts/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { DashboardPage } from "@/pages/DashboardPage";
-import { ModulePage } from "@/pages/ModulePage";
+import { ProductsPage } from "@/pages/ProductsPage";
+import { InventoryPage } from "@/pages/InventoryPage";
+import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
+import { SalesPage } from "@/pages/SalesPage";
+import { ForecastPage } from "@/pages/ForecastPage";
 import { ProtectedPage } from "@/pages/ProtectedPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
@@ -36,6 +39,19 @@ function getCurrentPath() {
   return window.location.pathname || "/";
 }
 
+function getReceiptPrintRequest() {
+  const url = new URL(window.location.href);
+
+  if (url.searchParams.get("print") !== "receipt") {
+    return null;
+  }
+
+  return {
+    payload: url.searchParams.get("data"),
+    requestId: url.searchParams.get("requestId")
+  };
+}
+
 export function AppShell() {
   const {
     error,
@@ -57,6 +73,7 @@ export function AppShell() {
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [logoutSubmitting, setLogoutSubmitting] = useState(false);
   const logoutSubmittingRef = useRef(false);
+  const receiptPrintRequest = getReceiptPrintRequest();
 
   useEffect(() => {
     const handlePopState = () => setPath(getCurrentPath());
@@ -134,6 +151,15 @@ export function AppShell() {
       window.clearTimeout(timeoutId);
     };
   }, [shouldHoldForAuth]);
+
+  if (receiptPrintRequest) {
+    return (
+      <ReceiptPrintPage
+        payload={receiptPrintRequest.payload}
+        requestId={receiptPrintRequest.requestId}
+      />
+    );
+  }
 
   if (shouldHoldForAuth) {
     return showLaunchSplash ? <LaunchSplash /> : null;
@@ -218,67 +244,33 @@ function renderRoute(
     return <AccessDeniedPage moduleName={route.label} onNavigate={navigate} />;
   }
 
-  if (route.protected) {
-    return (
-      <ProtectedPage
-        description={route.description}
-        hasOwnerAccess={user?.role === "OWNER"}
-        icon={route.icon}
-        title={route.label}
-      />
-    );
-  }
-
   switch (route.path) {
     case "/dashboard":
       return <DashboardPage />;
     case "/pos":
       return <PosPage />;
     case "/products":
-      return (
-        <ModulePage
-          description={route.description}
-          focusItems={[
-            "Catalog table area",
-            "Product search and filters",
-            "Create and edit actions reserved",
-            "Category and unit fields reserved"
-          ]}
-          icon={Package}
-          title={route.label}
-        />
-      );
+      return <ProductsPage />;
     case "/inventory":
-      return (
-        <ModulePage
-          description={route.description}
-          focusItems={[
-            "Stock level table area",
-            "Low-stock status badges",
-            "Batch and expiry columns reserved",
-            "Stock movement actions reserved"
-          ]}
-          icon={Boxes}
-          title={route.label}
-        />
-      );
+      return <InventoryPage />;
     case "/sales":
-      return (
-        <ModulePage
-          description={route.description}
-          focusItems={[
-            "Receipt history table area",
-            "Date and cashier filters",
-            "Sale detail panel reserved",
-            "Export action reserved"
-          ]}
-          icon={ReceiptText}
-          title={route.label}
-        />
-      );
+      return <SalesPage />;
+    case "/forecast":
+      return <ForecastPage />;
     case "/users":
       return <UserManagementPage error={error} onRegister={register} user={user} />;
     default:
+      if (route.protected) {
+        return (
+          <ProtectedPage
+            description={route.description}
+            hasOwnerAccess={user?.role === "OWNER"}
+            icon={route.icon}
+            title={route.label}
+          />
+        );
+      }
+
       return <NotFoundPage onNavigate={navigate} />;
   }
 }

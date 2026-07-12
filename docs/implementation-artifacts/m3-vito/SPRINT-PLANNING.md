@@ -36,3 +36,9 @@
 | Query-readiness is represented    | Product, inventory, sales, and forecast access patterns are usable by downstream modules  |
 | Seed strategy is controlled       | Sample product and inventory data remains deterministic                                   |
 | SARIMA remains later-sprint scope | Forecasting execution remains foundation-only until explicitly implemented                |
+
+## Planning Updates
+
+| Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module                                         | Priority |
+| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------- | -------- |
+| 2026-07-10 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI | High     |

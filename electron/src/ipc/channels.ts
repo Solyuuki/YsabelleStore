@@ -1,6 +1,14 @@
 export const IPC_CHANNEL_NAMESPACE = "ysabellestore";
 
-export const allowedIpcChannels = [] as const;
+export const receiptPrintRequestChannel = createIpcChannelName("request", "receipt-print");
+export const receiptPrintDataChannel = createIpcChannelName("request", "receipt-print-data");
+export const receiptPrintReadyChannel = createIpcChannelName("request", "receipt-print-ready");
+
+export const allowedIpcChannels = [
+  receiptPrintRequestChannel,
+  receiptPrintDataChannel,
+  receiptPrintReadyChannel
+] as const;
 
 export type AllowedIpcChannel = (typeof allowedIpcChannels)[number];
 

@@ -107,11 +107,12 @@ Do not bump to `v0.3.0` at Sprint 3 planning start. Only bump to `v0.3.0` when S
 | M1 UI needs backend confirmation               | M2 then M3        | Resolved                |
 | Prisma DLL lock during build                   | All / Environment | Known environment issue |
 
-M1 moved account creation to the owner-only User Management UI, M2 completed backend enforcement, and M3 validated the final behavior through API and UI checks.
+| M1 moved account creation to the owner-only User Management UI, M2 completed bac | Date       | Member                           | Branch                                                                            | Latest Activity | Validation Status |
+| -------------------------------------------------------------------------------- | ---------- | -------------------------------- | --------------------------------------------------------------------------------- | --------------- | ----------------- |
+| 2026-07-07                                                                       | M1 Abarado | m1/v0.2/feat/auth-fullstack-flow | Sprint documentation and validation evidence were updated for the current branch. | Passed          |
+| 2026-07-08                                                                       | M1 Abarado | m1/v0.2/feat/auth-fullstack-flow | Sprint documentation and validation evidence were updated for the current branch. | Passed          |
 
 ## Latest Sprint Activity
 
-| Date       | Member     | Branch                           | Latest Activity                                                                   | Validation Status |
-| ---------- | ---------- | -------------------------------- | --------------------------------------------------------------------------------- | ----------------- |
-| 2026-07-07 | M1 Abarado | m1/v0.2/feat/auth-fullstack-flow | Sprint documentation and validation evidence were updated for the current branch. | Passed            |
-| 2026-07-08 | M1 Abarado | m1/v0.2/feat/auth-fullstack-flow | Sprint documentation and validation evidence were updated for the current branch. | Passed            |
+| Date | Member | Branch | Latest Activity | Validation Status |
+| ---- | ------ | ------ | --------------- | ----------------- |

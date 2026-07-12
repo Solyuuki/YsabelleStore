@@ -5,7 +5,7 @@ const mainFilePath = fileURLToPath(import.meta.url);
 const configDirectory = path.dirname(mainFilePath);
 
 export function getPreloadBundlePath(): string {
-  return path.join(configDirectory, "../preload/index.js");
+  return path.join(configDirectory, "../preload/index.cjs");
 }
 
 export function getRendererDevUrl(): string | undefined {

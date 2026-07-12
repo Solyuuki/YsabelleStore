@@ -1,11 +1,12 @@
-export type ApiResponse<TData = unknown, TError = unknown> =
-  | ApiSuccessResponse<TData>
+export type ApiResponse<TData = unknown, TError = unknown, TMeta = unknown> =
+  | ApiSuccessResponse<TData, TMeta>
   | ApiErrorResponse<TError>;
 
-export type ApiSuccessResponse<TData = unknown> = {
+export type ApiSuccessResponse<TData = unknown, TMeta = unknown> = {
   success: true;
   message: string;
   data?: TData;
+  meta?: TMeta;
 };
 
 export type ApiErrorResponse<TError = unknown> = {

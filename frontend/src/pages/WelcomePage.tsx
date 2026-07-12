@@ -14,6 +14,7 @@ import type { FormEvent } from "react";
 
 import type { AppRoutePath } from "@/app/routes";
 import { APP_VERSION_LABEL } from "@/config/appVersion";
+import { AppPagination } from "@/components/shared/AppPagination";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +54,7 @@ const trustedDeviceMessages = new Set([
 ]);
 
 const SYSTEM_HEALTH_REFRESH_MS = 45_000;
+const KNOWN_ACCOUNTS_PAGE_SIZE = 2;
 
 const systemHealthFooterCopy: Record<SystemHealthState, string> = {
   checking: "Checking system...",
@@ -99,6 +101,7 @@ export function WelcomePage({
   const [verifyingAccountId, setVerifyingAccountId] = useState<string | null>(null);
   const [selectedRememberedAccount, setSelectedRememberedAccount] =
     useState<RememberedAccount | null>(null);
+  const [rememberedAccountsPage, setRememberedAccountsPage] = useState(1);
   const [emailHasError, setEmailHasError] = useState(false);
   const [passwordHasError, setPasswordHasError] = useState(false);
   const [validationBump, setValidationBump] = useState(0);
@@ -124,6 +127,26 @@ export function WelcomePage({
       ? error
       : "Device verification failed. Please sign in again.";
   const loginButtonLabel = isSubmitting ? "Signing in..." : "Sign in";
+  const totalRememberedAccountPages = Math.max(
+    1,
+    Math.ceil(rememberedAccounts.length / KNOWN_ACCOUNTS_PAGE_SIZE)
+  );
+  const currentRememberedAccountsPage = Math.min(
+    rememberedAccountsPage,
+    totalRememberedAccountPages
+  );
+  const rememberedAccountsPageStartIndex =
+    rememberedAccounts.length === 0
+      ? 0
+      : (currentRememberedAccountsPage - 1) * KNOWN_ACCOUNTS_PAGE_SIZE;
+  const rememberedAccountsPageEndIndex = Math.min(
+    rememberedAccountsPageStartIndex + KNOWN_ACCOUNTS_PAGE_SIZE,
+    rememberedAccounts.length
+  );
+  const paginatedRememberedAccounts = rememberedAccounts.slice(
+    rememberedAccountsPageStartIndex,
+    rememberedAccountsPageEndIndex
+  );
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -170,6 +193,12 @@ export function WelcomePage({
       setVerifyingAccountId(null);
     }
   }, [hasRememberedAccounts, panelMode]);
+
+  useEffect(() => {
+    setRememberedAccountsPage((current) =>
+      Math.min(Math.max(current, 1), totalRememberedAccountPages)
+    );
+  }, [totalRememberedAccountPages]);
 
   useEffect(() => {
     if (!validationBump || reducedMotionRef.current) {
@@ -485,7 +514,7 @@ export function WelcomePage({
               ) : showRememberedAccounts ? (
                 <div className="space-y-4">
                   <div className="grid gap-3">
-                    {rememberedAccounts.map((account, index) => (
+                    {paginatedRememberedAccounts.map((account, index) => (
                       <RememberedAccountCard
                         account={account}
                         enterDelayMs={index * 70 + 80}
@@ -497,6 +526,17 @@ export function WelcomePage({
                       />
                     ))}
                   </div>
+
+                  {totalRememberedAccountPages > 1 ? (
+                    <AppPagination
+                      itemLabel="accounts"
+                      onPageChange={setRememberedAccountsPage}
+                      page={currentRememberedAccountsPage}
+                      pageSize={KNOWN_ACCOUNTS_PAGE_SIZE}
+                      siblingCount={0}
+                      totalItems={rememberedAccounts.length}
+                    />
+                  ) : null}
 
                   <Button
                     className="h-[clamp(2.75rem,3.1vw,3.35rem)] w-full text-[clamp(0.875rem,1vw,1rem)]"

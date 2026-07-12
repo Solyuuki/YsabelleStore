@@ -1,19 +1,27 @@
 import type { ApiErrorResponse, ApiSuccessResponse } from "../types/apiResponse.js";
 
-export function createSuccessResponse<TData>(
+export function createSuccessResponse<TData, TMeta = unknown>(
   message: string,
-  data?: TData
-): ApiSuccessResponse<TData> {
-  return data === undefined
+  data?: TData,
+  meta?: TMeta
+): ApiSuccessResponse<TData, TMeta> {
+  return data === undefined && meta === undefined
     ? {
         success: true,
         message
       }
-    : {
-        success: true,
-        message,
-        data
-      };
+    : meta === undefined
+      ? {
+          success: true,
+          message,
+          data
+        }
+      : {
+          success: true,
+          message,
+          data,
+          meta
+        };
 }
 
 export function createErrorResponse<TError>(

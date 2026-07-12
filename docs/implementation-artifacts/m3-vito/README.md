@@ -49,3 +49,13 @@ This artifact set is reconstructed from repository evidence available on `sprint
 ## Maintenance Rule
 
 M3 database work is not complete until schema, migration artifacts, seed notes, database docs, validation reports, decisions, blockers, and this artifact set are synchronized.
+
+## Current Work Snapshot
+
+| Item                 | Value                                                                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Last update          | 2026-07-10                                                                                                                                                      |
+| Current branch       | sprint/v0.3/sprint-3                                                                                                                                            |
+| Current work areas   | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI                                                                                                         |
+| Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
+| Validation status    | Passed                                                                                                                                                          |

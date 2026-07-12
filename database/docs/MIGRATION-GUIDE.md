@@ -46,7 +46,7 @@ Valid examples:
 
 Before creating a new migration folder:
 
-1. List existing migration folders under `database/migrations/`.
+1. List existing migration folders under `database/prisma/migrations/`.
 2. Find folders that begin with a four-digit sequence such as `0001_`.
 3. Determine the highest existing sequence number.
 4. Add one.
@@ -113,7 +113,7 @@ Confirm approved schema change
 
 | Step                     | Command or Review                                                       | Expected Result                                |
 | ------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------- |
-| Sequence check           | Manual folder review under `database/migrations/`                       | New sequence is unique and incremented         |
+| Sequence check           | Manual folder review under `database/prisma/migrations/`                | New sequence is unique and incremented         |
 | Prisma schema syntax     | `npm run prisma:validate`                                               | Schema validates successfully                  |
 | Prisma Client generation | `npm run prisma:generate` when client-dependent code changes            | Client generation succeeds                     |
 | Generated SQL review     | Manual review                                                           | SQL matches the approved schema change         |
@@ -125,7 +125,7 @@ Confirm approved schema change
 
 | Item                     | Status                                                                                                                 |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| Existing migration SQL   | `database/migrations/0001_sprint_1_database_foundation/migration.sql`                                                  |
+| Existing migration SQL   | `database/prisma/migrations/0001_sprint_1_database_foundation/migration.sql`                                           |
 | Migration source         | Generated from `database/prisma/schema.prisma` using Prisma diff                                                       |
 | Rename status            | Renamed from timestamp folder after safety check confirmed no applied Prisma migration history tied to the folder name |
 | Future naming status     | Numbered naming required for all future migrations                                                                     |
