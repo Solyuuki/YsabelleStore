@@ -63,6 +63,7 @@ import {
   type ProductImportSummary,
   type ProductRecord
 } from "@/services/catalogApi";
+import { formatFileSize, getImportFileType } from "@/utils/importFormatting";
 import { waitForMinimumDuration } from "@/utils/timing";
 import {
   getAvailabilityAction,
@@ -1264,34 +1265,6 @@ function ImportProductsDialog({
           : importState.phase === "success" && importState.summary
             ? `Import completed. ${importState.summary.importedRows} rows imported and the catalog refreshed.`
             : (importState.error ?? "");
-
-  function getImportFileType(file: File) {
-    const extension = file.name.split(".").pop()?.toLowerCase();
-
-    if (extension === "csv") {
-      return "CSV";
-    }
-
-    if (extension === "xlsx") {
-      return "XLSX";
-    }
-
-    return "File";
-  }
-
-  function formatFileSize(fileSize: number) {
-    if (fileSize < 1024) {
-      return `${fileSize} B`;
-    }
-
-    const sizeInKb = fileSize / 1024;
-
-    if (sizeInKb < 1024) {
-      return `${sizeInKb.toFixed(1)} KB`;
-    }
-
-    return `${(sizeInKb / 1024).toFixed(1)} MB`;
-  }
 
   function handleDownloadErrorReport() {
     if (!preview || !issueEntries.length) {

@@ -160,6 +160,7 @@ function formatMovementChange(item: MovementRecord) {
 export function InventoryPage() {
   const { user } = useAuth();
   const { pushToast } = useToast();
+  const importTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [rows, setRows] = useState<InventoryRecord[]>([]);
   const [categories, setCategories] = useState<ProductCategorySummary[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
@@ -473,7 +474,12 @@ export function InventoryPage() {
               <Plus className="h-4 w-4" aria-hidden="true" />
               Add Stock
             </Button>
-            <Button onClick={() => setImportOpen(true)} type="button" variant="default">
+            <Button
+              onClick={() => setImportOpen(true)}
+              ref={importTriggerRef}
+              type="button"
+              variant="default"
+            >
               <FileUp className="h-4 w-4" aria-hidden="true" />
               Import Stock
             </Button>
@@ -695,6 +701,7 @@ export function InventoryPage() {
         open={importOpen}
         onClose={() => setImportOpen(false)}
         onImported={() => void loadInventory("refresh")}
+        triggerRef={importTriggerRef}
       />
       <MovementHistoryDialog
         inventory={selectedInventory}

@@ -124,6 +124,14 @@
 | 2026-07-12 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                             |
 | 2026-07-12 | `npm run build`                          | Passed | Build completed successfully.                       |
 | 2026-07-12 | `npm audit --audit-level=high`           | Passed | Completed successfully.                             |
+| 2026-07-15 | `npm run format`                         | Passed | Completed successfully.                             |
+| 2026-07-15 | `npm run format:check`                   | Passed | Completed successfully.                             |
+| 2026-07-15 | `npm run lint`                           | Passed | Passed with existing Node module-type warning only. |
+| 2026-07-15 | `npm run typecheck --workspace frontend` | Passed | Completed successfully.                             |
+| 2026-07-15 | `npm run typecheck --workspace backend`  | Passed | Completed successfully.                             |
+| 2026-07-15 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                             |
+| 2026-07-15 | `npm run build`                          | Passed | Build completed successfully.                       |
+| 2026-07-15 | `npm audit --audit-level=high`           | Passed | Completed successfully.                             |
 
 ## Manual Review Evidence
 
@@ -132,6 +140,7 @@
 | 2026-07-07 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 | 2026-07-11 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 | 2026-07-12 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+| 2026-07-15 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 
 ## Discontinued Product Normalization
 
