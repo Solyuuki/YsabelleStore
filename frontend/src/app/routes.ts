@@ -6,6 +6,7 @@ import {
   LineChart,
   Package,
   ReceiptText,
+  History,
   ScanBarcode,
   Settings,
   UsersRound
@@ -21,6 +22,7 @@ export type AppRoutePath =
   | "/inventory"
   | "/sales"
   | "/forecast"
+  | "/historical-sales"
   | "/reports"
   | "/users"
   | "/settings"
@@ -76,6 +78,14 @@ export const appRoutes: readonly AppRoute[] = [
     label: "Forecast",
     description: "Demand forecast module shell",
     icon: LineChart,
+    allowedRoles: ["OWNER"],
+    protected: true
+  },
+  {
+    path: "/historical-sales",
+    label: "Historical Sales",
+    description: "Approved monthly sales history and SARIMA data management",
+    icon: History,
     allowedRoles: ["OWNER"],
     protected: true
   },

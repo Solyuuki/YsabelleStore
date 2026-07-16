@@ -1,4 +1,4 @@
-import type { ForecastProductSummary } from "@/types/forecast";
+import type { ForecastFilters, ForecastProductSummary } from "@/types/forecast";
 
 export const FORECAST_PRODUCTS_COMPACT_PAGE_SIZE = 7;
 export const FORECAST_PRODUCTS_DESKTOP_PAGE_SIZE = FORECAST_PRODUCTS_COMPACT_PAGE_SIZE + 3;
@@ -28,6 +28,29 @@ export const forecastSortOptions: { label: string; value: ForecastSortOption }[]
   { label: "Most In Demand", value: "mostInDemand" },
   { label: "Lowest Demand", value: "lowestDemand" }
 ];
+
+export function getForecastServerSort(
+  sortBy: ForecastSortOption
+): Pick<ForecastFilters, "sortBy" | "sortDirection"> {
+  switch (sortBy) {
+    case "alphabeticalAsc":
+      return { sortBy: "productName", sortDirection: "asc" };
+    case "alphabeticalDesc":
+      return { sortBy: "productName", sortDirection: "desc" };
+    case "highestForecast":
+      return { sortBy: "currentMonthForecastQuantity", sortDirection: "desc" };
+    case "lowestForecast":
+      return { sortBy: "currentMonthForecastQuantity", sortDirection: "asc" };
+    case "mostSelling":
+      return { sortBy: "recentHistoricalSalesTotal", sortDirection: "desc" };
+    case "leastSelling":
+      return { sortBy: "recentHistoricalSalesTotal", sortDirection: "asc" };
+    case "mostInDemand":
+      return { sortBy: "twelveMonthForecastTotal", sortDirection: "desc" };
+    case "lowestDemand":
+      return { sortBy: "twelveMonthForecastTotal", sortDirection: "asc" };
+  }
+}
 
 export function getLocalMonthKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;

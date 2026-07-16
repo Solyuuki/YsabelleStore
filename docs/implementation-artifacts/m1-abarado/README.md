@@ -73,13 +73,13 @@ This artifact set is reconstructed from repository evidence available on `sprint
 
 ## Current Work Snapshot
 
-| Item                 | Value                                                                                                                                                          |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validation status    | Passed                                                                                                                                                         |
-| Last update          | 2026-07-15                                                                                                                                                     |
-| Current branch       | sprint/v0.3/sprint-3                                                                                                                                           |
-| Current work areas   | Docs<br>Frontend                                                                                                                                               |
-| Current work summary | Polished the Welcome/Login and session experience, preserved trusted-device behavior, and kept validation evidence synchronized with implementation artifacts. |
+| Item                 | Value                                                                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation status    | Passed                                                                                                                                                          |
+| Last update          | 2026-07-16                                                                                                                                                      |
+| Current branch       | sprint/v0.3/sprint-3                                                                                                                                            |
+| Current work areas   | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI                                                                                                         |
+| Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
 
 ## Current Work Snapshot
 

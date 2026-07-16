@@ -13,6 +13,7 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
 import { SalesPage } from "@/pages/SalesPage";
 import { ForecastPage } from "@/pages/ForecastPage";
+import { HistoricalSalesPage } from "@/pages/HistoricalSalesPage";
 import { ProtectedPage } from "@/pages/ProtectedPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
@@ -29,6 +30,7 @@ const validRoutePaths = new Set<string>([
   "/inventory",
   "/sales",
   "/forecast",
+  "/historical-sales",
   "/reports",
   "/users",
   "/settings",
@@ -257,6 +259,8 @@ function renderRoute(
       return <SalesPage />;
     case "/forecast":
       return <ForecastPage />;
+    case "/historical-sales":
+      return <HistoricalSalesPage />;
     case "/users":
       return <UserManagementPage error={error} onRegister={register} user={user} />;
     default:

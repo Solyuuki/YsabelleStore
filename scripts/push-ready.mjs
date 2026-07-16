@@ -20,7 +20,6 @@ const steps = [
     "npm",
     ["run", "typecheck", "--workspace", "electron"]
   ],
-  ["npm run prisma:clean", "npm", ["run", "prisma:clean"]],
   ["npm run build", "npm", ["run", "build"]],
   ["npm audit --audit-level=high", "npm", ["audit", "--audit-level=high"]]
 ];
@@ -46,7 +45,9 @@ for (const [index, step] of steps.entries()) {
     console.error("\nFailed step:");
     console.error(label);
     console.error("\nSuggested fix:");
-    console.error("If Prisma EPERM occurs, run npm run prisma:clean or close dev server/Electron.");
+    console.error(
+      "If Prisma EPERM occurs, close the project dev server or Electron manually, then retry."
+    );
     process.exit(result.status);
   }
 
