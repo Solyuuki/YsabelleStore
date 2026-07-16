@@ -104,6 +104,7 @@ function isExpired(batch: { expiresAt: Date | null }) {
 
 function getPhysicalBatchTotal(
   batches: Array<{
+    expiresAt: Date | null;
     quantityRemaining: number;
     status: InventoryBatchStatus;
   }>,
@@ -114,7 +115,7 @@ function getPhysicalBatchTotal(
       return total;
     }
 
-    if (options.sellableOnly && !isSellableBatchStatus(batch.status)) {
+    if (options.sellableOnly && (!isSellableBatchStatus(batch.status) || isExpired(batch))) {
       return total;
     }
 
@@ -154,7 +155,9 @@ export function buildReconciliationIdentifiers(sku: string, repairDate = new Dat
 async function syncInventoryAggregate(tx: TransactionClient, productId: string) {
   const product = await getProductContext(tx, productId);
   const inventory = await getOrCreateInventory(tx, productId);
-  const batchTotal = getPhysicalBatchTotal(product.inventoryBatches);
+  const batchTotal = getPhysicalBatchTotal(product.inventoryBatches, {
+    sellableOnly: true
+  });
 
   const updatedInventory = await tx.inventory.update({
     data: {
@@ -207,7 +210,9 @@ export async function synchronizeInventoryAggregate(tx: TransactionClient, produ
 export async function assertStockInvariant(tx: TransactionClient, productId: string) {
   const product = await getProductContext(tx, productId);
   const inventory = await getOrCreateInventory(tx, productId);
-  const batchTotal = getPhysicalBatchTotal(product.inventoryBatches);
+  const batchTotal = getPhysicalBatchTotal(product.inventoryBatches, {
+    sellableOnly: true
+  });
 
   if (inventory.quantityOnHand !== batchTotal) {
     throw new HttpError(409, "Inventory stock is out of sync with batch stock.", {
@@ -224,7 +229,9 @@ export async function assertStockInvariant(tx: TransactionClient, productId: str
 export async function reconcileProductStock(tx: TransactionClient, productId: string) {
   const product = await getProductContext(tx, productId);
   const inventory = await getOrCreateInventory(tx, productId);
-  const batchTotal = getPhysicalBatchTotal(product.inventoryBatches);
+  const batchTotal = getPhysicalBatchTotal(product.inventoryBatches, {
+    sellableOnly: true
+  });
 
   if (inventory.quantityOnHand === batchTotal) {
     return {
@@ -810,10 +817,9 @@ export async function auditStock(tx: TransactionClient = prisma): Promise<StockA
   });
 
   return inventoryRows.map((inventory) => {
-    const batchTotal = inventory.product.inventoryBatches.reduce(
-      (total, batch) => total + batch.quantityRemaining,
-      0
-    );
+    const batchTotal = getPhysicalBatchTotal(inventory.product.inventoryBatches, {
+      sellableOnly: true
+    });
     const difference = inventory.quantityOnHand - batchTotal;
 
     return {

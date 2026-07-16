@@ -650,6 +650,54 @@ async function main() {
     });
   }
 
+  for (const inventory of inventoryRows) {
+    if (inventory.quantityOnHand <= 0) {
+      continue;
+    }
+
+    const seededProduct = productsByCanonicalId.get(inventory.productId);
+
+    if (!seededProduct) {
+      throw new Error(`Missing seeded product for batch row ${inventory.id}.`);
+    }
+
+    const batchCode = `SEED-${inventory.id.toUpperCase()}-OPENING`;
+    const receivedAt = inventory.lastStockUpdatedAt ?? isoDate("2026-07-16T00:00:00.000Z");
+
+    // Keep local development stock immediately sellable by seeding a matching opening batch.
+    const existingBatch = await prisma.inventoryBatch.findFirst({
+      where: {
+        batchCode,
+        productId: seededProduct.id
+      }
+    });
+
+    const batchData = {
+      batchCode,
+      expiresAt: null,
+      productId: seededProduct.id,
+      quantityReceived: inventory.quantityOnHand,
+      quantityRemaining: inventory.quantityOnHand,
+      receivedAt,
+      status: "AVAILABLE",
+      unitCost: seededProduct.costPrice
+    };
+
+    if (existingBatch) {
+      await prisma.inventoryBatch.update({
+        data: batchData,
+        where: {
+          id: existingBatch.id
+        }
+      });
+      continue;
+    }
+
+    await prisma.inventoryBatch.create({
+      data: batchData
+    });
+  }
+
   for (const movement of movementSeeds) {
     const seededProduct = productsByCanonicalId.get(movement.productId);
 

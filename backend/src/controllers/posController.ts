@@ -32,7 +32,7 @@ export const checkoutSale: RequestHandler = async (request, response, next) => {
       notes: parsedBody.data.notes
     });
 
-    response.status(201).json(createSuccessResponse("Sale completed successfully.", data));
+    response.status(200).json(createSuccessResponse("Sale completed successfully.", data));
   } catch (error) {
     next(error);
   }
