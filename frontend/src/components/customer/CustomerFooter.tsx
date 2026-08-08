@@ -29,11 +29,8 @@ export function CustomerFooter({
           <CustomerLink href="/shop" navigate={navigate}>
             Shop groceries
           </CustomerLink>
-          <CustomerLink href="/discover" navigate={navigate}>
-            Discover Ysabelle
-          </CustomerLink>
           <CustomerLink href="/about" navigate={navigate}>
-            About the store
+            About Ysabelle
           </CustomerLink>
           <button onClick={onStartGuide} type="button">
             Shopping Guide

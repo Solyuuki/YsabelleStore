@@ -30,7 +30,7 @@ export function CustomerHeader({
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop" },
     { href: "/shop#categories", label: "Categories" },
-    { href: "/about", label: "About" }
+    { href: "/about", label: "About Us" }
   ];
 
   return (
@@ -52,7 +52,7 @@ export function CustomerHeader({
               aria-current={
                 (link.label === "Home" && pathname === "/") ||
                 (link.label === "Shop" && pathname.startsWith("/shop")) ||
-                (link.label === "About" && pathname === "/about")
+                (link.href === "/about" && ["/about", "/discover"].includes(pathname))
                   ? "page"
                   : undefined
               }

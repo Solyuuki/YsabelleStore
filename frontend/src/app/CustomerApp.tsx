@@ -1,6 +1,5 @@
 import { CartProvider } from "@/context/CartContext";
 import { CustomerLayout } from "@/layouts/CustomerLayout";
-import { AboutPage } from "@/pages/customer/AboutPage";
 import { CartPage } from "@/pages/customer/CartPage";
 import { CheckoutPage } from "@/pages/customer/CheckoutPage";
 import { CustomerHomePage } from "@/pages/customer/CustomerHomePage";
@@ -44,7 +43,7 @@ export function CustomerApp({
   else if (pathname === "/checkout") page = <CheckoutPage navigate={navigate} />;
   else if (pathname === "/order-success")
     page = <OrderSuccessPage location={location} navigate={navigate} />;
-  else if (pathname === "/about") page = <AboutPage navigate={navigate} />;
+  else if (pathname === "/about") page = <DiscoverPage navigate={navigate} />;
   else if (pathname === "/discover") page = <DiscoverPage navigate={navigate} />;
   else page = <CustomerNotFoundPage navigate={navigate} />;
 

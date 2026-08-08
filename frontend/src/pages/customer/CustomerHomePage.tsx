@@ -61,7 +61,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
               </CustomerLink>
               <CustomerLink
                 className="customer-button customer-button--secondary"
-                href="/discover"
+                href="/about"
                 navigate={navigate}
               >
                 <Sparkles aria-hidden="true" size={17} /> Discover Ysabelle
