@@ -16,6 +16,7 @@ import type { AuthUserRole } from "@/types/auth";
 
 export type AppRoutePath =
   | "/"
+  | "/staff-login"
   | "/dashboard"
   | "/pos"
   | "/products"
@@ -119,6 +120,13 @@ export const utilityRoutes: readonly AppRoute[] = [
     path: "/",
     label: "Welcome",
     description: "Continue screen",
+    icon: ChartNoAxesCombined,
+    allowedRoles: ["OWNER", "STAFF"]
+  },
+  {
+    path: "/staff-login",
+    label: "Staff Login",
+    description: "Owner and staff account access",
     icon: ChartNoAxesCombined,
     allowedRoles: ["OWNER", "STAFF"]
   },

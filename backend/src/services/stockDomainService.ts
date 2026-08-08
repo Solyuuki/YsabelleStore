@@ -102,6 +102,22 @@ function isExpired(batch: { expiresAt: Date | null }) {
   return batch.expiresAt !== null && batch.expiresAt.getTime() < Date.now();
 }
 
+export function getSellableStockQuantity(
+  batches: Array<{
+    expiresAt: Date | null;
+    quantityRemaining: number;
+    status: InventoryBatchStatus;
+  }>
+) {
+  return batches.reduce((total, batch) => {
+    if (batch.quantityRemaining <= 0 || !isSellableBatchStatus(batch.status) || isExpired(batch)) {
+      return total;
+    }
+
+    return total + batch.quantityRemaining;
+  }, 0);
+}
+
 function getPhysicalBatchTotal(
   batches: Array<{
     quantityRemaining: number;
@@ -530,9 +546,7 @@ export async function allocateStockForSale(
       return left.id.localeCompare(right.id);
     });
 
-  const sellableStock = getPhysicalBatchTotal(product.inventoryBatches, {
-    sellableOnly: true
-  });
+  const sellableStock = getSellableStockQuantity(product.inventoryBatches);
 
   if (input.quantity > sellableStock) {
     throw new HttpError(409, "Insufficient sellable stock for checkout.", {

@@ -75,6 +75,22 @@ enum SaleStatus {
   VOIDED
 }
 
+enum CustomerOrderStatus {
+  PENDING
+  CONFIRMED
+  READY_FOR_PICKUP
+  COMPLETED
+  CANCELLED
+}
+
+enum CustomerFulfillmentMethod {
+  STORE_PICKUP
+}
+
+enum CustomerPaymentMethod {
+  CASH_ON_PICKUP
+}
+
 enum ForecastStatus {
   PENDING
   GENERATED
@@ -236,6 +252,7 @@ model Product {
   recommendationRecords     RecommendationRecord[]
   historicalMonthlySales    HistoricalMonthlySales[]
   historicalSalesImportRows HistoricalSalesImportRow[]
+  customerOrderItems        CustomerOrderItem[]
 
   @@index([categoryId, status], map: "idx_products_category_status")
   @@index([name], map: "idx_products_name")
@@ -348,6 +365,43 @@ model SaleItem {
   @@index([productId], map: "idx_sale_items_product")
   @@index([batchId], map: "idx_sale_items_batch")
   @@map("sale_items")
+}
+
+model CustomerOrder {
+  id                String                    @id @default(cuid()) @db.VarChar(191)
+  orderNumber       String                    @unique(map: "uq_customer_orders_order_number") @map("order_number") @db.VarChar(80)
+  customerName      String                    @map("customer_name") @db.VarChar(120)
+  customerEmail     String?                   @map("customer_email") @db.VarChar(191)
+  customerPhone     String                    @map("customer_phone") @db.VarChar(40)
+  fulfillmentMethod CustomerFulfillmentMethod @default(STORE_PICKUP) @map("fulfillment_method")
+  paymentMethod     CustomerPaymentMethod     @default(CASH_ON_PICKUP) @map("payment_method")
+  status            CustomerOrderStatus       @default(PENDING)
+  subtotalAmount    Decimal                   @map("subtotal_amount") @db.Decimal(12, 2)
+  totalAmount       Decimal                   @map("total_amount") @db.Decimal(12, 2)
+  notes             String?                   @db.VarChar(255)
+  createdAt         DateTime                  @default(now()) @map("created_at")
+  updatedAt         DateTime                  @updatedAt @map("updated_at")
+  items             CustomerOrderItem[]
+
+  @@index([status, createdAt], map: "idx_customer_orders_status_created")
+  @@index([customerPhone, createdAt], map: "idx_customer_orders_phone_created")
+  @@map("customer_orders")
+}
+
+model CustomerOrderItem {
+  id          String        @id @default(cuid()) @db.VarChar(191)
+  orderId     String        @map("order_id") @db.VarChar(191)
+  productId   String        @map("product_id") @db.VarChar(191)
+  quantity    Int           @db.UnsignedInt
+  unitPrice   Decimal       @map("unit_price") @db.Decimal(10, 2)
+  totalAmount Decimal       @map("total_amount") @db.Decimal(12, 2)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  order       CustomerOrder @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product     Product       @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([orderId], map: "idx_customer_order_items_order")
+  @@index([productId], map: "idx_customer_order_items_product")
+  @@map("customer_order_items")
 }
 
 model ForecastRecord {

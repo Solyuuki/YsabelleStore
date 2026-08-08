@@ -12,6 +12,7 @@ import { productsRouter } from "./products.routes.js";
 import { productRouter } from "./product.routes.js";
 import { salesRouter } from "./sales.routes.js";
 import { searchRouter } from "./search.routes.js";
+import { storefrontRouter } from "./storefront.routes.js";
 
 export const apiRouteGroups: readonly RouteGroup[] = [
   { path: "/api/products", module: "POS product search", status: "implemented" },
@@ -29,7 +30,8 @@ export const apiRouteGroups: readonly RouteGroup[] = [
   },
   { path: "/api/recommendations", module: "Recommendations", status: "planned" },
   { path: "/api/imports", module: "Imports", status: "planned" },
-  { path: "/api/reports", module: "Reports", status: "planned" }
+  { path: "/api/reports", module: "Reports", status: "planned" },
+  { path: "/api/storefront", module: "Customer storefront", status: "implemented" }
 ];
 
 export const router = Router();
@@ -45,3 +47,4 @@ router.use("/catalog/categories", categoryRouter);
 router.use("/inventory", inventoryRouter);
 router.use("/sales", salesRouter);
 router.use("/search", searchRouter);
+router.use("/storefront", storefrontRouter);
