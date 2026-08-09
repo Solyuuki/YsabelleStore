@@ -63,7 +63,12 @@ export function ProductDetailPage({
           <ArrowLeft aria-hidden="true" size={17} /> Back to {product.category.name}
         </CustomerLink>
         <section className="customer-product-detail">
-          <ProductVisual category={product.category.name} large name={product.name} />
+          <ProductVisual
+            category={product.category.name}
+            imageUrl={product.imageUrl}
+            large
+            name={product.name}
+          />
           <div className="customer-product-detail__copy">
             <p className="customer-kicker">{product.category.name}</p>
             <h1>{product.name}</h1>

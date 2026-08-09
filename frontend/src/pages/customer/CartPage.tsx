@@ -35,7 +35,11 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
             <section aria-label="Cart items" className="customer-cart-items">
               {items.map(({ product, quantity }) => (
                 <article className="customer-cart-item" key={product.id}>
-                  <ProductVisual category={product.category.name} name={product.name} />
+                  <ProductVisual
+                    category={product.category.name}
+                    imageUrl={product.imageUrl}
+                    name={product.name}
+                  />
                   <div className="customer-cart-item__info">
                     <p className="customer-eyebrow">{product.category.name}</p>
                     <CustomerLink href={`/product/${product.id}`} navigate={navigate}>

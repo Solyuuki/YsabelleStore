@@ -10,6 +10,7 @@ export type StorefrontProduct = {
   id: string;
   name: string;
   description: string | null;
+  imageUrl?: string | null;
   unit: string;
   sellingPrice: string;
   availableStock: number;

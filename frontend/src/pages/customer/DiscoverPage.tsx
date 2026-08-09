@@ -2,46 +2,69 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   ArrowRight,
-  BarChart3,
   Boxes,
-  Check,
-  ClipboardCheck,
-  Database,
   ExternalLink,
-  LineChart,
   MapPin,
   Package,
-  RefreshCw,
-  ScanBarcode,
   Search,
   ShoppingBasket,
   ShoppingCart,
-  Store,
-  TrendingUp,
-  Warehouse,
-  type LucideIcon
+  Store
 } from "lucide-react";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
 import { ProductVisual } from "@/components/customer/ProductVisual";
+import { SystemIntelligenceScene } from "@/components/customer/discover/SystemIntelligenceScene";
 import { useCart } from "@/context/CartContext";
 import { fetchStorefrontProducts } from "@/services/storefrontService";
 import type { StorefrontProduct } from "@/types/storefront";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const essentialCategories = [
-  "Beverages",
-  "Snacks",
-  "Instant Food",
-  "Canned Goods",
-  "Staples",
-  "Personal Care",
-  "Household",
-  "Kitchen & Dining"
-];
+const essentialShelfItems = [
+  {
+    alt: "Unbranded amber beverage bottle",
+    category: "Beverages",
+    imageUrl: "/images/discover/essentials/beverage.webp"
+  },
+  {
+    alt: "Unbranded resealable snack pouch",
+    category: "Snacks",
+    imageUrl: "/images/discover/essentials/snacks.webp"
+  },
+  {
+    alt: "Unbranded instant noodle cup",
+    category: "Instant Food",
+    imageUrl: "/images/discover/essentials/instant-food.webp"
+  },
+  {
+    alt: "Unbranded canned food tin",
+    category: "Canned Goods",
+    imageUrl: "/images/discover/essentials/canned-goods.webp"
+  },
+  {
+    alt: "Unbranded pantry staple bag",
+    category: "Staples",
+    imageUrl: "/images/discover/essentials/staples.webp"
+  },
+  {
+    alt: "Unbranded personal care bottle",
+    category: "Personal Care",
+    imageUrl: "/images/discover/essentials/personal-care.webp"
+  },
+  {
+    alt: "Unbranded household detergent bottle",
+    category: "Household",
+    imageUrl: "/images/discover/essentials/household.webp"
+  },
+  {
+    alt: "Stainless steel kitchen utensils in a holder",
+    category: "Kitchen & Dining",
+    imageUrl: "/images/discover/essentials/kitchen-dining.webp"
+  }
+] as const;
 
 const storyScenes = [
   { id: "discover-welcome", label: "Welcome" },
@@ -50,71 +73,6 @@ const storyScenes = [
   { id: "discover-location", label: "Our location" },
   { id: "discover-smarter", label: "System intelligence" },
   { id: "discover-shop", label: "Shop with Ysabelle" }
-];
-
-const intelligenceStages: Array<{
-  description: string;
-  eyebrow: string;
-  icon: LucideIcon;
-  title: string;
-  tone: "foundation" | "forecast" | "target";
-}> = [
-  {
-    eyebrow: "01 / Customer and POS sale",
-    title: "A completed sale starts the signal.",
-    description:
-      "Customer and POS transactions capture which product moved and how many units sold.",
-    icon: ShoppingBasket,
-    tone: "foundation"
-  },
-  {
-    eyebrow: "02 / Inventory update",
-    title: "Stock visibility follows the transaction.",
-    description:
-      "Completed selling activity connects to usable-stock monitoring and inventory movement records.",
-    icon: Boxes,
-    tone: "foundation"
-  },
-  {
-    eyebrow: "03 / Historical monthly sales",
-    title: "Transactions become demand history.",
-    description:
-      "Approved POS and historical sales records form complete monthly product-demand series.",
-    icon: Database,
-    tone: "foundation"
-  },
-  {
-    eyebrow: "04 / SARIMA demand forecast",
-    title: "Seasonal patterns become a forward view.",
-    description:
-      "Eligible product series use SARIMA to model recurring 12-month demand patterns, with validated fallback models for limited histories.",
-    icon: LineChart,
-    tone: "forecast"
-  },
-  {
-    eyebrow: "05 / Target decision layer",
-    title: "Forecast demand meets inventory context.",
-    description:
-      "The planned recommendation layer combines forecast demand with usable stock and confirmed supply information before proposing a replenishment need.",
-    icon: BarChart3,
-    tone: "target"
-  },
-  {
-    eyebrow: "06 / Owner decision",
-    title: "The owner remains in control.",
-    description:
-      "The target workflow keeps recommendations reviewable and adjustable before any replenishment action is approved.",
-    icon: ClipboardCheck,
-    tone: "target"
-  },
-  {
-    eyebrow: "07 / Restock workflow",
-    title: "An approved decision becomes store action.",
-    description:
-      "Approved quantities can proceed into the store's restocking and supplier workflow without presenting supplier automation as complete.",
-    icon: RefreshCw,
-    tone: "target"
-  }
 ];
 
 const storeAddress = "110 A. Mabini Street, Pasig City, Metro Manila";
@@ -130,12 +88,6 @@ type StoryConditions = {
 };
 
 type CatalogStatus = "error" | "loading" | "ready";
-
-type ShelfItem = {
-  category: string;
-  label: string;
-  product?: StorefrontProduct;
-};
 
 function isPresentableStorefrontProduct(product: StorefrontProduct) {
   const searchable = `${product.name} ${product.category.name}`.toLowerCase();
@@ -239,7 +191,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               .from(".story-welcome__mark", { autoAlpha: 0, rotate: -8, scale: 0.55 })
               .from(
                 ".story-welcome__title .story-mask__line",
-                { yPercent: 112, stagger: 0.08 },
+                { autoAlpha: 0, stagger: 0.08, y: 30 },
                 "-=0.44"
               )
               .from(".story-welcome__support > *", { autoAlpha: 0, stagger: 0.1, y: 16 }, "-=0.3");
@@ -300,18 +252,19 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             beginningTimeline
               .fromTo(
                 ".story-beginning__year",
-                { scale: desktop ? 1.12 : 1.04, xPercent: desktop ? 7 : 0 },
+                { scale: desktop ? 1.07 : 1.03, xPercent: 0, y: desktop ? 18 : 8 },
                 {
-                  duration: 0.34,
+                  duration: 0.3,
                   ease: "none",
-                  scale: desktop ? 0.76 : 0.94,
-                  xPercent: desktop ? -8 : 0
+                  scale: 1,
+                  xPercent: 0,
+                  y: 0
                 },
                 0.04
               )
               .from(
                 ".story-beginning__copy .story-mask__line",
-                { duration: 0.18, stagger: 0.045, yPercent: 110 },
+                { autoAlpha: 0, duration: 0.18, stagger: 0.045, y: 24 },
                 0.17
               )
               .from(
@@ -351,49 +304,70 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
           }
 
           const essentials = first<HTMLElement>(".story-products");
-          if (essentials) {
+          if (essentials && !mobile) {
             const productsTimeline = gsap.timeline({
               scrollTrigger: {
                 trigger: essentials,
                 start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 84%",
                 end: desktop ? "bottom bottom" : "bottom 16%",
+                fastScrollEnd: true,
+                invalidateOnRefresh: true,
                 scrub
               }
             });
             productsTimeline
-              .from(".story-products__count", { duration: 0.22, scale: 1.12, yPercent: 105 }, 0.04)
+              .from(".story-products .story-kicker", { autoAlpha: 0, duration: 0.08, x: -24 }, 0.02)
+              .from(
+                ".story-products__count",
+                { autoAlpha: 0, duration: 0.16, scale: 0.9, y: 48 },
+                0.08
+              )
               .from(
                 ".story-products__heading .story-mask__line",
-                { duration: 0.18, stagger: 0.045, yPercent: 110 },
-                0.12
+                { autoAlpha: 0, duration: 0.13, y: 26 },
+                0.18
               )
-              .from(".story-products__heading p", { autoAlpha: 0, duration: 0.13, x: 24 }, 0.25)
               .from(
-                ".story-shelf__item",
-                {
-                  autoAlpha: 0,
-                  duration: 0.25,
-                  rotate: (index) => (index % 2 === 0 ? -3 : 3),
-                  scale: 0.76,
-                  stagger: 0.03,
-                  x: (index) => (index % 3 === 0 ? -80 : index % 3 === 1 ? 70 : 0),
-                  y: (index) => (index % 3 === 2 ? -45 : 58)
-                },
-                0.32
+                ".story-products__heading p",
+                { autoAlpha: 0, clipPath: "inset(0 100% 0 0)", duration: 0.1 },
+                0.27
               )
               .fromTo(
                 ".story-shelf__rail",
                 { scaleX: 0 },
-                { duration: 0.12, ease: "none", scaleX: 1 },
-                0.74
+                { duration: 0.11, ease: "none", scaleX: 1 },
+                0.31
+              )
+              .fromTo(
+                ".story-shelf__item",
+                {
+                  autoAlpha: 0.12,
+                  clipPath: "inset(100% 0 0 0 round 1.2rem)",
+                  rotate: (index) => (index % 2 === 0 ? -4 : 4),
+                  scale: 0.86,
+                  x: (index) => (index % 2 === 0 ? -24 : 24),
+                  y: 82
+                },
+                {
+                  autoAlpha: 1,
+                  clipPath: "inset(0% 0 0 0 round 1.2rem)",
+                  duration: 0.16,
+                  ease: "power2.out",
+                  rotate: 0,
+                  scale: 1,
+                  stagger: 0.03,
+                  x: 0,
+                  y: 0
+                },
+                0.4
               )
               .fromTo(
                 ".story-products__handoff",
                 { scaleX: 0 },
-                { duration: 0.08, ease: "none", scaleX: 1 },
-                0.84
+                { duration: 0.06, ease: "none", scaleX: 1 },
+                0.82
               );
-            settle(productsTimeline);
+            settle(productsTimeline, 0.88);
           }
 
           const location = first<HTMLElement>(".story-location");
@@ -401,8 +375,9 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             const locationTimeline = gsap.timeline({
               scrollTrigger: {
                 trigger: location,
-                start: mobile ? "top 88%" : "top 80%",
-                end: "bottom 18%",
+                start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
+                end: desktop ? "bottom bottom" : "bottom 14%",
+                invalidateOnRefresh: true,
                 scrub
               }
             });
@@ -412,46 +387,56 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                 { clipPath: "inset(10% 10% 10% 10% round 3.5rem)", scale: 0.96 },
                 {
                   clipPath: "inset(0% 0% 0% 0% round 2rem)",
-                  duration: 0.42,
+                  duration: 0.18,
                   ease: "none",
                   scale: 1
                 },
-                0.04
+                0.02
+              )
+              .from(
+                ".story-real-map__badge",
+                { autoAlpha: 0, duration: 0.14, scale: 0.72, y: 18 },
+                0.2
               )
               .fromTo(
                 ".story-real-map__trace",
                 { scaleX: 0 },
-                { duration: 0.28, ease: "none", scaleX: 1 },
-                0.16
+                { duration: 0.24, ease: "none", scaleX: 1 },
+                0.26
               )
-              .from(
-                ".story-real-map__badge",
-                { autoAlpha: 0, duration: 0.15, scale: 0.65, y: 16 },
-                0.34
+              .fromTo(
+                ".story-real-map__route path",
+                { strokeDashoffset: 1 },
+                { duration: 0.26, ease: "none", strokeDashoffset: 0 },
+                0.3
               )
               .from(
                 ".story-location__copy .story-mask__line",
-                { duration: 0.2, stagger: 0.05, yPercent: 110 },
-                0.44
+                { autoAlpha: 0, duration: 0.15, stagger: 0.035, y: 24 },
+                0.52
               )
               .from(
-                ".story-location__address > *, .story-location__action",
-                { autoAlpha: 0, duration: 0.14, stagger: 0.025, x: 22 },
-                0.58
+                ".story-location__lead, .story-location__address > *",
+                { autoAlpha: 0, duration: 0.12, stagger: 0.025, x: 22 },
+                0.64
               )
+              .from(".story-location__action", { autoAlpha: 0, duration: 0.1, x: 18 }, 0.75)
               .fromTo(
                 ".story-location__handoff",
                 { scaleX: 0 },
-                { duration: 0.09, ease: "none", scaleX: 1 },
-                0.84
+                { duration: 0.04, ease: "none", scaleX: 1 },
+                0.87
               );
-            settle(locationTimeline);
+            settle(locationTimeline, 0.9);
           }
 
           const intelligence = first<HTMLElement>(".story-intelligence");
           if (intelligence) {
-            const panels = query<HTMLElement>(".story-intelligence__panel");
-            const markers = query<HTMLElement>(".story-intelligence__step");
+            const panels = query<HTMLElement>("[data-intelligence-panel]");
+            const markers = query<HTMLElement>("[data-intelligence-step]");
+            const markerIcons = markers
+              .map((marker) => marker.querySelector<HTMLElement>(":scope > span"))
+              .filter((icon): icon is HTMLElement => icon !== null);
             const firstPanel = panels[0];
             const firstMarker = markers[0];
 
@@ -461,77 +446,139 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                 inset: 0,
                 marginTop: 0,
                 position: "absolute",
-                scale: 0.97,
-                y: 26
+                scale: 1,
+                y: 18
               });
               gsap.set(firstPanel, { autoAlpha: 1, scale: 1, y: 0 });
-              gsap.set(markers, { opacity: 0.34 });
+              gsap.set(markers, { opacity: 0.42 });
               gsap.set(firstMarker, { opacity: 1 });
+              gsap.set(markerIcons, { backgroundColor: "#202653", color: "#9ca3d9" });
+              if (markerIcons[0]) {
+                gsap.set(markerIcons[0], { backgroundColor: "#f7f9ff", color: "#625bff" });
+              }
+              gsap.set(".story-intelligence__heading .story-mask__line", {
+                autoAlpha: 0,
+                y: 22
+              });
+              gsap.set(".story-intelligence__heading p", { autoAlpha: 0, x: -16 });
+              gsap.set(".story-intelligence__progress", { scaleY: 0.035 });
+
+              panels.forEach((panel) => {
+                gsap.set(
+                  Array.from(panel.querySelectorAll<HTMLElement>("[data-intelligence-build]")),
+                  { autoAlpha: 0, y: 12 }
+                );
+
+                Array.from(
+                  panel.querySelectorAll<SVGGeometryElement>("[data-intelligence-chart-path]")
+                ).forEach((path) => {
+                  const length = path.getTotalLength();
+                  gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
+                });
+
+                gsap.set(panel.querySelectorAll("[data-intelligence-line]"), {
+                  scaleX: 0,
+                  transformOrigin: "left center"
+                });
+              });
 
               const intelligenceTimeline = gsap.timeline({
                 scrollTrigger: {
                   trigger: intelligence,
                   start: "top top+=76",
-                  end: () => `+=${Math.max(2600, Math.round(window.innerHeight * 3.2))}`,
+                  end: () => `+=${Math.max(5600, Math.round(window.innerHeight * 7.2))}`,
                   pin: intelligence,
                   pinSpacing: true,
                   anticipatePin: 1,
+                  fastScrollEnd: true,
                   invalidateOnRefresh: true,
-                  scrub: 0.95
+                  scrub: 0.55
                 }
               });
 
               intelligenceTimeline
-                .from(
+                .to(
                   ".story-intelligence__heading .story-mask__line",
-                  { duration: 0.1, stagger: 0.025, yPercent: 110 },
+                  { autoAlpha: 1, duration: 0.16, stagger: 0.035, y: 0 },
                   0
                 )
-                .from(
-                  ".story-intelligence__heading p",
-                  { autoAlpha: 0, duration: 0.08, x: -20 },
-                  0.06
-                )
-                .fromTo(
-                  ".story-intelligence__progress",
-                  { scaleY: 0 },
-                  { duration: 0.72, ease: "none", scaleY: 1 },
-                  0.08
-                );
+                .to(".story-intelligence__heading p", { autoAlpha: 1, duration: 0.14, x: 0 }, 0.08);
 
               panels.forEach((panel, index) => {
-                const position = 0.09 + index * 0.105;
-                const panelMotion = Array.from(
-                  panel.querySelectorAll<HTMLElement>("[data-intelligence-motion]")
+                const stageStart = 0.24 + index;
+                const buildElements = Array.from(
+                  panel.querySelectorAll<HTMLElement>("[data-intelligence-build]")
+                );
+                const chartPaths = Array.from(
+                  panel.querySelectorAll<SVGGeometryElement>("[data-intelligence-chart-path]")
+                );
+                const lineElements = Array.from(
+                  panel.querySelectorAll<HTMLElement>("[data-intelligence-line]")
                 );
 
+                intelligenceTimeline.addLabel(`intelligence-stage-${index + 1}`, stageStart);
+
                 if (index > 0) {
+                  const handoffStart = stageStart - 0.2;
+                  const progress = index / (panels.length - 1);
+
                   intelligenceTimeline
                     .to(
                       panels[index - 1]!,
-                      { autoAlpha: 0, duration: 0.05, scale: 0.98, y: -18 },
-                      position
+                      { autoAlpha: 0, duration: 0.14, ease: "power1.in", y: -12 },
+                      handoffStart
                     )
-                    .fromTo(
+                    .to(
+                      ".story-intelligence__progress",
+                      { duration: 0.18, ease: "none", scaleY: progress },
+                      handoffStart
+                    )
+                    .to(markers[index - 1]!, { duration: 0.14, opacity: 0.68 }, handoffStart)
+                    .to(markers[index]!, { duration: 0.14, opacity: 1 }, handoffStart)
+                    .set(
+                      markerIcons[index - 1]!,
+                      { backgroundColor: "#242a62", color: "#9c96ff" },
+                      handoffStart
+                    )
+                    .set(
+                      markerIcons[index]!,
+                      { backgroundColor: "#f7f9ff", color: "#625bff" },
+                      handoffStart
+                    )
+                    .to(
                       panel,
-                      { autoAlpha: 0, scale: 0.97, y: 26 },
-                      { autoAlpha: 1, duration: 0.035, scale: 1, y: 0 },
-                      position
-                    )
-                    .to(markers[index - 1]!, { duration: 0.05, opacity: 0.34 }, position)
-                    .to(markers[index]!, { duration: 0.035, opacity: 1 }, position);
+                      { autoAlpha: 1, duration: 0.16, ease: "power2.out", y: 0 },
+                      stageStart
+                    );
                 }
 
-                if (panelMotion.length) {
-                  intelligenceTimeline.from(
-                    panelMotion,
+                if (buildElements.length) {
+                  intelligenceTimeline.to(
+                    buildElements,
                     {
-                      autoAlpha: 0,
-                      duration: 0.06,
-                      stagger: 0.012,
-                      y: 16
+                      autoAlpha: 1,
+                      duration: 0.2,
+                      ease: "power2.out",
+                      stagger: 0.025,
+                      y: 0
                     },
-                    position + 0.045
+                    stageStart + 0.14
+                  );
+                }
+
+                if (lineElements.length) {
+                  intelligenceTimeline.to(
+                    lineElements,
+                    { duration: 0.28, ease: "none", scaleX: 1 },
+                    stageStart + 0.38
+                  );
+                }
+
+                if (chartPaths.length) {
+                  intelligenceTimeline.to(
+                    chartPaths,
+                    { duration: 0.34, ease: "none", stagger: 0.08, strokeDashoffset: 0 },
+                    stageStart + 0.34
                   );
                 }
               });
@@ -539,77 +586,97 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               intelligenceTimeline.fromTo(
                 ".story-intelligence__handoff",
                 { scaleX: 0 },
-                { duration: 0.08, ease: "none", scaleX: 1 },
-                0.84
+                { duration: 0.22, ease: "none", scaleX: 1 },
+                6.92
               );
-              settle(intelligenceTimeline);
+              intelligenceTimeline.to({ hold: 0 }, { duration: 0.68, hold: 1 }, 7.14);
             } else {
               gsap.from(".story-intelligence__heading .story-mask__line", {
+                autoAlpha: 0,
                 scrollTrigger: {
                   trigger: ".story-intelligence__heading",
                   start: "top 88%",
                   end: "bottom 55%",
                   scrub
                 },
-                yPercent: 110,
+                y: 22,
                 stagger: 0.05
-              });
-
-              panels.forEach((panel) => {
-                gsap.from(panel, {
-                  clipPath: "inset(0 0 18% 0 round 1.5rem)",
-                  scale: 0.96,
-                  scrollTrigger: {
-                    trigger: panel,
-                    start: "top 90%",
-                    end: "center 58%",
-                    scrub
-                  },
-                  y: 26
-                });
               });
             }
           }
 
           const shop = first<HTMLElement>(".story-shop");
           if (shop) {
+            const liveProducts = query<HTMLElement>(".story-live-product");
+            const liveProductBodies = query<HTMLElement>(".story-live-product__body");
+            const liveProductButtons = query<HTMLElement>(".story-live-product button");
             const shopTimeline = gsap.timeline({
               scrollTrigger: {
                 trigger: shop,
-                start: mobile ? "top 90%" : "top 82%",
-                end: "bottom 18%",
+                start: desktop ? "top top+=76" : mobile ? "top 90%" : "top 84%",
+                end: desktop ? "bottom bottom" : "bottom 14%",
+                invalidateOnRefresh: true,
                 scrub
               }
             });
             shopTimeline
               .from(
                 ".story-shop__copy .story-mask__line",
-                { duration: 0.2, stagger: 0.05, yPercent: 110 },
-                0.04
+                { autoAlpha: 0, duration: 0.12, stagger: 0.03, y: 24 },
+                0.03
               )
-              .from(
-                ".story-shop__copy p, .story-shop__copy .customer-button",
-                { autoAlpha: 0, duration: 0.18, stagger: 0.04, x: -24 },
-                0.18
-              )
+              .from(".story-shop__copy p", { autoAlpha: 0, duration: 0.12, x: -24 }, 0.16)
               .fromTo(
                 ".story-live-store",
                 { clipPath: "inset(0 0 100% 0 round 2rem)", scale: 0.96 },
                 {
                   clipPath: "inset(0 0 0% 0 round 2rem)",
-                  duration: 0.36,
+                  duration: 0.24,
                   ease: "none",
                   scale: 1
                 },
-                0.14
+                0.18
               );
 
-            shopTimeline.from(
-              ".story-live-store__cart",
-              { autoAlpha: 0, duration: 0.1, rotate: 8, scale: 0.6 },
-              0.76
-            );
-            settle(shopTimeline, 0.88);
+            if (liveProducts.length) {
+              shopTimeline
+                .from(
+                  liveProducts,
+                  {
+                    autoAlpha: 0,
+                    duration: 0.14,
+                    scale: 0.82,
+                    stagger: 0.025,
+                    x: (index) => (index % 2 === 0 ? -30 : 30)
+                  },
+                  0.4
+                )
+                .from(
+                  liveProductBodies,
+                  { autoAlpha: 0, duration: 0.11, stagger: 0.02, y: 14 },
+                  0.5
+                )
+                .from(liveProductButtons, { autoAlpha: 0, duration: 0.09, scale: 0.86 }, 0.68);
+            }
+
+            shopTimeline
+              .from(
+                ".story-live-store__cart",
+                { autoAlpha: 0, duration: 0.08, rotate: 8, scale: 0.6 },
+                0.72
+              )
+              .from(
+                ".story-shop__copy .customer-button",
+                { autoAlpha: 0, duration: 0.1, scale: 0.94, x: -16 },
+                0.78
+              )
+              .fromTo(
+                ".story-shop__handoff",
+                { scaleX: 0 },
+                { duration: 0.04, ease: "none", scaleX: 1 },
+                0.87
+              );
+            settle(shopTimeline, 0.9);
           }
 
           const updateActiveScene = () => {
@@ -649,58 +716,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
       context.revert();
       root.classList.remove("story-motion-ready", "story-progress-active", "story-reduced-motion");
     };
-  }, []);
-
-  useEffect(() => {
-    if (catalogStatus !== "ready" || !catalogProducts.length) return;
-
-    const root = rootRef.current;
-    if (!root) return;
-
-    let animationMedia: gsap.MatchMedia | undefined;
-    let refreshFrame = 0;
-    const context = gsap.context(() => {
-      animationMedia = gsap.matchMedia();
-      animationMedia.add("(prefers-reduced-motion: no-preference)", () => {
-        const products = Array.from(root.querySelectorAll<HTMLElement>(".story-live-product"));
-        const shop = root.querySelector<HTMLElement>(".story-shop");
-        if (!products.length || !shop) return;
-
-        gsap.from(products, {
-          autoAlpha: 0,
-          duration: 0.24,
-          scale: 0.78,
-          scrollTrigger: {
-            end: "bottom 32%",
-            scrub: window.innerWidth >= 1024 ? 0.55 : 0.3,
-            start: window.innerWidth < 700 ? "top 88%" : "top 78%",
-            trigger: shop
-          },
-          stagger: 0.025,
-          x: (index) => (index % 2 === 0 ? -32 : 32)
-        });
-      });
-    }, root);
-
-    refreshFrame = window.requestAnimationFrame(() => ScrollTrigger.refresh());
-    return () => {
-      window.cancelAnimationFrame(refreshFrame);
-      animationMedia?.revert();
-      context.revert();
-    };
   }, [catalogProducts.length, catalogStatus]);
-
-  const shelfItems: ShelfItem[] = [
-    ...catalogProducts.slice(0, 4).map((product) => ({
-      category: product.category.name,
-      label: product.name,
-      product
-    })),
-    ...essentialCategories.map((category) => ({
-      category,
-      label: category
-    }))
-  ].slice(0, 8);
 
   return (
     <div className="customer-discover discover-story" ref={rootRef}>
@@ -766,6 +782,11 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
       </section>
 
       <section className="story-scene story-beginning" id="discover-beginning">
+        <div aria-hidden="true" className="story-beginning__atmosphere">
+          <span className="story-beginning__glow story-beginning__glow--one" />
+          <span className="story-beginning__glow story-beginning__glow--two" />
+          <span className="story-beginning__orbit" />
+        </div>
         <div className="customer-container story-beginning__stage" data-story-motion>
           <div className="story-beginning__year" aria-label="Established in 2019">
             2019
@@ -823,23 +844,20 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
 
           <div className="story-shelf">
             <ul aria-label="Store product and category shelf">
-              {shelfItems.map((item, index) => (
+              {essentialShelfItems.map((item, index) => (
                 <li
-                  className={`story-shelf__item story-shelf__item--${(index % 4) + 1} ${item.product ? "story-shelf__item--live" : ""}`}
+                  className={`story-shelf__item story-shelf__item--${(index % 4) + 1}`}
                   key={`shelf-slot-${index}`}
                 >
-                  {item.product ? (
-                    <ProductVisual category={item.category} name={item.label} />
-                  ) : (
-                    <span aria-hidden="true" className="story-shelf__icon">
-                      <Package />
-                    </span>
-                  )}
-                  <span>
-                    <small>{item.product ? item.category : "Store category"}</small>
-                    <strong>{item.label}</strong>
+                  <div className="story-shelf__visual">
+                    <img alt={item.alt} decoding="async" loading="lazy" src={item.imageUrl} />
+                    <span aria-hidden="true" className="story-shelf__shine" />
+                  </div>
+                  <span className="story-shelf__label">
+                    <small>Store category</small>
+                    <strong>{item.category}</strong>
                   </span>
-                  <b>{String(index + 1).padStart(2, "0")}</b>
+                  <b aria-hidden="true">{String(index + 1).padStart(2, "0")}</b>
                 </li>
               ))}
             </ul>
@@ -860,6 +878,11 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               title="OpenStreetMap showing 110 A. Mabini Street in Pasig City"
             />
             <span aria-hidden="true" className="story-real-map__trace" />
+            <svg aria-hidden="true" className="story-real-map__route" viewBox="0 0 640 440">
+              <path d="M320 24 V150 M320 250 V416 M24 200 H270 M370 200 H616" pathLength="1" />
+              <circle cx="320" cy="200" r="25" />
+              <circle cx="320" cy="200" r="7" />
+            </svg>
             <figcaption className="story-real-map__badge">
               <MapPin aria-hidden="true" />
               <span>
@@ -897,57 +920,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
         <span aria-hidden="true" className="story-location__handoff" />
       </section>
 
-      <section className="story-scene story-intelligence" id="discover-smarter">
-        <div className="customer-container story-intelligence__stage" data-story-motion>
-          <div className="story-intelligence__heading">
-            <span className="story-kicker">05 / System intelligence</span>
-            <h2 className="story-display-safe">
-              <span className="story-mask">
-                <span className="story-mask__line">Sales become signals.</span>
-              </span>
-              <span className="story-mask">
-                <span className="story-mask__line story-mask__line--mint">
-                  SARIMA finds the season.
-                </span>
-              </span>
-            </h2>
-            <p>
-              Validated seasonal forecasting connects grocery demand history to clearer inventory
-              decisions without presenting SARIMA as generic AI.
-            </p>
-          </div>
-
-          <div className="story-intelligence__layout">
-            <div className="story-intelligence__index">
-              <span aria-hidden="true" className="story-intelligence__track" />
-              <span aria-hidden="true" className="story-intelligence__progress" />
-              <ol aria-label="Retail intelligence stages">
-                {intelligenceStages.map(({ icon: Icon, title }, index) => (
-                  <li className="story-intelligence__step" key={title}>
-                    <span>
-                      <Icon aria-hidden="true" />
-                    </span>
-                    <small>{String(index + 1).padStart(2, "0")}</small>
-                    <strong>{title}</strong>
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            <div className="story-intelligence__visual">
-              {intelligenceStages.map((stage, index) => (
-                <IntelligencePanel index={index} key={stage.title} stage={stage} />
-              ))}
-            </div>
-          </div>
-
-          <p className="story-intelligence__disclosure">
-            Current system boundary: forecasting is implemented; the inventory-aware recommendation
-            endpoint and approval workflow remain planned integration layers.
-          </p>
-        </div>
-        <span aria-hidden="true" className="story-intelligence__handoff" />
-      </section>
+      <SystemIntelligenceScene />
 
       <section className="story-scene story-shop" id="discover-shop">
         <div className="customer-container story-shop__stage" data-story-motion>
@@ -997,7 +970,11 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                 {catalogProducts.slice(0, 4).map((product) => (
                   <article className="story-live-product" key={product.id}>
                     <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
-                      <ProductVisual category={product.category.name} name={product.name} />
+                      <ProductVisual
+                        category={product.category.name}
+                        imageUrl={product.imageUrl}
+                        name={product.name}
+                      />
                     </CustomerLink>
                     <div className="story-live-product__body">
                       <small>{product.category.name}</small>
@@ -1038,217 +1015,8 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             )}
           </div>
         </div>
+        <span aria-hidden="true" className="story-shop__handoff" />
       </section>
-    </div>
-  );
-}
-
-function IntelligencePanel({
-  index,
-  stage
-}: {
-  index: number;
-  stage: (typeof intelligenceStages)[number];
-}) {
-  const Icon = stage.icon;
-
-  return (
-    <article
-      className={`story-intelligence__panel story-intelligence__panel--${index + 1}`}
-      data-tone={stage.tone}
-    >
-      <header>
-        <span className="story-intelligence__panel-icon">
-          <Icon aria-hidden="true" />
-        </span>
-        <div>
-          <small>{stage.eyebrow}</small>
-          <h3>{stage.title}</h3>
-        </div>
-      </header>
-      <p>{stage.description}</p>
-      <IntelligenceVisual index={index} />
-    </article>
-  );
-}
-
-function IntelligenceVisual({ index }: { index: number }) {
-  if (index === 0) {
-    return (
-      <div aria-hidden="true" className="intelligence-sale intelligence-visual">
-        <span data-intelligence-motion>
-          <ScanBarcode /> Scan
-        </span>
-        <i data-intelligence-motion />
-        <span data-intelligence-motion>
-          <ShoppingBasket /> Complete sale
-        </span>
-        <b data-intelligence-motion>
-          <Check /> Recorded
-        </b>
-      </div>
-    );
-  }
-
-  if (index === 1) {
-    return (
-      <div
-        aria-label="Illustrative usable-stock update after a sale"
-        className="intelligence-stock intelligence-visual"
-        role="img"
-      >
-        <div data-intelligence-motion>
-          <span>Usable stock</span>
-          <strong>Before sale</strong>
-          <i style={{ "--stock-level": "88%" } as CSSProperties} />
-        </div>
-        <ArrowRight aria-hidden="true" data-intelligence-motion />
-        <div data-intelligence-motion>
-          <span>Movement recorded</span>
-          <strong>After sale</strong>
-          <i style={{ "--stock-level": "66%" } as CSSProperties} />
-        </div>
-      </div>
-    );
-  }
-
-  if (index === 2) {
-    return (
-      <div className="intelligence-history intelligence-visual">
-        <div data-intelligence-motion>
-          <Database aria-hidden="true" />
-          <span>Approved monthly demand history</span>
-        </div>
-        <svg
-          aria-label="Illustrative monthly sales series accumulating over time"
-          data-intelligence-motion
-          role="img"
-          viewBox="0 0 620 190"
-        >
-          <path d="M20 154 C70 132 92 142 135 108 C180 72 214 130 260 98 C308 62 340 85 384 58 C430 30 470 88 512 52 C548 22 576 42 604 24" />
-          {Array.from({ length: 12 }, (_, month) => (
-            <line key={month} x1={24 + month * 52} x2={24 + month * 52} y1="170" y2="176" />
-          ))}
-        </svg>
-        <small data-intelligence-motion>
-          Complete months / product-level series / validated inputs
-        </small>
-      </div>
-    );
-  }
-
-  if (index === 3) {
-    return (
-      <div className="intelligence-sarima intelligence-visual">
-        <div className="intelligence-sarima__facts" data-intelligence-motion>
-          <span>
-            <strong>24+</strong> monthly observations
-          </span>
-          <span>
-            <strong>12</strong> month seasonality
-          </span>
-          <span>
-            <strong>SARIMA</strong> eligible series
-          </span>
-        </div>
-        <svg
-          aria-label="Illustrative historical seasonal curve continuing into a forecast"
-          data-intelligence-motion
-          role="img"
-          viewBox="0 0 680 250"
-        >
-          <defs>
-            <linearGradient id="sarima-area" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="#7ad3b9" stopOpacity="0.38" />
-              <stop offset="1" stopColor="#7ad3b9" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path
-            className="intelligence-sarima__area"
-            d="M20 210 C72 184 92 98 145 128 C194 158 218 202 270 158 C320 116 342 50 392 82 L392 230 L20 230 Z"
-          />
-          <path
-            className="intelligence-sarima__history"
-            d="M20 210 C72 184 92 98 145 128 C194 158 218 202 270 158 C320 116 342 50 392 82"
-          />
-          <path
-            className="intelligence-sarima__forecast"
-            d="M392 82 C438 112 458 186 512 146 C558 112 584 45 660 72"
-          />
-          <line className="intelligence-sarima__divider" x1="392" x2="392" y1="30" y2="230" />
-          <text x="36" y="30">
-            Historical sales
-          </text>
-          <text x="420" y="30">
-            Forecast horizon
-          </text>
-        </svg>
-        <p data-intelligence-motion>
-          SARIMA is a seasonal statistical model, not a generic AI label.
-        </p>
-      </div>
-    );
-  }
-
-  if (index === 4) {
-    return (
-      <div className="intelligence-formula intelligence-visual">
-        <strong data-intelligence-motion>Target inventory-aware decision model</strong>
-        <div data-intelligence-motion>
-          <span>Forecast demand</span>
-          <b>+</b>
-          <span>Safety stock</span>
-          <b>-</b>
-          <span>Current usable stock</span>
-          <b>-</b>
-          <span>Confirmed incoming stock</span>
-          <b>=</b>
-          <span className="is-result">Base replenishment need</span>
-        </div>
-        <p data-intelligence-motion>
-          Planned integration. Current production forecasting does not yet apply this inventory
-          formula.
-        </p>
-      </div>
-    );
-  }
-
-  if (index === 5) {
-    return (
-      <div className="intelligence-owner intelligence-visual">
-        <div data-intelligence-motion>
-          <TrendingUp aria-hidden="true" />
-          <span>
-            <small>Recommendation review</small>
-            <strong>Owner decision point</strong>
-          </span>
-        </div>
-        <div aria-hidden="true" className="intelligence-owner__actions" data-intelligence-motion>
-          <span>Review</span>
-          <span>Adjust</span>
-          <span className="is-approved">
-            <Check /> Approve
-          </span>
-        </div>
-        <p data-intelligence-motion>Target workflow: decision support, not automatic purchasing.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="intelligence-restock intelligence-visual">
-      <span data-intelligence-motion>
-        <ClipboardCheck aria-hidden="true" /> Approved quantity
-      </span>
-      <ArrowRight aria-hidden="true" data-intelligence-motion />
-      <span data-intelligence-motion>
-        <Warehouse aria-hidden="true" /> Supplier workflow
-      </span>
-      <ArrowRight aria-hidden="true" data-intelligence-motion />
-      <span data-intelligence-motion>
-        <Boxes aria-hidden="true" /> Stock received
-      </span>
-      <small data-intelligence-motion>Operational handoff remains owner-controlled.</small>
     </div>
   );
 }

@@ -12,7 +12,7 @@ export function CustomerFooter({
   return (
     <footer className="customer-footer">
       <div className="customer-container customer-footer__grid">
-        <div>
+        <div className="customer-footer__brand-column">
           <div className="customer-brand customer-brand--footer">
             <span className="customer-brand__mark">
               <Store aria-hidden="true" size={22} />
@@ -24,7 +24,7 @@ export function CustomerFooter({
           </div>
           <p>Everyday essentials, closer to home.</p>
         </div>
-        <div>
+        <div className="customer-footer__explore-column">
           <h2>Explore</h2>
           <CustomerLink href="/shop" navigate={navigate}>
             Shop groceries
@@ -36,12 +36,15 @@ export function CustomerFooter({
             Shopping Guide
           </button>
         </div>
-        <div>
+        <div className="customer-footer__visit-column">
           <h2>Visit us</h2>
           <p className="customer-footer__location">
-            <MapPin aria-hidden="true" size={18} /> 110 A. Mabini Street
-            <br />
-            Pasig City, Metro Manila
+            <MapPin aria-hidden="true" size={18} />
+            <span>
+              110 A. Mabini Street
+              <br />
+              Pasig City, Metro Manila
+            </span>
           </p>
           <CustomerLink className="customer-footer__staff" href="/staff-login" navigate={navigate}>
             Staff / Owner Login

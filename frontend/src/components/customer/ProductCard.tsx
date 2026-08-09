@@ -28,7 +28,11 @@ export function ProductCard({
         href={`/product/${product.id}`}
         navigate={navigate}
       >
-        <ProductVisual category={product.category.name} name={product.name} />
+        <ProductVisual
+          category={product.category.name}
+          imageUrl={product.imageUrl}
+          name={product.name}
+        />
       </CustomerLink>
       <div className="customer-product-card__body">
         <p className="customer-eyebrow">{product.category.name}</p>
