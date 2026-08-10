@@ -21,51 +21,11 @@ import { SystemIntelligenceScene } from "@/components/customer/discover/SystemIn
 import { useCart } from "@/context/CartContext";
 import { fetchStorefrontProducts } from "@/services/storefrontService";
 import type { StorefrontProduct } from "@/types/storefront";
+import { getEssentialShelfItems } from "@/utils/storefrontCategoryPresentation";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const essentialShelfItems = [
-  {
-    alt: "Bottled and canned beverages arranged on a grocery shelf",
-    category: "Beverages",
-    imageUrl: "/images/discover/essentials/beverages-retail-display.webp"
-  },
-  {
-    alt: "Packaged crackers, chips, and snacks arranged on a grocery shelf",
-    category: "Snacks",
-    imageUrl: "/images/discover/essentials/snacks-retail-display.webp"
-  },
-  {
-    alt: "Packaged instant noodles and noodle cups arranged for retail",
-    category: "Instant Food",
-    imageUrl: "/images/discover/essentials/instant-food-retail-display.webp"
-  },
-  {
-    alt: "Unopened canned foods arranged across store shelves",
-    category: "Canned Goods",
-    imageUrl: "/images/discover/essentials/canned-goods-retail-display.webp"
-  },
-  {
-    alt: "Packaged rice and grains arranged in a supermarket aisle",
-    category: "Staples",
-    imageUrl: "/images/discover/essentials/staples-retail-display.webp"
-  },
-  {
-    alt: "Packaged hair and personal care products on retail shelves",
-    category: "Personal Care",
-    imageUrl: "/images/discover/essentials/personal-care-retail-display.webp"
-  },
-  {
-    alt: "Bottled household cleaners and laundry products on a display shelf",
-    category: "Household",
-    imageUrl: "/images/discover/essentials/household-retail-display.webp"
-  },
-  {
-    alt: "Non-stick cookware arranged on a kitchenware store display",
-    category: "Kitchen & Dining",
-    imageUrl: "/images/discover/essentials/kitchen-dining-retail-display.webp"
-  }
-] as const;
+const essentialShelfItems = getEssentialShelfItems();
 
 const storyScenes = [
   { id: "discover-welcome", label: "Welcome" },

@@ -6771,6 +6771,17 @@
   background: #e9efff;
 }
 
+.home-category-card__visual > .catalog-product-image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.home-category-card__visual > .catalog-product-image > img {
+  object-fit: cover;
+  object-position: center;
+}
+
 .home-category-card__visual::after {
   position: absolute;
   inset: 0;

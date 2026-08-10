@@ -26,6 +26,7 @@ import type {
   StorefrontProduct
 } from "@/types/storefront";
 import { getCategoryRepresentativeProducts, hasCatalogImage } from "@/utils/storefrontImages";
+import { getCategoryPresentation } from "@/utils/storefrontCategoryPresentation";
 import { getStorefrontProductBadge } from "@/utils/storefrontMerchandising";
 
 type Resource<T> = {
@@ -487,6 +488,7 @@ function CategoryCard({
   index: number;
   navigate: (path: string) => void;
 }) {
+  const categoryPresentation = getCategoryPresentation(category.slug);
   const representativeProducts = getCategoryRepresentativeProducts(category);
 
   return (
@@ -497,7 +499,14 @@ function CategoryCard({
       navigate={navigate}
     >
       <span className="home-category-card__visual">
-        {representativeProducts.length ? (
+        {categoryPresentation ? (
+          <ProductImage
+            alt={categoryPresentation.alt}
+            fallbackLabel="Category image unavailable"
+            imageUrl={categoryPresentation.imageUrl}
+            loading="eager"
+          />
+        ) : representativeProducts.length ? (
           <span
             className="home-category-card__assortment"
             data-image-count={representativeProducts.length}
