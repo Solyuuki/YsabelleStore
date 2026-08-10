@@ -1049,6 +1049,25 @@ export function ProductsPage() {
                                   <div className="mt-0.5 max-h-10 overflow-hidden text-xs leading-5 text-slate-500">
                                     {product.description ?? "No description"}
                                   </div>
+                                  <div className="mt-1.5">
+                                    <StatusBadge
+                                      variant={
+                                        product.dataQualityStatus === "APPROVED"
+                                          ? "success"
+                                          : product.dataQualityStatus === "REJECTED"
+                                            ? "error"
+                                            : "warning"
+                                      }
+                                    >
+                                      {product.dataQualityStatus === "APPROVED"
+                                        ? product.isStorefrontVisible
+                                          ? "Approved · Storefront"
+                                          : "Approved · Internal"
+                                        : product.dataQualityStatus === "REJECTED"
+                                          ? "Rejected"
+                                          : "Needs review"}
+                                    </StatusBadge>
+                                  </div>
                                   <div className="mt-2 grid gap-1 text-xs text-slate-500 lg:hidden">
                                     <div className="flex items-start justify-between gap-3">
                                       <span className="font-medium text-slate-700">SKU</span>
@@ -1913,6 +1932,8 @@ function getReadableIssueLabel(issue: Pick<ProductImportIssue, "code" | "message
     INVALID_STATUS: "Invalid status",
     INVALID_UNIT: "Invalid unit",
     MISSING_REQUIRED_FIELD: "Missing required field",
+    POSSIBLE_DUPLICATE_IDENTITY: "Possible catalog duplicate",
+    POSSIBLE_DUPLICATE_IDENTITY_IN_FILE: "Possible duplicate in file",
     PRODUCT_IMPORT_INVALID: "Import rejected",
     UNSUPPORTED_IMPORT_FILE_MIME: "Unsupported file type",
     UNSUPPORTED_IMPORT_FILE_TYPE: "Unsupported file type"
@@ -1950,6 +1971,9 @@ function getSuggestedFix(issue: ProductImportIssue) {
       return "Change the barcode or leave it blank.";
     case "DUPLICATE_HEADER":
       return "Rename repeated column headers in the source file.";
+    case "POSSIBLE_DUPLICATE_IDENTITY":
+    case "POSSIBLE_DUPLICATE_IDENTITY_IN_FILE":
+      return "Compare brand, variant, size, SKU, and barcode before approving either record.";
     case "INVALID_IMPORT_CSV":
     case "INVALID_IMPORT_WORKBOOK":
       return "Re-save the file from Excel or export it again.";
@@ -2133,17 +2157,23 @@ function CreateProductDialog({
   const { pushToast } = useToast();
   const [form, setForm] = useState({
     barcode: "",
+    brand: "",
     categoryId: "",
     costPrice: "",
     description: "",
     imageUrl: "",
     name: "",
+    dataQualityStatus: "NEEDS_REVIEW" as ProductRecord["dataQualityStatus"],
+    isStorefrontVisible: false,
     reorderLevel: "0",
     sellingPrice: "",
     sku: "",
     status: "ACTIVE" as ProductRecord["status"],
     targetStockLevel: "0",
-    unit: "PIECE" as ProductRecord["unit"]
+    unit: "PIECE" as ProductRecord["unit"],
+    variant: "",
+    sizeValue: "",
+    sizeUnit: "" as NonNullable<ProductRecord["sizeUnit"]> | ""
   });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -2241,6 +2271,7 @@ function CreateProductDialog({
     try {
       const response = await createProduct({
         barcode: form.barcode.trim() || null,
+        brand: form.brand.trim() || null,
         categoryId: form.categoryId,
         costPrice: form.costPrice.trim(),
         description: form.description.trim() || null,
@@ -2248,10 +2279,13 @@ function CreateProductDialog({
         name: form.name.trim(),
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
+        sizeUnit: form.sizeUnit || undefined,
+        sizeValue: form.sizeValue ? Number(form.sizeValue) : undefined,
         sku: form.sku.trim(),
         status: form.status,
         targetStockLevel: Number(form.targetStockLevel),
-        unit: form.unit
+        unit: form.unit,
+        variant: form.variant.trim() || null
       });
 
       if (!response.success || !response.data) {
@@ -2287,7 +2321,7 @@ function CreateProductDialog({
           <DialogTitle>Add Product</DialogTitle>
           <DialogDescription>Create a catalog record for the product.</DialogDescription>
           <p className="text-xs leading-5 text-slate-500">
-            Stock quantities are managed separately in Inventory after the product is created.
+            New records start hidden for catalog review. Stock is managed separately in Inventory.
           </p>
         </DialogHeader>
 
@@ -2323,6 +2357,60 @@ function CreateProductDialog({
                     setForm((current) => ({ ...current, sku: event.target.value }))
                   }
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-brand">Brand</Label>
+                <Input
+                  id="product-brand"
+                  placeholder="Unknown"
+                  value={form.brand}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, brand: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-variant">Variant or flavor</Label>
+                <Input
+                  id="product-variant"
+                  placeholder="Leave blank when not specified"
+                  value={form.variant}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, variant: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-size-value">Pack size</Label>
+                <Input
+                  id="product-size-value"
+                  inputMode="decimal"
+                  placeholder="Unknown"
+                  value={form.sizeValue}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, sizeValue: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-size-unit">Pack size unit</Label>
+                <Select
+                  id="product-size-unit"
+                  value={form.sizeUnit}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      sizeUnit: event.target.value as NonNullable<ProductRecord["sizeUnit"]> | ""
+                    }))
+                  }
+                >
+                  <option value="">Unknown</option>
+                  {["MILLILITER", "LITER", "GRAM", "KILOGRAM", "PIECE"].map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="product-barcode">Barcode</Label>
@@ -2615,15 +2703,21 @@ function ProductDetailsDialog({
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     barcode: "",
+    brand: "",
     categoryId: "",
     costPrice: "",
+    dataQualityStatus: "NEEDS_REVIEW" as ProductRecord["dataQualityStatus"],
     description: "",
     imageUrl: "",
+    isStorefrontVisible: false,
     name: "",
     reorderLevel: "0",
     sellingPrice: "",
+    sizeUnit: "" as NonNullable<ProductRecord["sizeUnit"]> | "",
+    sizeValue: "",
     targetStockLevel: "0",
-    unit: "PIECE" as ProductRecord["unit"]
+    unit: "PIECE" as ProductRecord["unit"],
+    variant: ""
   });
 
   useEffect(() => {
@@ -2634,15 +2728,21 @@ function ProductDetailsDialog({
 
     setForm({
       barcode: product.barcode ?? "",
+      brand: product.brand ?? "",
       categoryId: product.category.id,
       costPrice: product.costPrice,
       description: product.description ?? "",
       imageUrl: product.imageUrl ?? "",
       name: product.name,
+      dataQualityStatus: product.dataQualityStatus,
+      isStorefrontVisible: product.isStorefrontVisible,
       reorderLevel: String(product.reorderLevel),
       sellingPrice: product.sellingPrice,
       targetStockLevel: String(product.targetStockLevel),
-      unit: product.unit
+      unit: product.unit,
+      variant: product.variant ?? "",
+      sizeValue: product.sizeValue ?? "",
+      sizeUnit: product.sizeUnit ?? ""
     });
     setIsEditing(false);
   }, [product]);
@@ -2659,15 +2759,21 @@ function ProductDetailsDialog({
     try {
       const response = await updateProduct(product.id, {
         barcode: form.barcode.trim() || null,
+        brand: form.brand.trim() || null,
         categoryId: form.categoryId,
         costPrice: form.costPrice.trim(),
         description: form.description.trim() || null,
         imageUrl: form.imageUrl.trim() || null,
         name: form.name.trim(),
+        dataQualityStatus: form.dataQualityStatus,
+        isStorefrontVisible: form.isStorefrontVisible,
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
         targetStockLevel: Number(form.targetStockLevel),
-        unit: form.unit
+        unit: form.unit,
+        variant: form.variant.trim() || null,
+        sizeValue: form.sizeValue ? Number(form.sizeValue) : null,
+        sizeUnit: form.sizeUnit || null
       });
 
       if (!response.success) {
@@ -2762,6 +2868,62 @@ function ProductDetailsDialog({
                         setForm((current) => ({ ...current, barcode: event.target.value }))
                       }
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-brand">Brand</Label>
+                    <Input
+                      id="edit-brand"
+                      placeholder="Leave blank when unknown"
+                      value={form.brand}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, brand: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-variant">Variant or flavor</Label>
+                    <Input
+                      id="edit-variant"
+                      placeholder="Leave blank when not specified"
+                      value={form.variant}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, variant: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-size-value">Pack size</Label>
+                    <Input
+                      id="edit-size-value"
+                      inputMode="decimal"
+                      placeholder="Unknown"
+                      value={form.sizeValue}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, sizeValue: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-size-unit">Pack size unit</Label>
+                    <Select
+                      id="edit-size-unit"
+                      value={form.sizeUnit}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          sizeUnit: event.target.value as
+                            | NonNullable<ProductRecord["sizeUnit"]>
+                            | ""
+                        }))
+                      }
+                    >
+                      <option value="">Unknown</option>
+                      {["MILLILITER", "LITER", "GRAM", "KILOGRAM", "PIECE"].map((unit) => (
+                        <option key={unit} value={unit}>
+                          {unit}
+                        </option>
+                      ))}
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="edit-category">Category</Label>
@@ -2878,6 +3040,40 @@ function ProductDetailsDialog({
                       }
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-quality-status">Catalog quality</Label>
+                    <Select
+                      id="edit-quality-status"
+                      value={form.dataQualityStatus}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          dataQualityStatus: event.target
+                            .value as ProductRecord["dataQualityStatus"],
+                          isStorefrontVisible:
+                            event.target.value === "APPROVED" ? current.isStorefrontVisible : false
+                        }))
+                      }
+                    >
+                      <option value="NEEDS_REVIEW">Needs review</option>
+                      <option value="APPROVED">Approved</option>
+                      <option value="REJECTED">Rejected</option>
+                    </Select>
+                  </div>
+                  <label className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700">
+                    <input
+                      checked={form.isStorefrontVisible}
+                      disabled={form.dataQualityStatus !== "APPROVED"}
+                      type="checkbox"
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          isStorefrontVisible: event.target.checked
+                        }))
+                      }
+                    />
+                    Approved for customer storefront
+                  </label>
                 </div>
               </form>
             ) : (
@@ -2890,6 +3086,16 @@ function ProductDetailsDialog({
                     value={product.imageUrl ? "Catalog link set" : "Not set"}
                   />
                   <DetailLine label="Category" value={product.category.name} />
+                  <DetailLine label="Brand" value={product.brand ?? "Unknown"} />
+                  <DetailLine label="Variant" value={product.variant ?? "Not specified"} />
+                  <DetailLine
+                    label="Pack size"
+                    value={
+                      product.sizeValue && product.sizeUnit
+                        ? `${product.sizeValue} ${product.sizeUnit}`
+                        : "Unresolved"
+                    }
+                  />
                   <DetailLine label="Unit" value={product.unit} />
                   <DetailLine
                     label="Cost price"
@@ -2904,6 +3110,20 @@ function ProductDetailsDialog({
                   <DetailLine
                     label="Status"
                     value={product.status === "ACTIVE" ? "Available" : "Unavailable"}
+                  />
+                  <DetailLine label="Record source" value={product.recordSource} />
+                  <DetailLine label="Catalog quality" value={product.dataQualityStatus} />
+                  <DetailLine
+                    label="Quality warnings"
+                    value={
+                      product.qualityWarnings.length > 0
+                        ? product.qualityWarnings.join(", ")
+                        : "None"
+                    }
+                  />
+                  <DetailLine
+                    label="Customer storefront"
+                    value={product.isStorefrontVisible ? "Approved" : "Hidden"}
                   />
                   <DetailLine
                     label="Created"

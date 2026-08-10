@@ -127,6 +127,34 @@ test("POS actual replaces rather than adds to imported product-month quantity", 
   });
 });
 
+test("confirmed alias histories aggregate by canonical product and month", () => {
+  const combined = combineEffectiveMonthlyPoints(
+    [
+      {
+        isActive: true,
+        period: new Date("2024-01-01T00:00:00.000Z"),
+        productId: "canonical-product",
+        quantitySold: 4,
+        source: "IMPORTED_HISTORICAL"
+      },
+      {
+        isActive: true,
+        period: new Date("2024-01-01T00:00:00.000Z"),
+        productId: "canonical-product",
+        quantitySold: 6,
+        source: "IMPORTED_HISTORICAL"
+      }
+    ],
+    []
+  );
+
+  assert.deepEqual(combined.get("canonical-product")?.get("2024-01"), {
+    period: "2024-01",
+    quantitySold: 10,
+    source: "IMPORTED_HISTORICAL"
+  });
+});
+
 test("inactive imports and development fixtures are excluded", () => {
   const combined = combineEffectiveMonthlyPoints(
     [

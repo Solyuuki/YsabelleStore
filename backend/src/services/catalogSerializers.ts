@@ -10,6 +10,8 @@ import type {
 export type ProductWithRelations = Product & {
   category: Category;
   inventory: Inventory | null;
+  duplicateCandidatesLeft?: Array<{ status: string }>;
+  duplicateCandidatesRight?: Array<{ status: string }>;
 };
 
 export type InventoryWithRelations = Inventory & {
@@ -38,6 +40,9 @@ export type CategorySummary = {
   slug: string;
   description: string | null;
   isActive: boolean;
+  recordSource: Category["recordSource"];
+  dataQualityStatus: Category["dataQualityStatus"];
+  isStorefrontVisible: boolean;
 };
 
 export type InventorySummary = {
@@ -58,6 +63,10 @@ export type ProductSummary = {
   barcode: string | null;
   description: string | null;
   imageUrl: string | null;
+  brand: string | null;
+  variant: string | null;
+  sizeValue: string | null;
+  sizeUnit: Product["sizeUnit"];
   unit: Product["unit"];
   costPrice: string;
   sellingPrice: string;
@@ -65,6 +74,10 @@ export type ProductSummary = {
   targetStockLevel: number;
   status: ProductStatusView;
   isActive: boolean;
+  recordSource: Product["recordSource"];
+  dataQualityStatus: Product["dataQualityStatus"];
+  isStorefrontVisible: boolean;
+  qualityWarnings: string[];
   category: CategorySummary;
   inventory: InventorySummary;
   createdAt: Date;
@@ -140,7 +153,10 @@ export function serializeCategory(category: Category): CategorySummary {
     name: category.name,
     slug: category.slug,
     description: category.description ?? null,
-    isActive: category.isActive
+    isActive: category.isActive,
+    recordSource: category.recordSource,
+    dataQualityStatus: category.dataQualityStatus,
+    isStorefrontVisible: category.isStorefrontVisible
   };
 }
 
@@ -148,6 +164,17 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
   const inventory = product.inventory ?? null;
   const quantityOnHand = inventory?.quantityOnHand ?? 0;
   const stockStatus = computeStockStatus(quantityOnHand, product.reorderLevel);
+  const hasUnresolvedDuplicate = [
+    ...(product.duplicateCandidatesLeft ?? []),
+    ...(product.duplicateCandidatesRight ?? [])
+  ].some((candidate) => ["PENDING", "CONFIRMED"].includes(candidate.status));
+  const qualityWarnings = [
+    ...(product.recordSource === "TEST_FIXTURE" ? ["TEST_FIXTURE"] : []),
+    ...(product.dataQualityStatus === "NEEDS_REVIEW" ? ["CATALOG_REVIEW_REQUIRED"] : []),
+    ...(product.dataQualityStatus === "REJECTED" ? ["CATALOG_REJECTED"] : []),
+    ...(hasUnresolvedDuplicate ? ["UNRESOLVED_DUPLICATE"] : []),
+    ...(!product.isStorefrontVisible ? ["STOREFRONT_HIDDEN"] : [])
+  ];
 
   return {
     id: product.id,
@@ -156,6 +183,10 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     barcode: product.barcode ?? null,
     description: product.description ?? null,
     imageUrl: product.imageUrl ?? null,
+    brand: product.brand ?? null,
+    variant: product.variant ?? null,
+    sizeValue: product.sizeValue?.toString() ?? null,
+    sizeUnit: product.sizeUnit ?? null,
     unit: product.unit,
     costPrice: product.costPrice.toString(),
     sellingPrice: product.sellingPrice.toString(),
@@ -163,6 +194,10 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     targetStockLevel: product.targetStockLevel,
     status: product.status,
     isActive: product.status === "ACTIVE",
+    recordSource: product.recordSource,
+    dataQualityStatus: product.dataQualityStatus,
+    isStorefrontVisible: product.isStorefrontVisible,
+    qualityWarnings,
     category: serializeCategory(product.category),
     inventory: {
       inventoryId: inventory?.id ?? "",

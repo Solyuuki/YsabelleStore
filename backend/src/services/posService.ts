@@ -6,6 +6,7 @@ import { prisma } from "../database/prismaClient.js";
 import { invalidateForecastCache } from "../modules/forecasting/forecast.service.js";
 import { HttpError } from "../utils/httpError.js";
 import type { PosCheckoutItemInput } from "../validators/pos.validators.js";
+import { operationalProductWhere } from "./catalogQualityPolicy.js";
 import {
   allocateStockForSale,
   assertStockInvariant,
@@ -73,26 +74,28 @@ type SalesListResult = {
 function buildPosWhere(query: string) {
   const normalizedQuery = query.trim();
 
-  return normalizedQuery
-    ? {
-        status: "ACTIVE" as const,
-        OR: [
-          { name: { contains: normalizedQuery } },
-          { sku: { contains: normalizedQuery } },
-          { barcode: { contains: normalizedQuery } },
-          { description: { contains: normalizedQuery } },
-          {
-            category: {
-              name: {
-                contains: normalizedQuery
+  return operationalProductWhere(
+    normalizedQuery
+      ? {
+          status: "ACTIVE" as const,
+          OR: [
+            { name: { contains: normalizedQuery } },
+            { sku: { contains: normalizedQuery } },
+            { barcode: { contains: normalizedQuery } },
+            { description: { contains: normalizedQuery } },
+            {
+              category: {
+                name: {
+                  contains: normalizedQuery
+                }
               }
             }
-          }
-        ]
-      }
-    : {
-        status: "ACTIVE" as const
-      };
+          ]
+        }
+      : {
+          status: "ACTIVE" as const
+        }
+  );
 }
 
 export async function searchPosProducts(
@@ -174,12 +177,12 @@ export async function checkoutPosSale(input: {
         category: true,
         inventory: true
       },
-      where: {
+      where: operationalProductWhere({
         id: {
           in: normalizedItems.map((item) => item.productId)
         },
         status: "ACTIVE"
-      }
+      })
     });
 
     const productMap = new Map(products.map((product) => [product.id, product]));

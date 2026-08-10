@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { CustomerOrderStatus, Prisma, ProductStatus, SaleStatus } from "@prisma/client";
+import { CustomerOrderStatus, Prisma, SaleStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
@@ -9,6 +9,11 @@ import type {
   StorefrontOrderInput,
   StorefrontProductQuery
 } from "../validators/storefront.validators.js";
+import {
+  approvedStorefrontCategoryWhere,
+  approvedStorefrontProductCoreWhere,
+  storefrontProductWhere
+} from "./catalogQualityPolicy.js";
 import { getSellableStockQuantity } from "./stockDomainService.js";
 
 const storefrontProductInclude = {
@@ -53,8 +58,10 @@ export async function listStorefrontCategories() {
   const categories = await prisma.category.findMany({
     orderBy: { name: "asc" },
     where: {
-      isActive: true,
-      products: { some: { status: ProductStatus.ACTIVE } }
+      AND: [
+        approvedStorefrontCategoryWhere,
+        { products: { some: approvedStorefrontProductCoreWhere } }
+      ]
     },
     select: {
       id: true,
@@ -65,13 +72,10 @@ export async function listStorefrontCategories() {
         orderBy: [{ name: "asc" }, { id: "asc" }],
         select: { id: true, imageUrl: true, name: true },
         take: 3,
-        where: {
-          imageUrl: { not: null },
-          status: ProductStatus.ACTIVE
-        }
+        where: { AND: [approvedStorefrontProductCoreWhere, { imageUrl: { not: null } }] }
       },
       _count: {
-        select: { products: { where: { status: ProductStatus.ACTIVE } } }
+        select: { products: { where: approvedStorefrontProductCoreWhere } }
       }
     }
   });
@@ -90,12 +94,8 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
   const products = await prisma.product.findMany({
     include: storefrontProductInclude,
     orderBy: [{ name: "asc" }, { id: "asc" }],
-    where: {
-      status: ProductStatus.ACTIVE,
-      category: {
-        isActive: true,
-        ...(query.category ? { slug: query.category } : {})
-      },
+    where: storefrontProductWhere({
+      ...(query.category ? { category: { slug: query.category } } : {}),
       ...(search
         ? {
             OR: [
@@ -105,7 +105,7 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
             ]
           }
         : {})
-    }
+    })
   });
 
   const visibleProducts = products.map(serializeStorefrontProduct).filter((product) => {
@@ -127,10 +127,7 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
 export async function listStorefrontMerchandising(now = new Date()) {
   const products = await prisma.product.findMany({
     include: storefrontProductInclude,
-    where: {
-      status: ProductStatus.ACTIVE,
-      category: { isActive: true }
-    }
+    where: storefrontProductWhere()
   });
   const availableProducts = products
     .map(serializeStorefrontProduct)
@@ -179,11 +176,7 @@ export async function listStorefrontMerchandising(now = new Date()) {
 export async function getStorefrontProduct(productId: string) {
   const product = await prisma.product.findFirst({
     include: storefrontProductInclude,
-    where: {
-      id: productId,
-      status: ProductStatus.ACTIVE,
-      category: { isActive: true }
-    }
+    where: storefrontProductWhere({ id: productId })
   });
 
   if (!product) {
@@ -209,11 +202,9 @@ export async function createStorefrontOrder(input: StorefrontOrderInput) {
   return prisma.$transaction(async (tx) => {
     const products = await tx.product.findMany({
       include: storefrontProductInclude,
-      where: {
-        id: { in: normalizedItems.map((item) => item.productId) },
-        status: ProductStatus.ACTIVE,
-        category: { isActive: true }
-      }
+      where: storefrontProductWhere({
+        id: { in: normalizedItems.map((item) => item.productId) }
+      })
     });
     const productMap = new Map(products.map((product) => [product.id, product]));
 

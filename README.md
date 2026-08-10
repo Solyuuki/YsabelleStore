@@ -98,6 +98,10 @@ Electron never starts its own backend or Vite process. Pressing Ctrl+C stops eve
 owned by that command and waits for both ports to be released, allowing an immediate restart. A
 pre-existing listener produces an actionable error; the stack never silently chooses another port.
 
+## Catalog Data Quality
+
+Use `npm run catalog:audit` for a read-only report and `npm run catalog:clean` to preview the transactional cleaning policy. The explicit `npm run catalog:clean:apply` command commits classifications and verifies that protected relationship totals remain unchanged. See [docs/CATALOG-DATA-QUALITY.md](docs/CATALOG-DATA-QUALITY.md) for the quality gate, duplicate-review policy, and canonical mapping model.
+
 ## System Architecture
 
 ```text

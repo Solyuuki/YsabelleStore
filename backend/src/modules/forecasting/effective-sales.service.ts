@@ -1,4 +1,5 @@
 import { prisma } from "../../database/prismaClient.js";
+import { operationalProductWhere } from "../../services/catalogQualityPolicy.js";
 import type { ProductHistoricalSeries } from "./forecast.types.js";
 
 export const SARIMA_MINIMUM_OBSERVATIONS = 24;
@@ -162,9 +163,13 @@ export function combineEffectiveMonthlyPoints(
     if (!record.isActive || record.source !== "IMPORTED_HISTORICAL") continue;
     const productPoints = pointsByProduct.get(record.productId) ?? new Map();
     const period = periodKey(record.period);
+    const existing = productPoints.get(period);
     productPoints.set(period, {
       period,
-      quantitySold: record.quantitySold,
+      quantitySold:
+        existing?.source === "IMPORTED_HISTORICAL"
+          ? existing.quantitySold + record.quantitySold
+          : record.quantitySold,
       source: "IMPORTED_HISTORICAL"
     });
     pointsByProduct.set(record.productId, productPoints);
@@ -189,7 +194,9 @@ export function combineEffectiveMonthlyPoints(
 }
 
 export async function getEffectiveMonthlySeries(productIds?: string[]) {
-  const productWhere = productIds?.length ? { id: { in: productIds } } : undefined;
+  const productWhere = operationalProductWhere(
+    productIds?.length ? { id: { in: productIds } } : {}
+  );
   const products = await prisma.product.findMany({
     orderBy: { name: "asc" },
     select: {
@@ -206,13 +213,22 @@ export async function getEffectiveMonthlySeries(productIds?: string[]) {
   }
 
   const ids = products.map((product) => product.id);
+  const mappings = await prisma.productCanonicalMapping.findMany({
+    select: { canonicalProductId: true, sourceProductId: true },
+    where: { canonicalProductId: { in: ids } }
+  });
+  const sourceToCanonical = new Map(
+    mappings.map((mapping) => [mapping.sourceProductId, mapping.canonicalProductId])
+  );
+  const sourceIds = mappings.map((mapping) => mapping.sourceProductId);
+  const historicalProductIds = [...new Set([...ids, ...sourceIds])];
   const [imported, actualItems] = await Promise.all([
     prisma.historicalMonthlySales.findMany({
       orderBy: { period: "asc" },
       select: { isActive: true, period: true, productId: true, quantitySold: true, source: true },
       where: {
         isActive: true,
-        productId: { in: ids },
+        productId: { in: historicalProductIds },
         source: "IMPORTED_HISTORICAL"
       }
     }),
@@ -223,17 +239,20 @@ export async function getEffectiveMonthlySeries(productIds?: string[]) {
         sale: { select: { saleDate: true } }
       },
       where: {
-        productId: { in: ids },
+        productId: { in: historicalProductIds },
         sale: { status: "COMPLETED" }
       }
     })
   ]);
 
   const pointsByProduct = combineEffectiveMonthlyPoints(
-    imported,
+    imported.map((record) => ({
+      ...record,
+      productId: sourceToCanonical.get(record.productId) ?? record.productId
+    })),
     actualItems.map((item) => ({
       period: item.sale.saleDate,
-      productId: item.productId,
+      productId: sourceToCanonical.get(item.productId) ?? item.productId,
       quantity: item.quantity
     }))
   );

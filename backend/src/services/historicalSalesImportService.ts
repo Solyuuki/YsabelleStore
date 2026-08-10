@@ -13,6 +13,7 @@ import {
 import { invalidateForecastCache } from "../modules/forecasting/forecast.service.js";
 import { HttpError } from "../utils/httpError.js";
 import { normalizeCode, normalizeWhitespace } from "../utils/normalizers.js";
+import { operationalProductWhere } from "./catalogQualityPolicy.js";
 
 export const HISTORICAL_SALES_TEMPLATE_HEADERS = [
   "sku",
@@ -376,14 +377,68 @@ async function buildPreview(file: UploadFile) {
         .filter(Boolean)
     )
   ];
-  const products = await prisma.product.findMany({
-    select: { barcode: true, id: true, name: true, sku: true },
-    where: { OR: [{ sku: { in: skuValues } }, { barcode: { in: barcodeValues } }] }
-  });
-  const bySku = new Map(products.map((product) => [normalizeCode(product.sku), product]));
-  const byBarcode = new Map(
-    products.flatMap((product) => (product.barcode ? [[product.barcode, product] as const] : []))
+  const [products, aliases] = await Promise.all([
+    prisma.product.findMany({
+      select: {
+        barcode: true,
+        id: true,
+        name: true,
+        sku: true,
+        sourceMapping: {
+          select: {
+            canonicalProduct: {
+              select: { barcode: true, id: true, name: true, sku: true }
+            }
+          }
+        }
+      },
+      where: {
+        AND: [
+          { OR: [{ sku: { in: skuValues } }, { barcode: { in: barcodeValues } }] },
+          {
+            OR: [operationalProductWhere(), { sourceMapping: { isNot: null } }]
+          }
+        ]
+      }
+    }),
+    prisma.productAlias.findMany({
+      select: {
+        normalizedValue: true,
+        type: true,
+        canonicalProduct: {
+          select: { barcode: true, id: true, name: true, sku: true }
+        }
+      },
+      where: {
+        canonicalProduct: { is: operationalProductWhere() },
+        OR: [
+          { type: "SKU", normalizedValue: { in: skuValues } },
+          { type: "BARCODE", normalizedValue: { in: barcodeValues } }
+        ]
+      }
+    })
+  ]);
+  const bySku = new Map(
+    products.map((product) => [
+      normalizeCode(product.sku),
+      product.sourceMapping?.canonicalProduct ?? product
+    ])
   );
+  const byBarcode = new Map(
+    products.flatMap((product) =>
+      product.barcode
+        ? [[product.barcode, product.sourceMapping?.canonicalProduct ?? product] as const]
+        : []
+    )
+  );
+  for (const alias of aliases) {
+    if (alias.type === "SKU" && !bySku.has(alias.normalizedValue)) {
+      bySku.set(alias.normalizedValue, alias.canonicalProduct);
+    }
+    if (alias.type === "BARCODE" && !byBarcode.has(alias.normalizedValue)) {
+      byBarcode.set(alias.normalizedValue, alias.canonicalProduct);
+    }
+  }
 
   const rows: HistoricalSalesPreviewRow[] = baseRows.map(({ rowNumber, sourceRow, rawData }) => {
     const errors: Issue[] = [];

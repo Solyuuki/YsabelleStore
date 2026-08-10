@@ -3,12 +3,19 @@ import { apiClient } from "@/services/apiClient";
 import { getStoredAuthToken } from "@/services/authStorage";
 import type { ApiResponse } from "@/types/api";
 
+export type CatalogRecordSource = "CATALOG" | "IMPORT" | "TEST_FIXTURE" | "INTERNAL";
+export type CatalogQualityStatus = "APPROVED" | "NEEDS_REVIEW" | "REJECTED";
+export type ProductSizeUnit = "MILLILITER" | "LITER" | "GRAM" | "KILOGRAM" | "PIECE";
+
 export type ProductCategorySummary = {
   id: string;
   name: string;
   slug: string;
   description: string | null;
   isActive: boolean;
+  recordSource: CatalogRecordSource;
+  dataQualityStatus: CatalogQualityStatus;
+  isStorefrontVisible: boolean;
 };
 
 export type ProductCategoryRecord = ProductCategorySummary;
@@ -35,6 +42,10 @@ export type ProductRecord = {
   barcode: string | null;
   description: string | null;
   imageUrl: string | null;
+  brand: string | null;
+  variant: string | null;
+  sizeValue: string | null;
+  sizeUnit: ProductSizeUnit | null;
   unit: string;
   costPrice: string;
   sellingPrice: string;
@@ -42,6 +53,10 @@ export type ProductRecord = {
   targetStockLevel: number;
   status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   isActive: boolean;
+  recordSource: CatalogRecordSource;
+  dataQualityStatus: CatalogQualityStatus;
+  isStorefrontVisible: boolean;
+  qualityWarnings: string[];
   category: ProductCategorySummary;
   inventory: ProductInventorySummary;
   createdAt: string;
@@ -61,6 +76,12 @@ export type CreateProductInput = {
   reorderLevel: number;
   targetStockLevel: number;
   status?: ProductRecord["status"];
+  brand?: string | null;
+  variant?: string | null;
+  sizeValue?: number | null;
+  sizeUnit?: ProductSizeUnit | null;
+  dataQualityStatus?: CatalogQualityStatus;
+  isStorefrontVisible?: boolean;
 };
 
 export type InventoryRecord = {
@@ -548,6 +569,12 @@ export async function updateProduct(
       | "unit"
       | "description"
       | "imageUrl"
+      | "brand"
+      | "variant"
+      | "sizeValue"
+      | "sizeUnit"
+      | "dataQualityStatus"
+      | "isStorefrontVisible"
       | "costPrice"
       | "sellingPrice"
       | "reorderLevel"

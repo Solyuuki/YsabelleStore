@@ -57,7 +57,7 @@ export type ForecastSourceSnapshot = {
 };
 
 async function loadForecastSourceSnapshot(): Promise<ForecastSourceSnapshot> {
-  const [historical, sales, saleItems, products, imports] = await Promise.all([
+  const [historical, sales, saleItems, products, imports, canonicalMappings] = await Promise.all([
     prisma.historicalMonthlySales.aggregate({
       _count: { _all: true },
       _max: { updatedAt: true },
@@ -82,6 +82,10 @@ async function loadForecastSourceSnapshot(): Promise<ForecastSourceSnapshot> {
       _count: { _all: true },
       _max: { completedAt: true, rolledBackAt: true },
       where: { status: { in: ["COMPLETED", "COMPLETED_WITH_SKIPS", "ROLLED_BACK"] } }
+    }),
+    prisma.productCanonicalMapping.aggregate({
+      _count: { _all: true },
+      _max: { updatedAt: true }
     })
   ]);
 
@@ -97,6 +101,10 @@ async function loadForecastSourceSnapshot(): Promise<ForecastSourceSnapshot> {
         completedAt: dateValue(imports._max.completedAt),
         count: imports._count._all,
         rolledBackAt: dateValue(imports._max.rolledBackAt)
+      },
+      canonicalMappings: {
+        count: canonicalMappings._count._all,
+        updatedAt: dateValue(canonicalMappings._max.updatedAt)
       },
       products: {
         count: products._count._all,

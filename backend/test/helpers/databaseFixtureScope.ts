@@ -53,6 +53,22 @@ export async function captureDatabaseFixtureScope(
 
         if (newProducts.length > 0) {
           const productIds = { in: newProducts };
+          await transaction.catalogAuditLog.deleteMany({
+            where: { canonicalProductId: productIds }
+          });
+          await transaction.productDuplicateCandidate.deleteMany({
+            where: {
+              OR: [{ leftProductId: productIds }, { rightProductId: productIds }]
+            }
+          });
+          await transaction.productCanonicalMapping.deleteMany({
+            where: {
+              OR: [{ sourceProductId: productIds }, { canonicalProductId: productIds }]
+            }
+          });
+          await transaction.productAlias.deleteMany({
+            where: { canonicalProductId: productIds }
+          });
           await transaction.customerOrderItem.deleteMany({ where: { productId: productIds } });
           await transaction.saleItem.deleteMany({ where: { productId: productIds } });
           await transaction.recommendationRecord.deleteMany({ where: { productId: productIds } });

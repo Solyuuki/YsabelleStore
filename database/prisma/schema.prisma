@@ -45,6 +45,54 @@ enum ProductStatus {
   DISCONTINUED
 }
 
+enum CatalogRecordSource {
+  CATALOG
+  IMPORT
+  TEST_FIXTURE
+  INTERNAL
+}
+
+enum CatalogQualityStatus {
+  APPROVED
+  NEEDS_REVIEW
+  REJECTED
+}
+
+enum ProductSizeUnit {
+  MILLILITER
+  LITER
+  GRAM
+  KILOGRAM
+  PIECE
+}
+
+enum ProductAliasType {
+  RAW_NAME
+  SKU
+  BARCODE
+  SUPPLIER_CODE
+}
+
+enum ProductIdentityMatchType {
+  BARCODE
+  SKU
+  SUPPLIER_CODE
+  NORMALIZED_IDENTITY
+  MANUAL_REVIEW
+}
+
+enum ProductMappingAction {
+  MAPPED
+  MERGED
+}
+
+enum ProductDuplicateStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  MERGED
+}
+
 enum InventoryBatchStatus {
   AVAILABLE
   LOW_STOCK
@@ -215,36 +263,47 @@ model TrustedDevice {
 }
 
 model Category {
-  id          String    @id @default(cuid()) @db.VarChar(191)
-  name        String    @unique(map: "uq_categories_name") @db.VarChar(120)
-  slug        String    @unique(map: "uq_categories_slug") @db.VarChar(140)
-  description String?   @db.VarChar(255)
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  products    Product[]
+  id                  String               @id @default(cuid()) @db.VarChar(191)
+  name                String               @unique(map: "uq_categories_name") @db.VarChar(120)
+  slug                String               @unique(map: "uq_categories_slug") @db.VarChar(140)
+  description         String?              @db.VarChar(255)
+  isActive            Boolean              @default(true) @map("is_active")
+  recordSource        CatalogRecordSource  @default(CATALOG) @map("record_source")
+  dataQualityStatus   CatalogQualityStatus @default(NEEDS_REVIEW) @map("data_quality_status")
+  isStorefrontVisible Boolean              @default(false) @map("is_storefront_visible")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  products            Product[]
 
   @@index([isActive], map: "idx_categories_is_active")
+  @@index([isStorefrontVisible, dataQualityStatus, isActive], map: "idx_categories_storefront_quality")
   @@map("categories")
 }
 
 model Product {
-  id                        String                     @id @default(cuid()) @db.VarChar(191)
-  categoryId                String                     @map("category_id") @db.VarChar(191)
-  sku                       String                     @unique(map: "uq_products_sku") @db.VarChar(80)
-  barcode                   String?                    @unique(map: "uq_products_barcode") @db.VarChar(80)
-  name                      String                     @db.VarChar(160)
-  description               String?                    @db.VarChar(255)
-  imageUrl                  String?                    @map("image_url") @db.VarChar(2048)
-  unit                      ProductUnit                @default(PIECE)
-  costPrice                 Decimal                    @map("cost_price") @db.Decimal(10, 2)
-  sellingPrice              Decimal                    @map("selling_price") @db.Decimal(10, 2)
-  reorderLevel              Int                        @default(0) @map("reorder_level") @db.UnsignedInt
-  targetStockLevel          Int                        @default(0) @map("target_stock_level") @db.UnsignedInt
-  status                    ProductStatus              @default(ACTIVE)
-  createdAt                 DateTime                   @default(now()) @map("created_at")
-  updatedAt                 DateTime                   @updatedAt @map("updated_at")
-  category                  Category                   @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id                        String                      @id @default(cuid()) @db.VarChar(191)
+  categoryId                String                      @map("category_id") @db.VarChar(191)
+  sku                       String                      @unique(map: "uq_products_sku") @db.VarChar(80)
+  barcode                   String?                     @unique(map: "uq_products_barcode") @db.VarChar(80)
+  name                      String                      @db.VarChar(160)
+  description               String?                     @db.VarChar(255)
+  imageUrl                  String?                     @map("image_url") @db.VarChar(2048)
+  brand                     String?                     @db.VarChar(120)
+  variant                   String?                     @db.VarChar(120)
+  sizeValue                 Decimal?                    @map("size_value") @db.Decimal(10, 3)
+  sizeUnit                  ProductSizeUnit?            @map("size_unit")
+  unit                      ProductUnit                 @default(PIECE)
+  costPrice                 Decimal                     @map("cost_price") @db.Decimal(10, 2)
+  sellingPrice              Decimal                     @map("selling_price") @db.Decimal(10, 2)
+  reorderLevel              Int                         @default(0) @map("reorder_level") @db.UnsignedInt
+  targetStockLevel          Int                         @default(0) @map("target_stock_level") @db.UnsignedInt
+  status                    ProductStatus               @default(ACTIVE)
+  recordSource              CatalogRecordSource         @default(CATALOG) @map("record_source")
+  dataQualityStatus         CatalogQualityStatus        @default(NEEDS_REVIEW) @map("data_quality_status")
+  isStorefrontVisible       Boolean                     @default(false) @map("is_storefront_visible")
+  createdAt                 DateTime                    @default(now()) @map("created_at")
+  updatedAt                 DateTime                    @updatedAt @map("updated_at")
+  category                  Category                    @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   inventory                 Inventory?
   inventoryBatches          InventoryBatch[]
   inventoryMovements        InventoryMovement[]
@@ -254,11 +313,97 @@ model Product {
   historicalMonthlySales    HistoricalMonthlySales[]
   historicalSalesImportRows HistoricalSalesImportRow[]
   customerOrderItems        CustomerOrderItem[]
+  aliases                   ProductAlias[]
+  sourceMapping             ProductCanonicalMapping?    @relation("SourceProductMapping")
+  canonicalMappings         ProductCanonicalMapping[]   @relation("CanonicalProductMappings")
+  duplicateCandidatesLeft   ProductDuplicateCandidate[] @relation("DuplicateCandidateLeft")
+  duplicateCandidatesRight  ProductDuplicateCandidate[] @relation("DuplicateCandidateRight")
+  canonicalAuditLogs        CatalogAuditLog[]
 
   @@index([categoryId, status], map: "idx_products_category_status")
   @@index([name], map: "idx_products_name")
   @@index([status, createdAt], map: "idx_products_status_created")
+  @@index([isStorefrontVisible, dataQualityStatus, status], map: "idx_products_storefront_quality")
+  @@index([recordSource, dataQualityStatus], map: "idx_products_source_quality")
   @@map("products")
+}
+
+model ProductAlias {
+  id                 String              @id @default(cuid()) @db.VarChar(191)
+  canonicalProductId String              @map("canonical_product_id") @db.VarChar(191)
+  type               ProductAliasType
+  value              String              @db.VarChar(255)
+  normalizedValue    String              @map("normalized_value") @db.VarChar(255)
+  recordSource       CatalogRecordSource @default(IMPORT) @map("record_source")
+  sourceReference    String?             @map("source_reference") @db.VarChar(255)
+  evidence           Json?
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  canonicalProduct   Product             @relation(fields: [canonicalProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([canonicalProductId, type, normalizedValue], map: "uq_product_alias_identity")
+  @@index([type, normalizedValue], map: "idx_product_alias_lookup")
+  @@map("product_aliases")
+}
+
+model ProductCanonicalMapping {
+  id                 String                   @id @default(cuid()) @db.VarChar(191)
+  sourceProductId    String                   @unique(map: "uq_product_mapping_source") @map("source_product_id") @db.VarChar(191)
+  canonicalProductId String                   @map("canonical_product_id") @db.VarChar(191)
+  matchType          ProductIdentityMatchType @map("match_type")
+  action             ProductMappingAction     @default(MAPPED)
+  reason             String                   @db.VarChar(500)
+  evidence           Json
+  automated          Boolean                  @default(false)
+  approvedBy         String?                  @map("approved_by") @db.VarChar(191)
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @updatedAt @map("updated_at")
+  sourceProduct      Product                  @relation("SourceProductMapping", fields: [sourceProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  canonicalProduct   Product                  @relation("CanonicalProductMappings", fields: [canonicalProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([canonicalProductId], map: "idx_product_mapping_canonical")
+  @@index([matchType, action], map: "idx_product_mapping_match_action")
+  @@map("product_canonical_mappings")
+}
+
+model ProductDuplicateCandidate {
+  id             String                   @id @default(cuid()) @db.VarChar(191)
+  leftProductId  String                   @map("left_product_id") @db.VarChar(191)
+  rightProductId String                   @map("right_product_id") @db.VarChar(191)
+  matchType      ProductIdentityMatchType @map("match_type")
+  confidence     Decimal                  @db.Decimal(5, 4)
+  reason         String                   @db.VarChar(500)
+  evidence       Json
+  status         ProductDuplicateStatus   @default(PENDING)
+  resolvedBy     String?                  @map("resolved_by") @db.VarChar(191)
+  resolvedAt     DateTime?                @map("resolved_at")
+  createdAt      DateTime                 @default(now()) @map("created_at")
+  updatedAt      DateTime                 @updatedAt @map("updated_at")
+  leftProduct    Product                  @relation("DuplicateCandidateLeft", fields: [leftProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  rightProduct   Product                  @relation("DuplicateCandidateRight", fields: [rightProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([leftProductId, rightProductId], map: "uq_product_duplicate_pair")
+  @@index([status, confidence], map: "idx_product_duplicate_status_confidence")
+  @@index([rightProductId], map: "idx_product_duplicate_right")
+  @@map("product_duplicate_candidates")
+}
+
+model CatalogAuditLog {
+  id                 String   @id @default(cuid()) @db.VarChar(191)
+  entityType         String   @map("entity_type") @db.VarChar(80)
+  entityId           String   @map("entity_id") @db.VarChar(191)
+  canonicalProductId String?  @map("canonical_product_id") @db.VarChar(191)
+  action             String   @db.VarChar(80)
+  reason             String   @db.VarChar(500)
+  evidence           Json?
+  automated          Boolean  @default(false)
+  actor              String?  @db.VarChar(191)
+  createdAt          DateTime @default(now()) @map("created_at")
+  canonicalProduct   Product? @relation(fields: [canonicalProductId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([entityType, entityId, createdAt], map: "idx_catalog_audit_entity_created")
+  @@index([canonicalProductId, createdAt], map: "idx_catalog_audit_canonical_created")
+  @@map("catalog_audit_logs")
 }
 
 model Inventory {

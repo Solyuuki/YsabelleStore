@@ -56,7 +56,10 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
     data: {
       name: `Storefront Test ${suffix}`,
       slug: `storefront-test-${suffix}`,
-      isActive: true
+      isActive: true,
+      recordSource: "CATALOG",
+      dataQualityStatus: "APPROVED",
+      isStorefrontVisible: true
     }
   });
   const product = await prisma.product.create({
@@ -71,6 +74,9 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
       reorderLevel: 2,
       targetStockLevel: 8,
       status: "ACTIVE",
+      recordSource: "CATALOG",
+      dataQualityStatus: "APPROVED",
+      isStorefrontVisible: true,
       inventory: { create: { quantityOnHand: 5 } },
       inventoryBatches: {
         create: {
