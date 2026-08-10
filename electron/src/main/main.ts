@@ -24,5 +24,8 @@ void app.whenReady().then(() => {
 
   registerReceiptPrintIpc();
   wireAppLifecycle();
-  void createMainWindow();
+  const mainWindow = createMainWindow();
+  mainWindow.webContents.once("did-finish-load", () => {
+    console.info("YsabelleStore Electron renderer ready.");
+  });
 });

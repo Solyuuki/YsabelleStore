@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isSupportedCatalogImageUrl } from "../utils/catalogImage.js";
+
 const moneyStringSchema = z.preprocess(
   (value) => {
     if (typeof value === "number") {
@@ -25,6 +27,24 @@ const optionalTextSchema = (maxLength: number) =>
 
     return value;
   }, z.string().max(maxLength).optional());
+
+const optionalCatalogImageUrlSchema = z.preprocess(
+  (value) => {
+    if (value === null) return null;
+    if (typeof value !== "string") return value;
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  },
+  z
+    .string()
+    .max(2048)
+    .refine(isSupportedCatalogImageUrl, {
+      message: "Product images must use an HTTPS URL or a root-relative local asset path."
+    })
+    .nullable()
+    .optional()
+);
 
 export const productUnitSchema = z.enum([
   "PIECE",
@@ -55,7 +75,8 @@ export const createProductSchema = z.object({
   reorderLevel: z.coerce.number().int().min(0).default(0),
   targetStockLevel: z.coerce.number().int().min(0).default(0),
   status: productStatusSchema.optional(),
-  description: optionalTextSchema(255)
+  description: optionalTextSchema(255),
+  imageUrl: optionalCatalogImageUrlSchema
 });
 
 export const updateProductSchema = z.object({
@@ -69,7 +90,8 @@ export const updateProductSchema = z.object({
   reorderLevel: z.coerce.number().int().min(0).optional(),
   targetStockLevel: z.coerce.number().int().min(0).optional(),
   status: productStatusSchema.optional(),
-  description: optionalTextSchema(255)
+  description: optionalTextSchema(255),
+  imageUrl: optionalCatalogImageUrlSchema
 });
 
 export const deactivateProductSchema = z.object({

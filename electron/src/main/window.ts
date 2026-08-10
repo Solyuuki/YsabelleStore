@@ -14,19 +14,19 @@ type RendererEntry = {
 };
 
 function resolveRendererEntry(): RendererEntry {
+  if (app.isPackaged) {
+    return {
+      kind: "file",
+      value: getPackagedRendererIndexPath()
+    };
+  }
+
   const rendererDevUrl = getRendererDevUrl();
 
   if (rendererDevUrl) {
     return {
       kind: "url",
       value: rendererDevUrl
-    };
-  }
-
-  if (app.isPackaged) {
-    return {
-      kind: "file",
-      value: getPackagedRendererIndexPath()
     };
   }
 
@@ -38,6 +38,7 @@ function resolveRendererEntry(): RendererEntry {
 
 export function createMainWindow(): BrowserWindow {
   const preloadPath = getPreloadBundlePath();
+  const smokeTest = process.env.YSABELLE_DEV_SMOKE === "1";
   const mainWindow = new BrowserWindow({
     ...windowDefaults,
     show: false,
@@ -47,9 +48,11 @@ export function createMainWindow(): BrowserWindow {
     webPreferences: createSafeWebPreferences(preloadPath, app.isPackaged)
   });
 
-  mainWindow.once("ready-to-show", () => {
-    mainWindow.show();
-  });
+  if (!smokeTest) {
+    mainWindow.once("ready-to-show", () => {
+      mainWindow.show();
+    });
+  }
 
   mainWindow.webContents.setWindowOpenHandler(() => ({
     action: "deny"
@@ -58,10 +61,30 @@ export function createMainWindow(): BrowserWindow {
   const rendererEntry = resolveRendererEntry();
 
   if (rendererEntry.kind === "url") {
-    void mainWindow.loadURL(rendererEntry.value);
+    void loadDevelopmentRenderer(mainWindow, rendererEntry.value);
   } else {
     void mainWindow.loadFile(rendererEntry.value);
   }
 
   return mainWindow;
+}
+
+async function loadDevelopmentRenderer(mainWindow: BrowserWindow, rendererUrl: string) {
+  const attempts = 30;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    if (mainWindow.isDestroyed()) return;
+
+    try {
+      await mainWindow.loadURL(rendererUrl);
+      return;
+    } catch (error) {
+      if (attempt === attempts) {
+        console.error(`Electron could not load the renderer at ${rendererUrl}.`, error);
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { frontendEnv } from "@/schemas/frontendEnv.schema";
+import { resolveApiUrl } from "@/config/runtime";
 import { apiClient } from "@/services/apiClient";
 import { getStoredAuthToken } from "@/services/authStorage";
 import type { ApiResponse } from "@/types/api";
@@ -34,6 +34,7 @@ export type ProductRecord = {
   sku: string;
   barcode: string | null;
   description: string | null;
+  imageUrl: string | null;
   unit: string;
   costPrice: string;
   sellingPrice: string;
@@ -54,6 +55,7 @@ export type CreateProductInput = {
   categoryId: string;
   unit: ProductRecord["unit"];
   description?: string | null;
+  imageUrl?: string | null;
   costPrice: string;
   sellingPrice: string;
   reorderLevel: number;
@@ -251,6 +253,7 @@ export type ProductImportRow = {
     initialStock: number;
     status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
     description: string | null;
+    imageUrl: string | null;
   } | null;
   valid: boolean;
   errors: ProductImportIssue[];
@@ -309,7 +312,7 @@ function buildQueryString(params: Record<string, string | number | boolean | und
 }
 
 function buildApiUrl(path: string) {
-  return new URL(path, frontendEnv.VITE_API_BASE_URL).toString();
+  return resolveApiUrl(path).toString();
 }
 
 async function downloadText(url: string) {
@@ -544,6 +547,7 @@ export async function updateProduct(
       | "categoryId"
       | "unit"
       | "description"
+      | "imageUrl"
       | "costPrice"
       | "sellingPrice"
       | "reorderLevel"

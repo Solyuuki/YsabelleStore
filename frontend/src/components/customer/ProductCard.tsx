@@ -3,6 +3,10 @@ import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
 import type { StorefrontProduct } from "@/types/storefront";
+import {
+  getStorefrontProductBadge,
+  type StorefrontProductBadge
+} from "@/utils/storefrontMerchandising";
 import { CustomerLink } from "./CustomerLink";
 import { ProductVisual } from "./ProductVisual";
 import { QuantityControl } from "./QuantityControl";
@@ -10,8 +14,10 @@ import { QuantityControl } from "./QuantityControl";
 export function ProductCard({
   product,
   navigate,
+  badge,
   tourTarget = false
 }: {
+  badge?: StorefrontProductBadge | null;
   product: StorefrontProduct;
   navigate: (path: string) => void;
   tourTarget?: boolean;
@@ -19,6 +25,7 @@ export function ProductCard({
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const outOfStock = product.availableStock <= 0;
+  const resolvedBadge = badge === undefined ? getStorefrontProductBadge(product) : badge;
 
   return (
     <article className="customer-product-card" data-tour={tourTarget ? "product" : undefined}>
@@ -33,6 +40,11 @@ export function ProductCard({
           imageUrl={product.imageUrl}
           name={product.name}
         />
+        {resolvedBadge ? (
+          <span className={`customer-product-badge customer-product-badge--${resolvedBadge.tone}`}>
+            {resolvedBadge.label}
+          </span>
+        ) : null}
       </CustomerLink>
       <div className="customer-product-card__body">
         <p className="customer-eyebrow">{product.category.name}</p>

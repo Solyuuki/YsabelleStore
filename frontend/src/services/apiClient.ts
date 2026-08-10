@@ -1,4 +1,4 @@
-import { frontendEnv } from "@/schemas/frontendEnv.schema";
+import { frontendRuntimeConfig, resolveApiUrl } from "@/config/runtime";
 import type { ApiResponse } from "@/types/api";
 
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
@@ -70,7 +70,7 @@ export class ApiClient {
     }
 
     let context: ApiRequestContext = {
-      url: new URL(path, this.baseUrl),
+      url: resolveUrl(path, this.baseUrl),
       init: {
         ...initOptions,
         headers: requestHeaders,
@@ -83,7 +83,20 @@ export class ApiClient {
       context = await interceptor(context);
     }
 
-    const response = await fetch(context.url, context.init);
+    let response: Response;
+
+    try {
+      response = await fetch(context.url, context.init);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+
+      throw new Error(
+        `The store service at ${frontendRuntimeConfig.apiBaseUrl} could not be reached. Please retry when the connection is available.`,
+        { cause: error }
+      );
+    }
     const payload = await this.parseResponse<TData, TError>(response);
 
     let interceptedPayload: ApiResponse = payload;
@@ -116,5 +129,13 @@ export class ApiClient {
 }
 
 export const apiClient = new ApiClient({
-  baseUrl: frontendEnv.VITE_API_BASE_URL
+  baseUrl: frontendRuntimeConfig.apiBaseUrl
 });
+
+function resolveUrl(path: string, baseUrl: string): URL {
+  if (baseUrl === frontendRuntimeConfig.apiBaseUrl) {
+    return resolveApiUrl(path);
+  }
+
+  return new URL(path, `${baseUrl.replace(/\/+$/, "")}/`);
+}

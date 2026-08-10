@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
 import { ProductVisual } from "@/components/customer/ProductVisual";
+import { ProductImage } from "@/components/customer/ProductImage";
 import { SystemIntelligenceScene } from "@/components/customer/discover/SystemIntelligenceScene";
 import { useCart } from "@/context/CartContext";
 import { fetchStorefrontProducts } from "@/services/storefrontService";
@@ -25,44 +26,44 @@ gsap.registerPlugin(ScrollTrigger);
 
 const essentialShelfItems = [
   {
-    alt: "Unbranded amber beverage bottle",
+    alt: "Bottled and canned beverages arranged on a grocery shelf",
     category: "Beverages",
-    imageUrl: "/images/discover/essentials/beverage.webp"
+    imageUrl: "/images/discover/essentials/beverages-retail-display.webp"
   },
   {
-    alt: "Unbranded resealable snack pouch",
+    alt: "Packaged crackers, chips, and snacks arranged on a grocery shelf",
     category: "Snacks",
-    imageUrl: "/images/discover/essentials/snacks.webp"
+    imageUrl: "/images/discover/essentials/snacks-retail-display.webp"
   },
   {
-    alt: "Unbranded instant noodle cup",
+    alt: "Packaged instant noodles and noodle cups arranged for retail",
     category: "Instant Food",
-    imageUrl: "/images/discover/essentials/instant-food.webp"
+    imageUrl: "/images/discover/essentials/instant-food-retail-display.webp"
   },
   {
-    alt: "Unbranded canned food tin",
+    alt: "Unopened canned foods arranged across store shelves",
     category: "Canned Goods",
-    imageUrl: "/images/discover/essentials/canned-goods.webp"
+    imageUrl: "/images/discover/essentials/canned-goods-retail-display.webp"
   },
   {
-    alt: "Unbranded pantry staple bag",
+    alt: "Packaged rice and grains arranged in a supermarket aisle",
     category: "Staples",
-    imageUrl: "/images/discover/essentials/staples.webp"
+    imageUrl: "/images/discover/essentials/staples-retail-display.webp"
   },
   {
-    alt: "Unbranded personal care bottle",
+    alt: "Packaged hair and personal care products on retail shelves",
     category: "Personal Care",
-    imageUrl: "/images/discover/essentials/personal-care.webp"
+    imageUrl: "/images/discover/essentials/personal-care-retail-display.webp"
   },
   {
-    alt: "Unbranded household detergent bottle",
+    alt: "Bottled household cleaners and laundry products on a display shelf",
     category: "Household",
-    imageUrl: "/images/discover/essentials/household.webp"
+    imageUrl: "/images/discover/essentials/household-retail-display.webp"
   },
   {
-    alt: "Stainless steel kitchen utensils in a holder",
+    alt: "Non-stick cookware arranged on a kitchenware store display",
     category: "Kitchen & Dining",
-    imageUrl: "/images/discover/essentials/kitchen-dining.webp"
+    imageUrl: "/images/discover/essentials/kitchen-dining-retail-display.webp"
   }
 ] as const;
 
@@ -101,22 +102,31 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
   const [activeScene, setActiveScene] = useState(0);
   const [catalogProducts, setCatalogProducts] = useState<StorefrontProduct[]>([]);
   const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>("loading");
+  const [catalogError, setCatalogError] = useState("");
+  const [catalogReloadKey, setCatalogReloadKey] = useState(0);
   const { addItem } = useCart();
 
   useEffect(() => {
     const controller = new AbortController();
+    setCatalogError("");
+    setCatalogStatus("loading");
 
     fetchStorefrontProducts({ availability: "in-stock", page: 1, pageSize: 48 }, controller.signal)
       .then(({ items }) => {
-        setCatalogProducts(items.filter(isPresentableStorefrontProduct).slice(0, 6));
+        setCatalogProducts(items.filter(isPresentableStorefrontProduct));
         setCatalogStatus("ready");
       })
-      .catch(() => {
-        if (!controller.signal.aborted) setCatalogStatus("error");
+      .catch((reason: unknown) => {
+        if (!controller.signal.aborted) {
+          setCatalogError(
+            reason instanceof Error ? reason.message : "The live catalog could not be reached."
+          );
+          setCatalogStatus("error");
+        }
       });
 
     return () => controller.abort();
-  }, []);
+  }, [catalogReloadKey]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -1086,7 +1096,11 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                   key={`shelf-slot-${index}`}
                 >
                   <div className="story-shelf__visual">
-                    <img alt={item.alt} decoding="async" loading="lazy" src={item.imageUrl} />
+                    <ProductImage
+                      alt={item.alt}
+                      fallbackLabel="Image temporarily unavailable"
+                      imageUrl={item.imageUrl}
+                    />
                     <span aria-hidden="true" className="story-shelf__shine" />
                   </div>
                   <span className="story-shelf__label">
@@ -1244,8 +1258,18 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                   <p>
                     {catalogStatus === "loading"
                       ? "Connecting to the store catalog and current stock."
-                      : "The full storefront remains available from the shopping page."}
+                      : catalogStatus === "error"
+                        ? catalogError
+                        : "No in-stock catalog products are available right now."}
                   </p>
+                  {catalogStatus === "error" ? (
+                    <button
+                      onClick={() => setCatalogReloadKey((current) => current + 1)}
+                      type="button"
+                    >
+                      Retry connection
+                    </button>
+                  ) : null}
                 </div>
               </div>
             )}

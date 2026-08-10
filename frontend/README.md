@@ -86,7 +86,8 @@ Sprint 1 routes are defined in `src/app/routes.ts` and rendered by the shell wit
 
 ## Environment Setup
 
-Create `frontend/.env` from `frontend/.env.example` for local development.
+Create the repository-root `.env` from `.env.example` for local development. Vite uses the root as
+its `envDir`, giving the browser and Electron renderer one public API setting.
 
 | Variable            | Purpose                     | Example                 |
 | ------------------- | --------------------------- | ----------------------- |
@@ -95,6 +96,8 @@ Create `frontend/.env` from `frontend/.env.example` for local development.
 | `VITE_API_BASE_URL` | Backend API base URL        | `http://localhost:3001` |
 
 All runtime values exposed to Vite must use the `VITE_` prefix.
+Only `VITE_*` values are embedded in the renderer. Backend credentials in the root `.env` are not
+exposed. API URL construction is centralized in `src/config/runtime.ts`.
 
 ## UI Standards
 

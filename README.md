@@ -68,6 +68,36 @@ YsabelleStore is a desktop inventory management and recommendation system for Ys
 | Packaging            | electron-builder                                               |
 | Development Tools    | Git, GitHub, npm, npx, ESLint, Prettier, Husky, GitHub Actions |
 
+## Local Development
+
+Copy `.env.example` to `.env` at the repository root and keep local database credentials only in
+that ignored file. Both renderers use the same `VITE_API_BASE_URL`, and the backend is the only
+process that connects to Prisma/MySQL.
+
+```bash
+# Canonical development stack: backend + browser + Electron
+npm run dev
+
+# Optional browser-focused stack: backend + browser, without Electron
+npm run dev:web
+
+# Print resolved URLs/database target without credentials
+npm run runtime:report
+
+# Compare storefront responses for browser and Electron origins
+npm run storefront:parity
+```
+
+`npm run dev` is sufficient for normal development. The root orchestrator starts the backend,
+waits for `/api/health`, starts Vite, waits for the Web URL, and then starts Electron. Once ready it
+prints the exact Web and backend URLs. `npm run dev:web` uses the same owner and readiness logic but
+intentionally omits Electron.
+
+Both commands use `http://localhost:5173` for the renderer and `http://localhost:3001` for the API.
+Electron never starts its own backend or Vite process. Pressing Ctrl+C stops every process tree
+owned by that command and waits for both ports to be released, allowing an immediate restart. A
+pre-existing listener produces an actionable error; the stack never silently chooses another port.
+
 ## System Architecture
 
 ```text

@@ -4,6 +4,7 @@ import {
   createStorefrontOrder,
   getStorefrontProduct,
   listStorefrontCategories,
+  listStorefrontMerchandising,
   listStorefrontProducts
 } from "../services/storefrontService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
@@ -35,6 +36,19 @@ export const listStorefrontProductsController: RequestHandler = async (request, 
     });
     const result = await listStorefrontProducts(query);
     response.json(createSuccessResponse("Storefront products loaded.", result.items, result.meta));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listStorefrontMerchandisingController: RequestHandler = async (
+  _request,
+  response,
+  next
+) => {
+  try {
+    const merchandising = await listStorefrontMerchandising();
+    response.json(createSuccessResponse("Storefront merchandising loaded.", merchandising));
   } catch (error) {
     next(error);
   }

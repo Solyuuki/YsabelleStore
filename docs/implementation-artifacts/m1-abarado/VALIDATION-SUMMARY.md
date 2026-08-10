@@ -125,3 +125,9 @@
 | 2026-08-09 | sprint/v0.4/sprint-4               | npm run typecheck --workspace frontend | Pending | Run validation before push and record the result.   |
 | 2026-08-09 | sprint/v0.4/sprint-4               | npm run build --workspace frontend     | Pending | Run validation before push and record the result.   |
 | 2026-08-09 | sprint/v0.4/sprint-4               | npm run prepush:local                  | Pending | Run validation before push and record the result.   |
+| 2026-08-10 | sprint/v0.4/sprint-4               | npm run format                         | Pending | Run validation before push and record the result.   |
+| 2026-08-10 | sprint/v0.4/sprint-4               | npm run format:check                   | Pending | Run validation before push and record the result.   |
+| 2026-08-10 | sprint/v0.4/sprint-4               | npm run lint                           | Pending | Run validation before push and record the result.   |
+| 2026-08-10 | sprint/v0.4/sprint-4               | npm run typecheck --workspace frontend | Pending | Run validation before push and record the result.   |
+| 2026-08-10 | sprint/v0.4/sprint-4               | npm run build --workspace frontend     | Pending | Run validation before push and record the result.   |
+| 2026-08-10 | sprint/v0.4/sprint-4               | npm run prepush:local                  | Pending | Run validation before push and record the result.   |

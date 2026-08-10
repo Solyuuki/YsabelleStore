@@ -7,6 +7,8 @@ import { InventoryBatchStatus } from "@prisma/client";
 import { prisma } from "../src/database/prismaClient.js";
 import {
   createStorefrontOrder,
+  listStorefrontCategories,
+  listStorefrontMerchandising,
   listStorefrontProducts
 } from "../src/services/storefrontService.js";
 import { getSellableStockQuantity } from "../src/services/stockDomainService.js";
@@ -33,6 +35,21 @@ test("sellable stock excludes expired and unavailable batches", () => {
   assert.equal(quantity, 4);
 });
 
+test("storefront merchandising only ranks available products with recorded sales", async () => {
+  const merchandising = await listStorefrontMerchandising();
+
+  assert.equal(merchandising.trendingWindowDays, 30);
+  for (const shelf of [merchandising.trending, merchandising.bestSellers]) {
+    assert.ok(shelf.length <= 4);
+    shelf.forEach((entry, index) => {
+      assert.equal(entry.rank, index + 1);
+      assert.ok(entry.unitsSold > 0);
+      assert.ok(entry.product.availableStock > 0);
+      if (index > 0) assert.ok((shelf[index - 1]?.unitsSold ?? 0) >= entry.unitsSold);
+    });
+  }
+});
+
 test("storefront orders remain pending and do not deduct inventory", async () => {
   const suffix = randomUUID().slice(0, 8);
   const category = await prisma.category.create({
@@ -47,6 +64,7 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
       categoryId: category.id,
       sku: `STOREFRONT-${suffix}`,
       name: `Storefront Test Product ${suffix}`,
+      imageUrl: `/images/products/storefront-test-${suffix}.webp`,
       unit: "PIECE",
       costPrice: "10.00",
       sellingPrice: "15.00",
@@ -74,8 +92,18 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
       pageSize: 24
     });
     const storefrontProduct = catalog.items.find((item) => item.id === product.id);
+    const storefrontCategories = await listStorefrontCategories();
+    const storefrontCategory = storefrontCategories.find((item) => item.id === category.id);
 
     assert.equal(storefrontProduct?.availableStock, 5);
+    assert.equal(storefrontProduct?.imageUrl, `/images/products/storefront-test-${suffix}.webp`);
+    assert.deepEqual(storefrontCategory?.representativeProducts, [
+      {
+        id: product.id,
+        imageUrl: `/images/products/storefront-test-${suffix}.webp`,
+        name: product.name
+      }
+    ]);
     assert.equal("costPrice" in (storefrontProduct ?? {}), false);
     assert.equal("reorderLevel" in (storefrontProduct ?? {}), false);
 

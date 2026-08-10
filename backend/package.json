@@ -8,7 +8,7 @@
     "prisma:generate": "npm run prisma:generate --prefix ..",
     "prebuild": "npm run prisma:generate",
     "build": "tsc -p tsconfig.json",
-    "test": "tsx --test --test-concurrency=1 test/data-flow.test.ts test/storefront.test.ts test/forecast-delivery.test.ts test/forecast-fallback.test.ts test/historical-sales-rules.test.ts test/inventory-import.test.ts",
+    "test": "tsx --test --test-concurrency=1 test/cors.test.ts test/data-flow.test.ts test/storefront.test.ts test/forecast-delivery.test.ts test/forecast-fallback.test.ts test/historical-sales-rules.test.ts test/inventory-import.test.ts",
     "start": "node dist/src/server.js",
     "lint": "eslint .",
     "format": "prettier --write .",

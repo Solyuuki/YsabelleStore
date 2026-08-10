@@ -1812,6 +1812,7 @@ function getReadableIssueField(field?: string) {
     categoryId: "Category",
     costPrice: "Cost price",
     description: "Description",
+    imageUrl: "Product image",
     initialStock: "Initial stock",
     name: "Product name",
     reorderLevel: "Reorder level",
@@ -1875,6 +1876,8 @@ function getRowValueByField(
       return rowData.costPrice;
     case "description":
       return rowData.description;
+    case "imageUrl":
+      return rowData.imageUrl;
     case "initialStock":
       return rowData.initialStock;
     case "name":
@@ -2133,6 +2136,7 @@ function CreateProductDialog({
     categoryId: "",
     costPrice: "",
     description: "",
+    imageUrl: "",
     name: "",
     reorderLevel: "0",
     sellingPrice: "",
@@ -2240,6 +2244,7 @@ function CreateProductDialog({
         categoryId: form.categoryId,
         costPrice: form.costPrice.trim(),
         description: form.description.trim() || null,
+        imageUrl: form.imageUrl.trim() || null,
         name: form.name.trim(),
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
@@ -2471,6 +2476,24 @@ function CreateProductDialog({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="product-image-url">Product image</Label>
+              <Input
+                id="product-image-url"
+                inputMode="url"
+                placeholder="https://brand.example/product.jpg or /images/products/item.jpg"
+                value={form.imageUrl}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, imageUrl: event.target.value }))
+                }
+              />
+              <p className="text-xs leading-5 text-slate-500">
+                Link only the exact product, size, flavor, and packaging shown in this catalog
+                record. Use an approved local asset or a stable HTTPS source you are permitted to
+                use.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="product-description">Description</Label>
               <Textarea
                 id="product-description"
@@ -2595,6 +2618,7 @@ function ProductDetailsDialog({
     categoryId: "",
     costPrice: "",
     description: "",
+    imageUrl: "",
     name: "",
     reorderLevel: "0",
     sellingPrice: "",
@@ -2613,6 +2637,7 @@ function ProductDetailsDialog({
       categoryId: product.category.id,
       costPrice: product.costPrice,
       description: product.description ?? "",
+      imageUrl: product.imageUrl ?? "",
       name: product.name,
       reorderLevel: String(product.reorderLevel),
       sellingPrice: product.sellingPrice,
@@ -2637,6 +2662,7 @@ function ProductDetailsDialog({
         categoryId: form.categoryId,
         costPrice: form.costPrice.trim(),
         description: form.description.trim() || null,
+        imageUrl: form.imageUrl.trim() || null,
         name: form.name.trim(),
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
@@ -2784,6 +2810,21 @@ function ProductDetailsDialog({
                     </Select>
                   </div>
                   <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="edit-image-url">Product image</Label>
+                    <Input
+                      id="edit-image-url"
+                      inputMode="url"
+                      placeholder="https://brand.example/product.jpg or /images/products/item.jpg"
+                      value={form.imageUrl}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, imageUrl: event.target.value }))
+                      }
+                    />
+                    <p className="text-xs leading-5 text-slate-500">
+                      Use an approved image for this exact SKU, variant, size, and packaging.
+                    </p>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="edit-description">Description</Label>
                     <Textarea
                       id="edit-description"
@@ -2844,6 +2885,10 @@ function ProductDetailsDialog({
                 <div className="grid gap-3 md:grid-cols-2">
                   <DetailLine label="SKU" value={product.sku} />
                   <DetailLine label="Barcode" value={product.barcode ?? "Not set"} />
+                  <DetailLine
+                    label="Product image"
+                    value={product.imageUrl ? "Catalog link set" : "Not set"}
+                  />
                   <DetailLine label="Category" value={product.category.name} />
                   <DetailLine label="Unit" value={product.unit} />
                   <DetailLine

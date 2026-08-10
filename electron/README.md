@@ -69,10 +69,17 @@ electron/
 
 ## Development Workflow
 
-1. Start the frontend dev server.
-2. Run the Electron workspace in development mode.
-3. The main process uses `ELECTRON_RENDERER_DEV_URL` when present.
-4. If the dev URL is not present, Electron falls back to the built renderer output.
+1. Run `npm run dev` at the repository root.
+2. The root owner starts the backend, waits for health, starts Vite, waits for its URL, and only then
+   starts the Electron shell.
+3. The main process uses `ELECTRON_RENDERER_DEV_URL` when present and otherwise uses
+   `http://localhost:5173` in development.
+4. The window retains a bounded retry as a secondary recovery path, while normal startup uses the
+   root readiness checks.
+5. Electron never spawns a backend; its React renderer uses the same `VITE_API_BASE_URL` as the
+   browser.
+6. A packaged application loads the built renderer from `frontend/index.html`.
+7. Ctrl+C at the root terminates the Electron process tree together with Vite and the backend.
 
 ## Production Packaging Plan
 

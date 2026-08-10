@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/main/main.js",
   "scripts": {
-    "dev": "npm run build && cross-env ELECTRON_RENDERER_DEV_URL=http://localhost:5173 electron .",
+    "dev": "npm run build && electron .",
     "build": "tsc -p tsconfig.json && esbuild src/preload/index.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist/preload/index.cjs",
     "package": "electron-builder --config electron-builder.config.cjs",
     "lint": "eslint .",
@@ -17,7 +17,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
-    "cross-env": "^7.0.3",
     "esbuild": "^0.25.12",
     "electron-builder": "^26.15.3",
     "tsx": "^4.19.2"

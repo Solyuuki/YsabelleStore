@@ -87,15 +87,22 @@ The canonical API contract lives in `docs/api/`. Backend implementations must fo
 
 ## Environment Setup
 
-Create `backend/.env` from `backend/.env.example` for local development.
+Create the repository-root `.env` from `.env.example` for local development. The backend always
+loads that root file so Prisma cannot accidentally resolve a workspace-specific database.
 
 | Variable       | Required For                 | Example                                              |
 | -------------- | ---------------------------- | ---------------------------------------------------- |
 | `NODE_ENV`     | Runtime mode                 | `development`                                        |
 | `PORT`         | Backend HTTP port            | `3001`                                               |
-| `CORS_ORIGIN`  | Frontend development origin  | `http://localhost:5173`                              |
+| `FRONTEND_URL` | Canonical frontend URL       | `http://localhost:5173`                              |
+| `CORS_ORIGINS` | Explicit renderer origins    | `http://localhost:5173,http://127.0.0.1:5173,null`   |
 | `DATABASE_URL` | Prisma and MySQL integration | `mysql://user:password@localhost:3306/ysabellestore` |
 | `JWT_SECRET`   | Authentication signing       | `change_this_development_secret`                     |
+
+`null` is allowed specifically for the packaged Electron `file://` renderer. Wildcard CORS is not
+used. The root development owner starts exactly one backend. A second backend start on port 3001
+probes `/api/health` to produce a specific error for an existing YsabelleStore service; it does not
+reuse or silently replace a process owned by another development stack.
 
 ## Validation Pattern
 

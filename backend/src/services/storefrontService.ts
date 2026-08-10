@@ -1,8 +1,9 @@
 import { randomBytes } from "node:crypto";
 
-import { CustomerOrderStatus, Prisma, ProductStatus } from "@prisma/client";
+import { CustomerOrderStatus, Prisma, ProductStatus, SaleStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
 import { HttpError } from "../utils/httpError.js";
 import type {
   StorefrontOrderInput,
@@ -19,6 +20,9 @@ type StorefrontProductRecord = Prisma.ProductGetPayload<{
   include: typeof storefrontProductInclude;
 }>;
 
+const STOREFRONT_MERCHANDISING_LIMIT = 4;
+const TRENDING_WINDOW_DAYS = 30;
+
 function stockStatus(availableStock: number, reorderLevel: number) {
   if (availableStock <= 0) return "OUT_OF_STOCK" as const;
   if (availableStock <= reorderLevel) return "LOW_STOCK" as const;
@@ -32,6 +36,7 @@ function serializeStorefrontProduct(product: StorefrontProductRecord) {
     id: product.id,
     name: product.name,
     description: product.description,
+    imageUrl: product.imageUrl,
     unit: product.unit,
     sellingPrice: product.sellingPrice.toString(),
     availableStock,
@@ -56,15 +61,27 @@ export async function listStorefrontCategories() {
       name: true,
       slug: true,
       description: true,
+      products: {
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        select: { id: true, imageUrl: true, name: true },
+        take: 3,
+        where: {
+          imageUrl: { not: null },
+          status: ProductStatus.ACTIVE
+        }
+      },
       _count: {
         select: { products: { where: { status: ProductStatus.ACTIVE } } }
       }
     }
   });
 
-  return categories.map(({ _count, ...category }) => ({
+  return categories.map(({ _count, products, ...category }) => ({
     ...category,
-    productCount: _count.products
+    productCount: _count.products,
+    representativeProducts: products.filter(
+      (product): product is typeof product & { imageUrl: string } => Boolean(product.imageUrl)
+    )
   }));
 }
 
@@ -104,6 +121,58 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
   return {
     items: visibleProducts.slice(start, start + query.pageSize),
     meta: { page, pageSize: query.pageSize, totalItems, totalPages }
+  };
+}
+
+export async function listStorefrontMerchandising(now = new Date()) {
+  const products = await prisma.product.findMany({
+    include: storefrontProductInclude,
+    where: {
+      status: ProductStatus.ACTIVE,
+      category: { isActive: true }
+    }
+  });
+  const availableProducts = products
+    .map(serializeStorefrontProduct)
+    .filter((product) => product.availableStock > 0);
+  const productIds = availableProducts.map((product) => product.id);
+
+  if (productIds.length === 0) {
+    return {
+      bestSellers: [],
+      generatedAt: now.toISOString(),
+      trending: [],
+      trendingWindowDays: TRENDING_WINDOW_DAYS
+    };
+  }
+
+  const trendingWindowStart = new Date(now.getTime() - TRENDING_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const [effectiveSeries, recentSaleItems] = await Promise.all([
+    getEffectiveMonthlySeries(productIds),
+    prisma.saleItem.findMany({
+      select: { productId: true, quantity: true },
+      where: {
+        productId: { in: productIds },
+        sale: {
+          saleDate: { gte: trendingWindowStart, lte: now },
+          status: SaleStatus.COMPLETED
+        }
+      }
+    })
+  ]);
+  const recentUnits = sumUnitsByProduct(recentSaleItems);
+  const historicalUnits = new Map(
+    effectiveSeries.map((series) => [
+      series.productId,
+      series.points.reduce((total, point) => total + point.quantitySold, 0)
+    ])
+  );
+
+  return {
+    bestSellers: rankStorefrontProducts(availableProducts, historicalUnits),
+    generatedAt: now.toISOString(),
+    trending: rankStorefrontProducts(availableProducts, recentUnits),
+    trendingWindowDays: TRENDING_WINDOW_DAYS
   };
 }
 
@@ -229,4 +298,31 @@ export async function createStorefrontOrder(input: StorefrontOrderInput) {
 function createOrderNumber() {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   return `YS-${date}-${randomBytes(3).toString("hex").toUpperCase()}`;
+}
+
+function sumUnitsByProduct(items: Array<{ productId: string; quantity: number }>) {
+  const totals = new Map<string, number>();
+
+  for (const item of items) {
+    totals.set(item.productId, (totals.get(item.productId) ?? 0) + item.quantity);
+  }
+
+  return totals;
+}
+
+function rankStorefrontProducts(
+  products: ReturnType<typeof serializeStorefrontProduct>[],
+  unitsByProduct: Map<string, number>
+) {
+  return products
+    .map((product) => ({ product, unitsSold: unitsByProduct.get(product.id) ?? 0 }))
+    .filter((entry) => entry.unitsSold > 0)
+    .sort(
+      (left, right) =>
+        right.unitsSold - left.unitsSold ||
+        left.product.name.localeCompare(right.product.name) ||
+        left.product.id.localeCompare(right.product.id)
+    )
+    .slice(0, STOREFRONT_MERCHANDISING_LIMIT)
+    .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }

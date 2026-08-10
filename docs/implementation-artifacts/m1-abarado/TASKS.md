@@ -50,3 +50,4 @@ A task is complete only when implementation evidence and the matching artifact u
 | YSB-M1-ABARADO-20260715 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |
 | YSB-M1-ABARADO-20260716 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |
 | YSB-M1-ABARADO-20260809 | Polish auth UI and session safety flow                         | In Progress        | sprint/v0.4/sprint-4               | Run push-ready validation and resolve any failures.   |
+| YSB-M1-ABARADO-20260810 | Preserve artifact markdown templates during automation updates | Needs Review       | sprint/v0.4/sprint-4               | Run push-ready validation and resolve any failures.   |

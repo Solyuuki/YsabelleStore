@@ -1,6 +1,7 @@
 import { apiClient } from "@/services/apiClient";
 import type {
   StorefrontCategory,
+  StorefrontMerchandising,
   StorefrontOrder,
   StorefrontOrderInput,
   StorefrontPagination,
@@ -53,6 +54,15 @@ export async function fetchStorefrontProducts(
 export async function fetchStorefrontProduct(productId: string, signal?: AbortSignal) {
   const response = await apiClient.request<StorefrontProduct>(
     `/api/storefront/products/${encodeURIComponent(productId)}`,
+    { signal }
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function fetchStorefrontMerchandising(signal?: AbortSignal) {
+  const response = await apiClient.request<StorefrontMerchandising>(
+    "/api/storefront/merchandising",
     { signal }
   );
   if (!response.success || !response.data) throw new Error(response.message);

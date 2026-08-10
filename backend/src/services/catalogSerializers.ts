@@ -57,6 +57,7 @@ export type ProductSummary = {
   sku: string;
   barcode: string | null;
   description: string | null;
+  imageUrl: string | null;
   unit: Product["unit"];
   costPrice: string;
   sellingPrice: string;
@@ -154,6 +155,7 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     sku: product.sku,
     barcode: product.barcode ?? null,
     description: product.description ?? null,
+    imageUrl: product.imageUrl ?? null,
     unit: product.unit,
     costPrice: product.costPrice.toString(),
     sellingPrice: product.sellingPrice.toString(),

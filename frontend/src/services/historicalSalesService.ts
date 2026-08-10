@@ -1,4 +1,4 @@
-import { frontendEnv } from "@/schemas/frontendEnv.schema";
+import { resolveApiUrl } from "@/config/runtime";
 import { apiClient } from "@/services/apiClient";
 import { getStoredAuthToken } from "@/services/authStorage";
 import type {
@@ -101,14 +101,9 @@ export function refreshHistoricalSalesForecasts(batchId: string, signal?: AbortS
 }
 
 export async function downloadHistoricalSalesTemplate() {
-  const response = await fetch(
-    new URL("/api/historical-sales/template", frontendEnv.VITE_API_BASE_URL),
-    {
-      headers: getStoredAuthToken()
-        ? { Authorization: `Bearer ${getStoredAuthToken()}` }
-        : undefined
-    }
-  );
+  const response = await fetch(resolveApiUrl("/api/historical-sales/template"), {
+    headers: getStoredAuthToken() ? { Authorization: `Bearer ${getStoredAuthToken()}` } : undefined
+  });
   if (!response.ok) throw new Error("Historical sales template download failed.");
   return await response.text();
 }

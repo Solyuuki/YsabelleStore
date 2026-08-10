@@ -51,6 +51,12 @@ function normalizeProductInput(input: CreateProductRequest | UpdateProductReques
     categoryId: input.categoryId ? input.categoryId.trim() : undefined,
     description:
       input.description === undefined ? undefined : normalizeOptionalString(input.description),
+    imageUrl:
+      input.imageUrl === undefined
+        ? undefined
+        : input.imageUrl === null
+          ? null
+          : normalizeWhitespace(input.imageUrl),
     status: input.status,
     unit: input.unit,
     costPrice: input.costPrice ? toDecimal(String(input.costPrice)) : undefined,
@@ -272,6 +278,7 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
     barcode,
     categoryId,
     description,
+    imageUrl,
     status,
     unit,
     costPrice,
@@ -299,6 +306,7 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
           barcode,
           categoryId,
           description,
+          imageUrl,
           unit: unit ?? "PIECE",
           costPrice,
           sellingPrice,
@@ -415,6 +423,10 @@ export async function updateProduct(
 
   if (normalized.description !== undefined) {
     data.description = normalized.description;
+  }
+
+  if (normalized.imageUrl !== undefined) {
+    data.imageUrl = normalized.imageUrl;
   }
 
   if (normalized.unit !== undefined) {

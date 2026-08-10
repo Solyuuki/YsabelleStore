@@ -10,6 +10,10 @@ import {
   previewInventoryStockImport
 } from "../src/services/inventoryImportService.js";
 import { searchPosProducts } from "../src/services/posService.js";
+import {
+  captureDatabaseFixtureScope,
+  type DatabaseFixtureScope
+} from "./helpers/databaseFixtureScope.js";
 
 type UploadedFile = {
   originalname: string;
@@ -19,8 +23,10 @@ type UploadedFile = {
 
 let categoryId = "";
 let userId = "";
+let fixtureScope: DatabaseFixtureScope;
 
 test.before(async () => {
+  fixtureScope = await captureDatabaseFixtureScope(prisma);
   const category = await createCategory({
     name: `Inventory Import ${randomUUID().slice(0, 8)}`,
     slug: `inventory-import-${randomUUID().slice(0, 8)}`
@@ -39,6 +45,7 @@ test.before(async () => {
 });
 
 test.after(async () => {
+  await fixtureScope.cleanup();
   await prisma.$disconnect();
 });
 

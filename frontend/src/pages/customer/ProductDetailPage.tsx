@@ -38,6 +38,13 @@ export function ProductDetailPage({
         <div className="customer-empty-state">
           <h1>Product unavailable</h1>
           <p>{error}</p>
+          <button
+            className="customer-button"
+            onClick={() => window.location.reload()}
+            type="button"
+          >
+            Try again
+          </button>
           <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
             Back to shop
           </CustomerLink>

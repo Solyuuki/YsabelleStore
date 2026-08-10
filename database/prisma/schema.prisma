@@ -235,6 +235,7 @@ model Product {
   barcode                   String?                    @unique(map: "uq_products_barcode") @db.VarChar(80)
   name                      String                     @db.VarChar(160)
   description               String?                    @db.VarChar(255)
+  imageUrl                  String?                    @map("image_url") @db.VarChar(2048)
   unit                      ProductUnit                @default(PIECE)
   costPrice                 Decimal                    @map("cost_price") @db.Decimal(10, 2)
   sellingPrice              Decimal                    @map("selling_price") @db.Decimal(10, 2)
@@ -432,27 +433,27 @@ model ForecastRecord {
 }
 
 model ForecastBatchCache {
-  id                     String                 @id @default(cuid()) @db.VarChar(191)
+  id                     String                  @id @default(cuid()) @db.VarChar(191)
   source                 ForecastBatchSource
-  sourceVersion          String                 @map("source_version") @db.VarChar(64)
-  databaseRevision       String                 @map("database_revision") @db.VarChar(64)
-  forecastStartMonth     DateTime               @map("forecast_start_month") @db.Date
-  status                 ForecastBatchStatus    @default(GENERATING)
-  isActive               Boolean                @default(false) @map("is_active")
-  startedAt              DateTime               @default(now()) @map("started_at")
-  generatedAt            DateTime?              @map("generated_at")
-  completedAt            DateTime?              @map("completed_at")
-  failedAt               DateTime?              @map("failed_at")
-  durationMs             Int                    @default(0) @map("duration_ms") @db.UnsignedInt
-  totalProductCount      Int                    @default(0) @map("total_product_count") @db.UnsignedInt
-  successfulProductCount Int                    @default(0) @map("successful_product_count") @db.UnsignedInt
-  fallbackProductCount   Int                    @default(0) @map("fallback_product_count") @db.UnsignedInt
-  failedProductCount     Int                    @default(0) @map("failed_product_count") @db.UnsignedInt
-  errorCode              String?                @map("error_code") @db.VarChar(80)
-  generationMetadata     Json?                  @map("generation_metadata")
-  validationMetadata     Json?                  @map("validation_metadata")
-  createdAt              DateTime               @default(now()) @map("created_at")
-  updatedAt              DateTime               @updatedAt @map("updated_at")
+  sourceVersion          String                  @map("source_version") @db.VarChar(64)
+  databaseRevision       String                  @map("database_revision") @db.VarChar(64)
+  forecastStartMonth     DateTime                @map("forecast_start_month") @db.Date
+  status                 ForecastBatchStatus     @default(GENERATING)
+  isActive               Boolean                 @default(false) @map("is_active")
+  startedAt              DateTime                @default(now()) @map("started_at")
+  generatedAt            DateTime?               @map("generated_at")
+  completedAt            DateTime?               @map("completed_at")
+  failedAt               DateTime?               @map("failed_at")
+  durationMs             Int                     @default(0) @map("duration_ms") @db.UnsignedInt
+  totalProductCount      Int                     @default(0) @map("total_product_count") @db.UnsignedInt
+  successfulProductCount Int                     @default(0) @map("successful_product_count") @db.UnsignedInt
+  fallbackProductCount   Int                     @default(0) @map("fallback_product_count") @db.UnsignedInt
+  failedProductCount     Int                     @default(0) @map("failed_product_count") @db.UnsignedInt
+  errorCode              String?                 @map("error_code") @db.VarChar(80)
+  generationMetadata     Json?                   @map("generation_metadata")
+  validationMetadata     Json?                   @map("validation_metadata")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
   products               ForecastProductResult[]
 
   @@index([isActive, status], map: "idx_forecast_batches_active_status")

@@ -19,6 +19,10 @@ import {
   previewProductImport
 } from "../src/services/productImportService.js";
 import { auditStock } from "../src/services/stockDomainService.js";
+import {
+  captureDatabaseFixtureScope,
+  type DatabaseFixtureScope
+} from "./helpers/databaseFixtureScope.js";
 
 type UploadedFile = {
   originalname: string;
@@ -27,12 +31,15 @@ type UploadedFile = {
 };
 
 let categoryId = "";
+let fixtureScope: DatabaseFixtureScope;
 
 test.before(async () => {
+  fixtureScope = await captureDatabaseFixtureScope(prisma);
   categoryId = await ensureCategoryId();
 });
 
 test.after(async () => {
+  await fixtureScope.cleanup();
   await prisma.$disconnect();
 });
 
@@ -177,7 +184,7 @@ test(
   async () => {
     const template = getProductImportTemplateCsv();
     const expectedHeaders =
-      "name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description";
+      "name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description,imageUrl";
 
     assert.equal(template, expectedHeaders);
     assert.equal(template.split("\n").length, 1);

@@ -4,13 +4,18 @@ export type StorefrontCategory = {
   slug: string;
   description: string | null;
   productCount: number;
+  representativeProducts: Array<{
+    id: string;
+    imageUrl: string;
+    name: string;
+  }>;
 };
 
 export type StorefrontProduct = {
   id: string;
   name: string;
   description: string | null;
-  imageUrl?: string | null;
+  imageUrl: string | null;
   unit: string;
   sellingPrice: string;
   availableStock: number;
@@ -23,6 +28,19 @@ export type StorefrontPagination = {
   pageSize: number;
   totalItems: number;
   totalPages: number;
+};
+
+export type StorefrontMerchandisingEntry = {
+  product: StorefrontProduct;
+  rank: number;
+  unitsSold: number;
+};
+
+export type StorefrontMerchandising = {
+  bestSellers: StorefrontMerchandisingEntry[];
+  generatedAt: string;
+  trending: StorefrontMerchandisingEntry[];
+  trendingWindowDays: number;
 };
 
 export type StorefrontOrder = {

@@ -5,6 +5,7 @@ import { Prisma, type ProductStatus, type ProductUnit } from "@prisma/client";
 import { readSheet } from "read-excel-file/node";
 
 import { prisma } from "../database/prismaClient.js";
+import { isSupportedCatalogImageUrl, normalizeCatalogImageUrl } from "../utils/catalogImage.js";
 import { HttpError } from "../utils/httpError.js";
 import { normalizeCode, normalizeWhitespace } from "../utils/normalizers.js";
 import { createOpeningStockBatch, assertStockInvariant } from "./stockDomainService.js";
@@ -21,7 +22,8 @@ const PRODUCT_IMPORT_TEMPLATE_HEADERS = [
   "targetStockLevel",
   "initialStock",
   "status",
-  "description"
+  "description",
+  "imageUrl"
 ] as const;
 
 const REQUIRED_IMPORT_HEADERS = [
@@ -87,6 +89,7 @@ type NormalizedImportRow = {
   initialStock: number;
   status: ProductStatus;
   description: string | null;
+  imageUrl: string | null;
 };
 
 type PreviewRow = {
@@ -176,7 +179,12 @@ const headerAliasEntries: Array<[string, string]> = [
   ["initial stock", "initialStock"],
   ["initial_stock", "initialStock"],
   ["status", "status"],
-  ["description", "description"]
+  ["description", "description"],
+  ["imageurl", "imageUrl"],
+  ["image url", "imageUrl"],
+  ["image_url", "imageUrl"],
+  ["productimage", "imageUrl"],
+  ["product image", "imageUrl"]
 ];
 
 const headerAliasMap = new Map<string, string>(
@@ -698,6 +706,7 @@ function normalizeImportRow(
   const descriptionRaw = normalizeTextCell(
     resolveCellValue(row, columnIndexByCanonical, "description")
   );
+  const imageUrlRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "imageUrl"));
 
   if (!name) {
     errors.push(
@@ -846,6 +855,7 @@ function normalizeImportRow(
   const status = resolveStatus(statusRaw, row.rowNumber, errors);
   const unit = resolveUnit(unitRaw, row.rowNumber, errors);
   const description = parseOptionalText(descriptionRaw);
+  const imageUrl = normalizeCatalogImageUrl(imageUrlRaw);
   const barcode = parseOptionalText(barcodeRaw);
 
   if (barcodeRaw.length > 0 && barcode === null) {
@@ -880,6 +890,28 @@ function normalizeImportRow(
         "INVALID_DESCRIPTION",
         "Description must not be blank after trimming.",
         descriptionRaw
+      )
+    );
+  }
+
+  if (imageUrlRaw.length > 2048) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "imageUrl",
+        "IMAGE_URL_TOO_LONG",
+        "Product image URL must be 2,048 characters or fewer.",
+        imageUrlRaw
+      )
+    );
+  } else if (imageUrl && !isSupportedCatalogImageUrl(imageUrl)) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "imageUrl",
+        "INVALID_IMAGE_URL",
+        "Product image must use an HTTPS URL or a root-relative local asset path.",
+        imageUrlRaw
       )
     );
   }
@@ -927,7 +959,8 @@ function normalizeImportRow(
           targetStockLevel,
           initialStock,
           status,
-          description
+          description,
+          imageUrl
         } satisfies NormalizedImportRow
       };
     }
@@ -1235,7 +1268,8 @@ export async function importProductsFromFile(
           reorderLevel: row.reorderLevel,
           targetStockLevel: row.targetStockLevel,
           status: row.status,
-          description: row.description
+          description: row.description,
+          imageUrl: row.imageUrl
         }
       });
 

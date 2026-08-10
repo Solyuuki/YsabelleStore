@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 
-import { env } from "./config/env.js";
+import { corsOrigins } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFoundHandler } from "./middleware/notFoundHandler.js";
 import { rateLimitFoundation } from "./middleware/rateLimitPlaceholder.js";
@@ -14,7 +14,9 @@ export function createApp() {
 
   app.use(
     cors({
-      origin: env.CORS_ORIGIN
+      origin(origin, callback) {
+        callback(null, origin === undefined || corsOrigins.includes(origin));
+      }
     })
   );
   app.use(securityHeaders);
