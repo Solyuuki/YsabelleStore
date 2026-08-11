@@ -14,7 +14,7 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
       <div className="customer-container">
         <div className="customer-page-heading">
           <p className="customer-kicker">Your grocery list</p>
-          <h1>Shopping cart</h1>
+          <h1>Shopping Cart</h1>
           <p>
             {itemCount
               ? `${itemCount} item${itemCount === 1 ? "" : "s"} ready to review.`
@@ -24,7 +24,7 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
         {!items.length ? (
           <div className="customer-empty-state customer-empty-state--cart">
             <ShoppingBasket aria-hidden="true" size={42} />
-            <h2>Your cart is empty</h2>
+            <h2>Your Cart Is Empty</h2>
             <p>Browse groceries and add the everyday items you need.</p>
             <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
               Start shopping <ArrowRight aria-hidden="true" size={18} />
@@ -69,7 +69,7 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
             </section>
             <aside className="customer-order-summary">
               <p className="customer-kicker">Order summary</p>
-              <h2>Review your total</h2>
+              <h2>Review Your Total</h2>
               <div>
                 <span>Items ({itemCount})</span>
                 <strong>{formatCurrency(subtotal)}</strong>

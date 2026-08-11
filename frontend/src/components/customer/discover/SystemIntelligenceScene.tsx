@@ -548,11 +548,11 @@ export function SystemIntelligenceScene() {
           <div className="story-intelligence__heading-grid">
             <h2 className="story-display-safe">
               <span className="story-mask">
-                <span className="story-mask__line">Sales become signals.</span>
+                <span className="story-mask__line">Sales Become Signals.</span>
               </span>
               <span className="story-mask">
                 <span className="story-mask__line story-mask__line--mint">
-                  SARIMA finds the season.
+                  SARIMA Finds the Season.
                 </span>
               </span>
             </h2>

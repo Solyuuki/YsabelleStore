@@ -23,7 +23,7 @@ export function OrderSuccessPage({
           <Check aria-hidden="true" />
         </div>
         <p className="customer-kicker">Pickup request received</p>
-        <h1>Your essentials are on the list.</h1>
+        <h1>Your Essentials Are on the List.</h1>
         <p>
           The store has received your pending pickup order. Please keep the reference number below.
         </p>

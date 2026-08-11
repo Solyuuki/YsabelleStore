@@ -106,7 +106,7 @@ export function ShopPage({
       <section className="customer-shop-heading">
         <div className="customer-container">
           <p className="customer-kicker">The grocery aisle, online</p>
-          <h1>{activeCategory?.name ?? "Shop everyday essentials"}</h1>
+          <h1>{activeCategory?.name ?? "Shop Everyday Essentials"}</h1>
           <p>
             {activeCategory?.description ??
               "Search the live Ysabelle's Store catalog and add what you need."}
@@ -188,7 +188,7 @@ export function ShopPage({
 
           {error ? (
             <div className="customer-empty-state">
-              <h3>We could not load the shop</h3>
+              <h3>We Could Not Load the Shop</h3>
               <p>{error}</p>
               <button
                 className="customer-button"
@@ -216,7 +216,7 @@ export function ShopPage({
           {!error && !loading && !products.length ? (
             <div className="customer-empty-state">
               <Search aria-hidden="true" size={34} />
-              <h3>No products matched</h3>
+              <h3>No Products Matched</h3>
               <p>Try a broader search or clear the current filters.</p>
               <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
                 View all products

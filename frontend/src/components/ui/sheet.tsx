@@ -76,7 +76,7 @@ export const SheetTitle = forwardRef<
 >(function SheetTitle({ className, ...props }, ref) {
   return (
     <DialogPrimitive.Title
-      className={cn("text-lg font-semibold leading-none tracking-tight text-slate-950", className)}
+      className={cn("type-h3 text-slate-950", className)}
       ref={ref}
       {...props}
     />
@@ -89,7 +89,7 @@ export const SheetDescription = forwardRef<
 >(function SheetDescription({ className, ...props }, ref) {
   return (
     <DialogPrimitive.Description
-      className={cn("text-sm leading-6 text-slate-600", className)}
+      className={cn("type-body-sm text-slate-600", className)}
       ref={ref}
       {...props}
     />

@@ -12,8 +12,8 @@ export function EmptyState({ description, icon: Icon, title }: EmptyStateProps) 
       <span className="flex h-11 w-11 items-center justify-center rounded-md bg-slate-100 text-slate-600">
         <Icon className="h-5 w-5" aria-hidden="true" />
       </span>
-      <h2 className="mt-4 text-base font-semibold text-slate-950">{title}</h2>
-      <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
+      <h2 className="type-h4 mt-4 text-slate-950">{title}</h2>
+      <p className="type-body-sm mt-2 max-w-md text-slate-500">{description}</p>
     </div>
   );
 }

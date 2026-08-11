@@ -18,9 +18,9 @@ export function AboutPage({ navigate }: { navigate: (path: string) => void }) {
         <div className="customer-container">
           <p className="customer-kicker">About Ysabelle&apos;s Store</p>
           <h1>
-            A local grocery store,
+            A Local Grocery Store,
             <br />
-            <em>growing thoughtfully.</em>
+            <em>Growing Thoughtfully.</em>
           </h1>
           <p>
             Everyday grocery and household essentials in Pasig City, with a direction toward smarter
@@ -54,7 +54,7 @@ export function AboutPage({ navigate }: { navigate: (path: string) => void }) {
         <div className="customer-container customer-about-story__grid">
           <div>
             <p className="customer-kicker">Everyday essentials</p>
-            <h2>Built around the things people need.</h2>
+            <h2>Built Around the Things People Need.</h2>
           </div>
           <div>
             <p>
@@ -73,7 +73,7 @@ export function AboutPage({ navigate }: { navigate: (path: string) => void }) {
         <div className="customer-container customer-modernization">
           <div className="customer-modernization__copy">
             <p className="customer-kicker">Growing smarter</p>
-            <h2>From manual monitoring toward data-driven retail.</h2>
+            <h2>From Manual Monitoring Toward Data-Driven Retail.</h2>
             <p>
               Inventory was historically monitored manually. YsabelleStore supports the move toward
               connected barcode sales, inventory visibility, demand forecasting, and informed

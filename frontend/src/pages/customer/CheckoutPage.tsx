@@ -47,7 +47,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
     return (
       <div className="customer-page customer-container">
         <div className="customer-empty-state">
-          <h1>Your cart is empty</h1>
+          <h1>Your Cart Is Empty</h1>
           <p>Add at least one product before checkout.</p>
           <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
             Browse groceries
@@ -74,7 +74,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
               <div className="customer-checkout-section-title">
                 <span>1</span>
                 <div>
-                  <h2>Your details</h2>
+                  <h2>Your Details</h2>
                   <p>Used only to identify and coordinate this pickup request.</p>
                 </div>
               </div>

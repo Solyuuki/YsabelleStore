@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export const Table = forwardRef<HTMLTableElement, TableHTMLAttributes<HTMLTableElement>>(
   function Table({ className, ...props }, ref) {
     return (
-      <table className={cn("w-full caption-bottom text-sm", className)} ref={ref} {...props} />
+      <table className={cn("type-body-sm w-full caption-bottom", className)} ref={ref} {...props} />
     );
   }
 );
@@ -34,10 +34,7 @@ export const TableHead = forwardRef<HTMLTableCellElement, HTMLAttributes<HTMLTab
   function TableHead({ className, ...props }, ref) {
     return (
       <th
-        className={cn(
-          "h-11 px-3 text-left align-middle text-xs font-semibold text-slate-600",
-          className
-        )}
+        className={cn("type-caption h-11 px-3 text-left align-middle text-slate-600", className)}
         ref={ref}
         {...props}
       />

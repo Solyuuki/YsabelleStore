@@ -36,7 +36,7 @@ export function ProductDetailPage({
     return (
       <div className="customer-page customer-container">
         <div className="customer-empty-state">
-          <h1>Product unavailable</h1>
+          <h1>Product Unavailable</h1>
           <p>{error}</p>
           <button
             className="customer-button"

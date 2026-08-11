@@ -9,11 +9,12 @@ import {
   Sparkles,
   Store
 } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard } from "@/components/customer/ProductCard";
 import { ProductImage } from "@/components/customer/ProductImage";
+import { useRevealOnView } from "@/hooks/useRevealOnView";
 import {
   fetchStorefrontCategories,
   fetchStorefrontMerchandising,
@@ -25,15 +26,30 @@ import type {
   StorefrontMerchandisingEntry,
   StorefrontProduct
 } from "@/types/storefront";
-import { getCategoryRepresentativeProducts, hasCatalogImage } from "@/utils/storefrontImages";
-import { getCategoryPresentation } from "@/utils/storefrontCategoryPresentation";
-import { getStorefrontProductBadge } from "@/utils/storefrontMerchandising";
+import { getCategoryRepresentativeProducts } from "@/utils/storefrontImages";
+import {
+  getCategoryPresentation,
+  getEssentialShelfItems
+} from "@/utils/storefrontCategoryPresentation";
+import {
+  getStorefrontProductBadge,
+  type StorefrontProductBadge
+} from "@/utils/storefrontMerchandising";
 
 type Resource<T> = {
   data: T;
   error: string;
   status: "error" | "loading" | "success";
 };
+
+type HomeShowcaseItem = {
+  alt: string;
+  category: string;
+  imageUrl: string;
+  slug: string;
+};
+
+const homeShowcaseOrder = ["beverages", "snacks", "instant-food"];
 
 const emptyMerchandising: StorefrontMerchandising = {
   bestSellers: [],
@@ -128,7 +144,37 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
         left.name.localeCompare(right.name)
     )
     .slice(0, 8);
-  const heroProducts = products.data.filter(hasCatalogImage).slice(0, 3);
+  const showcaseCategories = [...categories.data]
+    .filter((category) => getCategoryPresentation(category.slug))
+    .sort(
+      (left, right) =>
+        showcaseRank(left.slug) - showcaseRank(right.slug) ||
+        right.productCount - left.productCount ||
+        left.name.localeCompare(right.name)
+    )
+    .slice(0, 3);
+  const showcaseItems: HomeShowcaseItem[] = showcaseCategories.length
+    ? showcaseCategories.flatMap((category) => {
+        const presentation = getCategoryPresentation(category.slug);
+        return presentation
+          ? [
+              {
+                alt: presentation.alt,
+                category: category.name,
+                imageUrl: presentation.imageUrl,
+                slug: category.slug
+              }
+            ]
+          : [];
+      })
+    : getEssentialShelfItems()
+        .slice(0, 3)
+        .map((item) => ({
+          alt: item.alt,
+          category: item.category,
+          imageUrl: item.imageUrl,
+          slug: item.slug
+        }));
   const everydayProducts = selectEverydayProducts(products.data, categories.data, 4);
   const catalogProductCount = categories.data.reduce(
     (total, category) => total + category.productCount,
@@ -140,13 +186,13 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
     <div className="customer-home">
       <section className="home-hero">
         <div className="customer-container home-hero__grid">
-          <div className="home-hero__copy customer-reveal is-visible">
+          <div className="home-hero__copy home-hero__copy--animated">
             <p className="customer-kicker">
               <span /> Your neighborhood grocery, online
             </p>
             <h1>
-              Your everyday list,
-              <em> ready when you are.</em>
+              <span>Your Everyday List,</span>
+              <em>Ready When You Are.</em>
             </h1>
             <p className="home-hero__lead">
               Find groceries, pantry staples, and home essentials with live store availability from
@@ -171,14 +217,17 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
 
             <div className="home-hero__actions">
               <CustomerLink
-                className="customer-button"
+                className="customer-button home-hero__primary-action"
                 data-tour="start-shopping"
                 href="/shop"
                 navigate={navigate}
               >
                 Shop groceries <ArrowRight aria-hidden="true" size={18} />
               </CustomerLink>
-              <a className="home-hero__category-link" href="#shop-by-category">
+              <a
+                className="home-hero__category-link home-hero__secondary-action"
+                href="#shop-by-category"
+              >
                 Browse categories <ArrowRight aria-hidden="true" size={16} />
               </a>
             </div>
@@ -199,44 +248,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
             </div>
           </div>
 
-          <div className="home-hero__merchandise" aria-label="Everyday grocery selection">
-            <div className="home-hero__orbit home-hero__orbit--one" />
-            <div className="home-hero__orbit home-hero__orbit--two" />
-            {heroProducts.length ? (
-              heroProducts.map((product, index) => (
-                <figure
-                  className={`home-hero-product home-hero-product--${["main", "snack", "home"][index]}`}
-                  key={product.id}
-                >
-                  <ProductImage
-                    alt={`${product.name} product photo`}
-                    fetchPriority={index === 0 ? "high" : undefined}
-                    imageUrl={product.imageUrl}
-                    loading={index === 0 ? "eager" : "lazy"}
-                  />
-                  <figcaption>
-                    <span>{product.category.name}</span>
-                    <strong>{product.name}</strong>
-                  </figcaption>
-                </figure>
-              ))
-            ) : (
-              <div className="home-hero__image-policy">
-                <ShoppingBasket aria-hidden="true" />
-                <strong>Real products, clearly represented.</strong>
-                <small>
-                  Catalog photography appears here after each product image is verified.
-                </small>
-              </div>
-            )}
-            <div className="home-hero__availability">
-              <span />
-              <div>
-                <strong>Live shelf status</strong>
-                <small>Check availability before pickup</small>
-              </div>
-            </div>
-          </div>
+          <HomeCategoryShowcase items={showcaseItems} navigate={navigate} />
         </div>
       </section>
 
@@ -253,7 +265,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
             actionHref="/shop#categories"
             eyebrow="Find your aisle"
             navigate={navigate}
-            title="Shop by category"
+            title="Shop by Category"
           >
             Browse the real store catalog by the kind of item you need.
           </SectionHeading>
@@ -263,7 +275,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
             <CompactSectionState
               message={categories.error}
               onRetry={retry}
-              title="Categories could not be loaded"
+              title="Categories Could Not Be Loaded"
             />
           ) : null}
           {categories.status === "success" && featuredCategories.length ? (
@@ -281,7 +293,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
           {categories.status === "success" && !featuredCategories.length ? (
             <CompactSectionState
               message="Store categories will appear here when catalog items are available."
-              title="No categories yet"
+              title="No Categories Yet"
             />
           ) : null}
         </div>
@@ -294,7 +306,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
             actionHref="/shop"
             eyebrow="Ready for pickup"
             navigate={navigate}
-            title="Everyday essentials"
+            title="Everyday Essentials"
           >
             A balanced selection of currently available products from the live catalog.
           </SectionHeading>
@@ -304,17 +316,18 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
             <CompactSectionState
               message={products.error}
               onRetry={retry}
-              title="The essentials shelf could not be loaded"
+              title="The Essentials Shelf Could Not Be Loaded"
             />
           ) : null}
           {products.status === "success" && everydayProducts.length ? (
             <div className="customer-product-grid home-product-grid">
               {everydayProducts.map((product, index) => (
-                <ProductCard
+                <HomeProductCard
                   key={product.id}
                   navigate={navigate}
                   product={product}
                   tourTarget={index === 0}
+                  revealIndex={index}
                 />
               ))}
             </div>
@@ -322,7 +335,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
           {products.status === "success" && !everydayProducts.length ? (
             <CompactSectionState
               message="There are no in-stock products to show right now. Browse the full catalog for updates."
-              title="The shelf is being restocked"
+              title="The Shelf Is Being Restocked"
             />
           ) : null}
         </div>
@@ -335,7 +348,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
               <ShoppingBasket aria-hidden="true" />
             </span>
             <p className="customer-kicker">Simple store pickup</p>
-            <h2>Build your basket now. Pay when you collect it.</h2>
+            <h2>Build Your Basket Now. Pay When You Collect It.</h2>
             <p>
               Send your grocery request online, then pick it up at 110 A. Mabini Street, Pasig City.
             </p>
@@ -357,7 +370,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
               <Sparkles aria-hidden="true" />
             </span>
             <p className="customer-kicker">Discover Ysabelle</p>
-            <h2>See the story behind the shelves.</h2>
+            <h2>See the Story Behind the Shelves.</h2>
             <p>
               Step into the store&apos;s journey from a local beginning to smarter everyday retail.
             </p>
@@ -367,6 +380,82 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
           </article>
         </div>
       </section>
+    </div>
+  );
+}
+
+function HomeCategoryShowcase({
+  items,
+  navigate
+}: {
+  items: HomeShowcaseItem[];
+  navigate: (path: string) => void;
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncPreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    syncPreference();
+    mediaQuery.addEventListener?.("change", syncPreference);
+    return () => mediaQuery.removeEventListener?.("change", syncPreference);
+  }, []);
+
+  useEffect(() => {
+    setActiveIndex((current) => (items.length ? current % items.length : 0));
+  }, [items.length]);
+
+  useEffect(() => {
+    if (isPaused || prefersReducedMotion || items.length < 2) return;
+
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        setActiveIndex((current) => (current + 1) % items.length);
+      }
+    }, 7000);
+
+    return () => window.clearInterval(interval);
+  }, [isPaused, items.length, prefersReducedMotion]);
+
+  const item = items[activeIndex] ?? items[0];
+  if (!item) return null;
+
+  return (
+    <div className="home-hero__merchandise home-hero__merchandise--animated">
+      <CustomerLink
+        aria-label={`Browse the ${item.category} category`}
+        className="home-showcase"
+        href={`/shop/category/${item.slug}`}
+        navigate={navigate}
+        onBlur={() => setIsPaused(false)}
+        onFocus={() => setIsPaused(true)}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        <span className="home-showcase__media">
+          <ProductImage
+            alt={item.alt}
+            className="home-showcase__image"
+            fetchPriority="high"
+            imageUrl={item.imageUrl}
+            key={item.slug}
+            loading="eager"
+          />
+          <span className="home-showcase__media-label">Featured aisle</span>
+        </span>
+        <span className="home-showcase__content" key={item.slug}>
+          <strong className="home-showcase__category">{item.category}</strong>
+          <span className="home-showcase__title">{getShowcaseTitle(item.category)}</span>
+          <span className="home-showcase__footer">
+            <span className="home-showcase__availability">
+              <span aria-hidden="true" /> Live availability
+            </span>
+            <ArrowRight aria-hidden="true" className="home-showcase__arrow" size={19} />
+          </span>
+        </span>
+      </CustomerLink>
     </div>
   );
 }
@@ -387,7 +476,7 @@ function MerchandisingArea({
           <CompactSectionState
             message={resource.error}
             onRetry={onRetry}
-            title="Sales-backed picks could not be loaded"
+            title="Sales-Backed Picks Could Not Be Loaded"
           />
         </div>
       </section>
@@ -398,7 +487,7 @@ function MerchandisingArea({
     return (
       <section className="customer-section home-merchandising home-merchandising--loading">
         <div className="customer-container">
-          <SectionHeading eyebrow="What shoppers are choosing" title="Hot right now">
+          <SectionHeading eyebrow="What shoppers are choosing" title="Hot Right Now">
             Checking recent completed sales for the products customers are choosing now.
           </SectionHeading>
           <ProductSkeletons />
@@ -417,7 +506,7 @@ function MerchandisingArea({
           eyebrow="What shoppers are choosing"
           navigate={navigate}
           placement="trending"
-          title="Hot right now"
+          title="Hot Right Now"
         >
           {`Ranked by completed sales in the last ${resource.data.trendingWindowDays} days.`}
         </MerchandisingShelf>
@@ -428,7 +517,7 @@ function MerchandisingArea({
           eyebrow="Proven store favorites"
           navigate={navigate}
           placement="best-seller"
-          title="Best sellers"
+          title="Best Sellers"
         >
           Ranked by recorded units sold across completed and imported historical sales.
         </MerchandisingShelf>
@@ -466,11 +555,12 @@ function MerchandisingShelf({
         </SectionHeading>
         <div className="customer-product-grid home-product-grid">
           {entries.map((entry) => (
-            <ProductCard
+            <HomeProductCard
               badge={getStorefrontProductBadge(entry.product, placement, entry.rank)}
               key={entry.product.id}
               navigate={navigate}
               product={entry.product}
+              revealIndex={entry.rank - 1}
             />
           ))}
         </div>
@@ -490,54 +580,87 @@ function CategoryCard({
 }) {
   const categoryPresentation = getCategoryPresentation(category.slug);
   const representativeProducts = getCategoryRepresentativeProducts(category);
+  const reveal = useRevealOnView<HTMLDivElement>();
 
   return (
-    <CustomerLink
-      className="home-category-card"
-      data-category-variant={(index % 4) + 1}
-      href={`/shop/category/${category.slug}`}
-      navigate={navigate}
+    <div
+      className={`home-reveal home-reveal--card ${reveal.isVisible ? "is-visible" : ""}`}
+      ref={reveal.ref}
+      style={{ "--home-reveal-index": index } as CSSProperties}
     >
-      <span className="home-category-card__visual">
-        {categoryPresentation ? (
-          <ProductImage
-            alt={categoryPresentation.alt}
-            fallbackLabel="Category image unavailable"
-            imageUrl={categoryPresentation.imageUrl}
-            loading="eager"
-          />
-        ) : representativeProducts.length ? (
-          <span
-            className="home-category-card__assortment"
-            data-image-count={representativeProducts.length}
-          >
-            {representativeProducts.map((product) => (
-              <ProductImage
-                alt={`${product.name} product photo`}
-                imageUrl={product.imageUrl}
-                key={product.id}
-              />
-            ))}
+      <CustomerLink
+        className="home-category-card"
+        data-category-variant={(index % 4) + 1}
+        href={`/shop/category/${category.slug}`}
+        navigate={navigate}
+      >
+        <span className="home-category-card__visual">
+          {categoryPresentation ? (
+            <ProductImage
+              alt={categoryPresentation.alt}
+              fallbackLabel="Category image unavailable"
+              imageUrl={categoryPresentation.imageUrl}
+              loading="eager"
+            />
+          ) : representativeProducts.length ? (
+            <span
+              className="home-category-card__assortment"
+              data-image-count={representativeProducts.length}
+            >
+              {representativeProducts.map((product) => (
+                <ProductImage
+                  alt={`${product.name} product photo`}
+                  imageUrl={product.imageUrl}
+                  key={product.id}
+                />
+              ))}
+            </span>
+          ) : (
+            <ProductImage
+              alt={`${category.name} category`}
+              className="home-category-card__image-pending"
+              fallbackLabel="Verified category imagery pending"
+            />
+          )}
+          <span className="home-category-card__count">
+            {category.productCount} product{category.productCount === 1 ? "" : "s"}
           </span>
-        ) : (
-          <ProductImage
-            alt={`${category.name} category`}
-            className="home-category-card__image-pending"
-            fallbackLabel="Verified category imagery pending"
-          />
-        )}
-        <span className="home-category-card__count">
-          {category.productCount} product{category.productCount === 1 ? "" : "s"}
         </span>
-      </span>
-      <span className="home-category-card__body">
-        <span>
-          <strong>{category.name}</strong>
-          <small>{category.description || "Explore this aisle"}</small>
+        <span className="home-category-card__body">
+          <span>
+            <strong>{category.name}</strong>
+            <small>{category.description || "Explore this aisle"}</small>
+          </span>
+          <ArrowRight aria-hidden="true" size={18} />
         </span>
-        <ArrowRight aria-hidden="true" size={18} />
-      </span>
-    </CustomerLink>
+      </CustomerLink>
+    </div>
+  );
+}
+
+function HomeProductCard({
+  badge,
+  navigate,
+  product,
+  revealIndex,
+  tourTarget
+}: {
+  badge?: StorefrontProductBadge | null;
+  navigate: (path: string) => void;
+  product: StorefrontProduct;
+  revealIndex: number;
+  tourTarget?: boolean;
+}) {
+  const reveal = useRevealOnView<HTMLDivElement>();
+
+  return (
+    <div
+      className={`home-reveal home-reveal--product ${reveal.isVisible ? "is-visible" : ""}`}
+      ref={reveal.ref}
+      style={{ "--home-reveal-index": Math.min(revealIndex, 4) } as CSSProperties}
+    >
+      <ProductCard badge={badge} navigate={navigate} product={product} tourTarget={tourTarget} />
+    </div>
   );
 }
 
@@ -556,8 +679,13 @@ function SectionHeading({
   navigate?: (path: string) => void;
   title: string;
 }) {
+  const reveal = useRevealOnView<HTMLDivElement>();
+
   return (
-    <div className="customer-section-heading home-section-heading">
+    <div
+      className={`customer-section-heading home-section-heading home-reveal ${reveal.isVisible ? "is-visible" : ""}`}
+      ref={reveal.ref}
+    >
       <div>
         <p className="customer-kicker">{eyebrow}</p>
         <h2>{title}</h2>
@@ -659,4 +787,19 @@ function homeError(reason: unknown, fallback: string) {
   if (!(reason instanceof Error) || /^failed to fetch$/i.test(reason.message.trim()))
     return fallback;
   return reason.message;
+}
+
+function showcaseRank(slug: string) {
+  const rank = homeShowcaseOrder.indexOf(slug);
+  return rank === -1 ? homeShowcaseOrder.length : rank;
+}
+
+function getShowcaseTitle(category: string) {
+  const titles: Record<string, string> = {
+    Beverages: "Everyday refreshments, ready when you are.",
+    "Instant Food": "Quick pantry favorites for busy days.",
+    Snacks: "Easy-to-reach favorites for every little break."
+  };
+
+  return titles[category] ?? "Everyday essentials, ready for your next shop.";
 }

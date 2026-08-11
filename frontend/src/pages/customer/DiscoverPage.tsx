@@ -1001,10 +1001,10 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             <span className="story-kicker">02 / Our beginning</span>
             <h2 className="story-display-safe">
               <span className="story-mask">
-                <span className="story-mask__line">Where our story</span>
+                <span className="story-mask__line">Where Our Story</span>
               </span>
               <span className="story-mask">
-                <span className="story-mask__line">begins.</span>
+                <span className="story-mask__line">Begins.</span>
               </span>
             </h2>
             <p>
@@ -1042,7 +1042,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                 <span className="story-products__count">300+</span>
               </span>
               <span className="story-mask">
-                <span className="story-mask__line">products across the store</span>
+                <span className="story-mask__line">Products Across the Store</span>
               </span>
             </h2>
             <p>The shelf fills category by category, from daily groceries to household needs.</p>
@@ -1106,10 +1106,10 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             <span className="story-kicker">04 / Our location</span>
             <h2 className="story-display-safe">
               <span className="story-mask">
-                <span className="story-mask__line">Local by</span>
+                <span className="story-mask__line">Local By</span>
               </span>
               <span className="story-mask">
-                <span className="story-mask__line story-mask__line--accent">design.</span>
+                <span className="story-mask__line story-mask__line--accent">Design.</span>
               </span>
             </h2>
             <p className="story-location__lead">Serving everyday grocery needs in Pasig City.</p>
@@ -1138,10 +1138,10 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             <span className="story-kicker">06 / Shop with Ysabelle</span>
             <h2 className="story-display-safe">
               <span className="story-mask">
-                <span className="story-mask__line">The story opens</span>
+                <span className="story-mask__line">The Story Opens</span>
               </span>
               <span className="story-mask">
-                <span className="story-mask__line story-mask__line--sky">into the store.</span>
+                <span className="story-mask__line story-mask__line--sky">Into the Store.</span>
               </span>
             </h2>
             <p>Search the live catalog, check real availability, and build your pickup order.</p>
