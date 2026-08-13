@@ -121,6 +121,13 @@ test("storefront and merchandising enforce durable catalog quality fields", asyn
       recordSource: "TEST_FIXTURE",
       sku: `FIXTURE-${suffix}`
     });
+    const imageLess = await createSellableProduct({
+      categoryId: category.id,
+      imageReady: false,
+      name: `Image Pending Product ${suffix}`,
+      recordSource: "CATALOG",
+      sku: `IMAGE-PENDING-${suffix}`
+    });
     const unresolvedLeft = await createSellableProduct({
       categoryId: category.id,
       name: `Review Product ${suffix} 500ml`,
@@ -187,6 +194,10 @@ test("storefront and merchandising enforce durable catalog quality fields", asyn
       false
     );
     assert.equal(
+      catalog.items.some((product) => product.id === imageLess.id),
+      false
+    );
+    assert.equal(
       catalog.items.some((product) => product.id === unresolvedLeft.id),
       false
     );
@@ -194,7 +205,15 @@ test("storefront and merchandising enforce durable catalog quality fields", asyn
       catalog.items.some((product) => product.id === unresolvedRight.id),
       false
     );
-    assert.ok(categories.some((item) => item.id === category.id));
+    const storefrontCategory = categories.find((item) => item.id === category.id);
+    assert.equal(storefrontCategory?.productCount, 1);
+    assert.deepEqual(storefrontCategory?.representativeProducts, [
+      {
+        id: approved.id,
+        imageUrl: approved.imageUrl,
+        name: approved.name
+      }
+    ]);
     assert.equal(
       merchandising.trending.some((entry) => entry.product.id === fixture.id),
       false
@@ -210,6 +229,7 @@ test("storefront and merchandising enforce durable catalog quality fields", asyn
 
 async function createSellableProduct(input: {
   categoryId: string;
+  imageReady?: boolean;
   name: string;
   recordSource: "CATALOG" | "TEST_FIXTURE";
   sku: string;
@@ -219,6 +239,8 @@ async function createSellableProduct(input: {
       categoryId: input.categoryId,
       costPrice: "10",
       dataQualityStatus: "APPROVED",
+      imageUrl:
+        input.imageReady === false ? null : `/images/products/${input.sku.toLowerCase()}.webp`,
       inventory: { create: { quantityOnHand: 10 } },
       inventoryBatches: {
         create: {

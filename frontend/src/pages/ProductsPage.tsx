@@ -2730,7 +2730,7 @@ function ProductDetailsDialog({
       barcode: product.barcode ?? "",
       brand: product.brand ?? "",
       categoryId: product.category.id,
-      costPrice: product.costPrice,
+      costPrice: product.costPrice ?? "",
       description: product.description ?? "",
       imageUrl: product.imageUrl ?? "",
       name: product.name,
@@ -3099,7 +3099,11 @@ function ProductDetailsDialog({
                   <DetailLine label="Unit" value={product.unit} />
                   <DetailLine
                     label="Cost price"
-                    value={currencyFormatter.format(Number(product.costPrice))}
+                    value={
+                      product.costPrice === null
+                        ? "Not set"
+                        : currencyFormatter.format(Number(product.costPrice))
+                    }
                   />
                   <DetailLine
                     label="Selling price"

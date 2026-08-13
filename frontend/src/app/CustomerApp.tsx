@@ -49,7 +49,7 @@ export function CustomerApp({
 
   return (
     <CartProvider>
-      <CustomerLayout navigate={navigate} pathname={pathname}>
+      <CustomerLayout location={location} navigate={navigate} pathname={pathname}>
         {page}
       </CustomerLayout>
     </CartProvider>

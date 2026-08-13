@@ -11,8 +11,8 @@ import type {
 } from "../validators/storefront.validators.js";
 import {
   approvedStorefrontCategoryWhere,
-  approvedStorefrontProductCoreWhere,
-  storefrontProductWhere
+  storefrontProductWhere,
+  temporaryImageReadyStorefrontProductWhere
 } from "./catalogQualityPolicy.js";
 import { getSellableStockQuantity } from "./stockDomainService.js";
 
@@ -60,7 +60,7 @@ export async function listStorefrontCategories() {
     where: {
       AND: [
         approvedStorefrontCategoryWhere,
-        { products: { some: approvedStorefrontProductCoreWhere } }
+        { products: { some: temporaryImageReadyStorefrontProductWhere } }
       ]
     },
     select: {
@@ -72,10 +72,10 @@ export async function listStorefrontCategories() {
         orderBy: [{ name: "asc" }, { id: "asc" }],
         select: { id: true, imageUrl: true, name: true },
         take: 3,
-        where: { AND: [approvedStorefrontProductCoreWhere, { imageUrl: { not: null } }] }
+        where: temporaryImageReadyStorefrontProductWhere
       },
       _count: {
-        select: { products: { where: approvedStorefrontProductCoreWhere } }
+        select: { products: { where: temporaryImageReadyStorefrontProductWhere } }
       }
     }
   });
@@ -101,7 +101,9 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
             OR: [
               { name: { contains: search } },
               { description: { contains: search } },
-              { category: { name: { contains: search } } }
+              { category: { name: { contains: search } } },
+              { sku: { contains: search } },
+              { barcode: { contains: search } }
             ]
           }
         : {})

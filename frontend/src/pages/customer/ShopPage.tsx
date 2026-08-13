@@ -1,8 +1,9 @@
 import { ArrowLeft, ArrowRight, Search, SlidersHorizontal } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard } from "@/components/customer/ProductCard";
+import { useRevealOnView } from "@/hooks/useRevealOnView";
 import { fetchStorefrontCategories, fetchStorefrontProducts } from "@/services/storefrontService";
 import type {
   StorefrontCategory,
@@ -42,6 +43,22 @@ export function ShopPage({
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const introReveal = useRevealOnView<HTMLElement>({
+    rootMargin: "0px 0px -12% 0px",
+    threshold: 0.2
+  });
+  const categoryNavigationReveal = useRevealOnView<HTMLElement>({
+    rootMargin: "0px 0px -8% 0px",
+    threshold: 0.18
+  });
+  const controlsReveal = useRevealOnView<HTMLFormElement>({
+    rootMargin: "0px 0px -12% 0px",
+    threshold: 0.2
+  });
+  const resultsMetaReveal = useRevealOnView<HTMLDivElement>({
+    rootMargin: "0px 0px -10% 0px",
+    threshold: 0.18
+  });
 
   useEffect(() => {
     setSearch(searchParam);
@@ -103,18 +120,28 @@ export function ShopPage({
 
   return (
     <div className="customer-page customer-shop-page">
-      <section className="customer-shop-heading">
+      <section
+        className={`customer-shop-heading shop-motion-intro ${introReveal.isVisible ? "is-visible" : ""}`}
+        ref={introReveal.ref}
+      >
         <div className="customer-container">
-          <p className="customer-kicker">The grocery aisle, online</p>
-          <h1>{activeCategory?.name ?? "Shop Everyday Essentials"}</h1>
-          <p>
+          <p className="customer-kicker shop-motion-intro__eyebrow">The grocery aisle, online</p>
+          <h1 className="shop-motion-intro__title">
+            {activeCategory?.name ?? "Shop Everyday Essentials"}
+          </h1>
+          <p className="shop-motion-intro__description">
             {activeCategory?.description ??
               "Search the live Ysabelle's Store catalog and add what you need."}
           </p>
         </div>
       </section>
       <div className="customer-container customer-shop-layout">
-        <aside aria-label="Shop filters" className="customer-filter-panel" id="categories">
+        <aside
+          aria-label="Shop filters"
+          className={`customer-filter-panel shop-category-navigation ${categoryNavigationReveal.isVisible ? "is-visible" : ""}`}
+          id="categories"
+          ref={categoryNavigationReveal.ref}
+        >
           <div className="customer-filter-panel__title">
             <SlidersHorizontal aria-hidden="true" size={18} />
             <h2>Browse</h2>
@@ -123,15 +150,17 @@ export function ShopPage({
             className={!categorySlug ? "is-active" : ""}
             href={buildShopUrl({ page: 1 }, null)}
             navigate={navigate}
+            style={{ "--shop-navigation-index": 0 } as CSSProperties}
           >
             All categories
           </CustomerLink>
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <CustomerLink
               className={category.slug === categorySlug ? "is-active" : ""}
               href={buildShopUrl({ page: 1 }, category.slug)}
               key={category.id}
               navigate={navigate}
+              style={{ "--shop-navigation-index": index + 1 } as CSSProperties}
             >
               <span>{category.name}</span>
               <small>{category.productCount}</small>
@@ -140,11 +169,17 @@ export function ShopPage({
         </aside>
 
         <section className="customer-shop-results" aria-labelledby="shop-results-title">
-          <form className="customer-shop-toolbar" onSubmit={submit} role="search">
+          <form
+            className={`customer-shop-toolbar shop-motion-controls ${controlsReveal.isVisible ? "is-visible" : ""}`}
+            onSubmit={submit}
+            ref={controlsReveal.ref}
+            role="search"
+          >
             <label className="customer-shop-search">
               <Search aria-hidden="true" size={18} />
               <span className="sr-only">Search products</span>
               <input
+                maxLength={120}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search products or categories"
                 type="search"
@@ -166,14 +201,17 @@ export function ShopPage({
               Apply
             </button>
           </form>
-          <div className="customer-results-meta">
+          <div
+            className={`customer-results-meta shop-motion-results-meta ${resultsMetaReveal.isVisible ? "is-visible" : ""}`}
+            ref={resultsMetaReveal.ref}
+          >
             <div>
               <h2 id="shop-results-title">
                 {searchParam
                   ? `Results for “${searchParam}”`
                   : (activeCategory?.name ?? "All products")}
               </h2>
-              <p>
+              <p aria-live="polite">
                 {loading
                   ? "Checking the shelves..."
                   : `${meta.totalItems} product${meta.totalItems === 1 ? "" : "s"}`}
@@ -207,11 +245,7 @@ export function ShopPage({
             </div>
           ) : null}
           {!error && !loading && products.length ? (
-            <div className="customer-product-grid">
-              {products.map((product) => (
-                <ProductCard key={product.id} navigate={navigate} product={product} />
-              ))}
-            </div>
+            <ShopProductGrid navigate={navigate} products={products} />
           ) : null}
           {!error && !loading && !products.length ? (
             <div className="customer-empty-state">
@@ -247,6 +281,36 @@ export function ShopPage({
           ) : null}
         </section>
       </div>
+    </div>
+  );
+}
+
+function ShopProductGrid({
+  navigate,
+  products
+}: {
+  navigate: (path: string) => void;
+  products: StorefrontProduct[];
+}) {
+  const reveal = useRevealOnView<HTMLDivElement>({
+    rootMargin: "0px 0px -8% 0px",
+    threshold: 0.18
+  });
+
+  return (
+    <div
+      className={`customer-product-grid shop-product-grid ${reveal.isVisible ? "is-visible" : ""}`}
+      ref={reveal.ref}
+    >
+      {products.map((product, index) => (
+        <div
+          className="shop-product-reveal"
+          key={product.id}
+          style={{ "--shop-product-index": Math.min(index, 5) } as CSSProperties}
+        >
+          <ProductCard navigate={navigate} product={product} />
+        </div>
+      ))}
     </div>
   );
 }

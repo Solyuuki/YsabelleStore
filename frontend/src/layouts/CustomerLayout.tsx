@@ -7,10 +7,12 @@ import { useShoppingGuide } from "@/hooks/useShoppingGuide";
 
 export function CustomerLayout({
   children,
+  location,
   navigate,
   pathname
 }: {
   children: ReactNode;
+  location: string;
   navigate: (path: string) => void;
   pathname: string;
 }) {
@@ -22,7 +24,12 @@ export function CustomerLayout({
       <a className="customer-skip-link" href="#customer-main">
         Skip to main content
       </a>
-      <CustomerHeader navigate={navigate} onStartGuide={startGuide} pathname={pathname} />
+      <CustomerHeader
+        location={location}
+        navigate={navigate}
+        onStartGuide={startGuide}
+        pathname={pathname}
+      />
       <main id="customer-main">{children}</main>
       <CustomerFooter navigate={navigate} onStartGuide={startGuide} />
       <div aria-live="polite" className="sr-only" role="status">

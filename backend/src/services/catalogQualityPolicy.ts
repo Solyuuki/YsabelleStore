@@ -3,6 +3,15 @@ import type { Prisma } from "@prisma/client";
 
 const unresolvedDuplicateStatuses = ["PENDING", "CONFIRMED"] as const;
 
+export const APPROVED_STOREFRONT_PRODUCT_IMAGE_PREFIX = "/images/products/";
+
+export const approvedStorefrontProductImageWhere = {
+  imageUrl: {
+    endsWith: ".webp",
+    startsWith: APPROVED_STOREFRONT_PRODUCT_IMAGE_PREFIX
+  }
+} satisfies Prisma.ProductWhereInput;
+
 export const approvedStorefrontCategoryWhere = {
   dataQualityStatus: CatalogQualityStatus.APPROVED,
   isActive: true,
@@ -25,6 +34,15 @@ export const approvedStorefrontProductCoreWhere = {
   status: "ACTIVE"
 } satisfies Prisma.ProductWhereInput;
 
+/**
+ * Temporary customer-catalog gate while the complete verified image library is collected.
+ * It is presentation-only: internal product validity, forecasting, inventory, and sales remain
+ * governed by their existing domain policies.
+ */
+export const temporaryImageReadyStorefrontProductWhere = {
+  AND: [approvedStorefrontProductCoreWhere, approvedStorefrontProductImageWhere]
+} satisfies Prisma.ProductWhereInput;
+
 export const operationalCatalogProductWhere = {
   dataQualityStatus: { not: CatalogQualityStatus.REJECTED },
   recordSource: { not: CatalogRecordSource.TEST_FIXTURE },
@@ -36,7 +54,7 @@ export function storefrontProductWhere(
 ): Prisma.ProductWhereInput {
   return {
     AND: [
-      approvedStorefrontProductCoreWhere,
+      temporaryImageReadyStorefrontProductWhere,
       { category: { is: approvedStorefrontCategoryWhere } },
       additionalWhere
     ]

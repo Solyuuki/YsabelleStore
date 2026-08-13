@@ -1,35 +1,29 @@
-import { CircleHelp, Menu, Search, ShoppingBasket, Store, X } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { CircleHelp, Menu, ShoppingBasket, Store, X } from "lucide-react";
+import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
+import { isCustomerShopRoute } from "@/utils/customerRoutes";
 import { CustomerLink } from "./CustomerLink";
+import { GlobalStorefrontSearch } from "./GlobalStorefrontSearch";
 
 export function CustomerHeader({
+  location,
   navigate,
   onStartGuide,
   pathname
 }: {
+  location: string;
   navigate: (path: string) => void;
   onStartGuide: () => void;
   pathname: string;
 }) {
   const { itemCount } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [search, setSearch] = useState(
-    () => new URL(window.location.href).searchParams.get("search") ?? ""
-  );
-
-  function submitSearch(event: FormEvent) {
-    event.preventDefault();
-    const query = search.trim();
-    navigate(query ? `/shop?search=${encodeURIComponent(query)}` : "/shop");
-    setMenuOpen(false);
-  }
+  const isShopRoute = isCustomerShopRoute(pathname);
 
   const links = [
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop" },
-    { href: "/shop#categories", label: "Categories" },
     { href: "/about", label: "About Us" }
   ];
 
@@ -65,20 +59,13 @@ export function CustomerHeader({
           ))}
         </nav>
 
-        <form className="customer-search" data-tour="search" onSubmit={submitSearch} role="search">
-          <Search aria-hidden="true" size={18} />
-          <label className="sr-only" htmlFor="customer-global-search">
-            Search groceries
-          </label>
-          <input
-            id="customer-global-search"
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search groceries..."
-            type="search"
-            value={search}
-          />
-          <button type="submit">Search</button>
-        </form>
+        <div
+          aria-hidden={isShopRoute || undefined}
+          className={`customer-header__search-region ${isShopRoute ? "is-hidden" : ""}`}
+          inert={isShopRoute || undefined}
+        >
+          <GlobalStorefrontSearch enabled={!isShopRoute} location={location} navigate={navigate} />
+        </div>
 
         <div className="customer-header__actions">
           <button

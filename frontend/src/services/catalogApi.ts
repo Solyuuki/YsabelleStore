@@ -47,7 +47,7 @@ export type ProductRecord = {
   sizeValue: string | null;
   sizeUnit: ProductSizeUnit | null;
   unit: string;
-  costPrice: string;
+  costPrice: string | null;
   sellingPrice: string;
   reorderLevel: number;
   targetStockLevel: number;

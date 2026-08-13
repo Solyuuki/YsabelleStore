@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-10T14:29:03.873Z",
+  "generatedAt": "2026-08-11T14:45:37.579Z",
   "policy": {
     "destructiveMergesAllowed": false,
     "fixtureDetection": "Exact test-generator signatures combine generated names, SKU/barcode formats, and fixture-category provenance; runtime storefront filtering does not use names.",
@@ -15,24 +15,24 @@
   "summary": {
     "barcodeConflicts": 0,
     "categoryIdentityDuplicateGroups": 0,
-    "currentStorefrontEligible": 7,
+    "currentStorefrontEligible": 23,
     "canonicalMappings": 0,
-    "canonicalProductsAfterCleaning": 11,
+    "canonicalProductsAfterCleaning": 31,
     "duplicateGroups": 1,
     "exactBarcodeDuplicates": 0,
     "exactSkuDuplicates": 0,
     "fixtureCategories": 160,
-    "missingBarcode": 1,
+    "missingBarcode": 21,
     "missingBrand": 11,
     "missingCategory": 0,
-    "missingImage": 11,
+    "missingImage": 31,
     "missingSize": 6,
-    "qualityGateEligible": 7,
+    "qualityGateEligible": 23,
     "skuConflicts": 0,
     "testFixtureProducts": 2491,
-    "totalCategories": 167,
-    "totalProducts": 2502,
-    "unresolvedProducts": 4
+    "totalCategories": 170,
+    "totalProducts": 2522,
+    "unresolvedProducts": 8
   },
   "identifierConflicts": {
     "barcode": [],
@@ -91,9 +91,24 @@
         "recordSource": "CATALOG"
       },
       "name": "Beverages",
-      "productCount": 2313,
+      "productCount": 2318,
       "proposed": null,
       "slug": "beverages"
+    },
+    {
+      "id": "cmsorph3s002vibxg85n7v2h0",
+      "classification": "CATALOG",
+      "evidence": [],
+      "isActive": true,
+      "persisted": {
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "INTERNAL"
+      },
+      "name": "Bread & Bakery",
+      "productCount": 1,
+      "proposed": null,
+      "slug": "bread-bakery"
     },
     {
       "id": "cat_canned_goods",
@@ -106,9 +121,24 @@
         "recordSource": "CATALOG"
       },
       "name": "Canned Goods",
-      "productCount": 1,
+      "productCount": 5,
       "proposed": null,
       "slug": "canned-goods"
+    },
+    {
+      "id": "cmsorpgxt001cibxgoqrytybb",
+      "classification": "CATALOG",
+      "evidence": [],
+      "isActive": true,
+      "persisted": {
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "INTERNAL"
+      },
+      "name": "Condiments & Cooking",
+      "productCount": 2,
+      "proposed": null,
+      "slug": "condiments-cooking"
     },
     {
       "id": "cmrgnu30m0000ibjco868i8v4",
@@ -771,6 +801,21 @@
       "slug": "duplicate-category-fcb0ca03"
     },
     {
+      "id": "cmsorph4d0032ibxg2iamh2qp",
+      "classification": "CATALOG",
+      "evidence": [],
+      "isActive": true,
+      "persisted": {
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "INTERNAL"
+      },
+      "name": "Frozen & Chilled",
+      "productCount": 1,
+      "proposed": null,
+      "slug": "frozen-chilled"
+    },
+    {
       "id": "cat_household_products",
       "classification": "CATALOG",
       "evidence": [],
@@ -796,7 +841,7 @@
         "recordSource": "CATALOG"
       },
       "name": "Instant Food",
-      "productCount": 1,
+      "productCount": 2,
       "proposed": null,
       "slug": "instant-food"
     },
@@ -1906,7 +1951,7 @@
         "recordSource": "CATALOG"
       },
       "name": "Personal Care",
-      "productCount": 2,
+      "productCount": 6,
       "proposed": null,
       "slug": "personal-care"
     },
@@ -2566,7 +2611,7 @@
         "recordSource": "CATALOG"
       },
       "name": "Snacks",
-      "productCount": 1,
+      "productCount": 3,
       "proposed": null,
       "slug": "snacks"
     },
@@ -2630,12 +2675,54 @@
       }
     },
     {
-      "id": "prd_beef_noodles",
+      "id": "prd_sarima_p098_argentina_luncheon_meat_340g",
       "classification": "CATALOG",
       "qualityDecision": "APPROVED",
       "storefrontDecision": "ELIGIBLE",
       "evidence": [],
-      "issues": ["MISSING_BRAND", "MISSING_SIZE", "MISSING_IMAGE"],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Canned Goods",
+        "name": "Argentina Chicken Luncheon Meat 340g",
+        "sku": "SARIMA-P098",
+        "status": "ACTIVE",
+        "unit": "PIECE"
+      },
+      "persisted": {
+        "brand": "Argentina",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "340",
+        "variant": "Chicken"
+      },
+      "proposed": {
+        "category": "Canned Goods",
+        "name": "Argentina Chicken Luncheon Meat 340g",
+        "size": {
+          "value": "340",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_beef_noodles",
+      "classification": "CATALOG",
+      "qualityDecision": "NEEDS_REVIEW",
+      "storefrontDecision": "HIDDEN",
+      "evidence": [],
+      "issues": ["MISSING_BRAND", "MISSING_SIZE", "MISSING_IMAGE", "MASTER_DATA_REVIEW_REQUIRED"],
       "original": {
         "barcode": "4800012345682",
         "category": "Instant Food",
@@ -2646,8 +2733,8 @@
       },
       "persisted": {
         "brand": null,
-        "dataQualityStatus": "APPROVED",
-        "isStorefrontVisible": true,
+        "dataQualityStatus": "NEEDS_REVIEW",
+        "isStorefrontVisible": false,
         "recordSource": "CATALOG",
         "sizeUnit": null,
         "sizeValue": null,
@@ -2710,10 +2797,10 @@
     {
       "id": "cmrdl1482000dibqcle38ptpp",
       "classification": "CATALOG",
-      "qualityDecision": "APPROVED",
-      "storefrontDecision": "ELIGIBLE",
+      "qualityDecision": "NEEDS_REVIEW",
+      "storefrontDecision": "HIDDEN",
       "evidence": [],
-      "issues": ["MISSING_BRAND", "MISSING_SIZE", "MISSING_IMAGE"],
+      "issues": ["MISSING_BRAND", "MISSING_SIZE", "MISSING_IMAGE", "MASTER_DATA_REVIEW_REQUIRED"],
       "original": {
         "barcode": "4800041123470",
         "category": "Staples",
@@ -2724,8 +2811,8 @@
       },
       "persisted": {
         "brand": null,
-        "dataQualityStatus": "APPROVED",
-        "isStorefrontVisible": true,
+        "dataQualityStatus": "NEEDS_REVIEW",
+        "isStorefrontVisible": false,
         "recordSource": "CATALOG",
         "sizeUnit": null,
         "sizeValue": null,
@@ -2784,6 +2871,90 @@
         "historicalMonthlySales": 0,
         "inventoryBatches": 1,
         "inventoryMovements": 4,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p261_coca_cola_15l",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Beverages",
+        "name": "Coca-Cola 1.5L",
+        "sku": "SARIMA-P261",
+        "status": "ACTIVE",
+        "unit": "BOTTLE"
+      },
+      "persisted": {
+        "brand": "Coca-Cola",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "LITER",
+        "sizeValue": "1.5",
+        "variant": null
+      },
+      "proposed": {
+        "category": "Beverages",
+        "name": "Coca-Cola 1.5L",
+        "size": {
+          "value": "1.5",
+          "unit": "LITER"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p080_colgate_maximum_cavity_74g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Personal Care",
+        "name": "Colgate Maximum Cavity Protection Toothpaste 74g",
+        "sku": "SARIMA-P080",
+        "status": "ACTIVE",
+        "unit": "PIECE"
+      },
+      "persisted": {
+        "brand": "Colgate",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "74",
+        "variant": "Maximum Cavity Protection"
+      },
+      "proposed": {
+        "category": "Personal Care",
+        "name": "Colgate Maximum Cavity Protection Toothpaste 74g",
+        "size": {
+          "value": "74",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
         "recommendationRecords": 0,
         "saleItems": 0
       }
@@ -43427,6 +43598,174 @@
       }
     },
     {
+      "id": "prd_sarima_p241_del_monte_tomato_sauce_250g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Condiments & Cooking",
+        "name": "Del Monte Original Style Tomato Sauce 250g",
+        "sku": "SARIMA-P241",
+        "status": "ACTIVE",
+        "unit": "PIECE"
+      },
+      "persisted": {
+        "brand": "Del Monte",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "250",
+        "variant": "Original Style"
+      },
+      "proposed": {
+        "category": "Condiments & Cooking",
+        "name": "Del Monte Original Style Tomato Sauce 250g",
+        "size": {
+          "value": "250",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p065_dr_wongs_sulfur_soap_80g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Personal Care",
+        "name": "Dr. Wong's Sulfur Soap 80g",
+        "sku": "SARIMA-P065",
+        "status": "ACTIVE",
+        "unit": "PIECE"
+      },
+      "persisted": {
+        "brand": "Dr. Wong's",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "80",
+        "variant": "Sulfur"
+      },
+      "proposed": {
+        "category": "Personal Care",
+        "name": "Dr. Wong's Sulfur Soap 80g",
+        "size": {
+          "value": "80",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p088_fresca_tuna_175g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Canned Goods",
+        "name": "Fresca Tuna Flakes in Oil 175g",
+        "sku": "SARIMA-P088",
+        "status": "ACTIVE",
+        "unit": "PIECE"
+      },
+      "persisted": {
+        "brand": "Fresca",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "175",
+        "variant": "Flakes in Oil"
+      },
+      "proposed": {
+        "category": "Canned Goods",
+        "name": "Fresca Tuna Flakes in Oil 175g",
+        "size": {
+          "value": "175",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p022_gardenia_white_bread_600g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Bread & Bakery",
+        "name": "Gardenia Enriched White Bread 600g",
+        "sku": "SARIMA-P022",
+        "status": "ACTIVE",
+        "unit": "PACK"
+      },
+      "persisted": {
+        "brand": "Gardenia",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "600",
+        "variant": "Enriched White"
+      },
+      "proposed": {
+        "category": "Bread & Bakery",
+        "name": "Gardenia Enriched White Bread 600g",
+        "size": {
+          "value": "600",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
       "id": "cmrgptskd0009ib5co9bpolgm",
       "classification": "TEST_FIXTURE",
       "qualityDecision": "REJECTED",
@@ -54383,6 +54722,90 @@
       }
     },
     {
+      "id": "prd_sarima_p370_piattos_cheese_85g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Snacks",
+        "name": "Jack 'n Jill Piattos Cheese 85g",
+        "sku": "SARIMA-P370",
+        "status": "ACTIVE",
+        "unit": "PACK"
+      },
+      "persisted": {
+        "brand": "Jack 'n Jill Piattos",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "85",
+        "variant": "Cheese"
+      },
+      "proposed": {
+        "category": "Snacks",
+        "name": "Jack 'n Jill Piattos Cheese 85g",
+        "size": {
+          "value": "85",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p102_ladys_choice_mayonnaise_72ml",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Condiments & Cooking",
+        "name": "Lady's Choice Real Mayonnaise 72mL",
+        "sku": "SARIMA-P102",
+        "status": "ACTIVE",
+        "unit": "PIECE"
+      },
+      "persisted": {
+        "brand": "Lady's Choice",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "MILLILITER",
+        "sizeValue": "72",
+        "variant": "Real Mayonnaise"
+      },
+      "proposed": {
+        "category": "Condiments & Cooking",
+        "name": "Lady's Choice Real Mayonnaise 72ml",
+        "size": {
+          "value": "72",
+          "unit": "MILLILITER"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
       "id": "prd_dishwashing_liquid",
       "classification": "CATALOG",
       "qualityDecision": "APPROVED",
@@ -54417,6 +54840,48 @@
         "historicalMonthlySales": 0,
         "inventoryBatches": 1,
         "inventoryMovements": 4,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p144_ligo_sardines_155g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Canned Goods",
+        "name": "Ligo Sardines in Tomato Sauce, Chili Added 155g",
+        "sku": "SARIMA-P144",
+        "status": "ACTIVE",
+        "unit": "PIECE"
+      },
+      "persisted": {
+        "brand": "Ligo",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "155",
+        "variant": "Tomato Sauce, Chili Added"
+      },
+      "proposed": {
+        "category": "Canned Goods",
+        "name": "Ligo Sardines in Tomato Sauce, Chili Added 155g",
+        "size": {
+          "value": "155",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
         "recommendationRecords": 0,
         "saleItems": 0
       }
@@ -54501,6 +54966,216 @@
         "historicalMonthlySales": 0,
         "inventoryBatches": 1,
         "inventoryMovements": 3,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p218_natures_spring_350ml",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Beverages",
+        "name": "Nature's Spring Purified Drinking Water 350mL",
+        "sku": "SARIMA-P218",
+        "status": "ACTIVE",
+        "unit": "BOTTLE"
+      },
+      "persisted": {
+        "brand": "Nature's Spring",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "MILLILITER",
+        "sizeValue": "350",
+        "variant": "Purified Drinking Water"
+      },
+      "proposed": {
+        "category": "Beverages",
+        "name": "Nature's Spring Purified Drinking Water 350ml",
+        "size": {
+          "value": "350",
+          "unit": "MILLILITER"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p385_nescafe_classic_80g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Beverages",
+        "name": "Nescafe Classic 80g",
+        "sku": "SARIMA-P385",
+        "status": "ACTIVE",
+        "unit": "PACK"
+      },
+      "persisted": {
+        "brand": "Nescafe",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "80",
+        "variant": "Classic"
+      },
+      "proposed": {
+        "category": "Beverages",
+        "name": "Nescafe Classic 80g",
+        "size": {
+          "value": "80",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p425_oishi_ridges_bbq_60g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Snacks",
+        "name": "Oishi Ridges Barbecue Flavor 60g",
+        "sku": "SARIMA-P425",
+        "status": "ACTIVE",
+        "unit": "PACK"
+      },
+      "persisted": {
+        "brand": "Oishi",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "60",
+        "variant": "Barbecue Flavor"
+      },
+      "proposed": {
+        "category": "Snacks",
+        "name": "Oishi Ridges Barbecue Flavor 60g",
+        "size": {
+          "value": "60",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p443_payless_yakisoba_59g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Instant Food",
+        "name": "Payless Yakisoba Spicy Chicken 59g",
+        "sku": "SARIMA-P443",
+        "status": "ACTIVE",
+        "unit": "PACK"
+      },
+      "persisted": {
+        "brand": "Payless",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "59",
+        "variant": "Spicy Chicken"
+      },
+      "proposed": {
+        "category": "Instant Food",
+        "name": "Payless Yakisoba Spicy Chicken 59g",
+        "size": {
+          "value": "59",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p237_pocari_sweat_500ml",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Beverages",
+        "name": "Pocari Sweat 500mL",
+        "sku": "SARIMA-P237",
+        "status": "ACTIVE",
+        "unit": "BOTTLE"
+      },
+      "persisted": {
+        "brand": "Pocari Sweat",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "MILLILITER",
+        "sizeValue": "500",
+        "variant": null
+      },
+      "proposed": {
+        "category": "Beverages",
+        "name": "Pocari Sweat 500ml",
+        "size": {
+          "value": "500",
+          "unit": "MILLILITER"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
         "recommendationRecords": 0,
         "saleItems": 0
       }
@@ -115025,12 +115700,180 @@
       }
     },
     {
-      "id": "prd_sardines_155g",
+      "id": "prd_sarima_p038_purefoods_tocino_450g",
       "classification": "CATALOG",
       "qualityDecision": "APPROVED",
       "storefrontDecision": "ELIGIBLE",
       "evidence": [],
-      "issues": ["MISSING_BRAND", "MISSING_IMAGE"],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Frozen & Chilled",
+        "name": "Purefoods Classic Tocino 450g",
+        "sku": "SARIMA-P038",
+        "status": "ACTIVE",
+        "unit": "PACK"
+      },
+      "persisted": {
+        "brand": "Purefoods",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "450",
+        "variant": "Classic"
+      },
+      "proposed": {
+        "category": "Frozen & Chilled",
+        "name": "Purefoods Classic Tocino 450g",
+        "size": {
+          "value": "450",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p091_star_nutri_meats_afritada_100g",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Canned Goods",
+        "name": "Star Nutri-Meats Giniling Afritada 100g",
+        "sku": "SARIMA-P091",
+        "status": "ACTIVE",
+        "unit": "PIECE"
+      },
+      "persisted": {
+        "brand": "Star Nutri-Meats",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "GRAM",
+        "sizeValue": "100",
+        "variant": "Giniling Afritada"
+      },
+      "proposed": {
+        "category": "Canned Goods",
+        "name": "Star Nutri-Meats Giniling Afritada 100g",
+        "size": {
+          "value": "100",
+          "unit": "GRAM"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p054_sunsilk_anti_dandruff_135ml",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Personal Care",
+        "name": "Sunsilk Anti-Dandruff & Silky Shampoo Sachet 13.5mL",
+        "sku": "SARIMA-P054",
+        "status": "ACTIVE",
+        "unit": "SACHET"
+      },
+      "persisted": {
+        "brand": "Sunsilk",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "MILLILITER",
+        "sizeValue": "13.5",
+        "variant": "Anti-Dandruff & Silky"
+      },
+      "proposed": {
+        "category": "Personal Care",
+        "name": "Sunsilk Anti-Dandruff & Silky Shampoo Sachet 13.5ml",
+        "size": {
+          "value": "13.5",
+          "unit": "MILLILITER"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sarima_p078_sunsilk_perfect_straight_13ml",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Personal Care",
+        "name": "Sunsilk Perfect Straight Shampoo Sachet 13mL",
+        "sku": "SARIMA-P078",
+        "status": "ACTIVE",
+        "unit": "SACHET"
+      },
+      "persisted": {
+        "brand": "Sunsilk",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "MILLILITER",
+        "sizeValue": "13",
+        "variant": "Perfect Straight"
+      },
+      "proposed": {
+        "category": "Personal Care",
+        "name": "Sunsilk Perfect Straight Shampoo Sachet 13ml",
+        "size": {
+          "value": "13",
+          "unit": "MILLILITER"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
+      }
+    },
+    {
+      "id": "prd_sardines_155g",
+      "classification": "CATALOG",
+      "qualityDecision": "NEEDS_REVIEW",
+      "storefrontDecision": "HIDDEN",
+      "evidence": [],
+      "issues": ["MISSING_BRAND", "MISSING_IMAGE", "MASTER_DATA_REVIEW_REQUIRED"],
       "original": {
         "barcode": "4800012345680",
         "category": "Canned Goods",
@@ -115041,8 +115884,8 @@
       },
       "persisted": {
         "brand": null,
-        "dataQualityStatus": "APPROVED",
-        "isStorefrontVisible": true,
+        "dataQualityStatus": "NEEDS_REVIEW",
+        "isStorefrontVisible": false,
         "recordSource": "CATALOG",
         "sizeUnit": "GRAM",
         "sizeValue": "155",
@@ -115069,10 +115912,10 @@
     {
       "id": "cmrdl144d0005ibqc05dq8jhv",
       "classification": "CATALOG",
-      "qualityDecision": "APPROVED",
-      "storefrontDecision": "ELIGIBLE",
+      "qualityDecision": "NEEDS_REVIEW",
+      "storefrontDecision": "HIDDEN",
       "evidence": [],
-      "issues": ["MISSING_BRAND", "MISSING_SIZE", "MISSING_IMAGE"],
+      "issues": ["MISSING_BRAND", "MISSING_SIZE", "MISSING_IMAGE", "MASTER_DATA_REVIEW_REQUIRED"],
       "original": {
         "barcode": "4800041123456",
         "category": "Staples",
@@ -115083,8 +115926,8 @@
       },
       "persisted": {
         "brand": null,
-        "dataQualityStatus": "APPROVED",
-        "isStorefrontVisible": true,
+        "dataQualityStatus": "NEEDS_REVIEW",
+        "isStorefrontVisible": false,
         "recordSource": "CATALOG",
         "sizeUnit": null,
         "sizeValue": null,
@@ -115103,6 +115946,48 @@
         "inventoryMovements": 3,
         "recommendationRecords": 0,
         "saleItems": 3
+      }
+    },
+    {
+      "id": "prd_sarima_p217_wilkins_500ml",
+      "classification": "CATALOG",
+      "qualityDecision": "APPROVED",
+      "storefrontDecision": "ELIGIBLE",
+      "evidence": [],
+      "issues": ["MISSING_BARCODE", "MISSING_IMAGE"],
+      "original": {
+        "barcode": null,
+        "category": "Beverages",
+        "name": "Wilkins Pure Drinking Water 500mL",
+        "sku": "SARIMA-P217",
+        "status": "ACTIVE",
+        "unit": "BOTTLE"
+      },
+      "persisted": {
+        "brand": "Wilkins",
+        "dataQualityStatus": "APPROVED",
+        "isStorefrontVisible": true,
+        "recordSource": "IMPORT",
+        "sizeUnit": "MILLILITER",
+        "sizeValue": "500",
+        "variant": "Pure Drinking Water"
+      },
+      "proposed": {
+        "category": "Beverages",
+        "name": "Wilkins Pure Drinking Water 500ml",
+        "size": {
+          "value": "500",
+          "unit": "MILLILITER"
+        }
+      },
+      "relationships": {
+        "customerOrderItems": 0,
+        "forecastRecords": 0,
+        "historicalMonthlySales": 0,
+        "inventoryBatches": 0,
+        "inventoryMovements": 0,
+        "recommendationRecords": 0,
+        "saleItems": 0
       }
     }
   ]

@@ -41,14 +41,15 @@ A task is complete only when implementation evidence and the matching artifact u
 
 ## In Progress
 
-| Task ID | Scope | Status | Evidence | Next Action |
-| --- | --- | --- | --- | --- |
-| YSB-M1-ABARADO-20260709 | Polish auth UI and session safety flow | Manual QA Required | m1/v0.3/feat/pos-sales-integration | Perform manual QA on the changed auth/device/UI flow. |
-| YSB-M1-ABARADO-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3 | Perform manual QA on the changed auth/device/UI flow. |
-| YSB-M1-ABARADO-20260711 | Polish auth UI and session safety flow | Manual QA Required | sprint/v0.3/sprint-3 | Perform manual QA on the changed auth/device/UI flow. |
-| YSB-M1-ABARADO-20260712 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3 | Perform manual QA on the changed auth/device/UI flow. |
-| YSB-M1-ABARADO-20260715 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3 | Perform manual QA on the changed auth/device/UI flow. |
-| YSB-M1-ABARADO-20260716 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3 | Perform manual QA on the changed auth/device/UI flow. |
-| YSB-M1-ABARADO-20260809 | Polish auth UI and session safety flow | In Progress | sprint/v0.4/sprint-4 | Run push-ready validation and resolve any failures. |
-| YSB-M1-ABARADO-20260810 | Preserve artifact markdown templates during automation updates | Needs Review | sprint/v0.4/sprint-4 | Run push-ready validation and resolve any failures. |
-| YSB-M1-ABARADO-20260811 | Polish auth UI and session safety flow | In Progress | sprint/v0.4/sprint-4 | Run push-ready validation and resolve any failures. |
+| Task ID                 | Scope                                                          | Status             | Evidence                           | Next Action                                           |
+| ----------------------- | -------------------------------------------------------------- | ------------------ | ---------------------------------- | ----------------------------------------------------- |
+| YSB-M1-ABARADO-20260709 | Polish auth UI and session safety flow                         | Manual QA Required | m1/v0.3/feat/pos-sales-integration | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260711 | Polish auth UI and session safety flow                         | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260712 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260715 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260716 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3               | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260809 | Polish auth UI and session safety flow                         | In Progress        | sprint/v0.4/sprint-4               | Run push-ready validation and resolve any failures.   |
+| YSB-M1-ABARADO-20260810 | Preserve artifact markdown templates during automation updates | Needs Review       | sprint/v0.4/sprint-4               | Run push-ready validation and resolve any failures.   |
+| YSB-M1-ABARADO-20260811 | Polish auth UI and session safety flow                         | In Progress        | sprint/v0.4/sprint-4               | Run push-ready validation and resolve any failures.   |
+| YSB-M1-ABARADO-20260814 | Preserve artifact markdown templates during automation updates | Needs Review       | sprint/v0.4/sprint-4               | Run push-ready validation and resolve any failures.   |

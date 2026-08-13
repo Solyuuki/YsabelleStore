@@ -68,7 +68,7 @@ export type ProductSummary = {
   sizeValue: string | null;
   sizeUnit: Product["sizeUnit"];
   unit: Product["unit"];
-  costPrice: string;
+  costPrice: string | null;
   sellingPrice: string;
   reorderLevel: number;
   targetStockLevel: number;
@@ -91,7 +91,7 @@ export type InventorySummaryRow = InventorySummary & {
   barcode: string | null;
   description: string | null;
   unit: Product["unit"];
-  costPrice: string;
+  costPrice: string | null;
   sellingPrice: string;
   reorderLevel: number;
   targetStockLevel: number;
@@ -188,7 +188,7 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     sizeValue: product.sizeValue?.toString() ?? null,
     sizeUnit: product.sizeUnit ?? null,
     unit: product.unit,
-    costPrice: product.costPrice.toString(),
+    costPrice: product.costPrice?.toString() ?? null,
     sellingPrice: product.sellingPrice.toString(),
     reorderLevel: product.reorderLevel,
     targetStockLevel: product.targetStockLevel,
@@ -238,7 +238,7 @@ export function serializeInventory(inventory: InventoryWithRelations): Inventory
     barcode: product.barcode ?? null,
     description: product.description ?? null,
     unit: product.unit,
-    costPrice: product.costPrice.toString(),
+    costPrice: product.costPrice?.toString() ?? null,
     sellingPrice: product.sellingPrice.toString(),
     reorderLevel: product.reorderLevel,
     targetStockLevel: product.targetStockLevel,

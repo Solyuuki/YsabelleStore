@@ -1,5 +1,5 @@
-import { ShoppingBasket } from "lucide-react";
-import { useState } from "react";
+import { Check, CircleAlert, ShoppingBasket } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { useCart } from "@/context/CartContext";
 import type { StorefrontProduct } from "@/types/storefront";
@@ -15,20 +15,42 @@ export function ProductCard({
   product,
   navigate,
   badge,
+  presentation = "catalog",
   tourTarget = false
 }: {
   badge?: StorefrontProductBadge | null;
   product: StorefrontProduct;
   navigate: (path: string) => void;
+  presentation?: "catalog" | "editorial";
   tourTarget?: boolean;
 }) {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [justAdded, setJustAdded] = useState(false);
+  const feedbackTimer = useRef<number | null>(null);
   const outOfStock = product.availableStock <= 0;
   const resolvedBadge = badge === undefined ? getStorefrontProductBadge(product) : badge;
 
+  useEffect(
+    () => () => {
+      if (feedbackTimer.current !== null) window.clearTimeout(feedbackTimer.current);
+    },
+    []
+  );
+
+  function handleAddToCart() {
+    addItem(product, quantity);
+    setJustAdded(true);
+    if (feedbackTimer.current !== null) window.clearTimeout(feedbackTimer.current);
+    feedbackTimer.current = window.setTimeout(() => setJustAdded(false), 1400);
+  }
+
   return (
-    <article className="customer-product-card" data-tour={tourTarget ? "product" : undefined}>
+    <article
+      className={`customer-product-card customer-product-card--${presentation}`}
+      data-stock={product.stockStatus.toLowerCase()}
+      data-tour={tourTarget ? "product" : undefined}
+    >
       <CustomerLink
         aria-label={`View ${product.name}`}
         className="customer-product-card__visual-link"
@@ -39,6 +61,7 @@ export function ProductCard({
           category={product.category.name}
           imageUrl={product.imageUrl}
           name={product.name}
+          showCategory={false}
         />
         {resolvedBadge ? (
           <span className={`customer-product-badge customer-product-badge--${resolvedBadge.tone}`}>
@@ -56,6 +79,7 @@ export function ProductCard({
           <span>per {formatUnit(product.unit)}</span>
         </div>
         <p className={`customer-stock customer-stock--${product.stockStatus.toLowerCase()}`}>
+          <span aria-hidden="true" className="customer-stock__dot" />
           {outOfStock
             ? "Out of stock"
             : product.stockStatus === "LOW_STOCK"
@@ -75,11 +99,17 @@ export function ProductCard({
             className="customer-button customer-button--compact"
             data-tour={tourTarget ? "add-to-cart" : undefined}
             disabled={outOfStock}
-            onClick={() => addItem(product, quantity)}
+            onClick={handleAddToCart}
             type="button"
           >
-            <ShoppingBasket aria-hidden="true" size={17} />
-            {outOfStock ? "Unavailable" : "Add"}
+            {outOfStock ? (
+              <CircleAlert aria-hidden="true" size={17} />
+            ) : justAdded ? (
+              <Check aria-hidden="true" size={17} />
+            ) : (
+              <ShoppingBasket aria-hidden="true" size={17} />
+            )}
+            {outOfStock ? "Unavailable" : justAdded ? "Added" : "Add to cart"}
           </button>
         </div>
       </div>

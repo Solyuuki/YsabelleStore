@@ -24,6 +24,8 @@
     "catalog:audit": "node --env-file=.env scripts/catalog-quality-audit.mjs",
     "catalog:clean": "node --env-file=.env scripts/catalog-clean.mjs",
     "catalog:clean:apply": "node --env-file=.env scripts/catalog-clean.mjs --apply",
+    "curated-showcase:master-data:audit": "tsx --tsconfig frontend/tsconfig.app.json scripts/curated-showcase-master-data-audit.ts",
+    "curated-showcase:master-data:apply": "tsx --tsconfig frontend/tsconfig.app.json scripts/curated-showcase-master-data-audit.ts --apply",
     "inventory:audit": "node scripts/inventory-audit.mjs",
     "inventory:reconcile": "tsx scripts/inventory-reconcile.mjs",
     "prisma:clean": "node scripts/prisma-clean.mjs",
@@ -44,8 +46,19 @@
     "forecast:smoke": "tsx backend/src/scripts/forecastSmoke.ts",
     "forecast:test": "python -m pytest forecasting-service/tests",
     "forecast:ui-test": "tsx --tsconfig frontend/tsconfig.app.json scripts/forecast-ui-test.ts",
+    "catalog:sarima:validate": "tsx backend/src/scripts/mapSarimaCatalogProducts.ts",
+    "catalog:sarima:apply": "tsx backend/src/scripts/mapSarimaCatalogProducts.ts --apply",
+    "catalog:sarima:verify": "tsx backend/src/scripts/validateSarimaCatalogProducts.ts",
     "product-names:repair": "tsx backend/src/scripts/repairProductNames.ts",
-    "product-names:test": "tsx scripts/product-name-normalizer-test.ts"
+    "product-names:test": "tsx scripts/product-name-normalizer-test.ts",
+    "product-images:process": "python scripts/product_image_cutouts.py",
+    "product-images:cutouts:verify": "python scripts/product_image_cutouts.py --verify",
+    "product-images:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/product-image-mapping-test.ts",
+    "storefront:images:verify": "tsx scripts/storefront-image-ready-audit.ts",
+    "storefront:showcase:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/storefront-curated-showcase-test.ts",
+    "storefront:search-history:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/storefront-search-history-test.ts",
+    "customer:header-route:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/customer-header-route-test.ts",
+    "storefront:shop-filter:test": "node --env-file=.env scripts/storefront-shop-filter-test.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"

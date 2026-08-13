@@ -15,6 +15,7 @@ import {
   Warehouse,
   type LucideIcon
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 type IntelligenceStage = {
   capability: "Implemented now" | "Target workflow";
@@ -540,8 +541,14 @@ function StageVisual({ index }: { index: number }) {
 }
 
 export function SystemIntelligenceScene() {
+  const sceneRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    sceneRef.current?.dispatchEvent(new CustomEvent("story:intelligence-ready", { bubbles: true }));
+  }, []);
+
   return (
-    <section className="story-scene story-intelligence" id="discover-smarter">
+    <section className="story-scene story-intelligence" id="discover-smarter" ref={sceneRef}>
       <div className="customer-container story-intelligence__stage" data-story-motion>
         <div className="story-intelligence__heading">
           <span className="story-kicker">05 / System intelligence</span>

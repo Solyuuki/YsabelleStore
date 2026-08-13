@@ -38,39 +38,40 @@
 
 ## Planning Updates
 
-| Date | Next Recommended Task | QA Focus | Affected Module | Priority |
-| --- | --- | --- | --- | --- |
-| 2026-07-09 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Electron<br>Frontend<br>Scripts / CI | High |
-| 2026-07-09 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Frontend | High |
-| 2026-07-09 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend | High |
-| 2026-07-09 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Frontend | High |
-| 2026-07-09 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend | High |
-| 2026-07-10 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Frontend | High |
-| 2026-07-10 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend | High |
-| 2026-07-10 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend<br>Scripts / CI | High |
-| 2026-07-10 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI | High |
-| 2026-07-11 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Frontend<br>Scripts / CI | High |
-| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend<br>Scripts / CI | High |
-| 2026-07-11 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Frontend | High |
-| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend | High |
-| 2026-07-11 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Frontend<br>Scripts / CI | High |
-| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Docs<br>Frontend<br>Scripts / CI | High |
-| 2026-07-11 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Frontend | High |
-| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Docs<br>Frontend | High |
-| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI | High |
-| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Electron<br>Frontend<br>Scripts / CI | High |
-| 2026-07-12 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Electron<br>Frontend | High |
-| 2026-07-12 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Docs<br>Electron<br>Frontend | High |
-| 2026-07-12 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Frontend | High |
-| 2026-07-12 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Docs<br>Frontend | High |
-| 2026-07-12 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Other<br>Backend<br>Docs<br>Electron<br>Forecasting<br>Frontend<br>Scripts / CI | High |
-| 2026-07-15 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Frontend | High |
-| 2026-07-15 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend | High |
-| 2026-07-15 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend | High |
-| 2026-07-15 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI | High |
-| 2026-07-16 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI | High |
-| 2026-08-09 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Frontend | High |
-| 2026-08-10 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Other<br>Backend<br>Docs<br>Database<br>Electron<br>Frontend<br>Scripts / CI | High |
-| 2026-08-10 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI<br>Other | High |
-| 2026-08-11 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Electron<br>Frontend<br>Scripts / CI | High |
-| 2026-08-11 | Run push-ready validation and resolve any failures. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend | High |
+| Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module                                                                 | Priority |
+| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------- | -------- |
+| 2026-07-09 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Electron<br>Frontend<br>Scripts / CI             | High     |
+| 2026-07-09 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Frontend                                                 | High     |
+| 2026-07-09 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend                                         | High     |
+| 2026-07-09 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Frontend                                                                        | High     |
+| 2026-07-09 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend                                                                | High     |
+| 2026-07-10 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Frontend                                                                        | High     |
+| 2026-07-10 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend                                                                | High     |
+| 2026-07-10 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend<br>Scripts / CI                                                | High     |
+| 2026-07-10 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI                         | High     |
+| 2026-07-11 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Frontend<br>Scripts / CI                                                        | High     |
+| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend<br>Scripts / CI                                                | High     |
+| 2026-07-11 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Frontend                                                                        | High     |
+| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend                                                                | High     |
+| 2026-07-11 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Frontend<br>Scripts / CI                                             | High     |
+| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Docs<br>Frontend<br>Scripts / CI                                     | High     |
+| 2026-07-11 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Frontend                                                             | High     |
+| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Docs<br>Frontend                                                     | High     |
+| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI                         | High     |
+| 2026-07-11 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Electron<br>Frontend<br>Scripts / CI             | High     |
+| 2026-07-12 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Electron<br>Frontend                                                 | High     |
+| 2026-07-12 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Docs<br>Electron<br>Frontend                                         | High     |
+| 2026-07-12 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Frontend                                                             | High     |
+| 2026-07-12 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Docs<br>Frontend                                                     | High     |
+| 2026-07-12 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Other<br>Backend<br>Docs<br>Electron<br>Forecasting<br>Frontend<br>Scripts / CI | High     |
+| 2026-07-15 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Frontend                                                                        | High     |
+| 2026-07-15 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend                                                                | High     |
+| 2026-07-15 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend                                         | High     |
+| 2026-07-15 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI                         | High     |
+| 2026-07-16 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI                         | High     |
+| 2026-08-09 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Frontend                                                                        | High     |
+| 2026-08-10 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Other<br>Backend<br>Docs<br>Database<br>Electron<br>Frontend<br>Scripts / CI    | High     |
+| 2026-08-10 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI<br>Other                | High     |
+| 2026-08-11 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Electron<br>Frontend<br>Scripts / CI                                            | High     |
+| 2026-08-11 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Docs<br>Frontend                                                                | High     |
+| 2026-08-14 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI<br>Other                | High     |

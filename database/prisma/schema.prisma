@@ -93,6 +93,12 @@ enum ProductDuplicateStatus {
   MERGED
 }
 
+enum SarimaSourceIdentityConfidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
 enum InventoryBatchStatus {
   AVAILABLE
   LOW_STOCK
@@ -293,7 +299,7 @@ model Product {
   sizeValue                 Decimal?                    @map("size_value") @db.Decimal(10, 3)
   sizeUnit                  ProductSizeUnit?            @map("size_unit")
   unit                      ProductUnit                 @default(PIECE)
-  costPrice                 Decimal                     @map("cost_price") @db.Decimal(10, 2)
+  costPrice                 Decimal?                    @map("cost_price") @db.Decimal(10, 2)
   sellingPrice              Decimal                     @map("selling_price") @db.Decimal(10, 2)
   reorderLevel              Int                         @default(0) @map("reorder_level") @db.UnsignedInt
   targetStockLevel          Int                         @default(0) @map("target_stock_level") @db.UnsignedInt
@@ -316,6 +322,7 @@ model Product {
   aliases                   ProductAlias[]
   sourceMapping             ProductCanonicalMapping?    @relation("SourceProductMapping")
   canonicalMappings         ProductCanonicalMapping[]   @relation("CanonicalProductMappings")
+  sarimaSourceMapping       SarimaSourceProductMapping?
   duplicateCandidatesLeft   ProductDuplicateCandidate[] @relation("DuplicateCandidateLeft")
   duplicateCandidatesRight  ProductDuplicateCandidate[] @relation("DuplicateCandidateRight")
   canonicalAuditLogs        CatalogAuditLog[]
@@ -386,6 +393,35 @@ model ProductDuplicateCandidate {
   @@index([status, confidence], map: "idx_product_duplicate_status_confidence")
   @@index([rightProductId], map: "idx_product_duplicate_right")
   @@map("product_duplicate_candidates")
+}
+
+// Preserves the authoritative workbook identity used by the fallback SARIMA pipeline.
+// This intentionally does not reuse ProductCanonicalMapping, which is reserved for
+// catalog-product deduplication and has two Product foreign keys.
+model SarimaSourceProductMapping {
+  id                     String                         @id @default(cuid()) @db.VarChar(191)
+  sourceKey              String                         @unique(map: "uq_sarima_source_mapping_key") @map("source_key") @db.VarChar(80)
+  sourceProductId        String                         @unique(map: "uq_sarima_source_mapping_product") @map("source_product_id") @db.VarChar(40)
+  canonicalProductId     String                         @unique(map: "uq_sarima_source_mapping_canonical") @map("canonical_product_id") @db.VarChar(191)
+  sourceDataset          String                         @map("source_dataset") @db.VarChar(160)
+  sourceProductName      String                         @map("source_product_name") @db.VarChar(160)
+  sourceCategory         String                         @map("source_category") @db.VarChar(160)
+  sourceSellingPrice     Decimal                        @map("source_selling_price") @db.Decimal(10, 2)
+  historicalMonthCount   Int                            @map("historical_month_count") @db.UnsignedInt
+  historicalStartPeriod  String                         @map("historical_start_period") @db.VarChar(7)
+  historicalEndPeriod    String                         @map("historical_end_period") @db.VarChar(7)
+  totalHistoricalUnits   Int                            @map("total_historical_units") @db.UnsignedInt
+  confidence             SarimaSourceIdentityConfidence
+  evidence               Json
+  approvedBy             String?                        @map("approved_by") @db.VarChar(191)
+  approvedAt             DateTime                       @default(now()) @map("approved_at")
+  createdAt              DateTime                       @default(now()) @map("created_at")
+  updatedAt              DateTime                       @updatedAt @map("updated_at")
+  canonicalProduct       Product                        @relation(fields: [canonicalProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([confidence, approvedAt], map: "idx_sarima_source_mapping_confidence")
+  @@index([sourceDataset, sourceProductId], map: "idx_sarima_source_mapping_dataset_product")
+  @@map("sarima_source_product_mappings")
 }
 
 model CatalogAuditLog {

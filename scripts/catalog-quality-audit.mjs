@@ -14,6 +14,7 @@ import {
   normalizeCategoryIdentity,
   qualityIssuesForProduct
 } from "./lib/catalog-quality.mjs";
+import { MASTER_DATA_REVIEW_REQUIRED_ACTION } from "./lib/catalog-review-actions.mjs";
 
 const prisma = new PrismaClient();
 const outputArgument = process.argv.find((argument) => argument.startsWith("--output="));
@@ -39,92 +40,106 @@ try {
 }
 
 async function buildReport() {
-  const [products, categories, importRows, storedDuplicateCandidates, canonicalMappings] =
-    await Promise.all([
-      prisma.product.findMany({
-        orderBy: [{ name: "asc" }, { id: "asc" }],
-        select: {
-          barcode: true,
-          brand: true,
-          category: {
-            select: {
-              dataQualityStatus: true,
-              id: true,
-              isActive: true,
-              isStorefrontVisible: true,
-              name: true,
-              recordSource: true,
-              slug: true
-            }
-          },
-          categoryId: true,
-          costPrice: true,
-          createdAt: true,
-          dataQualityStatus: true,
-          description: true,
-          id: true,
-          imageUrl: true,
-          isStorefrontVisible: true,
-          name: true,
-          recordSource: true,
-          sellingPrice: true,
-          sizeUnit: true,
-          sizeValue: true,
-          sku: true,
-          status: true,
-          unit: true,
-          variant: true,
-          _count: {
-            select: {
-              customerOrderItems: true,
-              forecastRecords: true,
-              historicalMonthlySales: true,
-              inventoryBatches: true,
-              inventoryMovements: true,
-              recommendationRecords: true,
-              saleItems: true
-            }
+  const [
+    products,
+    categories,
+    importRows,
+    storedDuplicateCandidates,
+    canonicalMappings,
+    masterDataReviewLocks
+  ] = await Promise.all([
+    prisma.product.findMany({
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      select: {
+        barcode: true,
+        brand: true,
+        category: {
+          select: {
+            dataQualityStatus: true,
+            id: true,
+            isActive: true,
+            isStorefrontVisible: true,
+            name: true,
+            recordSource: true,
+            slug: true
+          }
+        },
+        categoryId: true,
+        costPrice: true,
+        createdAt: true,
+        dataQualityStatus: true,
+        description: true,
+        id: true,
+        imageUrl: true,
+        isStorefrontVisible: true,
+        name: true,
+        recordSource: true,
+        sellingPrice: true,
+        sizeUnit: true,
+        sizeValue: true,
+        sku: true,
+        status: true,
+        unit: true,
+        variant: true,
+        _count: {
+          select: {
+            customerOrderItems: true,
+            forecastRecords: true,
+            historicalMonthlySales: true,
+            inventoryBatches: true,
+            inventoryMovements: true,
+            recommendationRecords: true,
+            saleItems: true
           }
         }
-      }),
-      prisma.category.findMany({
-        orderBy: [{ name: "asc" }, { id: "asc" }],
-        select: {
-          id: true,
-          dataQualityStatus: true,
-          isActive: true,
-          isStorefrontVisible: true,
-          name: true,
-          recordSource: true,
-          slug: true,
-          _count: { select: { products: true } }
-        }
-      }),
-      prisma.historicalSalesImportRow.findMany({
-        select: {
-          matchedProductId: true,
-          normalizedBarcode: true,
-          normalizedSku: true
-        }
-      }),
-      prisma.productDuplicateCandidate.findMany({
-        select: {
-          confidence: true,
-          leftProductId: true,
-          reason: true,
-          rightProductId: true,
-          status: true
-        }
-      }),
-      prisma.productCanonicalMapping.findMany({
-        select: {
-          action: true,
-          canonicalProductId: true,
-          matchType: true,
-          sourceProductId: true
-        }
-      })
-    ]);
+      }
+    }),
+    prisma.category.findMany({
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      select: {
+        id: true,
+        dataQualityStatus: true,
+        isActive: true,
+        isStorefrontVisible: true,
+        name: true,
+        recordSource: true,
+        slug: true,
+        _count: { select: { products: true } }
+      }
+    }),
+    prisma.historicalSalesImportRow.findMany({
+      select: {
+        matchedProductId: true,
+        normalizedBarcode: true,
+        normalizedSku: true
+      }
+    }),
+    prisma.productDuplicateCandidate.findMany({
+      select: {
+        confidence: true,
+        leftProductId: true,
+        reason: true,
+        rightProductId: true,
+        status: true
+      }
+    }),
+    prisma.productCanonicalMapping.findMany({
+      select: {
+        action: true,
+        canonicalProductId: true,
+        matchType: true,
+        sourceProductId: true
+      }
+    }),
+    prisma.catalogAuditLog.findMany({
+      select: { entityId: true },
+      where: {
+        action: MASTER_DATA_REVIEW_REQUIRED_ACTION,
+        entityType: "PRODUCT"
+      }
+    })
+  ]);
+  const masterDataReviewProductIds = new Set(masterDataReviewLocks.map(({ entityId }) => entityId));
 
   const fixtureProductIds = new Set(
     products.filter((product) => fixtureProductEvidence(product).length > 0).map(({ id }) => id)
@@ -150,13 +165,17 @@ async function buildReport() {
   );
   const records = products.map((product) => {
     const fixtureEvidence = fixtureProductEvidence(product);
-    const issues = qualityIssuesForProduct(product, duplicateProductIds);
+    const issues = [
+      ...qualityIssuesForProduct(product, duplicateProductIds),
+      ...(masterDataReviewProductIds.has(product.id) ? ["MASTER_DATA_REVIEW_REQUIRED"] : [])
+    ];
     const blockingIssues = issues.filter((issue) =>
       [
         "INTERNAL_DESCRIPTION",
         "INVALID_CATEGORY",
         "INVALID_CUSTOMER_NAME",
         "INVALID_SELLING_PRICE",
+        "MASTER_DATA_REVIEW_REQUIRED",
         "TEST_FIXTURE",
         "UNRESOLVED_DUPLICATE"
       ].includes(issue)

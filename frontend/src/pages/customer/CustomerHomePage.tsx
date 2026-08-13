@@ -4,12 +4,11 @@ import {
   Clock3,
   MapPin,
   PackageCheck,
-  Search,
   ShoppingBasket,
   Sparkles,
   Store
 } from "lucide-react";
-import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard } from "@/components/customer/ProductCard";
@@ -59,7 +58,6 @@ const emptyMerchandising: StorefrontMerchandising = {
 };
 
 export function CustomerHomePage({ navigate }: { navigate: (path: string) => void }) {
-  const [search, setSearch] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [categories, setCategories] = useState<Resource<StorefrontCategory[]>>({
     data: [],
@@ -97,7 +95,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
         }
       });
 
-    void fetchStorefrontProducts({ availability: "in-stock", pageSize: 48 }, controller.signal)
+    void fetchStorefrontProducts({ availability: "all", pageSize: 48 }, controller.signal)
       .then((result) => {
         if (!controller.signal.aborted) {
           setProducts({ data: result.items, error: "", status: "success" });
@@ -129,12 +127,6 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
 
     return () => controller.abort();
   }, [reloadKey]);
-
-  function submitSearch(event: FormEvent) {
-    event.preventDefault();
-    const query = search.trim();
-    navigate(query ? `/shop?search=${encodeURIComponent(query)}` : "/shop");
-  }
 
   const featuredCategories = [...categories.data]
     .sort(
@@ -175,7 +167,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
           imageUrl: item.imageUrl,
           slug: item.slug
         }));
-  const everydayProducts = selectEverydayProducts(products.data, categories.data, 4);
+  const everydayProducts = selectEverydayProducts(products.data, categories.data, 3);
   const catalogProductCount = categories.data.reduce(
     (total, category) => total + category.productCount,
     0
@@ -191,44 +183,31 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
               <span /> Your neighborhood grocery, online
             </p>
             <h1>
-              <span>Your Everyday List,</span>
-              <em>Ready When You Are.</em>
+              <span className="home-hero__headline-primary">Your Everyday List,</span>
+              <em className="home-hero__headline-accent">Ready When You Are.</em>
             </h1>
             <p className="home-hero__lead">
               Find groceries, pantry staples, and home essentials with live store availability from
               Ysabelle&apos;s Store in Pasig City.
             </p>
 
-            <form className="home-hero__search" onSubmit={submitSearch} role="search">
-              <Search aria-hidden="true" size={21} />
-              <label className="sr-only" htmlFor="home-product-search">
-                Search the grocery catalog
-              </label>
-              <input
-                autoComplete="off"
-                id="home-product-search"
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search drinks, snacks, household items..."
-                type="search"
-                value={search}
-              />
-              <button type="submit">Find products</button>
-            </form>
-
             <div className="home-hero__actions">
-              <CustomerLink
-                className="customer-button home-hero__primary-action"
-                data-tour="start-shopping"
-                href="/shop"
-                navigate={navigate}
-              >
-                Shop groceries <ArrowRight aria-hidden="true" size={18} />
-              </CustomerLink>
+              <span className="home-hero__primary-action-reveal">
+                <CustomerLink
+                  className="customer-button home-hero__primary-action"
+                  data-tour="start-shopping"
+                  href="/shop"
+                  navigate={navigate}
+                >
+                  <span>Shop groceries</span>
+                  <ArrowRight aria-hidden="true" size={18} />
+                </CustomerLink>
+              </span>
               <a
-                className="home-hero__category-link home-hero__secondary-action"
+                className="home-hero__category-link home-hero__secondary-action home-secondary-link"
                 href="#shop-by-category"
               >
-                Browse categories <ArrowRight aria-hidden="true" size={16} />
+                Browse categories
               </a>
             </div>
 
@@ -252,8 +231,6 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
         </div>
       </section>
 
-      <MerchandisingArea navigate={navigate} onRetry={retry} resource={merchandising} />
-
       <section
         className="customer-section home-categories"
         data-tour="categories"
@@ -264,6 +241,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
             action="View all categories"
             actionHref="/shop#categories"
             eyebrow="Find your aisle"
+            motion="categories"
             navigate={navigate}
             title="Shop by Category"
           >
@@ -299,16 +277,19 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
         </div>
       </section>
 
+      <MerchandisingArea navigate={navigate} onRetry={retry} resource={merchandising} />
+
       <section className="customer-section home-essentials">
         <div className="customer-container">
           <SectionHeading
             action="Shop all products"
             actionHref="/shop"
-            eyebrow="Ready for pickup"
+            eyebrow="Everyday picks"
+            motion="essentials"
             navigate={navigate}
             title="Everyday Essentials"
           >
-            A balanced selection of currently available products from the live catalog.
+            A curated selection of everyday products from Ysabelle&apos;s catalog.
           </SectionHeading>
 
           {products.status === "loading" ? <ProductSkeletons /> : null}
@@ -324,6 +305,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
               {everydayProducts.map((product, index) => (
                 <HomeProductCard
                   key={product.id}
+                  motion="essentials"
                   navigate={navigate}
                   product={product}
                   tourTarget={index === 0}
@@ -334,52 +316,14 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
           ) : null}
           {products.status === "success" && !everydayProducts.length ? (
             <CompactSectionState
-              message="There are no in-stock products to show right now. Browse the full catalog for updates."
-              title="The Shelf Is Being Restocked"
+              message="Verified product imagery is still being added. Browse again as the catalog expands."
+              title="More Everyday Picks Are Coming"
             />
           ) : null}
         </div>
       </section>
 
-      <section className="customer-section home-next-step">
-        <div className="customer-container home-next-step__grid">
-          <article className="home-pickup-card" data-tour="checkout">
-            <span className="home-next-step__icon">
-              <ShoppingBasket aria-hidden="true" />
-            </span>
-            <p className="customer-kicker">Simple store pickup</p>
-            <h2>Build Your Basket Now. Pay When You Collect It.</h2>
-            <p>
-              Send your grocery request online, then pick it up at 110 A. Mabini Street, Pasig City.
-            </p>
-            <div className="home-pickup-card__meta">
-              <span>
-                <MapPin aria-hidden="true" /> Pasig City
-              </span>
-              <span>
-                <Store aria-hidden="true" /> Cash on pickup
-              </span>
-            </div>
-            <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
-              Build your basket <ArrowRight aria-hidden="true" size={18} />
-            </CustomerLink>
-          </article>
-
-          <article className="home-discover-card">
-            <span className="home-next-step__icon">
-              <Sparkles aria-hidden="true" />
-            </span>
-            <p className="customer-kicker">Discover Ysabelle</p>
-            <h2>See the Story Behind the Shelves.</h2>
-            <p>
-              Step into the store&apos;s journey from a local beginning to smarter everyday retail.
-            </p>
-            <CustomerLink href="/about" navigate={navigate}>
-              Explore our story <ArrowRight aria-hidden="true" size={17} />
-            </CustomerLink>
-          </article>
-        </div>
-      </section>
+      <HomeNextStep navigate={navigate} />
     </div>
   );
 }
@@ -393,7 +337,9 @@ function HomeCategoryShowcase({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const transitionTimeout = useRef<number | null>(null);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -405,19 +351,38 @@ function HomeCategoryShowcase({
 
   useEffect(() => {
     setActiveIndex((current) => (items.length ? current % items.length : 0));
+    setIsTransitioning(false);
   }, [items.length]);
+
+  useEffect(
+    () => () => {
+      if (transitionTimeout.current !== null) window.clearTimeout(transitionTimeout.current);
+    },
+    []
+  );
+
+  const advanceCategory = useCallback(() => {
+    if (isTransitioning || items.length < 2) return;
+
+    setIsTransitioning(true);
+    transitionTimeout.current = window.setTimeout(() => {
+      setActiveIndex((current) => (current + 1) % items.length);
+      setIsTransitioning(false);
+      transitionTimeout.current = null;
+    }, 160);
+  }, [isTransitioning, items.length]);
 
   useEffect(() => {
     if (isPaused || prefersReducedMotion || items.length < 2) return;
 
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") {
-        setActiveIndex((current) => (current + 1) % items.length);
+        advanceCategory();
       }
     }, 7000);
 
     return () => window.clearInterval(interval);
-  }, [isPaused, items.length, prefersReducedMotion]);
+  }, [advanceCategory, isPaused, items.length, prefersReducedMotion]);
 
   const item = items[activeIndex] ?? items[0];
   if (!item) return null;
@@ -426,7 +391,7 @@ function HomeCategoryShowcase({
     <div className="home-hero__merchandise home-hero__merchandise--animated">
       <CustomerLink
         aria-label={`Browse the ${item.category} category`}
-        className="home-showcase"
+        className={`home-showcase ${isTransitioning ? "is-transitioning" : ""}`}
         href={`/shop/category/${item.slug}`}
         navigate={navigate}
         onBlur={() => setIsPaused(false)}
@@ -452,7 +417,7 @@ function HomeCategoryShowcase({
             <span className="home-showcase__availability">
               <span aria-hidden="true" /> Live availability
             </span>
-            <ArrowRight aria-hidden="true" className="home-showcase__arrow" size={19} />
+            <ArrowRight aria-hidden="true" className="home-showcase__arrow" size={17} />
           </span>
         </span>
       </CustomerLink>
@@ -469,20 +434,6 @@ function MerchandisingArea({
   onRetry: () => void;
   resource: Resource<StorefrontMerchandising>;
 }) {
-  if (resource.status === "error") {
-    return (
-      <section className="customer-section home-merchandising-status">
-        <div className="customer-container">
-          <CompactSectionState
-            message={resource.error}
-            onRetry={onRetry}
-            title="Sales-Backed Picks Could Not Be Loaded"
-          />
-        </div>
-      </section>
-    );
-  }
-
   if (resource.status === "loading") {
     return (
       <section className="customer-section home-merchandising home-merchandising--loading">
@@ -496,38 +447,59 @@ function MerchandisingArea({
     );
   }
 
-  if (!resource.data.trending.length && !resource.data.bestSellers.length) return null;
+  const trendingState =
+    resource.status === "error"
+      ? {
+          message: resource.error,
+          onRetry,
+          title: "Trending Could Not Be Loaded"
+        }
+      : {
+          message: `Fresh customer activity will appear here after completed sales are recorded in the last ${resource.data.trendingWindowDays} days.`,
+          title: "Trending Is Building"
+        };
+  const bestSellerState =
+    resource.status === "error"
+      ? {
+          message: resource.error,
+          onRetry,
+          title: "Best Sellers Could Not Be Loaded"
+        }
+      : {
+          message:
+            "Sales-backed favorites will appear here once eligible products have recorded completed or imported historical sales.",
+          title: "Best Sellers Are Building"
+        };
 
   return (
     <>
-      {resource.data.trending.length ? (
-        <MerchandisingShelf
-          entries={resource.data.trending}
-          eyebrow="What shoppers are choosing"
-          navigate={navigate}
-          placement="trending"
-          title="Hot Right Now"
-        >
-          {`Ranked by completed sales in the last ${resource.data.trendingWindowDays} days.`}
-        </MerchandisingShelf>
-      ) : null}
-      {resource.data.bestSellers.length ? (
-        <MerchandisingShelf
-          entries={resource.data.bestSellers}
-          eyebrow="Proven store favorites"
-          navigate={navigate}
-          placement="best-seller"
-          title="Best Sellers"
-        >
-          Ranked by recorded units sold across completed and imported historical sales.
-        </MerchandisingShelf>
-      ) : null}
+      <MerchandisingShelf
+        emptyState={trendingState}
+        entries={resource.data.trending}
+        eyebrow="What shoppers are choosing"
+        navigate={navigate}
+        placement="trending"
+        title="Hot Right Now"
+      >
+        {`Ranked by completed sales in the last ${resource.data.trendingWindowDays} days.`}
+      </MerchandisingShelf>
+      <MerchandisingShelf
+        emptyState={bestSellerState}
+        entries={resource.data.bestSellers}
+        eyebrow="Proven store favorites"
+        navigate={navigate}
+        placement="best-seller"
+        title="Best Sellers"
+      >
+        Ranked by recorded units sold across completed and imported historical sales.
+      </MerchandisingShelf>
     </>
   );
 }
 
 function MerchandisingShelf({
   children,
+  emptyState,
   entries,
   eyebrow,
   navigate,
@@ -535,6 +507,11 @@ function MerchandisingShelf({
   title
 }: {
   children: string;
+  emptyState: {
+    message: string;
+    onRetry?: () => void;
+    title: string;
+  };
   entries: StorefrontMerchandisingEntry[];
   eyebrow: string;
   navigate: (path: string) => void;
@@ -548,24 +525,56 @@ function MerchandisingShelf({
           action="Browse the full shop"
           actionHref="/shop"
           eyebrow={eyebrow}
+          motion={placement === "trending" ? "trending" : "best-seller"}
           navigate={navigate}
           title={title}
         >
           {children}
         </SectionHeading>
-        <div className="customer-product-grid home-product-grid">
-          {entries.map((entry) => (
-            <HomeProductCard
-              badge={getStorefrontProductBadge(entry.product, placement, entry.rank)}
-              key={entry.product.id}
-              navigate={navigate}
-              product={entry.product}
-              revealIndex={entry.rank - 1}
-            />
-          ))}
-        </div>
+        {entries.length ? (
+          <div className="customer-product-grid home-product-grid">
+            {entries.map((entry) => (
+              <HomeProductCard
+                badge={getStorefrontProductBadge(entry.product, placement, entry.rank)}
+                key={entry.product.id}
+                motion={placement}
+                navigate={navigate}
+                product={entry.product}
+                revealIndex={entry.rank - 1}
+              />
+            ))}
+          </div>
+        ) : (
+          <MerchandisingShelfState placement={placement} {...emptyState} />
+        )}
       </div>
     </section>
+  );
+}
+
+function MerchandisingShelfState({
+  message,
+  onRetry,
+  placement,
+  title
+}: {
+  message: string;
+  onRetry?: () => void;
+  placement: "best-seller" | "trending";
+  title: string;
+}) {
+  const reveal = useRevealOnView<HTMLDivElement>({
+    rootMargin: "0px 0px -12% 0px",
+    threshold: 0.18
+  });
+
+  return (
+    <div
+      className={`home-reveal home-reveal--merchandising-state home-reveal--${placement} ${reveal.isVisible ? "is-visible" : ""}`}
+      ref={reveal.ref}
+    >
+      <CompactSectionState message={message} onRetry={onRetry} title={title} />
+    </div>
   );
 }
 
@@ -580,11 +589,14 @@ function CategoryCard({
 }) {
   const categoryPresentation = getCategoryPresentation(category.slug);
   const representativeProducts = getCategoryRepresentativeProducts(category);
-  const reveal = useRevealOnView<HTMLDivElement>();
+  const reveal = useRevealOnView<HTMLDivElement>({
+    rootMargin: "0px 0px -8% 0px",
+    threshold: 0.18
+  });
 
   return (
     <div
-      className={`home-reveal home-reveal--card ${reveal.isVisible ? "is-visible" : ""}`}
+      className={`home-reveal home-reveal--card home-reveal--category ${reveal.isVisible ? "is-visible" : ""}`}
       ref={reveal.ref}
       style={{ "--home-reveal-index": index } as CSSProperties}
     >
@@ -631,7 +643,6 @@ function CategoryCard({
             <strong>{category.name}</strong>
             <small>{category.description || "Explore this aisle"}</small>
           </span>
-          <ArrowRight aria-hidden="true" size={18} />
         </span>
       </CustomerLink>
     </div>
@@ -640,26 +651,37 @@ function CategoryCard({
 
 function HomeProductCard({
   badge,
+  motion = "best-seller",
   navigate,
   product,
   revealIndex,
   tourTarget
 }: {
   badge?: StorefrontProductBadge | null;
+  motion?: "best-seller" | "essentials" | "trending";
   navigate: (path: string) => void;
   product: StorefrontProduct;
   revealIndex: number;
   tourTarget?: boolean;
 }) {
-  const reveal = useRevealOnView<HTMLDivElement>();
+  const reveal = useRevealOnView<HTMLDivElement>({
+    rootMargin: "0px 0px -8% 0px",
+    threshold: 0.18
+  });
 
   return (
     <div
-      className={`home-reveal home-reveal--product ${reveal.isVisible ? "is-visible" : ""}`}
+      className={`home-reveal home-reveal--product home-reveal--${motion} ${reveal.isVisible ? "is-visible" : ""}`}
       ref={reveal.ref}
       style={{ "--home-reveal-index": Math.min(revealIndex, 4) } as CSSProperties}
     >
-      <ProductCard badge={badge} navigate={navigate} product={product} tourTarget={tourTarget} />
+      <ProductCard
+        badge={badge}
+        navigate={navigate}
+        presentation="editorial"
+        product={product}
+        tourTarget={tourTarget}
+      />
     </div>
   );
 }
@@ -669,6 +691,7 @@ function SectionHeading({
   actionHref,
   children,
   eyebrow,
+  motion = "best-seller",
   navigate,
   title
 }: {
@@ -677,26 +700,86 @@ function SectionHeading({
   children: string;
   eyebrow: string;
   navigate?: (path: string) => void;
+  motion?: "best-seller" | "categories" | "essentials" | "trending";
   title: string;
 }) {
-  const reveal = useRevealOnView<HTMLDivElement>();
+  const reveal = useRevealOnView<HTMLDivElement>({
+    rootMargin: "0px 0px -12% 0px",
+    threshold: 0.2
+  });
 
   return (
     <div
-      className={`customer-section-heading home-section-heading home-reveal ${reveal.isVisible ? "is-visible" : ""}`}
+      className={`customer-section-heading home-section-heading home-section-heading--${motion} ${reveal.isVisible ? "is-visible" : ""}`}
       ref={reveal.ref}
     >
       <div>
-        <p className="customer-kicker">{eyebrow}</p>
-        <h2>{title}</h2>
-        <p>{children}</p>
+        <p className="customer-kicker home-section-heading__eyebrow">{eyebrow}</p>
+        <h2 className="home-section-heading__title">{title}</h2>
+        <p className="home-section-heading__description">{children}</p>
       </div>
       {action && actionHref && navigate ? (
-        <CustomerLink href={actionHref} navigate={navigate}>
+        <CustomerLink
+          className="home-section-heading__action"
+          href={actionHref}
+          navigate={navigate}
+        >
           {action} <ArrowRight aria-hidden="true" size={16} />
         </CustomerLink>
       ) : null}
     </div>
+  );
+}
+
+function HomeNextStep({ navigate }: { navigate: (path: string) => void }) {
+  const reveal = useRevealOnView<HTMLDivElement>({
+    rootMargin: "0px 0px -12% 0px",
+    threshold: 0.2
+  });
+
+  return (
+    <section className="customer-section home-next-step">
+      <div
+        className={`customer-container home-next-step__grid ${reveal.isVisible ? "is-visible" : ""}`}
+        ref={reveal.ref}
+      >
+        <article className="home-pickup-card" data-tour="checkout">
+          <span className="home-next-step__icon">
+            <ShoppingBasket aria-hidden="true" />
+          </span>
+          <p className="customer-kicker">Simple store pickup</p>
+          <h2>Build Your Basket Now. Pay When You Collect It.</h2>
+          <p>
+            Send your grocery request online, then pick it up at 110 A. Mabini Street, Pasig City.
+          </p>
+          <div className="home-pickup-card__meta">
+            <span>
+              <MapPin aria-hidden="true" /> Pasig City
+            </span>
+            <span>
+              <Store aria-hidden="true" /> Cash on pickup
+            </span>
+          </div>
+          <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
+            Build your basket <ArrowRight aria-hidden="true" size={18} />
+          </CustomerLink>
+        </article>
+
+        <article className="home-discover-card">
+          <span className="home-next-step__icon">
+            <Sparkles aria-hidden="true" />
+          </span>
+          <p className="customer-kicker">Discover Ysabelle</p>
+          <h2>See the Story Behind the Shelves.</h2>
+          <p>
+            Step into the store&apos;s journey from a local beginning to smarter everyday retail.
+          </p>
+          <CustomerLink className="home-secondary-link" href="/about" navigate={navigate}>
+            Explore our story
+          </CustomerLink>
+        </article>
+      </div>
+    </section>
   );
 }
 

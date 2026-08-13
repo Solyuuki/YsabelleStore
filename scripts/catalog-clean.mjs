@@ -12,6 +12,7 @@ import {
   normalizeCanonicalProductName,
   normalizeCatalogIdentity
 } from "./lib/catalog-quality.mjs";
+import { MASTER_DATA_REVIEW_REQUIRED_ACTION } from "./lib/catalog-review-actions.mjs";
 
 const prisma = new PrismaClient();
 const shouldApply = process.argv.includes("--apply");
@@ -39,7 +40,7 @@ try {
 }
 
 async function buildCleaningPlan() {
-  const [products, categories] = await Promise.all([
+  const [products, categories, masterDataReviewLocks] = await Promise.all([
     prisma.product.findMany({
       orderBy: [{ name: "asc" }, { id: "asc" }],
       select: {
@@ -73,8 +74,16 @@ async function buildCleaningPlan() {
         recordSource: true,
         slug: true
       }
+    }),
+    prisma.catalogAuditLog.findMany({
+      select: { entityId: true },
+      where: {
+        action: MASTER_DATA_REVIEW_REQUIRED_ACTION,
+        entityType: "PRODUCT"
+      }
     })
   ]);
+  const masterDataReviewProductIds = new Set(masterDataReviewLocks.map(({ entityId }) => entityId));
   const fixtureProductIds = new Set(
     products.filter((product) => fixtureProductEvidence(product).length > 0).map(({ id }) => id)
   );
@@ -98,6 +107,9 @@ async function buildCleaningPlan() {
     if (Number(product.sellingPrice) <= 0) blockingIssues.push("INVALID_SELLING_PRICE");
     if (duplicateProductIds.has(product.id)) blockingIssues.push("UNRESOLVED_DUPLICATE");
     if (hasLifecycleDescriptionConflict(product)) blockingIssues.push("INTERNAL_DESCRIPTION");
+    if (masterDataReviewProductIds.has(product.id)) {
+      blockingIssues.push("MASTER_DATA_REVIEW_REQUIRED");
+    }
 
     const recordSource = fixtureEvidence.length > 0 ? "TEST_FIXTURE" : "CATALOG";
     const dataQualityStatus =
