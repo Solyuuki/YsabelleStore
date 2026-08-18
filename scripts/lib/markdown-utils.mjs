@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { writeFileAtomic } from "./atomic-write.mjs";
+
 export const AUTO_START = "<!-- AUTO-UPDATE:START -->";
 export const AUTO_END = "<!-- AUTO-UPDATE:END -->";
 
@@ -19,7 +21,7 @@ export function ensureMarkdownFile(filePath, heading) {
   }
 
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `# ${heading}\n\n`, "utf8");
+  writeFileAtomic(filePath, `# ${heading}\n\n`);
 }
 
 export function cleanupAutomatedSections(filePath) {
@@ -31,12 +33,13 @@ export function cleanupAutomatedSections(filePath) {
   const cleaned = removeAutomatedSections(current);
 
   if (cleaned !== current) {
-    fs.writeFileSync(filePath, cleaned, "utf8");
+    writeFileAtomic(filePath, cleaned);
   }
 }
 
 export function removeAutomatedSections(content) {
-  let next = content;
+  const newline = detectNewline(content);
+  let next = content.replaceAll("\r\n", "\n");
 
   next = next.replace(
     /\n*## Automated (?:Progress Update|Validation Summary|Sprint Member Update|Sprint Backlog Activity|Validation Status|Latest Sprint Activity)\n\n<!-- AUTO-UPDATE:START -->[\s\S]*?<!-- AUTO-UPDATE:END -->\n*/g,
@@ -45,7 +48,7 @@ export function removeAutomatedSections(content) {
   next = next.replace(/\n*<!-- AUTO-UPDATE:START -->[\s\S]*?<!-- AUTO-UPDATE:END -->\n*/g, "\n\n");
   next = next.replace(/\n{3,}/g, "\n\n");
 
-  return next.trimEnd() + "\n";
+  return `${next.trimEnd()}\n`.replaceAll("\n", newline);
 }
 
 export function ensureSectionWithTable(filePath, heading, headers) {
@@ -55,9 +58,10 @@ export function ensureSectionWithTable(filePath, heading, headers) {
     return;
   }
 
-  const section = [`## ${heading}`, "", table(headers, [])].join("\n");
-  const separator = current.endsWith("\n") || current.length === 0 ? "" : "\n";
-  fs.writeFileSync(filePath, `${current}${separator}\n${section}\n`, "utf8");
+  const newline = detectNewline(current);
+  const section = [`## ${heading}`, "", table(headers, [])].join(newline);
+  const separator = current.endsWith("\n") || current.length === 0 ? "" : newline;
+  writeFileAtomic(filePath, `${current}${separator}${newline}${section}${newline}`);
 }
 
 export function upsertTableRow(filePath, heading, keyColumns, rowByHeader) {
@@ -66,13 +70,14 @@ export function upsertTableRow(filePath, heading, keyColumns, rowByHeader) {
 
   if (!tableInfo) {
     const headers = Object.keys(rowByHeader);
+    const newline = detectNewline(current);
     const section = [
       `## ${heading}`,
       "",
       table(headers, [headers.map((header) => rowByHeader[header] ?? "")])
-    ].join("\n");
-    const separator = current.endsWith("\n") || current.length === 0 ? "" : "\n";
-    fs.writeFileSync(filePath, `${current}${separator}\n${section}\n`, "utf8");
+    ].join(newline);
+    const separator = current.endsWith("\n") || current.length === 0 ? "" : newline;
+    writeFileAtomic(filePath, `${current}${separator}${newline}${section}${newline}`);
     return;
   }
 
@@ -93,9 +98,27 @@ export function upsertTableRow(filePath, heading, keyColumns, rowByHeader) {
     rows.push(nextRow);
   }
 
-  const nextTable = table(tableInfo.headers, rows);
+  const nextTable = table(tableInfo.headers, rows).replaceAll("\n", detectNewline(current));
   const nextContent = `${current.slice(0, tableInfo.start)}${nextTable}${current.slice(tableInfo.end)}`;
-  fs.writeFileSync(filePath, nextContent, "utf8");
+  writeFileAtomic(filePath, nextContent);
+}
+
+export function removeTableRows(filePath, heading, predicate) {
+  const current = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : "";
+  const tableInfo = findTableAfterHeading(current, heading);
+  if (!tableInfo) return false;
+
+  const rows = tableInfo.rows.filter((row) => {
+    const rowByHeader = Object.fromEntries(
+      tableInfo.headers.map((header, index) => [header, row[index] ?? ""])
+    );
+    return !predicate(rowByHeader);
+  });
+  if (rows.length === tableInfo.rows.length) return false;
+
+  const nextTable = table(tableInfo.headers, rows).replaceAll("\n", detectNewline(current));
+  const nextContent = `${current.slice(0, tableInfo.start)}${nextTable}${current.slice(tableInfo.end)}`;
+  return writeFileAtomic(filePath, nextContent);
 }
 
 export function fileContains(filePath, value) {
@@ -131,20 +154,35 @@ export function escapeCell(value) {
 }
 
 export function table(headers, rows) {
+  const escapedHeaders = headers.map(escapeCell);
+  const escapedRows = rows.map((row) =>
+    headers.map((_, columnIndex) => escapeCell(row[columnIndex] ?? ""))
+  );
+  const columnWidths = escapedHeaders.map((header, columnIndex) =>
+    Math.max(3, header.length, ...escapedRows.map((row) => row[columnIndex].length))
+  );
+  const formatRow = (cells) =>
+    `| ${cells.map((cell, index) => cell.padEnd(columnWidths[index])).join(" | ")} |`;
+
   return [
-    `| ${headers.map(escapeCell).join(" | ")} |`,
-    `| ${headers.map(() => "---").join(" | ")} |`,
-    ...rows.map((row) => `| ${row.map(escapeCell).join(" | ")} |`)
+    formatRow(escapedHeaders),
+    formatRow(columnWidths.map((width) => "-".repeat(width))),
+    ...escapedRows.map(formatRow)
   ].join("\n");
 }
 
 function findTableAfterHeading(content, heading) {
   const linesWithOffsets = [];
-  let offset = 0;
+  const linePattern = /([^\r\n]*)(\r\n|\n|$)/g;
+  let match;
 
-  for (const line of content.split(/\r?\n/)) {
-    linesWithOffsets.push({ line, offset });
-    offset += line.length + 1;
+  while ((match = linePattern.exec(content)) !== null && match[0] !== "") {
+    linesWithOffsets.push({
+      end: match.index + match[1].length,
+      line: match[1],
+      offset: match.index
+    });
+    if (!match[2]) break;
   }
 
   const headingIndex = linesWithOffsets.findIndex(({ line }) => line.trim() === `## ${heading}`);
@@ -183,10 +221,7 @@ function findTableAfterHeading(content, heading) {
   }
 
   const start = linesWithOffsets[tableStartIndex].offset;
-  const end =
-    tableEndIndex < linesWithOffsets.length
-      ? linesWithOffsets[tableEndIndex].offset - 1
-      : content.length;
+  const end = linesWithOffsets[tableEndIndex - 1].end;
   const lines = linesWithOffsets.slice(tableStartIndex, tableEndIndex).map(({ line }) => line);
   const headers = parseTableLine(lines[0]);
   const rows = lines.slice(2).map(parseTableLine);
@@ -197,6 +232,10 @@ function findTableAfterHeading(content, heading) {
     rows,
     start
   };
+}
+
+function detectNewline(content) {
+  return content.includes("\r\n") ? "\r\n" : "\n";
 }
 
 function parseTableLine(line) {
@@ -214,8 +253,4 @@ function normalizeCell(value) {
     .replace(/`/g, "")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

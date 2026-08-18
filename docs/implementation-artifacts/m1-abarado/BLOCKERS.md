@@ -28,6 +28,6 @@
 
 ## Active Blockers
 
-| Blocker ID | Owner | Current Status | Required Action |
-| --- | --- | --- | --- |
-| None | None | No active blockers. Manual QA remains recommended before merge. | Complete manual QA for changed user-facing flows. |
+| Blocker ID | Owner | Current Status                                                  | Required Action                                   |
+| ---------- | ----- | --------------------------------------------------------------- | ------------------------------------------------- |
+| None       | None  | No active blockers. Manual QA remains recommended before merge. | Complete manual QA for changed user-facing flows. |

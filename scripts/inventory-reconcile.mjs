@@ -122,7 +122,7 @@ const { auditStock, buildReconciliationIdentifiers, reconcileLegacyStockMismatch
   await import("../backend/src/services/stockDomainService.js");
 const { searchPosProducts } = await import("../backend/src/services/posService.js");
 
-const { apply, dryRun } = parseArgs(process.argv.slice(2));
+const { apply } = parseArgs(process.argv.slice(2));
 
 if (apply && process.env.NODE_ENV === "production") {
   console.error("Refusing to run inventory reconciliation in production.");

@@ -8,11 +8,11 @@ import {
   ensureMarkdownFile,
   ensureSectionWithTable,
   markdownList,
-  table,
+  removeTableRows,
   today,
   upsertTableRow
 } from "./lib/markdown-utils.mjs";
-import { readValidationStatus } from "./lib/validation-summary.mjs";
+import { aggregateValidationRows, readValidationStatus } from "./lib/validation-summary.mjs";
 
 const branch = getBranch();
 const member = requireMember(branch);
@@ -157,34 +157,16 @@ function updateBlockers() {
 }
 
 function updateTestingReports() {
-  const commands = [
-    "npm run format",
-    "npm run format:check",
-    "npm run lint",
-    "npm run typecheck --workspace frontend",
-    "npm run typecheck --workspace backend",
-    "npm run typecheck --workspace electron",
-    "npm run build",
-    "npm audit --audit-level=high"
-  ];
-
   const filePath = `${memberDir}/TESTING-REPORTS.md`;
   cleanupAutomatedSections(filePath);
+  removeTableRows(filePath, "Historical Validation Detail", (row) => row.Date === date);
 
-  for (const command of commands) {
+  for (const evidence of aggregateValidationRows(validationStatus)) {
     upsertTableRow(filePath, "Historical Validation Detail", ["Date", "Command"], {
       Date: date,
-      Command: `\`${command}\``,
-      Result:
-        validationStatus === "Passed"
-          ? "Passed"
-          : validationStatus === "Failed"
-            ? "Failed or blocked"
-            : "Pending",
-      Notes:
-        validationStatus === "Passed"
-          ? validationNoteFor(command)
-          : "Run validation before push and record the result."
+      Command: `\`${evidence.command}\``,
+      Result: evidence.result,
+      Notes: evidence.notes
     });
   }
 
@@ -200,14 +182,6 @@ function updateTestingReports() {
 
 function updateValidationSummary() {
   const filePath = `${memberDir}/VALIDATION-SUMMARY.md`;
-  const commands = [
-    "npm run format",
-    "npm run format:check",
-    "npm run lint",
-    "npm run typecheck --workspace frontend",
-    "npm run build --workspace frontend",
-    "npm run prepush:local"
-  ];
 
   cleanupAutomatedSections(filePath);
   ensureSectionWithTable(filePath, "Validation Results", [
@@ -217,22 +191,19 @@ function updateValidationSummary() {
     "Result",
     "Notes"
   ]);
+  removeTableRows(
+    filePath,
+    "Validation Results",
+    (row) => row.Date === date && row.Branch === branch
+  );
 
-  for (const command of commands) {
+  for (const evidence of aggregateValidationRows(validationStatus)) {
     upsertTableRow(filePath, "Validation Results", ["Date", "Branch", "Command"], {
       Date: date,
       Branch: branch,
-      Command: command,
-      Result:
-        validationStatus === "Passed"
-          ? "Passed"
-          : validationStatus === "Failed"
-            ? "Failed or blocked"
-            : "Pending",
-      Notes:
-        validationStatus === "Passed"
-          ? validationNoteFor(command)
-          : "Run validation before push and record the result."
+      Command: evidence.command,
+      Result: evidence.result,
+      Notes: evidence.notes
     });
   }
 }
@@ -324,14 +295,14 @@ function reportFiles() {
 
 function validationSummary() {
   if (validationStatus === "Passed") {
-    return "Validation passed. Formatting, lint, frontend typecheck, frontend build, artifact checks, and local pre-push workflow completed successfully.";
+    return "The aggregate read-only code verification passed.";
   }
 
   if (validationStatus === "Failed") {
     return "Validation failed. Review the failing command output before merge.";
   }
 
-  return "Validation is pending. Run the local validation sequence before push.";
+  return "Validation is pending. Run the aggregate read-only code verification before push.";
 }
 
 function issueSummary() {
@@ -350,30 +321,6 @@ function manualQaArea() {
   return classified.manualQa
     ? "Auth UI, trusted-device flow, logout confirmation, and session restore"
     : "Changed files";
-}
-
-function validationNoteFor(command) {
-  if (command === "npm run lint") {
-    return "Passed with existing Node module-type warning only.";
-  }
-
-  if (command.includes("build")) {
-    return "Build completed successfully.";
-  }
-
-  return "Completed successfully.";
-}
-
-function followUpNeeded() {
-  if (validationStatus !== "Passed") {
-    return "Run npm run prepush:local and review generated markdown changes.";
-  }
-
-  if (classified.manualQa) {
-    return "Complete manual QA for the affected UI/auth/device flow.";
-  }
-
-  return "Review generated artifacts before staging.";
 }
 
 function nextTask() {

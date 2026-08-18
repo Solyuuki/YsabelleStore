@@ -22,7 +22,9 @@ function createProduct(id: string, overrides: Partial<StorefrontProduct> = {}): 
       name: "Pantry",
       slug: "pantry"
     },
-    ...overrides
+    ...overrides,
+    averageRating: overrides.averageRating ?? 0,
+    reviewCount: overrides.reviewCount ?? 0
   };
 }
 
@@ -36,10 +38,10 @@ const configuredProducts = [...new Set(ABOUT_STORE_ESSENTIAL_PRODUCT_IDS)].map((
 );
 
 const shuffledResolution = resolveAboutStoreEssentials([
-  configuredProducts[2],
+  configuredProducts[2]!,
   createProduct("unrelated-product"),
-  configuredProducts[0],
-  configuredProducts[1]
+  configuredProducts[0]!,
+  configuredProducts[1]!
 ]);
 
 assert.equal(ABOUT_STORE_ESSENTIAL_PRODUCT_IDS.length, ABOUT_STORE_ESSENTIAL_SLOT_COUNT);
@@ -50,8 +52,8 @@ assert.deepEqual(
   ABOUT_STORE_ESSENTIAL_PRODUCT_IDS
 );
 assert.deepEqual(shuffledResolution.missingProductIds, []);
-assert.equal(shuffledResolution.products[0].availableStock, 0);
-assert.equal(shuffledResolution.products[0].stockStatus, "OUT_OF_STOCK");
+assert.equal(shuffledResolution.products[0]!.availableStock, 0);
+assert.equal(shuffledResolution.products[0]!.stockStatus, "OUT_OF_STOCK");
 assert.ok(shuffledResolution.products.every((product) => product.imageUrl?.endsWith(".webp")));
 
 const partialResolution = resolveAboutStoreEssentials(

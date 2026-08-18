@@ -34,6 +34,15 @@ This document defines the deployment version policy for YsabelleStore.
 | No guesswork                 | Release decisions must be based on validated build evidence |
 | No direct production release | Final release steps remain documented until approved        |
 
+## Repository Sources
+
+The visible application version, private npm package metadata, and active sprint serve different
+purposes. `npm run version:check` verifies their individual formats and the alignment of private
+package/lockfile versions. Sprint transitions never imply semantic version bumps.
+
+Version mutation remains an explicit release action. Local verification and pre-push workflows do
+not call `version:bump`, so failed or repeated validation cannot increment a version.
+
 ## Future Implementation Notes
 
 - Versioning should support both thesis milestones and deployment readiness.
@@ -45,4 +54,4 @@ This document defines the deployment version policy for YsabelleStore.
 - [x] Foundation labels are documented
 - [x] Semantic versioning is documented
 - [x] Major, minor, and patch meanings are clear
-- [x] No release automation is implemented
+- [x] Version mutation is explicit and is not part of validation

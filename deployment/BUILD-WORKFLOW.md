@@ -36,16 +36,14 @@ Development
 | Release Candidate | Review a near-final build set           | Candidate package        |
 | Final Release     | Promote approved release assets         | Release-ready files      |
 
-## Documentation-Only Commands
+## Validation Commands
 
 ```bash
-npm run format
-npm run format:check
-npm run lint
-npm run build
-npm audit --audit-level=high
-npx prisma validate --schema=database/prisma/schema.prisma
+npm run verify:local -- --member m1
 ```
+
+Formatting fixes and status/version changes are separate, explicit mutations; validation does not
+silently perform them.
 
 ## Future Implementation Notes
 
@@ -56,6 +54,6 @@ npx prisma validate --schema=database/prisma/schema.prisma
 ## Validation Checklist
 
 - [x] Workflow stages are documented
-- [x] Commands are listed as documentation only
+- [x] Read-only validation command is documented
 - [x] Release progression is clear
 - [x] No packaging implementation is included

@@ -15,12 +15,13 @@ This guide defines the required GitHub process for YsabelleStore. Every contribu
 Run these before opening a pull request:
 
 ```bash
-npm run format
-npm run format:check
-npm run lint
-npm run build
-npm audit --audit-level=high
-npx prisma validate --schema=database/prisma/schema.prisma
+npm run verify:local -- --member m1
+```
+
+When current implementation and sprint evidence must be refreshed, use the explicit metadata path:
+
+```bash
+npm run status:update -- --member m1 --validation Passed
 ```
 
 Documentation-only and implementation tasks must also update the responsible member artifacts under `docs/implementation-artifacts/<member>/`. A task is not complete until daily notes, tasks, sprint progress, testing reports, deployment notes, decisions, blockers, and README entries are synchronized when affected.
@@ -29,16 +30,10 @@ Documentation-only and implementation tasks must also update the responsible mem
 
 Husky protects the repository before commit and before push:
 
-| Hook         | Local Commands                                                                                                                                                                                                                                                                        |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pre-commit` | `npm run lint`, then `npm run format:check`                                                                                                                                                                                                                                           |
-| `pre-push`   | `npm run typecheck` or the repository equivalent, `npm run build` with the temporary validation `DATABASE_URL`, `npx prisma validate --schema=database/prisma/schema.prisma` with the same temporary `DATABASE_URL`, `npm audit --audit-level=high`, and optional tests if they exist |
-
-The `pre-push` hook uses the same temporary validation database URL already used by repository validation:
-
-```text
-mysql://root:password@localhost:3306/ysabellestore_validation
-```
+| Hook         | Local Commands                                                   |
+| ------------ | ---------------------------------------------------------------- |
+| `pre-commit` | `npm run lint`, then `npm run format:check`                      |
+| `pre-push`   | `npm run verify:code` (read-only source and metadata validation) |
 
 If repository policy allows an intentional bypass, developers can skip Husky hooks with:
 
@@ -57,8 +52,12 @@ GitHub Actions runs the same quality gates with a clean install:
 npm ci
 npm run format:check
 npm run lint
+npm run typecheck
+npm run test:guardrails
+npm test --workspaces --if-present
 npm run build
-npm audit --audit-level=high
+npm run security:audit:production
+npm run version:check
 npx prisma validate --schema=database/prisma/schema.prisma
 ```
 

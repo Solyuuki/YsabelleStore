@@ -10,6 +10,7 @@ import {
 } from "./lib/member-utils.mjs";
 import { fileContains, today } from "./lib/markdown-utils.mjs";
 import { printTable } from "./lib/run-command.mjs";
+import { artifactEvidenceIssues } from "./lib/validation-summary.mjs";
 
 const branch = getBranch();
 const member = requireMember(branch);
@@ -63,6 +64,19 @@ if (classified.risky) {
     "Validation evidence documented in TESTING-REPORTS.md",
     fileContains(`${artifactDir(member.key)}/TESTING-REPORTS.md`, dateOrBranchEvidence()),
     "Testing report contains current evidence."
+  );
+}
+
+for (const [fileName, options] of [
+  ["VALIDATION-SUMMARY.md", { branch, date: today() }],
+  ["TESTING-REPORTS.md", { date: today() }]
+]) {
+  const filePath = `${artifactDir(member.key)}/${fileName}`;
+  const issues = artifactEvidenceIssues(fs.readFileSync(filePath, "utf8"), options);
+  addCheck(
+    `${fileName} evidence integrity`,
+    issues.length === 0,
+    issues.length === 0 ? "Current aggregate evidence is structurally valid." : issues.join(" ")
   );
 }
 

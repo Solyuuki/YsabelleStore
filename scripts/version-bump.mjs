@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { writeFileAtomic } from "./lib/atomic-write.mjs";
+
 const VERSION_FILE = path.join("frontend", "src", "config", "appVersion.ts");
 
 const args = parseArgs(process.argv.slice(2));
@@ -83,7 +85,7 @@ function readCurrentVersion(filePath) {
 
 function writeVersionFile(filePath, version) {
   const content = `export const APP_VERSION = "${version}";\nexport const APP_VERSION_LABEL = \`v\${APP_VERSION}\`;\n`;
-  fs.writeFileSync(filePath, content, "utf8");
+  writeFileAtomic(filePath, content);
 }
 
 function updateSprintReadmeVersion(filePath, version) {
@@ -97,6 +99,6 @@ function updateSprintReadmeVersion(filePath, version) {
     return false;
   }
 
-  fs.writeFileSync(filePath, nextContent, "utf8");
+  writeFileAtomic(filePath, nextContent);
   return true;
 }

@@ -14,12 +14,10 @@ This checklist documents the release readiness gates for the YsabelleStore deplo
 
 ## Release Checklist
 
-- [ ] `npm run format`
-- [ ] `npm run format:check`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `npm audit --audit-level=high`
-- [ ] `npx prisma validate --schema=database/prisma/schema.prisma`
+- [ ] `npm run verify:local -- --member m1`
+- [ ] `npm run security:audit` reviewed, including development-only findings
+- [ ] `npm run security:audit:production` passes
+- [ ] `npm run version:check` passes
 - [ ] Electron build completed
 - [ ] Installer generated
 - [ ] Installer tested
@@ -30,14 +28,14 @@ This checklist documents the release readiness gates for the YsabelleStore deplo
 
 ## Validation Matrix
 
-| Check          | Pass Means                          | Fail Means                         |
-| -------------- | ----------------------------------- | ---------------------------------- |
-| Format         | Code style is consistent            | Files need formatting              |
-| Lint           | Code quality rules pass             | Code issues must be fixed          |
-| Build          | Workspace builds succeed            | Release cannot proceed             |
-| Audit          | No high or critical vulnerabilities | Dependencies must be corrected     |
-| Prisma         | Schema is valid                     | Schema change must be fixed        |
-| Installer test | Desktop package behaves correctly   | Packaging or runtime issue remains |
+| Check          | Pass Means                                               | Fail Means                                        |
+| -------------- | -------------------------------------------------------- | ------------------------------------------------- |
+| Format         | Code style is consistent                                 | Files need formatting                             |
+| Lint           | Code quality rules pass                                  | Code issues must be fixed                         |
+| Build          | Workspace builds succeed                                 | Release cannot proceed                            |
+| Audit          | No production-reachable high or critical vulnerabilities | Dependencies must be corrected or release blocked |
+| Prisma         | Schema is valid                                          | Schema change must be fixed                       |
+| Installer test | Desktop package behaves correctly                        | Packaging or runtime issue remains                |
 
 ## Future Implementation Notes
 

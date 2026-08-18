@@ -34,17 +34,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate guardrail preconditions
+        run: npm run guardrail:preflight -- --member m1
+
       - name: Check formatting
         run: npm run format:check
 
       - name: Lint repository
         run: npm run lint
 
+      - name: Typecheck repository
+        run: npm run typecheck
+
+      - name: Run guardrail tests
+        run: npm run test:guardrails
+
+      - name: Run workspace tests
+        run: npm test --workspaces --if-present
+
       - name: Build repository
         run: npm run build
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
+      - name: Audit production dependency reachability
+        run: npm run security:audit:production
+
+      - name: Check version consistency
+        run: npm run version:check
+
+      - name: Verify committed sprint and artifact status
+        run: npm run verify:status -- --member m1
 
       - name: Validate Prisma schema
         run: npx prisma validate --schema=database/prisma/schema.prisma

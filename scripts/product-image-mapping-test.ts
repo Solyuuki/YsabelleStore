@@ -3,7 +3,10 @@ import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { SARIMA_CATALOG_CANDIDATES } from "../backend/src/modules/forecasting/sarima-catalog-candidates";
+import {
+  SARIMA_CATALOG_CANDIDATES,
+  type SarimaCatalogCandidate
+} from "../backend/src/modules/forecasting/sarima-catalog-candidates";
 import {
   describeCatalogImage,
   getCatalogImageMetadata
@@ -37,9 +40,10 @@ const expectedMappings = [
   }
 ] as const;
 
-const mappedCandidates = SARIMA_CATALOG_CANDIDATES.filter((candidate) => candidate.imageUrl);
+const catalogCandidates: readonly SarimaCatalogCandidate[] = SARIMA_CATALOG_CANDIDATES;
+const mappedCandidates = catalogCandidates.filter((candidate) => candidate.imageUrl);
 const candidateBySourceId = new Map(
-  SARIMA_CATALOG_CANDIDATES.map((candidate) => [candidate.sourceProductId, candidate])
+  catalogCandidates.map((candidate) => [candidate.sourceProductId, candidate])
 );
 assert.equal(SARIMA_CATALOG_CANDIDATES.length, 20);
 assert.equal(mappedCandidates.length, expectedMappings.length);
@@ -63,7 +67,7 @@ assert.equal(
   "The 400g California Raisin Loaf must not replace the exact 600g Enriched White Bread image."
 );
 assert.equal(
-  SARIMA_CATALOG_CANDIDATES.filter((candidate) => !candidate.imageUrl).length,
+  catalogCandidates.filter((candidate) => !candidate.imageUrl).length,
   17,
   "Unmatched products must retain the shared imageUrl=null fallback path."
 );

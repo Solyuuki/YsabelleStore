@@ -8,7 +8,6 @@ import {
   extractCanonicalSize,
   fixtureCategoryEvidence,
   fixtureProductEvidence,
-  hasLifecycleDescriptionConflict,
   normalizeCanonicalProductName,
   normalizeCatalogIdentity,
   normalizeCategoryIdentity,
