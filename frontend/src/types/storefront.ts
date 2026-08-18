@@ -20,6 +20,8 @@ export type StorefrontProduct = {
   sellingPrice: string;
   availableStock: number;
   stockStatus: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
+  averageRating: number;
+  reviewCount: number;
   category: Pick<StorefrontCategory, "id" | "name" | "slug">;
 };
 
@@ -28,6 +30,34 @@ export type StorefrontPagination = {
   pageSize: number;
   totalItems: number;
   totalPages: number;
+};
+
+export type StorefrontProductReview = {
+  id: string;
+  reviewerDisplayName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+};
+
+export type StorefrontProductReviews = {
+  summary: {
+    averageRating: number | null;
+    totalReviews: number;
+    distribution: Array<{
+      rating: number;
+      count: number;
+      percentage: number;
+    }>;
+  };
+  reviews: StorefrontProductReview[];
+  meta: StorefrontPagination;
+};
+
+export type StorefrontRelatedProducts = {
+  category: Pick<StorefrontCategory, "id" | "name" | "slug">;
+  sameCategory: StorefrontProduct[];
+  fallback: StorefrontProduct[];
 };
 
 export type StorefrontMerchandisingEntry = {

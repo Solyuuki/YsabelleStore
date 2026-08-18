@@ -5,7 +5,9 @@ import type {
   StorefrontOrder,
   StorefrontOrderInput,
   StorefrontPagination,
-  StorefrontProduct
+  StorefrontProduct,
+  StorefrontProductReviews,
+  StorefrontRelatedProducts
 } from "@/types/storefront";
 
 function queryString(values: Record<string, string | number | undefined>) {
@@ -54,6 +56,33 @@ export async function fetchStorefrontProducts(
 export async function fetchStorefrontProduct(productId: string, signal?: AbortSignal) {
   const response = await apiClient.request<StorefrontProduct>(
     `/api/storefront/products/${encodeURIComponent(productId)}`,
+    { signal }
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function fetchStorefrontProductReviews(
+  productId: string,
+  query: { rating?: number; page?: number; pageSize?: number } = {},
+  signal?: AbortSignal
+) {
+  const search = queryString(query);
+  const response = await apiClient.request<StorefrontProductReviews>(
+    `/api/storefront/products/${encodeURIComponent(productId)}/reviews${search ? `?${search}` : ""}`,
+    { signal }
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function fetchStorefrontRelatedProducts(
+  productId: string,
+  limit = 4,
+  signal?: AbortSignal
+) {
+  const response = await apiClient.request<StorefrontRelatedProducts>(
+    `/api/storefront/products/${encodeURIComponent(productId)}/related?limit=${limit}`,
     { signal }
   );
   if (!response.success || !response.data) throw new Error(response.message);

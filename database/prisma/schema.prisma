@@ -319,6 +319,7 @@ model Product {
   historicalMonthlySales    HistoricalMonthlySales[]
   historicalSalesImportRows HistoricalSalesImportRow[]
   customerOrderItems        CustomerOrderItem[]
+  reviews                   ProductReview[]
   aliases                   ProductAlias[]
   sourceMapping             ProductCanonicalMapping?    @relation("SourceProductMapping")
   canonicalMappings         ProductCanonicalMapping[]   @relation("CanonicalProductMappings")
@@ -333,6 +334,21 @@ model Product {
   @@index([isStorefrontVisible, dataQualityStatus, status], map: "idx_products_storefront_quality")
   @@index([recordSource, dataQualityStatus], map: "idx_products_source_quality")
   @@map("products")
+}
+
+model ProductReview {
+  id                  String   @id @default(cuid()) @db.VarChar(191)
+  productId           String   @map("product_id") @db.VarChar(191)
+  reviewerDisplayName String   @map("reviewer_display_name") @db.VarChar(120)
+  rating              Int      @db.UnsignedTinyInt
+  comment             String   @db.VarChar(1000)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([productId, createdAt], map: "idx_product_reviews_product_created")
+  @@index([productId, rating, createdAt], map: "idx_product_reviews_product_rating_created")
+  @@map("product_reviews")
 }
 
 model ProductAlias {

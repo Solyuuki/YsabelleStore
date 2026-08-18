@@ -3,6 +3,8 @@ import type { RequestHandler } from "express";
 import {
   createStorefrontOrder,
   getStorefrontProduct,
+  listStorefrontProductReviews,
+  listStorefrontRelatedProducts,
   listStorefrontCategories,
   listStorefrontMerchandising,
   listStorefrontProducts
@@ -12,7 +14,9 @@ import { parseOrThrow } from "../utils/requestValidation.js";
 import {
   storefrontOrderSchema,
   storefrontProductParamsSchema,
-  storefrontProductQuerySchema
+  storefrontProductQuerySchema,
+  storefrontProductReviewQuerySchema,
+  storefrontRelatedProductQuerySchema
 } from "../validators/storefront.validators.js";
 
 export const listStorefrontCategoriesController: RequestHandler = async (
@@ -62,6 +66,48 @@ export const getStorefrontProductController: RequestHandler = async (request, re
     });
     const product = await getStorefrontProduct(params.id);
     response.json(createSuccessResponse("Storefront product loaded.", product));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listStorefrontProductReviewsController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const params = parseOrThrow(storefrontProductParamsSchema, request.params, {
+      message: "Storefront product id is invalid.",
+      code: "INVALID_STOREFRONT_PRODUCT_ID"
+    });
+    const query = parseOrThrow(storefrontProductReviewQuerySchema, request.query, {
+      message: "Storefront product review query is invalid.",
+      code: "INVALID_STOREFRONT_REVIEW_QUERY"
+    });
+    const reviews = await listStorefrontProductReviews(params.id, query);
+    response.json(createSuccessResponse("Storefront product reviews loaded.", reviews));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listStorefrontRelatedProductsController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const params = parseOrThrow(storefrontProductParamsSchema, request.params, {
+      message: "Storefront product id is invalid.",
+      code: "INVALID_STOREFRONT_PRODUCT_ID"
+    });
+    const query = parseOrThrow(storefrontRelatedProductQuerySchema, request.query, {
+      message: "Related product query is invalid.",
+      code: "INVALID_STOREFRONT_RELATED_QUERY"
+    });
+    const related = await listStorefrontRelatedProducts(params.id, query.limit);
+    response.json(createSuccessResponse("Related storefront products loaded.", related));
   } catch (error) {
     next(error);
   }

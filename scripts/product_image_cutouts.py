@@ -15,7 +15,7 @@ from collections import deque
 from pathlib import Path
 from statistics import median
 
-from PIL import Image, features
+from PIL import Image, ImageDraw, ImageFilter, features
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +28,34 @@ ASSET_NAMES = (
     "ligo-sardines-tomato-sauce-chili-added-155g.webp",
     "sunsilk-anti-dandruff-silky-shampoo-sachet-13-5ml.webp",
 )
+LOSSLESS_DERIVATIVES = {"gardenia-enriched-white-bread-600g.webp"}
+
+# The licensed Ligo source is a real handheld product photo. A deterministic silhouette keeps only
+# the sealed can while excluding the hand and room behind it; coordinates refer to the preserved
+# 1275x1698 source and intentionally avoid reconstructing or altering any package artwork.
+MANUAL_PRODUCT_POLYGONS = {
+    "ligo-sardines-tomato-sauce-chili-added-155g.webp": (
+        (305, 540),
+        (320, 525),
+        (350, 513),
+        (405, 503),
+        (750, 496),
+        (790, 502),
+        (818, 516),
+        (832, 540),
+        (829, 1190),
+        (822, 1300),
+        (812, 1355),
+        (795, 1385),
+        (770, 1405),
+        (720, 1416),
+        (420, 1425),
+        (378, 1412),
+        (348, 1390),
+        (330, 1350),
+        (316, 620),
+    )
+}
 
 # A single color-distance policy is used for every asset. Connectivity, rather than a blanket
 # white-pixel replacement, prevents enclosed light package artwork from being erased.
@@ -208,7 +236,39 @@ def remove_isolated_matte_specks(image: Image.Image) -> tuple[int, int]:
     return removed_components, removed_pixels
 
 
-def isolate_product(image: Image.Image) -> tuple[Image.Image, dict[str, object]]:
+def isolate_manual_product(
+    image: Image.Image, polygon: tuple[tuple[int, int], ...]
+) -> tuple[Image.Image, dict[str, object]]:
+    rgba = image.convert("RGBA")
+    mask = Image.new("L", rgba.size, 0)
+    ImageDraw.Draw(mask).polygon(polygon, fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(1.0))
+    rgba.putalpha(mask)
+    bounds = mask.getbbox()
+    if bounds is None:
+        raise ValueError("Manual product silhouette removed the entire image.")
+
+    visible = rgba.crop(bounds)
+    padding = max(
+        MIN_SAFE_PADDING,
+        min(MAX_SAFE_PADDING, round(max(visible.size) * SAFE_PADDING_RATIO)),
+    )
+    padded = Image.new(
+        "RGBA", (visible.width + padding * 2, visible.height + padding * 2), (0, 0, 0, 0)
+    )
+    padded.alpha_composite(visible, (padding, padding))
+    return padded, {
+        "maskType": "manual sealed-product silhouette",
+        "contentBounds": list(bounds),
+        "safePadding": padding,
+    }
+
+
+def isolate_product(image: Image.Image, asset_name: str) -> tuple[Image.Image, dict[str, object]]:
+    manual_polygon = MANUAL_PRODUCT_POLYGONS.get(asset_name)
+    if manual_polygon is not None:
+        return isolate_manual_product(image, manual_polygon)
+
     rgb = image.convert("RGB")
     width, height = rgb.size
     background = estimate_background(rgb)
@@ -322,15 +382,13 @@ def process_assets() -> dict[str, object]:
         with Image.open(source_path) as source:
             source.load()
             source_dimensions = list(source.size)
-            cutout, processing = isolate_product(source)
-        cutout.save(
-            output_path,
-            "WEBP",
-            quality=92,
-            alpha_quality=100,
-            method=6,
-            exact=True,
-        )
+            cutout, processing = isolate_product(source, name)
+        save_options: dict[str, object] = {"method": 6, "exact": True}
+        if name in LOSSLESS_DERIVATIVES:
+            save_options["lossless"] = True
+        else:
+            save_options.update({"quality": 92, "alpha_quality": 100})
+        cutout.save(output_path, "WEBP", **save_options)
         validation = inspect_asset(output_path)
         entries.append(
             {
@@ -351,7 +409,10 @@ def process_assets() -> dict[str, object]:
         )
 
     manifest = {
-        "algorithm": "edge-connected near-background isolation with matte decontamination",
+        "algorithm": (
+            "deterministic asset-specific isolation using edge-connected matte removal or a "
+            "sealed-product silhouette"
+        ),
         "deterministic": True,
         "generative": False,
         "processor": "Pillow 12.0.0 (MIT-CMU)",

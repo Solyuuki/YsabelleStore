@@ -1,16 +1,18 @@
-# Scene 03 Editorial Image Sources
+# Storefront Editorial Category Image Sources
 
-All assets below are licensed real photography used for the About Us Scene 03 category shelf.
+All assets below are licensed real photography used for storefront category covers and the About Us
+category shelf.
 Their usage classification is: **Editorial/category representation — not an exact purchasable SKU
 packshot.** No photographed package is mapped to or labeled as a YsabelleStore catalog SKU.
 
 License: [Pexels License](https://www.pexels.com/license/). The license permits free website use and
 modification; attribution is not required. Photographer credits and source pages are retained for
-provenance. License and source pages were reviewed on 2026-08-09.
+provenance. License and source pages were reviewed on 2026-08-18.
 
 | Category         | Local asset                          | Editorial subject                                                | Photographer        | Source                                                                                                               |
 | ---------------- | ------------------------------------ | ---------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Beverages        | `beverages-retail-display.webp`      | Mixed bottles and cans on a grocery beverage shelf               | Ichear Xue          | [Pexels photo 18039942](https://www.pexels.com/photo/selection-of-beverages-in-store-18039942/)                      |
+| Bread & Bakery   | `bread-bakery-retail-display.webp`   | Fresh bread loaves arranged on a bakery retail display           | Ludovic Delot       | [Pexels photo 37421221](https://www.pexels.com/photo/artisan-breads-on-display-in-bakery-shop-37421221/)             |
 | Snacks           | `snacks-retail-display.webp`         | Mixed packaged crackers, chips, and snacks on store shelves      | Allen Boguslavsky   | [Pexels photo 27939228](https://www.pexels.com/photo/a-shelf-filled-with-snacks-and-other-food-items-27939228/)      |
 | Instant Food     | `instant-food-retail-display.webp`   | Packaged instant noodle bags and cups in a market display        | Gera Cejas          | [Pexels photo 23014601](https://www.pexels.com/photo/instant-noodles-for-sale-23014601/)                             |
 | Canned Goods     | `canned-goods-retail-display.webp`   | Unopened canned foods arranged on shop shelves                   | Warren Yip          | [Pexels photo 32063427](https://www.pexels.com/photo/colorful-display-of-canned-goods-in-store-shelf-32063427/)      |

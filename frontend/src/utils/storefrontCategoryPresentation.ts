@@ -13,6 +13,12 @@ const essentialShelfItems = [
     slug: "beverages"
   },
   {
+    alt: "Fresh bread loaves arranged on a bakery retail display",
+    category: "Bread & Bakery",
+    imageUrl: "/images/discover/essentials/bread-bakery-retail-display.webp",
+    slug: "bread-bakery"
+  },
+  {
     alt: "Unopened canned foods arranged across store shelves",
     category: "Canned Goods",
     imageUrl: "/images/discover/essentials/canned-goods-retail-display.webp",

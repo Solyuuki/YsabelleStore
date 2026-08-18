@@ -1,6 +1,7 @@
-import { Check, CircleAlert, ShoppingBasket } from "lucide-react";
+import { Check, CircleAlert, ShoppingBasket, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import type { StorefrontProduct } from "@/types/storefront";
 import {
@@ -30,6 +31,17 @@ export function ProductCard({
   const feedbackTimer = useRef<number | null>(null);
   const outOfStock = product.availableStock <= 0;
   const resolvedBadge = badge === undefined ? getStorefrontProductBadge(product) : badge;
+  const hasReviewSummary =
+    Number.isFinite(product.averageRating) &&
+    Number.isInteger(product.reviewCount) &&
+    product.reviewCount >= 0 &&
+    ((product.reviewCount === 0 && product.averageRating === 0) ||
+      (product.reviewCount > 0 && product.averageRating > 0 && product.averageRating <= 5));
+  const hasReviews = hasReviewSummary && product.reviewCount > 0;
+  const formattedRating = hasReviewSummary ? product.averageRating.toFixed(1) : "";
+  const ratingLabel = hasReviews
+    ? `Rated ${formattedRating} out of 5 from ${product.reviewCount} ${product.reviewCount === 1 ? "review" : "reviews"}.`
+    : "No reviews yet.";
 
   useEffect(
     () => () => {
@@ -63,6 +75,13 @@ export function ProductCard({
           name={product.name}
           showCategory={false}
         />
+        {hasReviewSummary ? (
+          <Badge aria-label={ratingLabel} className="customer-product-rating-badge" role="img">
+            <Star aria-hidden="true" fill={hasReviews ? "currentColor" : "none"} />
+            <span>{formattedRating}</span>
+            <span className="customer-product-rating-badge__count">({product.reviewCount})</span>
+          </Badge>
+        ) : null}
         {resolvedBadge ? (
           <span className={`customer-product-badge customer-product-badge--${resolvedBadge.tone}`}>
             {resolvedBadge.label}

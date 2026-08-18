@@ -1,12 +1,13 @@
 import { randomBytes } from "node:crypto";
 
-import { CustomerOrderStatus, Prisma, SaleStatus } from "@prisma/client";
+import { CustomerOrderStatus, InventoryBatchStatus, Prisma, SaleStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
 import { HttpError } from "../utils/httpError.js";
 import type {
   StorefrontOrderInput,
+  StorefrontProductReviewQuery,
   StorefrontProductQuery
 } from "../validators/storefront.validators.js";
 import {
@@ -25,7 +26,13 @@ type StorefrontProductRecord = Prisma.ProductGetPayload<{
   include: typeof storefrontProductInclude;
 }>;
 
+type StorefrontProductReviewSummary = {
+  averageRating: number;
+  reviewCount: number;
+};
+
 const STOREFRONT_MERCHANDISING_LIMIT = 4;
+const STOREFRONT_RELATED_CANDIDATE_MULTIPLIER = 3;
 const TRENDING_WINDOW_DAYS = 30;
 
 function stockStatus(availableStock: number, reorderLevel: number) {
@@ -34,7 +41,10 @@ function stockStatus(availableStock: number, reorderLevel: number) {
   return "IN_STOCK" as const;
 }
 
-function serializeStorefrontProduct(product: StorefrontProductRecord) {
+function serializeStorefrontProduct(
+  product: StorefrontProductRecord,
+  reviewSummary: StorefrontProductReviewSummary
+) {
   const availableStock = getSellableStockQuantity(product.inventoryBatches);
 
   return {
@@ -46,12 +56,43 @@ function serializeStorefrontProduct(product: StorefrontProductRecord) {
     sellingPrice: product.sellingPrice.toString(),
     availableStock,
     stockStatus: stockStatus(availableStock, product.reorderLevel),
+    averageRating: reviewSummary.averageRating,
+    reviewCount: reviewSummary.reviewCount,
     category: {
       id: product.category.id,
       name: product.category.name,
       slug: product.category.slug
     }
   };
+}
+
+async function serializeStorefrontProducts(products: StorefrontProductRecord[]) {
+  if (products.length === 0) return [];
+
+  const productIds = products.map((product) => product.id);
+  const aggregates = await prisma.productReview.groupBy({
+    _avg: { rating: true },
+    _count: { _all: true },
+    by: ["productId"],
+    where: { productId: { in: productIds } }
+  });
+  const summaries = new Map<string, StorefrontProductReviewSummary>(
+    aggregates.map((aggregate) => [
+      aggregate.productId,
+      {
+        averageRating:
+          aggregate._avg.rating === null ? 0 : Math.round(aggregate._avg.rating * 10) / 10,
+        reviewCount: aggregate._count._all
+      }
+    ])
+  );
+
+  return products.map((product) =>
+    serializeStorefrontProduct(
+      product,
+      summaries.get(product.id) ?? { averageRating: 0, reviewCount: 0 }
+    )
+  );
 }
 
 export async function listStorefrontCategories() {
@@ -110,18 +151,20 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
     })
   });
 
-  const visibleProducts = products.map(serializeStorefrontProduct).filter((product) => {
-    if (query.availability === "in-stock") return product.availableStock > 0;
-    if (query.availability === "out-of-stock") return product.availableStock <= 0;
+  const visibleProducts = products.filter((product) => {
+    const availableStock = getSellableStockQuantity(product.inventoryBatches);
+    if (query.availability === "in-stock") return availableStock > 0;
+    if (query.availability === "out-of-stock") return availableStock <= 0;
     return true;
   });
   const totalItems = visibleProducts.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize));
   const page = Math.min(query.page, totalPages);
   const start = (page - 1) * query.pageSize;
+  const pageProducts = visibleProducts.slice(start, start + query.pageSize);
 
   return {
-    items: visibleProducts.slice(start, start + query.pageSize),
+    items: await serializeStorefrontProducts(pageProducts),
     meta: { page, pageSize: query.pageSize, totalItems, totalPages }
   };
 }
@@ -131,10 +174,10 @@ export async function listStorefrontMerchandising(now = new Date()) {
     include: storefrontProductInclude,
     where: storefrontProductWhere()
   });
-  const availableProducts = products
-    .map(serializeStorefrontProduct)
-    .filter((product) => product.availableStock > 0);
-  const productIds = availableProducts.map((product) => product.id);
+  const availableProductRecords = products.filter(
+    (product) => getSellableStockQuantity(product.inventoryBatches) > 0
+  );
+  const productIds = availableProductRecords.map((product) => product.id);
 
   if (productIds.length === 0) {
     return {
@@ -146,7 +189,8 @@ export async function listStorefrontMerchandising(now = new Date()) {
   }
 
   const trendingWindowStart = new Date(now.getTime() - TRENDING_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-  const [effectiveSeries, recentSaleItems] = await Promise.all([
+  const [availableProducts, effectiveSeries, recentSaleItems] = await Promise.all([
+    serializeStorefrontProducts(availableProductRecords),
     getEffectiveMonthlySeries(productIds),
     prisma.saleItem.findMany({
       select: { productId: true, quantity: true },
@@ -187,7 +231,171 @@ export async function getStorefrontProduct(productId: string) {
     });
   }
 
-  return serializeStorefrontProduct(product);
+  return (await serializeStorefrontProducts([product]))[0]!;
+}
+
+export async function listStorefrontProductReviews(
+  productId: string,
+  query: StorefrontProductReviewQuery
+) {
+  await requireStorefrontProduct(productId);
+
+  const reviewWhere = {
+    productId,
+    ...(query.rating ? { rating: query.rating } : {})
+  } satisfies Prisma.ProductReviewWhereInput;
+  const [aggregate, groupedRatings, reviews, filteredCount] = await Promise.all([
+    prisma.productReview.aggregate({
+      _avg: { rating: true },
+      _count: { _all: true },
+      where: { productId }
+    }),
+    prisma.productReview.groupBy({
+      _count: { _all: true },
+      by: ["rating"],
+      where: { productId }
+    }),
+    prisma.productReview.findMany({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: {
+        id: true,
+        reviewerDisplayName: true,
+        rating: true,
+        comment: true,
+        createdAt: true
+      },
+      skip: (query.page - 1) * query.pageSize,
+      take: query.pageSize,
+      where: reviewWhere
+    }),
+    prisma.productReview.count({ where: reviewWhere })
+  ]);
+  const distributionCounts = new Map(
+    groupedRatings.map((entry) => [entry.rating, entry._count._all])
+  );
+  const totalReviews = aggregate._count._all;
+
+  return {
+    summary: {
+      averageRating:
+        aggregate._avg.rating === null ? null : Math.round(aggregate._avg.rating * 10) / 10,
+      totalReviews,
+      distribution: [5, 4, 3, 2, 1].map((rating) => {
+        const count = distributionCounts.get(rating) ?? 0;
+        return {
+          rating,
+          count,
+          percentage: totalReviews === 0 ? 0 : Math.round((count / totalReviews) * 100)
+        };
+      })
+    },
+    reviews,
+    meta: {
+      page: query.page,
+      pageSize: query.pageSize,
+      totalItems: filteredCount,
+      totalPages: Math.max(1, Math.ceil(filteredCount / query.pageSize))
+    }
+  };
+}
+
+export async function listStorefrontRelatedProducts(productId: string, limit = 4) {
+  const product = await requireStorefrontProduct(productId);
+  const sellableBatchWhere = {
+    OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
+    quantityRemaining: { gt: 0 },
+    status: { in: [InventoryBatchStatus.AVAILABLE, InventoryBatchStatus.LOW_STOCK] }
+  } satisfies Prisma.InventoryBatchWhereInput;
+  const candidateLimit = limit * STOREFRONT_RELATED_CANDIDATE_MULTIPLIER;
+  const sameCategoryAvailable = (
+    await prisma.product.findMany({
+      include: storefrontProductInclude,
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      take: candidateLimit,
+      where: storefrontProductWhere({
+        categoryId: product.category.id,
+        id: { not: product.id },
+        inventoryBatches: { some: sellableBatchWhere }
+      })
+    })
+  )
+    .filter((candidate) => getSellableStockQuantity(candidate.inventoryBatches) > 0)
+    .slice(0, limit);
+  const sameCategory = [...sameCategoryAvailable];
+
+  if (sameCategory.length < limit) {
+    const sameCategoryUnavailable = await prisma.product.findMany({
+      include: storefrontProductInclude,
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      take: limit - sameCategory.length,
+      where: storefrontProductWhere({
+        categoryId: product.category.id,
+        id: { notIn: [product.id, ...sameCategory.map((candidate) => candidate.id)] }
+      })
+    });
+    sameCategory.push(...sameCategoryUnavailable);
+  }
+
+  const fallback: StorefrontProductRecord[] = [];
+  const fallbackLimit = limit - sameCategory.length;
+  if (fallbackLimit > 0) {
+    const fallbackAvailable = (
+      await prisma.product.findMany({
+        include: storefrontProductInclude,
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        take: fallbackLimit * STOREFRONT_RELATED_CANDIDATE_MULTIPLIER,
+        where: storefrontProductWhere({
+          categoryId: { not: product.category.id },
+          id: { not: product.id },
+          inventoryBatches: { some: sellableBatchWhere }
+        })
+      })
+    )
+      .filter((candidate) => getSellableStockQuantity(candidate.inventoryBatches) > 0)
+      .slice(0, fallbackLimit);
+    fallback.push(...fallbackAvailable);
+
+    if (fallback.length < fallbackLimit) {
+      const fallbackUnavailable = await prisma.product.findMany({
+        include: storefrontProductInclude,
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        take: fallbackLimit - fallback.length,
+        where: storefrontProductWhere({
+          categoryId: { not: product.category.id },
+          id: {
+            notIn: [product.id, ...fallback.map((candidate) => candidate.id)]
+          }
+        })
+      });
+      fallback.push(...fallbackUnavailable);
+    }
+  }
+
+  const serializedProducts = await serializeStorefrontProducts([...sameCategory, ...fallback]);
+
+  return {
+    category: product.category,
+    sameCategory: serializedProducts.slice(0, sameCategory.length),
+    fallback: serializedProducts.slice(sameCategory.length)
+  };
+}
+
+async function requireStorefrontProduct(productId: string) {
+  const product = await prisma.product.findFirst({
+    select: {
+      id: true,
+      category: { select: { id: true, name: true, slug: true } }
+    },
+    where: storefrontProductWhere({ id: productId })
+  });
+
+  if (!product) {
+    throw new HttpError(404, "Product was not found in the storefront.", {
+      code: "STOREFRONT_PRODUCT_NOT_FOUND"
+    });
+  }
+
+  return product;
 }
 
 export async function createStorefrontOrder(input: StorefrontOrderInput) {

@@ -1,5 +1,5 @@
 {
-  "algorithm": "edge-connected near-background isolation with matte decontamination",
+  "algorithm": "deterministic asset-specific isolation using edge-connected matte removal or a sealed-product silhouette",
   "deterministic": true,
   "generative": false,
   "processor": "Pillow 12.0.0 (MIT-CMU)",
@@ -13,8 +13,8 @@
       },
       "processed": {
         "path": "frontend/public/images/products/gardenia-enriched-white-bread-600g.webp",
-        "bytes": 34512,
-        "sha256": "F2606EDDDECE40E9FC47AC57A0F8874AA96B447DC6B76C609B1449B91107D555",
+        "bytes": 95756,
+        "sha256": "2B86B1733F8E72AB62B420F6E1EE2CEB90C726801F3BB69C4B4DDCCE405A7F52",
         "dimensions": [164, 412],
         "format": "WEBP",
         "hasAlpha": true,
@@ -33,53 +33,51 @@
     {
       "source": {
         "path": "frontend/public/images/products/originals/ligo-sardines-tomato-sauce-chili-added-155g.webp",
-        "dimensions": [80, 120],
-        "bytes": 5512,
-        "sha256": "D23BD674A539CF9AA1233F3ABC9FDB9B87201F678E965375EF4E608960B90D4F"
+        "dimensions": [1275, 1698],
+        "bytes": 372778,
+        "sha256": "A8C4FF7F90F1C106585E7865DA12F8FD368112F94C8596EAC6E8D11803C48989"
       },
       "processed": {
         "path": "frontend/public/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp",
-        "bytes": 6314,
-        "sha256": "AF099D486F5B1A7E0F01C78702A1204ABE3470F6F5834091790612728917F653",
-        "dimensions": [80, 128],
+        "bytes": 103112,
+        "sha256": "90619D1507B11460FD9968CA91CCD6C309E212A0C49F69D1FF98F2E48A08D11F",
+        "dimensions": [550, 950],
         "format": "WEBP",
         "hasAlpha": true,
-        "opaqueBounds": [4, 4, 76, 124],
-        "transparentPixelRatio": 0.2424,
-        "translucentPixels": 490
+        "opaqueBounds": [8, 8, 542, 942],
+        "transparentPixelRatio": 0.1015,
+        "translucentPixels": 16186
       },
       "processing": {
-        "backgroundRgb": [255, 255, 254],
-        "contentBounds": [4, 0, 76, 120],
-        "removedMatteComponents": 18,
-        "removedMattePixels": 22,
-        "safePadding": 4
+        "maskType": "manual sealed-product silhouette",
+        "contentBounds": [302, 494, 836, 1428],
+        "safePadding": 8
       }
     },
     {
       "source": {
         "path": "frontend/public/images/products/originals/sunsilk-anti-dandruff-silky-shampoo-sachet-13-5ml.webp",
-        "dimensions": [140, 75],
-        "bytes": 4542,
-        "sha256": "CC60B010BF424024F93112AE53E218948CF55BF763273AA9DFB4ABCE27F9B9D5"
+        "dimensions": [1032, 456],
+        "bytes": 97340,
+        "sha256": "C3D1D034D857F2B3E55023579115310573F4A004C8C70D939F36E8A63ACD772F"
       },
       "processed": {
         "path": "frontend/public/images/products/sunsilk-anti-dandruff-silky-shampoo-sachet-13-5ml.webp",
-        "bytes": 5030,
-        "sha256": "E12DB31B2231B6CB77DB7625A573C0140C18A2B63EE3F808F9C70B88F7A7DB35",
-        "dimensions": [137, 68],
+        "bytes": 99672,
+        "sha256": "9999AF6C8944383C3DF6201F395C42CCD191DB6DA6B412FA74A425A469A459AB",
+        "dimensions": [1043, 470],
         "format": "WEBP",
         "hasAlpha": true,
-        "opaqueBounds": [4, 4, 133, 64],
-        "transparentPixelRatio": 0.221,
-        "translucentPixels": 739
+        "opaqueBounds": [8, 8, 1035, 462],
+        "transparentPixelRatio": 0.0625,
+        "translucentPixels": 9646
       },
       "processing": {
-        "backgroundRgb": [254, 254, 254],
-        "contentBounds": [5, 6, 134, 66],
-        "removedMatteComponents": 6,
-        "removedMattePixels": 10,
-        "safePadding": 4
+        "backgroundRgb": [204, 202, 252],
+        "contentBounds": [4, 0, 1031, 454],
+        "removedMatteComponents": 29,
+        "removedMattePixels": 34,
+        "safePadding": 8
       }
     }
   ]

@@ -73,12 +73,12 @@ This artifact set is reconstructed from repository evidence available on `sprint
 
 ## Current Work Snapshot
 
-| Item                 | Value                                                                                                                                                           |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validation status    | Pending                                                                                                                                                         |
-| Last update          | 2026-08-14                                                                                                                                                      |
-| Current branch       | sprint/v0.4/sprint-4                                                                                                                                            |
-| Current work areas   | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI<br>Other                                                                                                |
+| Item | Value |
+| --- | --- |
+| Validation status | Pending |
+| Last update | 2026-08-18 |
+| Current branch | sprint/v0.4/sprint-4 |
+| Current work areas | Backend<br>Database<br>Frontend<br>Scripts / CI |
 | Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
 
 ## Current Work Snapshot

@@ -12,13 +12,13 @@ const catalogImageMetadata = {
   },
   "/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp": {
     background: "transparent",
-    height: 128,
-    width: 80
+    height: 950,
+    width: 550
   },
   "/images/products/sunsilk-anti-dandruff-silky-shampoo-sachet-13-5ml.webp": {
     background: "transparent",
-    height: 68,
-    width: 137
+    height: 470,
+    width: 1043
   }
 } as const satisfies Record<string, CatalogImageMetadata>;
 

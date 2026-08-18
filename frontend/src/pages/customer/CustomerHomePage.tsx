@@ -612,7 +612,7 @@ function CategoryCard({
               alt={categoryPresentation.alt}
               fallbackLabel="Category image unavailable"
               imageUrl={categoryPresentation.imageUrl}
-              loading="eager"
+              loading="lazy"
             />
           ) : representativeProducts.length ? (
             <span
