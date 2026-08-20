@@ -36,6 +36,49 @@ async function ensureLoaded(rootDir) {
   return { config, ...persisted, autoBuilt: false };
 }
 
+async function ensureFreshLoaded(rootDir, loaded) {
+  const status = await getContextStatus({ rootDir, ...loaded });
+  if (!status.stale) {
+    return {
+      loaded,
+      contextRefresh: {
+        refreshed: false,
+        mode: 'noop',
+        changedPaths: [],
+        refreshedSubsystems: [],
+      },
+    };
+  }
+
+  const refreshed = await refreshContext({ rootDir });
+  let nextLoaded;
+  if (refreshed.index && refreshed.state) {
+    nextLoaded = {
+      config: refreshed.config ?? loaded.config,
+      index: refreshed.index,
+      state: refreshed.state,
+      autoBuilt: loaded.autoBuilt,
+    };
+  } else {
+    const persisted = await loadPersistedContext(rootDir);
+    nextLoaded = {
+      config: await loadContextConfig(rootDir),
+      ...persisted,
+      autoBuilt: loaded.autoBuilt,
+    };
+  }
+
+  return {
+    loaded: nextLoaded,
+    contextRefresh: {
+      refreshed: true,
+      mode: refreshed.mode,
+      changedPaths: refreshed.changedPaths ?? [],
+      refreshedSubsystems: refreshed.refreshedSubsystems ?? [],
+    },
+  };
+}
+
 function compactBuildResult(result) {
   return {
     mode: result.mode ?? 'full',
@@ -111,22 +154,28 @@ export async function runCli(
       return 0;
     }
 
+    const fresh = await ensureFreshLoaded(rootDir, loaded);
+    const active = fresh.loaded;
+
     if (command === 'overview') {
-      output(compactOverview(loaded));
+      output({ ...compactOverview(active), contextRefresh: fresh.contextRefresh });
       return 0;
     }
 
     if (command === 'query') {
       const task = rest.join(' ').trim();
       if (!task) throw new Error('query requires a task description.');
-      output(getRelevantContext(task, loaded.index, loaded.config));
+      output({
+        ...getRelevantContext(task, active.index, active.config),
+        contextRefresh: fresh.contextRefresh,
+      });
       return 0;
     }
 
     if (command === 'benchmark') {
       const task = rest.join(' ').trim();
       if (!task) throw new Error('benchmark requires a task description.');
-      const context = getRelevantContext(task, loaded.index, loaded.config);
+      const context = getRelevantContext(task, active.index, active.config);
       const compactContext = estimateContextTokens(context);
       const repositoryText = await estimateRepositoryTextFootprint(rootDir);
       const contextReductionRatio = repositoryText.approxTokens > 0
@@ -135,11 +184,18 @@ export async function runCli(
       output({
         task,
         subsystems: context.subsystems,
+        primaryFileCount: context.primaryFiles.length,
+        secondaryFileCount: context.secondaryFiles.length,
         likelyFileCount: context.likelyFiles.length,
+        guidanceCount: context.guidance.length,
+        invariantCount: context.invariants.length,
+        relatedFlowCount: context.relatedFlows.length,
         verificationTier: context.verificationTier,
+        escalationRequired: context.escalationRequired,
         compactContext,
         repositoryText,
         contextReductionRatio: Number(contextReductionRatio.toFixed(4)),
+        contextRefresh: fresh.contextRefresh,
         note: 'This is a deterministic context-footprint proxy, not actual Codex token billing or model-iteration usage.',
       });
       return 0;
@@ -148,18 +204,18 @@ export async function runCli(
     if (command === 'subsystem') {
       const name = rest[0];
       if (!name) throw new Error('subsystem requires a subsystem name.');
-      const subsystem = loaded.index.subsystems?.[name];
+      const subsystem = active.index.subsystems?.[name];
       if (!subsystem) throw new Error(`Unknown subsystem: ${name}`);
-      output({ name, ...subsystem });
+      output({ name, ...subsystem, contextRefresh: fresh.contextRefresh });
       return 0;
     }
 
     if (command === 'flow') {
       const name = rest[0];
       if (!name) throw new Error('flow requires a flow name.');
-      const flow = loaded.index.flows?.[name];
+      const flow = active.index.flows?.[name];
       if (!flow) throw new Error(`Unknown flow: ${name}`);
-      output({ name, ...flow });
+      output({ name, ...flow, contextRefresh: fresh.contextRefresh });
       return 0;
     }
 
