@@ -1,10 +1,14 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "YsabelleStore",
   "defaultVerificationTier": 1,
   "ignoredContextPaths": [".ysabelle-context/", "node_modules/", "dist/", "coverage/"],
   "authoritativeSources": {
     "activeSprint": "config/guardrails.json",
+    "projectScope": "docs/PROJECT-SCOPE.md",
+    "repositoryLayout": "docs/architecture/03-folder-architecture.md",
+    "moduleOwnership": "docs/architecture/08-module-ownership.md",
+    "executionPolicy": "docs/standards/010-golden-rules.md",
     "applicationCommands": "package.json",
     "databaseSchema": "database/prisma/schema.prisma",
     "databaseMigrations": "database/migrations/",
@@ -13,19 +17,26 @@
     "ciVerification": "docs/standards/CI-GUARDRAILS.md"
   },
   "contextWarnings": [
-    "docs/standards/02-folder-map.md describes the retired app/* plan and is not current layout authority.",
-    "docs/standards/07-member-ownership.md contains stale path tables; preserve only still-valid approval rules.",
-    "Do not infer current implementation status from stale Sprint 1 prose in README.md.",
-    "Older broad scope exclusions conflict with implemented storefront/customer features; prefer current source and newer task-specific architecture.",
-    "Do not load docs/standards/010-golden-rules.md wholesale for routine tasks."
+    "Current source code, schema, migrations, executable configuration, and tests outrank cached summaries for implemented behavior.",
+    "Historical sprint records are evidence of past work and must not be used to infer current implementation state.",
+    "Project scope distinguishes thesis-core requirements, currently implemented product extensions, and future extensions; do not silently treat one category as another."
   ],
   "subsystems": {
+    "project-scope": {
+      "description": "Current thesis-core boundaries, implemented product extensions, and explicit future-extension guardrails.",
+      "keywords": ["scope", "project scope", "thesis scope", "out of scope", "scope creep", "supplier integration", "procurement boundary", "product extension"],
+      "pathPrefixes": ["docs/PROJECT-SCOPE.md", "docs/architecture/10-thesis-scope-alignment.md"],
+      "guidance": ["docs/PROJECT-SCOPE.md"],
+      "invariants": ["Implemented source may extend beyond the thesis minimum without redefining the thesis research method.", "Future supplier ordering must remain owner-approved and must not be triggered automatically by recommendations."],
+      "verification": ["npm run repo:context:test"],
+      "verificationTier": 1
+    },
     "agent-context": {
-      "description": "Codex repository-memory tooling, project Skill, MCP integration, freshness and token-efficiency workflow.",
+      "description": "Repository-memory tooling, project Skill, MCP integration, freshness and token-efficiency workflow.",
       "keywords": ["codex", "context", "mcp", "skill", "token", "scan", "rescan", "persistent memory"],
       "pathPrefixes": ["tools/repo-context/", ".agents/skills/ysabelle-context/", ".codex/", "config/repository-context.json"],
       "guidance": ["docs/sprints/sprint-5/REPOSITORY-CONTEXT-PLAN.md", "docs/sprints/sprint-5/GUIDANCE-SOURCE-OF-TRUTH-AUDIT.md"],
-      "invariants": ["Persistent context is a navigation cache; current source and executable configuration remain authoritative.", "Routine tasks query context before exploratory scanning.", "Generated .ysabelle-context data stays ignored."],
+      "invariants": ["Persistent context is a navigation cache; current source and executable configuration remain authoritative.", "Routine task retrieval refreshes stale context before routing.", "Generated .ysabelle-context data stays ignored."],
       "verification": ["npm run repo:context:test", "npm run repo:context:status -- --json"],
       "verificationTier": 1
     },
@@ -94,9 +105,9 @@
     },
     "storefront": {
       "description": "Customer home/shop/product/cart/checkout, storefront APIs, pickup orders and global search.",
-      "keywords": ["storefront", "customer", "shop", "cart", "pickup order", "checkout page", "product detail", "global search"],
+      "keywords": ["storefront", "customer", "shop", "cart", "pickup order", "checkout page", "product detail", "global search", "ecommerce", "e-commerce"],
       "pathPrefixes": ["backend/src/routes/storefront.routes.ts", "backend/src/controllers/storefrontController.ts", "backend/src/services/storefrontService.ts", "frontend/src/pages/customer/", "frontend/src/components/customer/", "frontend/src/services/storefrontService.ts", "docs/architecture/11-storefront-global-search.md"],
-      "guidance": ["docs/architecture/11-storefront-global-search.md", "docs/standards/06-coding-standards.md"],
+      "guidance": ["docs/PROJECT-SCOPE.md", "docs/architecture/11-storefront-global-search.md", "docs/standards/06-coding-standards.md"],
       "invariants": ["Storefront search stays server-backed.", "Order creation revalidates products/prices server-side.", "Availability respects operational catalog and stock rules."],
       "verification": ["npm run storefront:shop-filter:test", "npm run storefront:search-history:test", "npm run customer:header-route:test", "npm test --workspace backend --if-present"],
       "verificationTier": 2
@@ -157,11 +168,41 @@
     }
   },
   "flows": {
-    "pos-sale-to-stock": {"description":"POS checkout creates sale items, allocates sellable batch stock, synchronizes inventory, records movement, asserts stock integrity, then invalidates forecast cache.","subsystems":["frontend","pos-sales","inventory","database","forecasting"],"paths":["frontend/src/pages/PosPage.tsx","frontend/src/services/posService.ts","backend/src/routes/pos.routes.ts","backend/src/controllers/posController.ts","backend/src/services/posService.ts","backend/src/services/stockDomainService.ts","database/prisma/schema.prisma","backend/src/modules/forecasting/forecast.service.ts"]},
-    "inventory-stock-mutation": {"description":"Inventory UI reaches validated backend stock-domain mutation, aggregate synchronization and movement persistence.","subsystems":["frontend","inventory","backend-api","database"],"paths":["frontend/src/pages/InventoryPage.tsx","frontend/src/services/catalogApi.ts","backend/src/routes/inventory.routes.ts","backend/src/controllers/inventoryController.ts","backend/src/services/inventoryService.ts","backend/src/services/stockDomainService.ts","database/prisma/schema.prisma"]},
-    "storefront-search": {"description":"Customer search queries server-backed storefront products and routes full results to Shop.","subsystems":["frontend","storefront","backend-api","products-catalog"],"paths":["frontend/src/components/customer/GlobalStorefrontSearch.tsx","frontend/src/services/storefrontService.ts","backend/src/routes/storefront.routes.ts","backend/src/controllers/storefrontController.ts","backend/src/services/storefrontService.ts","docs/architecture/11-storefront-global-search.md"]},
-    "storefront-order": {"description":"Checkout revalidates current products/prices and persists customer order records transactionally.","subsystems":["frontend","storefront","backend-api","products-catalog","database"],"paths":["frontend/src/pages/customer/CheckoutPage.tsx","frontend/src/services/storefrontService.ts","backend/src/routes/storefront.routes.ts","backend/src/services/storefrontService.ts","database/prisma/schema.prisma"]},
-    "forecast-generation": {"description":"Backend prepares sales, invokes Python SARIMA, evaluates/falls back, persists forecast batch and serves Forecast UI.","subsystems":["forecasting","database","backend-api","frontend"],"paths":["backend/src/modules/forecasting/forecast.service.ts","backend/src/modules/forecasting/python-forecast-runner.service.ts","backend/src/modules/forecasting/forecast-persistence.service.ts","forecasting-service/app/main.py","forecasting-service/app/sarima.py","forecasting-service/app/evaluation.py","frontend/src/pages/ForecastPage.tsx"]},
-    "authentication": {"description":"Renderer auth context uses backend auth API; backend validates sessions and roles without exposing database access.","subsystems":["frontend","auth-access","backend-api","security","database"],"paths":["frontend/src/context/AuthContext.tsx","frontend/src/services/authStorage.ts","backend/src/routes/auth.routes.ts","backend/src/controllers/authController.ts","backend/src/services/authService.ts","backend/src/middleware/authMiddleware.ts","backend/src/middleware/roleMiddleware.ts","database/prisma/schema.prisma"]}
+    "pos-sale-to-stock": {
+      "description": "POS checkout creates sale items, allocates sellable batch stock, synchronizes inventory, records movement, asserts stock integrity, then invalidates forecast cache.",
+      "subsystems": ["frontend", "pos-sales", "inventory", "database", "forecasting"],
+      "primaryPaths": ["backend/src/services/posService.ts", "backend/src/services/stockDomainService.ts", "database/prisma/schema.prisma"],
+      "secondaryPaths": ["backend/src/routes/pos.routes.ts", "backend/src/controllers/posController.ts", "backend/src/modules/forecasting/forecast.service.ts", "frontend/src/pages/PosPage.tsx", "frontend/src/services/posService.ts"]
+    },
+    "inventory-stock-mutation": {
+      "description": "Inventory UI reaches validated backend stock-domain mutation, aggregate synchronization and movement persistence.",
+      "subsystems": ["frontend", "inventory", "backend-api", "database"],
+      "primaryPaths": ["backend/src/services/inventoryService.ts", "backend/src/services/stockDomainService.ts", "database/prisma/schema.prisma"],
+      "secondaryPaths": ["backend/src/routes/inventory.routes.ts", "backend/src/controllers/inventoryController.ts", "frontend/src/pages/InventoryPage.tsx", "frontend/src/services/catalogApi.ts"]
+    },
+    "storefront-search": {
+      "description": "Customer search queries server-backed storefront products and routes full results to Shop.",
+      "subsystems": ["frontend", "storefront", "backend-api", "products-catalog"],
+      "primaryPaths": ["frontend/src/components/customer/GlobalStorefrontSearch.tsx", "frontend/src/services/storefrontService.ts", "backend/src/services/storefrontService.ts"],
+      "secondaryPaths": ["backend/src/routes/storefront.routes.ts", "backend/src/controllers/storefrontController.ts", "docs/architecture/11-storefront-global-search.md"]
+    },
+    "storefront-order": {
+      "description": "Checkout revalidates current products/prices and persists customer order records transactionally.",
+      "subsystems": ["frontend", "storefront", "backend-api", "products-catalog", "database"],
+      "primaryPaths": ["frontend/src/pages/customer/CheckoutPage.tsx", "frontend/src/services/storefrontService.ts", "backend/src/services/storefrontService.ts", "database/prisma/schema.prisma"],
+      "secondaryPaths": ["backend/src/routes/storefront.routes.ts"]
+    },
+    "forecast-generation": {
+      "description": "Backend prepares sales, invokes Python SARIMA, evaluates/falls back, persists forecast batch and serves Forecast UI.",
+      "subsystems": ["forecasting", "database", "backend-api", "frontend"],
+      "primaryPaths": ["backend/src/modules/forecasting/forecast.service.ts", "backend/src/modules/forecasting/python-forecast-runner.service.ts", "backend/src/modules/forecasting/forecast-persistence.service.ts", "forecasting-service/app/sarima.py", "forecasting-service/app/evaluation.py"],
+      "secondaryPaths": ["forecasting-service/app/main.py", "frontend/src/pages/ForecastPage.tsx"]
+    },
+    "authentication": {
+      "description": "Renderer auth context uses backend auth API; backend validates sessions and roles without exposing database access.",
+      "subsystems": ["frontend", "auth-access", "backend-api", "security", "database"],
+      "primaryPaths": ["backend/src/services/authService.ts", "backend/src/middleware/authMiddleware.ts", "backend/src/middleware/roleMiddleware.ts", "frontend/src/context/AuthContext.tsx"],
+      "secondaryPaths": ["frontend/src/services/authStorage.ts", "backend/src/routes/auth.routes.ts", "backend/src/controllers/authController.ts", "database/prisma/schema.prisma"]
+    }
   }
 }
