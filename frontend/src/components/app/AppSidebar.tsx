@@ -81,7 +81,7 @@ export function AppSidebar({
             alt=""
             aria-hidden="true"
             className="h-full w-full object-contain"
-            src="/brand/ysabelle-logo.png"
+            src="/brand/ysabelle-logo-v2.png"
           />
         </div>
         <div

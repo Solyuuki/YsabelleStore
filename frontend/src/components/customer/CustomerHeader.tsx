@@ -32,7 +32,7 @@ export function CustomerHeader({
       <div className="customer-header__bar">
         <CustomerLink className="customer-brand" href="/" navigate={navigate}>
           <span aria-hidden="true" className="customer-brand__mark">
-            <img alt="" className="customer-brand__logo" src="/brand/ysabelle-logo.png" />
+            <img alt="" className="customer-brand__logo" src="/brand/ysabelle-logo-v2.png" />
           </span>
           <span>
             <strong>Ysabelle</strong>

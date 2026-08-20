@@ -15,7 +15,7 @@ export function CustomerFooter({
         <div className="customer-footer__brand-column">
           <div className="customer-brand customer-brand--footer">
             <span aria-hidden="true" className="customer-brand__mark">
-              <img alt="" className="customer-brand__logo" src="/brand/ysabelle-logo.png" />
+              <img alt="" className="customer-brand__logo" src="/brand/ysabelle-logo-v2.png" />
             </span>
             <span>
               <strong>Ysabelle</strong>

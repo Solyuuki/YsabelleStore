@@ -12,7 +12,7 @@ module.exports = {
     }
   ],
   win: {
-    icon: "build/icon.ico",
+    icon: "build/icon-v2.ico",
     target: ["nsis"]
   },
   nsis: {
