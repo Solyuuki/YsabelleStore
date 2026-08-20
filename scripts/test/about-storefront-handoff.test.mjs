@@ -27,6 +27,7 @@ test("About storefront handoff uses real in-stock catalog products", () => {
   assert.match(source, /fetchStorefrontProducts/);
   assert.match(source, /availability:\s*"in-stock"/);
   assert.match(source, /pageSize:\s*3/);
+  assert.match(source, /IntersectionObserver/);
   assert.match(source, /Quick add/);
   assert.doesNotMatch(source, /ABOUT_STORE_ESSENTIAL_PRODUCT_IDS/);
   assert.doesNotMatch(source, /disabled=\{/);
