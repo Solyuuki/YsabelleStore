@@ -5,6 +5,10 @@ const GUIDE_PENDING_KEY = "ysabelle:shopping-guide:pending";
 const GUIDE_COMPLETE_KEY = "ysabelle:shopping-guide:complete";
 const GUIDE_SCROLL_TIMEOUT_MS = 900;
 const GUIDE_TARGET_WAIT_MS = 4_000;
+const GUIDE_SCROLLING_CLASS = "ysabelle-guide-scrolling";
+const GUIDE_FINISHING_CLASS = "ysabelle-guide-finishing";
+const GUIDE_FINISH_DURATION_MS = 180;
+const GUIDE_SCROLL_IDLE_MS = 140;
 const GUIDE_TARGETS = [
   '[data-tour="search"]',
   ".home-categories .home-section-heading",
@@ -79,17 +83,36 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
   function runGuide() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let isTransitioning = false;
+    let scrollIdleTimer: number | null = null;
+    let finishTimer: number | null = null;
+
+    function clearGuideClasses() {
+      document.documentElement.classList.remove(GUIDE_SCROLLING_CLASS, GUIDE_FINISHING_CLASS);
+    }
+
+    function handleGuideScroll() {
+      if (prefersReducedMotion) return;
+
+      document.documentElement.classList.add(GUIDE_SCROLLING_CLASS);
+      if (scrollIdleTimer !== null) window.clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = window.setTimeout(() => {
+        document.documentElement.classList.remove(GUIDE_SCROLLING_CLASS);
+        scrollIdleTimer = null;
+      }, GUIDE_SCROLL_IDLE_MS);
+    }
 
     function moveGuide(direction: "next" | "previous", currentIndex: number | undefined) {
       if (isTransitioning) return;
 
       const nextIndex = Math.max(0, (currentIndex ?? 0) + (direction === "next" ? 1 : -1));
       isTransitioning = true;
+      document.documentElement.classList.add(GUIDE_SCROLLING_CLASS);
 
       const wrapper = guide.getState().popover?.wrapper;
       if (wrapper) wrapper.classList.add("is-transitioning");
 
       const completeMove = () => {
+        document.documentElement.classList.remove(GUIDE_SCROLLING_CLASS);
         requestAnimationFrame(() => {
           if (direction === "next") guide.moveNext();
           else guide.movePrevious();
@@ -112,6 +135,8 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
       });
     }
 
+    window.addEventListener("scroll", handleGuideScroll, { passive: true });
+
     const guide = driver({
       allowClose: true,
       allowKeyboardControl: true,
@@ -132,11 +157,29 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
       popoverClass: "ysabelle-guide",
       onNextClick: (_element, _step, options) => moveGuide("next", options.index),
       onPrevClick: (_element, _step, options) => moveGuide("previous", options.index),
-      onDestroyed: () => localStorage.setItem(GUIDE_COMPLETE_KEY, "true"),
-      onDoneClick: () => {
+      onDestroyed: () => {
         localStorage.setItem(GUIDE_COMPLETE_KEY, "true");
-        guide.destroy();
-        navigate("/shop");
+        window.removeEventListener("scroll", handleGuideScroll);
+        if (scrollIdleTimer !== null) window.clearTimeout(scrollIdleTimer);
+        if (finishTimer !== null) window.clearTimeout(finishTimer);
+        clearGuideClasses();
+      },
+      onDoneClick: () => {
+        const finish = () => {
+          localStorage.setItem(GUIDE_COMPLETE_KEY, "true");
+          document.documentElement.classList.remove(GUIDE_FINISHING_CLASS);
+          guide.destroy();
+          navigate("/shop");
+        };
+
+        if (prefersReducedMotion) {
+          finish();
+          return;
+        }
+
+        document.documentElement.classList.remove(GUIDE_SCROLLING_CLASS);
+        document.documentElement.classList.add(GUIDE_FINISHING_CLASS);
+        finishTimer = window.setTimeout(finish, GUIDE_FINISH_DURATION_MS);
       },
       onPopoverRender: (popover) => {
         popover.closeButton.textContent = "Skip";
