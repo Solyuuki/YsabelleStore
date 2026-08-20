@@ -209,7 +209,18 @@ function selectRelatedFlows(task, selected, flows, maxFlows = 1) {
 }
 
 function selectLikelyFiles(task, selected, index, relatedFlows, maxFiles = 12) {
-  const preferred = unique(relatedFlows.flatMap((flow) => flow.paths ?? []));
+  const configuredPrimary = unique(relatedFlows.flatMap((flow) => flow.primaryPaths ?? []));
+  const configuredSecondary = unique(relatedFlows.flatMap((flow) => flow.secondaryPaths ?? []));
+  const legacyPreferred = unique(
+    relatedFlows.flatMap((flow) =>
+      flow.primaryPaths || flow.secondaryPaths ? [] : (flow.paths ?? []),
+    ),
+  );
+  const preferred = unique([
+    ...configuredPrimary,
+    ...legacyPreferred,
+    ...configuredSecondary,
+  ]);
   const tokens = taskTokens(task);
   const candidates = unique(
     selected.flatMap((name) => index.subsystems?.[name]?.files ?? []),
@@ -221,8 +232,20 @@ function selectLikelyFiles(task, selected, index, relatedFlows, maxFiles = 12) {
     }))
     .sort((left, right) => right.score - left.score || left.file.localeCompare(right.file));
 
-  const ranked = [...preferred, ...candidates.map((entry) => entry.file)];
-  return unique(ranked).slice(0, maxFiles);
+  const primaryFiles = unique([...configuredPrimary, ...legacyPreferred]).slice(0, maxFiles);
+  const remaining = Math.max(0, maxFiles - primaryFiles.length);
+  const secondaryFiles = unique([
+    ...configuredSecondary,
+    ...candidates.map((entry) => entry.file),
+  ])
+    .filter((file) => !primaryFiles.includes(file))
+    .slice(0, remaining);
+
+  return {
+    primaryFiles,
+    secondaryFiles,
+    likelyFiles: [...primaryFiles, ...secondaryFiles],
+  };
 }
 
 export function getRelevantContext(task, index, config, { maxFiles = 8, maxFlows = 1 } = {}) {
@@ -240,14 +263,16 @@ export function getRelevantContext(task, index, config, { maxFiles = 8, maxFlows
   }
 
   const relatedFlows = selectRelatedFlows(task, selected, index.flows ?? {}, maxFlows);
-  const likelyFiles = selectLikelyFiles(task, selected, index, relatedFlows, maxFiles);
+  const files = selectLikelyFiles(task, selected, index, relatedFlows, maxFiles);
 
   return {
     repository: index.repository,
     indexedCommit: index.source?.commit ?? null,
     task: String(task ?? ''),
     subsystems: selected,
-    likelyFiles,
+    primaryFiles: files.primaryFiles,
+    secondaryFiles: files.secondaryFiles,
+    likelyFiles: files.likelyFiles,
     guidance: unique(guidance),
     invariants: unique(invariants),
     verification: unique(verification),
