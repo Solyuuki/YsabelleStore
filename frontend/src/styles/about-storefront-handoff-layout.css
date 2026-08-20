@@ -1,0 +1,26 @@
+@media (max-width: 1023px) {
+  .about-experience .story-shop.story-shop--refined {
+    min-height: auto;
+  }
+
+  .about-experience .story-shop.story-shop--refined .story-shop__stage {
+    position: relative;
+    top: auto;
+    min-height: auto;
+    width: min(calc(100% - 2.5rem), 780px);
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    padding-block: 6rem;
+  }
+
+  .about-experience .story-shop--refined .story-shop__copy {
+    max-width: 42rem;
+  }
+
+  .about-experience .story-shop--refined .story-live-store {
+    width: 100%;
+    max-width: 780px;
+    justify-self: center;
+    transform: none;
+  }
+}
