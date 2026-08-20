@@ -1,61 +1,80 @@
 # Sprint 5 Backlog
 
-## Approved Sprint Theme
+## Sprint Theme
 
-Reduce repeated Codex repository discovery and unnecessary agent loops while improving requirement satisfaction and implementation reliability.
+Reduce repeated coding-agent repository discovery and unnecessary loops while preserving or improving requirement satisfaction, implementation quality, and verification discipline.
 
 ## Work Items
 
 | ID | Work Item | Outcome | Status |
 | --- | --- | --- | --- |
-| S5-01 | Guidance and source-of-truth audit | Classify existing guidance as KEEP, INDEX, MERGE, MOVE, or RETIRE | In Progress |
-| S5-02 | Canonical repository knowledge map | Record authoritative architecture, subsystem, guidance, test, and verification locations | Implemented |
-| S5-03 | Stable vs dynamic context model | Separate reusable architecture/invariants from change-sensitive implementation details | Implemented |
-| S5-04 | Persistent repository index | Store compact cross-task repository knowledge without duplicating full source code | Implemented |
-| S5-05 | Git freshness tracking | Detect changes since the last indexed state and identify affected paths/subsystems | Implemented |
-| S5-06 | Incremental context refresh | Refresh only changed, stale, or error-related areas instead of rescanning the repository | Implemented |
-| S5-07 | `ysabelle-context` Codex Skill | Enforce context-first navigation, narrow reads, auto-continuation, acceptance criteria, and stop rules | Implemented |
-| S5-08 | Verification tiers | Define local, subsystem, and full verification levels based on change risk | Implemented |
-| S5-09 | MCP repository-context service | Expose persistent repository knowledge to separate Codex conversations | Implemented; Codex-host validation pending |
-| S5-10 | Context deviation reporting | Report stale/mismatched cached knowledge and refresh affected context | Implemented |
-| S5-11 | Benchmark harness and baseline | Compare old vs optimized workflow using token and task-quality metrics | In Progress; context-footprint proxy implemented |
-| S5-12 | Pilot tasks | Validate the system using representative UI, backend/inventory, and cross-cutting tasks | In Progress; routing/proxy pilots passed |
-| S5-13 | Final tuning | Remove duplicate rules, tighten triggers, and refine retrieval/verification behavior from pilot evidence | Planned |
+| S5-01 | Guidance and source-of-truth audit | Consolidate current scope/layout/ownership/execution guidance and retire stale routing | **Completed** |
+| S5-02 | Canonical repository knowledge map | Record authoritative architecture, subsystem, guidance, test, and verification locations | **Implemented** |
+| S5-03 | Stable vs dynamic context model | Separate reusable architecture/invariants from change-sensitive implementation details | **Implemented** |
+| S5-04 | Persistent repository index | Store compact cross-task repository knowledge without duplicating full source code | **Implemented** |
+| S5-05 | Git freshness tracking | Detect changes since the last indexed state and identify affected paths/subsystems | **Implemented** |
+| S5-06 | Incremental context refresh | Refresh mapped changed areas and safely fall back when narrow refresh is unsafe | **Implemented** |
+| S5-07 | `ysabelle-context` project Skill | Enforce context-first, narrow, low-repetition implementation behavior | **Implemented** |
+| S5-08 | Verification tiers | Define local, subsystem, and full verification levels based on risk | **Implemented** |
+| S5-09 | MCP repository-context service | Expose persistent repository knowledge to separate coding-agent conversations | **Implemented; live Codex-host validation pending** |
+| S5-10 | Context deviation reporting | Record stale/mismatched cached knowledge without overriding current source | **Implemented** |
+| S5-11 | Benchmark harness and baseline | Deterministic context-footprint/routing benchmark with explicit non-billing boundary | **Repo-side complete; actual host usage telemetry pending** |
+| S5-12 | Pilot tasks | Representative storefront, POS/inventory, auth/database routing/freshness pilots | **Repo-side complete; live coding-agent pilots pending** |
+| S5-13 | Final tuning | Consolidate guidance, auto-refresh retrieval, prioritize primary vs secondary files | **Completed** |
 
-## Implementation Evidence
+## Repository-Side Completion Summary
 
-The first working repository-context implementation was added in commit `03057c3328fba74ba98f151e56d60d15d6d2730e`.
+Sprint 5 now provides:
 
-Implemented surfaces include:
+- one canonical current project-scope source (`docs/PROJECT-SCOPE.md`);
+- current repository-layout and ownership routing;
+- a compact Golden Rules policy/router instead of a large duplicated instruction dump;
+- a committed task/subsystem/source map in `config/repository-context.json`;
+- local persistent `.ysabelle-context/` state that survives separate sessions in the same checkout;
+- Git-based freshness detection;
+- incremental refresh for mapped changes and full-refresh fallback for unmapped changes;
+- automatic freshness handling during normal CLI/MCP context retrieval;
+- primary implementation files separated from secondary dependencies;
+- a lean project Skill and project-scoped MCP configuration;
+- context mismatch reporting;
+- risk-based verification tiers;
+- deterministic benchmark/proxy reporting;
+- regression coverage integrated with `npm run verify:code`.
 
-- `config/repository-context.json` for canonical task-to-subsystem routing, invariants, guidance pointers, flows, and verification tiers;
-- `.ysabelle-context/` as ignored generated persistent state for the local checkout;
-- Git commit/working-tree freshness detection and changed-subsystem mapping;
-- incremental context refresh with full refresh fallback for unmapped or unsafe changes;
-- `.agents/skills/ysabelle-context/` for context-first, low-repetition Codex behavior;
-- `.codex/config.toml` and `tools/repo-context/mcp-server.mjs` for project-scoped MCP access;
-- CLI commands for build, status, overview, query, refresh, and benchmark;
-- context mismatch reporting through the MCP runtime;
-- repository-context regression tests integrated into `verify:code`.
+## Verification Evidence
 
-Local implementation validation passed the repository-context test suite and the pre-existing guardrail regression suite before the implementation commit was prepared. The MCP server was also exercised through modern discovery, legacy initialization, task-context lookup, freshness, refresh, and mismatch-reporting paths. Full Codex-host integration remains unverified because no Codex host was available during this implementation session.
+Focused implementation validation exercised:
 
-The benchmark command intentionally reports a deterministic **context-footprint proxy**, not actual Codex billing or model-iteration token usage. Actual tokens-per-correct-task measurement remains part of S5-11/S5-12 when a compatible coding-agent host is available.
+- persistent-index reuse without rebuild;
+- mapped change -> stale -> affected subsystem -> incremental refresh -> fresh;
+- unmapped change -> safe full-refresh fallback;
+- MCP task retrieval with automatic refresh;
+- CLI task retrieval with automatic refresh while `status` remains diagnostic;
+- primary/secondary file ordering;
+- existing repository-context tests;
+- existing guardrail regression tests.
 
-## Implementation Order
+The repository-context and guardrail suites pass in the available isolated repository snapshot used for Sprint 5 verification. Full `verify:code` could not be executed in that isolated environment because third-party Node dependencies were not installed and network installation was unavailable; this is an environment limitation rather than a passing full-suite claim.
 
-1. Audit existing guidance and define sources of truth.
-2. Build the compact repository map and stable/dynamic context model.
-3. Implement persistent storage and Git-based freshness tracking.
-4. Create the lean project-level Codex Skill.
-5. Add incremental refresh and context-deviation behavior.
-6. Introduce the MCP query layer for cross-conversation reuse.
-7. Establish baseline and optimized measurements.
-8. Run pilot tasks and tune based on evidence.
+## Benchmark Boundary
+
+`repo:context:benchmark` intentionally reports a deterministic **context-footprint proxy**, not actual model billing. See [`PILOT-BENCHMARKS.md`](PILOT-BENCHMARKS.md).
+
+Actual tokens per correctly completed task, live model iterations, repeated host file/tool reads, and live Codex Skill/MCP loading remain external-host validation items.
+
+## Remaining External Validation
+
+No additional repository implementation is required merely to wait for Codex. When a compatible coding-agent host becomes available:
+
+1. open/trust the Sprint 5 checkout;
+2. confirm the `ysabelle-context` Skill and `ysabelle-repo-context` MCP service load;
+3. run the three representative pilot tasks;
+4. record actual host token/iteration/retry metrics beside the existing deterministic proxy;
+5. tune only if live evidence shows a meaningful routing/verification problem.
 
 ## Anti-Waste Requirements
 
-The optimized workflow should avoid, unless evidence requires otherwise:
+The optimized workflow avoids, unless evidence requires otherwise:
 
 - repository-wide scans at the start of routine tasks;
 - rereading already-understood files in the same task;
@@ -66,17 +85,4 @@ The optimized workflow should avoid, unless evidence requires otherwise:
 - unnecessary continuation confirmations for normal reversible work;
 - unrelated refactoring outside the requested acceptance criteria.
 
-## Benchmark Metrics
-
-Record, where measurable:
-
-- total tokens per correctly completed task;
-- number of model/agent iterations;
-- number of user clarification/continuation turns;
-- files inspected and repeated file reads;
-- repository-wide searches/scans;
-- command executions and duplicate executions;
-- full verification-suite runs;
-- retries caused by incorrect/incomplete implementation;
-- acceptance-criteria satisfaction;
-- known regressions or unresolved implementation issues.
+The primary optimization target remains **tokens per correctly completed task**. Correctness, data integrity, security, and required validation take priority over token reduction.
