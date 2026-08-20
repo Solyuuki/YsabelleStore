@@ -1,0 +1,67 @@
+name: Sprint 5 Temporary Validation
+
+on:
+  push:
+    branches:
+      - sprint/v0.5/sprint-5
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint-5-temporary-validation
+  cancel-in-progress: true
+
+jobs:
+  validate-and-format:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
+    steps:
+      - name: Checkout sprint branch
+        uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.5/sprint-5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format Sprint 5 surfaces
+        run: |
+          npx prettier --write \
+            README.md \
+            config/repository-context.json \
+            docs/PROJECT-SCOPE.md \
+            docs/architecture/01-system-framework.md \
+            docs/architecture/03-folder-architecture.md \
+            docs/architecture/10-thesis-scope-alignment.md \
+            "docs/sprints/sprint-5/*.md" \
+            docs/standards/01-big-picture.md \
+            docs/standards/010-golden-rules.md \
+            docs/standards/02-folder-map.md \
+            docs/standards/07-member-ownership.md \
+            ".agents/skills/ysabelle-context/**/*.md" \
+            ".agents/skills/ysabelle-context/**/*.yaml" \
+            "tools/repo-context/**/*.mjs" \
+            "tools/repo-context/**/*.md"
+
+      - name: Run full read-only repository verification
+        run: npm run verify:code
+
+      - name: Commit verified formatting
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md config/repository-context.json docs .agents/skills/ysabelle-context tools/repo-context
+          git commit -m "style: format sprint 5 context finalization [skip ci]"
+          git push origin HEAD:sprint/v0.5/sprint-5
