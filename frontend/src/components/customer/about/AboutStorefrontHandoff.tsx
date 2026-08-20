@@ -322,7 +322,7 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
                     ? "Checking current stock before products appear here."
                     : catalogStatus === "error"
                       ? catalogError
-                      : "Open the full catalog to browse every currently listed product."}
+                      : "No in-stock items are available for this preview right now."}
                 </p>
                 {catalogStatus === "error" ? (
                   <button
@@ -331,11 +331,7 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
                   >
                     Retry connection
                   </button>
-                ) : (
-                  <CustomerLink href="/shop" navigate={navigate}>
-                    Open catalog <ArrowRight aria-hidden="true" />
-                  </CustomerLink>
-                )}
+                ) : null}
               </div>
             </div>
           )}
