@@ -30,9 +30,34 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
   const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>("loading");
   const [catalogError, setCatalogError] = useState("");
   const [catalogReloadKey, setCatalogReloadKey] = useState(0);
+  const [shouldLoadCatalog, setShouldLoadCatalog] = useState(false);
   const { addItem } = useCart();
 
   useEffect(() => {
+    if (shouldLoadCatalog) return;
+
+    const root = rootRef.current;
+    if (!root || !("IntersectionObserver" in window)) {
+      setShouldLoadCatalog(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setShouldLoadCatalog(true);
+        observer.disconnect();
+      },
+      { rootMargin: "0px 0px 120% 0px" }
+    );
+
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [shouldLoadCatalog]);
+
+  useEffect(() => {
+    if (!shouldLoadCatalog) return;
+
     const controller = new AbortController();
 
     setProducts([]);
@@ -67,7 +92,7 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
       });
 
     return () => controller.abort();
-  }, [catalogReloadKey]);
+  }, [catalogReloadKey, shouldLoadCatalog]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -155,6 +180,11 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
 
     return () => media.revert();
   }, [products.length]);
+
+  useEffect(() => {
+    const refreshFrame = window.requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => window.cancelAnimationFrame(refreshFrame);
+  }, [catalogStatus, products.length]);
 
   return (
     <section
