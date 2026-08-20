@@ -6,14 +6,14 @@ Use [`../PROJECT-SCOPE.md`](../PROJECT-SCOPE.md) as the canonical source for wha
 
 ## System Purpose
 
-| Purpose | Description |
-| --- | --- |
-| Operational inventory tracking | Maintain product, batch, stock, movement, and expiration records. |
-| Sales/POS evidence | Record sales activity that affects stock and supports reporting/forecasting. |
-| Demand forecasting | Use historical sales and SARIMA/SARIMAX-family modeling for seasonal demand. |
-| Recommendation support | Convert forecast + inventory context into explainable operational guidance. |
-| Retail experience | Support current internal and customer-facing workflows implemented in the repository. |
-| Local deployment | Preserve the Electron/local operating model while allowing approved product evolution. |
+| Purpose                        | Description                                                                            |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| Operational inventory tracking | Maintain product, batch, stock, movement, and expiration records.                      |
+| Sales/POS evidence             | Record sales activity that affects stock and supports reporting/forecasting.           |
+| Demand forecasting             | Use historical sales and SARIMA/SARIMAX-family modeling for seasonal demand.           |
+| Recommendation support         | Convert forecast + inventory context into explainable operational guidance.            |
+| Retail experience              | Support current internal and customer-facing workflows implemented in the repository.  |
+| Local deployment               | Preserve the Electron/local operating model while allowing approved product evolution. |
 
 ## Architecture Flow
 

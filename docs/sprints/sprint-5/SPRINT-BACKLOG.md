@@ -6,21 +6,21 @@ Reduce repeated coding-agent repository discovery and unnecessary loops while pr
 
 ## Work Items
 
-| ID | Work Item | Outcome | Status |
-| --- | --- | --- | --- |
-| S5-01 | Guidance and source-of-truth audit | Consolidate current scope/layout/ownership/execution guidance and retire stale routing | **Completed** |
-| S5-02 | Canonical repository knowledge map | Record authoritative architecture, subsystem, guidance, test, and verification locations | **Implemented** |
-| S5-03 | Stable vs dynamic context model | Separate reusable architecture/invariants from change-sensitive implementation details | **Implemented** |
-| S5-04 | Persistent repository index | Store compact cross-task repository knowledge without duplicating full source code | **Implemented** |
-| S5-05 | Git freshness tracking | Detect changes since the last indexed state and identify affected paths/subsystems | **Implemented** |
-| S5-06 | Incremental context refresh | Refresh mapped changed areas and safely fall back when narrow refresh is unsafe | **Implemented** |
-| S5-07 | `ysabelle-context` project Skill | Enforce context-first, narrow, low-repetition implementation behavior | **Implemented** |
-| S5-08 | Verification tiers | Define local, subsystem, and full verification levels based on risk | **Implemented** |
-| S5-09 | MCP repository-context service | Expose persistent repository knowledge to separate coding-agent conversations | **Implemented; live Codex-host validation pending** |
-| S5-10 | Context deviation reporting | Record stale/mismatched cached knowledge without overriding current source | **Implemented** |
-| S5-11 | Benchmark harness and baseline | Deterministic context-footprint/routing benchmark with explicit non-billing boundary | **Repo-side complete; actual host usage telemetry pending** |
-| S5-12 | Pilot tasks | Representative storefront, POS/inventory, auth/database routing/freshness pilots | **Repo-side complete; live coding-agent pilots pending** |
-| S5-13 | Final tuning | Consolidate guidance, auto-refresh retrieval, prioritize primary vs secondary files | **Completed** |
+| ID    | Work Item                          | Outcome                                                                                  | Status                                                      |
+| ----- | ---------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| S5-01 | Guidance and source-of-truth audit | Consolidate current scope/layout/ownership/execution guidance and retire stale routing   | **Completed**                                               |
+| S5-02 | Canonical repository knowledge map | Record authoritative architecture, subsystem, guidance, test, and verification locations | **Implemented**                                             |
+| S5-03 | Stable vs dynamic context model    | Separate reusable architecture/invariants from change-sensitive implementation details   | **Implemented**                                             |
+| S5-04 | Persistent repository index        | Store compact cross-task repository knowledge without duplicating full source code       | **Implemented**                                             |
+| S5-05 | Git freshness tracking             | Detect changes since the last indexed state and identify affected paths/subsystems       | **Implemented**                                             |
+| S5-06 | Incremental context refresh        | Refresh mapped changed areas and safely fall back when narrow refresh is unsafe          | **Implemented**                                             |
+| S5-07 | `ysabelle-context` project Skill   | Enforce context-first, narrow, low-repetition implementation behavior                    | **Implemented**                                             |
+| S5-08 | Verification tiers                 | Define local, subsystem, and full verification levels based on risk                      | **Implemented**                                             |
+| S5-09 | MCP repository-context service     | Expose persistent repository knowledge to separate coding-agent conversations            | **Implemented; live Codex-host validation pending**         |
+| S5-10 | Context deviation reporting        | Record stale/mismatched cached knowledge without overriding current source               | **Implemented**                                             |
+| S5-11 | Benchmark harness and baseline     | Deterministic context-footprint/routing benchmark with explicit non-billing boundary     | **Repo-side complete; actual host usage telemetry pending** |
+| S5-12 | Pilot tasks                        | Representative storefront, POS/inventory, auth/database routing/freshness pilots         | **Repo-side complete; live coding-agent pilots pending**    |
+| S5-13 | Final tuning                       | Consolidate guidance, auto-refresh retrieval, prioritize primary vs secondary files      | **Completed**                                               |
 
 ## Repository-Side Completion Summary
 

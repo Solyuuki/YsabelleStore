@@ -33,34 +33,34 @@ The exact contents below these boundaries evolve with implementation. Do not inv
 
 ## Responsibility Map
 
-| Folder | Primary Responsibility |
-| --- | --- |
-| `frontend/` | React/Vite UI, pages, components, layouts, hooks, schemas, client services, presentation state. |
-| `backend/` | Express routes/controllers/services, validation, middleware, domain logic, backend integrations. |
-| `electron/` | Electron main/preload/IPC/runtime and desktop packaging integration. |
-| `database/` | Prisma schema, migrations, seed utilities, and database-specific guidance. |
-| `forecasting-service/` | Python SARIMA execution/evaluation and forecast-service tests. |
-| `docs/` | Current architecture/contracts/standards plus sprint and historical evidence. |
-| `testing/` | Cross-project testing and validation guidance. |
-| `deployment/` | Build, release, installer, and deployment guidance. |
-| `config/` | Repository/application configuration that is safe to commit. |
-| `scripts/` | Deterministic development, audit, validation, and repository automation. |
-| `tools/repo-context/` | Persistent repository-context index, freshness, CLI, MCP, and related tests. |
-| `.agents/skills/` | Project-level reusable coding-agent operating policy. |
-| `.codex/` | Project-scoped Codex configuration such as the repository-context MCP registration. |
+| Folder                 | Primary Responsibility                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `frontend/`            | React/Vite UI, pages, components, layouts, hooks, schemas, client services, presentation state.  |
+| `backend/`             | Express routes/controllers/services, validation, middleware, domain logic, backend integrations. |
+| `electron/`            | Electron main/preload/IPC/runtime and desktop packaging integration.                             |
+| `database/`            | Prisma schema, migrations, seed utilities, and database-specific guidance.                       |
+| `forecasting-service/` | Python SARIMA execution/evaluation and forecast-service tests.                                   |
+| `docs/`                | Current architecture/contracts/standards plus sprint and historical evidence.                    |
+| `testing/`             | Cross-project testing and validation guidance.                                                   |
+| `deployment/`          | Build, release, installer, and deployment guidance.                                              |
+| `config/`              | Repository/application configuration that is safe to commit.                                     |
+| `scripts/`             | Deterministic development, audit, validation, and repository automation.                         |
+| `tools/repo-context/`  | Persistent repository-context index, freshness, CLI, MCP, and related tests.                     |
+| `.agents/skills/`      | Project-level reusable coding-agent operating policy.                                            |
+| `.codex/`              | Project-scoped Codex configuration such as the repository-context MCP registration.              |
 
 ## Architecture Boundaries
 
-| Work | Correct Boundary |
-| --- | --- |
-| React/customer/internal UI | `frontend/` |
-| HTTP routing, validation, business/domain services | `backend/` |
-| Prisma model/schema change | `database/prisma/schema.prisma` + `database/migrations/` |
-| SARIMA/statistical implementation | `forecasting-service/` and approved backend integration boundary |
-| Electron lifecycle or secure preload/IPC | `electron/` |
-| Repository automation | `scripts/` or a focused tool under `tools/` |
-| Current architecture/contract guidance | `docs/` |
-| Persistent generated repository context | `.ysabelle-context/` locally; never committed |
+| Work                                               | Correct Boundary                                                 |
+| -------------------------------------------------- | ---------------------------------------------------------------- |
+| React/customer/internal UI                         | `frontend/`                                                      |
+| HTTP routing, validation, business/domain services | `backend/`                                                       |
+| Prisma model/schema change                         | `database/prisma/schema.prisma` + `database/migrations/`         |
+| SARIMA/statistical implementation                  | `forecasting-service/` and approved backend integration boundary |
+| Electron lifecycle or secure preload/IPC           | `electron/`                                                      |
+| Repository automation                              | `scripts/` or a focused tool under `tools/`                      |
+| Current architecture/contract guidance             | `docs/`                                                          |
+| Persistent generated repository context            | `.ysabelle-context/` locally; never committed                    |
 
 ## Placement Rules
 

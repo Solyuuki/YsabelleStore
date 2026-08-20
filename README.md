@@ -6,18 +6,18 @@ YsabelleStore is a thesis-grade retail and inventory system that connects sales/
 
 ## Current Repository State
 
-| Field | Current Source |
-| --- | --- |
-| Active sprint | `config/guardrails.json` |
-| Active integration branch | `sprint/v0.5/sprint-5` |
-| Current project scope | [`docs/PROJECT-SCOPE.md`](docs/PROJECT-SCOPE.md) |
-| Repository architecture | [`docs/architecture/03-folder-architecture.md`](docs/architecture/03-folder-architecture.md) |
-| Module ownership | [`docs/architecture/08-module-ownership.md`](docs/architecture/08-module-ownership.md) |
-| Execution policy | [`docs/standards/010-golden-rules.md`](docs/standards/010-golden-rules.md) |
-| API guidance | [`docs/api/README.md`](docs/api/README.md) |
-| Prisma schema | `database/prisma/schema.prisma` |
-| Local verification | [`docs/standards/LOCAL-GUARDRAILS.md`](docs/standards/LOCAL-GUARDRAILS.md) |
-| CI verification | [`docs/standards/CI-GUARDRAILS.md`](docs/standards/CI-GUARDRAILS.md) |
+| Field                     | Current Source                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------------- |
+| Active sprint             | `config/guardrails.json`                                                                     |
+| Active integration branch | `sprint/v0.5/sprint-5`                                                                       |
+| Current project scope     | [`docs/PROJECT-SCOPE.md`](docs/PROJECT-SCOPE.md)                                             |
+| Repository architecture   | [`docs/architecture/03-folder-architecture.md`](docs/architecture/03-folder-architecture.md) |
+| Module ownership          | [`docs/architecture/08-module-ownership.md`](docs/architecture/08-module-ownership.md)       |
+| Execution policy          | [`docs/standards/010-golden-rules.md`](docs/standards/010-golden-rules.md)                   |
+| API guidance              | [`docs/api/README.md`](docs/api/README.md)                                                   |
+| Prisma schema             | `database/prisma/schema.prisma`                                                              |
+| Local verification        | [`docs/standards/LOCAL-GUARDRAILS.md`](docs/standards/LOCAL-GUARDRAILS.md)                   |
+| CI verification           | [`docs/standards/CI-GUARDRAILS.md`](docs/standards/CI-GUARDRAILS.md)                         |
 
 Historical sprint documents remain useful evidence, but they do not define current implementation state.
 
@@ -39,18 +39,18 @@ See [`docs/PROJECT-SCOPE.md`](docs/PROJECT-SCOPE.md) for the distinction between
 
 ## Technology Stack
 
-| Layer | Technology |
-| --- | --- |
-| Frontend | React, Vite, TypeScript |
-| Styling/UI | Tailwind CSS and repository-approved component patterns |
-| Desktop | Electron |
-| Backend | Node.js, Express.js, TypeScript |
-| ORM | Prisma |
-| Database | MySQL Community Server |
-| Forecasting | Python, statsmodels SARIMA/SARIMAX |
-| Validation | Zod and domain validation |
-| Quality | ESLint, Prettier, Husky, GitHub Actions |
-| Packaging | electron-builder |
+| Layer       | Technology                                              |
+| ----------- | ------------------------------------------------------- |
+| Frontend    | React, Vite, TypeScript                                 |
+| Styling/UI  | Tailwind CSS and repository-approved component patterns |
+| Desktop     | Electron                                                |
+| Backend     | Node.js, Express.js, TypeScript                         |
+| ORM         | Prisma                                                  |
+| Database    | MySQL Community Server                                  |
+| Forecasting | Python, statsmodels SARIMA/SARIMAX                      |
+| Validation  | Zod and domain validation                               |
+| Quality     | ESLint, Prettier, Husky, GitHub Actions                 |
+| Packaging   | electron-builder                                        |
 
 ## Local Development
 

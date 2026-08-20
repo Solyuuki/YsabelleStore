@@ -6,24 +6,24 @@ Ownership reduces accidental overlap; it does not prevent a coherent cross-layer
 
 ## Current Primary Areas
 
-| Member | Primary Areas |
-| --- | --- |
-| m1 - Abarado | Frontend/UI, Electron integration, repository/documentation quality. |
-| m2 - Ramos | Backend/API, Prisma/database integration, migrations/import workflows. |
-| m3 - Vito | SARIMA forecasting, forecast evaluation, recommendation/analytics logic. |
+| Member       | Primary Areas                                                            |
+| ------------ | ------------------------------------------------------------------------ |
+| m1 - Abarado | Frontend/UI, Electron integration, repository/documentation quality.     |
+| m2 - Ramos   | Backend/API, Prisma/database integration, migrations/import workflows.   |
+| m3 - Vito    | SARIMA forecasting, forecast evaluation, recommendation/analytics logic. |
 
 Refer to `docs/architecture/08-module-ownership.md` for the current detailed review matrix. Current repository paths such as `frontend/`, `backend/`, `database/`, `electron/`, and `forecasting-service/` are authoritative over historical planning paths.
 
 ## Cross-Review Expectations
 
-| Change | Review/Coordination |
-| --- | --- |
-| API contract affects UI | Backend owner + frontend reviewer. |
-| Forecast request/output contract changes | Forecasting + backend reviewers; frontend when presentation changes. |
-| Database schema affects forecasting data | Database + forecasting reviewers. |
+| Change                                         | Review/Coordination                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| API contract affects UI                        | Backend owner + frontend reviewer.                                       |
+| Forecast request/output contract changes       | Forecasting + backend reviewers; frontend when presentation changes.     |
+| Database schema affects forecasting data       | Database + forecasting reviewers.                                        |
 | POS/inventory mutation crosses UI/API/database | Review all affected boundaries; preserve transactional stock invariants. |
-| Electron startup affects backend lifecycle | Electron + backend review. |
-| Shared architecture/standards change | Review by all materially affected areas. |
+| Electron startup affects backend lifecycle     | Electron + backend review.                                               |
+| Shared architecture/standards change           | Review by all materially affected areas.                                 |
 
 ## Task Record
 

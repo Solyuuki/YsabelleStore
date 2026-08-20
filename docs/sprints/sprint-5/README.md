@@ -4,15 +4,15 @@ Sprint 5 implements a token-efficient, context-aware coding-agent workflow for Y
 
 ## Sprint Metadata
 
-| Field | Details |
-| --- | --- |
-| Sprint | Sprint 5 |
-| Sprint branch | `sprint/v0.5/sprint-5` |
-| Active sprint source | `config/guardrails.json` |
-| Primary theme | Persistent repository context + low-repetition implementation workflow |
-| Primary efficiency metric | Tokens per correctly completed task |
-| Quality rule | Token savings never override required behavior, integrity, security, or validation |
-| Repository-side status | Implementation complete; live Codex-host empirical validation pending |
+| Field                     | Details                                                                            |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| Sprint                    | Sprint 5                                                                           |
+| Sprint branch             | `sprint/v0.5/sprint-5`                                                             |
+| Active sprint source      | `config/guardrails.json`                                                           |
+| Primary theme             | Persistent repository context + low-repetition implementation workflow             |
+| Primary efficiency metric | Tokens per correctly completed task                                                |
+| Quality rule              | Token savings never override required behavior, integrity, security, or validation |
+| Repository-side status    | Implementation complete; live Codex-host empirical validation pending              |
 
 ## What Sprint 5 Added
 
@@ -60,15 +60,15 @@ Repository-wide discovery is a last-resort escalation when refreshed context is 
 
 ## Planning and Evidence Documents
 
-| Document | Purpose |
-| --- | --- |
-| [SPRINT-GOAL.md](SPRINT-GOAL.md) | Sprint outcome and operating principles |
-| [SPRINT-BACKLOG.md](SPRINT-BACKLOG.md) | Work-item implementation/status and remaining external validation |
-| [DEFINITION-OF-DONE.md](DEFINITION-OF-DONE.md) | Repository-side vs live-host completion criteria |
-| [REPOSITORY-CONTEXT-PLAN.md](REPOSITORY-CONTEXT-PLAN.md) | Original technical design and rollout plan |
-| [GUIDANCE-SOURCE-OF-TRUTH-AUDIT.md](GUIDANCE-SOURCE-OF-TRUTH-AUDIT.md) | Completed guidance consolidation/source-of-truth audit |
-| [PILOT-BENCHMARKS.md](PILOT-BENCHMARKS.md) | Proxy/pilot evidence and live-host measurement boundary |
-| [`../../PROJECT-SCOPE.md`](../../PROJECT-SCOPE.md) | Canonical current thesis/product scope classification |
+| Document                                                               | Purpose                                                           |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [SPRINT-GOAL.md](SPRINT-GOAL.md)                                       | Sprint outcome and operating principles                           |
+| [SPRINT-BACKLOG.md](SPRINT-BACKLOG.md)                                 | Work-item implementation/status and remaining external validation |
+| [DEFINITION-OF-DONE.md](DEFINITION-OF-DONE.md)                         | Repository-side vs live-host completion criteria                  |
+| [REPOSITORY-CONTEXT-PLAN.md](REPOSITORY-CONTEXT-PLAN.md)               | Original technical design and rollout plan                        |
+| [GUIDANCE-SOURCE-OF-TRUTH-AUDIT.md](GUIDANCE-SOURCE-OF-TRUTH-AUDIT.md) | Completed guidance consolidation/source-of-truth audit            |
+| [PILOT-BENCHMARKS.md](PILOT-BENCHMARKS.md)                             | Proxy/pilot evidence and live-host measurement boundary           |
+| [`../../PROJECT-SCOPE.md`](../../PROJECT-SCOPE.md)                     | Canonical current thesis/product scope classification             |
 
 ## Implementation Entry Points
 

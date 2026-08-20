@@ -10,16 +10,16 @@ The research problem remains inventory decision support: manual stock monitoring
 
 ## Research-Critical Capabilities
 
-| Thesis Concern | System Support |
-| --- | --- |
-| Manual inventory checking | Computerized product/inventory/batch monitoring. |
-| Stock shortages | Low-stock visibility and forecast-aware replenishment guidance. |
-| Overstock risk | Compare inventory position with demand/forecast context. |
-| Expiration monitoring | Batch expiration and near-expiry/expiry-risk handling. |
-| Replenishment decisions | Combine current usable stock, historical sales, forecast output, and defined inventory rules. |
-| Demand forecasting | SARIMA/SARIMAX-family seasonal demand forecasting from historical sales. |
-| Sales evidence | POS/sales records that support reporting and forecasting. |
-| Role control | Owner/staff authorization appropriate to operational responsibilities. |
+| Thesis Concern            | System Support                                                                                |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| Manual inventory checking | Computerized product/inventory/batch monitoring.                                              |
+| Stock shortages           | Low-stock visibility and forecast-aware replenishment guidance.                               |
+| Overstock risk            | Compare inventory position with demand/forecast context.                                      |
+| Expiration monitoring     | Batch expiration and near-expiry/expiry-risk handling.                                        |
+| Replenishment decisions   | Combine current usable stock, historical sales, forecast output, and defined inventory rules. |
+| Demand forecasting        | SARIMA/SARIMAX-family seasonal demand forecasting from historical sales.                      |
+| Sales evidence            | POS/sales records that support reporting and forecasting.                                     |
+| Role control              | Owner/staff authorization appropriate to operational responsibilities.                        |
 
 ## Product Extensions
 

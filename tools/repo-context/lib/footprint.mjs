@@ -1,23 +1,53 @@
-import { readdir, stat } from 'node:fs/promises';
-import path from 'node:path';
+import { readdir, stat } from "node:fs/promises";
+import path from "node:path";
 
 const TEXT_EXTENSIONS = new Set([
-  '.c', '.cc', '.cjs', '.cpp', '.css', '.env', '.h', '.html', '.ini', '.java', '.js', '.json',
-  '.jsx', '.md', '.mjs', '.prisma', '.py', '.sh', '.sql', '.toml', '.ts', '.tsx', '.txt', '.xml',
-  '.yaml', '.yml',
+  ".c",
+  ".cc",
+  ".cjs",
+  ".cpp",
+  ".css",
+  ".env",
+  ".h",
+  ".html",
+  ".ini",
+  ".java",
+  ".js",
+  ".json",
+  ".jsx",
+  ".md",
+  ".mjs",
+  ".prisma",
+  ".py",
+  ".sh",
+  ".sql",
+  ".toml",
+  ".ts",
+  ".tsx",
+  ".txt",
+  ".xml",
+  ".yaml",
+  ".yml"
 ]);
 
 const IGNORED_DIRECTORIES = new Set([
-  '.git', '.ysabelle-context', 'node_modules', 'dist', 'build', 'coverage', '.vite', '.cache',
+  ".git",
+  ".ysabelle-context",
+  "node_modules",
+  "dist",
+  "build",
+  "coverage",
+  ".vite",
+  ".cache"
 ]);
 
 function isTextLike(filePath) {
   const base = path.basename(filePath).toLowerCase();
-  if (base === 'dockerfile' || base === 'makefile') return true;
+  if (base === "dockerfile" || base === "makefile") return true;
   return TEXT_EXTENSIONS.has(path.extname(base));
 }
 
-async function collect(rootDir, relativeDir = '') {
+async function collect(rootDir, relativeDir = "") {
   const absoluteDir = path.join(rootDir, relativeDir);
   const entries = await readdir(absoluteDir, { withFileTypes: true });
   let fileCount = 0;
@@ -43,7 +73,7 @@ async function collect(rootDir, relativeDir = '') {
 }
 
 export function estimateContextTokens(value) {
-  const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+  const serialized = typeof value === "string" ? value : JSON.stringify(value);
   const characters = serialized.length;
   return { characters, approxTokens: Math.ceil(characters / 4) };
 }

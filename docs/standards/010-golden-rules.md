@@ -46,31 +46,31 @@ Generated `.ysabelle-context/` data is a navigation cache, never the implementat
 
 ## Verification Tiers
 
-| Tier | Use | Typical Checks |
-| --- | --- | --- |
-| 1 - Local | Isolated low-risk implementation/UI/tooling edit | Targeted test plus affected typecheck/lint/build as applicable. |
-| 2 - Subsystem | Multi-file change within one subsystem or contract boundary | Relevant test group, affected workspace build/typecheck, integration/API checks. |
-| 3 - Full/high risk | Inventory/POS integrity, auth/security, schema/database, release/packaging, cross-cutting high-risk behavior | Full required repository verification plus relevant specialized checks. |
+| Tier               | Use                                                                                                          | Typical Checks                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| 1 - Local          | Isolated low-risk implementation/UI/tooling edit                                                             | Targeted test plus affected typecheck/lint/build as applicable.                  |
+| 2 - Subsystem      | Multi-file change within one subsystem or contract boundary                                                  | Relevant test group, affected workspace build/typecheck, integration/API checks. |
+| 3 - Full/high risk | Inventory/POS integrity, auth/security, schema/database, release/packaging, cross-cutting high-risk behavior | Full required repository verification plus relevant specialized checks.          |
 
 During iteration, run the smallest sufficient check. Near completion, run the final tier appropriate to the risk. Do not rerun an expensive successful check when no relevant code changed afterward.
 
 ## Domain Router
 
-| Task Area | Primary Guidance |
-| --- | --- |
-| Current project/thesis scope | `docs/PROJECT-SCOPE.md` |
-| Repository layout | `docs/architecture/03-folder-architecture.md` |
-| Module ownership/review | `docs/architecture/08-module-ownership.md` + `docs/standards/07-member-ownership.md` |
-| General coding | `docs/standards/06-coding-standards.md` |
-| API/contracts | `docs/api/README.md` and task-specific API contract |
-| Database/Prisma | `database/docs/DATABASE-FOUNDATION.md`, migration guide, current schema |
-| Security/auth | `docs/security/` relevant topic |
-| Testing/local verification | `docs/standards/LOCAL-GUARDRAILS.md`, `testing/` relevant topic |
-| CI/merge quality | `docs/standards/CI-GUARDRAILS.md` |
-| Forecasting | `docs/architecture/06-forecasting-architecture.md`, forecasting contract/tests |
-| Electron/runtime | `docs/architecture/07-electron-architecture.md`, `electron/README.md` |
-| Deployment/release | `deployment/` relevant guide |
-| Repository context/MCP | `tools/repo-context/README.md`, Sprint 5 context plan |
+| Task Area                    | Primary Guidance                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------ |
+| Current project/thesis scope | `docs/PROJECT-SCOPE.md`                                                              |
+| Repository layout            | `docs/architecture/03-folder-architecture.md`                                        |
+| Module ownership/review      | `docs/architecture/08-module-ownership.md` + `docs/standards/07-member-ownership.md` |
+| General coding               | `docs/standards/06-coding-standards.md`                                              |
+| API/contracts                | `docs/api/README.md` and task-specific API contract                                  |
+| Database/Prisma              | `database/docs/DATABASE-FOUNDATION.md`, migration guide, current schema              |
+| Security/auth                | `docs/security/` relevant topic                                                      |
+| Testing/local verification   | `docs/standards/LOCAL-GUARDRAILS.md`, `testing/` relevant topic                      |
+| CI/merge quality             | `docs/standards/CI-GUARDRAILS.md`                                                    |
+| Forecasting                  | `docs/architecture/06-forecasting-architecture.md`, forecasting contract/tests       |
+| Electron/runtime             | `docs/architecture/07-electron-architecture.md`, `electron/README.md`                |
+| Deployment/release           | `deployment/` relevant guide                                                         |
+| Repository context/MCP       | `tools/repo-context/README.md`, Sprint 5 context plan                                |
 
 Do not load every row for every task.
 

@@ -1,5 +1,5 @@
-import { appendFile, mkdir } from 'node:fs/promises';
-import path from 'node:path';
+import { appendFile, mkdir } from "node:fs/promises";
+import path from "node:path";
 
 import {
   buildAndPersistIndex,
@@ -7,8 +7,8 @@ import {
   getContextStatus,
   loadContextConfig,
   loadPersistedContext,
-  refreshContext,
-} from './runtime.mjs';
+  refreshContext
+} from "./runtime.mjs";
 
 export async function createRepositoryContextRuntime({ rootDir = process.cwd() } = {}) {
   let config = await loadContextConfig(rootDir);
@@ -32,7 +32,7 @@ export async function createRepositoryContextRuntime({ rootDir = process.cwd() }
         rootDir,
         config: runtime.config,
         index: runtime.index,
-        state: runtime.state,
+        state: runtime.state
       });
     },
     async refresh(options = {}) {
@@ -51,7 +51,7 @@ export async function createRepositoryContextRuntime({ rootDir = process.cwd() }
         mode: refreshed.mode,
         stale: false,
         changedPaths: refreshed.changedPaths ?? [],
-        refreshedSubsystems: refreshed.refreshedSubsystems ?? [],
+        refreshedSubsystems: refreshed.refreshedSubsystems ?? []
       };
     },
     async ensureFresh() {
@@ -59,21 +59,21 @@ export async function createRepositoryContextRuntime({ rootDir = process.cwd() }
       if (!status.stale) {
         return {
           refreshed: false,
-          mode: 'noop',
+          mode: "noop",
           changedPaths: [],
-          refreshedSubsystems: [],
+          refreshedSubsystems: []
         };
       }
 
       const refreshed = await runtime.refresh();
       return {
         refreshed: true,
-        ...refreshed,
+        ...refreshed
       };
     },
     async reportMismatch(details = {}) {
-      const summary = String(details.summary ?? '').trim();
-      if (!summary) throw new Error('summary is required');
+      const summary = String(details.summary ?? "").trim();
+      if (!summary) throw new Error("summary is required");
       const status = await runtime.getStatus();
       const record = {
         recordedAt: new Date().toISOString(),
@@ -84,13 +84,17 @@ export async function createRepositoryContextRuntime({ rootDir = process.cwd() }
           ? [...new Set(details.affectedSubsystems.map(String))].sort()
           : [],
         indexedCommit: status.indexedCommit,
-        currentCommit: status.currentCommit,
+        currentCommit: status.currentCommit
       };
-      const storeDir = path.join(rootDir, '.ysabelle-context');
+      const storeDir = path.join(rootDir, ".ysabelle-context");
       await mkdir(storeDir, { recursive: true });
-      await appendFile(path.join(storeDir, 'mismatches.jsonl'), `${JSON.stringify(record)}\n`, 'utf8');
+      await appendFile(
+        path.join(storeDir, "mismatches.jsonl"),
+        `${JSON.stringify(record)}\n`,
+        "utf8"
+      );
       return { recorded: true, ...record };
-    },
+    }
   };
 
   return runtime;

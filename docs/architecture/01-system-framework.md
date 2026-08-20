@@ -4,19 +4,19 @@ This document defines the primary technology stack and framework boundaries for 
 
 ## Core Stack
 
-| Layer | Framework/Tool | Responsibility |
-| --- | --- | --- |
-| Frontend | React + TypeScript + Vite | Customer/internal UI and client interaction. |
-| Styling/UI | Tailwind CSS and repository-approved component patterns | Consistent accessible application UI. |
-| Desktop | Electron | Local desktop lifecycle and Windows packaging. |
-| Backend | Node.js + Express.js | HTTP/API boundary and domain-service orchestration. |
-| Validation | Zod + domain validators | Validate external and cross-layer inputs. |
-| ORM | Prisma | Type-safe application persistence boundary. |
-| Database | MySQL Community Server | Relational products, sales, inventory, users, forecasts, orders, and related operational data. |
-| Forecasting | Python + statsmodels SARIMA/SARIMAX | Seasonal demand forecasting and evaluation. |
-| Charts | Recharts with approved fallback where needed | Forecast/report/dashboard visualization. |
-| Quality | ESLint, Prettier, Husky, GitHub Actions | Repository consistency and validation. |
-| Packaging | electron-builder | Windows desktop packaging. |
+| Layer       | Framework/Tool                                          | Responsibility                                                                                 |
+| ----------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Frontend    | React + TypeScript + Vite                               | Customer/internal UI and client interaction.                                                   |
+| Styling/UI  | Tailwind CSS and repository-approved component patterns | Consistent accessible application UI.                                                          |
+| Desktop     | Electron                                                | Local desktop lifecycle and Windows packaging.                                                 |
+| Backend     | Node.js + Express.js                                    | HTTP/API boundary and domain-service orchestration.                                            |
+| Validation  | Zod + domain validators                                 | Validate external and cross-layer inputs.                                                      |
+| ORM         | Prisma                                                  | Type-safe application persistence boundary.                                                    |
+| Database    | MySQL Community Server                                  | Relational products, sales, inventory, users, forecasts, orders, and related operational data. |
+| Forecasting | Python + statsmodels SARIMA/SARIMAX                     | Seasonal demand forecasting and evaluation.                                                    |
+| Charts      | Recharts with approved fallback where needed            | Forecast/report/dashboard visualization.                                                       |
+| Quality     | ESLint, Prettier, Husky, GitHub Actions                 | Repository consistency and validation.                                                         |
+| Packaging   | electron-builder                                        | Windows desktop packaging.                                                                     |
 
 ## Architecture Principles
 

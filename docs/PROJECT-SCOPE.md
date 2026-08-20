@@ -8,18 +8,18 @@ For implemented behavior, current source code, the Prisma schema, migrations, ex
 
 The thesis remains centered on an inventory recommender system that uses historical sales and SARIMA demand forecasting to support inventory decisions for Ysabelle's Store.
 
-| Core Area | Required Capability |
-| --- | --- |
-| Product and catalog records | Maintain products, categories, identifiers, pricing, and operational status. |
-| Sales/POS | Record sales and barcode-assisted item quantities. |
-| Inventory | Track usable stock, batch quantities, movements, and stock integrity. |
-| Expiration | Track expiration dates and identify near-expiry/expiry-risk inventory. |
-| Forecasting | Use historical sales and SARIMA to forecast seasonal demand. |
-| Recommendations | Combine demand forecasts and inventory context into restock/risk guidance. |
-| Import | Support validated CSV/XLSX preparation/import workflows where implemented. |
-| Reporting | Present operational inventory, sales, forecasting, and recommendation information. |
-| Access control | Keep owner/staff capabilities role-appropriate. |
-| Local operation | Preserve the local desktop/LAN-capable operating model unless a later approved deployment decision changes it. |
+| Core Area                   | Required Capability                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Product and catalog records | Maintain products, categories, identifiers, pricing, and operational status.                                   |
+| Sales/POS                   | Record sales and barcode-assisted item quantities.                                                             |
+| Inventory                   | Track usable stock, batch quantities, movements, and stock integrity.                                          |
+| Expiration                  | Track expiration dates and identify near-expiry/expiry-risk inventory.                                         |
+| Forecasting                 | Use historical sales and SARIMA to forecast seasonal demand.                                                   |
+| Recommendations             | Combine demand forecasts and inventory context into restock/risk guidance.                                     |
+| Import                      | Support validated CSV/XLSX preparation/import workflows where implemented.                                     |
+| Reporting                   | Present operational inventory, sales, forecasting, and recommendation information.                             |
+| Access control              | Keep owner/staff capabilities role-appropriate.                                                                |
+| Local operation             | Preserve the local desktop/LAN-capable operating model unless a later approved deployment decision changes it. |
 
 SARIMA forecasts **demand**, not expiration dates. Expiry risk is derived from inventory/batch state, time to expiration, and expected demand.
 

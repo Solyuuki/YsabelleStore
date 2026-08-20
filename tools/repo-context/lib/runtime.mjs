@@ -1,19 +1,19 @@
-import { createHash } from 'node:crypto';
-import { execFileSync } from 'node:child_process';
-import { access, mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
-import path from 'node:path';
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { access, mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
+import path from "node:path";
 
-import { buildContextIndex, detectChangedSubsystems } from './context-core.mjs';
+import { buildContextIndex, detectChangedSubsystems } from "./context-core.mjs";
 
-const CONFIG_PATH = 'config/repository-context.json';
-const STORE_DIR = '.ysabelle-context';
+const CONFIG_PATH = "config/repository-context.json";
+const STORE_DIR = ".ysabelle-context";
 const INDEX_PATH = `${STORE_DIR}/index.json`;
 const STATE_PATH = `${STORE_DIR}/state.json`;
 
 function normalizeRepositoryPath(value) {
-  return String(value ?? '')
-    .replaceAll('\\', '/')
-    .replace(/^\.\//, '');
+  return String(value ?? "")
+    .replaceAll("\\", "/")
+    .replace(/^\.\//, "");
 }
 
 function unique(values) {
@@ -22,22 +22,22 @@ function unique(values) {
 
 function runGit(rootDir, args, { allowFailure = false } = {}) {
   try {
-    return execFileSync('git', args, {
+    return execFileSync("git", args, {
       cwd: rootDir,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
     }).trim();
   } catch (error) {
     if (allowFailure) return null;
     const stderr = error?.stderr?.toString?.().trim();
-    throw new Error(stderr || `git ${args.join(' ')} failed`);
+    throw new Error(stderr || `git ${args.join(" ")} failed`);
   }
 }
 
 function runGitNullSeparated(rootDir, args, { allowFailure = false } = {}) {
   const output = runGit(rootDir, args, { allowFailure });
-  if (output === null || output === '') return [];
-  return output.split('\0').map(normalizeRepositoryPath).filter(Boolean);
+  if (output === null || output === "") return [];
+  return output.split("\0").map(normalizeRepositoryPath).filter(Boolean);
 }
 
 function isIgnoredContextPath(repositoryPath, config) {
@@ -45,7 +45,9 @@ function isIgnoredContextPath(repositoryPath, config) {
   const ignored = config.ignoredContextPaths ?? [`.ysabelle-context/`];
   return ignored.some((prefix) => {
     const normalizedPrefix = normalizeRepositoryPath(prefix);
-    return normalized === normalizedPrefix.replace(/\/$/, '') || normalized.startsWith(normalizedPrefix);
+    return (
+      normalized === normalizedPrefix.replace(/\/$/, "") || normalized.startsWith(normalizedPrefix)
+    );
   });
 }
 
@@ -55,25 +57,25 @@ async function fileHash(rootDir, repositoryPath) {
     const fileStat = await stat(absolutePath);
     if (!fileStat.isFile()) return null;
     const content = await readFile(absolutePath);
-    return createHash('sha256').update(content).digest('hex');
+    return createHash("sha256").update(content).digest("hex");
   } catch (error) {
-    if (error?.code === 'ENOENT') return null;
+    if (error?.code === "ENOENT") return null;
     throw error;
   }
 }
 
 async function currentWorkingTreePaths(rootDir, config) {
   const paths = unique([
-    ...runGitNullSeparated(rootDir, ['diff', '--name-only', '-z']),
-    ...runGitNullSeparated(rootDir, ['diff', '--cached', '--name-only', '-z']),
-    ...runGitNullSeparated(rootDir, ['ls-files', '--others', '--exclude-standard', '-z']),
+    ...runGitNullSeparated(rootDir, ["diff", "--name-only", "-z"]),
+    ...runGitNullSeparated(rootDir, ["diff", "--cached", "--name-only", "-z"]),
+    ...runGitNullSeparated(rootDir, ["ls-files", "--others", "--exclude-standard", "-z"])
   ]);
   return paths.filter((entry) => !isIgnoredContextPath(entry, config)).sort();
 }
 
 async function capturePathHashes(rootDir, paths) {
   const entries = await Promise.all(
-    paths.map(async (repositoryPath) => [repositoryPath, await fileHash(rootDir, repositoryPath)]),
+    paths.map(async (repositoryPath) => [repositoryPath, await fileHash(rootDir, repositoryPath)])
   );
   return Object.fromEntries(entries);
 }
@@ -81,62 +83,76 @@ async function capturePathHashes(rootDir, paths) {
 async function writeJsonAtomic(filePath, value) {
   await mkdir(path.dirname(filePath), { recursive: true });
   const temporaryPath = `${filePath}.tmp-${process.pid}`;
-  await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+  await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
   await rename(temporaryPath, filePath);
 }
 
 function validateSubsystem(name, subsystem) {
-  if (!subsystem || typeof subsystem !== 'object') throw new Error(`Subsystem ${name} must be an object.`);
-  if (typeof subsystem.description !== 'string') throw new Error(`Subsystem ${name} requires a description.`);
+  if (!subsystem || typeof subsystem !== "object")
+    throw new Error(`Subsystem ${name} must be an object.`);
+  if (typeof subsystem.description !== "string")
+    throw new Error(`Subsystem ${name} requires a description.`);
   if (!Array.isArray(subsystem.keywords)) throw new Error(`Subsystem ${name} requires keywords[].`);
   if (!Array.isArray(subsystem.pathPrefixes) || subsystem.pathPrefixes.length === 0) {
     throw new Error(`Subsystem ${name} requires at least one path prefix.`);
   }
   const tier = Number(subsystem.verificationTier ?? 1);
-  if (![1, 2, 3].includes(tier)) throw new Error(`Subsystem ${name} has invalid verificationTier ${tier}.`);
+  if (![1, 2, 3].includes(tier))
+    throw new Error(`Subsystem ${name} has invalid verificationTier ${tier}.`);
 }
 
 export async function loadContextConfig(rootDir, configPath = CONFIG_PATH) {
   const absolutePath = path.join(rootDir, configPath);
-  const raw = await readFile(absolutePath, 'utf8');
+  const raw = await readFile(absolutePath, "utf8");
   const config = JSON.parse(raw);
 
   if (!Number.isInteger(config.schemaVersion) || config.schemaVersion < 1) {
-    throw new Error('repository-context config requires a positive integer schemaVersion.');
+    throw new Error("repository-context config requires a positive integer schemaVersion.");
   }
-  if (typeof config.repository !== 'string' || !config.repository.trim()) {
-    throw new Error('repository-context config requires repository.');
+  if (typeof config.repository !== "string" || !config.repository.trim()) {
+    throw new Error("repository-context config requires repository.");
   }
-  if (!config.subsystems || typeof config.subsystems !== 'object') {
-    throw new Error('repository-context config requires subsystems.');
+  if (!config.subsystems || typeof config.subsystems !== "object") {
+    throw new Error("repository-context config requires subsystems.");
   }
-  for (const [name, subsystem] of Object.entries(config.subsystems)) validateSubsystem(name, subsystem);
+  for (const [name, subsystem] of Object.entries(config.subsystems))
+    validateSubsystem(name, subsystem);
   return config;
 }
 
-export async function getGitState(rootDir, config = { ignoredContextPaths: [`.ysabelle-context/`] }) {
-  const commit = runGit(rootDir, ['rev-parse', 'HEAD']);
-  const branch = runGit(rootDir, ['branch', '--show-current'], { allowFailure: true }) || null;
+export async function getGitState(
+  rootDir,
+  config = { ignoredContextPaths: [`.ysabelle-context/`] }
+) {
+  const commit = runGit(rootDir, ["rev-parse", "HEAD"]);
+  const branch = runGit(rootDir, ["branch", "--show-current"], { allowFailure: true }) || null;
   const changedPaths = await currentWorkingTreePaths(rootDir, config);
   return {
     branch,
     commit,
     dirty: changedPaths.length > 0,
-    changedPaths,
+    changedPaths
   };
 }
 
 async function getCommittedPathsSince(rootDir, indexedCommit, currentCommit, config) {
   if (!indexedCommit || !currentCommit || indexedCommit === currentCommit) return [];
-  const mergeBaseCheck = runGit(rootDir, ['merge-base', '--is-ancestor', indexedCommit, currentCommit], {
-    allowFailure: true,
-  });
+  const mergeBaseCheck = runGit(
+    rootDir,
+    ["merge-base", "--is-ancestor", indexedCommit, currentCommit],
+    {
+      allowFailure: true
+    }
+  );
   if (mergeBaseCheck === null) {
     return null;
   }
-  return runGitNullSeparated(rootDir, ['diff', '--name-only', '-z', `${indexedCommit}..${currentCommit}`]).filter(
-    (entry) => !isIgnoredContextPath(entry, config),
-  );
+  return runGitNullSeparated(rootDir, [
+    "diff",
+    "--name-only",
+    "-z",
+    `${indexedCommit}..${currentCommit}`
+  ]).filter((entry) => !isIgnoredContextPath(entry, config));
 }
 
 async function changedWorkingTreePathsSinceSnapshot(rootDir, config, state) {
@@ -144,17 +160,19 @@ async function changedWorkingTreePathsSinceSnapshot(rootDir, config, state) {
   const captured = state.dirtyPathHashes ?? {};
   const candidates = unique([...currentPaths, ...Object.keys(captured)]).sort();
   const currentHashes = await capturePathHashes(rootDir, candidates);
-  return candidates.filter((repositoryPath) => currentHashes[repositoryPath] !== (captured[repositoryPath] ?? null));
+  return candidates.filter(
+    (repositoryPath) => currentHashes[repositoryPath] !== (captured[repositoryPath] ?? null)
+  );
 }
 
 export async function loadPersistedContext(rootDir) {
   const [indexRaw, stateRaw] = await Promise.all([
-    readFile(path.join(rootDir, INDEX_PATH), 'utf8'),
-    readFile(path.join(rootDir, STATE_PATH), 'utf8'),
+    readFile(path.join(rootDir, INDEX_PATH), "utf8"),
+    readFile(path.join(rootDir, STATE_PATH), "utf8")
   ]);
   return {
     index: JSON.parse(indexRaw),
-    state: JSON.parse(stateRaw),
+    state: JSON.parse(stateRaw)
   };
 }
 
@@ -166,18 +184,18 @@ async function persistContext({ rootDir, config, index }) {
     indexedAt: new Date().toISOString(),
     indexedBranch: gitState.branch,
     indexedCommit: gitState.commit,
-    dirtyPathHashes,
+    dirtyPathHashes
   };
 
   index.source = {
     commit: gitState.commit,
     branch: gitState.branch,
-    dirty: gitState.dirty,
+    dirty: gitState.dirty
   };
 
   await Promise.all([
     writeJsonAtomic(path.join(rootDir, INDEX_PATH), index),
-    writeJsonAtomic(path.join(rootDir, STATE_PATH), state),
+    writeJsonAtomic(path.join(rootDir, STATE_PATH), state)
   ]);
   return { index, state };
 }
@@ -187,7 +205,7 @@ export async function buildAndPersistIndex({ rootDir, configPath = CONFIG_PATH }
   const gitState = await getGitState(rootDir, config);
   const index = await buildContextIndex({ rootDir, config, gitState });
   const persisted = await persistContext({ rootDir, config, index });
-  return { config, ...persisted, mode: 'full' };
+  return { config, ...persisted, mode: "full" };
 }
 
 export async function getContextStatus({ rootDir, config, index, state }) {
@@ -196,19 +214,19 @@ export async function getContextStatus({ rootDir, config, index, state }) {
     rootDir,
     state.indexedCommit ?? index.source?.commit,
     currentGit.commit,
-    config,
+    config
   );
 
   if (committedPaths === null) {
     return {
       stale: true,
-      reason: 'indexed commit is unavailable or not an ancestor of current HEAD',
+      reason: "indexed commit is unavailable or not an ancestor of current HEAD",
       changedPaths: [],
       affectedSubsystems: [],
       unmappedPaths: [],
       indexedCommit: state.indexedCommit ?? null,
       currentCommit: currentGit.commit,
-      requiresFullRefresh: true,
+      requiresFullRefresh: true
     };
   }
 
@@ -218,23 +236,29 @@ export async function getContextStatus({ rootDir, config, index, state }) {
 
   return {
     stale: changedPaths.length > 0,
-    reason: changedPaths.length > 0 ? 'repository changed since context snapshot' : null,
+    reason: changedPaths.length > 0 ? "repository changed since context snapshot" : null,
     changedPaths,
     affectedSubsystems: mapped.subsystems.sort(),
     unmappedPaths: mapped.unmappedPaths.sort(),
     indexedCommit: state.indexedCommit ?? null,
     currentCommit: currentGit.commit,
-    requiresFullRefresh: mapped.unmappedPaths.length > 0,
+    requiresFullRefresh: mapped.unmappedPaths.length > 0
   };
 }
 
-export async function refreshContext({ rootDir, configPath = CONFIG_PATH, paths, subsystems, force = false } = {}) {
+export async function refreshContext({
+  rootDir,
+  configPath = CONFIG_PATH,
+  paths,
+  subsystems,
+  force = false
+} = {}) {
   const config = await loadContextConfig(rootDir, configPath);
   let persisted;
   try {
     persisted = await loadPersistedContext(rootDir);
   } catch (error) {
-    if (error?.code !== 'ENOENT') throw error;
+    if (error?.code !== "ENOENT") throw error;
     return buildAndPersistIndex({ rootDir, configPath });
   }
 
@@ -245,15 +269,15 @@ export async function refreshContext({ rootDir, configPath = CONFIG_PATH, paths,
   const targetSubsystems = unique([
     ...status.affectedSubsystems,
     ...pathMapping.subsystems,
-    ...explicitSubsystems,
+    ...explicitSubsystems
   ]).sort();
 
   if (!force && !status.stale && targetSubsystems.length === 0) {
     return {
-      mode: 'noop',
+      mode: "noop",
       refreshedSubsystems: [],
       stale: false,
-      changedPaths: [],
+      changedPaths: []
     };
   }
 
@@ -266,10 +290,10 @@ export async function refreshContext({ rootDir, configPath = CONFIG_PATH, paths,
     const result = await buildAndPersistIndex({ rootDir, configPath });
     return {
       ...result,
-      mode: 'full',
+      mode: "full",
       refreshedSubsystems: Object.keys(config.subsystems).sort(),
       stale: false,
-      changedPaths: unique([...status.changedPaths, ...explicitPaths]),
+      changedPaths: unique([...status.changedPaths, ...explicitPaths])
     };
   }
 
@@ -287,19 +311,19 @@ export async function refreshContext({ rootDir, configPath = CONFIG_PATH, paths,
   return {
     ...next,
     config,
-    mode: 'incremental',
+    mode: "incremental",
     refreshedSubsystems: targetSubsystems,
     stale: false,
-    changedPaths: unique([...status.changedPaths, ...explicitPaths]),
+    changedPaths: unique([...status.changedPaths, ...explicitPaths])
   };
 }
 
 export async function ensureContextStoreIgnored(rootDir) {
-  const gitignorePath = path.join(rootDir, '.gitignore');
-  const raw = await readFile(gitignorePath, 'utf8');
-  if (raw.split(/\r?\n/).some((line) => line.trim() === '.ysabelle-context/')) return false;
-  const suffix = raw.endsWith('\n') ? '' : '\n';
-  await writeFile(gitignorePath, `${raw}${suffix}.ysabelle-context/\n`, 'utf8');
+  const gitignorePath = path.join(rootDir, ".gitignore");
+  const raw = await readFile(gitignorePath, "utf8");
+  if (raw.split(/\r?\n/).some((line) => line.trim() === ".ysabelle-context/")) return false;
+  const suffix = raw.endsWith("\n") ? "" : "\n";
+  await writeFile(gitignorePath, `${raw}${suffix}.ysabelle-context/\n`, "utf8");
   return true;
 }
 

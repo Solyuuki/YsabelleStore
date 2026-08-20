@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import { getRelevantContext } from './lib/context-core.mjs';
-import { estimateContextTokens, estimateRepositoryTextFootprint } from './lib/footprint.mjs';
+import { getRelevantContext } from "./lib/context-core.mjs";
+import { estimateContextTokens, estimateRepositoryTextFootprint } from "./lib/footprint.mjs";
 import {
   buildAndPersistIndex,
   contextStoreExists,
   getContextStatus,
   loadContextConfig,
   loadPersistedContext,
-  refreshContext,
-} from './lib/runtime.mjs';
+  refreshContext
+} from "./lib/runtime.mjs";
 
 function writeJson(stdout, value) {
   stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
 function writeHuman(stdout, value) {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     stdout.write(`${value}\n`);
     return;
   }
@@ -43,10 +43,10 @@ async function ensureFreshLoaded(rootDir, loaded) {
       loaded,
       contextRefresh: {
         refreshed: false,
-        mode: 'noop',
+        mode: "noop",
         changedPaths: [],
-        refreshedSubsystems: [],
-      },
+        refreshedSubsystems: []
+      }
     };
   }
 
@@ -57,14 +57,14 @@ async function ensureFreshLoaded(rootDir, loaded) {
       config: refreshed.config ?? loaded.config,
       index: refreshed.index,
       state: refreshed.state,
-      autoBuilt: loaded.autoBuilt,
+      autoBuilt: loaded.autoBuilt
     };
   } else {
     const persisted = await loadPersistedContext(rootDir);
     nextLoaded = {
       config: await loadContextConfig(rootDir),
       ...persisted,
-      autoBuilt: loaded.autoBuilt,
+      autoBuilt: loaded.autoBuilt
     };
   }
 
@@ -74,20 +74,20 @@ async function ensureFreshLoaded(rootDir, loaded) {
       refreshed: true,
       mode: refreshed.mode,
       changedPaths: refreshed.changedPaths ?? [],
-      refreshedSubsystems: refreshed.refreshedSubsystems ?? [],
-    },
+      refreshedSubsystems: refreshed.refreshedSubsystems ?? []
+    }
   };
 }
 
 function compactBuildResult(result) {
   return {
-    mode: result.mode ?? 'full',
+    mode: result.mode ?? "full",
     repository: result.index.repository,
     indexedCommit: result.state.indexedCommit,
     indexedBranch: result.state.indexedBranch,
     subsystemCount: Object.keys(result.index.subsystems ?? {}).length,
     flowCount: Object.keys(result.index.flows ?? {}).length,
-    dirtySnapshotCount: Object.keys(result.state.dirtyPathHashes ?? {}).length,
+    dirtySnapshotCount: Object.keys(result.state.dirtyPathHashes ?? {}).length
   };
 }
 
@@ -102,9 +102,9 @@ function compactOverview({ config, index, state }) {
       name,
       description: subsystem.description,
       fileCount: subsystem.files?.length ?? 0,
-      verificationTier: subsystem.verificationTier ?? 1,
+      verificationTier: subsystem.verificationTier ?? 1
     })),
-    flows: Object.keys(index.flows ?? {}),
+    flows: Object.keys(index.flows ?? {})
   };
 }
 
@@ -114,41 +114,43 @@ function usage() {
 
 export async function runCli(
   argv,
-  { rootDir = process.cwd(), stdout = process.stdout, stderr = process.stderr } = {},
+  { rootDir = process.cwd(), stdout = process.stdout, stderr = process.stderr } = {}
 ) {
   const args = [...argv];
-  const asJson = args.includes('--json');
-  const force = args.includes('--force');
-  const cleanArgs = args.filter((arg) => arg !== '--json' && arg !== '--force');
+  const asJson = args.includes("--json");
+  const force = args.includes("--force");
+  const cleanArgs = args.filter((arg) => arg !== "--json" && arg !== "--force");
   const [command, ...rest] = cleanArgs;
-  const output = asJson ? (value) => writeJson(stdout, value) : (value) => writeHuman(stdout, value);
+  const output = asJson
+    ? (value) => writeJson(stdout, value)
+    : (value) => writeHuman(stdout, value);
 
   try {
-    if (!command || command === 'help' || command === '--help' || command === '-h') {
+    if (!command || command === "help" || command === "--help" || command === "-h") {
       stdout.write(usage());
       return 0;
     }
 
-    if (command === 'build') {
+    if (command === "build") {
       const result = await buildAndPersistIndex({ rootDir });
       output(compactBuildResult(result));
       return 0;
     }
 
-    if (command === 'refresh') {
+    if (command === "refresh") {
       const result = await refreshContext({ rootDir, force });
       output({
         mode: result.mode,
         stale: result.stale ?? false,
         changedPaths: result.changedPaths ?? [],
-        refreshedSubsystems: result.refreshedSubsystems ?? [],
+        refreshedSubsystems: result.refreshedSubsystems ?? []
       });
       return 0;
     }
 
     const loaded = await ensureLoaded(rootDir);
 
-    if (command === 'status') {
+    if (command === "status") {
       const status = await getContextStatus({ rootDir, ...loaded });
       output({ ...status, autoBuilt: loaded.autoBuilt });
       return 0;
@@ -157,30 +159,31 @@ export async function runCli(
     const fresh = await ensureFreshLoaded(rootDir, loaded);
     const active = fresh.loaded;
 
-    if (command === 'overview') {
+    if (command === "overview") {
       output({ ...compactOverview(active), contextRefresh: fresh.contextRefresh });
       return 0;
     }
 
-    if (command === 'query') {
-      const task = rest.join(' ').trim();
-      if (!task) throw new Error('query requires a task description.');
+    if (command === "query") {
+      const task = rest.join(" ").trim();
+      if (!task) throw new Error("query requires a task description.");
       output({
         ...getRelevantContext(task, active.index, active.config),
-        contextRefresh: fresh.contextRefresh,
+        contextRefresh: fresh.contextRefresh
       });
       return 0;
     }
 
-    if (command === 'benchmark') {
-      const task = rest.join(' ').trim();
-      if (!task) throw new Error('benchmark requires a task description.');
+    if (command === "benchmark") {
+      const task = rest.join(" ").trim();
+      if (!task) throw new Error("benchmark requires a task description.");
       const context = getRelevantContext(task, active.index, active.config);
       const compactContext = estimateContextTokens(context);
       const repositoryText = await estimateRepositoryTextFootprint(rootDir);
-      const contextReductionRatio = repositoryText.approxTokens > 0
-        ? Math.max(0, Math.min(1, 1 - compactContext.approxTokens / repositoryText.approxTokens))
-        : 0;
+      const contextReductionRatio =
+        repositoryText.approxTokens > 0
+          ? Math.max(0, Math.min(1, 1 - compactContext.approxTokens / repositoryText.approxTokens))
+          : 0;
       output({
         task,
         subsystems: context.subsystems,
@@ -196,23 +199,23 @@ export async function runCli(
         repositoryText,
         contextReductionRatio: Number(contextReductionRatio.toFixed(4)),
         contextRefresh: fresh.contextRefresh,
-        note: 'This is a deterministic context-footprint proxy, not actual Codex token billing or model-iteration usage.',
+        note: "This is a deterministic context-footprint proxy, not actual Codex token billing or model-iteration usage."
       });
       return 0;
     }
 
-    if (command === 'subsystem') {
+    if (command === "subsystem") {
       const name = rest[0];
-      if (!name) throw new Error('subsystem requires a subsystem name.');
+      if (!name) throw new Error("subsystem requires a subsystem name.");
       const subsystem = active.index.subsystems?.[name];
       if (!subsystem) throw new Error(`Unknown subsystem: ${name}`);
       output({ name, ...subsystem, contextRefresh: fresh.contextRefresh });
       return 0;
     }
 
-    if (command === 'flow') {
+    if (command === "flow") {
       const name = rest[0];
-      if (!name) throw new Error('flow requires a flow name.');
+      if (!name) throw new Error("flow requires a flow name.");
       const flow = active.index.flows?.[name];
       if (!flow) throw new Error(`Unknown flow: ${name}`);
       output({ name, ...flow, contextRefresh: fresh.contextRefresh });
@@ -226,7 +229,8 @@ export async function runCli(
   }
 }
 
-const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isDirectRun =
+  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirectRun) {
   process.exitCode = await runCli(process.argv.slice(2));
 }

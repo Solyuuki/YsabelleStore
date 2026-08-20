@@ -25,11 +25,11 @@ That measurement proves the routing/context-footprint mechanism; it does not pro
 
 The final Sprint 5 routing model adds explicit **primary** and **secondary** files and automatic freshness handling.
 
-| Pilot | Expected Routing | File Budget | Verification | Escalation |
-| --- | --- | --- | --- | --- |
-| Storefront global-search behavior | Storefront/frontend search flow | <= 8 likely files; primary search/service paths first | Tier 2 | No broad scan when mapped context is sufficient |
-| POS stock deduction after completed sale | `inventory` + `pos-sales` | 3 primary implementation/data-integrity paths, then secondary route/UI/cache dependencies | Tier 3 | No broad scan when mapped context is sufficient |
-| Authentication role + persisted session/database behavior | auth/database/security-related flow | <= 8 likely files with backend authorization/service paths prioritized | Tier 3 | No broad scan when mapped context is sufficient |
+| Pilot                                                     | Expected Routing                    | File Budget                                                                               | Verification | Escalation                                      |
+| --------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------- | ------------ | ----------------------------------------------- |
+| Storefront global-search behavior                         | Storefront/frontend search flow     | <= 8 likely files; primary search/service paths first                                     | Tier 2       | No broad scan when mapped context is sufficient |
+| POS stock deduction after completed sale                  | `inventory` + `pos-sales`           | 3 primary implementation/data-integrity paths, then secondary route/UI/cache dependencies | Tier 3       | No broad scan when mapped context is sufficient |
+| Authentication role + persisted session/database behavior | auth/database/security-related flow | <= 8 likely files with backend authorization/service paths prioritized                    | Tier 3       | No broad scan when mapped context is sufficient |
 
 ## Freshness Acceptance Evidence
 

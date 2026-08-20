@@ -8,24 +8,24 @@ The audit preserved historical evidence rather than deleting it for token saving
 
 ## Canonical Source Map
 
-| Concern | Canonical Current Source |
-| --- | --- |
-| Active sprint | `config/guardrails.json` |
-| Project/thesis scope classification | `docs/PROJECT-SCOPE.md` |
-| Current repository layout | `docs/architecture/03-folder-architecture.md` |
-| Module ownership | `docs/architecture/08-module-ownership.md` |
-| Cross-cutting execution policy | `docs/standards/010-golden-rules.md` |
-| Implemented behavior | Current source code/tests |
-| Application commands | `package.json` |
-| Database schema | `database/prisma/schema.prisma` |
-| Migration history | `database/migrations/` |
-| API contracts | Relevant file under `docs/api/` |
-| Security guidance | Relevant file under `docs/security/` |
-| Testing/local verification | `docs/standards/LOCAL-GUARDRAILS.md` + relevant `testing/` guide |
-| CI/merge validation | `docs/standards/CI-GUARDRAILS.md` |
-| Forecasting architecture | `docs/architecture/06-forecasting-architecture.md` + forecasting contract/tests |
-| Deployment/release | Relevant `deployment/` guide |
-| Persistent coding-agent context | `config/repository-context.json` + `tools/repo-context/` |
+| Concern                             | Canonical Current Source                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| Active sprint                       | `config/guardrails.json`                                                        |
+| Project/thesis scope classification | `docs/PROJECT-SCOPE.md`                                                         |
+| Current repository layout           | `docs/architecture/03-folder-architecture.md`                                   |
+| Module ownership                    | `docs/architecture/08-module-ownership.md`                                      |
+| Cross-cutting execution policy      | `docs/standards/010-golden-rules.md`                                            |
+| Implemented behavior                | Current source code/tests                                                       |
+| Application commands                | `package.json`                                                                  |
+| Database schema                     | `database/prisma/schema.prisma`                                                 |
+| Migration history                   | `database/migrations/`                                                          |
+| API contracts                       | Relevant file under `docs/api/`                                                 |
+| Security guidance                   | Relevant file under `docs/security/`                                            |
+| Testing/local verification          | `docs/standards/LOCAL-GUARDRAILS.md` + relevant `testing/` guide                |
+| CI/merge validation                 | `docs/standards/CI-GUARDRAILS.md`                                               |
+| Forecasting architecture            | `docs/architecture/06-forecasting-architecture.md` + forecasting contract/tests |
+| Deployment/release                  | Relevant `deployment/` guide                                                    |
+| Persistent coding-agent context     | `config/repository-context.json` + `tools/repo-context/`                        |
 
 ## Resolved Conflicts
 
@@ -61,14 +61,14 @@ Executable commands in `package.json`, local/CI guardrails, and the Sprint 5 ris
 
 ## Context Policy by Knowledge Type
 
-| Knowledge | Policy |
-| --- | --- |
-| Current source/schema/config/tests | Authoritative for implemented behavior. Inspect relevant files only. |
-| Architecture/API/security/database/testing/deployment docs | Index and load by relevant subsystem/task. |
-| Current scope/layout/ownership/execution sources | Stable canonical pointers in repository context. |
-| Older sprint folders | Historical evidence only; exclude from normal feature-task context. |
-| Implementation artifacts | Retrieve only for traceability/history/status needs. |
-| Generated `.ysabelle-context/` | Local persistent navigation cache; never source authority and never committed. |
+| Knowledge                                                  | Policy                                                                         |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Current source/schema/config/tests                         | Authoritative for implemented behavior. Inspect relevant files only.           |
+| Architecture/API/security/database/testing/deployment docs | Index and load by relevant subsystem/task.                                     |
+| Current scope/layout/ownership/execution sources           | Stable canonical pointers in repository context.                               |
+| Older sprint folders                                       | Historical evidence only; exclude from normal feature-task context.            |
+| Implementation artifacts                                   | Retrieve only for traceability/history/status needs.                           |
+| Generated `.ysabelle-context/`                             | Local persistent navigation cache; never source authority and never committed. |
 
 ## Source Precedence
 

@@ -1,21 +1,21 @@
-import { readdir } from 'node:fs/promises';
-import path from 'node:path';
+import { readdir } from "node:fs/promises";
+import path from "node:path";
 
 const DEFAULT_IGNORES = new Set([
-  '.git',
-  '.ysabelle-context',
-  'node_modules',
-  'dist',
-  'build',
-  'coverage',
-  '.vite',
-  '.cache',
+  ".git",
+  ".ysabelle-context",
+  "node_modules",
+  "dist",
+  "build",
+  "coverage",
+  ".vite",
+  ".cache"
 ]);
 
 function normalizeRepositoryPath(value) {
-  return String(value ?? '')
-    .replaceAll('\\', '/')
-    .replace(/^\.\//, '');
+  return String(value ?? "")
+    .replaceAll("\\", "/")
+    .replace(/^\.\//, "");
 }
 
 function unique(values) {
@@ -41,15 +41,15 @@ export function mapPathToSubsystems(repositoryPath, config) {
 function scoreKeyword(text, keyword) {
   const normalized = keyword.trim().toLowerCase();
   if (!normalized) return 0;
-  if (normalized.includes(' ')) return text.includes(normalized) ? 4 : 0;
+  if (normalized.includes(" ")) return text.includes(normalized) ? 4 : 0;
 
-  const escaped = normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const word = new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i');
+  const escaped = normalized.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const word = new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, "i");
   return word.test(text) ? 2 : 0;
 }
 
 export function routeTask(task, config, { maxSubsystems = 4 } = {}) {
-  const normalizedTask = String(task ?? '').toLowerCase();
+  const normalizedTask = String(task ?? "").toLowerCase();
   const scores = {};
 
   for (const [name, subsystem] of Object.entries(config.subsystems ?? {})) {
@@ -84,7 +84,7 @@ export function detectChangedSubsystems(changedPaths, config) {
 
   return {
     subsystems: [...subsystemSet],
-    unmappedPaths,
+    unmappedPaths
   };
 }
 
@@ -102,7 +102,7 @@ export function shouldEscalateDiscovery({
   contradictory = false,
   unexplainedFailure = false,
   undocumentedSubsystem = false,
-  missingPath = false,
+  missingPath = false
 } = {}) {
   return (
     !contextFound ||
@@ -114,13 +114,13 @@ export function shouldEscalateDiscovery({
   );
 }
 
-async function walkFiles(rootDir, relativeDir = '') {
+async function walkFiles(rootDir, relativeDir = "") {
   const absoluteDir = path.join(rootDir, relativeDir);
   let entries;
   try {
     entries = await readdir(absoluteDir, { withFileTypes: true });
   } catch (error) {
-    if (error?.code === 'ENOENT') return [];
+    if (error?.code === "ENOENT") return [];
     throw error;
   }
 
@@ -139,9 +139,7 @@ async function walkFiles(rootDir, relativeDir = '') {
 
 export async function buildContextIndex({ rootDir, config, gitState = {} }) {
   const allFiles = await walkFiles(rootDir);
-  const subsystemFiles = new Map(
-    Object.keys(config.subsystems ?? {}).map((name) => [name, []]),
-  );
+  const subsystemFiles = new Map(Object.keys(config.subsystems ?? {}).map((name) => [name, []]));
 
   for (const file of allFiles) {
     for (const subsystem of mapPathToSubsystems(file, config)) {
@@ -152,12 +150,12 @@ export async function buildContextIndex({ rootDir, config, gitState = {} }) {
   const subsystems = {};
   for (const [name, subsystem] of Object.entries(config.subsystems ?? {})) {
     subsystems[name] = {
-      description: subsystem.description ?? '',
+      description: subsystem.description ?? "",
       guidance: unique(subsystem.guidance ?? []),
       invariants: unique(subsystem.invariants ?? []),
       verification: unique(subsystem.verification ?? []),
       verificationTier: Number(subsystem.verificationTier ?? config.defaultVerificationTier ?? 1),
-      files: unique(subsystemFiles.get(name) ?? []).sort(),
+      files: unique(subsystemFiles.get(name) ?? []).sort()
     };
   }
 
@@ -167,24 +165,24 @@ export async function buildContextIndex({ rootDir, config, gitState = {} }) {
     source: {
       commit: gitState.commit ?? null,
       branch: gitState.branch ?? null,
-      dirty: Boolean(gitState.dirty),
+      dirty: Boolean(gitState.dirty)
     },
     subsystems,
-    flows: config.flows ?? {},
+    flows: config.flows ?? {}
   };
 }
 
 function taskTokens(task) {
   return unique(
-    String(task ?? '')
+    String(task ?? "")
       .toLowerCase()
       .split(/[^a-z0-9]+/)
-      .filter((token) => token.length >= 3),
+      .filter((token) => token.length >= 3)
   );
 }
 
 function scoreTextForTokens(text, tokens) {
-  const normalized = String(text ?? '').toLowerCase();
+  const normalized = String(text ?? "").toLowerCase();
   return tokens.reduce((score, token) => score + (normalized.includes(token) ? 1 : 0), 0);
 }
 
@@ -193,8 +191,10 @@ function selectRelatedFlows(task, selected, flows, maxFlows = 1) {
   const tokens = taskTokens(task);
   const candidates = Object.entries(flows ?? {})
     .map(([name, flow]) => {
-      const overlap = (flow.subsystems ?? []).filter((subsystem) => selected.includes(subsystem)).length;
-      const textScore = scoreTextForTokens(`${name} ${flow.description ?? ''}`, tokens);
+      const overlap = (flow.subsystems ?? []).filter((subsystem) =>
+        selected.includes(subsystem)
+      ).length;
+      const textScore = scoreTextForTokens(`${name} ${flow.description ?? ""}`, tokens);
       return { name, flow, overlap, score: overlap * 10 + textScore };
     })
     .filter((entry) => entry.overlap > 0);
@@ -213,38 +213,29 @@ function selectLikelyFiles(task, selected, index, relatedFlows, maxFiles = 12) {
   const configuredSecondary = unique(relatedFlows.flatMap((flow) => flow.secondaryPaths ?? []));
   const legacyPreferred = unique(
     relatedFlows.flatMap((flow) =>
-      flow.primaryPaths || flow.secondaryPaths ? [] : (flow.paths ?? []),
-    ),
+      flow.primaryPaths || flow.secondaryPaths ? [] : (flow.paths ?? [])
+    )
   );
-  const preferred = unique([
-    ...configuredPrimary,
-    ...legacyPreferred,
-    ...configuredSecondary,
-  ]);
+  const preferred = unique([...configuredPrimary, ...legacyPreferred, ...configuredSecondary]);
   const tokens = taskTokens(task);
-  const candidates = unique(
-    selected.flatMap((name) => index.subsystems?.[name]?.files ?? []),
-  )
+  const candidates = unique(selected.flatMap((name) => index.subsystems?.[name]?.files ?? []))
     .filter((file) => !preferred.includes(file))
     .map((file) => ({
       file,
-      score: scoreTextForTokens(file, tokens),
+      score: scoreTextForTokens(file, tokens)
     }))
     .sort((left, right) => right.score - left.score || left.file.localeCompare(right.file));
 
   const primaryFiles = unique([...configuredPrimary, ...legacyPreferred]).slice(0, maxFiles);
   const remaining = Math.max(0, maxFiles - primaryFiles.length);
-  const secondaryFiles = unique([
-    ...configuredSecondary,
-    ...candidates.map((entry) => entry.file),
-  ])
+  const secondaryFiles = unique([...configuredSecondary, ...candidates.map((entry) => entry.file)])
     .filter((file) => !primaryFiles.includes(file))
     .slice(0, remaining);
 
   return {
     primaryFiles,
     secondaryFiles,
-    likelyFiles: [...primaryFiles, ...secondaryFiles],
+    likelyFiles: [...primaryFiles, ...secondaryFiles]
   };
 }
 
@@ -268,7 +259,7 @@ export function getRelevantContext(task, index, config, { maxFiles = 8, maxFlows
   return {
     repository: index.repository,
     indexedCommit: index.source?.commit ?? null,
-    task: String(task ?? ''),
+    task: String(task ?? ""),
     subsystems: selected,
     primaryFiles: files.primaryFiles,
     secondaryFiles: files.secondaryFiles,
@@ -278,6 +269,6 @@ export function getRelevantContext(task, index, config, { maxFiles = 8, maxFlows
     verification: unique(verification),
     verificationTier: chooseVerificationTier(selected, config),
     relatedFlows,
-    escalationRequired: shouldEscalateDiscovery({ contextFound: selected.length > 0 }),
+    escalationRequired: shouldEscalateDiscovery({ contextFound: selected.length > 0 })
   };
 }
