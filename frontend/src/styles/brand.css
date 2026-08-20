@@ -1,0 +1,28 @@
+/* Shared Ysabelle brand asset sizing. Loaded after customer.css so the real logo replaces legacy marks. */
+.customer-brand__mark {
+  display: grid;
+  width: 3.1rem;
+  height: 3.1rem;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  box-shadow: 0 8px 20px rgb(98 91 255 / 20%);
+}
+
+.customer-brand__logo {
+  display: block;
+  width: 3.1rem;
+  height: 3.1rem;
+  object-fit: contain;
+}
+
+@media (max-width: 720px) {
+  .customer-brand__mark,
+  .customer-brand__logo {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
