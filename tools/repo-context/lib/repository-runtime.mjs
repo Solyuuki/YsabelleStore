@@ -54,6 +54,23 @@ export async function createRepositoryContextRuntime({ rootDir = process.cwd() }
         refreshedSubsystems: refreshed.refreshedSubsystems ?? [],
       };
     },
+    async ensureFresh() {
+      const status = await runtime.getStatus();
+      if (!status.stale) {
+        return {
+          refreshed: false,
+          mode: 'noop',
+          changedPaths: [],
+          refreshedSubsystems: [],
+        };
+      }
+
+      const refreshed = await runtime.refresh();
+      return {
+        refreshed: true,
+        ...refreshed,
+      };
+    },
     async reportMismatch(details = {}) {
       const summary = String(details.summary ?? '').trim();
       if (!summary) throw new Error('summary is required');
