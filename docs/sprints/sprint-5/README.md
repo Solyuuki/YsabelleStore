@@ -1,6 +1,6 @@
 # Sprint 5 Planning Index
 
-Sprint 5 focuses on reducing Codex token waste and repeated repository discovery while preserving or improving implementation quality. The sprint introduces a coherent repository-knowledge architecture that lets Codex reuse stable system knowledge across tasks and conversations, refresh only changed or uncertain areas, and verify work according to risk.
+Sprint 5 implements a token-efficient, context-aware coding-agent workflow for YsabelleStore while preserving correctness, repository source-of-truth discipline, and risk-appropriate verification.
 
 ## Sprint Metadata
 
@@ -8,76 +8,88 @@ Sprint 5 focuses on reducing Codex token waste and repeated repository discovery
 | --- | --- |
 | Sprint | Sprint 5 |
 | Sprint branch | `sprint/v0.5/sprint-5` |
-| Active sprint config | `config/guardrails.json` = `5` |
-| Primary theme | Token-efficient, context-aware Codex workflow |
-| Quality rule | Token savings must never replace correctness or required behavior |
-| Source of truth | Current repository source and approved project guidance |
+| Active sprint source | `config/guardrails.json` |
+| Primary theme | Persistent repository context + low-repetition implementation workflow |
+| Primary efficiency metric | Tokens per correctly completed task |
+| Quality rule | Token savings never override required behavior, integrity, security, or validation |
+| Repository-side status | Implementation complete; live Codex-host empirical validation pending |
 
-## Sprint 5 Core Objectives
+## What Sprint 5 Added
 
-1. Audit existing repository guidance and identify authoritative sources, duplication, stale material, and overlapping rules.
-2. Reorganize existing guidance into one coherent knowledge system without discarding useful constraints.
-3. Build a compact repository context/index so Codex does not need to rediscover stable architecture on every task.
-4. Add incremental freshness tracking so only changed or uncertain areas are refreshed.
-5. Introduce a lean project-level Codex Skill that enforces context-first, narrow-inspection, low-repetition execution behavior.
-6. Design an MCP-backed persistent context layer so repository knowledge can be reused across separate Codex conversations.
-7. Define verification tiers to avoid repeatedly running expensive full-repository checks during intermediate edits.
-8. Benchmark the new workflow using tokens per correctly completed task, retries, scans, command executions, and requirement satisfaction.
+- canonical current scope/layout/ownership/execution sources;
+- guidance consolidation that removes stale plans from active routing;
+- persistent `.ysabelle-context/` repository memory;
+- deterministic Git freshness tracking;
+- incremental mapped refresh with safe full-refresh fallback;
+- automatic freshness handling during normal context retrieval;
+- primary vs secondary source-file prioritization;
+- project-level `ysabelle-context` Skill;
+- project-scoped repository-context MCP service;
+- context mismatch reporting;
+- local/subsystem/full verification tiers;
+- deterministic routing/context-footprint benchmark tooling;
+- regression coverage integrated into repository verification.
 
-## Planned Architecture
-
-```text
-YsabelleStore
-├── source code and approved project guidance
-├── docs/sprints/sprint-5/
-├── .agents/skills/
-│   └── ysabelle-context/
-│       └── SKILL.md
-├── .ysabelle-context/
-│   ├── persistent repository index
-│   ├── freshness state
-│   └── compact subsystem summaries
-└── tools/repo-context/
-    ├── indexer
-    ├── incremental updater
-    └── MCP context service
-```
-
-The persistent context is a navigation and knowledge cache, not a replacement for the repository. Source code remains authoritative when cached knowledge and implementation disagree.
-
-## Execution Model
+## Normal Task Flow
 
 ```text
-New task / new conversation
+new task / new conversation
         ↓
-Query persistent YsabelleStore context
+query persistent YsabelleStore context
         ↓
-Identify likely subsystem, files, invariants, and guidance
+automatic Git freshness check
         ↓
-Inspect only current relevant source files
+refresh changed context only when safe
         ↓
-Implement the requested behavior
+primary implementation files
         ↓
-Run targeted verification
+secondary dependencies only if needed
         ↓
-Check original acceptance criteria
+implement requested behavior
         ↓
-Run the appropriate final verification tier
+targeted verification
         ↓
-Complete the task and report meaningful context deviations
+acceptance-criteria check
+        ↓
+final verification tier
+        ↓
+done
 ```
 
-Repository-wide discovery is a fallback, not a default. It is allowed when stored knowledge is missing, stale, contradictory, or insufficient to explain an error.
+Repository-wide discovery is a last-resort escalation when refreshed context is missing, contradictory, or insufficient.
 
-## Planning Documents
+## Planning and Evidence Documents
 
 | Document | Purpose |
 | --- | --- |
-| [SPRINT-GOAL.md](SPRINT-GOAL.md) | Defines the Sprint 5 outcome and operating principles |
-| [SPRINT-BACKLOG.md](SPRINT-BACKLOG.md) | Breaks the plan into implementation phases and measurable work items |
-| [DEFINITION-OF-DONE.md](DEFINITION-OF-DONE.md) | Defines completion and quality requirements |
-| [REPOSITORY-CONTEXT-PLAN.md](REPOSITORY-CONTEXT-PLAN.md) | Technical design for persistent context, Skill behavior, MCP, refresh, and benchmarking |
+| [SPRINT-GOAL.md](SPRINT-GOAL.md) | Sprint outcome and operating principles |
+| [SPRINT-BACKLOG.md](SPRINT-BACKLOG.md) | Work-item implementation/status and remaining external validation |
+| [DEFINITION-OF-DONE.md](DEFINITION-OF-DONE.md) | Repository-side vs live-host completion criteria |
+| [REPOSITORY-CONTEXT-PLAN.md](REPOSITORY-CONTEXT-PLAN.md) | Original technical design and rollout plan |
+| [GUIDANCE-SOURCE-OF-TRUTH-AUDIT.md](GUIDANCE-SOURCE-OF-TRUTH-AUDIT.md) | Completed guidance consolidation/source-of-truth audit |
+| [PILOT-BENCHMARKS.md](PILOT-BENCHMARKS.md) | Proxy/pilot evidence and live-host measurement boundary |
+| [`../../PROJECT-SCOPE.md`](../../PROJECT-SCOPE.md) | Canonical current thesis/product scope classification |
 
-## Success Metric
+## Implementation Entry Points
 
-The primary efficiency metric is **tokens per correctly completed task**, not tokens per message or turn. A cheaper task that requires repeated corrections is considered worse than a slightly more expensive task that is completed correctly in one cycle.
+```text
+config/repository-context.json
+.agents/skills/ysabelle-context/
+.codex/config.toml
+tools/repo-context/
+```
+
+Useful commands:
+
+```bash
+npm run repo:context:query -- "<task>" --json
+npm run repo:context:status -- --json
+npm run repo:context:benchmark -- "<task>" --json
+npm run repo:context:test
+```
+
+A routine task should normally start with `query`, not a manual full build.
+
+## Remaining External Evidence
+
+The repository cannot manufacture actual Codex/model usage telemetry. When a compatible coding-agent host becomes available, validate fresh-session Skill/MCP loading and record actual tokens/iterations/retries for the representative pilots in `PILOT-BENCHMARKS.md`.
