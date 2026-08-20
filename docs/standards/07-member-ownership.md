@@ -1,72 +1,54 @@
-# Member Ownership
+# Member Ownership and Cross-Review Rules
 
-Ownership protects the team from accidental overlap and unclear responsibility. Every task must identify the assigned member, affected files, and validation result.
+The canonical module ownership matrix is [`../architecture/08-module-ownership.md`](../architecture/08-module-ownership.md). This standard defines the collaboration workflow around that ownership using the **current** repository layout.
 
-## Ownership Matrix
+Ownership reduces accidental overlap; it does not prevent a coherent cross-layer task from touching multiple modules when the change is required and reviewed.
 
-| Member       | Responsibility                                                                   | Primary Folders                                       |
-| ------------ | -------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| m1 - Abarado | Repository governance, documentation quality, React UI shell, Electron packaging | `.github/`, `docs/`, `app/frontend/`, `app/electron/` |
-| m2 - Ramos   | Express backend, Prisma schema, MySQL migrations, import APIs                    | `app/backend/`, `prisma/`                             |
-| m3 - Vito    | Python SARIMA engine, analytics, recommendation logic, chart validation          | `app/forecasting/`, analytics modules                 |
+## Current Primary Areas
 
-## Shared Responsibility Matrix
+| Member | Primary Areas |
+| --- | --- |
+| m1 - Abarado | Frontend/UI, Electron integration, repository/documentation quality. |
+| m2 - Ramos | Backend/API, Prisma/database integration, migrations/import workflows. |
+| m3 - Vito | SARIMA forecasting, forecast evaluation, recommendation/analytics logic. |
 
-| Area                           | Primary Owner | Required Reviewers                       |
-| ------------------------------ | ------------- | ---------------------------------------- |
-| Recommendation output contract | m3            | m1, m2                                   |
-| API response contract          | m2            | m1 for UI impact, m3 for forecast impact |
-| Import data format             | m2            | m1 for UI import flow                    |
-| Desktop packaging              | m1            | m2 if backend startup changes            |
-| Database schema                | m2            | m3 if forecast data changes              |
-| Documentation standards        | m1            | Affected member                          |
+Refer to `docs/architecture/08-module-ownership.md` for the current detailed review matrix. Current repository paths such as `frontend/`, `backend/`, `database/`, `electron/`, and `forecasting-service/` are authoritative over historical planning paths.
 
-## Required Task Record
+## Cross-Review Expectations
 
-Every task must contain:
+| Change | Review/Coordination |
+| --- | --- |
+| API contract affects UI | Backend owner + frontend reviewer. |
+| Forecast request/output contract changes | Forecasting + backend reviewers; frontend when presentation changes. |
+| Database schema affects forecasting data | Database + forecasting reviewers. |
+| POS/inventory mutation crosses UI/API/database | Review all affected boundaries; preserve transactional stock invariants. |
+| Electron startup affects backend lifecycle | Electron + backend review. |
+| Shared architecture/standards change | Review by all materially affected areas. |
 
-| Field           | Description                                            |
-| --------------- | ------------------------------------------------------ |
-| Task ID         | Unique identifier such as `YSB-M2-API-001`             |
-| Sprint          | Sprint number or version                               |
-| Assigned Member | `m1`, `m2`, or `m3`                                    |
-| Scope           | Clear feature, fix, test, or documentation objective   |
-| Affected Files  | Files or folders expected to change                    |
-| Status          | Not Started, In Progress, Blocked, In Review, Done     |
-| Test Result     | Command output summary or documented manual validation |
-| Notes           | Decisions, risks, or reviewer comments                 |
+## Task Record
 
-## Approval Workflow
+A meaningful implementation task should be traceable through:
 
-| Stage         | Required Action                                |
-| ------------- | ---------------------------------------------- |
-| Task creation | Assign owner and affected files                |
-| Before coding | Owner confirms branch and scope                |
-| Before PR     | Owner updates task artifact and test result    |
-| During review | Reviewer checks ownership and affected files   |
-| Before merge  | Owner confirms no unrelated files were changed |
+- task/sprint identity when applicable;
+- assigned or accountable owner;
+- requested behavior and acceptance criteria;
+- materially affected files/modules;
+- verification result;
+- blocker/risk or architectural decision when one exists.
+
+Do not create documentation churn for trivial edits solely to satisfy a template. Update implementation artifacts when the repository's established guardrails require them.
 
 ## Cross-Ownership Rules
 
-| Scenario                                      | Required Action                      |
-| --------------------------------------------- | ------------------------------------ |
-| m1 edits Prisma schema                        | Must get m2 approval                 |
-| m2 edits React UI shell                       | Must get m1 approval                 |
-| m3 changes API response shape                 | Must get m2 approval and notify m1   |
-| Any member edits shared recommendation output | Must get all affected owner approval |
+- Do not make unrelated changes inside another member's area.
+- A required cross-layer fix may modify another area when the task cannot be completed correctly otherwise; keep the change focused and obtain the normal review before merge.
+- Shared contracts require affected-area awareness because a locally correct edit can still break another layer.
+- The current user/task requirement may authorize implementation work, but it does not waive repository validation or review expectations for merge/release.
 
-## Good vs Bad Examples
+## Completion Check
 
-| Good Example                                                 | Bad Example                                                  |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `m2 updates inventory.service.ts and records API tests`      | `m2 edits frontend table and schema without review`          |
-| `m3 changes forecast output with documented contract review` | `m3 changes response fields without notifying API/UI owners` |
-| `m1 updates docs and PR template in one docs branch`         | `m1 bundles docs, API, and forecasting edits in one PR`      |
-
-## Ownership Checklist
-
-- [ ] Task owner is identified
-- [ ] Affected files are recorded
-- [ ] Shared files have reviewer approval
-- [ ] Tests or validation evidence are attached
-- [ ] No member modified another member's task without permission
+- [ ] The change is scoped to the requested behavior.
+- [ ] Current paths and ownership sources were used.
+- [ ] Shared contracts/invariants were considered.
+- [ ] Required verification evidence exists.
+- [ ] Unrelated modules were not rewritten.
