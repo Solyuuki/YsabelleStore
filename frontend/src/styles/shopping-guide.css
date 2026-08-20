@@ -20,15 +20,22 @@
   font-size: 0.875rem;
   line-height: 1.5;
   box-shadow: 0 24px 65px rgb(16 20 38 / 24%);
-  transition:
-    opacity 150ms ease,
-    transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: opacity 150ms ease;
 }
 
-.ysabelle-guide.is-transitioning {
+.ysabelle-guide.is-transitioning,
+.ysabelle-guide-scrolling .ysabelle-guide.driver-popover,
+.ysabelle-guide-finishing .ysabelle-guide.driver-popover {
   pointer-events: none;
   opacity: 0;
-  transform: translateY(5px) scale(0.985);
+}
+
+.driver-overlay {
+  transition: opacity 180ms ease;
+}
+
+.ysabelle-guide-finishing .driver-overlay {
+  opacity: 0;
 }
 
 .ysabelle-guide .driver-popover-title {
@@ -216,12 +223,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ysabelle-guide.driver-popover,
+  .driver-overlay,
   .ysabelle-guide .driver-popover-footer button {
     transition: none;
-  }
-
-  .ysabelle-guide.is-transitioning {
-    transform: none;
   }
 
   .ysabelle-guide .driver-popover-next-btn:hover,
