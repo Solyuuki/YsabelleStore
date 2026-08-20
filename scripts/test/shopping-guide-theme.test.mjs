@@ -25,6 +25,22 @@ test("shopping guide config uses storefront colors and waits for async product t
   assert.match(source, /popover\.closeButton\.textContent\s*=\s*"Skip"/);
 });
 
+test("shopping guide transitions between distant targets without making the popover chase scrolling", () => {
+  const source = read("frontend/src/hooks/useShoppingGuide.ts");
+
+  assert.match(source, /smoothScroll:\s*false/);
+  assert.match(source, /duration:\s*prefersReducedMotion\s*\?\s*0\s*:\s*520/);
+  assert.match(source, /onNextClick:/);
+  assert.match(source, /onPrevClick:/);
+  assert.match(source, /scrollIntoView\(\{/);
+  assert.match(source, /behavior:\s*prefersReducedMotion\s*\?\s*"auto"\s*:\s*"smooth"/);
+  assert.match(source, /block:\s*"center"/);
+  assert.match(source, /wrapper\.classList\.add\("is-transitioning"\)/);
+  assert.match(source, /requestAnimationFrame/);
+  assert.match(source, /\.home-categories \.home-section-heading/);
+  assert.doesNotMatch(source, /element:\s*'\[data-tour="start-shopping"\]'/);
+});
+
 test("shopping guide popover is self-themed and aligned without customer-app scoped variables", () => {
   const styles = read("frontend/src/styles/shopping-guide.css");
 
@@ -37,4 +53,5 @@ test("shopping guide popover is self-themed and aligned without customer-app sco
   assert.match(styles, /driver-popover-footer[\s\S]*?justify-content:\s*space-between/);
   assert.match(styles, /driver-popover-next-btn[\s\S]*?background:\s*var\(--guide-primary\)/);
   assert.match(styles, /driver-popover-prev-btn[\s\S]*?background:\s*var\(--guide-surface\)/);
+  assert.match(styles, /\.ysabelle-guide\.is-transitioning\s*\{[\s\S]*?opacity:\s*0;/);
 });
