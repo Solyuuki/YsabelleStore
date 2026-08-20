@@ -7,12 +7,12 @@ const LEGACY_PROTOCOLS = new Set(['2024-11-05', '2025-03-26', '2025-06-18', LEGA
 const toolDefinitions = [
   {
     name: 'repo_overview',
-    description: 'Return a compact YsabelleStore repository context overview without scanning source files.',
+    description: 'Return a compact fresh YsabelleStore repository context overview without scanning source files.',
     inputSchema: { type: 'object', additionalProperties: false, properties: {} },
   },
   {
     name: 'find_relevant_context',
-    description: 'Route a task to likely subsystems, files, invariants, guidance, and verification tier.',
+    description: 'Refresh stale context when needed, then route a task to primary files, secondary dependencies, invariants, guidance, and verification tier.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -22,7 +22,7 @@ const toolDefinitions = [
   },
   {
     name: 'get_subsystem',
-    description: 'Return compact stored context for one named subsystem.',
+    description: 'Return fresh compact stored context for one named subsystem.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -32,7 +32,7 @@ const toolDefinitions = [
   },
   {
     name: 'trace_flow',
-    description: 'Return a stored cross-subsystem flow by name.',
+    description: 'Return a fresh stored cross-subsystem flow by name.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -42,12 +42,12 @@ const toolDefinitions = [
   },
   {
     name: 'changed_since_index',
-    description: 'Report Git changes since the persistent context index was built and affected subsystems.',
+    description: 'Report Git changes since the persistent context index was built and affected subsystems without mutating the index.',
     inputSchema: { type: 'object', additionalProperties: false, properties: {} },
   },
   {
     name: 'refresh_context',
-    description: 'Refresh stale or changed repository context using the persistent index runtime.',
+    description: 'Explicitly refresh stale or selected repository context using the persistent index runtime.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -81,7 +81,7 @@ function resultEnvelope(id, result, { modern = true } = {}) {
       ...result,
       _meta: {
         ...(result?._meta ?? {}),
-        'io.modelcontextprotocol/serverInfo': { name: 'ysabelle-repo-context', version: '0.1.0' },
+        'io.modelcontextprotocol/serverInfo': { name: 'ysabelle-repo-context', version: '0.2.0' },
       },
     };
   }
@@ -117,22 +117,43 @@ function compactOverview(runtime) {
   };
 }
 
+async function freshness(runtime) {
+  if (!runtime.ensureFresh) {
+    return {
+      refreshed: false,
+      mode: 'noop',
+      changedPaths: [],
+      refreshedSubsystems: [],
+    };
+  }
+  return runtime.ensureFresh();
+}
+
 async function callTool(name, args, runtime) {
   switch (name) {
-    case 'repo_overview':
-      return compactOverview(runtime);
-    case 'find_relevant_context':
+    case 'repo_overview': {
+      const contextRefresh = await freshness(runtime);
+      return { ...compactOverview(runtime), contextRefresh };
+    }
+    case 'find_relevant_context': {
       if (typeof args?.task !== 'string' || !args.task.trim()) throw new Error('task is required');
-      return getRelevantContext(args.task, runtime.index, runtime.config);
+      const contextRefresh = await freshness(runtime);
+      return {
+        ...getRelevantContext(args.task, runtime.index, runtime.config),
+        contextRefresh,
+      };
+    }
     case 'get_subsystem': {
+      const contextRefresh = await freshness(runtime);
       const subsystem = runtime.index.subsystems?.[args?.name];
       if (!subsystem) throw new Error(`Unknown subsystem: ${String(args?.name ?? '')}`);
-      return { name: args.name, ...subsystem };
+      return { name: args.name, ...subsystem, contextRefresh };
     }
     case 'trace_flow': {
+      const contextRefresh = await freshness(runtime);
       const flow = runtime.index.flows?.[args?.name];
       if (!flow) throw new Error(`Unknown flow: ${String(args?.name ?? '')}`);
-      return { name: args.name, ...flow };
+      return { name: args.name, ...flow, contextRefresh };
     }
     case 'changed_since_index':
       return runtime.getStatus();
@@ -160,7 +181,7 @@ export async function handleMcpRequest(request, runtime) {
         supportedVersions: [MODERN_PROTOCOL],
         capabilities: { tools: {} },
         instructions:
-          'Before exploratory scans, query repository context and freshness first. Open only the returned likely files and direct dependencies. Refresh changed subsystems when stale. Treat current source, schema, migrations, and executable config as authoritative when cached context disagrees. Use repository-wide discovery only as a last-resort escalation.',
+          'Query repository context before exploratory scans. Retrieval tools automatically refresh stale mapped context and safely fall back to a full refresh when changed paths cannot be mapped. Open primary files first, secondary dependencies only when evidence requires them, and treat current source, schema, migrations, and executable configuration as authoritative when cached context disagrees.',
         ttlMs: 60_000,
         cacheScope: 'private',
       });
@@ -174,9 +195,9 @@ export async function handleMcpRequest(request, runtime) {
         {
           protocolVersion,
           capabilities: { tools: { listChanged: false } },
-          serverInfo: { name: 'ysabelle-repo-context', version: '0.1.0' },
+          serverInfo: { name: 'ysabelle-repo-context', version: '0.2.0' },
           instructions:
-            'Before exploratory scans, query repository context and freshness first. Open only the returned likely files and direct dependencies. Refresh changed subsystems when stale. Treat current source, schema, migrations, and executable config as authoritative when cached context disagrees. Use repository-wide discovery only as a last-resort escalation.',
+            'Query repository context before exploratory scans. Retrieval tools automatically refresh stale context. Open primary files first and secondary dependencies only when required. Current source, schema, migrations, and executable configuration remain authoritative.',
         },
         { modern: false },
       );
