@@ -1,8 +1,16 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, type CSSProperties } from "react";
 
 import { AboutStorefrontHandoff } from "@/components/customer/about/AboutStorefrontHandoff";
 import { DiscoverPage } from "@/pages/customer/DiscoverPage";
 import "@/styles/about-storefront-handoff.css";
+
+const storyTheme = {
+  "--story-blue": "#008cff",
+  "--story-indigo": "#625bff",
+  "--story-magenta": "#f43f8c",
+  "--story-navy": "#101426",
+  "--story-violet": "#a83cf0"
+} as CSSProperties;
 
 export function AboutExperiencePage({ navigate }: { navigate: (path: string) => void }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -25,7 +33,7 @@ export function AboutExperiencePage({ navigate }: { navigate: (path: string) => 
   }, []);
 
   return (
-    <div className="about-experience" ref={rootRef}>
+    <div className="about-experience" ref={rootRef} style={storyTheme}>
       <DiscoverPage navigate={navigate} />
       <AboutStorefrontHandoff navigate={navigate} />
     </div>
