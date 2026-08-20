@@ -81,6 +81,10 @@ test("About storefront handoff has isolated responsive styling", () => {
   );
   assert.match(layoutStyles, /\.story-shop__copy\s*\{[\s\S]*?min-width:\s*0;/);
   assert.match(layoutStyles, /\.story-mask__line\s*\{[\s\S]*?white-space:\s*normal;/);
+  assert.match(
+    layoutStyles,
+    /\.story-mask__line--sky\s*\{[\s\S]*?font-style:\s*normal;/
+  );
 });
 
 test("About storefront handoff keeps the narrow headline compact", () => {
