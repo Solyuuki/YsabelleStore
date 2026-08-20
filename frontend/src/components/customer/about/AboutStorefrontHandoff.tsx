@@ -205,12 +205,10 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
           </span>
           <h2 className="story-display-safe" data-handoff-copy>
             <span className="story-mask">
-              <span className="story-mask__line">From Local Roots</span>
+              <span className="story-mask__line">From Local</span>
             </span>
             <span className="story-mask">
-              <span className="story-mask__line story-mask__line--sky">
-                to Smarter Retail.
-              </span>
+              <span className="story-mask__line story-mask__line--sky">to Smart Retail</span>
             </span>
           </h2>
           <p data-handoff-copy>
