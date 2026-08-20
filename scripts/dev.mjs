@@ -46,12 +46,18 @@ process.once("exit", () => {
 try {
   const existingStack = await inspectExistingWebStack();
 
-  if (webOnly && existingStack === "complete") {
-    console.info("YsabelleStore web development stack is already running.");
-    console.info(`Web:      ${displayUrl(runtime.frontendUrl)}`);
-    console.info(`Backend:  ${displayUrl(runtime.apiBaseUrl)}`);
-    console.info("Electron: not started (web-only mode)");
-    cleanupFinished = true;
+  if (existingStack === "complete") {
+    if (webOnly) {
+      console.info("YsabelleStore web development stack is already running.");
+      console.info(`Web:      ${displayUrl(runtime.frontendUrl)}`);
+      console.info(`Backend:  ${displayUrl(runtime.apiBaseUrl)}`);
+      console.info("Electron: not started (web-only mode)");
+      cleanupFinished = true;
+    } else {
+      throw new Error(
+        "YsabelleStore web development stack is already running. Stop npm run dev:web before starting npm run dev."
+      );
+    }
   } else {
     if (existingStack === "partial") {
       throw new Error(
@@ -59,17 +65,13 @@ try {
       );
     }
 
-    if (existingStack === "none") {
-      console.info("Starting YsabelleStore backend...");
-      const backend = startWorkspace("backend");
-      await waitForBackend(backend.process);
+    console.info("Starting YsabelleStore backend...");
+    const backend = startWorkspace("backend");
+    await waitForBackend(backend.process);
 
-      console.info("Starting YsabelleStore web frontend...");
-      const frontend = startWorkspace("frontend");
-      await waitForFrontend(frontend.process);
-    } else if (!webOnly) {
-      console.info("Reusing existing YsabelleStore web development stack.");
-    }
+    console.info("Starting YsabelleStore web frontend...");
+    const frontend = startWorkspace("frontend");
+    await waitForFrontend(frontend.process);
 
     if (!webOnly) {
       console.info("Starting YsabelleStore Electron application...");
@@ -222,12 +224,15 @@ async function inspectExistingWebStack() {
 
   if (backendOwner === "backend" && frontendOwner === "web frontend") return "complete";
 
-  if ((backendOccupied && !backendOwner) || (frontendOccupied && !frontendOwner)) {
-    const conflicts = [];
-    if (backendOccupied && !backendOwner) conflicts.push(`port ${runtime.backendPort}`);
-    if (frontendOccupied && !frontendOwner) conflicts.push(`port ${runtime.frontendPort}`);
+  if (backendOccupied && !backendOwner) {
     throw new Error(
-      `${conflicts.join(" and ")} ${conflicts.length === 1 ? "is" : "are"} occupied by another process. Stop the owning process before starting YsabelleStore; no fallback port will be used.`
+      `Port ${runtime.backendPort} is already occupied by another process. Unable to start the YsabelleStore backend. Stop the owning process or stack first; no fallback port will be used.`
+    );
+  }
+
+  if (frontendOccupied && !frontendOwner) {
+    throw new Error(
+      `Port ${runtime.frontendPort} is already occupied by another process. Unable to start the YsabelleStore web frontend. Stop the owning process or stack first; no fallback port will be used.`
     );
   }
 
