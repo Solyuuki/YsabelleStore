@@ -13,18 +13,20 @@ test("web shell declares the Ysabelle favicon and touch icon", () => {
 });
 
 test("customer and staff brand marks use the canonical logo asset at readable sizes", () => {
+  const app = read("frontend/src/app/CustomerApp.tsx");
   const header = read("frontend/src/components/customer/CustomerHeader.tsx");
   const footer = read("frontend/src/components/customer/CustomerFooter.tsx");
   const sidebar = read("frontend/src/components/app/AppSidebar.tsx");
-  const styles = read("frontend/src/styles/customer.css");
+  const styles = read("frontend/src/styles/brand.css");
 
+  assert.match(app, /import "@\/styles\/brand\.css";/);
   assert.match(header, /src="\/brand\/ysabelle-logo\.png"/);
   assert.match(footer, /src="\/brand\/ysabelle-logo\.png"/);
   assert.match(sidebar, /src="\/brand\/ysabelle-logo\.png"/);
   assert.doesNotMatch(header, /<Store aria-hidden="true" size=\{22\}/);
   assert.doesNotMatch(footer, /<Store aria-hidden="true" size=\{22\}/);
   assert.doesNotMatch(sidebar, />\s*YS\s*</);
-  assert.match(styles, /\.customer-brand__logo[\s\S]*?width:\s*3(?:\.1)?rem/);
+  assert.match(styles, /\.customer-brand__logo[\s\S]*?width:\s*3\.1rem/);
 });
 
 test("Electron uses explicit runtime and packaged Windows icons", () => {
@@ -33,9 +35,8 @@ test("Electron uses explicit runtime and packaged Windows icons", () => {
   const paths = read("electron/src/config/paths.ts");
 
   assert.match(builder, /icon:\s*"build\/icon\.ico"/);
-  assert.match(builder, /from:\s*"build\/icon\.png"[\s\S]*?to:\s*"brand\/icon\.png"/);
   assert.match(windowSource, /icon:\s*getWindowIconPath\(app\.isPackaged\)/);
   assert.match(paths, /export function getWindowIconPath\(packaged:\s*boolean\)/);
-  assert.match(paths, /brand",\s*"icon\.png"/);
-  assert.match(paths, /build",\s*"icon\.png"/);
+  assert.match(paths, /frontend",\s*"brand",\s*"ysabelle-logo\.png"/);
+  assert.match(paths, /frontend\/public\/brand\/ysabelle-logo\.png/);
 });
