@@ -1,8 +1,5 @@
-:root {
-  --ys-brand-logo: url("/brand/ysabelle-logo-v2.png");
-}
-
-/* Shared Ysabelle branding. Loaded after customer.css so real logo assets win over legacy glyphs. */
+/* Shared Ysabelle branding. The real PNG is used where it can report load failures;
+   story-only identity glyphs stay vector-based so missing static assets never leave blanks. */
 .customer-brand__mark {
   display: grid;
   width: 3.4rem;
@@ -27,7 +24,7 @@
   object-position: center;
 }
 
-/* The About/Discover welcome scene is a brand moment, not a generic storefront glyph. */
+/* The About/Discover story marks remain visible even when /public/brand is unavailable. */
 .story-welcome__mark {
   box-sizing: border-box;
   overflow: hidden;
@@ -39,42 +36,27 @@
 }
 
 .story-welcome__mark > svg {
-  display: none;
-}
-
-.story-welcome__mark::before {
   display: block;
-  width: 100%;
-  height: 100%;
-  background-image: var(--ys-brand-logo);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  content: "";
+  width: 62%;
+  height: 62%;
+  color: #625bff;
 }
 
-/* Replace only the identity glyph; functional search, cart, package, and status icons remain unchanged. */
 .story-live-store__bar > span:first-child {
   align-items: center;
 }
 
 .story-live-store__bar > span:first-child > svg:first-child {
-  display: none;
-}
-
-.story-live-store__bar > span:first-child::before {
   width: 2.5rem;
   height: 2.5rem;
   flex: none;
+  box-sizing: border-box;
+  padding: 0.52rem;
   border: 1px solid rgb(98 91 255 / 14%);
   border-radius: 50%;
-  background-color: #fff;
-  background-image: var(--ys-brand-logo);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
+  background: #fff;
+  color: #625bff;
   box-shadow: 0 7px 18px rgb(98 91 255 / 16%);
-  content: "";
 }
 
 @media (max-width: 720px) {
