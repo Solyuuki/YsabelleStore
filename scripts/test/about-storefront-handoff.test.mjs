@@ -44,6 +44,15 @@ test("About storefront handoff closes the story with local-to-smart retail copy"
   assert.match(source, /Pickup ready/);
 });
 
+test("About storefront handoff keeps one primary catalog CTA", () => {
+  const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
+
+  assert.equal(source.match(/story-shop__primary-action/g)?.length, 1);
+  assert.equal(source.match(/Shop the live catalog/g)?.length, 1);
+  assert.doesNotMatch(source, /Open catalog/);
+  assert.match(source, /Retry connection/);
+});
+
 test("About wrapper replaces only the legacy About ending", () => {
   const source = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
 
@@ -57,9 +66,17 @@ test("About wrapper replaces only the legacy About ending", () => {
 test("About storefront handoff has isolated responsive styling", () => {
   const page = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
   const styles = read("frontend/src/styles/about-storefront-handoff.css");
+  const layoutStyles = read("frontend/src/styles/about-storefront-handoff-layout.css");
 
   assert.match(page, /about-storefront-handoff\.css/);
+  assert.match(page, /about-storefront-handoff-layout\.css/);
   assert.match(styles, /\.story-shop\.story-shop--refined/);
   assert.match(styles, /@media \(max-width: 840px\)/);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(
+    layoutStyles,
+    /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(28rem,\s*34rem\)/
+  );
+  assert.match(layoutStyles, /\.story-shop__copy\s*\{[\s\S]*?min-width:\s*0;/);
+  assert.match(layoutStyles, /\.story-mask__line\s*\{[\s\S]*?white-space:\s*normal;/);
 });
