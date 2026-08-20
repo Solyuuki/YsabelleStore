@@ -1,212 +1,96 @@
-# Development Execution Framework for YsabelleStore
+# YsabelleStore Golden Rules
 
-This document defines the mandatory execution standards, quality requirements, ownership boundaries, validation rules, and delivery expectations for all contributors working on the YsabelleStore repository.
+This document is the compact cross-cutting execution policy for repository work. It intentionally does **not** repeat every frontend, API, database, security, testing, forecasting, or deployment rule. Use it to choose the right authoritative source, then load only the domain guidance needed for the task.
 
-All implementation changes must comply with these standards before acceptance.
+## Source Precedence
 
-## Critical Rules Table
+When guidance conflicts:
 
-| Rule                                                           | Priority | Enforcement                                          |
-| -------------------------------------------------------------- | -------- | ---------------------------------------------------- |
-| 100% follow project standards                                  | Critical | Reject PR if standards are ignored                   |
-| Never break existing functionality                             | Critical | Validate affected flows before completion            |
-| Never destabilize the codebase                                 | Critical | Keep changes focused and reversible                  |
-| Never rewrite unrelated modules                                | Critical | Reject unrelated rewrites                            |
-| Never modify another member's assigned task without permission | Critical | Require owner approval                               |
-| No bundle coding                                               | Critical | One task per focused change                          |
-| No bundle fixes                                                | Critical | Fix only the requested or discovered blocking issue  |
-| Apply targeted modular changes only                            | High     | Prefer small files and clear boundaries              |
-| Keep files maintainable                                        | High     | Split mixed responsibilities                         |
-| Prefer focused modules                                         | High     | Avoid broad catch-all files                          |
-| Avoid giant files                                              | High     | Refactor when file purpose becomes unclear           |
-| Fix bugs completely                                            | High     | Address root cause and validation                    |
-| Use Rubber Duck Method for unknown bugs                        | High     | Explain observed behavior, expectation, and evidence |
-| Find root cause first                                          | Critical | Do not patch symptoms blindly                        |
-| Avoid assumptions                                              | High     | Inspect code and docs before editing                 |
-| Validate implementation before completion                      | Critical | Run available checks and report results              |
-| Production-Company-Enterprise-Grade-Level quality only         | Critical | Treat thesis output as evaluator-facing              |
-| Target 10/10 quality                                           | High     | Prefer polished, consistent, reviewable work         |
+1. current user/task requirement;
+2. current source code, schema, migrations, tests, and executable configuration for implemented behavior;
+3. [`../PROJECT-SCOPE.md`](../PROJECT-SCOPE.md) for current scope classification;
+4. current subsystem architecture/contracts;
+5. active sprint planning/status;
+6. historical sprint records and superseded plans.
 
-## Development Workflow
+Never force current code to match a stale lower-precedence document.
 
-| Stage      | Required Behavior                                              |
-| ---------- | -------------------------------------------------------------- |
-| Understand | Read the relevant standard, owner artifact, and affected files |
-| Scope      | Identify exact files and expected behavior                     |
-| Implement  | Make targeted modular changes                                  |
-| Validate   | Run available checks or document why unavailable               |
-| Report     | Provide summary, tests, risks, and next step                   |
+## Global Engineering Rules
 
-## Execution Capability Framework
+- Complete the requested behavior; do not stop at a partial implementation when the remaining work is normal and reversible.
+- Preserve every explicit acceptance criterion.
+- Keep changes focused; do not bundle unrelated refactors or speculative cleanup.
+- Diagnose root causes instead of patching symptoms blindly.
+- Preserve existing behavior unless the task explicitly changes it.
+- Keep boundaries clear: UI -> API/service -> persistence; React must not directly access Prisma/MySQL.
+- Preserve inventory/data integrity and transactionality for stock/sales operations.
+- Validate inputs and avoid exposing secrets or sensitive internal details.
+- Keep SARIMA responsible for demand forecasting, not expiration-date prediction.
+- Prefer readable, maintainable modules over giant mixed-responsibility files.
+- Use current repository paths rather than historical planned layouts.
 
-This framework defines the required execution capabilities for development assistants, automation tools, and contributors working on YsabelleStore. Apply the capability that matches the task type before changing files or reporting completion.
+## Context-First Agent Workflow
 
-## Execution Capabilities
+For coding-agent work inside YsabelleStore:
 
-| Capability                                               | When to Apply                                                                                                                                                                   | Required Execution Behavior                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Production-Company-Enterprise-Grade-Level Implementation | Creating full features<br>Setting up modules<br>Completing assigned tasks<br>Building project foundations<br>Updating core project workflows                                    | Complete the task fully<br>Avoid partial implementation<br>Avoid shortcuts<br>Avoid temporary fixes<br>Maintain professional code and documentation quality<br>Validate before reporting completion<br>Respect all repository standards                                                                                                                                                                                                                   |
-| UI Engineering Execution                                 | Creating frontend screens<br>Building dashboard pages<br>Designing layouts<br>Creating reusable UI components<br>Improving user interface consistency                           | Use React, TypeScript, Tailwind CSS, and shadcn/ui<br>Use free UI references only as inspiration<br>Do not copy paid, proprietary, or restricted templates<br>Prefer clean dashboard layouts<br>Use reusable components<br>Keep spacing, typography, forms, tables, dialogs, badges, alerts, sidebars, and cards consistent<br>Prioritize accessible, simple, professional, thesis-ready UI                                                               |
-| Frontend Engineering Execution                           | Working on React features<br>Creating frontend logic<br>Connecting UI to backend APIs<br>Managing forms, validation, state, and client-side behavior                            | Use strict TypeScript<br>Create modular components<br>Separate UI, hooks, services, validation, and state logic<br>Avoid duplicated logic<br>Avoid giant files<br>Validate forms using proper validation patterns<br>Keep API calls inside service modules, not raw UI components<br>Keep frontend code maintainable and predictable                                                                                                                      |
-| Backend Engineering Execution                            | Creating Express routes<br>Creating API endpoints<br>Building business logic<br>Handling authentication<br>Processing inventory logic<br>Communicating with forecasting service | Separate routes, controllers, services, validators, and middleware<br>Do not place business logic directly inside route files<br>Validate all inputs<br>Handle errors consistently<br>Return predictable API responses<br>Avoid hardcoded credentials<br>Keep backend logic modular and testable<br>Keep business rules isolated from transport logic                                                                                                     |
-| Database and Prisma Execution                            | Creating Prisma models<br>Updating schema<br>Creating migrations<br>Working with MySQL<br>Creating database relations                                                           | Use safe Prisma schema changes<br>Respect existing migrations<br>Use clear model names<br>Use consistent database naming<br>Define correct relationships<br>Avoid destructive schema changes unless explicitly approved<br>Validate schema and migrations before completion<br>Keep database structure aligned with inventory, sales, batch, and forecasting data needs                                                                                   |
-| SARIMA Forecasting Execution                             | Working with Python forecasting<br>Creating demand forecasting logic<br>Building forecast-driven recommendations<br>Connecting forecast output to inventory recommendations     | Keep SARIMA focused on seasonal demand forecasting<br>Use historical sales data as the primary forecasting input<br>Do not use SARIMA directly to predict expiration dates<br>Compute expiry risk using current stock, expiration date, and forecasted demand<br>Keep forecasting service separate from backend business logic<br>Validate forecast outputs before using them in recommendations<br>Keep forecasting logic explainable for thesis defense |
-| Electron Desktop Execution                               | Working on desktop app setup<br>Creating Electron main process<br>Creating preload scripts<br>Connecting renderer and backend<br>Preparing desktop packaging                    | Separate main process, preload, and renderer responsibilities<br>Use secure IPC patterns<br>Do not expose unsafe Node APIs to the frontend<br>Keep desktop packaging clean<br>Validate development and production behavior<br>Keep Windows `.exe` deployment in mind                                                                                                                                                                                      |
-| Quality Assurance and Guardrail Execution                | Completing any task<br>Preparing pull requests<br>Fixing bugs<br>Updating core modules<br>Changing workflows or standards                                                       | Run or document relevant checks<br>Verify build<br>Verify lint<br>Verify development run when applicable<br>Verify Prisma validation when applicable<br>Verify migration status when applicable<br>Do not claim success if checks were not performed<br>Clearly state when a check is not applicable                                                                                                                                                      |
-| GitHub Pull Request Discipline Execution                 | Creating branches<br>Preparing commits<br>Preparing pull requests<br>Reviewing changes<br>Merging work                                                                          | Follow branch format: `member/version/type/task-name`<br>Never commit directly to `main`<br>Keep pull requests small and focused<br>Document affected files<br>Respect member ownership<br>Do not include unrelated changes<br>Require review before merge<br>Prevent merge collisions through proper synchronization                                                                                                                                     |
-| Rubber Duck Debugging Execution                          | Bug is unclear<br>Error source is unknown<br>Previous fix failed<br>Multiple modules may be affected<br>The system behavior does not match expected output                      | Analyze before fixing<br>Scan affected files<br>Identify root cause<br>Identify blockers<br>Identify affected modules<br>Report findings before applying fixes<br>Apply targeted fixes only<br>Do not guess<br>Do not bundle unrelated fixes                                                                                                                                                                                                              |
-| Documentation and Reporting Execution                    | Completing any task<br>Updating documentation<br>Creating standards<br>Preparing implementation reports<br>Preparing sprint progress reports                                    | Use formal tables<br>Avoid vague reports<br>Document changed files<br>Document validations<br>Document issues found<br>Document next recommended step<br>Keep reports readable and professional                                                                                                                                                                                                                                                           |
-| Repository Governance Execution                          | Updating standards<br>Updating workflow rules<br>Updating ownership rules<br>Creating foundational project documents<br>Preparing team-level development rules                  | Keep standards consistent<br>Avoid duplicate rules<br>Cross-reference related standards when needed<br>Protect repository maintainability<br>Keep documentation easy for beginner developers to follow<br>Ensure rules support fast development without sacrificing quality                                                                                                                                                                               |
+1. Turn the request into a compact acceptance checklist.
+2. Query persistent repository context before broad discovery.
+3. Let task retrieval refresh stale context automatically; use `status` when a diagnostic freshness report is needed.
+4. Open **primary implementation files first**. Open secondary dependencies only when the task or evidence requires them.
+5. Follow direct callers/imports only as needed; do not reread understood files without new evidence.
+6. Widen to subsystem discovery only when cached context is insufficient, contradictory, stale after refresh, or an error exposes an undocumented dependency.
+7. Use repository-wide discovery only as a last resort.
+8. Record meaningful context mismatches instead of silently keeping stale cache.
 
-## Execution Activation Matrix
+Generated `.ysabelle-context/` data is a navigation cache, never the implementation source of truth.
 
-| Task Type                   | Required Execution Capabilities                                                                                                 |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Full feature implementation | Production Implementation, Frontend/Backend/Database Execution as needed, QA Guardrails, PR Discipline, Documentation Reporting |
-| UI screen creation          | UI Engineering, Frontend Engineering, QA Guardrails, Documentation Reporting                                                    |
-| Frontend feature work       | Frontend Engineering, QA Guardrails, PR Discipline, Documentation Reporting                                                     |
-| Backend API creation        | Backend Engineering, Database and Prisma Execution, QA Guardrails, Documentation Reporting                                      |
-| Database schema update      | Database and Prisma Execution, QA Guardrails, PR Discipline, Documentation Reporting                                            |
-| Forecasting module work     | SARIMA Forecasting, Backend Engineering, QA Guardrails, Documentation Reporting                                                 |
-| Electron desktop work       | Electron Desktop, Frontend Engineering, QA Guardrails, Documentation Reporting                                                  |
-| Unknown bug fixing          | Rubber Duck Debugging, QA Guardrails, Documentation Reporting                                                                   |
-| Documentation update        | Documentation Reporting, Repository Governance, QA Guardrails                                                                   |
-| Pull request preparation    | GitHub PR Discipline, QA Guardrails, Documentation Reporting                                                                    |
-| Merge conflict resolution   | GitHub PR Discipline, Rubber Duck Debugging, QA Guardrails, Documentation Reporting                                             |
+## Verification Tiers
 
-## Good vs Bad Execution Examples
+| Tier | Use | Typical Checks |
+| --- | --- | --- |
+| 1 - Local | Isolated low-risk implementation/UI/tooling edit | Targeted test plus affected typecheck/lint/build as applicable. |
+| 2 - Subsystem | Multi-file change within one subsystem or contract boundary | Relevant test group, affected workspace build/typecheck, integration/API checks. |
+| 3 - Full/high risk | Inventory/POS integrity, auth/security, schema/database, release/packaging, cross-cutting high-risk behavior | Full required repository verification plus relevant specialized checks. |
 
-| Scenario           | Good Execution Behavior                                      | Bad Execution Behavior                           |
-| ------------------ | ------------------------------------------------------------ | ------------------------------------------------ |
-| UI task            | Creates reusable shadcn/ui components with consistent layout | Creates one giant messy page                     |
-| Frontend task      | Separates components, hooks, services, and validation        | Mixes API calls, UI, and state in one file       |
-| Backend task       | Uses route-controller-service structure                      | Puts all business logic in one route file        |
-| Database task      | Validates Prisma schema and migration                        | Changes schema destructively without checking    |
-| Forecasting task   | Uses SARIMA for demand forecasting only                      | Claims SARIMA directly predicts expiration dates |
-| Bug fix            | Finds root cause first                                       | Randomly changes files                           |
-| PR task            | Lists affected files and checks                              | Says done without validation                     |
-| Documentation task | Uses tables, checklists, and clear rules                     | Creates long vague paragraphs                    |
+During iteration, run the smallest sufficient check. Near completion, run the final tier appropriate to the risk. Do not rerun an expensive successful check when no relevant code changed afterward.
 
-## Mandatory Task Completion Report Template
+## Domain Router
 
-| Section                        | Status                | Details                                         |
-| ------------------------------ | --------------------- | ----------------------------------------------- |
-| Task Scope                     | Completed/Failed      | Summary                                         |
-| Execution Capabilities Applied | Completed/Failed      | List of capabilities used                       |
-| Files Changed                  | Completed/Failed      | List of affected files                          |
-| Validation                     | Passed/Failed/Not Run | Build, lint, dev, Prisma, migration checks      |
-| Bugs Found                     | None/List             | Summary                                         |
-| Ownership Check                | Passed/Failed         | Confirm no unrelated member files were modified |
-| Guardrails                     | Passed/Failed         | Summary                                         |
-| Issues Found                   | None/List             | Summary                                         |
-| Next Recommended Step          | Pending               | Recommendation                                  |
+| Task Area | Primary Guidance |
+| --- | --- |
+| Current project/thesis scope | `docs/PROJECT-SCOPE.md` |
+| Repository layout | `docs/architecture/03-folder-architecture.md` |
+| Module ownership/review | `docs/architecture/08-module-ownership.md` + `docs/standards/07-member-ownership.md` |
+| General coding | `docs/standards/06-coding-standards.md` |
+| API/contracts | `docs/api/README.md` and task-specific API contract |
+| Database/Prisma | `database/docs/DATABASE-FOUNDATION.md`, migration guide, current schema |
+| Security/auth | `docs/security/` relevant topic |
+| Testing/local verification | `docs/standards/LOCAL-GUARDRAILS.md`, `testing/` relevant topic |
+| CI/merge quality | `docs/standards/CI-GUARDRAILS.md` |
+| Forecasting | `docs/architecture/06-forecasting-architecture.md`, forecasting contract/tests |
+| Electron/runtime | `docs/architecture/07-electron-architecture.md`, `electron/README.md` |
+| Deployment/release | `deployment/` relevant guide |
+| Repository context/MCP | `tools/repo-context/README.md`, Sprint 5 context plan |
 
-## Mandatory Guardrail Checklist
+Do not load every row for every task.
 
-- [ ] Task scope is fully understood
-- [ ] Correct execution capabilities were applied
-- [ ] Repository standards were followed
-- [ ] Member ownership was respected
-- [ ] No unrelated files were modified
-- [ ] No bundle coding was performed
-- [ ] No bundle fixes were performed
-- [ ] No temporary implementation was added
-- [ ] Build check was performed or marked not applicable
-- [ ] Lint check was performed or marked not applicable
-- [ ] Development run was performed or marked not applicable
-- [ ] Prisma validation was performed or marked not applicable
-- [ ] Migration check was performed or marked not applicable
-- [ ] Implementation artifacts were updated when task work changed code, schema, workflow, validation, or deployment status
-- [ ] Final report was provided
+## Continuation and Clarification
 
-## Implementation Artifact Maintenance Rule
+Proceed through normal reversible inspection, implementation, fixes caused by the change, and verification without repeatedly asking whether to continue.
 
-Every completed task must synchronize implementation evidence and member artifacts before it is reported complete.
+Clarify only when a material requirement cannot be safely inferred, credentials/secrets are needed, the next action is destructive/irreversible, an external side effect needs explicit authorization, or materially different choices produce different required user-facing behavior.
 
-| Artifact              | Update Required When                                                                                 |
-| --------------------- | ---------------------------------------------------------------------------------------------------- |
-| `DAILY-NOTES.md`      | Any implementation, validation, blocker, or merge-relevant work occurs                               |
-| `TASKS.md`            | A task changes status, scope, evidence, or validation result                                         |
-| `SPRINT-PROGRESS.md`  | Sprint completion status changes                                                                     |
-| `TESTING-REPORTS.md`  | A validation command, manual review, failure, or skipped check occurs                                |
-| `DEPLOYMENT-NOTES.md` | Runtime, packaging, migration, environment, or release readiness changes                             |
-| `DECISIONS.md`        | An engineering choice affects architecture, ownership, migration, routing, deployment, or validation |
-| `BLOCKERS.md`         | A blocker, risk, merge conflict, validation failure, or evidence gap is found or resolved            |
-| `README.md`           | Member responsibilities, deliverables, or artifact index changes                                     |
+A failing test caused by the current change, a newly discovered relevant file, or the normal next implementation step is not itself a reason to stop.
 
-A task is not complete until code, schema, migration, validation, and documentation evidence are synchronized.
+## Completion Contract
 
-## Migration Naming Rule
+Do not report a task as complete until:
 
-Future database migrations must follow the repository sequential naming standard:
+- requested behavior exists;
+- no explicit requirement is knowingly omitted;
+- relevant domain invariants hold;
+- appropriate fresh verification passes, or a genuine external blocker is clearly reported;
+- no known issue introduced by the change remains unresolved;
+- documentation/context is updated when architecture or source-of-truth routing changed.
 
-```text
-<sequence>_<task>
-```
-
-Before creating a migration, determine the highest existing four-digit sequence under `database/migrations/`, increment it by one, and never duplicate a number. Use snake_case task names such as `0002_add_products`. Never use timestamp-based folder names, and never rename an applied migration after the repository is shared.
-
-## Dependency Security Validation
-
-| Validation Item      | Requirement                                                                              |
-| -------------------- | ---------------------------------------------------------------------------------------- |
-| npm audit            | Must pass without unresolved high or critical vulnerabilities                            |
-| Vulnerability Target | 0 High Vulnerabilities                                                                   |
-| Vulnerability Target | 0 Critical Vulnerabilities                                                               |
-| Dependency Updates   | Required when security fixes are available                                               |
-| Production Readiness | Repository must not be considered release-ready with unresolved security vulnerabilities |
-
-A successful installation is not enough.
-
-The following commands are part of the mandatory validation process:
-
-```bash
-npm install
-npm audit
-npm run lint
-npm run build
-```
-
-The repository is considered validation-green only when:
-
-- Build passes
-- Lint passes
-- Type checks pass
-- Prisma validation passes, if applicable
-- No high vulnerabilities exist
-- No critical vulnerabilities exist
-
-## Rubber Duck Method
-
-| Question                           | Required Answer                                 |
-| ---------------------------------- | ----------------------------------------------- |
-| What is happening?                 | State observed failure or request clearly       |
-| What should happen?                | State expected behavior                         |
-| Where is the likely source?        | Identify file, module, or layer                 |
-| What evidence supports it?         | Mention logs, tests, code path, or reproduction |
-| What is the smallest complete fix? | Define focused correction                       |
-
-## Implementation Completion Checklist
-
-- [ ] Build Passed
-- [ ] Lint Passed
-- [ ] Ownership Respected
-- [ ] Scope Respected
-- [ ] No Bundle Fix
-- [ ] No Unrelated Changes
-- [ ] Validation Complete
-- [ ] Security Validation Complete
-- [ ] 0 High Vulnerabilities
-- [ ] 0 Critical Vulnerabilities
-- [ ] Report Generated
-
-## Mandatory Final Report Template
-
-| Section               | Status           | Details                             |
-| --------------------- | ---------------- | ----------------------------------- |
-| Summary               | Completed/Failed | Brief outcome                       |
-| Files Changed         | Completed/Failed | List affected files or folders      |
-| Standards Followed    | Completed/Failed | Naming, coding, ownership, workflow |
-| Validation            | Completed/Failed | Commands run and results            |
-| Issues Found          | None/List        | Risks, blockers, or failures        |
-| Next Recommended Step | Pending          | Next task or review action          |
+Final reports should be concise: outcome, meaningful files/areas changed, verification evidence, and any remaining external blocker or risk.
