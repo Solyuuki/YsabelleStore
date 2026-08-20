@@ -1,5 +1,4 @@
 import { driver } from "driver.js";
-import "driver.js/dist/driver.css";
 import { useEffect } from "react";
 
 const GUIDE_PENDING_KEY = "ysabelle:shopping-guide:pending";
@@ -20,9 +19,9 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
       showButtons: ["previous", "next", "close"],
       skipMissingElement: true,
       smoothScroll: true,
-      waitForElement: 1_000,
-      overlayColor: "#052e26",
-      overlayOpacity: 0.58,
+      waitForElement: 4_000,
+      overlayColor: "#101426",
+      overlayOpacity: 0.52,
       popoverClass: "ysabelle-guide",
       onDestroyed: () => localStorage.setItem(GUIDE_COMPLETE_KEY, "true"),
       onDoneClick: () => {
