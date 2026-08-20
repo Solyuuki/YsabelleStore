@@ -23,3 +23,9 @@ export function getRendererDistIndexPath(): string {
 export function getPackagedRendererIndexPath(): string {
   return path.join(process.resourcesPath, "frontend", "index.html");
 }
+
+export function getWindowIconPath(packaged: boolean): string {
+  return packaged
+    ? path.join(process.resourcesPath, "frontend", "brand", "ysabelle-logo.png")
+    : path.join(configDirectory, "../../../frontend/public/brand/ysabelle-logo.png");
+}
