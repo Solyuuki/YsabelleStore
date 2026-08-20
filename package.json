@@ -3,11 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Desktop inventory recommender system for Ysabelle's Store.",
-  "workspaces": [
-    "frontend",
-    "backend",
-    "electron"
-  ],
+  "workspaces": ["frontend", "backend", "electron"],
   "scripts": {
     "install:all": "npm install",
     "dev": "node --env-file=.env scripts/dev.mjs",
@@ -31,6 +27,14 @@
     "inventory:reconcile": "tsx scripts/inventory-reconcile.mjs",
     "prisma:clean": "node scripts/prisma-clean.mjs",
     "test:guardrails": "node --test scripts/test/guardrails.test.mjs",
+    "repo:context:build": "node tools/repo-context/cli.mjs build",
+    "repo:context:status": "node tools/repo-context/cli.mjs status",
+    "repo:context:overview": "node tools/repo-context/cli.mjs overview",
+    "repo:context:query": "node tools/repo-context/cli.mjs query",
+    "repo:context:refresh": "node tools/repo-context/cli.mjs refresh",
+    "repo:context:benchmark": "node tools/repo-context/cli.mjs benchmark",
+    "repo:context:mcp": "node tools/repo-context/mcp-server.mjs",
+    "repo:context:test": "node --test tools/repo-context/test/*.test.mjs",
     "security:audit": "node scripts/security-audit.mjs",
     "security:audit:production": "node scripts/security-audit.mjs --production",
     "artifact-update": "node scripts/artifact-update.mjs",
@@ -70,21 +74,7 @@
     "customer:header-route:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/customer-header-route-test.ts",
     "storefront:shop-filter:test": "node --env-file=.env scripts/storefront-shop-filter-test.mjs"
   },
-  "dependencies": {
-    "@prisma/client": "^6.2.1"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.18.0",
-    "eslint": "^9.18.0",
-    "globals": "^15.14.0",
-    "husky": "^9.1.7",
-    "prettier": "^3.4.2",
-    "prisma": "^6.2.1",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
-  },
-  "engines": {
-    "node": ">=20.11.0",
-    "npm": ">=10.0.0"
-  }
+  "dependencies": {"@prisma/client": "^6.2.1"},
+  "devDependencies": {"@eslint/js":"^9.18.0","eslint":"^9.18.0","globals":"^15.14.0","husky":"^9.1.7","prettier":"^3.4.2","prisma":"^6.2.1","typescript":"^5.7.3","typescript-eslint":"^8.20.0"},
+  "engines": {"node": ">=20.11.0", "npm": ">=10.0.0"}
 }

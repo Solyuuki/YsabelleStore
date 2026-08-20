@@ -1,0 +1,9 @@
+[mcp_servers.ysabelle-repo-context]
+command = "node"
+args = ["tools/repo-context/mcp-server.mjs"]
+cwd = "."
+enabled = true
+required = false
+startup_timeout_sec = 10
+tool_timeout_sec = 30
+default_tools_approval_mode = "auto"
