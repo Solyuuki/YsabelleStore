@@ -8,7 +8,7 @@ Reduce repeated Codex repository discovery and unnecessary agent loops while imp
 
 | ID | Work Item | Outcome | Status |
 | --- | --- | --- | --- |
-| S5-01 | Guidance and source-of-truth audit | Classify existing guidance as KEEP, INDEX, MERGE, MOVE, or RETIRE | Planned |
+| S5-01 | Guidance and source-of-truth audit | Classify existing guidance as KEEP, INDEX, MERGE, MOVE, or RETIRE | In Progress |
 | S5-02 | Canonical repository knowledge map | Record authoritative architecture, subsystem, guidance, test, and verification locations | Planned |
 | S5-03 | Stable vs dynamic context model | Separate reusable architecture/invariants from change-sensitive implementation details | Planned |
 | S5-04 | Persistent repository index | Store compact cross-task repository knowledge without duplicating full source code | Planned |
