@@ -1,13 +1,48 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import http from "node:http";
+import net from "node:net";
 import { test } from "node:test";
 
 import { resolveDevelopmentRuntime } from "../lib/runtime-config.mjs";
 
-const runtime = resolveDevelopmentRuntime();
+async function createIsolatedRuntime() {
+  const [backendPort, frontendPort] = await reserveDistinctPorts();
+  const environment = {
+    ...process.env,
+    PORT: String(backendPort),
+    VITE_API_BASE_URL: `http://127.0.0.1:${backendPort}`,
+    FRONTEND_URL: `http://127.0.0.1:${frontendPort}`,
+    ELECTRON_RENDERER_DEV_URL: `http://127.0.0.1:${frontendPort}`,
+    npm_execpath: process.env.npm_execpath ?? process.execPath
+  };
 
-async function startExistingWebStack() {
+  return {
+    environment,
+    runtime: resolveDevelopmentRuntime(environment)
+  };
+}
+
+async function reserveDistinctPorts() {
+  const backendProbe = net.createServer();
+  const frontendProbe = net.createServer();
+
+  try {
+    await Promise.all([listen(backendProbe, 0), listen(frontendProbe, 0)]);
+    const backendAddress = backendProbe.address();
+    const frontendAddress = frontendProbe.address();
+
+    assert.ok(backendAddress && typeof backendAddress === "object");
+    assert.ok(frontendAddress && typeof frontendAddress === "object");
+    assert.notEqual(backendAddress.port, frontendAddress.port);
+
+    return [backendAddress.port, frontendAddress.port];
+  } finally {
+    await Promise.all([close(backendProbe), close(frontendProbe)]);
+  }
+}
+
+async function startExistingWebStack(runtime) {
   const backend = http.createServer((request, response) => {
     if (request.url === "/api/health") {
       response.writeHead(200, { "content-type": "application/json" });
@@ -23,17 +58,20 @@ async function startExistingWebStack() {
     response.end('<!doctype html><html><body><div id="root">YsabelleStore</div></body></html>');
   });
 
-  await Promise.all([listen(backend, runtime.backendPort), listen(frontend, runtime.frontendPort)]);
+  await Promise.all([
+    listen(backend, runtime.backendPort),
+    listen(frontend, runtime.frontendPort)
+  ]);
 
   return async () => {
     await Promise.all([close(backend), close(frontend)]);
   };
 }
 
-function runDev(args = []) {
-  const child = spawn(process.execPath, ["--env-file=.env", "scripts/dev.mjs", ...args], {
+function runDev(environment, args = []) {
+  const child = spawn(process.execPath, ["scripts/dev.mjs", ...args], {
     cwd: process.cwd(),
-    env: process.env,
+    env: environment,
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true
   });
@@ -64,19 +102,25 @@ async function withTimeout(promise, timeoutMs, message) {
 function listen(server, port) {
   return new Promise((resolve, reject) => {
     server.once("error", reject);
-    server.listen(port, resolve);
+    server.listen(port, "127.0.0.1", resolve);
   });
 }
 
 function close(server) {
   return new Promise((resolve, reject) => {
+    if (!server.listening) {
+      resolve();
+      return;
+    }
+
     server.close((error) => (error ? reject(error) : resolve()));
   });
 }
 
 test("dev:web treats an existing YsabelleStore web stack as already running", async () => {
-  const stopWebStack = await startExistingWebStack();
-  const run = runDev(["--web-only"]);
+  const { environment, runtime } = await createIsolatedRuntime();
+  const stopWebStack = await startExistingWebStack(runtime);
+  const run = runDev(environment, ["--web-only"]);
 
   try {
     const result = await withTimeout(run.exit, 10_000, "dev:web did not exit cleanly");
@@ -91,8 +135,9 @@ test("dev:web treats an existing YsabelleStore web stack as already running", as
 });
 
 test("dev refuses to start while the web development stack is already running", async () => {
-  const stopWebStack = await startExistingWebStack();
-  const run = runDev();
+  const { environment, runtime } = await createIsolatedRuntime();
+  const stopWebStack = await startExistingWebStack(runtime);
+  const run = runDev(environment);
 
   try {
     const result = await withTimeout(run.exit, 10_000, "dev did not reject the active web stack");
