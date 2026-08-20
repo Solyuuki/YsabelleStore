@@ -67,7 +67,7 @@ const presentationBySlug = Object.fromEntries(
 ) as Record<string, Omit<StorefrontCategoryPresentation, "slug">>;
 
 export function getEssentialShelfItems() {
-  return essentialShelfItems;
+  return essentialShelfItems.slice(0, 8);
 }
 
 export function getCategoryPresentation(slug: string) {
