@@ -34,11 +34,13 @@ test("About storefront handoff uses real in-stock catalog products", () => {
   assert.doesNotMatch(source, />Unavailable</);
 });
 
-test("About storefront handoff closes the story with local-to-smart retail copy", () => {
+test("About storefront handoff uses the approved compact smart-retail headline", () => {
   const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
 
-  assert.match(source, /From Local Roots/);
-  assert.match(source, /to Smarter Retail\./);
+  assert.match(source, />From Local</);
+  assert.match(source, />\s*to Smart Retail\s*</);
+  assert.doesNotMatch(source, /From Local Roots/);
+  assert.doesNotMatch(source, /to Smarter Retail\./);
   assert.match(source, /Live catalog/);
   assert.match(source, /Current stock/);
   assert.match(source, /Pickup ready/);
