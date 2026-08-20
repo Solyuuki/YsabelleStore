@@ -5,6 +5,11 @@ const steps = [
   { args: ["diff", "--check"], command: "git", label: "git diff check" },
   { args: ["run", "prisma:validate"], command: "npm", label: "Prisma validation" },
   {
+    args: ["run", "prisma:generate"],
+    command: "npm",
+    label: "Prisma client generation"
+  },
+  {
     args: ["run", "typecheck"],
     command: "npm",
     label: "workspace type checking"
