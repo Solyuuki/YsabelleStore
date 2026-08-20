@@ -9,7 +9,9 @@ import { DiscoverPage } from "@/pages/customer/DiscoverPage";
 import { OrderSuccessPage } from "@/pages/customer/OrderSuccessPage";
 import { ProductDetailPage } from "@/pages/customer/ProductDetailPage";
 import { ShopPage } from "@/pages/customer/ShopPage";
+import "driver.js/dist/driver.css";
 import "@/styles/customer.css";
+import "@/styles/shopping-guide.css";
 
 export function CustomerApp({
   location,
