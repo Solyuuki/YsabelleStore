@@ -126,7 +126,7 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
       showButtons: ["previous", "next", "close"],
       skipMissingElement: true,
       smoothScroll: false,
-      waitForElement: GUIDE_TARGET_WAIT_MS,
+      waitForElement: 4_000,
       overlayColor: "#101426",
       overlayOpacity: 0.52,
       popoverClass: "ysabelle-guide",
