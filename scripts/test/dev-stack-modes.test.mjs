@@ -1,15 +1,11 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import http from "node:http";
-import os from "node:os";
-import path from "node:path";
 import { test } from "node:test";
 
 import { resolveDevelopmentRuntime } from "../lib/runtime-config.mjs";
 
 const runtime = resolveDevelopmentRuntime();
-const READY_MARKER = "Press Ctrl+C once to stop every process in this development stack.";
 
 async function startExistingWebStack() {
   const backend = http.createServer((request, response) => {
@@ -34,26 +30,11 @@ async function startExistingWebStack() {
   };
 }
 
-async function createFakeNpmCli() {
-  const directory = await mkdtemp(path.join(os.tmpdir(), "ysabelle-dev-mode-"));
-  const cliPath = path.join(directory, "fake-npm.mjs");
-  await writeFile(
-    cliPath,
-    `const args = process.argv.slice(2);\nif (args.join(" ") !== "run dev --workspace electron") {\n  console.error("Unexpected fake npm invocation:", args.join(" "));\n  process.exit(2);\n}\nconsole.log("YsabelleStore Electron renderer ready.");\nsetInterval(() => {}, 1000);\n`,
-    "utf8"
-  );
-
-  return {
-    cliPath,
-    cleanup: () => rm(directory, { force: true, recursive: true })
-  };
-}
-
-function runDev(args = [], environment = {}) {
+function runDev(args = []) {
   const child = spawn(process.execPath, ["--env-file=.env", "scripts/dev.mjs", ...args], {
     cwd: process.cwd(),
-    env: { ...process.env, ...environment },
-    stdio: ["ignore", "pipe", "pipe", "ipc"],
+    env: process.env,
+    stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true
   });
   let output = "";
@@ -71,18 +52,6 @@ function runDev(args = [], environment = {}) {
       child.once("exit", (code, signal) => resolve({ code, signal }));
     })
   };
-}
-
-async function waitForOutput(run, marker, timeoutMs = 10_000) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    if (run.output().includes(marker)) return;
-    if (run.child.exitCode !== null || run.child.signalCode !== null) {
-      throw new Error(`Development command exited before "${marker}".\n${run.output()}`);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-  throw new Error(`Timed out waiting for "${marker}".\n${run.output()}`);
 }
 
 async function withTimeout(promise, timeoutMs, message) {
@@ -107,50 +76,41 @@ function close(server) {
 
 test("dev:web treats an existing YsabelleStore web stack as already running", async () => {
   const stopWebStack = await startExistingWebStack();
-  const fakeNpm = await createFakeNpmCli();
-  const run = runDev(["--web-only"], { npm_execpath: fakeNpm.cliPath });
+  const run = runDev(["--web-only"]);
 
   try {
     const result = await withTimeout(run.exit, 10_000, "dev:web did not exit cleanly");
     assert.equal(result.code, 0);
     assert.match(run.output(), /YsabelleStore web development stack is already running/);
-    assert.match(run.output(), new RegExp(runtime.frontendUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
     assert.doesNotMatch(run.output(), /Assertion failed:/);
     assert.doesNotMatch(run.output(), /UV_HANDLE_CLOSING/);
   } finally {
     if (run.child.exitCode === null && run.child.signalCode === null) run.child.kill();
-    await fakeNpm.cleanup();
     await stopWebStack();
   }
 });
 
-test("dev reuses an existing web stack and owns only the Electron process", async () => {
+test("dev refuses to start while the web development stack is already running", async () => {
   const stopWebStack = await startExistingWebStack();
-  const fakeNpm = await createFakeNpmCli();
-  const run = runDev([], { npm_execpath: fakeNpm.cliPath });
+  const run = runDev();
 
   try {
-    await waitForOutput(run, READY_MARKER);
-    assert.match(run.output(), /Reusing existing YsabelleStore web development stack/);
-    assert.match(run.output(), /Electron:\s+running/);
-    assert.doesNotMatch(run.output(), /Starting YsabelleStore backend/);
-    assert.doesNotMatch(run.output(), /Starting YsabelleStore web frontend/);
-
-    run.child.send({ type: "shutdown" });
-    const result = await withTimeout(run.exit, 10_000, "dev did not stop cleanly");
-    assert.equal(result.code, 0);
+    const result = await withTimeout(run.exit, 10_000, "dev did not reject the active web stack");
+    assert.equal(result.code, 1);
+    assert.match(run.output(), /YsabelleStore web development stack is already running/);
+    assert.match(run.output(), /Stop npm run dev:web before starting npm run dev/);
+    assert.doesNotMatch(run.output(), /Starting YsabelleStore Electron application/);
+    assert.doesNotMatch(run.output(), /Assertion failed:/);
+    assert.doesNotMatch(run.output(), /UV_HANDLE_CLOSING/);
 
     const [backendResponse, frontendResponse] = await Promise.all([
       fetch(new URL("/api/health", `${runtime.apiBaseUrl}/`)),
       fetch(runtime.frontendUrl)
     ]);
-    assert.equal(backendResponse.ok, true, "dev stopped the web-only backend it did not own");
-    assert.equal(frontendResponse.ok, true, "dev stopped the web-only frontend it did not own");
-    assert.doesNotMatch(run.output(), /Assertion failed:/);
-    assert.doesNotMatch(run.output(), /UV_HANDLE_CLOSING/);
+    assert.equal(backendResponse.ok, true, "rejected dev command stopped the existing backend");
+    assert.equal(frontendResponse.ok, true, "rejected dev command stopped the existing frontend");
   } finally {
     if (run.child.exitCode === null && run.child.signalCode === null) run.child.kill();
-    await fakeNpm.cleanup();
     await stopWebStack();
   }
 });
