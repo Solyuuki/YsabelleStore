@@ -14,13 +14,21 @@
   padding: 1.1rem 1.1rem 1rem;
   border: 1px solid rgb(98 91 255 / 18%);
   border-radius: 1.1rem 1.1rem 1.1rem 0.38rem;
-  background:
-    linear-gradient(145deg, rgb(255 255 255 / 99%), rgb(247 249 255 / 98%));
+  background: linear-gradient(145deg, rgb(255 255 255 / 99%), rgb(247 249 255 / 98%));
   color: var(--guide-ink);
   font-family: var(--font-sans);
   font-size: 0.875rem;
   line-height: 1.5;
   box-shadow: 0 24px 65px rgb(16 20 38 / 24%);
+  transition:
+    opacity 150ms ease,
+    transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.ysabelle-guide.is-transitioning {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(5px) scale(0.985);
 }
 
 .ysabelle-guide .driver-popover-title {
@@ -207,8 +215,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ysabelle-guide.driver-popover,
   .ysabelle-guide .driver-popover-footer button {
     transition: none;
+  }
+
+  .ysabelle-guide.is-transitioning {
+    transform: none;
   }
 
   .ysabelle-guide .driver-popover-next-btn:hover,
