@@ -35,10 +35,38 @@ test("shopping guide transitions between distant targets without making the popo
   assert.match(source, /scrollIntoView\(\{/);
   assert.match(source, /behavior:\s*prefersReducedMotion\s*\?\s*"auto"\s*:\s*"smooth"/);
   assert.match(source, /block:\s*"center"/);
-  assert.match(source, /wrapper\.classList\.add\("is-transitioning"\)/);
   assert.match(source, /requestAnimationFrame/);
   assert.match(source, /\.home-categories \.home-section-heading/);
   assert.doesNotMatch(source, /element:\s*'\[data-tour="start-shopping"\]'/);
+});
+
+test("shopping guide stays hidden while the page scrolls without animating Driver positioning transforms", () => {
+  const source = read("frontend/src/hooks/useShoppingGuide.ts");
+  const styles = read("frontend/src/styles/shopping-guide.css");
+  const popoverRule = styles.match(/\.ysabelle-guide\.driver-popover\s*\{([\s\S]*?)\}/)?.[1] ?? "";
+  const transitionRule =
+    styles.match(/\.ysabelle-guide\.is-transitioning\s*\{([\s\S]*?)\}/)?.[1] ?? "";
+
+  assert.match(source, /const GUIDE_SCROLLING_CLASS = "ysabelle-guide-scrolling"/);
+  assert.match(source, /window\.addEventListener\("scroll", handleGuideScroll, \{ passive: true \}\)/);
+  assert.match(source, /document\.documentElement\.classList\.add\(GUIDE_SCROLLING_CLASS\)/);
+  assert.match(source, /document\.documentElement\.classList\.remove\(GUIDE_SCROLLING_CLASS\)/);
+  assert.match(styles, /\.ysabelle-guide-scrolling \.ysabelle-guide\.driver-popover[\s\S]*?opacity:\s*0/);
+  assert.doesNotMatch(popoverRule, /transform/);
+  assert.doesNotMatch(transitionRule, /transform/);
+});
+
+test("shopping guide Finish fades the guide and overlay before teardown and navigation", () => {
+  const source = read("frontend/src/hooks/useShoppingGuide.ts");
+  const styles = read("frontend/src/styles/shopping-guide.css");
+
+  assert.match(source, /const GUIDE_FINISHING_CLASS = "ysabelle-guide-finishing"/);
+  assert.match(source, /const GUIDE_FINISH_DURATION_MS = 180/);
+  assert.match(source, /document\.documentElement\.classList\.add\(GUIDE_FINISHING_CLASS\)/);
+  assert.match(source, /window\.setTimeout\(finish, GUIDE_FINISH_DURATION_MS\)/);
+  assert.match(source, /document\.documentElement\.classList\.remove\(GUIDE_FINISHING_CLASS\)/);
+  assert.match(styles, /\.ysabelle-guide-finishing \.ysabelle-guide\.driver-popover[\s\S]*?opacity:\s*0/);
+  assert.match(styles, /\.ysabelle-guide-finishing \.driver-overlay[\s\S]*?opacity:\s*0/);
 });
 
 test("shopping guide popover is self-themed and aligned without customer-app scoped variables", () => {
