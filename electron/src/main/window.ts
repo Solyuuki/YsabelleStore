@@ -1,4 +1,4 @@
-import { BrowserWindow, app } from "electron";
+import { BrowserWindow, app, nativeImage } from "electron";
 import { appMetadata, windowDefaults } from "../config/app.js";
 import {
   getApplicationIconPath,
@@ -40,15 +40,31 @@ function resolveRendererEntry(): RendererEntry {
 export function createMainWindow(): BrowserWindow {
   const preloadPath = getPreloadBundlePath();
   const smokeTest = process.env.YSABELLE_DEV_SMOKE === "1";
+  const applicationIconPath = getApplicationIconPath(app.isPackaged);
+  const applicationIcon = nativeImage.createFromPath(applicationIconPath);
+
+  if (applicationIcon.isEmpty()) {
+    console.warn(`YsabelleStore application icon could not be loaded from ${applicationIconPath}.`);
+  }
+
   const mainWindow = new BrowserWindow({
     ...windowDefaults,
     show: false,
     title: appMetadata.appName,
-    icon: getApplicationIconPath(app.isPackaged),
+    icon: applicationIcon.isEmpty() ? applicationIconPath : applicationIcon,
     autoHideMenuBar: true,
     backgroundColor: "#ffffff",
     webPreferences: createSafeWebPreferences(preloadPath, app.isPackaged)
   });
+
+  if (process.platform === "win32") {
+    mainWindow.setIcon(applicationIcon.isEmpty() ? applicationIconPath : applicationIcon);
+    mainWindow.setAppDetails({
+      appId: appMetadata.appUserModelId,
+      appIconIndex: 0,
+      appIconPath: applicationIconPath
+    });
+  }
 
   if (!smokeTest) {
     mainWindow.once("ready-to-show", () => {

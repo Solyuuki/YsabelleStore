@@ -25,6 +25,14 @@ export function getPackagedRendererIndexPath(): string {
 }
 
 export function getApplicationIconPath(isPackaged: boolean): string {
+  if (process.platform === "win32") {
+    if (isPackaged) {
+      return path.join(process.resourcesPath, "app-icon.ico");
+    }
+
+    return path.join(configDirectory, "../../build/icon.ico");
+  }
+
   if (isPackaged) {
     return path.join(process.resourcesPath, "frontend", "brand", "ysabelle-store-mark.png");
   }
