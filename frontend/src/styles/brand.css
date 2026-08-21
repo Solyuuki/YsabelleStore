@@ -1,5 +1,4 @@
 .customer-app {
-  --ysabelle-brand-mark-image: url("/brand/ysabelle-store-mark-256.png?v=a4f0dde2");
   --ysabelle-brand-fallback: linear-gradient(145deg, #008cff, #625bff 48%, #f43f8c);
 }
 
@@ -55,79 +54,35 @@
   display: none;
 }
 
-/*
- * Discover still contains legacy brand wrappers. Keep the original Store SVG below
- * the approved image, so a failed request shows a colored fallback instead of white.
- */
-.customer-brand__mark,
-.story-welcome__mark {
-  position: relative;
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--ysabelle-brand-fallback);
-  color: #fff;
-  isolation: isolate;
-}
-
-.customer-brand__mark::after,
-.story-welcome__mark::after {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background-image: var(--ysabelle-brand-mark-image);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  content: "";
-  pointer-events: none;
-}
-
-.customer-brand__mark > svg,
-.story-welcome__mark > svg {
-  position: relative;
-  z-index: 0;
-}
-
-.story-welcome__mark {
+.story-welcome__mark--branded {
   width: clamp(6rem, 7vw, 7rem);
   height: clamp(6rem, 7vw, 7rem);
+  border-radius: 50%;
+  background: var(--ysabelle-brand-fallback);
   box-shadow: 0 22px 45px rgb(98 91 255 / 24%);
 }
 
-.story-live-store__bar > span:first-child {
-  position: relative;
+.story-welcome__mark--branded > svg,
+.story-live-store__identity--branded > svg {
+  display: none;
 }
 
-.story-live-store__bar > span:first-child::before {
-  z-index: 1;
-  display: block;
+.story-welcome__mark--branded > .ysabelle-brand-mark {
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
+}
+
+.story-live-store__identity--branded > .ysabelle-brand-mark {
+  order: -1;
   width: 2.75rem;
   height: 2.75rem;
   flex: 0 0 2.75rem;
-  border-radius: 50%;
-  background-image: var(--ysabelle-brand-mark-image);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  content: "";
-  pointer-events: none;
-}
-
-.story-live-store__bar > span:first-child > svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 0;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0.68rem;
-  border-radius: 50%;
-  background: var(--ysabelle-brand-fallback);
-  color: #fff;
+  box-shadow: none;
 }
 
 @media (max-width: 480px) {
-  .story-welcome__mark,
+  .story-welcome__mark--branded,
   .ysabelle-brand-mark--display {
     width: 5.5rem;
     height: 5.5rem;
