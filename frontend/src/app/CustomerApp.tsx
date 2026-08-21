@@ -9,6 +9,7 @@ import { OrderSuccessPage } from "@/pages/customer/OrderSuccessPage";
 import { ProductDetailPage } from "@/pages/customer/ProductDetailPage";
 import { ShopPage } from "@/pages/customer/ShopPage";
 import "@/styles/customer.css";
+import "@/styles/brand.css";
 
 export function CustomerApp({
   location,

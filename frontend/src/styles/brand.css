@@ -1,0 +1,54 @@
+.customer-app {
+  --ysabelle-brand-mark-image: url("/brand/ysabelle-store-mark.png?v=20260821");
+  --ysabelle-brand-logo-image: url("/brand/ysabelle-store-logo.png?v=20260821");
+}
+
+.customer-brand__mark,
+.story-welcome__mark {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.customer-brand__mark::after,
+.story-welcome__mark::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-position: center;
+  background-repeat: no-repeat;
+  content: "";
+  pointer-events: none;
+}
+
+.customer-brand__mark::after {
+  background-image: var(--ysabelle-brand-mark-image);
+  background-size: cover;
+}
+
+.story-welcome__mark {
+  width: clamp(5rem, 6vw, 6rem);
+  height: clamp(5rem, 6vw, 6rem);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--story-indigo);
+  box-shadow: 0 22px 45px rgb(98 91 255 / 24%);
+}
+
+.story-welcome__mark::after {
+  background-image: var(--ysabelle-brand-logo-image);
+  background-size: contain;
+}
+
+.customer-brand__mark > svg,
+.story-welcome__mark > svg {
+  position: relative;
+  z-index: 0;
+}
+
+@media (max-width: 480px) {
+  .story-welcome__mark {
+    width: 5rem;
+    height: 5rem;
+  }
+}

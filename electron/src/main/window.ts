@@ -1,6 +1,7 @@
 import { BrowserWindow, app } from "electron";
 import { appMetadata, windowDefaults } from "../config/app.js";
 import {
+  getApplicationIconPath,
   getPackagedRendererIndexPath,
   getPreloadBundlePath,
   getRendererDevUrl,
@@ -43,6 +44,7 @@ export function createMainWindow(): BrowserWindow {
     ...windowDefaults,
     show: false,
     title: appMetadata.appName,
+    icon: getApplicationIconPath(app.isPackaged),
     autoHideMenuBar: true,
     backgroundColor: "#ffffff",
     webPreferences: createSafeWebPreferences(preloadPath, app.isPackaged)

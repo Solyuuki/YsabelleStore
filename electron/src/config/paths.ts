@@ -23,3 +23,14 @@ export function getRendererDistIndexPath(): string {
 export function getPackagedRendererIndexPath(): string {
   return path.join(process.resourcesPath, "frontend", "index.html");
 }
+
+export function getApplicationIconPath(isPackaged: boolean): string {
+  if (isPackaged) {
+    return path.join(process.resourcesPath, "frontend", "brand", "ysabelle-store-mark.png");
+  }
+
+  return path.join(
+    configDirectory,
+    "../../../frontend/public/brand/ysabelle-store-mark.png"
+  );
+}
