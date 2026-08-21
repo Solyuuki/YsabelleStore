@@ -51,18 +51,16 @@ export function createMainWindow(): BrowserWindow {
     ...windowDefaults,
     show: false,
     title: appMetadata.appName,
-    icon: applicationIcon.isEmpty() ? applicationIconPath : applicationIcon,
+    ...(applicationIcon.isEmpty() ? {} : { icon: applicationIcon }),
     autoHideMenuBar: true,
     backgroundColor: "#ffffff",
     webPreferences: createSafeWebPreferences(preloadPath, app.isPackaged)
   });
 
-  if (process.platform === "win32") {
-    mainWindow.setIcon(applicationIcon.isEmpty() ? applicationIconPath : applicationIcon);
+  if (process.platform === "win32" && !applicationIcon.isEmpty()) {
+    mainWindow.setIcon(applicationIcon);
     mainWindow.setAppDetails({
-      appId: appMetadata.appUserModelId,
-      appIconIndex: 0,
-      appIconPath: applicationIconPath
+      appId: appMetadata.appUserModelId
     });
   }
 

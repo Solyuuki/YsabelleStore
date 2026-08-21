@@ -11,10 +11,6 @@ module.exports = {
     {
       from: "../frontend/dist",
       to: "frontend"
-    },
-    {
-      from: "build/icon.ico",
-      to: "app-icon.ico"
     }
   ],
   win: {
