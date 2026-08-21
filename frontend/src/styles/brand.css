@@ -1,5 +1,5 @@
-/* Shared Ysabelle branding. The real PNG is used where it can report load failures;
-   story-only identity glyphs stay vector-based so missing static assets never leave blanks. */
+/* Shared Ysabelle branding. The approved logo is bundled by Vite from src/assets so it ships
+   with every build instead of depending on a fragile /public URL. */
 .customer-brand__mark {
   display: grid;
   width: 3.4rem;
@@ -24,9 +24,13 @@
   object-position: center;
 }
 
-/* The About/Discover story marks remain visible even when /public/brand is unavailable. */
+/* Story identity marks show the same official logo. The existing Store SVG stays underneath as
+   a no-network/no-asset fallback, while the bundled image overlays it during normal operation. */
 .story-welcome__mark {
+  position: relative;
+  display: grid;
   box-sizing: border-box;
+  place-items: center;
   overflow: hidden;
   padding: 0.12rem;
   border: 1px solid rgb(98 91 255 / 16%);
@@ -42,8 +46,20 @@
   color: #625bff;
 }
 
+.story-welcome__mark::before {
+  position: absolute;
+  inset: 0.08rem;
+  border-radius: 50%;
+  background: #fff url("../assets/brand/ysabelle-logo-official.webp") center / contain no-repeat;
+  content: "";
+}
+
 .story-live-store__bar > span:first-child {
   align-items: center;
+}
+
+.story-live-store__bar > span:first-child {
+  position: relative;
 }
 
 .story-live-store__bar > span:first-child > svg:first-child {
@@ -57,6 +73,18 @@
   background: #fff;
   color: #625bff;
   box-shadow: 0 7px 18px rgb(98 91 255 / 16%);
+}
+
+.story-live-store__bar > span:first-child::before {
+  position: absolute;
+  left: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgb(98 91 255 / 14%);
+  border-radius: 50%;
+  background: #fff url("../assets/brand/ysabelle-logo-official.webp") center / contain no-repeat;
+  box-shadow: 0 7px 18px rgb(98 91 255 / 16%);
+  content: "";
 }
 
 @media (max-width: 720px) {
