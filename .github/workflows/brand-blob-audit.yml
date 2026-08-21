@@ -1,0 +1,46 @@
+name: Brand Blob Audit
+
+on:
+  push:
+    branches:
+      - m1/v0.4/test/brand-blob-audit
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check pillow
+      - name: Audit committed image
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from hashlib import sha256
+          from pathlib import Path
+          import json
+          path = Path('tmp/approved-blob-check.png')
+          raw = path.read_bytes()
+          image = Image.open(path).convert('RGBA')
+          report = {
+            'bytes': len(raw),
+            'sha256': sha256(raw).hexdigest(),
+            'mode': image.mode,
+            'size': list(image.size),
+            'pixel_sha256': sha256(image.tobytes()).hexdigest(),
+          }
+          Path('tmp/audit.json').write_text(json.dumps(report, indent=2) + '\n')
+          print(json.dumps(report, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: approved-blob-audit
+          path: |
+            tmp/approved-blob-check.png
+            tmp/audit.json
+          if-no-files-found: error
