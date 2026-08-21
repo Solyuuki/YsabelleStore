@@ -4,32 +4,26 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const assetPath = path.join(root, "frontend/src/assets/brand/ysabelle-logo-official.svg");
+const assetPath = path.join(root, "frontend/src/assets/brand/ysabelle-logo-official.webp");
 const componentPath = path.join(root, "frontend/src/components/brand/BrandLogo.tsx");
 const cssPath = path.join(root, "frontend/src/styles/brand.css");
-const expectedSha256 = "f2ee9b4fb0184df39eabcbef116a70cc74db3100c9910a448e5e74b5df7e0be3";
+const expectedSha256 = "b62e9d932778a4c3f4d1fe1651fa0638380a7ad6d86800a46a80448965b4085c";
 
 assert.equal(existsSync(assetPath), true, "Official bundled Ysabelle logo asset must exist.");
 
 const component = readFileSync(componentPath, "utf8");
 const css = readFileSync(cssPath, "utf8");
-const asset = readFileSync(assetPath, "utf8");
+const asset = readFileSync(assetPath);
 
 assert.match(
   component,
-  /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.svg["'];/
+  /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
 );
 assert.doesNotMatch(component, /\/brand\/ysabelle-logo-v2\.png/);
-assert.match(css, /url\(["']\.\.\/assets\/brand\/ysabelle-logo-official\.svg["']\)/);
+assert.match(css, /url\(["']\.\.\/assets\/brand\/ysabelle-logo-official\.webp["']\)/);
 assert.doesNotMatch(css, /\/brand\/ysabelle-logo-v2\.png/);
 
-const embeddedPng = asset.match(/href="data:image\/png;base64,([^"]+)"/);
-assert.ok(embeddedPng, "Official SVG wrapper must embed the uploaded PNG.");
-const digest = createHash("sha256").update(Buffer.from(embeddedPng[1], "base64")).digest("hex");
-assert.equal(
-  digest,
-  expectedSha256,
-  "Bundled logo must exactly match the uploaded official logo bytes."
-);
+const digest = createHash("sha256").update(asset).digest("hex");
+assert.equal(digest, expectedSha256, "Bundled logo must match the approved official Ysabelle logo asset.");
 
 console.log("Official Ysabelle brand asset checks passed.");
