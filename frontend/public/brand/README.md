@@ -1,11 +1,16 @@
 # Ysabelle Store brand assets
 
-The source of truth is the 500×500 RGBA PNG supplied by Ysabelle Store. Its SHA-256 is `f2ee9b4fb0184df39eabcbef116a70cc74db3100c9910a448e5e74b5df7e0be3`.
+The approved source artwork is the textless cart-and-`Y` mark selected in the August 21, 2026 logo review. The uploaded source SHA-256 is `44fb993b2b3b39cc8d7926636710758fc8e75f697f73842d82f6ba2954aaa66f`.
 
-- `ysabelle-store-logo.png` is a web export of the supplied artwork for the larger About/Discover placement. It was resized only; no artwork was redrawn or generated.
-- `ysabelle-store-mark.png` is a literal crop of the supplied artwork (`x=110..390`, `y=40..320`) for the header, footer, and Electron window icon. It was resized only; no artwork was redrawn or generated.
-- `favicon-16x16.png` and `favicon-32x32.png` use the same literal crop with transparent padding and a rounded mask so the existing cart-and-`Y` mark remains recognizable in browser tabs.
+No new artwork is generated in this directory. The committed files are deterministic square, transparent, size-specific exports or literal crops of that approved image:
 
-The original Store icons remain beneath the web artwork as a non-blank fallback if an asset request fails. Update the cache version in `frontend/index.html` and `frontend/src/styles/brand.css` whenever an approved brand asset changes.
+- `ysabelle-store-mark.png` and `ysabelle-store-mark-256.png`: canonical web and Electron mark.
+- `ysabelle-store-mark-128.png`: responsive source for compact customer branding.
+- `favicon-16x16.png`: literal `Y`-focused crop of the approved mark for the smallest browser-tab slot (`x=355..905`, `y=450..1000` on the square source).
+- `favicon-32x32.png`: literal cart-and-`Y` crop for medium-density tabs (`x=230..1030`, `y=360..1160`).
+- `favicon-48x48.png`: full approved textless mark.
+- `favicon.ico`: multi-size container holding those same 16px, 32px, and 48px exports.
+- `apple-touch-icon.png`: mobile bookmark/home-screen export.
+- `ysabelle-store-logo.png`: compatibility alias containing the same approved textless artwork, so stale references cannot show the superseded wordmark logo.
 
-Do not replace these files with generated approximations.
+Header and footer branding use a real `<img>` element with an underlying Store-icon fallback. Legacy Discover markup keeps the same fallback beneath the approved image. A failed asset request must never produce a blank white circle.
