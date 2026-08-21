@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const BRAND_LOGO_SRC = "/brand/ysabelle-logo-v2.png";
+import officialLogoUrl from "@/assets/brand/ysabelle-logo-official.webp";
 
 type BrandLogoProps = {
   className?: string;
@@ -52,7 +52,7 @@ export function BrandLogo({ className }: BrandLogoProps) {
       className={classes}
       decoding="async"
       onError={() => setImageFailed(true)}
-      src={BRAND_LOGO_SRC}
+      src={officialLogoUrl}
     />
   );
 }
