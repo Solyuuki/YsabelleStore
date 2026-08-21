@@ -11,14 +11,10 @@ module.exports = {
     {
       from: "../frontend/dist",
       to: "frontend"
-    },
-    {
-      from: "build/icon.ico",
-      to: "app-icon.ico"
     }
   ],
   win: {
-    icon: "build/icon.ico",
+    icon: "../frontend/public/brand/ysabelle-store-mark.png",
     target: ["nsis"]
   },
   nsis: {
