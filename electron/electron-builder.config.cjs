@@ -12,6 +12,7 @@ module.exports = {
     }
   ],
   win: {
+    icon: "../frontend/public/brand/ysabelle-store-mark.png",
     target: ["nsis"]
   },
   nsis: {
