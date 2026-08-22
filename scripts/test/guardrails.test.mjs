@@ -342,11 +342,17 @@ test("artifact validation records only the aggregate command that actually ran",
   ]);
 });
 
-test("CI includes read-only preflight and status verification without status mutation", () => {
+test("CI uses PR context without hardcoded member ownership or status mutation", () => {
   const workflow = fs.readFileSync(path.join(REPO_ROOT, ".github", "workflows", "ci.yml"), "utf8");
 
-  assert.match(workflow, /npm run guardrail:preflight -- --member m1/);
-  assert.match(workflow, /npm run verify:status -- --member m1/);
+  assert.match(workflow, /YSABELLE_BRANCH:/);
+  assert.match(workflow, /YSABELLE_BASE_REF:/);
+  assert.match(workflow, /YSABELLE_HEAD_SHA:/);
+  assert.match(workflow, /YSABELLE_BASE_SHA:/);
+  assert.match(workflow, /npm run guardrail:preflight/);
+  assert.match(workflow, /npm run verify:status/);
+  assert.match(workflow, /mysql:/);
+  assert.doesNotMatch(workflow, /--member m1/);
   assert.doesNotMatch(workflow, /npm run status:update/);
 });
 

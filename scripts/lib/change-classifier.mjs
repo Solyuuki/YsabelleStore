@@ -54,7 +54,11 @@ export function classifyChanges(changes) {
 function detectSummaries(files) {
   const summaries = new Set();
 
-  if (files.some((file) => /auth|trusted-device|trusteddevice|welcomepage|authcontext|auth\.routes/i.test(file))) {
+  if (
+    files.some((file) =>
+      /auth|trusted-device|trusteddevice|welcomepage|authcontext|auth\.routes/i.test(file)
+    )
+  ) {
     summaries.add("Authentication / session / access-control changes");
   }
 
@@ -89,7 +93,8 @@ function detectDecisions(files) {
   if (files.some((file) => /trusteddevice|trusted-device|trusted_device/i.test(file))) {
     decisions.push({
       decision: "Trusted-device access behavior changed.",
-      reason: "Trusted-device changes require explicit review of session, revocation, and access behavior."
+      reason:
+        "Trusted-device changes require explicit review of session, revocation, and access behavior."
     });
   }
 
@@ -103,7 +108,8 @@ function detectDecisions(files) {
   if (files.some((file) => /toast/i.test(file))) {
     decisions.push({
       decision: "User notification lifecycle changed.",
-      reason: "Notification changes require review for contradictory, stale, or duplicated feedback."
+      reason:
+        "Notification changes require review for contradictory, stale, or duplicated feedback."
     });
   }
 
