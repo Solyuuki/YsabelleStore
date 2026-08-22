@@ -72,6 +72,12 @@ jobs:
       - name: Validate guardrail preconditions
         run: npm run guardrail:preflight
 
+      - name: Print exact HTTP contract Prettier diff
+        run: |
+          npx prettier backend/test/http-status-contract.test.ts --write
+          git diff -- backend/test/http-status-contract.test.ts
+          git checkout -- backend/test/http-status-contract.test.ts
+
       - name: Check formatting
         run: npm run format:check
 
