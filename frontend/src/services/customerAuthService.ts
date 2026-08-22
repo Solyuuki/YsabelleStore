@@ -20,9 +20,7 @@ type CustomerResponseData = {
   customer: Customer;
 };
 
-function customerAuthRequestOptions(
-  options: Omit<RequestInit, "body"> & { json?: unknown } = {}
-) {
+function customerAuthRequestOptions(options: Omit<RequestInit, "body"> & { json?: unknown } = {}) {
   return {
     ...options,
     credentials: "include" as const
@@ -30,7 +28,9 @@ function customerAuthRequestOptions(
 }
 
 function requireCustomer(
-  response: Awaited<ReturnType<typeof apiClient.request<CustomerResponseData, CustomerAuthErrorPayload>>>
+  response: Awaited<
+    ReturnType<typeof apiClient.request<CustomerResponseData, CustomerAuthErrorPayload>>
+  >
 ) {
   if (response.success && response.data?.customer) {
     return response.data.customer;
