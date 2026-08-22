@@ -22,13 +22,25 @@ const storefrontProductInclude = {
   inventoryBatches: true
 } satisfies Prisma.ProductInclude;
 
+const storefrontOrderInclude = {
+  items: { include: { product: true } }
+} satisfies Prisma.CustomerOrderInclude;
+
 type StorefrontProductRecord = Prisma.ProductGetPayload<{
   include: typeof storefrontProductInclude;
+}>;
+
+type StorefrontOrderRecord = Prisma.CustomerOrderGetPayload<{
+  include: typeof storefrontOrderInclude;
 }>;
 
 type StorefrontProductReviewSummary = {
   averageRating: number;
   reviewCount: number;
+};
+
+type StorefrontOrderContext = {
+  customerAccountId?: string;
 };
 
 const STOREFRONT_MERCHANDISING_LIMIT = 4;
@@ -63,6 +75,26 @@ function serializeStorefrontProduct(
       name: product.category.name,
       slug: product.category.slug
     }
+  };
+}
+
+function serializeStorefrontOrder(order: StorefrontOrderRecord) {
+  return {
+    id: order.id,
+    orderNumber: order.orderNumber,
+    status: order.status,
+    fulfillmentMethod: order.fulfillmentMethod,
+    paymentMethod: order.paymentMethod,
+    totalAmount: order.totalAmount.toString(),
+    createdAt: order.createdAt,
+    itemCount: order.items.reduce((total, item) => total + item.quantity, 0),
+    items: order.items.map((item) => ({
+      productId: item.productId,
+      productName: item.product.name,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice.toString(),
+      totalAmount: item.totalAmount.toString()
+    }))
   };
 }
 
@@ -398,7 +430,10 @@ async function requireStorefrontProduct(productId: string) {
   return product;
 }
 
-export async function createStorefrontOrder(input: StorefrontOrderInput) {
+export async function createStorefrontOrder(
+  input: StorefrontOrderInput,
+  context: StorefrontOrderContext = {}
+) {
   const itemQuantities = new Map<string, number>();
   for (const item of input.items) {
     itemQuantities.set(item.productId, (itemQuantities.get(item.productId) ?? 0) + item.quantity);
@@ -454,6 +489,7 @@ export async function createStorefrontOrder(input: StorefrontOrderInput) {
     );
     const order = await tx.customerOrder.create({
       data: {
+        customerAccountId: context.customerAccountId ?? null,
         orderNumber: createOrderNumber(),
         customerName: input.customerName,
         customerEmail: input.customerEmail || null,
@@ -473,27 +509,21 @@ export async function createStorefrontOrder(input: StorefrontOrderInput) {
           }))
         }
       },
-      include: { items: { include: { product: true } } }
+      include: storefrontOrderInclude
     });
 
-    return {
-      id: order.id,
-      orderNumber: order.orderNumber,
-      status: order.status,
-      fulfillmentMethod: order.fulfillmentMethod,
-      paymentMethod: order.paymentMethod,
-      totalAmount: order.totalAmount.toString(),
-      createdAt: order.createdAt,
-      itemCount: order.items.reduce((total, item) => total + item.quantity, 0),
-      items: order.items.map((item) => ({
-        productId: item.productId,
-        productName: item.product.name,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice.toString(),
-        totalAmount: item.totalAmount.toString()
-      }))
-    };
+    return serializeStorefrontOrder(order);
   });
+}
+
+export async function listCustomerOrders(customerAccountId: string) {
+  const orders = await prisma.customerOrder.findMany({
+    include: storefrontOrderInclude,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    where: { customerAccountId }
+  });
+
+  return orders.map(serializeStorefrontOrder);
 }
 
 function createOrderNumber() {
