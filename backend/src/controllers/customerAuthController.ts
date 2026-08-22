@@ -4,18 +4,18 @@ import { getAuthenticatedCustomer } from "../middleware/customerAuthMiddleware.j
 import {
   loginCustomer,
   registerCustomer,
-  revokeCustomerSession,
+  revokeCustomerSession
 } from "../services/customerAuthService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import {
   clearCustomerSessionCookie,
   readCustomerSessionCookie,
-  setCustomerSessionCookie,
+  setCustomerSessionCookie
 } from "../utils/customerAuthCookie.js";
 import { HttpError } from "../utils/httpError.js";
 import {
   customerLoginSchema,
-  customerRegisterSchema,
+  customerRegisterSchema
 } from "../validators/customerAuth.validators.js";
 
 export const registerCustomerAccount: RequestHandler = async (request, response, next) => {
@@ -24,7 +24,7 @@ export const registerCustomerAccount: RequestHandler = async (request, response,
     if (!parsedBody.success) {
       throw new HttpError(400, "Customer registration request is invalid.", {
         code: "INVALID_CUSTOMER_REGISTER_REQUEST",
-        details: parsedBody.error.flatten(),
+        details: parsedBody.error.flatten()
       });
     }
 
@@ -33,8 +33,8 @@ export const registerCustomerAccount: RequestHandler = async (request, response,
 
     response.status(201).json(
       createSuccessResponse("Customer registration successful.", {
-        customer: session.customer,
-      }),
+        customer: session.customer
+      })
     );
   } catch (error) {
     next(error);
@@ -47,7 +47,7 @@ export const loginCustomerAccount: RequestHandler = async (request, response, ne
     if (!parsedBody.success) {
       throw new HttpError(400, "Customer login request is invalid.", {
         code: "INVALID_CUSTOMER_LOGIN_REQUEST",
-        details: parsedBody.error.flatten(),
+        details: parsedBody.error.flatten()
       });
     }
 
@@ -56,8 +56,8 @@ export const loginCustomerAccount: RequestHandler = async (request, response, ne
 
     response.status(200).json(
       createSuccessResponse("Customer login successful.", {
-        customer: session.customer,
-      }),
+        customer: session.customer
+      })
     );
   } catch (error) {
     next(error);
@@ -69,8 +69,8 @@ export const getCurrentCustomer: RequestHandler = (request, response, next) => {
   if (!customer) {
     next(
       new HttpError(401, "Customer session is required.", {
-        code: "CUSTOMER_SESSION_REQUIRED",
-      }),
+        code: "CUSTOMER_SESSION_REQUIRED"
+      })
     );
     return;
   }
