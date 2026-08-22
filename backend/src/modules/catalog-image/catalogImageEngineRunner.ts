@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { env } from "../../config/env.js";
 import { HttpError } from "../../utils/httpError.js";
+import { CatalogImageProcessGate } from "./catalogImageProcessGate.js";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const CATALOG_IMAGE_ENGINE_SCRIPT = path.resolve(
@@ -14,6 +15,7 @@ const MAX_PROCESS_OUTPUT_BYTES = 1024 * 1024;
 const STATUS_VALUES = new Set(["APPROVED", "NEEDS_REVIEW", "REJECTED"] as const);
 const SEVERITY_VALUES = new Set(["info", "warning", "error"] as const);
 const VARIANT_FILE_NAMES = new Set(["processed.webp", "card.webp", "pdp.webp"]);
+const catalogImageProcessGate = new CatalogImageProcessGate(1);
 
 export type CatalogImageQualityStatus = "APPROVED" | "NEEDS_REVIEW" | "REJECTED";
 
@@ -107,7 +109,11 @@ export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngin
     invalidResult();
   }
 
-  if (!isRecord(parsed) || typeof parsed.status !== "string" || !STATUS_VALUES.has(parsed.status as never)) {
+  if (
+    !isRecord(parsed) ||
+    typeof parsed.status !== "string" ||
+    !STATUS_VALUES.has(parsed.status as never)
+  ) {
     invalidResult();
   }
   if (!isRecord(parsed.source)) invalidResult();
@@ -198,6 +204,10 @@ export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngin
 }
 
 export async function runCatalogImageEngine(sourcePath: string, outputDirectory: string) {
+  return catalogImageProcessGate.run(() => runCatalogImageEngineProcess(sourcePath, outputDirectory));
+}
+
+async function runCatalogImageEngineProcess(sourcePath: string, outputDirectory: string) {
   const requestBody = JSON.stringify({ sourcePath, outputDirectory });
 
   return await new Promise<CatalogImageEngineResult>((resolve, reject) => {
@@ -268,7 +278,10 @@ export async function runCatalogImageEngine(sourcePath: string, outputDirectory:
       }
       if (code !== 0) {
         if (stderr.trim()) {
-          console.error(`[catalog-image] Python process exited with code ${String(code)}:`, stderr.slice(0, 600));
+          console.error(
+            `[catalog-image] Python process exited with code ${String(code)}:`,
+            stderr.slice(0, 600)
+          );
         }
         reject(
           new HttpError(502, "Catalog image engine failed to process the image.", {
