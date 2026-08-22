@@ -1,0 +1,107 @@
+import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import test from "node:test";
+
+import { CatalogImageStorage } from "../src/modules/catalog-image/catalogImageStorage.js";
+import { inspectProductImageUpload } from "../src/modules/catalog-image/imageUploadPolicy.js";
+
+test("product image upload trusts PNG magic bytes instead of filename or declared MIME", () => {
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+  const inspection = inspectProductImageUpload({
+    buffer: png,
+    mimetype: "image/jpeg",
+    originalname: "fake.jpg",
+    size: png.length
+  });
+
+  assert.equal(inspection.detectedMimeType, "image/png");
+  assert.equal(inspection.extension, ".png");
+});
+
+test("product image upload detects JPEG and WebP from bytes", () => {
+  const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xdb, 0x00, 0x43]);
+  const webp = Buffer.concat([
+    Buffer.from("RIFF", "ascii"),
+    Buffer.alloc(4),
+    Buffer.from("WEBP", "ascii"),
+    Buffer.from("VP8 ", "ascii")
+  ]);
+
+  assert.deepEqual(
+    inspectProductImageUpload({
+      buffer: jpeg,
+      mimetype: "application/octet-stream",
+      originalname: "photo.bin",
+      size: jpeg.length
+    }),
+    {
+      detectedMimeType: "image/jpeg",
+      extension: ".jpg"
+    }
+  );
+  assert.deepEqual(
+    inspectProductImageUpload({
+      buffer: webp,
+      mimetype: "image/png",
+      originalname: "wrong.png",
+      size: webp.length
+    }),
+    {
+      detectedMimeType: "image/webp",
+      extension: ".webp"
+    }
+  );
+});
+
+test("product image upload rejects unsupported bytes", () => {
+  assert.throws(
+    () =>
+      inspectProductImageUpload({
+        buffer: Buffer.from("<svg></svg>"),
+        mimetype: "image/svg+xml",
+        originalname: "x.svg",
+        size: 11
+      }),
+    (error) =>
+      error instanceof Error &&
+      (error as { code?: string }).code === "PRODUCT_IMAGE_UNSUPPORTED_TYPE"
+  );
+});
+
+test("product image upload rejects files over the hard byte limit", () => {
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+  assert.throws(
+    () =>
+      inspectProductImageUpload({
+        buffer: png,
+        mimetype: "image/png",
+        originalname: "large.png",
+        size: 8 * 1024 * 1024 + 1
+      }),
+    (error) =>
+      error instanceof Error && (error as { code?: string }).code === "PRODUCT_IMAGE_TOO_LARGE"
+  );
+});
+
+test("catalog image storage uses generated keys and blocks path traversal", async () => {
+  const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "ysabelle-catalog-images-"));
+
+  try {
+    const storage = new CatalogImageStorage(temporaryRoot);
+    const key = await storage.writeOriginal("candidate-1", ".png", Buffer.from("image-bytes"));
+
+    assert.equal(key, "candidates/candidate-1/original.png");
+    assert.equal(await readFile(storage.resolveStorageKey(key), "utf8"), "image-bytes");
+    assert.throws(
+      () => storage.resolveStorageKey("../../escape.webp"),
+      (error) =>
+        error instanceof Error && (error as { code?: string }).code === "CATALOG_IMAGE_INVALID_STORAGE_KEY"
+    );
+  } finally {
+    await rm(temporaryRoot, { force: true, recursive: true });
+  }
+});
