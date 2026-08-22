@@ -14,7 +14,7 @@
     "dev:web": "node --env-file=.env scripts/dev.mjs --web-only",
     "dev:lifecycle-test": "node --env-file=.env scripts/dev-lifecycle-smoke.mjs",
     "build": "npm run build --workspaces && npm run prisma:validate",
-    "lint": "eslint backend frontend electron scripts tools database eslint.config.mjs",
+    "lint": "eslint backend/src backend/test frontend/src frontend/vite.config.ts frontend/tailwind.config.ts frontend/postcss.config.js electron/src electron/electron-builder.config.cjs scripts tools/repo-context database/seed eslint.config.mjs",
     "typecheck": "npm run typecheck:scripts && npm run typecheck --workspaces --if-present",
     "typecheck:scripts": "tsc --noEmit -p tsconfig.json",
     "format": "prettier --write .",
