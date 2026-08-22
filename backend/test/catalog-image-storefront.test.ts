@@ -6,7 +6,7 @@ import { prisma } from "../src/database/prismaClient.js";
 import { listStorefrontProducts } from "../src/services/storefrontService.js";
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
 
-test("storefront accepts an active approved CIQE image and exposes card plus PDP URLs", async () => {
+test("storefront accepts an active approved CIQE image and keeps list payload card-only", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
 
@@ -71,10 +71,7 @@ test("storefront accepts an active approved CIQE image and exposes card plus PDP
       storefrontProduct.imageUrl,
       `/api/storefront/product-images/${asset.id}/card`
     );
-    assert.equal(
-      storefrontProduct.detailImageUrl,
-      `/api/storefront/product-images/${asset.id}/pdp`
-    );
+    assert.equal("detailImageUrl" in storefrontProduct, false);
   } finally {
     await scope.cleanup();
   }
@@ -121,7 +118,7 @@ test("storefront still accepts legacy curated product images without an active C
 
     assert.ok(storefrontProduct);
     assert.equal(storefrontProduct.imageUrl, imageUrl);
-    assert.equal(storefrontProduct.detailImageUrl, imageUrl);
+    assert.equal("detailImageUrl" in storefrontProduct, false);
   } finally {
     await scope.cleanup();
   }
