@@ -3,32 +3,21 @@ import { test } from "node:test";
 
 import { HTTP_STATUS, isCanonicalHttpStatusCode } from "../src/constants/httpStatusContract.js";
 
-const canonicalStatusCodes = [
-  200,
-  201,
-  400,
-  401,
-  403,
-  404,
-  409,
-  413,
-  415,
-  422,
-  429,
-  500,
-  503
-] as const;
+const canonicalStatusCodes = [200, 201, 400, 401, 403, 404, 409, 413, 415, 422, 429, 500, 503] as const;
 
-test("Sprint 8 exposes one canonical HTTP status contract for supported server outcomes", () => {
-  assert.deepEqual(
-    Object.values(HTTP_STATUS).sort((left, right) => left - right),
-    [...canonicalStatusCodes]
-  );
+test(
+  "Sprint 8 exposes one canonical HTTP status contract for supported server outcomes",
+  () => {
+    assert.deepEqual(
+      Object.values(HTTP_STATUS).sort((left, right) => left - right),
+      [...canonicalStatusCodes]
+    );
 
-  for (const statusCode of canonicalStatusCodes) {
-    assert.equal(isCanonicalHttpStatusCode(statusCode), true);
+    for (const statusCode of canonicalStatusCodes) {
+      assert.equal(isCanonicalHttpStatusCode(statusCode), true);
+    }
   }
-});
+);
 
 test(
   "protocol and upstream status codes stay outside the contract until architecture requires them",
