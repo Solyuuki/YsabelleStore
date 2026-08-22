@@ -33,13 +33,12 @@ def _enhance_bounded(image: Image.Image) -> Image.Image:
 
 
 def _normalization_working_copy(oriented: Image.Image) -> Image.Image:
-    working = oriented.copy()
-    if max(working.size) > NORMALIZATION_INPUT_MAX_SIDE:
-        working.thumbnail(
+    if max(oriented.size) > NORMALIZATION_INPUT_MAX_SIDE:
+        oriented.thumbnail(
             (NORMALIZATION_INPUT_MAX_SIDE, NORMALIZATION_INPUT_MAX_SIDE),
             Image.Resampling.LANCZOS,
         )
-    return working
+    return oriented
 
 
 def _normalized_master(oriented: Image.Image) -> tuple[Image.Image, str]:
