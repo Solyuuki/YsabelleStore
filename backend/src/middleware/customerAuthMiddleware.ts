@@ -1,7 +1,10 @@
 import type { Request, RequestHandler } from "express";
 
 import { getCustomerFromSessionToken, type SafeCustomer } from "../services/customerAuthService.js";
-import { readCustomerSessionCookie } from "../utils/customerAuthCookie.js";
+import {
+  clearCustomerSessionCookie,
+  readCustomerSessionCookie
+} from "../utils/customerAuthCookie.js";
 import { HttpError } from "../utils/httpError.js";
 
 type RequestWithCustomerAuth = Request & {
@@ -30,18 +33,24 @@ export const requireCustomerAuth: RequestHandler = async (request, _response, ne
   }
 };
 
-export const optionalCustomerAuth: RequestHandler = async (request, _response, next) => {
-  try {
-    const sessionToken = readCustomerSessionCookie(request);
-    if (!sessionToken) {
-      next();
-      return;
-    }
+export const optionalCustomerAuth: RequestHandler = async (request, response, next) => {
+  const sessionToken = readCustomerSessionCookie(request);
+  if (!sessionToken) {
+    next();
+    return;
+  }
 
+  try {
     (request as RequestWithCustomerAuth).authCustomer =
       await getCustomerFromSessionToken(sessionToken);
     next();
   } catch (error) {
+    if (error instanceof HttpError && error.code === "CUSTOMER_SESSION_INVALID") {
+      clearCustomerSessionCookie(response);
+      next();
+      return;
+    }
+
     next(error);
   }
 };
