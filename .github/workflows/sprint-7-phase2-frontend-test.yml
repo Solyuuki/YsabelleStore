@@ -25,5 +25,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run frontend customer auth contract
+      - name: Run frontend customer auth service contract
         run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-auth-frontend-test.ts
+
+      - name: Run frontend customer auth UI state contract
+        run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-auth-ui-contract-test.ts
