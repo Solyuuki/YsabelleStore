@@ -127,7 +127,11 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
           </dl>
 
           <div className="customer-account-actions">
-            <button className="customer-auth-submit" onClick={() => navigate("/shop")} type="button">
+            <button
+              className="customer-auth-submit"
+              onClick={() => navigate("/shop")}
+              type="button"
+            >
               Continue Shopping
             </button>
             <button
@@ -167,7 +171,11 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
               <PackageCheck aria-hidden="true" size={28} />
               <strong>No signed-in orders yet</strong>
               <p>Your next pickup order will appear here when you place it while signed in.</p>
-              <button className="customer-auth-secondary" onClick={() => navigate("/shop")} type="button">
+              <button
+                className="customer-auth-secondary"
+                onClick={() => navigate("/shop")}
+                type="button"
+              >
                 Browse the shop
               </button>
             </div>
