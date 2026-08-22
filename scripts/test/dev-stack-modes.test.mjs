@@ -58,10 +58,7 @@ async function startExistingWebStack(runtime) {
     response.end('<!doctype html><html><body><div id="root">YsabelleStore</div></body></html>');
   });
 
-  await Promise.all([
-    listen(backend, runtime.backendPort),
-    listen(frontend, runtime.frontendPort)
-  ]);
+  await Promise.all([listen(backend, runtime.backendPort), listen(frontend, runtime.frontendPort)]);
 
   return async () => {
     await Promise.all([close(backend), close(frontend)]);

@@ -26,10 +26,12 @@
 ### Task 1: Guardrail GitHub Actions Context Regression Tests
 
 **Files:**
+
 - Modify: `scripts/test/guardrails.test.mjs`
 - Modify: `scripts/lib/git-utils.mjs`
 
 **Interfaces:**
+
 - Consumes: Git branch state plus `GITHUB_HEAD_REF`, `GITHUB_BASE_REF`, and optional explicit Ysabelle guardrail environment.
 - Produces: deterministic `getBranch()` and PR-aware `collectChangedFiles()` behavior.
 
@@ -42,6 +44,7 @@
 ### Task 2: Remove Hardcoded M1 From Generic CI
 
 **Files:**
+
 - Modify: `scripts/lib/guardrail-config.mjs`
 - Modify: `scripts/guardrail-preflight.mjs`
 - Modify: `scripts/verify-status.mjs`
@@ -50,6 +53,7 @@
 - Modify: `.github/workflows/ci.yml`
 
 **Interfaces:**
+
 - Consumes: branch classification: member branch, sprint integration branch, staging/main.
 - Produces: member-scoped checks only when a member exists; sprint-level validation for sprint integration branches.
 
@@ -62,11 +66,13 @@
 ### Task 3: Make Main CI Database-Capable and Runtime-Consistent
 
 **Files:**
+
 - Modify: `.github/workflows/ci.yml`
 - Modify: `package.json` only if a deterministic CI database preparation command is needed.
 - Modify: database migration/test setup only if an existing persisted invariant is proven broken by the now-correct database test lane.
 
 **Interfaces:**
+
 - Consumes: committed Prisma schema and backend tests.
 - Produces: disposable MySQL schema and strict workspace test results.
 
@@ -78,6 +84,7 @@
 ### Task 4: Make Validation Read-Only and Remove Temporary Self-Mutating Workflows
 
 **Files:**
+
 - Modify: `.github/workflows/sprint-7-validation.yml`
 - Delete: `.github/workflows/sprint-7-phase1-schema-apply.yml`
 - Delete: `.github/sprint-7-phase1-schema-trigger.txt`
@@ -85,6 +92,7 @@
 - Modify: `backend/package.json` if the committed customer-auth contract must become part of the normal backend test command.
 
 **Interfaces:**
+
 - Consumes: committed Sprint 7 schema/service/tests only.
 - Produces: strict, read-only Sprint 7 validation with no commit/push permissions.
 
@@ -97,12 +105,14 @@
 ### Task 5: Reduce False Failures Without Weakening Safety
 
 **Files:**
+
 - Modify: `.prettierignore` only for generated/external content that should never be repository-owned formatting policy.
 - Modify: `.github/workflows/repository-governance.yml` only where a check is proven stale or unrelated.
 - Modify: `scripts/lib/change-classifier.mjs`
 - Modify: `scripts/test/guardrails.test.mjs`
 
 **Interfaces:**
+
 - Consumes: changed-file set.
 - Produces: generic, current-scope risk/manual-QA classification without stale trusted-device-specific conclusions.
 
@@ -114,9 +124,11 @@
 ### Task 6: Final Guardrail Verification
 
 **Files:**
+
 - Modify: `docs/standards/CI-GUARDRAILS.md` and `docs/GITHUB-WORKFLOW.md` only to document the repaired behavior.
 
 **Interfaces:**
+
 - Consumes: final committed checker architecture.
 - Produces: a repeatable local/CI contract.
 

@@ -19,6 +19,7 @@ Use 21st AI as a design drafting surface, not as an authority over the repositor
 ## Handoff
 
 After selecting a draft:
+
 1. Extract layout hierarchy, spacing, interaction intent, and reusable component ideas.
 2. Map those ideas to existing YsabelleStore components first.
 3. Use `21st-cli-use` for reusable catalog components where appropriate.

@@ -83,7 +83,9 @@ export async function createCustomerSession(
   return { sessionToken, expiresAt };
 }
 
-export async function registerCustomer(input: CustomerRegisterInput): Promise<CustomerSessionResult> {
+export async function registerCustomer(
+  input: CustomerRegisterInput
+): Promise<CustomerSessionResult> {
   const parsed = customerRegisterSchema.parse(input);
   const email = parsed.email;
   const existing = await prisma.customerAccount.findUnique({ where: { email } });

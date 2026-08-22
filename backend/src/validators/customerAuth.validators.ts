@@ -2,7 +2,12 @@ import { z } from "zod";
 
 export const customerRegisterSchema = z.object({
   name: z.string().trim().min(2).max(120),
-  email: z.string().trim().email().max(191).transform((value) => value.toLowerCase()),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(191)
+    .transform((value) => value.toLowerCase()),
   phone: z
     .string()
     .trim()
@@ -15,7 +20,12 @@ export const customerRegisterSchema = z.object({
 });
 
 export const customerLoginSchema = z.object({
-  email: z.string().trim().email().max(191).transform((value) => value.toLowerCase()),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(191)
+    .transform((value) => value.toLowerCase()),
   password: z.string().min(1).max(128)
 });
 

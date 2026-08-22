@@ -29,10 +29,12 @@
 ## File Map
 
 ### Database
+
 - Modify: `database/prisma/schema.prisma`
 - Create: `database/prisma/migrations/20260822_customer_accounts/migration.sql`
 
 ### Backend customer authentication
+
 - Create: `backend/src/validators/customerAuth.validators.ts`
 - Create: `backend/src/services/customerAuthService.ts`
 - Create: `backend/src/services/customerSessionCookie.ts`
@@ -46,6 +48,7 @@
 - Test: `backend/test/customer-auth.test.ts`
 
 ### Backend storefront/account integration
+
 - Modify: `backend/src/services/storefrontService.ts`
 - Modify: `backend/src/controllers/storefrontController.ts`
 - Modify: `backend/src/routes/storefront.routes.ts`
@@ -53,12 +56,14 @@
 - Modify: `backend/package.json`
 
 ### Internal-auth hardening
+
 - Modify: `backend/src/services/authService.ts`
 - Modify: `backend/src/routes/auth.routes.ts`
 - Create: `backend/src/middleware/authRateLimit.ts`
 - Test: `backend/test/auth-security.test.ts`
 
 ### Frontend customer authentication
+
 - Create: `frontend/src/types/customerAuth.ts`
 - Create: `frontend/src/services/customerAuthService.ts`
 - Create: `frontend/src/context/CustomerAuthContext.tsx`
@@ -86,11 +91,13 @@
 ## Task 1: Add customer identity, session, and optional order ownership to Prisma
 
 **Files:**
+
 - Modify: `database/prisma/schema.prisma`
 - Create: `database/prisma/migrations/20260822_customer_accounts/migration.sql`
 - Test: `backend/test/customer-auth.test.ts`
 
 **Interfaces:**
+
 - Produces Prisma models `CustomerAccount`, `CustomerSession`, and nullable `CustomerOrder.customerAccountId`.
 - Later tasks depend on `CustomerAccount.id`, `CustomerSession.tokenHash`, `CustomerSession.expiresAt`, and `CustomerOrder.customerAccountId`.
 
@@ -135,7 +142,9 @@ test("customer account and finite session persist independently from internal us
 });
 
 test.after(async () => {
-  await prisma.customerSession.deleteMany({ where: { customerAccountId: { in: createdCustomerIds } } });
+  await prisma.customerSession.deleteMany({
+    where: { customerAccountId: { in: createdCustomerIds } }
+  });
   await prisma.customerAccount.deleteMany({ where: { id: { in: createdCustomerIds } } });
 });
 ```
@@ -234,6 +243,7 @@ git commit -m "feat: add customer account persistence"
 ## Task 2: Implement opaque HttpOnly customer sessions and auth service
 
 **Files:**
+
 - Create: `backend/src/validators/customerAuth.validators.ts`
 - Create: `backend/src/services/customerAuthService.ts`
 - Create: `backend/src/services/customerSessionCookie.ts`
@@ -241,6 +251,7 @@ git commit -m "feat: add customer account persistence"
 - Expand: `backend/test/customer-auth.test.ts`
 
 **Interfaces:**
+
 - Produces `SafeCustomer`, `registerCustomer`, `loginCustomer`, `createCustomerSession`, `getCustomerFromSessionToken`, `revokeCustomerSession`.
 - Produces middleware helpers `requireCustomerAuth`, `optionalCustomerAuth`, `getAuthenticatedCustomer`.
 - Cookie name: `ysabelle_customer_session`.
@@ -280,13 +291,23 @@ import { z } from "zod";
 
 export const customerRegisterSchema = z.object({
   name: z.string().trim().min(2).max(120),
-  email: z.string().trim().email().max(191).transform((value) => value.toLowerCase()),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(191)
+    .transform((value) => value.toLowerCase()),
   phone: z.string().trim().min(7).max(40).optional().or(z.literal("")),
   password: z.string().min(8).max(128)
 });
 
 export const customerLoginSchema = z.object({
-  email: z.string().trim().email().max(191).transform((value) => value.toLowerCase()),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .max(191)
+    .transform((value) => value.toLowerCase()),
   password: z.string().min(1).max(128)
 });
 
@@ -366,6 +387,7 @@ git commit -m "feat: add secure customer sessions"
 ## Task 3: Expose customer auth HTTP routes and configure credentialed CORS
 
 **Files:**
+
 - Create: `backend/src/controllers/customerAuthController.ts`
 - Create: `backend/src/routes/customerAuth.routes.ts`
 - Modify: `backend/src/routes/index.ts`
@@ -373,6 +395,7 @@ git commit -m "feat: add secure customer sessions"
 - Expand: `backend/test/customer-auth.test.ts`
 
 **Interfaces:**
+
 - `POST /api/customer-auth/register`
 - `POST /api/customer-auth/login`
 - `GET /api/customer-auth/me`
@@ -400,7 +423,9 @@ npx tsx --test --test-concurrency=1 backend/test/customer-auth.test.ts
 Controllers parse the Zod schemas, call service functions, set/clear the cookie, and return only:
 
 ```ts
-{ customer: SafeCustomer }
+{
+  customer: SafeCustomer;
+}
 ```
 
 Never return `sessionToken` or `passwordHash`.
@@ -421,7 +446,7 @@ cors({
   origin(origin, callback) {
     callback(null, origin === undefined || corsOrigins.includes(origin));
   }
-})
+});
 ```
 
 - [ ] **Step 5: Verify GREEN plus existing CORS regression**
@@ -444,6 +469,7 @@ git commit -m "feat: expose customer authentication API"
 ## Task 4: Add frontend customer-auth test harness, service, and context
 
 **Files:**
+
 - Modify: `frontend/package.json`
 - Modify: `package-lock.json`
 - Create: `frontend/src/test/setup.ts`
@@ -453,6 +479,7 @@ git commit -m "feat: expose customer authentication API"
 - Test: `frontend/src/context/CustomerAuthContext.test.tsx`
 
 **Interfaces:**
+
 - `CustomerAuthStatus = "loading" | "authenticated" | "unauthenticated"`
 - `useCustomerAuth()` exposes `customer`, `status`, `isReady`, `login`, `register`, `logout`, `refreshSession`.
 - All customer auth requests use `credentials: "include"`; no customer token is stored in localStorage/sessionStorage.
@@ -493,10 +520,11 @@ npm test --workspace @ysabellestore/frontend -- CustomerAuthContext.test.tsx
 `customerAuthService.ts` calls:
 
 ```ts
-/api/customer-auth/me
-/api/customer-auth/login
-/api/customer-auth/register
-/api/customer-auth/logout
+/api/cemorstu -
+  auth / me / api / customer -
+  auth / login / api / customer -
+  auth / register / api / customer -
+  auth / logout;
 ```
 
 with `credentials: "include"` on every request.
@@ -522,6 +550,7 @@ git commit -m "feat: add storefront customer auth state"
 ## Task 5: Build Sign In, Create Account, and authenticated header states
 
 **Files:**
+
 - Create: `frontend/src/pages/customer/CustomerLoginPage.tsx`
 - Create: `frontend/src/pages/customer/CustomerRegisterPage.tsx`
 - Modify: `frontend/src/app/CustomerApp.tsx`
@@ -531,6 +560,7 @@ git commit -m "feat: add storefront customer auth state"
 - Test: `frontend/src/pages/customer/CustomerRegisterPage.test.tsx`
 
 **Interfaces:**
+
 - Public routes: `/login`, `/register`.
 - Authenticated header target: `My Account` -> `/account`.
 - Guest header target: `Sign In` plus route to `Create Account` from the login page.
@@ -613,6 +643,7 @@ git commit -m "feat: add customer sign in and registration UI"
 ## Task 6: Link authenticated checkout orders and expose customer-owned order history
 
 **Files:**
+
 - Create: `backend/src/controllers/customerAccountController.ts`
 - Create: `backend/src/routes/customerAccount.routes.ts`
 - Modify: `backend/src/routes/index.ts`
@@ -623,6 +654,7 @@ git commit -m "feat: add customer sign in and registration UI"
 - Modify: `backend/package.json`
 
 **Interfaces:**
+
 - `GET /api/customer-account/orders` requires customer auth.
 - `POST /api/storefront/orders` stays public but uses `optionalCustomerAuth`.
 - `createStorefrontOrder(input, { customerAccountId?: string })` persists ownership when authenticated.
@@ -665,7 +697,9 @@ Service writes `customerAccountId` into `customerOrder.create` while leaving gue
 `GET /api/customer-account/orders` uses `requireCustomerAuth` and queries strictly:
 
 ```ts
-where: { customerAccountId: customer.id }
+where: {
+  customerAccountId: customer.id;
+}
 ```
 
 Order by `createdAt desc`, include item product names, and return only storefront-safe order fields. Do not accept an arbitrary customer id from route/query/body.
@@ -693,6 +727,7 @@ git commit -m "feat: link customer accounts to storefront orders"
 ## Task 7: Add My Account, order history, and authenticated checkout UX
 
 **Files:**
+
 - Create: `frontend/src/pages/customer/CustomerAccountPage.tsx`
 - Test: `frontend/src/pages/customer/CustomerAccountPage.test.tsx`
 - Modify: `frontend/src/pages/customer/CheckoutPage.tsx`
@@ -701,6 +736,7 @@ git commit -m "feat: link customer accounts to storefront orders"
 - Modify: `frontend/src/styles/customer.css`
 
 **Interfaces:**
+
 - `fetchCustomerOrders()` is called only for authenticated account UI.
 - `placeStorefrontOrder()` uses `credentials: "include"`, allowing the backend to link the order when a customer session exists while still working for guests.
 
@@ -771,6 +807,7 @@ git commit -m "feat: add customer account order history"
 ## Task 8: Harden internal/public auth boundaries and add real login throttling
 
 **Files:**
+
 - Create: `backend/src/middleware/authRateLimit.ts`
 - Modify: `backend/src/services/authService.ts`
 - Modify: `backend/src/routes/auth.routes.ts`
@@ -779,6 +816,7 @@ git commit -m "feat: add customer account order history"
 - Test: `backend/test/auth-security.test.ts`
 
 **Interfaces:**
+
 - Internal bearer tokens carry `tokenType: "internal"` and `getUserFromToken` rejects any token without that exact discriminator.
 - Customer auth remains opaque-cookie based and cannot be consumed by `requireAuth`.
 - Login throttling applies separately to internal login and customer login/register.
@@ -862,6 +900,7 @@ git commit -m "security: harden Sprint 7 authentication"
 ## Task 9: Run full Sprint 7 verification, security review, and acceptance flow
 
 **Files:**
+
 - Review all Sprint 7 changed files against `docs/superpowers/specs/2026-08-22-customer-authentication-design.md`.
 - Update documentation only if verification exposes a real behavior/contract change.
 

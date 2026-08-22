@@ -19,7 +19,10 @@ function rememberCustomer(customerId: string) {
   return customerId;
 }
 
-function expectHttpError(error: unknown, expected: { code: string; message: string; status: number }) {
+function expectHttpError(
+  error: unknown,
+  expected: { code: string; message: string; status: number }
+) {
   assert.ok(error instanceof HttpError);
   assert.equal(error.statusCode, expected.status);
   assert.equal(error.code, expected.code);
@@ -133,9 +136,8 @@ test("missing customer and wrong password return the same public credential erro
     loginCustomer({ email: `missing-${suffix}@example.com`, password: "CustomerPass123!" }),
     (error) => expectHttpError(error, expected)
   );
-  await assert.rejects(
-    loginCustomer({ email, password: "DefinitelyWrong123!" }),
-    (error) => expectHttpError(error, expected)
+  await assert.rejects(loginCustomer({ email, password: "DefinitelyWrong123!" }), (error) =>
+    expectHttpError(error, expected)
   );
 });
 
@@ -154,14 +156,12 @@ test("inactive customer cannot log in and active customer receives a new finite 
     where: { id: registered.customer.id }
   });
 
-  await assert.rejects(
-    loginCustomer({ email, password: "CustomerPass123!" }),
-    (error) =>
-      expectHttpError(error, {
-        status: 401,
-        code: "INVALID_CUSTOMER_CREDENTIALS",
-        message: "Invalid email or password."
-      })
+  await assert.rejects(loginCustomer({ email, password: "CustomerPass123!" }), (error) =>
+    expectHttpError(error, {
+      status: 401,
+      code: "INVALID_CUSTOMER_CREDENTIALS",
+      message: "Invalid email or password."
+    })
   );
 
   await prisma.customerAccount.update({
@@ -186,39 +186,36 @@ test("expired, revoked, and inactive-account sessions are rejected", async () =>
   rememberCustomer(customer.id);
 
   const now = new Date("2026-08-22T12:00:00.000Z");
-  const expired = await createCustomerSession(customer.id, new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000));
-  await assert.rejects(
-    getCustomerFromSessionToken(expired.sessionToken, now),
-    (error) =>
-      expectHttpError(error, {
-        status: 401,
-        code: "CUSTOMER_SESSION_INVALID",
-        message: "Customer session is invalid or expired."
-      })
+  const expired = await createCustomerSession(
+    customer.id,
+    new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000)
+  );
+  await assert.rejects(getCustomerFromSessionToken(expired.sessionToken, now), (error) =>
+    expectHttpError(error, {
+      status: 401,
+      code: "CUSTOMER_SESSION_INVALID",
+      message: "Customer session is invalid or expired."
+    })
   );
 
   const revoked = await createCustomerSession(customer.id, now);
   await revokeCustomerSession(revoked.sessionToken);
-  await assert.rejects(
-    getCustomerFromSessionToken(revoked.sessionToken, now),
-    (error) =>
-      expectHttpError(error, {
-        status: 401,
-        code: "CUSTOMER_SESSION_INVALID",
-        message: "Customer session is invalid or expired."
-      })
+  await assert.rejects(getCustomerFromSessionToken(revoked.sessionToken, now), (error) =>
+    expectHttpError(error, {
+      status: 401,
+      code: "CUSTOMER_SESSION_INVALID",
+      message: "Customer session is invalid or expired."
+    })
   );
 
   const inactive = await createCustomerSession(customer.id, now);
   await prisma.customerAccount.update({ data: { status: "INACTIVE" }, where: { id: customer.id } });
-  await assert.rejects(
-    getCustomerFromSessionToken(inactive.sessionToken, now),
-    (error) =>
-      expectHttpError(error, {
-        status: 401,
-        code: "CUSTOMER_SESSION_INVALID",
-        message: "Customer session is invalid or expired."
-      })
+  await assert.rejects(getCustomerFromSessionToken(inactive.sessionToken, now), (error) =>
+    expectHttpError(error, {
+      status: 401,
+      code: "CUSTOMER_SESSION_INVALID",
+      message: "Customer session is invalid or expired."
+    })
   );
 });
 

@@ -4,19 +4,19 @@ Sprint 6 introduces a server-side **Catalog Image Quality Engine (CIQE)** for pr
 
 ## Sprint Metadata
 
-| Field | Details |
-| --- | --- |
-| Sprint | Sprint 6 |
-| Sprint branch | `sprint/v0.6/sprint-6` |
-| Base branch | `sprint/v0.5/sprint-5` |
-| Active sprint source | `config/guardrails.json` |
-| Primary theme | Automated product-image quality, normalization, and publishing safety |
-| Internal service name | `catalog-image-engine` |
-| Architecture | Server-side hybrid deterministic processing + optional local vision adapter |
-| External paid image API | Not required |
-| Product-save policy | Product may save even when a candidate image fails; failed/unapproved image is not promoted to storefront |
-| Approval UX | Before/After preview for publishable processed images |
-| Repository-side status | Planning/design approved; implementation not started |
+| Field                   | Details                                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------- |
+| Sprint                  | Sprint 6                                                                                                  |
+| Sprint branch           | `sprint/v0.6/sprint-6`                                                                                    |
+| Base branch             | `sprint/v0.5/sprint-5`                                                                                    |
+| Active sprint source    | `config/guardrails.json`                                                                                  |
+| Primary theme           | Automated product-image quality, normalization, and publishing safety                                     |
+| Internal service name   | `catalog-image-engine`                                                                                    |
+| Architecture            | Server-side hybrid deterministic processing + optional local vision adapter                               |
+| External paid image API | Not required                                                                                              |
+| Product-save policy     | Product may save even when a candidate image fails; failed/unapproved image is not promoted to storefront |
+| Approval UX             | Before/After preview for publishable processed images                                                     |
+| Repository-side status  | Planning/design approved; implementation not started                                                      |
 
 ## Sprint 6 Goal
 
@@ -51,12 +51,12 @@ promote approved asset to product
 
 ## Planning Documents
 
-| Document | Purpose |
-| --- | --- |
-| [SPRINT-GOAL.md](SPRINT-GOAL.md) | Sprint outcomes, constraints, and non-goals |
-| [SPRINT-BACKLOG.md](SPRINT-BACKLOG.md) | Work breakdown and sequencing |
-| [DEFINITION-OF-DONE.md](DEFINITION-OF-DONE.md) | Acceptance and verification criteria |
-| [`../../superpowers/specs/2026-08-22-catalog-image-quality-engine-design.md`](../../superpowers/specs/2026-08-22-catalog-image-quality-engine-design.md) | Approved architecture/design specification |
+| Document                                                                                                                                                 | Purpose                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| [SPRINT-GOAL.md](SPRINT-GOAL.md)                                                                                                                         | Sprint outcomes, constraints, and non-goals |
+| [SPRINT-BACKLOG.md](SPRINT-BACKLOG.md)                                                                                                                   | Work breakdown and sequencing               |
+| [DEFINITION-OF-DONE.md](DEFINITION-OF-DONE.md)                                                                                                           | Acceptance and verification criteria        |
+| [`../../superpowers/specs/2026-08-22-catalog-image-quality-engine-design.md`](../../superpowers/specs/2026-08-22-catalog-image-quality-engine-design.md) | Approved architecture/design specification  |
 
 ## Product Safety Principle
 

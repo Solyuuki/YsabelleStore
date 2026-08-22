@@ -10,6 +10,7 @@ Use production UI/UX reasoning while treating the existing YsabelleStore design 
 ## Priorities
 
 Apply in this order:
+
 1. Accessibility and keyboard/touch usability.
 2. Correct interaction and loading/error feedback.
 3. Responsive layout and content resilience.
@@ -39,6 +40,7 @@ Apply in this order:
 ## Product image normalization
 
 For product cards and PDP/product-detail views:
+
 - Use a stable aspect-ratio media frame.
 - Keep the full product visible with `object-fit: contain` unless deliberate cropping is approved.
 - Center the subject and enforce consistent visual padding.

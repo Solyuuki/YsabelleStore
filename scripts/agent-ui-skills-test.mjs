@@ -7,7 +7,7 @@ const expected = [
   "21st-cli-use",
   "21st-ai",
   "motion-dev-animations",
-  "ysabelle-ui-orchestrator",
+  "ysabelle-ui-orchestrator"
 ];
 
 let failures = 0;
@@ -27,7 +27,11 @@ for (const name of expected) {
     continue;
   }
 
-  if (!new RegExp(`^name:\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "m").test(frontmatter[1])) {
+  if (
+    !new RegExp(`^name:\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "m").test(
+      frontmatter[1]
+    )
+  ) {
     console.error(`WRONG name in ${file}`);
     failures++;
   }

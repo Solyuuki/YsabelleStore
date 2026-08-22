@@ -1,9 +1,11 @@
 # M1 Abarado — Sprint 7
 
 ## Focus
+
 Customer authentication and account readiness.
 
 ## Responsibilities
+
 - Customer auth persistence and migrations.
 - Registration/login/session service.
 - Secure HttpOnly cookie HTTP boundary.
@@ -12,4 +14,5 @@ Customer authentication and account readiness.
 - Sprint 7 auth verification and documentation.
 
 ## Current status
+
 Phase 1 in progress. Persistence and service layer are implemented; HTTP boundary and final Phase 1 isolation tests remain.
