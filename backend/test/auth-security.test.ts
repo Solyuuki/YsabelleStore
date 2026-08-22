@@ -105,11 +105,10 @@ test("internal bearer tokens require the internal token discriminator", async ()
   const user = await createInternalUser();
 
   try {
-    const legacyToken = jwt.sign(
-      { email: user.email, role: user.role },
-      requireJwtSecret(),
-      { expiresIn: "8h", subject: user.id }
-    );
+    const legacyToken = jwt.sign({ email: user.email, role: user.role }, requireJwtSecret(), {
+      expiresIn: "8h",
+      subject: user.id
+    });
     const typedToken = jwt.sign(
       { tokenType: "internal", email: user.email, role: user.role },
       requireJwtSecret(),
@@ -234,14 +233,14 @@ test("expired or legacy null-expiry trusted devices require password re-authenti
       ]
     });
 
-    await expectHttpError(
-      () => restoreTrustedDeviceSession({ trustedDeviceToken: expiredToken }),
-      { statusCode: 401, code: "TRUSTED_DEVICE_INVALID" }
-    );
-    await expectHttpError(
-      () => restoreTrustedDeviceSession({ trustedDeviceToken: legacyToken }),
-      { statusCode: 401, code: "TRUSTED_DEVICE_INVALID" }
-    );
+    await expectHttpError(() => restoreTrustedDeviceSession({ trustedDeviceToken: expiredToken }), {
+      statusCode: 401,
+      code: "TRUSTED_DEVICE_INVALID"
+    });
+    await expectHttpError(() => restoreTrustedDeviceSession({ trustedDeviceToken: legacyToken }), {
+      statusCode: 401,
+      code: "TRUSTED_DEVICE_INVALID"
+    });
   } finally {
     await prisma.trustedDevice.deleteMany({ where: { userId: user.id } });
     await prisma.user.delete({ where: { id: user.id } });
