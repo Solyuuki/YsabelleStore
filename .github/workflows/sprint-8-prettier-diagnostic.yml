@@ -29,3 +29,5 @@ jobs:
 
       - name: Print exact formatter diff
         run: git diff -- backend/test/http-status-contract.test.ts
+
+      # This workflow is temporary diagnostic instrumentation for Phase 1.
