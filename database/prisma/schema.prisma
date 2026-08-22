@@ -58,6 +58,19 @@ enum CatalogQualityStatus {
   REJECTED
 }
 
+enum ProductImageQualityStatus {
+  APPROVED
+  NEEDS_REVIEW
+  REJECTED
+}
+
+enum ProductImageProcessingStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
 enum ProductSizeUnit {
   MILLILITER
   LITER
@@ -289,6 +302,7 @@ model Category {
 model Product {
   id                        String                      @id @default(cuid()) @db.VarChar(191)
   categoryId                String                      @map("category_id") @db.VarChar(191)
+  activeImageAssetId        String?                     @unique(map: "uq_products_active_image_asset") @map("active_image_asset_id") @db.VarChar(191)
   sku                       String                      @unique(map: "uq_products_sku") @db.VarChar(80)
   barcode                   String?                     @unique(map: "uq_products_barcode") @db.VarChar(80)
   name                      String                      @db.VarChar(160)
@@ -310,6 +324,8 @@ model Product {
   createdAt                 DateTime                    @default(now()) @map("created_at")
   updatedAt                 DateTime                    @updatedAt @map("updated_at")
   category                  Category                    @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  activeImageAsset          ProductImageAsset?          @relation("ActiveProductImage", fields: [activeImageAssetId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  imageAssets               ProductImageAsset[]         @relation("ProductImageAssets")
   inventory                 Inventory?
   inventoryBatches          InventoryBatch[]
   inventoryMovements        InventoryMovement[]
@@ -334,6 +350,34 @@ model Product {
   @@index([isStorefrontVisible, dataQualityStatus, status], map: "idx_products_storefront_quality")
   @@index([recordSource, dataQualityStatus], map: "idx_products_source_quality")
   @@map("products")
+}
+
+model ProductImageAsset {
+  id                  String                       @id @default(cuid()) @db.VarChar(191)
+  productId           String                       @map("product_id") @db.VarChar(191)
+  qualityStatus       ProductImageQualityStatus    @default(NEEDS_REVIEW) @map("quality_status")
+  processingStatus    ProductImageProcessingStatus @default(PENDING) @map("processing_status")
+  originalStorageKey  String                       @map("original_storage_key") @db.VarChar(500)
+  processedStorageKey String?                      @map("processed_storage_key") @db.VarChar(500)
+  cardStorageKey      String?                      @map("card_storage_key") @db.VarChar(500)
+  pdpStorageKey       String?                      @map("pdp_storage_key") @db.VarChar(500)
+  sourceMimeType      String                       @map("source_mime_type") @db.VarChar(80)
+  sourceBytes         Int                          @map("source_bytes") @db.UnsignedInt
+  sourceWidth         Int?                         @map("source_width") @db.UnsignedInt
+  sourceHeight        Int?                         @map("source_height") @db.UnsignedInt
+  diagnostics         Json?
+  processingVersion   String                       @default("ciqe-v1") @map("processing_version") @db.VarChar(40)
+  approvedAt          DateTime?                    @map("approved_at")
+  rejectedAt          DateTime?                    @map("rejected_at")
+  supersededAt        DateTime?                    @map("superseded_at")
+  createdAt           DateTime                     @default(now()) @map("created_at")
+  updatedAt           DateTime                     @updatedAt @map("updated_at")
+  product             Product                      @relation("ProductImageAssets", fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  activeForProduct    Product?                     @relation("ActiveProductImage")
+
+  @@index([productId, createdAt], map: "idx_product_image_assets_product_created")
+  @@index([productId, qualityStatus, processingStatus], map: "idx_product_image_assets_quality")
+  @@map("product_image_assets")
 }
 
 model ProductReview {
