@@ -14,9 +14,12 @@ type ProductImageUploadFile = {
   size: number;
 };
 
+export type OwnerProductImageVariant = "original" | "processed" | "card" | "pdp";
+export type PublicProductImageVariant = "card" | "pdp";
+
 const storage = new CatalogImageStorage(catalogImageStorageRoot);
 
-export function approvedProductImageUrl(imageId: string, variant: "card" | "pdp") {
+export function approvedProductImageUrl(imageId: string, variant: PublicProductImageVariant) {
   return `/api/storefront/product-images/${encodeURIComponent(imageId)}/${variant}`;
 }
 
@@ -227,4 +230,77 @@ export async function rejectProductImageCandidate(productId: string, imageId: st
     },
     where: { id: candidate.id }
   });
+}
+
+export async function getOwnerProductImageVariant(
+  productId: string,
+  imageId: string,
+  variant: OwnerProductImageVariant
+) {
+  const candidate = await prisma.productImageAsset.findUnique({ where: { id: imageId } });
+
+  if (!candidate || candidate.productId !== productId) {
+    throw new HttpError(404, "Product image candidate was not found.", {
+      code: "PRODUCT_IMAGE_NOT_FOUND"
+    });
+  }
+
+  const key =
+    variant === "original"
+      ? candidate.originalStorageKey
+      : variant === "processed"
+        ? candidate.processedStorageKey
+        : variant === "card"
+          ? candidate.cardStorageKey
+          : candidate.pdpStorageKey;
+
+  if (!key) {
+    throw new HttpError(404, "Requested product image variant is not available.", {
+      code: "PRODUCT_IMAGE_VARIANT_NOT_FOUND"
+    });
+  }
+
+  return {
+    buffer: await storage.readStorageKey(key),
+    mimeType: variant === "original" ? candidate.sourceMimeType : "image/webp"
+  };
+}
+
+export async function getPublicProductImageVariant(
+  imageId: string,
+  variant: PublicProductImageVariant
+) {
+  const candidate = await prisma.productImageAsset.findUnique({
+    select: {
+      activeForProduct: { select: { id: true } },
+      cardStorageKey: true,
+      pdpStorageKey: true,
+      processingStatus: true,
+      qualityStatus: true
+    },
+    where: { id: imageId }
+  });
+
+  if (
+    !candidate ||
+    !candidate.activeForProduct ||
+    candidate.processingStatus !== "READY" ||
+    candidate.qualityStatus !== "APPROVED"
+  ) {
+    throw new HttpError(404, "Approved product image was not found.", {
+      code: "PRODUCT_IMAGE_NOT_FOUND"
+    });
+  }
+
+  const key = variant === "card" ? candidate.cardStorageKey : candidate.pdpStorageKey;
+  if (!key) {
+    throw new HttpError(404, "Approved product image variant was not found.", {
+      code: "PRODUCT_IMAGE_VARIANT_NOT_FOUND"
+    });
+  }
+
+  return {
+    buffer: await storage.readStorageKey(key),
+    mimeType: "image/webp"
+  };
 }
