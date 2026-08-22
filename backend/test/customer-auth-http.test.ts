@@ -62,123 +62,117 @@ async function cleanupCustomer(email: string) {
   await prisma.customerAccount.delete({ where: { id: customer.id } });
 }
 
-test(
-  "customer register, session restore, and logout use a revocable HttpOnly cookie without exposing the raw token",
-  async () => {
-    const suffix = randomUUID().slice(0, 8);
-    const email = `http-${suffix}@example.com`;
+test("customer register, session restore, and logout use a revocable HttpOnly cookie without exposing the raw token", async () => {
+  const suffix = randomUUID().slice(0, 8);
+  const email = `http-${suffix}@example.com`;
 
-    try {
-      await withServer(async (baseUrl) => {
-        const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            name: "HTTP Customer",
-            email: `  ${email.toUpperCase()}  `,
-            phone: "09171234567",
-            password: PASSWORD,
-          }),
-        });
-
-        assert.equal(register.status, 201);
-        const setCookie = register.headers.get("set-cookie") ?? "";
-        assert.match(setCookie, new RegExp(`^${CUSTOMER_COOKIE_NAME}=`));
-        assert.match(setCookie, /HttpOnly/i);
-        assert.match(setCookie, /SameSite=Lax/i);
-        assert.match(setCookie, /Path=\/api/i);
-        assert.match(setCookie, /Max-Age=604800/i);
-        assert.doesNotMatch(setCookie, /Secure/i);
-
-        const registerBody = await json(register);
-        assert.equal(registerBody.data?.customer?.email, email);
-        assert.equal(JSON.stringify(registerBody).includes("sessionToken"), false);
-
-        const cookie = cookiePair(setCookie);
-        const me = await fetch(`${baseUrl}/api/customer-auth/me`, {
-          headers: { Cookie: cookie },
-        });
-        assert.equal(me.status, 200);
-        const meBody = await json(me);
-        assert.equal(meBody.data?.customer?.email, email);
-        assert.equal(JSON.stringify(meBody).includes("sessionToken"), false);
-
-        const logout = await fetch(`${baseUrl}/api/customer-auth/logout`, {
-          method: "POST",
-          headers: { Cookie: cookie },
-        });
-        assert.equal(logout.status, 200);
-        const clearedCookie = logout.headers.get("set-cookie") ?? "";
-        assert.match(clearedCookie, new RegExp(`^${CUSTOMER_COOKIE_NAME}=`));
-        assert.match(clearedCookie, /Max-Age=0/i);
-        assert.match(clearedCookie, /HttpOnly/i);
-        assert.match(clearedCookie, /SameSite=Lax/i);
-        assert.match(clearedCookie, /Path=\/api/i);
-
-        const revoked = await fetch(`${baseUrl}/api/customer-auth/me`, {
-          headers: { Cookie: cookie },
-        });
-        assert.equal(revoked.status, 401);
+  try {
+    await withServer(async (baseUrl) => {
+      const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: "HTTP Customer",
+          email: `  ${email.toUpperCase()}  `,
+          phone: "09171234567",
+          password: PASSWORD
+        })
       });
-    } finally {
-      await cleanupCustomer(email);
-    }
-  },
-);
 
-test(
-  "customer login keeps credential failures generic and registration rejects normalized duplicate email",
-  async () => {
-    const suffix = randomUUID().slice(0, 8);
-    const email = `generic-${suffix}@example.com`;
+      assert.equal(register.status, 201);
+      const setCookie = register.headers.get("set-cookie") ?? "";
+      assert.match(setCookie, new RegExp(`^${CUSTOMER_COOKIE_NAME}=`));
+      assert.match(setCookie, /HttpOnly/i);
+      assert.match(setCookie, /SameSite=Lax/i);
+      assert.match(setCookie, /Path=\/api/i);
+      assert.match(setCookie, /Max-Age=604800/i);
+      assert.doesNotMatch(setCookie, /Secure/i);
 
-    try {
-      await withServer(async (baseUrl) => {
-        const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ name: "Generic Customer", email, password: PASSWORD }),
-        });
-        assert.equal(register.status, 201);
+      const registerBody = await json(register);
+      assert.equal(registerBody.data?.customer?.email, email);
+      assert.equal(JSON.stringify(registerBody).includes("sessionToken"), false);
 
-        const duplicate = await fetch(`${baseUrl}/api/customer-auth/register`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            name: "Duplicate Customer",
-            email: ` ${email.toUpperCase()} `,
-            password: PASSWORD,
-          }),
-        });
-        assert.equal(duplicate.status, 409);
-
-        const wrongPassword = await fetch(`${baseUrl}/api/customer-auth/login`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email, password: "wrong-password" }),
-        });
-        const missingAccount = await fetch(`${baseUrl}/api/customer-auth/login`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            email: `missing-${suffix}@example.com`,
-            password: "wrong-password",
-          }),
-        });
-
-        assert.equal(wrongPassword.status, 401);
-        assert.equal(missingAccount.status, 401);
-        const wrongBody = await json(wrongPassword);
-        const missingBody = await json(missingAccount);
-        assert.equal(wrongBody.message, missingBody.message);
-        assert.equal(wrongBody.error?.code, missingBody.error?.code);
-        assert.equal(wrongBody.error?.code, "INVALID_CUSTOMER_CREDENTIALS");
+      const cookie = cookiePair(setCookie);
+      const me = await fetch(`${baseUrl}/api/customer-auth/me`, {
+        headers: { Cookie: cookie }
       });
-    } finally {
-      await cleanupCustomer(email);
-    }
-  },
-);
+      assert.equal(me.status, 200);
+      const meBody = await json(me);
+      assert.equal(meBody.data?.customer?.email, email);
+      assert.equal(JSON.stringify(meBody).includes("sessionToken"), false);
+
+      const logout = await fetch(`${baseUrl}/api/customer-auth/logout`, {
+        method: "POST",
+        headers: { Cookie: cookie }
+      });
+      assert.equal(logout.status, 200);
+      const clearedCookie = logout.headers.get("set-cookie") ?? "";
+      assert.match(clearedCookie, new RegExp(`^${CUSTOMER_COOKIE_NAME}=`));
+      assert.match(clearedCookie, /Max-Age=0/i);
+      assert.match(clearedCookie, /HttpOnly/i);
+      assert.match(clearedCookie, /SameSite=Lax/i);
+      assert.match(clearedCookie, /Path=\/api/i);
+
+      const revoked = await fetch(`${baseUrl}/api/customer-auth/me`, {
+        headers: { Cookie: cookie }
+      });
+      assert.equal(revoked.status, 401);
+    });
+  } finally {
+    await cleanupCustomer(email);
+  }
+});
+
+test("customer login keeps credential failures generic and registration rejects normalized duplicate email", async () => {
+  const suffix = randomUUID().slice(0, 8);
+  const email = `generic-${suffix}@example.com`;
+
+  try {
+    await withServer(async (baseUrl) => {
+      const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: "Generic Customer", email, password: PASSWORD })
+      });
+      assert.equal(register.status, 201);
+
+      const duplicate = await fetch(`${baseUrl}/api/customer-auth/register`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: "Duplicate Customer",
+          email: ` ${email.toUpperCase()} `,
+          password: PASSWORD
+        })
+      });
+      assert.equal(duplicate.status, 409);
+
+      const wrongPassword = await fetch(`${baseUrl}/api/customer-auth/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password: "wrong-password" })
+      });
+      const missingAccount = await fetch(`${baseUrl}/api/customer-auth/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email: `missing-${suffix}@example.com`,
+          password: "wrong-password"
+        })
+      });
+
+      assert.equal(wrongPassword.status, 401);
+      assert.equal(missingAccount.status, 401);
+      const wrongBody = await json(wrongPassword);
+      const missingBody = await json(missingAccount);
+      assert.equal(wrongBody.message, missingBody.message);
+      assert.equal(wrongBody.error?.code, missingBody.error?.code);
+      assert.equal(wrongBody.error?.code, "INVALID_CUSTOMER_CREDENTIALS");
+    });
+  } finally {
+    await cleanupCustomer(email);
+  }
+});
 
 test("customer auth supports credentialed CORS only for approved concrete origins", async () => {
   await withServer(async (baseUrl) => {
@@ -186,8 +180,8 @@ test("customer auth supports credentialed CORS only for approved concrete origin
       method: "OPTIONS",
       headers: {
         Origin: "http://localhost:5173",
-        "Access-Control-Request-Method": "GET",
-      },
+        "Access-Control-Request-Method": "GET"
+      }
     });
 
     assert.equal(allowed.headers.get("access-control-allow-origin"), "http://localhost:5173");
@@ -198,8 +192,8 @@ test("customer auth supports credentialed CORS only for approved concrete origin
       method: "OPTIONS",
       headers: {
         Origin: "https://untrusted.example",
-        "Access-Control-Request-Method": "GET",
-      },
+        "Access-Control-Request-Method": "GET"
+      }
     });
 
     assert.equal(rejected.headers.get("access-control-allow-origin"), null);
@@ -216,7 +210,7 @@ test("customer cookie and internal bearer authentication remain isolated", async
       name: "Boundary Staff",
       email: internalEmail,
       password: PASSWORD,
-      role: "STAFF",
+      role: "STAFF"
     });
 
     await withServer(async (baseUrl) => {
@@ -226,19 +220,19 @@ test("customer cookie and internal bearer authentication remain isolated", async
         body: JSON.stringify({
           name: "Boundary Customer",
           email: customerEmail,
-          password: PASSWORD,
-        }),
+          password: PASSWORD
+        })
       });
       assert.equal(register.status, 201);
       const customerCookie = cookiePair(register.headers.get("set-cookie") ?? "");
 
       const internalMeWithCustomerCookie = await fetch(`${baseUrl}/api/auth/me`, {
-        headers: { Cookie: customerCookie },
+        headers: { Cookie: customerCookie }
       });
       assert.equal(internalMeWithCustomerCookie.status, 401);
 
       const customerMeWithInternalBearer = await fetch(`${baseUrl}/api/customer-auth/me`, {
-        headers: { Authorization: `Bearer ${internal.token}` },
+        headers: { Authorization: `Bearer ${internal.token}` }
       });
       assert.equal(customerMeWithInternalBearer.status, 401);
     });
