@@ -73,6 +73,7 @@
     "product-images:process": "python scripts/product_image_cutouts.py",
     "product-images:cutouts:verify": "python scripts/product_image_cutouts.py --verify",
     "product-images:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/product-image-mapping-test.ts",
+    "catalog-images:test": "python -m unittest discover -s catalog-image-engine/tests -t catalog-image-engine -p test_*.py",
     "storefront:images:verify": "tsx scripts/storefront-image-ready-audit.ts",
     "storefront:showcase:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/storefront-curated-showcase-test.ts",
     "storefront:search-history:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/storefront-search-history-test.ts",
