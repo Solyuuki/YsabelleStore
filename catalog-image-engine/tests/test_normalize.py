@@ -110,6 +110,22 @@ class CatalogImageNormalizationTests(unittest.TestCase):
         self.assertGreaterEqual(result["variants"]["processed"]["width"], 800)
         self.assertGreaterEqual(result["variants"]["processed"]["height"], 800)
 
+    def test_large_complex_source_caps_processed_master_before_expensive_canvas_work(self) -> None:
+        source = Image.new("RGB", (1800, 2400), "white")
+        draw = ImageDraw.Draw(source)
+        for index in range(0, 1800, 60):
+            color = (40, 90, 170) if (index // 60) % 2 == 0 else (230, 180, 60)
+            draw.rectangle((index, 0, min(index + 59, 1799), 2399), fill=color)
+        draw.rectangle((550, 400, 1250, 2000), fill=(20, 20, 20))
+        path = self.save("large-complex-background.png", source)
+        output = self.root / "out"
+
+        result = normalize_image_path(path, output)
+
+        self.assertEqual(result["subjectDetection"], "preserved-full-frame")
+        self.assertLessEqual(max(result["variants"]["processed"]["width"], result["variants"]["processed"]["height"]), 1600)
+        self.assertLessEqual(max(result["variants"]["pdp"]["width"], result["variants"]["pdp"]["height"]), 1000)
+
 
 def foreground_bbox(image: Image.Image):
     rgb = image.convert("RGB")
