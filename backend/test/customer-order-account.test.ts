@@ -12,16 +12,18 @@ const PASSWORD = "CustomerPass123!";
 
 type OrderApiBody = {
   success?: boolean;
-  data?: Array<{
-    id?: string;
-    orderNumber?: string;
-    status?: string;
-    totalAmount?: string;
-    items?: Array<{ productId?: string; productName?: string; quantity?: number }>;
-  }> | {
-    id?: string;
-    orderNumber?: string;
-  };
+  data?:
+    | Array<{
+        id?: string;
+        orderNumber?: string;
+        status?: string;
+        totalAmount?: string;
+        items?: Array<{ productId?: string; productName?: string; quantity?: number }>;
+      }>
+    | {
+        id?: string;
+        orderNumber?: string;
+      };
 };
 
 async function withServer(run: (baseUrl: string) => Promise<void>) {
@@ -193,7 +195,10 @@ test("customer order history is strictly isolated to the authenticated customer"
       assert.equal(customerAHistory.status, 200);
       const customerABody = (await customerAHistory.json()) as OrderApiBody;
       assert.ok(Array.isArray(customerABody.data));
-      assert.equal(customerABody.data.some((order) => order.id === ownedOrder.id), true);
+      assert.equal(
+        customerABody.data.some((order) => order.id === ownedOrder.id),
+        true
+      );
       const serializedOwnedOrder = customerABody.data.find((order) => order.id === ownedOrder.id);
       assert.equal(serializedOwnedOrder?.items?.[0]?.productName, fixture.product.name);
 
@@ -203,7 +208,10 @@ test("customer order history is strictly isolated to the authenticated customer"
       assert.equal(customerBHistory.status, 200);
       const customerBBody = (await customerBHistory.json()) as OrderApiBody;
       assert.ok(Array.isArray(customerBBody.data));
-      assert.equal(customerBBody.data.some((order) => order.id === ownedOrder.id), false);
+      assert.equal(
+        customerBBody.data.some((order) => order.id === ownedOrder.id),
+        false
+      );
 
       const anonymousHistory = await fetch(`${baseUrl}/api/customer-account/orders`);
       assert.equal(anonymousHistory.status, 401);
