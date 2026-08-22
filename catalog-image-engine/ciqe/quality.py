@@ -13,6 +13,7 @@ MIN_SOURCE_SHORT_SIDE = 96
 PDP_REVIEW_SHORT_SIDE = 480
 SAFE_MARGIN_RATIO = 0.015
 ANALYSIS_MAX_SIDE = 512
+MAX_COMPLEX_EDGE_OUTLIER_RATIO = 0.25
 
 
 def _diagnostic(code: str, message: str, severity: str = "warning") -> dict[str, str]:
@@ -89,7 +90,13 @@ def _foreground_metrics(rgba: Image.Image) -> tuple[float | None, bool | None]:
             max(abs(sample[channel] - background[channel]) for channel in range(3))
             for sample in samples
         ]
-        if _median(edge_deviations) > 14:
+        edge_outlier_ratio = (
+            sum(deviation > 14 for deviation in edge_deviations) / len(edge_deviations)
+        )
+        if (
+            _median(edge_deviations) > 14
+            or edge_outlier_ratio > MAX_COMPLEX_EDGE_OUTLIER_RATIO
+        ):
             return None, None
 
         difference = ImageChops.difference(
