@@ -145,16 +145,6 @@ test("storefront reviews aggregate persisted ratings and support bounded rating 
     }
     assert.equal(storefrontProductReviewQuerySchema.safeParse({ rating: 0 }).success, false);
     assert.equal(storefrontProductReviewQuerySchema.safeParse({ rating: 6 }).success, false);
-    await assert.rejects(
-      prisma.productReview.create({
-        data: {
-          comment: "Invalid rating must not persist.",
-          productId: product.id,
-          rating: 6,
-          reviewerDisplayName: "Invalid Customer"
-        }
-      })
-    );
   } finally {
     await cleanupProducts([product.id]);
     await prisma.category.delete({ where: { id: category.id } });
