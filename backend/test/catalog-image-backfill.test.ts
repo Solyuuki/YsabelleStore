@@ -3,14 +3,29 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import test from "node:test";
 
+import { catalogImageStorageRoot } from "../src/config/env.js";
 import { prisma } from "../src/database/prismaClient.js";
+import { CatalogImageStorage } from "../src/modules/catalog-image/catalogImageStorage.js";
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
+
+const storage = new CatalogImageStorage(catalogImageStorageRoot);
 
 async function loadBackfillModule() {
   try {
     return await import("../src/modules/catalog-image/legacyImageBackfill.js");
   } catch {
     return null;
+  }
+}
+
+async function cleanupCandidateStorage(productId: string) {
+  const candidates = await prisma.productImageAsset.findMany({
+    select: { id: true },
+    where: { productId }
+  });
+
+  for (const candidate of candidates) {
+    await storage.removeCandidate(candidate.id);
   }
 }
 
@@ -180,6 +195,141 @@ test("legacy image backfill planner skips products with existing CIQE image hist
     assert.equal(plan[0]?.reason, "IMAGE_ASSET_EXISTS");
     assert.equal(plan[0]?.sourcePath, undefined);
   } finally {
+    await cleanupCandidateStorage(product.id);
+    await scope.cleanup();
+  }
+});
+
+test("legacy image backfill dry run reports eligibility without database or storage mutation", async () => {
+  const backfill = await loadBackfillModule();
+  assert.equal(
+    typeof backfill?.runLegacyProductImageBackfill,
+    "function",
+    "runLegacyProductImageBackfill must be implemented"
+  );
+
+  const scope = await captureDatabaseFixtureScope(prisma);
+  const suffix = randomUUID().slice(0, 8);
+  let productId: string | null = null;
+
+  try {
+    const category = await prisma.category.create({
+      data: {
+        dataQualityStatus: "APPROVED",
+        isActive: true,
+        isStorefrontVisible: true,
+        name: `Backfill Dry Run ${suffix}`,
+        recordSource: "CATALOG",
+        slug: `backfill-dry-run-${suffix}`
+      }
+    });
+    const product = await prisma.product.create({
+      data: {
+        categoryId: category.id,
+        costPrice: "10",
+        dataQualityStatus: "APPROVED",
+        imageUrl: "/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp",
+        isStorefrontVisible: true,
+        name: `Backfill Dry Run Product ${suffix}`,
+        sellingPrice: "15",
+        sku: `BACKFILL-DRY-RUN-${suffix}`,
+        status: "ACTIVE",
+        unit: "PIECE"
+      }
+    });
+    productId = product.id;
+
+    const before = await prisma.productImageAsset.count({ where: { productId: product.id } });
+    const result = await backfill.runLegacyProductImageBackfill({
+      apply: false,
+      productId: product.id,
+      repositoryRoot: path.resolve(".")
+    });
+    const after = await prisma.productImageAsset.count({ where: { productId: product.id } });
+
+    assert.equal(before, 0);
+    assert.equal(after, 0);
+    assert.equal(result.eligible, 1);
+    assert.equal(result.processed, 0);
+    assert.equal(result.skipped, 0);
+  } finally {
+    if (productId) await cleanupCandidateStorage(productId);
+    await scope.cleanup();
+  }
+});
+
+test("legacy image backfill apply creates one candidate, stays idempotent, and does not publish it", async () => {
+  const backfill = await loadBackfillModule();
+  assert.equal(
+    typeof backfill?.runLegacyProductImageBackfill,
+    "function",
+    "runLegacyProductImageBackfill must be implemented"
+  );
+
+  const scope = await captureDatabaseFixtureScope(prisma);
+  const suffix = randomUUID().slice(0, 8);
+  let productId: string | null = null;
+
+  try {
+    const category = await prisma.category.create({
+      data: {
+        dataQualityStatus: "APPROVED",
+        isActive: true,
+        isStorefrontVisible: true,
+        name: `Backfill Apply ${suffix}`,
+        recordSource: "CATALOG",
+        slug: `backfill-apply-${suffix}`
+      }
+    });
+    const legacyImageUrl = "/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp";
+    const product = await prisma.product.create({
+      data: {
+        categoryId: category.id,
+        costPrice: "10",
+        dataQualityStatus: "APPROVED",
+        imageUrl: legacyImageUrl,
+        isStorefrontVisible: true,
+        name: `Backfill Apply Product ${suffix}`,
+        sellingPrice: "15",
+        sku: `BACKFILL-APPLY-${suffix}`,
+        status: "ACTIVE",
+        unit: "PIECE"
+      }
+    });
+    productId = product.id;
+
+    const first = await backfill.runLegacyProductImageBackfill({
+      apply: true,
+      productId: product.id,
+      repositoryRoot: path.resolve(".")
+    });
+    const afterFirst = await prisma.productImageAsset.findMany({
+      where: { productId: product.id }
+    });
+    const reloadedAfterFirst = await prisma.product.findUniqueOrThrow({
+      where: { id: product.id }
+    });
+
+    assert.equal(first.eligible, 1);
+    assert.equal(first.processed, 1);
+    assert.equal(afterFirst.length, 1);
+    assert.equal(reloadedAfterFirst.imageUrl, legacyImageUrl);
+    assert.equal(reloadedAfterFirst.activeImageAssetId, null);
+
+    const second = await backfill.runLegacyProductImageBackfill({
+      apply: true,
+      productId: product.id,
+      repositoryRoot: path.resolve(".")
+    });
+    const afterSecond = await prisma.productImageAsset.count({
+      where: { productId: product.id }
+    });
+
+    assert.equal(afterSecond, 1);
+    assert.equal(second.processed, 0);
+    assert.equal(second.skipped, 1);
+  } finally {
+    if (productId) await cleanupCandidateStorage(productId);
     await scope.cleanup();
   }
 });
