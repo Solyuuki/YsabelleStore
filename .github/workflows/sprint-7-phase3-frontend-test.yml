@@ -1,0 +1,37 @@
+name: Sprint 7 Phase 3 Frontend Test
+
+on:
+  push:
+    branches:
+      - sprint/v0.7/sprint-7
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint-7-phase3-frontend-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phase-3-frontend:
+    name: Phase 3 customer account frontend contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout committed Sprint 7 state
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Phase 3 customer account frontend contract
+        run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-account-frontend-test.ts
