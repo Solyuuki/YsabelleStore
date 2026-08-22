@@ -1,0 +1,31 @@
+name: Sprint 8 Prettier Diagnostic
+
+on:
+  push:
+    branches:
+      - sprint/v0.8/sprint-8
+
+permissions:
+  contents: read
+
+jobs:
+  prettier-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Sprint 8
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format HTTP contract test in runner only
+        run: npx prettier backend/test/http-status-contract.test.ts --write
+
+      - name: Print exact formatter diff
+        run: git diff -- backend/test/http-status-contract.test.ts
