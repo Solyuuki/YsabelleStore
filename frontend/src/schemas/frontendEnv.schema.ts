@@ -6,7 +6,7 @@ const frontendEnvSchema = z.object({
   VITE_API_BASE_URL: z.string().url().default("http://localhost:3001")
 });
 
-const parsedFrontendEnv = frontendEnvSchema.safeParse(import.meta.env);
+const parsedFrontendEnv = frontendEnvSchema.safeParse(import.meta.env ?? {});
 
 if (!parsedFrontendEnv.success) {
   throw new Error(`Invalid frontend environment: ${parsedFrontendEnv.error.message}`);
