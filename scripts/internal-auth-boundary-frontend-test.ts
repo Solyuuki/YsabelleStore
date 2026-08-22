@@ -69,6 +69,18 @@ async function main() {
     assert.equal(observedAuthorization.get("/api/customer-auth/me"), null);
     assert.equal(observedAuthorization.get("/api/customer-account/orders"), null);
     assert.equal(observedAuthorization.get("/api/auth/me"), "Bearer internal-test-token");
+
+    const plainHeadersClient = new ApiClient({ baseUrl: apiBase });
+    plainHeadersClient.addRequestInterceptor((context) => ({
+      ...context,
+      init: {
+        ...context.init,
+        headers: { Authorization: "Bearer plain-object-token" }
+      }
+    }));
+
+    await plainHeadersClient.request("/api/storefront/orders");
+    assert.equal(observedAuthorization.get("/api/storefront/orders"), null);
   } finally {
     globalThis.fetch = originalFetch;
   }
