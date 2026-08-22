@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import {
-  HTTP_STATUS,
-  isCanonicalHttpStatusCode
-} from "../src/constants/httpStatusContract.js";
+import { HTTP_STATUS, isCanonicalHttpStatusCode } from "../src/constants/httpStatusContract.js";
 
 const canonicalStatusCodes = [
   200,
