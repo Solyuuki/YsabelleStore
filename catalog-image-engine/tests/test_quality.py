@@ -96,6 +96,21 @@ class CatalogImageQualityTests(unittest.TestCase):
         self.assertIn("BACKGROUND_COMPLEXITY_RISK", diagnostic_codes(result))
         self.assertIsNone(result["metrics"]["foregroundOccupancy"])
 
+    def test_flags_periodic_busy_edges_even_when_one_edge_color_dominates_the_median(self) -> None:
+        image = Image.new("RGB", (900, 900), "white")
+        draw = ImageDraw.Draw(image)
+        for index in range(0, 900, 20):
+            color = (40, 90, 170) if (index // 20) % 2 == 0 else (230, 180, 60)
+            draw.rectangle((index, 0, min(index + 19, 899), 899), fill=color)
+        draw.rectangle((300, 180, 600, 720), fill=(20, 20, 20))
+        path = self.save("aliased-busy-background.png", image)
+
+        result = analyze_image_path(path)
+
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertIn("BACKGROUND_COMPLEXITY_RISK", diagnostic_codes(result))
+        self.assertIsNone(result["metrics"]["foregroundOccupancy"])
+
     def test_clean_well_framed_source_can_be_approved(self) -> None:
         image = Image.new("RGB", (900, 900), "white")
         draw = ImageDraw.Draw(image)
