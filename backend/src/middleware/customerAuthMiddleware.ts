@@ -29,3 +29,19 @@ export const requireCustomerAuth: RequestHandler = async (request, _response, ne
     next(error);
   }
 };
+
+export const optionalCustomerAuth: RequestHandler = async (request, _response, next) => {
+  try {
+    const sessionToken = readCustomerSessionCookie(request);
+    if (!sessionToken) {
+      next();
+      return;
+    }
+
+    (request as RequestWithCustomerAuth).authCustomer =
+      await getCustomerFromSessionToken(sessionToken);
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
