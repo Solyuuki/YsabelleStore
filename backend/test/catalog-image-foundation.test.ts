@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { prisma } from "../src/database/prismaClient.js";
 import { CatalogImageStorage } from "../src/modules/catalog-image/catalogImageStorage.js";
 import { inspectProductImageUpload } from "../src/modules/catalog-image/imageUploadPolicy.js";
+import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
 
 test("product image upload trusts PNG magic bytes instead of filename or declared MIME", () => {
   const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
@@ -103,5 +106,56 @@ test("catalog image storage uses generated keys and blocks path traversal", asyn
     );
   } finally {
     await rm(temporaryRoot, { force: true, recursive: true });
+  }
+});
+
+test("product image candidate is persisted without replacing the active product image", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  const suffix = randomUUID().slice(0, 8);
+
+  try {
+    const category = await prisma.category.create({
+      data: {
+        dataQualityStatus: "APPROVED",
+        isActive: true,
+        isStorefrontVisible: true,
+        name: `Image Candidate ${suffix}`,
+        recordSource: "CATALOG",
+        slug: `image-candidate-${suffix}`
+      }
+    });
+    const legacyImageUrl = `/images/products/existing-${suffix}.webp`;
+    const product = await prisma.product.create({
+      data: {
+        categoryId: category.id,
+        costPrice: "10",
+        dataQualityStatus: "APPROVED",
+        imageUrl: legacyImageUrl,
+        isStorefrontVisible: true,
+        name: `Candidate Product ${suffix}`,
+        sellingPrice: "15",
+        sku: `IMAGE-CANDIDATE-${suffix}`,
+        status: "ACTIVE",
+        unit: "PIECE"
+      }
+    });
+
+    const candidate = await prisma.productImageAsset.create({
+      data: {
+        originalStorageKey: `candidates/${suffix}/original.png`,
+        productId: product.id,
+        sourceBytes: 1024,
+        sourceMimeType: "image/png"
+      }
+    });
+    const reloaded = await prisma.product.findUniqueOrThrow({ where: { id: product.id } });
+
+    assert.equal(candidate.productId, product.id);
+    assert.equal(candidate.qualityStatus, "NEEDS_REVIEW");
+    assert.equal(candidate.processingStatus, "PENDING");
+    assert.equal(reloaded.imageUrl, legacyImageUrl);
+    assert.equal(reloaded.activeImageAssetId, null);
+  } finally {
+    await scope.cleanup();
   }
 });
