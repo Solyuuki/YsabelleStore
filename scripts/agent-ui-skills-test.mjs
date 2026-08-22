@@ -33,7 +33,7 @@ for (const name of expected) {
   }
 
   if (!/^description:\s*Use when\b/m.test(frontmatter[1])) {
-    console.error(`DESCRIPTION must start with \"Use when\": ${file}`);
+    console.error(`DESCRIPTION must start with "Use when": ${file}`);
     failures++;
   }
 }
