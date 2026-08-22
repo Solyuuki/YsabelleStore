@@ -245,3 +245,35 @@ test("guest storefront checkout remains public and leaves customer ownership nul
     await cleanupFixture(fixture);
   }
 });
+
+test("stale customer session falls back to guest checkout and clears the stale cookie", async () => {
+  const fixture = await createFixture();
+
+  try {
+    await withServer(async (baseUrl) => {
+      const response = await fetch(`${baseUrl}/api/storefront/orders`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          Cookie: customerCookie("stale-session-token")
+        },
+        body: JSON.stringify(orderInput(fixture.product.id, "Expired Session Guest"))
+      });
+
+      assert.equal(response.status, 201);
+      const setCookie = response.headers.get("set-cookie") ?? "";
+      assert.match(setCookie, new RegExp(`^${CUSTOMER_COOKIE_NAME}=`));
+      assert.match(setCookie, /Max-Age=0/i);
+
+      const body = (await response.json()) as OrderApiBody;
+      assert.ok(body.data && !Array.isArray(body.data));
+      const order = await prisma.customerOrder.findUniqueOrThrow({
+        where: { id: body.data.id }
+      });
+
+      assert.equal(order.customerAccountId, null);
+    });
+  } finally {
+    await cleanupFixture(fixture);
+  }
+});
