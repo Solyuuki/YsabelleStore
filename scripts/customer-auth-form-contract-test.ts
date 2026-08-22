@@ -5,13 +5,10 @@ import {
   validateCustomerRegisterForm
 } from "../frontend/src/utils/customerAuthForms.ts";
 
-assert.deepEqual(
-  validateCustomerLoginForm({ email: "", password: "" }),
-  {
-    email: "Enter a valid email address.",
-    password: "Enter your password."
-  }
-);
+assert.deepEqual(validateCustomerLoginForm({ email: "", password: "" }), {
+  email: "Enter a valid email address.",
+  password: "Enter your password."
+});
 
 assert.deepEqual(
   validateCustomerLoginForm({ email: "customer@example.com", password: "CustomerPass123!" }),
