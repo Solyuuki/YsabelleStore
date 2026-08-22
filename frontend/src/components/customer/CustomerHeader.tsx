@@ -1,7 +1,8 @@
-import { CircleHelp, Menu, ShoppingBasket, Store, X } from "lucide-react";
+import { CircleHelp, Menu, ShoppingBasket, Store, UserRound, X } from "lucide-react";
 import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { isCustomerShopRoute } from "@/utils/customerRoutes";
 import { CustomerLink } from "./CustomerLink";
 import { GlobalStorefrontSearch } from "./GlobalStorefrontSearch";
@@ -18,8 +19,11 @@ export function CustomerHeader({
   pathname: string;
 }) {
   const { itemCount } = useCart();
+  const { customer, status } = useCustomerAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const isShopRoute = isCustomerShopRoute(pathname);
+  const accountHref = status === "authenticated" ? "/account" : "/login";
+  const accountLabel = status === "authenticated" ? "My Account" : "Sign In";
 
   const links = [
     { href: "/", label: "Home" },
@@ -68,6 +72,16 @@ export function CustomerHeader({
         </div>
 
         <div className="customer-header__actions">
+          <CustomerLink
+            aria-current={pathname === "/account" || pathname === "/login" ? "page" : undefined}
+            aria-label={customer ? `My account, signed in as ${customer.name}` : "Sign in to customer account"}
+            className="customer-account-link"
+            href={accountHref}
+            navigate={navigate}
+          >
+            <UserRound aria-hidden="true" size={19} />
+            <span>{accountLabel}</span>
+          </CustomerLink>
           <button
             aria-label="Open shopping guide"
             className="customer-icon-button customer-help-button"
@@ -112,6 +126,9 @@ export function CustomerHeader({
               {link.label}
             </CustomerLink>
           ))}
+          <CustomerLink href={accountHref} navigate={navigate} onClick={() => setMenuOpen(false)}>
+            {accountLabel}
+          </CustomerLink>
           <button onClick={onStartGuide} type="button">
             Shopping Guide
           </button>
