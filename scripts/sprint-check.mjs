@@ -28,38 +28,36 @@ for (const filePath of getRequiredSprintFiles(sprint.sprintDir)) {
 if (memberFile) {
   addCheck("Current member sprint file", fs.existsSync(memberFile), memberFile);
   addCheck("Current member sprint activity", includesBranch(memberFile), memberFile);
-}
-
-addCheck(
-  "DEFINITION-OF-DONE validation section",
-  includesText(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`, "Validation Status"),
-  "Validation template section present."
-);
-addCheck(
-  "SPRINT-BACKLOG activity section",
-  includesText(`${sprint.sprintDir}/SPRINT-BACKLOG.md`, "Sprint Activity Log"),
-  "Backlog activity template section present."
-);
-
-if (hasImplementationChanges() && memberFile) {
   addCheck(
-    "Implementation changes documented in member sprint file",
-    includesBranch(memberFile),
-    branch
+    "DEFINITION-OF-DONE validation section",
+    includesText(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`, "Validation Status"),
+    "Member status-update template section present."
   );
-}
+  addCheck(
+    "SPRINT-BACKLOG activity section",
+    includesText(`${sprint.sprintDir}/SPRINT-BACKLOG.md`, "Sprint Activity Log"),
+    "Member status-update template section present."
+  );
 
-if (memberFile) {
+  if (hasImplementationChanges()) {
+    addCheck(
+      "Implementation changes documented in member sprint file",
+      includesBranch(memberFile),
+      branch
+    );
+  }
+
   addCheck(
     "Current member sprint activity has no automated progress section",
     !hasAutomatedProgressSection(memberFile),
     "Template table is used instead of marker blocks."
   );
 }
+
 addCheck(
   "Definition of Done has no automated progress section",
   !hasAutomatedProgressSection(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`),
-  "Template table is used instead of marker blocks."
+  "Sprint documentation is free from legacy generated marker blocks."
 );
 
 printTable(["Requirement", "Status", "Notes"], rows);
