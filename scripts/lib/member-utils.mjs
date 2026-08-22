@@ -136,7 +136,9 @@ export function requireSprint(branch, { rootDir = process.cwd() } = {}) {
   return {
     sprintNumber,
     sprintSlug,
-    sprintVersion: versionMatch ? `v${versionMatch[1]}.${versionMatch[2]}` : `sprint-${sprintNumber}`,
+    sprintVersion: versionMatch
+      ? `v${versionMatch[1]}.${versionMatch[2]}`
+      : `sprint-${sprintNumber}`,
     sprintDir
   };
 }
