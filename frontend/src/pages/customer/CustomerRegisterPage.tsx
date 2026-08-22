@@ -52,7 +52,10 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
           </span>
           <p className="customer-eyebrow">Customer account</p>
           <h1>Create your account</h1>
-          <p>Save your customer identity now while guest shopping remains available whenever you prefer.</p>
+          <p>
+            Save your customer identity now while guest shopping remains available whenever you
+            prefer.
+          </p>
         </div>
 
         <form className="customer-auth-form" onSubmit={handleSubmit} noValidate>
@@ -88,7 +91,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
           </label>
 
           <label className="customer-auth-field">
-            <span>Phone number <small>(optional)</small></span>
+            <span>
+              Phone number <small>(optional)</small>
+            </span>
             <input
               aria-invalid={Boolean(fieldErrors.phone)}
               autoComplete="tel"
@@ -115,7 +120,11 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 onClick={() => setShowPassword((current) => !current)}
                 type="button"
               >
-                {showPassword ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
+                {showPassword ? (
+                  <EyeOff aria-hidden="true" size={18} />
+                ) : (
+                  <Eye aria-hidden="true" size={18} />
+                )}
               </button>
             </span>
             {fieldErrors.password ? <small>{fieldErrors.password}</small> : null}
