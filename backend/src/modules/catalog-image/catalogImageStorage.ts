@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { HttpError } from "../../utils/httpError.js";
@@ -48,5 +48,16 @@ export class CatalogImageStorage {
     await writeFile(destination, buffer, { flag: "wx" });
 
     return key;
+  }
+
+  public async removeCandidate(candidateId: string) {
+    if (!CANDIDATE_ID_PATTERN.test(candidateId)) {
+      throw new HttpError(400, "Catalog image storage request is invalid.", {
+        code: "CATALOG_IMAGE_INVALID_STORAGE_KEY"
+      });
+    }
+
+    const candidateDirectory = this.resolveStorageKey(`candidates/${candidateId}`);
+    await rm(candidateDirectory, { force: true, recursive: true });
   }
 }
