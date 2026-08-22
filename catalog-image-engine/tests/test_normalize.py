@@ -42,6 +42,7 @@ class CatalogImageNormalizationTests(unittest.TestCase):
         self.assertAlmostEqual((left + right) / 2, processed.width / 2, delta=3)
         self.assertAlmostEqual((top + bottom) / 2, processed.height / 2, delta=3)
         self.assertEqual(result["variants"]["processed"]["fileName"], "processed.webp")
+        self.assertEqual(result["subjectDetection"], "detected")
 
     def test_preserves_product_aspect_ratio_instead_of_stretching(self) -> None:
         source = Image.new("RGB", (700, 700), "white")
@@ -92,6 +93,22 @@ class CatalogImageNormalizationTests(unittest.TestCase):
 
         self.assertEqual(result["orientedSource"]["width"], 420)
         self.assertEqual(result["orientedSource"]["height"], 240)
+
+    def test_complex_background_preserves_full_frame_instead_of_guessing_a_crop(self) -> None:
+        source = Image.new("RGB", (800, 600), "white")
+        draw = ImageDraw.Draw(source)
+        for index in range(0, 800, 20):
+            color = (40, 80, 150) if (index // 20) % 2 == 0 else (220, 170, 70)
+            draw.rectangle((index, 0, min(index + 19, 799), 599), fill=color)
+        draw.rectangle((280, 100, 520, 500), fill=(30, 30, 30))
+        path = self.save("complex-background.png", source)
+        output = self.root / "out"
+
+        result = normalize_image_path(path, output)
+
+        self.assertEqual(result["subjectDetection"], "preserved-full-frame")
+        self.assertGreaterEqual(result["variants"]["processed"]["width"], 800)
+        self.assertGreaterEqual(result["variants"]["processed"]["height"], 800)
 
 
 def foreground_bbox(image: Image.Image):
