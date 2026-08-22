@@ -6,7 +6,8 @@ import { z } from "zod";
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFilePath);
-const rootEnvPath = path.resolve(currentDirectory, "../../..", ".env");
+const repositoryRoot = path.resolve(currentDirectory, "../../..");
+const rootEnvPath = path.join(repositoryRoot, ".env");
 
 loadEnv({ path: rootEnvPath });
 
@@ -36,6 +37,7 @@ if (!parsedEnv.success) {
 }
 
 export const env = parsedEnv.data;
+export const catalogImageStorageRoot = path.resolve(repositoryRoot, env.CATALOG_IMAGE_STORAGE_ROOT);
 
 const defaultCorsOrigins = [
   env.FRONTEND_URL,
