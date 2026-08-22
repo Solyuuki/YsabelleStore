@@ -2,18 +2,18 @@ import fs from "node:fs";
 
 import { classifyChanges } from "./lib/change-classifier.mjs";
 import { collectChangedFiles, getBranch } from "./lib/git-utils.mjs";
-import { getRequiredSprintFiles, requireMember, requireSprint } from "./lib/member-utils.mjs";
+import { getRequiredSprintFiles, requireSprint, resolveMember } from "./lib/member-utils.mjs";
 import { printTable } from "./lib/run-command.mjs";
 
 const branch = getBranch();
-const member = requireMember(branch);
+const member = resolveMember(branch);
 const sprint = requireSprint(branch);
 const classified = classifyChanges(collectChangedFiles());
 const rows = [];
-const memberFile = `${sprint.sprintDir}/members/${member.key}.md`;
+const memberFile = member ? `${sprint.sprintDir}/members/${member.key}.md` : null;
 
 console.log(`branch: ${branch}`);
-console.log(`member: ${member.key}`);
+console.log(`member: ${member?.key ?? "sprint-integration"}`);
 console.log(`sprintVersion: ${sprint.sprintVersion}`);
 console.log(`sprintDir: ${sprint.sprintDir}`);
 
@@ -25,8 +25,11 @@ for (const filePath of getRequiredSprintFiles(sprint.sprintDir)) {
   );
 }
 
-addCheck("Current member sprint file", fs.existsSync(memberFile), memberFile);
-addCheck("Current member sprint activity", includesBranch(memberFile), memberFile);
+if (memberFile) {
+  addCheck("Current member sprint file", fs.existsSync(memberFile), memberFile);
+  addCheck("Current member sprint activity", includesBranch(memberFile), memberFile);
+}
+
 addCheck(
   "DEFINITION-OF-DONE validation section",
   includesText(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`, "Validation Status"),
@@ -38,7 +41,7 @@ addCheck(
   "Backlog activity template section present."
 );
 
-if (hasImplementationChanges()) {
+if (hasImplementationChanges() && memberFile) {
   addCheck(
     "Implementation changes documented in member sprint file",
     includesBranch(memberFile),
@@ -46,11 +49,13 @@ if (hasImplementationChanges()) {
   );
 }
 
-addCheck(
-  "Current member sprint activity has no automated progress section",
-  !hasAutomatedProgressSection(memberFile),
-  "Template table is used instead of marker blocks."
-);
+if (memberFile) {
+  addCheck(
+    "Current member sprint activity has no automated progress section",
+    !hasAutomatedProgressSection(memberFile),
+    "Template table is used instead of marker blocks."
+  );
+}
 addCheck(
   "Definition of Done has no automated progress section",
   !hasAutomatedProgressSection(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`),
