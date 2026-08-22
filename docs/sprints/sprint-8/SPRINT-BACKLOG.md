@@ -11,10 +11,10 @@
 - [x] Audit existing HTTP/error handling before changing behavior.
 - [x] Write and observe the failing canonical HTTP status contract test.
 - [x] Add the minimal canonical status contract for 200, 201, 400, 401, 403, 404, 409, 413, 415, 422, 429, 500, and 503.
-- [ ] Restore Sprint 8 guardrail preconditions without weakening them.
-- [ ] Run the new contract test within the normal backend test suite.
-- [ ] Verify full exact-head CI and PR guardrails.
-- [ ] Record Phase 1 evidence and stop before Phase 2.
+- [x] Restore Sprint 8 guardrail preconditions without weakening them.
+- [x] Run the new contract test within the normal backend test suite.
+- [ ] Verify full exact-head CI and PR guardrails after the final Phase 1 documentation commit.
+- [x] Record Phase 1 evidence and stop before Phase 2.
 
 ## Phase 2 — Health, liveness, and readiness
 
