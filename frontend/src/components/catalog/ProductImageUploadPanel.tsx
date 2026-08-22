@@ -66,8 +66,6 @@ export function ProductImageUploadPanel({
 
   useEffect(() => {
     clearSelection();
-    // resetKey intentionally defines the lifecycle boundary for a dialog/session.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey]);
 
   useEffect(() => {
