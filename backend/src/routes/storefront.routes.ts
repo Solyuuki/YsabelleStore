@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { publicProductImageController } from "../controllers/productImageController.js";
 import {
   createStorefrontOrderController,
   getStorefrontProductController,
@@ -12,6 +13,7 @@ import {
 
 export const storefrontRouter = Router();
 
+storefrontRouter.get("/product-images/:imageId/:variant", publicProductImageController);
 storefrontRouter.get("/categories", listStorefrontCategoriesController);
 storefrontRouter.get("/merchandising", listStorefrontMerchandisingController);
 storefrontRouter.get("/products", listStorefrontProductsController);
