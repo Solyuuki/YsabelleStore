@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: sprint-7-validation-${{ github.ref }}
@@ -41,23 +41,17 @@ jobs:
       JWT_SECRET: sprint-7-ci-only-secret
       FRONTEND_URL: http://localhost:5173
     steps:
-      - name: Checkout Sprint 7 branch
+      - name: Checkout committed Sprint 7 state
         uses: actions/checkout@v4
-        with:
-          ref: sprint/v0.7/sprint-7
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Apply candidate customer persistence schema
-        run: node scripts/sprint7-phase1-schema-candidate.mjs
 
       - name: Generate Prisma client
         run: npm run prisma:generate
@@ -65,30 +59,14 @@ jobs:
       - name: Validate Prisma schema
         run: npm run prisma:validate
 
-      - name: Build disposable CI database from candidate schema
+      - name: Build disposable CI database from committed schema
         run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
 
-      - name: Run customer persistence contract
+      - name: Run customer authentication contract
         run: npx tsx --test --test-concurrency=1 backend/test/customer-auth.test.ts
 
-      - name: Commit verified schema on branch pushes
-        if: github.event_name == 'push'
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add database/prisma/schema.prisma
-          git diff --cached --check
-          if git diff --cached --quiet; then
-            echo "Schema already committed."
-            exit 0
-          fi
-          git commit -m "feat: add customer account persistence schema"
-          git push origin HEAD:sprint/v0.7/sprint-7
-
-      - name: Run existing backend tests
+      - name: Run backend test suite
         run: npm test --workspace @ysabellestore/backend
-        continue-on-error: true
 
       - name: Typecheck backend
         run: npm run typecheck --workspace @ysabellestore/backend
