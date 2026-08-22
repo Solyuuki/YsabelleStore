@@ -1,11 +1,14 @@
 export class CatalogImageProcessGate {
   private active = 0;
+  private readonly maxConcurrent: number;
   private readonly waiting: Array<() => void> = [];
 
-  public constructor(private readonly maxConcurrent: number) {
+  public constructor(maxConcurrent: number) {
     if (!Number.isInteger(maxConcurrent) || maxConcurrent < 1) {
       throw new Error("Catalog image process concurrency must be a positive integer.");
     }
+
+    this.maxConcurrent = maxConcurrent;
   }
 
   public get activeCount() {
