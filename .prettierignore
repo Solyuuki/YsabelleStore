@@ -6,6 +6,9 @@ database/prisma/generated
 frontend/dist
 backend/dist
 electron/dist
+electron/release*/
 forecasting-service/.venv
 forecasting-service/data
 forecasting-service/outputs
+.agents/
+.codex/
