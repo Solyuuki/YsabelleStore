@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { uploadProductImageController } from "../controllers/productImageController.js";
 import {
   changeProductStatusController,
   createProductController,
@@ -13,9 +14,9 @@ import {
   importProductsController,
   previewProductImportController
 } from "../controllers/productImportController.js";
-import { productImportUpload } from "../middleware/uploadMiddleware.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
+import { productImageUpload, productImportUpload } from "../middleware/uploadMiddleware.js";
 
 export const productRouter = Router();
 
@@ -37,6 +38,12 @@ productRouter.post(
 productRouter.get("/categories", requireRole("OWNER", "STAFF"), listCategoriesController);
 productRouter.post("/", requireRole("OWNER"), createProductController);
 productRouter.get("/", requireRole("OWNER", "STAFF"), listProductsController);
+productRouter.post(
+  "/:id/images",
+  requireRole("OWNER"),
+  productImageUpload.single("image"),
+  uploadProductImageController
+);
 productRouter.get("/:id", requireRole("OWNER", "STAFF"), getProductController);
 productRouter.patch("/:id", requireRole("OWNER"), updateProductController);
 productRouter.patch("/:id/status", requireRole("OWNER"), changeProductStatusController);
