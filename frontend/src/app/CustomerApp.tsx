@@ -15,6 +15,7 @@ import { OrderSuccessPage } from "@/pages/customer/OrderSuccessPage";
 import { ProductDetailPage } from "@/pages/customer/ProductDetailPage";
 import { ShopPage } from "@/pages/customer/ShopPage";
 import "@/styles/customer.css";
+import "@/styles/customer-auth.css";
 import { getCustomerAuthPageKind, resolveCustomerAuthRedirect } from "@/utils/customerRoutes";
 
 export function CustomerApp({
