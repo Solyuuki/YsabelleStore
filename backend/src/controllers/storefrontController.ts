@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 
+import { getAuthenticatedCustomer } from "../middleware/customerAuthMiddleware.js";
 import {
   createStorefrontOrder,
   getStorefrontProduct,
@@ -119,7 +120,11 @@ export const createStorefrontOrderController: RequestHandler = async (request, r
       message: "Pickup order request is invalid.",
       code: "INVALID_STOREFRONT_ORDER"
     });
-    const order = await createStorefrontOrder(body);
+    const customer = getAuthenticatedCustomer(request);
+    const order = await createStorefrontOrder(
+      body,
+      customer ? { customerAccountId: customer.id } : {}
+    );
     response.status(201).json(createSuccessResponse("Pickup order placed successfully.", order));
   } catch (error) {
     next(error);
