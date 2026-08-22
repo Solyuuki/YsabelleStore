@@ -195,6 +195,7 @@ def analyze_image_path(path: str | Path) -> dict[str, Any]:
     contrast = float(statistics.stddev[0])
     sharpness = _sharpness_rms(gray)
     occupancy, touches_safe_margin = _foreground_metrics(analysis)
+    source_is_opaque = analysis.getchannel("A").getextrema()[0] >= 250
 
     if luminance < 35 or luminance > 235:
         diagnostics.append(
@@ -206,7 +207,14 @@ def analyze_image_path(path: str | Path) -> dict[str, Any]:
         diagnostics.append(
             _diagnostic("BLUR_RISK", "Image appears soft or blurred at catalog scale.")
         )
-    if occupancy is not None:
+    if occupancy is None and source_is_opaque:
+        diagnostics.append(
+            _diagnostic(
+                "BACKGROUND_COMPLEXITY_RISK",
+                "Background is too complex for trustworthy automatic product isolation.",
+            )
+        )
+    elif occupancy is not None:
         if occupancy < 0.20:
             diagnostics.append(
                 _diagnostic(
