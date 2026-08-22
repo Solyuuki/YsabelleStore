@@ -1,8 +1,13 @@
-import { requireMember, requireSprint } from "./member-utils.mjs";
+import { requireMember, requireSprint, resolveMember } from "./member-utils.mjs";
 
-export function loadGuardrailContext({ args = [], branch, rootDir = process.cwd() }) {
+export function loadGuardrailContext({
+  args = [],
+  branch,
+  memberRequired = true,
+  rootDir = process.cwd()
+}) {
   return {
-    member: requireMember(branch, args),
+    member: memberRequired ? requireMember(branch, args) : resolveMember(branch, args),
     sprint: requireSprint(branch, { rootDir })
   };
 }
