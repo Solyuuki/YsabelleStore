@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw
 
 from ciqe.normalize import normalize_image_path
 
@@ -29,7 +29,8 @@ class CatalogImageNormalizationTests(unittest.TestCase):
         output = self.root / "out"
 
         result = normalize_image_path(path, output)
-        processed = Image.open(output / "processed.webp").convert("RGB")
+        with Image.open(output / "processed.webp") as opened:
+            processed = opened.convert("RGB")
         bbox = foreground_bbox(processed)
 
         self.assertIsNotNone(bbox)
@@ -50,7 +51,9 @@ class CatalogImageNormalizationTests(unittest.TestCase):
         output = self.root / "out"
 
         normalize_image_path(path, output)
-        processed_bbox = foreground_bbox(Image.open(output / "processed.webp").convert("RGB"))
+        with Image.open(output / "processed.webp") as opened:
+            processed = opened.convert("RGB")
+        processed_bbox = foreground_bbox(processed)
 
         self.assertIsNotNone(source_bbox)
         self.assertIsNotNone(processed_bbox)
@@ -63,14 +66,17 @@ class CatalogImageNormalizationTests(unittest.TestCase):
         output = self.root / "out"
 
         result = normalize_image_path(path, output)
-        processed = Image.open(output / "processed.webp")
-        card = Image.open(output / "card.webp")
-        pdp = Image.open(output / "pdp.webp")
+        with Image.open(output / "processed.webp") as processed_image:
+            processed_size = processed_image.size
+        with Image.open(output / "card.webp") as card_image:
+            card_size = card_image.size
+        with Image.open(output / "pdp.webp") as pdp_image:
+            pdp_size = pdp_image.size
 
-        self.assertLessEqual(max(card.size), 480)
-        self.assertLessEqual(max(pdp.size), 1000)
-        self.assertLessEqual(max(card.size), round(max(processed.size) * 1.25) + 1)
-        self.assertLessEqual(max(pdp.size), round(max(processed.size) * 1.25) + 1)
+        self.assertLessEqual(max(card_size), 480)
+        self.assertLessEqual(max(pdp_size), 1000)
+        self.assertLessEqual(max(card_size), round(max(processed_size) * 1.25) + 1)
+        self.assertLessEqual(max(pdp_size), round(max(processed_size) * 1.25) + 1)
         self.assertLessEqual(result["upscaleFactor"]["card"], 1.25)
         self.assertLessEqual(result["upscaleFactor"]["pdp"], 1.25)
 
@@ -91,7 +97,7 @@ class CatalogImageNormalizationTests(unittest.TestCase):
 def foreground_bbox(image: Image.Image):
     rgb = image.convert("RGB")
     background = Image.new("RGB", rgb.size, "white")
-    difference = __import__("PIL.ImageChops", fromlist=["difference"]).difference(rgb, background).convert("L")
+    difference = ImageChops.difference(rgb, background).convert("L")
     return difference.point(lambda value: 255 if value >= 24 else 0).getbbox()
 
 
