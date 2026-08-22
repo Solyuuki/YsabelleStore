@@ -26,9 +26,9 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.3",
+    "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/multer": "^2.0.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "^22.10.5",
     "tsx": "^4.19.2"
   }
