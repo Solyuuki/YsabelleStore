@@ -74,7 +74,9 @@ export function CustomerHeader({
         <div className="customer-header__actions">
           <CustomerLink
             aria-current={pathname === "/account" || pathname === "/login" ? "page" : undefined}
-            aria-label={customer ? `My account, signed in as ${customer.name}` : "Sign in to customer account"}
+            aria-label={
+              customer ? `My account, signed in as ${customer.name}` : "Sign in to customer account"
+            }
             className="customer-account-link"
             href={accountHref}
             navigate={navigate}
