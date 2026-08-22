@@ -86,30 +86,30 @@ All later Sprint 8 phases must preserve these unless the user explicitly approve
 
 ## HTTP baseline observed before Sprint 8 implementation
 
-| HTTP status | Baseline use |
-| --- | --- |
-| 200 | successful reads, login, updates and normal operations |
-| 201 | created resources, registrations, orders and POS sales |
-| 400 | invalid request/query/input |
-| 401 | missing, invalid or expired authentication/session |
-| 403 | authenticated caller lacks required permission |
-| 404 | missing route/resource/product/inventory |
-| 409 | duplicates, state conflicts, inventory invariant conflicts |
-| 413 | oversized upload |
-| 422 | validly-shaped request rejected by business/domain rule |
-| 429 | authentication throttling, including `Retry-After` |
-| 500 | unexpected server failure |
+- `200` — successful reads, login, updates and normal operations.
+- `201` — created resources, registrations, orders and POS sales.
+- `400` — invalid request/query/input.
+- `401` — missing, invalid or expired authentication/session.
+- `403` — authenticated caller lacks required permission.
+- `404` — missing route/resource/product/inventory.
+- `409` — duplicates, state conflicts, inventory invariant conflicts.
+- `413` — oversized upload.
+- `422` — validly-shaped request rejected by business/domain rule.
+- `429` — authentication throttling, including `Retry-After`.
+- `500` — unexpected server failure.
 
 Status codes such as 101, 502 and 504 are not Sprint 8 requirements unless a later approved architecture introduces a real protocol/upstream condition that requires them.
 
 ## Phase 0 allowed changes
 
 Allowed:
+
 - Sprint 8 branch creation;
 - Sprint 8 documentation and baseline records;
 - read-only repository inspection.
 
 Not allowed in Phase 0:
+
 - server middleware behavior changes;
 - route changes;
 - health response changes;
