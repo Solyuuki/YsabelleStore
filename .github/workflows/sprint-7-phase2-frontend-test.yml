@@ -33,3 +33,21 @@ jobs:
 
       - name: Run frontend customer auth form contract
         run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-auth-form-contract-test.ts
+
+      - name: Print exact Phase 2 Prettier delta
+        run: |
+          npx prettier --write \
+            frontend/src/components/customer/CustomerHeader.tsx \
+            frontend/src/context/CustomerAuthContext.tsx \
+            frontend/src/pages/customer/CustomerLoginPage.tsx \
+            frontend/src/pages/customer/CustomerRegisterPage.tsx \
+            frontend/src/services/customerAuthService.ts \
+            scripts/customer-auth-form-contract-test.ts
+          git diff --check
+          git diff --no-ext-diff -- \
+            frontend/src/components/customer/CustomerHeader.tsx \
+            frontend/src/context/CustomerAuthContext.tsx \
+            frontend/src/pages/customer/CustomerLoginPage.tsx \
+            frontend/src/pages/customer/CustomerRegisterPage.tsx \
+            frontend/src/services/customerAuthService.ts \
+            scripts/customer-auth-form-contract-test.ts
