@@ -148,6 +148,7 @@ test("legacy image backfill planner skips products with existing CIQE image hist
 
   const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
+  let productId: string | null = null;
 
   try {
     const category = await prisma.category.create({
@@ -174,6 +175,7 @@ test("legacy image backfill planner skips products with existing CIQE image hist
         unit: "PIECE"
       }
     });
+    productId = product.id;
 
     await prisma.productImageAsset.create({
       data: {
@@ -195,7 +197,7 @@ test("legacy image backfill planner skips products with existing CIQE image hist
     assert.equal(plan[0]?.reason, "IMAGE_ASSET_EXISTS");
     assert.equal(plan[0]?.sourcePath, undefined);
   } finally {
-    await cleanupCandidateStorage(product.id);
+    if (productId) await cleanupCandidateStorage(productId);
     await scope.cleanup();
   }
 });
