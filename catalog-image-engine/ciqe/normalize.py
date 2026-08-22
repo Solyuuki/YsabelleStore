@@ -4,7 +4,9 @@ import math
 from pathlib import Path
 from typing import Any
 
-from PIL import Image, ImageChops, ImageEnhance, ImageFilter, ImageOps
+from PIL import Image, ImageEnhance, ImageOps
+
+from ciqe.subject import EdgeConnectedBackgroundDetector
 
 SAFE_PADDING_RATIO = 0.04
 MIN_SAFE_PADDING = 8
@@ -13,65 +15,7 @@ PDP_MAX_SIDE = 1000
 MAX_UPSCALE_FACTOR = 1.25
 WEBP_QUALITY = 90
 
-
-def _median(values: list[int]) -> int:
-    ordered = sorted(values)
-    count = len(ordered)
-    if not count:
-        return 255
-    midpoint = count // 2
-    return ordered[midpoint] if count % 2 else (ordered[midpoint - 1] + ordered[midpoint]) // 2
-
-
-def _edge_samples(rgb: Image.Image) -> list[tuple[int, int, int]]:
-    width, height = rgb.size
-    pixels = rgb.load()
-    step = max(1, min(width, height) // 96)
-    samples: list[tuple[int, int, int]] = []
-
-    for x in range(0, width, step):
-        samples.append(pixels[x, 0])
-        samples.append(pixels[x, height - 1])
-    for y in range(0, height, step):
-        samples.append(pixels[0, y])
-        samples.append(pixels[width - 1, y])
-
-    return samples
-
-
-def _background_and_bbox(
-    image: Image.Image,
-) -> tuple[tuple[int, int, int], tuple[int, int, int, int] | None, bool]:
-    rgb = image.convert("RGB")
-    samples = _edge_samples(rgb)
-    background = tuple(
-        _median([sample[channel] for sample in samples]) for channel in range(3)
-    )
-    edge_deviations = [
-        max(abs(sample[channel] - background[channel]) for channel in range(3))
-        for sample in samples
-    ]
-    confident = _median(edge_deviations) <= 14
-    if not confident:
-        return background, None, False
-
-    difference = ImageChops.difference(
-        rgb, Image.new("RGB", rgb.size, background)
-    ).convert("L")
-    mask = difference.point(lambda value: 255 if value >= 18 else 0)
-    mask = mask.filter(ImageFilter.MaxFilter(3))
-    bounding_box = mask.getbbox()
-
-    if bounding_box is None:
-        return background, None, True
-
-    left, top, right, bottom = bounding_box
-    if left <= 0 or top <= 0 or right >= image.width or bottom >= image.height:
-        # Edge contact is a crop-risk signal. Preserve the full source instead of
-        # trimming further because missing packaging cannot be reconstructed safely.
-        return background, None, True
-
-    return background, bounding_box, True
+_SUBJECT_DETECTOR = EdgeConnectedBackgroundDetector()
 
 
 def _enhance_bounded(image: Image.Image) -> Image.Image:
@@ -86,7 +30,7 @@ def _enhance_bounded(image: Image.Image) -> Image.Image:
     return rgba
 
 
-def _normalized_master(oriented: Image.Image) -> Image.Image:
+def _normalized_master(oriented: Image.Image) -> tuple[Image.Image, str]:
     rgba = oriented.convert("RGBA")
     has_transparency = rgba.getchannel("A").getextrema()[0] < 250
 
@@ -95,9 +39,17 @@ def _normalized_master(oriented: Image.Image) -> Image.Image:
             lambda value: 255 if value >= 24 else 0
         ).getbbox()
         background_rgba = (255, 255, 255, 0)
+        detection_state = "alpha-bounds" if bounding_box is not None else "preserved-full-frame"
     else:
-        background, bounding_box, _ = _background_and_bbox(rgba)
-        background_rgba = (*background, 255)
+        detection = _SUBJECT_DETECTOR.detect(rgba)
+        if detection is None:
+            bounding_box = None
+            background_rgba = (255, 255, 255, 255)
+            detection_state = "preserved-full-frame"
+        else:
+            bounding_box = detection.bounding_box
+            background_rgba = (*detection.background_rgb, 255)
+            detection_state = "detected"
 
     subject = rgba.crop(bounding_box) if bounding_box is not None else rgba
     subject = _enhance_bounded(subject).convert("RGBA")
@@ -108,7 +60,8 @@ def _normalized_master(oriented: Image.Image) -> Image.Image:
     y = (side - subject.height) // 2
     canvas.alpha_composite(subject, (x, y))
 
-    return canvas if background_rgba[3] < 255 else canvas.convert("RGB")
+    master = canvas if background_rgba[3] < 255 else canvas.convert("RGB")
+    return master, detection_state
 
 
 def _variant(master: Image.Image, max_side: int) -> tuple[Image.Image, float]:
@@ -140,7 +93,7 @@ def normalize_image_path(
         opened.load()
         oriented = ImageOps.exif_transpose(opened)
         oriented_size = oriented.size
-        master = _normalized_master(oriented)
+        master, subject_detection = _normalized_master(oriented)
 
     processed_path = output / "processed.webp"
     card_path = output / "card.webp"
@@ -154,6 +107,7 @@ def normalize_image_path(
 
     return {
         "orientedSource": {"width": oriented_size[0], "height": oriented_size[1]},
+        "subjectDetection": subject_detection,
         "upscaleFactor": {
             "card": round(card_scale, 6),
             "pdp": round(pdp_scale, 6),
