@@ -81,6 +81,21 @@ class CatalogImageQualityTests(unittest.TestCase):
 
         self.assertIn("BLUR_RISK", diagnostic_codes(result))
 
+    def test_flags_busy_background_when_subject_bounds_are_not_trustworthy(self) -> None:
+        image = Image.new("RGB", (900, 900), "white")
+        draw = ImageDraw.Draw(image)
+        for index in range(0, 900, 24):
+            color = (45, 90, 165) if (index // 24) % 2 == 0 else (225, 175, 65)
+            draw.rectangle((index, 0, min(index + 23, 899), 899), fill=color)
+        draw.rectangle((280, 150, 620, 750), fill=(30, 30, 30))
+        path = self.save("busy-background.png", image)
+
+        result = analyze_image_path(path)
+
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertIn("BACKGROUND_COMPLEXITY_RISK", diagnostic_codes(result))
+        self.assertIsNone(result["metrics"]["foregroundOccupancy"])
+
     def test_clean_well_framed_source_can_be_approved(self) -> None:
         image = Image.new("RGB", (900, 900), "white")
         draw = ImageDraw.Draw(image)
