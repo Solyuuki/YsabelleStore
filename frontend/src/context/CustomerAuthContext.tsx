@@ -88,7 +88,9 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (logoutError) {
-      setError("You are signed out locally, but the server session could not be confirmed revoked.");
+      setError(
+        "You are signed out locally, but the server session could not be confirmed revoked."
+      );
       throw logoutError;
     }
 
