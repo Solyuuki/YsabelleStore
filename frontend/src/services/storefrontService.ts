@@ -98,9 +98,19 @@ export async function fetchStorefrontMerchandising(signal?: AbortSignal) {
   return response.data;
 }
 
+export async function fetchCustomerOrders(signal?: AbortSignal) {
+  const response = await apiClient.request<StorefrontOrder[]>("/api/customer-account/orders", {
+    credentials: "include",
+    signal
+  });
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
 export async function placeStorefrontOrder(input: StorefrontOrderInput) {
   const response = await apiClient.request<StorefrontOrder, unknown>("/api/storefront/orders", {
     method: "POST",
+    credentials: "include",
     json: input
   });
   if (!response.success || !response.data) throw new Error(response.message);
