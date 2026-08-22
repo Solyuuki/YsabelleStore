@@ -12,6 +12,8 @@ SAFE_PADDING_RATIO = 0.04
 MIN_SAFE_PADDING = 8
 CARD_MAX_SIDE = 480
 PDP_MAX_SIDE = 1000
+PROCESSED_MAX_SIDE = 1600
+NORMALIZATION_INPUT_MAX_SIDE = 1480
 MAX_UPSCALE_FACTOR = 1.25
 WEBP_QUALITY = 90
 
@@ -28,6 +30,16 @@ def _enhance_bounded(image: Image.Image) -> Image.Image:
     rgba = rgb.convert("RGBA")
     rgba.putalpha(alpha)
     return rgba
+
+
+def _normalization_working_copy(oriented: Image.Image) -> Image.Image:
+    working = oriented.copy()
+    if max(working.size) > NORMALIZATION_INPUT_MAX_SIDE:
+        working.thumbnail(
+            (NORMALIZATION_INPUT_MAX_SIDE, NORMALIZATION_INPUT_MAX_SIDE),
+            Image.Resampling.LANCZOS,
+        )
+    return working
 
 
 def _normalized_master(oriented: Image.Image) -> tuple[Image.Image, str]:
@@ -93,7 +105,11 @@ def normalize_image_path(
         opened.load()
         oriented = ImageOps.exif_transpose(opened)
         oriented_size = oriented.size
-        master, subject_detection = _normalized_master(oriented)
+        working = _normalization_working_copy(oriented)
+        master, subject_detection = _normalized_master(working)
+
+    if max(master.size) > PROCESSED_MAX_SIDE:
+        raise RuntimeError("Normalized catalog image exceeded the processed master size limit.")
 
     processed_path = output / "processed.webp"
     card_path = output / "card.webp"
