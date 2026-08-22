@@ -44,7 +44,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
           </span>
           <p className="customer-eyebrow">My Account</p>
           <h1>{customer.name}</h1>
-          <p>Your storefront account is signed in and ready for the next part of your shopping flow.</p>
+          <p>Your storefront account is signed in and ready while you browse and shop.</p>
         </div>
 
         {error || logoutMessage ? (
@@ -88,11 +88,8 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
         </div>
 
         <div className="customer-account-note">
-          <strong>Order history comes next.</strong>
-          <p>
-            This account screen is ready for Phase 3 order ownership and history. Guest checkout remains
-            available in the meantime.
-          </p>
+          <strong>Your account is ready.</strong>
+          <p>Guest checkout remains available whenever you prefer to shop without signing in.</p>
         </div>
       </div>
     </section>
