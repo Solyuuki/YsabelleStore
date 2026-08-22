@@ -1,6 +1,11 @@
 import { Router } from "express";
 
-import { uploadProductImageController } from "../controllers/productImageController.js";
+import {
+  approveProductImageController,
+  previewProductImageController,
+  rejectProductImageController,
+  uploadProductImageController
+} from "../controllers/productImageController.js";
 import {
   changeProductStatusController,
   createProductController,
@@ -43,6 +48,21 @@ productRouter.post(
   requireRole("OWNER"),
   productImageUpload.single("image"),
   uploadProductImageController
+);
+productRouter.get(
+  "/:productId/images/:imageId/preview/:variant",
+  requireRole("OWNER"),
+  previewProductImageController
+);
+productRouter.post(
+  "/:productId/images/:imageId/approve",
+  requireRole("OWNER"),
+  approveProductImageController
+);
+productRouter.post(
+  "/:productId/images/:imageId/reject",
+  requireRole("OWNER"),
+  rejectProductImageController
 );
 productRouter.get("/:id", requireRole("OWNER", "STAFF"), getProductController);
 productRouter.patch("/:id", requireRole("OWNER"), updateProductController);
