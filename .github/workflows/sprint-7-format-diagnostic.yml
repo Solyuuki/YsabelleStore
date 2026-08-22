@@ -1,0 +1,38 @@
+name: Sprint 7 Format Diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  format-diff:
+    if: github.head_ref == 'sprint/v0.7/sprint-7'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout committed state
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate exact Prettier diff
+        run: |
+          npx prettier --write \
+            backend/src/controllers/customerAuthController.ts \
+            backend/src/middleware/customerAuthMiddleware.ts \
+            backend/test/customer-auth-http.test.ts
+          git diff --check
+          git diff --no-ext-diff -- \
+            backend/src/controllers/customerAuthController.ts \
+            backend/src/middleware/customerAuthMiddleware.ts \
+            backend/test/customer-auth-http.test.ts
