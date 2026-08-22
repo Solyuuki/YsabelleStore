@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { classifyChanges } from "../lib/change-classifier.mjs";
 import { loadGuardrailContext } from "../lib/guardrail-config.mjs";
 import { collectChangedFiles, getBranch } from "../lib/git-utils.mjs";
 
@@ -141,4 +142,22 @@ test("member branch guardrail context still resolves the real member", () => {
 
   assert.equal(context.member?.key, "m2-ramos");
   assert.equal(context.sprint.sprintNumber, 7);
+});
+
+test("generic Prisma changes do not manufacture a trusted-device decision", () => {
+  const classified = classifyChanges([{ file: "database/prisma/schema.prisma", status: "M" }]);
+
+  assert.equal(
+    classified.decisions.some((decision) => /trusted-device/i.test(decision.decision)),
+    false
+  );
+});
+
+test("customer authentication service changes require manual QA", () => {
+  const classified = classifyChanges([
+    { file: "backend/src/services/customerAuthService.ts", status: "M" }
+  ]);
+
+  assert.equal(classified.manualQa, true);
+  assert.equal(classified.risky, true);
 });
