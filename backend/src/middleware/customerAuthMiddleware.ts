@@ -2,7 +2,7 @@ import type { Request, RequestHandler } from "express";
 
 import {
   getCustomerFromSessionToken,
-  type SafeCustomer
+  type SafeCustomer,
 } from "../services/customerAuthService.js";
 import { readCustomerSessionCookie } from "../utils/customerAuthCookie.js";
 import { HttpError } from "../utils/httpError.js";
@@ -21,7 +21,7 @@ export const requireCustomerAuth: RequestHandler = async (request, _response, ne
 
     if (!sessionToken) {
       throw new HttpError(401, "Customer session is required.", {
-        code: "CUSTOMER_SESSION_REQUIRED"
+        code: "CUSTOMER_SESSION_REQUIRED",
       });
     }
 
