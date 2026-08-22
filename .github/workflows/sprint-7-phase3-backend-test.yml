@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - sprint/v0.7/sprint-7
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
