@@ -1,17 +1,16 @@
 name: Sprint 7 Phase 1 Schema Apply
 
 on:
-  push:
+  pull_request:
     branches:
-      - sprint/v0.7/sprint-7
-    paths:
-      - .github/sprint-7-phase1-schema-trigger.txt
+      - main
 
 permissions:
   contents: write
 
 jobs:
   apply-schema:
+    if: github.head_ref == 'sprint/v0.7/sprint-7'
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -44,14 +43,9 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Apply, verify, and report schema change
-        shell: bash
+      - name: Patch Prisma schema
+        shell: python
         run: |
-          set +e
-          STATUS_FILE=.github/sprint-7-phase1-schema-status.txt
-          rm -f "$STATUS_FILE"
-
-          python <<'PY'
           from pathlib import Path
 
           path = Path("database/prisma/schema.prisma")
@@ -59,6 +53,8 @@ jobs:
 
           status_anchor = "enum UserStatus {\n  ACTIVE\n  INACTIVE\n}\n"
           if "enum CustomerAccountStatus" not in text:
+              if status_anchor not in text:
+                  raise SystemExit("UserStatus anchor not found")
               text = text.replace(status_anchor, status_anchor + "\nenum CustomerAccountStatus {\n  ACTIVE\n  INACTIVE\n}\n", 1)
 
           trusted_end = '  @@map("trusted_devices")\n}\n'
@@ -98,28 +94,26 @@ model CustomerSession {
   @@map("customer_sessions")
 }
 '''
-              if trusted_end not in text:
-                  raise SystemExit("TrustedDevice anchor not found")
               text = text.replace(trusted_end, models, 1)
 
+          order_anchor = "model CustomerOrder {\n  id                String                    @id @default(cuid()) @db.VarChar(191)\n"
           if "customerAccountId String?" not in text:
-              anchor = "model CustomerOrder {\n  id                String                    @id @default(cuid()) @db.VarChar(191)\n"
-              replacement = anchor + '  customerAccountId String?                   @map("customer_account_id") @db.VarChar(191)\n'
-              if anchor not in text:
+              if order_anchor not in text:
                   raise SystemExit("CustomerOrder id anchor not found")
-              text = text.replace(anchor, replacement, 1)
+              text = text.replace(order_anchor, order_anchor + '  customerAccountId String?                   @map("customer_account_id") @db.VarChar(191)\n', 1)
 
+          items_anchor = '  items             CustomerOrderItem[]\n\n  @@index([status, createdAt], map: "idx_customer_orders_status_created")\n'
           if "idx_customer_orders_customer_created" not in text:
-              anchor = '  items             CustomerOrderItem[]\n\n  @@index([status, createdAt], map: "idx_customer_orders_status_created")\n'
-              replacement = '  items             CustomerOrderItem[]\n  customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)\n\n  @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")\n  @@index([status, createdAt], map: "idx_customer_orders_status_created")\n'
-              if anchor not in text:
+              if items_anchor not in text:
                   raise SystemExit("CustomerOrder items anchor not found")
-              text = text.replace(anchor, replacement, 1)
+              replacement = '  items             CustomerOrderItem[]\n  customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)\n\n  @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")\n  @@index([status, createdAt], map: "idx_customer_orders_status_created")\n'
+              text = text.replace(items_anchor, replacement, 1)
 
           path.write_text(text)
-          PY
-          PATCH_RC=$?
 
+      - name: Create migration
+        shell: bash
+        run: |
           mkdir -p database/prisma/migrations/20260822_customer_accounts
           cat > database/prisma/migrations/20260822_customer_accounts/migration.sql <<'SQL'
           CREATE TABLE `customer_accounts` (
@@ -159,34 +153,30 @@ model CustomerSession {
             ADD CONSTRAINT `customer_orders_customer_account_fkey` FOREIGN KEY (`customer_account_id`) REFERENCES `customer_accounts`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
           SQL
 
-          npm ci
-          INSTALL_RC=$?
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate and validate Prisma
+        run: |
           npm run prisma:generate
-          GENERATE_RC=$?
           npm run prisma:validate
-          VALIDATE_RC=$?
-          npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
-          DB_RC=$?
-          npx tsx --test --test-concurrency=1 backend/test/customer-auth.test.ts
-          TEST_RC=$?
 
-          printf 'patch=%s\ninstall=%s\ngenerate=%s\nvalidate=%s\ndb_push=%s\ncustomer_auth_test=%s\n' \
-            "$PATCH_RC" "$INSTALL_RC" "$GENERATE_RC" "$VALIDATE_RC" "$DB_RC" "$TEST_RC" > "$STATUS_FILE"
+      - name: Build disposable database
+        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
 
+      - name: Run persistence contract
+        run: npx tsx --test --test-concurrency=1 backend/test/customer-auth.test.ts
+
+      - name: Commit verified schema changes
+        shell: bash
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          if [ "$PATCH_RC" -eq 0 ] && [ "$INSTALL_RC" -eq 0 ] && [ "$GENERATE_RC" -eq 0 ] && [ "$VALIDATE_RC" -eq 0 ] && [ "$DB_RC" -eq 0 ] && [ "$TEST_RC" -eq 0 ]; then
-            echo 'result=GREEN' >> "$STATUS_FILE"
-            git add database/prisma/schema.prisma database/prisma/migrations/20260822_customer_accounts/migration.sql "$STATUS_FILE"
-            git diff --cached --check
-            git commit -m "feat: add customer account persistence"
-          else
-            echo 'result=FAILED' >> "$STATUS_FILE"
-            git restore database/prisma/schema.prisma
-            rm -rf database/prisma/migrations/20260822_customer_accounts
-            git add "$STATUS_FILE"
-            git commit -m "chore: record Phase 1 schema validation failure"
+          git add database/prisma/schema.prisma database/prisma/migrations/20260822_customer_accounts/migration.sql
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "No schema changes to commit."
+            exit 0
           fi
-
+          git commit -m "feat: add customer account persistence"
           git push origin HEAD:sprint/v0.7/sprint-7
