@@ -158,7 +158,7 @@ export function ProductDetailPage({
         <section className="customer-product-detail">
           <ProductVisual
             category={product.category.name}
-            imageUrl={product.imageUrl}
+            imageUrl={product.detailImageUrl ?? product.imageUrl}
             large
             name={product.name}
           />
