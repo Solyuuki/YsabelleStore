@@ -1,0 +1,29 @@
+name: Sprint 7 Phase 2 Frontend Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  customer-auth-frontend:
+    if: github.head_ref == 'sprint/v0.7/sprint-7'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout committed state
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend customer auth contract
+        run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-auth-frontend-test.ts
