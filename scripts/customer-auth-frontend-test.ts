@@ -1,10 +1,17 @@
 import assert from "node:assert/strict";
 
 async function main() {
-  const customerAuthModule = await import(
-    "../frontend/src/services/customerAuthService.ts"
-  ).catch(() => null);
+  let importFailure: unknown = null;
+  const customerAuthModule = await import("../frontend/src/services/customerAuthService.ts").catch(
+    (error: unknown) => {
+      importFailure = error;
+      return null;
+    }
+  );
 
+  if (!customerAuthModule) {
+    console.error("customerAuthService import failed:", importFailure);
+  }
   assert.ok(customerAuthModule, "Expected frontend customerAuthService to exist.");
 
   const requests: Array<{ init: RequestInit; url: string }> = [];
