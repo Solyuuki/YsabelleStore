@@ -8,7 +8,7 @@
     "dev": "npm run build && electron .",
     "build": "tsc -p tsconfig.json && esbuild src/preload/index.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist/preload/index.cjs",
     "package": "electron-builder --config electron-builder.config.cjs",
-    "lint": "eslint .",
+    "lint": "eslint src electron-builder.config.cjs",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
   },
