@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { HttpError } from "../../utils/httpError.js";
@@ -70,6 +70,17 @@ export class CatalogImageStorage {
       throw this.invalidStorageKeyError();
     }
     return `candidates/${candidateId}/processed/${fileName}`;
+  }
+
+  public async readStorageKey(key: string) {
+    try {
+      return await readFile(this.resolveStorageKey(key));
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      throw new HttpError(404, "Catalog image asset was not found.", {
+        code: "PRODUCT_IMAGE_ASSET_NOT_FOUND"
+      });
+    }
   }
 
   public async removeCandidate(candidateId: string) {
