@@ -1,17 +1,34 @@
 import { ArrowLeft, CheckCircle2, MapPin, ShieldCheck, Store } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { placeStorefrontOrder } from "@/services/storefrontService";
+import { getCustomerCheckoutDefaults } from "@/utils/customerAccountState";
 
 const LAST_ORDER_KEY = "ysabelle:last-customer-order";
 
 export function CheckoutPage({ navigate }: { navigate: (path: string) => void }) {
   const { items, itemCount, subtotal, clearCart } = useCart();
+  const { customer } = useCustomerAuth();
+  const [contact, setContact] = useState(() => getCustomerCheckoutDefaults(customer));
+  const [contactEdited, setContactEdited] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!contactEdited) {
+      setContact(getCustomerCheckoutDefaults(customer));
+    }
+  }, [contactEdited, customer]);
+
+  function updateContact(event: ChangeEvent<HTMLInputElement>) {
+    const field = event.currentTarget.name as keyof typeof contact;
+    setContact((current) => ({ ...current, [field]: event.currentTarget.value }));
+    setContactEdited(true);
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,7 +92,11 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <span>1</span>
                 <div>
                   <h2>Your Details</h2>
-                  <p>Used only to identify and coordinate this pickup request.</p>
+                  <p>
+                    {customer
+                      ? "We prefilled your account details. You can edit them for this order."
+                      : "Used only to identify and coordinate this pickup request."}
+                  </p>
                 </div>
               </div>
               <div className="customer-form-grid">
@@ -86,8 +107,10 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     maxLength={120}
                     minLength={2}
                     name="customerName"
+                    onChange={updateContact}
                     required
                     type="text"
+                    value={contact.customerName}
                   />
                 </label>
                 <label>
@@ -97,15 +120,24 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     maxLength={40}
                     minLength={7}
                     name="customerPhone"
+                    onChange={updateContact}
                     required
                     type="tel"
+                    value={contact.customerPhone}
                   />
                 </label>
                 <label className="customer-form-grid__full">
                   <span>
                     Email <small>(optional)</small>
                   </span>
-                  <input autoComplete="email" maxLength={191} name="customerEmail" type="email" />
+                  <input
+                    autoComplete="email"
+                    maxLength={191}
+                    name="customerEmail"
+                    onChange={updateContact}
+                    type="email"
+                    value={contact.customerEmail}
+                  />
                 </label>
               </div>
             </section>
