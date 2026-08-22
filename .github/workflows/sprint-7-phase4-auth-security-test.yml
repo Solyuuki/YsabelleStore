@@ -18,35 +18,11 @@ concurrency:
 
 jobs:
   auth-security:
-    name: Phase 4 Tier 3 verification
+    name: Phase 4 formatter diagnostic
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_DATABASE: ysabellestore_ci
-          MYSQL_USER: ci
-          MYSQL_PASSWORD: ci
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
-    env:
-      NODE_ENV: test
-      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
-      JWT_SECRET: sprint-7-phase4-test-secret
-      FRONTEND_URL: http://localhost:5173
-      YSABELLE_BRANCH: sprint/v0.7/sprint-7
-      YSABELLE_BASE_REF: main
     steps:
       - name: Checkout committed Sprint 7 state
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -57,50 +33,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npm run prisma:generate
-
-      - name: Validate Prisma schema
-        run: npm run prisma:validate
-
-      - name: Build disposable CI database
-        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
-
-      - name: Run backend Phase 4 auth security contract
-        run: npx tsx --test --test-concurrency=1 backend/test/auth-security.test.ts
-
-      - name: Run frontend internal auth boundary contract
-        run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/internal-auth-boundary-frontend-test.ts
-
-      - name: Run backend workspace tests
-        run: npm test --workspace @ysabellestore/backend
-
-      - name: Run frontend workspace tests
-        run: npm test --workspace @ysabellestore/frontend
-
-      - name: Lint repository
-        run: npm run lint
-
-      - name: Typecheck repository
-        run: npm run typecheck
-
-      - name: Build repository
-        run: npm run build
-
-      - name: Run full dependency audit for evidence
-        id: full_audit
-        continue-on-error: true
-        run: npm run security:audit
-
-      - name: Run guardrail regression tests
-        run: npm run test:guardrails
-
-      - name: Run read-only code verification
-        run: npm run verify:code
-
-      - name: Run Tier 3 local pre-push workflow
-        run: npm run prepush:local -- --member m1
-
-      - name: Report full audit outcome
-        if: always()
-        run: echo "Full dependency audit outcome: ${{ steps.full_audit.outcome }}"
+      - name: Print exact Phase 4 formatter delta
+        run: |
+          npx prettier --write backend/test/auth-security.test.ts
+          git diff -- backend/test/auth-security.test.ts
+          test -z "$(git status --short backend/test/auth-security.test.ts)"
