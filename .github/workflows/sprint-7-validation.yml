@@ -56,14 +56,11 @@ jobs:
       - name: Generate Prisma client
         run: npm run prisma:generate
 
-      - name: Apply database migrations
-        run: npx prisma migrate deploy --schema=database/prisma/schema.prisma
+      - name: Build disposable CI database from current schema
+        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
 
       - name: Validate Prisma schema
         run: npm run prisma:validate
-
-      - name: Run existing backend tests
-        run: npm test --workspace @ysabellestore/backend
 
       - name: Run Sprint 7 customer-auth tests when present
         shell: bash
@@ -73,6 +70,9 @@ jobs:
           else
             echo "customer-auth.test.ts not added yet; baseline only."
           fi
+
+      - name: Run existing backend tests
+        run: npm test --workspace @ysabellestore/backend
 
       - name: Typecheck backend
         run: npm run typecheck --workspace @ysabellestore/backend
