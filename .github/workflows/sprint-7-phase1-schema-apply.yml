@@ -44,105 +44,82 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Patch Prisma schema
-        shell: python
+      - name: Apply, verify, and report schema change
+        shell: bash
         run: |
+          set +e
+          STATUS_FILE=.github/sprint-7-phase1-schema-status.txt
+          rm -f "$STATUS_FILE"
+
+          python <<'PY'
           from pathlib import Path
 
           path = Path("database/prisma/schema.prisma")
           text = path.read_text()
 
-          status_anchor = """enum UserStatus {
-            ACTIVE
-            INACTIVE
-          }
-          """.replace("          ", "")
-          status_insert = status_anchor + """
-          enum CustomerAccountStatus {
-            ACTIVE
-            INACTIVE
-          }
-          """.replace("          ", "")
+          status_anchor = "enum UserStatus {\n  ACTIVE\n  INACTIVE\n}\n"
           if "enum CustomerAccountStatus" not in text:
-              if status_anchor not in text:
-                  raise SystemExit("UserStatus anchor not found")
-              text = text.replace(status_anchor, status_insert, 1)
+              text = text.replace(status_anchor, status_anchor + "\nenum CustomerAccountStatus {\n  ACTIVE\n  INACTIVE\n}\n", 1)
 
-          trusted_end = """  @@map(\"trusted_devices\")
-          }
-          """.replace("          ", "")
-          customer_models = trusted_end + """
-
-          model CustomerAccount {
-            id           String                @id @default(cuid()) @db.VarChar(191)
-            name         String                @db.VarChar(120)
-            email        String                @unique(map: \"uq_customer_accounts_email\") @db.VarChar(191)
-            phone        String?               @db.VarChar(40)
-            passwordHash String                @map(\"password_hash\") @db.VarChar(255)
-            status       CustomerAccountStatus @default(ACTIVE)
-            createdAt    DateTime              @default(now()) @map(\"created_at\")
-            updatedAt    DateTime              @updatedAt @map(\"updated_at\")
-            sessions     CustomerSession[]
-            orders       CustomerOrder[]
-
-            @@index([status], map: \"idx_customer_accounts_status\")
-            @@map(\"customer_accounts\")
-          }
-
-          model CustomerSession {
-            id                String          @id @default(cuid()) @db.VarChar(191)
-            customerAccountId String          @map(\"customer_account_id\") @db.VarChar(191)
-            tokenHash         String          @unique(map: \"uq_customer_sessions_token_hash\") @map(\"token_hash\") @db.VarChar(64)
-            expiresAt         DateTime        @map(\"expires_at\")
-            revokedAt         DateTime?       @map(\"revoked_at\")
-            lastUsedAt        DateTime?       @map(\"last_used_at\")
-            createdAt         DateTime        @default(now()) @map(\"created_at\")
-            updatedAt         DateTime        @updatedAt @map(\"updated_at\")
-            customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-            @@index([customerAccountId], map: \"idx_customer_sessions_customer\")
-            @@index([expiresAt], map: \"idx_customer_sessions_expires\")
-            @@index([revokedAt], map: \"idx_customer_sessions_revoked\")
-            @@map(\"customer_sessions\")
-          }
-          """.replace("          ", "")
+          trusted_end = '  @@map("trusted_devices")\n}\n'
           if "model CustomerAccount" not in text:
+              models = trusted_end + '''
+
+model CustomerAccount {
+  id           String                @id @default(cuid()) @db.VarChar(191)
+  name         String                @db.VarChar(120)
+  email        String                @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
+  phone        String?               @db.VarChar(40)
+  passwordHash String                @map("password_hash") @db.VarChar(255)
+  status       CustomerAccountStatus @default(ACTIVE)
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+  sessions     CustomerSession[]
+  orders       CustomerOrder[]
+
+  @@index([status], map: "idx_customer_accounts_status")
+  @@map("customer_accounts")
+}
+
+model CustomerSession {
+  id                String          @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String          @map("customer_account_id") @db.VarChar(191)
+  tokenHash         String          @unique(map: "uq_customer_sessions_token_hash") @map("token_hash") @db.VarChar(64)
+  expiresAt         DateTime        @map("expires_at")
+  revokedAt         DateTime?       @map("revoked_at")
+  lastUsedAt        DateTime?       @map("last_used_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([customerAccountId], map: "idx_customer_sessions_customer")
+  @@index([expiresAt], map: "idx_customer_sessions_expires")
+  @@index([revokedAt], map: "idx_customer_sessions_revoked")
+  @@map("customer_sessions")
+}
+'''
               if trusted_end not in text:
-                  raise SystemExit("TrustedDevice model anchor not found")
-              text = text.replace(trusted_end, customer_models, 1)
+                  raise SystemExit("TrustedDevice anchor not found")
+              text = text.replace(trusted_end, models, 1)
 
-          order_anchor = """model CustomerOrder {
-            id                String                    @id @default(cuid()) @db.VarChar(191)
-          """.replace("          ", "")
-          order_insert = """model CustomerOrder {
-            id                String                    @id @default(cuid()) @db.VarChar(191)
-            customerAccountId String?                   @map(\"customer_account_id\") @db.VarChar(191)
-          """.replace("          ", "")
           if "customerAccountId String?" not in text:
-              if order_anchor not in text:
+              anchor = "model CustomerOrder {\n  id                String                    @id @default(cuid()) @db.VarChar(191)\n"
+              replacement = anchor + '  customerAccountId String?                   @map("customer_account_id") @db.VarChar(191)\n'
+              if anchor not in text:
                   raise SystemExit("CustomerOrder id anchor not found")
-              text = text.replace(order_anchor, order_insert, 1)
+              text = text.replace(anchor, replacement, 1)
 
-          items_anchor = """  items             CustomerOrderItem[]
-
-            @@index([status, createdAt], map: \"idx_customer_orders_status_created\")
-          """.replace("          ", "")
-          items_insert = """  items             CustomerOrderItem[]
-            customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-            @@index([customerAccountId, createdAt], map: \"idx_customer_orders_customer_created\")
-            @@index([status, createdAt], map: \"idx_customer_orders_status_created\")
-          """.replace("          ", "")
           if "idx_customer_orders_customer_created" not in text:
-              if items_anchor not in text:
+              anchor = '  items             CustomerOrderItem[]\n\n  @@index([status, createdAt], map: "idx_customer_orders_status_created")\n'
+              replacement = '  items             CustomerOrderItem[]\n  customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)\n\n  @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")\n  @@index([status, createdAt], map: "idx_customer_orders_status_created")\n'
+              if anchor not in text:
                   raise SystemExit("CustomerOrder items anchor not found")
-              text = text.replace(items_anchor, items_insert, 1)
+              text = text.replace(anchor, replacement, 1)
 
           path.write_text(text)
+          PY
+          PATCH_RC=$?
 
-      - name: Create migration
-        shell: bash
-        run: |
           mkdir -p database/prisma/migrations/20260822_customer_accounts
           cat > database/prisma/migrations/20260822_customer_accounts/migration.sql <<'SQL'
           CREATE TABLE `customer_accounts` (
@@ -182,26 +159,34 @@ jobs:
             ADD CONSTRAINT `customer_orders_customer_account_fkey` FOREIGN KEY (`customer_account_id`) REFERENCES `customer_accounts`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
           SQL
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate and validate Prisma
-        run: |
+          npm ci
+          INSTALL_RC=$?
           npm run prisma:generate
+          GENERATE_RC=$?
           npm run prisma:validate
+          VALIDATE_RC=$?
+          npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+          DB_RC=$?
+          npx tsx --test --test-concurrency=1 backend/test/customer-auth.test.ts
+          TEST_RC=$?
 
-      - name: Build disposable database
-        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+          printf 'patch=%s\ninstall=%s\ngenerate=%s\nvalidate=%s\ndb_push=%s\ncustomer_auth_test=%s\n' \
+            "$PATCH_RC" "$INSTALL_RC" "$GENERATE_RC" "$VALIDATE_RC" "$DB_RC" "$TEST_RC" > "$STATUS_FILE"
 
-      - name: Run persistence contract
-        run: npx tsx --test --test-concurrency=1 backend/test/customer-auth.test.ts
-
-      - name: Commit verified schema changes
-        shell: bash
-        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add database/prisma/schema.prisma database/prisma/migrations/20260822_customer_accounts/migration.sql
-          git diff --cached --check
-          git commit -m "feat: add customer account persistence"
+
+          if [ "$PATCH_RC" -eq 0 ] && [ "$INSTALL_RC" -eq 0 ] && [ "$GENERATE_RC" -eq 0 ] && [ "$VALIDATE_RC" -eq 0 ] && [ "$DB_RC" -eq 0 ] && [ "$TEST_RC" -eq 0 ]; then
+            echo 'result=GREEN' >> "$STATUS_FILE"
+            git add database/prisma/schema.prisma database/prisma/migrations/20260822_customer_accounts/migration.sql "$STATUS_FILE"
+            git diff --cached --check
+            git commit -m "feat: add customer account persistence"
+          else
+            echo 'result=FAILED' >> "$STATUS_FILE"
+            git restore database/prisma/schema.prisma
+            rm -rf database/prisma/migrations/20260822_customer_accounts
+            git add "$STATUS_FILE"
+            git commit -m "chore: record Phase 1 schema validation failure"
+          fi
+
           git push origin HEAD:sprint/v0.7/sprint-7
