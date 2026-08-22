@@ -1,7 +1,8 @@
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { prisma } from "../../database/prismaClient.js";
+import { createProductImageCandidate } from "./productImageService.js";
 
 const LEGACY_PRODUCT_IMAGE_PATTERN = /^\/images\/products\/([^/?#\\]+)$/;
 
@@ -18,6 +19,17 @@ export type LegacyImageBackfillPlanItem = {
     | "UNSAFE_OR_UNSUPPORTED_LEGACY_URL"
     | "SOURCE_NOT_FOUND";
   sourcePath?: string;
+};
+
+export type LegacyImageBackfillResult = {
+  plan: LegacyImageBackfillPlanItem[];
+  eligible: number;
+  processed: number;
+  approvedQuality: number;
+  needsReview: number;
+  rejected: number;
+  failed: number;
+  skipped: number;
 };
 
 export function resolveLegacyProductImageSource(
@@ -112,4 +124,78 @@ export async function planLegacyProductImageBackfill(
   }
 
   return plan;
+}
+
+export async function runLegacyProductImageBackfill(options: {
+  apply: boolean;
+  productId?: string;
+  repositoryRoot?: string;
+}): Promise<LegacyImageBackfillResult> {
+  const plan = await planLegacyProductImageBackfill({
+    productId: options.productId,
+    repositoryRoot: options.repositoryRoot
+  });
+  const result: LegacyImageBackfillResult = {
+    plan,
+    eligible: plan.filter((item) => item.status === "ELIGIBLE").length,
+    processed: 0,
+    approvedQuality: 0,
+    needsReview: 0,
+    rejected: 0,
+    failed: 0,
+    skipped: plan.filter((item) => item.status === "SKIPPED").length
+  };
+
+  if (!options.apply) {
+    return result;
+  }
+
+  for (const item of plan) {
+    if (item.status !== "ELIGIBLE" || !item.sourcePath) {
+      continue;
+    }
+
+    const currentProduct = await prisma.product.findUnique({
+      select: {
+        _count: { select: { imageAssets: true } },
+        activeImageAssetId: true
+      },
+      where: { id: item.productId }
+    });
+
+    if (
+      !currentProduct ||
+      currentProduct.activeImageAssetId ||
+      currentProduct._count.imageAssets > 0
+    ) {
+      result.skipped += 1;
+      continue;
+    }
+
+    try {
+      const buffer = await readFile(item.sourcePath);
+      const candidate = await createProductImageCandidate(item.productId, {
+        buffer,
+        mimetype: "application/octet-stream",
+        originalname: path.basename(item.sourcePath),
+        size: buffer.length
+      });
+
+      result.processed += 1;
+
+      if (candidate.processingStatus === "FAILED") {
+        result.failed += 1;
+      } else if (candidate.qualityStatus === "APPROVED") {
+        result.approvedQuality += 1;
+      } else if (candidate.qualityStatus === "REJECTED") {
+        result.rejected += 1;
+      } else {
+        result.needsReview += 1;
+      }
+    } catch {
+      result.failed += 1;
+    }
+  }
+
+  return result;
 }
