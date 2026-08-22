@@ -35,3 +35,8 @@ jobs:
 
       - name: Run Phase 3 customer account frontend contract
         run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-account-frontend-test.ts
+
+      - name: Print exact Phase 3 formatter delta
+        run: |
+          npx prettier --write backend/test/customer-order-account.test.ts frontend/src/pages/customer/CustomerAccountPage.tsx
+          git diff -- backend/test/customer-order-account.test.ts frontend/src/pages/customer/CustomerAccountPage.tsx
