@@ -109,8 +109,10 @@ export function collectChangedFiles() {
 
   const baseRef = getBaseRef();
   if (baseRef) {
-    const resolvedBase = resolveGitRef(baseRef);
-    const resolvedHead = resolveGitRef(getBranch());
+    const resolvedBase =
+      resolveGitRef(baseRef) ?? resolveGitRef(environmentValue("YSABELLE_BASE_SHA"));
+    const resolvedHead =
+      resolveGitRef(getBranch()) ?? resolveGitRef(environmentValue("YSABELLE_HEAD_SHA"));
     if (resolvedBase && resolvedHead) {
       const result = runCommand("git", [
         "diff",
