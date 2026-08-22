@@ -84,7 +84,7 @@ export class ApiClient {
       context = await interceptor(context);
     }
 
-    if (!shouldAttachInternalBearer(context.url) && context.init.headers instanceof Headers) {
+    if (!shouldAttachInternalBearer(context.url)) {
       const sanitizedHeaders = new Headers(context.init.headers);
       sanitizedHeaders.delete("Authorization");
       context = {
