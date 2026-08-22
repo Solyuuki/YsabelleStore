@@ -30,3 +30,6 @@ jobs:
 
       - name: Run frontend customer auth UI state contract
         run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-auth-ui-contract-test.ts
+
+      - name: Run frontend customer auth form contract
+        run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-auth-form-contract-test.ts
