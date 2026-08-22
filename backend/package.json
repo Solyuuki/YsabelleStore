@@ -10,7 +10,7 @@
     "build": "tsc -p tsconfig.json",
     "test": "tsx --test --test-concurrency=1 test/cors.test.ts test/catalog-image-process-gate.test.ts test/catalog-image-engine-runner.test.ts test/catalog-image-storage.test.ts test/catalog-image-foundation.test.ts test/catalog-image-approval.test.ts test/catalog-image-storefront.test.ts test/catalog-image-url.test.ts test/catalog-quality.test.ts test/data-flow.test.ts test/storefront.test.ts test/storefront-product-detail.test.ts test/forecast-delivery.test.ts test/forecast-fallback.test.ts test/historical-sales-rules.test.ts test/inventory-import.test.ts",
     "start": "node dist/src/server.js",
-    "lint": "eslint .",
+    "lint": "eslint src test",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
   },
@@ -26,9 +26,9 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
+    "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/multer": "^2.2.0",
+    "@types/multer": "^2.0.0",
     "@types/node": "^22.10.5",
     "tsx": "^4.19.2"
   }
