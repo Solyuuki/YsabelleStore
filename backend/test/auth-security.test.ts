@@ -266,3 +266,12 @@ test("auth rate limiter returns 429 with Retry-After after the configured allowa
     assert.ok(Number(blocked.headers.get("retry-after")) >= 1);
   });
 });
+
+test("normal API traffic no longer advertises the retired global rate-limit placeholder", async () => {
+  await withServer(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/api/health`);
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("x-rate-limit-policy"), null);
+  });
+});
