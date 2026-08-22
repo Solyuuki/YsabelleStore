@@ -27,7 +27,9 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
       await login({ email: email.trim(), password });
       navigate("/account");
     } catch (error) {
-      setServerError(error instanceof Error ? error.message : "Unable to sign in. Please try again.");
+      setServerError(
+        error instanceof Error ? error.message : "Unable to sign in. Please try again."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -80,7 +82,11 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
                 onClick={() => setShowPassword((current) => !current)}
                 type="button"
               >
-                {showPassword ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
+                {showPassword ? (
+                  <EyeOff aria-hidden="true" size={18} />
+                ) : (
+                  <Eye aria-hidden="true" size={18} />
+                )}
               </button>
             </span>
             {fieldErrors.password ? <small>{fieldErrors.password}</small> : null}
