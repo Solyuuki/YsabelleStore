@@ -1,5 +1,6 @@
 import { frontendRuntimeConfig, resolveApiUrl } from "@/config/runtime";
 import type { ApiResponse } from "@/types/api";
+import { shouldAttachInternalBearer } from "@/utils/internalAuthRoutes";
 
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
   json?: unknown;
@@ -81,6 +82,18 @@ export class ApiClient {
 
     for (const interceptor of this.requestInterceptors) {
       context = await interceptor(context);
+    }
+
+    if (!shouldAttachInternalBearer(context.url) && context.init.headers instanceof Headers) {
+      const sanitizedHeaders = new Headers(context.init.headers);
+      sanitizedHeaders.delete("Authorization");
+      context = {
+        ...context,
+        init: {
+          ...context.init,
+          headers: sanitizedHeaders
+        }
+      };
     }
 
     let response: Response;
