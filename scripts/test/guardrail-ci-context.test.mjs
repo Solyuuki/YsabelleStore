@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { loadGuardrailContext } from "../lib/guardrail-config.mjs";
 import { collectChangedFiles, getBranch } from "../lib/git-utils.mjs";
 
 function git(cwd, ...args) {
@@ -56,6 +57,17 @@ function temporaryPullRequestRepository() {
   return root;
 }
 
+function temporaryGuardrailRepository() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "ysabelle-member-context-"));
+  fs.mkdirSync(path.join(root, "config"), { recursive: true });
+  fs.mkdirSync(path.join(root, "docs", "sprints", "sprint-7"), { recursive: true });
+  fs.writeFileSync(
+    path.join(root, "config", "guardrails.json"),
+    `${JSON.stringify({ activeSprint: 7 }, null, 2)}\n`
+  );
+  return root;
+}
+
 test("GitHub PR source branch is used when checkout is detached", () => {
   const root = temporaryPullRequestRepository();
   const previousCwd = process.cwd();
@@ -103,4 +115,30 @@ test("GitHub PR changed files come from source versus base, not the synthetic me
   } finally {
     process.chdir(previousCwd);
   }
+});
+
+test("sprint integration guardrail context does not invent an M1 owner", () => {
+  const rootDir = temporaryGuardrailRepository();
+  const context = loadGuardrailContext({
+    args: [],
+    branch: "sprint/v0.7/sprint-7",
+    memberRequired: false,
+    rootDir
+  });
+
+  assert.equal(context.member, null);
+  assert.equal(context.sprint.sprintNumber, 7);
+});
+
+test("member branch guardrail context still resolves the real member", () => {
+  const rootDir = temporaryGuardrailRepository();
+  const context = loadGuardrailContext({
+    args: [],
+    branch: "m2/v0.7/feat/customer-auth",
+    memberRequired: false,
+    rootDir
+  });
+
+  assert.equal(context.member?.key, "m2-ramos");
+  assert.equal(context.sprint.sprintNumber, 7);
 });
