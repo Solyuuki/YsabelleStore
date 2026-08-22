@@ -1,4 +1,9 @@
-import { CatalogQualityStatus, CatalogRecordSource } from "@prisma/client";
+import {
+  CatalogQualityStatus,
+  CatalogRecordSource,
+  ProductImageProcessingStatus,
+  ProductImageQualityStatus
+} from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 const unresolvedDuplicateStatuses = ["PENDING", "CONFIRMED"] as const;
@@ -6,10 +11,24 @@ const unresolvedDuplicateStatuses = ["PENDING", "CONFIRMED"] as const;
 export const APPROVED_STOREFRONT_PRODUCT_IMAGE_PREFIX = "/images/products/";
 
 export const approvedStorefrontProductImageWhere = {
-  imageUrl: {
-    endsWith: ".webp",
-    startsWith: APPROVED_STOREFRONT_PRODUCT_IMAGE_PREFIX
-  }
+  OR: [
+    {
+      imageUrl: {
+        endsWith: ".webp",
+        startsWith: APPROVED_STOREFRONT_PRODUCT_IMAGE_PREFIX
+      }
+    },
+    {
+      activeImageAsset: {
+        is: {
+          cardStorageKey: { not: null },
+          pdpStorageKey: { not: null },
+          processingStatus: ProductImageProcessingStatus.READY,
+          qualityStatus: ProductImageQualityStatus.APPROVED
+        }
+      }
+    }
+  ]
 } satisfies Prisma.ProductWhereInput;
 
 export const approvedStorefrontCategoryWhere = {
@@ -36,8 +55,9 @@ export const approvedStorefrontProductCoreWhere = {
 
 /**
  * Temporary customer-catalog gate while the complete verified image library is collected.
- * It is presentation-only: internal product validity, forecasting, inventory, and sales remain
- * governed by their existing domain policies.
+ * Sprint 6 extends the gate to also trust the currently active CIQE asset when processing and
+ * image quality are both approved. It remains presentation-only: internal product validity,
+ * forecasting, inventory, and sales keep their existing domain policies.
  */
 export const temporaryImageReadyStorefrontProductWhere = {
   AND: [approvedStorefrontProductCoreWhere, approvedStorefrontProductImageWhere]
