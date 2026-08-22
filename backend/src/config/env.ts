@@ -21,6 +21,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1).optional(),
   PYTHON_EXECUTABLE: z.string().min(1).default("python"),
   CATALOG_IMAGE_STORAGE_ROOT: z.string().min(1).default(".data/catalog-images"),
+  CATALOG_IMAGE_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
   FORECAST_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
   FORECAST_DEFAULT_HORIZON: z.coerce.number().int().positive().default(12),
   FORECAST_SEASONAL_PERIOD: z.coerce.number().int().positive().default(12),
