@@ -1,4 +1,4 @@
-name: Sprint 7 Phase 1 Schema Apply
+name: Sprint 7 Format Repair
 
 on:
   pull_request:
@@ -9,27 +9,9 @@ permissions:
   contents: write
 
 jobs:
-  apply-schema:
+  repair-formatting:
     if: github.head_ref == 'sprint/v0.7/sprint-7'
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_DATABASE: ysabellestore_ci
-          MYSQL_USER: ci
-          MYSQL_PASSWORD: ci
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
-    env:
-      NODE_ENV: test
-      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
     steps:
       - name: Checkout Sprint 7 branch
         uses: actions/checkout@v4
@@ -43,140 +25,40 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Patch Prisma schema
-        shell: python
-        run: |
-          from pathlib import Path
-
-          path = Path("database/prisma/schema.prisma")
-          text = path.read_text()
-
-          status_anchor = "enum UserStatus {\n  ACTIVE\n  INACTIVE\n}\n"
-          if "enum CustomerAccountStatus" not in text:
-              if status_anchor not in text:
-                  raise SystemExit("UserStatus anchor not found")
-              text = text.replace(status_anchor, status_anchor + "\nenum CustomerAccountStatus {\n  ACTIVE\n  INACTIVE\n}\n", 1)
-
-          trusted_end = '  @@map("trusted_devices")\n}\n'
-          if "model CustomerAccount" not in text:
-              models = trusted_end + '''
-
-model CustomerAccount {
-  id           String                @id @default(cuid()) @db.VarChar(191)
-  name         String                @db.VarChar(120)
-  email        String                @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
-  phone        String?               @db.VarChar(40)
-  passwordHash String                @map("password_hash") @db.VarChar(255)
-  status       CustomerAccountStatus @default(ACTIVE)
-  createdAt    DateTime              @default(now()) @map("created_at")
-  updatedAt    DateTime              @updatedAt @map("updated_at")
-  sessions     CustomerSession[]
-  orders       CustomerOrder[]
-
-  @@index([status], map: "idx_customer_accounts_status")
-  @@map("customer_accounts")
-}
-
-model CustomerSession {
-  id                String          @id @default(cuid()) @db.VarChar(191)
-  customerAccountId String          @map("customer_account_id") @db.VarChar(191)
-  tokenHash         String          @unique(map: "uq_customer_sessions_token_hash") @map("token_hash") @db.VarChar(64)
-  expiresAt         DateTime        @map("expires_at")
-  revokedAt         DateTime?       @map("revoked_at")
-  lastUsedAt        DateTime?       @map("last_used_at")
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
-  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@index([customerAccountId], map: "idx_customer_sessions_customer")
-  @@index([expiresAt], map: "idx_customer_sessions_expires")
-  @@index([revokedAt], map: "idx_customer_sessions_revoked")
-  @@map("customer_sessions")
-}
-'''
-              text = text.replace(trusted_end, models, 1)
-
-          order_anchor = "model CustomerOrder {\n  id                String                    @id @default(cuid()) @db.VarChar(191)\n"
-          if "customerAccountId String?" not in text:
-              if order_anchor not in text:
-                  raise SystemExit("CustomerOrder id anchor not found")
-              text = text.replace(order_anchor, order_anchor + '  customerAccountId String?                   @map("customer_account_id") @db.VarChar(191)\n', 1)
-
-          items_anchor = '  items             CustomerOrderItem[]\n\n  @@index([status, createdAt], map: "idx_customer_orders_status_created")\n'
-          if "idx_customer_orders_customer_created" not in text:
-              if items_anchor not in text:
-                  raise SystemExit("CustomerOrder items anchor not found")
-              replacement = '  items             CustomerOrderItem[]\n  customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)\n\n  @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")\n  @@index([status, createdAt], map: "idx_customer_orders_status_created")\n'
-              text = text.replace(items_anchor, replacement, 1)
-
-          path.write_text(text)
-
-      - name: Create migration
-        shell: bash
-        run: |
-          mkdir -p database/prisma/migrations/20260822_customer_accounts
-          cat > database/prisma/migrations/20260822_customer_accounts/migration.sql <<'SQL'
-          CREATE TABLE `customer_accounts` (
-            `id` VARCHAR(191) NOT NULL,
-            `name` VARCHAR(120) NOT NULL,
-            `email` VARCHAR(191) NOT NULL,
-            `phone` VARCHAR(40) NULL,
-            `password_hash` VARCHAR(255) NOT NULL,
-            `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
-            `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-            `updated_at` DATETIME(3) NOT NULL,
-            UNIQUE INDEX `uq_customer_accounts_email`(`email`),
-            INDEX `idx_customer_accounts_status`(`status`),
-            PRIMARY KEY (`id`)
-          ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-          CREATE TABLE `customer_sessions` (
-            `id` VARCHAR(191) NOT NULL,
-            `customer_account_id` VARCHAR(191) NOT NULL,
-            `token_hash` VARCHAR(64) NOT NULL,
-            `expires_at` DATETIME(3) NOT NULL,
-            `revoked_at` DATETIME(3) NULL,
-            `last_used_at` DATETIME(3) NULL,
-            `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-            `updated_at` DATETIME(3) NOT NULL,
-            UNIQUE INDEX `uq_customer_sessions_token_hash`(`token_hash`),
-            INDEX `idx_customer_sessions_customer`(`customer_account_id`),
-            INDEX `idx_customer_sessions_expires`(`expires_at`),
-            INDEX `idx_customer_sessions_revoked`(`revoked_at`),
-            PRIMARY KEY (`id`),
-            CONSTRAINT `customer_sessions_customer_account_fkey` FOREIGN KEY (`customer_account_id`) REFERENCES `customer_accounts`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-          ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-          ALTER TABLE `customer_orders`
-            ADD COLUMN `customer_account_id` VARCHAR(191) NULL,
-            ADD INDEX `idx_customer_orders_customer_created`(`customer_account_id`, `created_at`),
-            ADD CONSTRAINT `customer_orders_customer_account_fkey` FOREIGN KEY (`customer_account_id`) REFERENCES `customer_accounts`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-          SQL
-
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate and validate Prisma
-        run: |
-          npm run prisma:generate
-          npm run prisma:validate
+      - name: Format files reported by CI
+        run: >-
+          npx prettier --write
+          .agents/skills/21st-ai/SKILL.md
+          .agents/skills/ui-ux-pro-max/SKILL.md
+          .github/workflows/sprint-7-phase1-schema-apply.yml
+          backend/src/services/customerAuthService.ts
+          backend/src/validators/customerAuth.validators.ts
+          backend/test/customer-auth.test.ts
+          docs/sprints/sprint-6/README.md
+          docs/sprints/sprint-6/SPRINT-BACKLOG.md
+          docs/sprints/sprint-7
+          docs/superpowers/plans/2026-08-22-customer-authentication.md
+          scripts/agent-ui-skills-test.mjs
+          scripts/test/dev-stack-modes.test.mjs
 
-      - name: Build disposable database
-        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+      - name: Verify repository formatting
+        run: npm run format:check
 
-      - name: Run persistence contract
-        run: npx tsx --test --test-concurrency=1 backend/test/customer-auth.test.ts
+      - name: Verify whitespace integrity
+        run: git diff --check
 
-      - name: Commit verified schema changes
+      - name: Commit formatting repair
         shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add database/prisma/schema.prisma database/prisma/migrations/20260822_customer_accounts/migration.sql
-          git diff --cached --check
-          if git diff --cached --quiet; then
-            echo "No schema changes to commit."
+          if git diff --quiet; then
+            echo "No formatting changes needed."
             exit 0
           fi
-          git commit -m "feat: add customer account persistence"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "chore: normalize Sprint 7 formatting"
           git push origin HEAD:sprint/v0.7/sprint-7
