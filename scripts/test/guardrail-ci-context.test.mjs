@@ -48,6 +48,8 @@ function temporaryPullRequestRepository() {
   fs.writeFileSync(path.join(root, "main-only.txt"), "main\n");
   git(root, "add", "main-only.txt");
   git(root, "commit", "-m", "main moved");
+
+  git(root, "checkout", "-b", "pr-merge");
   git(root, "merge", "--no-ff", "m2/v0.7/feat/customer-auth", "-m", "synthetic PR merge");
   git(root, "checkout", "--detach", "HEAD");
 
