@@ -61,6 +61,10 @@ export function inferMemberFromBranch(branch) {
   return MEMBERS[prefix] ?? null;
 }
 
+export function resolveMember(branch, args = process.argv.slice(2)) {
+  return parseMemberOverride(args) ?? inferMemberFromBranch(branch);
+}
+
 export function inferSprintFromBranch(branch) {
   const match = branch?.match(/\/v(\d+)\.(\d+)\//);
 
@@ -83,16 +87,10 @@ export function inferSprintFromBranch(branch) {
 }
 
 export function requireMember(branch, args = process.argv.slice(2)) {
-  const override = parseMemberOverride(args);
+  const member = resolveMember(branch, args);
 
-  if (override) {
-    return override;
-  }
-
-  const inferred = inferMemberFromBranch(branch);
-
-  if (inferred) {
-    return inferred;
+  if (member) {
+    return member;
   }
 
   throw new Error(
@@ -119,7 +117,13 @@ export function requireSprint(branch, { rootDir = process.cwd() } = {}) {
     );
   }
 
-  const versionMatch = branch?.match(/(?:^|\/)v(\d+\.\d+)(?:$|\/)/);
+  const versionMatch = branch?.match(/(?:^|\/)v(\d+)\.(\d+)(?:$|\/)/);
+  if (versionMatch && Number.parseInt(versionMatch[2], 10) !== sprintNumber) {
+    throw new Error(
+      `Branch ${branch} declares v${versionMatch[1]}.${versionMatch[2]}, but activeSprint is ${sprintNumber} in ${GUARDRAIL_CONFIG_PATH}.`
+    );
+  }
+
   const sprintSlug = `sprint-${sprintNumber}`;
   const sprintDir = `docs/sprints/${sprintSlug}`;
   const absoluteSprintDir = path.join(rootDir, ...sprintDir.split("/"));
@@ -132,7 +136,7 @@ export function requireSprint(branch, { rootDir = process.cwd() } = {}) {
   return {
     sprintNumber,
     sprintSlug,
-    sprintVersion: versionMatch ? `v${versionMatch[1]}` : `sprint-${sprintNumber}`,
+    sprintVersion: versionMatch ? `v${versionMatch[1]}.${versionMatch[2]}` : `sprint-${sprintNumber}`,
     sprintDir
   };
 }
