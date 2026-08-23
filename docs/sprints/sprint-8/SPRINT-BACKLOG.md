@@ -13,17 +13,17 @@
 - [x] Add the minimal canonical status contract for 200, 201, 400, 401, 403, 404, 409, 413, 415, 422, 429, 500, and 503.
 - [x] Restore Sprint 8 guardrail preconditions without weakening them.
 - [x] Run the new contract test within the normal backend test suite.
-- [ ] Verify full exact-head CI and PR guardrails after the final Phase 1 documentation commit.
+- [x] Verify full exact-head CI and PR guardrails after the final Phase 1 documentation commit.
 - [x] Record Phase 1 evidence and stop before Phase 2.
 
 ## Phase 2 — Health, liveness, and readiness
 
-- [ ] Preserve a compatible health summary endpoint.
-- [ ] Add explicit liveness semantics for backend process availability.
-- [ ] Add explicit readiness semantics for critical dependency availability.
-- [ ] Return 503 when critical readiness requirements are unavailable.
-- [ ] Add canonical healthy/degraded/unavailable health states.
-- [ ] Add failure-simulation regression coverage.
+- [x] Preserve a compatible health summary endpoint.
+- [x] Add explicit liveness semantics for backend process availability.
+- [x] Add explicit readiness semantics for critical dependency availability.
+- [x] Return 503 when critical readiness requirements are unavailable.
+- [x] Add canonical healthy/degraded/unavailable health states.
+- [x] Add failure-simulation regression coverage.
 
 ## Phase 3 — Safe error handling
 
