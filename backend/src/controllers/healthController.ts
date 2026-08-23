@@ -64,7 +64,10 @@ export const getHealth: RequestHandler = async (_request, response) => {
   response
     .status(HTTP_STATUS.OK)
     .json(
-      createSuccessResponse("Backend service is running.", createHealthData(database, serviceHealth))
+      createSuccessResponse(
+        "Backend service is running.",
+        createHealthData(database, serviceHealth)
+      )
     );
 };
 
@@ -82,10 +85,12 @@ export const getReadiness: RequestHandler = async (_request, response) => {
   const serviceHealth = classifyServiceHealth(database.status);
   const statusCode = serviceHealth.ready ? HTTP_STATUS.OK : HTTP_STATUS.SERVICE_UNAVAILABLE;
 
-  response.status(statusCode).json(
-    createSuccessResponse(
-      serviceHealth.ready ? "Backend service is ready." : "Backend service is not ready.",
-      createHealthData(database, serviceHealth)
-    )
-  );
+  response
+    .status(statusCode)
+    .json(
+      createSuccessResponse(
+        serviceHealth.ready ? "Backend service is ready." : "Backend service is not ready.",
+        createHealthData(database, serviceHealth)
+      )
+    );
 };
