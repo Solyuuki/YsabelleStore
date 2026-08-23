@@ -76,6 +76,7 @@
     "product-images:cutouts:verify": "python scripts/product_image_cutouts.py --verify && python scripts/refresh_ligo_product_image.py --verify",
     "product-images:ligo:refresh": "python scripts/refresh_ligo_product_image.py --download",
     "product-images:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/product-image-mapping-test.ts",
+    "catalog-images:backfill": "tsx backend/src/scripts/backfillCatalogImages.ts",
     "catalog-images:test": "cd catalog-image-engine && python -m unittest discover -s tests -p \"test_*.py\"",
     "storefront:images:verify": "tsx scripts/storefront-image-ready-audit.ts",
     "storefront:showcase:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/storefront-curated-showcase-test.ts",
