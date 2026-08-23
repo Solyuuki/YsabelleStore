@@ -25,6 +25,8 @@
     "catalog:audit": "node --env-file=.env scripts/catalog-quality-audit.mjs",
     "catalog:clean": "node --env-file=.env scripts/catalog-clean.mjs",
     "catalog:clean:apply": "node --env-file=.env scripts/catalog-clean.mjs --apply",
+    "sprint6:fixtures:clean": "node --env-file=.env scripts/sprint6-backfill-fixture-cleanup.mjs",
+    "sprint6:fixtures:clean:apply": "node --env-file=.env scripts/sprint6-backfill-fixture-cleanup.mjs --apply",
     "curated-showcase:master-data:audit": "tsx --tsconfig frontend/tsconfig.app.json scripts/curated-showcase-master-data-audit.ts",
     "curated-showcase:master-data:apply": "tsx --tsconfig frontend/tsconfig.app.json scripts/curated-showcase-master-data-audit.ts --apply",
     "inventory:audit": "node scripts/inventory-audit.mjs",
