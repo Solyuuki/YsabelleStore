@@ -74,6 +74,26 @@ test("readiness returns 200 healthy when critical database and configuration che
   });
 });
 
+test("readiness returns 503 degraded when required authentication configuration is missing", async () => {
+  const originalJwtSecret = env.JWT_SECRET;
+
+  try {
+    env.JWT_SECRET = undefined;
+
+    await withServer(async (baseUrl) => {
+      const response = await fetch(`${baseUrl}/api/health/ready`);
+      const body = await json(response);
+
+      assert.equal(response.status, 503);
+      assert.equal(body.data?.status, "degraded");
+      assert.equal(body.data?.ready, false);
+      assert.equal(body.data?.checks?.database, "connected");
+    });
+  } finally {
+    env.JWT_SECRET = originalJwtSecret;
+  }
+});
+
 test("readiness fails with 503 unavailable when the database dependency is not configured", async () => {
   const originalDatabaseUrl = env.DATABASE_URL;
 
