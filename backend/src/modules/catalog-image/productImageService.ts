@@ -75,7 +75,11 @@ export async function getLatestProductImageCandidate(productId: string) {
 
   return prisma.productImageAsset.findFirst({
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    where: { productId }
+    where: {
+      productId,
+      qualityStatus: { not: "REJECTED" },
+      rejectedAt: null
+    }
   });
 }
 

@@ -64,6 +64,7 @@ import {
   type ProductImportSummary,
   type ProductRecord
 } from "@/services/catalogApi";
+import { rejectProductImage } from "@/services/productImageApi";
 import { formatFileSize, getImportFileType } from "@/utils/importFormatting";
 import { waitForMinimumDuration } from "@/utils/timing";
 import {
@@ -2747,6 +2748,8 @@ function ProductDetailsDialog({
   const { pushToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [discardingImageDrafts, setDiscardingImageDrafts] = useState(false);
+  const [draftImageCandidateIds, setDraftImageCandidateIds] = useState<string[]>([]);
   const [form, setForm] = useState({
     barcode: "",
     brand: "",
@@ -2791,10 +2794,61 @@ function ProductDetailsDialog({
     setIsEditing(false);
   }, [product]);
 
+  useEffect(() => {
+    setDraftImageCandidateIds([]);
+  }, [product?.id]);
+
+  async function discardDraftImageCandidates() {
+    if (!product || draftImageCandidateIds.length === 0) {
+      return true;
+    }
+    if (discardingImageDrafts) {
+      return false;
+    }
+
+    setDiscardingImageDrafts(true);
+    try {
+      for (const candidateId of draftImageCandidateIds) {
+        const response = await rejectProductImage(product.id, candidateId);
+        if (!response.success) {
+          throw new Error(response.message || "Image draft discard failed.");
+        }
+      }
+      setDraftImageCandidateIds([]);
+      return true;
+    } catch (discardError) {
+      pushToast({
+        message:
+          discardError instanceof Error
+            ? discardError.message
+            : "The uploaded image draft could not be discarded.",
+        title: "Image draft not discarded",
+        variant: "error"
+      });
+      return false;
+    } finally {
+      setDiscardingImageDrafts(false);
+    }
+  }
+
+  async function handleCancelEditing() {
+    if (!(await discardDraftImageCandidates())) {
+      return;
+    }
+    setIsEditing(false);
+  }
+
+  async function handleCloseRequest() {
+    if (isEditing && !(await discardDraftImageCandidates())) {
+      return;
+    }
+    onClose();
+  }
+
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!product || saving) {
+    if (!product || saving || discardingImageDrafts) {
       return;
     }
 
@@ -2805,7 +2859,7 @@ function ProductDetailsDialog({
         barcode: form.barcode.trim() || null,
         brand: form.brand.trim() || null,
         categoryId: form.categoryId,
-        costPrice: form.costPrice.trim(),
+        costPrice: form.costPrice.trim() || undefined,
         description: form.description.trim() || null,
         name: form.name.trim(),
         dataQualityStatus: form.dataQualityStatus,
@@ -2833,6 +2887,7 @@ function ProductDetailsDialog({
         title: "Product updated",
         variant: "success"
       });
+      setDraftImageCandidateIds([]);
       setIsEditing(false);
       onSaved();
     } catch {
@@ -2851,7 +2906,7 @@ function ProductDetailsDialog({
       open={isOpen}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
-          onClose();
+          void handleCloseRequest();
         }
       }}
     >
@@ -3016,14 +3071,27 @@ function ProductDetailsDialog({
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <ProductImageUploadPanel
-                      disabled={saving}
-                      onApproved={() => {
+                      disabled={saving || discardingImageDrafts}
+                      onApproved={(candidate) => {
+                        setDraftImageCandidateIds((current) =>
+                          current.filter((candidateId) => candidateId !== candidate.id)
+                        );
                         pushToast({
                           message: "The optimized replacement is now active for the storefront.",
                           title: "Product image approved",
                           variant: "success"
                         });
                         onSaved();
+                      }}
+                      onCandidateCreated={(candidate) => {
+                        setDraftImageCandidateIds((current) =>
+                          current.includes(candidate.id) ? current : [...current, candidate.id]
+                        );
+                      }}
+                      onCandidateDiscarded={(candidate) => {
+                        setDraftImageCandidateIds((current) =>
+                          current.filter((candidateId) => candidateId !== candidate.id)
+                        );
                       }}
                       productId={product.id}
                       resetKey={`${product.id}-${isEditing ? "edit" : "view"}`}
@@ -3201,15 +3269,16 @@ function ProductDetailsDialog({
           {isEditing ? (
             <>
               <Button
-                disabled={saving}
+                disabled={saving || discardingImageDrafts}
                 type="button"
                 variant="secondary"
-                onClick={() => setIsEditing(false)}
+                onClick={() => void handleCancelEditing()}
               >
-                Cancel
+                {discardingImageDrafts ? "Discarding image..." : "Cancel"}
               </Button>
               <Button
                 disabled={saving || !product || !form.name || !form.categoryId}
+                key="product-edit-save"
                 form="product-edit-form"
                 type="submit"
               >
@@ -3224,7 +3293,14 @@ function ProductDetailsDialog({
               <Button type="button" variant="secondary" onClick={onClose}>
                 Close
               </Button>
-              <Button type="button" onClick={() => setIsEditing(true)}>
+              <Button
+                key="product-edit-enter"
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  setIsEditing(true);
+                }}
+              >
                 Edit product
               </Button>
             </>

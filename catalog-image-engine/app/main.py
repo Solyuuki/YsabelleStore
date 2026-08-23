@@ -38,12 +38,25 @@ def main() -> int:
     if not source.is_file():
         return invalid_request("sourcePath must reference an existing file")
 
-    result = analyze_image_path(source)
-    diagnostic_codes = {item["code"] for item in result["diagnostics"]}
+    source_result = analyze_image_path(source)
+    diagnostic_codes = {item["code"] for item in source_result["diagnostics"]}
     blocking_codes = {"DECODE_FAILED", "PIXEL_LIMIT_EXCEEDED"}
+    result = source_result
 
     if not diagnostic_codes.intersection(blocking_codes):
-        normalized = normalize_image_path(source, Path(output_directory))
+        output = Path(output_directory)
+        normalized = normalize_image_path(source, output)
+        post_optimization = analyze_image_path(output / "processed.webp")
+        result = {
+            "status": (
+                "APPROVED"
+                if post_optimization["status"] == "APPROVED"
+                else "REJECTED"
+            ),
+            "source": source_result["source"],
+            "diagnostics": post_optimization["diagnostics"],
+            "metrics": post_optimization["metrics"],
+        }
         result.update(normalized)
 
     json.dump(result, sys.stdout, separators=(",", ":"))

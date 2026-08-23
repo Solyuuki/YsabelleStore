@@ -16,6 +16,7 @@ import {
   fetchLatestProductImageCandidate,
   fetchProductImagePreviewBlob,
   getProductImageDiagnostics,
+  rejectProductImage,
   uploadProductImage,
   type ProductImageCandidate
 } from "@/services/productImageApi";
@@ -31,17 +32,22 @@ type ProductImagePanelPhase =
   | "preview"
   | "approving"
   | "approved"
+  | "discarding"
   | "error";
 
 export function ProductImageUploadPanel({
   disabled = false,
   onApproved,
+  onCandidateCreated,
+  onCandidateDiscarded,
   onSelectionChange,
   productId,
   resetKey
 }: {
   disabled?: boolean;
   onApproved?: (candidate: ProductImageCandidate) => void;
+  onCandidateCreated?: (candidate: ProductImageCandidate) => void;
+  onCandidateDiscarded?: (candidate: ProductImageCandidate) => void;
   onSelectionChange?: (hasSelectedImage: boolean) => void;
   productId: string | null;
   resetKey?: string | number;
@@ -51,6 +57,7 @@ export function ProductImageUploadPanel({
   const selectionVersionRef = useRef(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [candidate, setCandidate] = useState<ProductImageCandidate | null>(null);
+  const [candidateRefreshKey, setCandidateRefreshKey] = useState(0);
   const [phase, setPhase] = useState<ProductImagePanelPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [originalPreviewUrl, setOriginalPreviewUrl] = useState<string | null>(null);
@@ -62,7 +69,7 @@ export function ProductImageUploadPanel({
   const canApprove = Boolean(
     candidate && candidate.qualityStatus === "APPROVED" && candidate.processingStatus === "READY"
   );
-  const isBusy = phase === "uploading" || phase === "approving";
+  const isBusy = phase === "uploading" || phase === "approving" || phase === "discarding";
 
   useEffect(() => {
     const hydrationVersion = selectionVersionRef.current + 1;
@@ -135,7 +142,7 @@ export function ProductImageUploadPanel({
       controller.abort();
       if (originalObjectUrl) URL.revokeObjectURL(originalObjectUrl);
     };
-  }, [onSelectionChange, productId, resetKey]);
+  }, [candidateRefreshKey, onSelectionChange, productId, resetKey]);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -213,6 +220,7 @@ export function ProductImageUploadPanel({
         }
 
         setCandidate(response.data);
+        onCandidateCreated?.(response.data);
         setPhase(response.data.processingStatus === "FAILED" ? "error" : "preview");
         if (response.data.processingStatus === "FAILED") {
           setError("The image could not be processed. Upload a different source image.");
@@ -233,7 +241,7 @@ export function ProductImageUploadPanel({
     return () => {
       active = false;
     };
-  }, [productId, selectedFile]);
+  }, [onCandidateCreated, productId, selectedFile]);
 
   function validateFile(file: File) {
     if (file.size > MAX_PRODUCT_IMAGE_BYTES) {
@@ -285,6 +293,33 @@ export function ProductImageUploadPanel({
     if (inputRef.current) inputRef.current.value = "";
   }
 
+  async function handleDiscard() {
+    if (!productId || !candidate || candidate.approvedAt || phase === "discarding") {
+      return;
+    }
+
+    setPhase("discarding");
+    setError(null);
+
+    try {
+      const response = await rejectProductImage(productId, candidate.id);
+      if (!response.success || !response.data) {
+        throw new Error(response.message || "The uploaded image could not be discarded.");
+      }
+
+      onCandidateDiscarded?.(response.data);
+      clearSelection();
+      setCandidateRefreshKey((current) => current + 1);
+    } catch (discardError) {
+      setPhase(candidate.processingStatus === "FAILED" ? "error" : "preview");
+      setError(
+        discardError instanceof Error
+          ? discardError.message
+          : "The uploaded image could not be discarded."
+      );
+    }
+  }
+
   async function handleApprove() {
     if (!productId || !candidate || !canApprove || phase === "approving") {
       return;
@@ -324,8 +359,8 @@ export function ProductImageUploadPanel({
         <div>
           <p className="text-sm font-semibold text-slate-950">Product image</p>
           <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-600">
-            Upload a normal product photo. The system checks quality, centers the product, creates
-            catalog variants, and only publishes an approved optimized result.
+            Upload a normal product photo. CIQE automatically optimizes and re-checks the processed
+            result, then only allows an approved optimized image to be published.
           </p>
         </div>
         <Button
@@ -399,6 +434,7 @@ export function ProductImageUploadPanel({
         phase === "preview" ||
         phase === "approving" ||
         phase === "approved" ||
+        phase === "discarding" ||
         phase === "error") ? (
         <div className="grid gap-4 md:grid-cols-2">
           <ImagePreview title="Original" url={originalPreviewUrl} />
@@ -456,6 +492,19 @@ export function ProductImageUploadPanel({
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
               Upload Another
             </Button>
+            {!candidate.approvedAt ? (
+              <Button
+                disabled={isBusy}
+                onClick={() => void handleDiscard()}
+                type="button"
+                variant="ghost"
+              >
+                {phase === "discarding" ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : null}
+                {phase === "discarding" ? "Discarding..." : "Discard upload"}
+              </Button>
+            ) : null}
             {canApprove && phase !== "approved" ? (
               <Button
                 disabled={phase === "approving" || !optimizedPreviewUrl}
