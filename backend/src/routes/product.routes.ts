@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   approveProductImageController,
+  getLatestProductImageController,
   previewProductImageController,
   rejectProductImageController,
   uploadProductImageController
@@ -48,6 +49,11 @@ productRouter.post(
   requireRole("OWNER"),
   productImageUpload.single("image"),
   uploadProductImageController
+);
+productRouter.get(
+  "/:productId/images/latest",
+  requireRole("OWNER"),
+  getLatestProductImageController
 );
 productRouter.get(
   "/:productId/images/:imageId/preview/:variant",
