@@ -42,6 +42,22 @@ export async function uploadProductImage(productId: string, file: File) {
   );
 }
 
+export async function fetchLatestProductImageCandidate(
+  productId: string,
+  signal?: AbortSignal
+): Promise<ProductImageCandidate | null> {
+  const response = await apiClient.request<{ candidate: ProductImageCandidate | null }>(
+    `/api/catalog/products/${encodeURIComponent(productId)}/images/latest`,
+    { signal }
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message || "Latest product image candidate could not be loaded.");
+  }
+
+  return response.data.candidate;
+}
+
 export async function approveProductImage(productId: string, imageId: string) {
   return apiClient.request<ProductImageCandidate, { code?: string; details?: unknown }>(
     `/api/catalog/products/${encodeURIComponent(productId)}/images/${encodeURIComponent(imageId)}/approve`,
