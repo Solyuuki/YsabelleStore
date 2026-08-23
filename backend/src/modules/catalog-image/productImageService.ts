@@ -61,6 +61,24 @@ export async function createProductImageCandidate(productId: string, file: Produ
   return processProductImageCandidate(candidateId);
 }
 
+export async function getLatestProductImageCandidate(productId: string) {
+  const product = await prisma.product.findUnique({
+    select: { id: true },
+    where: { id: productId }
+  });
+
+  if (!product) {
+    throw new HttpError(404, "Product was not found.", {
+      code: "PRODUCT_NOT_FOUND"
+    });
+  }
+
+  return prisma.productImageAsset.findFirst({
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    where: { productId }
+  });
+}
+
 export async function processProductImageCandidate(candidateId: string) {
   const candidate = await prisma.productImageAsset.findUnique({
     where: { id: candidateId }
