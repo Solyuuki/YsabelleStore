@@ -11,11 +11,7 @@ import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
 const storage = new CatalogImageStorage(catalogImageStorageRoot);
 
 async function loadBackfillModule() {
-  try {
-    return await import("../src/modules/catalog-image/legacyImageBackfill.js");
-  } catch {
-    return null;
-  }
+  return import("../src/modules/catalog-image/legacyImageBackfill.js");
 }
 
 async function cleanupCandidateStorage(productId: string) {
@@ -32,7 +28,7 @@ async function cleanupCandidateStorage(productId: string) {
 test("legacy image resolver accepts only an exact local product-image basename", async () => {
   const backfill = await loadBackfillModule();
   assert.equal(
-    typeof backfill?.resolveLegacyProductImageSource,
+    typeof backfill.resolveLegacyProductImageSource,
     "function",
     "resolveLegacyProductImageSource must be implemented"
   );
@@ -57,7 +53,7 @@ test("legacy image resolver accepts only an exact local product-image basename",
 test("legacy image resolver rejects unsafe, nested, remote, decorated, and CIQE URLs", async () => {
   const backfill = await loadBackfillModule();
   assert.equal(
-    typeof backfill?.resolveLegacyProductImageSource,
+    typeof backfill.resolveLegacyProductImageSource,
     "function",
     "resolveLegacyProductImageSource must be implemented"
   );
@@ -87,7 +83,7 @@ test("legacy image resolver rejects unsafe, nested, remote, decorated, and CIQE 
 test("legacy image backfill planner marks a retained legacy source eligible", async () => {
   const backfill = await loadBackfillModule();
   assert.equal(
-    typeof backfill?.planLegacyProductImageBackfill,
+    typeof backfill.planLegacyProductImageBackfill,
     "function",
     "planLegacyProductImageBackfill must be implemented"
   );
@@ -142,7 +138,7 @@ test("legacy image backfill planner marks a retained legacy source eligible", as
 test("legacy image backfill planner skips products with existing CIQE image history", async () => {
   const backfill = await loadBackfillModule();
   assert.equal(
-    typeof backfill?.planLegacyProductImageBackfill,
+    typeof backfill.planLegacyProductImageBackfill,
     "function",
     "planLegacyProductImageBackfill must be implemented"
   );
@@ -207,7 +203,7 @@ test("legacy image backfill planner skips products with existing CIQE image hist
 test("legacy image backfill dry run reports eligibility without database or storage mutation", async () => {
   const backfill = await loadBackfillModule();
   assert.equal(
-    typeof backfill?.runLegacyProductImageBackfill,
+    typeof backfill.runLegacyProductImageBackfill,
     "function",
     "runLegacyProductImageBackfill must be implemented"
   );
@@ -266,7 +262,7 @@ test("legacy image backfill dry run reports eligibility without database or stor
 test("legacy image backfill apply creates one candidate, stays idempotent, and does not publish it", async () => {
   const backfill = await loadBackfillModule();
   assert.equal(
-    typeof backfill?.runLegacyProductImageBackfill,
+    typeof backfill.runLegacyProductImageBackfill,
     "function",
     "runLegacyProductImageBackfill must be implemented"
   );
