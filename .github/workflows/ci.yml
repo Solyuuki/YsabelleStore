@@ -72,6 +72,12 @@ jobs:
       - name: Validate guardrail preconditions
         run: npm run guardrail:preflight
 
+      - name: Print exact Phase 2 Prettier diff
+        run: |
+          npx prettier backend/src/controllers/healthController.ts backend/src/routes/health.routes.ts --write
+          git diff -- backend/src/controllers/healthController.ts backend/src/routes/health.routes.ts
+          git checkout -- backend/src/controllers/healthController.ts backend/src/routes/health.routes.ts
+
       - name: Check formatting
         run: npm run format:check
 
