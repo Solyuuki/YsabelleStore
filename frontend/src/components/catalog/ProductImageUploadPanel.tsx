@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   approveProductImage,
+  fetchLatestProductImageCandidate,
   fetchProductImagePreviewBlob,
   getProductImageDiagnostics,
   uploadProductImage,
@@ -47,6 +48,7 @@ export function ProductImageUploadPanel({
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const processedUploadKeyRef = useRef<string | null>(null);
+  const selectionVersionRef = useRef(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [candidate, setCandidate] = useState<ProductImageCandidate | null>(null);
   const [phase, setPhase] = useState<ProductImagePanelPhase>("idle");
@@ -63,12 +65,78 @@ export function ProductImageUploadPanel({
   const isBusy = phase === "uploading" || phase === "approving";
 
   useEffect(() => {
-    clearSelection();
-  }, [resetKey]);
+    const hydrationVersion = selectionVersionRef.current + 1;
+    selectionVersionRef.current = hydrationVersion;
+    processedUploadKeyRef.current = null;
+    setSelectedFile(null);
+    setCandidate(null);
+    setOriginalPreviewUrl(null);
+    setOptimizedPreviewUrl(null);
+    setError(null);
+    setPhase("idle");
+    onSelectionChange?.(false);
+    if (inputRef.current) inputRef.current.value = "";
+
+    if (!productId) {
+      return;
+    }
+
+    const controller = new AbortController();
+    let originalObjectUrl: string | null = null;
+
+    fetchLatestProductImageCandidate(productId, controller.signal)
+      .then(async (hydratedCandidate) => {
+        if (
+          controller.signal.aborted ||
+          selectionVersionRef.current !== hydrationVersion ||
+          !hydratedCandidate
+        ) {
+          return;
+        }
+
+        setCandidate(hydratedCandidate);
+        setPhase(
+          hydratedCandidate.approvedAt
+            ? "approved"
+            : hydratedCandidate.processingStatus === "FAILED"
+              ? "error"
+              : "preview"
+        );
+        if (hydratedCandidate.processingStatus === "FAILED") {
+          setError("The existing image candidate could not be processed. Upload a different source image.");
+        }
+
+        const originalBlob = await fetchProductImagePreviewBlob(
+          productId,
+          hydratedCandidate.id,
+          "original",
+          controller.signal
+        );
+        if (controller.signal.aborted || selectionVersionRef.current !== hydrationVersion) {
+          return;
+        }
+
+        originalObjectUrl = URL.createObjectURL(originalBlob);
+        setOriginalPreviewUrl(originalObjectUrl);
+      })
+      .catch((hydrationError: unknown) => {
+        if (controller.signal.aborted || selectionVersionRef.current !== hydrationVersion) return;
+        setPhase("error");
+        setError(
+          hydrationError instanceof Error
+            ? hydrationError.message
+            : "The existing product image candidate could not be loaded."
+        );
+      });
+
+    return () => {
+      controller.abort();
+      if (originalObjectUrl) URL.revokeObjectURL(originalObjectUrl);
+    };
+  }, [onSelectionChange, productId, resetKey]);
 
   useEffect(() => {
     if (!selectedFile) {
-      setOriginalPreviewUrl(null);
       return;
     }
 
@@ -192,6 +260,7 @@ export function ProductImageUploadPanel({
       return;
     }
 
+    selectionVersionRef.current += 1;
     processedUploadKeyRef.current = null;
     setSelectedFile(file);
     setCandidate(null);
@@ -202,9 +271,11 @@ export function ProductImageUploadPanel({
   }
 
   function clearSelection() {
+    selectionVersionRef.current += 1;
     processedUploadKeyRef.current = null;
     setSelectedFile(null);
     setCandidate(null);
+    setOriginalPreviewUrl(null);
     setOptimizedPreviewUrl(null);
     setError(null);
     setPhase("idle");
@@ -261,12 +332,12 @@ export function ProductImageUploadPanel({
           type="button"
           variant="secondary"
         >
-          {selectedFile ? (
+          {selectedFile || candidate ? (
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
           ) : (
             <Upload className="h-4 w-4" aria-hidden="true" />
           )}
-          {selectedFile ? "Upload Another" : "Choose image"}
+          {selectedFile || candidate ? "Upload Another" : "Choose image"}
         </Button>
       </div>
 
@@ -279,7 +350,7 @@ export function ProductImageUploadPanel({
         type="file"
       />
 
-      {!selectedFile && phase !== "error" ? (
+      {!selectedFile && !candidate && phase !== "error" ? (
         <button
           className="flex w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center transition-colors hover:border-violet-300 hover:bg-violet-50/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-60"
           disabled={disabled || isBusy}
@@ -321,7 +392,7 @@ export function ProductImageUploadPanel({
         </Alert>
       ) : null}
 
-      {selectedFile &&
+      {(selectedFile || candidate) &&
       (phase === "selected" ||
         phase === "preview" ||
         phase === "approving" ||
