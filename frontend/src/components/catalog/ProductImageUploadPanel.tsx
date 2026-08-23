@@ -103,7 +103,9 @@ export function ProductImageUploadPanel({
               : "preview"
         );
         if (hydratedCandidate.processingStatus === "FAILED") {
-          setError("The existing image candidate could not be processed. Upload a different source image.");
+          setError(
+            "The existing image candidate could not be processed. Upload a different source image."
+          );
         }
 
         const originalBlob = await fetchProductImagePreviewBlob(

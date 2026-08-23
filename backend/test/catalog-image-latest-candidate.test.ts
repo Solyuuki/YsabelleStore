@@ -86,7 +86,6 @@ test("latest product image candidate rejects an unknown product", async () => {
   await assert.rejects(
     service.getLatestProductImageCandidate(`missing-${randomUUID()}`),
     (error: unknown) =>
-      error instanceof Error &&
-      (error as { code?: string }).code === "PRODUCT_NOT_FOUND"
+      error instanceof Error && (error as { code?: string }).code === "PRODUCT_NOT_FOUND"
   );
 });

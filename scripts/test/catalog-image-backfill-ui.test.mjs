@@ -23,9 +23,12 @@ test("existing product image review hydrates the latest CIQE candidate without a
   assert.match(panelSource, /fetchLatestProductImageCandidate/);
   assert.match(
     panelSource,
-    /fetchProductImagePreviewBlob\(productId, hydratedCandidate\.id, "original"/
+    /fetchProductImagePreviewBlob\(\s*productId,\s*hydratedCandidate\.id,\s*"original"/
   );
   assert.match(panelSource, /selectedFile \|\| candidate/);
   assert.match(panelSource, /Use Optimized Image/);
-  assert.doesNotMatch(panelSource, /fetchLatestProductImageCandidate[\s\S]{0,800}approveProductImage\(/);
+  assert.doesNotMatch(
+    panelSource,
+    /fetchLatestProductImageCandidate[\s\S]{0,800}approveProductImage\(/
+  );
 });
