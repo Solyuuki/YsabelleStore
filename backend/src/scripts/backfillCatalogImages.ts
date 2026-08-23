@@ -15,6 +15,7 @@ function parseArguments(args: string[]): BackfillCliOptions {
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
+    if (!argument) continue;
 
     if (argument === "--apply") {
       options.apply = true;
