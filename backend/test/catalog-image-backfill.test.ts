@@ -9,6 +9,7 @@ import { CatalogImageStorage } from "../src/modules/catalog-image/catalogImageSt
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
 
 const storage = new CatalogImageStorage(catalogImageStorageRoot);
+const actualRepositoryRoot = path.resolve(import.meta.dirname, "..", "..");
 
 async function loadBackfillModule() {
   return import("../src/modules/catalog-image/legacyImageBackfill.js");
@@ -121,7 +122,7 @@ test("legacy image backfill planner marks a retained legacy source eligible", as
 
     const plan = await backfill.planLegacyProductImageBackfill({
       productId: product.id,
-      repositoryRoot: path.resolve(".")
+      repositoryRoot: actualRepositoryRoot
     });
 
     assert.equal(plan.length, 1);
@@ -186,7 +187,7 @@ test("legacy image backfill planner skips products with existing CIQE image hist
 
     const plan = await backfill.planLegacyProductImageBackfill({
       productId: product.id,
-      repositoryRoot: path.resolve(".")
+      repositoryRoot: actualRepositoryRoot
     });
 
     assert.equal(plan.length, 1);
@@ -244,7 +245,7 @@ test("legacy image backfill dry run reports eligibility without database or stor
     const result = await backfill.runLegacyProductImageBackfill({
       apply: false,
       productId: product.id,
-      repositoryRoot: path.resolve(".")
+      repositoryRoot: actualRepositoryRoot
     });
     const after = await prisma.productImageAsset.count({ where: { productId: product.id } });
 
@@ -303,7 +304,7 @@ test("legacy image backfill apply creates one candidate, stays idempotent, and d
     const first = await backfill.runLegacyProductImageBackfill({
       apply: true,
       productId: product.id,
-      repositoryRoot: path.resolve(".")
+      repositoryRoot: actualRepositoryRoot
     });
     const afterFirst = await prisma.productImageAsset.findMany({
       where: { productId: product.id }
@@ -321,7 +322,7 @@ test("legacy image backfill apply creates one candidate, stays idempotent, and d
     const second = await backfill.runLegacyProductImageBackfill({
       apply: true,
       productId: product.id,
-      repositoryRoot: path.resolve(".")
+      repositoryRoot: actualRepositoryRoot
     });
     const afterSecond = await prisma.productImageAsset.count({
       where: { productId: product.id }
