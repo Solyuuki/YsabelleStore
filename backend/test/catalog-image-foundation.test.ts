@@ -102,7 +102,8 @@ test("catalog image storage uses generated keys and blocks path traversal", asyn
     assert.throws(
       () => storage.resolveStorageKey("../../escape.webp"),
       (error) =>
-        error instanceof Error && (error as { code?: string }).code === "CATALOG_IMAGE_INVALID_STORAGE_KEY"
+        error instanceof Error &&
+        (error as { code?: string }).code === "CATALOG_IMAGE_INVALID_STORAGE_KEY"
     );
   } finally {
     await rm(temporaryRoot, { force: true, recursive: true });

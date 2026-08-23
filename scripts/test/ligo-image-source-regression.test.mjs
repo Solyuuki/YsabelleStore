@@ -6,14 +6,7 @@ import test from "node:test";
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..");
 const REFRESH_SCRIPT = path.join(REPO_ROOT, "scripts", "refresh_ligo_product_image.py");
 const PACKAGE_JSON = path.join(REPO_ROOT, "package.json");
-const SOURCES_DOC = path.join(
-  REPO_ROOT,
-  "frontend",
-  "public",
-  "images",
-  "products",
-  "SOURCES.md"
-);
+const SOURCES_DOC = path.join(REPO_ROOT, "frontend", "public", "images", "products", "SOURCES.md");
 
 test("the final product-image pipeline always replaces the legacy Ligo silhouette result", () => {
   const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON, "utf8"));
@@ -52,5 +45,8 @@ test("Ligo provenance explicitly avoids assuming a blanket redistribution licens
   assert.match(source, /full-can/i);
   assert.match(source, /rights basis/i);
   assert.match(source, /not described here as copyright[- ]free/i);
-  assert.match(source, /does not infer a blanket\s+copyright license from public web availability/i);
+  assert.match(
+    source,
+    /does not infer a blanket\s+copyright license from public web availability/i
+  );
 });

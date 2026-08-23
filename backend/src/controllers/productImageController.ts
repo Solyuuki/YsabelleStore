@@ -14,12 +14,7 @@ import { HttpError } from "../utils/httpError.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import { productIdParamSchema } from "../validators/product.validators.js";
 
-const OWNER_VARIANTS = new Set<OwnerProductImageVariant>([
-  "original",
-  "processed",
-  "card",
-  "pdp"
-]);
+const OWNER_VARIANTS = new Set<OwnerProductImageVariant>(["original", "processed", "card", "pdp"]);
 const PUBLIC_VARIANTS = new Set<PublicProductImageVariant>(["card", "pdp"]);
 
 function requiredParam(value: string | undefined, code: string, message: string) {

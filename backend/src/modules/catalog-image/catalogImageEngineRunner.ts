@@ -204,7 +204,9 @@ export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngin
 }
 
 export async function runCatalogImageEngine(sourcePath: string, outputDirectory: string) {
-  return catalogImageProcessGate.run(() => runCatalogImageEngineProcess(sourcePath, outputDirectory));
+  return catalogImageProcessGate.run(() =>
+    runCatalogImageEngineProcess(sourcePath, outputDirectory)
+  );
 }
 
 async function runCatalogImageEngineProcess(sourcePath: string, outputDirectory: string) {

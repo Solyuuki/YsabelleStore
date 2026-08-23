@@ -83,6 +83,7 @@
 ### Task 1: Product-image upload policy and storage containment
 
 **Files:**
+
 - Create: `backend/src/modules/catalog-image/imageUploadPolicy.ts`
 - Create: `backend/src/modules/catalog-image/catalogImageStorage.ts`
 - Create: `backend/test/catalog-image-foundation.test.ts`
@@ -90,6 +91,7 @@
 - Modify: `backend/src/config/env.ts`
 
 **Interfaces:**
+
 - Produces: `inspectProductImageUpload(input): ProductImageUploadInspection`
 - Produces: `CatalogImageStorage.writeOriginal(candidateId, extension, buffer): Promise<string>`
 - Produces: `CatalogImageStorage.resolveStorageKey(key): string`
@@ -104,15 +106,28 @@ import { inspectProductImageUpload } from "../src/modules/catalog-image/imageUpl
 
 test("product image upload trusts magic bytes instead of filename or declared MIME", () => {
   const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-  const inspection = inspectProductImageUpload({ buffer: png, mimetype: "image/jpeg", originalname: "fake.jpg", size: png.length });
+  const inspection = inspectProductImageUpload({
+    buffer: png,
+    mimetype: "image/jpeg",
+    originalname: "fake.jpg",
+    size: png.length
+  });
   assert.equal(inspection.detectedMimeType, "image/png");
   assert.equal(inspection.extension, ".png");
 });
 
 test("product image upload rejects unsupported bytes", () => {
   assert.throws(
-    () => inspectProductImageUpload({ buffer: Buffer.from("<svg></svg>"), mimetype: "image/svg+xml", originalname: "x.svg", size: 11 }),
-    (error) => error instanceof Error && (error as { code?: string }).code === "PRODUCT_IMAGE_UNSUPPORTED_TYPE"
+    () =>
+      inspectProductImageUpload({
+        buffer: Buffer.from("<svg></svg>"),
+        mimetype: "image/svg+xml",
+        originalname: "x.svg",
+        size: 11
+      }),
+    (error) =>
+      error instanceof Error &&
+      (error as { code?: string }).code === "PRODUCT_IMAGE_UNSUPPORTED_TYPE"
   );
 });
 ```
@@ -152,11 +167,13 @@ Commit: `feat: add secure catalog image upload primitives`
 ### Task 2: Persist candidates separately from the active image
 
 **Files:**
+
 - Modify: `database/prisma/schema.prisma`
 - Create: `database/prisma/migrations/20260822200000_catalog_image_engine_foundation/migration.sql`
 - Extend: `backend/test/catalog-image-foundation.test.ts`
 
 **Interfaces:**
+
 - Produces Prisma model `ProductImageAsset`.
 - Adds `Product.activeImageAssetId` and relations while retaining legacy `Product.imageUrl`.
 
@@ -215,6 +232,7 @@ model ProductImageAsset {
 ### Task 3: Owner upload endpoint creates a candidate without changing product publication
 
 **Files:**
+
 - Modify: `backend/src/middleware/uploadMiddleware.ts`
 - Create: `backend/src/modules/catalog-image/productImageService.ts`
 - Create: `backend/src/controllers/productImageController.ts`
@@ -222,6 +240,7 @@ model ProductImageAsset {
 - Extend: `backend/test/catalog-image-foundation.test.ts`
 
 **Interfaces:**
+
 - `POST /api/catalog/products/:id/images` with multipart field `image`.
 - Returns candidate id, `PENDING`/`NEEDS_REVIEW`, original metadata, and no public storefront URL.
 
@@ -239,6 +258,7 @@ model ProductImageAsset {
 ### Task 4: Python process contract and hard decode limits
 
 **Files:**
+
 - Create: `catalog-image-engine/requirements.txt`
 - Create: `catalog-image-engine/ciqe/__init__.py`
 - Create: `catalog-image-engine/ciqe/quality.py`
@@ -246,13 +266,15 @@ model ProductImageAsset {
 - Create: `catalog-image-engine/tests/test_quality.py`
 
 **Interfaces:**
+
 - stdin JSON: `{ "sourcePath": string, "outputDirectory": string }`
 - stdout JSON: `{ "status": "APPROVED"|"NEEDS_REVIEW"|"REJECTED", "source": {...}, "diagnostics": [...], "metrics": {...} }`
 - Non-zero exit only for process/contract failure; a poor but decodeable image returns a normal JSON `NEEDS_REVIEW`/`REJECTED` result.
 
 Initial deterministic policy:
+
 - decode failure => `REJECTED` reason `DECODE_FAILED`;
-- >24 MP or any dimension >8000 => `REJECTED` reason `PIXEL_LIMIT_EXCEEDED`;
+- > 24 MP or any dimension >8000 => `REJECTED` reason `PIXEL_LIMIT_EXCEEDED`;
 - short side <96 => `REJECTED` reason `RESOLUTION_TOO_LOW`;
 - short side 96..479 => at least `NEEDS_REVIEW` reason `PDP_RESOLUTION_LOW`;
 - foreground occupancy <0.20 => `NEEDS_REVIEW` `PRODUCT_TOO_SMALL_IN_FRAME`;
@@ -271,15 +293,18 @@ Initial deterministic policy:
 ### Task 5: Safe normalization and card/PDP derivative generation
 
 **Files:**
+
 - Create: `catalog-image-engine/ciqe/normalize.py`
 - Create: `catalog-image-engine/tests/test_normalize.py`
 - Modify: `catalog-image-engine/app/main.py`
 
 **Interfaces:**
+
 - Produces `processed.webp`, `card.webp`, `pdp.webp` only for decodeable candidates.
 - JSON adds `variants.processed`, `variants.card`, `variants.pdp` with dimensions/storage filenames.
 
 Normalization policy:
+
 - apply EXIF transpose;
 - preserve aspect ratio;
 - crop only excess edge-connected near-background where confidence is high;
@@ -299,12 +324,14 @@ Normalization policy:
 ### Task 6: Node runner connects uploaded candidates to CIQE
 
 **Files:**
+
 - Create: `backend/src/modules/catalog-image/catalogImageEngineRunner.ts`
 - Modify: `backend/src/modules/catalog-image/productImageService.ts`
 - Modify: `backend/src/config/env.ts`
 - Extend: `backend/test/catalog-image-foundation.test.ts`
 
 **Interfaces:**
+
 - `runCatalogImageEngine(sourcePath, outputDirectory): Promise<CatalogImageEngineResult>`
 - `processProductImageCandidate(candidateId): Promise<ProductImageAsset>`
 
@@ -323,12 +350,14 @@ Normalization policy:
 ### Task 7: Approval/rejection lifecycle cannot displace a good image accidentally
 
 **Files:**
+
 - Modify: `backend/src/modules/catalog-image/productImageService.ts`
 - Modify: `backend/src/controllers/productImageController.ts`
 - Modify: `backend/src/routes/product.routes.ts`
 - Extend: `backend/test/catalog-image-foundation.test.ts`
 
 **Interfaces:**
+
 - `POST /api/catalog/products/:productId/images/:imageId/approve`
 - `POST /api/catalog/products/:productId/images/:imageId/reject`
 
@@ -341,6 +370,7 @@ Normalization policy:
 ### Task 8: Deliver previews privately and active variants publicly
 
 **Files:**
+
 - Modify: `backend/src/controllers/productImageController.ts`
 - Modify: `backend/src/routes/product.routes.ts`
 - Modify: `backend/src/routes/storefront.routes.ts`
@@ -348,24 +378,27 @@ Normalization policy:
 - Extend: `backend/test/catalog-image-foundation.test.ts`
 
 **Interfaces:**
+
 - Owner preview: `GET /api/catalog/products/:productId/images/:imageId/preview/:variant` where variant is `original|processed|card|pdp`.
 - Storefront: `GET /api/storefront/product-images/:imageId/:variant` where variant is `card|pdp` and the asset must be the product's active approved asset.
 
 - [ ] **Step 1: Write failing delivery authorization tests**: rejected/pending assets cannot be served publicly; another product's asset cannot be fetched through a mismatched product route.
 - [ ] **Step 2: Run RED**.
 - [ ] **Step 3: Implement storage reads through `resolveStorageKey` only**.
-- [ ] **Step 4: Set preview `Cache-Control: private, no-store`; approved immutable variant `Cache-Control: public, max-age=31536000, immutable`; set `Content-Type: image/webp` for processed variants.
+- [ ] \*\*Step 4: Set preview `Cache-Control: private, no-store`; approved immutable variant `Cache-Control: public, max-age=31536000, immutable`; set `Content-Type: image/webp` for processed variants.
 - [ ] **Step 5: Override CORP on approved image responses only as required for the configured frontend/backend origin split**.
 - [ ] **Step 6: Run GREEN and commit** `feat: serve approved catalog image variants safely`.
 
 ### Task 9: Storefront serializers prefer active CIQE variants while keeping legacy images
 
 **Files:**
+
 - Modify: `backend/src/services/catalogQualityPolicy.ts`
 - Modify: `backend/src/services/storefrontService.ts`
 - Modify: `backend/test/catalog-quality.test.ts`
 
 **Interfaces:**
+
 - Storefront product adds `detailImageUrl: string | null`.
 - Existing `imageUrl` remains the card URL and remains compatible with legacy `/images/products/*.webp` products.
 
@@ -383,6 +416,7 @@ Normalization policy:
 ### Task 10: Frontend API contracts for candidate upload and approval
 
 **Files:**
+
 - Modify: `frontend/src/services/catalogApi.ts`
 
 **Interfaces:**
@@ -409,10 +443,12 @@ Add `uploadProductImage(productId, file)`, `approveProductImage(productId, image
 ### Task 11: Reusable owner image upload/preview panel
 
 **Files:**
+
 - Create: `frontend/src/components/catalog/ProductImageUploadPanel.tsx`
 - Modify tests/scripts only as needed for UI contract coverage.
 
 **Behavior:**
+
 - local file picker accepts `.jpg,.jpeg,.png,.webp`;
 - validates 8 MiB client-side for fast feedback but server remains authoritative;
 - states: `idle`, `selected`, `uploading`, `processing`, `preview`, `needs-review`, `rejected`, `approved`, `error`;
@@ -430,10 +466,12 @@ Add `uploadProductImage(productId, file)`, `approveProductImage(productId, image
 ### Task 12: Integrate image upload into Add/Edit Product without blocking product save
 
 **Files:**
+
 - Modify: `frontend/src/pages/ProductsPage.tsx` around `CreateProductDialog` and `ProductDetailsDialog`.
 - Use: `frontend/src/components/catalog/ProductImageUploadPanel.tsx`.
 
 **Create behavior:**
+
 1. owner may select a file before submit;
 2. `createProduct(...)` saves metadata first;
 3. when product creation succeeds, upload/process selected file using returned product id;
@@ -441,6 +479,7 @@ Add `uploadProductImage(productId, file)`, `approveProductImage(productId, image
 5. if candidate is approved by CIQE, show Before/After and allow explicit promotion.
 
 **Edit behavior:**
+
 - replacement candidate is processed beside the current active image;
 - cancel/reject/failed processing leaves active image untouched.
 
@@ -454,6 +493,7 @@ Add `uploadProductImage(productId, file)`, `approveProductImage(productId, image
 ### Task 13: PDP uses detail variant; card remains optimized
 
 **Files:**
+
 - Modify: `frontend/src/types/storefront.ts`
 - Modify: `frontend/src/pages/customer/ProductDetailPage.tsx`
 - Modify: `frontend/src/services/storefrontService.ts` if type mapping is explicit there.
@@ -472,6 +512,7 @@ Add `uploadProductImage(productId, file)`, `approveProductImage(productId, image
 ### Task 14: Local vision adapter boundary without making AI mandatory
 
 **Files:**
+
 - Create: `catalog-image-engine/ciqe/subject.py`
 - Extend: `catalog-image-engine/tests/test_normalize.py`
 
@@ -494,6 +535,7 @@ Baseline implementation is `EdgeConnectedBackgroundDetector`, using deterministi
 ### Task 15: Representative image regression corpus and truthfulness checks
 
 **Files:**
+
 - Create generated/synthetic fixtures under `catalog-image-engine/tests/fixtures/` only when binary fixture size is justified.
 - Reuse existing licensed/preserved product originals under `frontend/public/images/products/originals/` for read-only regression where licensing already belongs to the project.
 - Extend Python/backend tests.
@@ -509,10 +551,12 @@ Corpus covers cans, bottles, sachets, boxes, portrait/landscape, low resolution,
 ### Task 16: Performance, cleanup, and full verification
 
 **Files:**
+
 - Modify `backend/src/modules/catalog-image/productImageService.ts` for superseded/rejected candidate cleanup policy if needed.
 - Update Sprint 6 evidence docs with measured results only.
 
 Performance acceptance for an 8 MiB-or-smaller / <=24 MP image on the supported development machine:
+
 - API event loop remains responsive because image work is in the Python child process;
 - process timeout is 20 seconds;
 - peak decoded image protection is enforced by pixel limits/Pillow guard;

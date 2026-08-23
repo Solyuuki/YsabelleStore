@@ -72,3 +72,9 @@ Observed subsystem and performance evidence is recorded in [PHASE-5-VERIFICATION
 ## Truthfulness Rule
 
 No completion claim is valid if the system makes a visually convincing but factually fabricated product image. A source that cannot be safely repaired must remain review-required/rejected instead.
+
+## Validation Status
+
+| Date       | Member     | Validation Checklist | Status | Notes                                                 |
+| ---------- | ---------- | -------------------- | ------ | ----------------------------------------------------- |
+| 2026-08-23 | M1 Abarado | npm run verify:code  | Passed | Aggregate read-only code verification passed locally. |

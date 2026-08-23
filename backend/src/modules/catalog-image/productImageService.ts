@@ -23,10 +23,7 @@ export function approvedProductImageUrl(imageId: string, variant: PublicProductI
   return `/api/storefront/product-images/${encodeURIComponent(imageId)}/${variant}`;
 }
 
-export async function createProductImageCandidate(
-  productId: string,
-  file: ProductImageUploadFile
-) {
+export async function createProductImageCandidate(productId: string, file: ProductImageUploadFile) {
   const product = await prisma.product.findUnique({
     select: { id: true },
     where: { id: productId }
@@ -98,13 +95,9 @@ export async function processProductImageCandidate(candidateId: string) {
 
     return await prisma.productImageAsset.update({
       data: {
-        cardStorageKey: result.variants
-          ? storage.variantStorageKey(candidateId, "card")
-          : null,
+        cardStorageKey: result.variants ? storage.variantStorageKey(candidateId, "card") : null,
         diagnostics: result.diagnostics,
-        pdpStorageKey: result.variants
-          ? storage.variantStorageKey(candidateId, "pdp")
-          : null,
+        pdpStorageKey: result.variants ? storage.variantStorageKey(candidateId, "pdp") : null,
         processedStorageKey: result.variants
           ? storage.variantStorageKey(candidateId, "processed")
           : null,
@@ -124,7 +117,8 @@ export async function processProductImageCandidate(candidateId: string) {
         diagnostics: [
           {
             code: "PROCESSING_FAILED",
-            message: "Image processing could not be completed. Upload another image or try again later.",
+            message:
+              "Image processing could not be completed. Upload another image or try again later.",
             severity: "error"
           }
         ],

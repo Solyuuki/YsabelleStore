@@ -67,10 +67,7 @@ test("storefront accepts an active approved CIQE image and keeps list payload ca
     const storefrontProduct = catalog.items.find((item) => item.id === product.id);
 
     assert.ok(storefrontProduct);
-    assert.equal(
-      storefrontProduct.imageUrl,
-      `/api/storefront/product-images/${asset.id}/card`
-    );
+    assert.equal(storefrontProduct.imageUrl, `/api/storefront/product-images/${asset.id}/card`);
     assert.equal("detailImageUrl" in storefrontProduct, false);
   } finally {
     await scope.cleanup();

@@ -35,11 +35,11 @@ Measurements were collected in the agent Linux execution environment with Pillow
 
 Input dimensions: 4000 x 6000 (24 MP).
 
-| Revision | Elapsed | Peak RSS | Processed master | Result |
-| --- | ---: | ---: | --- | --- |
-| Before working-size cap | 15.10 s | ~821 MiB | 6480 x 6480 | `NEEDS_REVIEW` |
-| After 1600 px master cap | 6.13 s | ~424 MiB | 1600 x 1600 | `NEEDS_REVIEW` |
-| After redundant-copy removal | 5.24 s | ~392 MiB | 1600 x 1600 | `NEEDS_REVIEW` |
+| Revision                     | Elapsed | Peak RSS | Processed master | Result         |
+| ---------------------------- | ------: | -------: | ---------------- | -------------- |
+| Before working-size cap      | 15.10 s | ~821 MiB | 6480 x 6480      | `NEEDS_REVIEW` |
+| After 1600 px master cap     |  6.13 s | ~424 MiB | 1600 x 1600      | `NEEDS_REVIEW` |
+| After redundant-copy removal |  5.24 s | ~392 MiB | 1600 x 1600      | `NEEDS_REVIEW` |
 
 The same complex source continued to preserve the full frame and remained review-required throughout the optimization.
 

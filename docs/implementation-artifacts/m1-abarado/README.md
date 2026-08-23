@@ -76,9 +76,9 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | Item                 | Value                                                                                                                                                           |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Validation status    | Passed                                                                                                                                                          |
-| Last update          | 2026-08-18                                                                                                                                                      |
-| Current branch       | sprint/v0.4/sprint-4                                                                                                                                            |
-| Current work areas   | Scripts / CI<br>Backend<br>Other<br>Docs<br>Database<br>Frontend                                                                                                |
+| Last update          | 2026-08-23                                                                                                                                                      |
+| Current branch       | sprint/v0.6/sprint-6                                                                                                                                            |
+| Current work areas   | Other<br>Backend<br>Docs<br>Electron<br>Frontend<br>Scripts / CI                                                                                                |
 | Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
 
 ## Current Work Snapshot

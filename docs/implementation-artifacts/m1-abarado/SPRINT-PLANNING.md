@@ -77,3 +77,4 @@
 | 2026-08-14 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI<br>Other                | High     |
 | 2026-08-18 | Run push-ready validation and resolve any failures.   | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Frontend<br>Scripts / CI                                 | High     |
 | 2026-08-18 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Scripts / CI<br>Backend<br>Other<br>Docs<br>Database<br>Frontend                | High     |
+| 2026-08-23 | Review generated artifact updates before commit.      | Backend/database validation and migration application.              | Other<br>Backend<br>Docs<br>Electron<br>Frontend<br>Scripts / CI                | High     |

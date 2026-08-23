@@ -58,9 +58,7 @@ export function ProductImageUploadPanel({
     [candidate]
   );
   const canApprove = Boolean(
-    candidate &&
-      candidate.qualityStatus === "APPROVED" &&
-      candidate.processingStatus === "READY"
+    candidate && candidate.qualityStatus === "APPROVED" && candidate.processingStatus === "READY"
   );
   const isBusy = phase === "uploading" || phase === "approving";
 
@@ -257,8 +255,17 @@ export function ProductImageUploadPanel({
             catalog variants, and only publishes an approved optimized result.
           </p>
         </div>
-        <Button disabled={disabled || isBusy} onClick={openPicker} type="button" variant="secondary">
-          {selectedFile ? <RefreshCw className="h-4 w-4" aria-hidden="true" /> : <Upload className="h-4 w-4" aria-hidden="true" />}
+        <Button
+          disabled={disabled || isBusy}
+          onClick={openPicker}
+          type="button"
+          variant="secondary"
+        >
+          {selectedFile ? (
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <Upload className="h-4 w-4" aria-hidden="true" />
+          )}
           {selectedFile ? "Upload Another" : "Choose image"}
         </Button>
       </div>
@@ -314,11 +321,18 @@ export function ProductImageUploadPanel({
         </Alert>
       ) : null}
 
-      {selectedFile && (phase === "selected" || phase === "preview" || phase === "approving" || phase === "approved" || phase === "error") ? (
+      {selectedFile &&
+      (phase === "selected" ||
+        phase === "preview" ||
+        phase === "approving" ||
+        phase === "approved" ||
+        phase === "error") ? (
         <div className="grid gap-4 md:grid-cols-2">
           <ImagePreview title="Original" url={originalPreviewUrl} />
           <ImagePreview
-            loading={Boolean(candidate && candidate.processingStatus === "READY" && !optimizedPreviewUrl && !error)}
+            loading={Boolean(
+              candidate && candidate.processingStatus === "READY" && !optimizedPreviewUrl && !error
+            )}
             title="Optimized"
             url={optimizedPreviewUrl}
           />
@@ -344,9 +358,15 @@ export function ProductImageUploadPanel({
               {diagnostics.map((diagnostic, index) => (
                 <li className="flex items-start gap-2" key={`${diagnostic.code}-${index}`}>
                   {diagnostic.severity === "error" ? (
-                    <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-red-600" aria-hidden="true" />
+                    <ShieldAlert
+                      className="mt-0.5 h-4 w-4 shrink-0 text-red-600"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
+                    <CheckCircle2
+                      className="mt-0.5 h-4 w-4 shrink-0 text-slate-500"
+                      aria-hidden="true"
+                    />
                   )}
                   <span>{diagnostic.message}</span>
                 </li>
@@ -364,7 +384,11 @@ export function ProductImageUploadPanel({
               Upload Another
             </Button>
             {canApprove && phase !== "approved" ? (
-              <Button disabled={phase === "approving" || !optimizedPreviewUrl} onClick={() => void handleApprove()} type="button">
+              <Button
+                disabled={phase === "approving" || !optimizedPreviewUrl}
+                onClick={() => void handleApprove()}
+                type="button"
+              >
                 {phase === "approving" ? (
                   <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                 ) : (

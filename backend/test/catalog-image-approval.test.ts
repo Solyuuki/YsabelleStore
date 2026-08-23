@@ -118,10 +118,7 @@ test("approved ready replacement atomically becomes active and supersedes previo
 
     assert.equal(approved.id, replacement.id);
     assert.equal(reloadedProduct.activeImageAssetId, replacement.id);
-    assert.equal(
-      reloadedProduct.imageUrl,
-      `/api/storefront/product-images/${replacement.id}/card`
-    );
+    assert.equal(reloadedProduct.imageUrl, `/api/storefront/product-images/${replacement.id}/card`);
     assert.ok(previous.supersededAt instanceof Date);
   } finally {
     await scope.cleanup();

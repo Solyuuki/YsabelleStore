@@ -32,10 +32,7 @@ export type LegacyImageBackfillResult = {
   skipped: number;
 };
 
-export function resolveLegacyProductImageSource(
-  repositoryRoot: string,
-  imageUrl: string | null
-) {
+export function resolveLegacyProductImageSource(repositoryRoot: string, imageUrl: string | null) {
   if (!imageUrl) {
     return null;
   }

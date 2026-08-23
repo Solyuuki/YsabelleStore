@@ -14,10 +14,22 @@ const [
   readFile(new URL("../backend/src/routes/product.routes.ts", import.meta.url), "utf8"),
   readFile(new URL("../backend/src/routes/storefront.routes.ts", import.meta.url), "utf8"),
   readFile(new URL("../backend/src/middleware/uploadMiddleware.ts", import.meta.url), "utf8"),
-  readFile(new URL("../backend/src/controllers/productImageController.ts", import.meta.url), "utf8"),
-  readFile(new URL("../backend/src/modules/catalog-image/productImageService.ts", import.meta.url), "utf8"),
-  readFile(new URL("../backend/src/modules/catalog-image/catalogImageStorage.ts", import.meta.url), "utf8"),
-  readFile(new URL("../backend/src/modules/catalog-image/catalogImageEngineRunner.ts", import.meta.url), "utf8"),
+  readFile(
+    new URL("../backend/src/controllers/productImageController.ts", import.meta.url),
+    "utf8"
+  ),
+  readFile(
+    new URL("../backend/src/modules/catalog-image/productImageService.ts", import.meta.url),
+    "utf8"
+  ),
+  readFile(
+    new URL("../backend/src/modules/catalog-image/catalogImageStorage.ts", import.meta.url),
+    "utf8"
+  ),
+  readFile(
+    new URL("../backend/src/modules/catalog-image/catalogImageEngineRunner.ts", import.meta.url),
+    "utf8"
+  ),
   readFile(new URL("../.gitignore", import.meta.url), "utf8")
 ]);
 
