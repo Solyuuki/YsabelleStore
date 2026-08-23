@@ -1,10 +1,6 @@
 import { Router } from "express";
 
-import {
-  getHealth,
-  getLiveness,
-  getReadiness
-} from "../controllers/healthController.js";
+import { getHealth, getLiveness, getReadiness } from "../controllers/healthController.js";
 
 export const healthRouter = Router();
 
