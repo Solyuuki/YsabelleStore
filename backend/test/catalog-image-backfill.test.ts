@@ -100,9 +100,9 @@ test("legacy image backfill planner marks a retained legacy source eligible", as
       data: {
         dataQualityStatus: "APPROVED",
         isActive: true,
-        isStorefrontVisible: true,
+        isStorefrontVisible: false,
         name: `Backfill Eligible ${suffix}`,
-        recordSource: "CATALOG",
+        recordSource: "TEST_FIXTURE",
         slug: `backfill-eligible-${suffix}`
       }
     });
@@ -113,8 +113,9 @@ test("legacy image backfill planner marks a retained legacy source eligible", as
         costPrice: "10",
         dataQualityStatus: "APPROVED",
         imageUrl,
-        isStorefrontVisible: true,
+        isStorefrontVisible: false,
         name: `Backfill Eligible Product ${suffix}`,
+        recordSource: "TEST_FIXTURE",
         sellingPrice: "15",
         sku: `BACKFILL-ELIGIBLE-${suffix}`,
         status: "ACTIVE",
@@ -155,9 +156,9 @@ test("legacy image backfill planner skips products with existing CIQE image hist
       data: {
         dataQualityStatus: "APPROVED",
         isActive: true,
-        isStorefrontVisible: true,
+        isStorefrontVisible: false,
         name: `Backfill Existing ${suffix}`,
-        recordSource: "CATALOG",
+        recordSource: "TEST_FIXTURE",
         slug: `backfill-existing-${suffix}`
       }
     });
@@ -167,8 +168,9 @@ test("legacy image backfill planner skips products with existing CIQE image hist
         costPrice: "10",
         dataQualityStatus: "APPROVED",
         imageUrl: "/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp",
-        isStorefrontVisible: true,
+        isStorefrontVisible: false,
         name: `Backfill Existing Product ${suffix}`,
+        recordSource: "TEST_FIXTURE",
         sellingPrice: "15",
         sku: `BACKFILL-EXISTING-${suffix}`,
         status: "ACTIVE",
@@ -219,9 +221,9 @@ test("legacy image backfill dry run reports eligibility without database or stor
       data: {
         dataQualityStatus: "APPROVED",
         isActive: true,
-        isStorefrontVisible: true,
+        isStorefrontVisible: false,
         name: `Backfill Dry Run ${suffix}`,
-        recordSource: "CATALOG",
+        recordSource: "TEST_FIXTURE",
         slug: `backfill-dry-run-${suffix}`
       }
     });
@@ -231,8 +233,9 @@ test("legacy image backfill dry run reports eligibility without database or stor
         costPrice: "10",
         dataQualityStatus: "APPROVED",
         imageUrl: "/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp",
-        isStorefrontVisible: true,
+        isStorefrontVisible: false,
         name: `Backfill Dry Run Product ${suffix}`,
+        recordSource: "TEST_FIXTURE",
         sellingPrice: "15",
         sku: `BACKFILL-DRY-RUN-${suffix}`,
         status: "ACTIVE",
@@ -277,9 +280,9 @@ test("legacy image backfill apply creates one candidate, stays idempotent, and d
       data: {
         dataQualityStatus: "APPROVED",
         isActive: true,
-        isStorefrontVisible: true,
+        isStorefrontVisible: false,
         name: `Backfill Apply ${suffix}`,
-        recordSource: "CATALOG",
+        recordSource: "TEST_FIXTURE",
         slug: `backfill-apply-${suffix}`
       }
     });
@@ -290,8 +293,9 @@ test("legacy image backfill apply creates one candidate, stays idempotent, and d
         costPrice: "10",
         dataQualityStatus: "APPROVED",
         imageUrl: legacyImageUrl,
-        isStorefrontVisible: true,
+        isStorefrontVisible: false,
         name: `Backfill Apply Product ${suffix}`,
+        recordSource: "TEST_FIXTURE",
         sellingPrice: "15",
         sku: `BACKFILL-APPLY-${suffix}`,
         status: "ACTIVE",
