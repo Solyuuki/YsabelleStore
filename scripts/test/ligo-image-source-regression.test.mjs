@@ -4,8 +4,8 @@ import path from "node:path";
 import test from "node:test";
 
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..");
-const CUTOUT_SCRIPT = path.join(REPO_ROOT, "scripts", "product_image_cutouts.py");
 const REFRESH_SCRIPT = path.join(REPO_ROOT, "scripts", "refresh_ligo_product_image.py");
+const PACKAGE_JSON = path.join(REPO_ROOT, "package.json");
 const SOURCES_DOC = path.join(
   REPO_ROOT,
   "frontend",
@@ -15,15 +15,24 @@ const SOURCES_DOC = path.join(
   "SOURCES.md"
 );
 
-test("Ligo no longer depends on the legacy manual silhouette crop", () => {
-  const source = fs.readFileSync(CUTOUT_SCRIPT, "utf8");
+test("the final product-image pipeline always replaces the legacy Ligo silhouette result", () => {
+  const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON, "utf8"));
 
-  assert.doesNotMatch(source, /MANUAL_PRODUCT_POLYGONS/);
-  assert.doesNotMatch(source, /manual sealed-product silhouette/);
-  assert.doesNotMatch(source, /isolate_manual_product/);
+  assert.match(
+    packageJson.scripts["product-images:process"],
+    /product_image_cutouts\.py.*refresh_ligo_product_image\.py/
+  );
+  assert.match(
+    packageJson.scripts["product-images:cutouts:verify"],
+    /product_image_cutouts\.py --verify.*refresh_ligo_product_image\.py --verify/
+  );
+  assert.match(
+    packageJson.scripts["product-images:ligo:refresh"],
+    /refresh_ligo_product_image\.py --download/
+  );
 });
 
-test("Ligo replacement workflow fetches an exact 155g full-can retail packshot and re-runs deterministic processing", () => {
+test("Ligo replacement workflow fetches an exact 155g full-can retail packshot and normalizes it to a safe fixed canvas", () => {
   const source = fs.readFileSync(REFRESH_SCRIPT, "utf8");
 
   assert.match(
@@ -31,8 +40,9 @@ test("Ligo replacement workflow fetches an exact 155g full-can retail packshot a
     /https:\/\/www\.dmc\.com\.ph\/shop\/ligo-sardines-in-tomato-sauce-with-chili-red-155g-x-100-1099/
   );
   assert.match(source, /MIN_SOURCE_DIMENSION\s*=\s*500/);
+  assert.match(source, /OUTPUT_CANVAS\s*=\s*800/);
   assert.match(source, /validate_light_background/);
-  assert.match(source, /product_image_cutouts\.py/);
+  assert.match(source, /validate_full_can_margin/);
   assert.match(source, /ligo-sardines-tomato-sauce-chili-added-155g\.webp/);
 });
 
@@ -42,5 +52,6 @@ test("Ligo provenance documents the replacement source without calling third-par
   assert.match(source, /DMC/);
   assert.match(source, /155g/);
   assert.match(source, /full-can/i);
+  assert.match(source, /rights basis/i);
   assert.doesNotMatch(source, /copyright[- ]free/i);
 });
