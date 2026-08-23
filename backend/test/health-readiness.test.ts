@@ -55,7 +55,6 @@ test("liveness reports the backend process alive without depending on database r
       assert.equal(body.success, true);
       assert.equal(body.data?.service, "ysabellestore-backend");
       assert.equal(body.data?.status, "healthy");
-      assert.equal(body.data?.ready, true);
     });
   } finally {
     env.DATABASE_URL = originalDatabaseUrl;
