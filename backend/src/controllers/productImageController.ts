@@ -3,6 +3,7 @@ import type { RequestHandler } from "express";
 import {
   approveProductImageCandidate,
   createProductImageCandidate,
+  getLatestProductImageCandidate,
   getOwnerProductImageVariant,
   getPublicProductImageVariant,
   rejectProductImageCandidate,
@@ -43,6 +44,23 @@ export const uploadProductImageController: RequestHandler = async (request, resp
     response
       .status(201)
       .json(createSuccessResponse("Product image candidate processed successfully.", candidate));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLatestProductImageController: RequestHandler = async (request, response, next) => {
+  try {
+    const productId = requiredParam(
+      request.params.productId,
+      "INVALID_PRODUCT_ID",
+      "Product id is invalid."
+    );
+    const candidate = await getLatestProductImageCandidate(productId);
+
+    response
+      .status(200)
+      .json(createSuccessResponse("Latest product image candidate loaded.", { candidate }));
   } catch (error) {
     next(error);
   }
