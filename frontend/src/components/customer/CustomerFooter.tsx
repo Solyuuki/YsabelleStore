@@ -1,4 +1,6 @@
-import { MapPin, Store } from "lucide-react";
+import { MapPin } from "lucide-react";
+
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 import { CustomerLink } from "./CustomerLink";
 
@@ -14,8 +16,8 @@ export function CustomerFooter({
       <div className="customer-container customer-footer__grid">
         <div className="customer-footer__brand-column">
           <div className="customer-brand customer-brand--footer">
-            <span className="customer-brand__mark">
-              <Store aria-hidden="true" size={22} />
+            <span aria-hidden="true" className="customer-brand__mark">
+              <BrandLogo className="customer-brand__logo" />
             </span>
             <span>
               <strong>Ysabelle</strong>

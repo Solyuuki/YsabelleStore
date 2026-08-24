@@ -1,6 +1,7 @@
-import { CircleHelp, Menu, ShoppingBasket, Store, X } from "lucide-react";
+import { CircleHelp, Menu, ShoppingBasket, X } from "lucide-react";
 import { useState } from "react";
 
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useCart } from "@/context/CartContext";
 import { isCustomerShopRoute } from "@/utils/customerRoutes";
 import { CustomerLink } from "./CustomerLink";
@@ -31,8 +32,8 @@ export function CustomerHeader({
     <header className="customer-header">
       <div className="customer-header__bar">
         <CustomerLink className="customer-brand" href="/" navigate={navigate}>
-          <span className="customer-brand__mark">
-            <Store aria-hidden="true" size={22} />
+          <span aria-hidden="true" className="customer-brand__mark">
+            <BrandLogo className="customer-brand__logo" />
           </span>
           <span>
             <strong>Ysabelle</strong>

@@ -76,8 +76,13 @@ export function AppSidebar({
       </Button>
 
       <div className="flex h-16 items-center gap-3 border-b border-slate-200/80 px-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-500 text-sm font-bold text-slate-950 shadow-sm shadow-emerald-950/10">
-          YS
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 shadow-sm shadow-violet-950/15 ring-1 ring-violet-200/70">
+          <img
+            alt=""
+            aria-hidden="true"
+            className="h-full w-full object-contain"
+            src="/brand/ysabelle-logo-v2.png"
+          />
         </div>
         <div
           className={cn(

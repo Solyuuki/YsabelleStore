@@ -4,7 +4,8 @@ import {
   getPackagedRendererIndexPath,
   getPreloadBundlePath,
   getRendererDevUrl,
-  getRendererDistIndexPath
+  getRendererDistIndexPath,
+  getWindowIconPath
 } from "../config/paths.js";
 import { createSafeWebPreferences } from "../security/defaults.js";
 
@@ -43,6 +44,7 @@ export function createMainWindow(): BrowserWindow {
     ...windowDefaults,
     show: false,
     title: appMetadata.appName,
+    icon: getWindowIconPath(app.isPackaged),
     autoHideMenuBar: true,
     backgroundColor: "#ffffff",
     webPreferences: createSafeWebPreferences(preloadPath, app.isPackaged)
