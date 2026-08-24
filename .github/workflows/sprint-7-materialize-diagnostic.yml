@@ -1,0 +1,46 @@
+name: Sprint 7 Materialize Diagnostic
+
+on:
+  pull_request:
+    branches:
+      - sprint/v0.7/sprint-7
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-materialization:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: m1/v0.7/fix/sprint6-sprint7-integration
+          fetch-depth: 0
+
+      - name: Attempt exact Sprint 6 merge resolution
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin sprint/v0.6/sprint-6
+          set +e
+          git merge --no-commit --no-ff origin/sprint/v0.6/sprint-6
+          merge_status=$?
+          set -e
+          if [ "$merge_status" -ne 0 ]; then
+            mapfile -t conflicts < <(git diff --name-only --diff-filter=U)
+            expected=(
+              "backend/package.json"
+              "backend/src/controllers/storefrontController.ts"
+              "docs/sprints/sprint-6/SPRINT-BACKLOG.md"
+              "frontend/package.json"
+              "frontend/src/app/CustomerApp.tsx"
+              "frontend/src/components/customer/CustomerHeader.tsx"
+            )
+            printf '%s\n' "${conflicts[@]}" | sort > /tmp/actual.txt
+            printf '%s\n' "${expected[@]}" | sort > /tmp/expected.txt
+            diff -u /tmp/expected.txt /tmp/actual.txt
+          fi
+          echo "MERGE_STATUS=$merge_status"
+          echo "UNMERGED_COUNT=$(git diff --name-only --diff-filter=U | wc -l)"
