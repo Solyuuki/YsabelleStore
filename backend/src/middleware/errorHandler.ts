@@ -1,6 +1,7 @@
 import type { ErrorRequestHandler } from "express";
 import { MulterError } from "multer";
 
+import { HTTP_STATUS } from "../constants/httpStatusContract.js";
 import { createErrorResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 
@@ -9,41 +10,44 @@ type ErrorPayload = {
   details?: unknown;
 };
 
+const INTERNAL_ERROR_MESSAGE = "An unexpected error occurred.";
+const INTERNAL_ERROR_CODE = "INTERNAL_SERVER_ERROR";
+
 export const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
   void _next;
 
-  const statusCode =
-    error instanceof HttpError
-      ? error.statusCode
-      : error instanceof MulterError && error.code === "LIMIT_FILE_SIZE"
-        ? 413
-        : 500;
-  const message =
-    error instanceof HttpError
-      ? error.message
-      : error instanceof MulterError && error.code === "LIMIT_FILE_SIZE"
-        ? "The uploaded file is too large."
-        : "Unexpected server error.";
+  const isFileSizeError = error instanceof MulterError && error.code === "LIMIT_FILE_SIZE";
+  const isSafeHttpError = error instanceof HttpError && error.statusCode < HTTP_STATUS.INTERNAL_SERVER_ERROR;
+
+  const statusCode = isSafeHttpError
+    ? error.statusCode
+    : isFileSizeError
+      ? HTTP_STATUS.PAYLOAD_TOO_LARGE
+      : HTTP_STATUS.INTERNAL_SERVER_ERROR;
+  const message = isSafeHttpError
+    ? error.message
+    : isFileSizeError
+      ? "The uploaded file is too large."
+      : INTERNAL_ERROR_MESSAGE;
   const payload: ErrorPayload = {
-    code:
-      error instanceof HttpError
-        ? error.code
-        : error instanceof MulterError && error.code === "LIMIT_FILE_SIZE"
-          ? "FILE_TOO_LARGE"
-          : "SERVER_ERROR"
+    code: isSafeHttpError
+      ? error.code
+      : isFileSizeError
+        ? "FILE_TOO_LARGE"
+        : INTERNAL_ERROR_CODE
   };
 
-  if (error instanceof HttpError && error.details !== undefined) {
+  if (isSafeHttpError && error.details !== undefined) {
     payload.details = error.details;
   }
 
-  if (error instanceof MulterError && error.code === "LIMIT_FILE_SIZE") {
+  if (isFileSizeError) {
     payload.details = {
       limit: "5MB"
     };
   }
 
-  if (statusCode >= 500) {
+  if (statusCode >= HTTP_STATUS.INTERNAL_SERVER_ERROR) {
     console.error(error);
   }
 
