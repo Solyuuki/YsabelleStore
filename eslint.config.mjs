@@ -9,7 +9,8 @@ export default [
       "**/build/**",
       "**/coverage/**",
       "**/node_modules/**",
-      "database/prisma/generated/**"
+      "database/prisma/generated/**",
+      "electron/release/**"
     ]
   },
   js.configs.recommended,

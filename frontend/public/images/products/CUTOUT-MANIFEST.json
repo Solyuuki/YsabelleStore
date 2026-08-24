@@ -1,5 +1,5 @@
 {
-  "algorithm": "deterministic asset-specific isolation using edge-connected matte removal or a sealed-product silhouette",
+  "algorithm": "deterministic asset isolation using edge-connected matte removal; Ligo is normalized onto a fixed full-can safe canvas",
   "deterministic": true,
   "generative": false,
   "processor": "Pillow 12.0.0 (MIT-CMU)",
@@ -33,25 +33,28 @@
     {
       "source": {
         "path": "frontend/public/images/products/originals/ligo-sardines-tomato-sauce-chili-added-155g.webp",
-        "dimensions": [1275, 1698],
-        "bytes": 372778,
-        "sha256": "A8C4FF7F90F1C106585E7865DA12F8FD368112F94C8596EAC6E8D11803C48989"
+        "dimensions": [2160, 2160],
+        "bytes": 178946,
+        "sha256": "A65BFFF0C1BFED0B155E7939C3C26CA448D2D69DEF0276CD7980FEAC2E22CD71"
       },
       "processed": {
         "path": "frontend/public/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp",
-        "bytes": 103112,
-        "sha256": "90619D1507B11460FD9968CA91CCD6C309E212A0C49F69D1FF98F2E48A08D11F",
-        "dimensions": [550, 950],
+        "bytes": 66066,
+        "sha256": "78CB0DDE12937F7F01E69E9805893F3EF81772376AD49C6B97160545576DAE57",
+        "dimensions": [800, 800],
         "format": "WEBP",
         "hasAlpha": true,
-        "opaqueBounds": [8, 8, 542, 942],
-        "transparentPixelRatio": 0.1015,
-        "translucentPixels": 16186
+        "opaqueBounds": [199, 50, 600, 750],
+        "transparentPixelRatio": 0.594,
+        "translucentPixels": 6025
       },
       "processing": {
-        "maskType": "manual sealed-product silhouette",
-        "contentBounds": [302, 494, 836, 1428],
-        "safePadding": 8
+        "maskType": "edge-connected light-background isolation",
+        "sourcePage": "https://www.dmc.com.ph/shop/ligo-sardines-in-tomato-sauce-with-chili-red-155g-x-100-1099",
+        "outputCanvas": 800,
+        "contentLimit": 700,
+        "minimumSafeMargin": 50,
+        "fullCanPreserved": true
       }
     },
     {

@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 
 import { getAuthenticatedCustomer } from "../middleware/customerAuthMiddleware.js";
+import { resolveProductDetailImageUrl } from "../modules/catalog-image/catalogImageUrls.js";
 import {
   createStorefrontOrder,
   getStorefrontProduct,
@@ -66,7 +67,12 @@ export const getStorefrontProductController: RequestHandler = async (request, re
       code: "INVALID_STOREFRONT_PRODUCT_ID"
     });
     const product = await getStorefrontProduct(params.id);
-    response.json(createSuccessResponse("Storefront product loaded.", product));
+    response.json(
+      createSuccessResponse("Storefront product loaded.", {
+        ...product,
+        detailImageUrl: resolveProductDetailImageUrl(product.imageUrl)
+      })
+    );
   } catch (error) {
     next(error);
   }
