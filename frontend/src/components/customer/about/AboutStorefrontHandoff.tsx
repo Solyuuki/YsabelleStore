@@ -1,19 +1,12 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import {
-  ArrowRight,
-  Check,
-  Package,
-  Search,
-  ShoppingBasket,
-  ShoppingCart,
-  Store
-} from "lucide-react";
+import { ArrowRight, Check, Package, Search, ShoppingBasket, ShoppingCart } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
 import { ProductVisual } from "@/components/customer/ProductVisual";
+import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
 import { useCart } from "@/context/CartContext";
 import { fetchStorefrontProducts } from "@/services/storefrontService";
 import type { StorefrontProduct } from "@/types/storefront";
@@ -238,7 +231,7 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
         <div className="story-live-store story-live-store--refined" data-handoff-store>
           <div className="story-live-store__bar">
             <span>
-              <Store aria-hidden="true" />
+              <YsabelleBrandMark variant="mini" />
               <span className="story-live-store__identity">
                 <strong>Ysabelle&apos;s Store</strong>
                 <small>Live catalog</small>
