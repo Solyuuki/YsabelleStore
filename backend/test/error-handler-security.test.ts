@@ -9,9 +9,9 @@ import { HttpError } from "../src/utils/httpError.js";
 
 type ErrorBody = {
   success?: boolean;
+  message?: string;
   error?: {
     code?: string;
-    message?: string;
     details?: unknown;
   };
 };
@@ -54,7 +54,7 @@ test("unexpected backend failures return the generic 500 envelope without leakin
     assert.equal(response.status, 500);
     assert.equal(body.success, false);
     assert.equal(body.error?.code, "INTERNAL_SERVER_ERROR");
-    assert.equal(body.error?.message, "An unexpected error occurred.");
+    assert.equal(body.message, "An unexpected error occurred.");
     assert.equal(body.error?.details, null);
     assert.doesNotMatch(JSON.stringify(body), /super-secret|db\.internal/);
   });
@@ -62,8 +62,11 @@ test("unexpected backend failures return the generic 500 envelope without leakin
 
 test("server-side HttpError diagnostics are sanitized instead of exposing internal messages or details", async () => {
   const secret = "jwt-secret-value";
-  const error = new HttpError(500, "UPSTREAM_FAILURE", `failed using ${secret}`, {
-    dependency: `https://service.internal/?token=${secret}`
+  const error = new HttpError(500, `failed using ${secret}`, {
+    code: "UPSTREAM_FAILURE",
+    details: {
+      dependency: `https://service.internal/?token=${secret}`
+    }
   });
 
   await withErrorServer(error, async (baseUrl) => {
@@ -73,15 +76,18 @@ test("server-side HttpError diagnostics are sanitized instead of exposing intern
     assert.equal(response.status, 500);
     assert.equal(body.success, false);
     assert.equal(body.error?.code, "INTERNAL_SERVER_ERROR");
-    assert.equal(body.error?.message, "An unexpected error occurred.");
+    assert.equal(body.message, "An unexpected error occurred.");
     assert.equal(body.error?.details, null);
     assert.doesNotMatch(JSON.stringify(body), /jwt-secret-value|service\.internal/);
   });
 });
 
 test("expected client HttpError responses preserve their safe status, code, message, and details", async () => {
-  const error = new HttpError(422, "VALIDATION_ERROR", "Product input is invalid.", {
-    field: "productName"
+  const error = new HttpError(422, "Product input is invalid.", {
+    code: "VALIDATION_ERROR",
+    details: {
+      field: "productName"
+    }
   });
 
   await withErrorServer(error, async (baseUrl) => {
@@ -90,7 +96,7 @@ test("expected client HttpError responses preserve their safe status, code, mess
 
     assert.equal(response.status, 422);
     assert.equal(body.error?.code, "VALIDATION_ERROR");
-    assert.equal(body.error?.message, "Product input is invalid.");
+    assert.equal(body.message, "Product input is invalid.");
     assert.deepEqual(body.error?.details, { field: "productName" });
   });
 });
