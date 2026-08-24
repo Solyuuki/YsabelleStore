@@ -197,11 +197,11 @@ jobs:
 
       - name: Verify Prisma schema
         if: steps.merge.outputs.already_merged == 'false'
-        run: npx prisma validate --schema backend/prisma/schema.prisma
+        run: npm run prisma:validate
 
       - name: Generate Prisma client
         if: steps.merge.outputs.already_merged == 'false'
-        run: npx prisma generate --schema backend/prisma/schema.prisma
+        run: npm run prisma:generate
 
       - name: Verify typecheck
         if: steps.merge.outputs.already_merged == 'false'
@@ -221,15 +221,15 @@ jobs:
 
       - name: Verify repository context
         if: steps.merge.outputs.already_merged == 'false'
-        run: npm run test:repo-context
+        run: npm run repo:context:test
 
       - name: Verify workspace tests
         if: steps.merge.outputs.already_merged == 'false'
         run: npm test --workspaces --if-present
 
-      - name: Verify workspace builds
+      - name: Verify production build
         if: steps.merge.outputs.already_merged == 'false'
-        run: npm run build --workspaces --if-present
+        run: npm run build
 
       - name: Verify production dependency audit
         if: steps.merge.outputs.already_merged == 'false'
@@ -237,7 +237,7 @@ jobs:
 
       - name: Verify version metadata
         if: steps.merge.outputs.already_merged == 'false'
-        run: npm run version:verify
+        run: npm run version:check
 
       - name: Verify aggregate code gate
         if: steps.merge.outputs.already_merged == 'false'
