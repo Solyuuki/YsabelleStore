@@ -179,13 +179,19 @@ jobs:
       - name: Install CIQE dependencies
         run: python -m pip install -r catalog-image-engine/requirements.txt
 
-      - name: Format resolved conflict files
+      - name: Format resolved integration surface
         run: >-
-          npx prettier --write backend/package.json
+          npx prettier --write
+          .github/workflows/sprint-7-integration-format.yml
+          .github/workflows/sprint-7-integration-pr-validation.yml
+          .github/workflows/sprint-7-integration-resolution.yml
+          backend/package.json
           backend/src/controllers/storefrontController.ts
           docs/sprints/sprint-6/SPRINT-BACKLOG.md
-          frontend/package.json frontend/src/app/CustomerApp.tsx
+          frontend/package.json
+          frontend/src/app/CustomerApp.tsx
           frontend/src/components/customer/CustomerHeader.tsx
+          scripts/brand-assets-test.mjs
 
       - name: Prisma generate and validate
         run: npm run prisma:generate && npm run prisma:validate
