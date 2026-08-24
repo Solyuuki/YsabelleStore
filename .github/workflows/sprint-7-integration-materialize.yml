@@ -4,12 +4,15 @@ on:
   push:
     branches:
       - m1/v0.7/fix/sprint6-sprint7-integration
+  pull_request:
+    branches:
+      - sprint/v0.7/sprint-7
 
 permissions:
   contents: write
 
 concurrency:
-  group: sprint-7-integration-materialize
+  group: sprint-7-integration-materialize-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
@@ -172,8 +175,8 @@ jobs:
             frontend/src/app/CustomerApp.tsx \
             frontend/src/components/customer/CustomerHeader.tsx \
             scripts/brand-assets-test.mjs
-          rm -f .github/workflows/sprint-7-integration-format.yml
           rm -f .github/workflows/sprint-7-integration-materialize.yml
+          rm -f .github/workflows/sprint-7-materialize-diagnostic.yml
           rm -f .github/workflows/sprint-6-format-brand-test.yml
           git add -A
           test -z "$(git diff --name-only --diff-filter=U)"
