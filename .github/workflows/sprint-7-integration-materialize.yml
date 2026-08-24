@@ -191,7 +191,55 @@ jobs:
           test -f .git/MERGE_HEAD
           git commit -m "merge: integrate accepted Sprint 6 into Sprint 7"
 
-      - name: Verify committed integrated tree before push
+      - name: Verify git diff
+        if: steps.merge.outputs.already_merged == 'false'
+        run: git diff --check
+
+      - name: Verify Prisma schema
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npx prisma validate --schema backend/prisma/schema.prisma
+
+      - name: Generate Prisma client
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npx prisma generate --schema backend/prisma/schema.prisma
+
+      - name: Verify typecheck
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm run typecheck
+
+      - name: Verify lint
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm run lint
+
+      - name: Verify formatting
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm run format:check
+
+      - name: Verify guardrails
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm run test:guardrails
+
+      - name: Verify repository context
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm run test:repo-context
+
+      - name: Verify workspace tests
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm test --workspaces --if-present
+
+      - name: Verify workspace builds
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm run build --workspaces --if-present
+
+      - name: Verify production dependency audit
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm run security:audit:production
+
+      - name: Verify version metadata
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm run version:verify
+
+      - name: Verify aggregate code gate
         if: steps.merge.outputs.already_merged == 'false'
         run: npm run verify:code
 
