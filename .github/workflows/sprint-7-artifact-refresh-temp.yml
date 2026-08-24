@@ -79,14 +79,15 @@ jobs:
       - name: Generate truthful validation evidence
         run: |
           node scripts/artifact-update.mjs --validation Passed
-          npx prettier --write docs/implementation-artifacts/m1-abarado/*.md
+          node scripts/sprint-update.mjs --validation Passed
+          npx prettier --write docs/implementation-artifacts/m1-abarado/*.md docs/sprints/sprint-7/*.md docs/sprints/sprint-7/members/m1-abarado.md
           npm run verify:status
 
       - name: Commit generated evidence and remove temporary workflow
         run: |
           set -euo pipefail
           rm -f .github/workflows/sprint-7-artifact-refresh-temp.yml
-          git add docs/implementation-artifacts/m1-abarado .github/workflows/sprint-7-artifact-refresh-temp.yml
+          git add docs/implementation-artifacts/m1-abarado docs/sprints/sprint-7 .github/workflows/sprint-7-artifact-refresh-temp.yml
           git diff --cached --check
           git commit -m "docs(sprint7): record integration validation evidence"
 
