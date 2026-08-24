@@ -1,6 +1,5 @@
 import { CartProvider } from "@/context/CartContext";
 import { CustomerLayout } from "@/layouts/CustomerLayout";
-import { AboutExperiencePage } from "@/pages/customer/AboutExperiencePage";
 import { CartPage } from "@/pages/customer/CartPage";
 import { CheckoutPage } from "@/pages/customer/CheckoutPage";
 import { CustomerHomePage } from "@/pages/customer/CustomerHomePage";
@@ -9,10 +8,8 @@ import { DiscoverPage } from "@/pages/customer/DiscoverPage";
 import { OrderSuccessPage } from "@/pages/customer/OrderSuccessPage";
 import { ProductDetailPage } from "@/pages/customer/ProductDetailPage";
 import { ShopPage } from "@/pages/customer/ShopPage";
-import "driver.js/dist/driver.css";
 import "@/styles/customer.css";
 import "@/styles/brand.css";
-import "@/styles/shopping-guide.css";
 
 export function CustomerApp({
   location,
@@ -52,7 +49,7 @@ export function CustomerApp({
   else if (pathname === "/checkout") page = <CheckoutPage navigate={navigate} />;
   else if (pathname === "/order-success")
     page = <OrderSuccessPage location={location} navigate={navigate} />;
-  else if (pathname === "/about") page = <AboutExperiencePage navigate={navigate} />;
+  else if (pathname === "/about") page = <DiscoverPage navigate={navigate} />;
   else if (pathname === "/discover") page = <DiscoverPage navigate={navigate} />;
   else page = <CustomerNotFoundPage navigate={navigate} />;
 

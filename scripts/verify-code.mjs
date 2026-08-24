@@ -5,6 +5,11 @@ const steps = [
   { args: ["diff", "--check"], command: "git", label: "git diff check" },
   { args: ["run", "prisma:validate"], command: "npm", label: "Prisma validation" },
   {
+    args: ["run", "prisma:generate"],
+    command: "npm",
+    label: "Prisma client generation"
+  },
+  {
     args: ["run", "typecheck"],
     command: "npm",
     label: "workspace type checking"
@@ -12,6 +17,11 @@ const steps = [
   { args: ["run", "lint"], command: "npm", label: "lint" },
   { args: ["run", "format:check"], command: "npm", label: "format check" },
   { args: ["run", "test:guardrails"], command: "npm", label: "guardrail regression tests" },
+  {
+    args: ["run", "repo:context:test"],
+    command: "npm",
+    label: "repository context regression tests"
+  },
   {
     args: ["test", "--workspaces", "--if-present"],
     command: "npm",
