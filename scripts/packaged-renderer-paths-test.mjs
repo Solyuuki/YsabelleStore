@@ -20,3 +20,21 @@ test("packaged customer router treats file index.html as home", async () => {
   assert.match(customerApp, /window\.location\.protocol === ["']file:["']/);
   assert.match(customerApp, /rawPathname\.endsWith\(["']\/index\.html["']\)/);
 });
+
+test("shared customer brand mark uses a bundled asset under file loading", async () => {
+  const brandMark = await readFile(
+    join(repoRoot, "frontend", "src", "components", "customer", "YsabelleBrandMark.tsx"),
+    "utf8"
+  );
+
+  assert.match(
+    brandMark,
+    /import\s+\w+\s+from\s+["']@\/assets\/brand\/ysabelle-logo-official\.webp["']/,
+    "YsabelleBrandMark must import the approved logo through Vite so packaged file:// builds receive a relative emitted asset URL."
+  );
+  assert.doesNotMatch(
+    brandMark,
+    /["'`]\/brand\//,
+    "YsabelleBrandMark must not depend on root-absolute public /brand URLs under Electron file:// loading."
+  );
+});
