@@ -7,7 +7,6 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const brandRoot = join(repoRoot, "frontend", "public", "brand");
-const assetVersion = "a4f0dde2";
 const faviconVersion = "fullmark-2e25e00f";
 
 const assets = new Map([
@@ -77,9 +76,14 @@ test("browser favicon uses full-logo 16, 32, and 48 px frames", async () => {
   assert.doesNotMatch(html, /sizes="256x256"/);
 });
 
-test("uses a real responsive image with a visible error fallback", async () => {
+test("uses the bundled approved logo with a visible error fallback", async () => {
   const c = await readText("frontend/src/components/customer/YsabelleBrandMark.tsx");
-  assert.match(c, /<img/); assert.match(c, /srcSet=\{BRAND_MARK_SRC_SET\}/); assert.match(c, /event\.currentTarget\.hidden = true/); assert.match(c, new RegExp(assetVersion));
+  assert.match(c, /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/);
+  assert.match(c, /<img/);
+  assert.match(c, /src=\{officialLogoUrl\}/);
+  assert.match(c, /event\.currentTarget\.hidden = true/);
+  assert.match(c, /<Store className="ysabelle-brand-mark__fallback" \/>/);
+  assert.doesNotMatch(c, /["'`]\/brand\//);
 });
 
 test("keeps approved header and footer on shared mark", async () => {
