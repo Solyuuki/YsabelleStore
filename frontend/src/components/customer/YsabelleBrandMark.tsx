@@ -1,12 +1,7 @@
 import { Store } from "lucide-react";
 import type { SyntheticEvent } from "react";
 
-const BRAND_ASSET_VERSION = "a4f0dde2";
-const BRAND_MARK_SRC = `/brand/ysabelle-store-mark-256.png?v=${BRAND_ASSET_VERSION}`;
-const BRAND_MARK_SRC_SET = [
-  `/brand/ysabelle-store-mark-128.png?v=${BRAND_ASSET_VERSION} 128w`,
-  `/brand/ysabelle-store-mark-256.png?v=${BRAND_ASSET_VERSION} 256w`
-].join(", ");
+import officialLogoUrl from "@/assets/brand/ysabelle-logo-official.webp";
 
 type YsabelleBrandMarkProps = {
   className?: string;
@@ -35,8 +30,7 @@ export function YsabelleBrandMark({
           event.currentTarget.hidden = true;
         }}
         sizes={variant === "display" ? "112px" : variant === "mini" ? "36px" : "48px"}
-        src={BRAND_MARK_SRC}
-        srcSet={BRAND_MARK_SRC_SET}
+        src={officialLogoUrl}
         width={256}
       />
     </span>
