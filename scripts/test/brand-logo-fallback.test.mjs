@@ -6,56 +6,50 @@ async function source(path) {
   return readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 }
 
-test("customer brand marks use the bundled official logo and retain a visible fallback", async () => {
-  const [component, header, footer, styles] = await Promise.all([
+test("brand components use the bundled official logo and retain visible fallbacks", async () => {
+  const [legacySharedLogo, customerMark, header, footer, sidebar, styles] = await Promise.all([
     source("frontend/src/components/brand/BrandLogo.tsx"),
+    source("frontend/src/components/customer/YsabelleBrandMark.tsx"),
     source("frontend/src/components/customer/CustomerHeader.tsx"),
     source("frontend/src/components/customer/CustomerFooter.tsx"),
+    source("frontend/src/components/app/AppSidebar.tsx"),
     source("frontend/src/styles/brand.css")
   ]);
 
-  assert.match(
-    component,
-    /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/,
-    "BrandLogo must import the approved bundled Ysabelle logo."
-  );
-  assert.match(
-    component,
-    /onError=\{[^}]*setImageFailed\(true\)/s,
-    "BrandLogo must swap to its fallback if the bundled image cannot render."
-  );
-  assert.match(component, /<svg[\s>]/, "BrandLogo must contain a built-in vector fallback.");
-  assert.doesNotMatch(
-    component,
-    /\/brand\/ysabelle-logo-v2\.png/,
-    "BrandLogo must not depend on the legacy public logo path."
-  );
-
-  for (const [name, value] of [
-    ["header", header],
-    ["footer", footer]
+  for (const [name, component] of [
+    ["BrandLogo", legacySharedLogo],
+    ["YsabelleBrandMark", customerMark]
   ]) {
-    assert.match(value, /BrandLogo/, `${name} must render the shared BrandLogo component.`);
+    assert.match(
+      component,
+      /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/,
+      `${name} must import the approved bundled Ysabelle logo.`
+    );
     assert.doesNotMatch(
-      value,
-      /<img[^>]+ysabelle-logo-v2\.png/,
-      `${name} must not render the fragile legacy brand PNG directly.`
+      component,
+      /\/brand\/ysabelle-logo-v2\.png/,
+      `${name} must not depend on the legacy public logo path.`
     );
   }
 
   assert.match(
-    styles,
-    /url\(["']\.\.\/assets\/brand\/ysabelle-logo-official\.webp["']\)/,
-    "About/Discover identity marks must use the bundled official logo."
+    legacySharedLogo,
+    /onError=\{[^}]*setImageFailed\(true\)/s,
+    "BrandLogo must swap to its vector fallback if the bundled image cannot render."
   );
-  assert.doesNotMatch(
-    styles,
-    /story-welcome__mark\s*>\s*svg\s*\{[^}]*display:\s*none/s,
-    "The About welcome scene must keep its vector Store mark available as a fallback."
+  assert.match(legacySharedLogo, /<svg[\s>]/, "BrandLogo must contain a built-in vector fallback.");
+  assert.match(
+    customerMark,
+    /event\.currentTarget\.hidden = true/,
+    "YsabelleBrandMark must reveal its Store fallback if the bundled image cannot render."
   );
-  assert.doesNotMatch(
-    styles,
-    /story-live-store__bar[^{}]*svg:first-child\s*\{[^}]*display:\s*none/s,
-    "The live-store identity must keep its vector Store mark available as a fallback."
-  );
+  assert.match(customerMark, /<Store className="ysabelle-brand-mark__fallback" \/>/);
+
+  assert.match(header, /YsabelleBrandMark/, "header must render the shared customer mark.");
+  assert.match(footer, /YsabelleBrandMark/, "footer must render the shared customer mark.");
+  assert.match(sidebar, /BrandLogo/, "staff sidebar must render the bundled shared logo.");
+  assert.doesNotMatch(sidebar, /\/brand\/ysabelle-logo-v2\.png/);
+
+  assert.match(styles, /\.ysabelle-brand-mark__fallback/);
+  assert.match(styles, /\.ysabelle-brand-mark__image\[hidden\]/);
 });
