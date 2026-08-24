@@ -65,3 +65,10 @@ promote approved asset to product
 ## Scope Boundary
 
 Sprint 6 focuses on the internal upload/processing/publishing pipeline. Barcode-first online image discovery may be added later as a separate extension using explicit source/licensing rules; arbitrary web images are not auto-published by this sprint.
+
+## Latest Sprint Activity
+
+| Date       | Member     | Branch               | Latest Activity                                                                                                  | Validation Status |
+| ---------- | ---------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 2026-08-23 | M1 Abarado | sprint/v0.6/sprint-6 | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |
+| 2026-08-24 | M1 Abarado | sprint/v0.6/sprint-6 | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |

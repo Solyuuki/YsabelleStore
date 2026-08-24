@@ -1,4 +1,4 @@
-import { CircleHelp, Menu, ShoppingBasket, Store, UserRound, X } from "lucide-react";
+import { CircleHelp, Menu, ShoppingBasket, UserRound, X } from "lucide-react";
 import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
@@ -6,6 +6,7 @@ import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { isCustomerShopRoute } from "@/utils/customerRoutes";
 import { CustomerLink } from "./CustomerLink";
 import { GlobalStorefrontSearch } from "./GlobalStorefrontSearch";
+import { YsabelleBrandMark } from "./YsabelleBrandMark";
 
 export function CustomerHeader({
   location,
@@ -35,9 +36,7 @@ export function CustomerHeader({
     <header className="customer-header">
       <div className="customer-header__bar">
         <CustomerLink className="customer-brand" href="/" navigate={navigate}>
-          <span className="customer-brand__mark">
-            <Store aria-hidden="true" size={22} />
-          </span>
+          <YsabelleBrandMark eager />
           <span>
             <strong>Ysabelle</strong>
             <small>Store</small>

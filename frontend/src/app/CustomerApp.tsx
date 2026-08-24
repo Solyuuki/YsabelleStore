@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { CartProvider } from "@/context/CartContext";
 import { CustomerAuthProvider, useCustomerAuth } from "@/context/CustomerAuthContext";
 import { CustomerLayout } from "@/layouts/CustomerLayout";
+import { AboutExperiencePage } from "@/pages/customer/AboutExperiencePage";
 import { CartPage } from "@/pages/customer/CartPage";
 import { CheckoutPage } from "@/pages/customer/CheckoutPage";
 import { CustomerAccountPage } from "@/pages/customer/CustomerAccountPage";
@@ -14,8 +15,11 @@ import { DiscoverPage } from "@/pages/customer/DiscoverPage";
 import { OrderSuccessPage } from "@/pages/customer/OrderSuccessPage";
 import { ProductDetailPage } from "@/pages/customer/ProductDetailPage";
 import { ShopPage } from "@/pages/customer/ShopPage";
+import "driver.js/dist/driver.css";
 import "@/styles/customer.css";
 import "@/styles/customer-auth.css";
+import "@/styles/brand.css";
+import "@/styles/shopping-guide.css";
 import { getCustomerAuthPageKind, resolveCustomerAuthRedirect } from "@/utils/customerRoutes";
 
 export function CustomerApp({
@@ -41,7 +45,9 @@ function CustomerAppRoutes({
   location: string;
   navigate: (path: string) => void;
 }) {
-  const pathname = new URL(location, window.location.origin).pathname.replace(/\/$/, "") || "/";
+  const rawPathname = new URL(location, window.location.origin).pathname.replace(/\/$/, "") || "/";
+  const pathname =
+    window.location.protocol === "file:" && rawPathname.endsWith("/index.html") ? "/" : rawPathname;
   const { status } = useCustomerAuth();
   const redirect = resolveCustomerAuthRedirect(pathname, status);
   const authPageKind = getCustomerAuthPageKind(pathname);
@@ -87,7 +93,7 @@ function CustomerAppRoutes({
   else if (pathname === "/checkout") page = <CheckoutPage navigate={navigate} />;
   else if (pathname === "/order-success")
     page = <OrderSuccessPage location={location} navigate={navigate} />;
-  else if (pathname === "/about") page = <DiscoverPage navigate={navigate} />;
+  else if (pathname === "/about") page = <AboutExperiencePage navigate={navigate} />;
   else if (pathname === "/discover") page = <DiscoverPage navigate={navigate} />;
   else if (pathname === "/login") page = <CustomerLoginPage navigate={navigate} />;
   else if (pathname === "/register") page = <CustomerRegisterPage navigate={navigate} />;

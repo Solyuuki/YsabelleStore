@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    base: "./",
     envDir: envDirectory,
     plugins: [react()],
     resolve: {

@@ -59,17 +59,21 @@ const KNOWN_ACCOUNTS_PAGE_SIZE = 2;
 const systemHealthFooterCopy: Record<SystemHealthState, string> = {
   checking: "Checking system...",
   healthy: "All Systems Normal",
-  warning: "Service Warning",
+  degraded: "Service Degraded",
   "database-unavailable": "Database Unavailable",
-  offline: "System Offline"
+  "backend-unavailable": "Backend Unavailable",
+  timeout: "Health Check Timed Out",
+  offline: "Device Offline"
 };
 
 const systemHealthFooterDotClass: Record<SystemHealthState, string> = {
   checking: "bg-sky-400",
   healthy: "bg-emerald-500",
-  warning: "bg-amber-500",
+  degraded: "bg-amber-500",
   "database-unavailable": "bg-orange-500",
-  offline: "bg-red-500"
+  "backend-unavailable": "bg-red-500",
+  timeout: "bg-violet-500",
+  offline: "bg-slate-500"
 };
 
 function formatLastUsedAt(lastUsedAt: string) {

@@ -12,8 +12,8 @@ const catalogImageMetadata = {
   },
   "/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp": {
     background: "transparent",
-    height: 950,
-    width: 550
+    height: 800,
+    width: 800
   },
   "/images/products/sunsilk-anti-dandruff-silky-shampoo-sachet-13-5ml.webp": {
     background: "transparent",

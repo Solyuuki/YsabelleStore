@@ -16,6 +16,7 @@ export type StorefrontProduct = {
   name: string;
   description: string | null;
   imageUrl: string | null;
+  detailImageUrl?: string | null;
   unit: string;
   sellingPrice: string;
   availableStock: number;

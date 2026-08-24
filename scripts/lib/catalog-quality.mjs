@@ -4,6 +4,10 @@ const GENERATED_SUFFIX = "[0-9a-f]{8}";
 const FIXTURE_CATEGORY_PATTERNS = [
   ["DATA_FLOW_DEBUG_CATEGORY", new RegExp(`^Dbg ${GENERATED_SUFFIX}$`, "i")],
   ["DUPLICATE_CATEGORY_TEST", new RegExp(`^Duplicate Category ${GENERATED_SUFFIX}$`, "i")],
+  [
+    "CIQE_BACKFILL_TEST",
+    new RegExp(`^Backfill (?:Eligible|Existing|Dry Run|Apply) ${GENERATED_SUFFIX}$`, "i")
+  ],
   ["INVENTORY_IMPORT_TEST", new RegExp(`^Inventory Import ${GENERATED_SUFFIX}$`, "i")],
   ["MANUAL_CATEGORY_TEST", new RegExp(`^Manual Category ${GENERATED_SUFFIX}$`, "i")],
   ["SLUG_CATEGORY_TEST", new RegExp(`^Slug Category ${GENERATED_SUFFIX}$`, "i")],

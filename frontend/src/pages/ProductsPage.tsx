@@ -20,6 +20,7 @@ import {
   type RefObject
 } from "react";
 
+import { ProductImageUploadPanel } from "@/components/catalog/ProductImageUploadPanel";
 import { useAuth } from "@/context/AuthContext";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -63,6 +64,7 @@ import {
   type ProductImportSummary,
   type ProductRecord
 } from "@/services/catalogApi";
+import { rejectProductImage } from "@/services/productImageApi";
 import { formatFileSize, getImportFileType } from "@/utils/importFormatting";
 import { waitForMinimumDuration } from "@/utils/timing";
 import {
@@ -2161,7 +2163,6 @@ function CreateProductDialog({
     categoryId: "",
     costPrice: "",
     description: "",
-    imageUrl: "",
     name: "",
     dataQualityStatus: "NEEDS_REVIEW" as ProductRecord["dataQualityStatus"],
     isStorefrontVisible: false,
@@ -2177,6 +2178,9 @@ function CreateProductDialog({
   });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [createdProductId, setCreatedProductId] = useState<string | null>(null);
+  const [hasSelectedImage, setHasSelectedImage] = useState(false);
+  const [imageSession, setImageSession] = useState(0);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [categoryForm, setCategoryForm] = useState({
     description: "",
@@ -2184,6 +2188,16 @@ function CreateProductDialog({
   });
   const [categoryError, setCategoryError] = useState<string | null>(null);
   const [creatingCategory, setCreatingCategory] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setCreatedProductId(null);
+    setHasSelectedImage(false);
+    setImageSession((current) => current + 1);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -2208,7 +2222,7 @@ function CreateProductDialog({
   async function handleCreateCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (creatingCategory) {
+    if (creatingCategory || createdProductId) {
       return;
     }
 
@@ -2261,7 +2275,7 @@ function CreateProductDialog({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (saving) {
+    if (saving || createdProductId) {
       return;
     }
 
@@ -2275,7 +2289,6 @@ function CreateProductDialog({
         categoryId: form.categoryId,
         costPrice: form.costPrice.trim(),
         description: form.description.trim() || null,
-        imageUrl: form.imageUrl.trim() || null,
         name: form.name.trim(),
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
@@ -2293,12 +2306,23 @@ function CreateProductDialog({
         return;
       }
 
+      onCreated();
+
+      if (hasSelectedImage) {
+        setCreatedProductId(response.data.id);
+        pushToast({
+          message: "Product created; image needs attention while optimization finishes.",
+          title: "Product created",
+          variant: "success"
+        });
+        return;
+      }
+
       pushToast({
         message: `${response.data.name} was created successfully.`,
         title: "Product created",
         variant: "success"
       });
-      onCreated();
       onClose();
     } catch {
       setError("The product creation service is unavailable.");
@@ -2337,269 +2361,292 @@ function CreateProductDialog({
               </Alert>
             ) : null}
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="product-name">Product name</Label>
-                <Input
-                  id="product-name"
-                  value={form.name}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, name: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-sku">SKU</Label>
-                <Input
-                  id="product-sku"
-                  value={form.sku}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, sku: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-brand">Brand</Label>
-                <Input
-                  id="product-brand"
-                  placeholder="Unknown"
-                  value={form.brand}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, brand: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-variant">Variant or flavor</Label>
-                <Input
-                  id="product-variant"
-                  placeholder="Leave blank when not specified"
-                  value={form.variant}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, variant: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-size-value">Pack size</Label>
-                <Input
-                  id="product-size-value"
-                  inputMode="decimal"
-                  placeholder="Unknown"
-                  value={form.sizeValue}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, sizeValue: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-size-unit">Pack size unit</Label>
-                <Select
-                  id="product-size-unit"
-                  value={form.sizeUnit}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      sizeUnit: event.target.value as NonNullable<ProductRecord["sizeUnit"]> | ""
-                    }))
-                  }
-                >
-                  <option value="">Unknown</option>
-                  {["MILLILITER", "LITER", "GRAM", "KILOGRAM", "PIECE"].map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-barcode">Barcode</Label>
-                <Input
-                  id="product-barcode"
-                  value={form.barcode}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, barcode: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-category">Category</Label>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <div className="min-w-0 flex-1">
-                    <Select
-                      id="product-category"
-                      disabled={categoryLoading || categories.length === 0}
-                      value={form.categoryId}
-                      onChange={(event) =>
-                        setForm((current) => ({ ...current, categoryId: event.target.value }))
-                      }
-                    >
-                      {categoryLoading ? (
-                        <option value="">Loading categories...</option>
-                      ) : categories.length === 0 ? (
-                        <option value="">No categories found</option>
-                      ) : (
-                        <>
-                          <option value="">Select a category</option>
-                          {categories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </>
-                      )}
-                    </Select>
-                    {!categoryLoading && categories.length === 0 ? (
-                      <p className="mt-2 text-xs leading-5 text-slate-500">No categories found</p>
+            {createdProductId ? (
+              <Alert>
+                <AlertTitle>Product saved</AlertTitle>
+                <AlertDescription>
+                  The catalog record already exists. Finish the image review below or close this
+                  dialog; a failed image will not remove the product.
+                </AlertDescription>
+              </Alert>
+            ) : null}
+
+            <fieldset className="space-y-4" disabled={Boolean(createdProductId)}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="product-name">Product name</Label>
+                  <Input
+                    id="product-name"
+                    value={form.name}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, name: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-sku">SKU</Label>
+                  <Input
+                    id="product-sku"
+                    value={form.sku}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, sku: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-brand">Brand</Label>
+                  <Input
+                    id="product-brand"
+                    placeholder="Unknown"
+                    value={form.brand}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, brand: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-variant">Variant or flavor</Label>
+                  <Input
+                    id="product-variant"
+                    placeholder="Leave blank when not specified"
+                    value={form.variant}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, variant: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-size-value">Pack size</Label>
+                  <Input
+                    id="product-size-value"
+                    inputMode="decimal"
+                    placeholder="Unknown"
+                    value={form.sizeValue}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, sizeValue: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-size-unit">Pack size unit</Label>
+                  <Select
+                    id="product-size-unit"
+                    value={form.sizeUnit}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        sizeUnit: event.target.value as NonNullable<ProductRecord["sizeUnit"]> | ""
+                      }))
+                    }
+                  >
+                    <option value="">Unknown</option>
+                    {["MILLILITER", "LITER", "GRAM", "KILOGRAM", "PIECE"].map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-barcode">Barcode</Label>
+                  <Input
+                    id="product-barcode"
+                    value={form.barcode}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, barcode: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-category">Category</Label>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                    <div className="min-w-0 flex-1">
+                      <Select
+                        id="product-category"
+                        disabled={categoryLoading || categories.length === 0}
+                        value={form.categoryId}
+                        onChange={(event) =>
+                          setForm((current) => ({ ...current, categoryId: event.target.value }))
+                        }
+                      >
+                        {categoryLoading ? (
+                          <option value="">Loading categories...</option>
+                        ) : categories.length === 0 ? (
+                          <option value="">No categories found</option>
+                        ) : (
+                          <>
+                            <option value="">Select a category</option>
+                            {categories.map((category) => (
+                              <option key={category.id} value={category.id}>
+                                {category.name}
+                              </option>
+                            ))}
+                          </>
+                        )}
+                      </Select>
+                      {!categoryLoading && categories.length === 0 ? (
+                        <p className="mt-2 text-xs leading-5 text-slate-500">No categories found</p>
+                      ) : null}
+                    </div>
+                    {isOwner ? (
+                      <Button
+                        className="shrink-0 whitespace-nowrap"
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          setCategoryError(null);
+                          setIsCategoryDialogOpen(true);
+                        }}
+                      >
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                        Add category
+                      </Button>
                     ) : null}
                   </div>
-                  {isOwner ? (
-                    <Button
-                      className="shrink-0 whitespace-nowrap"
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        setCategoryError(null);
-                        setIsCategoryDialogOpen(true);
-                      }}
-                    >
-                      <Plus className="h-4 w-4" aria-hidden="true" />
-                      Add category
-                    </Button>
-                  ) : null}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-unit">Unit</Label>
+                  <Select
+                    id="product-unit"
+                    value={form.unit}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        unit: event.target.value as ProductRecord["unit"]
+                      }))
+                    }
+                  >
+                    {[
+                      "PIECE",
+                      "PACK",
+                      "BOX",
+                      "BOTTLE",
+                      "SACHET",
+                      "KILOGRAM",
+                      "GRAM",
+                      "LITER",
+                      "MILLILITER"
+                    ].map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-status">Status</Label>
+                  <Select
+                    id="product-status"
+                    value={form.status}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        status: event.target.value as ProductRecord["status"]
+                      }))
+                    }
+                  >
+                    {["ACTIVE", "INACTIVE"].map((status) => (
+                      <option key={status} value={status}>
+                        {status === "ACTIVE" ? "Available" : "Unavailable"}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-cost">Cost price</Label>
+                  <Input
+                    id="product-cost"
+                    inputMode="decimal"
+                    value={form.costPrice}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, costPrice: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-sell">Selling price</Label>
+                  <Input
+                    id="product-sell"
+                    inputMode="decimal"
+                    value={form.sellingPrice}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, sellingPrice: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-reorder">Reorder level</Label>
+                  <Input
+                    id="product-reorder"
+                    inputMode="numeric"
+                    value={form.reorderLevel}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, reorderLevel: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-target">Target stock level</Label>
+                  <Input
+                    id="product-target"
+                    inputMode="numeric"
+                    value={form.targetStockLevel}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
+                    }
+                  />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-unit">Unit</Label>
-                <Select
-                  id="product-unit"
-                  value={form.unit}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      unit: event.target.value as ProductRecord["unit"]
-                    }))
-                  }
-                >
-                  {[
-                    "PIECE",
-                    "PACK",
-                    "BOX",
-                    "BOTTLE",
-                    "SACHET",
-                    "KILOGRAM",
-                    "GRAM",
-                    "LITER",
-                    "MILLILITER"
-                  ].map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-status">Status</Label>
-                <Select
-                  id="product-status"
-                  value={form.status}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      status: event.target.value as ProductRecord["status"]
-                    }))
-                  }
-                >
-                  {["ACTIVE", "INACTIVE"].map((status) => (
-                    <option key={status} value={status}>
-                      {status === "ACTIVE" ? "Available" : "Unavailable"}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-cost">Cost price</Label>
-                <Input
-                  id="product-cost"
-                  inputMode="decimal"
-                  value={form.costPrice}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, costPrice: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-sell">Selling price</Label>
-                <Input
-                  id="product-sell"
-                  inputMode="decimal"
-                  value={form.sellingPrice}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, sellingPrice: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-reorder">Reorder level</Label>
-                <Input
-                  id="product-reorder"
-                  inputMode="numeric"
-                  value={form.reorderLevel}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, reorderLevel: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-target">Target stock level</Label>
-                <Input
-                  id="product-target"
-                  inputMode="numeric"
-                  value={form.targetStockLevel}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
-                  }
-                />
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="product-image-url">Product image</Label>
-              <Input
-                id="product-image-url"
-                inputMode="url"
-                placeholder="https://brand.example/product.jpg or /images/products/item.jpg"
-                value={form.imageUrl}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, imageUrl: event.target.value }))
-                }
-              />
-              <p className="text-xs leading-5 text-slate-500">
-                Link only the exact product, size, flavor, and packaging shown in this catalog
-                record. Use an approved local asset or a stable HTTPS source you are permitted to
-                use.
-              </p>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-description">Description</Label>
+                <Textarea
+                  id="product-description"
+                  value={form.description}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, description: event.target.value }))
+                  }
+                />
+              </div>
+            </fieldset>
 
-            <div className="space-y-2">
-              <Label htmlFor="product-description">Description</Label>
-              <Textarea
-                id="product-description"
-                value={form.description}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, description: event.target.value }))
-                }
-              />
-            </div>
+            <ProductImageUploadPanel
+              disabled={saving}
+              onApproved={() => {
+                pushToast({
+                  message: "The optimized product image is now active for the storefront.",
+                  title: "Product image approved",
+                  variant: "success"
+                });
+                onCreated();
+                onClose();
+              }}
+              onSelectionChange={setHasSelectedImage}
+              productId={createdProductId}
+              resetKey={imageSession}
+            />
           </div>
           <DialogFooter className="mt-6 px-0 pb-0">
-            <Button disabled={saving} type="button" variant="secondary" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button disabled={saving || !form.name || !form.sku || !form.categoryId} type="submit">
-              {saving ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-              Create product
-            </Button>
+            {createdProductId ? (
+              <Button type="button" onClick={onClose}>
+                Close
+              </Button>
+            ) : (
+              <>
+                <Button disabled={saving} type="button" variant="secondary" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button
+                  disabled={saving || !form.name || !form.sku || !form.categoryId}
+                  type="submit"
+                >
+                  {saving ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : null}
+                  Create product
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </form>
 
@@ -2701,6 +2748,8 @@ function ProductDetailsDialog({
   const { pushToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [discardingImageDrafts, setDiscardingImageDrafts] = useState(false);
+  const [draftImageCandidateIds, setDraftImageCandidateIds] = useState<string[]>([]);
   const [form, setForm] = useState({
     barcode: "",
     brand: "",
@@ -2708,7 +2757,6 @@ function ProductDetailsDialog({
     costPrice: "",
     dataQualityStatus: "NEEDS_REVIEW" as ProductRecord["dataQualityStatus"],
     description: "",
-    imageUrl: "",
     isStorefrontVisible: false,
     name: "",
     reorderLevel: "0",
@@ -2732,7 +2780,6 @@ function ProductDetailsDialog({
       categoryId: product.category.id,
       costPrice: product.costPrice ?? "",
       description: product.description ?? "",
-      imageUrl: product.imageUrl ?? "",
       name: product.name,
       dataQualityStatus: product.dataQualityStatus,
       isStorefrontVisible: product.isStorefrontVisible,
@@ -2747,10 +2794,61 @@ function ProductDetailsDialog({
     setIsEditing(false);
   }, [product]);
 
+  useEffect(() => {
+    setDraftImageCandidateIds([]);
+  }, [product?.id]);
+
+  async function discardDraftImageCandidates() {
+    if (!product || draftImageCandidateIds.length === 0) {
+      return true;
+    }
+    if (discardingImageDrafts) {
+      return false;
+    }
+
+    setDiscardingImageDrafts(true);
+    try {
+      for (const candidateId of draftImageCandidateIds) {
+        const response = await rejectProductImage(product.id, candidateId);
+        if (!response.success) {
+          throw new Error(response.message || "Image draft discard failed.");
+        }
+      }
+      setDraftImageCandidateIds([]);
+      return true;
+    } catch (discardError) {
+      pushToast({
+        message:
+          discardError instanceof Error
+            ? discardError.message
+            : "The uploaded image draft could not be discarded.",
+        title: "Image draft not discarded",
+        variant: "error"
+      });
+      return false;
+    } finally {
+      setDiscardingImageDrafts(false);
+    }
+  }
+
+  async function handleCancelEditing() {
+    if (!(await discardDraftImageCandidates())) {
+      return;
+    }
+    setIsEditing(false);
+  }
+
+  async function handleCloseRequest() {
+    if (isEditing && !(await discardDraftImageCandidates())) {
+      return;
+    }
+    onClose();
+  }
+
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!product || saving) {
+    if (!product || saving || discardingImageDrafts) {
       return;
     }
 
@@ -2761,9 +2859,8 @@ function ProductDetailsDialog({
         barcode: form.barcode.trim() || null,
         brand: form.brand.trim() || null,
         categoryId: form.categoryId,
-        costPrice: form.costPrice.trim(),
+        costPrice: form.costPrice.trim() || undefined,
         description: form.description.trim() || null,
-        imageUrl: form.imageUrl.trim() || null,
         name: form.name.trim(),
         dataQualityStatus: form.dataQualityStatus,
         isStorefrontVisible: form.isStorefrontVisible,
@@ -2790,6 +2887,7 @@ function ProductDetailsDialog({
         title: "Product updated",
         variant: "success"
       });
+      setDraftImageCandidateIds([]);
       setIsEditing(false);
       onSaved();
     } catch {
@@ -2808,7 +2906,7 @@ function ProductDetailsDialog({
       open={isOpen}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
-          onClose();
+          void handleCloseRequest();
         }
       }}
     >
@@ -2972,19 +3070,32 @@ function ProductDetailsDialog({
                     </Select>
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="edit-image-url">Product image</Label>
-                    <Input
-                      id="edit-image-url"
-                      inputMode="url"
-                      placeholder="https://brand.example/product.jpg or /images/products/item.jpg"
-                      value={form.imageUrl}
-                      onChange={(event) =>
-                        setForm((current) => ({ ...current, imageUrl: event.target.value }))
-                      }
+                    <ProductImageUploadPanel
+                      disabled={saving || discardingImageDrafts}
+                      onApproved={(candidate) => {
+                        setDraftImageCandidateIds((current) =>
+                          current.filter((candidateId) => candidateId !== candidate.id)
+                        );
+                        pushToast({
+                          message: "The optimized replacement is now active for the storefront.",
+                          title: "Product image approved",
+                          variant: "success"
+                        });
+                        onSaved();
+                      }}
+                      onCandidateCreated={(candidate) => {
+                        setDraftImageCandidateIds((current) =>
+                          current.includes(candidate.id) ? current : [...current, candidate.id]
+                        );
+                      }}
+                      onCandidateDiscarded={(candidate) => {
+                        setDraftImageCandidateIds((current) =>
+                          current.filter((candidateId) => candidateId !== candidate.id)
+                        );
+                      }}
+                      productId={product.id}
+                      resetKey={`${product.id}-${isEditing ? "edit" : "view"}`}
                     />
-                    <p className="text-xs leading-5 text-slate-500">
-                      Use an approved image for this exact SKU, variant, size, and packaging.
-                    </p>
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="edit-description">Description</Label>
@@ -3083,7 +3194,7 @@ function ProductDetailsDialog({
                   <DetailLine label="Barcode" value={product.barcode ?? "Not set"} />
                   <DetailLine
                     label="Product image"
-                    value={product.imageUrl ? "Catalog link set" : "Not set"}
+                    value={product.imageUrl ? "Catalog image set" : "Not set"}
                   />
                   <DetailLine label="Category" value={product.category.name} />
                   <DetailLine label="Brand" value={product.brand ?? "Unknown"} />
@@ -3158,15 +3269,16 @@ function ProductDetailsDialog({
           {isEditing ? (
             <>
               <Button
-                disabled={saving}
+                disabled={saving || discardingImageDrafts}
                 type="button"
                 variant="secondary"
-                onClick={() => setIsEditing(false)}
+                onClick={() => void handleCancelEditing()}
               >
-                Cancel
+                {discardingImageDrafts ? "Discarding image..." : "Cancel"}
               </Button>
               <Button
                 disabled={saving || !product || !form.name || !form.categoryId}
+                key="product-edit-save"
                 form="product-edit-form"
                 type="submit"
               >
@@ -3181,7 +3293,14 @@ function ProductDetailsDialog({
               <Button type="button" variant="secondary" onClick={onClose}>
                 Close
               </Button>
-              <Button type="button" onClick={() => setIsEditing(true)}>
+              <Button
+                key="product-edit-enter"
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  setIsEditing(true);
+                }}
+              >
                 Edit product
               </Button>
             </>

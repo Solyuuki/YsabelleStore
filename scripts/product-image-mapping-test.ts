@@ -18,11 +18,11 @@ import {
 
 const expectedMappings = [
   {
-    height: 950,
+    height: 800,
     imageUrl: "/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp",
-    presentation: { resolution: "standard", shape: "tall" },
+    presentation: { resolution: "standard", shape: "balanced" },
     sourceProductId: "P144",
-    width: 550
+    width: 800
   },
   {
     height: 470,
@@ -77,6 +77,10 @@ async function verifyAssets() {
     cwd: process.cwd(),
     stdio: "pipe"
   });
+  execFileSync("python", ["scripts/refresh_ligo_product_image.py", "--verify"], {
+    cwd: process.cwd(),
+    stdio: "pipe"
+  });
   for (const mapping of expectedMappings) {
     assert.match(mapping.imageUrl, /^\/images\/products\/[a-z0-9-]+\.webp$/);
     const assetPath = path.join(process.cwd(), "frontend", "public", mapping.imageUrl);
@@ -95,7 +99,7 @@ async function verifyAssets() {
 }
 
 assert.deepEqual(describeCatalogImage(164, 412), { resolution: "low", shape: "tall" });
-assert.deepEqual(describeCatalogImage(550, 950), { resolution: "standard", shape: "tall" });
+assert.deepEqual(describeCatalogImage(800, 800), { resolution: "standard", shape: "balanced" });
 assert.deepEqual(describeCatalogImage(1043, 470), { resolution: "standard", shape: "wide" });
 
 assert.equal(ABOUT_STORE_ESSENTIAL_PRODUCT_IDS.length, ABOUT_STORE_ESSENTIAL_SLOT_COUNT);

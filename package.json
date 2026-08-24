@@ -14,7 +14,7 @@
     "dev:web": "node --env-file=.env scripts/dev.mjs --web-only",
     "dev:lifecycle-test": "node --env-file=.env scripts/dev-lifecycle-smoke.mjs",
     "build": "npm run build --workspaces && npm run prisma:validate",
-    "lint": "eslint .",
+    "lint": "eslint backend/src backend/test frontend/src frontend/vite.config.ts frontend/tailwind.config.ts frontend/postcss.config.js electron/src electron/electron-builder.config.cjs scripts tools/repo-context database/seed eslint.config.mjs",
     "typecheck": "npm run typecheck:scripts && npm run typecheck --workspaces --if-present",
     "typecheck:scripts": "tsc --noEmit -p tsconfig.json",
     "format": "prettier --write .",
@@ -25,6 +25,8 @@
     "catalog:audit": "node --env-file=.env scripts/catalog-quality-audit.mjs",
     "catalog:clean": "node --env-file=.env scripts/catalog-clean.mjs",
     "catalog:clean:apply": "node --env-file=.env scripts/catalog-clean.mjs --apply",
+    "sprint6:fixtures:clean": "node --env-file=.env scripts/sprint6-backfill-fixture-cleanup.mjs",
+    "sprint6:fixtures:clean:apply": "node --env-file=.env scripts/sprint6-backfill-fixture-cleanup.mjs --apply",
     "curated-showcase:master-data:audit": "tsx --tsconfig frontend/tsconfig.app.json scripts/curated-showcase-master-data-audit.ts",
     "curated-showcase:master-data:apply": "tsx --tsconfig frontend/tsconfig.app.json scripts/curated-showcase-master-data-audit.ts --apply",
     "inventory:audit": "node scripts/inventory-audit.mjs",
@@ -70,9 +72,12 @@
     "catalog:sarima:verify": "tsx backend/src/scripts/validateSarimaCatalogProducts.ts",
     "product-names:repair": "tsx backend/src/scripts/repairProductNames.ts",
     "product-names:test": "tsx scripts/product-name-normalizer-test.ts",
-    "product-images:process": "python scripts/product_image_cutouts.py",
-    "product-images:cutouts:verify": "python scripts/product_image_cutouts.py --verify",
+    "product-images:process": "python scripts/product_image_cutouts.py && python scripts/refresh_ligo_product_image.py",
+    "product-images:cutouts:verify": "python scripts/product_image_cutouts.py --verify && python scripts/refresh_ligo_product_image.py --verify",
+    "product-images:ligo:refresh": "python scripts/refresh_ligo_product_image.py --download",
     "product-images:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/product-image-mapping-test.ts",
+    "catalog-images:backfill": "tsx backend/src/scripts/backfillCatalogImages.ts",
+    "catalog-images:test": "cd catalog-image-engine && python -m unittest discover -s tests -p \"test_*.py\"",
     "storefront:images:verify": "tsx scripts/storefront-image-ready-audit.ts",
     "storefront:showcase:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/storefront-curated-showcase-test.ts",
     "storefront:search-history:test": "tsx --tsconfig frontend/tsconfig.app.json scripts/storefront-search-history-test.ts",
@@ -95,5 +100,8 @@
   "engines": {
     "node": ">=20.11.0",
     "npm": ">=10.0.0"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.0"
   }
 }

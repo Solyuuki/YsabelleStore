@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Search, SlidersHorizontal } from "lucide-react";
-import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type CSSProperties, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard } from "@/components/customer/ProductCard";
@@ -10,6 +10,9 @@ import type {
   StorefrontPagination,
   StorefrontProduct
 } from "@/types/storefront";
+
+const SEARCH_DEBOUNCE_MS = 350;
+type AvailabilityFilter = "all" | "in-stock" | "out-of-stock";
 
 export function ShopPage({
   categorySlug,
@@ -22,7 +25,7 @@ export function ShopPage({
 }) {
   const params = new URL(location, window.location.origin).searchParams;
   const searchParam = params.get("search") ?? "";
-  const availabilityParam =
+  const availabilityParam: AvailabilityFilter =
     params.get("availability") === "out-of-stock"
       ? "out-of-stock"
       : params.get("availability") === "in-stock"
@@ -30,9 +33,6 @@ export function ShopPage({
         : "all";
   const pageParam = Math.max(1, Number(params.get("page")) || 1);
   const [search, setSearch] = useState(searchParam);
-  const [availability, setAvailability] = useState<"all" | "in-stock" | "out-of-stock">(
-    availabilityParam
-  );
   const [categories, setCategories] = useState<StorefrontCategory[]>([]);
   const [products, setProducts] = useState<StorefrontProduct[]>([]);
   const [meta, setMeta] = useState<StorefrontPagination>({
@@ -62,8 +62,7 @@ export function ShopPage({
 
   useEffect(() => {
     setSearch(searchParam);
-    setAvailability(availabilityParam);
-  }, [searchParam, availabilityParam]);
+  }, [searchParam]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -99,23 +98,45 @@ export function ShopPage({
 
   const activeCategory = categories.find((category) => category.slug === categorySlug);
 
-  function buildShopUrl(
-    values: { search?: string; availability?: string; page?: number },
-    slug: string | null | undefined = categorySlug
-  ) {
-    const next = new URLSearchParams();
-    const nextSearch = values.search ?? searchParam;
-    const nextAvailability = values.availability ?? availabilityParam;
-    if (nextSearch) next.set("search", nextSearch);
-    if (nextAvailability !== "all") next.set("availability", nextAvailability);
-    if ((values.page ?? 1) > 1) next.set("page", String(values.page));
-    const base = slug ? `/shop/category/${slug}` : "/shop";
-    return `${base}${next.size ? `?${next}` : ""}`;
-  }
+  const buildShopUrl = useCallback(
+    (
+      values: { search?: string; availability?: string; page?: number },
+      slug: string | null | undefined = categorySlug
+    ) => {
+      const next = new URLSearchParams();
+      const nextSearch = values.search ?? searchParam;
+      const nextAvailability = values.availability ?? availabilityParam;
+      if (nextSearch) next.set("search", nextSearch);
+      if (nextAvailability !== "all") next.set("availability", nextAvailability);
+      if ((values.page ?? 1) > 1) next.set("page", String(values.page));
+      const base = slug ? `/shop/category/${slug}` : "/shop";
+      return `${base}${next.size ? `?${next}` : ""}`;
+    },
+    [availabilityParam, categorySlug, searchParam]
+  );
+
+  useEffect(() => {
+    const normalizedSearch = search.trim();
+    if (normalizedSearch === searchParam) return;
+
+    const timeout = window.setTimeout(() => {
+      navigate(
+        buildShopUrl({ search: normalizedSearch, availability: availabilityParam, page: 1 })
+      );
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeout);
+  }, [availabilityParam, buildShopUrl, navigate, search, searchParam]);
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    navigate(buildShopUrl({ search: search.trim(), availability, page: 1 }));
+    const normalizedSearch = search.trim();
+    if (normalizedSearch === searchParam && pageParam === 1) return;
+    navigate(buildShopUrl({ search: normalizedSearch, availability: availabilityParam, page: 1 }));
+  }
+
+  function applyAvailability(nextAvailability: AvailabilityFilter) {
+    navigate(buildShopUrl({ search: search.trim(), availability: nextAvailability, page: 1 }));
   }
 
   return (
@@ -179,6 +200,7 @@ export function ShopPage({
               <Search aria-hidden="true" size={18} />
               <span className="sr-only">Search products</span>
               <input
+                autoComplete="off"
                 maxLength={120}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search products or categories"
@@ -189,17 +211,14 @@ export function ShopPage({
             <label className="customer-select">
               <span className="sr-only">Availability</span>
               <select
-                onChange={(event) => setAvailability(event.target.value as typeof availability)}
-                value={availability}
+                onChange={(event) => applyAvailability(event.target.value as AvailabilityFilter)}
+                value={availabilityParam}
               >
                 <option value="all">All availability</option>
                 <option value="in-stock">In stock</option>
                 <option value="out-of-stock">Out of stock</option>
               </select>
             </label>
-            <button className="customer-button customer-button--compact" type="submit">
-              Apply
-            </button>
           </form>
           <div
             className={`customer-results-meta shop-motion-results-meta ${resultsMetaReveal.isVisible ? "is-visible" : ""}`}
