@@ -11,6 +11,12 @@ on:
 permissions:
   contents: write
 
+env:
+  NODE_ENV: test
+  DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
+  JWT_SECRET: sprint-7-integration-materialize-secret
+  FRONTEND_URL: http://localhost:5173
+
 concurrency:
   group: sprint-7-integration-materialize-${{ github.event_name }}
   cancel-in-progress: true
