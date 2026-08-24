@@ -178,9 +178,17 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Set up Python
+        if: steps.merge.outputs.already_merged == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install dependencies
         if: steps.merge.outputs.already_merged == 'false'
-        run: npm ci
+        run: |
+          npm ci
+          python -m pip install -r catalog-image-engine/requirements.txt
 
       - name: Format merge result and remove temporary workflows
         if: steps.merge.outputs.already_merged == 'false'
