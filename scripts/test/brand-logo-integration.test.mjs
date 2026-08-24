@@ -9,7 +9,10 @@ test("web shell uses cache-safe canonical Ysabelle favicon and touch icon assets
 
   assert.match(html, /rel="icon"[^>]+href="\/brand\/favicon\.ico\?v=fullmark-[^"]+"/);
   assert.match(html, /href="\/brand\/favicon-32x32\.png\?v=fullmark-[^"]+"/);
-  assert.match(html, /rel="apple-touch-icon"[\s\S]*?href="\/brand\/apple-touch-icon\.png\?v=[^"]+"/);
+  assert.match(
+    html,
+    /rel="apple-touch-icon"[\s\S]*?href="\/brand\/apple-touch-icon\.png\?v=[^"]+"/
+  );
   assert.match(html, /<title>Ysabelle Store<\/title>/);
 });
 
@@ -51,7 +54,15 @@ test("Electron uses canonical runtime PNG and generated packaged Windows ICO", (
   const paths = read("electron/src/config/paths.ts");
 
   assert.match(builder, /icon:\s*"build\/icon\.ico"/);
-  assert.match(windowSource, /icon:\s*getApplicationIconPath\(app\.isPackaged\)/);
+  assert.match(
+    windowSource,
+    /const applicationIconPath = getApplicationIconPath\(app\.isPackaged\)/
+  );
+  assert.match(windowSource, /nativeImage\.createFromPath\(applicationIconPath\)/);
+  assert.match(
+    windowSource,
+    /\.\.\.\(applicationIcon\.isEmpty\(\) \? \{\} : \{ icon: applicationIcon \}\)/
+  );
   assert.match(paths, /export function getApplicationIconPath\(isPackaged:\s*boolean\)/);
   assert.match(paths, /frontend",\s*"brand",\s*"favicon-48x48\.png"/);
   assert.match(paths, /frontend\/public\/brand\/favicon-48x48\.png/);

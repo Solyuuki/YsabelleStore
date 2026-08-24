@@ -152,6 +152,7 @@
 | 2026-08-14 | `npm run build`                          | Pending | Run validation before push and record the result.                 |
 | 2026-08-14 | `npm audit --audit-level=high`           | Pending | Run validation before push and record the result.                 |
 | 2026-08-18 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
+| 2026-08-24 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
 
 ## Manual Review Evidence
 
@@ -167,6 +168,7 @@
 | 2026-08-11 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 | 2026-08-14 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 | 2026-08-18 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+| 2026-08-24 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 
 ## Discontinued Product Normalization
 

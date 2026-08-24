@@ -173,9 +173,7 @@
   padding: clamp(1.15rem, 2vw, 1.65rem);
   border: 1px solid rgb(255 255 255 / 54%);
   border-radius: 2.3rem 2.3rem 2.3rem 0.75rem;
-  background:
-    linear-gradient(145deg, rgb(255 255 255 / 98%), rgb(243 246 255 / 96%)),
-    #f7f9ff;
+  background: linear-gradient(145deg, rgb(255 255 255 / 98%), rgb(243 246 255 / 96%)), #f7f9ff;
   color: var(--story-navy);
   box-shadow:
     0 45px 100px rgb(15 18 64 / 32%),

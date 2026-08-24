@@ -30,18 +30,12 @@ export function getApplicationIconPath(isPackaged: boolean): string {
       return path.join(process.resourcesPath, "frontend", "brand", "favicon-48x48.png");
     }
 
-    return path.join(
-      configDirectory,
-      "../../../frontend/public/brand/favicon-48x48.png"
-    );
+    return path.join(configDirectory, "../../../frontend/public/brand/favicon-48x48.png");
   }
 
   if (isPackaged) {
     return path.join(process.resourcesPath, "frontend", "brand", "ysabelle-store-mark.png");
   }
 
-  return path.join(
-    configDirectory,
-    "../../../frontend/public/brand/ysabelle-store-mark.png"
-  );
+  return path.join(configDirectory, "../../../frontend/public/brand/ysabelle-store-mark.png");
 }

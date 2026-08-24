@@ -93,3 +93,9 @@ A routine task should normally start with `query`, not a manual full build.
 ## Remaining External Evidence
 
 The repository cannot manufacture actual Codex/model usage telemetry. When a compatible coding-agent host becomes available, validate fresh-session Skill/MCP loading and record actual tokens/iterations/retries for the representative pilots in `PILOT-BENCHMARKS.md`.
+
+## Latest Sprint Activity
+
+| Date       | Member     | Branch                             | Latest Activity                                                                                                  | Validation Status |
+| ---------- | ---------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 2026-08-24 | M1 Abarado | validation/sprint5-recovery-remote | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |

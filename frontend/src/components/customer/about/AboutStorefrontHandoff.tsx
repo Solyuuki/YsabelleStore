@@ -68,9 +68,7 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
       .then(({ items }) => {
         if (controller.signal.aborted) return;
 
-        const availableProducts = items
-          .filter((product) => product.availableStock > 0)
-          .slice(0, 3);
+        const availableProducts = items.filter((product) => product.availableStock > 0).slice(0, 3);
 
         setProducts(availableProducts);
         setCatalogStatus("ready");

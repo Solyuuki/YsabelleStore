@@ -65,3 +65,9 @@ If token-saving behavior conflicts with correctness, approved project requiremen
 ## Closure Rule
 
 Do not claim live Codex performance improvements from repository proxy data alone. Once a compatible host is available, add live evidence to `PILOT-BENCHMARKS.md` and only tune the repository again if that evidence identifies a real problem.
+
+## Validation Status
+
+| Date       | Member     | Validation Checklist | Status | Notes                                                 |
+| ---------- | ---------- | -------------------- | ------ | ----------------------------------------------------- |
+| 2026-08-24 | M1 Abarado | npm run verify:code  | Passed | Aggregate read-only code verification passed locally. |

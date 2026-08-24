@@ -136,9 +136,7 @@ export function ShopPage({
   }
 
   function applyAvailability(nextAvailability: AvailabilityFilter) {
-    navigate(
-      buildShopUrl({ search: search.trim(), availability: nextAvailability, page: 1 })
-    );
+    navigate(buildShopUrl({ search: search.trim(), availability: nextAvailability, page: 1 }));
   }
 
   return (
