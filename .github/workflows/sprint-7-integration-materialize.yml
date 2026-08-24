@@ -21,6 +21,21 @@ concurrency:
 jobs:
   materialize-merge:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ysabellestore_ci
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - name: Checkout writable integration branch
         uses: actions/checkout@v4
@@ -203,6 +218,10 @@ jobs:
         if: steps.merge.outputs.already_merged == 'false'
         run: npm run prisma:generate
 
+      - name: Build disposable CI database
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+
       - name: Verify typecheck
         if: steps.merge.outputs.already_merged == 'false'
         run: npm run typecheck
@@ -223,9 +242,13 @@ jobs:
         if: steps.merge.outputs.already_merged == 'false'
         run: npm run repo:context:test
 
-      - name: Verify workspace tests
+      - name: Verify backend workspace tests
         if: steps.merge.outputs.already_merged == 'false'
-        run: npm test --workspaces --if-present
+        run: npm test --workspace backend
+
+      - name: Verify frontend workspace tests
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm test --workspace frontend
 
       - name: Verify production build
         if: steps.merge.outputs.already_merged == 'false'
