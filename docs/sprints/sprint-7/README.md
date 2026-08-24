@@ -69,3 +69,9 @@ After Sprint 6 is integrated, the combined Sprint 7 branch must undergo fresh Ti
 The Sprint 7 documents in this folder are the sprint-level source of truth for scope, ownership, verification state, and remaining acceptance work. Implementation details are additionally documented in `docs/superpowers/specs/2026-08-22-customer-authentication-design.md` and `docs/superpowers/plans/2026-08-22-customer-authentication.md`.
 
 Green automated checks do not replace user manual acceptance. Sprint 7 must not be merged without an explicit final user merge decision.
+
+## Latest Sprint Activity
+
+| Date       | Member     | Branch                                  | Latest Activity                                                                                                  | Validation Status |
+| ---------- | ---------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 2026-08-24 | M1 Abarado | m1/v0.7/fix/sprint6-sprint7-integration | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |

@@ -80,3 +80,4 @@
 | 2026-08-23 | Review generated artifact updates before commit.      | Backend/database validation and migration application.              | Other<br>Backend<br>Docs<br>Electron<br>Frontend<br>Scripts / CI                | High     |
 | 2026-08-24 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Other<br>Frontend<br>Scripts / CI                                    | High     |
 | 2026-08-24 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Other<br>Docs<br>Electron<br>Frontend<br>Scripts / CI                           | High     |
+| 2026-08-24 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Scripts / CI<br>Other<br>Backend<br>Database<br>Docs<br>Electron<br>Frontend    | High     |

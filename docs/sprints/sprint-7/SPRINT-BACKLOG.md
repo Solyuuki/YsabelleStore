@@ -57,3 +57,9 @@
 - [ ] Re-run focused auth/security and Sprint 6 storefront/catalog regressions.
 - [ ] Complete manual acceptance of the combined Sprint 7 branch.
 - [ ] Receive explicit final user approval before any final merge/promotion decision.
+
+## Sprint Activity Log
+
+| Date       | Member     | Work Item                                                                                                        | Status | Evidence                                                                                                                                                                                                                                                               |
+| ---------- | ---------- | ---------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-24 | M1 Abarado | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed | .github/workflows/sprint-7-artifact-refresh-temp.yml<br>.gitignore<br>.prettierignore<br>.prettierrc.json<br>backend/package.json<br>backend/src/config/env.ts<br>backend/src/controllers/productImageController.ts<br>backend/src/controllers/storefrontController.ts |
