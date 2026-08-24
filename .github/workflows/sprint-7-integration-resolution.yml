@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - m1/v0.7/fix/sprint6-sprint7-integration
+  pull_request:
+    branches:
+      - sprint/v0.7/sprint-7
 
 permissions:
   contents: read
@@ -20,7 +23,7 @@ jobs:
       - name: Configure Git identity
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898248+github-actions[bot]@users.noreply.github.com"
 
       - name: Attempt Sprint 6 merge and report exact conflicts
         run: |
