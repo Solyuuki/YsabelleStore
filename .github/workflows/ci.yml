@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - integration/sprint5-recovery-20260824
   pull_request:
     branches:
       - main
