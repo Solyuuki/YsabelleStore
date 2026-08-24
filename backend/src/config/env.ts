@@ -6,7 +6,8 @@ import { z } from "zod";
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFilePath);
-const rootEnvPath = path.resolve(currentDirectory, "../../..", ".env");
+const repositoryRoot = path.resolve(currentDirectory, "../../..");
+const rootEnvPath = path.join(repositoryRoot, ".env");
 
 loadEnv({ path: rootEnvPath });
 
@@ -19,6 +20,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url().optional(),
   JWT_SECRET: z.string().min(1).optional(),
   PYTHON_EXECUTABLE: z.string().min(1).default("python"),
+  CATALOG_IMAGE_STORAGE_ROOT: z.string().min(1).default(".data/catalog-images"),
+  CATALOG_IMAGE_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
   FORECAST_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
   FORECAST_DEFAULT_HORIZON: z.coerce.number().int().positive().default(12),
   FORECAST_SEASONAL_PERIOD: z.coerce.number().int().positive().default(12),
@@ -35,6 +38,7 @@ if (!parsedEnv.success) {
 }
 
 export const env = parsedEnv.data;
+export const catalogImageStorageRoot = path.resolve(repositoryRoot, env.CATALOG_IMAGE_STORAGE_ROOT);
 
 const defaultCorsOrigins = [
   env.FRONTEND_URL,

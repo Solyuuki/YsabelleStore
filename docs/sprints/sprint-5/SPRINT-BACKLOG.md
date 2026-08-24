@@ -86,3 +86,9 @@ The optimized workflow avoids, unless evidence requires otherwise:
 - unrelated refactoring outside the requested acceptance criteria.
 
 The primary optimization target remains **tokens per correctly completed task**. Correctness, data integrity, security, and required validation take priority over token reduction.
+
+## Sprint Activity Log
+
+| Date       | Member     | Work Item                                                                                                        | Status | Evidence                     |
+| ---------- | ---------- | ---------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------- |
+| 2026-08-24 | M1 Abarado | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed | electron/src/config/paths.ts |

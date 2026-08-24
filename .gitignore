@@ -26,5 +26,8 @@ forecasting-service/outputs/*
 !forecasting-service/outputs/.gitkeep
 !forecasting-service/outputs/README.md
 
+# Generated product image candidates and variants
+.data/
+
 # Generated persistent repository context
 .ysabelle-context/

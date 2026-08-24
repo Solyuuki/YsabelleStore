@@ -33,6 +33,13 @@ export const SECURITY_LIMITS = {
   plannedRateLimitMaxRequests: 300
 } as const;
 
+export const PRODUCT_IMAGE_UPLOAD_LIMITS = {
+  maxFileBytes: 8 * 1024 * 1024,
+  maxDecodedPixels: 24_000_000,
+  maxDimensionPixels: 8_000,
+  allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"]
+} as const;
+
 export const FUTURE_AUTH_ROLES = {
   admin: "admin",
   user: "user"

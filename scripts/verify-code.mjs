@@ -27,6 +27,11 @@ const steps = [
     command: "npm",
     label: "workspace tests"
   },
+  {
+    args: ["run", "catalog-images:test"],
+    command: "npm",
+    label: "catalog image engine regression tests"
+  },
   { args: ["run", "build"], command: "npm", label: "production build" },
   {
     args: ["run", "security:audit:production"],
