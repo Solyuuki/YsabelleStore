@@ -4,14 +4,8 @@ import test from "node:test";
 
 const appSource = fs.readFileSync("backend/src/app.ts", "utf8");
 const errorHandlerSource = fs.readFileSync("backend/src/middleware/errorHandler.ts", "utf8");
-const requestLoggerSource = fs.readFileSync(
-  "backend/src/middleware/requestAuditLogger.ts",
-  "utf8"
-);
-const healthServiceSource = fs.readFileSync(
-  "frontend/src/services/systemHealthService.ts",
-  "utf8"
-);
+const requestLoggerSource = fs.readFileSync("backend/src/middleware/requestAuditLogger.ts", "utf8");
+const healthServiceSource = fs.readFileSync("frontend/src/services/systemHealthService.ts", "utf8");
 
 test("request tracing stays ahead of API routing and error handling", () => {
   const traceIndex = appSource.indexOf("app.use(requestTrace)");

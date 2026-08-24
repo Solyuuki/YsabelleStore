@@ -18,7 +18,8 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
   void _next;
 
   const isFileSizeError = error instanceof MulterError && error.code === "LIMIT_FILE_SIZE";
-  const isSafeHttpError = error instanceof HttpError && error.statusCode < HTTP_STATUS.INTERNAL_SERVER_ERROR;
+  const isSafeHttpError =
+    error instanceof HttpError && error.statusCode < HTTP_STATUS.INTERNAL_SERVER_ERROR;
   const requestId = getRequestId(response);
 
   const statusCode = isSafeHttpError
@@ -32,11 +33,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
       ? "The uploaded file is too large."
       : INTERNAL_ERROR_MESSAGE;
   const payload: ErrorPayload = {
-    code: isSafeHttpError
-      ? error.code
-      : isFileSizeError
-        ? "FILE_TOO_LARGE"
-        : INTERNAL_ERROR_CODE
+    code: isSafeHttpError ? error.code : isFileSizeError ? "FILE_TOO_LARGE" : INTERNAL_ERROR_CODE
   };
 
   if (isSafeHttpError && error.details !== undefined) {

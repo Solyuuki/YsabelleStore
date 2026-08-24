@@ -5,5 +5,6 @@ Sprint 7 head: aab18da8d1fb9b408222dab3ee1a3c2624643dfb
 Merge exit status: 1
 
 ## Unmerged paths
+
 backend/package.json
 frontend/package.json

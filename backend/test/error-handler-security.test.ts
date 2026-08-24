@@ -16,10 +16,7 @@ type ErrorBody = {
   };
 };
 
-async function withErrorServer(
-  error: Error,
-  run: (baseUrl: string) => Promise<void>
-) {
+async function withErrorServer(error: Error, run: (baseUrl: string) => Promise<void>) {
   const app = express();
   app.get("/failure", (_request, _response, next) => next(error));
   app.use(errorHandler);
