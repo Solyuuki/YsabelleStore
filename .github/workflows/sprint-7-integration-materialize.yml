@@ -1,9 +1,6 @@
 name: Sprint 7 Integration Materialize
 
 on:
-  push:
-    branches:
-      - m1/v0.7/fix/sprint6-sprint7-integration
   pull_request:
     branches:
       - sprint/v0.7/sprint-7
@@ -18,7 +15,7 @@ env:
   FRONTEND_URL: http://localhost:5173
 
 concurrency:
-  group: sprint-7-integration-materialize-${{ github.event_name }}
+  group: sprint-7-integration-materialize
   cancel-in-progress: true
 
 jobs:
@@ -187,10 +184,21 @@ jobs:
           git add -A
           test -z "$(git diff --name-only --diff-filter=U)"
 
-      - name: Commit and push actual two-parent merge
+      - name: Commit actual two-parent merge
         if: steps.merge.outputs.already_merged == 'false'
         run: |
           set -euo pipefail
           test -f .git/MERGE_HEAD
           git commit -m "merge: integrate accepted Sprint 6 into Sprint 7"
+
+      - name: Verify committed integrated tree before push
+        if: steps.merge.outputs.already_merged == 'false'
+        run: npm run verify:code
+
+      - name: Push verified integrated merge
+        if: steps.merge.outputs.already_merged == 'false'
+        env:
+          HUSKY: "0"
+        run: |
+          set -euo pipefail
           git push origin HEAD:m1/v0.7/fix/sprint6-sprint7-integration
