@@ -1,0 +1,58 @@
+name: Sprint 8 Integration Diagnostic
+
+on:
+  push:
+    branches:
+      - sprint/v0.8/sprint-8
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint8-integration-diagnostic
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Sprint 8
+        uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.8/sprint-8
+          fetch-depth: 0
+      - name: Configure Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin sprint/v0.7/sprint-7
+      - name: Capture exact merge conflicts
+        run: |
+          set +e
+          git merge --no-commit --no-ff origin/sprint/v0.7/sprint-7
+          merge_status=$?
+          set -e
+          mkdir -p docs/sprints/sprint-8
+          {
+            echo "# Sprint 7 -> Sprint 8 integration conflicts"
+            echo
+            echo "Sprint 8 head before integration: $(git rev-parse HEAD)"
+            echo "Sprint 7 head: $(git rev-parse origin/sprint/v0.7/sprint-7)"
+            echo "Merge exit status: $merge_status"
+            echo
+            echo "## Unmerged paths"
+            git diff --name-only --diff-filter=U | sort
+          } > /tmp/sprint8-conflicts.txt
+          git merge --abort || true
+          cp /tmp/sprint8-conflicts.txt docs/sprints/sprint-8/INTEGRATION-CONFLICTS.md
+      - name: Commit diagnostic and remove workflow
+        run: |
+          rm -f .github/workflows/sprint8-integration-diagnostic-temp.yml
+          git add docs/sprints/sprint-8/INTEGRATION-CONFLICTS.md .github/workflows/sprint8-integration-diagnostic-temp.yml
+          git diff --cached --check
+          git commit -m "docs(sprint8): record Sprint 7 integration conflicts"
+      - name: Push diagnostic
+        env:
+          HUSKY: "0"
+        run: git push origin HEAD:sprint/v0.8/sprint-8
