@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - m1/v0.7/fix/sprint6-sprint7-integration
+  pull_request:
+    branches:
+      - sprint/v0.7/sprint-7
   workflow_dispatch:
 
 permissions:
@@ -149,7 +152,6 @@ jobs:
           new = '    const product = await getStorefrontProduct(params.id);\n    response.json(\n      createSuccessResponse("Storefront product loaded.", {\n        ...product,\n        detailImageUrl: resolveProductDetailImageUrl(product.imageUrl)\n      })\n    );'
           if old not in text:
               raise SystemExit('storefrontController product-detail merge anchor not found')
-          text = text.replace(old, new)
           path.write_text(text)
 
           path = Path('frontend/src/app/CustomerApp.tsx')
@@ -158,7 +160,6 @@ jobs:
           about_import = 'import { AboutExperiencePage } from "@/pages/customer/AboutExperiencePage";\n'
           if about_import not in text:
               text = text.replace(anchor, anchor + about_import)
-          css_anchor = 'import "@/styles/customer.css";\n'
           css_block = (
               'import "driver.js/dist/driver.css";\n'
               'import "@/styles/customer.css";\n'
@@ -291,7 +292,7 @@ jobs:
         run: npm run verify:code
 
       - name: Commit and push verified Sprint 6 merge
-        if: steps.merge.outputs.already_merged == 'false'
+        if: steps.merge.outputs.already_merged == 'false' && github.event_name == 'push'
         run: |
           set -euo pipefail
           git commit -m "merge: integrate accepted Sprint 6 into Sprint 7"
