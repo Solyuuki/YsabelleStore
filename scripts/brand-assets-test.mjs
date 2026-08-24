@@ -116,15 +116,20 @@ test("uses exact approved public mark in web and bundled mark only for Electron 
 
   for (const source of [customerMark, staffMark]) {
     assert.match(source, /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/);
-    assert.match(source, /\/brand\/ysabelle-store-mark-256\.png\?v=fullmark-2e25e00f/);
+    assert.match(source, /const BRAND_ASSET_VERSION = "fullmark-2e25e00f";/);
+    assert.match(source, /`\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/);
     assert.match(source, /window\.location\.protocol === "file:"/);
-    assert.match(source, /officialLogoUrl/);
   }
 
-  assert.match(customerMark, /ysabelle-store-mark-128\.png\?v=fullmark-2e25e00f 128w/);
-  assert.match(customerMark, /ysabelle-store-mark-256\.png\?v=fullmark-2e25e00f 256w/);
+  assert.match(customerMark, /`\/brand\/ysabelle-store-mark-128\.png\?v=\$\{BRAND_ASSET_VERSION\} 128w`/);
+  assert.match(customerMark, /`\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\} 256w`/);
+  assert.match(customerMark, /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/);
+  assert.match(customerMark, /const sourceSet = isFileProtocol \? undefined : WEB_BRAND_MARK_SRC_SET/);
+  assert.match(customerMark, /src=\{source\}/);
+  assert.match(customerMark, /srcSet=\{sourceSet\}/);
   assert.match(customerMark, /event\.currentTarget\.hidden = true/);
   assert.match(customerMark, /<Store className="ysabelle-brand-mark__fallback" \/>/);
+  assert.match(staffMark, /src=\{source\}/);
 });
 
 test("keeps approved header and footer on shared mark", async () => {
