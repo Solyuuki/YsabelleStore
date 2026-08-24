@@ -20,7 +20,7 @@ for (const name of expected) {
   }
 
   const text = fs.readFileSync(file, "utf8");
-  const frontmatter = text.match(/^---\n([\s\S]*?)\n---/);
+  const frontmatter = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!frontmatter) {
     console.error(`INVALID frontmatter: ${file}`);
     failures++;

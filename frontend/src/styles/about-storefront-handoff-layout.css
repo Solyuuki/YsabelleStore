@@ -1,0 +1,77 @@
+.about-experience .story-shop.story-shop--refined .story-shop__stage {
+  grid-template-columns: minmax(0, 1fr) minmax(28rem, 34rem);
+  gap: clamp(3rem, 5vw, 5rem);
+}
+
+.about-experience .story-shop--refined .story-shop__copy {
+  min-width: 0;
+  max-width: 37rem;
+}
+
+.about-experience .story-shop--refined .story-mask,
+.about-experience .story-shop--refined .story-mask__line {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.about-experience .story-shop--refined .story-mask__line {
+  white-space: normal;
+}
+
+.about-experience .story-shop--refined .story-mask__line--sky {
+  font-style: normal;
+}
+
+.about-experience .story-shop--refined .story-live-store {
+  width: 100%;
+  max-width: 34rem;
+  justify-self: end;
+}
+
+@media (max-width: 1120px) {
+  .about-experience .story-shop.story-shop--refined .story-shop__stage {
+    grid-template-columns: minmax(0, 1fr) minmax(27rem, 31rem);
+    gap: 2.5rem;
+  }
+
+  .about-experience .story-shop--refined .story-shop__copy h2 {
+    font-size: clamp(3.1rem, 5vw, 4.9rem);
+  }
+}
+
+@media (max-width: 1023px) {
+  .about-experience .story-shop.story-shop--refined {
+    min-height: auto;
+  }
+
+  .about-experience .story-shop.story-shop--refined .story-shop__stage {
+    position: relative;
+    top: auto;
+    min-height: auto;
+    width: min(calc(100% - 2.5rem), 780px);
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    padding-block: 6rem;
+  }
+
+  .about-experience .story-shop--refined .story-shop__copy {
+    min-width: 0;
+    max-width: 42rem;
+  }
+
+  .about-experience .story-shop--refined .story-live-store {
+    width: 100%;
+    max-width: 780px;
+    justify-self: center;
+    transform: none;
+  }
+}
+
+@media (max-width: 840px) {
+  .about-experience .story-shop--refined .story-shop__copy h2 {
+    max-width: 100%;
+    font-size: clamp(2.75rem, 8vw, 3.4rem);
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+  }
+}
