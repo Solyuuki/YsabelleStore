@@ -110,14 +110,26 @@ test("browser favicon uses full-logo 16, 32, and 48 px frames", async () => {
   assert.doesNotMatch(html, /sizes="256x256"/);
 });
 
-test("uses the bundled approved logo with a visible error fallback", async () => {
-  const c = await readText("frontend/src/components/customer/YsabelleBrandMark.tsx");
-  assert.match(c, /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/);
-  assert.match(c, /<img/);
-  assert.match(c, /src=\{officialLogoUrl\}/);
-  assert.match(c, /event\.currentTarget\.hidden = true/);
-  assert.match(c, /<Store className="ysabelle-brand-mark__fallback" \/>/);
-  assert.doesNotMatch(c, /["'`]\/brand\//);
+test("uses exact approved public mark in web and bundled mark only for Electron file protocol", async () => {
+  const customerMark = await readText("frontend/src/components/customer/YsabelleBrandMark.tsx");
+  const staffMark = await readText("frontend/src/components/brand/BrandLogo.tsx");
+
+  for (const source of [customerMark, staffMark]) {
+    assert.match(source, /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/);
+    assert.match(source, /const BRAND_ASSET_VERSION = "fullmark-2e25e00f";/);
+    assert.match(source, /`\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/);
+    assert.match(source, /window\.location\.protocol === "file:"/);
+  }
+
+  assert.match(customerMark, /`\/brand\/ysabelle-store-mark-128\.png\?v=\$\{BRAND_ASSET_VERSION\} 128w`/);
+  assert.match(customerMark, /`\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\} 256w`/);
+  assert.match(customerMark, /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/);
+  assert.match(customerMark, /const sourceSet = isFileProtocol \? undefined : WEB_BRAND_MARK_SRC_SET/);
+  assert.match(customerMark, /src=\{source\}/);
+  assert.match(customerMark, /srcSet=\{sourceSet\}/);
+  assert.match(customerMark, /event\.currentTarget\.hidden = true/);
+  assert.match(customerMark, /<Store className="ysabelle-brand-mark__fallback" \/>/);
+  assert.match(staffMark, /src=\{source\}/);
 });
 
 test("keeps approved header and footer on shared mark", async () => {
