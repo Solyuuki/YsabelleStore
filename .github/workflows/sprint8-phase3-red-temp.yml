@@ -1,0 +1,25 @@
+name: Sprint 8 Phase 3 RED
+
+on:
+  push:
+    branches:
+      - sprint/v0.8/sprint-8
+
+permissions:
+  contents: read
+
+jobs:
+  phase3-red:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Sprint 8
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Phase 3 safe-error regression
+        run: npx tsx --test backend/test/error-handler-security.test.ts
