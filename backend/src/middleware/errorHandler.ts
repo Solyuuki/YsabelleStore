@@ -39,6 +39,8 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
 
   if (isSafeHttpError && error.details !== undefined) {
     payload.details = error.details;
+  } else if (!isFileSizeError) {
+    payload.details = null;
   }
 
   if (isFileSizeError) {
