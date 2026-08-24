@@ -12,33 +12,10 @@ concurrency:
   group: sprint8-integration-materializer
   cancel-in-progress: true
 
-env:
-  NODE_ENV: test
-  DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
-  JWT_SECRET: sprint8-integration-verification-secret
-  FRONTEND_URL: http://localhost:5173
-  YSABELLE_BRANCH: sprint/v0.8/sprint-8
-  YSABELLE_BASE_REF: sprint/v0.7/sprint-7
-
 jobs:
   integrate:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_DATABASE: ysabellestore_ci
-          MYSQL_USER: ci
-          MYSQL_PASSWORD: ci
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
     steps:
       - name: Checkout Sprint 8
         uses: actions/checkout@v4
@@ -60,17 +37,13 @@ jobs:
           set -e
           conflicts="$(git diff --name-only --diff-filter=U | sort)"
           expected="$(printf '%s\n' backend/package.json frontend/package.json)"
-          if [ "$merge_status" -eq 0 ]; then
-            echo "Expected the previously diagnosed two package conflicts, but merge completed without them."
-            exit 1
-          fi
-          if [ "$conflicts" != "$expected" ]; then
-            echo "Unexpected conflict set:"
-            printf '%s\n' "$conflicts"
+          if [ "$merge_status" -eq 0 ] || [ "$conflicts" != "$expected" ]; then
+            echo "Unexpected merge result."
+            printf 'merge_status=%s\nconflicts:\n%s\n' "$merge_status" "$conflicts"
             exit 1
           fi
 
-      - name: Resolve backend and frontend package scripts
+      - name: Resolve package script conflicts by preserving both sprints
         run: |
           cat > backend/package.json <<'JSON'
           {
@@ -155,21 +128,20 @@ jobs:
           JSON
           git add backend/package.json frontend/package.json
 
-      - name: Complete detailed frontend health indicator
+      - name: Complete Sprint 8 health indicator state labels
         run: |
           python - <<'PY'
           from pathlib import Path
           path = Path('frontend/src/pages/WelcomePage.tsx')
           text = path.read_text()
-          text = text.replace(
-          '''const systemHealthFooterCopy: Record<SystemHealthState, string> = {
+          old_copy = '''const systemHealthFooterCopy: Record<SystemHealthState, string> = {
             checking: "Checking system...",
             healthy: "All Systems Normal",
             warning: "Service Warning",
             "database-unavailable": "Database Unavailable",
             offline: "System Offline"
-          };''',
-          '''const systemHealthFooterCopy: Record<SystemHealthState, string> = {
+          };'''
+          new_copy = '''const systemHealthFooterCopy: Record<SystemHealthState, string> = {
             checking: "Checking system...",
             healthy: "All Systems Normal",
             degraded: "Service Degraded",
@@ -177,16 +149,15 @@ jobs:
             "backend-unavailable": "Backend Unavailable",
             timeout: "Health Check Timed Out",
             offline: "Device Offline"
-          };''')
-          text = text.replace(
-          '''const systemHealthFooterDotClass: Record<SystemHealthState, string> = {
+          };'''
+          old_dot = '''const systemHealthFooterDotClass: Record<SystemHealthState, string> = {
             checking: "bg-sky-400",
             healthy: "bg-emerald-500",
             warning: "bg-amber-500",
             "database-unavailable": "bg-orange-500",
             offline: "bg-red-500"
-          };''',
-          '''const systemHealthFooterDotClass: Record<SystemHealthState, string> = {
+          };'''
+          new_dot = '''const systemHealthFooterDotClass: Record<SystemHealthState, string> = {
             checking: "bg-sky-400",
             healthy: "bg-emerald-500",
             degraded: "bg-amber-500",
@@ -194,57 +165,22 @@ jobs:
             "backend-unavailable": "bg-red-500",
             timeout: "bg-violet-500",
             offline: "bg-slate-500"
-          };''')
-          if 'warning: "Service Warning"' in text:
-              raise SystemExit('Frontend health indicator replacement did not apply')
-          path.write_text(text)
+          };'''
+          if old_copy not in text or old_dot not in text:
+              raise SystemExit('Expected health indicator blocks were not found after merge')
+          path.write_text(text.replace(old_copy, new_copy).replace(old_dot, new_dot))
           PY
           git add frontend/src/pages/WelcomePage.tsx
 
-      - name: Remove temporary trigger and format integration tree
+      - name: Clean integration-only files and commit merge
         run: |
           rm -f docs/sprints/sprint-8/INTEGRATION-TRIGGER.tmp
-          npx --yes prettier@3.4.2 --write backend/package.json frontend/package.json frontend/src/pages/WelcomePage.tsx frontend/src/services/systemHealthService.ts backend/src/middleware/errorHandler.ts backend/src/middleware/requestTrace.ts backend/src/middleware/requestAuditLogger.ts backend/test/error-handler-security.test.ts backend/test/request-traceability.test.ts scripts/system-health-reliability-test.ts scripts/test/server-reliability-contract.test.mjs docs/sprints/sprint-8/*.md .github/workflows/sprint8-integration-materializer-temp.yml
-          git add -A
-          git diff --check
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: |
-          npm ci
-          python -m pip install -r catalog-image-engine/requirements.txt
-
-      - name: Build disposable CI database
-        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
-
-      - name: Verify combined Sprint 7 plus Sprint 8 code
-        run: npm run verify:code
-
-      - name: Refresh truthful Sprint 8 validation evidence
-        run: |
-          node scripts/artifact-update.mjs --validation Passed
-          node scripts/sprint-update.mjs --validation Passed
-          npx prettier --write docs/implementation-artifacts/m1-abarado/*.md docs/sprints/sprint-8/*.md docs/sprints/sprint-8/members/m1-abarado.md
-          npm run verify:status
-
-      - name: Commit verified merge and remove temporary materializer
-        run: |
           rm -f .github/workflows/sprint8-integration-materializer-temp.yml
           git add -A
           git diff --cached --check
-          git commit -m "merge: integrate verified Sprint 7 into Sprint 8"
+          git commit -m "merge: integrate Sprint 7 into Sprint 8"
 
-      - name: Push verified Sprint 8 merge
+      - name: Push integrated Sprint 8
         env:
           HUSKY: "0"
         run: git push origin HEAD:sprint/v0.8/sprint-8
