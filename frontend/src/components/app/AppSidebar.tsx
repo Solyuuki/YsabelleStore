@@ -1,9 +1,10 @@
 import { ChevronLeft, LogOut } from "lucide-react";
 
 import { appRoutes, type AppRoutePath } from "@/app/routes";
-import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { SidebarNavItem } from "@/components/app/SidebarNavItem";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/button";
+import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { cn } from "@/lib/utils";
 import type { AuthUser } from "@/types/auth";
 
@@ -77,12 +78,7 @@ export function AppSidebar({
 
       <div className="flex h-16 items-center gap-3 border-b border-slate-200/80 px-4">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 shadow-sm shadow-violet-950/15 ring-1 ring-violet-200/70">
-          <img
-            alt=""
-            aria-hidden="true"
-            className="h-full w-full object-contain"
-            src="/brand/ysabelle-logo-v2.png"
-          />
+          <BrandLogo className="h-full w-full object-contain" />
         </div>
         <div
           className={cn(
