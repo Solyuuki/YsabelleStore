@@ -55,6 +55,25 @@ test("About storefront handoff keeps one primary catalog CTA", () => {
   assert.match(source, /Retry connection/);
 });
 
+test("About visible live-catalog identity renders the canonical Ysabelle brand mark", () => {
+  const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
+
+  assert.match(
+    source,
+    /import \{ YsabelleBrandMark \} from "@\/components\/customer\/YsabelleBrandMark";/
+  );
+  assert.match(
+    source,
+    /story-live-store__bar[\s\S]*?<YsabelleBrandMark[^>]*variant="mini"/,
+    "The visible About live-catalog bar must render the shared canonical mark directly."
+  );
+  assert.doesNotMatch(
+    source,
+    /story-live-store__bar[\s\S]*?<Store aria-hidden="true" \/>/,
+    "The visible About live-catalog identity must not depend on a generic Store glyph."
+  );
+});
+
 test("About wrapper replaces only the legacy About ending", () => {
   const source = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
 
