@@ -4,6 +4,7 @@ import { MulterError } from "multer";
 import { HTTP_STATUS } from "../constants/httpStatusContract.js";
 import { createErrorResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
+import { getRequestId } from "./requestTrace.js";
 
 type ErrorPayload = {
   code: string;
@@ -18,6 +19,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
 
   const isFileSizeError = error instanceof MulterError && error.code === "LIMIT_FILE_SIZE";
   const isSafeHttpError = error instanceof HttpError && error.statusCode < HTTP_STATUS.INTERNAL_SERVER_ERROR;
+  const requestId = getRequestId(response);
 
   const statusCode = isSafeHttpError
     ? error.statusCode
@@ -40,7 +42,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
   if (isSafeHttpError && error.details !== undefined) {
     payload.details = error.details;
   } else if (!isFileSizeError) {
-    payload.details = null;
+    payload.details = requestId ? { requestId } : null;
   }
 
   if (isFileSizeError) {
@@ -50,7 +52,15 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
   }
 
   if (statusCode >= HTTP_STATUS.INTERNAL_SERVER_ERROR) {
-    console.error(error);
+    console.error(
+      JSON.stringify({
+        event: "http_request_failed",
+        requestId,
+        statusCode,
+        errorType: error instanceof Error ? error.name : "UnknownError",
+        errorCode: error instanceof HttpError ? error.code : INTERNAL_ERROR_CODE
+      })
+    );
   }
 
   response.status(statusCode).json(createErrorResponse(message, payload));
