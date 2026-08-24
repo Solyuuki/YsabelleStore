@@ -34,20 +34,17 @@ On that implementation head, the following permanent workflows completed success
 
 Dedicated Tier 3 verification was also completed before removal of the temporary Phase 4 verification workflow. It covered Prisma generation/validation, isolated-database backend auth tests, frontend auth-boundary contracts, backend/frontend workspace tests, formatting, lint, typecheck, full build, dependency audit, guardrail tests, `verify:code`, and `prepush:local -- --member m1`.
 
-A repository audit found no separate `v0.7` side branch or additional Sprint 7 pull request that still needs integration. PR #12 is the Sprint 7 review lane. PR #13 belongs to Sprint 8 and is intentionally excluded.
+PR #12 remains the Sprint 7 review lane to `main`. PR #13 belongs to Sprint 8 and is intentionally excluded from the Sprint 6 → Sprint 7 integration work.
 
-## Current pre-integration state
+## Current Sprint 6 → Sprint 7 integration state
 
-Sprint 7 implementation is complete on its own verified baseline, but final Sprint 7 acceptance is not yet complete because the accepted Sprint 6 branch has advanced since Sprint 7 was created.
+The accepted Sprint 6 history has been materialized on the dedicated Sprint 7 integration lane, PR #17 (`m1/v0.7/fix/sprint6-sprint7-integration` → `sprint/v0.7/sprint-7`). The six known merge conflicts were resolved while preserving both the accepted Sprint 6 storefront/catalog/image behavior and the Sprint 7 authentication/security behavior.
 
-Before Sprint 6 is merged into Sprint 7:
+The combined integration tree completed fresh full code verification with a disposable MySQL database. The verified checks included Prisma validation/generation, typecheck, lint, formatting, guardrail regression tests, repository-context tests, frontend workspace authentication contracts, 135 backend tests, 34 catalog-image-engine Python tests, production build, production dependency audit, version consistency, and the aggregate `npm run verify:code` gate.
 
-1. Sprint 7 documentation must accurately reflect the delivered Phase 1–4 state.
-2. The latest Sprint 7 head after documentation reconciliation must pass its exact-head automated checks.
-3. No known Sprint 7 defect may remain open.
-4. The user must explicitly authorize Sprint 6 → Sprint 7 integration.
+The generated Sprint 7 implementation and sprint-status evidence was refreshed through the repository's own artifact/sprint update tooling. Temporary materialization, diagnostic, and evidence-refresh workflows are not part of the intended final Sprint 7 tree.
 
-After Sprint 6 is integrated, the combined Sprint 7 branch must undergo fresh Tier 3/full regression verification and manual acceptance before any final merge decision.
+The remaining integration action is promotion of the verified PR #17 result into `sprint/v0.7/sprint-7`, followed by fresh exact-head automated verification on the resulting Sprint 7 branch. Manual acceptance remains a separate human gate and is not implied by automated verification.
 
 ## Manual acceptance focus after integration
 
@@ -68,7 +65,7 @@ After Sprint 6 is integrated, the combined Sprint 7 branch must undergo fresh Ti
 
 The Sprint 7 documents in this folder are the sprint-level source of truth for scope, ownership, verification state, and remaining acceptance work. Implementation details are additionally documented in `docs/superpowers/specs/2026-08-22-customer-authentication-design.md` and `docs/superpowers/plans/2026-08-22-customer-authentication.md`.
 
-Green automated checks do not replace user manual acceptance. Sprint 7 must not be merged without an explicit final user merge decision.
+Green automated checks do not replace user manual acceptance. Sprint 7 must not be merged to `main` without an explicit final user merge decision.
 
 ## Latest Sprint Activity
 
