@@ -1,48 +1,62 @@
 # System Framework
 
-This document defines the primary technology stack and framework boundaries for YsabelleStore. Scope classification belongs in [`../PROJECT-SCOPE.md`](../PROJECT-SCOPE.md); this file should not be used as an absolute product-feature exclusion list.
-
-## Core Stack
-
-| Layer       | Framework/Tool                                          | Responsibility                                                                                 |
-| ----------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Frontend    | React + TypeScript + Vite                               | Customer/internal UI and client interaction.                                                   |
-| Styling/UI  | Tailwind CSS and repository-approved component patterns | Consistent accessible application UI.                                                          |
-| Desktop     | Electron                                                | Local desktop lifecycle and Windows packaging.                                                 |
-| Backend     | Node.js + Express.js                                    | HTTP/API boundary and domain-service orchestration.                                            |
-| Validation  | Zod + domain validators                                 | Validate external and cross-layer inputs.                                                      |
-| ORM         | Prisma                                                  | Type-safe application persistence boundary.                                                    |
-| Database    | MySQL Community Server                                  | Relational products, sales, inventory, users, forecasts, orders, and related operational data. |
-| Forecasting | Python + statsmodels SARIMA/SARIMAX                     | Seasonal demand forecasting and evaluation.                                                    |
-| Charts      | Recharts with approved fallback where needed            | Forecast/report/dashboard visualization.                                                       |
-| Quality     | ESLint, Prettier, Husky, GitHub Actions                 | Repository consistency and validation.                                                         |
-| Packaging   | electron-builder                                        | Windows desktop packaging.                                                                     |
-
-## Architecture Principles
-
-- React does not connect directly to Prisma/MySQL.
-- Express routes delegate business/domain work through the current service architecture.
-- Prisma/schema/migrations define persisted application structure.
-- SARIMA logic stays in the forecasting boundary and forecasts demand rather than expiration dates.
-- Electron does not expose unrestricted Node access to the renderer.
-- Product extensions should reuse these boundaries instead of introducing parallel persistence or business-logic stacks.
-
-## Thesis Alignment
-
-The core research flow remains:
+This document defines the official framework stack for YsabelleStore before Sprint 1 implementation begins. The stack supports the core thesis flow:
 
 ```text
-Historical sales
-    ↓
-SARIMA demand forecast
-    ↓
-Inventory/batch context
-    ↓
-Recommendation and risk guidance
+Sales Data
+  -> SARIMA Forecast
+  -> Inventory Recommendation
 ```
 
-Customer storefront functionality or later owner-approved supplier integrations may extend the retail workflow without changing the thesis forecasting method. Their scope status must be taken from `docs/PROJECT-SCOPE.md` and their implementation status from current source/tests.
+Any feature or framework that does not support this flow must be reviewed as possible scope creep.
 
-## Technology Change Rule
+## Official Framework Stack
 
-A new framework should be introduced only when it solves a documented requirement that the current stack cannot reasonably satisfy. Avoid replacing established technology merely for novelty or speculative scale.
+| Layer           | Framework/Tool                              | Purpose                                                                                  | Reason                                                                            |
+| --------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Frontend        | React                                       | Build the desktop application's user interface                                           | Modern, widely documented, component-based, and manageable for thesis development |
+| Build Tool      | Vite                                        | Run and build the React frontend                                                         | Fast development server, simple configuration, and strong TypeScript support      |
+| Language        | TypeScript                                  | Add type safety to frontend and backend logic                                            | Reduces runtime errors and improves maintainability                               |
+| Styling         | Tailwind CSS                                | Provide utility-first styling                                                            | Keeps UI consistent without heavy custom CSS                                      |
+| UI Components   | shadcn/ui                                   | Provide accessible component patterns                                                    | Supports professional dashboard UI without proprietary templates                  |
+| Desktop         | Electron                                    | Package the system as a local desktop app                                                | Enables Windows `.exe` deployment for store use                                   |
+| Backend         | Node.js and Express.js                      | Provide local API and business logic layer                                               | Lightweight, familiar, and appropriate for local desktop-backed services          |
+| ORM             | Prisma                                      | Manage database access and migrations                                                    | Type-safe database client and structured migration workflow                       |
+| Database        | MySQL Community Server                      | Store products, sales, inventory, batches, forecasts, recommendations, and audit records | Reliable relational database suitable for inventory data                          |
+| Forecasting     | Python 3.12+ and statsmodels SARIMA/SARIMAX | Generate seasonal demand forecasts from historical sales                                 | Mature statistical tooling and explainable model behavior                         |
+| Charts          | Recharts                                    | Display dashboards and analytics                                                         | React-friendly charting for thesis demonstrations                                 |
+| Fallback Charts | Chart.js                                    | Support charts when Recharts is not suitable                                             | Mature fallback for special chart needs                                           |
+| Validation      | Zod                                         | Validate frontend and backend data contracts                                             | Clear schemas and predictable validation errors                                   |
+| Authentication  | JWT                                         | Secure user sessions                                                                     | Simple token-based authentication for local app workflows                         |
+| Code Quality    | ESLint, Prettier, Husky                     | Enforce style and pre-commit quality gates                                               | Keeps contributions consistent across members                                     |
+| Deployment      | electron-builder                            | Build Windows desktop installer/package                                                  | Standard Electron packaging workflow                                              |
+| Development     | Git, GitHub, npm, npx, GitHub Actions       | Version control, dependency commands, and automation                                     | Professional collaboration workflow                                               |
+
+## Thesis Suitability
+
+| Quality                | How the Stack Supports It                                                                |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| Modern                 | Uses current TypeScript, React, Prisma, Electron, and Python forecasting tools           |
+| Manageable             | Separates UI, backend, database, forecasting, and desktop responsibilities               |
+| Deployable             | Supports local Windows `.exe` packaging through Electron and electron-builder            |
+| Professional           | Includes validation, code quality tools, GitHub workflow, and modular architecture       |
+| Avoids overengineering | Uses one local database, one backend API, one forecasting service, and one desktop shell |
+
+## Scope Boundary
+
+| Allowed                   | Not Allowed                               |
+| ------------------------- | ----------------------------------------- |
+| Local desktop deployment  | Cloud server deployment                   |
+| MySQL Community Server    | MongoDB                                   |
+| Express.js API            | PHP or XAMPP stack                        |
+| SARIMA demand forecasting | Supplier procurement automation           |
+| Inventory recommendations | Purchase orders or restock history module |
+| Local app packaging       | Web hosting                               |
+
+## Framework Validation Checklist
+
+- [ ] The selected tool directly supports the approved architecture
+- [ ] The tool is compatible with local desktop deployment
+- [ ] The tool does not introduce cloud-only requirements
+- [ ] The tool supports the Sales Data -> SARIMA Forecast -> Inventory Recommendation flow
+- [ ] The tool can be explained clearly during thesis defense

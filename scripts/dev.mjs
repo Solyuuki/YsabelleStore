@@ -44,55 +44,36 @@ process.once("exit", () => {
 });
 
 try {
-  const existingStack = await inspectExistingWebStack();
+  await assertDevPortsAvailable();
 
-  if (existingStack === "complete") {
-    if (webOnly) {
-      console.info("YsabelleStore web development stack is already running.");
-      console.info(`Web:      ${displayUrl(runtime.frontendUrl)}`);
-      console.info(`Backend:  ${displayUrl(runtime.apiBaseUrl)}`);
-      console.info("Electron: not started (web-only mode)");
-      cleanupFinished = true;
-    } else {
-      throw new Error(
-        "YsabelleStore web development stack is already running. Stop npm run dev:web before starting npm run dev."
-      );
-    }
-  } else {
-    if (existingStack === "partial") {
-      throw new Error(
-        "A partial YsabelleStore development stack is already running. Stop the existing process(es) on ports 3001/5173 before starting another mode."
-      );
-    }
+  console.info("Starting YsabelleStore backend...");
+  const backend = startWorkspace("backend");
+  await waitForBackend(backend.process);
 
-    console.info("Starting YsabelleStore backend...");
-    const backend = startWorkspace("backend");
-    await waitForBackend(backend.process);
+  console.info("Starting YsabelleStore web frontend...");
+  const frontend = startWorkspace("frontend");
+  await waitForFrontend(frontend.process);
 
-    console.info("Starting YsabelleStore web frontend...");
-    const frontend = startWorkspace("frontend");
-    await waitForFrontend(frontend.process);
-
-    if (!webOnly) {
-      console.info("Starting YsabelleStore Electron application...");
-      const electron = startWorkspace("electron", {
-        environment: {
-          ELECTRON_RENDERER_DEV_URL: runtime.frontendUrl
-        },
-        readyMarker: ELECTRON_READY_MARKER
-      });
-      await electron.ready;
-    }
-
-    console.info("");
-    console.info("YsabelleStore development environment ready");
-    console.info("");
-    console.info(`Web:      ${displayUrl(runtime.frontendUrl)}`);
-    console.info(`Backend:  ${displayUrl(runtime.apiBaseUrl)}`);
-    console.info(`Electron: ${webOnly ? "not started (web-only mode)" : "running"}`);
-    console.info("");
-    console.info("Press Ctrl+C once to stop every process in this development stack.");
+  let electron;
+  if (!webOnly) {
+    console.info("Starting YsabelleStore Electron application...");
+    electron = startWorkspace("electron", {
+      environment: {
+        ELECTRON_RENDERER_DEV_URL: runtime.frontendUrl
+      },
+      readyMarker: ELECTRON_READY_MARKER
+    });
+    await electron.ready;
   }
+
+  console.info("");
+  console.info("YsabelleStore development environment ready");
+  console.info("");
+  console.info(`Web:      ${displayUrl(runtime.frontendUrl)}`);
+  console.info(`Backend:  ${displayUrl(runtime.apiBaseUrl)}`);
+  console.info(`Electron: ${webOnly ? "not started (web-only mode)" : "running"}`);
+  console.info("");
+  console.info("Press Ctrl+C once to stop every process in this development stack.");
 } catch (error) {
   const message = error instanceof Error ? error.message : "Unknown development startup error.";
   await shutdown(1, message);
@@ -151,11 +132,16 @@ function waitForOutputMarker(child, marker, label) {
       if (settled) return;
 
       output = `${output}${chunk.toString()}`.slice(-8_192);
-      if (stripAnsi(output).includes(marker)) finish(resolve);
+
+      if (stripAnsi(output).includes(marker)) {
+        finish(resolve);
+      }
     };
     const onStdout = (chunk) => inspect(chunk, process.stdout);
     const onStderr = (chunk) => inspect(chunk, process.stderr);
-    const onExit = () => finish(() => reject(new Error(`${label} exited before it became ready.`)));
+    const onExit = () => {
+      finish(() => reject(new Error(`${label} exited before it became ready.`)));
+    };
 
     child.stdout.on("data", onStdout);
     child.stderr.on("data", onStderr);
@@ -173,6 +159,7 @@ function waitForOutputMarker(child, marker, label) {
 
 async function waitForBackend(child) {
   const healthUrl = new URL("/api/health", `${runtime.apiBaseUrl}/`);
+
   await waitForHttp(healthUrl, child, "backend", async (response) => {
     if (!response.ok) return false;
     const payload = await response.json();
@@ -209,34 +196,31 @@ async function waitForHttp(url, child, label, isReady) {
   throw new Error(`The ${label} did not become ready at ${url} within 45 seconds.`);
 }
 
-async function inspectExistingWebStack() {
-  const [backendOccupied, frontendOccupied] = await Promise.all([
-    isPortOccupied(runtime.backendPort, new URL(runtime.apiBaseUrl).hostname),
-    isPortOccupied(runtime.frontendPort, new URL(runtime.frontendUrl).hostname)
-  ]);
+async function assertDevPortsAvailable() {
+  const checks = [
+    {
+      kind: "backend",
+      port: runtime.backendPort,
+      url: runtime.apiBaseUrl
+    },
+    {
+      kind: "web frontend",
+      port: runtime.frontendPort,
+      url: runtime.frontendUrl
+    }
+  ];
 
-  if (!backendOccupied && !frontendOccupied) return "none";
+  for (const check of checks) {
+    if (!(await isPortOccupied(check.port, new URL(check.url).hostname))) continue;
 
-  const [backendOwner, frontendOwner] = await Promise.all([
-    backendOccupied ? identifyYsabelleService("backend", runtime.apiBaseUrl) : null,
-    frontendOccupied ? identifyYsabelleService("web frontend", runtime.frontendUrl) : null
-  ]);
-
-  if (backendOwner === "backend" && frontendOwner === "web frontend") return "complete";
-
-  if (backendOccupied && !backendOwner) {
+    const owner = await identifyYsabelleService(check.kind, check.url);
+    const detail = owner
+      ? `an existing YsabelleStore ${owner} from another development stack`
+      : "another process";
     throw new Error(
-      `Port ${runtime.backendPort} is already occupied by another process. Unable to start the YsabelleStore backend. Stop the owning process or stack first; no fallback port will be used.`
+      `Port ${check.port} is already occupied by ${detail}. Unable to start the YsabelleStore ${check.kind}. Stop the owning process or stack first; no fallback port will be used.`
     );
   }
-
-  if (frontendOccupied && !frontendOwner) {
-    throw new Error(
-      `Port ${runtime.frontendPort} is already occupied by another process. Unable to start the YsabelleStore web frontend. Stop the owning process or stack first; no fallback port will be used.`
-    );
-  }
-
-  return "partial";
 }
 
 async function identifyYsabelleService(kind, baseUrl) {
@@ -271,17 +255,20 @@ function shutdown(exitCode, reason) {
 
     await Promise.all(children.map((ownedChild) => waitForExit(ownedChild.process)));
 
-    const portsReleased = children.length === 0 ? true : await waitForOwnedPortsReleased();
+    const portsReleased = children.length === 0 ? true : await waitForPortsReleased();
     if (!portsReleased) {
-      console.error("Shutdown completed, but an owned development port is still occupied.");
+      console.error(
+        `Shutdown completed, but port ${runtime.backendPort} or ${runtime.frontendPort} is still occupied by a process outside this stack.`
+      );
       exitCode = 1;
     } else if (children.length > 0) {
-      console.info("YsabelleStore owned development processes stopped.");
+      console.info(
+        `YsabelleStore development environment stopped; ports ${runtime.backendPort} and ${runtime.frontendPort} are released.`
+      );
     }
 
     cleanupFinished = true;
-    process.exitCode = exitCode;
-    if (process.connected) process.disconnect();
+    process.exit(exitCode);
   })();
 
   return shutdownPromise;
@@ -307,24 +294,20 @@ function terminateOwnedProcessTree(child) {
 
 async function waitForExit(child) {
   if (child.exitCode !== null || child.signalCode !== null) return;
+
   await Promise.race([new Promise((resolve) => child.once("exit", resolve)), delay(5_000)]);
 }
 
-async function waitForOwnedPortsReleased() {
+async function waitForPortsReleased() {
   const deadline = Date.now() + PORT_RELEASE_TIMEOUT_MS;
 
   while (Date.now() < deadline) {
-    const checks = children
-      .filter((child) => child.name === "backend" || child.name === "frontend")
-      .map((child) =>
-        child.name === "backend"
-          ? isPortOccupied(runtime.backendPort, new URL(runtime.apiBaseUrl).hostname)
-          : isPortOccupied(runtime.frontendPort, new URL(runtime.frontendUrl).hostname)
-      );
+    const [backendOccupied, frontendOccupied] = await Promise.all([
+      isPortOccupied(runtime.backendPort, new URL(runtime.apiBaseUrl).hostname),
+      isPortOccupied(runtime.frontendPort, new URL(runtime.frontendUrl).hostname)
+    ]);
 
-    if (checks.length === 0) return true;
-    const occupied = await Promise.all(checks);
-    if (occupied.every((value) => !value)) return true;
+    if (!backendOccupied && !frontendOccupied) return true;
     await delay(POLL_INTERVAL_MS);
   }
 

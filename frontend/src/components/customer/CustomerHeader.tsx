@@ -1,11 +1,11 @@
 import { CircleHelp, Menu, ShoppingBasket, X } from "lucide-react";
 import { useState } from "react";
 
-import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useCart } from "@/context/CartContext";
 import { isCustomerShopRoute } from "@/utils/customerRoutes";
 import { CustomerLink } from "./CustomerLink";
 import { GlobalStorefrontSearch } from "./GlobalStorefrontSearch";
+import { YsabelleBrandMark } from "./YsabelleBrandMark";
 
 export function CustomerHeader({
   location,
@@ -32,9 +32,7 @@ export function CustomerHeader({
     <header className="customer-header">
       <div className="customer-header__bar">
         <CustomerLink className="customer-brand" href="/" navigate={navigate}>
-          <span aria-hidden="true" className="customer-brand__mark">
-            <BrandLogo className="customer-brand__logo" />
-          </span>
+          <YsabelleBrandMark eager />
           <span>
             <strong>Ysabelle</strong>
             <small>Store</small>

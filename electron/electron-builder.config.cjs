@@ -1,7 +1,9 @@
 module.exports = {
   appId: "com.ysabellestore.desktop",
   productName: "YsabelleStore",
+  electronVersion: "42.8.1",
   directories: {
+    buildResources: "build",
     output: "release"
   },
   files: ["dist/**/*", "package.json"],
@@ -12,7 +14,7 @@ module.exports = {
     }
   ],
   win: {
-    icon: "build/icon-v2.ico",
+    icon: "build/icon.ico",
     target: ["nsis"]
   },
   nsis: {

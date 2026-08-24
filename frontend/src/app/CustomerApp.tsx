@@ -21,7 +21,12 @@ export function CustomerApp({
   location: string;
   navigate: (path: string) => void;
 }) {
-  const pathname = new URL(location, window.location.origin).pathname.replace(/\/$/, "") || "/";
+  const rawPathname =
+    new URL(location, window.location.origin).pathname.replace(/\/$/, "") || "/";
+  const pathname =
+    window.location.protocol === "file:" && rawPathname.endsWith("/index.html")
+      ? "/"
+      : rawPathname;
   const categoryMatch = pathname.match(/^\/shop\/category\/([^/]+)$/);
   const productMatch = pathname.match(/^\/product\/([^/]+)$/);
 

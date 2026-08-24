@@ -1,95 +1,90 @@
-/* Shared Ysabelle branding. The approved logo is bundled by Vite from src/assets so it ships
-   with every build instead of depending on a fragile /public URL. */
-.customer-brand__mark {
-  display: grid;
-  width: 3.4rem;
-  height: 3.4rem;
-  flex: none;
-  box-sizing: border-box;
-  place-items: center;
-  overflow: hidden;
-  padding: 0.08rem;
-  border: 1px solid rgb(98 91 255 / 16%);
-  border-radius: 50%;
-  background: #fff;
-  color: inherit;
-  box-shadow: 0 8px 22px rgb(98 91 255 / 18%);
+.customer-app {
+  --ysabelle-brand-fallback: linear-gradient(145deg, #008cff, #625bff 48%, #f43f8c);
 }
 
-.customer-brand__logo {
-  display: block;
+.ysabelle-brand-mark {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  overflow: hidden;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ysabelle-brand-fallback);
+  box-shadow: 0 8px 20px rgb(98 91 255 / 24%);
+  isolation: isolate;
+}
+
+.ysabelle-brand-mark--compact {
+  width: 3rem;
+  height: 3rem;
+}
+
+.ysabelle-brand-mark--mini {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.ysabelle-brand-mark--display {
+  width: clamp(6rem, 7vw, 7rem);
+  height: clamp(6rem, 7vw, 7rem);
+}
+
+.ysabelle-brand-mark__fallback,
+.ysabelle-brand-mark__image {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center;
 }
 
-/* Story identity marks show the same official logo. The existing Store SVG stays underneath as
-   a no-network/no-asset fallback, while the bundled image overlays it during normal operation. */
-.story-welcome__mark {
-  position: relative;
-  display: grid;
-  box-sizing: border-box;
-  place-items: center;
-  overflow: hidden;
-  padding: 0.12rem;
-  border: 1px solid rgb(98 91 255 / 16%);
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 14px 34px rgb(98 91 255 / 20%);
+.ysabelle-brand-mark__fallback {
+  z-index: 0;
+  margin: auto;
+  padding: 24%;
+  color: #fff;
 }
 
-.story-welcome__mark > svg {
+.ysabelle-brand-mark__image {
+  z-index: 1;
   display: block;
-  width: 62%;
-  height: 62%;
-  color: #625bff;
+  object-fit: contain;
 }
 
-.story-welcome__mark::before {
-  position: absolute;
-  inset: 0.08rem;
+.ysabelle-brand-mark__image[hidden] {
+  display: none;
+}
+
+.story-welcome__mark--branded {
+  width: clamp(6rem, 7vw, 7rem);
+  height: clamp(6rem, 7vw, 7rem);
   border-radius: 50%;
-  background: #fff url("../assets/brand/ysabelle-logo-official.webp") center / contain no-repeat;
-  content: "";
+  background: var(--ysabelle-brand-fallback);
+  box-shadow: 0 22px 45px rgb(98 91 255 / 24%);
 }
 
-.story-live-store__bar > span:first-child {
-  align-items: center;
+.story-welcome__mark--branded > svg,
+.story-live-store__identity--branded > svg {
+  display: none;
 }
 
-.story-live-store__bar > span:first-child {
-  position: relative;
+.story-welcome__mark--branded > .ysabelle-brand-mark {
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
 }
 
-.story-live-store__bar > span:first-child > svg:first-child {
-  width: 2.5rem;
-  height: 2.5rem;
-  flex: none;
-  box-sizing: border-box;
-  padding: 0.52rem;
-  border: 1px solid rgb(98 91 255 / 14%);
-  border-radius: 50%;
-  background: #fff;
-  color: #625bff;
-  box-shadow: 0 7px 18px rgb(98 91 255 / 16%);
+.story-live-store__identity--branded > .ysabelle-brand-mark {
+  order: -1;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 2.75rem;
+  box-shadow: none;
 }
 
-.story-live-store__bar > span:first-child::before {
-  position: absolute;
-  left: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid rgb(98 91 255 / 14%);
-  border-radius: 50%;
-  background: #fff url("../assets/brand/ysabelle-logo-official.webp") center / contain no-repeat;
-  box-shadow: 0 7px 18px rgb(98 91 255 / 16%);
-  content: "";
-}
-
-@media (max-width: 720px) {
-  .customer-brand__mark {
-    width: 3rem;
-    height: 3rem;
+@media (max-width: 480px) {
+  .story-welcome__mark--branded,
+  .ysabelle-brand-mark--display {
+    width: 5.5rem;
+    height: 5.5rem;
   }
 }

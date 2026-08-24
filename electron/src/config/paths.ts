@@ -24,8 +24,24 @@ export function getPackagedRendererIndexPath(): string {
   return path.join(process.resourcesPath, "frontend", "index.html");
 }
 
-export function getWindowIconPath(packaged: boolean): string {
-  return packaged
-    ? path.join(process.resourcesPath, "frontend", "brand", "ysabelle-logo-v2.png")
-    : path.join(configDirectory, "../../../frontend/public/brand/ysabelle-logo-v2.png");
+export function getApplicationIconPath(isPackaged: boolean): string {
+  if (process.platform === "win32") {
+    if (isPackaged) {
+      return path.join(process.resourcesPath, "frontend", "brand", "favicon-48x48.png");
+    }
+
+    return path.join(
+      configDirectory,
+      "../../../frontend/public/brand/favicon-48x48.png"
+    );
+  }
+
+  if (isPackaged) {
+    return path.join(process.resourcesPath, "frontend", "brand", "ysabelle-store-mark.png");
+  }
+
+  return path.join(
+    configDirectory,
+    "../../../frontend/public/brand/ysabelle-store-mark.png"
+  );
 }
