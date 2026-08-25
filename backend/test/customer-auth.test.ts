@@ -89,7 +89,7 @@ test("registration normalizes identity, hashes the password, and returns only sa
   assert.notEqual(storedSession.tokenHash, registered.sessionToken);
 });
 
-test("registration rejects an already registered email after normalization", async () => {
+test("registration rejects an already registered email after normalization with a generic conflict", async () => {
   const suffix = randomUUID().slice(0, 8);
   const email = `duplicate-${suffix}@example.com`;
   const first = await registerCustomer({
@@ -110,8 +110,8 @@ test("registration rejects an already registered email after normalization", asy
     (error) =>
       expectHttpError(error, {
         status: 409,
-        code: "CUSTOMER_EMAIL_ALREADY_REGISTERED",
-        message: "An account with this email already exists."
+        code: "CUSTOMER_ACCOUNT_CONFLICT",
+        message: "Unable to create customer account with the supplied details."
       })
   );
 });
