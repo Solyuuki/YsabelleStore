@@ -10,13 +10,14 @@ import { registerLocalUser } from "../src/services/authService.js";
 const CUSTOMER_COOKIE_NAME = "ysabelle_customer_session";
 const PASSWORD = "CustomerPass123!";
 
- type ApiBody = {
+type ApiBody = {
   success?: boolean;
   message?: string;
   data?: {
     customer?: {
       id?: string;
       name?: string;
+      username?: string | null;
       email?: string;
       phone?: string | null;
       status?: string;
@@ -68,6 +69,7 @@ async function registerCustomerHttp(
   baseUrl: string,
   input: {
     name: string;
+    username: string;
     email: string;
     password: string;
     phone?: string;
@@ -95,11 +97,13 @@ async function cleanupCustomer(email: string) {
 test("customer register, session restore, and logout use a revocable HttpOnly cookie without exposing the raw token", async () => {
   const suffix = randomUUID().slice(0, 8);
   const email = `http-${suffix}@example.com`;
+  const username = `http.${suffix}`;
 
   try {
     await withServer(async (baseUrl) => {
       const register = await registerCustomerHttp(baseUrl, {
         name: "HTTP Customer",
+        username,
         email: `  ${email.toUpperCase()}  `,
         phone: "09171234567",
         password: PASSWORD
@@ -115,8 +119,11 @@ test("customer register, session restore, and logout use a revocable HttpOnly co
       assert.doesNotMatch(setCookie, /Secure/i);
 
       const registerBody = await json(register);
+      assert.equal(registerBody.data?.customer?.username, username);
       assert.equal(registerBody.data?.customer?.email, email);
+      assert.equal(registerBody.data?.customer?.phone, "+639171234567");
       assert.equal(JSON.stringify(registerBody).includes("sessionToken"), false);
+      assert.equal(JSON.stringify(registerBody).includes("phoneNormalized"), false);
 
       const cookie = cookiePair(setCookie);
       const me = await fetch(`${baseUrl}/api/customer-auth/me`, {
@@ -124,8 +131,10 @@ test("customer register, session restore, and logout use a revocable HttpOnly co
       });
       assert.equal(me.status, 200);
       const meBody = await json(me);
+      assert.equal(meBody.data?.customer?.username, username);
       assert.equal(meBody.data?.customer?.email, email);
       assert.equal(JSON.stringify(meBody).includes("sessionToken"), false);
+      assert.equal(JSON.stringify(meBody).includes("phoneNormalized"), false);
 
       const logout = await fetch(`${baseUrl}/api/customer-auth/logout`, {
         method: "POST",
@@ -157,6 +166,7 @@ test("customer login keeps credential failures generic and registration rejects 
     await withServer(async (baseUrl) => {
       const register = await registerCustomerHttp(baseUrl, {
         name: "Generic Customer",
+        username: `generic.${suffix}`,
         email,
         password: PASSWORD
       });
@@ -164,6 +174,7 @@ test("customer login keeps credential failures generic and registration rejects 
 
       const duplicate = await registerCustomerHttp(baseUrl, {
         name: "Duplicate Customer",
+        username: `generic.duplicate.${suffix}`,
         email: ` ${email.toUpperCase()} `,
         password: PASSWORD
       });
@@ -172,13 +183,13 @@ test("customer login keeps credential failures generic and registration rejects 
       const wrongPassword = await fetch(`${baseUrl}/api/customer-auth/login`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password: "wrong-password" })
+        body: JSON.stringify({ identifier: email, password: "wrong-password" })
       });
       const missingAccount = await fetch(`${baseUrl}/api/customer-auth/login`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          email: `missing-${suffix}@example.com`,
+          identifier: `missing-${suffix}@example.com`,
           password: "wrong-password"
         })
       });
@@ -238,6 +249,7 @@ test("customer cookie and internal bearer authentication remain isolated", async
     await withServer(async (baseUrl) => {
       const register = await registerCustomerHttp(baseUrl, {
         name: "Boundary Customer",
+        username: `boundary.${suffix}`,
         email: customerEmail,
         password: PASSWORD
       });
