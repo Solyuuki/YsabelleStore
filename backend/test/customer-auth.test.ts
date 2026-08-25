@@ -129,7 +129,7 @@ test("missing customer and wrong password return the same public credential erro
   const expected = {
     status: 401,
     code: "INVALID_CUSTOMER_CREDENTIALS",
-    message: "Invalid email or password."
+    message: "Invalid credentials."
   };
 
   await assert.rejects(
@@ -160,7 +160,7 @@ test("inactive customer cannot log in and active customer receives a new finite 
     expectHttpError(error, {
       status: 401,
       code: "INVALID_CUSTOMER_CREDENTIALS",
-      message: "Invalid email or password."
+      message: "Invalid credentials."
     })
   );
 
