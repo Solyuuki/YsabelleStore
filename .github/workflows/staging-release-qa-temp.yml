@@ -82,7 +82,7 @@ jobs:
           npm run dev:web > qa-artifacts/dev-stack.log 2>&1 &
           echo $! > qa-artifacts/dev-stack.pid
           for attempt in $(seq 1 90); do
-            if curl -fsS http://127.0.0.1:3001/api/health >/dev/null 2>&1 && curl -fsS http://127.0.0.1:5173/ >/dev/null 2>&1; then
+            if curl -fsS http://localhost:3001/api/health >/dev/null 2>&1 && curl -fsS http://localhost:5173/ >/dev/null 2>&1; then
               echo "Staging web stack is ready."
               exit 0
             fi
@@ -96,7 +96,7 @@ jobs:
           node --input-type=module <<'NODE'
           import { writeFile } from "node:fs/promises";
 
-          const baseUrl = "http://127.0.0.1:3001";
+          const baseUrl = "http://localhost:3001";
           const cases = [
             ["summary", "/api/health"],
             ["liveness", "/api/health/live"],
@@ -158,21 +158,21 @@ jobs:
             --browser chromium \
             --viewport-size "1440,1000" \
             --wait-for-timeout 5000 \
-            http://127.0.0.1:5173/ \
+            http://localhost:5173/ \
             qa-artifacts/customer-home-desktop.png
 
           npx --yes playwright@1.55.0 screenshot \
             --browser chromium \
             --viewport-size "1440,1000" \
             --wait-for-timeout 5000 \
-            http://127.0.0.1:5173/staff-login \
+            http://localhost:5173/staff-login \
             qa-artifacts/staff-login-desktop.png
 
           npx --yes playwright@1.55.0 screenshot \
             --browser chromium \
             --device "iPhone 13" \
             --wait-for-timeout 5000 \
-            http://127.0.0.1:5173/ \
+            http://localhost:5173/ \
             qa-artifacts/customer-home-mobile.png
 
       - name: Record QA manifest
