@@ -78,6 +78,7 @@ jobs:
           NODE_ENV: development
         run: |
           mkdir -p qa-artifacts
+          touch .env
           npm run dev:web > qa-artifacts/dev-stack.log 2>&1 &
           echo $! > qa-artifacts/dev-stack.pid
           for attempt in $(seq 1 90); do
