@@ -1,0 +1,28 @@
+:root {
+  --ys-auth-primary: #625bff;
+  --ys-auth-secondary: #008cff;
+  --ys-auth-accent: #d946ef;
+  --ys-auth-surface: rgb(255 255 255 / 86%);
+  --ys-auth-border: rgb(98 91 255 / 16%);
+  --ys-auth-shadow: 0 24px 64px rgb(39 44 92 / 14%);
+  --ys-auth-focus: rgb(98 91 255 / 24%);
+  --ys-auth-gradient: linear-gradient(135deg, var(--ys-auth-secondary), var(--ys-auth-primary) 58%, var(--ys-auth-accent));
+}
+
+.ys-auth-surface {
+  border: 1px solid var(--ys-auth-border);
+  background: var(--ys-auth-surface);
+  box-shadow: var(--ys-auth-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.ys-auth-primary-action {
+  border-color: transparent;
+  background: var(--ys-auth-gradient);
+  color: #fff;
+}
+
+.ys-auth-focus-ring:focus-visible {
+  outline: 3px solid var(--ys-auth-focus);
+  outline-offset: 2px;
+}
