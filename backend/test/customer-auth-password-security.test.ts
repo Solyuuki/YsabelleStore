@@ -54,7 +54,7 @@ test("successful customer login upgrades a legacy password hash before creating 
   });
   createdCustomerIds.push(customer.id);
 
-  const session = await loginCustomer({ email, password });
+  const session = await loginCustomer({ identifier: email, password });
   assert.equal(session.customer.id, customer.id);
 
   const persisted = await prisma.customerAccount.findUniqueOrThrow({ where: { id: customer.id } });
@@ -77,14 +77,14 @@ test("missing and inactive customer login use the same public credential failure
   createdCustomerIds.push(customer.id);
 
   await assert.rejects(
-    loginCustomer({ email: `missing-${suffix}@example.com`, password }),
+    loginCustomer({ identifier: `missing-${suffix}@example.com`, password }),
     expectInvalidCredentials
   );
-  await assert.rejects(loginCustomer({ email, password }), expectInvalidCredentials);
+  await assert.rejects(loginCustomer({ identifier: email, password }), expectInvalidCredentials);
 
   await prisma.customerAccount.update({ data: { status: "ACTIVE" }, where: { id: customer.id } });
   await assert.rejects(
-    loginCustomer({ email, password: "DefinitelyWrong123!" }),
+    loginCustomer({ identifier: email, password: "DefinitelyWrong123!" }),
     expectInvalidCredentials
   );
 });
