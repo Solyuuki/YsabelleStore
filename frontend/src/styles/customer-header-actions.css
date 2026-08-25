@@ -95,11 +95,12 @@
     height: 190%;
     background: linear-gradient(
       110deg,
-      transparent 20%,
-      rgb(255 255 255 / 0%) 34%,
-      rgb(255 255 255 / 32%) 49%,
-      rgb(237 246 255 / 12%) 58%,
-      transparent 76%
+      transparent 16%,
+      rgb(98 91 255 / 0%) 28%,
+      rgb(98 91 255 / 42%) 42%,
+      rgb(255 255 255 / 86%) 50%,
+      rgb(0 140 255 / 30%) 60%,
+      transparent 78%
     );
     content: "";
     opacity: 0;
