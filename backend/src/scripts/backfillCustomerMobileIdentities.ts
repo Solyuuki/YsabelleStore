@@ -58,7 +58,10 @@ export function planCustomerMobileIdentityBackfill(
 
   for (const [phoneNormalized, ids] of canonicalGroups) {
     if (ids.length === 1) {
-      updates.push({ id: ids[0], phoneNormalized });
+      const [id] = ids;
+      if (id) {
+        updates.push({ id, phoneNormalized });
+      }
       continue;
     }
 
