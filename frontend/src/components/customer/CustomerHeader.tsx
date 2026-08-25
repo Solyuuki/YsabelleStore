@@ -134,9 +134,6 @@ export function CustomerHeader({
           <button onClick={onStartGuide} type="button">
             Shopping Guide
           </button>
-          <CustomerLink href="/staff-login" navigate={navigate} onClick={() => setMenuOpen(false)}>
-            Staff / Owner Login
-          </CustomerLink>
         </nav>
       </div>
     </header>
