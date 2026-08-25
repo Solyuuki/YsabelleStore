@@ -1,8 +1,9 @@
 import { Eye, EyeOff, UserPlus } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { prepareCustomerRegistrationIntent } from "@/services/customerAuthService";
 import { validateCustomerRegisterForm } from "@/utils/customerAuthForms";
 
 export function CustomerRegisterPage({ navigate }: { navigate: (path: string) => void }) {
@@ -15,6 +16,12 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void prepareCustomerRegistrationIntent().catch(() => {
+      // Submission retries preparation and surfaces an actionable error if the service is unavailable.
+    });
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
