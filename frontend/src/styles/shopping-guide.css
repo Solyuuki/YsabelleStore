@@ -1,3 +1,90 @@
+.customer-guide-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 42%, rgb(168 60 240 / 12%), transparent 38%),
+    linear-gradient(145deg, rgb(247 249 255 / 97%), rgb(244 241 255 / 98%));
+  backdrop-filter: blur(10px);
+  transition:
+    opacity 220ms ease,
+    visibility 0s linear 220ms;
+}
+
+.customer-guide-transition.is-visible {
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.customer-guide-transition__panel {
+  width: min(23rem, calc(100vw - 2rem));
+  padding: 1.15rem 1.2rem 1.05rem;
+  border: 1px solid rgb(98 91 255 / 16%);
+  border-radius: 1.2rem;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 24px 70px rgb(16 20 38 / 18%);
+  text-align: center;
+}
+
+.customer-guide-transition__mark {
+  margin-inline: auto;
+  margin-bottom: 0.75rem;
+}
+
+.customer-guide-transition__copy {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.customer-guide-transition__copy strong {
+  color: #101426;
+  font-size: 0.98rem;
+  font-weight: 760;
+  letter-spacing: -0.018em;
+}
+
+.customer-guide-transition__copy span {
+  color: #5b647d;
+  font-size: 0.79rem;
+  font-weight: 520;
+}
+
+.customer-guide-transition__progress {
+  height: 4px;
+  margin-top: 0.9rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(98 91 255 / 10%);
+}
+
+.customer-guide-transition__progress span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #625bff, #a83cf0, #008cff);
+  box-shadow: 0 0 14px rgb(98 91 255 / 28%);
+  animation: customer-guide-progress 900ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes customer-guide-progress {
+  from {
+    transform: translateX(-115%);
+  }
+
+  to {
+    transform: translateX(245%);
+  }
+}
+
 .ysabelle-guide.driver-popover {
   --guide-primary: #625bff;
   --guide-primary-strong: #5149d9;
@@ -190,6 +277,15 @@
 }
 
 @media (max-width: 480px) {
+  .customer-guide-transition {
+    padding: 1rem;
+  }
+
+  .customer-guide-transition__panel {
+    width: min(21rem, calc(100vw - 1.25rem));
+    padding: 1rem 1rem 0.95rem;
+  }
+
   .ysabelle-guide.driver-popover {
     width: min(20rem, calc(100vw - 1.25rem));
     padding: 1rem 1rem 0.9rem;
@@ -222,6 +318,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .customer-guide-transition {
+    backdrop-filter: none;
+    transition: none;
+  }
+
+  .customer-guide-transition__progress span {
+    width: 100%;
+    transform: none;
+    animation: none;
+  }
+
   .ysabelle-guide.driver-popover,
   .driver-overlay,
   .ysabelle-guide .driver-popover-footer button {

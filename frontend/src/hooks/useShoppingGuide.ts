@@ -1,10 +1,11 @@
 import { driver } from "driver.js";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const GUIDE_PENDING_KEY = "ysabelle:shopping-guide:pending";
 const GUIDE_COMPLETE_KEY = "ysabelle:shopping-guide:complete";
 const GUIDE_SCROLL_TIMEOUT_MS = 900;
 const GUIDE_TARGET_WAIT_MS = 4_000;
+const GUIDE_PREPARE_MIN_MS = 560;
 const GUIDE_SCROLLING_CLASS = "ysabelle-guide-scrolling";
 const GUIDE_FINISHING_CLASS = "ysabelle-guide-finishing";
 const GUIDE_FINISH_DURATION_MS = 180;
@@ -80,6 +81,9 @@ function waitForScrollSettle(onSettled: () => void) {
 }
 
 export function useShoppingGuide(pathname: string, navigate: (path: string) => void) {
+  const [isPreparingGuide, setIsPreparingGuide] = useState(false);
+  const prepareStartedAtRef = useRef<number | null>(null);
+
   function runGuide() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let isTransitioning = false;
@@ -255,6 +259,8 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
 
   function startGuide() {
     if (pathname !== "/") {
+      prepareStartedAtRef.current = performance.now();
+      setIsPreparingGuide(true);
       sessionStorage.setItem(GUIDE_PENDING_KEY, "true");
       navigate("/");
       return;
@@ -264,10 +270,33 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
 
   useEffect(() => {
     if (pathname !== "/" || sessionStorage.getItem(GUIDE_PENDING_KEY) !== "true") return;
+
     sessionStorage.removeItem(GUIDE_PENDING_KEY);
-    const timeout = window.setTimeout(runGuide, 700);
-    return () => window.clearTimeout(timeout);
+    const startedAt = prepareStartedAtRef.current ?? performance.now();
+    prepareStartedAtRef.current = startedAt;
+    setIsPreparingGuide(true);
+
+    let cancelled = false;
+    let startTimeout: number | null = null;
+
+    waitForGuideTarget(0, () => {
+      if (cancelled) return;
+
+      const elapsed = performance.now() - startedAt;
+      const remaining = Math.max(0, GUIDE_PREPARE_MIN_MS - elapsed);
+      startTimeout = window.setTimeout(() => {
+        if (cancelled) return;
+        runGuide();
+        requestAnimationFrame(() => setIsPreparingGuide(false));
+        prepareStartedAtRef.current = null;
+      }, remaining);
+    });
+
+    return () => {
+      cancelled = true;
+      if (startTimeout !== null) window.clearTimeout(startTimeout);
+    };
   }, [pathname]);
 
-  return { startGuide };
+  return { isPreparingGuide, startGuide };
 }
