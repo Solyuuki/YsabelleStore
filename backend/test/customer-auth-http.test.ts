@@ -10,7 +10,7 @@ import { registerLocalUser } from "../src/services/authService.js";
 const CUSTOMER_COOKIE_NAME = "ysabelle_customer_session";
 const PASSWORD = "CustomerPass123!";
 
-type ApiBody = {
+ type ApiBody = {
   success?: boolean;
   message?: string;
   data?: {
@@ -54,6 +54,36 @@ async function json(response: Response): Promise<ApiBody> {
   return (await response.json()) as ApiBody;
 }
 
+async function issueRegistrationIntent(baseUrl: string) {
+  const intent = await fetch(`${baseUrl}/api/customer-auth/registration-intent`);
+  assert.equal(intent.status, 200);
+
+  const cookie = cookiePair(intent.headers.get("set-cookie") ?? "");
+  assert.match(cookie, /^ysabelle_customer_registration_intent=/);
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  return cookie;
+}
+
+async function registerCustomerHttp(
+  baseUrl: string,
+  input: {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string;
+  }
+) {
+  const registrationIntentCookie = await issueRegistrationIntent(baseUrl);
+  return fetch(`${baseUrl}/api/customer-auth/register`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Cookie: registrationIntentCookie
+    },
+    body: JSON.stringify(input)
+  });
+}
+
 async function cleanupCustomer(email: string) {
   const customer = await prisma.customerAccount.findUnique({ where: { email } });
   if (!customer) return;
@@ -68,15 +98,11 @@ test("customer register, session restore, and logout use a revocable HttpOnly co
 
   try {
     await withServer(async (baseUrl) => {
-      const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: "HTTP Customer",
-          email: `  ${email.toUpperCase()}  `,
-          phone: "09171234567",
-          password: PASSWORD
-        })
+      const register = await registerCustomerHttp(baseUrl, {
+        name: "HTTP Customer",
+        email: `  ${email.toUpperCase()}  `,
+        phone: "09171234567",
+        password: PASSWORD
       });
 
       assert.equal(register.status, 201);
@@ -129,21 +155,17 @@ test("customer login keeps credential failures generic and registration rejects 
 
   try {
     await withServer(async (baseUrl) => {
-      const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: "Generic Customer", email, password: PASSWORD })
+      const register = await registerCustomerHttp(baseUrl, {
+        name: "Generic Customer",
+        email,
+        password: PASSWORD
       });
       assert.equal(register.status, 201);
 
-      const duplicate = await fetch(`${baseUrl}/api/customer-auth/register`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: "Duplicate Customer",
-          email: ` ${email.toUpperCase()} `,
-          password: PASSWORD
-        })
+      const duplicate = await registerCustomerHttp(baseUrl, {
+        name: "Duplicate Customer",
+        email: ` ${email.toUpperCase()} `,
+        password: PASSWORD
       });
       assert.equal(duplicate.status, 409);
 
@@ -214,14 +236,10 @@ test("customer cookie and internal bearer authentication remain isolated", async
     });
 
     await withServer(async (baseUrl) => {
-      const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: "Boundary Customer",
-          email: customerEmail,
-          password: PASSWORD
-        })
+      const register = await registerCustomerHttp(baseUrl, {
+        name: "Boundary Customer",
+        email: customerEmail,
+        password: PASSWORD
       });
       assert.equal(register.status, 201);
       const customerCookie = cookiePair(register.headers.get("set-cookie") ?? "");
