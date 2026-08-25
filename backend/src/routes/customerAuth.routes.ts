@@ -12,6 +12,10 @@ import {
   derivePrivateRateLimitKey
 } from "../middleware/authRateLimit.js";
 import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
+import {
+  disableSensitiveResponseCaching,
+  requireAllowedCustomerAuthOrigin
+} from "../middleware/customerAuthSecurity.js";
 import { AUTH_RATE_LIMITS } from "../security/security.constants.js";
 
 export const customerAuthRouter = Router();
@@ -46,18 +50,26 @@ const customerLoginIdentifierRateLimit = createAuthRateLimit({
   }
 });
 
-customerAuthRouter.get("/registration-intent", issueCustomerRegistrationIntent);
+customerAuthRouter.use(disableSensitiveResponseCaching);
+
+customerAuthRouter.get(
+  "/registration-intent",
+  requireAllowedCustomerAuthOrigin,
+  issueCustomerRegistrationIntent
+);
 customerAuthRouter.post(
   "/register",
+  requireAllowedCustomerAuthOrigin,
   customerRegisterRateLimit,
   customerRegisterIdentityRateLimit,
   registerCustomerAccount
 );
 customerAuthRouter.post(
   "/login",
+  requireAllowedCustomerAuthOrigin,
   customerLoginRateLimit,
   customerLoginIdentifierRateLimit,
   loginCustomerAccount
 );
 customerAuthRouter.get("/me", requireCustomerAuth, getCurrentCustomer);
-customerAuthRouter.post("/logout", logoutCustomerAccount);
+customerAuthRouter.post("/logout", requireAllowedCustomerAuthOrigin, logoutCustomerAccount);
