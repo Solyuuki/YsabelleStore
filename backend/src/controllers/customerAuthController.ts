@@ -12,14 +12,44 @@ import {
   readCustomerSessionCookie,
   setCustomerSessionCookie
 } from "../utils/customerAuthCookie.js";
+import {
+  clearCustomerRegistrationIntentCookie,
+  createCustomerRegistrationIntent,
+  isCustomerRegistrationIntentValid,
+  readCustomerRegistrationIntentCookie,
+  setCustomerRegistrationIntentCookie
+} from "../utils/customerRegistrationIntent.js";
 import { HttpError } from "../utils/httpError.js";
 import {
   customerLoginSchema,
   customerRegisterSchema
 } from "../validators/customerAuth.validators.js";
 
+export const issueCustomerRegistrationIntent: RequestHandler = (_request, response) => {
+  const intentToken = createCustomerRegistrationIntent();
+  setCustomerRegistrationIntentCookie(response, intentToken);
+  response.status(200).json(
+    createSuccessResponse("Customer registration intent issued.", {
+      ready: true
+    })
+  );
+};
+
 export const registerCustomerAccount: RequestHandler = async (request, response, next) => {
   try {
+    const intentToken = readCustomerRegistrationIntentCookie(request);
+    if (!intentToken) {
+      throw new HttpError(403, "Customer registration intent is required.", {
+        code: "CUSTOMER_REGISTRATION_INTENT_REQUIRED"
+      });
+    }
+
+    if (!isCustomerRegistrationIntentValid(intentToken)) {
+      throw new HttpError(403, "Customer registration intent is invalid or expired.", {
+        code: "CUSTOMER_REGISTRATION_INTENT_INVALID"
+      });
+    }
+
     const parsedBody = customerRegisterSchema.safeParse(request.body);
     if (!parsedBody.success) {
       throw new HttpError(400, "Customer registration request is invalid.", {
@@ -30,6 +60,7 @@ export const registerCustomerAccount: RequestHandler = async (request, response,
 
     const session = await registerCustomer(parsedBody.data);
     setCustomerSessionCookie(response, session.sessionToken);
+    clearCustomerRegistrationIntentCookie(response);
 
     response.status(201).json(
       createSuccessResponse("Customer registration successful.", {
