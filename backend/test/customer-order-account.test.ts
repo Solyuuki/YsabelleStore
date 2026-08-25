@@ -90,12 +90,14 @@ async function createFixture() {
   });
   const customerA = await registerCustomer({
     name: "Customer A",
+    username: `customer.a.${suffix}`,
     email: `customer-a-${suffix}@example.com`,
     phone: "09171234567",
     password: PASSWORD
   });
   const customerB = await registerCustomer({
     name: "Customer B",
+    username: `customer.b.${suffix}`,
     email: `customer-b-${suffix}@example.com`,
     phone: "09179876543",
     password: PASSWORD
