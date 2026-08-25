@@ -45,6 +45,14 @@ async function issueIntent(baseUrl: string) {
   return { response, body };
 }
 
+function usernameFromEmail(email: string) {
+  return email
+    .split("@", 1)[0]!
+    .toLowerCase()
+    .replace(/[^a-z0-9._]/g, ".")
+    .slice(0, 30);
+}
+
 async function register(baseUrl: string, email: string, cookie?: string) {
   return fetch(`${baseUrl}/api/customer-auth/register`, {
     method: "POST",
@@ -54,6 +62,7 @@ async function register(baseUrl: string, email: string, cookie?: string) {
     },
     body: JSON.stringify({
       name: "Intent Guard Customer",
+      username: usernameFromEmail(email),
       email,
       password: PASSWORD
     })
