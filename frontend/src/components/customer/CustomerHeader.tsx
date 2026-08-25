@@ -71,6 +71,16 @@ export function CustomerHeader({
         </div>
 
         <div className="customer-header__actions">
+          <button
+            aria-label="Open shopping guide"
+            className="customer-icon-button customer-help-button"
+            onClick={onStartGuide}
+            type="button"
+          >
+            <CircleHelp aria-hidden="true" size={19} />
+            <span>Guide</span>
+          </button>
+          <span aria-hidden="true" className="customer-header__action-divider" />
           <CustomerLink
             aria-current={pathname === "/account" || pathname === "/login" ? "page" : undefined}
             aria-label={
@@ -80,18 +90,9 @@ export function CustomerHeader({
             href={accountHref}
             navigate={navigate}
           >
-            <UserRound aria-hidden="true" size={19} />
+            <UserRound aria-hidden="true" size={18} />
             <span>{accountLabel}</span>
           </CustomerLink>
-          <button
-            aria-label="Open shopping guide"
-            className="customer-icon-button customer-help-button"
-            onClick={onStartGuide}
-            type="button"
-          >
-            <CircleHelp aria-hidden="true" size={20} />
-            <span>Guide</span>
-          </button>
           <CustomerLink
             aria-label={`Cart with ${itemCount} item${itemCount === 1 ? "" : "s"}`}
             className="customer-cart-link"
@@ -99,7 +100,7 @@ export function CustomerHeader({
             href="/cart"
             navigate={navigate}
           >
-            <ShoppingBasket aria-hidden="true" size={21} />
+            <ShoppingBasket aria-hidden="true" size={19} />
             <span>Cart</span>
             {itemCount > 0 ? <strong>{itemCount > 99 ? "99+" : itemCount}</strong> : null}
           </CustomerLink>
