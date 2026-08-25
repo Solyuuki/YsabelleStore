@@ -99,7 +99,6 @@ test("registration rejects an already registered email after normalization with 
     name: "First Customer",
     username: `duplicate.first.${suffix}`,
     email,
-    phone: "09171234567",
     password: "CustomerPass123!"
   });
   rememberCustomer(first.customer.id);
@@ -109,7 +108,6 @@ test("registration rejects an already registered email after normalization with 
       name: "Second Customer",
       username: `duplicate.second.${suffix}`,
       email: ` ${email.toUpperCase()} `,
-      phone: "09179876543",
       password: "CustomerPass456!"
     }),
     (error) =>
