@@ -27,37 +27,40 @@
 
 ## Phase 3 — Safe error handling
 
-- [ ] Standardize client-safe unexpected failures.
-- [ ] Review dependency/Prisma failure translation where appropriate.
-- [ ] Prove stack traces, credentials, and sensitive configuration are not exposed.
+- [x] Standardize client-safe unexpected failures.
+- [x] Review dependency/Prisma failure translation where appropriate.
+- [x] Prove stack traces, credentials, connection details, and sensitive configuration are not exposed through server-error or health-response boundaries.
 
 ## Phase 4 — Request traceability and safe logging
 
-- [ ] Add a request/correlation identifier.
-- [ ] Add safe structured request/error logging with explicit sensitive-field exclusions.
-- [ ] Prove request identifiers can correlate client-safe errors with server-side diagnostics.
+- [x] Add a request/correlation identifier.
+- [x] Add safe structured request/error logging with explicit sensitive-field exclusions.
+- [x] Prove request identifiers can correlate client-safe errors with server-side diagnostics without logging secrets.
 
 ## Phase 5 — Frontend reliability states
 
-- [ ] Distinguish healthy, degraded, database unavailable, backend unavailable, timeout, and offline conditions.
-- [ ] Preserve the existing lightweight system-health indicator.
-- [ ] Add frontend regression tests for each supported health state.
+- [x] Distinguish healthy, degraded, database unavailable, backend unavailable, timeout, and offline conditions.
+- [x] Preserve the existing lightweight system-health indicator.
+- [x] Add frontend regression tests for each supported health state.
 
 ## Phase 6 — Server change-safety guardrails
 
-- [ ] Add permanent server contract/failure-injection safeguards.
-- [ ] Add compatibility and rollback guidance for risky server/database changes.
-- [ ] Define repository security invariants/policy where approved.
+- [x] Add permanent server contract/failure-injection safeguards.
+- [x] Add compatibility and rollback guidance for risky server/database changes.
+- [x] Define and document Sprint 8 server-security and data-integrity invariants.
 
 ## Phase 7 — Security and failure audit
 
-- [ ] Review the exact Sprint 8 diff.
-- [ ] Run supported security-diff review and information-disclosure checks.
-- [ ] Resolve Critical/Important findings before progression or record explicit owner acceptance.
+- [x] Review the exact Sprint 8 diff and security-sensitive boundaries.
+- [x] Run supported information-disclosure and correlation-safety checks.
+- [x] Resolve the discovered public database-diagnostic disclosure path and add permanent regression coverage.
+- [x] Confirm no unresolved Critical/Important Sprint 8 finding remains in the reviewed diff; record tooling/coverage limitations explicitly.
 
-## Phase 8 — Final verification and human acceptance handoff
+## Phase 8 — Final verification and release-candidate handoff
 
-- [ ] Run full exact-head repository verification.
-- [ ] Confirm CI, governance, PR checks, and Sprint 8 validation are green.
-- [ ] Hand Sprint 8 to the user for manual acceptance testing.
-- [ ] Do not merge without explicit user approval.
+- [ ] Run full exact-head repository verification after final Sprint 8 documentation reconciliation.
+- [ ] Confirm CI, governance, PR checks, workspace builds, tests, dependency audit, and committed-status verification are green on that exact head.
+- [ ] Promote the verified Sprint 8 head by replacing the stale `staging` branch state with that exact commit.
+- [ ] Run the full release-candidate verification again on `staging`; repair any staging-only issue before considering `main`.
+- [ ] Hand the verified staging candidate to the user for manual acceptance testing.
+- [ ] Do not promote `staging` to `main` without explicit user approval after manual acceptance.
