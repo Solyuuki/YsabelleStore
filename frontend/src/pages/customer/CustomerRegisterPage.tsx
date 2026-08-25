@@ -9,10 +9,13 @@ import { validateCustomerRegisterForm } from "@/utils/customerAuthForms";
 export function CustomerRegisterPage({ navigate }: { navigate: (path: string) => void }) {
   const { register } = useCustomerAuth();
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -25,7 +28,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const input = { email, name, password, phone };
+    const input = { confirmPassword, email, name, password, phone, username };
     const errors = validateCustomerRegisterForm(input);
     setFieldErrors(errors);
     setServerError(null);
@@ -38,7 +41,8 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
         email: email.trim(),
         name: name.trim(),
         password,
-        phone: phone.trim() || undefined
+        phone: phone.trim() || undefined,
+        username: username.trim()
       });
       navigate("/account");
     } catch (error) {
@@ -85,6 +89,18 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
           </label>
 
           <label className="customer-auth-field">
+            <span>Username</span>
+            <input
+              aria-invalid={Boolean(fieldErrors.username)}
+              autoComplete="username"
+              onChange={(event) => setUsername(event.target.value)}
+              type="text"
+              value={username}
+            />
+            {fieldErrors.username ? <small>{fieldErrors.username}</small> : null}
+          </label>
+
+          <label className="customer-auth-field">
             <span>Email address</span>
             <input
               aria-invalid={Boolean(fieldErrors.email)}
@@ -99,7 +115,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
           <label className="customer-auth-field">
             <span>
-              Phone number <small>(optional)</small>
+              PH mobile number <small>(optional)</small>
             </span>
             <input
               aria-invalid={Boolean(fieldErrors.phone)}
@@ -135,6 +151,31 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
               </button>
             </span>
             {fieldErrors.password ? <small>{fieldErrors.password}</small> : null}
+          </label>
+
+          <label className="customer-auth-field">
+            <span>Confirm password</span>
+            <span className="customer-auth-password">
+              <input
+                aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                autoComplete="new-password"
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+              />
+              <button
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                onClick={() => setShowConfirmPassword((current) => !current)}
+                type="button"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff aria-hidden="true" size={18} />
+                ) : (
+                  <Eye aria-hidden="true" size={18} />
+                )}
+              </button>
+            </span>
+            {fieldErrors.confirmPassword ? <small>{fieldErrors.confirmPassword}</small> : null}
           </label>
 
           <button className="customer-auth-submit" disabled={submitting} type="submit">
