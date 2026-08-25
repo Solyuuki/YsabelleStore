@@ -15,6 +15,9 @@ type HealthBody = {
       database?: string;
       prisma?: string;
     };
+    database?: {
+      message?: string;
+    };
   };
 };
 
@@ -94,7 +97,7 @@ test("readiness returns 503 degraded when required authentication configuration 
   }
 });
 
-test("readiness fails with 503 unavailable when the database dependency is not configured", async () => {
+test("readiness fails with 503 unavailable without exposing database configuration diagnostics", async () => {
   const originalDatabaseUrl = env.DATABASE_URL;
 
   try {
@@ -103,18 +106,21 @@ test("readiness fails with 503 unavailable when the database dependency is not c
     await withServer(async (baseUrl) => {
       const response = await fetch(`${baseUrl}/api/health/ready`);
       const body = await json(response);
+      const serializedBody = JSON.stringify(body);
 
       assert.equal(response.status, 503);
       assert.equal(body.data?.status, "unavailable");
       assert.equal(body.data?.ready, false);
       assert.equal(body.data?.checks?.database, "not_configured");
+      assert.equal(body.data?.database?.message, "Database connection is unavailable.");
+      assert.doesNotMatch(serializedBody, /DATABASE_URL|mysql:\/\/|password|secret/i);
     });
   } finally {
     env.DATABASE_URL = originalDatabaseUrl;
   }
 });
 
-test("the existing health summary stays HTTP 200 compatible while exposing canonical health status", async () => {
+test("the existing health summary stays HTTP 200 compatible with sanitized unavailable diagnostics", async () => {
   const originalDatabaseUrl = env.DATABASE_URL;
 
   try {
@@ -129,6 +135,7 @@ test("the existing health summary stays HTTP 200 compatible while exposing canon
       assert.equal(body.data?.status, "unavailable");
       assert.equal(body.data?.ready, false);
       assert.equal(body.data?.checks?.database, "not_configured");
+      assert.equal(body.data?.database?.message, "Database connection is unavailable.");
     });
   } finally {
     env.DATABASE_URL = originalDatabaseUrl;
