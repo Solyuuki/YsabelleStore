@@ -25,6 +25,10 @@ const INVALID_SESSION = {
   code: "CUSTOMER_SESSION_INVALID",
   message: "Customer session is invalid or expired."
 } as const;
+const CUSTOMER_ACCOUNT_CONFLICT = {
+  code: "CUSTOMER_ACCOUNT_CONFLICT",
+  message: "Unable to create customer account with the supplied details."
+} as const;
 
 const DUMMY_PASSWORD_HASH_PROMISE = hashPassword(randomBytes(32).toString("base64url"));
 
@@ -71,6 +75,12 @@ function invalidSession(): HttpError {
   });
 }
 
+function customerAccountConflict(): HttpError {
+  return new HttpError(409, CUSTOMER_ACCOUNT_CONFLICT.message, {
+    code: CUSTOMER_ACCOUNT_CONFLICT.code
+  });
+}
+
 export async function createCustomerSession(
   customerAccountId: string,
   now = new Date()
@@ -97,9 +107,7 @@ export async function registerCustomer(
   const existing = await prisma.customerAccount.findUnique({ where: { email } });
 
   if (existing) {
-    throw new HttpError(409, "An account with this email already exists.", {
-      code: "CUSTOMER_EMAIL_ALREADY_REGISTERED"
-    });
+    throw customerAccountConflict();
   }
 
   let customer: CustomerAccount;
@@ -115,9 +123,7 @@ export async function registerCustomer(
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      throw new HttpError(409, "An account with this email already exists.", {
-        code: "CUSTOMER_EMAIL_ALREADY_REGISTERED"
-      });
+      throw customerAccountConflict();
     }
     throw error;
   }
