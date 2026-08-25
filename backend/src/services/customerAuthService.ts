@@ -10,17 +10,23 @@ import {
   type CustomerLoginInput,
   type CustomerRegisterInput
 } from "../validators/customerAuth.validators.js";
-import { hashPassword, verifyPassword } from "./passwordHashService.js";
+import {
+  hashPassword,
+  passwordHashNeedsUpgrade,
+  verifyPassword
+} from "./passwordHashService.js";
 
 const CUSTOMER_SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
 const INVALID_CREDENTIALS = {
   code: "INVALID_CUSTOMER_CREDENTIALS",
-  message: "Invalid email or password."
+  message: "Invalid credentials."
 } as const;
 const INVALID_SESSION = {
   code: "CUSTOMER_SESSION_INVALID",
   message: "Customer session is invalid or expired."
 } as const;
+
+const DUMMY_PASSWORD_HASH_PROMISE = hashPassword(randomBytes(32).toString("base64url"));
 
 export type SafeCustomer = {
   id: string;
@@ -130,12 +136,21 @@ export async function loginCustomer(input: CustomerLoginInput): Promise<Customer
   });
 
   if (!customer || customer.status !== "ACTIVE") {
+    const dummyHash = await DUMMY_PASSWORD_HASH_PROMISE;
+    await verifyPassword(parsed.password, dummyHash);
     throw invalidCredentials();
   }
 
   const passwordMatches = await verifyPassword(parsed.password, customer.passwordHash);
   if (!passwordMatches) {
     throw invalidCredentials();
+  }
+
+  if (passwordHashNeedsUpgrade(customer.passwordHash)) {
+    await prisma.customerAccount.update({
+      data: { passwordHash: await hashPassword(parsed.password) },
+      where: { id: customer.id }
+    });
   }
 
   const session = await createCustomerSession(customer.id);
