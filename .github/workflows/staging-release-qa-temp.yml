@@ -1,0 +1,193 @@
+name: Staging Release QA Probe
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa-probe:
+    name: Sprint 8 server and UI QA probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ysabellestore_qa
+          MYSQL_USER: qa
+          MYSQL_PASSWORD: qa
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DATABASE_URL: mysql://qa:qa@127.0.0.1:3306/ysabellestore_qa
+      JWT_SECRET: staging-qa-only-secret
+      FRONTEND_URL: http://localhost:5173
+      VITE_API_BASE_URL: http://localhost:3001
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      PORT: 3001
+
+    steps:
+      - name: Checkout staging candidate
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare disposable QA database
+        env:
+          NODE_ENV: test
+        run: |
+          npm run prisma:generate
+          npm run prisma:validate
+          npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+          npm run db:seed
+
+      - name: Run targeted Sprint 8 server reliability regressions
+        env:
+          NODE_ENV: test
+        run: |
+          cd backend
+          npx tsx --test --test-concurrency=1 \
+            test/http-status-contract.test.ts \
+            test/health-readiness.test.ts \
+            test/error-handler-security.test.ts \
+            test/request-traceability.test.ts
+
+      - name: Start real staging web stack
+        env:
+          NODE_ENV: development
+        run: |
+          mkdir -p qa-artifacts
+          npm run dev:web > qa-artifacts/dev-stack.log 2>&1 &
+          echo $! > qa-artifacts/dev-stack.pid
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:3001/api/health >/dev/null 2>&1 && curl -fsS http://127.0.0.1:5173/ >/dev/null 2>&1; then
+              echo "Staging web stack is ready."
+              exit 0
+            fi
+            sleep 1
+          done
+          cat qa-artifacts/dev-stack.log
+          exit 1
+
+      - name: Assert live Sprint 8 health contract
+        run: |
+          node --input-type=module <<'NODE'
+          import { writeFile } from "node:fs/promises";
+
+          const baseUrl = "http://127.0.0.1:3001";
+          const cases = [
+            ["summary", "/api/health"],
+            ["liveness", "/api/health/live"],
+            ["readiness", "/api/health/ready"]
+          ];
+          const evidence = {};
+
+          for (const [name, path] of cases) {
+            const response = await fetch(`${baseUrl}${path}`);
+            const body = await response.json();
+            const requestId = response.headers.get("x-request-id");
+
+            if (response.status !== 200) throw new Error(`${name} returned ${response.status}`);
+            if (body?.data?.service !== "ysabellestore-backend") {
+              throw new Error(`${name} did not identify the YsabelleStore backend`);
+            }
+            if (!requestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) {
+              throw new Error(`${name} did not return a valid server-generated request id`);
+            }
+
+            if (name === "summary" || name === "readiness") {
+              if (body?.data?.status !== "healthy" || body?.data?.ready !== true) {
+                throw new Error(`${name} was not healthy and ready`);
+              }
+              if (body?.data?.checks?.database !== "connected") {
+                throw new Error(`${name} database check was not connected`);
+              }
+              if (body?.data?.database?.message !== "Database connection is available.") {
+                throw new Error(`${name} returned an unexpected database health message`);
+              }
+            }
+
+            if (name === "liveness" && body?.data?.status !== "healthy") {
+              throw new Error("liveness was not healthy");
+            }
+
+            evidence[name] = {
+              statusCode: response.status,
+              requestId,
+              body
+            };
+          }
+
+          const serialized = JSON.stringify(evidence, null, 2);
+          if (/mysql:\/\/qa:qa|staging-qa-only-secret|PrismaClient|stack trace/i.test(serialized)) {
+            throw new Error("Health evidence exposed a sensitive diagnostic value");
+          }
+
+          await writeFile("qa-artifacts/server-health-evidence.json", serialized);
+          console.log(serialized);
+          NODE
+
+      - name: Install Chromium for visual QA
+        run: npx --yes playwright@1.55.0 install --with-deps chromium
+
+      - name: Capture real staging UI screenshots
+        run: |
+          npx --yes playwright@1.55.0 screenshot \
+            --browser chromium \
+            --viewport-size "1440,1000" \
+            --wait-for-timeout 5000 \
+            http://127.0.0.1:5173/ \
+            qa-artifacts/customer-home-desktop.png
+
+          npx --yes playwright@1.55.0 screenshot \
+            --browser chromium \
+            --viewport-size "1440,1000" \
+            --wait-for-timeout 5000 \
+            http://127.0.0.1:5173/staff-login \
+            qa-artifacts/staff-login-desktop.png
+
+          npx --yes playwright@1.55.0 screenshot \
+            --browser chromium \
+            --device "iPhone 13" \
+            --wait-for-timeout 5000 \
+            http://127.0.0.1:5173/ \
+            qa-artifacts/customer-home-mobile.png
+
+      - name: Record QA manifest
+        if: always()
+        run: |
+          {
+            echo "branch=staging"
+            echo "commit=${GITHUB_SHA}"
+            echo "probe=staging-release-qa"
+            echo "customer_home_desktop=customer-home-desktop.png"
+            echo "staff_login_desktop=staff-login-desktop.png"
+            echo "customer_home_mobile=customer-home-mobile.png"
+          } > qa-artifacts/manifest.txt
+
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-release-qa-evidence
+          path: qa-artifacts/
+          if-no-files-found: error
+          retention-days: 7
