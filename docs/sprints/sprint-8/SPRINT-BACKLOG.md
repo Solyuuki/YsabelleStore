@@ -58,9 +58,9 @@
 
 ## Phase 8 — Final verification and release-candidate handoff
 
-- [ ] Run full exact-head repository verification after final Sprint 8 documentation reconciliation.
-- [ ] Confirm CI, governance, PR checks, workspace builds, tests, dependency audit, and committed-status verification are green on that exact head.
-- [ ] Promote the verified Sprint 8 head by replacing the stale `staging` branch state with that exact commit.
+- [x] Run full exact-head repository verification after final Sprint 8 documentation reconciliation.
+- [x] Confirm CI, governance, PR checks, workspace builds, tests, dependency audit, and committed-status verification are green on the verified implementation head `a19927933ec5255ff7b1b5f6776cd453feda9844`.
+- [ ] Promote the final verified Sprint 8 documentation head by replacing the stale `staging` branch state with that exact commit.
 - [ ] Run the full release-candidate verification again on `staging`; repair any staging-only issue before considering `main`.
 - [ ] Hand the verified staging candidate to the user for manual acceptance testing.
 - [ ] Do not promote `staging` to `main` without explicit user approval after manual acceptance.
