@@ -17,25 +17,59 @@ import {
   requireAllowedCustomerAuthOrigin
 } from "../middleware/customerAuthSecurity.js";
 import { AUTH_RATE_LIMITS } from "../security/security.constants.js";
+import {
+  classifyCustomerLoginIdentifier,
+  normalizeCustomerEmail,
+  normalizeCustomerUsername,
+  normalizePhilippineMobile
+} from "../utils/customerIdentity.js";
 
 export const customerAuthRouter = Router();
 
-function normalizedEmailFromBody(body: unknown): string | null {
+function stringFieldFromBody(body: unknown, field: string): string | null {
   if (!body || typeof body !== "object") return null;
-  const email = (body as { email?: unknown }).email;
-  if (typeof email !== "string") return null;
+  const value = (body as Record<string, unknown>)[field];
+  return typeof value === "string" ? value : null;
+}
 
-  const normalized = email.trim().toLowerCase();
-  return normalized || null;
+function privateIdentityKey(scope: string, kind: string, normalized: string): string {
+  return derivePrivateRateLimitKey(scope, `${kind}:${normalized}`);
 }
 
 const customerRegisterRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRegister);
-const customerRegisterIdentityRateLimit = createAuthRateLimit({
+const customerRegisterUsernameRateLimit = createAuthRateLimit({
   ...AUTH_RATE_LIMITS.customerRegisterIdentity,
   keyResolver(request) {
-    const email = normalizedEmailFromBody(request.body);
+    const rawUsername = stringFieldFromBody(request.body, "username");
+    if (!rawUsername) return null;
+
+    const username = normalizeCustomerUsername(rawUsername);
+    return username
+      ? privateIdentityKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, "username", username)
+      : null;
+  }
+});
+const customerRegisterEmailRateLimit = createAuthRateLimit({
+  ...AUTH_RATE_LIMITS.customerRegisterIdentity,
+  keyResolver(request) {
+    const rawEmail = stringFieldFromBody(request.body, "email");
+    if (!rawEmail) return null;
+
+    const email = normalizeCustomerEmail(rawEmail);
     return email
-      ? derivePrivateRateLimitKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, email)
+      ? privateIdentityKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, "email", email)
+      : null;
+  }
+});
+const customerRegisterMobileRateLimit = createAuthRateLimit({
+  ...AUTH_RATE_LIMITS.customerRegisterIdentity,
+  keyResolver(request) {
+    const rawPhone = stringFieldFromBody(request.body, "phone");
+    if (!rawPhone) return null;
+
+    const phone = normalizePhilippineMobile(rawPhone);
+    return phone
+      ? privateIdentityKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, "phone", phone)
       : null;
   }
 });
@@ -43,9 +77,16 @@ const customerLoginRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerLogi
 const customerLoginIdentifierRateLimit = createAuthRateLimit({
   ...AUTH_RATE_LIMITS.customerLoginIdentifier,
   keyResolver(request) {
-    const email = normalizedEmailFromBody(request.body);
-    return email
-      ? derivePrivateRateLimitKey(AUTH_RATE_LIMITS.customerLoginIdentifier.scope, email)
+    const rawIdentifier = stringFieldFromBody(request.body, "identifier");
+    if (!rawIdentifier) return null;
+
+    const identity = classifyCustomerLoginIdentifier(rawIdentifier);
+    return identity
+      ? privateIdentityKey(
+          AUTH_RATE_LIMITS.customerLoginIdentifier.scope,
+          identity.kind,
+          identity.normalized
+        )
       : null;
   }
 });
@@ -61,7 +102,9 @@ customerAuthRouter.post(
   "/register",
   requireAllowedCustomerAuthOrigin,
   customerRegisterRateLimit,
-  customerRegisterIdentityRateLimit,
+  customerRegisterUsernameRateLimit,
+  customerRegisterEmailRateLimit,
+  customerRegisterMobileRateLimit,
   registerCustomerAccount
 );
 customerAuthRouter.post(
