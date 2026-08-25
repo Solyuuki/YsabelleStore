@@ -5,7 +5,9 @@ import { test } from "node:test";
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 
 function extractTypeBlock(source, typeName) {
-  const match = source.match(new RegExp(`export type ${typeName}\\s*=\\s*\\{([\\s\\S]*?)\\n\\};`));
+  const match = source.match(
+    new RegExp(`export type ${typeName}\\s*=\\s*\\{([\\s\\S]*?)\\n\\};`)
+  );
   assert.ok(match, `${typeName} must remain an exported object type`);
   return match[1];
 }
@@ -26,11 +28,17 @@ test("customer auth types expose username and use identifier instead of login em
 test("customer login page submits a generic username, email, or mobile identifier", () => {
   const loginPage = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
 
-  assert.match(loginPage, /const\s*\[identifier\s*,\s*setIdentifier\]\s*=\s*useState\(["']{2}\)/);
+  assert.match(
+    loginPage,
+    /const\s*\[identifier\s*,\s*setIdentifier\]\s*=\s*useState\(["']{2}\)/
+  );
   assert.match(loginPage, /Username, email or mobile number/);
   assert.match(loginPage, /autoComplete=["']username["']/);
   assert.match(loginPage, /validateCustomerLoginForm\(\{\s*identifier\s*,\s*password\s*\}\)/);
-  assert.match(loginPage, /await login\(\{\s*identifier:\s*identifier\.trim\(\)\s*,\s*password\s*\}\)/);
+  assert.match(
+    loginPage,
+    /await login\(\{\s*identifier:\s*identifier\.trim\(\)\s*,\s*password\s*\}\)/
+  );
   assert.doesNotMatch(loginPage, /type=["']email["']/);
 });
 
@@ -53,8 +61,14 @@ test("customer registration intent prewarm remains part of the registration flow
   const registerPage = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
 
   assert.match(service, /export async function prepareCustomerRegistrationIntent\s*\(/);
-  assert.match(service, /registerCustomer[\s\S]*?await ensureCustomerRegistrationIntentReady\s*\(\s*\)/);
-  assert.match(registerPage, /useEffect\s*\(\s*\(\s*\)\s*=>[\s\S]*?prepareCustomerRegistrationIntent/);
+  assert.match(
+    service,
+    /registerCustomer[\s\S]*?await ensureCustomerRegistrationIntentReady\s*\(\s*\)/
+  );
+  assert.match(
+    registerPage,
+    /useEffect\s*\(\s*\(\s*\)\s*=>[\s\S]*?prepareCustomerRegistrationIntent/
+  );
 });
 
 test("Phase 2 customer auth pages do not introduce OAuth or OTP controls", () => {
@@ -62,5 +76,8 @@ test("Phase 2 customer auth pages do not introduce OAuth or OTP controls", () =>
   const registerPage = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
   const combined = `${loginPage}\n${registerPage}`;
 
-  assert.doesNotMatch(combined, /\bGoogle\b|\bFacebook\b|\bOAuth\b|\bOTP\b|one[- ]time code|verification code/i);
+  assert.doesNotMatch(
+    combined,
+    /\bGoogle\b|\bFacebook\b|\bOAuth\b|\bOTP\b|one[- ]time code|verification code/i
+  );
 });
