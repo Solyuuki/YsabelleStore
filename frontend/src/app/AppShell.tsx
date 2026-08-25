@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
+import { CustomerApp } from "@/app/CustomerApp";
 import { LogoutConfirmationModal } from "@/components/shared/LogoutConfirmationModal";
 import { AppLayout } from "@/layouts/AppLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +14,7 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
 import { SalesPage } from "@/pages/SalesPage";
 import { ForecastPage } from "@/pages/ForecastPage";
+import { HistoricalSalesPage } from "@/pages/HistoricalSalesPage";
 import { ProtectedPage } from "@/pages/ProtectedPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
@@ -22,21 +24,23 @@ const LAUNCH_SPLASH_DELAY_MS = 250;
 const LOGOUT_CONFIRMATION_MINIMUM_MS = 700;
 
 const validRoutePaths = new Set<string>([
-  "/",
   "/dashboard",
   "/pos",
   "/products",
   "/inventory",
   "/sales",
   "/forecast",
+  "/historical-sales",
   "/reports",
   "/users",
   "/settings",
   "/not-found"
 ]);
 
-function getCurrentPath() {
-  return window.location.pathname || "/";
+const internalRoutePaths = new Set<string>([...validRoutePaths, "/staff-login"]);
+
+function getCurrentLocation() {
+  return `${window.location.pathname || "/"}${window.location.search}${window.location.hash}`;
 }
 
 function getReceiptPrintRequest() {
@@ -66,9 +70,11 @@ export function AppShell() {
     switchUser,
     user
   } = useAuth();
-  const [path, setPath] = useState(getCurrentPath);
+  const [location, setLocation] = useState(getCurrentLocation);
+  const path = new URL(location, window.location.origin).pathname;
+  const isCustomerRoute = !internalRoutePaths.has(path);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.innerWidth < 1280);
-  const shouldHoldForAuth = !isAuthReady || (status === "authenticated" && path === "/");
+  const shouldHoldForAuth = !isCustomerRoute && !isAuthReady;
   const [showLaunchSplash, setShowLaunchSplash] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [logoutSubmitting, setLogoutSubmitting] = useState(false);
@@ -76,19 +82,25 @@ export function AppShell() {
   const receiptPrintRequest = getReceiptPrintRequest();
 
   useEffect(() => {
-    const handlePopState = () => setPath(getCurrentPath());
+    const handlePopState = () => setLocation(getCurrentLocation());
 
     window.addEventListener("popstate", handlePopState);
 
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  const navigate = useCallback((nextPath: AppRoutePath) => {
-    if (window.location.pathname !== nextPath) {
+  const navigate = useCallback((nextPath: string) => {
+    if (getCurrentLocation() !== nextPath) {
       window.history.pushState({}, "", nextPath);
     }
 
-    setPath(nextPath);
+    setLocation(getCurrentLocation());
+    const hash = new URL(nextPath, window.location.origin).hash;
+    if (hash) {
+      window.requestAnimationFrame(() => document.querySelector(hash)?.scrollIntoView());
+    } else {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
   }, []);
 
   const route = useMemo(() => getRouteByPath(path), [path]);
@@ -120,7 +132,7 @@ export function AppShell() {
     logoutSubmittingRef.current = false;
     setLogoutModalOpen(false);
     setLogoutSubmitting(false);
-    navigate("/");
+    navigate("/staff-login");
   }, [logout, navigate]);
 
   useEffect(() => {
@@ -128,12 +140,12 @@ export function AppShell() {
       return;
     }
 
-    if (status === "authenticated" && path === "/") {
+    if (status === "authenticated" && path === "/staff-login") {
       navigate("/dashboard");
     }
 
-    if (status === "unauthenticated" && path !== "/") {
-      navigate("/");
+    if (status === "unauthenticated" && internalRoutePaths.has(path) && path !== "/staff-login") {
+      navigate("/staff-login");
     }
   }, [isAuthReady, navigate, path, status]);
 
@@ -161,11 +173,15 @@ export function AppShell() {
     );
   }
 
+  if (isCustomerRoute) {
+    return <CustomerApp location={location} navigate={navigate} />;
+  }
+
   if (shouldHoldForAuth) {
     return showLaunchSplash ? <LaunchSplash /> : null;
   }
 
-  if (status !== "authenticated" || path === "/") {
+  if (status !== "authenticated" || path === "/staff-login") {
     return (
       <WelcomePage
         error={error}
@@ -218,10 +234,8 @@ function LaunchSplash() {
           <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/70 bg-white/75 shadow-[0_18px_48px_rgba(15,23,42,0.12)] backdrop-blur-md">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
           </div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-700/90">
-            Restoring session
-          </p>
-          <p className="text-sm font-medium text-slate-700">Opening YsabelleStore...</p>
+          <p className="type-label text-emerald-700/90">Restoring session</p>
+          <p className="type-body-sm font-semibold text-slate-700">Opening YsabelleStore...</p>
         </div>
       </div>
     </main>
@@ -257,6 +271,8 @@ function renderRoute(
       return <SalesPage />;
     case "/forecast":
       return <ForecastPage />;
+    case "/historical-sales":
+      return <HistoricalSalesPage />;
     case "/users":
       return <UserManagementPage error={error} onRegister={register} user={user} />;
     default:

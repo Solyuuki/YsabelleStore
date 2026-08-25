@@ -630,9 +630,7 @@ function CompactEmptyState({ title, description }: { title: string; description:
 function SectionHeading({ label }: { label: string }) {
   return (
     <div className="flex items-center justify-between px-1">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-        {label}
-      </p>
+      <p className="type-label text-slate-500">{label}</p>
     </div>
   );
 }

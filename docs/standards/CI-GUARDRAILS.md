@@ -15,8 +15,12 @@ These rules apply to GitHub Actions, pull requests, repository quality checks, a
 | `npm ci`                                                     | Installs dependencies from the lockfile                           |
 | `npm run format:check`                                       | Confirms formatting is clean                                      |
 | `npm run lint`                                               | Confirms code quality rules pass                                  |
+| `npm run typecheck`                                          | Checks root scripts and all TypeScript workspaces                 |
+| `npm run test:guardrails`                                    | Checks orchestration, rollback, sprint, version, and audit policy |
+| `npm test --workspaces --if-present`                         | Runs configured workspace tests                                   |
 | `npm run build`                                              | Confirms workspace build succeeds                                 |
-| `npm audit --audit-level=high`                               | Confirms there are no unresolved high or critical vulnerabilities |
+| `npm run security:audit:production`                          | Blocks production-reachable high or critical vulnerabilities      |
+| `npm run version:check`                                      | Confirms package/lockfile alignment and app-version validity      |
 | `npx prisma validate --schema=database/prisma/schema.prisma` | Confirms Prisma schema is valid                                   |
 | Workspace validation                                         | Confirms `frontend`, `backend`, and `electron` remain buildable   |
 
@@ -32,14 +36,14 @@ These rules apply to GitHub Actions, pull requests, repository quality checks, a
 - Broken builds
 - Formatting regressions
 - Lint failures
-- High or critical dependency vulnerabilities
+- Production-reachable high or critical dependency vulnerabilities
 - Invalid Prisma schema changes
 - Unsafe branch names
 - Missing or incomplete PR metadata
 
 ## What Must Never Be Bypassed
 
-- Security audit failures
+- Production security audit failures
 - Prisma validation failures
 - Branch naming rules for PRs
 - Required review workflow
@@ -59,6 +63,10 @@ During the implementation phase, branch naming, PR metadata, and review discipli
 2. Reproduce the issue locally with the same command.
 3. Fix the root cause, not the failing symptom.
 4. Rerun the relevant checks before requesting another review.
+
+Development-only audit findings remain warnings that require review and targeted remediation. They
+must not be represented as production reachability merely because npm reports them through optional
+peer metadata.
 
 ## Validation Checklist
 

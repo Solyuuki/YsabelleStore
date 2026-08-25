@@ -1,9 +1,10 @@
 import { ChevronLeft, LogOut } from "lucide-react";
 
 import { appRoutes, type AppRoutePath } from "@/app/routes";
-import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { SidebarNavItem } from "@/components/app/SidebarNavItem";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/button";
+import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { cn } from "@/lib/utils";
 import type { AuthUser } from "@/types/auth";
 
@@ -76,8 +77,8 @@ export function AppSidebar({
       </Button>
 
       <div className="flex h-16 items-center gap-3 border-b border-slate-200/80 px-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-500 text-sm font-bold text-slate-950 shadow-sm shadow-emerald-950/10">
-          YS
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 shadow-sm shadow-violet-950/15 ring-1 ring-violet-200/70">
+          <BrandLogo className="h-full w-full object-contain" />
         </div>
         <div
           className={cn(
@@ -85,8 +86,8 @@ export function AppSidebar({
             collapsed ? "max-w-0 opacity-0" : "max-w-48 opacity-100"
           )}
         >
-          <p className="truncate text-sm font-semibold text-slate-950">YsabelleStore</p>
-          <p className="truncate text-xs text-slate-500">Retail desktop</p>
+          <p className="type-body-sm truncate font-semibold text-slate-950">YsabelleStore</p>
+          <p className="type-caption truncate text-slate-500">Retail desktop</p>
         </div>
       </div>
 
@@ -166,9 +167,7 @@ function SectionLabel({ collapsed, title }: SectionLabelProps) {
         collapsed ? "max-h-0 opacity-0" : "max-h-8 opacity-100"
       )}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-        {title}
-      </p>
+      <p className="type-label text-slate-500">{title}</p>
     </div>
   );
 }
@@ -176,13 +175,15 @@ function SectionLabel({ collapsed, title }: SectionLabelProps) {
 function FullCounterModeCard({ user }: { user: AuthUser | null }) {
   return (
     <div className="rounded-xl border border-slate-200/80 bg-white/75 p-3 text-slate-700 shadow-sm backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 ease-out">
-      <p className="text-xs font-medium text-slate-900">{user?.name ?? "Counter mode"}</p>
-      <p className="mt-1 text-xs leading-5 text-slate-500">
+      <p className="type-caption font-semibold text-slate-900">{user?.name ?? "Counter mode"}</p>
+      <p className="type-caption mt-1 text-slate-500">
         {user
           ? `${user.role.toLowerCase()} session active.`
           : "Staff workspace for daily retail operations."}
       </p>
-      <p className="mt-3 text-xs font-medium text-slate-500">YsabelleStore {APP_VERSION_LABEL}</p>
+      <p className="type-caption mt-3 font-semibold text-slate-500">
+        YsabelleStore {APP_VERSION_LABEL}
+      </p>
     </div>
   );
 }

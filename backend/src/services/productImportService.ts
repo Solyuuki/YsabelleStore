@@ -5,9 +5,16 @@ import { Prisma, type ProductStatus, type ProductUnit } from "@prisma/client";
 import { readSheet } from "read-excel-file/node";
 
 import { prisma } from "../database/prismaClient.js";
+import { isSupportedCatalogImageUrl, normalizeCatalogImageUrl } from "../utils/catalogImage.js";
+import {
+  extractCanonicalProductSize,
+  normalizeCanonicalProductName,
+  normalizeProductIdentity
+} from "../utils/catalogIdentity.js";
 import { HttpError } from "../utils/httpError.js";
 import { normalizeCode, normalizeWhitespace } from "../utils/normalizers.js";
 import { createOpeningStockBatch, assertStockInvariant } from "./stockDomainService.js";
+import { operationalProductWhere } from "./catalogQualityPolicy.js";
 
 const PRODUCT_IMPORT_TEMPLATE_HEADERS = [
   "name",
@@ -21,7 +28,8 @@ const PRODUCT_IMPORT_TEMPLATE_HEADERS = [
   "targetStockLevel",
   "initialStock",
   "status",
-  "description"
+  "description",
+  "imageUrl"
 ] as const;
 
 const REQUIRED_IMPORT_HEADERS = [
@@ -87,6 +95,7 @@ type NormalizedImportRow = {
   initialStock: number;
   status: ProductStatus;
   description: string | null;
+  imageUrl: string | null;
 };
 
 type PreviewRow = {
@@ -176,7 +185,12 @@ const headerAliasEntries: Array<[string, string]> = [
   ["initial stock", "initialStock"],
   ["initial_stock", "initialStock"],
   ["status", "status"],
-  ["description", "description"]
+  ["description", "description"],
+  ["imageurl", "imageUrl"],
+  ["image url", "imageUrl"],
+  ["image_url", "imageUrl"],
+  ["productimage", "imageUrl"],
+  ["product image", "imageUrl"]
 ];
 
 const headerAliasMap = new Map<string, string>(
@@ -698,6 +712,7 @@ function normalizeImportRow(
   const descriptionRaw = normalizeTextCell(
     resolveCellValue(row, columnIndexByCanonical, "description")
   );
+  const imageUrlRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "imageUrl"));
 
   if (!name) {
     errors.push(
@@ -846,6 +861,7 @@ function normalizeImportRow(
   const status = resolveStatus(statusRaw, row.rowNumber, errors);
   const unit = resolveUnit(unitRaw, row.rowNumber, errors);
   const description = parseOptionalText(descriptionRaw);
+  const imageUrl = normalizeCatalogImageUrl(imageUrlRaw);
   const barcode = parseOptionalText(barcodeRaw);
 
   if (barcodeRaw.length > 0 && barcode === null) {
@@ -880,6 +896,28 @@ function normalizeImportRow(
         "INVALID_DESCRIPTION",
         "Description must not be blank after trimming.",
         descriptionRaw
+      )
+    );
+  }
+
+  if (imageUrlRaw.length > 2048) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "imageUrl",
+        "IMAGE_URL_TOO_LONG",
+        "Product image URL must be 2,048 characters or fewer.",
+        imageUrlRaw
+      )
+    );
+  } else if (imageUrl && !isSupportedCatalogImageUrl(imageUrl)) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        "imageUrl",
+        "INVALID_IMAGE_URL",
+        "Product image must use an HTTPS URL or a root-relative local asset path.",
+        imageUrlRaw
       )
     );
   }
@@ -927,7 +965,8 @@ function normalizeImportRow(
           targetStockLevel,
           initialStock,
           status,
-          description
+          description,
+          imageUrl
         } satisfies NormalizedImportRow
       };
     }
@@ -1140,6 +1179,25 @@ async function validateSpreadsheetImport(file: UploadFile): Promise<ProductImpor
   });
 
   addWithinFileDuplicates(previewRows);
+  const rowsByIdentity = new Map<string, PreviewRow[]>();
+  for (const row of previewRows) {
+    if (!row.normalizedData) continue;
+    const identity = normalizeProductIdentity(row.normalizedData.name);
+    rowsByIdentity.set(identity, [...(rowsByIdentity.get(identity) ?? []), row]);
+  }
+  for (const [identity, rowsWithIdentity] of rowsByIdentity) {
+    if (!identity || rowsWithIdentity.length < 2) continue;
+    for (const row of rowsWithIdentity) {
+      row.warnings.push({
+        code: "POSSIBLE_DUPLICATE_IDENTITY_IN_FILE",
+        field: "name",
+        message:
+          "Another import row has the same normalized name. Different sizes or variants remain separate; otherwise review these records as duplicate candidates.",
+        rowNumber: row.rowNumber,
+        value: row.normalizedData?.name
+      });
+    }
+  }
 
   const skuValues = [
     ...new Set(previewRows.flatMap((row) => (row.normalizedData ? [row.normalizedData.sku] : [])))
@@ -1168,6 +1226,38 @@ async function validateSpreadsheetImport(file: UploadFile): Promise<ProductImpor
     });
 
     addConflictIssues(previewRows, conflicts);
+  }
+
+  const existingIdentityProducts = await prisma.product.findMany({
+    select: { barcode: true, id: true, name: true, sku: true },
+    where: operationalProductWhere()
+  });
+  const productsByIdentity = new Map<string, typeof existingIdentityProducts>();
+  for (const product of existingIdentityProducts) {
+    const identity = normalizeProductIdentity(product.name);
+    productsByIdentity.set(identity, [...(productsByIdentity.get(identity) ?? []), product]);
+  }
+  for (const row of previewRows) {
+    if (!row.normalizedData) continue;
+    const identity = normalizeProductIdentity(row.normalizedData.name);
+    const matches = productsByIdentity.get(identity) ?? [];
+    for (const match of matches) {
+      if (
+        match.sku === row.normalizedData.sku ||
+        (match.barcode && match.barcode === row.normalizedData.barcode)
+      ) {
+        continue;
+      }
+      row.warnings.push({
+        code: "POSSIBLE_DUPLICATE_IDENTITY",
+        existingProductId: match.id,
+        field: "name",
+        message:
+          "A catalog product has the same normalized name but different strong identifiers. The imported record will require manual duplicate review.",
+        rowNumber: row.rowNumber,
+        value: row.normalizedData.name
+      });
+    }
   }
 
   const rows = previewRows.map((row) => ({
@@ -1216,16 +1306,27 @@ export async function importProductsFromFile(
   const now = new Date();
   const importRows = preview.rows
     .filter((row) => row.valid && row.normalizedData)
-    .map((row) => row.normalizedData as NormalizedImportRow);
+    .map((row) => ({
+      candidateProductIds: row.warnings.flatMap((warning) =>
+        warning.code === "POSSIBLE_DUPLICATE_IDENTITY" && warning.existingProductId
+          ? [warning.existingProductId]
+          : []
+      ),
+      data: row.normalizedData as NormalizedImportRow
+    }));
 
   let inventoryRowsCreated = 0;
   let initialMovementsCreated = 0;
 
   await prisma.$transaction(async (tx) => {
-    for (const row of importRows) {
+    const createdByIdentity = new Map<string, string[]>();
+    for (const importRow of importRows) {
+      const row = importRow.data;
+      const canonicalName = normalizeCanonicalProductName(row.name);
+      const size = extractCanonicalProductSize(canonicalName);
       const product = await tx.product.create({
         data: {
-          name: row.name,
+          name: canonicalName,
           sku: row.sku,
           barcode: row.barcode,
           categoryId: row.categoryId,
@@ -1235,9 +1336,82 @@ export async function importProductsFromFile(
           reorderLevel: row.reorderLevel,
           targetStockLevel: row.targetStockLevel,
           status: row.status,
-          description: row.description
+          description: row.description,
+          imageUrl: row.imageUrl,
+          sizeValue: size.sizeValue ? new Prisma.Decimal(size.sizeValue) : null,
+          sizeUnit: size.sizeUnit,
+          recordSource: "IMPORT",
+          dataQualityStatus: "NEEDS_REVIEW",
+          isStorefrontVisible: false,
+          aliases: {
+            create: [
+              {
+                type: "RAW_NAME",
+                value: row.name,
+                normalizedValue: canonicalName.toLowerCase(),
+                recordSource: "IMPORT",
+                sourceReference: importId,
+                evidence: { fileName: preview.fileName, importId }
+              },
+              {
+                type: "SKU",
+                value: row.sku,
+                normalizedValue: row.sku.toUpperCase(),
+                recordSource: "IMPORT",
+                sourceReference: importId,
+                evidence: { fileName: preview.fileName, importId }
+              },
+              ...(row.barcode
+                ? [
+                    {
+                      type: "BARCODE" as const,
+                      value: row.barcode,
+                      normalizedValue: row.barcode,
+                      recordSource: "IMPORT" as const,
+                      sourceReference: importId,
+                      evidence: { fileName: preview.fileName, importId }
+                    }
+                  ]
+                : [])
+            ]
+          }
         }
       });
+
+      const identity = normalizeProductIdentity(row.name);
+      const candidateProductIds = new Set([
+        ...importRow.candidateProductIds,
+        ...(createdByIdentity.get(identity) ?? [])
+      ]);
+      for (const candidateProductId of candidateProductIds) {
+        const sortedProductIds = [candidateProductId, product.id].sort();
+        const leftProductId = sortedProductIds[0];
+        const rightProductId = sortedProductIds[1];
+        if (!leftProductId || !rightProductId) continue;
+        await tx.productDuplicateCandidate.upsert({
+          create: {
+            confidence: "0.5500",
+            evidence: {
+              importId,
+              importedBarcode: row.barcode,
+              importedName: row.name,
+              importedSku: row.sku,
+              normalizedName: normalizeProductIdentity(row.name)
+            },
+            leftProductId,
+            matchType: "NORMALIZED_IDENTITY",
+            reason:
+              "Imported name matches a catalog identity, but strong identifiers differ; manual review required.",
+            rightProductId,
+            status: "PENDING"
+          },
+          update: {},
+          where: {
+            leftProductId_rightProductId: { leftProductId, rightProductId }
+          }
+        });
+      }
+      createdByIdentity.set(identity, [...(createdByIdentity.get(identity) ?? []), product.id]);
 
       await tx.inventory.create({
         data: {

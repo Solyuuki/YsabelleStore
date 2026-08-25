@@ -2,18 +2,18 @@ import fs from "node:fs";
 
 import { classifyChanges } from "./lib/change-classifier.mjs";
 import { collectChangedFiles, getBranch } from "./lib/git-utils.mjs";
-import { getRequiredSprintFiles, requireMember, requireSprint } from "./lib/member-utils.mjs";
+import { getRequiredSprintFiles, requireSprint, resolveMember } from "./lib/member-utils.mjs";
 import { printTable } from "./lib/run-command.mjs";
 
 const branch = getBranch();
-const member = requireMember(branch);
+const member = resolveMember(branch);
 const sprint = requireSprint(branch);
 const classified = classifyChanges(collectChangedFiles());
 const rows = [];
-const memberFile = `${sprint.sprintDir}/members/${member.key}.md`;
+const memberFile = member ? `${sprint.sprintDir}/members/${member.key}.md` : null;
 
 console.log(`branch: ${branch}`);
-console.log(`member: ${member.key}`);
+console.log(`member: ${member?.key ?? "sprint-integration"}`);
 console.log(`sprintVersion: ${sprint.sprintVersion}`);
 console.log(`sprintDir: ${sprint.sprintDir}`);
 
@@ -25,36 +25,39 @@ for (const filePath of getRequiredSprintFiles(sprint.sprintDir)) {
   );
 }
 
-addCheck("Current member sprint file", fs.existsSync(memberFile), memberFile);
-addCheck("Current member sprint activity", includesBranch(memberFile), memberFile);
-addCheck(
-  "DEFINITION-OF-DONE validation section",
-  includesText(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`, "Validation Status"),
-  "Validation template section present."
-);
-addCheck(
-  "SPRINT-BACKLOG activity section",
-  includesText(`${sprint.sprintDir}/SPRINT-BACKLOG.md`, "Sprint Activity Log"),
-  "Backlog activity template section present."
-);
-
-if (hasImplementationChanges()) {
+if (memberFile) {
+  addCheck("Current member sprint file", fs.existsSync(memberFile), memberFile);
+  addCheck("Current member sprint activity", includesBranch(memberFile), memberFile);
   addCheck(
-    "Implementation changes documented in member sprint file",
-    includesBranch(memberFile),
-    branch
+    "DEFINITION-OF-DONE validation section",
+    includesText(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`, "Validation Status"),
+    "Member status-update template section present."
+  );
+  addCheck(
+    "SPRINT-BACKLOG activity section",
+    includesText(`${sprint.sprintDir}/SPRINT-BACKLOG.md`, "Sprint Activity Log"),
+    "Member status-update template section present."
+  );
+
+  if (hasImplementationChanges()) {
+    addCheck(
+      "Implementation changes documented in member sprint file",
+      includesBranch(memberFile),
+      branch
+    );
+  }
+
+  addCheck(
+    "Current member sprint activity has no automated progress section",
+    !hasAutomatedProgressSection(memberFile),
+    "Template table is used instead of marker blocks."
   );
 }
 
 addCheck(
-  "Current member sprint activity has no automated progress section",
-  !hasAutomatedProgressSection(memberFile),
-  "Template table is used instead of marker blocks."
-);
-addCheck(
   "Definition of Done has no automated progress section",
   !hasAutomatedProgressSection(`${sprint.sprintDir}/DEFINITION-OF-DONE.md`),
-  "Template table is used instead of marker blocks."
+  "Sprint documentation is free from legacy generated marker blocks."
 );
 
 printTable(["Requirement", "Status", "Notes"], rows);

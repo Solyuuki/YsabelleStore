@@ -1,0 +1,4 @@
+sku,barcode,productName,period,quantitySold,unitPrice,salesAmount
+UNKNOWN-001,,Unknown product,2024-01,10,20.00,200.00
+COLA-15L,,Cola 1.5L,not-a-month,12,65.00,780.00
+COLA-15L,,Cola 1.5L,2024-02,-2,65.00,-130.00

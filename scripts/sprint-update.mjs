@@ -6,6 +6,7 @@ import {
   ensureMarkdownFile,
   ensureSectionWithTable,
   markdownList,
+  removeTableRows,
   today,
   upsertTableRow
 } from "./lib/markdown-utils.mjs";
@@ -99,15 +100,20 @@ function updateDefinitionOfDone() {
     "Status",
     "Notes"
   ]);
+  removeTableRows(
+    filePath,
+    "Validation Status",
+    (row) => row.Date === date && row.Member === member.displayName
+  );
   upsertTableRow(filePath, "Validation Status", ["Date", "Member", "Validation Checklist"], {
     Date: date,
     Member: member.displayName,
-    "Validation Checklist": "prepush:local / push-ready",
+    "Validation Checklist": "npm run verify:code",
     Status: validationStatus,
     Notes:
       validationStatus === "Passed"
-        ? "Validation passed locally."
-        : "Validation must pass before push."
+        ? "Aggregate read-only code verification passed locally."
+        : "Aggregate read-only code verification must pass before push."
   });
 }
 

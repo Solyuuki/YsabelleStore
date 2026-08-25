@@ -14,6 +14,7 @@ import type {
 import { hashPassword, verifyPassword } from "./passwordHashService.js";
 
 const TOKEN_EXPIRES_IN = "8h";
+const TRUSTED_DEVICE_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
 
 export type SafeUser = {
   id: string;
@@ -31,6 +32,7 @@ export type AuthSession = {
 
 export type AuthTokenPayload = {
   sub: string;
+  tokenType: "internal";
   email: string;
   role: UserRole;
 };
@@ -55,9 +57,22 @@ function toSafeUser(user: User): SafeUser {
   };
 }
 
+function invalidCredentials(): HttpError {
+  return new HttpError(401, "Invalid email or password.", {
+    code: "INVALID_CREDENTIALS"
+  });
+}
+
+function invalidTrustedDevice(): HttpError {
+  return new HttpError(401, "Device verification failed. Please sign in again.", {
+    code: "TRUSTED_DEVICE_INVALID"
+  });
+}
+
 function signAuthToken(user: SafeUser): string {
   return jwt.sign(
     {
+      tokenType: "internal",
       email: user.email,
       role: user.role
     },
@@ -86,7 +101,7 @@ async function createTrustedDeviceSession(userId: string, userAgent?: string) {
       tokenHash: hashTrustedDeviceToken(trustedDeviceToken),
       deviceLabel: "This device",
       userAgent: userAgent?.slice(0, 255),
-      expiresAt: null
+      expiresAt: new Date(Date.now() + TRUSTED_DEVICE_LIFETIME_MS)
     }
   });
 
@@ -104,13 +119,7 @@ export async function loginWithPassword(
   });
 
   if (!user) {
-    throw new HttpError(
-      404,
-      "Account not found. Please run the development seed or register an authorized user.",
-      {
-        code: "ACCOUNT_NOT_FOUND"
-      }
-    );
+    throw invalidCredentials();
   }
 
   if (!user.passwordHash.startsWith("scrypt$")) {
@@ -132,9 +141,7 @@ export async function loginWithPassword(
   const passwordMatches = await verifyPassword(credentials.password, user.passwordHash);
 
   if (!passwordMatches) {
-    throw new HttpError(401, "Invalid email or password.", {
-      code: "INVALID_CREDENTIALS"
-    });
+    throw invalidCredentials();
   }
 
   const safeUser = toSafeUser(user);
@@ -191,15 +198,17 @@ export async function restoreTrustedDeviceSession(
   });
 
   if (!trustedDevice) {
-    throw new HttpError(401, "Device verification failed. Please sign in again.", {
-      code: "TRUSTED_DEVICE_INVALID"
-    });
+    throw invalidTrustedDevice();
   }
 
   if (trustedDevice.revokedAt) {
     throw new HttpError(401, "This device was forgotten. Please sign in again.", {
       code: "TRUSTED_DEVICE_REVOKED"
     });
+  }
+
+  if (!trustedDevice.expiresAt || trustedDevice.expiresAt.getTime() <= Date.now()) {
+    throw invalidTrustedDevice();
   }
 
   if (!trustedDevice.user || trustedDevice.user.status !== "ACTIVE") {
@@ -253,12 +262,13 @@ export async function getUserFromToken(token: string): Promise<SafeUser> {
   try {
     const verified = jwt.verify(token, requireJwtSecret());
 
-    if (typeof verified === "string" || !verified.sub) {
+    if (typeof verified === "string" || !verified.sub || verified.tokenType !== "internal") {
       throw new Error("Invalid token payload.");
     }
 
     payload = {
       sub: verified.sub,
+      tokenType: "internal",
       email: String(verified.email ?? ""),
       role: verified.role as UserRole
     };

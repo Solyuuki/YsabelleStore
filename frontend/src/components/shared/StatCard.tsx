@@ -23,9 +23,9 @@ export function StatCard({ detail, icon: Icon, title, tone, value }: StatCardPro
         </span>
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-semibold text-slate-950">{value}</p>
+        <p className="type-metric text-slate-950">{value}</p>
         <div className="mt-4 flex items-center justify-between gap-3">
-          <p className="text-sm text-slate-500">{detail}</p>
+          <p className="type-body-sm text-slate-500">{detail}</p>
           <StatusBadge variant={tone}>{tone}</StatusBadge>
         </div>
       </CardContent>

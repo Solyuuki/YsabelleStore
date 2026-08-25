@@ -34,8 +34,47 @@ function parseShortStatus(output) {
     .filter(Boolean);
 }
 
+function environmentValue(name) {
+  const value = process.env[name]?.trim();
+  return value || null;
+}
+
+function resolveGitRef(refName) {
+  if (!refName || refName === "unknown") {
+    return null;
+  }
+
+  for (const candidate of [refName, `origin/${refName}`]) {
+    const result = runCommand("git", ["rev-parse", "--verify", "--quiet", candidate]);
+    if (result.ok) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
 export function getBranch() {
-  return runCommand("git", ["branch", "--show-current"]).stdout.trim() || "unknown";
+  const explicitBranch = environmentValue("YSABELLE_BRANCH");
+  if (explicitBranch) {
+    return explicitBranch;
+  }
+
+  const pullRequestBranch = environmentValue("GITHUB_HEAD_REF");
+  if (pullRequestBranch) {
+    return pullRequestBranch;
+  }
+
+  const localBranch = runCommand("git", ["branch", "--show-current"]).stdout.trim();
+  if (localBranch) {
+    return localBranch;
+  }
+
+  return environmentValue("GITHUB_REF_NAME") ?? "unknown";
+}
+
+export function getBaseRef() {
+  return environmentValue("YSABELLE_BASE_REF") ?? environmentValue("GITHUB_BASE_REF");
 }
 
 export function getUpstream() {
@@ -53,7 +92,6 @@ export function getRecentLog() {
 }
 
 export function collectChangedFiles() {
-  const upstream = getUpstream();
   const results = [];
 
   for (const args of [
@@ -69,10 +107,29 @@ export function collectChangedFiles() {
     }
   }
 
-  if (upstream) {
-    const result = runCommand("git", ["diff", "--name-status", `${upstream}...HEAD`]);
-    if (result.ok) {
-      results.push(...parseNameStatus(result.stdout));
+  const baseRef = getBaseRef();
+  if (baseRef) {
+    const resolvedBase =
+      resolveGitRef(baseRef) ?? resolveGitRef(environmentValue("YSABELLE_BASE_SHA"));
+    const resolvedHead =
+      resolveGitRef(getBranch()) ?? resolveGitRef(environmentValue("YSABELLE_HEAD_SHA"));
+    if (resolvedBase && resolvedHead) {
+      const result = runCommand("git", [
+        "diff",
+        "--name-status",
+        `${resolvedBase}...${resolvedHead}`
+      ]);
+      if (result.ok) {
+        results.push(...parseNameStatus(result.stdout));
+      }
+    }
+  } else {
+    const upstream = getUpstream();
+    if (upstream) {
+      const result = runCommand("git", ["diff", "--name-status", `${upstream}...HEAD`]);
+      if (result.ok) {
+        results.push(...parseNameStatus(result.stdout));
+      }
     }
   }
 

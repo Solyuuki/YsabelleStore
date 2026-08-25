@@ -1,69 +1,52 @@
 # Big Picture
 
-YsabelleStore is a thesis-grade desktop system for inventory monitoring, sales recording, SARIMA forecasting, and inventory recommendation support. This document aligns the team on what the system must do, what it must avoid, and how each technical layer contributes to the final application.
+YsabelleStore is a thesis-grade retail and inventory system centered on sales-informed inventory management, SARIMA demand forecasting, and inventory recommendation support.
+
+Use [`../PROJECT-SCOPE.md`](../PROJECT-SCOPE.md) as the canonical source for what belongs to the thesis core, what is a currently implemented product extension, and what remains future work. This document provides only the high-level system picture.
 
 ## System Purpose
 
-| Purpose                        | Description                                                      |
-| ------------------------------ | ---------------------------------------------------------------- |
-| Operational inventory tracking | Maintain product, batch, stock, and expiration records           |
-| Sales-based forecasting        | Use historical sales to forecast seasonal demand                 |
-| Recommendation support         | Convert forecasts and inventory data into action-oriented alerts |
-| Desktop deployment             | Deliver a local Windows desktop experience for Ysabelle's Store  |
-
-## Approved Scope
-
-| Included Module            | Required Capability                                                          |
-| -------------------------- | ---------------------------------------------------------------------------- |
-| Product Management         | Create, update, view, and deactivate products                                |
-| Sales Recording            | Record sales transactions and quantities                                     |
-| Inventory Monitoring       | Track stock levels and batch quantities                                      |
-| Batch Inventory Management | Monitor batch-specific stock and expiration dates                            |
-| Expiration Monitoring      | Detect near expiry and expiry risk                                           |
-| CSV and Excel Import       | Import product, inventory, and sales data                                    |
-| SARIMA Forecasting         | Produce demand forecasts with Python statsmodels                             |
-| Recommendation Engine      | Generate restock, low stock, overstock, near expiry, and expiry risk outputs |
-| Desktop Deployment         | Package the app as a Windows `.exe`                                          |
-
-## Out-of-Scope Decision Table
-
-| Excluded Item       | Decision     | Reason                                                |
-| ------------------- | ------------ | ----------------------------------------------------- |
-| PHP                 | Not allowed  | Final backend stack is Node.js and Express.js         |
-| XAMPP               | Not allowed  | Database must use MySQL Community Server directly     |
-| MongoDB             | Not allowed  | Relational inventory data requires MySQL and Prisma   |
-| Supplier Management | Not included | Thesis scope focuses on inventory and recommendations |
-| Purchase Orders     | Not included | Procurement is outside approved requirements          |
-| Restock History     | Not included | Recommendations are outputs, not procurement tracking |
-| GCash API           | Not included | Payment integration is outside the system scope       |
-| Cloud Deployment    | Not included | Deployment target is local desktop                    |
+| Purpose                        | Description                                                                            |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| Operational inventory tracking | Maintain product, batch, stock, movement, and expiration records.                      |
+| Sales/POS evidence             | Record sales activity that affects stock and supports reporting/forecasting.           |
+| Demand forecasting             | Use historical sales and SARIMA/SARIMAX-family modeling for seasonal demand.           |
+| Recommendation support         | Convert forecast + inventory context into explainable operational guidance.            |
+| Retail experience              | Support current internal and customer-facing workflows implemented in the repository.  |
+| Local deployment               | Preserve the Electron/local operating model while allowing approved product evolution. |
 
 ## Architecture Flow
 
 ```text
-Electron Desktop App
-  -> React + TypeScript + Tailwind CSS + shadcn/ui
-  -> Express.js Backend
-  -> Prisma ORM
-  -> MySQL Community Server
-  -> Python SARIMA Engine
-  -> Recommendation Engine
+React / customer + internal UI
+        ↓
+Express API and domain services
+        ↓
+Prisma / MySQL
+        ↕
+Python SARIMA forecasting
+        ↓
+Forecast and inventory recommendations
 ```
+
+Electron hosts the local desktop experience and must preserve secure renderer/main-process boundaries.
+
+## Scope Classification
+
+Do not maintain a second out-of-scope table here. Older versions of this document contained absolute exclusions that later conflicted with implemented storefront behavior. Current classification lives in `docs/PROJECT-SCOPE.md`.
+
+Key principles:
+
+- thesis research remains focused on SARIMA demand forecasting and inventory recommendation;
+- current storefront/customer features are valid product extensions when supported by current source/tests;
+- future supplier/B2B ordering is not considered implemented until evidence exists and requires owner approval before external submission;
+- unrelated features that do not support the documented store problem should not be added merely to expand scope.
 
 ## Engineering Priorities
 
-| Priority        | Rule                                                                    |
-| --------------- | ----------------------------------------------------------------------- |
-| Correctness     | Inventory and forecast outputs must be explainable and testable         |
-| Maintainability | Prefer small focused modules over giant files                           |
-| Scope control   | Build only approved thesis features                                     |
-| Traceability    | Every task must have owner, affected files, status, and test result     |
-| Validation      | Inputs, environment variables, imports, and forecasts must be validated |
-
-## Success Checklist
-
-- [ ] Application scope matches approved thesis requirements
-- [ ] Technology choices match the final approved stack
-- [ ] Every feature has clear ownership
-- [ ] Forecast outputs are tied to inventory recommendations
-- [ ] Desktop packaging remains part of the delivery plan
+- correctness and inventory integrity;
+- explainable forecasting/recommendation behavior;
+- maintainable layer boundaries;
+- role-appropriate access control;
+- current source-of-truth consistency;
+- focused implementation and risk-based verification.

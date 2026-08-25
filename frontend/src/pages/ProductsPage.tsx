@@ -20,6 +20,7 @@ import {
   type RefObject
 } from "react";
 
+import { ProductImageUploadPanel } from "@/components/catalog/ProductImageUploadPanel";
 import { useAuth } from "@/context/AuthContext";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -63,6 +64,8 @@ import {
   type ProductImportSummary,
   type ProductRecord
 } from "@/services/catalogApi";
+import { rejectProductImage } from "@/services/productImageApi";
+import { formatFileSize, getImportFileType } from "@/utils/importFormatting";
 import { waitForMinimumDuration } from "@/utils/timing";
 import {
   getAvailabilityAction,
@@ -1048,6 +1051,25 @@ export function ProductsPage() {
                                   <div className="mt-0.5 max-h-10 overflow-hidden text-xs leading-5 text-slate-500">
                                     {product.description ?? "No description"}
                                   </div>
+                                  <div className="mt-1.5">
+                                    <StatusBadge
+                                      variant={
+                                        product.dataQualityStatus === "APPROVED"
+                                          ? "success"
+                                          : product.dataQualityStatus === "REJECTED"
+                                            ? "error"
+                                            : "warning"
+                                      }
+                                    >
+                                      {product.dataQualityStatus === "APPROVED"
+                                        ? product.isStorefrontVisible
+                                          ? "Approved · Storefront"
+                                          : "Approved · Internal"
+                                        : product.dataQualityStatus === "REJECTED"
+                                          ? "Rejected"
+                                          : "Needs review"}
+                                    </StatusBadge>
+                                  </div>
                                   <div className="mt-2 grid gap-1 text-xs text-slate-500 lg:hidden">
                                     <div className="flex items-start justify-between gap-3">
                                       <span className="font-medium text-slate-700">SKU</span>
@@ -1264,34 +1286,6 @@ function ImportProductsDialog({
           : importState.phase === "success" && importState.summary
             ? `Import completed. ${importState.summary.importedRows} rows imported and the catalog refreshed.`
             : (importState.error ?? "");
-
-  function getImportFileType(file: File) {
-    const extension = file.name.split(".").pop()?.toLowerCase();
-
-    if (extension === "csv") {
-      return "CSV";
-    }
-
-    if (extension === "xlsx") {
-      return "XLSX";
-    }
-
-    return "File";
-  }
-
-  function formatFileSize(fileSize: number) {
-    if (fileSize < 1024) {
-      return `${fileSize} B`;
-    }
-
-    const sizeInKb = fileSize / 1024;
-
-    if (sizeInKb < 1024) {
-      return `${sizeInKb.toFixed(1)} KB`;
-    }
-
-    return `${(sizeInKb / 1024).toFixed(1)} MB`;
-  }
 
   function handleDownloadErrorReport() {
     if (!preview || !issueEntries.length) {
@@ -1839,6 +1833,7 @@ function getReadableIssueField(field?: string) {
     categoryId: "Category",
     costPrice: "Cost price",
     description: "Description",
+    imageUrl: "Product image",
     initialStock: "Initial stock",
     name: "Product name",
     reorderLevel: "Reorder level",
@@ -1902,6 +1897,8 @@ function getRowValueByField(
       return rowData.costPrice;
     case "description":
       return rowData.description;
+    case "imageUrl":
+      return rowData.imageUrl;
     case "initialStock":
       return rowData.initialStock;
     case "name":
@@ -1937,6 +1934,8 @@ function getReadableIssueLabel(issue: Pick<ProductImportIssue, "code" | "message
     INVALID_STATUS: "Invalid status",
     INVALID_UNIT: "Invalid unit",
     MISSING_REQUIRED_FIELD: "Missing required field",
+    POSSIBLE_DUPLICATE_IDENTITY: "Possible catalog duplicate",
+    POSSIBLE_DUPLICATE_IDENTITY_IN_FILE: "Possible duplicate in file",
     PRODUCT_IMPORT_INVALID: "Import rejected",
     UNSUPPORTED_IMPORT_FILE_MIME: "Unsupported file type",
     UNSUPPORTED_IMPORT_FILE_TYPE: "Unsupported file type"
@@ -1974,6 +1973,9 @@ function getSuggestedFix(issue: ProductImportIssue) {
       return "Change the barcode or leave it blank.";
     case "DUPLICATE_HEADER":
       return "Rename repeated column headers in the source file.";
+    case "POSSIBLE_DUPLICATE_IDENTITY":
+    case "POSSIBLE_DUPLICATE_IDENTITY_IN_FILE":
+      return "Compare brand, variant, size, SKU, and barcode before approving either record.";
     case "INVALID_IMPORT_CSV":
     case "INVALID_IMPORT_WORKBOOK":
       return "Re-save the file from Excel or export it again.";
@@ -2157,19 +2159,28 @@ function CreateProductDialog({
   const { pushToast } = useToast();
   const [form, setForm] = useState({
     barcode: "",
+    brand: "",
     categoryId: "",
     costPrice: "",
     description: "",
     name: "",
+    dataQualityStatus: "NEEDS_REVIEW" as ProductRecord["dataQualityStatus"],
+    isStorefrontVisible: false,
     reorderLevel: "0",
     sellingPrice: "",
     sku: "",
     status: "ACTIVE" as ProductRecord["status"],
     targetStockLevel: "0",
-    unit: "PIECE" as ProductRecord["unit"]
+    unit: "PIECE" as ProductRecord["unit"],
+    variant: "",
+    sizeValue: "",
+    sizeUnit: "" as NonNullable<ProductRecord["sizeUnit"]> | ""
   });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [createdProductId, setCreatedProductId] = useState<string | null>(null);
+  const [hasSelectedImage, setHasSelectedImage] = useState(false);
+  const [imageSession, setImageSession] = useState(0);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [categoryForm, setCategoryForm] = useState({
     description: "",
@@ -2177,6 +2188,16 @@ function CreateProductDialog({
   });
   const [categoryError, setCategoryError] = useState<string | null>(null);
   const [creatingCategory, setCreatingCategory] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setCreatedProductId(null);
+    setHasSelectedImage(false);
+    setImageSession((current) => current + 1);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -2201,7 +2222,7 @@ function CreateProductDialog({
   async function handleCreateCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (creatingCategory) {
+    if (creatingCategory || createdProductId) {
       return;
     }
 
@@ -2254,7 +2275,7 @@ function CreateProductDialog({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (saving) {
+    if (saving || createdProductId) {
       return;
     }
 
@@ -2264,20 +2285,36 @@ function CreateProductDialog({
     try {
       const response = await createProduct({
         barcode: form.barcode.trim() || null,
+        brand: form.brand.trim() || null,
         categoryId: form.categoryId,
         costPrice: form.costPrice.trim(),
         description: form.description.trim() || null,
         name: form.name.trim(),
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
+        sizeUnit: form.sizeUnit || undefined,
+        sizeValue: form.sizeValue ? Number(form.sizeValue) : undefined,
         sku: form.sku.trim(),
         status: form.status,
         targetStockLevel: Number(form.targetStockLevel),
-        unit: form.unit
+        unit: form.unit,
+        variant: form.variant.trim() || null
       });
 
       if (!response.success || !response.data) {
         setError(response.message || "Product creation failed.");
+        return;
+      }
+
+      onCreated();
+
+      if (hasSelectedImage) {
+        setCreatedProductId(response.data.id);
+        pushToast({
+          message: "Product created; image needs attention while optimization finishes.",
+          title: "Product created",
+          variant: "success"
+        });
         return;
       }
 
@@ -2286,7 +2323,6 @@ function CreateProductDialog({
         title: "Product created",
         variant: "success"
       });
-      onCreated();
       onClose();
     } catch {
       setError("The product creation service is unavailable.");
@@ -2309,7 +2345,7 @@ function CreateProductDialog({
           <DialogTitle>Add Product</DialogTitle>
           <DialogDescription>Create a catalog record for the product.</DialogDescription>
           <p className="text-xs leading-5 text-slate-500">
-            Stock quantities are managed separately in Inventory after the product is created.
+            New records start hidden for catalog review. Stock is managed separately in Inventory.
           </p>
         </DialogHeader>
 
@@ -2325,197 +2361,292 @@ function CreateProductDialog({
               </Alert>
             ) : null}
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="product-name">Product name</Label>
-                <Input
-                  id="product-name"
-                  value={form.name}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, name: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-sku">SKU</Label>
-                <Input
-                  id="product-sku"
-                  value={form.sku}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, sku: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-barcode">Barcode</Label>
-                <Input
-                  id="product-barcode"
-                  value={form.barcode}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, barcode: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-category">Category</Label>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <div className="min-w-0 flex-1">
-                    <Select
-                      id="product-category"
-                      disabled={categoryLoading || categories.length === 0}
-                      value={form.categoryId}
-                      onChange={(event) =>
-                        setForm((current) => ({ ...current, categoryId: event.target.value }))
-                      }
-                    >
-                      {categoryLoading ? (
-                        <option value="">Loading categories...</option>
-                      ) : categories.length === 0 ? (
-                        <option value="">No categories found</option>
-                      ) : (
-                        <>
-                          <option value="">Select a category</option>
-                          {categories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </>
-                      )}
-                    </Select>
-                    {!categoryLoading && categories.length === 0 ? (
-                      <p className="mt-2 text-xs leading-5 text-slate-500">No categories found</p>
+            {createdProductId ? (
+              <Alert>
+                <AlertTitle>Product saved</AlertTitle>
+                <AlertDescription>
+                  The catalog record already exists. Finish the image review below or close this
+                  dialog; a failed image will not remove the product.
+                </AlertDescription>
+              </Alert>
+            ) : null}
+
+            <fieldset className="space-y-4" disabled={Boolean(createdProductId)}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="product-name">Product name</Label>
+                  <Input
+                    id="product-name"
+                    value={form.name}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, name: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-sku">SKU</Label>
+                  <Input
+                    id="product-sku"
+                    value={form.sku}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, sku: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-brand">Brand</Label>
+                  <Input
+                    id="product-brand"
+                    placeholder="Unknown"
+                    value={form.brand}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, brand: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-variant">Variant or flavor</Label>
+                  <Input
+                    id="product-variant"
+                    placeholder="Leave blank when not specified"
+                    value={form.variant}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, variant: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-size-value">Pack size</Label>
+                  <Input
+                    id="product-size-value"
+                    inputMode="decimal"
+                    placeholder="Unknown"
+                    value={form.sizeValue}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, sizeValue: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-size-unit">Pack size unit</Label>
+                  <Select
+                    id="product-size-unit"
+                    value={form.sizeUnit}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        sizeUnit: event.target.value as NonNullable<ProductRecord["sizeUnit"]> | ""
+                      }))
+                    }
+                  >
+                    <option value="">Unknown</option>
+                    {["MILLILITER", "LITER", "GRAM", "KILOGRAM", "PIECE"].map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-barcode">Barcode</Label>
+                  <Input
+                    id="product-barcode"
+                    value={form.barcode}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, barcode: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-category">Category</Label>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                    <div className="min-w-0 flex-1">
+                      <Select
+                        id="product-category"
+                        disabled={categoryLoading || categories.length === 0}
+                        value={form.categoryId}
+                        onChange={(event) =>
+                          setForm((current) => ({ ...current, categoryId: event.target.value }))
+                        }
+                      >
+                        {categoryLoading ? (
+                          <option value="">Loading categories...</option>
+                        ) : categories.length === 0 ? (
+                          <option value="">No categories found</option>
+                        ) : (
+                          <>
+                            <option value="">Select a category</option>
+                            {categories.map((category) => (
+                              <option key={category.id} value={category.id}>
+                                {category.name}
+                              </option>
+                            ))}
+                          </>
+                        )}
+                      </Select>
+                      {!categoryLoading && categories.length === 0 ? (
+                        <p className="mt-2 text-xs leading-5 text-slate-500">No categories found</p>
+                      ) : null}
+                    </div>
+                    {isOwner ? (
+                      <Button
+                        className="shrink-0 whitespace-nowrap"
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          setCategoryError(null);
+                          setIsCategoryDialogOpen(true);
+                        }}
+                      >
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                        Add category
+                      </Button>
                     ) : null}
                   </div>
-                  {isOwner ? (
-                    <Button
-                      className="shrink-0 whitespace-nowrap"
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        setCategoryError(null);
-                        setIsCategoryDialogOpen(true);
-                      }}
-                    >
-                      <Plus className="h-4 w-4" aria-hidden="true" />
-                      Add category
-                    </Button>
-                  ) : null}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-unit">Unit</Label>
+                  <Select
+                    id="product-unit"
+                    value={form.unit}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        unit: event.target.value as ProductRecord["unit"]
+                      }))
+                    }
+                  >
+                    {[
+                      "PIECE",
+                      "PACK",
+                      "BOX",
+                      "BOTTLE",
+                      "SACHET",
+                      "KILOGRAM",
+                      "GRAM",
+                      "LITER",
+                      "MILLILITER"
+                    ].map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-status">Status</Label>
+                  <Select
+                    id="product-status"
+                    value={form.status}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        status: event.target.value as ProductRecord["status"]
+                      }))
+                    }
+                  >
+                    {["ACTIVE", "INACTIVE"].map((status) => (
+                      <option key={status} value={status}>
+                        {status === "ACTIVE" ? "Available" : "Unavailable"}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-cost">Cost price</Label>
+                  <Input
+                    id="product-cost"
+                    inputMode="decimal"
+                    value={form.costPrice}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, costPrice: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-sell">Selling price</Label>
+                  <Input
+                    id="product-sell"
+                    inputMode="decimal"
+                    value={form.sellingPrice}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, sellingPrice: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-reorder">Reorder level</Label>
+                  <Input
+                    id="product-reorder"
+                    inputMode="numeric"
+                    value={form.reorderLevel}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, reorderLevel: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-target">Target stock level</Label>
+                  <Input
+                    id="product-target"
+                    inputMode="numeric"
+                    value={form.targetStockLevel}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
+                    }
+                  />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-unit">Unit</Label>
-                <Select
-                  id="product-unit"
-                  value={form.unit}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      unit: event.target.value as ProductRecord["unit"]
-                    }))
-                  }
-                >
-                  {[
-                    "PIECE",
-                    "PACK",
-                    "BOX",
-                    "BOTTLE",
-                    "SACHET",
-                    "KILOGRAM",
-                    "GRAM",
-                    "LITER",
-                    "MILLILITER"
-                  ].map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-status">Status</Label>
-                <Select
-                  id="product-status"
-                  value={form.status}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      status: event.target.value as ProductRecord["status"]
-                    }))
-                  }
-                >
-                  {["ACTIVE", "INACTIVE"].map((status) => (
-                    <option key={status} value={status}>
-                      {status === "ACTIVE" ? "Available" : "Unavailable"}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-cost">Cost price</Label>
-                <Input
-                  id="product-cost"
-                  inputMode="decimal"
-                  value={form.costPrice}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, costPrice: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-sell">Selling price</Label>
-                <Input
-                  id="product-sell"
-                  inputMode="decimal"
-                  value={form.sellingPrice}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, sellingPrice: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-reorder">Reorder level</Label>
-                <Input
-                  id="product-reorder"
-                  inputMode="numeric"
-                  value={form.reorderLevel}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, reorderLevel: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="product-target">Target stock level</Label>
-                <Input
-                  id="product-target"
-                  inputMode="numeric"
-                  value={form.targetStockLevel}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
-                  }
-                />
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="product-description">Description</Label>
-              <Textarea
-                id="product-description"
-                value={form.description}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, description: event.target.value }))
-                }
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-description">Description</Label>
+                <Textarea
+                  id="product-description"
+                  value={form.description}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, description: event.target.value }))
+                  }
+                />
+              </div>
+            </fieldset>
+
+            <ProductImageUploadPanel
+              disabled={saving}
+              onApproved={() => {
+                pushToast({
+                  message: "The optimized product image is now active for the storefront.",
+                  title: "Product image approved",
+                  variant: "success"
+                });
+                onCreated();
+                onClose();
+              }}
+              onSelectionChange={setHasSelectedImage}
+              productId={createdProductId}
+              resetKey={imageSession}
+            />
           </div>
           <DialogFooter className="mt-6 px-0 pb-0">
-            <Button disabled={saving} type="button" variant="secondary" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button disabled={saving || !form.name || !form.sku || !form.categoryId} type="submit">
-              {saving ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-              Create product
-            </Button>
+            {createdProductId ? (
+              <Button type="button" onClick={onClose}>
+                Close
+              </Button>
+            ) : (
+              <>
+                <Button disabled={saving} type="button" variant="secondary" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button
+                  disabled={saving || !form.name || !form.sku || !form.categoryId}
+                  type="submit"
+                >
+                  {saving ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : null}
+                  Create product
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </form>
 
@@ -2617,16 +2748,24 @@ function ProductDetailsDialog({
   const { pushToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [discardingImageDrafts, setDiscardingImageDrafts] = useState(false);
+  const [draftImageCandidateIds, setDraftImageCandidateIds] = useState<string[]>([]);
   const [form, setForm] = useState({
     barcode: "",
+    brand: "",
     categoryId: "",
     costPrice: "",
+    dataQualityStatus: "NEEDS_REVIEW" as ProductRecord["dataQualityStatus"],
     description: "",
+    isStorefrontVisible: false,
     name: "",
     reorderLevel: "0",
     sellingPrice: "",
+    sizeUnit: "" as NonNullable<ProductRecord["sizeUnit"]> | "",
+    sizeValue: "",
     targetStockLevel: "0",
-    unit: "PIECE" as ProductRecord["unit"]
+    unit: "PIECE" as ProductRecord["unit"],
+    variant: ""
   });
 
   useEffect(() => {
@@ -2637,22 +2776,79 @@ function ProductDetailsDialog({
 
     setForm({
       barcode: product.barcode ?? "",
+      brand: product.brand ?? "",
       categoryId: product.category.id,
-      costPrice: product.costPrice,
+      costPrice: product.costPrice ?? "",
       description: product.description ?? "",
       name: product.name,
+      dataQualityStatus: product.dataQualityStatus,
+      isStorefrontVisible: product.isStorefrontVisible,
       reorderLevel: String(product.reorderLevel),
       sellingPrice: product.sellingPrice,
       targetStockLevel: String(product.targetStockLevel),
-      unit: product.unit
+      unit: product.unit,
+      variant: product.variant ?? "",
+      sizeValue: product.sizeValue ?? "",
+      sizeUnit: product.sizeUnit ?? ""
     });
     setIsEditing(false);
   }, [product]);
 
+  useEffect(() => {
+    setDraftImageCandidateIds([]);
+  }, [product?.id]);
+
+  async function discardDraftImageCandidates() {
+    if (!product || draftImageCandidateIds.length === 0) {
+      return true;
+    }
+    if (discardingImageDrafts) {
+      return false;
+    }
+
+    setDiscardingImageDrafts(true);
+    try {
+      for (const candidateId of draftImageCandidateIds) {
+        const response = await rejectProductImage(product.id, candidateId);
+        if (!response.success) {
+          throw new Error(response.message || "Image draft discard failed.");
+        }
+      }
+      setDraftImageCandidateIds([]);
+      return true;
+    } catch (discardError) {
+      pushToast({
+        message:
+          discardError instanceof Error
+            ? discardError.message
+            : "The uploaded image draft could not be discarded.",
+        title: "Image draft not discarded",
+        variant: "error"
+      });
+      return false;
+    } finally {
+      setDiscardingImageDrafts(false);
+    }
+  }
+
+  async function handleCancelEditing() {
+    if (!(await discardDraftImageCandidates())) {
+      return;
+    }
+    setIsEditing(false);
+  }
+
+  async function handleCloseRequest() {
+    if (isEditing && !(await discardDraftImageCandidates())) {
+      return;
+    }
+    onClose();
+  }
+
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!product || saving) {
+    if (!product || saving || discardingImageDrafts) {
       return;
     }
 
@@ -2661,14 +2857,20 @@ function ProductDetailsDialog({
     try {
       const response = await updateProduct(product.id, {
         barcode: form.barcode.trim() || null,
+        brand: form.brand.trim() || null,
         categoryId: form.categoryId,
-        costPrice: form.costPrice.trim(),
+        costPrice: form.costPrice.trim() || undefined,
         description: form.description.trim() || null,
         name: form.name.trim(),
+        dataQualityStatus: form.dataQualityStatus,
+        isStorefrontVisible: form.isStorefrontVisible,
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
         targetStockLevel: Number(form.targetStockLevel),
-        unit: form.unit
+        unit: form.unit,
+        variant: form.variant.trim() || null,
+        sizeValue: form.sizeValue ? Number(form.sizeValue) : null,
+        sizeUnit: form.sizeUnit || null
       });
 
       if (!response.success) {
@@ -2685,6 +2887,7 @@ function ProductDetailsDialog({
         title: "Product updated",
         variant: "success"
       });
+      setDraftImageCandidateIds([]);
       setIsEditing(false);
       onSaved();
     } catch {
@@ -2703,7 +2906,7 @@ function ProductDetailsDialog({
       open={isOpen}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
-          onClose();
+          void handleCloseRequest();
         }
       }}
     >
@@ -2765,6 +2968,62 @@ function ProductDetailsDialog({
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="edit-brand">Brand</Label>
+                    <Input
+                      id="edit-brand"
+                      placeholder="Leave blank when unknown"
+                      value={form.brand}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, brand: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-variant">Variant or flavor</Label>
+                    <Input
+                      id="edit-variant"
+                      placeholder="Leave blank when not specified"
+                      value={form.variant}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, variant: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-size-value">Pack size</Label>
+                    <Input
+                      id="edit-size-value"
+                      inputMode="decimal"
+                      placeholder="Unknown"
+                      value={form.sizeValue}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, sizeValue: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-size-unit">Pack size unit</Label>
+                    <Select
+                      id="edit-size-unit"
+                      value={form.sizeUnit}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          sizeUnit: event.target.value as
+                            | NonNullable<ProductRecord["sizeUnit"]>
+                            | ""
+                        }))
+                      }
+                    >
+                      <option value="">Unknown</option>
+                      {["MILLILITER", "LITER", "GRAM", "KILOGRAM", "PIECE"].map((unit) => (
+                        <option key={unit} value={unit}>
+                          {unit}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="edit-category">Category</Label>
                     <Select
                       id="edit-category"
@@ -2809,6 +3068,34 @@ function ProductDetailsDialog({
                         </option>
                       ))}
                     </Select>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <ProductImageUploadPanel
+                      disabled={saving || discardingImageDrafts}
+                      onApproved={(candidate) => {
+                        setDraftImageCandidateIds((current) =>
+                          current.filter((candidateId) => candidateId !== candidate.id)
+                        );
+                        pushToast({
+                          message: "The optimized replacement is now active for the storefront.",
+                          title: "Product image approved",
+                          variant: "success"
+                        });
+                        onSaved();
+                      }}
+                      onCandidateCreated={(candidate) => {
+                        setDraftImageCandidateIds((current) =>
+                          current.includes(candidate.id) ? current : [...current, candidate.id]
+                        );
+                      }}
+                      onCandidateDiscarded={(candidate) => {
+                        setDraftImageCandidateIds((current) =>
+                          current.filter((candidateId) => candidateId !== candidate.id)
+                        );
+                      }}
+                      productId={product.id}
+                      resetKey={`${product.id}-${isEditing ? "edit" : "view"}`}
+                    />
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="edit-description">Description</Label>
@@ -2864,6 +3151,40 @@ function ProductDetailsDialog({
                       }
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-quality-status">Catalog quality</Label>
+                    <Select
+                      id="edit-quality-status"
+                      value={form.dataQualityStatus}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          dataQualityStatus: event.target
+                            .value as ProductRecord["dataQualityStatus"],
+                          isStorefrontVisible:
+                            event.target.value === "APPROVED" ? current.isStorefrontVisible : false
+                        }))
+                      }
+                    >
+                      <option value="NEEDS_REVIEW">Needs review</option>
+                      <option value="APPROVED">Approved</option>
+                      <option value="REJECTED">Rejected</option>
+                    </Select>
+                  </div>
+                  <label className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700">
+                    <input
+                      checked={form.isStorefrontVisible}
+                      disabled={form.dataQualityStatus !== "APPROVED"}
+                      type="checkbox"
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          isStorefrontVisible: event.target.checked
+                        }))
+                      }
+                    />
+                    Approved for customer storefront
+                  </label>
                 </div>
               </form>
             ) : (
@@ -2871,11 +3192,29 @@ function ProductDetailsDialog({
                 <div className="grid gap-3 md:grid-cols-2">
                   <DetailLine label="SKU" value={product.sku} />
                   <DetailLine label="Barcode" value={product.barcode ?? "Not set"} />
+                  <DetailLine
+                    label="Product image"
+                    value={product.imageUrl ? "Catalog image set" : "Not set"}
+                  />
                   <DetailLine label="Category" value={product.category.name} />
+                  <DetailLine label="Brand" value={product.brand ?? "Unknown"} />
+                  <DetailLine label="Variant" value={product.variant ?? "Not specified"} />
+                  <DetailLine
+                    label="Pack size"
+                    value={
+                      product.sizeValue && product.sizeUnit
+                        ? `${product.sizeValue} ${product.sizeUnit}`
+                        : "Unresolved"
+                    }
+                  />
                   <DetailLine label="Unit" value={product.unit} />
                   <DetailLine
                     label="Cost price"
-                    value={currencyFormatter.format(Number(product.costPrice))}
+                    value={
+                      product.costPrice === null
+                        ? "Not set"
+                        : currencyFormatter.format(Number(product.costPrice))
+                    }
                   />
                   <DetailLine
                     label="Selling price"
@@ -2886,6 +3225,20 @@ function ProductDetailsDialog({
                   <DetailLine
                     label="Status"
                     value={product.status === "ACTIVE" ? "Available" : "Unavailable"}
+                  />
+                  <DetailLine label="Record source" value={product.recordSource} />
+                  <DetailLine label="Catalog quality" value={product.dataQualityStatus} />
+                  <DetailLine
+                    label="Quality warnings"
+                    value={
+                      product.qualityWarnings.length > 0
+                        ? product.qualityWarnings.join(", ")
+                        : "None"
+                    }
+                  />
+                  <DetailLine
+                    label="Customer storefront"
+                    value={product.isStorefrontVisible ? "Approved" : "Hidden"}
                   />
                   <DetailLine
                     label="Created"
@@ -2916,15 +3269,16 @@ function ProductDetailsDialog({
           {isEditing ? (
             <>
               <Button
-                disabled={saving}
+                disabled={saving || discardingImageDrafts}
                 type="button"
                 variant="secondary"
-                onClick={() => setIsEditing(false)}
+                onClick={() => void handleCancelEditing()}
               >
-                Cancel
+                {discardingImageDrafts ? "Discarding image..." : "Cancel"}
               </Button>
               <Button
                 disabled={saving || !product || !form.name || !form.categoryId}
+                key="product-edit-save"
                 form="product-edit-form"
                 type="submit"
               >
@@ -2939,7 +3293,14 @@ function ProductDetailsDialog({
               <Button type="button" variant="secondary" onClick={onClose}>
                 Close
               </Button>
-              <Button type="button" onClick={() => setIsEditing(true)}>
+              <Button
+                key="product-edit-enter"
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  setIsEditing(true);
+                }}
+              >
                 Edit product
               </Button>
             </>

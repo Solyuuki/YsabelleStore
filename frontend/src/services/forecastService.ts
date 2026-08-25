@@ -1,7 +1,7 @@
 import { apiClient } from "@/services/apiClient";
 import type {
   ForecastFilters,
-  ForecastGenerationSummary,
+  ForecastRefreshResponse,
   ForecastSummary,
   PaginatedForecastProductsResponse,
   ProductForecastDetail
@@ -32,7 +32,7 @@ function queryString(filters: ForecastFilters) {
 }
 
 export async function generateForecasts(force = false) {
-  return await apiClient.request<ForecastGenerationSummary>("/api/forecasts/generate", {
+  return await apiClient.request<ForecastRefreshResponse>("/api/forecasts/generate", {
     headers: authHeaders(),
     json: { force },
     method: "POST"
@@ -48,18 +48,16 @@ export async function getForecastProducts(filters: ForecastFilters) {
   );
 }
 
-export async function getForecastProductCollection() {
-  return await getForecastProducts({
-    page: 1,
-    pageSize: 500,
-    sortBy: "productId",
-    sortDirection: "asc"
-  });
+export async function getForecastProductCollection(filters: ForecastFilters) {
+  return await getForecastProducts(filters);
 }
 
-export async function getForecastProduct(productId: string) {
+export async function getForecastProduct(productId: string, batchId?: string | null) {
+  const params = new URLSearchParams();
+  if (batchId) params.set("batchId", batchId);
+  const query = params.size ? `?${params.toString()}` : "";
   return await apiClient.request<ProductForecastDetail>(
-    `/api/forecasts/products/${encodeURIComponent(productId)}`,
+    `/api/forecasts/products/${encodeURIComponent(productId)}${query}`,
     {
       headers: authHeaders()
     }

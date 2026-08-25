@@ -59,17 +59,21 @@ const KNOWN_ACCOUNTS_PAGE_SIZE = 2;
 const systemHealthFooterCopy: Record<SystemHealthState, string> = {
   checking: "Checking system...",
   healthy: "All Systems Normal",
-  warning: "Service Warning",
+  degraded: "Service Degraded",
   "database-unavailable": "Database Unavailable",
-  offline: "System Offline"
+  "backend-unavailable": "Backend Unavailable",
+  timeout: "Health Check Timed Out",
+  offline: "Device Offline"
 };
 
 const systemHealthFooterDotClass: Record<SystemHealthState, string> = {
   checking: "bg-sky-400",
   healthy: "bg-emerald-500",
-  warning: "bg-amber-500",
+  degraded: "bg-amber-500",
   "database-unavailable": "bg-orange-500",
-  offline: "bg-red-500"
+  "backend-unavailable": "bg-red-500",
+  timeout: "bg-violet-500",
+  offline: "bg-slate-500"
 };
 
 function formatLastUsedAt(lastUsedAt: string) {
@@ -440,10 +444,8 @@ export function WelcomePage({
               <ShieldCheck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
               System Secure
             </div>
-            <h1 className="mt-[clamp(1.5rem,2.4vw,2.5rem)] text-[clamp(2.75rem,5vw,5rem)] font-semibold leading-[1.02] tracking-normal">
-              YsabelleStore
-            </h1>
-            <p className="mt-[clamp(1rem,1.8vw,1.75rem)] max-w-[clamp(42rem,52vw,58rem)] text-[clamp(1rem,1.25vw,1.25rem)] leading-[1.75] text-slate-600">
+            <h1 className="type-display mt-[clamp(1.5rem,2.4vw,2.5rem)]">YsabelleStore</h1>
+            <p className="type-body-lg mt-[clamp(1rem,1.8vw,1.75rem)] max-w-[clamp(42rem,52vw,58rem)] text-slate-600">
               {renderHeroCopy()}
             </p>
             <div className="mt-[clamp(2rem,3.5vw,3.75rem)] max-w-[clamp(34rem,44vw,48rem)]">

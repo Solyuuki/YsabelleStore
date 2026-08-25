@@ -1,0 +1,9 @@
+interface:
+  display_name: "Ysabelle Context"
+  short_description: "Use persistent repo context before scanning."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "ysabelle-repo-context"
+      description: "Persistent YsabelleStore repository context and freshness tools."

@@ -39,6 +39,19 @@ function toDateKey(value: Date | null | undefined) {
   return value ? value.toISOString().slice(0, 10) : null;
 }
 
+function requireProductCostPrice(product: { costPrice: Prisma.Decimal | null; id: string }) {
+  if (product.costPrice) return product.costPrice;
+
+  throw new HttpError(
+    422,
+    "A verified procurement cost is required before stock can be recorded.",
+    {
+      code: "PRODUCT_COST_PRICE_REQUIRED",
+      details: { productId: product.id }
+    }
+  );
+}
+
 async function getProductContext(tx: TransactionClient, productId: string) {
   const product = await tx.product.findUnique({
     include: {
@@ -100,6 +113,22 @@ function isSellableBatchStatus(status: InventoryBatchStatus) {
 
 function isExpired(batch: { expiresAt: Date | null }) {
   return batch.expiresAt !== null && batch.expiresAt.getTime() < Date.now();
+}
+
+export function getSellableStockQuantity(
+  batches: Array<{
+    expiresAt: Date | null;
+    quantityRemaining: number;
+    status: InventoryBatchStatus;
+  }>
+) {
+  return batches.reduce((total, batch) => {
+    if (batch.quantityRemaining <= 0 || !isSellableBatchStatus(batch.status) || isExpired(batch)) {
+      return total;
+    }
+
+    return total + batch.quantityRemaining;
+  }, 0);
 }
 
 function getPhysicalBatchTotal(
@@ -341,6 +370,7 @@ export async function stockInBatch(
   }
 
   const product = await getProductContext(tx, input.productId);
+  const unitCost = input.unitCost ?? requireProductCostPrice(product);
   const inventory = await getOrCreateInventory(tx, input.productId);
   const batchCode =
     input.batchCode?.trim() || `STOCKIN-${product.sku}-${randomUUID().slice(0, 8).toUpperCase()}`;
@@ -378,7 +408,7 @@ export async function stockInBatch(
           quantityRemaining: input.quantity,
           receivedAt: new Date(),
           status: InventoryBatchStatus.AVAILABLE,
-          unitCost: input.unitCost ?? product.costPrice
+          unitCost
         }
       });
 
@@ -424,9 +454,10 @@ export async function applyStockAdjustment(
   }
 ) {
   const product = await getProductContext(tx, input.productId);
-  const inventory = await getOrCreateInventory(tx, input.productId);
 
   if (input.direction === "IN") {
+    const adjustmentUnitCost = requireProductCostPrice(product);
+    const inventory = await getOrCreateInventory(tx, input.productId);
     const batchCode = `ADJIN-${product.sku}-${randomUUID().slice(0, 8).toUpperCase()}`;
     const batch = await tx.inventoryBatch.create({
       data: {
@@ -437,7 +468,7 @@ export async function applyStockAdjustment(
         quantityRemaining: input.quantity,
         receivedAt: new Date(),
         status: InventoryBatchStatus.AVAILABLE,
-        unitCost: product.costPrice
+        unitCost: adjustmentUnitCost
       }
     });
 
@@ -467,6 +498,8 @@ export async function applyStockAdjustment(
       movement
     };
   }
+
+  const inventory = await getOrCreateInventory(tx, input.productId);
 
   const allocations = await allocateStockForSale(tx, {
     productId: product.id,
@@ -530,9 +563,7 @@ export async function allocateStockForSale(
       return left.id.localeCompare(right.id);
     });
 
-  const sellableStock = getPhysicalBatchTotal(product.inventoryBatches, {
-    sellableOnly: true
-  });
+  const sellableStock = getSellableStockQuantity(product.inventoryBatches);
 
   if (input.quantity > sellableStock) {
     throw new HttpError(409, "Insufficient sellable stock for checkout.", {
@@ -651,7 +682,6 @@ export async function reconcileLegacyStockMismatch(
   }
 
   const product = await getProductContext(tx, input.productId);
-  const inventory = await getOrCreateInventory(tx, input.productId);
   const identifiers = buildReconciliationIdentifiers(input.sku, input.repairDate);
   const batchPrefix = `RECON-${identifiers.token}-`;
   const existingBatch = await tx.inventoryBatch.findFirst({
@@ -721,6 +751,9 @@ export async function reconcileLegacyStockMismatch(
     );
   }
 
+  const reconciliationUnitCost = existingBatch ? undefined : requireProductCostPrice(product);
+  const inventory = await getOrCreateInventory(tx, input.productId);
+
   let batch = existingBatch;
   let createdBatch = false;
 
@@ -734,7 +767,7 @@ export async function reconcileLegacyStockMismatch(
         quantityRemaining: input.quantity,
         receivedAt: input.repairDate ?? new Date(),
         status: InventoryBatchStatus.AVAILABLE,
-        unitCost: product.costPrice
+        unitCost: reconciliationUnitCost ?? requireProductCostPrice(product)
       }
     });
     createdBatch = true;

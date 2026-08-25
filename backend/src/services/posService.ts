@@ -3,8 +3,10 @@ import { randomBytes } from "node:crypto";
 import { Prisma, SaleStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { invalidateForecastCache } from "../modules/forecasting/forecast.service.js";
 import { HttpError } from "../utils/httpError.js";
 import type { PosCheckoutItemInput } from "../validators/pos.validators.js";
+import { operationalProductWhere } from "./catalogQualityPolicy.js";
 import {
   allocateStockForSale,
   assertStockInvariant,
@@ -72,26 +74,28 @@ type SalesListResult = {
 function buildPosWhere(query: string) {
   const normalizedQuery = query.trim();
 
-  return normalizedQuery
-    ? {
-        status: "ACTIVE" as const,
-        OR: [
-          { name: { contains: normalizedQuery } },
-          { sku: { contains: normalizedQuery } },
-          { barcode: { contains: normalizedQuery } },
-          { description: { contains: normalizedQuery } },
-          {
-            category: {
-              name: {
-                contains: normalizedQuery
+  return operationalProductWhere(
+    normalizedQuery
+      ? {
+          status: "ACTIVE" as const,
+          OR: [
+            { name: { contains: normalizedQuery } },
+            { sku: { contains: normalizedQuery } },
+            { barcode: { contains: normalizedQuery } },
+            { description: { contains: normalizedQuery } },
+            {
+              category: {
+                name: {
+                  contains: normalizedQuery
+                }
               }
             }
-          }
-        ]
-      }
-    : {
-        status: "ACTIVE" as const
-      };
+          ]
+        }
+      : {
+          status: "ACTIVE" as const
+        }
+  );
 }
 
 export async function searchPosProducts(
@@ -167,18 +171,18 @@ export async function checkoutPosSale(input: {
   const saleDate = new Date();
   const saleNumber = generateSaleNumber(saleDate);
 
-  return prisma.$transaction(async (tx) => {
+  const result: CheckoutResult = await prisma.$transaction(async (tx) => {
     const products = await tx.product.findMany({
       include: {
         category: true,
         inventory: true
       },
-      where: {
+      where: operationalProductWhere({
         id: {
           in: normalizedItems.map((item) => item.productId)
         },
         status: "ACTIVE"
-      }
+      })
     });
 
     const productMap = new Map(products.map((product) => [product.id, product]));
@@ -313,6 +317,10 @@ export async function checkoutPosSale(input: {
       }
     };
   });
+
+  // Checkout stays responsive; forecast delivery keeps serving the previous batch while this runs.
+  invalidateForecastCache(normalizedItems.map((item) => item.productId));
+  return result;
 }
 
 export async function listRecentSales(limit = 20): Promise<SalesListResult> {

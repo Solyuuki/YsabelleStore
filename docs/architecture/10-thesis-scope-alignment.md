@@ -1,63 +1,43 @@
 # Thesis Scope Alignment
 
-## Project Title
+The canonical current scope classification is [`../PROJECT-SCOPE.md`](../PROJECT-SCOPE.md). This document explains how the current product remains aligned with the thesis even though the repository now contains product extensions beyond the minimum thesis UI.
 
-Inventory Recommender System Using Seasonal Autoregressive Integrated Moving Average (SARIMA) for Ysabelle's Store.
+## Thesis Focus
 
-## Business Context
+**Inventory Recommender System Using Seasonal Autoregressive Integrated Moving Average (SARIMA) for Ysabelle's Store**
 
-Ysabelle's Store is a grocery store located at 110 A. Mabini Street, Pasig City, Metro Manila. The store was established in 2019 and carries more than 300 daily consumer products, including beverages, canned goods, snacks, instant noodles, toiletries, and household products.
+The research problem remains inventory decision support: manual stock monitoring, shortages/overstock risk, expiration visibility, and limited demand forecasting.
 
-The current store process relies on manual inventory monitoring through visual inspection and receipt-based sales records. This creates delays in replenishment decisions and limits the store's ability to anticipate future demand.
+## Research-Critical Capabilities
 
-## Current Business Problems
+| Thesis Concern            | System Support                                                                                |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| Manual inventory checking | Computerized product/inventory/batch monitoring.                                              |
+| Stock shortages           | Low-stock visibility and forecast-aware replenishment guidance.                               |
+| Overstock risk            | Compare inventory position with demand/forecast context.                                      |
+| Expiration monitoring     | Batch expiration and near-expiry/expiry-risk handling.                                        |
+| Replenishment decisions   | Combine current usable stock, historical sales, forecast output, and defined inventory rules. |
+| Demand forecasting        | SARIMA/SARIMAX-family seasonal demand forecasting from historical sales.                      |
+| Sales evidence            | POS/sales records that support reporting and forecasting.                                     |
+| Role control              | Owner/staff authorization appropriate to operational responsibilities.                        |
 
-| Problem                             | Implementation Relevance                                                           |
-| ----------------------------------- | ---------------------------------------------------------------------------------- |
-| Manual inventory checking           | The system must support computerized inventory monitoring.                         |
-| Stock shortages                     | The system must support low-stock visibility and restocking recommendations.       |
-| Overstocking risk                   | The system must compare stock position with demand movement and forecasts.         |
-| Expiration monitoring difficulty    | The system must track product batches and near-expiry notifications.               |
-| Inefficient replenishment decisions | The system must combine current stock, historical sales, and recommendation rules. |
-| Limited demand forecasting          | The system must implement SARIMA forecasting from monthly historical sales.        |
+## Product Extensions
 
-## System Scope
+Customer-facing storefront/shop/search/order behavior present in current source is a **product extension**, not a replacement for the thesis method. It may improve the retail workflow while reusing the same product, pricing, availability, inventory, and backend boundaries.
 
-The implementation roadmap must align to these approved thesis features:
+Older documents that categorically described every online/storefront capability as prohibited reflected an earlier planning state. They must not be used to deny behavior that is already implemented and tested in the current repository.
 
-| Scope Area                    | Expected System Support                                                                    |
-| ----------------------------- | ------------------------------------------------------------------------------------------ |
-| Sales transaction processing  | Record sales and cashier activity.                                                         |
-| Barcode-based stock deduction | Deduct sold products from inventory records after barcode-based sale entry.                |
-| Inventory monitoring          | Track current stock, batches, movement history, and inventory status.                      |
-| Low-stock alerts              | Flag products below approved reorder levels.                                               |
-| Overstock alerts              | Flag products whose stock exceeds demand-based expectations.                               |
-| Near-expiry notifications     | Flag batches approaching expiration.                                                       |
-| Inventory recommendations     | Recommend restocking and attention actions from forecast, stock, and expiry context.       |
-| SARIMA forecasting            | Use two years of monthly historical sales data for demand forecasting.                     |
-| Dashboard and reports         | Present operational summaries, forecast outputs, and inventory status to authorized users. |
-| CSV/Excel import              | Import historical sales and inventory data for setup and forecasting preparation.          |
-| Role-based owner/staff access | Restrict administrative, reporting, and forecasting functions by role.                     |
+## Forecasting Boundary
 
-## Role-Based Access
+- SARIMA remains the approved demand-forecasting method for the thesis result.
+- SARIMA does not directly predict expiration dates.
+- Expiry risk combines forecasted demand with current stock, batch quantity, and expiration context.
+- Product extensions must not silently replace or misrepresent the research forecasting method.
 
-| Role  | Access Scope                                                                                               |
-| ----- | ---------------------------------------------------------------------------------------------------------- |
-| Owner | Administrative functions, reports, forecasting results, inventory management, and user/account management. |
-| Staff | Sales processing and inventory monitoring.                                                                 |
+## Supplier/Replenishment Boundary
 
-## Limitations
+Supplier purchasing is not part of the minimum implemented thesis-core requirement. If supplier/B2B ordering is introduced as a product extension, recommendation output may prepare an assisted/auto-draft proposal, but **owner approval is required before an external supplier order is sent**.
 
-| Limitation                         | Reason                                                             |
-| ---------------------------------- | ------------------------------------------------------------------ |
-| No automated supplier ordering     | The thesis focuses on recommendations, not procurement automation. |
-| No online ordering                 | The system is for local store operations.                          |
-| No e-commerce integration          | Online commerce is outside the approved scope.                     |
-| No mobile app                      | Deployment target is a desktop application.                        |
-| No cloud deployment                | The system is designed for local desktop use.                      |
-| No multi-branch inventory          | The study focuses only on Ysabelle's Store.                        |
-| No forecasting model beyond SARIMA | The approved forecasting method is SARIMA.                         |
+## Evidence Rule
 
-## Sprint 2 Relation
-
-Sprint 2 implements the authentication, registration, and role-based access control foundation required before product, inventory, sales, reporting, and forecasting modules are completed. Future records and decisions must be tied to authorized owner or staff users so the system can support secure operational use, role-appropriate workflows, and thesis-aligned access boundaries.
+Use current source, schema, migrations, tests, and executable configuration to determine what the system actually implements. Use `docs/PROJECT-SCOPE.md` to classify that behavior as thesis core, current product extension, or future extension.

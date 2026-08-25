@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "baseUrl": ".",
+    "checkJs": false,
+    "noEmit": true,
+    "paths": {
+      "@/*": ["frontend/src/*"]
+    },
+    "types": ["node"]
+  },
+  "include": ["scripts/**/*.ts"]
+}

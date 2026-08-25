@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isSupportedCatalogImageUrl } from "../utils/catalogImage.js";
+
 const moneyStringSchema = z.preprocess(
   (value) => {
     if (typeof value === "number") {
@@ -26,6 +28,35 @@ const optionalTextSchema = (maxLength: number) =>
     return value;
   }, z.string().max(maxLength).optional());
 
+const nullableOptionalTextSchema = (maxLength: number) =>
+  z.preprocess((value) => {
+    if (value === null) return null;
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      return trimmed.length > 0 ? trimmed : null;
+    }
+
+    return value;
+  }, z.string().max(maxLength).nullable().optional());
+
+const optionalCatalogImageUrlSchema = z.preprocess(
+  (value) => {
+    if (value === null) return null;
+    if (typeof value !== "string") return value;
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  },
+  z
+    .string()
+    .max(2048)
+    .refine(isSupportedCatalogImageUrl, {
+      message: "Product images must use an HTTPS URL or a root-relative local asset path."
+    })
+    .nullable()
+    .optional()
+);
+
 export const productUnitSchema = z.enum([
   "PIECE",
   "PACK",
@@ -39,6 +70,8 @@ export const productUnitSchema = z.enum([
 ]);
 
 export const productStatusSchema = z.enum(["ACTIVE", "INACTIVE", "DISCONTINUED"]);
+export const catalogQualityStatusSchema = z.enum(["APPROVED", "NEEDS_REVIEW", "REJECTED"]);
+export const productSizeUnitSchema = z.enum(["MILLILITER", "LITER", "GRAM", "KILOGRAM", "PIECE"]);
 
 export const productIdParamSchema = z.object({
   id: z.string().trim().min(1).max(191)
@@ -47,7 +80,7 @@ export const productIdParamSchema = z.object({
 export const createProductSchema = z.object({
   name: z.string().trim().min(1).max(160),
   sku: z.string().trim().min(1).max(80),
-  barcode: optionalTextSchema(80),
+  barcode: nullableOptionalTextSchema(80),
   categoryId: z.string().trim().min(1).max(191),
   unit: productUnitSchema.default("PIECE"),
   costPrice: moneyStringSchema,
@@ -55,13 +88,20 @@ export const createProductSchema = z.object({
   reorderLevel: z.coerce.number().int().min(0).default(0),
   targetStockLevel: z.coerce.number().int().min(0).default(0),
   status: productStatusSchema.optional(),
-  description: optionalTextSchema(255)
+  description: nullableOptionalTextSchema(255),
+  imageUrl: optionalCatalogImageUrlSchema,
+  brand: nullableOptionalTextSchema(120),
+  variant: nullableOptionalTextSchema(120),
+  sizeValue: z.coerce.number().positive().max(9999999).optional(),
+  sizeUnit: productSizeUnitSchema.optional(),
+  dataQualityStatus: catalogQualityStatusSchema.optional(),
+  isStorefrontVisible: z.boolean().optional()
 });
 
 export const updateProductSchema = z.object({
   name: z.string().trim().min(1).max(160).optional(),
   sku: z.string().trim().min(1).max(80).optional(),
-  barcode: optionalTextSchema(80),
+  barcode: nullableOptionalTextSchema(80),
   categoryId: z.string().trim().min(1).max(191).optional(),
   unit: productUnitSchema.optional(),
   costPrice: moneyStringSchema.optional(),
@@ -69,7 +109,14 @@ export const updateProductSchema = z.object({
   reorderLevel: z.coerce.number().int().min(0).optional(),
   targetStockLevel: z.coerce.number().int().min(0).optional(),
   status: productStatusSchema.optional(),
-  description: optionalTextSchema(255)
+  description: nullableOptionalTextSchema(255),
+  imageUrl: optionalCatalogImageUrlSchema,
+  brand: nullableOptionalTextSchema(120),
+  variant: nullableOptionalTextSchema(120),
+  sizeValue: z.coerce.number().positive().max(9999999).nullable().optional(),
+  sizeUnit: productSizeUnitSchema.nullable().optional(),
+  dataQualityStatus: catalogQualityStatusSchema.optional(),
+  isStorefrontVisible: z.boolean().optional()
 });
 
 export const deactivateProductSchema = z.object({

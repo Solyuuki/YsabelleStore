@@ -40,6 +40,17 @@ This document defines how version labels should be used for YsabelleStore config
 | Version consistency | Must match PR, release notes, and deployment docs |
 | Safe evolution      | Must not change silently across layers            |
 
+## Source Separation
+
+| Source                                                | Meaning                          | Consistency rule                                  |
+| ----------------------------------------------------- | -------------------------------- | ------------------------------------------------- |
+| `config/guardrails.json`                              | Active sprint number             | Independent from application and package versions |
+| `frontend/src/config/appVersion.ts`                   | User-visible application version | Changed only by an explicit version command       |
+| Root/workspace `package.json` and `package-lock.json` | Private package metadata         | Root, workspaces, and lockfile entries must match |
+
+`npm run version:check` validates these rules without modifying files. `npm run version:bump` is an
+explicit metadata command and is never invoked by `verify:local`, `push-ready`, or `prepush:local`.
+
 ## Future Implementation Notes
 
 - Version policy should remain simple enough for thesis review.
@@ -51,4 +62,4 @@ This document defines how version labels should be used for YsabelleStore config
 - [x] Foundation through final defense stages are documented
 - [x] Semantic versioning is included
 - [x] Maintenance policy is clear
-- [x] No release automation is added
+- [x] Release version mutation is explicit and separate from sprint status

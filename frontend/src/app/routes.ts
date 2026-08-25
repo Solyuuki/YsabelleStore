@@ -6,6 +6,7 @@ import {
   LineChart,
   Package,
   ReceiptText,
+  History,
   ScanBarcode,
   Settings,
   UsersRound
@@ -15,12 +16,14 @@ import type { AuthUserRole } from "@/types/auth";
 
 export type AppRoutePath =
   | "/"
+  | "/staff-login"
   | "/dashboard"
   | "/pos"
   | "/products"
   | "/inventory"
   | "/sales"
   | "/forecast"
+  | "/historical-sales"
   | "/reports"
   | "/users"
   | "/settings"
@@ -80,6 +83,14 @@ export const appRoutes: readonly AppRoute[] = [
     protected: true
   },
   {
+    path: "/historical-sales",
+    label: "Historical Sales",
+    description: "Approved monthly sales history and SARIMA data management",
+    icon: History,
+    allowedRoles: ["OWNER"],
+    protected: true
+  },
+  {
     path: "/reports",
     label: "Reports",
     description: "Protected reporting module shell",
@@ -109,6 +120,13 @@ export const utilityRoutes: readonly AppRoute[] = [
     path: "/",
     label: "Welcome",
     description: "Continue screen",
+    icon: ChartNoAxesCombined,
+    allowedRoles: ["OWNER", "STAFF"]
+  },
+  {
+    path: "/staff-login",
+    label: "Staff Login",
+    description: "Owner and staff account access",
     icon: ChartNoAxesCombined,
     allowedRoles: ["OWNER", "STAFF"]
   },

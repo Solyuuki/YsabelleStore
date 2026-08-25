@@ -1,7 +1,11 @@
-import { frontendEnv } from "@/schemas/frontendEnv.schema";
+import { resolveApiUrl } from "@/config/runtime";
 import { apiClient } from "@/services/apiClient";
 import { getStoredAuthToken } from "@/services/authStorage";
 import type { ApiResponse } from "@/types/api";
+
+export type CatalogRecordSource = "CATALOG" | "IMPORT" | "TEST_FIXTURE" | "INTERNAL";
+export type CatalogQualityStatus = "APPROVED" | "NEEDS_REVIEW" | "REJECTED";
+export type ProductSizeUnit = "MILLILITER" | "LITER" | "GRAM" | "KILOGRAM" | "PIECE";
 
 export type ProductCategorySummary = {
   id: string;
@@ -9,6 +13,9 @@ export type ProductCategorySummary = {
   slug: string;
   description: string | null;
   isActive: boolean;
+  recordSource: CatalogRecordSource;
+  dataQualityStatus: CatalogQualityStatus;
+  isStorefrontVisible: boolean;
 };
 
 export type ProductCategoryRecord = ProductCategorySummary;
@@ -34,13 +41,22 @@ export type ProductRecord = {
   sku: string;
   barcode: string | null;
   description: string | null;
+  imageUrl: string | null;
+  brand: string | null;
+  variant: string | null;
+  sizeValue: string | null;
+  sizeUnit: ProductSizeUnit | null;
   unit: string;
-  costPrice: string;
+  costPrice: string | null;
   sellingPrice: string;
   reorderLevel: number;
   targetStockLevel: number;
   status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   isActive: boolean;
+  recordSource: CatalogRecordSource;
+  dataQualityStatus: CatalogQualityStatus;
+  isStorefrontVisible: boolean;
+  qualityWarnings: string[];
   category: ProductCategorySummary;
   inventory: ProductInventorySummary;
   createdAt: string;
@@ -54,11 +70,18 @@ export type CreateProductInput = {
   categoryId: string;
   unit: ProductRecord["unit"];
   description?: string | null;
+  imageUrl?: string | null;
   costPrice: string;
   sellingPrice: string;
   reorderLevel: number;
   targetStockLevel: number;
   status?: ProductRecord["status"];
+  brand?: string | null;
+  variant?: string | null;
+  sizeValue?: number | null;
+  sizeUnit?: ProductSizeUnit | null;
+  dataQualityStatus?: CatalogQualityStatus;
+  isStorefrontVisible?: boolean;
 };
 
 export type InventoryRecord = {
@@ -251,6 +274,7 @@ export type ProductImportRow = {
     initialStock: number;
     status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
     description: string | null;
+    imageUrl: string | null;
   } | null;
   valid: boolean;
   errors: ProductImportIssue[];
@@ -309,7 +333,7 @@ function buildQueryString(params: Record<string, string | number | boolean | und
 }
 
 function buildApiUrl(path: string) {
-  return new URL(path, frontendEnv.VITE_API_BASE_URL).toString();
+  return resolveApiUrl(path).toString();
 }
 
 async function downloadText(url: string) {
@@ -544,6 +568,13 @@ export async function updateProduct(
       | "categoryId"
       | "unit"
       | "description"
+      | "imageUrl"
+      | "brand"
+      | "variant"
+      | "sizeValue"
+      | "sizeUnit"
+      | "dataQualityStatus"
+      | "isStorefrontVisible"
       | "costPrice"
       | "sellingPrice"
       | "reorderLevel"

@@ -1,0 +1,75 @@
+name: Sprint 7 Validation
+
+on:
+  push:
+    branches:
+      - sprint/v0.7/sprint-7
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint-7-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phase-1-backend:
+    name: Phase 1 customer auth validation
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ysabellestore_ci
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
+      JWT_SECRET: sprint-7-ci-only-secret
+      FRONTEND_URL: http://localhost:5173
+    steps:
+      - name: Checkout committed Sprint 7 state
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
+      - name: Build disposable CI database from committed schema
+        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+
+      - name: Run customer authentication contract
+        run: npx tsx --test --test-concurrency=1 backend/test/customer-auth.test.ts
+
+      - name: Run backend test suite
+        run: npm test --workspace @ysabellestore/backend
+
+      - name: Typecheck backend
+        run: npm run typecheck --workspace @ysabellestore/backend
+
+      - name: Build backend
+        run: npm run build --workspace @ysabellestore/backend

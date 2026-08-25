@@ -2,19 +2,75 @@ import type {
   ForecastBatch,
   ForecastFilters,
   ForecastGenerationSummary,
+  ForecastInputSource,
   ForecastModel,
   ForecastPoint,
   ForecastProductSummary,
   ForecastSummary,
+  HistoricalImportIssue,
+  HistoricalImportValidation,
+  ProductHistoricalSeries,
   ProductForecastDetail
 } from "./forecast.types.js";
+import type { ForecastDeliveryStatus, ForecastRefreshResponse } from "./forecast.types.js";
 import { getActiveForecastMonth, monthStartIso } from "./forecast-window.js";
-import { loadHistoricalSalesData } from "./historical-sales.service.js";
+import {
+  loadHistoricalSalesData,
+  loadHistoricalSalesFallbackData,
+  type HistoricalSalesFallbackResult
+} from "./historical-sales.service.js";
 import { runPythonForecast } from "./python-forecast-runner.service.js";
 import { HttpError } from "../../utils/httpError.js";
+import { assessSarimaEligibility, loadEligibleEffectiveSales } from "./effective-sales.service.js";
+import {
+  createGeneratingForecastBatch,
+  failForecastBatch,
+  getActivePersistedForecastBatch,
+  getPersistedForecastDetail,
+  loadPersistedForecastBatch,
+  persistAndActivateForecastBatch,
+  queryPersistedForecastProducts,
+  recoverAbandonedForecastJobs
+} from "./forecast-persistence.service.js";
+import {
+  getForecastSourceSnapshot,
+  invalidateForecastSourceSnapshot,
+  sourceVersionFor,
+  type ForecastSourceSnapshot
+} from "./forecast-source-version.service.js";
 
 let forecastCache: ForecastBatch | null = null;
 let generationPromise: Promise<ForecastBatch> | null = null;
+let generationVersion: number | null = null;
+let cacheVersion = 0;
+let deliveryJob: Promise<void> | null = null;
+let deliveryJobId: string | null = null;
+let recoveryPromise: Promise<unknown> | null = null;
+let lastDeliveryFailure: { key: string; occurredAt: string } | null = null;
+let queuedFullRefresh = false;
+const queuedAffectedProductIds = new Set<string>();
+
+export const WORKBOOK_PRODUCT_ID_PREFIX = "workbook:";
+
+export type ForecastInputResult = {
+  allProducts: ProductHistoricalSeries[];
+  products: ProductHistoricalSeries[];
+  source: ForecastInputSource;
+  validation: HistoricalImportValidation;
+  warnings: HistoricalImportIssue[];
+};
+
+export type ForecastRuntimeDependencies = {
+  loadDatabaseInput: typeof loadEligibleEffectiveSales;
+  loadWorkbookInput: () => Promise<HistoricalSalesFallbackResult>;
+  runForecast: typeof runPythonForecast;
+};
+
+const defaultDependencies: ForecastRuntimeDependencies = {
+  loadDatabaseInput: loadEligibleEffectiveSales,
+  loadWorkbookInput: loadHistoricalSalesFallbackData,
+  runForecast: runPythonForecast
+};
 
 function sumForecast(points: ForecastPoint[]) {
   return points.reduce((sum, point) => sum + point.recommendedQuantity, 0);
@@ -131,66 +187,508 @@ function buildGenerationSummary(
   };
 }
 
-export async function generateForecastBatch(options: { force?: boolean } = {}) {
+function databaseWarnings(
+  effective: Awaited<ReturnType<typeof loadEligibleEffectiveSales>>
+): HistoricalImportIssue[] {
+  return effective.series
+    .filter((product) => product.eligibility.status !== "ELIGIBLE")
+    .map((product) => ({
+      code: product.eligibility.status,
+      message: product.eligibility.reason,
+      productId: product.productId,
+      row: null,
+      severity: "warning" as const,
+      workbookYear: null
+    }));
+}
+
+function withWorkbookIdentity(product: ProductHistoricalSeries): ProductHistoricalSeries {
+  const productId = `${WORKBOOK_PRODUCT_ID_PREFIX}${product.productId}`;
+
+  return {
+    ...product,
+    historical: product.historical.map((point) => ({ ...point, productId })),
+    productId
+  };
+}
+
+function selectProducts(products: ProductHistoricalSeries[], productIds?: string[]) {
+  if (!productIds?.length) {
+    return products;
+  }
+
+  const selected = new Set(productIds);
+  return products.filter((product) => selected.has(product.productId));
+}
+
+function emptyValidation(skippedProducts: number, warnings: HistoricalImportIssue[] = []) {
+  return {
+    errors: [],
+    importedObservations: 0,
+    importedProducts: 0,
+    skippedProducts,
+    valid: true,
+    warnings
+  } satisfies HistoricalImportValidation;
+}
+
+export async function loadForecastInput(
+  productIds?: string[],
+  dependencies: ForecastRuntimeDependencies = defaultDependencies
+): Promise<ForecastInputResult> {
+  // Source selection is global. Product IDs narrow a refresh only after DB priority is known.
+  const effective = await dependencies.loadDatabaseInput();
+  const dbWarnings = databaseWarnings(effective);
+
+  if (effective.products.length > 0) {
+    const validation = {
+      errors: [],
+      importedObservations: effective.products.reduce(
+        (sum, product) => sum + product.historical.length,
+        0
+      ),
+      importedProducts: effective.products.length,
+      skippedProducts: effective.series.length - effective.products.length,
+      valid: true,
+      warnings: dbWarnings
+    } satisfies HistoricalImportValidation;
+
+    return {
+      allProducts: effective.products,
+      products: selectProducts(effective.products, productIds),
+      source: "DATABASE",
+      validation,
+      warnings: dbWarnings
+    };
+  }
+
+  const workbookFallback = await dependencies.loadWorkbookInput();
+
+  if (!workbookFallback.available) {
+    console.warn(
+      `[forecast] Workbook fallback unavailable; approved workbook year(s) missing: ${workbookFallback.missingYears.join(", ")}.`
+    );
+    const validation = emptyValidation(effective.series.length, dbWarnings);
+
+    return {
+      allProducts: [],
+      products: [],
+      source: "EMPTY",
+      validation,
+      warnings: dbWarnings
+    };
+  }
+
+  const workbookImport = workbookFallback.data;
+
+  if (!workbookImport.validation.valid) {
+    throw new HttpError(422, "Historical sales workbook data is invalid.", {
+      code: "HISTORICAL_SALES_INVALID",
+      details: workbookImport.validation
+    });
+  }
+
+  const workbookEligibility = workbookImport.products.map((product) => ({
+    eligibility: assessSarimaEligibility(
+      product.productId,
+      product.productName,
+      product.historical.map((point) => ({
+        period: point.period,
+        quantitySold: point.quantitySold,
+        source: "IMPORTED_HISTORICAL" as const
+      }))
+    ),
+    product
+  }));
+  const workbookWarnings: HistoricalImportIssue[] = workbookEligibility
+    .filter(({ eligibility }) => eligibility.status !== "ELIGIBLE")
+    .map(({ eligibility }) => ({
+      code: eligibility.status,
+      message: eligibility.reason,
+      productId: eligibility.productId,
+      row: null,
+      severity: "warning",
+      workbookYear: null
+    }));
+  const eligibleWorkbookProducts = workbookEligibility
+    .filter(({ eligibility }) => eligibility.status === "ELIGIBLE")
+    .map(({ product }) => withWorkbookIdentity(product));
+  const warnings = [...dbWarnings, ...workbookImport.validation.warnings, ...workbookWarnings];
+
+  if (eligibleWorkbookProducts.length === 0) {
+    const validation = emptyValidation(
+      effective.series.length + workbookImport.products.length,
+      warnings
+    );
+
+    return {
+      allProducts: [],
+      products: [],
+      source: "EMPTY",
+      validation,
+      warnings
+    };
+  }
+
+  const validation = {
+    errors: [],
+    importedObservations: eligibleWorkbookProducts.reduce(
+      (sum, product) => sum + product.historical.length,
+      0
+    ),
+    importedProducts: eligibleWorkbookProducts.length,
+    skippedProducts:
+      effective.series.length +
+      workbookImport.validation.skippedProducts +
+      workbookEligibility.length -
+      eligibleWorkbookProducts.length,
+    valid: true,
+    warnings
+  } satisfies HistoricalImportValidation;
+
+  return {
+    allProducts: eligibleWorkbookProducts,
+    products: selectProducts(eligibleWorkbookProducts, productIds),
+    source: "WORKBOOK_FALLBACK",
+    validation,
+    warnings
+  };
+}
+
+async function generateBatchFromInput(
+  forecastInput: ForecastInputResult,
+  inputProducts: ProductHistoricalSeries[],
+  dependencies: ForecastRuntimeDependencies,
+  startedAt: number,
+  existingProducts: ProductForecastDetail[] = [],
+  replacedProductIds: string[] = []
+) {
+  const generatedAt = new Date().toISOString();
+  const generatedProducts = inputProducts.length
+    ? (await dependencies.runForecast(inputProducts)).products
+    : [];
+
+  if (generatedProducts.length !== inputProducts.length) {
+    throw new Error(
+      `Forecast output was incomplete: expected ${inputProducts.length} products, received ${generatedProducts.length}.`
+    );
+  }
+
+  const outputIds = new Set(generatedProducts.map((product) => product.productId));
+  if (outputIds.size !== generatedProducts.length) {
+    throw new Error("Forecast output contains duplicate product identities.");
+  }
+
+  const replaced = new Set(replacedProductIds);
+  const products = [
+    ...existingProducts.filter((product) => !replaced.has(product.productId)),
+    ...generatedProducts
+  ].map((product) => ({ ...product, generatedAt }));
+  const activeForecastMonth = getActiveForecastMonth();
+  const generation = buildGenerationSummary(
+    products,
+    Date.now() - startedAt,
+    generatedAt,
+    activeForecastMonth,
+    forecastInput.validation
+  );
+
+  return {
+    generation,
+    products,
+    source: forecastInput.source,
+    validation: forecastInput.validation
+  } satisfies ForecastBatch;
+}
+
+export async function generateForecastBatch(
+  options: { force?: boolean; productIds?: string[] } = {},
+  dependencies: ForecastRuntimeDependencies = defaultDependencies
+) {
   const activeForecastMonth = getActiveForecastMonth();
   const activeForecastStart = monthStartIso(activeForecastMonth);
+  const targeted = Boolean(options.productIds?.length);
 
   if (
     forecastCache &&
     !options.force &&
+    !targeted &&
+    forecastCache.products.length > 0 &&
     forecastCache.generation.forecastStartMonth === activeForecastStart
   ) {
     return forecastCache;
   }
 
   if (generationPromise) {
-    return await generationPromise;
-  }
+    const activeVersion = generationVersion;
+    const activeGeneration = await generationPromise;
 
-  generationPromise = (async () => {
-    const startedAt = Date.now();
-    const historicalImport = await loadHistoricalSalesData();
-
-    if (!historicalImport.validation.valid) {
-      throw new HttpError(422, "Historical sales data is invalid.", {
-        code: "HISTORICAL_SALES_INVALID",
-        details: historicalImport.validation
-      });
+    if (options.force || targeted || activeVersion !== cacheVersion) {
+      return await generateForecastBatch(options, dependencies);
     }
 
-    const generatedAt = new Date().toISOString();
-    const pythonResponse = await runPythonForecast(historicalImport.products);
-    const durationMs = Date.now() - startedAt;
-    const generation = buildGenerationSummary(
-      pythonResponse.products,
-      durationMs,
-      generatedAt,
-      activeForecastMonth,
-      historicalImport.validation
+    return activeGeneration;
+  }
+
+  const startedVersion = cacheVersion;
+  generationVersion = startedVersion;
+  const activePromise = (async () => {
+    const startedAt = Date.now();
+    const forecastInput = await loadForecastInput(options.productIds, dependencies);
+    const canMergeTargetedRefresh =
+      targeted &&
+      forecastCache?.source === forecastInput.source &&
+      forecastInput.source !== "EMPTY";
+    const inputProducts = canMergeTargetedRefresh
+      ? forecastInput.products
+      : forecastInput.allProducts;
+
+    const batch = await generateBatchFromInput(
+      forecastInput,
+      inputProducts,
+      dependencies,
+      startedAt,
+      canMergeTargetedRefresh && forecastCache ? forecastCache.products : [],
+      canMergeTargetedRefresh ? (options.productIds ?? []) : []
     );
 
-    forecastCache = {
-      generation,
-      products: pythonResponse.products,
-      validation: historicalImport.validation
-    };
+    // An import or rollback may invalidate the cache while Python is still running.
+    if (startedVersion === cacheVersion && batch.products.length > 0) {
+      forecastCache = batch;
+    }
 
-    generationPromise = null;
-    return forecastCache;
-  })().catch((error) => {
-    generationPromise = null;
+    return batch;
+  })();
+  generationPromise = activePromise;
+
+  try {
+    return await activePromise;
+  } finally {
+    if (generationPromise === activePromise) {
+      generationPromise = null;
+      generationVersion = null;
+    }
+  }
+}
+
+export function invalidateForecastCache(productIds?: string[]) {
+  cacheVersion += 1;
+  forecastCache = null;
+  invalidateForecastSourceSnapshot();
+
+  if (productIds?.length && !process.env.NODE_TEST_CONTEXT) {
+    void requestForecastRefresh({ productIds }).catch((error) => {
+      console.error("[forecast] Unable to schedule the forecast refresh.", error);
+    });
+  }
+}
+
+function ensureForecastJobRecovery() {
+  recoveryPromise ??= recoverAbandonedForecastJobs().catch((error) => {
+    recoveryPromise = null;
     throw error;
   });
+  return recoveryPromise;
+}
 
-  return await generationPromise;
+function isPersistedBatchCurrent(
+  batch: Awaited<ReturnType<typeof getActivePersistedForecastBatch>>,
+  snapshot: ForecastSourceSnapshot
+) {
+  if (!batch) return false;
+  return (
+    batch.forecastStartMonth.toISOString().slice(0, 10) ===
+      snapshot.activeForecastMonth.slice(0, 10) &&
+    batch.sourceVersion === sourceVersionFor(batch.source, snapshot)
+  );
+}
+
+function deliveryStatus(
+  active: Awaited<ReturnType<typeof getActivePersistedForecastBatch>>,
+  current: boolean
+): ForecastDeliveryStatus {
+  if (!active) {
+    return deliveryJob ? "GENERATING" : lastDeliveryFailure ? "FAILED" : "GENERATING";
+  }
+  if (deliveryJob) {
+    return active.source === "EMPTY" ? "GENERATING" : "REFRESHING";
+  }
+  if (active.source === "EMPTY" && current) return "EMPTY";
+  if (current) return "READY";
+  if (lastDeliveryFailure?.key === active.sourceVersion && !deliveryJob) {
+    return "FAILED_WITH_PREVIOUS";
+  }
+  return deliveryJob ? "REFRESHING" : "STALE";
+}
+
+async function runPersistedForecastRefresh(options: { force: boolean; productIds?: string[] }) {
+  const startedAt = Date.now();
+  const snapshotBefore = await getForecastSourceSnapshot();
+  const active = await getActivePersistedForecastBatch();
+  const requestedIds = [...new Set(options.productIds ?? [])];
+  const sameMonth =
+    active?.forecastStartMonth.toISOString().slice(0, 10) ===
+    snapshotBefore.activeForecastMonth.slice(0, 10);
+  const incrementalRequested =
+    requestedIds.length > 0 && active?.source === "DATABASE" && sameMonth;
+  const input = await loadForecastInput(incrementalRequested ? requestedIds : undefined);
+  const sourceVersion = sourceVersionFor(input.source, snapshotBefore);
+
+  if (!options.force && requestedIds.length === 0 && active?.sourceVersion === sourceVersion) {
+    return;
+  }
+
+  const job = await createGeneratingForecastBatch(input.source, sourceVersion, snapshotBefore);
+  deliveryJobId = job.id;
+
+  try {
+    let existingProducts: ProductForecastDetail[] = [];
+    let inputProducts = input.allProducts;
+    let replacedProductIds: string[] = [];
+
+    if (incrementalRequested && input.source === "DATABASE" && active) {
+      const previousBatch = await loadPersistedForecastBatch(active.id);
+      if (previousBatch?.source === "DATABASE") {
+        const selectedEligibleIds = new Set(input.products.map((product) => product.productId));
+        const expectedIds = new Set(input.allProducts.map((product) => product.productId));
+        const mergedIds = new Set([
+          ...previousBatch.products
+            .filter((product) => !requestedIds.includes(product.productId))
+            .map((product) => product.productId),
+          ...selectedEligibleIds
+        ]);
+        const mergeIsComplete =
+          expectedIds.size === mergedIds.size && [...expectedIds].every((id) => mergedIds.has(id));
+
+        if (mergeIsComplete) {
+          existingProducts = previousBatch.products;
+          inputProducts = input.products;
+          replacedProductIds = requestedIds;
+        }
+      }
+    }
+
+    const batch = await generateBatchFromInput(
+      input,
+      inputProducts,
+      defaultDependencies,
+      startedAt,
+      existingProducts,
+      replacedProductIds
+    );
+    const snapshotAfter = await getForecastSourceSnapshot();
+    if (sourceVersionFor(input.source, snapshotAfter) !== sourceVersion) {
+      queuedFullRefresh = true;
+      throw new Error("Forecast source changed while generation was running.");
+    }
+
+    await persistAndActivateForecastBatch(job.id, batch);
+    forecastCache = batch.products.length > 0 ? batch : null;
+    lastDeliveryFailure = null;
+  } catch (error) {
+    await failForecastBatch(job.id);
+    lastDeliveryFailure = {
+      key: active?.sourceVersion ?? sourceVersion,
+      occurredAt: new Date().toISOString()
+    };
+    throw error;
+  }
+}
+
+export async function requestForecastRefresh(
+  options: { force?: boolean; productIds?: string[] } = {}
+): Promise<ForecastRefreshResponse> {
+  await ensureForecastJobRecovery();
+  const active = await getActivePersistedForecastBatch();
+
+  if (deliveryJob) {
+    for (const productId of options.productIds ?? []) {
+      queuedAffectedProductIds.add(productId);
+    }
+    return {
+      accepted: true,
+      generationId: deliveryJobId,
+      previousDataAvailable: Boolean(active && active.source !== "EMPTY"),
+      status: active && active.source !== "EMPTY" ? "REFRESHING" : "GENERATING"
+    };
+  }
+
+  const activePromise = runPersistedForecastRefresh({
+    force: options.force ?? false,
+    productIds: options.productIds
+  });
+  deliveryJob = activePromise;
+  void activePromise
+    .catch((error) => {
+      console.error("[forecast] Background forecast refresh failed.", error);
+    })
+    .finally(() => {
+      if (deliveryJob === activePromise) {
+        deliveryJob = null;
+        deliveryJobId = null;
+        const productIds = queuedFullRefresh ? undefined : [...queuedAffectedProductIds];
+        const runQueuedRefresh = queuedFullRefresh || Boolean(productIds?.length);
+        queuedFullRefresh = false;
+        queuedAffectedProductIds.clear();
+
+        if (runQueuedRefresh) {
+          void requestForecastRefresh({ productIds }).catch((error) => {
+            console.error("[forecast] Queued forecast refresh failed.", error);
+          });
+        }
+      }
+    });
+
+  return {
+    accepted: true,
+    generationId: deliveryJobId,
+    previousDataAvailable: Boolean(active && active.source !== "EMPTY"),
+    status: active && active.source !== "EMPTY" ? "REFRESHING" : "GENERATING"
+  };
+}
+
+export async function waitForForecastRefresh(options: { force?: boolean } = {}) {
+  await requestForecastRefresh(options);
+  const activeJob = deliveryJob;
+  if (activeJob) await activeJob;
+  return await getActivePersistedForecastBatch();
+}
+
+async function getForecastDeliveryContext() {
+  await ensureForecastJobRecovery();
+  const [snapshot, active] = await Promise.all([
+    getForecastSourceSnapshot(),
+    getActivePersistedForecastBatch()
+  ]);
+  const current = isPersistedBatchCurrent(active, snapshot);
+
+  const failedForCurrentData = active
+    ? lastDeliveryFailure?.key === active.sourceVersion
+    : Boolean(lastDeliveryFailure);
+
+  if (!current && !deliveryJob && !failedForCurrentData) {
+    void requestForecastRefresh().catch((error) => {
+      console.error("[forecast] Unable to start stale forecast refresh.", error);
+    });
+  }
+
+  return {
+    active,
+    current,
+    status:
+      !current && !failedForCurrentData
+        ? active
+          ? ("REFRESHING" as const)
+          : ("GENERATING" as const)
+        : deliveryStatus(active, current)
+  };
 }
 
 export async function validateHistoricalSales() {
   return await loadHistoricalSalesData();
 }
 
-export async function getForecastProductList(filters: ForecastFilters) {
-  const batch = await generateForecastBatch();
+export function buildForecastProductList(batch: ForecastBatch, filters: ForecastFilters) {
   const categories = [...new Set(batch.products.map((product) => product.category))].sort();
   const summaries = batch.products.map(summarizeProduct);
   const search = filters.search?.toLowerCase();
@@ -239,9 +737,44 @@ export async function getForecastProductList(filters: ForecastFilters) {
   };
 }
 
-export async function getForecastProductDetail(productId: string) {
-  const batch = await generateForecastBatch();
-  const product = batch.products.find((item) => item.productId === productId);
+export async function getForecastProductList(filters: ForecastFilters) {
+  const context = await getForecastDeliveryContext();
+
+  if (!context.active) {
+    return {
+      batchId: null,
+      categories: [],
+      forecastStartMonth: monthStartIso(getActiveForecastMonth()),
+      generatedAt: null,
+      isRefreshing: context.status === "GENERATING",
+      isStale: false,
+      items: [],
+      page: 1,
+      pageSize: filters.pageSize,
+      status: context.status,
+      totalItems: 0,
+      totalPages: 1
+    };
+  }
+
+  return await queryPersistedForecastProducts(context.active, filters, {
+    batchId: context.active.id,
+    forecastStartMonth: context.active.forecastStartMonth.toISOString().slice(0, 10),
+    isRefreshing: context.status === "REFRESHING",
+    isStale: !context.current,
+    status: context.status
+  });
+}
+
+export async function getForecastProductDetail(productId: string, requestedBatchId?: string) {
+  if (!requestedBatchId) {
+    const memoryProduct = forecastCache?.products.find((item) => item.productId === productId);
+    if (memoryProduct) return memoryProduct;
+  }
+
+  const context = requestedBatchId ? null : await getForecastDeliveryContext();
+  const batchId = requestedBatchId ?? context?.active?.id;
+  const product = batchId ? await getPersistedForecastDetail(batchId, productId) : null;
 
   if (!product) {
     throw new HttpError(404, "Product forecast was not found.", {
@@ -253,13 +786,27 @@ export async function getForecastProductDetail(productId: string) {
 }
 
 export async function getForecastGenerationSummary() {
-  const batch = await generateForecastBatch();
+  const context = await getForecastDeliveryContext();
+  const batch = context.active ? await loadPersistedForecastBatch(context.active.id) : null;
+
+  if (!batch) {
+    throw new HttpError(409, "Forecast generation is still in progress.", {
+      code: "FORECAST_GENERATING"
+    });
+  }
 
   return batch.generation;
 }
 
 export async function getForecastSummary(): Promise<ForecastSummary> {
-  const batch = await generateForecastBatch();
+  const context = await getForecastDeliveryContext();
+  const batch = context.active ? await loadPersistedForecastBatch(context.active.id) : null;
+
+  if (!batch) {
+    throw new HttpError(409, "Forecast generation is still in progress.", {
+      code: "FORECAST_GENERATING"
+    });
+  }
   const summaries = batch.products.map(summarizeProduct);
   const actualUnits2024 = summaries.reduce((sum, item) => sum + item.totalHistorical2024, 0);
   const actualUnits2025 = summaries.reduce((sum, item) => sum + item.totalHistorical2025, 0);

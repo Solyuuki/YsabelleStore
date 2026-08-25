@@ -7,11 +7,10 @@
     "dev": "tsx watch src/server.ts",
     "prisma:generate": "npm run prisma:generate --prefix ..",
     "prebuild": "npm run prisma:generate",
-    "pretypecheck": "npm run prisma:generate",
     "build": "tsc -p tsconfig.json",
-    "test": "tsx --test --test-concurrency=1 test/data-flow.test.ts",
+    "test": "tsx --test --test-concurrency=1 test/auth-security.test.ts test/customer-auth.test.ts test/customer-auth-http.test.ts test/customer-order-account.test.ts test/cors.test.ts test/catalog-image-process-gate.test.ts test/catalog-image-engine-runner.test.ts test/catalog-image-storage.test.ts test/catalog-image-foundation.test.ts test/catalog-image-approval.test.ts test/catalog-image-storefront.test.ts test/catalog-image-url.test.ts test/catalog-image-backfill.test.ts test/catalog-image-latest-candidate.test.ts test/catalog-quality.test.ts test/data-flow.test.ts test/storefront.test.ts test/storefront-product-detail.test.ts test/forecast-delivery.test.ts test/forecast-fallback.test.ts test/historical-sales-rules.test.ts test/inventory-import.test.ts test/http-status-contract.test.ts test/health-readiness.test.ts test/error-handler-security.test.ts test/request-traceability.test.ts",
     "start": "node dist/src/server.js",
-    "lint": "eslint .",
+    "lint": "eslint src test",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
   },

@@ -6,6 +6,9 @@ import { env } from "../config/env.js";
 const prismaLogLevels: Prisma.PrismaClientOptions["log"] =
   env.NODE_ENV === "development" ? ["warn", "error"] : ["error"];
 
+const DATABASE_AVAILABLE_MESSAGE = "Database connection is available.";
+const DATABASE_UNAVAILABLE_MESSAGE = "Database connection is unavailable.";
+
 export const prisma = new PrismaClient({
   log: prismaLogLevels
 });
@@ -28,7 +31,7 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
   if (!env.DATABASE_URL) {
     return {
       status: "not_configured",
-      message: "DATABASE_URL is not configured."
+      message: DATABASE_UNAVAILABLE_MESSAGE
     };
   }
 
@@ -37,14 +40,12 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
 
     return {
       status: "connected",
-      message: "Database connection is available."
+      message: DATABASE_AVAILABLE_MESSAGE
     };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown database connection error.";
-
+  } catch {
     return {
       status: "unavailable",
-      message
+      message: DATABASE_UNAVAILABLE_MESSAGE
     };
   }
 }

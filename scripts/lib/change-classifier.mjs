@@ -31,19 +31,19 @@ export function classifyChanges(changes) {
     areas: [...areas],
     decisions: detectDecisions(files),
     deploymentRelevant: files.some((file) =>
-      /^(electron\/|deployment\/|database\/prisma\/|database\/migrations\/|backend\/src\/(services|database|controllers)\/|package\.json|package-lock\.json)/.test(
+      /^(electron\/|deployment\/|database\/prisma\/|database\/migrations\/|backend\/src\/(services|database|controllers)\/|package\.json|package-lock\.json)/i.test(
         file
       )
     ),
     files,
     importantFiles: files.slice(0, 10),
     manualQa: files.some((file) =>
-      /frontend\/src\/(context|pages|app)|backend\/src\/(routes|controllers|services)\/auth|trusted|Toast/.test(
+      /frontend\/src\/(context|pages|app)|backend\/src\/(routes|controllers|services)\/[^/]*auth|trusted|toast/i.test(
         file
       )
     ),
     risky: files.some((file) =>
-      /backend\/|database\/|auth|security|migration|prisma|package\.json|package-lock\.json/.test(
+      /backend\/|database\/|auth|security|migration|prisma|package\.json|package-lock\.json/i.test(
         file
       )
     ),
@@ -56,18 +56,18 @@ function detectSummaries(files) {
 
   if (
     files.some((file) =>
-      /auth|trusted-device|TrustedDevice|WelcomePage|AuthContext|auth\.routes/.test(file)
+      /auth|trusted-device|trusteddevice|welcomepage|authcontext|auth\.routes/i.test(file)
     )
   ) {
-    summaries.add("Authentication / trusted device login / RBAC");
+    summaries.add("Authentication / session / access-control changes");
   }
 
-  if (files.some((file) => /Toast|toast/.test(file))) {
+  if (files.some((file) => /toast/i.test(file))) {
     summaries.add("Toast notification lifecycle");
   }
 
   if (
-    files.some((file) => /schema\.prisma|database\/(prisma\/migrations|migrations)\//.test(file))
+    files.some((file) => /schema\.prisma|database\/(prisma\/migrations|migrations)\//i.test(file))
   ) {
     summaries.add("Database schema / migration update");
   }
@@ -90,31 +90,26 @@ function detectSummaries(files) {
 function detectDecisions(files) {
   const decisions = [];
 
-  if (
-    files.some((file) =>
-      /TrustedDevice|trusted-device|schema\.prisma|database\/.*trusted_device/.test(file)
-    )
-  ) {
+  if (files.some((file) => /trusteddevice|trusted-device|trusted_device/i.test(file))) {
     decisions.push({
-      decision: "Trusted-device access is revocation-based instead of expiration-based.",
+      decision: "Trusted-device access behavior changed.",
       reason:
-        "Persistent desktop access must remain valid until explicitly revoked, forgotten, reset, or blocked by inactive account status."
+        "Trusted-device changes require explicit review of session, revocation, and access behavior."
     });
   }
 
   if (files.some((file) => file.startsWith("scripts/") || file === "package.json")) {
     decisions.push({
-      decision: "Local push readiness is automated through deterministic Node.js scripts.",
-      reason:
-        "Members need repeatable artifact updates, sprint updates, Prisma cleanup, and validation before pushing."
+      decision: "Repository automation or validation behavior changed.",
+      reason: "Automation changes require repeatable guardrail and validation checks before push."
     });
   }
 
-  if (files.some((file) => /Toast|toast/.test(file))) {
+  if (files.some((file) => /toast/i.test(file))) {
     decisions.push({
-      decision:
-        "Authentication toasts are scoped and auto-dismiss through the shared toast lifecycle.",
-      reason: "Auth feedback should avoid contradictory stacking and stale progress notifications."
+      decision: "User notification lifecycle changed.",
+      reason:
+        "Notification changes require review for contradictory, stale, or duplicated feedback."
     });
   }
 

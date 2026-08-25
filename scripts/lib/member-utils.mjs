@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 
 export const MEMBERS = {
   m1: {
@@ -24,28 +25,44 @@ export const REQUIRED_ARTIFACT_FILES = [
   "TESTING-REPORTS.md",
   "DEPLOYMENT-NOTES.md",
   "SPRINT-PLANNING.md",
-  "SPRINT-PROGRESS.md"
+  "SPRINT-PROGRESS.md",
+  "VALIDATION-SUMMARY.md"
 ];
+
+const GUARDRAIL_CONFIG_PATH = "config/guardrails.json";
 
 export function parseMemberOverride(args = process.argv.slice(2)) {
   const memberFlagIndex = args.findIndex((arg) => arg === "--member");
+  const inlineMemberArgument = args.find((arg) => arg.startsWith("--member="));
   const memberValue =
-    memberFlagIndex >= 0
-      ? args[memberFlagIndex + 1]
-      : args.find((arg) => arg.startsWith("--member="))?.split("=")[1];
+    memberFlagIndex >= 0 ? args[memberFlagIndex + 1] : inlineMemberArgument?.slice(9);
 
-  if (!memberValue) {
+  if (memberFlagIndex < 0 && !inlineMemberArgument) {
     return null;
   }
 
-  const prefix = memberValue.toLowerCase().slice(0, 2);
-  return MEMBERS[prefix] ?? null;
+  const normalizedValue = memberValue?.toLowerCase();
+  const member = Object.entries(MEMBERS).find(
+    ([alias, details]) => normalizedValue === alias || normalizedValue === details.key
+  )?.[1];
+
+  if (!member) {
+    throw new Error(
+      `Unknown member ${memberValue || "(missing)"}. Use --member m1, --member m2, or --member m3.`
+    );
+  }
+
+  return member;
 }
 
 export function inferMemberFromBranch(branch) {
   const prefix = branch?.split("/")?.[0]?.toLowerCase();
 
   return MEMBERS[prefix] ?? null;
+}
+
+export function resolveMember(branch, args = process.argv.slice(2)) {
+  return parseMemberOverride(args) ?? inferMemberFromBranch(branch);
 }
 
 export function inferSprintFromBranch(branch) {
@@ -70,16 +87,10 @@ export function inferSprintFromBranch(branch) {
 }
 
 export function requireMember(branch, args = process.argv.slice(2)) {
-  const override = parseMemberOverride(args);
+  const member = resolveMember(branch, args);
 
-  if (override) {
-    return override;
-  }
-
-  const inferred = inferMemberFromBranch(branch);
-
-  if (inferred) {
-    return inferred;
+  if (member) {
+    return member;
   }
 
   throw new Error(
@@ -87,20 +98,49 @@ export function requireMember(branch, args = process.argv.slice(2)) {
   );
 }
 
-export function requireSprint(branch) {
-  const inferred = inferSprintFromBranch(branch);
+export function requireSprint(branch, { rootDir = process.cwd() } = {}) {
+  const configPath = path.join(rootDir, ...GUARDRAIL_CONFIG_PATH.split("/"));
+  if (!fs.existsSync(configPath)) {
+    throw new Error(`Guardrail configuration ${GUARDRAIL_CONFIG_PATH} does not exist.`);
+  }
 
-  if (!inferred) {
+  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  const sprintNumber = config.activeSprint;
+  if (!Number.isInteger(sprintNumber) || sprintNumber <= 0) {
+    throw new Error(`${GUARDRAIL_CONFIG_PATH} activeSprint must be a positive whole number.`);
+  }
+
+  const declaredSprint = branch?.match(/(?:^|\/)sprint-(\d+)(?:$|\/)/)?.[1];
+  if (declaredSprint && Number.parseInt(declaredSprint, 10) !== sprintNumber) {
     throw new Error(
-      "Unable to determine sprint version from branch name. Expected format: m1/v0.3/feat/name"
+      `Branch ${branch} declares sprint-${declaredSprint}, but activeSprint is ${sprintNumber} in ${GUARDRAIL_CONFIG_PATH}.`
     );
   }
 
-  if (!fs.existsSync(inferred.sprintDir)) {
-    throw new Error(`Resolved sprint folder ${inferred.sprintDir} does not exist.`);
+  const versionMatch = branch?.match(/(?:^|\/)v(\d+)\.(\d+)(?:$|\/)/);
+  if (versionMatch && Number.parseInt(versionMatch[2], 10) !== sprintNumber) {
+    throw new Error(
+      `Branch ${branch} declares v${versionMatch[1]}.${versionMatch[2]}, but activeSprint is ${sprintNumber} in ${GUARDRAIL_CONFIG_PATH}.`
+    );
   }
 
-  return inferred;
+  const sprintSlug = `sprint-${sprintNumber}`;
+  const sprintDir = `docs/sprints/${sprintSlug}`;
+  const absoluteSprintDir = path.join(rootDir, ...sprintDir.split("/"));
+  if (!fs.existsSync(absoluteSprintDir)) {
+    throw new Error(
+      `Active sprint folder ${sprintDir} does not exist. Add the required Sprint ${sprintNumber} documentation, or correct activeSprint in ${GUARDRAIL_CONFIG_PATH} if the transition was not intended.`
+    );
+  }
+
+  return {
+    sprintNumber,
+    sprintSlug,
+    sprintVersion: versionMatch
+      ? `v${versionMatch[1]}.${versionMatch[2]}`
+      : `sprint-${sprintNumber}`,
+    sprintDir
+  };
 }
 
 export function getRequiredSprintFiles(sprintDir) {

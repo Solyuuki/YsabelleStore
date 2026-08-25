@@ -1,3 +1,5 @@
+import fs from "node:fs";
+
 import type {
   HistoricalImportIssue,
   HistoricalImportValidation,
@@ -11,6 +13,10 @@ import {
 
 const HISTORICAL_2024_PATH = "data/forecasting/historical-sales-2024.xlsx";
 const HISTORICAL_2025_PATH = "data/forecasting/historical-sales-2025.xlsx";
+
+export type HistoricalSalesFallbackResult =
+  | { available: true; data: HistoricalSalesImport }
+  | { available: false; missingYears: number[] };
 
 export type HistoricalSalesImport = {
   products: ProductHistoricalSeries[];
@@ -156,4 +162,20 @@ export async function loadHistoricalSalesData(): Promise<HistoricalSalesImport> 
       products2025: workbook2025.products.size
     }
   };
+}
+
+export async function loadHistoricalSalesFallbackData(): Promise<HistoricalSalesFallbackResult> {
+  const workbookPaths = [
+    { sourcePath: resolveRepositoryPath(HISTORICAL_2024_PATH), year: 2024 },
+    { sourcePath: resolveRepositoryPath(HISTORICAL_2025_PATH), year: 2025 }
+  ];
+  const missingYears = workbookPaths
+    .filter((workbook) => !fs.existsSync(workbook.sourcePath))
+    .map((workbook) => workbook.year);
+
+  if (missingYears.length > 0) {
+    return { available: false, missingYears };
+  }
+
+  return { available: true, data: await loadHistoricalSalesData() };
 }

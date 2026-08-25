@@ -6,11 +6,38 @@ export const SECURITY_HEADERS = {
   crossOriginResourcePolicy: "same-origin"
 } as const;
 
+const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
+export const AUTH_RATE_LIMITS = {
+  internalLogin: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 10,
+    scope: "internal-login"
+  },
+  customerLogin: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 10,
+    scope: "customer-login"
+  },
+  customerRegister: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 5,
+    scope: "customer-register"
+  }
+} as const;
+
 export const SECURITY_LIMITS = {
   jsonBodyLimit: "1mb",
   plannedImportFileSizeMb: 10,
   plannedRateLimitWindowMinutes: 15,
   plannedRateLimitMaxRequests: 300
+} as const;
+
+export const PRODUCT_IMAGE_UPLOAD_LIMITS = {
+  maxFileBytes: 8 * 1024 * 1024,
+  maxDecodedPixels: 24_000_000,
+  maxDimensionPixels: 8_000,
+  allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"]
 } as const;
 
 export const FUTURE_AUTH_ROLES = {

@@ -27,6 +27,11 @@ enum UserStatus {
   INACTIVE
 }
 
+enum CustomerAccountStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum ProductUnit {
   PIECE
   PACK
@@ -43,6 +48,73 @@ enum ProductStatus {
   ACTIVE
   INACTIVE
   DISCONTINUED
+}
+
+enum CatalogRecordSource {
+  CATALOG
+  IMPORT
+  TEST_FIXTURE
+  INTERNAL
+}
+
+enum CatalogQualityStatus {
+  APPROVED
+  NEEDS_REVIEW
+  REJECTED
+}
+
+enum ProductImageQualityStatus {
+  APPROVED
+  NEEDS_REVIEW
+  REJECTED
+}
+
+enum ProductImageProcessingStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum ProductSizeUnit {
+  MILLILITER
+  LITER
+  GRAM
+  KILOGRAM
+  PIECE
+}
+
+enum ProductAliasType {
+  RAW_NAME
+  SKU
+  BARCODE
+  SUPPLIER_CODE
+}
+
+enum ProductIdentityMatchType {
+  BARCODE
+  SKU
+  SUPPLIER_CODE
+  NORMALIZED_IDENTITY
+  MANUAL_REVIEW
+}
+
+enum ProductMappingAction {
+  MAPPED
+  MERGED
+}
+
+enum ProductDuplicateStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  MERGED
+}
+
+enum SarimaSourceIdentityConfidence {
+  HIGH
+  MEDIUM
+  LOW
 }
 
 enum InventoryBatchStatus {
@@ -75,10 +147,80 @@ enum SaleStatus {
   VOIDED
 }
 
+enum CustomerOrderStatus {
+  PENDING
+  CONFIRMED
+  READY_FOR_PICKUP
+  COMPLETED
+  CANCELLED
+}
+
+enum CustomerFulfillmentMethod {
+  STORE_PICKUP
+}
+
+enum CustomerPaymentMethod {
+  CASH_ON_PICKUP
+}
+
 enum ForecastStatus {
   PENDING
   GENERATED
   FAILED
+}
+
+enum HistoricalSalesImportMode {
+  APPEND_ONLY
+  REJECT_ON_OVERLAP
+  REPLACE_IMPORTED_OVERLAPS
+}
+
+enum HistoricalSalesImportStatus {
+  PREVIEWED
+  PROCESSING
+  COMPLETED
+  COMPLETED_WITH_SKIPS
+  FAILED
+  ROLLED_BACK
+}
+
+enum HistoricalSalesRowStatus {
+  VALID
+  WARNING
+  INVALID
+  UNMATCHED
+  DUPLICATE
+  OVERLAP
+  IMPORTED
+  SKIPPED
+  REPLACED
+}
+
+enum MonthlySalesSource {
+  IMPORTED_HISTORICAL
+  POS_ACTUAL
+  DEVELOPMENT_FIXTURE
+}
+
+enum ForecastRefreshStatus {
+  NOT_REQUIRED
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+enum ForecastBatchStatus {
+  GENERATING
+  READY
+  FAILED
+  SUPERSEDED
+  EMPTY
+}
+
+enum ForecastBatchSource {
+  DATABASE
+  WORKBOOK_FALLBACK
+  EMPTY
 }
 
 enum RecommendationType {
@@ -104,19 +246,22 @@ enum RecommendationStatus {
 }
 
 model User {
-  id                  String              @id @default(cuid()) @db.VarChar(191)
-  name                String              @db.VarChar(120)
-  email               String              @unique(map: "uq_users_email") @db.VarChar(191)
-  passwordHash        String              @map("password_hash") @db.VarChar(255)
-  role                UserRole            @default(STAFF)
-  status              UserStatus          @default(ACTIVE)
-  createdAt           DateTime            @default(now()) @map("created_at")
-  updatedAt           DateTime            @updatedAt @map("updated_at")
-  sales               Sale[]
-  inventoryMovements  InventoryMovement[]
-  forecastRecords     ForecastRecord[]
-  recommendationNotes RecommendationRecord[]
-  trustedDevices      TrustedDevice[]
+  id                       String                       @id @default(cuid()) @db.VarChar(191)
+  name                     String                       @db.VarChar(120)
+  email                    String                       @unique(map: "uq_users_email") @db.VarChar(191)
+  passwordHash             String                       @map("password_hash") @db.VarChar(255)
+  role                     UserRole                     @default(STAFF)
+  status                   UserStatus                   @default(ACTIVE)
+  createdAt                DateTime                     @default(now()) @map("created_at")
+  updatedAt                DateTime                     @updatedAt @map("updated_at")
+  sales                    Sale[]
+  inventoryMovements       InventoryMovement[]
+  forecastRecords          ForecastRecord[]
+  recommendationNotes      RecommendationRecord[]
+  trustedDevices           TrustedDevice[]
+  historicalSalesImports   HistoricalSalesImportBatch[] @relation("HistoricalSalesImportedBy")
+  historicalSalesRollbacks HistoricalSalesImportBatch[] @relation("HistoricalSalesRolledBackBy")
+  invalidatedMonthlySales  HistoricalMonthlySales[]     @relation("HistoricalSalesInvalidatedBy")
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
@@ -141,47 +286,258 @@ model TrustedDevice {
   @@map("trusted_devices")
 }
 
+model CustomerAccount {
+  id           String                @id @default(cuid()) @db.VarChar(191)
+  name         String                @db.VarChar(120)
+  email        String                @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
+  phone        String?               @db.VarChar(40)
+  passwordHash String                @map("password_hash") @db.VarChar(255)
+  status       CustomerAccountStatus @default(ACTIVE)
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+  sessions     CustomerSession[]
+  orders       CustomerOrder[]
+
+  @@index([status], map: "idx_customer_accounts_status")
+  @@map("customer_accounts")
+}
+
+model CustomerSession {
+  id                String          @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String          @map("customer_account_id") @db.VarChar(191)
+  tokenHash         String          @unique(map: "uq_customer_sessions_token_hash") @map("token_hash") @db.VarChar(64)
+  expiresAt         DateTime        @map("expires_at")
+  revokedAt         DateTime?       @map("revoked_at")
+  lastUsedAt        DateTime?       @map("last_used_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([customerAccountId], map: "idx_customer_sessions_customer")
+  @@index([expiresAt], map: "idx_customer_sessions_expires")
+  @@index([revokedAt], map: "idx_customer_sessions_revoked")
+  @@map("customer_sessions")
+}
+
 model Category {
-  id          String    @id @default(cuid()) @db.VarChar(191)
-  name        String    @unique(map: "uq_categories_name") @db.VarChar(120)
-  slug        String    @unique(map: "uq_categories_slug") @db.VarChar(140)
-  description String?   @db.VarChar(255)
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  products    Product[]
+  id                  String               @id @default(cuid()) @db.VarChar(191)
+  name                String               @unique(map: "uq_categories_name") @db.VarChar(120)
+  slug                String               @unique(map: "uq_categories_slug") @db.VarChar(140)
+  description         String?              @db.VarChar(255)
+  isActive            Boolean              @default(true) @map("is_active")
+  recordSource        CatalogRecordSource  @default(CATALOG) @map("record_source")
+  dataQualityStatus   CatalogQualityStatus @default(NEEDS_REVIEW) @map("data_quality_status")
+  isStorefrontVisible Boolean              @default(false) @map("is_storefront_visible")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  products            Product[]
 
   @@index([isActive], map: "idx_categories_is_active")
+  @@index([isStorefrontVisible, dataQualityStatus, isActive], map: "idx_categories_storefront_quality")
   @@map("categories")
 }
 
 model Product {
-  id                    String                 @id @default(cuid()) @db.VarChar(191)
-  categoryId            String                 @map("category_id") @db.VarChar(191)
-  sku                   String                 @unique(map: "uq_products_sku") @db.VarChar(80)
-  barcode               String?                @unique(map: "uq_products_barcode") @db.VarChar(80)
-  name                  String                 @db.VarChar(160)
-  description           String?                @db.VarChar(255)
-  unit                  ProductUnit            @default(PIECE)
-  costPrice             Decimal                @map("cost_price") @db.Decimal(10, 2)
-  sellingPrice          Decimal                @map("selling_price") @db.Decimal(10, 2)
-  reorderLevel          Int                    @default(0) @map("reorder_level") @db.UnsignedInt
-  targetStockLevel      Int                    @default(0) @map("target_stock_level") @db.UnsignedInt
-  status                ProductStatus          @default(ACTIVE)
-  createdAt             DateTime               @default(now()) @map("created_at")
-  updatedAt             DateTime               @updatedAt @map("updated_at")
-  category              Category               @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  inventory             Inventory?
-  inventoryBatches      InventoryBatch[]
-  inventoryMovements    InventoryMovement[]
-  saleItems             SaleItem[]
-  forecastRecords       ForecastRecord[]
-  recommendationRecords RecommendationRecord[]
+  id                        String                      @id @default(cuid()) @db.VarChar(191)
+  categoryId                String                      @map("category_id") @db.VarChar(191)
+  activeImageAssetId        String?                     @unique(map: "uq_products_active_image_asset") @map("active_image_asset_id") @db.VarChar(191)
+  sku                       String                      @unique(map: "uq_products_sku") @db.VarChar(80)
+  barcode                   String?                     @unique(map: "uq_products_barcode") @db.VarChar(80)
+  name                      String                      @db.VarChar(160)
+  description               String?                     @db.VarChar(255)
+  imageUrl                  String?                     @map("image_url") @db.VarChar(2048)
+  brand                     String?                     @db.VarChar(120)
+  variant                   String?                     @db.VarChar(120)
+  sizeValue                 Decimal?                    @map("size_value") @db.Decimal(10, 3)
+  sizeUnit                  ProductSizeUnit?            @map("size_unit")
+  unit                      ProductUnit                 @default(PIECE)
+  costPrice                 Decimal?                    @map("cost_price") @db.Decimal(10, 2)
+  sellingPrice              Decimal                     @map("selling_price") @db.Decimal(10, 2)
+  reorderLevel              Int                         @default(0) @map("reorder_level") @db.UnsignedInt
+  targetStockLevel          Int                         @default(0) @map("target_stock_level") @db.UnsignedInt
+  status                    ProductStatus               @default(ACTIVE)
+  recordSource              CatalogRecordSource         @default(CATALOG) @map("record_source")
+  dataQualityStatus         CatalogQualityStatus        @default(NEEDS_REVIEW) @map("data_quality_status")
+  isStorefrontVisible       Boolean                     @default(false) @map("is_storefront_visible")
+  createdAt                 DateTime                    @default(now()) @map("created_at")
+  updatedAt                 DateTime                    @updatedAt @map("updated_at")
+  category                  Category                    @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  activeImageAsset          ProductImageAsset?          @relation("ActiveProductImage", fields: [activeImageAssetId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  imageAssets               ProductImageAsset[]         @relation("ProductImageAssets")
+  inventory                 Inventory?
+  inventoryBatches          InventoryBatch[]
+  inventoryMovements        InventoryMovement[]
+  saleItems                 SaleItem[]
+  forecastRecords           ForecastRecord[]
+  recommendationRecords     RecommendationRecord[]
+  historicalMonthlySales    HistoricalMonthlySales[]
+  historicalSalesImportRows HistoricalSalesImportRow[]
+  customerOrderItems        CustomerOrderItem[]
+  reviews                   ProductReview[]
+  aliases                   ProductAlias[]
+  sourceMapping             ProductCanonicalMapping?    @relation("SourceProductMapping")
+  canonicalMappings         ProductCanonicalMapping[]   @relation("CanonicalProductMappings")
+  sarimaSourceMapping       SarimaSourceProductMapping?
+  duplicateCandidatesLeft   ProductDuplicateCandidate[] @relation("DuplicateCandidateLeft")
+  duplicateCandidatesRight  ProductDuplicateCandidate[] @relation("DuplicateCandidateRight")
+  canonicalAuditLogs        CatalogAuditLog[]
 
   @@index([categoryId, status], map: "idx_products_category_status")
   @@index([name], map: "idx_products_name")
   @@index([status, createdAt], map: "idx_products_status_created")
+  @@index([isStorefrontVisible, dataQualityStatus, status], map: "idx_products_storefront_quality")
+  @@index([recordSource, dataQualityStatus], map: "idx_products_source_quality")
   @@map("products")
+}
+
+model ProductImageAsset {
+  id                  String                       @id @default(cuid()) @db.VarChar(191)
+  productId           String                       @map("product_id") @db.VarChar(191)
+  qualityStatus       ProductImageQualityStatus    @default(NEEDS_REVIEW) @map("quality_status")
+  processingStatus    ProductImageProcessingStatus @default(PENDING) @map("processing_status")
+  originalStorageKey  String                       @map("original_storage_key") @db.VarChar(500)
+  processedStorageKey String?                      @map("processed_storage_key") @db.VarChar(500)
+  cardStorageKey      String?                      @map("card_storage_key") @db.VarChar(500)
+  pdpStorageKey       String?                      @map("pdp_storage_key") @db.VarChar(500)
+  sourceMimeType      String                       @map("source_mime_type") @db.VarChar(80)
+  sourceBytes         Int                          @map("source_bytes") @db.UnsignedInt
+  sourceWidth         Int?                         @map("source_width") @db.UnsignedInt
+  sourceHeight        Int?                         @map("source_height") @db.UnsignedInt
+  diagnostics         Json?
+  processingVersion   String                       @default("ciqe-v1") @map("processing_version") @db.VarChar(40)
+  approvedAt          DateTime?                    @map("approved_at")
+  rejectedAt          DateTime?                    @map("rejected_at")
+  supersededAt        DateTime?                    @map("superseded_at")
+  createdAt           DateTime                     @default(now()) @map("created_at")
+  updatedAt           DateTime                     @updatedAt @map("updated_at")
+  product             Product                      @relation("ProductImageAssets", fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  activeForProduct    Product?                     @relation("ActiveProductImage")
+
+  @@index([productId, createdAt], map: "idx_product_image_assets_product_created")
+  @@index([productId, qualityStatus, processingStatus], map: "idx_product_image_assets_quality")
+  @@map("product_image_assets")
+}
+
+model ProductReview {
+  id                  String   @id @default(cuid()) @db.VarChar(191)
+  productId           String   @map("product_id") @db.VarChar(191)
+  reviewerDisplayName String   @map("reviewer_display_name") @db.VarChar(120)
+  rating              Int      @db.UnsignedTinyInt
+  comment             String   @db.VarChar(1000)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([productId, createdAt], map: "idx_product_reviews_product_created")
+  @@index([productId, rating, createdAt], map: "idx_product_reviews_product_rating_created")
+  @@map("product_reviews")
+}
+
+model ProductAlias {
+  id                 String              @id @default(cuid()) @db.VarChar(191)
+  canonicalProductId String              @map("canonical_product_id") @db.VarChar(191)
+  type               ProductAliasType
+  value              String              @db.VarChar(255)
+  normalizedValue    String              @map("normalized_value") @db.VarChar(255)
+  recordSource       CatalogRecordSource @default(IMPORT) @map("record_source")
+  sourceReference    String?             @map("source_reference") @db.VarChar(255)
+  evidence           Json?
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  canonicalProduct   Product             @relation(fields: [canonicalProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([canonicalProductId, type, normalizedValue], map: "uq_product_alias_identity")
+  @@index([type, normalizedValue], map: "idx_product_alias_lookup")
+  @@map("product_aliases")
+}
+
+model ProductCanonicalMapping {
+  id                 String                   @id @default(cuid()) @db.VarChar(191)
+  sourceProductId    String                   @unique(map: "uq_product_mapping_source") @map("source_product_id") @db.VarChar(191)
+  canonicalProductId String                   @map("canonical_product_id") @db.VarChar(191)
+  matchType          ProductIdentityMatchType @map("match_type")
+  action             ProductMappingAction     @default(MAPPED)
+  reason             String                   @db.VarChar(500)
+  evidence           Json
+  automated          Boolean                  @default(false)
+  approvedBy         String?                  @map("approved_by") @db.VarChar(191)
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @updatedAt @map("updated_at")
+  sourceProduct      Product                  @relation("SourceProductMapping", fields: [sourceProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  canonicalProduct   Product                  @relation("CanonicalProductMappings", fields: [canonicalProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([canonicalProductId], map: "idx_product_mapping_canonical")
+  @@index([matchType, action], map: "idx_product_mapping_match_action")
+  @@map("product_canonical_mappings")
+}
+
+model ProductDuplicateCandidate {
+  id             String                   @id @default(cuid()) @db.VarChar(191)
+  leftProductId  String                   @map("left_product_id") @db.VarChar(191)
+  rightProductId String                   @map("right_product_id") @db.VarChar(191)
+  matchType      ProductIdentityMatchType @map("match_type")
+  confidence     Decimal                  @db.Decimal(5, 4)
+  reason         String                   @db.VarChar(500)
+  evidence       Json
+  status         ProductDuplicateStatus   @default(PENDING)
+  resolvedBy     String?                  @map("resolved_by") @db.VarChar(191)
+  resolvedAt     DateTime?                @map("resolved_at")
+  createdAt      DateTime                 @default(now()) @map("created_at")
+  updatedAt      DateTime                 @updatedAt @map("updated_at")
+  leftProduct    Product                  @relation("DuplicateCandidateLeft", fields: [leftProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  rightProduct   Product                  @relation("DuplicateCandidateRight", fields: [rightProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([leftProductId, rightProductId], map: "uq_product_duplicate_pair")
+  @@index([status, confidence], map: "idx_product_duplicate_status_confidence")
+  @@index([rightProductId], map: "idx_product_duplicate_right")
+  @@map("product_duplicate_candidates")
+}
+
+// Preserves the authoritative workbook identity used by the fallback SARIMA pipeline.
+// This intentionally does not reuse ProductCanonicalMapping, which is reserved for
+// catalog-product deduplication and has two Product foreign keys.
+model SarimaSourceProductMapping {
+  id                     String                         @id @default(cuid()) @db.VarChar(191)
+  sourceKey              String                         @unique(map: "uq_sarima_source_mapping_key") @map("source_key") @db.VarChar(80)
+  sourceProductId        String                         @unique(map: "uq_sarima_source_mapping_product") @map("source_product_id") @db.VarChar(40)
+  canonicalProductId     String                         @unique(map: "uq_sarima_source_mapping_canonical") @map("canonical_product_id") @db.VarChar(191)
+  sourceDataset          String                         @map("source_dataset") @db.VarChar(160)
+  sourceProductName      String                         @map("source_product_name") @db.VarChar(160)
+  sourceCategory         String                         @map("source_category") @db.VarChar(160)
+  sourceSellingPrice     Decimal                        @map("source_selling_price") @db.Decimal(10, 2)
+  historicalMonthCount   Int                            @map("historical_month_count") @db.UnsignedInt
+  historicalStartPeriod  String                         @map("historical_start_period") @db.VarChar(7)
+  historicalEndPeriod    String                         @map("historical_end_period") @db.VarChar(7)
+  totalHistoricalUnits   Int                            @map("total_historical_units") @db.UnsignedInt
+  confidence             SarimaSourceIdentityConfidence
+  evidence               Json
+  approvedBy             String?                        @map("approved_by") @db.VarChar(191)
+  approvedAt             DateTime                       @default(now()) @map("approved_at")
+  createdAt              DateTime                       @default(now()) @map("created_at")
+  updatedAt              DateTime                       @updatedAt @map("updated_at")
+  canonicalProduct       Product                        @relation(fields: [canonicalProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([confidence, approvedAt], map: "idx_sarima_source_mapping_confidence")
+  @@index([sourceDataset, sourceProductId], map: "idx_sarima_source_mapping_dataset_product")
+  @@map("sarima_source_product_mappings")
+}
+
+model CatalogAuditLog {
+  id                 String   @id @default(cuid()) @db.VarChar(191)
+  entityType         String   @map("entity_type") @db.VarChar(80)
+  entityId           String   @map("entity_id") @db.VarChar(191)
+  canonicalProductId String?  @map("canonical_product_id") @db.VarChar(191)
+  action             String   @db.VarChar(80)
+  reason             String   @db.VarChar(500)
+  evidence           Json?
+  automated          Boolean  @default(false)
+  actor              String?  @db.VarChar(191)
+  createdAt          DateTime @default(now()) @map("created_at")
+  canonicalProduct   Product? @relation(fields: [canonicalProductId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([entityType, entityId, createdAt], map: "idx_catalog_audit_entity_created")
+  @@index([canonicalProductId, createdAt], map: "idx_catalog_audit_canonical_created")
+  @@map("catalog_audit_logs")
 }
 
 model Inventory {
@@ -201,18 +557,18 @@ model Inventory {
 }
 
 model InventoryBatch {
-  id                 String                  @id @default(cuid()) @db.VarChar(191)
-  productId          String                  @map("product_id") @db.VarChar(191)
-  batchCode          String                  @map("batch_code") @db.VarChar(80)
-  quantityReceived   Int                     @map("quantity_received") @db.UnsignedInt
-  quantityRemaining  Int                     @map("quantity_remaining") @db.UnsignedInt
-  unitCost           Decimal                 @map("unit_cost") @db.Decimal(10, 2)
-  receivedAt         DateTime                @default(now()) @map("received_at")
-  expiresAt          DateTime?               @map("expires_at") @db.Date
-  status             InventoryBatchStatus    @default(AVAILABLE)
-  createdAt          DateTime                @default(now()) @map("created_at")
-  updatedAt          DateTime                @updatedAt @map("updated_at")
-  product            Product                 @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id                 String               @id @default(cuid()) @db.VarChar(191)
+  productId          String               @map("product_id") @db.VarChar(191)
+  batchCode          String               @map("batch_code") @db.VarChar(80)
+  quantityReceived   Int                  @map("quantity_received") @db.UnsignedInt
+  quantityRemaining  Int                  @map("quantity_remaining") @db.UnsignedInt
+  unitCost           Decimal              @map("unit_cost") @db.Decimal(10, 2)
+  receivedAt         DateTime             @default(now()) @map("received_at")
+  expiresAt          DateTime?            @map("expires_at") @db.Date
+  status             InventoryBatchStatus @default(AVAILABLE)
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  product            Product              @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   inventoryMovements InventoryMovement[]
   saleItems          SaleItem[]
 
@@ -224,23 +580,23 @@ model InventoryBatch {
 }
 
 model InventoryMovement {
-  id            String                @id @default(cuid()) @db.VarChar(191)
-  inventoryId   String                @map("inventory_id") @db.VarChar(191)
-  productId     String                @map("product_id") @db.VarChar(191)
-  batchId       String?               @map("batch_id") @db.VarChar(191)
-  performedById String?               @map("performed_by_id") @db.VarChar(191)
-  type          InventoryMovementType
-  quantity      Int                   @db.UnsignedInt
-  quantityBefore Int                  @map("quantity_before") @db.UnsignedInt
-  quantityAfter Int                   @map("quantity_after") @db.UnsignedInt
-  reason        String?               @db.VarChar(255)
-  referenceType String?               @map("reference_type") @db.VarChar(80)
-  referenceId   String?               @map("reference_id") @db.VarChar(191)
-  createdAt     DateTime              @default(now()) @map("created_at")
-  inventory     Inventory             @relation(fields: [inventoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  product       Product               @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  batch         InventoryBatch?       @relation(fields: [batchId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  performedBy   User?                 @relation(fields: [performedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id             String                @id @default(cuid()) @db.VarChar(191)
+  inventoryId    String                @map("inventory_id") @db.VarChar(191)
+  productId      String                @map("product_id") @db.VarChar(191)
+  batchId        String?               @map("batch_id") @db.VarChar(191)
+  performedById  String?               @map("performed_by_id") @db.VarChar(191)
+  type           InventoryMovementType
+  quantity       Int                   @db.UnsignedInt
+  quantityBefore Int                   @map("quantity_before") @db.UnsignedInt
+  quantityAfter  Int                   @map("quantity_after") @db.UnsignedInt
+  reason         String?               @db.VarChar(255)
+  referenceType  String?               @map("reference_type") @db.VarChar(80)
+  referenceId    String?               @map("reference_id") @db.VarChar(191)
+  createdAt      DateTime              @default(now()) @map("created_at")
+  inventory      Inventory             @relation(fields: [inventoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  product        Product               @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  batch          InventoryBatch?       @relation(fields: [batchId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  performedBy    User?                 @relation(fields: [performedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([inventoryId, createdAt], map: "idx_inventory_movements_inventory_created")
   @@index([productId, createdAt], map: "idx_inventory_movements_product_created")
@@ -291,28 +647,236 @@ model SaleItem {
   @@map("sale_items")
 }
 
+model CustomerOrder {
+  id                String                    @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String?                   @map("customer_account_id") @db.VarChar(191)
+  orderNumber       String                    @unique(map: "uq_customer_orders_order_number") @map("order_number") @db.VarChar(80)
+  customerName      String                    @map("customer_name") @db.VarChar(120)
+  customerEmail     String?                   @map("customer_email") @db.VarChar(191)
+  customerPhone     String                    @map("customer_phone") @db.VarChar(40)
+  fulfillmentMethod CustomerFulfillmentMethod @default(STORE_PICKUP) @map("fulfillment_method")
+  paymentMethod     CustomerPaymentMethod     @default(CASH_ON_PICKUP) @map("payment_method")
+  status            CustomerOrderStatus       @default(PENDING)
+  subtotalAmount    Decimal                   @map("subtotal_amount") @db.Decimal(12, 2)
+  totalAmount       Decimal                   @map("total_amount") @db.Decimal(12, 2)
+  notes             String?                   @db.VarChar(255)
+  createdAt         DateTime                  @default(now()) @map("created_at")
+  updatedAt         DateTime                  @updatedAt @map("updated_at")
+  items             CustomerOrderItem[]
+  customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")
+  @@index([status, createdAt], map: "idx_customer_orders_status_created")
+  @@index([customerPhone, createdAt], map: "idx_customer_orders_phone_created")
+  @@map("customer_orders")
+}
+
+model CustomerOrderItem {
+  id          String        @id @default(cuid()) @db.VarChar(191)
+  orderId     String        @map("order_id") @db.VarChar(191)
+  productId   String        @map("product_id") @db.VarChar(191)
+  quantity    Int           @db.UnsignedInt
+  unitPrice   Decimal       @map("unit_price") @db.Decimal(10, 2)
+  totalAmount Decimal       @map("total_amount") @db.Decimal(12, 2)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  order       CustomerOrder @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product     Product       @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([orderId], map: "idx_customer_order_items_order")
+  @@index([productId], map: "idx_customer_order_items_product")
+  @@map("customer_order_items")
+}
+
 model ForecastRecord {
-  id                    String                 @id @default(cuid()) @db.VarChar(191)
-  productId             String                 @map("product_id") @db.VarChar(191)
-  generatedById         String?                @map("generated_by_id") @db.VarChar(191)
-  forecastPeriodStart   DateTime               @map("forecast_period_start") @db.Date
-  forecastPeriodEnd     DateTime               @map("forecast_period_end") @db.Date
-  forecastedDemand      Decimal                @map("forecasted_demand") @db.Decimal(12, 3)
-  modelName             String                 @default("SARIMA") @map("model_name") @db.VarChar(80)
-  confidenceLevel       Decimal?               @map("confidence_level") @db.Decimal(5, 2)
-  confidenceNotes       String?                @map("confidence_notes") @db.VarChar(255)
-  status                ForecastStatus         @default(PENDING)
-  generatedAt           DateTime               @default(now()) @map("generated_at")
-  createdAt             DateTime               @default(now()) @map("created_at")
-  product               Product                @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  generatedBy           User?                  @relation(fields: [generatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id                    String                      @id @default(cuid()) @db.VarChar(191)
+  productId             String                      @map("product_id") @db.VarChar(191)
+  generatedById         String?                     @map("generated_by_id") @db.VarChar(191)
+  forecastPeriodStart   DateTime                    @map("forecast_period_start") @db.Date
+  forecastPeriodEnd     DateTime                    @map("forecast_period_end") @db.Date
+  forecastedDemand      Decimal                     @map("forecasted_demand") @db.Decimal(12, 3)
+  modelName             String                      @default("SARIMA") @map("model_name") @db.VarChar(80)
+  confidenceLevel       Decimal?                    @map("confidence_level") @db.Decimal(5, 2)
+  confidenceNotes       String?                     @map("confidence_notes") @db.VarChar(255)
+  status                ForecastStatus              @default(PENDING)
+  generatedAt           DateTime                    @default(now()) @map("generated_at")
+  createdAt             DateTime                    @default(now()) @map("created_at")
+  product               Product                     @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  generatedBy           User?                       @relation(fields: [generatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
   recommendationRecords RecommendationRecord[]
+  sourceImportBatchId   String?                     @map("source_import_batch_id") @db.VarChar(191)
+  sourceImportBatch     HistoricalSalesImportBatch? @relation(fields: [sourceImportBatchId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@unique([productId, forecastPeriodStart, forecastPeriodEnd, modelName], map: "uq_forecasts_product_period_model")
   @@index([productId, generatedAt], map: "idx_forecasts_product_generated")
   @@index([status, generatedAt], map: "idx_forecasts_status_generated")
   @@index([generatedById], map: "idx_forecasts_generated_by")
+  @@index([sourceImportBatchId], map: "idx_forecasts_source_import_batch")
   @@map("forecast_records")
+}
+
+model ForecastBatchCache {
+  id                     String                  @id @default(cuid()) @db.VarChar(191)
+  source                 ForecastBatchSource
+  sourceVersion          String                  @map("source_version") @db.VarChar(64)
+  databaseRevision       String                  @map("database_revision") @db.VarChar(64)
+  forecastStartMonth     DateTime                @map("forecast_start_month") @db.Date
+  status                 ForecastBatchStatus     @default(GENERATING)
+  isActive               Boolean                 @default(false) @map("is_active")
+  startedAt              DateTime                @default(now()) @map("started_at")
+  generatedAt            DateTime?               @map("generated_at")
+  completedAt            DateTime?               @map("completed_at")
+  failedAt               DateTime?               @map("failed_at")
+  durationMs             Int                     @default(0) @map("duration_ms") @db.UnsignedInt
+  totalProductCount      Int                     @default(0) @map("total_product_count") @db.UnsignedInt
+  successfulProductCount Int                     @default(0) @map("successful_product_count") @db.UnsignedInt
+  fallbackProductCount   Int                     @default(0) @map("fallback_product_count") @db.UnsignedInt
+  failedProductCount     Int                     @default(0) @map("failed_product_count") @db.UnsignedInt
+  errorCode              String?                 @map("error_code") @db.VarChar(80)
+  generationMetadata     Json?                   @map("generation_metadata")
+  validationMetadata     Json?                   @map("validation_metadata")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  products               ForecastProductResult[]
+
+  @@index([isActive, status], map: "idx_forecast_batches_active_status")
+  @@index([source, sourceVersion, forecastStartMonth, status], map: "idx_forecast_batches_source_version_month")
+  @@index([status, startedAt], map: "idx_forecast_batches_status_started")
+  @@index([generatedAt], map: "idx_forecast_batches_generated")
+  @@map("forecast_batch_cache")
+}
+
+model ForecastProductResult {
+  id                           String             @id @default(cuid()) @db.VarChar(191)
+  batchId                      String             @map("batch_id") @db.VarChar(191)
+  sourceProductId              String             @map("source_product_id") @db.VarChar(191)
+  productName                  String             @map("product_name") @db.VarChar(160)
+  category                     String             @db.VarChar(120)
+  sellingPrice                 Decimal            @map("selling_price") @db.Decimal(10, 2)
+  resultStatus                 String             @map("result_status") @db.VarChar(24)
+  modelName                    String?            @map("model_name") @db.VarChar(40)
+  totalHistorical2024          Decimal            @map("total_historical_2024") @db.Decimal(14, 3)
+  totalHistorical2025          Decimal            @map("total_historical_2025") @db.Decimal(14, 3)
+  totalForecast2026            Decimal            @map("total_forecast_2026") @db.Decimal(14, 3)
+  growthVersus2025             Decimal?           @map("growth_versus_2025") @db.Decimal(14, 4)
+  currentMonthForecastQuantity Decimal?           @map("current_month_forecast_quantity") @db.Decimal(14, 3)
+  recentHistoricalSalesTotal   Decimal            @map("recent_historical_sales_total") @db.Decimal(14, 3)
+  twelveMonthForecastTotal     Decimal            @map("twelve_month_forecast_total") @db.Decimal(14, 3)
+  forecastVariancePercentage   Decimal?           @map("forecast_variance_percentage") @db.Decimal(14, 4)
+  warningCount                 Int                @default(0) @map("warning_count") @db.UnsignedInt
+  detailPayload                Json               @map("detail_payload")
+  createdAt                    DateTime           @default(now()) @map("created_at")
+  batch                        ForecastBatchCache @relation(fields: [batchId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([batchId, sourceProductId], map: "uq_forecast_product_batch_source")
+  @@index([batchId, productName], map: "idx_forecast_product_batch_name")
+  @@index([batchId, category, productName], map: "idx_forecast_product_batch_category_name")
+  @@index([batchId, totalForecast2026], map: "idx_forecast_product_batch_total_forecast")
+  @@index([batchId, currentMonthForecastQuantity], map: "idx_forecast_product_batch_current_forecast")
+  @@index([batchId, recentHistoricalSalesTotal], map: "idx_forecast_product_batch_recent_sales")
+  @@index([batchId, twelveMonthForecastTotal], map: "idx_forecast_product_batch_demand")
+  @@index([batchId, growthVersus2025], map: "idx_forecast_product_batch_growth")
+  @@map("forecast_product_results")
+}
+
+model HistoricalSalesImportBatch {
+  id                    String                      @id @default(cuid()) @db.VarChar(191)
+  batchCode             String                      @unique(map: "uq_historical_import_batch_code") @map("batch_code") @db.VarChar(80)
+  originalFileName      String                      @map("original_file_name") @db.VarChar(255)
+  fileHash              String                      @map("file_hash") @db.VarChar(64)
+  fileType              String                      @map("file_type") @db.VarChar(16)
+  fileSize              Int                         @map("file_size") @db.UnsignedInt
+  importMode            HistoricalSalesImportMode   @default(APPEND_ONLY) @map("import_mode")
+  status                HistoricalSalesImportStatus @default(PREVIEWED)
+  totalRows             Int                         @default(0) @map("total_rows") @db.UnsignedInt
+  validRows             Int                         @default(0) @map("valid_rows") @db.UnsignedInt
+  invalidRows           Int                         @default(0) @map("invalid_rows") @db.UnsignedInt
+  matchedRows           Int                         @default(0) @map("matched_rows") @db.UnsignedInt
+  unmatchedRows         Int                         @default(0) @map("unmatched_rows") @db.UnsignedInt
+  duplicateRows         Int                         @default(0) @map("duplicate_rows") @db.UnsignedInt
+  overlapRows           Int                         @default(0) @map("overlap_rows") @db.UnsignedInt
+  posOverlapRows        Int                         @default(0) @map("pos_overlap_rows") @db.UnsignedInt
+  importedRows          Int                         @default(0) @map("imported_rows") @db.UnsignedInt
+  skippedRows           Int                         @default(0) @map("skipped_rows") @db.UnsignedInt
+  replacedRows          Int                         @default(0) @map("replaced_rows") @db.UnsignedInt
+  productsAffected      Int                         @default(0) @map("products_affected") @db.UnsignedInt
+  forecastRefreshStatus ForecastRefreshStatus       @default(NOT_REQUIRED) @map("forecast_refresh_status")
+  importedByUserId      String                      @map("imported_by_user_id") @db.VarChar(191)
+  createdAt             DateTime                    @default(now()) @map("created_at")
+  confirmedAt           DateTime?                   @map("confirmed_at")
+  completedAt           DateTime?                   @map("completed_at")
+  failedAt              DateTime?                   @map("failed_at")
+  rolledBackAt          DateTime?                   @map("rolled_back_at")
+  rolledBackByUserId    String?                     @map("rolled_back_by_user_id") @db.VarChar(191)
+  rollbackReason        String?                     @map("rollback_reason") @db.VarChar(500)
+  errorMessage          String?                     @map("error_message") @db.VarChar(500)
+  metadata              Json?
+  importedBy            User                        @relation("HistoricalSalesImportedBy", fields: [importedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  rolledBackBy          User?                       @relation("HistoricalSalesRolledBackBy", fields: [rolledBackByUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  rows                  HistoricalSalesImportRow[]
+  monthlySales          HistoricalMonthlySales[]
+  forecastRecords       ForecastRecord[]
+
+  @@index([fileHash, status], map: "idx_historical_import_file_hash_status")
+  @@index([status, createdAt], map: "idx_historical_import_status_created")
+  @@index([importedByUserId, createdAt], map: "idx_historical_import_user_created")
+  @@index([rolledBackByUserId], map: "idx_historical_import_rollback_user")
+  @@map("historical_sales_import_batches")
+}
+
+model HistoricalMonthlySales {
+  id                  String                      @id @default(cuid()) @db.VarChar(191)
+  productId           String                      @map("product_id") @db.VarChar(191)
+  period              DateTime                    @db.Date
+  quantitySold        Int                         @map("quantity_sold") @db.UnsignedInt
+  unitPrice           Decimal?                    @map("unit_price") @db.Decimal(10, 2)
+  salesAmount         Decimal?                    @map("sales_amount") @db.Decimal(12, 2)
+  source              MonthlySalesSource
+  importBatchId       String?                     @map("import_batch_id") @db.VarChar(191)
+  activeKey           String?                     @unique(map: "uq_historical_monthly_sales_active_key") @map("active_key") @db.VarChar(255)
+  isActive            Boolean                     @default(true) @map("is_active")
+  replacesRecordId    String?                     @unique(map: "uq_historical_monthly_sales_replaces") @map("replaces_record_id") @db.VarChar(191)
+  createdAt           DateTime                    @default(now()) @map("created_at")
+  updatedAt           DateTime                    @updatedAt @map("updated_at")
+  invalidatedAt       DateTime?                   @map("invalidated_at")
+  invalidatedByUserId String?                     @map("invalidated_by_user_id") @db.VarChar(191)
+  invalidationReason  String?                     @map("invalidation_reason") @db.VarChar(500)
+  product             Product                     @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  importBatch         HistoricalSalesImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invalidatedBy       User?                       @relation("HistoricalSalesInvalidatedBy", fields: [invalidatedByUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  replacesRecord      HistoricalMonthlySales?     @relation("HistoricalSalesReplacement", fields: [replacesRecordId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  replacementRecord   HistoricalMonthlySales?     @relation("HistoricalSalesReplacement")
+
+  @@index([productId, period, source, isActive], map: "idx_historical_monthly_product_period_source_active")
+  @@index([importBatchId, isActive], map: "idx_historical_monthly_batch_active")
+  @@index([period, source, isActive], map: "idx_historical_monthly_period_source_active")
+  @@index([invalidatedByUserId], map: "idx_historical_monthly_invalidated_by")
+  @@map("historical_monthly_sales")
+}
+
+model HistoricalSalesImportRow {
+  id                String                     @id @default(cuid()) @db.VarChar(191)
+  importBatchId     String                     @map("import_batch_id") @db.VarChar(191)
+  rowNumber         Int                        @map("row_number") @db.UnsignedInt
+  rawData           Json                       @map("raw_data")
+  normalizedSku     String?                    @map("normalized_sku") @db.VarChar(80)
+  normalizedBarcode String?                    @map("normalized_barcode") @db.VarChar(80)
+  normalizedPeriod  DateTime?                  @map("normalized_period") @db.Date
+  quantitySold      Int?                       @map("quantity_sold") @db.UnsignedInt
+  unitPrice         Decimal?                   @map("unit_price") @db.Decimal(10, 2)
+  salesAmount       Decimal?                   @map("sales_amount") @db.Decimal(12, 2)
+  status            HistoricalSalesRowStatus
+  errorCode         String?                    @map("error_code") @db.VarChar(80)
+  errorMessage      String?                    @map("error_message") @db.VarChar(500)
+  warningCodes      Json?                      @map("warning_codes")
+  matchedProductId  String?                    @map("matched_product_id") @db.VarChar(191)
+  createdAt         DateTime                   @default(now()) @map("created_at")
+  importBatch       HistoricalSalesImportBatch @relation(fields: [importBatchId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  matchedProduct    Product?                   @relation(fields: [matchedProductId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([importBatchId, rowNumber], map: "uq_historical_import_row_number")
+  @@index([importBatchId, status, rowNumber], map: "idx_historical_import_rows_batch_status_row")
+  @@index([matchedProductId, normalizedPeriod], map: "idx_historical_import_rows_product_period")
+  @@map("historical_sales_import_rows")
 }
 
 model RecommendationRecord {

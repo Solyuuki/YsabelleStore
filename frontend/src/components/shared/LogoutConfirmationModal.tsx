@@ -90,10 +90,10 @@ export function LogoutConfirmationModal({
             <TriangleAlert className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <h2 id="logout-confirmation-title" className="text-base font-semibold text-slate-950">
+            <h2 id="logout-confirmation-title" className="type-h4 text-slate-950">
               End current session?
             </h2>
-            <p className="mt-2.5 text-sm leading-[1.65] text-slate-600">
+            <p className="type-body-sm mt-2.5 text-slate-600">
               You are about to sign out of YsabelleStore. Your autosaved changes and local workspace
               activity will remain available when you sign in again.
             </p>

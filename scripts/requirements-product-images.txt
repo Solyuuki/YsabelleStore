@@ -1,0 +1,3 @@
+# Local, deterministic image preparation only; not a frontend/runtime dependency.
+# Pillow is licensed MIT-CMU: https://github.com/python-pillow/Pillow/blob/main/LICENSE
+Pillow==12.0.0

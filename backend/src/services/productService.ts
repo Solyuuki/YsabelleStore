@@ -1,6 +1,11 @@
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import {
+  extractCanonicalProductSize,
+  isLikelySameCatalogIdentity,
+  normalizeCanonicalProductName
+} from "../utils/catalogIdentity.js";
 import { HttpError } from "../utils/httpError.js";
 import {
   normalizeCode,
@@ -32,7 +37,9 @@ type ProductListResult = {
 
 const productInclude = {
   category: true,
-  inventory: true
+  inventory: true,
+  duplicateCandidatesLeft: { select: { status: true } },
+  duplicateCandidatesRight: { select: { status: true } }
 } as const;
 
 function isKnownPrismaError(error: unknown): error is Prisma.PrismaClientKnownRequestError {
@@ -44,13 +51,63 @@ function toDecimal(value: string): Prisma.Decimal {
 }
 
 function normalizeProductInput(input: CreateProductRequest | UpdateProductRequest) {
+  const name = input.name
+    ? normalizeCanonicalProductName(normalizeWhitespace(input.name))
+    : undefined;
+  const extractedSize = name ? extractCanonicalProductSize(name) : undefined;
+
   return {
-    name: input.name ? normalizeWhitespace(input.name) : undefined,
+    name,
     sku: input.sku ? normalizeCode(input.sku) : undefined,
-    barcode: input.barcode === undefined ? undefined : normalizeOptionalCode(input.barcode),
+    barcode:
+      input.barcode === undefined
+        ? undefined
+        : input.barcode === null
+          ? null
+          : (normalizeOptionalCode(input.barcode) ?? null),
     categoryId: input.categoryId ? input.categoryId.trim() : undefined,
     description:
-      input.description === undefined ? undefined : normalizeOptionalString(input.description),
+      input.description === undefined
+        ? undefined
+        : input.description === null
+          ? null
+          : (normalizeOptionalString(input.description) ?? null),
+    imageUrl:
+      input.imageUrl === undefined
+        ? undefined
+        : input.imageUrl === null
+          ? null
+          : normalizeWhitespace(input.imageUrl),
+    brand:
+      input.brand === undefined
+        ? undefined
+        : input.brand === null
+          ? null
+          : (normalizeOptionalString(input.brand) ?? null),
+    variant:
+      input.variant === undefined
+        ? undefined
+        : input.variant === null
+          ? null
+          : (normalizeOptionalString(input.variant) ?? null),
+    sizeValue:
+      input.sizeValue === null
+        ? null
+        : input.sizeValue !== undefined
+          ? new Prisma.Decimal(input.sizeValue)
+          : extractedSize?.sizeValue
+            ? new Prisma.Decimal(extractedSize.sizeValue)
+            : name
+              ? null
+              : undefined,
+    sizeUnit:
+      input.sizeUnit !== undefined
+        ? input.sizeUnit
+        : name
+          ? (extractedSize?.sizeUnit ?? null)
+          : undefined,
+    dataQualityStatus: input.dataQualityStatus,
+    isStorefrontVisible: input.isStorefrontVisible,
     status: input.status,
     unit: input.unit,
     costPrice: input.costPrice ? toDecimal(String(input.costPrice)) : undefined,
@@ -58,6 +115,85 @@ function normalizeProductInput(input: CreateProductRequest | UpdateProductReques
     reorderLevel: input.reorderLevel,
     targetStockLevel: input.targetStockLevel
   };
+}
+
+async function assertStorefrontQualityGate(input: {
+  categoryId: string;
+  dataQualityStatus: "APPROVED" | "NEEDS_REVIEW" | "REJECTED";
+  isStorefrontVisible: boolean;
+  name: string;
+  productId?: string;
+  sellingPrice: Prisma.Decimal;
+  status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
+}) {
+  if (!input.isStorefrontVisible) return;
+
+  if (input.dataQualityStatus !== "APPROVED") {
+    throw new HttpError(422, "Only approved products can be storefront-visible.", {
+      code: "PRODUCT_QUALITY_APPROVAL_REQUIRED"
+    });
+  }
+
+  if (
+    input.status !== "ACTIVE" ||
+    input.sellingPrice.lessThanOrEqualTo(0) ||
+    input.name.trim().length < 3
+  ) {
+    throw new HttpError(
+      422,
+      "Storefront products require a customer-safe name, active status, and positive price.",
+      { code: "PRODUCT_STOREFRONT_GATE_FAILED" }
+    );
+  }
+
+  const [category, unresolvedDuplicateCount] = await Promise.all([
+    prisma.category.findFirst({
+      where: {
+        dataQualityStatus: "APPROVED",
+        id: input.categoryId,
+        isActive: true,
+        isStorefrontVisible: true,
+        recordSource: { not: "TEST_FIXTURE" }
+      },
+      select: { id: true }
+    }),
+    input.productId
+      ? prisma.productDuplicateCandidate.count({
+          where: {
+            OR: [{ leftProductId: input.productId }, { rightProductId: input.productId }],
+            status: { in: ["PENDING", "CONFIRMED"] }
+          }
+        })
+      : Promise.resolve(0)
+  ]);
+
+  if (!category) {
+    throw new HttpError(422, "Storefront products require an approved customer category.", {
+      code: "PRODUCT_CATEGORY_APPROVAL_REQUIRED"
+    });
+  }
+
+  if (unresolvedDuplicateCount > 0) {
+    throw new HttpError(422, "Resolve duplicate candidates before storefront approval.", {
+      code: "PRODUCT_DUPLICATE_REVIEW_REQUIRED"
+    });
+  }
+}
+
+function assertCompleteSize(
+  sizeValue: Prisma.Decimal | null | undefined,
+  sizeUnit: "MILLILITER" | "LITER" | "GRAM" | "KILOGRAM" | "PIECE" | null | undefined
+) {
+  if (
+    (sizeValue === null || sizeValue === undefined) ===
+    (sizeUnit === null || sizeUnit === undefined)
+  ) {
+    return;
+  }
+
+  throw new HttpError(422, "Pack size value and unit must be supplied together.", {
+    code: "PRODUCT_SIZE_INCOMPLETE"
+  });
 }
 
 function throwDuplicateProductError(field: "sku" | "barcode") {
@@ -136,7 +272,10 @@ async function detectDuplicateProductSku(sku: string, productId?: string) {
   }
 }
 
-async function detectDuplicateProductBarcode(barcode: string | undefined, productId?: string) {
+async function detectDuplicateProductBarcode(
+  barcode: string | null | undefined,
+  productId?: string
+) {
   if (!barcode) {
     return;
   }
@@ -152,6 +291,55 @@ async function detectDuplicateProductBarcode(barcode: string | undefined, produc
 
   if (existing && existing.id !== productId) {
     throwDuplicateProductError("barcode");
+  }
+}
+
+async function assertNoLikelyDuplicateIdentity(
+  input: {
+    brand?: string | null;
+    name: string;
+    sizeUnit?: "MILLILITER" | "LITER" | "GRAM" | "KILOGRAM" | "PIECE" | null;
+    sizeValue?: Prisma.Decimal | null;
+    variant?: string | null;
+  },
+  productId?: string
+) {
+  const candidates = await prisma.product.findMany({
+    select: {
+      barcode: true,
+      brand: true,
+      id: true,
+      name: true,
+      sizeUnit: true,
+      sizeValue: true,
+      sku: true,
+      variant: true
+    },
+    where: {
+      dataQualityStatus: { not: "REJECTED" },
+      id: productId ? { not: productId } : undefined,
+      recordSource: { not: "TEST_FIXTURE" },
+      sourceMapping: { is: null }
+    }
+  });
+  const matches = candidates.filter((candidate) => isLikelySameCatalogIdentity(input, candidate));
+
+  if (matches.length > 0) {
+    throw new HttpError(
+      409,
+      "A likely duplicate product identity requires review before this record can be saved.",
+      {
+        code: "PRODUCT_IDENTITY_REVIEW_REQUIRED",
+        details: {
+          matches: matches.map((match) => ({
+            barcode: match.barcode,
+            id: match.id,
+            name: match.name,
+            sku: match.sku
+          }))
+        }
+      }
+    );
   }
 }
 
@@ -272,6 +460,13 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
     barcode,
     categoryId,
     description,
+    imageUrl,
+    brand,
+    variant,
+    sizeValue,
+    sizeUnit,
+    dataQualityStatus,
+    isStorefrontVisible,
     status,
     unit,
     costPrice,
@@ -289,6 +484,22 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
   await ensureCategoryExists(categoryId);
   await detectDuplicateProductSku(sku);
   await detectDuplicateProductBarcode(barcode);
+  assertCompleteSize(sizeValue, sizeUnit);
+  await assertNoLikelyDuplicateIdentity({
+    brand,
+    name,
+    sizeUnit,
+    sizeValue,
+    variant
+  });
+  await assertStorefrontQualityGate({
+    categoryId,
+    dataQualityStatus: dataQualityStatus ?? "NEEDS_REVIEW",
+    isStorefrontVisible: isStorefrontVisible ?? false,
+    name,
+    sellingPrice,
+    status: status ?? "ACTIVE"
+  });
 
   try {
     const product = await prisma.$transaction(async (tx) => {
@@ -299,12 +510,20 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
           barcode,
           categoryId,
           description,
+          imageUrl,
+          brand,
+          variant,
+          sizeValue,
+          sizeUnit,
           unit: unit ?? "PIECE",
           costPrice,
           sellingPrice,
           reorderLevel: reorderLevel ?? 0,
           targetStockLevel: targetStockLevel ?? 0,
-          status: status ?? "ACTIVE"
+          status: status ?? "ACTIVE",
+          recordSource: "CATALOG",
+          dataQualityStatus: dataQualityStatus ?? "NEEDS_REVIEW",
+          isStorefrontVisible: isStorefrontVisible ?? false
         }
       });
 
@@ -417,6 +636,34 @@ export async function updateProduct(
     data.description = normalized.description;
   }
 
+  if (normalized.imageUrl !== undefined) {
+    data.imageUrl = normalized.imageUrl;
+  }
+
+  if (normalized.brand !== undefined) {
+    data.brand = normalized.brand;
+  }
+
+  if (normalized.variant !== undefined) {
+    data.variant = normalized.variant;
+  }
+
+  if (normalized.sizeValue !== undefined) {
+    data.sizeValue = normalized.sizeValue;
+  }
+
+  if (normalized.sizeUnit !== undefined) {
+    data.sizeUnit = normalized.sizeUnit;
+  }
+
+  if (normalized.dataQualityStatus !== undefined) {
+    data.dataQualityStatus = normalized.dataQualityStatus;
+  }
+
+  if (normalized.isStorefrontVisible !== undefined) {
+    data.isStorefrontVisible = normalized.isStorefrontVisible;
+  }
+
   if (normalized.unit !== undefined) {
     data.unit = normalized.unit;
   }
@@ -447,13 +694,79 @@ export async function updateProduct(
     });
   }
 
+  const nextIdentity = {
+    brand: normalized.brand !== undefined ? normalized.brand : existingProduct.brand,
+    name: normalized.name ?? existingProduct.name,
+    sizeUnit: normalized.sizeUnit !== undefined ? normalized.sizeUnit : existingProduct.sizeUnit,
+    sizeValue:
+      normalized.sizeValue !== undefined ? normalized.sizeValue : existingProduct.sizeValue,
+    variant: normalized.variant !== undefined ? normalized.variant : existingProduct.variant
+  };
+  const identityChanged =
+    nextIdentity.brand !== existingProduct.brand ||
+    nextIdentity.name !== existingProduct.name ||
+    nextIdentity.sizeUnit !== existingProduct.sizeUnit ||
+    nextIdentity.sizeValue?.toString() !== existingProduct.sizeValue?.toString() ||
+    nextIdentity.variant !== existingProduct.variant;
+  assertCompleteSize(nextIdentity.sizeValue, nextIdentity.sizeUnit);
+  if (identityChanged) {
+    await assertNoLikelyDuplicateIdentity(nextIdentity, existingProduct.id);
+  }
+
+  await assertStorefrontQualityGate({
+    categoryId: normalized.categoryId ?? existingProduct.categoryId,
+    dataQualityStatus: normalized.dataQualityStatus ?? existingProduct.dataQualityStatus,
+    isStorefrontVisible: normalized.isStorefrontVisible ?? existingProduct.isStorefrontVisible,
+    name: normalized.name ?? existingProduct.name,
+    productId: existingProduct.id,
+    sellingPrice: normalized.sellingPrice ?? existingProduct.sellingPrice,
+    status: normalized.status ?? existingProduct.status
+  });
+
   try {
-    const updatedProduct = await prisma.product.update({
-      data,
-      include: productInclude,
-      where: {
-        id: existingProduct.id
+    const updatedProduct = await prisma.$transaction(async (transaction) => {
+      const updated = await transaction.product.update({
+        data,
+        include: productInclude,
+        where: {
+          id: existingProduct.id
+        }
+      });
+
+      if (
+        normalized.dataQualityStatus !== undefined ||
+        normalized.isStorefrontVisible !== undefined ||
+        normalized.name !== undefined ||
+        normalized.categoryId !== undefined
+      ) {
+        await transaction.catalogAuditLog.create({
+          data: {
+            action: "MANUAL_PRODUCT_UPDATE",
+            automated: false,
+            actor: "owner-api",
+            canonicalProductId: existingProduct.id,
+            entityId: existingProduct.id,
+            entityType: "PRODUCT",
+            evidence: {
+              after: {
+                categoryId: updated.categoryId,
+                dataQualityStatus: updated.dataQualityStatus,
+                isStorefrontVisible: updated.isStorefrontVisible,
+                name: updated.name
+              },
+              before: {
+                categoryId: existingProduct.categoryId,
+                dataQualityStatus: existingProduct.dataQualityStatus,
+                isStorefrontVisible: existingProduct.isStorefrontVisible,
+                name: existingProduct.name
+              }
+            },
+            reason: "Owner-approved catalog identity or quality update."
+          }
+        });
       }
+
+      return updated;
     });
 
     return asProductSummary(updatedProduct);
@@ -518,7 +831,8 @@ export async function changeProductStatus(
 
   const updateResult = await prisma.product.updateMany({
     data: {
-      status: input.status
+      status: input.status,
+      ...(input.status === "INACTIVE" ? { isStorefrontVisible: false } : {})
     },
     where: {
       id: existingProduct.id,
@@ -587,12 +901,19 @@ export async function listCategories() {
         name: "asc"
       }
     ],
+    where: {
+      dataQualityStatus: { not: "REJECTED" },
+      recordSource: { not: "TEST_FIXTURE" }
+    },
     select: {
       id: true,
       name: true,
       slug: true,
       description: true,
-      isActive: true
+      isActive: true,
+      recordSource: true,
+      dataQualityStatus: true,
+      isStorefrontVisible: true
     }
   });
 
@@ -625,7 +946,10 @@ export async function createCategory(input: {
       data: {
         description,
         name,
-        slug
+        slug,
+        recordSource: "CATALOG",
+        dataQualityStatus: "APPROVED",
+        isStorefrontVisible: true
       }
     });
 

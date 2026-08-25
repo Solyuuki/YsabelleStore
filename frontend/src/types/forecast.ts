@@ -1,5 +1,13 @@
 export type ForecastModel = "SARIMA" | "SEASONAL_NAIVE" | "MOVING_AVERAGE";
 export type ForecastStatus = "READY" | "WARNING" | "FAILED";
+export type ForecastDeliveryStatus =
+  | "READY"
+  | "STALE"
+  | "REFRESHING"
+  | "GENERATING"
+  | "FAILED_WITH_PREVIOUS"
+  | "FAILED"
+  | "EMPTY";
 
 export type HistoricalImportIssue = {
   code: string;
@@ -93,7 +101,10 @@ export type ForecastSort =
   | "productName"
   | "category"
   | "totalForecast2026"
-  | "growthVersus2025";
+  | "growthVersus2025"
+  | "currentMonthForecastQuantity"
+  | "recentHistoricalSalesTotal"
+  | "twelveMonthForecastTotal";
 
 export type ForecastFilters = {
   search?: string;
@@ -112,6 +123,18 @@ export type PaginatedForecastProductsResponse = {
   totalPages: number;
   categories: string[];
   generatedAt: string | null;
+  forecastStartMonth: string | null;
+  status: ForecastDeliveryStatus;
+  isStale: boolean;
+  isRefreshing: boolean;
+  batchId: string | null;
+};
+
+export type ForecastRefreshResponse = {
+  accepted: boolean;
+  status: ForecastDeliveryStatus;
+  generationId: string | null;
+  previousDataAvailable: boolean;
 };
 
 export type ForecastSummary = {

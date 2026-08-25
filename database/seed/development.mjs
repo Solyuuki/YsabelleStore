@@ -27,6 +27,10 @@ function loadRootEnv() {
 
 loadRootEnv();
 
+if (process.env.NODE_ENV === "production") {
+  throw new Error("Development fixtures cannot be seeded when NODE_ENV=production.");
+}
+
 const prisma = new PrismaClient();
 
 const KEY_LENGTH = 64;

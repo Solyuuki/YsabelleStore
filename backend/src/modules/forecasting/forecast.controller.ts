@@ -2,13 +2,17 @@ import type { RequestHandler } from "express";
 
 import { createSuccessResponse } from "../../utils/apiResponse.js";
 import { HttpError } from "../../utils/httpError.js";
-import { forecastGenerateBodySchema, forecastListQuerySchema } from "./forecast.schemas.js";
 import {
-  generateForecastBatch,
+  forecastDetailQuerySchema,
+  forecastGenerateBodySchema,
+  forecastListQuerySchema
+} from "./forecast.schemas.js";
+import {
   getForecastGenerationSummary,
   getForecastProductDetail,
   getForecastProductList,
   getForecastSummary,
+  requestForecastRefresh,
   validateHistoricalSales
 } from "./forecast.service.js";
 
@@ -35,11 +39,9 @@ export const generateForecasts: RequestHandler = async (request, response, next)
       });
     }
 
-    const result = await generateForecastBatch({ force: parsedBody.data.force });
+    const result = await requestForecastRefresh({ force: parsedBody.data.force });
 
-    response
-      .status(200)
-      .json(createSuccessResponse("Forecast generation completed.", result.generation));
+    response.status(202).json(createSuccessResponse("Forecast refresh accepted.", result));
   } catch (error) {
     next(error);
   }
@@ -74,7 +76,15 @@ export const getForecastProduct: RequestHandler = async (request, response, next
       });
     }
 
-    const result = await getForecastProductDetail(productId);
+    const parsedQuery = forecastDetailQuerySchema.safeParse(request.query);
+    if (!parsedQuery.success) {
+      throw new HttpError(400, "Forecast detail query is invalid.", {
+        code: "INVALID_FORECAST_DETAIL_QUERY",
+        details: parsedQuery.error.flatten()
+      });
+    }
+
+    const result = await getForecastProductDetail(productId, parsedQuery.data.batchId);
 
     response.status(200).json(createSuccessResponse("Forecast product loaded.", result));
   } catch (error) {

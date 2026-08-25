@@ -1,0 +1,3 @@
+sku,barcode,productName,period,quantitySold,unitPrice,salesAmount
+COLA-15L,0001234567890,Cola 1.5L,2024-01,25,65.00,1625.00
+WATER-500ML,0001234567891,Mineral Water 500ml,2024-01,40,15.00,600.00
