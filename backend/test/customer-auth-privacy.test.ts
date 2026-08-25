@@ -61,11 +61,13 @@ async function issueRegistrationIntent(baseUrl: string) {
 }
 
 test("normalized duplicate registration uses a generic account-conflict response", async () => {
-  const email = `privacy-duplicate-${randomUUID().slice(0, 8)}@example.com`;
+  const suffix = randomUUID().slice(0, 8);
+  const email = `privacy-duplicate-${suffix}@example.com`;
 
   try {
     await registerCustomer({
       name: "Privacy Customer",
+      username: `privacy.first.${suffix}`,
       email,
       password: PASSWORD
     });
@@ -74,6 +76,7 @@ test("normalized duplicate registration uses a generic account-conflict response
       () =>
         registerCustomer({
           name: "Duplicate Privacy Customer",
+          username: `privacy.second.${suffix}`,
           email: `  ${email.toUpperCase()}  `,
           password: PASSWORD
         }),
@@ -85,9 +88,11 @@ test("normalized duplicate registration uses a generic account-conflict response
 });
 
 test("concurrent registration conflict returns the same generic public error", async () => {
-  const email = `privacy-race-${randomUUID().slice(0, 8)}@example.com`;
+  const suffix = randomUUID().slice(0, 8);
+  const email = `privacy-race-${suffix}@example.com`;
   const input = {
     name: "Concurrent Privacy Customer",
+    username: `privacy.race.${suffix}`,
     email,
     password: PASSWORD
   };
@@ -109,7 +114,7 @@ test("customer login public failure remains exactly generic", async () => {
   const email = `privacy-missing-${randomUUID().slice(0, 8)}@example.com`;
 
   await assert.rejects(
-    () => loginCustomer({ email, password: "WrongPassword123!" }),
+    () => loginCustomer({ identifier: email, password: "WrongPassword123!" }),
     (error: unknown) => {
       assert.ok(error instanceof HttpError);
       assert.equal(error.statusCode, 401);
@@ -139,7 +144,7 @@ test("auth request audit logs remain metadata-only and never include submitted s
           "content-type": "application/json",
           Cookie: `ysabelle_customer_session=${fakeSessionToken}`
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ identifier: email, password })
       });
       assert.equal(login.status, 401);
 
@@ -163,7 +168,8 @@ test("auth request audit logs remain metadata-only and never include submitted s
 });
 
 test("customer auth JSON never exposes password or session persistence material", async () => {
-  const email = `privacy-json-${randomUUID().slice(0, 8)}@example.com`;
+  const suffix = randomUUID().slice(0, 8);
+  const email = `privacy-json-${suffix}@example.com`;
 
   try {
     await withServer(async (baseUrl) => {
@@ -176,6 +182,7 @@ test("customer auth JSON never exposes password or session persistence material"
         },
         body: JSON.stringify({
           name: "Privacy JSON Customer",
+          username: `privacy.json.${suffix}`,
           email,
           password: PASSWORD
         })
@@ -184,7 +191,7 @@ test("customer auth JSON never exposes password or session persistence material"
       assert.equal(response.status, 201);
       const bodyText = await response.text();
       assert.equal(bodyText.includes(PASSWORD), false);
-      assert.doesNotMatch(bodyText, /passwordHash|tokenHash|sessionToken/i);
+      assert.doesNotMatch(bodyText, /passwordHash|phoneNormalized|tokenHash|sessionToken/i);
 
       const sessionCookie = (response.headers.get("set-cookie") ?? "")
         .split(",")
@@ -198,7 +205,7 @@ test("customer auth JSON never exposes password or session persistence material"
       });
       assert.equal(me.status, 200);
       const meBodyText = await me.text();
-      assert.doesNotMatch(meBodyText, /passwordHash|tokenHash|sessionToken/i);
+      assert.doesNotMatch(meBodyText, /passwordHash|phoneNormalized|tokenHash|sessionToken/i);
     });
   } finally {
     await cleanupCustomer(email);
