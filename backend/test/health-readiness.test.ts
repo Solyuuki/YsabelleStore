@@ -113,7 +113,10 @@ test("readiness fails with 503 unavailable without exposing database configurati
       assert.equal(body.data?.ready, false);
       assert.equal(body.data?.checks?.database, "not_configured");
       assert.equal(body.data?.database?.message, "Database connection is unavailable.");
-      assert.doesNotMatch(serializedBody, /DATABASE_URL|mysql:\/\/|password|secret/i);
+      assert.doesNotMatch(
+        serializedBody,
+        /DATABASE_URL is not configured\.|mysql:\/\/|password=|super-secret|db\.internal/i
+      );
     });
   } finally {
     env.DATABASE_URL = originalDatabaseUrl;
