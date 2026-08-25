@@ -5,9 +5,7 @@ import { test } from "node:test";
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 
 function extractTypeBlock(source, typeName) {
-  const match = source.match(
-    new RegExp(`export type ${typeName}\\s*=\\s*\\{([\\s\\S]*?)\\n\\};`)
-  );
+  const match = source.match(new RegExp(`export type ${typeName}\\s*=\\s*\\{([\\s\\S]*?)\\n\\};`));
   assert.ok(match, `${typeName} must remain an exported object type`);
   return match[1];
 }
@@ -28,10 +26,7 @@ test("customer auth types expose username and use identifier instead of login em
 test("customer login page submits a generic username, email, or mobile identifier", () => {
   const loginPage = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
 
-  assert.match(
-    loginPage,
-    /const\s*\[identifier\s*,\s*setIdentifier\]\s*=\s*useState\(["']{2}\)/
-  );
+  assert.match(loginPage, /const\s*\[identifier\s*,\s*setIdentifier\]\s*=\s*useState\(["']{2}\)/);
   assert.match(loginPage, /Username, email or mobile number/);
   assert.match(loginPage, /autoComplete=["']username["']/);
   assert.match(loginPage, /validateCustomerLoginForm\(\{\s*identifier\s*,\s*password\s*\}\)/);
