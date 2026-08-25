@@ -1,0 +1,95 @@
+name: Phase 2 Acceptance
+
+on:
+  pull_request:
+    branches:
+      - "sprint/**"
+
+permissions:
+  contents: read
+
+jobs:
+  phase2-acceptance:
+    name: Customer identifier auth acceptance
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ysabellestore_phase2_ci
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_phase2_ci
+      JWT_SECRET: phase2-ci-only-secret
+      FRONTEND_URL: http://localhost:5173
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
+      - name: Build disposable Phase 2 database
+        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+
+      - name: Frontend customer auth contract guards
+        run: >-
+          node --test
+          scripts/test/customer-auth-identifier-client.test.mjs
+          scripts/test/customer-registration-client-intent.test.mjs
+          scripts/test/customer-internal-access-separation.test.mjs
+
+      - name: Complete customer and internal auth security regression
+        run: >-
+          npx tsx --test --test-concurrency=1
+          backend/test/customer-identity.test.ts
+          backend/test/customer-mobile-backfill.test.ts
+          backend/test/customer-auth-identifier.test.ts
+          backend/test/customer-auth.test.ts
+          backend/test/customer-auth-http.test.ts
+          backend/test/customer-auth-password-security.test.ts
+          backend/test/customer-auth-rate-limit.test.ts
+          backend/test/customer-registration-intent.test.ts
+          backend/test/customer-auth-origin-cache.test.ts
+          backend/test/customer-auth-privacy.test.ts
+          backend/test/auth-security.test.ts
+
+      - name: Audit pending legacy customer mobile identities
+        run: npm run customer-mobile-identities:audit
+
+      - name: Typecheck repository
+        run: npm run typecheck
+
+      - name: Lint repository
+        run: npm run lint
+
+      - name: Build repository
+        run: npm run build
+
+      - name: Revalidate Prisma schema
+        run: npm run prisma:validate
+
+      - name: Run security audit
+        run: npm run security:audit
