@@ -26,7 +26,7 @@ test("customer auth types expose username and use identifier instead of login em
 test("customer login page submits a generic username, email, or mobile identifier", () => {
   const loginPage = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
 
-  assert.match(loginPage, /useState\(["']{2}\)[\s\S]*?identifier/i);
+  assert.match(loginPage, /const\s*\[identifier\s*,\s*setIdentifier\]\s*=\s*useState\(["']{2}\)/);
   assert.match(loginPage, /Username, email or mobile number/);
   assert.match(loginPage, /autoComplete=["']username["']/);
   assert.match(loginPage, /validateCustomerLoginForm\(\{\s*identifier\s*,\s*password\s*\}\)/);
