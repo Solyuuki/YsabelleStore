@@ -31,7 +31,7 @@ async function postInvalidLogin(baseUrl: string, origin?: string) {
       ...(origin ? { Origin: origin } : {})
     },
     body: JSON.stringify({
-      email: "origin-cache-missing@example.com",
+      identifier: "origin-cache-missing@example.com",
       password: "WrongPassword123!"
     })
   });
