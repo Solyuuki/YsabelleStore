@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   getCurrentCustomer,
+  issueCustomerRegistrationIntent,
   loginCustomerAccount,
   logoutCustomerAccount,
   registerCustomerAccount
@@ -45,6 +46,7 @@ const customerLoginIdentifierRateLimit = createAuthRateLimit({
   }
 });
 
+customerAuthRouter.get("/registration-intent", issueCustomerRegistrationIntent);
 customerAuthRouter.post(
   "/register",
   customerRegisterRateLimit,
