@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 
 import {
@@ -23,4 +24,13 @@ test("customer-order integration fixtures are classified as test data", () => {
     "FIXTURE_CATEGORY:CUSTOMER_ORDER_TEST",
     "CUSTOMER_ORDER_GENERATOR_SIGNATURE"
   ]);
+});
+
+test("storefront policy blocks stale customer-order fixtures even before cleanup", async () => {
+  const source = await readFile("backend/src/services/catalogQualityPolicy.ts", "utf8");
+
+  assert.match(source, /Customer Order Product /);
+  assert.match(source, /CUSTOMER-ORDER-/);
+  assert.match(source, /Customer Order Test /);
+  assert.match(source, /NOT: leakedCustomerOrderFixtureWhere/);
 });
