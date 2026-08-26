@@ -76,9 +76,9 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | Item                 | Value                                                                            |
 | -------------------- | -------------------------------------------------------------------------------- |
 | Validation status    | Passed                                                                           |
-| Last update          | 2026-08-26                                                                       |
-| Current branch       | m1/v0.9/feat/customer-auth-access                                                |
-| Current work areas   | Scripts / CI                                                                     |
+| Last update          | 2026-08-27                                                                       |
+| Current branch       | m1/v0.9/test/customer-auth-ui-readiness                                          |
+| Current work areas   | Other                                                                            |
 | Current work summary | Updated the implementation evidence and validation notes for the current branch. |
 
 ## Current Work Snapshot
