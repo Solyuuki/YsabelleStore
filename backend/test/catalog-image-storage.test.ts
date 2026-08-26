@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -27,6 +27,26 @@ test("catalog image storage exposes only generated candidate output paths", asyn
       "candidates/candidate-2/processed/pdp.webp"
     );
     assert.throws(() => storage.variantStorageKey("candidate-2", "../../escape" as never));
+  } finally {
+    await rm(temporaryRoot, { force: true, recursive: true });
+  }
+});
+
+test("catalog image storage recovers an existing asset from a linked-worktree fallback root", async () => {
+  const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "ysabelle-catalog-fallback-"));
+  const canonicalRoot = path.join(temporaryRoot, "primary", ".data", "catalog-images");
+  const legacyRoot = path.join(temporaryRoot, "phase-worktree", ".data", "catalog-images");
+  const key = "candidates/candidate-legacy/original.webp";
+
+  try {
+    const legacyFile = path.join(legacyRoot, ...key.split("/"));
+    await mkdir(path.dirname(legacyFile), { recursive: true });
+    await writeFile(legacyFile, Buffer.from("legacy-image"));
+
+    const storage = new CatalogImageStorage(canonicalRoot, [legacyRoot]);
+    const recovered = await storage.readStorageKey(key);
+
+    assert.equal(recovered.toString(), "legacy-image");
   } finally {
     await rm(temporaryRoot, { force: true, recursive: true });
   }
