@@ -1,0 +1,81 @@
+name: Sprint 9 Phase 4 Autoformat
+
+on:
+  push:
+    branches:
+      - feature/sprint9-account-security
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint9-phase4-autoformat-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format-phase4:
+    name: Format Phase 4-owned files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format Phase 4 files
+        run: >-
+          npx prettier --write
+          backend/src/controllers/customerAccountController.ts
+          backend/src/routes/customerAccount.routes.ts
+          backend/src/security/security.constants.ts
+          backend/src/services/customerAccountService.ts
+          backend/src/services/customerAuthService.ts
+          backend/src/validators/customerAccount.validators.ts
+          backend/test/customer-account-security.test.ts
+          backend/test/customer-account-password-concurrency.test.ts
+          frontend/src/app/CustomerApp.tsx
+          frontend/src/pages/customer/CustomerAccountPage.tsx
+          frontend/src/services/customerAccountService.ts
+          frontend/src/styles/customer-account.css
+          frontend/src/types/customerAccount.ts
+          scripts/customer-account-frontend-test.ts
+          .github/workflows/sprint-9-phase4-validation.yml
+          .github/workflows/sprint-9-phase4-autoformat.yml
+
+      - name: Commit formatting changes
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Phase 4 files already formatted."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            backend/src/controllers/customerAccountController.ts \
+            backend/src/routes/customerAccount.routes.ts \
+            backend/src/security/security.constants.ts \
+            backend/src/services/customerAccountService.ts \
+            backend/src/services/customerAuthService.ts \
+            backend/src/validators/customerAccount.validators.ts \
+            backend/test/customer-account-security.test.ts \
+            backend/test/customer-account-password-concurrency.test.ts \
+            frontend/src/app/CustomerApp.tsx \
+            frontend/src/pages/customer/CustomerAccountPage.tsx \
+            frontend/src/services/customerAccountService.ts \
+            frontend/src/styles/customer-account.css \
+            frontend/src/types/customerAccount.ts \
+            scripts/customer-account-frontend-test.ts \
+            .github/workflows/sprint-9-phase4-validation.yml \
+            .github/workflows/sprint-9-phase4-autoformat.yml
+          git commit -m "style(account): format Phase 4 files"
+          git push origin HEAD:feature/sprint9-account-security
