@@ -6,6 +6,28 @@ export type CatalogImageStoragePaths = {
   fallbackRoots: string[];
 };
 
+export function resolveDefaultCatalogImagePersistentRoot(options: {
+  environment?: NodeJS.ProcessEnv;
+  homeDirectory: string;
+  platform: NodeJS.Platform;
+}) {
+  const environment = options.environment ?? process.env;
+  let dataRoot: string;
+
+  if (options.platform === "win32") {
+    dataRoot =
+      environment.LOCALAPPDATA?.trim() ||
+      environment.APPDATA?.trim() ||
+      path.join(options.homeDirectory, "AppData", "Local");
+  } else if (options.platform === "darwin") {
+    dataRoot = path.join(options.homeDirectory, "Library", "Application Support");
+  } else {
+    dataRoot = environment.XDG_DATA_HOME?.trim() || path.join(options.homeDirectory, ".local", "share");
+  }
+
+  return path.resolve(dataRoot, "YsabelleStore", "catalog-images");
+}
+
 export function resolveCatalogImageStoragePaths(
   repositoryRoot: string,
   configuredRoot: string,
