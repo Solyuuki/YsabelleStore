@@ -1,5 +1,6 @@
 @media (min-width: 761px) {
-  .customer-auth-page--login {
+  .customer-auth-page--login,
+  .customer-auth-page--register {
     display: grid;
     min-height: calc(100vh - 76px);
     place-items: center;
@@ -12,7 +13,9 @@
   }
 
   .customer-auth-page--login::before,
-  .customer-auth-page--login::after {
+  .customer-auth-page--login::after,
+  .customer-auth-page--register::before,
+  .customer-auth-page--register::after {
     width: 34rem;
     height: 34rem;
     border-radius: 44% 56% 58% 42% / 48% 42% 58% 52%;
@@ -21,7 +24,8 @@
     will-change: transform, border-radius;
   }
 
-  .customer-auth-page--login::before {
+  .customer-auth-page--login::before,
+  .customer-auth-page--register::before {
     top: -8rem;
     left: -6rem;
     background:
@@ -30,7 +34,8 @@
     animation: ysabelle-login-aurora 16s ease-in-out infinite alternate;
   }
 
-  .customer-auth-page--login::after {
+  .customer-auth-page--login::after,
+  .customer-auth-page--register::after {
     right: -7rem;
     bottom: -9rem;
     background:
@@ -44,7 +49,13 @@
     width: min(100%, 42rem);
   }
 
-  .customer-auth-page--login .customer-auth-stage::before {
+  .customer-auth-page--register .customer-auth-stage {
+    display: block;
+    width: min(100%, 58rem);
+  }
+
+  .customer-auth-page--login .customer-auth-stage::before,
+  .customer-auth-page--register .customer-auth-stage::before {
     inset: -1.5rem;
     border-radius: 3rem;
     background:
@@ -61,7 +72,8 @@
     animation: ysabelle-login-orbit 22s linear infinite;
   }
 
-  .customer-auth-page--login .customer-auth-stage__panel {
+  .customer-auth-page--login .customer-auth-stage__panel,
+  .customer-auth-page--register .customer-auth-stage__panel {
     width: 100%;
     min-width: 0;
     height: fit-content;
@@ -75,34 +87,49 @@
     backdrop-filter: blur(24px) saturate(140%);
   }
 
-  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card {
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card,
+  .customer-auth-page--register .customer-auth-stage__panel .customer-auth-card {
     width: 100%;
     max-width: none;
   }
 
-  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card__intro {
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card__intro,
+  .customer-auth-page--register .customer-auth-stage__panel .customer-auth-card__intro {
     margin-bottom: 1.75rem;
   }
 
-  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card__intro h1 {
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card__intro h1,
+  .customer-auth-page--register .customer-auth-stage__panel .customer-auth-card__intro h1 {
     font-size: clamp(2.8rem, 5vw, 4.15rem);
     letter-spacing: -0.045em;
   }
 
-  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-form {
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-form,
+  .customer-auth-page--register .customer-auth-stage__panel .customer-auth-form {
     gap: 1.1rem;
   }
 
-  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-field input {
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-field input,
+  .customer-auth-page--register .customer-auth-stage__panel .customer-auth-field input {
     min-height: 54px;
     background: rgb(255 255 255 / 74%);
   }
 
-  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-submit {
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-submit,
+  .customer-auth-page--register .customer-auth-stage__panel .customer-auth-submit {
     min-height: 54px;
     box-shadow:
       0 14px 34px rgb(98 91 255 / 24%),
       0 0 32px rgb(244 63 140 / 10%);
+  }
+
+  .customer-auth-page--register .customer-auth-stage__panel {
+    padding: clamp(2rem, 3vw, 3rem);
+  }
+
+  .customer-auth-page--register .customer-auth-stage__panel .customer-auth-card__intro {
+    max-width: 42rem;
+    margin-bottom: 1.5rem;
   }
 }
 
@@ -138,11 +165,13 @@
 }
 
 @media (max-width: 760px) {
-  .customer-auth-page--login .customer-auth-stage {
+  .customer-auth-page--login .customer-auth-stage,
+  .customer-auth-page--register .customer-auth-stage {
     width: min(100%, 36rem);
   }
 
-  .customer-auth-page--login .customer-auth-stage__panel {
+  .customer-auth-page--login .customer-auth-stage__panel,
+  .customer-auth-page--register .customer-auth-stage__panel {
     width: 100%;
   }
 }
@@ -150,7 +179,10 @@
 @media (prefers-reduced-motion: reduce) {
   .customer-auth-page--login::before,
   .customer-auth-page--login::after,
-  .customer-auth-page--login .customer-auth-stage::before {
+  .customer-auth-page--register::before,
+  .customer-auth-page--register::after,
+  .customer-auth-page--login .customer-auth-stage::before,
+  .customer-auth-page--register .customer-auth-stage::before {
     animation: none;
     transform: none;
   }
