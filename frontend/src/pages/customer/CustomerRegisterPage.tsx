@@ -57,7 +57,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
   return (
     <CustomerAuthFrame mode="register" navigate={navigate}>
-      <div className="customer-auth-card">
+      <div className="customer-auth-card customer-auth-card--register">
         <div className="customer-auth-card__intro">
           <span className="customer-auth-card__icon" aria-hidden="true">
             <UserPlus size={22} />
@@ -72,7 +72,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
         <form
           aria-busy={submitting}
-          className="customer-auth-form"
+          className="customer-auth-form customer-auth-form--register"
           onSubmit={handleSubmit}
           noValidate
         >
