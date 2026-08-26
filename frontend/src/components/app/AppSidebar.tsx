@@ -2,7 +2,7 @@ import { ChevronLeft, LogOut } from "lucide-react";
 
 import { appRoutes, type AppRoutePath } from "@/app/routes";
 import { SidebarNavItem } from "@/components/app/SidebarNavItem";
-import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { cn } from "@/lib/utils";
@@ -76,7 +76,9 @@ export function AppSidebar({
       </Button>
 
       <div className="flex h-16 items-center gap-3 border-b border-violet-200/45 px-4">
-        <YsabelleBrandMark className="shrink-0" eager variant="mini" />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 shadow-sm shadow-violet-950/15 ring-1 ring-violet-200/70">
+          <BrandLogo className="h-full w-full object-contain" />
+        </div>
         <div
           className={cn(
             "min-w-0 overflow-hidden transition-all duration-300 ease-out",

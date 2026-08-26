@@ -21,7 +21,7 @@ test("customer auth uses independent content-hugging brand and form surfaces", (
   assert.match(stage, /gap:/);
   assert.match(stage, /background:\s*transparent;/);
   assert.doesNotMatch(stage, /overflow:\s*hidden;/);
-  assert.doesNotMatch(stage, /box-shadow:/);
+  assert.match(stage, /box-shadow:\s*none;/);
 
   assert.match(brand, /border-radius:/);
   assert.match(brand, /box-shadow:/);

@@ -36,15 +36,15 @@ test("customer auth fields expose accessible errors and password state", () => {
   const login = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
   const register = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
 
-  assert.match(login, /aria-describedby=\{fieldErrors\.identifier/);
-  assert.match(login, /aria-describedby=\{fieldErrors\.password/);
+  assert.match(login, /aria-describedby=\{\s*fieldErrors\.identifier/);
+  assert.match(login, /aria-describedby=\{\s*fieldErrors\.password/);
   assert.match(login, /aria-pressed=\{showPassword\}/);
   assert.match(login, /aria-busy=\{submitting\}/);
 
-  assert.match(register, /aria-describedby=\{fieldErrors\.name/);
+  assert.match(register, /aria-describedby=\{\s*fieldErrors\.name/);
   assert.match(register, /aria-describedby=\{\s*fieldErrors\.username/);
-  assert.match(register, /aria-describedby=\{fieldErrors\.email/);
-  assert.match(register, /aria-describedby=\{fieldErrors\.phone/);
+  assert.match(register, /aria-describedby=\{\s*fieldErrors\.email/);
+  assert.match(register, /aria-describedby=\{\s*fieldErrors\.phone/);
   assert.match(register, /aria-describedby=\{\s*fieldErrors\.password/);
   assert.match(register, /aria-describedby=\{\s*fieldErrors\.confirmPassword/);
   assert.match(register, /aria-pressed=\{showPassword\}/);
