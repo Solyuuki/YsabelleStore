@@ -19,6 +19,11 @@ function rememberCustomer(customerId: string) {
   return customerId;
 }
 
+function testPhone(suffix: string) {
+  const numeric = Number.parseInt(suffix, 16) % 10_000_000;
+  return `0917${numeric.toString().padStart(7, "0")}`;
+}
+
 function expectHttpError(
   error: unknown,
   expected: { code: string; message: string; status: number }
@@ -36,7 +41,7 @@ test("customer account and finite session persist independently from internal us
     data: {
       name: "Customer Auth Test",
       email: `customer-auth-${suffix}@example.com`,
-      phone: "09171234567",
+      phone: testPhone(suffix),
       passwordHash: "scrypt$test-placeholder",
       status: "ACTIVE"
     }
@@ -60,11 +65,13 @@ test("customer account and finite session persist independently from internal us
 test("registration normalizes identity, hashes the password, and returns only safe customer data", async () => {
   const suffix = randomUUID().slice(0, 8);
   const email = `customer-${suffix}@example.com`;
+  const phone = testPhone(suffix);
+  const normalizedPhone = `+63${phone.slice(1)}`;
   const registered = await registerCustomer({
     name: "  Maria Customer  ",
     username: `Maria.${suffix.toUpperCase()}`,
     email: `  ${email.toUpperCase()}  `,
-    phone: " 09171234567 ",
+    phone: ` ${phone} `,
     password: "CustomerPass123!"
   });
   rememberCustomer(registered.customer.id);
@@ -76,10 +83,10 @@ test("registration normalizes identity, hashes the password, and returns only sa
   assert.equal(registered.customer.name, "Maria Customer");
   assert.equal(registered.customer.username, `maria.${suffix}`);
   assert.equal(registered.customer.email, email);
-  assert.equal(registered.customer.phone, "+639171234567");
+  assert.equal(registered.customer.phone, normalizedPhone);
   assert.equal("passwordHash" in registered.customer, false);
   assert.equal(persisted.email, email);
-  assert.equal(persisted.phoneNormalized, "+639171234567");
+  assert.equal(persisted.phoneNormalized, normalizedPhone);
   assert.ok(persisted.passwordHash.startsWith("scrypt$"));
   assert.notEqual(persisted.passwordHash, "CustomerPass123!");
   assert.ok(registered.sessionToken.length >= 32);

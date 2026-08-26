@@ -135,3 +135,5 @@
 | 2026-08-23 | sprint/v0.6/sprint-6                    | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-08-24 | sprint/v0.6/sprint-6                    | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-08-24 | m1/v0.7/fix/sprint6-sprint7-integration | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
+| 2026-08-26 | m1/v0.9/feat/customer-auth-access       | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
+| 2026-08-27 | m1/v0.9/test/customer-auth-ui-readiness | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
