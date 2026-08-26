@@ -96,6 +96,12 @@
   .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card__intro,
   .customer-auth-page--register .customer-auth-stage__panel .customer-auth-card__intro {
     margin-bottom: 1.75rem;
+    text-align: center;
+  }
+
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card__icon,
+  .customer-auth-page--register .customer-auth-stage__panel .customer-auth-card__icon {
+    margin-inline: auto;
   }
 
   .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card__intro h1,
@@ -107,6 +113,7 @@
   .customer-auth-page--login .customer-auth-stage__panel .customer-auth-form,
   .customer-auth-page--register .customer-auth-stage__panel .customer-auth-form {
     gap: 1.1rem;
+    text-align: left;
   }
 
   .customer-auth-page--login .customer-auth-stage__panel .customer-auth-field input,
@@ -129,7 +136,7 @@
 
   .customer-auth-page--register .customer-auth-stage__panel .customer-auth-card__intro {
     max-width: 42rem;
-    margin-bottom: 1.5rem;
+    margin: 0 auto 1.5rem;
   }
 }
 
