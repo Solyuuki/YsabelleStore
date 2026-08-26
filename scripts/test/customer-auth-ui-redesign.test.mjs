@@ -23,9 +23,11 @@ test("customer auth routes use the storefront auth frame without changing auth c
 
   assert.match(register, /CustomerAuthFrame/);
   assert.match(register, /prepareCustomerRegistrationIntent/);
-  assert.match(register, /phone: phone\.trim\(\) \|\| undefined/);
-  assert.match(register, /username: username\.trim\(\)/);
-  assert.doesNotMatch(register, /register\(\{[\s\S]*confirmPassword/);
+  assert.match(
+    register,
+    /register\(\{\s*email: email\.trim\(\),\s*name: name\.trim\(\),\s*password,\s*phone: phone\.trim\(\) \|\| undefined,\s*username: username\.trim\(\)\s*\}\)/
+  );
+  assert.match(register, /navigate\("\/account"\)/);
 });
 
 test("customer auth fields expose accessible errors and password state", () => {
@@ -42,14 +44,14 @@ test("customer auth fields expose accessible errors and password state", () => {
   assert.match(register, /aria-describedby=\{fieldErrors\.email/);
   assert.match(register, /aria-describedby=\{fieldErrors\.phone/);
   assert.match(register, /aria-describedby=\{fieldErrors\.password/);
-  assert.match(register, /aria-describedby=\{fieldErrors\.confirmPassword/);
+  assert.match(register, /aria-describedby=\{\s*fieldErrors\.confirmPassword/);
   assert.match(register, /aria-pressed=\{showPassword\}/);
   assert.match(register, /aria-pressed=\{showConfirmPassword\}/);
   assert.match(register, /aria-busy=\{submitting\}/);
 });
 
 test("customer auth redesign stays inside the blue purple pink storefront palette", () => {
-  const authCss = read("frontend/src/styles/customer-auth.css");
+  const authCss = read("frontend/src/styles/customer-auth-phase3.css");
 
   assert.match(authCss, /\.customer-auth-stage\s*\{/);
   assert.match(authCss, /\.customer-auth-stage__brand\s*\{/);
