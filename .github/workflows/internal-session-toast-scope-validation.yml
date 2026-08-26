@@ -1,0 +1,16 @@
+name: Internal Session Toast Scope Validation
+
+on:
+  pull_request:
+    branches:
+      - "sprint/**"
+
+permissions:
+  contents: read
+
+jobs:
+  internal-session-toast-scope:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --test scripts/test/internal-session-toast-scope.test.mjs
