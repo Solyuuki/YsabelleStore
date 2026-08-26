@@ -154,6 +154,7 @@
 | 2026-08-18 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-08-23 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-08-24 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
+| 2026-08-26 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
 
 ## Manual Review Evidence
 
@@ -171,6 +172,7 @@
 | 2026-08-18 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 | 2026-08-23 | Changed files                                                          | Not required by changed files | No changed user-facing flow was detected by the artifact update.                                                                                                    |
 | 2026-08-24 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+| 2026-08-26 | Changed files                                                          | Passed                        | Customer registration/login/session/logout and Staff/Owner realm-isolation manual QA completed; cross-realm auth toast containment visually verified.               |
 
 ## Discontinued Product Normalization
 
