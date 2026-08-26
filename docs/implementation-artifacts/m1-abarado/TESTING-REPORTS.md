@@ -175,6 +175,7 @@
 | 2026-08-24 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 | 2026-08-26 | Changed files                                                          | Manually verified             | Customer registration/login/session/logout and Staff/Owner realm-isolation manual QA completed; cross-realm auth toast containment visually verified.               |
 | 2026-08-27 | Changed files                                                          | Not required by changed files | No changed user-facing flow was detected by the artifact update.                                                                                                    |
+| 2026-08-27 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 
 ## Discontinued Product Normalization
 
