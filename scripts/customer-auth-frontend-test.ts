@@ -23,20 +23,26 @@ async function main() {
 
     const responseBody = url.endsWith("/api/customer-auth/logout")
       ? { success: true, message: "Customer logout successful." }
-      : {
-          success: true,
-          message: "Customer authentication successful.",
-          data: {
-            customer: {
-              id: "customer-1",
-              name: "Maria Customer",
-              username: "maria.customer",
-              email: "maria@example.com",
-              phone: "09171234567",
-              status: "ACTIVE"
-            }
+      : url.endsWith("/api/customer-auth/registration-intent")
+        ? {
+            success: true,
+            message: "Customer registration intent prepared.",
+            data: { ready: true }
           }
-        };
+        : {
+            success: true,
+            message: "Customer authentication successful.",
+            data: {
+              customer: {
+                id: "customer-1",
+                name: "Maria Customer",
+                username: "maria.customer",
+                email: "maria@example.com",
+                phone: "09171234567",
+                status: "ACTIVE"
+              }
+            }
+          };
 
     return new Response(JSON.stringify(responseBody), {
       headers: { "content-type": "application/json" },
