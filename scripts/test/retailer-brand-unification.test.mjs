@@ -5,13 +5,13 @@ import { test } from "node:test";
 const fileUrl = (path) => new URL(`../../${path}`, import.meta.url);
 const read = (path) => readFileSync(fileUrl(path), "utf8");
 
-test("retailer shell uses the same Ysabelle brand mark as the customer storefront", () => {
+test("retailer shell uses the approved shared Ysabelle brand logo", () => {
   const main = read("frontend/src/main.tsx");
   const sidebar = read("frontend/src/components/app/AppSidebar.tsx");
 
   assert.match(main, /import "@\/styles\/brand\.css";/);
-  assert.match(sidebar, /YsabelleBrandMark/);
-  assert.doesNotMatch(sidebar, /BrandLogo/);
+  assert.match(sidebar, /BrandLogo/);
+  assert.doesNotMatch(sidebar, /YsabelleBrandMark/);
 });
 
 test("retailer shell and navigation remove emerald brand styling", () => {
