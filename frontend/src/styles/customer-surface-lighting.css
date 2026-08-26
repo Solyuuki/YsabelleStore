@@ -1,0 +1,113 @@
+.customer-home,
+.customer-shop-page {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background-color: #fcfdff;
+}
+
+.customer-home::before,
+.customer-shop-page::before {
+  position: absolute;
+  inset: -12rem -10rem;
+  z-index: -2;
+  content: "";
+  pointer-events: none;
+  background-repeat: no-repeat;
+  will-change: transform;
+  animation: customer-surface-ambient-drift 24s ease-in-out infinite alternate;
+}
+
+.customer-home::after,
+.customer-shop-page::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 18%) 0%,
+    rgb(255 255 255 / 68%) 16%,
+    rgb(252 253 255 / 78%) 48%,
+    rgb(255 255 255 / 64%) 78%,
+    rgb(252 253 255 / 86%) 100%
+  );
+}
+
+.customer-home::before {
+  background-image:
+    radial-gradient(circle at 13% 8%, rgb(0 140 255 / 17%) 0, rgb(0 140 255 / 7%) 20%, transparent 43%),
+    radial-gradient(circle at 84% 15%, rgb(98 91 255 / 16%) 0, rgb(98 91 255 / 6%) 22%, transparent 46%),
+    radial-gradient(circle at 66% 46%, rgb(168 60 240 / 11%) 0, rgb(168 60 240 / 4%) 18%, transparent 39%),
+    radial-gradient(circle at 22% 76%, rgb(244 63 140 / 10%) 0, rgb(244 63 140 / 3%) 20%, transparent 42%),
+    radial-gradient(circle at 82% 91%, rgb(0 140 255 / 8%) 0, transparent 34%);
+  filter: blur(10px) saturate(108%);
+  opacity: 0.94;
+}
+
+.customer-shop-page::before {
+  inset: -10rem -8rem;
+  background-image:
+    radial-gradient(circle at 12% 5%, rgb(0 140 255 / 11%) 0, rgb(0 140 255 / 4%) 18%, transparent 38%),
+    radial-gradient(circle at 88% 18%, rgb(98 91 255 / 10%) 0, rgb(98 91 255 / 4%) 19%, transparent 40%),
+    radial-gradient(circle at 72% 68%, rgb(168 60 240 / 7%) 0, transparent 34%),
+    radial-gradient(circle at 18% 88%, rgb(244 63 140 / 6%) 0, transparent 32%);
+  filter: blur(14px) saturate(104%);
+  opacity: 0.76;
+  animation-duration: 30s;
+}
+
+.customer-home > *,
+.customer-shop-page > * {
+  position: relative;
+  z-index: 0;
+}
+
+.customer-home .home-hero {
+  background:
+    radial-gradient(circle at 78% 18%, rgb(98 91 255 / 7%), transparent 38%),
+    linear-gradient(180deg, rgb(255 255 255 / 36%), rgb(255 255 255 / 4%));
+}
+
+.customer-shop-page .customer-shop-heading {
+  background:
+    radial-gradient(circle at 18% 10%, rgb(0 140 255 / 6%), transparent 34%),
+    radial-gradient(circle at 82% 18%, rgb(168 60 240 / 5%), transparent 36%),
+    linear-gradient(180deg, rgb(255 255 255 / 44%), rgb(255 255 255 / 8%));
+}
+
+@keyframes customer-surface-ambient-drift {
+  0% {
+    transform: translate3d(-1.5%, -0.8%, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(1.2%, 0.9%, 0) scale(1.015);
+  }
+
+  100% {
+    transform: translate3d(2%, -0.5%, 0) scale(1.025);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-home::before,
+  .customer-shop-page::before {
+    animation: none;
+    transform: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .customer-home::before,
+  .customer-shop-page::before {
+    inset: -6rem -4rem;
+    filter: blur(8px) saturate(102%);
+    opacity: 0.72;
+  }
+
+  .customer-shop-page::before {
+    opacity: 0.6;
+  }
+}
