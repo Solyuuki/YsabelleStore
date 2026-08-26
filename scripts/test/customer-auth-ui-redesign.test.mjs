@@ -13,9 +13,11 @@ test("customer auth routes use the storefront auth frame without changing auth c
   const login = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
   const register = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
 
-  assert.match(frame, /YsabelleBrandMark/);
-  assert.match(frame, /customer-auth-stage__brand/);
   assert.match(frame, /customer-auth-stage__panel/);
+  assert.doesNotMatch(frame, /YsabelleBrandMark/);
+  assert.doesNotMatch(frame, /customer-auth-stage__brand/);
+  assert.doesNotMatch(frame, /beverages-retail-display\.webp/);
+  assert.doesNotMatch(frame, /Continue to shop/);
 
   assert.match(login, /CustomerAuthFrame/);
   assert.match(login, /login\(\{ identifier: identifier\.trim\(\), password \}\)/);
@@ -66,20 +68,10 @@ test("password visibility controls keep a minimum 44px touch target", () => {
   assert.match(passwordButtonRule[1], /min-height:\s*2\.75rem;/);
 });
 
-test("storefront auth visual asset follows the relative Vite base used by packaged builds", () => {
-  const frame = read("frontend/src/components/customer/CustomerAuthFrame.tsx");
-  const viteConfig = read("frontend/vite.config.ts");
-
-  assert.match(viteConfig, /base:\s*"\.\/"/);
-  assert.match(frame, /src="images\/discover\/essentials\/beverages-retail-display\.webp"/);
-  assert.doesNotMatch(frame, /src="\/images\/discover\/essentials\/beverages-retail-display\.webp"/);
-});
-
 test("customer auth redesign stays inside the blue purple pink storefront palette", () => {
   const authCss = read("frontend/src/styles/customer-auth-phase3.css");
 
   assert.match(authCss, /\.customer-auth-stage\s*\{/);
-  assert.match(authCss, /\.customer-auth-stage__brand\s*\{/);
   assert.match(authCss, /\.customer-auth-stage__panel\s*\{/);
   assert.match(authCss, /var\(--customer-info\)/);
   assert.match(authCss, /var\(--customer-primary\)/);
