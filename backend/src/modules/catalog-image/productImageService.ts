@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
 
-import { catalogImageStorageRoot } from "../../config/env.js";
+import {
+  catalogImageStorageFallbackRoots,
+  catalogImageStorageRoot
+} from "../../config/env.js";
 import { prisma } from "../../database/prismaClient.js";
 import { HttpError } from "../../utils/httpError.js";
 import { runCatalogImageEngine } from "./catalogImageEngineRunner.js";
@@ -17,7 +20,7 @@ type ProductImageUploadFile = {
 export type OwnerProductImageVariant = "original" | "processed" | "card" | "pdp";
 export type PublicProductImageVariant = "card" | "pdp";
 
-const storage = new CatalogImageStorage(catalogImageStorageRoot);
+const storage = new CatalogImageStorage(catalogImageStorageRoot, catalogImageStorageFallbackRoots);
 
 export function approvedProductImageUrl(imageId: string, variant: PublicProductImageVariant) {
   return `/api/storefront/product-images/${encodeURIComponent(imageId)}/${variant}`;
