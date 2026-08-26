@@ -28,3 +28,11 @@ Sprint 9 is complete only when all applicable conditions below are satisfied.
 - Required Sprint 9 documentation is present and non-empty.
 - Governance rules are satisfied without bypasses or weakened validation.
 - Sprint/phase integration requires explicit user approval after verification.
+
+## Validation Status
+
+| Phase | Status | Acceptance gate |
+| --- | --- | --- |
+| Phase 1 | Accepted | Security/privacy foundation verified. |
+| Phase 2 | Final verification | Customer and Staff/Owner manual QA complete; final exact-head CI and governance must be green before acceptance. |
+| Phases 3–8 | Not accepted in this gate | Verified separately in their own phase branches and acceptance cycles. |
