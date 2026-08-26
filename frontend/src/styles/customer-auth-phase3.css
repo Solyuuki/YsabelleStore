@@ -11,12 +11,12 @@
   display: grid;
   width: min(100%, 1180px);
   grid-template-columns: minmax(0, 1.08fr) minmax(22rem, 0.92fr);
-  overflow: hidden;
-  border: 1px solid rgb(98 91 255 / 14%);
-  border-radius: 2rem 2rem 2rem 0.75rem;
-  background: rgb(255 255 255 / 86%);
-  box-shadow: 0 30px 90px rgb(16 20 38 / 12%);
-  backdrop-filter: blur(18px);
+  align-items: start;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .customer-auth-stage__brand {
@@ -27,9 +27,12 @@
   gap: 1.35rem;
   overflow: hidden;
   padding: clamp(2rem, 4vw, 3.6rem);
+  border: 1px solid rgb(98 91 255 / 16%);
+  border-radius: 2rem 2rem 2rem 0.75rem;
   background:
     linear-gradient(145deg, rgb(0 140 255 / 92%), rgb(98 91 255 / 96%) 52%, rgb(244 63 140 / 90%)),
     var(--customer-primary);
+  box-shadow: 0 30px 90px rgb(16 20 38 / 14%);
   color: #fff;
   isolation: isolate;
 }
@@ -215,10 +218,16 @@
 .customer-auth-stage__panel {
   display: flex;
   min-width: 0;
+  height: fit-content;
+  align-self: start;
   align-items: center;
   justify-content: center;
   padding: clamp(1.5rem, 4vw, 3.5rem);
+  border: 1px solid rgb(98 91 255 / 14%);
+  border-radius: 2rem 2rem 2rem 0.75rem;
   background: rgb(255 255 255 / 94%);
+  box-shadow: 0 24px 70px rgb(16 20 38 / 11%);
+  backdrop-filter: blur(18px);
 }
 
 .customer-auth-stage__panel .customer-auth-card {
@@ -346,6 +355,7 @@
 @media (max-width: 960px) {
   .customer-auth-stage {
     grid-template-columns: minmax(0, 0.9fr) minmax(21rem, 1.1fr);
+    gap: 1rem;
   }
 
   .customer-auth-page--register .customer-auth-stage {
@@ -381,6 +391,11 @@
   .customer-auth-stage,
   .customer-auth-page--register .customer-auth-stage {
     grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  .customer-auth-stage__brand,
+  .customer-auth-stage__panel {
     border-radius: 1.4rem 1.4rem 1.4rem 0.55rem;
   }
 
