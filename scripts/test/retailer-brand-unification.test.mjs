@@ -34,7 +34,11 @@ test("retailer shell and navigation remove emerald brand styling", () => {
 
 test("retailer and staff-login ambient surfaces inherit the ecommerce palette", () => {
   const themePath = "frontend/src/styles/retailer-brand.css";
-  assert.equal(existsSync(fileUrl(themePath)), true, "retailer brand stylesheet must exist");
+  assert.equal(
+    existsSync(fileUrl(themePath)),
+    true,
+    "retailer brand stylesheet must exist"
+  );
 
   const main = read("frontend/src/main.tsx");
   const theme = read(themePath);
@@ -47,6 +51,9 @@ test("retailer and staff-login ambient surfaces inherit the ecommerce palette", 
   assert.match(theme, /#f43f8c/i);
   assert.match(theme, /--primary:\s*243 100% 68%/);
   assert.match(theme, /\.welcome-ambient input:focus-visible/);
-  assert.match(theme, /\.welcome-ambient \.border-emerald-700\s*\{[\s\S]*?border-color:\s*#5149d9\s*!important;/);
+  assert.match(
+    theme,
+    /\.welcome-ambient \.border-emerald-700\s*\{[\s\S]*?border-color:\s*#5149d9\s*!important;/
+  );
   assert.doesNotMatch(theme, /#10b981|#059669|#047857|rgba\(167,\s*243,\s*208/i);
 });
