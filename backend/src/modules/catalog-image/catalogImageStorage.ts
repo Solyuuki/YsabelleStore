@@ -15,30 +15,17 @@ export type CatalogImageVariant = keyof typeof VARIANT_FILE_NAMES;
 
 export class CatalogImageStorage {
   private readonly root: string;
+  private readonly fallbackRoots: string[];
 
-  public constructor(root: string) {
+  public constructor(root: string, fallbackRoots: string[] = []) {
     this.root = path.resolve(root);
+    this.fallbackRoots = Array.from(
+      new Set(fallbackRoots.map((fallbackRoot) => path.resolve(fallbackRoot)))
+    ).filter((fallbackRoot) => fallbackRoot !== this.root);
   }
 
   public resolveStorageKey(key: string) {
-    const normalizedKey = key.replaceAll("\\", "/");
-    const resolved = path.resolve(this.root, normalizedKey);
-    const relative = path.relative(this.root, resolved);
-
-    if (
-      !normalizedKey ||
-      path.isAbsolute(normalizedKey) ||
-      relative === "" ||
-      relative.startsWith(`..${path.sep}`) ||
-      relative === ".." ||
-      path.isAbsolute(relative)
-    ) {
-      throw new HttpError(400, "Catalog image storage key is invalid.", {
-        code: "CATALOG_IMAGE_INVALID_STORAGE_KEY"
-      });
-    }
-
-    return resolved;
+    return this.resolveStorageKeyAgainstRoot(this.root, key);
   }
 
   public async writeOriginal(candidateId: string, extension: string, buffer: Buffer) {
@@ -73,20 +60,61 @@ export class CatalogImageStorage {
   }
 
   public async readStorageKey(key: string) {
+    const canonicalPath = this.resolveStorageKey(key);
+
     try {
-      return await readFile(this.resolveStorageKey(key));
+      return await readFile(canonicalPath);
     } catch (error) {
       if (error instanceof HttpError) throw error;
-      throw new HttpError(404, "Catalog image asset was not found.", {
-        code: "PRODUCT_IMAGE_ASSET_NOT_FOUND"
-      });
     }
+
+    for (const fallbackRoot of this.fallbackRoots) {
+      const fallbackPath = this.resolveStorageKeyAgainstRoot(fallbackRoot, key);
+      try {
+        return await readFile(fallbackPath);
+      } catch (error) {
+        if (error instanceof HttpError) throw error;
+      }
+    }
+
+    throw new HttpError(404, "Catalog image asset was not found.", {
+      code: "PRODUCT_IMAGE_ASSET_NOT_FOUND"
+    });
   }
 
   public async removeCandidate(candidateId: string) {
     this.assertCandidateId(candidateId);
-    const candidateDirectory = this.resolveStorageKey(`candidates/${candidateId}`);
-    await rm(candidateDirectory, { force: true, recursive: true });
+    const key = `candidates/${candidateId}`;
+    const candidateDirectories = [this.root, ...this.fallbackRoots].map((storageRoot) =>
+      this.resolveStorageKeyAgainstRoot(storageRoot, key)
+    );
+
+    await Promise.all(
+      candidateDirectories.map((candidateDirectory) =>
+        rm(candidateDirectory, { force: true, recursive: true })
+      )
+    );
+  }
+
+  private resolveStorageKeyAgainstRoot(storageRoot: string, key: string) {
+    const normalizedKey = key.replaceAll("\\", "/");
+    const resolved = path.resolve(storageRoot, normalizedKey);
+    const relative = path.relative(storageRoot, resolved);
+
+    if (
+      !normalizedKey ||
+      path.isAbsolute(normalizedKey) ||
+      relative === "" ||
+      relative.startsWith(`..${path.sep}`) ||
+      relative === ".." ||
+      path.isAbsolute(relative)
+    ) {
+      throw new HttpError(400, "Catalog image storage key is invalid.", {
+        code: "CATALOG_IMAGE_INVALID_STORAGE_KEY"
+      });
+    }
+
+    return resolved;
   }
 
   private assertCandidateId(candidateId: string) {
