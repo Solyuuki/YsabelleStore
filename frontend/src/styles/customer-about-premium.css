@@ -1,0 +1,33 @@
+/* About / Discover: keep native document scrolling while hiding only the visual scrollbar. */
+html:has(.customer-discover) {
+  scrollbar-width: none;
+}
+
+html:has(.customer-discover)::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Refine the light story chapter so it reads as clean ambient lighting, not pink fog. */
+.discover-story .story-beginning {
+  background:
+    linear-gradient(
+      to bottom,
+      var(--story-seam-12) 0 3%,
+      transparent 18%,
+      transparent 83%,
+      var(--story-seam-23) 96% 100%
+    ),
+    radial-gradient(circle at 82% 14%, rgb(168 60 240 / 8%), transparent 32%),
+    radial-gradient(circle at 10% 82%, rgb(0 140 255 / 9%), transparent 36%),
+    linear-gradient(135deg, #fcfdff 0%, #f8f8ff 48%, #fff8fb 100%);
+}
+
+.discover-story .story-beginning__glow {
+  opacity: 0.72;
+}
+
+.discover-story .story-beginning__orbit {
+  opacity: 0.52;
+}
