@@ -19,7 +19,10 @@ test("retailer theme primitives use the blue-indigo-violet-pink brand system", (
   assert.match(dashboard, /to-violet-500/);
 
   assert.doesNotMatch(badge, /emerald-|green-/);
-  assert.match(badge, /success:[\s\S]*?border-indigo-200[\s\S]*?bg-indigo-50[\s\S]*?text-indigo-700/);
+  assert.match(
+    badge,
+    /success:[\s\S]*?border-indigo-200[\s\S]*?bg-indigo-50[\s\S]*?text-indigo-700/
+  );
   assert.match(badge, /danger:[\s\S]*?border-rose-200[\s\S]*?bg-rose-50[\s\S]*?text-rose-700/);
 
   assert.doesNotMatch(pagination, /emerald-|green-/);
@@ -43,6 +46,9 @@ test("retailer theme primitives use the blue-indigo-violet-pink brand system", (
   assert.match(retailerBrand, /\.app-shell-ambient \[class~="bg-emerald-50"\]/);
   assert.match(retailerBrand, /\.app-shell-ambient \[class~="bg-green-50"\]/);
   assert.match(retailerBrand, /\.app-shell-ambient \[class~="text-emerald-700"\]/);
-  assert.match(retailerBrand, /\.app-shell-ambient \[class~="focus-visible:ring-emerald-500"\]:focus-visible/);
+  assert.match(
+    retailerBrand,
+    /\.app-shell-ambient \[class~="focus-visible:ring-emerald-500"\]:focus-visible/
+  );
   assert.match(retailerBrand, /\.app-shell-ambient \[class~="hover:bg-emerald-50"\]:hover/);
 });

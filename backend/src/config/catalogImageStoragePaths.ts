@@ -22,7 +22,8 @@ export function resolveDefaultCatalogImagePersistentRoot(options: {
   } else if (options.platform === "darwin") {
     dataRoot = path.join(options.homeDirectory, "Library", "Application Support");
   } else {
-    dataRoot = environment.XDG_DATA_HOME?.trim() || path.join(options.homeDirectory, ".local", "share");
+    dataRoot =
+      environment.XDG_DATA_HOME?.trim() || path.join(options.homeDirectory, ".local", "share");
   }
 
   return path.resolve(dataRoot, "YsabelleStore", "catalog-images");

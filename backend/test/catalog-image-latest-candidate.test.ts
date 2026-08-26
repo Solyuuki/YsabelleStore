@@ -4,10 +4,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
-import {
-  catalogImageStorageFallbackRoots,
-  catalogImageStorageRoot
-} from "../src/config/env.js";
+import { catalogImageStorageFallbackRoots, catalogImageStorageRoot } from "../src/config/env.js";
 import { prisma } from "../src/database/prismaClient.js";
 import { CatalogImageStorage } from "../src/modules/catalog-image/catalogImageStorage.js";
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";

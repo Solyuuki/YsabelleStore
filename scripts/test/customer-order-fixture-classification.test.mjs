@@ -2,10 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 
-import {
-  fixtureCategoryEvidence,
-  fixtureProductEvidence
-} from "../lib/catalog-quality.mjs";
+import { fixtureCategoryEvidence, fixtureProductEvidence } from "../lib/catalog-quality.mjs";
 
 test("customer-order integration fixtures are classified as test data", () => {
   const suffix = "0110af20";

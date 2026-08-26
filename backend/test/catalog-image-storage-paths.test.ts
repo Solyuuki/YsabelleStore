@@ -26,9 +26,7 @@ test("catalog image storage uses the primary checkout as the shared root for lin
     const resolved = resolveCatalogImageStoragePaths(linkedRoot, ".data/catalog-images");
 
     assert.equal(resolved.root, path.join(primaryRoot, ".data", "catalog-images"));
-    assert.deepEqual(resolved.fallbackRoots, [
-      path.join(linkedRoot, ".data", "catalog-images")
-    ]);
+    assert.deepEqual(resolved.fallbackRoots, [path.join(linkedRoot, ".data", "catalog-images")]);
   } finally {
     await rm(temporaryRoot, { force: true, recursive: true });
   }
