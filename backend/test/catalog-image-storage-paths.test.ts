@@ -4,7 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { resolveCatalogImageStoragePaths } from "../src/config/catalogImageStoragePaths.js";
+import {
+  resolveCatalogImageStoragePaths,
+  resolveDefaultCatalogImagePersistentRoot
+} from "../src/config/catalogImageStoragePaths.js";
 
 test("catalog image storage uses the primary checkout as the shared root for linked worktrees", async () => {
   const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "ysabelle-worktree-storage-"));
@@ -29,6 +32,26 @@ test("catalog image storage uses the primary checkout as the shared root for lin
   } finally {
     await rm(temporaryRoot, { force: true, recursive: true });
   }
+});
+
+test("development catalog storage resolves outside disposable repository checkouts", () => {
+  const homeDirectory = path.resolve("C:/Users/example");
+  const windowsRoot = resolveDefaultCatalogImagePersistentRoot({
+    environment: { LOCALAPPDATA: "C:/Users/example/AppData/Local" },
+    homeDirectory,
+    platform: "win32"
+  });
+  const linuxRoot = resolveDefaultCatalogImagePersistentRoot({
+    environment: { XDG_DATA_HOME: "/home/example/.data" },
+    homeDirectory: "/home/example",
+    platform: "linux"
+  });
+
+  assert.equal(
+    windowsRoot,
+    path.resolve("C:/Users/example/AppData/Local", "YsabelleStore", "catalog-images")
+  );
+  assert.equal(linuxRoot, path.resolve("/home/example/.data", "YsabelleStore", "catalog-images"));
 });
 
 test("legacy repo-local catalog storage migrates to a durable user-level root", async () => {
