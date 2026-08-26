@@ -310,9 +310,50 @@
   text-underline-offset: 0.2em;
 }
 
+.customer-auth-page--register .customer-auth-stage {
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+}
+
+.customer-auth-page--register .customer-auth-stage__panel {
+  padding: clamp(1.5rem, 2.5vw, 2.5rem);
+}
+
+.customer-auth-stage__panel .customer-auth-card--register {
+  width: min(100%, 44rem);
+}
+
+.customer-auth-stage__panel .customer-auth-form--register {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1rem;
+  row-gap: 1.05rem;
+}
+
+.customer-auth-stage__panel .customer-auth-form--register > .customer-auth-alert,
+.customer-auth-stage__panel .customer-auth-form--register > .customer-auth-submit {
+  grid-column: 1 / -1;
+}
+
+.customer-auth-page--register .customer-auth-stage__panel .customer-auth-card__intro {
+  max-width: 34rem;
+  margin-bottom: 1.45rem;
+}
+
+.customer-auth-page--register .customer-auth-stage__panel .customer-auth-switch {
+  margin-top: 1.15rem;
+}
+
 @media (max-width: 960px) {
   .customer-auth-stage {
     grid-template-columns: minmax(0, 0.9fr) minmax(21rem, 1.1fr);
+  }
+
+  .customer-auth-page--register .customer-auth-stage {
+    grid-template-columns: minmax(0, 0.85fr) minmax(21rem, 1.15fr);
+  }
+
+  .customer-auth-stage__panel .customer-auth-form--register {
+    grid-template-columns: 1fr;
   }
 
   .customer-auth-stage__brand {
@@ -337,7 +378,8 @@
     padding: 1rem 0.85rem 2.5rem;
   }
 
-  .customer-auth-stage {
+  .customer-auth-stage,
+  .customer-auth-page--register .customer-auth-stage {
     grid-template-columns: 1fr;
     border-radius: 1.4rem 1.4rem 1.4rem 0.55rem;
   }
@@ -374,7 +416,8 @@
     margin-top: 0;
   }
 
-  .customer-auth-stage__panel {
+  .customer-auth-stage__panel,
+  .customer-auth-page--register .customer-auth-stage__panel {
     padding: 1.35rem;
   }
 }
@@ -401,7 +444,8 @@
     display: none;
   }
 
-  .customer-auth-stage__panel {
+  .customer-auth-stage__panel,
+  .customer-auth-page--register .customer-auth-stage__panel {
     padding: 1.15rem;
   }
 }
