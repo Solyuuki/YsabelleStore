@@ -66,6 +66,15 @@ test("password visibility controls keep a minimum 44px touch target", () => {
   assert.match(passwordButtonRule[1], /min-height:\s*2\.75rem;/);
 });
 
+test("storefront auth visual asset follows the relative Vite base used by packaged builds", () => {
+  const frame = read("frontend/src/components/customer/CustomerAuthFrame.tsx");
+  const viteConfig = read("frontend/vite.config.ts");
+
+  assert.match(viteConfig, /base:\s*"\.\/"/);
+  assert.match(frame, /src="images\/discover\/essentials\/beverages-retail-display\.webp"/);
+  assert.doesNotMatch(frame, /src="\/images\/discover\/essentials\/beverages-retail-display\.webp"/);
+});
+
 test("customer auth redesign stays inside the blue purple pink storefront palette", () => {
   const authCss = read("frontend/src/styles/customer-auth-phase3.css");
 
