@@ -33,6 +33,14 @@ test("customer login and register use centered premium shader cards", () => {
     css,
     /\.customer-auth-page--login \.customer-auth-stage__panel,\s*\.customer-auth-page--register \.customer-auth-stage__panel\s*\{[\s\S]*?backdrop-filter:\s*blur\(24px\) saturate\(140%\);/
   );
+  assert.match(
+    css,
+    /\.customer-auth-page--login \.customer-auth-stage__panel \.customer-auth-card__intro,\s*\.customer-auth-page--register \.customer-auth-stage__panel \.customer-auth-card__intro\s*\{[\s\S]*?text-align:\s*center;/
+  );
+  assert.match(
+    css,
+    /\.customer-auth-page--login \.customer-auth-stage__panel \.customer-auth-card__icon,\s*\.customer-auth-page--register \.customer-auth-stage__panel \.customer-auth-card__icon\s*\{[\s\S]*?margin-inline:\s*auto;/
+  );
   assert.match(css, /rgb\(0 140 255/);
   assert.match(css, /rgb\(98 91 255/);
   assert.match(css, /rgb\(168 60 240/);
