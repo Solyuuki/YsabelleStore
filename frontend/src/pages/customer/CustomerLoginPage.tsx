@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerLoginForm } from "@/utils/customerAuthForms";
 
 export function CustomerLoginPage({ navigate }: { navigate: (path: string) => void }) {
