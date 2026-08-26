@@ -1,0 +1,9 @@
+.customer-auth-stage__panel .customer-auth-password button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+.customer-auth-stage__panel .customer-auth-password button:focus-visible {
+  outline: 3px solid rgb(0 140 255 / 32%);
+  outline-offset: 2px;
+}
