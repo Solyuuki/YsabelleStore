@@ -165,26 +165,37 @@ export async function changeCustomerPassword(
   const nextPasswordHash = await hashPassword(parsed.newPassword);
   const nextSession = createCustomerSessionMaterial(now);
 
-  const [updatedCustomer] = await prisma.$transaction([
-    prisma.customerAccount.update({
+  const updatedCustomer = await prisma.$transaction(async (transaction) => {
+    const passwordUpdate = await transaction.customerAccount.updateMany({
       data: { passwordHash: nextPasswordHash },
-      where: { id: customerAccountId }
-    }),
-    prisma.customerSession.updateMany({
+      where: {
+        id: customerAccountId,
+        passwordHash: customer.passwordHash,
+        status: "ACTIVE"
+      }
+    });
+
+    if (passwordUpdate.count !== 1) {
+      throw reauthenticationFailed();
+    }
+
+    await transaction.customerSession.updateMany({
       data: { revokedAt: now },
       where: {
         customerAccountId,
         revokedAt: null
       }
-    }),
-    prisma.customerSession.create({
+    });
+    await transaction.customerSession.create({
       data: {
         customerAccountId,
         tokenHash: nextSession.tokenHash,
         expiresAt: nextSession.expiresAt
       }
-    })
-  ]);
+    });
+
+    return transaction.customerAccount.findUniqueOrThrow({ where: { id: customerAccountId } });
+  });
 
   return {
     customer: toSafeCustomer(updatedCustomer),
@@ -235,6 +246,7 @@ export async function revokeOtherCustomerSessions(
       customerAccountId,
       id: { not: currentSession.id },
       revokedAt: null,
+      createdAt: { lte: now },
       expiresAt: { gt: now }
     }
   });
