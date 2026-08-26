@@ -1,4 +1,4 @@
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
@@ -41,7 +41,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
       <div className="customer-auth-card">
         <div className="customer-auth-card__intro">
           <span className="customer-auth-card__icon" aria-hidden="true">
-            <LogIn size={22} />
+            <KeyRound size={22} />
           </span>
           <p className="customer-eyebrow">Customer account</p>
           <h1>Welcome back</h1>
