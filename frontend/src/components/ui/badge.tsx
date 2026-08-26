@@ -4,14 +4,14 @@ import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "type-caption inline-flex items-center gap-1.5 rounded-md border px-2 py-1",
+  "type-caption inline-flex items-center gap-1.5 rounded-md border px-2 py-1 shadow-[0_1px_0_rgba(15,23,42,0.03)]",
   {
     variants: {
       variant: {
         default: "border-slate-200 bg-slate-50 text-slate-700",
-        success: "border-emerald-200 bg-emerald-50 text-emerald-700",
+        success: "border-indigo-200 bg-indigo-50 text-indigo-700",
         warning: "border-amber-200 bg-amber-50 text-amber-700",
-        danger: "border-red-200 bg-red-50 text-red-700",
+        danger: "border-rose-200 bg-rose-50 text-rose-700",
         info: "border-blue-200 bg-blue-50 text-blue-700"
       }
     },
