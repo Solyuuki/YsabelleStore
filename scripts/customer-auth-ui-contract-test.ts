@@ -25,6 +25,7 @@ assert.equal(
     {
       id: "customer-1",
       name: "Maria Customer",
+      username: null,
       email: "maria@example.com",
       phone: null,
       status: "ACTIVE"

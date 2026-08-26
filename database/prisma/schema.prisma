@@ -287,16 +287,18 @@ model TrustedDevice {
 }
 
 model CustomerAccount {
-  id           String                @id @default(cuid()) @db.VarChar(191)
-  name         String                @db.VarChar(120)
-  email        String                @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
-  phone        String?               @db.VarChar(40)
-  passwordHash String                @map("password_hash") @db.VarChar(255)
-  status       CustomerAccountStatus @default(ACTIVE)
-  createdAt    DateTime              @default(now()) @map("created_at")
-  updatedAt    DateTime              @updatedAt @map("updated_at")
-  sessions     CustomerSession[]
-  orders       CustomerOrder[]
+  id              String                @id @default(cuid()) @db.VarChar(191)
+  name            String                @db.VarChar(120)
+  username        String?               @unique(map: "uq_customer_accounts_username") @db.VarChar(30)
+  email           String                @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
+  phone           String?               @db.VarChar(40)
+  phoneNormalized String?               @unique(map: "uq_customer_accounts_phone_normalized") @map("phone_normalized") @db.VarChar(16)
+  passwordHash    String                @map("password_hash") @db.VarChar(255)
+  status          CustomerAccountStatus @default(ACTIVE)
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  sessions        CustomerSession[]
+  orders          CustomerOrder[]
 
   @@index([status], map: "idx_customer_accounts_status")
   @@map("customer_accounts")
@@ -493,9 +495,6 @@ model ProductDuplicateCandidate {
   @@map("product_duplicate_candidates")
 }
 
-// Preserves the authoritative workbook identity used by the fallback SARIMA pipeline.
-// This intentionally does not reuse ProductCanonicalMapping, which is reserved for
-// catalog-product deduplication and has two Product foreign keys.
 model SarimaSourceProductMapping {
   id                     String                         @id @default(cuid()) @db.VarChar(191)
   sourceKey              String                         @unique(map: "uq_sarima_source_mapping_key") @map("source_key") @db.VarChar(80)
@@ -890,7 +889,7 @@ model RecommendationRecord {
   reason              String                 @db.Text
   status              RecommendationStatus   @default(OPEN)
   generatedAt         DateTime               @default(now()) @map("generated_at")
-  resolvedAt          DateTime?              @map("resolved_at")
+  resolvedAt          DateTime?               @map("resolved_at")
   createdAt           DateTime               @default(now()) @map("created_at")
   product             Product                @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   forecastRecord      ForecastRecord?        @relation(fields: [forecastRecordId], references: [id], onDelete: SetNull, onUpdate: Cascade)

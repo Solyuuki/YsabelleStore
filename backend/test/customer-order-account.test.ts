@@ -49,6 +49,11 @@ function customerCookie(sessionToken: string) {
   return `${CUSTOMER_COOKIE_NAME}=${sessionToken}`;
 }
 
+function testPhone(suffix: string, offset = 0) {
+  const numeric = (Number.parseInt(suffix, 16) + offset) % 10_000_000;
+  return `0917${numeric.toString().padStart(7, "0")}`;
+}
+
 async function createFixture() {
   const suffix = randomUUID().slice(0, 8);
   const category = await prisma.category.create({
@@ -90,14 +95,16 @@ async function createFixture() {
   });
   const customerA = await registerCustomer({
     name: "Customer A",
+    username: `customer.a.${suffix}`,
     email: `customer-a-${suffix}@example.com`,
-    phone: "09171234567",
+    phone: testPhone(suffix),
     password: PASSWORD
   });
   const customerB = await registerCustomer({
     name: "Customer B",
+    username: `customer.b.${suffix}`,
     email: `customer-b-${suffix}@example.com`,
-    phone: "09179876543",
+    phone: testPhone(suffix, 1),
     password: PASSWORD
   });
 

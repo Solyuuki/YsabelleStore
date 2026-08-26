@@ -2,20 +2,114 @@ import { Router } from "express";
 
 import {
   getCurrentCustomer,
+  issueCustomerRegistrationIntent,
   loginCustomerAccount,
   logoutCustomerAccount,
   registerCustomerAccount
 } from "../controllers/customerAuthController.js";
-import { createAuthRateLimit } from "../middleware/authRateLimit.js";
+import { createAuthRateLimit, derivePrivateRateLimitKey } from "../middleware/authRateLimit.js";
 import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
+import {
+  disableSensitiveResponseCaching,
+  requireAllowedCustomerAuthOrigin
+} from "../middleware/customerAuthSecurity.js";
 import { AUTH_RATE_LIMITS } from "../security/security.constants.js";
+import {
+  classifyCustomerLoginIdentifier,
+  normalizeCustomerEmail,
+  normalizeCustomerUsername,
+  normalizePhilippineMobile
+} from "../utils/customerIdentity.js";
 
 export const customerAuthRouter = Router();
 
-const customerRegisterRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRegister);
-const customerLoginRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerLogin);
+function stringFieldFromBody(body: unknown, field: string): string | null {
+  if (!body || typeof body !== "object") return null;
+  const value = (body as Record<string, unknown>)[field];
+  return typeof value === "string" ? value : null;
+}
 
-customerAuthRouter.post("/register", customerRegisterRateLimit, registerCustomerAccount);
-customerAuthRouter.post("/login", customerLoginRateLimit, loginCustomerAccount);
+function privateIdentityKey(scope: string, kind: string, normalized: string): string {
+  return derivePrivateRateLimitKey(scope, `${kind}:${normalized}`);
+}
+
+const customerRegisterRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRegister);
+const customerRegisterUsernameRateLimit = createAuthRateLimit({
+  ...AUTH_RATE_LIMITS.customerRegisterIdentity,
+  keyResolver(request) {
+    const rawUsername = stringFieldFromBody(request.body, "username");
+    if (!rawUsername) return null;
+
+    const username = normalizeCustomerUsername(rawUsername);
+    return username
+      ? privateIdentityKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, "username", username)
+      : null;
+  }
+});
+const customerRegisterEmailRateLimit = createAuthRateLimit({
+  ...AUTH_RATE_LIMITS.customerRegisterIdentity,
+  keyResolver(request) {
+    const rawEmail = stringFieldFromBody(request.body, "email");
+    if (!rawEmail) return null;
+
+    const email = normalizeCustomerEmail(rawEmail);
+    return email
+      ? privateIdentityKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, "email", email)
+      : null;
+  }
+});
+const customerRegisterMobileRateLimit = createAuthRateLimit({
+  ...AUTH_RATE_LIMITS.customerRegisterIdentity,
+  keyResolver(request) {
+    const rawPhone = stringFieldFromBody(request.body, "phone");
+    if (!rawPhone) return null;
+
+    const phone = normalizePhilippineMobile(rawPhone);
+    return phone
+      ? privateIdentityKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, "phone", phone)
+      : null;
+  }
+});
+const customerLoginRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerLogin);
+const customerLoginIdentifierRateLimit = createAuthRateLimit({
+  ...AUTH_RATE_LIMITS.customerLoginIdentifier,
+  keyResolver(request) {
+    const rawIdentifier = stringFieldFromBody(request.body, "identifier");
+    if (!rawIdentifier) return null;
+
+    const identity = classifyCustomerLoginIdentifier(rawIdentifier);
+    return identity
+      ? privateIdentityKey(
+          AUTH_RATE_LIMITS.customerLoginIdentifier.scope,
+          identity.kind,
+          identity.normalized
+        )
+      : null;
+  }
+});
+
+customerAuthRouter.use(disableSensitiveResponseCaching);
+
+customerAuthRouter.get(
+  "/registration-intent",
+  requireAllowedCustomerAuthOrigin,
+  issueCustomerRegistrationIntent
+);
+customerAuthRouter.post(
+  "/register",
+  requireAllowedCustomerAuthOrigin,
+  customerRegisterRateLimit,
+  customerRegisterUsernameRateLimit,
+  customerRegisterEmailRateLimit,
+  customerRegisterMobileRateLimit,
+  registerCustomerAccount
+);
+customerAuthRouter.post(
+  "/login",
+  requireAllowedCustomerAuthOrigin,
+  customerLoginRateLimit,
+  customerLoginIdentifierRateLimit,
+  loginCustomerAccount
+);
 customerAuthRouter.get("/me", requireCustomerAuth, getCurrentCustomer);
-customerAuthRouter.post("/logout", logoutCustomerAccount);
+customerAuthRouter.post("/logout", requireAllowedCustomerAuthOrigin, logoutCustomerAccount);

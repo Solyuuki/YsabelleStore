@@ -7,7 +7,7 @@ import { validateCustomerLoginForm } from "@/utils/customerAuthForms";
 
 export function CustomerLoginPage({ navigate }: { navigate: (path: string) => void }) {
   const { login } = useCustomerAuth();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -16,7 +16,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const errors = validateCustomerLoginForm({ email, password });
+    const errors = validateCustomerLoginForm({ identifier, password });
     setFieldErrors(errors);
     setServerError(null);
 
@@ -24,7 +24,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
 
     setSubmitting(true);
     try {
-      await login({ email: email.trim(), password });
+      await login({ identifier: identifier.trim(), password });
       navigate("/account");
     } catch (error) {
       setServerError(
@@ -55,16 +55,15 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
           ) : null}
 
           <label className="customer-auth-field">
-            <span>Email address</span>
+            <span>Username, email or mobile number</span>
             <input
-              aria-invalid={Boolean(fieldErrors.email)}
-              autoComplete="email"
-              inputMode="email"
-              onChange={(event) => setEmail(event.target.value)}
-              type="email"
-              value={email}
+              aria-invalid={Boolean(fieldErrors.identifier)}
+              autoComplete="username"
+              onChange={(event) => setIdentifier(event.target.value)}
+              type="text"
+              value={identifier}
             />
-            {fieldErrors.email ? <small>{fieldErrors.email}</small> : null}
+            {fieldErrors.identifier ? <small>{fieldErrors.identifier}</small> : null}
           </label>
 
           <label className="customer-auth-field">

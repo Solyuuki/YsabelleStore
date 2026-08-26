@@ -17,6 +17,7 @@ type ApiBody = {
     customer?: {
       id?: string;
       name?: string;
+      username?: string | null;
       email?: string;
       phone?: string | null;
       status?: string;
@@ -50,8 +51,44 @@ function cookiePair(setCookie: string) {
   return setCookie.split(";", 1)[0]!;
 }
 
+function testPhone(suffix: string) {
+  const numeric = Number.parseInt(suffix, 16) % 10_000_000;
+  return `0917${numeric.toString().padStart(7, "0")}`;
+}
+
 async function json(response: Response): Promise<ApiBody> {
   return (await response.json()) as ApiBody;
+}
+
+async function issueRegistrationIntent(baseUrl: string) {
+  const intent = await fetch(`${baseUrl}/api/customer-auth/registration-intent`);
+  assert.equal(intent.status, 200);
+
+  const cookie = cookiePair(intent.headers.get("set-cookie") ?? "");
+  assert.match(cookie, /^ysabelle_customer_registration_intent=/);
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  return cookie;
+}
+
+async function registerCustomerHttp(
+  baseUrl: string,
+  input: {
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+    phone?: string;
+  }
+) {
+  const registrationIntentCookie = await issueRegistrationIntent(baseUrl);
+  return fetch(`${baseUrl}/api/customer-auth/register`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Cookie: registrationIntentCookie
+    },
+    body: JSON.stringify(input)
+  });
 }
 
 async function cleanupCustomer(email: string) {
@@ -65,18 +102,18 @@ async function cleanupCustomer(email: string) {
 test("customer register, session restore, and logout use a revocable HttpOnly cookie without exposing the raw token", async () => {
   const suffix = randomUUID().slice(0, 8);
   const email = `http-${suffix}@example.com`;
+  const username = `http.${suffix}`;
+  const phone = testPhone(suffix);
+  const normalizedPhone = `+63${phone.slice(1)}`;
 
   try {
     await withServer(async (baseUrl) => {
-      const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: "HTTP Customer",
-          email: `  ${email.toUpperCase()}  `,
-          phone: "09171234567",
-          password: PASSWORD
-        })
+      const register = await registerCustomerHttp(baseUrl, {
+        name: "HTTP Customer",
+        username,
+        email: `  ${email.toUpperCase()}  `,
+        phone,
+        password: PASSWORD
       });
 
       assert.equal(register.status, 201);
@@ -89,8 +126,11 @@ test("customer register, session restore, and logout use a revocable HttpOnly co
       assert.doesNotMatch(setCookie, /Secure/i);
 
       const registerBody = await json(register);
+      assert.equal(registerBody.data?.customer?.username, username);
       assert.equal(registerBody.data?.customer?.email, email);
+      assert.equal(registerBody.data?.customer?.phone, normalizedPhone);
       assert.equal(JSON.stringify(registerBody).includes("sessionToken"), false);
+      assert.equal(JSON.stringify(registerBody).includes("phoneNormalized"), false);
 
       const cookie = cookiePair(setCookie);
       const me = await fetch(`${baseUrl}/api/customer-auth/me`, {
@@ -98,8 +138,10 @@ test("customer register, session restore, and logout use a revocable HttpOnly co
       });
       assert.equal(me.status, 200);
       const meBody = await json(me);
+      assert.equal(meBody.data?.customer?.username, username);
       assert.equal(meBody.data?.customer?.email, email);
       assert.equal(JSON.stringify(meBody).includes("sessionToken"), false);
+      assert.equal(JSON.stringify(meBody).includes("phoneNormalized"), false);
 
       const logout = await fetch(`${baseUrl}/api/customer-auth/logout`, {
         method: "POST",
@@ -129,34 +171,32 @@ test("customer login keeps credential failures generic and registration rejects 
 
   try {
     await withServer(async (baseUrl) => {
-      const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: "Generic Customer", email, password: PASSWORD })
+      const register = await registerCustomerHttp(baseUrl, {
+        name: "Generic Customer",
+        username: `generic.${suffix}`,
+        email,
+        password: PASSWORD
       });
       assert.equal(register.status, 201);
 
-      const duplicate = await fetch(`${baseUrl}/api/customer-auth/register`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: "Duplicate Customer",
-          email: ` ${email.toUpperCase()} `,
-          password: PASSWORD
-        })
+      const duplicate = await registerCustomerHttp(baseUrl, {
+        name: "Duplicate Customer",
+        username: `generic.duplicate.${suffix}`,
+        email: ` ${email.toUpperCase()} `,
+        password: PASSWORD
       });
       assert.equal(duplicate.status, 409);
 
       const wrongPassword = await fetch(`${baseUrl}/api/customer-auth/login`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password: "wrong-password" })
+        body: JSON.stringify({ identifier: email, password: "wrong-password" })
       });
       const missingAccount = await fetch(`${baseUrl}/api/customer-auth/login`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          email: `missing-${suffix}@example.com`,
+          identifier: `missing-${suffix}@example.com`,
           password: "wrong-password"
         })
       });
@@ -214,14 +254,11 @@ test("customer cookie and internal bearer authentication remain isolated", async
     });
 
     await withServer(async (baseUrl) => {
-      const register = await fetch(`${baseUrl}/api/customer-auth/register`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: "Boundary Customer",
-          email: customerEmail,
-          password: PASSWORD
-        })
+      const register = await registerCustomerHttp(baseUrl, {
+        name: "Boundary Customer",
+        username: `boundary.${suffix}`,
+        email: customerEmail,
+        password: PASSWORD
       });
       assert.equal(register.status, 201);
       const customerCookie = cookiePair(register.headers.get("set-cookie") ?? "");

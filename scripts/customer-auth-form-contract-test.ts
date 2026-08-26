@@ -5,47 +5,56 @@ import {
   validateCustomerRegisterForm
 } from "../frontend/src/utils/customerAuthForms.ts";
 
-assert.deepEqual(validateCustomerLoginForm({ email: "", password: "" }), {
-  email: "Enter a valid email address.",
+assert.deepEqual(validateCustomerLoginForm({ identifier: "", password: "" }), {
+  identifier: "Enter your username, email, or mobile number.",
   password: "Enter your password."
 });
 
 assert.deepEqual(
-  validateCustomerLoginForm({ email: "customer@example.com", password: "CustomerPass123!" }),
+  validateCustomerLoginForm({
+    identifier: "customer@example.com",
+    password: "CustomerPass123!"
+  }),
   {}
 );
 
 assert.deepEqual(
   validateCustomerRegisterForm({
+    confirmPassword: "short",
     email: "bad-email",
     name: "M",
     password: "short",
-    phone: "123"
+    phone: "123",
+    username: "valid.user"
   }),
   {
     email: "Enter a valid email address.",
     name: "Name must be at least 2 characters.",
     password: "Password must be at least 8 characters.",
-    phone: "Phone number must be at least 7 characters."
+    phone: "Enter a valid Philippine mobile number."
   }
 );
 
 assert.deepEqual(
   validateCustomerRegisterForm({
+    confirmPassword: "CustomerPass123!",
     email: "customer@example.com",
     name: "Maria Customer",
     password: "CustomerPass123!",
-    phone: "09171234567"
+    phone: "09171234567",
+    username: "maria.customer"
   }),
   {}
 );
 
 assert.deepEqual(
   validateCustomerRegisterForm({
+    confirmPassword: "CustomerPass123!",
     email: "customer@example.com",
     name: "Maria Customer",
     password: "CustomerPass123!",
-    phone: ""
+    phone: "",
+    username: "maria.customer"
   }),
   {}
 );

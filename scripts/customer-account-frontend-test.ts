@@ -94,6 +94,7 @@ async function main() {
       accountStateModule.getCustomerCheckoutDefaults({
         id: "customer-1",
         name: "Maria Customer",
+        username: null,
         email: "maria@example.com",
         phone: "09171234567",
         status: "ACTIVE"

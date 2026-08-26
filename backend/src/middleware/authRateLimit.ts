@@ -1,4 +1,6 @@
-import type { RequestHandler } from "express";
+import { createHmac, randomBytes } from "node:crypto";
+
+import type { Request, RequestHandler } from "express";
 
 import { HttpError } from "../utils/httpError.js";
 
@@ -6,6 +8,7 @@ type AuthRateLimitOptions = {
   windowMs: number;
   maxAttempts: number;
   scope: string;
+  keyResolver?: (request: Request) => string | null;
 };
 
 type RateLimitEntry = {
@@ -13,17 +16,31 @@ type RateLimitEntry = {
   windowStartedAt: number;
 };
 
+const PROCESS_RATE_LIMIT_SECRET = randomBytes(32);
+const limiterAttempts = new WeakMap<RequestHandler, Map<string, RateLimitEntry>>();
+
+export function derivePrivateRateLimitKey(scope: string, value: string): string {
+  return createHmac("sha256", PROCESS_RATE_LIMIT_SECRET).update(`${scope}:${value}`).digest("hex");
+}
+
 export function createAuthRateLimit(options: AuthRateLimitOptions): RequestHandler {
   const attempts = new Map<string, RateLimitEntry>();
 
-  return (request, response, next) => {
+  const limiter: RequestHandler = (request, response, next) => {
     const now = Date.now();
-    const clientAddress = request.ip || request.socket.remoteAddress || "unknown";
-    const key = `${options.scope}:${clientAddress}`;
-    const current = attempts.get(key);
+    const resolvedKey = options.keyResolver
+      ? options.keyResolver(request)
+      : `${options.scope}:${request.ip || request.socket.remoteAddress || "unknown"}`;
+
+    if (!resolvedKey) {
+      next();
+      return;
+    }
+
+    const current = attempts.get(resolvedKey);
 
     if (!current || now - current.windowStartedAt >= options.windowMs) {
-      attempts.set(key, { count: 1, windowStartedAt: now });
+      attempts.set(resolvedKey, { count: 1, windowStartedAt: now });
       next();
       return;
     }
@@ -45,4 +62,11 @@ export function createAuthRateLimit(options: AuthRateLimitOptions): RequestHandl
     current.count += 1;
     next();
   };
+
+  limiterAttempts.set(limiter, attempts);
+  return limiter;
+}
+
+export function inspectAuthRateLimitKeysForTest(limiter: RequestHandler): string[] {
+  return [...(limiterAttempts.get(limiter)?.keys() ?? [])];
 }

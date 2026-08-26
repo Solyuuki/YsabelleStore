@@ -19,10 +19,20 @@ export const AUTH_RATE_LIMITS = {
     maxAttempts: 10,
     scope: "customer-login"
   },
+  customerLoginIdentifier: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 5,
+    scope: "customer-login-identifier"
+  },
   customerRegister: {
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     maxAttempts: 5,
     scope: "customer-register"
+  },
+  customerRegisterIdentity: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 3,
+    scope: "customer-register-identity"
   }
 } as const;
 
