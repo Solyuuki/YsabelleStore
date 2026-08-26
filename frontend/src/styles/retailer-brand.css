@@ -3,7 +3,12 @@
   --ys-indigo: #625bff;
   --ys-violet: #a83cf0;
   --ys-magenta: #f43f8c;
-  --ysabelle-brand-fallback: linear-gradient(145deg, var(--ys-blue), var(--ys-indigo) 48%, var(--ys-magenta));
+  --ysabelle-brand-fallback: linear-gradient(
+    145deg,
+    var(--ys-blue),
+    var(--ys-indigo) 48%,
+    var(--ys-magenta)
+  );
   --primary: 243 100% 68%;
   --retailer-positive: #625bff;
   --retailer-positive-strong: #5149d9;
@@ -103,7 +108,12 @@
 .app-shell-ambient [class~="bg-green-600"],
 .app-shell-ambient [class~="bg-green-700"] {
   background-color: var(--retailer-positive) !important;
-  background-image: linear-gradient(135deg, var(--ys-blue), var(--ys-indigo) 52%, var(--ys-violet)) !important;
+  background-image: linear-gradient(
+    135deg,
+    var(--ys-blue),
+    var(--ys-indigo) 52%,
+    var(--ys-violet)
+  ) !important;
 }
 
 .app-shell-ambient [class~="border-emerald-100"],

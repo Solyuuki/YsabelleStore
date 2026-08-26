@@ -58,15 +58,14 @@
   .customer-auth-page--register .customer-auth-stage::before {
     inset: -1.5rem;
     border-radius: 3rem;
-    background:
-      conic-gradient(
-        from 210deg,
-        rgb(0 140 255 / 14%),
-        rgb(98 91 255 / 16%),
-        rgb(168 60 240 / 12%),
-        rgb(244 63 140 / 14%),
-        rgb(0 140 255 / 14%)
-      );
+    background: conic-gradient(
+      from 210deg,
+      rgb(0 140 255 / 14%),
+      rgb(98 91 255 / 16%),
+      rgb(168 60 240 / 12%),
+      rgb(244 63 140 / 14%),
+      rgb(0 140 255 / 14%)
+    );
     filter: blur(34px);
     opacity: 0.82;
     animation: ysabelle-login-orbit 22s linear infinite;

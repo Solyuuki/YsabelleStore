@@ -7,7 +7,11 @@ const read = (path) => readFileSync(fileUrl(path), "utf8");
 
 test("desktop customer auth spreads wide left and right without growing vertically", () => {
   const layoutPath = "frontend/src/styles/customer-auth-wide-composition.css";
-  assert.equal(existsSync(fileUrl(layoutPath)), true, "wide desktop composition stylesheet must exist");
+  assert.equal(
+    existsSync(fileUrl(layoutPath)),
+    true,
+    "wide desktop composition stylesheet must exist"
+  );
 
   const frame = read("frontend/src/components/customer/CustomerAuthFrame.tsx");
   const css = read(layoutPath);

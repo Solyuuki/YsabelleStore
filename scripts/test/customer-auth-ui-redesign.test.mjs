@@ -42,10 +42,10 @@ test("customer auth fields expose accessible errors and password state", () => {
   assert.match(login, /aria-busy=\{submitting\}/);
 
   assert.match(register, /aria-describedby=\{fieldErrors\.name/);
-  assert.match(register, /aria-describedby=\{fieldErrors\.username/);
+  assert.match(register, /aria-describedby=\{\s*fieldErrors\.username/);
   assert.match(register, /aria-describedby=\{fieldErrors\.email/);
   assert.match(register, /aria-describedby=\{fieldErrors\.phone/);
-  assert.match(register, /aria-describedby=\{fieldErrors\.password/);
+  assert.match(register, /aria-describedby=\{\s*fieldErrors\.password/);
   assert.match(register, /aria-describedby=\{\s*fieldErrors\.confirmPassword/);
   assert.match(register, /aria-pressed=\{showPassword\}/);
   assert.match(register, /aria-pressed=\{showConfirmPassword\}/);
@@ -54,7 +54,11 @@ test("customer auth fields expose accessible errors and password state", () => {
 
 test("password visibility controls keep a minimum 44px touch target", () => {
   const interactionsPath = "frontend/src/styles/customer-auth-interactions.css";
-  assert.equal(existsSync(fileUrl(interactionsPath)), true, "customer auth interaction styles must exist");
+  assert.equal(
+    existsSync(fileUrl(interactionsPath)),
+    true,
+    "customer auth interaction styles must exist"
+  );
 
   const frame = read("frontend/src/components/customer/CustomerAuthFrame.tsx");
   const interactionsCss = read(interactionsPath);

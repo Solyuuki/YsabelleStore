@@ -64,7 +64,9 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
           <label className="customer-auth-field" htmlFor="customer-login-identifier">
             <span>Username, email or mobile number</span>
             <input
-              aria-describedby={fieldErrors.identifier ? "customer-login-identifier-error" : undefined}
+              aria-describedby={
+                fieldErrors.identifier ? "customer-login-identifier-error" : undefined
+              }
               aria-invalid={Boolean(fieldErrors.identifier)}
               autoComplete="username"
               id="customer-login-identifier"
@@ -82,7 +84,9 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
             <span>Password</span>
             <span className="customer-auth-password">
               <input
-                aria-describedby={fieldErrors.password ? "customer-login-password-error" : undefined}
+                aria-describedby={
+                  fieldErrors.password ? "customer-login-password-error" : undefined
+                }
                 aria-invalid={Boolean(fieldErrors.password)}
                 autoComplete="current-password"
                 id="customer-login-password"

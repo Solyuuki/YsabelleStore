@@ -102,7 +102,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
           <label className="customer-auth-field" htmlFor="customer-register-username">
             <span>Username</span>
             <input
-              aria-describedby={fieldErrors.username ? "customer-register-username-error" : undefined}
+              aria-describedby={
+                fieldErrors.username ? "customer-register-username-error" : undefined
+              }
               aria-invalid={Boolean(fieldErrors.username)}
               autoComplete="username"
               id="customer-register-username"
@@ -158,7 +160,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             <span>Password</span>
             <span className="customer-auth-password">
               <input
-                aria-describedby={fieldErrors.password ? "customer-register-password-error" : undefined}
+                aria-describedby={
+                  fieldErrors.password ? "customer-register-password-error" : undefined
+                }
                 aria-invalid={Boolean(fieldErrors.password)}
                 autoComplete="new-password"
                 id="customer-register-password"
@@ -190,7 +194,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             <span className="customer-auth-password">
               <input
                 aria-describedby={
-                  fieldErrors.confirmPassword ? "customer-register-confirm-password-error" : undefined
+                  fieldErrors.confirmPassword
+                    ? "customer-register-confirm-password-error"
+                    : undefined
                 }
                 aria-invalid={Boolean(fieldErrors.confirmPassword)}
                 autoComplete="new-password"

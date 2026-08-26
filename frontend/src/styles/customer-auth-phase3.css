@@ -247,7 +247,12 @@
   width: 3rem;
   height: 3rem;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, var(--customer-info), var(--customer-primary), var(--customer-accent));
+  background: linear-gradient(
+    135deg,
+    var(--customer-info),
+    var(--customer-primary),
+    var(--customer-accent)
+  );
 }
 
 .customer-auth-stage__panel .customer-auth-card__intro h1 {
@@ -293,7 +298,12 @@
   min-height: 50px;
   margin-top: 0.25rem;
   border-radius: 0.95rem;
-  background: linear-gradient(120deg, var(--customer-info), var(--customer-primary) 58%, var(--customer-accent));
+  background: linear-gradient(
+    120deg,
+    var(--customer-info),
+    var(--customer-primary) 58%,
+    var(--customer-accent)
+  );
   box-shadow: 0 12px 26px rgb(98 91 255 / 24%);
   transition:
     box-shadow 160ms ease,
