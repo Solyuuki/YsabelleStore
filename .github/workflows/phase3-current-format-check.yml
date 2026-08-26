@@ -22,7 +22,24 @@ jobs:
       - run: npm ci
       - name: Format current Phase 3 files
         run: |
-          npx prettier --write frontend/src/components/customer/CustomerAuthFrame.tsx frontend/src/pages/customer/CustomerLoginPage.tsx frontend/src/pages/customer/CustomerRegisterPage.tsx frontend/src/styles/customer-auth-phase3.css frontend/src/styles/retailer-brand.css scripts/test/customer-auth-ui-redesign.test.mjs scripts/test/retailer-brand-unification.test.mjs
+          npx prettier --write \
+            backend/src/config/catalogImageStoragePaths.ts \
+            backend/src/modules/catalog-image/productImageService.ts \
+            backend/test/catalog-image-latest-candidate.test.ts \
+            backend/test/catalog-image-storage-paths.test.ts \
+            frontend/src/pages/customer/CustomerLoginPage.tsx \
+            frontend/src/pages/customer/CustomerRegisterPage.tsx \
+            frontend/src/styles/customer-auth-login-premium.css \
+            frontend/src/styles/customer-auth-phase3.css \
+            frontend/src/styles/customer-auth-quick-sign.css \
+            frontend/src/styles/customer-surface-lighting.css \
+            frontend/src/styles/retailer-brand.css \
+            scripts/test/customer-about-location-premium.test.mjs \
+            scripts/test/customer-auth-ui-redesign.test.mjs \
+            scripts/test/customer-auth-wide-composition.test.mjs \
+            scripts/test/customer-order-fixture-classification.test.mjs \
+            scripts/test/retailer-brand-unification.test.mjs \
+            scripts/test/retailer-premium-theme-uniformity.test.mjs
       - name: Commit canonical formatting
         run: |
           if git diff --quiet; then
@@ -31,6 +48,23 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frontend/src/components/customer/CustomerAuthFrame.tsx frontend/src/pages/customer/CustomerLoginPage.tsx frontend/src/pages/customer/CustomerRegisterPage.tsx frontend/src/styles/customer-auth-phase3.css frontend/src/styles/retailer-brand.css scripts/test/customer-auth-ui-redesign.test.mjs scripts/test/retailer-brand-unification.test.mjs
-          HUSKY=0 git commit -m "style(phase3): normalize current auth UI formatting"
+          git add \
+            backend/src/config/catalogImageStoragePaths.ts \
+            backend/src/modules/catalog-image/productImageService.ts \
+            backend/test/catalog-image-latest-candidate.test.ts \
+            backend/test/catalog-image-storage-paths.test.ts \
+            frontend/src/pages/customer/CustomerLoginPage.tsx \
+            frontend/src/pages/customer/CustomerRegisterPage.tsx \
+            frontend/src/styles/customer-auth-login-premium.css \
+            frontend/src/styles/customer-auth-phase3.css \
+            frontend/src/styles/customer-auth-quick-sign.css \
+            frontend/src/styles/customer-surface-lighting.css \
+            frontend/src/styles/retailer-brand.css \
+            scripts/test/customer-about-location-premium.test.mjs \
+            scripts/test/customer-auth-ui-redesign.test.mjs \
+            scripts/test/customer-auth-wide-composition.test.mjs \
+            scripts/test/customer-order-fixture-classification.test.mjs \
+            scripts/test/retailer-brand-unification.test.mjs \
+            scripts/test/retailer-premium-theme-uniformity.test.mjs
+          HUSKY=0 git commit -m "style(phase3): normalize current Phase 3 formatting"
           HUSKY=0 git push origin HEAD:integration/sprint9-phase3-current-readiness
