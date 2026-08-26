@@ -1,0 +1,585 @@
+.customer-account-page-v2 {
+  min-height: calc(100vh - 72px);
+  padding: 42px 24px 72px;
+  background:
+    radial-gradient(circle at top left, rgba(168, 60, 240, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(244, 63, 140, 0.1), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 46%, #faf9ff 100%);
+}
+
+.customer-account-layout-v2 {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.customer-account-rail {
+  position: sticky;
+  top: 96px;
+  border: 1px solid rgba(98, 91, 255, 0.12);
+  border-radius: 24px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 22px 60px rgba(26, 37, 67, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.customer-account-identity-card {
+  display: grid;
+  gap: 14px;
+}
+
+.customer-account-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: white;
+  background: linear-gradient(135deg, var(--ys-blue), var(--ys-violet) 56%, var(--ys-magenta));
+  box-shadow: 0 14px 28px rgba(98, 91, 255, 0.25);
+}
+
+.customer-account-identity-card h1,
+.customer-account-hero h2,
+.customer-account-section-heading h2 {
+  margin: 0;
+  color: #172033;
+}
+
+.customer-account-identity-card p,
+.customer-account-hero p,
+.customer-account-section-heading p,
+.customer-account-username-card p,
+.customer-account-card-title p,
+.customer-account-empty p,
+.customer-account-muted {
+  margin: 0;
+  color: #65708a;
+  line-height: 1.6;
+}
+
+.customer-account-status {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #17653a;
+  background: #e9f9ef;
+}
+
+.customer-account-nav {
+  display: grid;
+  gap: 6px;
+  margin: 22px 0;
+  padding: 16px 0;
+  border-top: 1px solid #edf0f6;
+  border-bottom: 1px solid #edf0f6;
+}
+
+.customer-account-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  color: #39445d;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.customer-account-nav a:hover,
+.customer-account-nav a:focus-visible {
+  background: #f3f2ff;
+  color: #5149dd;
+  outline: none;
+}
+
+.customer-account-signout,
+.customer-account-shop-button,
+.customer-account-form button,
+.customer-account-inline-form button,
+.customer-account-security-card button,
+.customer-account-empty button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 16px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.customer-account-signout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: #8f3157;
+  background: #fff0f6;
+}
+
+.customer-account-content-v2 {
+  display: grid;
+  gap: 24px;
+}
+
+.customer-account-hero,
+.customer-account-section {
+  border: 1px solid rgba(98, 91, 255, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 50px rgba(26, 37, 67, 0.065);
+}
+
+.customer-account-hero {
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.customer-account-hero > div {
+  max-width: 640px;
+  display: grid;
+  gap: 8px;
+}
+
+.customer-account-hero h2 {
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  line-height: 1.1;
+}
+
+.customer-account-shop-button,
+.customer-account-form button,
+.customer-account-inline-form button,
+.customer-account-security-card button,
+.customer-account-empty button {
+  color: white;
+  background: linear-gradient(135deg, var(--ys-blue), var(--ys-indigo), var(--ys-violet));
+  box-shadow: 0 12px 24px rgba(98, 91, 255, 0.2);
+}
+
+.customer-account-signout:hover,
+.customer-account-shop-button:hover,
+.customer-account-form button:hover,
+.customer-account-inline-form button:hover,
+.customer-account-security-card button:hover,
+.customer-account-empty button:hover {
+  transform: translateY(-1px);
+}
+
+.customer-account-signout:disabled,
+.customer-account-shop-button:disabled,
+.customer-account-form button:disabled,
+.customer-account-inline-form button:disabled,
+.customer-account-security-card button:disabled,
+.customer-account-empty button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+}
+
+.customer-account-section {
+  padding: 28px;
+  scroll-margin-top: 96px;
+}
+
+.customer-account-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid #edf0f6;
+}
+
+.customer-account-section-heading > div {
+  display: grid;
+  gap: 6px;
+}
+
+.customer-account-section-heading > svg {
+  color: var(--ys-violet);
+}
+
+.customer-account-form,
+.customer-account-inline-form,
+.customer-account-security-card {
+  display: grid;
+  gap: 14px;
+}
+
+.customer-account-form {
+  max-width: 560px;
+}
+
+.customer-account-form label,
+.customer-account-inline-form label,
+.customer-account-security-card label {
+  display: grid;
+  gap: 7px;
+  color: #35405a;
+  font-weight: 700;
+}
+
+.customer-account-form label > span,
+.customer-account-inline-form label > span,
+.customer-account-security-card label > span {
+  font-size: 0.86rem;
+}
+
+.customer-account-form input,
+.customer-account-inline-form input,
+.customer-account-security-card input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #dfe4ef;
+  border-radius: 12px;
+  padding: 0 13px;
+  color: #182138;
+  background: white;
+  font: inherit;
+}
+
+.customer-account-form input:focus,
+.customer-account-inline-form input:focus,
+.customer-account-security-card input:focus {
+  border-color: var(--ys-indigo);
+  outline: 3px solid rgba(98, 91, 255, 0.12);
+}
+
+.customer-account-form button,
+.customer-account-inline-form button,
+.customer-account-security-card button {
+  width: fit-content;
+}
+
+.customer-account-form-error,
+.customer-account-form-success,
+.customer-account-alert {
+  margin: 0;
+  border-radius: 12px;
+  padding: 11px 13px;
+  line-height: 1.45;
+}
+
+.customer-account-form-error,
+.customer-account-alert {
+  color: #8c284a;
+  background: #fff0f4;
+  border: 1px solid #ffd5e2;
+}
+
+.customer-account-form-success {
+  color: #21603e;
+  background: #effaf3;
+  border: 1px solid #cfeeda;
+}
+
+.customer-account-readonly-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.customer-account-readonly-grid > div,
+.customer-account-username-card,
+.customer-account-security-card {
+  border: 1px solid #e8ebf4;
+  border-radius: 18px;
+  background: #fbfcff;
+}
+
+.customer-account-readonly-grid > div {
+  display: grid;
+  gap: 7px;
+  padding: 17px;
+}
+
+.customer-account-readonly-grid span,
+.customer-account-username-card span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #69748d;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.customer-account-readonly-grid strong,
+.customer-account-username-card strong {
+  overflow-wrap: anywhere;
+  color: #202a42;
+}
+
+.customer-account-readonly-grid small {
+  color: #7a8499;
+  line-height: 1.45;
+}
+
+.customer-account-username-card {
+  margin-top: 14px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  gap: 22px;
+}
+
+.customer-account-username-card > div {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
+.customer-account-security-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.customer-account-security-card {
+  padding: 18px;
+  align-content: start;
+}
+
+.customer-account-card-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.customer-account-card-title > svg {
+  color: var(--ys-indigo);
+  margin-top: 2px;
+  flex: 0 0 auto;
+}
+
+.customer-account-card-title > div {
+  display: grid;
+  gap: 4px;
+}
+
+.customer-account-session-list {
+  display: grid;
+  gap: 10px;
+}
+
+.customer-account-session-list article {
+  padding: 13px;
+  border: 1px solid #e6e9f1;
+  border-radius: 14px;
+  background: white;
+}
+
+.customer-account-session-list article.is-current {
+  border-color: rgba(98, 91, 255, 0.35);
+  background: #f7f6ff;
+}
+
+.customer-account-session-list article > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.customer-account-session-list article > div span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #5149dd;
+  background: #ebeaff;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.customer-account-session-list dl {
+  margin: 10px 0 0;
+  display: grid;
+  gap: 7px;
+}
+
+.customer-account-session-list dl div {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 10px;
+  color: #69748d;
+  font-size: 0.82rem;
+}
+
+.customer-account-session-list dt,
+.customer-account-session-list dd {
+  margin: 0;
+}
+
+.customer-account-session-list dd {
+  color: #37425b;
+  text-align: right;
+}
+
+.customer-account-state,
+.customer-account-empty {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.customer-account-empty {
+  gap: 8px;
+  padding: 28px;
+  border: 1px dashed #d8dced;
+  border-radius: 18px;
+  background: #fbfcff;
+}
+
+.customer-account-order-list-v2 {
+  display: grid;
+  gap: 14px;
+}
+
+.customer-account-order-v2 {
+  padding: 18px;
+  border: 1px solid #e7eaf2;
+  border-radius: 18px;
+  background: #fcfdff;
+}
+
+.customer-account-order-topline,
+.customer-account-order-meta,
+.customer-account-order-v2 li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.customer-account-order-topline > div {
+  display: grid;
+  gap: 2px;
+}
+
+.customer-account-order-topline > div span,
+.customer-account-order-meta,
+.customer-account-order-v2 li {
+  color: #69748d;
+  font-size: 0.87rem;
+}
+
+.customer-account-order-topline > span {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #f0efff;
+  color: #5149dd;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.customer-account-order-meta {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #edf0f5;
+}
+
+.customer-account-order-meta strong,
+.customer-account-order-v2 li strong {
+  color: #25304a;
+}
+
+.customer-account-order-v2 ul {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+@media (max-width: 960px) {
+  .customer-account-layout-v2 {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-account-rail {
+    position: static;
+  }
+
+  .customer-account-nav {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .customer-account-nav a {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .customer-account-page-v2 {
+    padding: 24px 14px 56px;
+  }
+
+  .customer-account-hero,
+  .customer-account-section {
+    border-radius: 20px;
+    padding: 20px;
+  }
+
+  .customer-account-hero,
+  .customer-account-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .customer-account-shop-button,
+  .customer-account-form button,
+  .customer-account-inline-form button,
+  .customer-account-security-card button,
+  .customer-account-empty button {
+    width: 100%;
+  }
+
+  .customer-account-readonly-grid,
+  .customer-account-security-grid,
+  .customer-account-username-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .customer-account-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-account-nav a {
+    justify-content: flex-start;
+  }
+
+  .customer-account-order-topline,
+  .customer-account-order-meta,
+  .customer-account-order-v2 li {
+    align-items: flex-start;
+  }
+
+  .customer-account-session-list dl div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .customer-account-session-list dd {
+    text-align: left;
+  }
+}
