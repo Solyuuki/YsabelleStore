@@ -20,9 +20,7 @@ const PROCESS_RATE_LIMIT_SECRET = randomBytes(32);
 const limiterAttempts = new WeakMap<RequestHandler, Map<string, RateLimitEntry>>();
 
 export function derivePrivateRateLimitKey(scope: string, value: string): string {
-  return createHmac("sha256", PROCESS_RATE_LIMIT_SECRET)
-    .update(`${scope}:${value}`)
-    .digest("hex");
+  return createHmac("sha256", PROCESS_RATE_LIMIT_SECRET).update(`${scope}:${value}`).digest("hex");
 }
 
 export function createAuthRateLimit(options: AuthRateLimitOptions): RequestHandler {

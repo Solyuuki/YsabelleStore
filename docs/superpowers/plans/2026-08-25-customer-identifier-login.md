@@ -30,6 +30,7 @@
 ## File Structure
 
 **Create**
+
 - `backend/src/utils/customerIdentity.ts` — canonical username/email/PH-mobile normalization and deterministic login identifier classification.
 - `backend/test/customer-auth-identifier.test.ts` — focused registration/login/legacy/privacy contract tests for Phase 2.
 - `backend/test/customer-identity.test.ts` — pure normalization/classification unit tests.
@@ -39,6 +40,7 @@
 - `scripts/test/customer-auth-identifier-client.test.mjs` — source-contract guard for frontend identifier/username wiring and confirm-password non-transmission.
 
 **Modify**
+
 - `database/prisma/schema.prisma` — add nullable unique `username` and `phoneNormalized`.
 - `backend/src/validators/customerAuth.validators.ts` — registration username/PH phone rules and login `identifier` contract.
 - `backend/src/services/customerAuthService.ts` — uniqueness checks, identifier lookup, safe customer username, canonical mobile persistence.
@@ -58,10 +60,12 @@
 ### Task 1: Customer Identity Normalization and Classification
 
 **Files:**
+
 - Create: `backend/src/utils/customerIdentity.ts`
 - Create: `backend/test/customer-identity.test.ts`
 
 **Interfaces:**
+
 - Produces: `normalizeCustomerUsername(value: string): string | null`
 - Produces: `normalizeCustomerEmail(value: string): string | null`
 - Produces: `normalizePhilippineMobile(value: string): string | null`
@@ -140,6 +144,7 @@ git commit -m "feat(auth): add customer identifier normalization"
 ### Task 2: Additive Prisma Identity Migration and Safe Legacy Mobile Backfill
 
 **Files:**
+
 - Modify: `database/prisma/schema.prisma`
 - Create: `database/prisma/migrations/20260825230000_customer_identifier_login/migration.sql`
 - Create: `backend/src/scripts/backfillCustomerMobileIdentities.ts`
@@ -147,6 +152,7 @@ git commit -m "feat(auth): add customer identifier normalization"
 - Modify: `package.json`
 
 **Interfaces:**
+
 - Consumes: `normalizePhilippineMobile()` from Task 1.
 - Produces schema fields: `CustomerAccount.username: string | null`, `CustomerAccount.phoneNormalized: string | null`.
 - Produces script commands: `npm run customer-mobile-identities:audit` and `npm run customer-mobile-identities:apply`.
@@ -162,7 +168,7 @@ Test a pure planning helper exported by the script module so DB mutation logic i
   { id: "c", phone: "+63 917 123 4567" },
   { id: "d", phone: "not-a-phone" },
   { id: "e", phone: null }
-]
+];
 ```
 
 prove that `a` and `c` are both marked duplicate/ambiguous for `+639171234567` and neither receives an update; `b` receives `+639981234567`; invalid/null rows receive no update; summary contains only counts and IDs needed internally, never raw phone strings in user-facing log output.
@@ -227,12 +233,14 @@ git commit -m "feat(auth): add customer login identities"
 ### Task 3: Backend Registration and Multi-Identifier Login Contract
 
 **Files:**
+
 - Create: `backend/test/customer-auth-identifier.test.ts`
 - Modify: `backend/src/validators/customerAuth.validators.ts`
 - Modify: `backend/src/services/customerAuthService.ts`
 - Modify existing customer-auth tests only for intentional request/response shape changes.
 
 **Interfaces:**
+
 - Consumes Task 1 normalizers/classifier and Task 2 Prisma fields.
 - Produces `CustomerLoginInput = { identifier: string; password: string }`.
 - Produces registration input containing required `username` and optional `phone`.
@@ -323,11 +331,13 @@ git commit -m "feat(auth): support customer identifier login"
 ### Task 4: Identifier-Private Rate Limiting
 
 **Files:**
+
 - Modify: `backend/src/routes/customerAuth.routes.ts`
 - Modify: `backend/src/security/security.constants.ts` only if needed for distinct scopes.
 - Modify: `backend/test/customer-auth-rate-limit.test.ts`
 
 **Interfaces:**
+
 - Consumes Task 1 canonical normalization.
 - Preserves `derivePrivateRateLimitKey(scope, canonicalIdentifier)` HMAC behavior.
 
@@ -376,6 +386,7 @@ git commit -m "feat(auth): protect customer identifier login rates"
 ### Task 5: Frontend Functional Identifier Contract
 
 **Files:**
+
 - Create: `scripts/test/customer-auth-identifier-client.test.mjs`
 - Modify: `frontend/src/types/customerAuth.ts`
 - Modify: `frontend/src/utils/customerAuthForms.ts`
@@ -385,6 +396,7 @@ git commit -m "feat(auth): protect customer identifier login rates"
 - Modify: `frontend/src/pages/customer/CustomerRegisterPage.tsx`
 
 **Interfaces:**
+
 - Login submits `{ identifier, password }`.
 - Registration submits `{ name, username, email, phone?, password }`.
 - `Customer.username` is `string | null`.
@@ -452,10 +464,12 @@ git commit -m "feat(auth): add customer identifier forms"
 ### Task 6: Phase 2 Acceptance and Regression Gate
 
 **Files:**
+
 - No production files unless a verification failure identifies a real defect.
 - Update Phase 2 tests only if a test itself is proven incorrect; do not weaken acceptance assertions.
 
 **Interfaces:**
+
 - Consumes all Tasks 1-5.
 - Produces fresh acceptance evidence for Phase 2.
 

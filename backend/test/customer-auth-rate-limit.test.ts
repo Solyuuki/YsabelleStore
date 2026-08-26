@@ -15,7 +15,10 @@ import {
 import { AUTH_RATE_LIMITS } from "../src/security/security.constants.js";
 import { classifyCustomerLoginIdentifier } from "../src/utils/customerIdentity.js";
 
-async function withServer(app: ReturnType<typeof express>, run: (baseUrl: string) => Promise<void>) {
+async function withServer(
+  app: ReturnType<typeof express>,
+  run: (baseUrl: string) => Promise<void>
+) {
   const server = app.listen(0, "127.0.0.1");
 
   try {
@@ -169,7 +172,11 @@ test("registration email identity cannot be bypassed by changing username", asyn
         },
         forwardedIp
       );
-      assert.equal(response.status, 403, `attempt ${attempt} must reach registration-intent validation`);
+      assert.equal(
+        response.status,
+        403,
+        `attempt ${attempt} must reach registration-intent validation`
+      );
     }
 
     await assertRateLimited(
@@ -198,7 +205,11 @@ test("registration username identity cannot be bypassed by changing email", asyn
         },
         forwardedIp
       );
-      assert.equal(response.status, 403, `attempt ${attempt} must reach registration-intent validation`);
+      assert.equal(
+        response.status,
+        403,
+        `attempt ${attempt} must reach registration-intent validation`
+      );
     }
 
     await assertRateLimited(
@@ -231,7 +242,11 @@ test("registration mobile identity cannot be bypassed by changing username and e
         },
         forwardedIp
       );
-      assert.equal(response.status, 403, `attempt ${attempt} must reach registration-intent validation`);
+      assert.equal(
+        response.status,
+        403,
+        `attempt ${attempt} must reach registration-intent validation`
+      );
     }
 
     await assertRateLimited(
@@ -288,7 +303,9 @@ test("privacy-safe identifier limiter stores only HMAC-derived class-prefixed ca
 
   const app = express();
   app.use(express.json());
-  app.post("/login", limiter, (_request, response) => response.status(401).json({ success: false }));
+  app.post("/login", limiter, (_request, response) =>
+    response.status(401).json({ success: false })
+  );
   app.use(errorHandler);
 
   await withServer(app, async (baseUrl) => {

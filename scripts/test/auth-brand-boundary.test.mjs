@@ -8,7 +8,11 @@ const read = (path) => readFileSync(fileUrl(path), "utf8");
 test("customer and internal auth surfaces share Ysabelle auth brand primitives", () => {
   const brandStylesPath = "frontend/src/styles/auth-brand.css";
 
-  assert.equal(existsSync(fileUrl(brandStylesPath)), true, "shared auth brand stylesheet must exist");
+  assert.equal(
+    existsSync(fileUrl(brandStylesPath)),
+    true,
+    "shared auth brand stylesheet must exist"
+  );
 
   const customerApp = read("frontend/src/app/CustomerApp.tsx");
   const appShell = read("frontend/src/app/AppShell.tsx");

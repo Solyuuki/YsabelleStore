@@ -71,10 +71,7 @@ export async function prepareCustomerRegistrationIntent(): Promise<void> {
     const response = await apiClient.request<
       CustomerRegistrationIntentData,
       CustomerAuthErrorPayload
-    >(
-      "/api/customer-auth/registration-intent",
-      customerAuthRequestOptions({ method: "GET" })
-    );
+    >("/api/customer-auth/registration-intent", customerAuthRequestOptions({ method: "GET" }));
 
     if (!response.success || response.data?.ready !== true) {
       registrationIntentRequest = null;

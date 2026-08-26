@@ -6,7 +6,12 @@
   --ys-auth-border: rgb(98 91 255 / 16%);
   --ys-auth-shadow: 0 24px 64px rgb(39 44 92 / 14%);
   --ys-auth-focus: rgb(98 91 255 / 24%);
-  --ys-auth-gradient: linear-gradient(135deg, var(--ys-auth-secondary), var(--ys-auth-primary) 58%, var(--ys-auth-accent));
+  --ys-auth-gradient: linear-gradient(
+    135deg,
+    var(--ys-auth-secondary),
+    var(--ys-auth-primary) 58%,
+    var(--ys-auth-accent)
+  );
 }
 
 .ys-auth-surface {

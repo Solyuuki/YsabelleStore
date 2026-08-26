@@ -26,10 +26,12 @@
 ### Task 1: Remove public Staff/Owner discovery without changing internal auth
 
 **Files:**
+
 - Modify: `frontend/src/components/customer/CustomerHeader.tsx`
 - Create: `scripts/test/customer-internal-access-separation.test.mjs`
 
 **Interfaces:**
+
 - Consumes: existing `/staff-login` route in `AppShell` and `app/routes.ts`.
 - Produces: storefront navigation with no Staff/Owner link while direct internal routing remains untouched.
 
@@ -100,12 +102,14 @@ git commit -m "fix(sprint9): hide internal staff entry from storefront"
 ### Task 2: Establish shared auth brand tokens before redesigning either login surface
 
 **Files:**
+
 - Create: `frontend/src/styles/auth-brand.css`
 - Modify: `frontend/src/app/CustomerApp.tsx`
 - Modify: internal app stylesheet import location used by `WelcomePage`/`AppLayout`
 - Create: `scripts/test/auth-brand-boundary.test.mjs`
 
 **Interfaces:**
+
 - Produces: shared visual tokens/classes for purple/blue/pink brand surfaces while leaving semantic success/warning/error colors available.
 - Consumes: existing Ysabelle brand colors already used by customer storefront.
 
@@ -157,6 +161,7 @@ git commit -m "style(sprint9): establish shared auth brand language"
 ### Task 3: Add username and normalized phone identity to CustomerAccount
 
 **Files:**
+
 - Modify: `database/prisma/schema.prisma`
 - Create: new Prisma migration under `database/prisma/migrations/<timestamp>_customer_login_identifiers/`
 - Modify: `backend/src/validators/customerAuth.validators.ts`
@@ -165,6 +170,7 @@ git commit -m "style(sprint9): establish shared auth brand language"
 - Create or modify customer-auth service tests as appropriate.
 
 **Interfaces:**
+
 - Produces: unique `username`, normalized unique phone when present, and a login identifier resolver.
 - Preserves: required email and password hash during this phase.
 
@@ -211,12 +217,13 @@ Migration must backfill existing customers deterministically before making `user
 Implement focused helpers in customer auth service/module, e.g.:
 
 ```ts
-function normalizeCustomerUsername(value: string): string
-function normalizeCustomerPhone(value: string): string
-async function findCustomerByLoginIdentifier(identifier: string): Promise<CustomerAccount | null>
+function normalizeCustomerUsername(value: string): string;
+function normalizeCustomerPhone(value: string): string;
+async function findCustomerByLoginIdentifier(identifier: string): Promise<CustomerAccount | null>;
 ```
 
 Rules:
+
 - username lookup is normalized consistently;
 - email remains normalized as currently expected by validators;
 - PH phone accepts common `09...` / `+63...` input and stores one canonical representation;
@@ -274,6 +281,7 @@ git commit -m "feat(sprint9): support customer username email and phone login"
 ### Task 4: Redesign customer login around identifier + password
 
 **Files:**
+
 - Modify: `frontend/src/pages/customer/CustomerLoginPage.tsx`
 - Modify: `frontend/src/utils/customerAuthForms.ts`
 - Modify: `frontend/src/types/customerAuth.ts`
@@ -282,12 +290,14 @@ git commit -m "feat(sprint9): support customer username email and phone login"
 - Create: `scripts/test/customer-login-experience.test.mjs`
 
 **Interfaces:**
+
 - Consumes: backend `{ identifier, password }` login contract from Task 3.
 - Produces: branded customer login with username/email/mobile field, password, forgot-password placeholder only if a functional route exists, and no internal staff entry.
 
 - [ ] **Step 1: Write failing UI contract tests**
 
 Assert:
+
 - label includes `Username, email or mobile number`;
 - identifier input has a helpful example placeholder;
 - password has a placeholder and show/hide control;
@@ -337,6 +347,7 @@ npm run build
 - [ ] **Step 6: Manual QA**
 
 Verify:
+
 - username login;
 - email login;
 - phone login;
@@ -359,6 +370,7 @@ git commit -m "feat(sprint9): redesign customer sign in experience"
 ### Task 5: Redesign customer registration and profile carry-through
 
 **Files:**
+
 - Modify: `frontend/src/pages/customer/CustomerRegisterPage.tsx`
 - Modify: `frontend/src/pages/customer/CustomerAccountPage.tsx`
 - Modify: `frontend/src/utils/customerAuthForms.ts`
@@ -367,6 +379,7 @@ git commit -m "feat(sprint9): redesign customer sign in experience"
 - Create: `scripts/test/customer-registration-profile.test.mjs`
 
 **Interfaces:**
+
 - Consumes: Task 3 registration fields.
 - Produces: account registration whose saved values immediately appear in customer profile/account settings.
 
@@ -411,6 +424,7 @@ git commit -m "feat(sprint9): align customer registration and profile"
 ### Task 6: Re-theme Staff/Owner access without changing its behavior
 
 **Files:**
+
 - Modify: `frontend/src/pages/WelcomePage.tsx`
 - Modify: `frontend/src/layouts/AppLayout.tsx`
 - Modify: `frontend/src/components/app/AppSidebar.tsx`
@@ -418,6 +432,7 @@ git commit -m "feat(sprint9): align customer registration and profile"
 - Create: `scripts/test/internal-auth-brand-parity.test.mjs`
 
 **Interfaces:**
+
 - Consumes: shared brand primitives from Task 2.
 - Preserves: all `WelcomePage` callbacks and state transitions.
 
@@ -434,6 +449,7 @@ node --test scripts/test/internal-auth-brand-parity.test.mjs
 - [ ] **Step 3: Re-theme, do not rewrite auth logic**
 
 Preserve:
+
 - remembered accounts;
 - `Continue` trusted-device action;
 - `Forget`;
@@ -463,6 +479,7 @@ Also run backend internal auth security tests to ensure no internal auth behavio
 - [ ] **Step 5: Manual QA**
 
 Test:
+
 - direct `/staff-login` access;
 - remembered OWNER account;
 - remembered STAFF account;
@@ -486,12 +503,14 @@ git commit -m "style(sprint9): align internal access with ysabelle brand"
 ### Task 7: Add Google Quick Sign In as the first external provider
 
 **Files:**
+
 - Schema migration for customer provider identity records
 - Backend customer auth provider service/routes/controller/validators
 - Frontend customer login/register quick-sign-in UI
 - Backend and frontend regression tests
 
 **Interfaces:**
+
 - Produces: customer-only provider identity linked to `CustomerAccount`.
 - Must never authenticate internal `User` records.
 
@@ -516,6 +535,7 @@ Follow the same isolation, account-linking, CSRF/state, error-handling, and regr
 ### Task 9: Add Phone OTP Quick Sign In and contact verification
 
 **Requirements:**
+
 - choose an SMS provider before implementation;
 - OTP values are short-lived, one-time, attempt-limited, and never stored plaintext if persisted;
 - rate-limit request and verify endpoints;
