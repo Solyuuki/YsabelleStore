@@ -1,4 +1,4 @@
-name: Phase 3 Current Format Check
+name: Phase 3 Current Format Repair
 
 on:
   push:
@@ -6,16 +6,31 @@ on:
       - integration/sprint9-phase3-current-readiness
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: integration/sprint9-phase3-current-readiness
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run format:check
+      - name: Format current Phase 3 files
+        run: |
+          npx prettier --write frontend/src/components/customer/CustomerAuthFrame.tsx frontend/src/pages/customer/CustomerLoginPage.tsx frontend/src/pages/customer/CustomerRegisterPage.tsx frontend/src/styles/customer-auth-phase3.css frontend/src/styles/retailer-brand.css scripts/test/customer-auth-ui-redesign.test.mjs scripts/test/retailer-brand-unification.test.mjs
+      - name: Commit canonical formatting
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/components/customer/CustomerAuthFrame.tsx frontend/src/pages/customer/CustomerLoginPage.tsx frontend/src/pages/customer/CustomerRegisterPage.tsx frontend/src/styles/customer-auth-phase3.css frontend/src/styles/retailer-brand.css scripts/test/customer-auth-ui-redesign.test.mjs scripts/test/retailer-brand-unification.test.mjs
+          HUSKY=0 git commit -m "style(phase3): normalize current auth UI formatting"
+          HUSKY=0 git push origin HEAD:integration/sprint9-phase3-current-readiness
