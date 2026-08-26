@@ -37,6 +37,10 @@
   border-color: rgb(98 91 255 / 20%) !important;
 }
 
+.welcome-ambient .border-emerald-700 {
+  border-color: #5149d9 !important;
+}
+
 .welcome-ambient .bg-emerald-50,
 .welcome-ambient .bg-emerald-50\/80 {
   background-color: rgb(98 91 255 / 8%) !important;
