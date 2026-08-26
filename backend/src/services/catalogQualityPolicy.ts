@@ -38,7 +38,16 @@ export const approvedStorefrontCategoryWhere = {
   recordSource: { not: CatalogRecordSource.TEST_FIXTURE }
 } satisfies Prisma.CategoryWhereInput;
 
+const leakedCustomerOrderFixtureWhere = {
+  AND: [
+    { name: { startsWith: "Customer Order Product " } },
+    { sku: { startsWith: "CUSTOMER-ORDER-" } },
+    { category: { is: { name: { startsWith: "Customer Order Test " } } } }
+  ]
+} satisfies Prisma.ProductWhereInput;
+
 export const approvedStorefrontProductCoreWhere = {
+  AND: [{ NOT: leakedCustomerOrderFixtureWhere }],
   dataQualityStatus: CatalogQualityStatus.APPROVED,
   duplicateCandidatesLeft: {
     none: { status: { in: [...unresolvedDuplicateStatuses] } }
