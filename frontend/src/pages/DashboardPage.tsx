@@ -67,10 +67,10 @@ export function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid h-60 grid-cols-12 items-end gap-2 rounded-md border border-slate-200 bg-slate-50 p-4">
+            <div className="grid h-60 grid-cols-12 items-end gap-2 rounded-md border border-indigo-100/80 bg-gradient-to-br from-white via-indigo-50/35 to-fuchsia-50/25 p-4">
               {[32, 44, 28, 56, 40, 70, 54, 62, 38, 80, 52, 66].map((height, index) => (
                 <div
-                  className="rounded-sm bg-emerald-600"
+                  className="rounded-sm bg-gradient-to-t from-blue-500 via-indigo-500 to-violet-500 shadow-[0_6px_16px_rgba(98,91,255,0.12)]"
                   key={`${height}-${index}`}
                   style={{ height: `${height}%` }}
                 />
@@ -92,7 +92,7 @@ export function DashboardPage() {
                 "Counter workspace ready"
               ].map((item) => (
                 <div
-                  className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
+                  className="flex items-center justify-between rounded-md border border-indigo-100/80 bg-gradient-to-r from-white to-indigo-50/45 px-3 py-2"
                   key={item}
                 >
                   <span className="text-sm text-slate-700">{item}</span>

@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { fetchProductById } from "@/services/catalogApi";
 import {
   approveProductImage,
   fetchLatestProductImageCandidate,
@@ -20,6 +21,7 @@ import {
   uploadProductImage,
   type ProductImageCandidate
 } from "@/services/productImageApi";
+import { getCatalogImageUrl } from "@/utils/storefrontImages";
 
 const MAX_PRODUCT_IMAGE_BYTES = 8 * 1024 * 1024;
 const SUPPORTED_PRODUCT_IMAGE_EXTENSION = /\.(jpe?g|png|webp)$/i;
@@ -62,6 +64,7 @@ export function ProductImageUploadPanel({
   const [error, setError] = useState<string | null>(null);
   const [originalPreviewUrl, setOriginalPreviewUrl] = useState<string | null>(null);
   const [optimizedPreviewUrl, setOptimizedPreviewUrl] = useState<string | null>(null);
+  const [publishedPreviewUrl, setPublishedPreviewUrl] = useState<string | null>(null);
   const diagnostics = useMemo(
     () => (candidate ? getProductImageDiagnostics(candidate) : []),
     [candidate]
@@ -79,6 +82,7 @@ export function ProductImageUploadPanel({
     setCandidate(null);
     setOriginalPreviewUrl(null);
     setOptimizedPreviewUrl(null);
+    setPublishedPreviewUrl(null);
     setError(null);
     setPhase("idle");
     onSelectionChange?.(false);
@@ -93,11 +97,16 @@ export function ProductImageUploadPanel({
 
     fetchLatestProductImageCandidate(productId, controller.signal)
       .then(async (hydratedCandidate) => {
-        if (
-          controller.signal.aborted ||
-          selectionVersionRef.current !== hydrationVersion ||
-          !hydratedCandidate
-        ) {
+        if (controller.signal.aborted || selectionVersionRef.current !== hydrationVersion) {
+          return;
+        }
+
+        if (!hydratedCandidate) {
+          const product = await fetchProductById(productId);
+          if (controller.signal.aborted || selectionVersionRef.current !== hydrationVersion) {
+            return;
+          }
+          setPublishedPreviewUrl(getCatalogImageUrl(product.imageUrl));
           return;
         }
 
@@ -209,6 +218,7 @@ export function ProductImageUploadPanel({
     setPhase("uploading");
     setError(null);
     setCandidate(null);
+    setPublishedPreviewUrl(null);
     setOptimizedPreviewUrl(null);
 
     uploadProductImage(productId, selectedFile)
@@ -274,6 +284,7 @@ export function ProductImageUploadPanel({
     processedUploadKeyRef.current = null;
     setSelectedFile(file);
     setCandidate(null);
+    setPublishedPreviewUrl(null);
     setOptimizedPreviewUrl(null);
     setError(null);
     setPhase("selected");
@@ -287,6 +298,7 @@ export function ProductImageUploadPanel({
     setCandidate(null);
     setOriginalPreviewUrl(null);
     setOptimizedPreviewUrl(null);
+    setPublishedPreviewUrl(null);
     setError(null);
     setPhase("idle");
     onSelectionChange?.(false);
@@ -353,6 +365,8 @@ export function ProductImageUploadPanel({
     inputRef.current?.click();
   }
 
+  const hasExistingImage = Boolean(candidate || publishedPreviewUrl);
+
   return (
     <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -369,12 +383,12 @@ export function ProductImageUploadPanel({
           type="button"
           variant="secondary"
         >
-          {selectedFile || candidate ? (
+          {selectedFile || hasExistingImage ? (
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
           ) : (
             <Upload className="h-4 w-4" aria-hidden="true" />
           )}
-          {selectedFile || candidate ? "Upload Another" : "Choose image"}
+          {selectedFile || hasExistingImage ? "Upload Another" : "Choose image"}
         </Button>
       </div>
 
@@ -387,7 +401,7 @@ export function ProductImageUploadPanel({
         type="file"
       />
 
-      {!selectedFile && !candidate && phase !== "error" ? (
+      {!selectedFile && !candidate && !publishedPreviewUrl && phase !== "error" ? (
         <button
           className="flex w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center transition-colors hover:border-violet-300 hover:bg-violet-50/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-60"
           disabled={disabled || isBusy}
@@ -427,6 +441,15 @@ export function ProductImageUploadPanel({
           <AlertTitle>Image needs attention</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
+      ) : null}
+
+      {!selectedFile && !candidate && publishedPreviewUrl ? (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-slate-600">Current storefront image</p>
+          <div className="max-w-sm">
+            <ImagePreview title="Published" url={publishedPreviewUrl} />
+          </div>
+        </div>
       ) : null}
 
       {(selectedFile || candidate) &&
@@ -538,7 +561,7 @@ function ImagePreview({
   url
 }: {
   loading?: boolean;
-  title: "Original" | "Optimized";
+  title: "Original" | "Optimized" | "Published";
   url: string | null;
 }) {
   return (

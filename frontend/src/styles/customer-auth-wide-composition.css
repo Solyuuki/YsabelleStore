@@ -1,0 +1,78 @@
+@media (min-width: 961px) {
+  .customer-auth-page--phase3 {
+    padding-inline: clamp(1.5rem, 4vw, 4rem);
+  }
+
+  .customer-auth-stage {
+    width: min(100%, 1460px);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(3rem, 5vw, 5.5rem);
+  }
+
+  .customer-auth-page--register .customer-auth-stage {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .customer-auth-stage__brand {
+    gap: 1rem;
+    padding: clamp(2rem, 2.8vw, 3rem);
+  }
+
+  .customer-auth-stage__identity h2 {
+    max-width: 18ch;
+    font-size: clamp(2.4rem, 3vw, 3.25rem);
+    line-height: 1.02;
+  }
+
+  .customer-auth-stage__lead {
+    max-width: 36rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  .customer-auth-stage__visual {
+    min-height: 11.5rem;
+    max-height: 13.5rem;
+  }
+
+  .customer-auth-stage__visual img {
+    min-height: 11.5rem;
+    max-height: 13.5rem;
+  }
+
+  .customer-auth-stage__highlights {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .customer-auth-stage__highlight {
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem;
+    padding: 0.7rem;
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 0.9rem;
+    background: rgb(255 255 255 / 7%);
+  }
+
+  .customer-auth-stage__highlight p {
+    display: none;
+  }
+
+  .customer-auth-stage__shop-link {
+    margin-top: 0.25rem;
+  }
+
+  .customer-auth-stage__panel {
+    width: 100%;
+    padding: clamp(1.75rem, 2.5vw, 2.75rem);
+  }
+
+  .customer-auth-stage__panel .customer-auth-card {
+    width: 100%;
+    max-width: 36rem;
+  }
+
+  .customer-auth-stage__panel .customer-auth-card--register {
+    max-width: 42rem;
+  }
+}

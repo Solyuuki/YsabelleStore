@@ -6,14 +6,14 @@ import { forwardRef, type ComponentProps, type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 const paginationLinkVariants = cva(
-  "inline-flex h-9 min-w-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex h-9 min-w-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950",
+          "border-slate-200 bg-white/90 text-slate-700 shadow-sm hover:border-indigo-200 hover:bg-indigo-50/70 hover:text-indigo-800",
         active:
-          "border-emerald-700 bg-emerald-700 text-white shadow-sm hover:border-emerald-800 hover:bg-emerald-800"
+          "border-indigo-500 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 text-white shadow-[0_8px_20px_rgba(98,91,255,0.22)] hover:from-blue-600 hover:via-indigo-600 hover:to-violet-600"
       },
       size: {
         default: "h-9 px-3",
