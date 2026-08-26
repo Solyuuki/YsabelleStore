@@ -51,11 +51,16 @@ test("customer auth fields expose accessible errors and password state", () => {
 });
 
 test("password visibility controls keep a minimum 44px touch target", () => {
-  const authCss = read("frontend/src/styles/customer-auth-phase3.css");
-  const passwordButtonRule = authCss.match(
+  const interactionsPath = "frontend/src/styles/customer-auth-interactions.css";
+  assert.equal(existsSync(fileUrl(interactionsPath)), true, "customer auth interaction styles must exist");
+
+  const frame = read("frontend/src/components/customer/CustomerAuthFrame.tsx");
+  const interactionsCss = read(interactionsPath);
+  const passwordButtonRule = interactionsCss.match(
     /\.customer-auth-stage__panel \.customer-auth-password button\s*\{([\s\S]*?)\}/
   );
 
+  assert.match(frame, /import "@\/styles\/customer-auth-interactions\.css";/);
   assert.ok(passwordButtonRule, "phase 3 must style password visibility controls");
   assert.match(passwordButtonRule[1], /min-width:\s*2\.75rem;/);
   assert.match(passwordButtonRule[1], /min-height:\s*2\.75rem;/);
