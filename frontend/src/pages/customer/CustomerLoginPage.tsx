@@ -1,4 +1,4 @@
-import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { Eye, EyeOff, KeyRound, ShieldCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
@@ -112,6 +112,21 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
             {submitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
+        <div className="customer-auth-quick-divider" aria-hidden="true">
+          <span>or</span>
+        </div>
+
+        <div className="customer-auth-quick-sign" aria-disabled="true">
+          <span className="customer-auth-quick-sign__icon" aria-hidden="true">
+            <ShieldCheck size={19} />
+          </span>
+          <span className="customer-auth-quick-sign__copy">
+            <strong>Quick Sign</strong>
+            <small>Trusted account access</small>
+          </span>
+          <span className="customer-auth-quick-sign__status">Coming soon</span>
+        </div>
 
         <p className="customer-auth-switch">
           New to Ysabelle Store?{" "}
