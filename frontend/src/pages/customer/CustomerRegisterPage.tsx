@@ -90,6 +90,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
               autoComplete="name"
               id="customer-register-name"
               onChange={(event) => setName(event.target.value)}
+              placeholder="e.g. Juan Dela Cruz"
               type="text"
               value={name}
             />
@@ -106,6 +107,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
               autoComplete="username"
               id="customer-register-username"
               onChange={(event) => setUsername(event.target.value)}
+              placeholder="Create your username"
               type="text"
               value={username}
             />
@@ -123,6 +125,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
               id="customer-register-email"
               inputMode="email"
               onChange={(event) => setEmail(event.target.value)}
+              placeholder="name@example.com"
               type="email"
               value={email}
             />
@@ -142,6 +145,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
               id="customer-register-phone"
               inputMode="tel"
               onChange={(event) => setPhone(event.target.value)}
+              placeholder="09XXXXXXXXX"
               type="tel"
               value={phone}
             />
@@ -159,6 +163,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 autoComplete="new-password"
                 id="customer-register-password"
                 onChange={(event) => setPassword(event.target.value)}
+                placeholder="Create a strong password"
                 type={showPassword ? "text" : "password"}
                 value={password}
               />
@@ -191,6 +196,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 autoComplete="new-password"
                 id="customer-register-confirm-password"
                 onChange={(event) => setConfirmPassword(event.target.value)}
+                placeholder="Re-enter your password"
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
               />
