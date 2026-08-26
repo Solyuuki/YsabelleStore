@@ -2,7 +2,7 @@ import { ChevronLeft, LogOut } from "lucide-react";
 
 import { appRoutes, type AppRoutePath } from "@/app/routes";
 import { SidebarNavItem } from "@/components/app/SidebarNavItem";
-import { BrandLogo } from "@/components/brand/BrandLogo";
+import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
 import { Button } from "@/components/ui/button";
 import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,6 @@ const mainRoutes: readonly AppRoutePath[] = [
   "/sales"
 ];
 
-// Add owner-only user management to the administrative section.
 const ownerRoutesWithUsers: readonly AppRoutePath[] = [
   "/forecast",
   "/reports",
@@ -53,15 +52,15 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        "relative flex min-h-screen shrink-0 flex-col overflow-visible border-r border-emerald-200/50 text-slate-700 shadow-[0_20px_48px_rgba(15,23,42,0.06)] transition-[width,background-color,border-color,box-shadow] duration-300 ease-out",
-        "bg-[rgba(244,252,248,0.9)]",
+        "relative flex min-h-screen shrink-0 flex-col overflow-visible border-r border-violet-200/55 text-slate-700 shadow-[0_20px_48px_rgba(37,31,86,0.08)] transition-[width,background-color,border-color,box-shadow] duration-300 ease-out",
+        "bg-[rgba(248,247,255,0.92)]",
         collapsed ? "w-20" : "w-64"
       )}
     >
       <Button
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         className={cn(
-          "absolute -right-4 top-12 z-20 h-8 w-8 rounded-full border border-emerald-200/70 bg-white p-0 text-slate-700 shadow-[0_10px_22px_rgba(15,23,42,0.12)] transition-[transform,background-color,border-color,box-shadow,opacity] duration-300 ease-out hover:bg-emerald-50"
+          "absolute -right-4 top-12 z-20 h-8 w-8 rounded-full border border-violet-200/70 bg-white p-0 text-slate-700 shadow-[0_10px_22px_rgba(37,31,86,0.14)] transition-[transform,background-color,border-color,box-shadow,opacity] duration-300 ease-out hover:bg-violet-50"
         )}
         onClick={onToggleSidebar}
         type="button"
@@ -76,10 +75,8 @@ export function AppSidebar({
         />
       </Button>
 
-      <div className="flex h-16 items-center gap-3 border-b border-slate-200/80 px-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 shadow-sm shadow-violet-950/15 ring-1 ring-violet-200/70">
-          <BrandLogo className="h-full w-full object-contain" />
-        </div>
+      <div className="flex h-16 items-center gap-3 border-b border-violet-200/45 px-4">
+        <YsabelleBrandMark className="shrink-0" eager variant="mini" />
         <div
           className={cn(
             "min-w-0 overflow-hidden transition-all duration-300 ease-out",
@@ -108,7 +105,7 @@ export function AppSidebar({
         />
       </nav>
 
-      <div className="border-t border-slate-200/80 p-3">
+      <div className="border-t border-violet-200/45 p-3">
         <div className="space-y-3">
           <SectionLabel collapsed={collapsed} title="SYSTEM" />
           {collapsed ? null : <FullCounterModeCard user={user} />}
@@ -174,7 +171,7 @@ function SectionLabel({ collapsed, title }: SectionLabelProps) {
 
 function FullCounterModeCard({ user }: { user: AuthUser | null }) {
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-white/75 p-3 text-slate-700 shadow-sm backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 ease-out">
+    <div className="rounded-xl border border-violet-200/45 bg-white/80 p-3 text-slate-700 shadow-sm backdrop-blur-sm transition-[background-color,border-color,box-shadow] duration-300 ease-out">
       <p className="type-caption font-semibold text-slate-900">{user?.name ?? "Counter mode"}</p>
       <p className="type-caption mt-1 text-slate-500">
         {user
