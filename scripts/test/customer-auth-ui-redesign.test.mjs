@@ -61,3 +61,18 @@ test("customer auth redesign stays inside the blue purple pink storefront palett
   assert.match(authCss, /var\(--customer-accent\)/);
   assert.doesNotMatch(authCss, /emerald|#10b981|#059669|#047857/i);
 });
+
+test("customer auth page keeps ambient brand shader layers behind the account stage", () => {
+  const authCss = read("frontend/src/styles/customer-auth-phase3.css");
+
+  assert.match(authCss, /\.customer-auth-page--phase3\s*\{[\s\S]*?position:\s*relative;/);
+  assert.match(
+    authCss,
+    /\.customer-auth-page--phase3::before,\s*\.customer-auth-page--phase3::after\s*\{/
+  );
+  assert.match(authCss, /filter:\s*blur\(/);
+  assert.match(authCss, /pointer-events:\s*none;/);
+  assert.match(authCss, /rgb\(0 140 255/);
+  assert.match(authCss, /rgb\(98 91 255/);
+  assert.match(authCss, /rgb\(244 63 140/);
+});
