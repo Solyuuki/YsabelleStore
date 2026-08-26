@@ -36,7 +36,12 @@ const sessionDateFormatter = new Intl.DateTimeFormat("en-PH", {
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  return parts.slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join("") || "YS";
+  return (
+    parts
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("") || "YS"
+  );
 }
 
 function errorMessage(reason: unknown, fallback: string) {
@@ -124,13 +129,18 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       } else if (
         !(ordersResult.reason instanceof DOMException && ordersResult.reason.name === "AbortError")
       ) {
-        setOrdersError(errorMessage(ordersResult.reason, "Your order history could not be loaded."));
+        setOrdersError(
+          errorMessage(ordersResult.reason, "Your order history could not be loaded.")
+        );
       }
 
       if (sessionsResult.status === "fulfilled") {
         setSessions(sessionsResult.value);
       } else if (
-        !(sessionsResult.reason instanceof DOMException && sessionsResult.reason.name === "AbortError")
+        !(
+          sessionsResult.reason instanceof DOMException &&
+          sessionsResult.reason.name === "AbortError"
+        )
       ) {
         setSessionsError(
           errorMessage(sessionsResult.reason, "Your active sessions could not be loaded.")
@@ -250,7 +260,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setPasswordMessage("Password changed. Other signed-in sessions were ended for your security.");
+      setPasswordMessage(
+        "Password changed. Other signed-in sessions were ended for your security."
+      );
     } catch (reason) {
       setPasswordError(errorMessage(reason, "Your password could not be changed."));
     } finally {
@@ -349,12 +361,18 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
             </div>
           ) : null}
 
-          <section className="customer-account-section" id="profile" aria-labelledby="profile-title">
+          <section
+            className="customer-account-section"
+            id="profile"
+            aria-labelledby="profile-title"
+          >
             <div className="customer-account-section-heading">
               <div>
                 <p className="customer-eyebrow">Profile information</p>
                 <h2 id="profile-title">Your customer identity</h2>
-                <p>Update your display name. Sign-in identifiers stay protected and read-only here.</p>
+                <p>
+                  Update your display name. Sign-in identifiers stay protected and read-only here.
+                </p>
               </div>
               <UserRound aria-hidden="true" size={22} />
             </div>
@@ -400,7 +418,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   <Phone size={16} /> Mobile
                 </span>
                 <strong>{customer.phone || "Not provided"}</strong>
-                <small>Phone changes require ownership verification and are handled separately.</small>
+                <small>
+                  Phone changes require ownership verification and are handled separately.
+                </small>
               </div>
             </div>
 
@@ -462,12 +482,18 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
             </div>
           </section>
 
-          <section className="customer-account-section" id="security" aria-labelledby="security-title">
+          <section
+            className="customer-account-section"
+            id="security"
+            aria-labelledby="security-title"
+          >
             <div className="customer-account-section-heading">
               <div>
                 <p className="customer-eyebrow">Account security</p>
                 <h2 id="security-title">Password and active sessions</h2>
-                <p>Sensitive actions require your current password and never expose session secrets.</p>
+                <p>
+                  Sensitive actions require your current password and never expose session secrets.
+                </p>
               </div>
               <ShieldCheck aria-hidden="true" size={22} />
             </div>
@@ -482,8 +508,8 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   <div>
                     <strong>Change password</strong>
                     <p>
-                      Changing it signs out every older session and keeps this browser signed in with a
-                      fresh session.
+                      Changing it signs out every older session and keeps this browser signed in
+                      with a fresh session.
                     </p>
                   </div>
                 </div>
@@ -540,8 +566,8 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   <div>
                     <strong>Active sessions</strong>
                     <p>
-                      Only real session timestamps are shown. Device, browser, IP, and location are not
-                      collected for this view.
+                      Only real session timestamps are shown. Device, browser, IP, and location are
+                      not collected for this view.
                     </p>
                   </div>
                 </div>

@@ -46,6 +46,4 @@ export const customerSessionRevokeOthersSchema = z
 export type CustomerProfileUpdateInput = z.infer<typeof customerProfileUpdateSchema>;
 export type CustomerUsernameClaimInput = z.infer<typeof customerUsernameClaimSchema>;
 export type CustomerPasswordChangeInput = z.infer<typeof customerPasswordChangeSchema>;
-export type CustomerSessionRevokeOthersInput = z.infer<
-  typeof customerSessionRevokeOthersSchema
->;
+export type CustomerSessionRevokeOthersInput = z.infer<typeof customerSessionRevokeOthersSchema>;

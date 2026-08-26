@@ -120,10 +120,7 @@ async function main() {
     });
     const usernameRequest = requests.at(-1);
     assert.ok(usernameRequest);
-    assert.equal(
-      new URL(usernameRequest.url).pathname,
-      "/api/customer-account/username/claim"
-    );
+    assert.equal(new URL(usernameRequest.url).pathname, "/api/customer-account/username/claim");
     assert.equal(usernameRequest.init.method, "POST");
     assert.equal(usernameRequest.init.credentials, "include");
     assert.deepEqual(JSON.parse(String(usernameRequest.init.body)), {
@@ -137,10 +134,7 @@ async function main() {
     });
     const passwordRequest = requests.at(-1);
     assert.ok(passwordRequest);
-    assert.equal(
-      new URL(passwordRequest.url).pathname,
-      "/api/customer-account/password/change"
-    );
+    assert.equal(new URL(passwordRequest.url).pathname, "/api/customer-account/password/change");
     assert.equal(passwordRequest.init.method, "POST");
     assert.equal(passwordRequest.init.credentials, "include");
     assert.deepEqual(JSON.parse(String(passwordRequest.init.body)), {
@@ -157,9 +151,7 @@ async function main() {
     assert.equal(sessionsRequest.init.method, "GET");
     assert.equal(sessionsRequest.init.credentials, "include");
 
-    const revocation = await customerAccountService.revokeOtherCustomerSessions(
-      "CustomerPass123!"
-    );
+    const revocation = await customerAccountService.revokeOtherCustomerSessions("CustomerPass123!");
     assert.equal(revocation.revokedCount, 1);
     const revokeRequest = requests.at(-1);
     assert.ok(revokeRequest);

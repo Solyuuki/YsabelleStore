@@ -25,11 +25,13 @@
 ### Task 1: Version password hashing and remove fast-fail enumeration
 
 **Files:**
+
 - Modify: `backend/src/services/passwordHashService.ts`
 - Modify: `backend/src/services/customerAuthService.ts`
 - Create: `backend/test/customer-auth-password-security.test.ts`
 
 **Interfaces:**
+
 - Produces: `hashPassword()` using the current profile, `verifyPassword()` compatible with legacy/current hashes, `passwordHashNeedsUpgrade(hash)`, and constant-work invalid customer login.
 - Consumes: existing `scrypt$N$r$p$salt$hash` format.
 
@@ -87,12 +89,14 @@ Commit message: `security(auth): harden customer password verification`.
 ### Task 2: Add HMAC-derived identifier throttling
 
 **Files:**
+
 - Modify: `backend/src/middleware/authRateLimit.ts`
 - Modify: `backend/src/security/security.constants.ts`
 - Modify: `backend/src/routes/customerAuth.routes.ts`
 - Create: `backend/test/customer-auth-rate-limit.test.ts`
 
 **Interfaces:**
+
 - Produces: reusable `createAuthRateLimit({ keyResolver? })` behavior where custom keys are opaque/HMAC-derived.
 - Preserves: current per-IP throttling and `Retry-After` response.
 
@@ -118,9 +122,7 @@ Add a process-random HMAC key generated with `randomBytes(32)` and helper:
 
 ```ts
 export function derivePrivateRateLimitKey(scope: string, value: string): string {
-  return createHmac("sha256", PROCESS_RATE_LIMIT_SECRET)
-    .update(`${scope}:${value}`)
-    .digest("hex");
+  return createHmac("sha256", PROCESS_RATE_LIMIT_SECRET).update(`${scope}:${value}`).digest("hex");
 }
 ```
 
@@ -150,18 +152,21 @@ Commit message: `security(auth): add privacy safe customer throttling`.
 ### Task 3: Add low-friction registration-intent bot guard
 
 **Files:**
+
 - Create: `backend/src/utils/customerRegistrationIntent.ts`
 - Modify: `backend/src/controllers/customerAuthController.ts`
 - Modify: `backend/src/routes/customerAuth.routes.ts`
 - Create: `backend/test/customer-registration-intent.test.ts`
 
 **Interfaces:**
+
 - Produces: `GET /api/customer-auth/registration-intent` and required intent-cookie validation on registration.
 - Preserves: no CAPTCHA for normal customers.
 
 - [ ] **Step 1: Write failing tests**
 
 Require:
+
 - registration without intent cookie -> 400/403 bot-protection error;
 - valid intent cookie after minimum age -> registration reaches normal validation/service path;
 - intent younger than 750 ms -> rejected;
@@ -200,17 +205,20 @@ Commit message: `security(auth): require customer registration intent`.
 ### Task 4: Enforce browser origin and no-store auth responses
 
 **Files:**
+
 - Create: `backend/src/middleware/customerAuthSecurity.ts`
 - Modify: `backend/src/routes/customerAuth.routes.ts`
 - Modify: `backend/src/routes/customerAccount.routes.ts`
 - Create: `backend/test/customer-auth-origin-cache.test.ts`
 
 **Interfaces:**
+
 - Produces: `requireAllowedCustomerAuthOrigin` and `disableSensitiveResponseCaching`.
 
 - [ ] **Step 1: Write failing tests**
 
 Assert:
+
 - approved `http://localhost:5173` Origin can invoke state-changing customer auth endpoints;
 - `https://evil.example` receives 403 before login/register/logout behavior executes;
 - absent Origin remains allowed for local/non-browser test clients;
@@ -237,11 +245,13 @@ Commit message: `security(auth): enforce customer auth origin and cache policy`.
 ### Task 5: Close privacy leaks and guard logs
 
 **Files:**
+
 - Modify: `backend/src/services/customerAuthService.ts`
 - Modify: `backend/test/customer-auth-http.test.ts`
 - Create: `backend/test/customer-auth-privacy.test.ts`
 
 **Interfaces:**
+
 - Produces: privacy-safe registration conflict behavior and tests for DTO/log hygiene.
 
 - [ ] **Step 1: Write failing tests**
@@ -259,7 +269,7 @@ Use generic conflict copy/code such as:
 ```ts
 new HttpError(409, "Unable to create customer account with the supplied details.", {
   code: "CUSTOMER_ACCOUNT_CONFLICT"
-})
+});
 ```
 
 Use one login response: `Invalid credentials.` / `INVALID_CUSTOMER_CREDENTIALS`.
@@ -277,9 +287,11 @@ Commit message: `security(auth): protect customer authentication privacy`.
 ### Task 6: Phase 1 security acceptance gate
 
 **Files:**
+
 - Modify: `docs/superpowers/specs/2026-08-25-customer-auth-security-foundation-design.md` only if verification reveals a documented limitation.
 
 **Interfaces:**
+
 - Produces: evidence-backed decision whether Phase 2 may start.
 
 - [ ] **Step 1: Run focused security suite**

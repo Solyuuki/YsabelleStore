@@ -8,10 +8,7 @@ import {
   revokeOtherCustomerSessionsController,
   updateCustomerProfileController
 } from "../controllers/customerAccountController.js";
-import {
-  createAuthRateLimit,
-  derivePrivateRateLimitKey
-} from "../middleware/authRateLimit.js";
+import { createAuthRateLimit, derivePrivateRateLimitKey } from "../middleware/authRateLimit.js";
 import {
   getAuthenticatedCustomer,
   requireCustomerAuth
@@ -31,7 +28,9 @@ function stringFieldFromBody(body: unknown, field: string): string | null {
   return typeof value === "string" ? value : null;
 }
 
-const customerSensitiveIpRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerAccountSensitiveIp);
+const customerSensitiveIpRateLimit = createAuthRateLimit(
+  AUTH_RATE_LIMITS.customerAccountSensitiveIp
+);
 const customerSensitiveAccountRateLimit = createAuthRateLimit({
   ...AUTH_RATE_LIMITS.customerAccountSensitiveAccount,
   keyResolver(request) {

@@ -46,10 +46,7 @@ test("concurrent password changes allow only one stale password state to win", a
     const updatedCustomer = await prisma.customerAccount.findUniqueOrThrow({
       where: { id: customer.id }
     });
-    const firstPasswordWon = await verifyPassword(
-      FIRST_NEW_PASSWORD,
-      updatedCustomer.passwordHash
-    );
+    const firstPasswordWon = await verifyPassword(FIRST_NEW_PASSWORD, updatedCustomer.passwordHash);
     const secondPasswordWon = await verifyPassword(
       SECOND_NEW_PASSWORD,
       updatedCustomer.passwordHash
