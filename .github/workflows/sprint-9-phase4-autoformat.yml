@@ -79,4 +79,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
           HUSKY=0 git commit -m "style(account): resolve Phase 4 formatting gate"
-          git push origin HEAD:feature/sprint9-account-security
+          HUSKY=0 git push origin HEAD:feature/sprint9-account-security
