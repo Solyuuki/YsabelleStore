@@ -1,0 +1,58 @@
+name: Phase 3 + Phase 4 Format Repair
+
+on:
+  push:
+    branches:
+      - integration/sprint9-phase3-phase4-clean-readiness
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phase3-phase4-format-repair-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format exact Phase 3 blockers
+        run: >-
+          npx prettier --write
+          frontend/src/components/customer/CustomerAuthFrame.tsx
+          frontend/src/pages/customer/CustomerLoginPage.tsx
+          frontend/src/pages/customer/CustomerRegisterPage.tsx
+          frontend/src/styles/customer-auth-phase3.css
+          frontend/src/styles/retailer-brand.css
+          scripts/test/customer-auth-ui-redesign.test.mjs
+          scripts/test/retailer-brand-unification.test.mjs
+      - name: Verify repository formatting
+        run: npm run format:check
+      - name: Commit formatting-only repair
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Formatting is already green."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            frontend/src/components/customer/CustomerAuthFrame.tsx \
+            frontend/src/pages/customer/CustomerLoginPage.tsx \
+            frontend/src/pages/customer/CustomerRegisterPage.tsx \
+            frontend/src/styles/customer-auth-phase3.css \
+            frontend/src/styles/retailer-brand.css \
+            scripts/test/customer-auth-ui-redesign.test.mjs \
+            scripts/test/retailer-brand-unification.test.mjs
+          HUSKY=0 git commit -m "style(auth-ui): format Phase 3 integration files"
+          HUSKY=0 git push origin HEAD:integration/sprint9-phase3-phase4-clean-readiness
