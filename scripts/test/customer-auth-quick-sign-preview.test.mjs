@@ -7,8 +7,9 @@ const read = (path) => readFileSync(fileUrl(path), "utf8");
 
 test("customer login exposes a premium UI-only Quick Sign preview", () => {
   const login = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
-  const css = read("frontend/src/styles/customer-auth-login-premium.css");
+  const css = read("frontend/src/styles/customer-auth-quick-sign.css");
 
+  assert.match(login, /import "@\/styles\/customer-auth-quick-sign\.css";/);
   assert.match(login, /ShieldCheck/);
   assert.match(login, /className="customer-auth-quick-divider"/);
   assert.match(login, /className="customer-auth-quick-sign" aria-disabled="true"/);
