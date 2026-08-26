@@ -30,12 +30,7 @@
   border: 1px solid rgb(98 91 255 / 16%);
   border-radius: 2rem 2rem 2rem 0.75rem;
   background:
-    linear-gradient(
-      145deg,
-      rgb(0 140 255 / 92%),
-      rgb(98 91 255 / 96%) 52%,
-      rgb(244 63 140 / 90%)
-    ),
+    linear-gradient(145deg, rgb(0 140 255 / 92%), rgb(98 91 255 / 96%) 52%, rgb(244 63 140 / 90%)),
     var(--customer-primary);
   box-shadow: 0 30px 90px rgb(16 20 38 / 14%);
   color: #fff;

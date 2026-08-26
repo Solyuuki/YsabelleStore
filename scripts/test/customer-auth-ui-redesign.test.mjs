@@ -85,20 +85,13 @@ test("customer auth redesign stays inside the blue purple pink storefront palett
 
 test("customer auth page keeps ambient brand shader layers behind the account stage", () => {
   const shaderPath = "frontend/src/styles/customer-auth-shaders.css";
-  assert.equal(
-    existsSync(fileUrl(shaderPath)),
-    true,
-    "customer auth shader stylesheet must exist"
-  );
+  assert.equal(existsSync(fileUrl(shaderPath)), true, "customer auth shader stylesheet must exist");
 
   const frame = read("frontend/src/components/customer/CustomerAuthFrame.tsx");
   const shaderCss = read(shaderPath);
 
   assert.match(frame, /import "@\/styles\/customer-auth-shaders\.css";/);
-  assert.match(
-    shaderCss,
-    /\.customer-auth-page--phase3\s*\{[\s\S]*?position:\s*relative;/
-  );
+  assert.match(shaderCss, /\.customer-auth-page--phase3\s*\{[\s\S]*?position:\s*relative;/);
   assert.match(
     shaderCss,
     /\.customer-auth-page--phase3::before,\s*\.customer-auth-page--phase3::after\s*\{/

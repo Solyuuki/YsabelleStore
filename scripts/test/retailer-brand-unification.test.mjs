@@ -34,11 +34,7 @@ test("retailer shell and navigation remove emerald brand styling", () => {
 
 test("retailer and staff-login ambient surfaces inherit the ecommerce palette", () => {
   const themePath = "frontend/src/styles/retailer-brand.css";
-  assert.equal(
-    existsSync(fileUrl(themePath)),
-    true,
-    "retailer brand stylesheet must exist"
-  );
+  assert.equal(existsSync(fileUrl(themePath)), true, "retailer brand stylesheet must exist");
 
   const main = read("frontend/src/main.tsx");
   const theme = read(themePath);
