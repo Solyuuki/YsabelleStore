@@ -24,3 +24,9 @@ Automated checks do not replace manual acceptance for security-sensitive or user
 ## Baseline
 
 Sprint 9 was created from the Sprint 8 release baseline already promoted into the repository and continues from `sprint/v0.9/sprint-9`. The Phase 2 customer-auth implementation is validated independently before later Phase 3/4 work is integrated.
+
+## Latest Sprint Activity
+
+| Date       | Member     | Branch                                  | Latest Activity                                                                   | Validation Status |
+| ---------- | ---------- | --------------------------------------- | --------------------------------------------------------------------------------- | ----------------- |
+| 2026-08-27 | M1 Abarado | m1/v0.9/test/customer-auth-ui-readiness | Sprint documentation and validation evidence were updated for the current branch. | Passed            |
