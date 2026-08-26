@@ -23,11 +23,19 @@ test("customer login and register use centered premium shader cards", () => {
   );
   assert.match(
     css,
-    /\.customer-auth-page--login \.customer-auth-stage\s*\{[\s\S]*?width:\s*min\(100%,\s*42rem\);[\s\S]*?display:\s*block;/
+    /\.customer-auth-page--login \.customer-auth-stage\s*\{[\s\S]*?display:\s*block;/
   );
   assert.match(
     css,
-    /\.customer-auth-page--register \.customer-auth-stage\s*\{[\s\S]*?width:\s*min\(100%,\s*58rem\);[\s\S]*?display:\s*block;/
+    /\.customer-auth-page--login \.customer-auth-stage\s*\{[\s\S]*?width:\s*min\(100%,\s*42rem\);/
+  );
+  assert.match(
+    css,
+    /\.customer-auth-page--register \.customer-auth-stage\s*\{[\s\S]*?display:\s*block;/
+  );
+  assert.match(
+    css,
+    /\.customer-auth-page--register \.customer-auth-stage\s*\{[\s\S]*?width:\s*min\(100%,\s*58rem\);/
   );
   assert.match(
     css,
