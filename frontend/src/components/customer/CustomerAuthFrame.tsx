@@ -61,7 +61,7 @@ export function CustomerAuthFrame({ children, mode, navigate }: CustomerAuthFram
               alt=""
               decoding="async"
               loading="eager"
-              src="/images/discover/essentials/beverages-retail-display.webp"
+              src="images/discover/essentials/beverages-retail-display.webp"
             />
             <div className="customer-auth-stage__visual-card">
               <span>Everyday essentials</span>
