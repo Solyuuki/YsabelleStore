@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import "@/styles/customer-auth-phase3.css";
 import "@/styles/customer-auth-shaders.css";
 import "@/styles/customer-auth-interactions.css";
+import "@/styles/customer-auth-wide-composition.css";
 
 import { CustomerLink } from "./CustomerLink";
 import { YsabelleBrandMark } from "./YsabelleBrandMark";
