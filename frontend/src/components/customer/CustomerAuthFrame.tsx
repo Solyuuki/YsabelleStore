@@ -36,7 +36,9 @@ export function CustomerAuthFrame({ children, mode, navigate }: CustomerAuthFram
   const isRegister = mode === "register";
 
   return (
-    <section className="customer-auth-page customer-auth-page--phase3">
+    <section
+      className={`customer-auth-page customer-auth-page--phase3 customer-auth-page--${mode}`}
+    >
       <div className="customer-auth-stage">
         <aside className="customer-auth-stage__brand" aria-label="Ysabelle Store customer account">
           <div className="customer-auth-stage__brand-glow customer-auth-stage__brand-glow--one" />
