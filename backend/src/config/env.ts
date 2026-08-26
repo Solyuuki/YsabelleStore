@@ -1,10 +1,14 @@
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { config as loadEnv } from "dotenv";
 import { z } from "zod";
 
-import { resolveCatalogImageStoragePaths } from "./catalogImageStoragePaths.js";
+import {
+  resolveCatalogImageStoragePaths,
+  resolveDefaultCatalogImagePersistentRoot
+} from "./catalogImageStoragePaths.js";
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFilePath);
@@ -40,9 +44,18 @@ if (!parsedEnv.success) {
 }
 
 export const env = parsedEnv.data;
+const developmentCatalogImagePersistentRoot =
+  env.NODE_ENV === "development" && !path.isAbsolute(env.CATALOG_IMAGE_STORAGE_ROOT)
+    ? resolveDefaultCatalogImagePersistentRoot({
+        environment: process.env,
+        homeDirectory: os.homedir(),
+        platform: process.platform
+      })
+    : undefined;
 const catalogImageStoragePaths = resolveCatalogImageStoragePaths(
   repositoryRoot,
-  env.CATALOG_IMAGE_STORAGE_ROOT
+  env.CATALOG_IMAGE_STORAGE_ROOT,
+  developmentCatalogImagePersistentRoot
 );
 export const catalogImageStorageRoot = catalogImageStoragePaths.root;
 export const catalogImageStorageFallbackRoots = catalogImageStoragePaths.fallbackRoots;
