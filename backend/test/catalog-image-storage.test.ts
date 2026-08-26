@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -32,7 +32,7 @@ test("catalog image storage exposes only generated candidate output paths", asyn
   }
 });
 
-test("catalog image storage recovers an existing asset from a linked-worktree fallback root", async () => {
+test("catalog image storage recovers and promotes an existing asset from a linked-worktree fallback root", async () => {
   const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "ysabelle-catalog-fallback-"));
   const canonicalRoot = path.join(temporaryRoot, "primary", ".data", "catalog-images");
   const legacyRoot = path.join(temporaryRoot, "phase-worktree", ".data", "catalog-images");
@@ -40,6 +40,7 @@ test("catalog image storage recovers an existing asset from a linked-worktree fa
 
   try {
     const legacyFile = path.join(legacyRoot, ...key.split("/"));
+    const canonicalFile = path.join(canonicalRoot, ...key.split("/"));
     await mkdir(path.dirname(legacyFile), { recursive: true });
     await writeFile(legacyFile, Buffer.from("legacy-image"));
 
@@ -47,6 +48,7 @@ test("catalog image storage recovers an existing asset from a linked-worktree fa
     const recovered = await storage.readStorageKey(key);
 
     assert.equal(recovered.toString(), "legacy-image");
+    assert.equal((await readFile(canonicalFile)).toString(), "legacy-image");
   } finally {
     await rm(temporaryRoot, { force: true, recursive: true });
   }
