@@ -1,6 +1,7 @@
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
+import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { validateCustomerLoginForm } from "@/utils/customerAuthForms";
@@ -36,7 +37,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
   }
 
   return (
-    <section className="customer-auth-page">
+    <CustomerAuthFrame mode="login" navigate={navigate}>
       <div className="customer-auth-card">
         <div className="customer-auth-card__intro">
           <span className="customer-auth-card__icon" aria-hidden="true">
@@ -47,37 +48,49 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
           <p>Sign in to keep your Ysabelle Store account ready while you shop.</p>
         </div>
 
-        <form className="customer-auth-form" onSubmit={handleSubmit} noValidate>
+        <form
+          aria-busy={submitting}
+          className="customer-auth-form"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           {serverError ? (
             <div className="customer-auth-alert" role="alert">
               {serverError}
             </div>
           ) : null}
 
-          <label className="customer-auth-field">
+          <label className="customer-auth-field" htmlFor="customer-login-identifier">
             <span>Username, email or mobile number</span>
             <input
+              aria-describedby={fieldErrors.identifier ? "customer-login-identifier-error" : undefined}
               aria-invalid={Boolean(fieldErrors.identifier)}
               autoComplete="username"
+              id="customer-login-identifier"
               onChange={(event) => setIdentifier(event.target.value)}
               type="text"
               value={identifier}
             />
-            {fieldErrors.identifier ? <small>{fieldErrors.identifier}</small> : null}
+            {fieldErrors.identifier ? (
+              <small id="customer-login-identifier-error">{fieldErrors.identifier}</small>
+            ) : null}
           </label>
 
-          <label className="customer-auth-field">
+          <label className="customer-auth-field" htmlFor="customer-login-password">
             <span>Password</span>
             <span className="customer-auth-password">
               <input
+                aria-describedby={fieldErrors.password ? "customer-login-password-error" : undefined}
                 aria-invalid={Boolean(fieldErrors.password)}
                 autoComplete="current-password"
+                id="customer-login-password"
                 onChange={(event) => setPassword(event.target.value)}
                 type={showPassword ? "text" : "password"}
                 value={password}
               />
               <button
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
                 onClick={() => setShowPassword((current) => !current)}
                 type="button"
               >
@@ -88,7 +101,9 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
                 )}
               </button>
             </span>
-            {fieldErrors.password ? <small>{fieldErrors.password}</small> : null}
+            {fieldErrors.password ? (
+              <small id="customer-login-password-error">{fieldErrors.password}</small>
+            ) : null}
           </label>
 
           <button className="customer-auth-submit" disabled={submitting} type="submit">
@@ -103,6 +118,6 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
           </CustomerLink>
         </p>
       </div>
-    </section>
+    </CustomerAuthFrame>
   );
 }
