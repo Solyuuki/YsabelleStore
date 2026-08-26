@@ -43,6 +43,10 @@ export type CustomerSessionToken = {
   expiresAt: Date;
 };
 
+export type CustomerSessionMaterial = CustomerSessionToken & {
+  tokenHash: string;
+};
+
 export type CustomerSessionResult = CustomerSessionToken & {
   customer: SafeCustomer;
 };
@@ -58,8 +62,19 @@ function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
   };
 }
 
-function hashSessionToken(token: string) {
+export function hashCustomerSessionToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
+}
+
+export function createCustomerSessionMaterial(now = new Date()): CustomerSessionMaterial {
+  const sessionToken = randomBytes(32).toString("base64url");
+  const expiresAt = new Date(now.getTime() + CUSTOMER_SESSION_LIFETIME_MS);
+
+  return {
+    sessionToken,
+    tokenHash: hashCustomerSessionToken(sessionToken),
+    expiresAt
+  };
 }
 
 function invalidCredentials(): HttpError {
@@ -90,18 +105,17 @@ export async function createCustomerSession(
   customerAccountId: string,
   now = new Date()
 ): Promise<CustomerSessionToken> {
-  const sessionToken = randomBytes(32).toString("base64url");
-  const expiresAt = new Date(now.getTime() + CUSTOMER_SESSION_LIFETIME_MS);
+  const session = createCustomerSessionMaterial(now);
 
   await prisma.customerSession.create({
     data: {
       customerAccountId,
-      tokenHash: hashSessionToken(sessionToken),
-      expiresAt
+      tokenHash: session.tokenHash,
+      expiresAt: session.expiresAt
     }
   });
 
-  return { sessionToken, expiresAt };
+  return { sessionToken: session.sessionToken, expiresAt: session.expiresAt };
 }
 
 export async function registerCustomer(
@@ -201,7 +215,7 @@ export async function getCustomerFromSessionToken(
 
   const session = await prisma.customerSession.findUnique({
     include: { customerAccount: true },
-    where: { tokenHash: hashSessionToken(sessionToken) }
+    where: { tokenHash: hashCustomerSessionToken(sessionToken) }
   });
 
   if (
@@ -225,7 +239,7 @@ export async function revokeCustomerSession(sessionToken: string): Promise<void>
   if (!sessionToken) return;
 
   const session = await prisma.customerSession.findUnique({
-    where: { tokenHash: hashSessionToken(sessionToken) }
+    where: { tokenHash: hashCustomerSessionToken(sessionToken) }
   });
   if (!session || session.revokedAt) return;
 
