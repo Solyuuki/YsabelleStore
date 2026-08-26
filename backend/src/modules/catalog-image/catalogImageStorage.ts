@@ -102,10 +102,8 @@ export class CatalogImageStorage {
     try {
       await mkdir(path.dirname(canonicalPath), { recursive: true });
       await writeFile(canonicalPath, buffer, { flag: "wx" });
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
-        // Recovery must still serve a valid fallback image even if best-effort migration cannot write.
-      }
+    } catch {
+      // Recovery must still serve a valid fallback image if best-effort migration cannot write.
     }
   }
 
