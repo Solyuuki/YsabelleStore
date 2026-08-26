@@ -8,7 +8,8 @@ export type CatalogImageStoragePaths = {
 
 export function resolveCatalogImageStoragePaths(
   repositoryRoot: string,
-  configuredRoot: string
+  configuredRoot: string,
+  persistentRoot?: string
 ): CatalogImageStoragePaths {
   const normalizedRepositoryRoot = path.resolve(repositoryRoot);
 
@@ -20,16 +21,13 @@ export function resolveCatalogImageStoragePaths(
   }
 
   const repositoryRoots = discoverGitRepositoryRoots(normalizedRepositoryRoot);
-  const canonicalRepositoryRoot = repositoryRoots[0] ?? normalizedRepositoryRoot;
-  const root = path.resolve(canonicalRepositoryRoot, configuredRoot);
-  const fallbackRoots = Array.from(
-    new Set(
-      repositoryRoots
-        .slice(1)
-        .map((candidateRoot) => path.resolve(candidateRoot, configuredRoot))
-        .filter((candidateRoot) => candidateRoot !== root)
-    )
+  const legacyRoots = Array.from(
+    new Set(repositoryRoots.map((candidateRoot) => path.resolve(candidateRoot, configuredRoot)))
   );
+  const root = persistentRoot
+    ? path.resolve(persistentRoot)
+    : (legacyRoots[0] ?? path.resolve(normalizedRepositoryRoot, configuredRoot));
+  const fallbackRoots = legacyRoots.filter((candidateRoot) => candidateRoot !== root);
 
   return { root, fallbackRoots };
 }
