@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 import { config as loadEnv } from "dotenv";
 import { z } from "zod";
 
+import { resolveCatalogImageStoragePaths } from "./catalogImageStoragePaths.js";
+
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFilePath);
 const repositoryRoot = path.resolve(currentDirectory, "../../..");
@@ -38,7 +40,12 @@ if (!parsedEnv.success) {
 }
 
 export const env = parsedEnv.data;
-export const catalogImageStorageRoot = path.resolve(repositoryRoot, env.CATALOG_IMAGE_STORAGE_ROOT);
+const catalogImageStoragePaths = resolveCatalogImageStoragePaths(
+  repositoryRoot,
+  env.CATALOG_IMAGE_STORAGE_ROOT
+);
+export const catalogImageStorageRoot = catalogImageStoragePaths.root;
+export const catalogImageStorageFallbackRoots = catalogImageStoragePaths.fallbackRoots;
 
 const defaultCorsOrigins = [
   env.FRONTEND_URL,
