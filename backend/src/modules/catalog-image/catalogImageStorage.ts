@@ -71,7 +71,9 @@ export class CatalogImageStorage {
     for (const fallbackRoot of this.fallbackRoots) {
       const fallbackPath = this.resolveStorageKeyAgainstRoot(fallbackRoot, key);
       try {
-        return await readFile(fallbackPath);
+        const buffer = await readFile(fallbackPath);
+        await this.promoteFallbackAsset(canonicalPath, buffer);
+        return buffer;
       } catch (error) {
         if (error instanceof HttpError) throw error;
       }
@@ -94,6 +96,17 @@ export class CatalogImageStorage {
         rm(candidateDirectory, { force: true, recursive: true })
       )
     );
+  }
+
+  private async promoteFallbackAsset(canonicalPath: string, buffer: Buffer) {
+    try {
+      await mkdir(path.dirname(canonicalPath), { recursive: true });
+      await writeFile(canonicalPath, buffer, { flag: "wx" });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+        // Recovery must still serve a valid fallback image even if best-effort migration cannot write.
+      }
+    }
   }
 
   private resolveStorageKeyAgainstRoot(storageRoot: string, key: string) {
