@@ -55,7 +55,7 @@ function requireCustomer(
 }
 
 function delay(milliseconds: number) {
-  return new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds));
+  return new Promise<void>((resolve) => globalThis.setTimeout(resolve, milliseconds));
 }
 
 export async function prepareCustomerRegistrationIntent(): Promise<void> {
