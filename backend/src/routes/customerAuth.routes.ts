@@ -7,10 +7,7 @@ import {
   logoutCustomerAccount,
   registerCustomerAccount
 } from "../controllers/customerAuthController.js";
-import {
-  createAuthRateLimit,
-  derivePrivateRateLimitKey
-} from "../middleware/authRateLimit.js";
+import { createAuthRateLimit, derivePrivateRateLimitKey } from "../middleware/authRateLimit.js";
 import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
 import {
   disableSensitiveResponseCaching,

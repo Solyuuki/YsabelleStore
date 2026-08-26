@@ -11,11 +11,7 @@ import {
   type CustomerLoginInput,
   type CustomerRegisterInput
 } from "../validators/customerAuth.validators.js";
-import {
-  hashPassword,
-  passwordHashNeedsUpgrade,
-  verifyPassword
-} from "./passwordHashService.js";
+import { hashPassword, passwordHashNeedsUpgrade, verifyPassword } from "./passwordHashService.js";
 
 const CUSTOMER_SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
 const INVALID_CREDENTIALS = {

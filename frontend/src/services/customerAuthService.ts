@@ -55,7 +55,7 @@ function requireCustomer(
 }
 
 function delay(milliseconds: number) {
-  return new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds));
+  return new Promise<void>((resolve) => globalThis.setTimeout(resolve, milliseconds));
 }
 
 export async function prepareCustomerRegistrationIntent(): Promise<void> {
@@ -71,10 +71,7 @@ export async function prepareCustomerRegistrationIntent(): Promise<void> {
     const response = await apiClient.request<
       CustomerRegistrationIntentData,
       CustomerAuthErrorPayload
-    >(
-      "/api/customer-auth/registration-intent",
-      customerAuthRequestOptions({ method: "GET" })
-    );
+    >("/api/customer-auth/registration-intent", customerAuthRequestOptions({ method: "GET" }));
 
     if (!response.success || response.data?.ready !== true) {
       registrationIntentRequest = null;

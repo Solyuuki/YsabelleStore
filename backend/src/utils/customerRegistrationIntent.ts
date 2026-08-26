@@ -4,8 +4,7 @@ import type { Request, Response } from "express";
 
 import { env } from "../config/env.js";
 
-export const CUSTOMER_REGISTRATION_INTENT_COOKIE_NAME =
-  "ysabelle_customer_registration_intent";
+export const CUSTOMER_REGISTRATION_INTENT_COOKIE_NAME = "ysabelle_customer_registration_intent";
 export const CUSTOMER_REGISTRATION_INTENT_MAX_AGE_MS = 10 * 60 * 1000;
 export const CUSTOMER_REGISTRATION_INTENT_MIN_AGE_MS = 750;
 
@@ -67,10 +66,7 @@ export function createCustomerRegistrationIntent(now = Date.now()): string {
   return `${encodedPayload}.${signature}`;
 }
 
-export function setCustomerRegistrationIntentCookie(
-  response: Response,
-  intentToken: string
-): void {
+export function setCustomerRegistrationIntentCookie(response: Response, intentToken: string): void {
   response.cookie(CUSTOMER_REGISTRATION_INTENT_COOKIE_NAME, intentToken, {
     ...registrationIntentCookieOptions,
     maxAge: CUSTOMER_REGISTRATION_INTENT_MAX_AGE_MS
@@ -88,10 +84,7 @@ export function readCustomerRegistrationIntentCookie(request: Request): string |
   return readCookie(request, CUSTOMER_REGISTRATION_INTENT_COOKIE_NAME);
 }
 
-export function isCustomerRegistrationIntentValid(
-  intentToken: string,
-  now = Date.now()
-): boolean {
+export function isCustomerRegistrationIntentValid(intentToken: string, now = Date.now()): boolean {
   const parts = intentToken.split(".");
   if (parts.length !== 2) return false;
 
