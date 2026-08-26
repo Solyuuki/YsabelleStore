@@ -21,6 +21,7 @@ test("customer auth uses independent content-hugging brand and form surfaces", (
   assert.match(stage, /gap:/);
   assert.match(stage, /background:\s*transparent;/);
   assert.doesNotMatch(stage, /overflow:\s*hidden;/);
+  // An explicit reset is valid; the stage must not carry a visible shadow.
   assert.match(stage, /box-shadow:\s*none;/);
 
   assert.match(brand, /border-radius:/);
