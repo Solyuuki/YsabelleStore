@@ -68,6 +68,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
               autoComplete="username"
               id="customer-login-identifier"
               onChange={(event) => setIdentifier(event.target.value)}
+              placeholder="Username, email, or 09XXXXXXXXX"
               type="text"
               value={identifier}
             />
@@ -85,6 +86,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
                 autoComplete="current-password"
                 id="customer-login-password"
                 onChange={(event) => setPassword(event.target.value)}
+                placeholder="Enter your password"
                 type={showPassword ? "text" : "password"}
                 value={password}
               />
