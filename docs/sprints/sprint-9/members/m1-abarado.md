@@ -18,6 +18,6 @@ Phase 2 implementation and manual QA are complete. Local verification, GitHub CI
 
 ## Sprint Activity
 
-| Branch | Phase | Status | Evidence |
-| --- | --- | --- | --- |
+| Branch                              | Phase                                         | Status             | Evidence                                                                                                       |
+| ----------------------------------- | --------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
 | `m1/v0.9/feat/customer-auth-access` | Phase 2 — username/email/PH mobile + password | Final verification | Customer manual QA and Staff/Owner isolation QA complete; exact-head CI/governance required before acceptance. |
