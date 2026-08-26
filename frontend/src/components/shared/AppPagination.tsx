@@ -64,7 +64,7 @@ export function AppPagination({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3",
+        "flex flex-col gap-3 rounded-xl border border-indigo-100/80 bg-white/90 px-4 py-3 shadow-[0_10px_30px_rgba(79,70,229,0.06)] backdrop-blur-sm",
         "sm:flex-row sm:items-center sm:justify-between",
         className
       )}
@@ -74,7 +74,7 @@ export function AppPagination({
           ? `Showing 0 ${itemLabel}`
           : `Showing ${startItem}-${endItem} of ${totalItems} ${itemLabel}`}
         {isLoading ? (
-          <span className="ml-3 inline-flex items-center gap-1 font-medium text-emerald-700">
+          <span className="ml-3 inline-flex items-center gap-1 font-medium text-indigo-700">
             <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
             Updating...
           </span>
@@ -87,7 +87,7 @@ export function AppPagination({
             <span className="whitespace-nowrap font-medium">Rows per page</span>
             <select
               aria-label="Rows per page"
-              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none transition-colors hover:border-slate-300 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none transition-all hover:border-indigo-200 focus-visible:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-100 disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isLoading}
               value={pageSize}
               onChange={(event) => {
