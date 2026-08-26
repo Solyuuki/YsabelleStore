@@ -140,6 +140,19 @@
   }
 }
 
+.customer-auth-page--login .customer-auth-field input::placeholder,
+.customer-auth-page--register .customer-auth-field input::placeholder {
+  color: rgb(71 85 105 / 54%);
+  font-weight: 450;
+  letter-spacing: 0.005em;
+  opacity: 1;
+}
+
+.customer-auth-page--login .customer-auth-field input:focus::placeholder,
+.customer-auth-page--register .customer-auth-field input:focus::placeholder {
+  color: rgb(71 85 105 / 38%);
+}
+
 @keyframes ysabelle-login-aurora {
   0% {
     transform: translate3d(-2%, -1%, 0) scale(0.96) rotate(-4deg);
