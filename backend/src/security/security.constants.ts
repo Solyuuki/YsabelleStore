@@ -34,6 +34,21 @@ export const AUTH_RATE_LIMITS = {
     maxAttempts: 3,
     scope: "customer-register-identity"
   },
+  customerRecoveryRequest: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 10,
+    scope: "customer-recovery-request"
+  },
+  customerRecoveryIdentifier: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 3,
+    scope: "customer-recovery-identifier"
+  },
+  customerRecoveryReset: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 10,
+    scope: "customer-recovery-reset"
+  },
   customerAccountSensitiveIp: {
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     maxAttempts: 20,
