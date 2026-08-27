@@ -54,6 +54,14 @@ function requireCustomer(
   );
 }
 
+function requireCustomerAuthSuccess(
+  response: Awaited<ReturnType<typeof apiClient.request<undefined, CustomerAuthErrorPayload>>>,
+  fallback: string
+) {
+  if (response.success) return;
+  throw new CustomerAuthRequestError(response.message || fallback, response.error?.code);
+}
+
 function delay(milliseconds: number) {
   return new Promise<void>((resolve) => globalThis.setTimeout(resolve, milliseconds));
 }
@@ -155,6 +163,33 @@ export async function registerCustomer(input: CustomerRegisterInput): Promise<Cu
   } finally {
     clearPreparedRegistrationIntent();
   }
+}
+
+export async function requestCustomerPasswordRecovery(identifier: string): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/recovery/request",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: { identifier: identifier.trim() }
+    })
+  );
+
+  requireCustomerAuthSuccess(response, "Password recovery could not be requested.");
+}
+
+export async function resetCustomerPassword(input: {
+  token: string;
+  newPassword: string;
+}): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/recovery/reset",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: input
+    })
+  );
+
+  requireCustomerAuthSuccess(response, "Your password could not be reset.");
 }
 
 export async function logoutCustomer(): Promise<void> {
