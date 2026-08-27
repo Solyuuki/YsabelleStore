@@ -34,6 +34,8 @@ const sessionDateFormatter = new Intl.DateTimeFormat("en-PH", {
   timeStyle: "short"
 });
 
+type AccountTab = "orders" | "profile" | "security";
+
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return (
@@ -57,6 +59,7 @@ function isCustomerSessionError(reason: unknown) {
 
 export function CustomerAccountPage({ navigate }: { navigate: (path: string) => void }) {
   const { customer, error, logout, refreshSession } = useCustomerAuth();
+  const [activeTab, setActiveTab] = useState<AccountTab>("orders");
   const [orders, setOrders] = useState<StorefrontOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
@@ -129,18 +132,13 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       } else if (
         !(ordersResult.reason instanceof DOMException && ordersResult.reason.name === "AbortError")
       ) {
-        setOrdersError(
-          errorMessage(ordersResult.reason, "Your order history could not be loaded.")
-        );
+        setOrdersError(errorMessage(ordersResult.reason, "Your order history could not be loaded."));
       }
 
       if (sessionsResult.status === "fulfilled") {
         setSessions(sessionsResult.value);
       } else if (
-        !(
-          sessionsResult.reason instanceof DOMException &&
-          sessionsResult.reason.name === "AbortError"
-        )
+        !(sessionsResult.reason instanceof DOMException && sessionsResult.reason.name === "AbortError")
       ) {
         setSessionsError(
           errorMessage(sessionsResult.reason, "Your active sessions could not be loaded.")
@@ -316,16 +314,34 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
             </span>
           </div>
 
-          <nav className="customer-account-nav">
-            <a href="#profile">
-              <UserRound size={17} /> Profile
-            </a>
-            <a href="#security">
-              <ShieldCheck size={17} /> Security
-            </a>
-            <a href="#orders">
+          <nav className="customer-account-nav" aria-label="Account views" role="tablist">
+            <button
+              aria-controls="orders-panel"
+              aria-selected={activeTab === "orders"}
+              onClick={() => setActiveTab("orders")}
+              role="tab"
+              type="button"
+            >
               <History size={17} /> Orders
-            </a>
+            </button>
+            <button
+              aria-controls="profile-panel"
+              aria-selected={activeTab === "profile"}
+              onClick={() => setActiveTab("profile")}
+              role="tab"
+              type="button"
+            >
+              <UserRound size={17} /> Profile
+            </button>
+            <button
+              aria-controls="security-panel"
+              aria-selected={activeTab === "security"}
+              onClick={() => setActiveTab("security")}
+              role="tab"
+              type="button"
+            >
+              <ShieldCheck size={17} /> Security
+            </button>
           </nav>
 
           <button
@@ -355,9 +371,75 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
           ) : null}
 
           <section
+            aria-labelledby="customer-order-history-title"
             className="customer-account-section"
-            id="profile"
+            hidden={activeTab !== "orders"}
+            id="orders-panel"
+            role="tabpanel"
+          >
+            <div className="customer-account-section-heading">
+              <div>
+                <p className="customer-eyebrow">Pickup activity</p>
+                <h2 id="customer-order-history-title">Order history</h2>
+                <p>Only orders placed while signed in to this account appear here.</p>
+              </div>
+              <History aria-hidden="true" size={22} />
+            </div>
+
+            {ordersLoading ? (
+              <div className="customer-account-state" role="status">
+                Loading your orders...
+              </div>
+            ) : ordersError ? (
+              <div className="customer-account-form-error" role="alert">
+                {ordersError}
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="customer-account-empty">
+                <PackageCheck aria-hidden="true" size={30} />
+                <strong>No signed-in orders yet</strong>
+                <p>Your next pickup order will appear here when you place it while signed in.</p>
+                <button onClick={() => navigate("/shop")} type="button">
+                  Browse the shop
+                </button>
+              </div>
+            ) : (
+              <div className="customer-account-order-list-v2">
+                {orders.map((order) => (
+                  <article className="customer-account-order-v2" key={order.id}>
+                    <div className="customer-account-order-topline">
+                      <div>
+                        <span>Order</span>
+                        <strong>{order.orderNumber}</strong>
+                      </div>
+                      <span>{order.status}</span>
+                    </div>
+                    <div className="customer-account-order-meta">
+                      <span>{orderDateFormatter.format(new Date(order.createdAt))}</span>
+                      <strong>{formatCurrency(Number(order.totalAmount))}</strong>
+                    </div>
+                    <ul>
+                      {order.items.map((item) => (
+                        <li key={`${order.id}-${item.productId}`}>
+                          <span>
+                            {item.quantity} × {item.productName}
+                          </span>
+                          <strong>{formatCurrency(Number(item.totalAmount))}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section
             aria-labelledby="profile-title"
+            className="customer-account-section"
+            hidden={activeTab !== "profile"}
+            id="profile-panel"
+            role="tabpanel"
           >
             <div className="customer-account-section-heading">
               <div>
@@ -476,9 +558,11 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
           </section>
 
           <section
-            className="customer-account-section"
-            id="security"
             aria-labelledby="security-title"
+            className="customer-account-section"
+            hidden={activeTab !== "security"}
+            id="security-panel"
+            role="tabpanel"
           >
             <div className="customer-account-section-heading">
               <div>
@@ -631,68 +715,6 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 </form>
               </div>
             </div>
-          </section>
-
-          <section
-            className="customer-account-section"
-            id="orders"
-            aria-labelledby="customer-order-history-title"
-          >
-            <div className="customer-account-section-heading">
-              <div>
-                <p className="customer-eyebrow">Pickup activity</p>
-                <h2 id="customer-order-history-title">Order history</h2>
-                <p>Only orders placed while signed in to this account appear here.</p>
-              </div>
-              <History aria-hidden="true" size={22} />
-            </div>
-
-            {ordersLoading ? (
-              <div className="customer-account-state" role="status">
-                Loading your orders...
-              </div>
-            ) : ordersError ? (
-              <div className="customer-account-form-error" role="alert">
-                {ordersError}
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="customer-account-empty">
-                <PackageCheck aria-hidden="true" size={30} />
-                <strong>No signed-in orders yet</strong>
-                <p>Your next pickup order will appear here when you place it while signed in.</p>
-                <button onClick={() => navigate("/shop")} type="button">
-                  Browse the shop
-                </button>
-              </div>
-            ) : (
-              <div className="customer-account-order-list-v2">
-                {orders.map((order) => (
-                  <article className="customer-account-order-v2" key={order.id}>
-                    <div className="customer-account-order-topline">
-                      <div>
-                        <span>Order</span>
-                        <strong>{order.orderNumber}</strong>
-                      </div>
-                      <span>{order.status}</span>
-                    </div>
-                    <div className="customer-account-order-meta">
-                      <span>{orderDateFormatter.format(new Date(order.createdAt))}</span>
-                      <strong>{formatCurrency(Number(order.totalAmount))}</strong>
-                    </div>
-                    <ul>
-                      {order.items.map((item) => (
-                        <li key={`${order.id}-${item.productId}`}>
-                          <span>
-                            {item.quantity} × {item.productName}
-                          </span>
-                          <strong>{formatCurrency(Number(item.totalAmount))}</strong>
-                        </li>
-                      ))}
-                    </ul>
-                  </article>
-                ))}
-              </div>
-            )}
           </section>
         </main>
       </div>
