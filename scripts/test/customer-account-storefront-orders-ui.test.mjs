@@ -16,6 +16,10 @@ const customerApp = fs.readFileSync(
   path.join(REPO_ROOT, "frontend", "src", "app", "CustomerApp.tsx"),
   "utf8"
 );
+const customerAccountPage = fs.readFileSync(
+  path.join(REPO_ROOT, "frontend", "src", "pages", "customer", "CustomerAccountPage.tsx"),
+  "utf8"
+);
 const premiumAccountCssPath = path.join(
   REPO_ROOT,
   "frontend",
@@ -59,4 +63,9 @@ test("premium account shell removes the oversized sidebar presentation", () => {
   assert.match(premiumAccountCss, /\.customer-account-identity-card\s*\{[\s\S]*display:\s*flex;/);
   assert.match(premiumAccountCss, /\.customer-account-identity-card h1\s*\{[\s\S]*white-space:\s*nowrap;/);
   assert.match(premiumAccountCss, /\.customer-account-signout\s*\{[\s\S]*width:\s*auto;/);
+});
+
+test("account hero does not duplicate the existing shop navigation", () => {
+  assert.doesNotMatch(customerAccountPage, /customer-account-shop-button/);
+  assert.doesNotMatch(customerAccountPage, />\s*Continue shopping\s*</);
 });
