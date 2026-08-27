@@ -45,7 +45,19 @@ test("customer recovery presents a premium three-step security flow", () => {
   assert.match(recoveryCss, /\.customer-recovery-progress\s*\{/);
   assert.match(recoveryCss, /\.customer-recovery-progress__step--active/);
   assert.match(recoveryCss, /backdrop-filter:\s*blur\(/);
-  assert.match(recoveryCss, /\.customer-recovery-code-input\s*\{[\s\S]*letter-spacing:/);
-  assert.match(recoveryCss, /repeating-linear-gradient/);
   assert.doesNotMatch(recoveryCss, /emerald|#10b981|#059669|#047857/i);
+});
+
+test("verification code uses six real visual slots instead of spacing one text input over fake columns", () => {
+  assert.match(recoveryPage, /customer-recovery-code-slots/);
+  assert.match(recoveryPage, /Array\.from\(\{ length: 6 \}/);
+  assert.match(recoveryPage, /verificationCode\[index\]/);
+  assert.match(recoveryPage, /customer-recovery-code-slot--filled/);
+  assert.match(recoveryPage, /aria-label="6-digit verification code"/);
+
+  assert.match(recoveryCss, /\.customer-recovery-code-slots\s*\{/);
+  assert.match(recoveryCss, /grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(recoveryCss, /\.customer-recovery-code-slot\s*\{/);
+  assert.match(recoveryCss, /\.customer-recovery-code-input\s*\{[\s\S]*opacity:\s*0;/);
+  assert.doesNotMatch(recoveryCss, /repeating-linear-gradient/);
 });
