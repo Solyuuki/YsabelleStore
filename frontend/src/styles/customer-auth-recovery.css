@@ -244,6 +244,15 @@
   }
 }
 
+@media (min-width: 761px) {
+  .customer-recovery-intro h1 {
+    max-width: none;
+    white-space: nowrap;
+    font-size: clamp(2.75rem, 4vw, 3.35rem);
+    line-height: 1.02;
+  }
+}
+
 @media (max-width: 760px) {
   .customer-auth-page--recovery {
     min-height: calc(100vh - 64px);
@@ -262,6 +271,7 @@
   .customer-recovery-intro h1 {
     max-width: 12ch;
     font-size: clamp(2.1rem, 11vw, 3rem);
+    white-space: normal;
   }
 
   .customer-recovery-actions {
