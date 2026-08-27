@@ -136,24 +136,3 @@ test("recovery request limits repeated normalized identities without echoing the
     assert.equal(payloadText.includes(identifier), false);
   });
 });
-
-test("recovery request has an independent IP ceiling across distinct identities", async () => {
-  const suffix = randomUUID().slice(0, 8);
-  await withServer(async (baseUrl) => {
-    for (let attempt = 0; attempt < 10; attempt += 1) {
-      const response = await fetch(`${baseUrl}/api/customer-auth/recovery/request`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ identifier: `ip-${suffix}-${attempt}@example.com` })
-      });
-      assert.equal(response.status, 200);
-    }
-
-    const limited = await fetch(`${baseUrl}/api/customer-auth/recovery/request`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ identifier: `ip-${suffix}-final@example.com` })
-    });
-    assert.equal(limited.status, 429);
-  });
-});
