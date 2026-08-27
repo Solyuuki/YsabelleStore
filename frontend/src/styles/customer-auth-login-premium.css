@@ -152,6 +152,35 @@
   color: rgb(71 85 105 / 38%);
 }
 
+.customer-auth-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -0.35rem;
+}
+
+.customer-auth-forgot-row a {
+  border-radius: 0.55rem;
+  color: #625bff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.customer-auth-forgot-row a:hover {
+  color: #a83cf0;
+  text-decoration: underline;
+}
+
+.customer-auth-forgot-row a:focus-visible {
+  outline: 2px solid rgb(98 91 255 / 52%);
+  outline-offset: 4px;
+}
+
 @keyframes ysabelle-login-aurora {
   0% {
     transform: translate3d(-2%, -1%, 0) scale(0.96) rotate(-4deg);
