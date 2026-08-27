@@ -48,4 +48,4 @@ jobs:
             scripts/customer-account-recovery-frontend-test.ts
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "style(auth): format account recovery"
-          git push origin HEAD:m1/v0.9/feat/customer-account-recovery
+          HUSKY=0 git push origin HEAD:m1/v0.9/feat/customer-account-recovery
