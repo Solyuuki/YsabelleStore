@@ -346,13 +346,6 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
               <h2>Profile, privacy, and security in one place.</h2>
               <p>Manage only the information and sessions that belong to your customer account.</p>
             </div>
-            <button
-              className="customer-account-shop-button"
-              onClick={() => navigate("/shop")}
-              type="button"
-            >
-              Continue shopping
-            </button>
           </header>
 
           {error || logoutMessage ? (
