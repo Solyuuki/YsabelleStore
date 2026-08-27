@@ -39,6 +39,16 @@ async function main() {
   assert.match(recoverySource, /role="status"/);
   assert.match(recoveryCss, /linear-gradient/);
   assert.match(recoveryCss, /@media/);
+  assert.match(
+    recoveryCss,
+    /\.customer-auth-page--recovery\s+\.customer-auth-stage\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s,
+    "Recovery must override the inherited desktop two-column auth grid with a single fluid column."
+  );
+  assert.match(
+    recoveryCss,
+    /\.customer-auth-page--recovery\s+\.customer-auth-stage\s*\{[^}]*width:\s*min\(100%,\s*44rem\)/s,
+    "Recovery desktop stage should retain the premium 44rem maximum width."
+  );
 
   const requests: Array<{ init: RequestInit; url: string }> = [];
   const originalFetch = globalThis.fetch;
