@@ -9,7 +9,12 @@ import {
   resetCustomerPassword,
   type CustomerRecoveryEmailDelivery
 } from "../src/services/customerPasswordRecoveryService.js";
-import { createCustomerSession, loginCustomer, registerCustomer } from "../src/services/customerAuthService.js";
+import {
+  createCustomerSession,
+  hashCustomerSessionToken,
+  loginCustomer,
+  registerCustomer
+} from "../src/services/customerAuthService.js";
 import { HttpError } from "../src/utils/httpError.js";
 
 const createdCustomerIds: string[] = [];
@@ -189,11 +194,14 @@ test("successful reset changes password, consumes all recovery tokens, and revok
   const login = await loginCustomer({ identifier: registered.customer.email, password: newPassword });
   assert.equal(login.customer.id, registered.customer.id);
 
+  const newSession = await prisma.customerSession.findFirstOrThrow({
+    where: { tokenHash: hashCustomerSessionToken(login.sessionToken) }
+  });
   const activeOldSessions = await prisma.customerSession.count({
     where: {
       customerAccountId: registered.customer.id,
       revokedAt: null,
-      id: { not: (await prisma.customerSession.findFirstOrThrow({ where: { tokenHash: hashCustomerPasswordResetToken(login.sessionToken) } })).id }
+      id: { not: newSession.id }
     }
   });
   assert.equal(activeOldSessions, 0);
