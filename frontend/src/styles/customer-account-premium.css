@@ -24,8 +24,7 @@
   padding: 15px 18px;
   border: 1px solid rgba(99, 102, 241, 0.14);
   border-radius: 24px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(249, 247, 255, 0.9));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(249, 247, 255, 0.9));
   box-shadow:
     0 24px 60px rgba(54, 47, 111, 0.09),
     inset 0 1px 0 rgba(255, 255, 255, 0.92);
@@ -120,10 +119,19 @@
   outline: none;
 }
 
-.customer-account-nav a[href="#orders"]:hover,
-.customer-account-nav a[href="#orders"]:focus-visible {
+.customer-account-layout-v2:has(#profile:target) .customer-account-nav a[href="#orders"],
+.customer-account-layout-v2:has(#security:target) .customer-account-nav a[href="#orders"] {
+  color: #656d82;
+  background: transparent;
+  box-shadow: none;
+}
+
+.customer-account-layout-v2:has(#profile:target) .customer-account-nav a[href="#profile"],
+.customer-account-layout-v2:has(#security:target) .customer-account-nav a[href="#security"],
+.customer-account-layout-v2:has(#orders:target) .customer-account-nav a[href="#orders"] {
   color: #ffffff;
-  background: linear-gradient(135deg, #087ee9, #594cdf 54%, #be4299);
+  background: linear-gradient(135deg, #168cff, #645cff 54%, #c94fa6);
+  box-shadow: 0 9px 22px rgba(88, 74, 210, 0.22);
 }
 
 .customer-account-signout {
@@ -220,8 +228,7 @@
 .customer-account-order-v2,
 .customer-account-session-list article {
   border-color: rgba(113, 104, 174, 0.12);
-  background:
-    linear-gradient(180deg, rgba(253, 253, 255, 0.98), rgba(249, 249, 255, 0.9));
+  background: linear-gradient(180deg, rgba(253, 253, 255, 0.98), rgba(249, 249, 255, 0.9));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
 }
 
