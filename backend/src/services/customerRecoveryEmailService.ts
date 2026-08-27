@@ -3,6 +3,7 @@ import type { CustomerRecoveryEmailDelivery } from "./customerPasswordRecoverySe
 
 const RESEND_EMAIL_ENDPOINT = "https://api.resend.com/emails";
 const DEVELOPMENT_RESEND_FROM_EMAIL = "onboarding@resend.dev";
+const CUSTOMER_RECOVERY_FROM_NAME = "Ysabelle Store";
 
 export class CustomerRecoveryEmailDeliveryError extends Error {
   constructor() {
@@ -17,6 +18,10 @@ function requireRecoveryEmailConfiguration() {
 
   if (!apiKey || !from) throw new CustomerRecoveryEmailDeliveryError();
   return { apiKey, from };
+}
+
+function formatRecoveryFromAddress(email: string) {
+  return `${CUSTOMER_RECOVERY_FROM_NAME} <${email}>`;
 }
 
 function recoveryEmailContent(verificationCode: string) {
@@ -67,7 +72,7 @@ async function sendRecoveryEmailRequest(input: {
       "user-agent": "YsabelleStore/customer-recovery"
     },
     body: JSON.stringify({
-      from: input.from,
+      from: formatRecoveryFromAddress(input.from),
       to: [input.to],
       subject: "Your Ysabelle Store verification code",
       html,
