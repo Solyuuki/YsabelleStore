@@ -44,6 +44,11 @@ export const AUTH_RATE_LIMITS = {
     maxAttempts: 3,
     scope: "customer-recovery-identifier"
   },
+  customerRecoveryVerify: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 10,
+    scope: "customer-recovery-verify"
+  },
   customerRecoveryReset: {
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     maxAttempts: 10,
