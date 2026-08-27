@@ -21,8 +21,10 @@ test("development recovery email retries a rejected custom sender with the Resen
     /const DEVELOPMENT_RESEND_FROM_EMAIL = "onboarding@resend\.dev"/
   );
   assert.match(recoveryEmailService, /sendRecoveryEmailRequest/);
-  assert.match(recoveryEmailService, /response\.status === 403/);
-  assert.match(recoveryEmailService, /env\.NODE_ENV !== "production"/);
+  assert.match(
+    recoveryEmailService,
+    /response\.status !== 403 \|\| env\.NODE_ENV === "production"/
+  );
   assert.match(recoveryEmailService, /from !== DEVELOPMENT_RESEND_FROM_EMAIL/);
   assert.match(recoveryEmailService, /domain.*not verified|verify a domain|testing emails/i);
   assert.match(
