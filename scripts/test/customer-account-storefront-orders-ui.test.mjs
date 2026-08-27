@@ -62,6 +62,25 @@ test("account tabs never use hash anchors that make the browser scroll", () => {
   assert.doesNotMatch(premiumAccountCss, /scroll-margin-top/);
 });
 
+test("account hero changes premium context with the active account tab", () => {
+  assert.match(customerAccountPage, /const ACCOUNT_HERO_CONTENT: Record<AccountTab,/);
+  assert.match(customerAccountPage, /orders:[\s\S]*eyebrow: "Order center"/);
+  assert.match(customerAccountPage, /orders:[\s\S]*title: "Your orders, organized\."/);
+  assert.match(customerAccountPage, /profile:[\s\S]*eyebrow: "Profile"/);
+  assert.match(customerAccountPage, /profile:[\s\S]*title: "Your identity, your account\."/);
+  assert.match(customerAccountPage, /security:[\s\S]*eyebrow: "Account security"/);
+  assert.match(customerAccountPage, /security:[\s\S]*title: "Protect your account\."/);
+  assert.match(customerAccountPage, /const heroContent = ACCOUNT_HERO_CONTENT\[activeTab\]/);
+  assert.match(customerAccountPage, /customer-account-hero--\$\{activeTab\}/);
+  assert.match(customerAccountPage, /key=\{activeTab\}/);
+  assert.match(premiumAccountCss, /\.customer-account-hero--orders/);
+  assert.match(premiumAccountCss, /\.customer-account-hero--profile/);
+  assert.match(premiumAccountCss, /\.customer-account-hero--security/);
+  assert.match(premiumAccountCss, /\.customer-account-hero__icon/);
+  assert.match(premiumAccountCss, /@keyframes customer-account-hero-enter/);
+  assert.match(premiumAccountCss, /min-height:\s*190px/);
+});
+
 test("premium account shell removes the oversized sidebar presentation", () => {
   assert.match(premiumAccountCss, /\.customer-account-rail\s*\{[\s\S]*position:\s*static;/);
   assert.match(premiumAccountCss, /\.customer-account-identity-card\s*\{[\s\S]*display:\s*flex;/);
