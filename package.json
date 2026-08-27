@@ -10,7 +10,9 @@
   ],
   "scripts": {
     "install:all": "npm install",
+    "predev": "node --env-file=.env scripts/customer-order-fixture-quarantine.mjs --apply",
     "dev": "node --env-file=.env scripts/dev.mjs",
+    "predev:web": "node --env-file=.env scripts/customer-order-fixture-quarantine.mjs --apply",
     "dev:web": "node --env-file=.env scripts/dev.mjs --web-only",
     "dev:lifecycle-test": "node --env-file=.env scripts/dev-lifecycle-smoke.mjs",
     "build": "npm run build --workspaces && npm run prisma:validate",
@@ -29,6 +31,8 @@
     "sprint6:fixtures:clean:apply": "node --env-file=.env scripts/sprint6-backfill-fixture-cleanup.mjs --apply",
     "customer-order-fixtures:clean": "node --env-file=.env scripts/customer-order-fixture-cleanup.mjs",
     "customer-order-fixtures:clean:apply": "node --env-file=.env scripts/customer-order-fixture-cleanup.mjs --apply",
+    "customer-order-fixtures:quarantine": "node --env-file=.env scripts/customer-order-fixture-quarantine.mjs",
+    "customer-order-fixtures:quarantine:apply": "node --env-file=.env scripts/customer-order-fixture-quarantine.mjs --apply",
     "curated-showcase:master-data:audit": "tsx --tsconfig frontend/tsconfig.app.json scripts/curated-showcase-master-data-audit.ts",
     "curated-showcase:master-data:apply": "tsx --tsconfig frontend/tsconfig.app.json scripts/curated-showcase-master-data-audit.ts --apply",
     "inventory:audit": "node scripts/inventory-audit.mjs",
