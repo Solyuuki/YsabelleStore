@@ -1,4 +1,4 @@
-name: Recovery Schema Artifact Temporary
+name: Recovery Format Temporary
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build-artifact:
+  format-recovery:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,13 +19,33 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node scripts/patch-recovery-schema-temp.mjs
+          cache: npm
+      - run: npm ci
+      - name: Format recovery-owned files
+        run: >-
+          npx prettier --write
+          backend/src/routes/customerAuth.routes.ts
+          backend/src/services/customerPasswordRecoveryService.ts
+          backend/test/customer-password-recovery-http.test.ts
+          backend/test/customer-password-recovery.test.ts
+          docs/superpowers/plans/2026-08-27-customer-account-recovery.md
+          frontend/src/pages/customer/CustomerAccountRecoveryPage.tsx
+          frontend/src/styles/customer-auth-recovery.css
+          scripts/customer-account-recovery-frontend-test.ts
       - run: git diff --check
-      - name: Commit schema and migration
+      - name: Commit formatting
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add database/prisma/schema.prisma database/prisma/migrations/20260827040000_customer_password_recovery/migration.sql
+          git add \
+            backend/src/routes/customerAuth.routes.ts \
+            backend/src/services/customerPasswordRecoveryService.ts \
+            backend/test/customer-password-recovery-http.test.ts \
+            backend/test/customer-password-recovery.test.ts \
+            docs/superpowers/plans/2026-08-27-customer-account-recovery.md \
+            frontend/src/pages/customer/CustomerAccountRecoveryPage.tsx \
+            frontend/src/styles/customer-auth-recovery.css \
+            scripts/customer-account-recovery-frontend-test.ts
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "feat(auth): add password recovery token persistence"
+          git commit -m "style(auth): format account recovery"
           git push origin HEAD:m1/v0.9/feat/customer-account-recovery
