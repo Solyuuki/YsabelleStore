@@ -61,3 +61,14 @@ test("verification code uses six real visual slots instead of spacing one text i
   assert.match(recoveryCss, /\.customer-recovery-code-input\s*\{[\s\S]*opacity:\s*0;/);
   assert.doesNotMatch(recoveryCss, /repeating-linear-gradient/);
 });
+
+test("premium OTP slots keep empty cells visually quiet and emphasize the active cell", () => {
+  assert.match(recoveryPage, /customer-recovery-code-slot--empty/);
+  assert.doesNotMatch(recoveryPage, /digit \|\| "0"/);
+  assert.match(recoveryPage, /digit \? digit : null/);
+
+  assert.match(recoveryCss, /\.customer-recovery-code-shell::before/);
+  assert.match(recoveryCss, /\.customer-recovery-code-slot--empty::after/);
+  assert.match(recoveryCss, /\.customer-recovery-code-slot--active/);
+  assert.match(recoveryCss, /linear-gradient\(135deg,\s*#168cff/);
+});
