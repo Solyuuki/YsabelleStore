@@ -192,6 +192,8 @@
   position: relative;
   z-index: 1;
   min-height: 132px;
+  max-width: none;
+  width: 100%;
   display: block;
   animation: customer-account-hero-enter 220ms ease both;
 }
