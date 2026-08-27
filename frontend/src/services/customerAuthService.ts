@@ -177,10 +177,25 @@ export async function requestCustomerPasswordRecovery(identifier: string): Promi
   requireCustomerAuthSuccess(response, "Password recovery could not be requested.");
 }
 
-export async function resetCustomerPassword(input: {
-  token: string;
-  newPassword: string;
+export async function verifyCustomerPasswordRecoveryCode(input: {
+  identifier: string;
+  verificationCode: string;
 }): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/recovery/verify",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: {
+        identifier: input.identifier.trim(),
+        verificationCode: input.verificationCode.trim()
+      }
+    })
+  );
+
+  requireCustomerAuthSuccess(response, "The verification code could not be verified.");
+}
+
+export async function resetCustomerPassword(input: { newPassword: string }): Promise<void> {
   const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
     "/api/customer-auth/recovery/reset",
     customerAuthRequestOptions({
