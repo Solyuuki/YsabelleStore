@@ -7,45 +7,56 @@ import {
   MailCheck,
   ShieldCheck
 } from "lucide-react";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import {
   requestCustomerPasswordRecovery,
-  resetCustomerPassword
+  resetCustomerPassword,
+  verifyCustomerPasswordRecoveryCode
 } from "@/services/customerAuthService";
 import "@/styles/customer-auth-recovery.css";
 
-type RecoveryStage = "identify" | "email-sent" | "reset" | "complete";
+type RecoveryStage = "identify" | "verify" | "reset" | "complete";
+
+const RESEND_COOLDOWN_SECONDS = 30;
 
 function errorMessage(reason: unknown, fallback: string) {
   return reason instanceof Error && reason.message ? reason.message : fallback;
 }
 
 export function CustomerAccountRecoveryPage({
-  location,
   navigate
 }: {
   location: string;
   navigate: (path: string) => void;
 }) {
-  const recoveryToken = useMemo(() => {
-    try {
-      return new URL(location, window.location.origin).searchParams.get("token")?.trim() ?? "";
-    } catch {
-      return "";
-    }
-  }, [location]);
-
-  const [stage, setStage] = useState<RecoveryStage>(recoveryToken ? "reset" : "identify");
+  const [stage, setStage] = useState<RecoveryStage>("identify");
   const [identifier, setIdentifier] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return undefined;
+    const timer = window.setTimeout(() => {
+      setResendCooldown((current) => Math.max(0, current - 1));
+    }, 1_000);
+    return () => window.clearTimeout(timer);
+  }, [resendCooldown]);
+
+  async function sendRecoveryCode(normalizedIdentifier: string) {
+    await requestCustomerPasswordRecovery(normalizedIdentifier);
+    setVerificationCode("");
+    setResendCooldown(RESEND_COOLDOWN_SECONDS);
+    setStage("verify");
+  }
 
   async function handleRecoveryRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,10 +70,48 @@ export function CustomerAccountRecoveryPage({
 
     setSubmitting(true);
     try {
-      await requestCustomerPasswordRecovery(normalizedIdentifier);
-      setStage("email-sent");
+      await sendRecoveryCode(normalizedIdentifier);
     } catch (reason) {
-      setError(errorMessage(reason, "Recovery instructions could not be requested right now."));
+      setError(errorMessage(reason, "A verification code could not be requested right now."));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleCodeVerification(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setError("Enter the 6-digit verification code from your email.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await verifyCustomerPasswordRecoveryCode({
+        identifier,
+        verificationCode
+      });
+      setVerificationCode("");
+      setStage("reset");
+    } catch (reason) {
+      setError(
+        errorMessage(reason, "The verification code is invalid or expired. Request a new code.")
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleResendCode() {
+    if (submitting || resendCooldown > 0) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      await sendRecoveryCode(identifier.trim());
+    } catch (reason) {
+      setError(errorMessage(reason, "A new verification code could not be requested right now."));
     } finally {
       setSubmitting(false);
     }
@@ -72,10 +121,6 @@ export function CustomerAccountRecoveryPage({
     event.preventDefault();
     setError(null);
 
-    if (!recoveryToken) {
-      setError("This recovery link is invalid or expired. Request a new one.");
-      return;
-    }
     if (newPassword.length < 8 || newPassword.length > 128) {
       setError("New password must be between 8 and 128 characters.");
       return;
@@ -87,17 +132,26 @@ export function CustomerAccountRecoveryPage({
 
     setSubmitting(true);
     try {
-      await resetCustomerPassword({ token: recoveryToken, newPassword });
+      await resetCustomerPassword({ newPassword });
       setNewPassword("");
       setConfirmPassword("");
       setStage("complete");
     } catch (reason) {
       setError(
-        errorMessage(reason, "This recovery link is invalid or expired. Request a new one.")
+        errorMessage(reason, "This recovery session is invalid or expired. Request a new code.")
       );
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function startOver() {
+    setError(null);
+    setVerificationCode("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setResendCooldown(0);
+    setStage("identify");
   }
 
   return (
@@ -105,7 +159,7 @@ export function CustomerAccountRecoveryPage({
       <div className="customer-auth-card customer-recovery-card">
         <div className="customer-auth-card__intro customer-recovery-intro">
           <span className="customer-auth-card__icon customer-recovery-icon" aria-hidden="true">
-            {stage === "email-sent" ? (
+            {stage === "verify" ? (
               <MailCheck size={22} />
             ) : stage === "complete" ? (
               <CheckCircle2 size={22} />
@@ -121,18 +175,18 @@ export function CustomerAccountRecoveryPage({
               <h1>Recover your account</h1>
               <p>Enter the username, email, or mobile number connected to your customer account.</p>
             </>
-          ) : stage === "email-sent" ? (
+          ) : stage === "verify" ? (
             <>
-              <h1>Check your email</h1>
+              <h1>Enter verification code</h1>
               <p>
-                If an eligible account exists, we sent a secure recovery link to its registered
-                email. The link expires in 15 minutes.
+                If an eligible account exists, a 6-digit code was sent to its registered email.
+                The code expires in 10 minutes.
               </p>
             </>
           ) : stage === "reset" ? (
             <>
               <h1>Set a new password</h1>
-              <p>Choose a new password for your Ysabelle Store customer account.</p>
+              <p>Your email code was verified. Choose a new password for your account.</p>
             </>
           ) : (
             <>
@@ -168,22 +222,53 @@ export function CustomerAccountRecoveryPage({
               />
             </label>
             <button className="customer-auth-submit" disabled={submitting} type="submit">
-              {submitting ? "Sending secure link..." : "Send recovery link"}
+              {submitting ? "Sending verification code..." : "Send verification code"}
             </button>
           </form>
         ) : null}
 
-        {stage === "email-sent" ? (
-          <div className="customer-recovery-status" role="status">
-            <MailCheck size={20} aria-hidden="true" />
-            <div>
-              <strong>Recovery request received</strong>
-              <span>
-                For privacy, this confirmation is the same whether or not an account matches your
-                entry.
-              </span>
+        {stage === "verify" ? (
+          <>
+            <form
+              aria-busy={submitting}
+              className="customer-auth-form customer-recovery-form"
+              onSubmit={(event) => void handleCodeVerification(event)}
+              noValidate
+            >
+              <label className="customer-auth-field" htmlFor="customer-recovery-code">
+                <span>6-digit verification code</span>
+                <input
+                  aria-invalid={Boolean(error)}
+                  autoComplete="one-time-code"
+                  className="customer-recovery-code-input"
+                  id="customer-recovery-code"
+                  inputMode="numeric"
+                  maxLength={6}
+                  onChange={(event) =>
+                    setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  pattern="[0-9]{6}"
+                  placeholder="000000"
+                  type="text"
+                  value={verificationCode}
+                />
+              </label>
+              <button className="customer-auth-submit" disabled={submitting} type="submit">
+                {submitting ? "Verifying code..." : "Verify code"}
+              </button>
+            </form>
+
+            <div className="customer-recovery-status" role="status">
+              <MailCheck size={20} aria-hidden="true" />
+              <div>
+                <strong>Verification code requested</strong>
+                <span>
+                  For privacy, this confirmation is the same whether or not an account matches your
+                  entry.
+                </span>
+              </div>
             </div>
-          </div>
+          </>
         ) : null}
 
         {stage === "reset" ? (
@@ -260,15 +345,19 @@ export function CustomerAccountRecoveryPage({
         ) : null}
 
         <div className="customer-recovery-actions">
-          {stage === "email-sent" ? (
+          {stage === "verify" ? (
             <button
               className="customer-recovery-secondary"
-              onClick={() => {
-                setError(null);
-                setStage("identify");
-              }}
+              disabled={submitting || resendCooldown > 0}
+              onClick={() => void handleResendCode()}
               type="button"
             >
+              {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend code"}
+            </button>
+          ) : null}
+
+          {stage === "verify" || stage === "reset" ? (
+            <button className="customer-recovery-secondary" onClick={startOver} type="button">
               Try another identifier
             </button>
           ) : null}
