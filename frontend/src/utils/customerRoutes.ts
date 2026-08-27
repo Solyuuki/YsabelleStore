@@ -30,7 +30,7 @@ export function resolveCustomerAuthRedirect(
   }
 
   if ((pathname === "/login" || pathname === "/register") && status === "authenticated") {
-    return "/account";
+    return "/";
   }
 
   return null;
