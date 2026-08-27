@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   patch-schema:
-    if: github.event.head_commit.message == 'ci(auth): add temporary recovery schema patch runner'
+    if: ${{ github.event.head_commit.message == 'ci(auth): fix recovery schema patch runner' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
