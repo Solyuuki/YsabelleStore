@@ -14,11 +14,11 @@ const fixtureScope = fs.readFileSync(
   path.join(REPO_ROOT, "backend", "test", "helpers", "databaseFixtureScope.ts"),
   "utf8"
 );
-const packageJson = JSON.parse(
-  fs.readFileSync(path.join(REPO_ROOT, "package.json"), "utf8")
-);
-const cleanupPath = path.join(REPO_ROOT, "scripts", "customer-order-fixture-cleanup.mjs");
-const cleanupScript = fs.existsSync(cleanupPath) ? fs.readFileSync(cleanupPath, "utf8") : "";
+const packageJson = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "package.json"), "utf8"));
+const quarantinePath = path.join(REPO_ROOT, "scripts", "customer-order-fixture-quarantine.mjs");
+const quarantineScript = fs.existsSync(quarantinePath)
+  ? fs.readFileSync(quarantinePath, "utf8")
+  : "";
 
 test("catalog quality recognizes leaked customer-order fixture categories exactly", () => {
   assert.deepEqual(fixtureCategoryEvidence({ name: "Customer Order Test deadbeef" }), [
@@ -57,14 +57,27 @@ test("database fixture scope covers customer accounts and sessions", () => {
   assert.match(fixtureScope, /transaction\.customerAccount\.deleteMany/);
 });
 
-test("repository exposes a dry-run and explicit apply command for leaked customer-order fixtures", () => {
-  assert.equal(typeof packageJson.scripts["customer-order-fixtures:clean"], "string");
-  assert.equal(typeof packageJson.scripts["customer-order-fixtures:clean:apply"], "string");
-  assert.match(packageJson.scripts["customer-order-fixtures:clean"], /customer-order-fixture-cleanup\.mjs/);
-  assert.match(packageJson.scripts["customer-order-fixtures:clean:apply"], /--apply/);
-  assert.match(cleanupScript, /Customer Order Test/);
-  assert.match(cleanupScript, /Customer Order Product/);
-  assert.match(cleanupScript, /CUSTOMER-ORDER-/);
-  assert.match(cleanupScript, /process\.argv\.includes\("--apply"\)/);
-  assert.match(cleanupScript, /Refusing to purge/);
+test("leaked customer-order fixtures are quarantined instead of deleted", () => {
+  assert.equal(typeof packageJson.scripts["customer-order-fixtures:quarantine"], "string");
+  assert.equal(typeof packageJson.scripts["customer-order-fixtures:quarantine:apply"], "string");
+  assert.match(
+    packageJson.scripts["customer-order-fixtures:quarantine"],
+    /customer-order-fixture-quarantine\.mjs/
+  );
+  assert.match(packageJson.scripts["customer-order-fixtures:quarantine:apply"], /--apply/);
+  assert.match(quarantineScript, /Customer Order Test/);
+  assert.match(quarantineScript, /Customer Order Product/);
+  assert.match(quarantineScript, /CUSTOMER-ORDER-/);
+  assert.match(quarantineScript, /recordSource:\s*"TEST_FIXTURE"/);
+  assert.match(quarantineScript, /dataQualityStatus:\s*"REJECTED"/);
+  assert.match(quarantineScript, /isStorefrontVisible:\s*false/);
+  assert.match(quarantineScript, /process\.argv\.includes\("--apply"\)/);
+  assert.doesNotMatch(quarantineScript, /\.delete(?:Many)?\(/);
+});
+
+test("development startup automatically quarantines stranded customer-order fixtures", () => {
+  assert.match(packageJson.scripts.predev, /customer-order-fixture-quarantine\.mjs --apply/);
+  assert.match(packageJson.scripts["predev:web"], /customer-order-fixture-quarantine\.mjs --apply/);
+  assert.doesNotMatch(packageJson.scripts.predev, /customer-order-fixture-cleanup\.mjs/);
+  assert.doesNotMatch(packageJson.scripts["predev:web"], /customer-order-fixture-cleanup\.mjs/);
 });
