@@ -6,22 +6,26 @@ on:
       - "m1/v0.9/feat/customer-account-recovery"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-artifact:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: m1/v0.9/feat/customer-account-recovery
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: node scripts/patch-recovery-schema-temp.mjs
       - run: git diff --check
-      - uses: actions/upload-artifact@v4
-        with:
-          name: recovery-schema-patch
-          path: |
-            database/prisma/schema.prisma
-            database/prisma/migrations/20260827040000_customer_password_recovery/migration.sql
-          if-no-files-found: error
+      - name: Commit schema and migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add database/prisma/schema.prisma database/prisma/migrations/20260827040000_customer_password_recovery/migration.sql
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "feat(auth): add password recovery token persistence"
+          git push origin HEAD:m1/v0.9/feat/customer-account-recovery
