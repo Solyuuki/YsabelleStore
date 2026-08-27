@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  recovery-red-green:
+  recovery-tier3:
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -31,16 +31,29 @@ jobs:
       DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
       JWT_SECRET: ci-only-secret
       FRONTEND_URL: http://localhost:5173
+      YSABELLE_BRANCH: m1/v0.9/feat/customer-account-recovery
+      YSABELLE_BASE_REF: feature/sprint9-account-security
+      YSABELLE_HEAD_SHA: ${{ github.sha }}
+      YSABELLE_BASE_SHA: 179dfad2986a97f9482ec039f4d8c8e194adfe18
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python image-test dependencies
+        run: python -m pip install -r catalog-image-engine/requirements.txt
       - run: npm ci
       - run: npm run prisma:generate
       - run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
-      - name: Recovery service and HTTP tests
-        run: npx tsx --test --test-concurrency=1 backend/test/customer-password-recovery.test.ts backend/test/customer-password-recovery-concurrency.test.ts backend/test/customer-password-recovery-http.test.ts backend/test/customer-password-recovery-rate-limit.test.ts
       - name: Recovery frontend contract
         run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-account-recovery-frontend-test.ts
+      - name: Full read-only code verification
+        run: npm run verify:code
+      - name: Verify committed sprint and artifact status
+        run: npm run verify:status
