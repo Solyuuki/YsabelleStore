@@ -8,6 +8,7 @@ const FIXTURE_CATEGORY_PATTERNS = [
     "CIQE_BACKFILL_TEST",
     new RegExp(`^Backfill (?:Eligible|Existing|Dry Run|Apply) ${GENERATED_SUFFIX}$`, "i")
   ],
+  ["CUSTOMER_ORDER_TEST", new RegExp(`^Customer Order Test ${GENERATED_SUFFIX}$`, "i")],
   ["INVENTORY_IMPORT_TEST", new RegExp(`^Inventory Import ${GENERATED_SUFFIX}$`, "i")],
   ["MANUAL_CATEGORY_TEST", new RegExp(`^Manual Category ${GENERATED_SUFFIX}$`, "i")],
   ["SLUG_CATEGORY_TEST", new RegExp(`^Slug Category ${GENERATED_SUFFIX}$`, "i")],
