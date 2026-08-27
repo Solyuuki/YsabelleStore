@@ -42,20 +42,24 @@ test("successful customer sign-in returns shoppers to the storefront", () => {
 
 test("customer account loads Orders first and keeps Profile and Security secondary", () => {
   assert.match(customerApp, /customer-account-premium\.css/);
-  assert.match(premiumAccountCss, /\.customer-account-layout-v2\s*\{[\s\S]*grid-template-columns:\s*1fr;/);
-  assert.match(premiumAccountCss, /\.customer-account-nav\s*\{[\s\S]*display:\s*flex;/);
-  assert.match(premiumAccountCss, /\.customer-account-nav a\[href="#orders"\][\s\S]*order:\s*-1;/);
-  assert.match(
-    premiumAccountCss,
-    /\.customer-account-content-v2 > #profile,[\s\S]*#security[\s\S]*display:\s*none;/
-  );
-  assert.match(
-    premiumAccountCss,
-    /\.customer-account-content-v2 > #orders\s*\{[\s\S]*display:\s*block;/
-  );
-  assert.match(premiumAccountCss, /#profile:target/);
-  assert.match(premiumAccountCss, /#security:target/);
-  assert.match(premiumAccountCss, /#orders:target/);
+  assert.match(customerAccountPage, /type AccountTab = "orders" \| "profile" \| "security";/);
+  assert.match(customerAccountPage, /useState<AccountTab>\("orders"\)/);
+  assert.match(customerAccountPage, /role="tablist"/);
+  assert.match(customerAccountPage, /aria-selected=\{activeTab === "orders"\}/);
+  assert.match(customerAccountPage, /aria-selected=\{activeTab === "profile"\}/);
+  assert.match(customerAccountPage, /aria-selected=\{activeTab === "security"\}/);
+  assert.match(customerAccountPage, /hidden=\{activeTab !== "orders"\}/);
+  assert.match(customerAccountPage, /hidden=\{activeTab !== "profile"\}/);
+  assert.match(customerAccountPage, /hidden=\{activeTab !== "security"\}/);
+});
+
+test("account tabs never use hash anchors that make the browser scroll", () => {
+  assert.doesNotMatch(customerAccountPage, /href="#(?:orders|profile|security)"/);
+  assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("orders"\)\}/);
+  assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("profile"\)\}/);
+  assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("security"\)\}/);
+  assert.doesNotMatch(premiumAccountCss, /:target/);
+  assert.doesNotMatch(premiumAccountCss, /scroll-margin-top/);
 });
 
 test("premium account shell removes the oversized sidebar presentation", () => {
@@ -63,6 +67,8 @@ test("premium account shell removes the oversized sidebar presentation", () => {
   assert.match(premiumAccountCss, /\.customer-account-identity-card\s*\{[\s\S]*display:\s*flex;/);
   assert.match(premiumAccountCss, /\.customer-account-identity-card h1\s*\{[\s\S]*white-space:\s*nowrap;/);
   assert.match(premiumAccountCss, /\.customer-account-signout\s*\{[\s\S]*width:\s*auto;/);
+  assert.match(premiumAccountCss, /\.customer-account-nav button\s*\{/);
+  assert.match(premiumAccountCss, /\.customer-account-nav button\[aria-selected="true"\]/);
 });
 
 test("account hero does not duplicate the existing shop navigation", () => {
