@@ -40,5 +40,5 @@ jobs:
       - run: npm ci
       - run: npm run prisma:generate
       - run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
-      - name: Recovery service tests
-        run: npx tsx --test --test-concurrency=1 backend/test/customer-password-recovery.test.ts backend/test/customer-password-recovery-concurrency.test.ts
+      - name: Recovery service and HTTP tests
+        run: npx tsx --test --test-concurrency=1 backend/test/customer-password-recovery.test.ts backend/test/customer-password-recovery-concurrency.test.ts backend/test/customer-password-recovery-http.test.ts
