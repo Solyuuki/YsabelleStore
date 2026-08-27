@@ -63,7 +63,7 @@ test("account tabs never use hash anchors that make the browser scroll", () => {
 });
 
 test("account hero changes premium context with the active account tab", () => {
-  assert.match(customerAccountPage, /const ACCOUNT_HERO_CONTENT: Record<AccountTab,/);
+  assert.match(customerAccountPage, /const ACCOUNT_HERO_CONTENT: Record<\s*AccountTab,/);
   assert.match(customerAccountPage, /orders:[\s\S]*eyebrow: "Order center"/);
   assert.match(customerAccountPage, /orders:[\s\S]*title: "Your orders, organized\."/);
   assert.match(customerAccountPage, /profile:[\s\S]*eyebrow: "Profile"/);
