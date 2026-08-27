@@ -18,14 +18,14 @@ function requireRecoveryEmailConfiguration() {
   return { apiKey, from };
 }
 
-function recoveryEmailContent(recoveryUrl: string) {
+function recoveryEmailContent(verificationCode: string) {
   const text = [
     "Ysabelle Store password recovery",
     "",
-    "We received a request to reset your customer account password.",
-    `Reset your password: ${recoveryUrl}`,
+    `Your verification code is: ${verificationCode}`,
     "",
-    "This recovery link expires in 15 minutes and can only be used once.",
+    "This code expires in 10 minutes and can only be used once.",
+    "Do not share this code with anyone.",
     "If you did not request this change, you can ignore this message."
   ].join("\n");
 
@@ -37,10 +37,10 @@ function recoveryEmailContent(recoveryUrl: string) {
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e8e4ff;border-radius:24px;padding:32px;box-shadow:0 18px 50px rgba(74,58,130,.12)">
           <tr><td>
             <div style="font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#6757d9">Ysabelle Store</div>
-            <h1 style="font-size:28px;line-height:1.2;margin:14px 0 10px">Reset your password</h1>
-            <p style="font-size:15px;line-height:1.7;color:#5f5a75;margin:0 0 24px">We received a request to reset your customer account password. Use the secure link below within 15 minutes.</p>
-            <a href="${recoveryUrl}" style="display:inline-block;padding:13px 20px;border-radius:14px;background:linear-gradient(135deg,#4d7cff,#7a5cff,#ec5da8);color:#ffffff;text-decoration:none;font-weight:800">Reset password</a>
-            <p style="font-size:13px;line-height:1.7;color:#77728c;margin:24px 0 0">This link is single-use. If you did not request a password reset, ignore this email and your current password will remain unchanged.</p>
+            <h1 style="font-size:28px;line-height:1.2;margin:14px 0 10px">Verify your recovery request</h1>
+            <p style="font-size:15px;line-height:1.7;color:#5f5a75;margin:0 0 24px">Use this one-time verification code to continue resetting your customer account password.</p>
+            <div style="display:inline-block;padding:14px 20px;border-radius:14px;background:linear-gradient(135deg,#edf4ff,#f5efff,#fff0f8);border:1px solid #ddd5ff;font-size:30px;line-height:1;font-weight:900;letter-spacing:.24em;color:#272244">${verificationCode}</div>
+            <p style="font-size:13px;line-height:1.7;color:#77728c;margin:24px 0 0">This code expires in 10 minutes and can only be used once. Do not share it with anyone. If you did not request a password reset, ignore this email and your current password will remain unchanged.</p>
           </td></tr>
         </table>
       </td></tr>
@@ -52,9 +52,9 @@ function recoveryEmailContent(recoveryUrl: string) {
 }
 
 export const customerRecoveryEmailDelivery: CustomerRecoveryEmailDelivery = {
-  async sendPasswordRecoveryEmail({ to, recoveryUrl }) {
+  async sendPasswordRecoveryEmail({ to, verificationCode }) {
     const { apiKey, from } = requireRecoveryEmailConfiguration();
-    const { html, text } = recoveryEmailContent(recoveryUrl);
+    const { html, text } = recoveryEmailContent(verificationCode);
 
     let response: Response;
     try {
@@ -67,7 +67,7 @@ export const customerRecoveryEmailDelivery: CustomerRecoveryEmailDelivery = {
         body: JSON.stringify({
           from,
           to: [to],
-          subject: "Reset your Ysabelle Store password",
+          subject: "Your Ysabelle Store verification code",
           html,
           text
         })
