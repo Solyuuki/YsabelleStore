@@ -142,31 +142,114 @@
 .customer-account-hero {
   position: relative;
   overflow: hidden;
-  padding: 26px 28px;
+  min-height: 190px;
+  padding: 28px 30px;
   border: 1px solid rgba(105, 91, 219, 0.12);
-  border-radius: 26px;
+  border-radius: 28px;
+  box-shadow:
+    0 28px 70px rgba(54, 47, 111, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  transition:
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.customer-account-hero--orders {
   background:
-    radial-gradient(circle at 84% 10%, rgba(109, 92, 255, 0.14), transparent 34%),
-    radial-gradient(circle at 70% 120%, rgba(226, 83, 163, 0.12), transparent 38%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 247, 255, 0.94));
-  box-shadow: 0 24px 62px rgba(54, 47, 111, 0.075);
+    radial-gradient(circle at 84% 12%, rgba(74, 144, 255, 0.22), transparent 30%),
+    radial-gradient(circle at 72% 118%, rgba(101, 92, 255, 0.16), transparent 38%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.99), rgba(244, 248, 255, 0.95));
+}
+
+.customer-account-hero--profile {
+  background:
+    radial-gradient(circle at 84% 12%, rgba(150, 90, 255, 0.2), transparent 31%),
+    radial-gradient(circle at 73% 118%, rgba(225, 77, 166, 0.15), transparent 38%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.99), rgba(250, 246, 255, 0.95));
+}
+
+.customer-account-hero--security {
+  background:
+    radial-gradient(circle at 84% 12%, rgba(55, 107, 255, 0.23), transparent 31%),
+    radial-gradient(circle at 72% 118%, rgba(114, 70, 214, 0.18), transparent 38%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.99), rgba(244, 246, 255, 0.96));
 }
 
 .customer-account-hero::after {
   content: "";
   position: absolute;
-  width: 170px;
-  height: 170px;
-  right: -65px;
-  top: -85px;
+  width: 184px;
+  height: 184px;
+  right: -62px;
+  top: -84px;
   border-radius: 50%;
-  border: 28px solid rgba(111, 86, 237, 0.05);
+  border: 30px solid rgba(111, 86, 237, 0.055);
   pointer-events: none;
 }
 
-.customer-account-hero h2 {
+.customer-account-hero__content {
+  position: relative;
+  z-index: 1;
+  min-height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  animation: customer-account-hero-enter 220ms ease both;
+}
+
+.customer-account-hero__content > div {
+  max-width: 720px;
+}
+
+.customer-account-hero__content > div > p:last-child {
   max-width: 680px;
-  font-size: clamp(1.6rem, 3vw, 2.22rem);
+  margin-top: 8px;
+  color: #687086;
+  line-height: 1.65;
+}
+
+.customer-account-hero h2 {
+  max-width: 700px;
+  margin-top: 7px;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  letter-spacing: -0.035em;
+}
+
+.customer-account-hero__icon {
+  width: 66px;
+  height: 66px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 21px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #168cff, #645cff 54%, #c94fa6);
+  box-shadow:
+    0 18px 38px rgba(85, 72, 205, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.customer-account-hero--profile .customer-account-hero__icon {
+  background: linear-gradient(135deg, #7657f5, #9b52df 54%, #d94c9f);
+}
+
+.customer-account-hero--security .customer-account-hero__icon {
+  background: linear-gradient(135deg, #176fef, #5359dd 54%, #8751d5);
+}
+
+@keyframes customer-account-hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .customer-account-section[hidden] {
@@ -265,12 +348,30 @@
     padding: 21px;
     border-radius: 21px;
   }
+
+  .customer-account-hero {
+    min-height: 190px;
+  }
+
+  .customer-account-hero__content {
+    min-height: 148px;
+    gap: 18px;
+  }
+
+  .customer-account-hero__icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 17px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .customer-account-hero,
+  .customer-account-hero__content,
   .customer-account-order-v2,
   .customer-account-signout,
   .customer-account-nav button {
+    animation: none;
     transition: none;
   }
 }
