@@ -81,6 +81,21 @@ test("account hero changes premium context with the active account tab", () => {
   assert.match(premiumAccountCss, /min-height:\s*190px/);
 });
 
+test("dynamic account hero keeps its icon in the card's top-right corner", () => {
+  assert.match(
+    premiumAccountCss,
+    /\.customer-account-hero > \.customer-account-hero__content\s*\{[\s\S]*?display:\s*block;/
+  );
+  assert.match(
+    premiumAccountCss,
+    /\.customer-account-hero__content > div\s*\{[\s\S]*?padding-right:\s*96px;/
+  );
+  assert.match(
+    premiumAccountCss,
+    /\.customer-account-hero__icon\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?top:\s*0;[\s\S]*?right:\s*0;/
+  );
+});
+
 test("premium account shell removes the oversized sidebar presentation", () => {
   assert.match(premiumAccountCss, /\.customer-account-rail\s*\{[\s\S]*position:\s*static;/);
   assert.match(premiumAccountCss, /\.customer-account-identity-card\s*\{[\s\S]*display:\s*flex;/);
