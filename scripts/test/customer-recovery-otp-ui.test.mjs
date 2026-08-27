@@ -26,6 +26,6 @@ test("customer auth client verifies OTP and resets password through cookie-backe
   assert.match(authService, /verifyCustomerPasswordRecoveryCode/);
   assert.match(authService, /\/api\/customer-auth\/recovery\/verify/);
   assert.match(authService, /verificationCode/);
-  assert.match(authService, /resetCustomerPassword\(input: \{\s*newPassword: string;/s);
-  assert.doesNotMatch(authService, /resetCustomerPassword\(input: \{\s*token: string;/s);
+  assert.match(authService, /resetCustomerPassword\(input:\s*\{\s*newPassword:\s*string\s*\}\)/s);
+  assert.doesNotMatch(authService, /resetCustomerPassword\(input:\s*\{[\s\S]*?token:\s*string/s);
 });
