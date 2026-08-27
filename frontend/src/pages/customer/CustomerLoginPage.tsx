@@ -27,7 +27,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     setSubmitting(true);
     try {
       await login({ identifier: identifier.trim(), password });
-      navigate("/account");
+      navigate("/");
     } catch (error) {
       setServerError(
         error instanceof Error ? error.message : "Unable to sign in. Please try again."
