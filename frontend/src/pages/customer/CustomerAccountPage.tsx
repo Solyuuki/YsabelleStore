@@ -36,6 +36,27 @@ const sessionDateFormatter = new Intl.DateTimeFormat("en-PH", {
 
 type AccountTab = "orders" | "profile" | "security";
 
+const ACCOUNT_HERO_CONTENT: Record<
+  AccountTab,
+  { eyebrow: string; title: string; description: string }
+> = {
+  orders: {
+    eyebrow: "Order center",
+    title: "Your orders, organized.",
+    description: "Track signed-in purchases, pickup activity, and your recent order history in one focused view."
+  },
+  profile: {
+    eyebrow: "Profile",
+    title: "Your identity, your account.",
+    description: "Keep your customer name and protected sign-in identifiers clear, current, and easy to review."
+  },
+  security: {
+    eyebrow: "Account security",
+    title: "Protect your account.",
+    description: "Manage your password and active sessions with security controls built around your customer account."
+  }
+};
+
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return (
@@ -161,6 +182,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     () => sessions.filter((session) => !session.current).length,
     [sessions]
   );
+  const heroContent = ACCOUNT_HERO_CONTENT[activeTab];
 
   if (!customer) {
     return (
@@ -356,11 +378,22 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
         </aside>
 
         <main className="customer-account-content-v2">
-          <header className="customer-account-hero">
-            <div>
-              <p className="customer-eyebrow">Account center</p>
-              <h2>Profile, privacy, and security in one place.</h2>
-              <p>Manage only the information and sessions that belong to your customer account.</p>
+          <header className={`customer-account-hero customer-account-hero--${activeTab}`}>
+            <div className="customer-account-hero__content" key={activeTab}>
+              <div>
+                <p className="customer-eyebrow">{heroContent.eyebrow}</p>
+                <h2>{heroContent.title}</h2>
+                <p>{heroContent.description}</p>
+              </div>
+              <span className="customer-account-hero__icon" aria-hidden="true">
+                {activeTab === "orders" ? (
+                  <History size={28} />
+                ) : activeTab === "profile" ? (
+                  <UserRound size={28} />
+                ) : (
+                  <ShieldCheck size={28} />
+                )}
+              </span>
             </div>
           </header>
 
