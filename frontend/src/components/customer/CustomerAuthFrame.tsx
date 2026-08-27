@@ -8,7 +8,7 @@ import "@/styles/customer-auth-login-premium.css";
 
 type CustomerAuthFrameProps = {
   children: ReactNode;
-  mode: "login" | "register";
+  mode: "login" | "register" | "recovery";
   navigate: (path: string) => void;
 };
 
