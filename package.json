@@ -60,7 +60,7 @@
     "prepare": "husky",
     "prisma:validate": "prisma validate --schema database/prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema database/prisma/schema.prisma",
-    "prisma:sync:dev": "prisma db push --schema database/prisma/schema.prisma --skip-generate",
+    "prisma:sync:dev": "prisma db push --schema database/prisma/schema.prisma --skip-generate && npm run prisma:generate",
     "db:seed": "node database/seed/development.mjs",
     "customer-mobile-identities:audit": "tsx backend/src/scripts/backfillCustomerMobileIdentities.ts",
     "customer-mobile-identities:apply": "tsx backend/src/scripts/backfillCustomerMobileIdentities.ts --apply",
