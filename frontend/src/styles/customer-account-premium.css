@@ -1,0 +1,304 @@
+.customer-account-page-v2 {
+  padding: 34px 24px 72px;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(74, 144, 255, 0.14), transparent 30%),
+    radial-gradient(circle at 82% 10%, rgba(168, 85, 247, 0.13), transparent 31%),
+    radial-gradient(circle at 72% 72%, rgba(236, 72, 153, 0.08), transparent 34%),
+    linear-gradient(180deg, #f7f9ff 0%, #fcfbff 48%, #ffffff 100%);
+}
+
+.customer-account-layout-v2 {
+  width: min(1240px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.customer-account-rail {
+  position: static;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 15px 18px;
+  border: 1px solid rgba(99, 102, 241, 0.14);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(249, 247, 255, 0.9));
+  box-shadow:
+    0 24px 60px rgba(54, 47, 111, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+}
+
+.customer-account-identity-card {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customer-account-identity-card > div:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.customer-account-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  flex: 0 0 auto;
+  background: linear-gradient(135deg, #168cff, #645cff 52%, #db4fa7);
+  box-shadow:
+    0 12px 28px rgba(94, 72, 214, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+
+.customer-account-identity-card .customer-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.13em;
+}
+
+.customer-account-identity-card h1 {
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.06rem;
+  line-height: 1.15;
+}
+
+.customer-account-identity-card h1 + p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+}
+
+.customer-account-status {
+  margin-left: 2px;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  color: #315f4a;
+  background: rgba(224, 247, 233, 0.82);
+  border: 1px solid rgba(51, 141, 91, 0.12);
+}
+
+.customer-account-nav {
+  margin: 0;
+  padding: 4px;
+  display: flex;
+  gap: 5px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(241, 242, 252, 0.78);
+}
+
+.customer-account-nav a {
+  min-height: 40px;
+  padding: 0 13px;
+  border-radius: 12px;
+  color: #656d82;
+  font-size: 0.87rem;
+  white-space: nowrap;
+}
+
+.customer-account-nav a[href="#orders"] {
+  order: -1;
+  color: #ffffff;
+  background: linear-gradient(135deg, #168cff, #645cff 54%, #c94fa6);
+  box-shadow: 0 9px 22px rgba(88, 74, 210, 0.22);
+}
+
+.customer-account-nav a:hover,
+.customer-account-nav a:focus-visible {
+  color: #3e3b73;
+  background: rgba(255, 255, 255, 0.94);
+  outline: none;
+}
+
+.customer-account-nav a[href="#orders"]:hover,
+.customer-account-nav a[href="#orders"]:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, #087ee9, #594cdf 54%, #be4299);
+}
+
+.customer-account-signout {
+  width: auto;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid rgba(181, 70, 119, 0.11);
+  background: rgba(255, 241, 247, 0.86);
+}
+
+.customer-account-content-v2 {
+  display: grid;
+  gap: 18px;
+}
+
+.customer-account-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 26px 28px;
+  border: 1px solid rgba(105, 91, 219, 0.12);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 84% 10%, rgba(109, 92, 255, 0.14), transparent 34%),
+    radial-gradient(circle at 70% 120%, rgba(226, 83, 163, 0.12), transparent 38%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 247, 255, 0.94));
+  box-shadow: 0 24px 62px rgba(54, 47, 111, 0.075);
+}
+
+.customer-account-hero::after {
+  content: "";
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  right: -65px;
+  top: -85px;
+  border-radius: 50%;
+  border: 28px solid rgba(111, 86, 237, 0.05);
+  pointer-events: none;
+}
+
+.customer-account-hero h2 {
+  max-width: 680px;
+  font-size: clamp(1.6rem, 3vw, 2.22rem);
+}
+
+.customer-account-shop-button {
+  position: relative;
+  z-index: 1;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #168cff, #645cff 52%, #cc4ca3);
+  box-shadow: 0 13px 30px rgba(91, 72, 212, 0.23);
+}
+
+.customer-account-content-v2 > #profile,
+.customer-account-content-v2 > #security {
+  display: none;
+}
+
+.customer-account-content-v2 > #orders {
+  display: block;
+}
+
+.customer-account-content-v2 > #profile:target,
+.customer-account-content-v2 > #security:target,
+.customer-account-content-v2 > #orders:target {
+  display: block;
+}
+
+.customer-account-content-v2:has(#profile:target) > #orders,
+.customer-account-content-v2:has(#security:target) > #orders {
+  display: none;
+}
+
+.customer-account-section {
+  scroll-margin-top: 110px;
+  padding: 26px 28px;
+  border: 1px solid rgba(99, 102, 241, 0.11);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 22px 58px rgba(38, 35, 87, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px);
+}
+
+.customer-account-section-heading {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+}
+
+.customer-account-readonly-grid > div,
+.customer-account-username-card,
+.customer-account-security-card,
+.customer-account-order-v2,
+.customer-account-session-list article {
+  border-color: rgba(113, 104, 174, 0.12);
+  background:
+    linear-gradient(180deg, rgba(253, 253, 255, 0.98), rgba(249, 249, 255, 0.9));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+}
+
+.customer-account-order-v2 {
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.customer-account-order-v2:hover {
+  transform: translateY(-1px);
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 14px 34px rgba(62, 54, 125, 0.08);
+}
+
+@media (max-width: 900px) {
+  .customer-account-rail {
+    grid-template-columns: 1fr auto;
+  }
+
+  .customer-account-nav {
+    grid-column: 1 / -1;
+    order: 3;
+    width: 100%;
+  }
+
+  .customer-account-nav a {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .customer-account-page-v2 {
+    padding: 22px 13px 54px;
+  }
+
+  .customer-account-rail {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .customer-account-identity-card {
+    flex: 1 1 calc(100% - 100px);
+  }
+
+  .customer-account-status {
+    display: none;
+  }
+
+  .customer-account-signout {
+    margin-left: auto;
+  }
+
+  .customer-account-nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .customer-account-nav a {
+    flex: 1 0 auto;
+  }
+
+  .customer-account-hero,
+  .customer-account-section {
+    padding: 21px;
+    border-radius: 21px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-account-order-v2,
+  .customer-account-shop-button,
+  .customer-account-signout,
+  .customer-account-nav a {
+    transition: none;
+  }
+}
