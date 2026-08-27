@@ -5,7 +5,9 @@ import {
   issueCustomerRegistrationIntent,
   loginCustomerAccount,
   logoutCustomerAccount,
-  registerCustomerAccount
+  registerCustomerAccount,
+  requestCustomerPasswordRecoveryAccount,
+  resetCustomerPasswordAccount
 } from "../controllers/customerAuthController.js";
 import { createAuthRateLimit, derivePrivateRateLimitKey } from "../middleware/authRateLimit.js";
 import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
@@ -87,6 +89,24 @@ const customerLoginIdentifierRateLimit = createAuthRateLimit({
       : null;
   }
 });
+const customerRecoveryRequestRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRecoveryRequest);
+const customerRecoveryIdentifierRateLimit = createAuthRateLimit({
+  ...AUTH_RATE_LIMITS.customerRecoveryIdentifier,
+  keyResolver(request) {
+    const rawIdentifier = stringFieldFromBody(request.body, "identifier");
+    if (!rawIdentifier) return null;
+
+    const identity = classifyCustomerLoginIdentifier(rawIdentifier);
+    return identity
+      ? privateIdentityKey(
+          AUTH_RATE_LIMITS.customerRecoveryIdentifier.scope,
+          identity.kind,
+          identity.normalized
+        )
+      : null;
+  }
+});
+const customerRecoveryResetRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRecoveryReset);
 
 customerAuthRouter.use(disableSensitiveResponseCaching);
 
@@ -110,6 +130,19 @@ customerAuthRouter.post(
   customerLoginRateLimit,
   customerLoginIdentifierRateLimit,
   loginCustomerAccount
+);
+customerAuthRouter.post(
+  "/recovery/request",
+  requireAllowedCustomerAuthOrigin,
+  customerRecoveryRequestRateLimit,
+  customerRecoveryIdentifierRateLimit,
+  requestCustomerPasswordRecoveryAccount
+);
+customerAuthRouter.post(
+  "/recovery/reset",
+  requireAllowedCustomerAuthOrigin,
+  customerRecoveryResetRateLimit,
+  resetCustomerPasswordAccount
 );
 customerAuthRouter.get("/me", requireCustomerAuth, getCurrentCustomer);
 customerAuthRouter.post("/logout", requireAllowedCustomerAuthOrigin, logoutCustomerAccount);
