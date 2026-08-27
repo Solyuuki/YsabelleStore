@@ -54,3 +54,15 @@ test("retailer and staff-login ambient surfaces inherit the ecommerce palette", 
   );
   assert.doesNotMatch(theme, /#10b981|#059669|#047857|rgba\(167,\s*243,\s*208/i);
 });
+
+test("logout confirmation uses the approved ecommerce palette", () => {
+  const modal = read("frontend/src/components/shared/LogoutConfirmationModal.tsx");
+
+  assert.match(modal, /rounded-xl border border-indigo-100 bg-white\/95/);
+  assert.match(modal, /border-indigo-200 bg-indigo-50\/80/);
+  assert.match(modal, /bg-gradient-to-r from-rose-500 via-fuchsia-500 to-fuchsia-600/);
+  assert.doesNotMatch(
+    modal,
+    /border-emerald-100|bg-emerald-50\/80|text-emerald-800|bg-amber-600|hover:bg-amber-700/
+  );
+});
