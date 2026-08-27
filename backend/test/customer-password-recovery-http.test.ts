@@ -6,8 +6,9 @@ import test from "node:test";
 import { createApp } from "../src/app.js";
 
 const GENERIC_REQUEST_MESSAGE =
-  "If an eligible account exists, recovery instructions have been sent to its registered email.";
-const GENERIC_RESET_MESSAGE = "This recovery link is invalid or expired. Request a new one.";
+  "If an eligible account exists, a verification code has been sent to its registered email.";
+const GENERIC_CODE_MESSAGE = "The verification code is invalid or expired. Request a new code.";
+const GENERIC_GRANT_MESSAGE = "This recovery session is invalid or expired. Request a new code.";
 
 type ApiBody = {
   success?: boolean;
@@ -37,7 +38,7 @@ async function body(response: Response): Promise<ApiBody> {
   return (await response.json()) as ApiBody;
 }
 
-test("recovery request is enumeration-resistant and disables sensitive response caching", async () => {
+test("recovery request is enumeration-resistant, token-free, and disables sensitive response caching", async () => {
   const suffix = randomUUID().slice(0, 8);
   await withServer(async (baseUrl) => {
     const response = await fetch(`${baseUrl}/api/customer-auth/recovery/request`, {
@@ -56,6 +57,7 @@ test("recovery request is enumeration-resistant and disables sensitive response 
     assert.equal(payload.success, true);
     assert.equal(payload.message, GENERIC_REQUEST_MESSAGE);
     assert.equal(JSON.stringify(payload).includes("token"), false);
+    assert.equal(JSON.stringify(payload).includes("verificationCode"), false);
   });
 });
 
@@ -69,31 +71,64 @@ test("recovery endpoints reject malformed bodies and disallowed origins", async 
     assert.equal(malformed.status, 400);
     assert.equal((await body(malformed)).error?.code, "INVALID_CUSTOMER_RECOVERY_REQUEST");
 
-    const disallowed = await fetch(`${baseUrl}/api/customer-auth/recovery/request`, {
+    const verifyMalformed = await fetch(`${baseUrl}/api/customer-auth/recovery/verify`, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        origin: "https://evil.example"
-      },
-      body: JSON.stringify({ identifier: "customer@example.com" })
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ identifier: "customer@example.com", verificationCode: "123" })
     });
-    assert.equal(disallowed.status, 403);
-    assert.equal((await body(disallowed)).error?.code, "CUSTOMER_AUTH_ORIGIN_REJECTED");
+    assert.equal(verifyMalformed.status, 400);
+    assert.equal(
+      (await body(verifyMalformed)).error?.code,
+      "INVALID_CUSTOMER_RECOVERY_VERIFICATION_REQUEST"
+    );
 
     const resetMalformed = await fetch(`${baseUrl}/api/customer-auth/recovery/reset`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ token: "short", newPassword: "short" })
+      body: JSON.stringify({ newPassword: "short" })
     });
     assert.equal(resetMalformed.status, 400);
     assert.equal(
       (await body(resetMalformed)).error?.code,
       "INVALID_CUSTOMER_PASSWORD_RESET_REQUEST"
     );
+
+    const disallowed = await fetch(`${baseUrl}/api/customer-auth/recovery/verify`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "https://evil.example"
+      },
+      body: JSON.stringify({ identifier: "customer@example.com", verificationCode: "123456" })
+    });
+    assert.equal(disallowed.status, 403);
+    assert.equal((await body(disallowed)).error?.code, "CUSTOMER_AUTH_ORIGIN_REJECTED");
   });
 });
 
-test("unknown reset tokens use one generic recovery-link error", async () => {
+test("unknown verification identities use one generic OTP error", async () => {
+  const suffix = randomUUID().slice(0, 8);
+  await withServer(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/api/customer-auth/recovery/verify`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "http://localhost:5173"
+      },
+      body: JSON.stringify({
+        identifier: `missing-verify-${suffix}@example.com`,
+        verificationCode: "123456"
+      })
+    });
+
+    assert.equal(response.status, 400);
+    const payload = await body(response);
+    assert.equal(payload.error?.code, "CUSTOMER_PASSWORD_RECOVERY_CODE_INVALID");
+    assert.equal(payload.message, GENERIC_CODE_MESSAGE);
+  });
+});
+
+test("password reset requires a valid HttpOnly recovery grant cookie", async () => {
   await withServer(async (baseUrl) => {
     const response = await fetch(`${baseUrl}/api/customer-auth/recovery/reset`, {
       method: "POST",
@@ -101,16 +136,13 @@ test("unknown reset tokens use one generic recovery-link error", async () => {
         "content-type": "application/json",
         origin: "http://localhost:5173"
       },
-      body: JSON.stringify({
-        token: "unknown-recovery-token-value-that-is-long-enough-123456",
-        newPassword: "NewPassword456!"
-      })
+      body: JSON.stringify({ newPassword: "NewPassword456!" })
     });
 
     assert.equal(response.status, 400);
     const payload = await body(response);
     assert.equal(payload.error?.code, "CUSTOMER_PASSWORD_RECOVERY_INVALID");
-    assert.equal(payload.message, GENERIC_RESET_MESSAGE);
+    assert.equal(payload.message, GENERIC_GRANT_MESSAGE);
   });
 });
 
