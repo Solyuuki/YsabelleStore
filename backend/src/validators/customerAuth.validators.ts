@@ -65,5 +65,16 @@ export const customerLoginSchema = z.object({
   password: z.string().min(1).max(128)
 });
 
+export const customerPasswordRecoveryRequestSchema = z.object({
+  identifier: z.string().trim().min(1).max(191)
+});
+
+export const customerPasswordResetSchema = z.object({
+  token: z.string().trim().min(32).max(256),
+  newPassword: z.string().min(8).max(128)
+});
+
 export type CustomerRegisterInput = z.infer<typeof customerRegisterSchema>;
 export type CustomerLoginInput = z.infer<typeof customerLoginSchema>;
+export type CustomerPasswordRecoveryRequest = z.infer<typeof customerPasswordRecoveryRequestSchema>;
+export type CustomerPasswordReset = z.infer<typeof customerPasswordResetSchema>;
