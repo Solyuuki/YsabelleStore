@@ -11,6 +11,11 @@ async function main() {
     "Expected requestCustomerPasswordRecovery service function."
   );
   assert.equal(
+    typeof customerAuthService.verifyCustomerPasswordRecoveryCode,
+    "function",
+    "Expected verifyCustomerPasswordRecoveryCode service function."
+  );
+  assert.equal(
     typeof customerAuthService.resetCustomerPassword,
     "function",
     "Expected resetCustomerPassword service function."
@@ -31,7 +36,7 @@ async function main() {
   assert.match(loginSource, /\/account-recovery/);
   assert.match(appSource, /CustomerAccountRecoveryPage/);
   assert.match(appSource, /pathname === "\/account-recovery"/);
-  assert.match(recoverySource, /Check your email/);
+  assert.match(recoverySource, /Enter verification code/);
   assert.match(recoverySource, /Set a new password/);
   assert.match(recoverySource, /Password reset complete/);
   assert.match(recoverySource, /confirmPassword/);
@@ -72,8 +77,21 @@ async function main() {
       identifier: "maria@example.com"
     });
 
+    await customerAuthService.verifyCustomerPasswordRecoveryCode({
+      identifier: "maria@example.com",
+      verificationCode: "123456"
+    });
+    const verifyCall = requests.at(-1);
+    assert.ok(verifyCall);
+    assert.equal(new URL(verifyCall.url).pathname, "/api/customer-auth/recovery/verify");
+    assert.equal(verifyCall.init.method, "POST");
+    assert.equal(verifyCall.init.credentials, "include");
+    assert.deepEqual(JSON.parse(String(verifyCall.init.body)), {
+      identifier: "maria@example.com",
+      verificationCode: "123456"
+    });
+
     await customerAuthService.resetCustomerPassword({
-      token: "recovery-token-value-that-is-long-enough-123456",
       newPassword: "CustomerPass456!"
     });
     const resetCall = requests.at(-1);
@@ -82,7 +100,6 @@ async function main() {
     assert.equal(resetCall.init.method, "POST");
     assert.equal(resetCall.init.credentials, "include");
     assert.deepEqual(JSON.parse(String(resetCall.init.body)), {
-      token: "recovery-token-value-that-is-long-enough-123456",
       newPassword: "CustomerPass456!"
     });
   } finally {
