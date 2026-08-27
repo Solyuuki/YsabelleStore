@@ -84,3 +84,4 @@
 | 2026-08-26 | Review generated artifact updates before commit.      | Documentation and validation review.                                | Scripts / CI                                                                    | Normal   |
 | 2026-08-27 | Review generated artifact updates before commit.      | Documentation and validation review.                                | Other                                                                           | Normal   |
 | 2026-08-27 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Scripts / CI<br>Backend<br>Docs<br>Frontend                                     | High     |
+| 2026-08-27 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Other<br>Scripts / CI<br>Backend<br>Database<br>Docs<br>Frontend                | High     |
