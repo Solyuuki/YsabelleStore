@@ -37,9 +37,10 @@ test("customer auth client verifies OTP and resets password through cookie-backe
 test("customer recovery presents a premium three-step security flow", () => {
   assert.match(recoveryPage, /aria-label="Recovery progress"/);
   assert.match(recoveryPage, /customer-recovery-progress__step/);
-  assert.match(recoveryPage, />Identify</);
-  assert.match(recoveryPage, />Verify</);
-  assert.match(recoveryPage, />Secure</);
+  assert.match(recoveryPage, /\{ label: "Identify", step: 1 \}/);
+  assert.match(recoveryPage, /\{ label: "Verify", step: 2 \}/);
+  assert.match(recoveryPage, /\{ label: "Secure", step: 3 \}/);
+  assert.match(recoveryPage, /<span>\{label\}<\/span>/);
 
   assert.match(recoveryCss, /\.customer-recovery-progress\s*\{/);
   assert.match(recoveryCss, /\.customer-recovery-progress__step--active/);
