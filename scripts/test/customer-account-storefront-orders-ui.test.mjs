@@ -84,7 +84,7 @@ test("account hero changes premium context with the active account tab", () => {
 test("dynamic account hero keeps its icon in the card's top-right corner", () => {
   assert.match(
     premiumAccountCss,
-    /\.customer-account-hero > \.customer-account-hero__content\s*\{[\s\S]*?display:\s*block;/
+    /\.customer-account-hero > \.customer-account-hero__content\s*\{[\s\S]*?max-width:\s*none;[\s\S]*?width:\s*100%;[\s\S]*?display:\s*block;/
   );
   assert.match(
     premiumAccountCss,
