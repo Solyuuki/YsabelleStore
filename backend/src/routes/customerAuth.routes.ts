@@ -7,7 +7,8 @@ import {
   logoutCustomerAccount,
   registerCustomerAccount,
   requestCustomerPasswordRecoveryAccount,
-  resetCustomerPasswordAccount
+  resetCustomerPasswordAccount,
+  verifyCustomerPasswordRecoveryAccount
 } from "../controllers/customerAuthController.js";
 import { createAuthRateLimit, derivePrivateRateLimitKey } from "../middleware/authRateLimit.js";
 import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
@@ -108,6 +109,7 @@ const customerRecoveryIdentifierRateLimit = createAuthRateLimit({
       : null;
   }
 });
+const customerRecoveryVerifyRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRecoveryVerify);
 const customerRecoveryResetRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRecoveryReset);
 
 customerAuthRouter.use(disableSensitiveResponseCaching);
@@ -139,6 +141,12 @@ customerAuthRouter.post(
   customerRecoveryRequestRateLimit,
   customerRecoveryIdentifierRateLimit,
   requestCustomerPasswordRecoveryAccount
+);
+customerAuthRouter.post(
+  "/recovery/verify",
+  requireAllowedCustomerAuthOrigin,
+  customerRecoveryVerifyRateLimit,
+  verifyCustomerPasswordRecoveryAccount
 );
 customerAuthRouter.post(
   "/recovery/reset",
