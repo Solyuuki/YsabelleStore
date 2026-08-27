@@ -8,6 +8,10 @@ const recoveryPage = fs.readFileSync(
   path.join(REPO_ROOT, "frontend", "src", "pages", "customer", "CustomerAccountRecoveryPage.tsx"),
   "utf8"
 );
+const recoveryCss = fs.readFileSync(
+  path.join(REPO_ROOT, "frontend", "src", "styles", "customer-auth-recovery.css"),
+  "utf8"
+);
 const authService = fs.readFileSync(
   path.join(REPO_ROOT, "frontend", "src", "services", "customerAuthService.ts"),
   "utf8"
@@ -28,4 +32,19 @@ test("customer auth client verifies OTP and resets password through cookie-backe
   assert.match(authService, /verificationCode/);
   assert.match(authService, /resetCustomerPassword\(input:\s*\{\s*newPassword:\s*string\s*\}\)/s);
   assert.doesNotMatch(authService, /resetCustomerPassword\(input:\s*\{[\s\S]*?token:\s*string/s);
+});
+
+test("customer recovery presents a premium three-step security flow", () => {
+  assert.match(recoveryPage, /aria-label="Recovery progress"/);
+  assert.match(recoveryPage, /customer-recovery-progress__step/);
+  assert.match(recoveryPage, />Identify</);
+  assert.match(recoveryPage, />Verify</);
+  assert.match(recoveryPage, />Secure</);
+
+  assert.match(recoveryCss, /\.customer-recovery-progress\s*\{/);
+  assert.match(recoveryCss, /\.customer-recovery-progress__step--active/);
+  assert.match(recoveryCss, /backdrop-filter:\s*blur\(/);
+  assert.match(recoveryCss, /\.customer-recovery-code-input\s*\{[\s\S]*letter-spacing:/);
+  assert.match(recoveryCss, /repeating-linear-gradient/);
+  assert.doesNotMatch(recoveryCss, /emerald|#10b981|#059669|#047857/i);
 });
