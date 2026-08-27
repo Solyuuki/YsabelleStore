@@ -33,6 +33,21 @@ export const AUTH_RATE_LIMITS = {
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     maxAttempts: 3,
     scope: "customer-register-identity"
+  },
+  customerAccountSensitiveIp: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 20,
+    scope: "customer-account-sensitive-ip"
+  },
+  customerAccountSensitiveAccount: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 5,
+    scope: "customer-account-sensitive-account"
+  },
+  customerUsernameClaimTarget: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 3,
+    scope: "customer-username-claim-target"
   }
 } as const;
 

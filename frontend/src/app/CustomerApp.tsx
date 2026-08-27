@@ -18,6 +18,7 @@ import { ShopPage } from "@/pages/customer/ShopPage";
 import "driver.js/dist/driver.css";
 import "@/styles/customer.css";
 import "@/styles/customer-auth.css";
+import "@/styles/customer-account.css";
 import "@/styles/auth-brand.css";
 import "@/styles/customer-header-actions.css";
 import "@/styles/customer-guide-route-transition.css";
