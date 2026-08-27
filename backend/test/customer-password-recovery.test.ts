@@ -81,7 +81,10 @@ test("missing and inactive accounts have the same public recovery outcome and do
   const { deliveries, delivery } = captureDelivery();
 
   assert.equal(
-    await requestCustomerPasswordRecovery({ identifier: `missing-${suffix}@example.com` }, delivery),
+    await requestCustomerPasswordRecovery(
+      { identifier: `missing-${suffix}@example.com` },
+      delivery
+    ),
     undefined
   );
 
@@ -92,7 +95,10 @@ test("missing and inactive accounts have the same public recovery outcome and do
     password: "OldPassword123!"
   });
   rememberCustomer(registered.customer.id);
-  await prisma.customerAccount.update({ data: { status: "INACTIVE" }, where: { id: registered.customer.id } });
+  await prisma.customerAccount.update({
+    data: { status: "INACTIVE" },
+    where: { id: registered.customer.id }
+  });
 
   assert.equal(
     await requestCustomerPasswordRecovery({ identifier: registered.customer.email }, delivery),
@@ -167,7 +173,9 @@ test("delivery failure removes the newly issued reset token while preserving gen
     /provider unavailable/
   );
   assert.equal(
-    await prisma.customerPasswordResetToken.count({ where: { customerAccountId: registered.customer.id } }),
+    await prisma.customerPasswordResetToken.count({
+      where: { customerAccountId: registered.customer.id }
+    }),
     0
   );
 });
@@ -190,8 +198,13 @@ test("successful reset changes password, consumes all recovery tokens, and revok
   const rawToken = tokenFromRecoveryUrl(deliveries[0]!.recoveryUrl);
   await resetCustomerPassword({ token: rawToken, newPassword });
 
-  await assert.rejects(loginCustomer({ identifier: registered.customer.email, password: oldPassword }));
-  const login = await loginCustomer({ identifier: registered.customer.email, password: newPassword });
+  await assert.rejects(
+    loginCustomer({ identifier: registered.customer.email, password: oldPassword })
+  );
+  const login = await loginCustomer({
+    identifier: registered.customer.email,
+    password: newPassword
+  });
   assert.equal(login.customer.id, registered.customer.id);
 
   const newSession = await prisma.customerSession.findFirstOrThrow({
@@ -231,11 +244,17 @@ test("unknown, expired, and already-used reset tokens return the same public err
   const token = tokenFromRecoveryUrl(deliveries[0]!.recoveryUrl);
 
   await assert.rejects(
-    resetCustomerPassword({ token: "missing-token-value-that-is-long-enough", newPassword: "NewPassword456!" }, now),
+    resetCustomerPassword(
+      { token: "missing-token-value-that-is-long-enough", newPassword: "NewPassword456!" },
+      now
+    ),
     expectGenericRecoveryError
   );
   await assert.rejects(
-    resetCustomerPassword({ token, newPassword: "NewPassword456!" }, new Date(now.getTime() + 15 * 60 * 1000 + 1)),
+    resetCustomerPassword(
+      { token, newPassword: "NewPassword456!" },
+      new Date(now.getTime() + 15 * 60 * 1000 + 1)
+    ),
     expectGenericRecoveryError
   );
 });

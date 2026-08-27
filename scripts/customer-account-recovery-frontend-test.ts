@@ -45,10 +45,10 @@ async function main() {
   globalThis.fetch = async (input, init) => {
     const url = input instanceof URL ? input.toString() : String(input);
     requests.push({ init: init ?? {}, url });
-    return new Response(
-      JSON.stringify({ success: true, message: "Request successful." }),
-      { headers: { "content-type": "application/json" }, status: 200 }
-    );
+    return new Response(JSON.stringify({ success: true, message: "Request successful." }), {
+      headers: { "content-type": "application/json" },
+      status: 200
+    });
   };
 
   try {

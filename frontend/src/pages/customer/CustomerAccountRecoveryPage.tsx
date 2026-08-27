@@ -92,7 +92,9 @@ export function CustomerAccountRecoveryPage({
       setConfirmPassword("");
       setStage("complete");
     } catch (reason) {
-      setError(errorMessage(reason, "This recovery link is invalid or expired. Request a new one."));
+      setError(
+        errorMessage(reason, "This recovery link is invalid or expired. Request a new one.")
+      );
     } finally {
       setSubmitting(false);
     }
@@ -117,9 +119,7 @@ export function CustomerAccountRecoveryPage({
           {stage === "identify" ? (
             <>
               <h1>Recover your account</h1>
-              <p>
-                Enter the username, email, or mobile number connected to your customer account.
-              </p>
+              <p>Enter the username, email, or mobile number connected to your customer account.</p>
             </>
           ) : stage === "email-sent" ? (
             <>
@@ -273,11 +273,7 @@ export function CustomerAccountRecoveryPage({
             </button>
           ) : null}
 
-          <CustomerLink
-            className="customer-recovery-back"
-            href="/login"
-            navigate={navigate}
-          >
+          <CustomerLink className="customer-recovery-back" href="/login" navigate={navigate}>
             <ArrowLeft size={16} aria-hidden="true" />
             {stage === "complete" ? "Sign in with new password" : "Back to sign in"}
           </CustomerLink>

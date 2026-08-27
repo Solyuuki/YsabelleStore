@@ -21,14 +21,24 @@
 .customer-auth-page--recovery::before {
   top: -8rem;
   left: -6rem;
-  background: radial-gradient(circle, rgb(0 140 255 / 34%), rgb(98 91 255 / 10%) 58%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgb(0 140 255 / 34%),
+    rgb(98 91 255 / 10%) 58%,
+    transparent 70%
+  );
   animation: ysabelle-recovery-drift 18s ease-in-out infinite alternate;
 }
 
 .customer-auth-page--recovery::after {
   right: -7rem;
   bottom: -8rem;
-  background: radial-gradient(circle, rgb(244 63 140 / 28%), rgb(168 60 240 / 14%) 56%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgb(244 63 140 / 28%),
+    rgb(168 60 240 / 14%) 56%,
+    transparent 70%
+  );
   animation: ysabelle-recovery-drift 21s ease-in-out infinite alternate-reverse;
 }
 
@@ -92,7 +102,12 @@
 
 .customer-recovery-icon {
   margin-inline: auto;
-  background: linear-gradient(135deg, rgb(0 140 255 / 14%), rgb(122 92 255 / 16%), rgb(244 63 140 / 13%));
+  background: linear-gradient(
+    135deg,
+    rgb(0 140 255 / 14%),
+    rgb(122 92 255 / 16%),
+    rgb(244 63 140 / 13%)
+  );
   box-shadow:
     0 10px 26px rgb(98 91 255 / 14%),
     inset 0 1px 0 rgb(255 255 255 / 74%);
@@ -126,7 +141,12 @@
   padding: 1rem 1.05rem;
   border: 1px solid rgb(111 92 240 / 15%);
   border-radius: 1rem;
-  background: linear-gradient(135deg, rgb(238 246 255 / 86%), rgb(248 242 255 / 88%), rgb(255 242 249 / 86%));
+  background: linear-gradient(
+    135deg,
+    rgb(238 246 255 / 86%),
+    rgb(248 242 255 / 88%),
+    rgb(255 242 249 / 86%)
+  );
   color: #413b66;
 }
 
@@ -154,7 +174,12 @@
 
 .customer-recovery-status--success {
   border-color: rgb(55 161 122 / 18%);
-  background: linear-gradient(135deg, rgb(238 250 248 / 90%), rgb(243 246 255 / 90%), rgb(255 242 249 / 82%));
+  background: linear-gradient(
+    135deg,
+    rgb(238 250 248 / 90%),
+    rgb(243 246 255 / 90%),
+    rgb(255 242 249 / 82%)
+  );
 }
 
 .customer-recovery-status--success svg {

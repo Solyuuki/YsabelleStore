@@ -111,7 +111,12 @@ export async function resetCustomerPassword(
   input: CustomerPasswordResetInput,
   now = new Date()
 ): Promise<void> {
-  if (!input.token || input.token.length < 32 || input.newPassword.length < 8 || input.newPassword.length > 128) {
+  if (
+    !input.token ||
+    input.token.length < 32 ||
+    input.newPassword.length < 8 ||
+    input.newPassword.length > 128
+  ) {
     throw invalidRecovery();
   }
 

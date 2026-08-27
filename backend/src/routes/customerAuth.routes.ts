@@ -89,7 +89,9 @@ const customerLoginIdentifierRateLimit = createAuthRateLimit({
       : null;
   }
 });
-const customerRecoveryRequestRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRecoveryRequest);
+const customerRecoveryRequestRateLimit = createAuthRateLimit(
+  AUTH_RATE_LIMITS.customerRecoveryRequest
+);
 const customerRecoveryIdentifierRateLimit = createAuthRateLimit({
   ...AUTH_RATE_LIMITS.customerRecoveryIdentifier,
   keyResolver(request) {

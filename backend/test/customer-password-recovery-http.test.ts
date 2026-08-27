@@ -86,7 +86,10 @@ test("recovery endpoints reject malformed bodies and disallowed origins", async 
       body: JSON.stringify({ token: "short", newPassword: "short" })
     });
     assert.equal(resetMalformed.status, 400);
-    assert.equal((await body(resetMalformed)).error?.code, "INVALID_CUSTOMER_PASSWORD_RESET_REQUEST");
+    assert.equal(
+      (await body(resetMalformed)).error?.code,
+      "INVALID_CUSTOMER_PASSWORD_RESET_REQUEST"
+    );
   });
 });
 

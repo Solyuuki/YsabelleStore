@@ -27,11 +27,13 @@
 ### Task 1: RED — Recovery security contract tests
 
 **Files:**
+
 - Create: `backend/test/customer-password-recovery.test.ts`
 - Create: `backend/test/customer-password-recovery-concurrency.test.ts`
 - Modify: `backend/package.json`
 
 **Interfaces:**
+
 - Tests expect `requestCustomerPasswordRecovery`, `resetCustomerPassword`, `hashCustomerPasswordResetToken`, and injectable email delivery from `backend/src/services/customerPasswordRecoveryService.ts`.
 - Tests expect Prisma model `customerPasswordResetToken`.
 
@@ -44,12 +46,14 @@
 ### Task 2: GREEN — Reset-token persistence and recovery service
 
 **Files:**
+
 - Modify: `database/prisma/schema.prisma`
 - Create: `database/prisma/migrations/20260827040000_customer_password_recovery/migration.sql`
 - Create: `backend/src/services/customerPasswordRecoveryService.ts`
 - Modify: `backend/src/services/customerAuthService.ts` only if a small shared identity/session helper is needed; avoid unrelated refactor.
 
 **Interfaces:**
+
 - `hashCustomerPasswordResetToken(token: string): string`
 - `requestCustomerPasswordRecovery(input: { identifier: string }, delivery: CustomerRecoveryEmailDelivery, now?: Date): Promise<void>`
 - `resetCustomerPassword(input: { token: string; newPassword: string }, now?: Date): Promise<void>`
@@ -67,6 +71,7 @@
 ### Task 3: RED/GREEN — Resend adapter, validation, rate limits, and HTTP contract
 
 **Files:**
+
 - Create: `backend/src/services/customerRecoveryEmailService.ts`
 - Modify: `backend/src/config/env.ts`
 - Modify: `.env.example`
@@ -77,6 +82,7 @@
 - Create or extend: `backend/test/customer-auth-http.test.ts`
 
 **Interfaces:**
+
 - Env: `RESEND_API_KEY?: string`, `CUSTOMER_RECOVERY_FROM_EMAIL?: string`.
 - Request schema: `{ identifier: string }`.
 - Reset schema: `{ token: string; newPassword: string }`.
@@ -95,6 +101,7 @@
 ### Task 4: RED/GREEN — Premium customer recovery UI
 
 **Files:**
+
 - Create: `frontend/src/pages/customer/CustomerAccountRecoveryPage.tsx`
 - Create: `frontend/src/styles/customer-auth-recovery.css`
 - Modify: `frontend/src/pages/customer/CustomerLoginPage.tsx`
@@ -105,6 +112,7 @@
 - Modify root `package.json` only if required to expose the focused frontend contract script.
 
 **Interfaces:**
+
 - `requestCustomerPasswordRecovery(identifier: string): Promise<void>`
 - `resetCustomerPassword(input: { token: string; newPassword: string }): Promise<void>`
 - `CustomerAuthPageKind` adds `recovery`.
@@ -120,6 +128,7 @@
 ### Task 5: Full high-risk verification and cleanup
 
 **Files:**
+
 - Update required Sprint 9/member implementation artifacts only through repository status tooling or factual evidence; do not fabricate passed commands.
 
 - [ ] Run targeted recovery service, concurrency, HTTP, and frontend tests.
