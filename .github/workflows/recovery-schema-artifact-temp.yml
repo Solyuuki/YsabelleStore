@@ -1,0 +1,27 @@
+name: Recovery Schema Artifact Temporary
+
+on:
+  push:
+    branches:
+      - "m1/v0.9/feat/customer-account-recovery"
+
+permissions:
+  contents: read
+
+jobs:
+  build-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/patch-recovery-schema-temp.mjs
+      - run: git diff --check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-schema-patch
+          path: |
+            database/prisma/schema.prisma
+            database/prisma/migrations/20260827040000_customer_password_recovery/migration.sql
+          if-no-files-found: error
