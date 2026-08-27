@@ -1,0 +1,19 @@
+name: Recovery Typography Temporary
+
+on:
+  push:
+    branches:
+      - "m1/v0.9/feat/customer-account-recovery"
+
+permissions:
+  contents: read
+
+jobs:
+  recovery-typography:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/customer-recovery-typography-test.mjs
