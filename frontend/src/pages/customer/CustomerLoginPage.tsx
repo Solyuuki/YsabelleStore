@@ -113,6 +113,12 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
             ) : null}
           </label>
 
+          <div className="customer-auth-forgot-row">
+            <CustomerLink href="/account-recovery" navigate={navigate}>
+              Forgot password?
+            </CustomerLink>
+          </div>
+
           <button className="customer-auth-submit" disabled={submitting} type="submit">
             {submitting ? "Signing in..." : "Sign In"}
           </button>
