@@ -39,3 +39,16 @@ test("recovery email keeps production strict instead of always replacing the con
     /const from = env\.NODE_ENV === "production"\s*\?[^:]+:\s*DEVELOPMENT_RESEND_FROM_EMAIL/s
   );
 });
+
+test("recovery email presents Ysabelle Store as the sender name for configured and fallback addresses", () => {
+  assert.match(recoveryEmailService, /const CUSTOMER_RECOVERY_FROM_NAME = "Ysabelle Store"/);
+  assert.match(recoveryEmailService, /function formatRecoveryFromAddress\(email: string\)/);
+  assert.match(
+    recoveryEmailService,
+    /return `\$\{CUSTOMER_RECOVERY_FROM_NAME\} <\$\{email\}>`/
+  );
+  assert.match(
+    recoveryEmailService,
+    /from: formatRecoveryFromAddress\(input\.from\)/
+  );
+});
