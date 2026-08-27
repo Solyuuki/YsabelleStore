@@ -6,6 +6,14 @@ import {
   registerCustomer,
   revokeCustomerSession
 } from "../services/customerAuthService.js";
+import {
+  CustomerRecoveryEmailDeliveryError,
+  customerRecoveryEmailDelivery
+} from "../services/customerRecoveryEmailService.js";
+import {
+  requestCustomerPasswordRecovery,
+  resetCustomerPassword
+} from "../services/customerPasswordRecoveryService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import {
   clearCustomerSessionCookie,
@@ -22,8 +30,13 @@ import {
 import { HttpError } from "../utils/httpError.js";
 import {
   customerLoginSchema,
+  customerPasswordRecoveryRequestSchema,
+  customerPasswordResetSchema,
   customerRegisterSchema
 } from "../validators/customerAuth.validators.js";
+
+const CUSTOMER_RECOVERY_REQUEST_MESSAGE =
+  "If an eligible account exists, recovery instructions have been sent to its registered email.";
 
 export const issueCustomerRegistrationIntent: RequestHandler = (_request, response) => {
   const intentToken = createCustomerRegistrationIntent();
@@ -90,6 +103,53 @@ export const loginCustomerAccount: RequestHandler = async (request, response, ne
         customer: session.customer
       })
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const requestCustomerPasswordRecoveryAccount: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const parsedBody = customerPasswordRecoveryRequestSchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer recovery request is invalid.", {
+        code: "INVALID_CUSTOMER_RECOVERY_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    try {
+      await requestCustomerPasswordRecovery(parsedBody.data, customerRecoveryEmailDelivery);
+    } catch (error) {
+      if (!(error instanceof CustomerRecoveryEmailDeliveryError)) throw error;
+      console.error(JSON.stringify({ event: "customer_recovery_delivery_failed" }));
+    }
+
+    response.status(200).json(createSuccessResponse(CUSTOMER_RECOVERY_REQUEST_MESSAGE));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetCustomerPasswordAccount: RequestHandler = async (request, response, next) => {
+  try {
+    const parsedBody = customerPasswordResetSchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer password reset request is invalid.", {
+        code: "INVALID_CUSTOMER_PASSWORD_RESET_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    await resetCustomerPassword(parsedBody.data);
+    clearCustomerSessionCookie(response);
+    response
+      .status(200)
+      .json(createSuccessResponse("Password reset successful. Sign in with your new password."));
   } catch (error) {
     next(error);
   }

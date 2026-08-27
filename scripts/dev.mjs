@@ -65,6 +65,9 @@ try {
       );
     }
 
+    console.info("Synchronizing YsabelleStore development database schema...");
+    synchronizeDevelopmentDatabaseSchema();
+
     console.info("Starting YsabelleStore backend...");
     const backend = startWorkspace("backend");
     await waitForBackend(backend.process);
@@ -96,6 +99,22 @@ try {
 } catch (error) {
   const message = error instanceof Error ? error.message : "Unknown development startup error.";
   await shutdown(1, message);
+}
+
+function synchronizeDevelopmentDatabaseSchema() {
+  const result = spawnSync(process.execPath, [npmCliPath, "run", "prisma:sync:dev"], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: "inherit",
+    windowsHide: true
+  });
+
+  if (result.error) {
+    throw new Error(`Unable to synchronize the development database schema: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    throw new Error("Unable to synchronize the development database schema.");
+  }
 }
 
 function startWorkspace(workspace, options = {}) {

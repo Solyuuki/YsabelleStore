@@ -1,0 +1,288 @@
+.customer-auth-page--recovery {
+  min-height: calc(100vh - 76px);
+  padding: clamp(1.5rem, 4vw, 4rem) 1.25rem;
+  background:
+    radial-gradient(circle at 16% 20%, rgb(0 140 255 / 18%), transparent 29rem),
+    radial-gradient(circle at 84% 24%, rgb(168 60 240 / 16%), transparent 27rem),
+    radial-gradient(circle at 70% 84%, rgb(244 63 140 / 14%), transparent 28rem),
+    linear-gradient(135deg, #eef6ff 0%, #f5f0ff 50%, #fff1f8 100%);
+}
+
+.customer-auth-page--recovery::before,
+.customer-auth-page--recovery::after {
+  width: 32rem;
+  height: 32rem;
+  border-radius: 50%;
+  filter: blur(40px) saturate(130%);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.customer-auth-page--recovery::before {
+  top: -8rem;
+  left: -6rem;
+  background: radial-gradient(
+    circle,
+    rgb(0 140 255 / 34%),
+    rgb(98 91 255 / 10%) 58%,
+    transparent 70%
+  );
+  animation: ysabelle-recovery-drift 18s ease-in-out infinite alternate;
+}
+
+.customer-auth-page--recovery::after {
+  right: -7rem;
+  bottom: -8rem;
+  background: radial-gradient(
+    circle,
+    rgb(244 63 140 / 28%),
+    rgb(168 60 240 / 14%) 56%,
+    transparent 70%
+  );
+  animation: ysabelle-recovery-drift 21s ease-in-out infinite alternate-reverse;
+}
+
+.customer-auth-page--recovery .customer-auth-stage {
+  width: min(100%, 44rem);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin-inline: auto;
+}
+
+.customer-auth-page--recovery .customer-auth-stage::before {
+  inset: -1.4rem;
+  border-radius: 3rem;
+  background: conic-gradient(
+    from 220deg,
+    rgb(0 140 255 / 15%),
+    rgb(98 91 255 / 18%),
+    rgb(168 60 240 / 14%),
+    rgb(244 63 140 / 15%),
+    rgb(0 140 255 / 15%)
+  );
+  filter: blur(34px);
+  opacity: 0.78;
+}
+
+.customer-auth-page--recovery .customer-auth-stage__panel {
+  width: 100%;
+  min-width: 0;
+  padding: clamp(1.75rem, 4vw, 3.25rem);
+  border: 1px solid rgb(255 255 255 / 68%);
+  border-radius: 2rem;
+  background: rgb(255 255 255 / 84%);
+  box-shadow:
+    0 28px 90px rgb(34 38 76 / 14%),
+    0 0 42px rgb(122 92 255 / 8%),
+    inset 0 1px 0 rgb(255 255 255 / 78%);
+  backdrop-filter: blur(24px) saturate(145%);
+}
+
+.customer-recovery-card {
+  width: 100%;
+  max-width: none;
+}
+
+.customer-recovery-intro {
+  max-width: 36rem;
+  margin: 0 auto 1.75rem;
+  text-align: center;
+}
+
+.customer-recovery-intro h1 {
+  max-width: 11ch;
+  margin: 0.55rem auto 0;
+  font-size: clamp(2.5rem, 5vw, 3.7rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.customer-recovery-intro > p:last-child {
+  max-width: 32rem;
+  margin: 0.9rem auto 0;
+  color: rgb(71 70 96 / 82%);
+  line-height: 1.65;
+}
+
+.customer-recovery-icon {
+  margin-inline: auto;
+  background: linear-gradient(
+    135deg,
+    rgb(0 140 255 / 14%),
+    rgb(122 92 255 / 16%),
+    rgb(244 63 140 / 13%)
+  );
+  box-shadow:
+    0 10px 26px rgb(98 91 255 / 14%),
+    inset 0 1px 0 rgb(255 255 255 / 74%);
+}
+
+.customer-recovery-form {
+  gap: 1.05rem;
+}
+
+.customer-recovery-form .customer-auth-field input {
+  min-height: 54px;
+  background: rgb(255 255 255 / 78%);
+}
+
+.customer-recovery-form .customer-auth-submit {
+  min-height: 54px;
+  background: linear-gradient(115deg, #168cff 0%, #7258f5 51%, #ef5aa8 100%);
+  box-shadow:
+    0 14px 34px rgb(98 91 255 / 24%),
+    0 0 30px rgb(244 63 140 / 10%);
+}
+
+.customer-recovery-alert {
+  margin-bottom: 1rem;
+}
+
+.customer-recovery-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgb(111 92 240 / 15%);
+  border-radius: 1rem;
+  background: linear-gradient(
+    135deg,
+    rgb(238 246 255 / 86%),
+    rgb(248 242 255 / 88%),
+    rgb(255 242 249 / 86%)
+  );
+  color: #413b66;
+}
+
+.customer-recovery-status svg {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+  color: #7058e8;
+}
+
+.customer-recovery-status div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.customer-recovery-status strong {
+  color: #24203d;
+  font-size: 0.96rem;
+}
+
+.customer-recovery-status span {
+  color: rgb(71 70 96 / 82%);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.customer-recovery-status--success {
+  border-color: rgb(55 161 122 / 18%);
+  background: linear-gradient(
+    135deg,
+    rgb(238 250 248 / 90%),
+    rgb(243 246 255 / 90%),
+    rgb(255 242 249 / 82%)
+  );
+}
+
+.customer-recovery-status--success svg {
+  color: #278b72;
+}
+
+.customer-recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  margin-top: 1.25rem;
+}
+
+.customer-recovery-back,
+.customer-recovery-secondary,
+.customer-auth-recovery-link {
+  border: 0;
+  background: transparent;
+  color: #6253d7;
+  font: inherit;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.customer-recovery-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.customer-recovery-back:hover,
+.customer-recovery-secondary:hover,
+.customer-auth-recovery-link:hover {
+  color: #d84f9b;
+}
+
+.customer-auth-recovery-link-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -0.35rem;
+}
+
+.customer-auth-recovery-link {
+  font-size: 0.88rem;
+}
+
+@keyframes ysabelle-recovery-drift {
+  from {
+    transform: translate3d(-2%, -2%, 0) scale(0.96);
+  }
+
+  to {
+    transform: translate3d(8%, 10%, 0) scale(1.08);
+  }
+}
+
+@media (min-width: 761px) {
+  .customer-recovery-intro h1 {
+    max-width: none;
+    white-space: nowrap;
+    font-size: clamp(2.75rem, 4vw, 3.35rem);
+    line-height: 1.02;
+  }
+}
+
+@media (max-width: 760px) {
+  .customer-auth-page--recovery {
+    min-height: calc(100vh - 64px);
+    padding: 1rem 0.8rem 2rem;
+  }
+
+  .customer-auth-page--recovery .customer-auth-stage {
+    width: min(100%, 36rem);
+  }
+
+  .customer-auth-page--recovery .customer-auth-stage__panel {
+    padding: 1.35rem 1rem 1.5rem;
+    border-radius: 1.45rem;
+  }
+
+  .customer-recovery-intro h1 {
+    max-width: 12ch;
+    font-size: clamp(2.1rem, 11vw, 3rem);
+    white-space: normal;
+  }
+
+  .customer-recovery-actions {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-auth-page--recovery::before,
+  .customer-auth-page--recovery::after {
+    animation: none;
+    transform: none;
+  }
+}

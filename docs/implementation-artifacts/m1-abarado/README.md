@@ -77,8 +77,8 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Validation status    | Passed                                                                                                                                                          |
 | Last update          | 2026-08-27                                                                                                                                                      |
-| Current branch       | m1/v0.9/feat/phase3-phase4-readiness                                                                                                                            |
-| Current work areas   | Scripts / CI<br>Backend<br>Docs<br>Frontend                                                                                                                     |
+| Current branch       | m1/v0.9/feat/customer-account-recovery                                                                                                                          |
+| Current work areas   | Other<br>Scripts / CI<br>Backend<br>Database<br>Docs<br>Frontend                                                                                                |
 | Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
 
 ## Current Work Snapshot
