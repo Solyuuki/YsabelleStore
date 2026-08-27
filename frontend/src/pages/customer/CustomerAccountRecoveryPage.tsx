@@ -282,8 +282,25 @@ export function CustomerAccountRecoveryPage({
               <label className="customer-auth-field" htmlFor="customer-recovery-code">
                 <span>6-digit verification code</span>
                 <div className="customer-recovery-code-shell">
+                  <div className="customer-recovery-code-slots" aria-hidden="true">
+                    {Array.from({ length: 6 }, (_, index) => {
+                      const digit = verificationCode[index] ?? "";
+                      const isActive = index === Math.min(verificationCode.length, 5);
+                      return (
+                        <span
+                          className={`customer-recovery-code-slot${
+                            digit ? " customer-recovery-code-slot--filled" : ""
+                          }${isActive ? " customer-recovery-code-slot--active" : ""}`}
+                          key={index}
+                        >
+                          {digit || "0"}
+                        </span>
+                      );
+                    })}
+                  </div>
                   <input
                     aria-invalid={Boolean(error)}
+                    aria-label="6-digit verification code"
                     autoComplete="one-time-code"
                     className="customer-recovery-code-input"
                     id="customer-recovery-code"
@@ -293,7 +310,6 @@ export function CustomerAccountRecoveryPage({
                       setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))
                     }
                     pattern="[0-9]{6}"
-                    placeholder="000000"
                     type="text"
                     value={verificationCode}
                   />
