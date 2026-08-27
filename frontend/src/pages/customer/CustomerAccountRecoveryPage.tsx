@@ -289,11 +289,13 @@ export function CustomerAccountRecoveryPage({
                       return (
                         <span
                           className={`customer-recovery-code-slot${
-                            digit ? " customer-recovery-code-slot--filled" : ""
+                            digit
+                              ? " customer-recovery-code-slot--filled"
+                              : " customer-recovery-code-slot--empty"
                           }${isActive ? " customer-recovery-code-slot--active" : ""}`}
                           key={index}
                         >
-                          {digit || "0"}
+                          {digit ? digit : null}
                         </span>
                       );
                     })}
