@@ -188,19 +188,17 @@
   pointer-events: none;
 }
 
-.customer-account-hero__content {
+.customer-account-hero > .customer-account-hero__content {
   position: relative;
   z-index: 1;
   min-height: 132px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 30px;
+  display: block;
   animation: customer-account-hero-enter 220ms ease both;
 }
 
 .customer-account-hero__content > div {
   max-width: 720px;
+  padding-right: 96px;
 }
 
 .customer-account-hero__content > div > p:last-child {
@@ -218,9 +216,11 @@
 }
 
 .customer-account-hero__icon {
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 66px;
   height: 66px;
-  flex: 0 0 auto;
   display: grid;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.72);
@@ -353,9 +353,12 @@
     min-height: 190px;
   }
 
-  .customer-account-hero__content {
+  .customer-account-hero > .customer-account-hero__content {
     min-height: 148px;
-    gap: 18px;
+  }
+
+  .customer-account-hero__content > div {
+    padding-right: 74px;
   }
 
   .customer-account-hero__icon {
