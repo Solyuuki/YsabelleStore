@@ -12,7 +12,8 @@ import {
 } from "../services/customerRecoveryEmailService.js";
 import {
   requestCustomerPasswordRecovery,
-  resetCustomerPassword
+  resetCustomerPassword,
+  verifyCustomerPasswordRecoveryCode
 } from "../services/customerPasswordRecoveryService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import {
@@ -20,6 +21,11 @@ import {
   readCustomerSessionCookie,
   setCustomerSessionCookie
 } from "../utils/customerAuthCookie.js";
+import {
+  clearCustomerRecoveryGrantCookie,
+  readCustomerRecoveryGrantCookie,
+  setCustomerRecoveryGrantCookie
+} from "../utils/customerRecoveryCookie.js";
 import {
   clearCustomerRegistrationIntentCookie,
   createCustomerRegistrationIntent,
@@ -31,12 +37,13 @@ import { HttpError } from "../utils/httpError.js";
 import {
   customerLoginSchema,
   customerPasswordRecoveryRequestSchema,
+  customerPasswordRecoveryVerifySchema,
   customerPasswordResetSchema,
   customerRegisterSchema
 } from "../validators/customerAuth.validators.js";
 
 const CUSTOMER_RECOVERY_REQUEST_MESSAGE =
-  "If an eligible account exists, recovery instructions have been sent to its registered email.";
+  "If an eligible account exists, a verification code has been sent to its registered email.";
 
 export const issueCustomerRegistrationIntent: RequestHandler = (_request, response) => {
   const intentToken = createCustomerRegistrationIntent();
@@ -122,6 +129,8 @@ export const requestCustomerPasswordRecoveryAccount: RequestHandler = async (
       });
     }
 
+    clearCustomerRecoveryGrantCookie(response);
+
     try {
       await requestCustomerPasswordRecovery(parsedBody.data, customerRecoveryEmailDelivery);
     } catch (error) {
@@ -131,6 +140,31 @@ export const requestCustomerPasswordRecoveryAccount: RequestHandler = async (
 
     response.status(200).json(createSuccessResponse(CUSTOMER_RECOVERY_REQUEST_MESSAGE));
   } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyCustomerPasswordRecoveryAccount: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const parsedBody = customerPasswordRecoveryVerifySchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer recovery verification request is invalid.", {
+        code: "INVALID_CUSTOMER_RECOVERY_VERIFICATION_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    const grant = await verifyCustomerPasswordRecoveryCode(parsedBody.data);
+    setCustomerRecoveryGrantCookie(response, grant.recoveryGrant);
+    response
+      .status(200)
+      .json(createSuccessResponse("Verification successful. Set a new password to continue."));
+  } catch (error) {
+    clearCustomerRecoveryGrantCookie(response);
     next(error);
   }
 };
@@ -145,12 +179,17 @@ export const resetCustomerPasswordAccount: RequestHandler = async (request, resp
       });
     }
 
-    await resetCustomerPassword(parsedBody.data);
+    await resetCustomerPassword({
+      recoveryGrant: readCustomerRecoveryGrantCookie(request) ?? "",
+      newPassword: parsedBody.data.newPassword
+    });
+    clearCustomerRecoveryGrantCookie(response);
     clearCustomerSessionCookie(response);
     response
       .status(200)
       .json(createSuccessResponse("Password reset successful. Sign in with your new password."));
   } catch (error) {
+    clearCustomerRecoveryGrantCookie(response);
     next(error);
   }
 };
