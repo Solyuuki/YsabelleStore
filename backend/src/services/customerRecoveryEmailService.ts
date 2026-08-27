@@ -2,6 +2,7 @@ import { env } from "../config/env.js";
 import type { CustomerRecoveryEmailDelivery } from "./customerPasswordRecoveryService.js";
 
 const RESEND_EMAIL_ENDPOINT = "https://api.resend.com/emails";
+const DEVELOPMENT_RESEND_FROM_EMAIL = "onboarding@resend.dev";
 
 export class CustomerRecoveryEmailDeliveryError extends Error {
   constructor() {
@@ -51,27 +52,69 @@ function recoveryEmailContent(verificationCode: string) {
   return { html, text };
 }
 
+async function sendRecoveryEmailRequest(input: {
+  apiKey: string;
+  from: string;
+  to: string;
+  verificationCode: string;
+}): Promise<Response> {
+  const { html, text } = recoveryEmailContent(input.verificationCode);
+  return fetch(RESEND_EMAIL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${input.apiKey}`,
+      "content-type": "application/json",
+      "user-agent": "YsabelleStore/customer-recovery"
+    },
+    body: JSON.stringify({
+      from: input.from,
+      to: [input.to],
+      subject: "Your Ysabelle Store verification code",
+      html,
+      text
+    })
+  });
+}
+
+async function isDevelopmentSenderRestriction(response: Response): Promise<boolean> {
+  if (response.status !== 403 || env.NODE_ENV === "production") return false;
+
+  let body = "";
+  try {
+    body = await response.clone().text();
+  } catch {
+    return false;
+  }
+
+  return /domain.*not verified|verify a domain|testing emails/i.test(body);
+}
+
 export const customerRecoveryEmailDelivery: CustomerRecoveryEmailDelivery = {
   async sendPasswordRecoveryEmail({ to, verificationCode }) {
     const { apiKey, from } = requireRecoveryEmailConfiguration();
-    const { html, text } = recoveryEmailContent(verificationCode);
 
     let response: Response;
     try {
-      response = await fetch(RESEND_EMAIL_ENDPOINT, {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${apiKey}`,
-          "content-type": "application/json"
-        },
-        body: JSON.stringify({
-          from,
-          to: [to],
-          subject: "Your Ysabelle Store verification code",
-          html,
-          text
-        })
-      });
+      response = await sendRecoveryEmailRequest({ apiKey, from, to, verificationCode });
+
+      if (
+        !response.ok &&
+        from !== DEVELOPMENT_RESEND_FROM_EMAIL &&
+        (await isDevelopmentSenderRestriction(response))
+      ) {
+        console.warn(
+          JSON.stringify({
+            event: "customer_recovery_sender_fallback",
+            reason: "development_sender_rejected"
+          })
+        );
+        response = await sendRecoveryEmailRequest({
+          apiKey,
+          from: DEVELOPMENT_RESEND_FROM_EMAIL,
+          to,
+          verificationCode
+        });
+      }
     } catch {
       throw new CustomerRecoveryEmailDeliveryError();
     }
