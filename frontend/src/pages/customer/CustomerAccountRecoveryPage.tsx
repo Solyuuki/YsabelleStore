@@ -26,6 +26,48 @@ function errorMessage(reason: unknown, fallback: string) {
   return reason instanceof Error && reason.message ? reason.message : fallback;
 }
 
+function RecoveryProgress({ stage }: { stage: RecoveryStage }) {
+  const currentStep = stage === "identify" ? 1 : stage === "verify" ? 2 : 3;
+  const steps = [
+    { label: "Identify", step: 1 },
+    { label: "Verify", step: 2 },
+    { label: "Secure", step: 3 }
+  ];
+
+  return (
+    <div className="customer-recovery-progress" aria-label="Recovery progress">
+      {steps.map(({ label, step }, index) => {
+        const completed = currentStep > step || stage === "complete";
+        const active = currentStep === step && stage !== "complete";
+        return (
+          <div className="customer-recovery-progress__item" key={label}>
+            <div
+              className={`customer-recovery-progress__step${
+                active ? " customer-recovery-progress__step--active" : ""
+              }${completed ? " customer-recovery-progress__step--complete" : ""}`}
+            >
+              <span className="customer-recovery-progress__dot" aria-hidden="true">
+                {completed ? <CheckCircle2 size={14} /> : step}
+              </span>
+              <span>{label}</span>
+            </div>
+            {index < steps.length - 1 ? (
+              <span
+                className={`customer-recovery-progress__line${
+                  currentStep > step || stage === "complete"
+                    ? " customer-recovery-progress__line--complete"
+                    : ""
+                }`}
+                aria-hidden="true"
+              />
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function CustomerAccountRecoveryPage({
   navigate
 }: {
@@ -157,16 +199,18 @@ export function CustomerAccountRecoveryPage({
   return (
     <CustomerAuthFrame mode="recovery" navigate={navigate}>
       <div className="customer-auth-card customer-recovery-card">
+        <RecoveryProgress stage={stage} />
+
         <div className="customer-auth-card__intro customer-recovery-intro">
           <span className="customer-auth-card__icon customer-recovery-icon" aria-hidden="true">
             {stage === "verify" ? (
-              <MailCheck size={22} />
+              <MailCheck size={23} />
             ) : stage === "complete" ? (
-              <CheckCircle2 size={22} />
+              <CheckCircle2 size={23} />
             ) : stage === "reset" ? (
-              <KeyRound size={22} />
+              <KeyRound size={23} />
             ) : (
-              <ShieldCheck size={22} />
+              <ShieldCheck size={23} />
             )}
           </span>
           <p className="customer-eyebrow">Secure account recovery</p>
@@ -237,21 +281,23 @@ export function CustomerAccountRecoveryPage({
             >
               <label className="customer-auth-field" htmlFor="customer-recovery-code">
                 <span>6-digit verification code</span>
-                <input
-                  aria-invalid={Boolean(error)}
-                  autoComplete="one-time-code"
-                  className="customer-recovery-code-input"
-                  id="customer-recovery-code"
-                  inputMode="numeric"
-                  maxLength={6}
-                  onChange={(event) =>
-                    setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))
-                  }
-                  pattern="[0-9]{6}"
-                  placeholder="000000"
-                  type="text"
-                  value={verificationCode}
-                />
+                <div className="customer-recovery-code-shell">
+                  <input
+                    aria-invalid={Boolean(error)}
+                    autoComplete="one-time-code"
+                    className="customer-recovery-code-input"
+                    id="customer-recovery-code"
+                    inputMode="numeric"
+                    maxLength={6}
+                    onChange={(event) =>
+                      setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    pattern="[0-9]{6}"
+                    placeholder="000000"
+                    type="text"
+                    value={verificationCode}
+                  />
+                </div>
               </label>
               <button className="customer-auth-submit" disabled={submitting} type="submit">
                 {submitting ? "Verifying code..." : "Verify code"}
@@ -259,7 +305,9 @@ export function CustomerAccountRecoveryPage({
             </form>
 
             <div className="customer-recovery-status" role="status">
-              <MailCheck size={20} aria-hidden="true" />
+              <span className="customer-recovery-status__icon" aria-hidden="true">
+                <MailCheck size={19} />
+              </span>
               <div>
                 <strong>Verification code requested</strong>
                 <span>
@@ -336,7 +384,9 @@ export function CustomerAccountRecoveryPage({
 
         {stage === "complete" ? (
           <div className="customer-recovery-status customer-recovery-status--success" role="status">
-            <CheckCircle2 size={20} aria-hidden="true" />
+            <span className="customer-recovery-status__icon" aria-hidden="true">
+              <CheckCircle2 size={19} />
+            </span>
             <div>
               <strong>Your account is secured</strong>
               <span>All previous customer sessions have been signed out.</span>
@@ -357,7 +407,7 @@ export function CustomerAccountRecoveryPage({
           ) : null}
 
           {stage === "verify" || stage === "reset" ? (
-            <button className="customer-recovery-secondary" onClick={startOver} type="button">
+            <button className="customer-recovery-tertiary" onClick={startOver} type="button">
               Try another identifier
             </button>
           ) : null}
