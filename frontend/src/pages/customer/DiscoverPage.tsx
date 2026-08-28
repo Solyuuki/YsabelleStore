@@ -746,16 +746,17 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               });
               locationTimeline
                 .addLabel("map", 0)
-                .to(locationCopy, { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 }, "map+=0.02")
                 .to(
                   realMap,
                   { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
                   "map+=0.02"
                 )
+                .addLabel("copy", 0.12)
+                .to(locationCopy, { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 }, "copy")
                 .to(
                   locationKicker,
                   { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                  0.14
+                  "copy"
                 )
                 .addLabel("headline", 0.2)
                 .to(
