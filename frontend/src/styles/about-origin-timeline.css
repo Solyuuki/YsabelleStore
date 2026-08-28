@@ -24,8 +24,8 @@
   align-self: center;
   max-width: 12ch;
   padding-top: 1.75rem;
-  color: #15182b;
-  font-size: clamp(1.75rem, 2.65vw, 2.75rem);
+  color: transparent;
+  font-size: 0;
   font-weight: 520;
   letter-spacing: -0.04em;
   line-height: 0.98;
@@ -42,6 +42,18 @@
   font-weight: 850;
   letter-spacing: 0.18em;
   line-height: 1;
+}
+
+.about-experience .story-origin-shelf__sign::after {
+  display: block;
+  max-width: 11ch;
+  color: #15182b;
+  content: "What shaped the store.";
+  font-family: var(--customer-font-display);
+  font-size: clamp(1.75rem, 2.65vw, 2.75rem);
+  font-weight: 520;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
 }
 
 .about-experience .story-origin-shelf__line {
@@ -162,6 +174,9 @@
     max-width: 15ch;
     margin-bottom: 1rem;
     padding-top: 1.45rem;
+  }
+
+  .about-experience .story-origin-shelf__sign::after {
     font-size: clamp(1.5rem, 6vw, 2.05rem);
   }
 
