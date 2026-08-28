@@ -965,8 +965,9 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
 
             if (progressFill) progressFill.style.transform = `scaleY(${progress})`;
 
+            const progressVisibilityStart = sceneOwnershipStarts[1] ?? rootTop;
             const nextProgressActive =
-              scrollTop >= rootTop - viewportHeight * 0.75 &&
+              scrollTop >= progressVisibilityStart &&
               scrollTop <= rootBottom - viewportHeight * 0.25;
             if (nextProgressActive !== progressActive) {
               progressActive = nextProgressActive;
