@@ -98,7 +98,7 @@ function useDeferredStoryScene(sceneId: string, rootMargin: string) {
 }
 
 function DeferredIntelligenceScene() {
-  const { isActivated, sceneRef } = useDeferredStoryScene("discover-smarter", "0px 0px 20% 0px");
+  const { isActivated, sceneRef } = useDeferredStoryScene("discover-smarter", "0px 0px 220% 0px");
 
   if (!isActivated) {
     return (
@@ -219,16 +219,15 @@ function initializeIntelligenceTimeline(
       pin: intelligence,
       pinSpacing: true,
       anticipatePin: 1,
-      fastScrollEnd: true,
       invalidateOnRefresh: true,
-      scrub: 0.55
+      scrub: 0.35
     }
   });
 
   intelligenceTimeline
     .to(intelligenceKicker, { autoAlpha: 1, duration: 0.1, ease: "power2.out", x: 0 }, 0.02)
     .to(intelligenceHeadline, { autoAlpha: 1, duration: 0.16, stagger: 0.035, y: 0 }, 0.1)
-    .to(intelligenceCopy, { autoAlpha: 1, duration: 0.12, x: 0 }, 0.2)
+    .to(intelligenceCopy, { autoAlpha: 1, duration: 0.12, x: -0 }, 0.2)
     .to(
       intelligenceSystem,
       { autoAlpha: 1, duration: 0.18, ease: "power1.out", scale: 1, y: 0 },
@@ -423,7 +422,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             return () => root.classList.remove("story-reduced-motion");
           }
 
-          const scrub = desktop ? 0.9 : tablet ? 0.55 : 0.35;
+          const scrub = desktop ? 0.45 : tablet ? 0.32 : 0.22;
           const progressFill = first<HTMLElement>(".discover-progress__fill");
 
           if (progressFill) {
@@ -536,7 +535,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                       anticipatePin: 1,
                       invalidateOnRefresh: true,
                       onToggle: ({ isActive }) => setBeginningAtmosphere(isActive),
-                      scrub: 0.9
+                      scrub: 0.45
                     }
                   : {
                       trigger: beginning,
@@ -639,7 +638,6 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                   trigger: essentials,
                   start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 84%",
                   end: desktop ? "bottom bottom" : "bottom 16%",
-                  fastScrollEnd: true,
                   invalidateOnRefresh: true,
                   scrub
                 }
@@ -805,7 +803,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             }
             initializeIntelligence(candidate);
             window.requestAnimationFrame(() => {
-              if (mounted) ScrollTrigger.refresh();
+              if (mounted) ScrollTrigger.refresh(true);
             });
           };
 
@@ -1015,7 +1013,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
       window.cancelAnimationFrame(refreshFrame);
       refreshFrame = window.requestAnimationFrame(() => {
         refreshFrame = 0;
-        if (mounted) ScrollTrigger.refresh();
+        if (mounted) ScrollTrigger.refresh(true);
       });
     };
 
