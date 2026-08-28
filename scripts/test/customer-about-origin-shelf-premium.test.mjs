@@ -44,16 +44,20 @@ test("About origin band keeps decorative numbers clear of the top edge", () => {
   );
 });
 
-test("About origin labels share one natural alignment with no per-item transform hacks", () => {
+test("About origin labels override base centering and share one number-to-label gap", () => {
   const css = readOriginCss();
 
-  assert.doesNotMatch(
+  assert.match(
     css,
-    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\([123]\)::after\s*\{[\s\S]*?transform:/
+    /\.story-origin-shelf \.story-origin-shelf__item\s*\{[\s\S]*?align-items:\s*flex-start;/
   );
   assert.match(
     css,
-    /\.story-origin-shelf \.story-origin-shelf__item::after\s*\{[\s\S]*?max-width:\s*22ch;/
+    /\.story-origin-shelf \.story-origin-shelf__item::after\s*\{[\s\S]*?margin-left:\s*clamp\(4\.5rem, 5\.2vw, 5\.4rem\);/
+  );
+  assert.doesNotMatch(
+    css,
+    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\([123]\)::after\s*\{[\s\S]*?transform:/
   );
 });
 
@@ -89,5 +93,9 @@ test("About origin editorial band stacks cleanly on small screens", () => {
   assert.match(
     css,
     /@media \(max-width: 840px\)[\s\S]*?\.story-origin-shelf__items\s*\{[\s\S]*?grid-template-columns:\s*1fr;/
+  );
+  assert.match(
+    css,
+    /@media \(max-width: 840px\)[\s\S]*?\.story-origin-shelf \.story-origin-shelf__item::after\s*\{[\s\S]*?margin-left:\s*0;/
   );
 });
