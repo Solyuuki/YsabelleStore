@@ -32,6 +32,159 @@ html:has(.customer-discover)::-webkit-scrollbar {
   opacity: 0.52;
 }
 
+/* Premium origin shelf: editorial retail photography instead of flat icon tiles. */
+.discover-story .story-origin-shelf {
+  --origin-shelf-inline: clamp(1rem, 2vw, 1.55rem);
+  --origin-shelf-rail-bottom: 1rem;
+
+  min-height: clamp(12.5rem, 20vw, 15rem);
+  grid-template-columns: minmax(230px, 0.64fr) minmax(0, 1.36fr);
+  align-items: stretch;
+  gap: clamp(1.2rem, 2.6vw, 2.5rem);
+  padding: clamp(1.15rem, 2vw, 1.55rem) var(--origin-shelf-inline) clamp(1.65rem, 2.4vw, 2rem);
+  border: 1px solid rgb(98 91 255 / 12%);
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 86%), rgb(247 248 255 / 70%)),
+    radial-gradient(circle at 85% 15%, rgb(168 60 240 / 8%), transparent 34%);
+  box-shadow:
+    0 28px 64px rgb(31 37 84 / 12%),
+    inset 0 1px 0 rgb(255 255 255 / 88%);
+  backdrop-filter: blur(18px);
+}
+
+.discover-story .story-origin-shelf__sign {
+  position: relative;
+  align-self: center;
+  max-width: 12ch;
+  padding-top: 1.65rem;
+  color: #171a2f;
+  font-size: clamp(1.65rem, 2.55vw, 2.7rem);
+  font-weight: 520;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+
+.discover-story .story-origin-shelf__sign::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #625bff;
+  content: "NEIGHBORHOOD SHELF";
+  font-family: var(--customer-font-body);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.17em;
+  line-height: 1;
+}
+
+.discover-story .story-origin-shelf__line {
+  right: var(--origin-shelf-inline);
+  bottom: var(--origin-shelf-rail-bottom);
+  left: var(--origin-shelf-inline);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgb(0 140 255 / 72%),
+    rgb(98 91 255 / 88%) 46%,
+    rgb(168 60 240 / 84%) 72%,
+    rgb(244 63 140 / 72%)
+  );
+  box-shadow: 0 0 16px rgb(98 91 255 / 24%);
+}
+
+.discover-story .story-origin-shelf__items {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 1.25fr 0.9fr 0.9fr 1.05fr;
+  align-items: stretch;
+  align-self: stretch;
+  gap: clamp(0.55rem, 1vw, 0.8rem);
+  order: 2;
+}
+
+.discover-story .story-origin-shelf__item {
+  position: relative;
+  height: auto;
+  min-height: 9rem;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 56%);
+  border-radius: 1rem;
+  background-color: #e8ebf8;
+  background-position: center;
+  background-size: cover;
+  box-shadow:
+    0 18px 34px rgb(18 24 61 / 14%),
+    inset 0 0 0 1px rgb(16 20 38 / 4%);
+  isolation: isolate;
+}
+
+.discover-story .story-origin-shelf__item::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: linear-gradient(to top, rgb(12 16 39 / 64%) 0%, rgb(12 16 39 / 8%) 58%, transparent 100%);
+  content: "";
+}
+
+.discover-story .story-origin-shelf__item::after {
+  position: absolute;
+  z-index: 1;
+  right: 0.7rem;
+  bottom: 0.65rem;
+  left: 0.7rem;
+  color: #fff;
+  font-family: var(--customer-font-body);
+  font-size: clamp(0.56rem, 0.72vw, 0.68rem);
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-shadow: 0 2px 10px rgb(0 0 0 / 24%);
+}
+
+.discover-story .story-origin-shelf__item:nth-child(1) {
+  min-height: 10.5rem;
+  background-image: url("/images/discover/essentials/beverages-retail-display.webp");
+}
+
+.discover-story .story-origin-shelf__item:nth-child(1)::after {
+  content: "BEVERAGES";
+}
+
+.discover-story .story-origin-shelf__item:nth-child(2) {
+  min-height: 9.35rem;
+  margin-top: 0.65rem;
+  background-image: url("/images/discover/essentials/bread-bakery-retail-display.webp");
+}
+
+.discover-story .story-origin-shelf__item:nth-child(2)::after {
+  content: "BAKERY";
+}
+
+.discover-story .story-origin-shelf__item:nth-child(3) {
+  min-height: 9.35rem;
+  margin-top: 1.3rem;
+  background-image: url("/images/discover/essentials/snacks-retail-display.webp");
+}
+
+.discover-story .story-origin-shelf__item:nth-child(3)::after {
+  content: "SNACKS";
+}
+
+.discover-story .story-origin-shelf__item:nth-child(4) {
+  min-height: 10.5rem;
+  background-image: url("/images/discover/essentials/household-retail-display.webp");
+}
+
+.discover-story .story-origin-shelf__item:nth-child(4)::after {
+  content: "HOUSEHOLD";
+}
+
+.discover-story .story-origin-shelf__item svg {
+  opacity: 0;
+}
+
 /* Premium location composition: balanced map/copy proportions and disciplined alignment. */
 .discover-story .story-location__stage {
   grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
@@ -137,6 +290,19 @@ html:has(.customer-discover)::-webkit-scrollbar {
 }
 
 @media (max-width: 980px) {
+  .discover-story .story-origin-shelf {
+    grid-template-columns: minmax(190px, 0.58fr) minmax(0, 1.42fr);
+    gap: 1rem;
+  }
+
+  .discover-story .story-origin-shelf__items {
+    grid-template-columns: 1.15fr 0.92fr 0.92fr;
+  }
+
+  .discover-story .story-origin-shelf__item:nth-child(4) {
+    display: none;
+  }
+
   .discover-story .story-location__stage {
     grid-template-columns: minmax(0, 1fr) minmax(280px, 0.82fr);
     gap: 2rem;
@@ -148,6 +314,35 @@ html:has(.customer-discover)::-webkit-scrollbar {
 }
 
 @media (max-width: 840px) {
+  .discover-story .story-origin-shelf {
+    display: block;
+    min-height: 0;
+    padding: 1rem 1rem 1.55rem;
+  }
+
+  .discover-story .story-origin-shelf__sign {
+    display: block;
+    max-width: 16ch;
+    margin-bottom: 1rem;
+    padding-top: 1.4rem;
+    font-size: clamp(1.45rem, 6vw, 2rem);
+  }
+
+  .discover-story .story-origin-shelf__items {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .discover-story .story-origin-shelf__item,
+  .discover-story .story-origin-shelf__item:nth-child(1),
+  .discover-story .story-origin-shelf__item:nth-child(2),
+  .discover-story .story-origin-shelf__item:nth-child(3),
+  .discover-story .story-origin-shelf__item:nth-child(4) {
+    display: block;
+    min-height: 6.6rem;
+    margin-top: 0;
+  }
+
   .discover-story .story-location__stage {
     grid-template-columns: 1fr;
   }
