@@ -8,12 +8,12 @@ const read = (path) => readFileSync(fileUrl(path), "utf8");
 test("About keeps native scrolling while hiding only the visual scrollbar", () => {
   const main = read("frontend/src/main.tsx");
   const css = read("frontend/src/styles/customer-about-premium.css");
+  const documentScrollbarRule = css.match(/html:has\(\.customer-discover\)\s*\{[^}]*\}/s)?.[0] ?? "";
 
   assert.match(main, /@\/styles\/customer-about-premium\.css/);
-  assert.match(css, /html:has\(\.customer-discover\)/);
-  assert.match(css, /scrollbar-width:\s*none/);
-  assert.match(css, /::-webkit-scrollbar/);
-  assert.doesNotMatch(css, /overflow(?:-y)?:\s*hidden/);
+  assert.match(documentScrollbarRule, /scrollbar-width:\s*none/);
+  assert.match(css, /html:has\(\.customer-discover\)::-webkit-scrollbar/);
+  assert.doesNotMatch(documentScrollbarRule, /overflow(?:-y)?:\s*hidden/);
 });
 
 test("About ScrollTrigger setup avoids aggressive catch-up during native wheel scrolling", () => {
