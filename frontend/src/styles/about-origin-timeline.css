@@ -144,7 +144,7 @@
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(2)::after {
   content: "PASIG CITY\A Serving close to home";
-  transform: translateY(0.35rem);
+  transform: translateX(1.5rem);
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(3)::after {
