@@ -17,6 +17,20 @@ test("About location uses a balanced premium map and copy composition", () => {
   assert.match(css, /width:\s*calc\(100% - 1\.1rem\)/);
 });
 
+test("About location copy card animates as one panel instead of leaving an empty rectangle", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+
+  assert.match(
+    discover,
+    /const locationCopy = location\.querySelector<HTMLElement>\("\.story-location__copy"\)/
+  );
+  assert.match(discover, /gsap\.set\(locationCopy, \{ autoAlpha: 0, scale: 0\.98, y: 18 \}\)/);
+  assert.match(
+    discover,
+    /\.to\(locationCopy, \{ autoAlpha: 1, duration: 0\.1, ease: "power1\.out", scale: 1, y: 0 \}, "map\+=0\.02"\)/
+  );
+});
+
 test("About welcome decorative rings stay complete and contained on desktop", () => {
   const css = read("frontend/src/styles/customer-about-premium.css");
 
