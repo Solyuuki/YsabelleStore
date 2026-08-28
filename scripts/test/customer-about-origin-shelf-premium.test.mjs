@@ -44,24 +44,16 @@ test("About origin band keeps decorative numbers clear of the top edge", () => {
   );
 });
 
-test("About Pasig copy matches the 03 breathing room from its decorative number", () => {
+test("About origin labels share one natural alignment with no per-item transform hacks", () => {
   const css = readOriginCss();
 
+  assert.doesNotMatch(
+    css,
+    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\([123]\)::after\s*\{[\s\S]*?transform:/
+  );
   assert.match(
     css,
-    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\(2\)::after\s*\{[\s\S]*?transform:\s*translateX\(clamp\(3\.6rem, 4vw, 4\.25rem\)\);/
-  );
-  assert.doesNotMatch(
-    css,
-    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\(2\)::after\s*\{[\s\S]*?translateY/
-  );
-  assert.doesNotMatch(
-    css,
-    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\(1\)::after\s*\{[\s\S]*?transform:/
-  );
-  assert.doesNotMatch(
-    css,
-    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\(3\)::after\s*\{[\s\S]*?transform:/
+    /\.story-origin-shelf \.story-origin-shelf__item::after\s*\{[\s\S]*?max-width:\s*22ch;/
   );
 });
 
