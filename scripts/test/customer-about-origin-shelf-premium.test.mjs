@@ -28,7 +28,8 @@ test("About origin uses one integrated premium editorial band", () => {
   assert.match(css, /content:\s*"03";/);
   assert.match(css, /content:\s*"LOCAL ROOTS\\A Neighborhood store";/);
   assert.match(css, /content:\s*"PASIG CITY\\A Serving close to home";/);
-  assert.match(css, /content:\s*"EVERYDAY ESSENTIALS\\A Built for daily life";/);
+  assert.match(css, /content:\s*"EVERYDAY ESSENTIALS\\A Daily essentials";/);
+  assert.doesNotMatch(css, /Built for daily life/);
   assert.doesNotMatch(css, /Built close to home\.|NEIGHBORHOOD ORIGIN|FOUNDING PRINCIPLES/);
   assert.doesNotMatch(css, /content:\s*"2019/);
 });
@@ -40,7 +41,7 @@ test("About origin band uses restrained premium hierarchy and ambient depth", ()
   assert.match(css, /\.story-origin-shelf::before\s*\{[\s\S]*?filter:\s*blur\(42px\);/);
   assert.match(
     css,
-    /\.story-origin-shelf \.story-origin-shelf__item::before\s*\{[\s\S]*?font-size:\s*clamp\(3\.2rem, 5\.4vw, 5\.4rem\);[\s\S]*?color:\s*rgb\(98 91 255 \/ 8%\);/
+    /\.story-origin-shelf \.story-origin-shelf__item::before\s*\{[\s\S]*?background:\s*linear-gradient\(135deg,[\s\S]*?background-clip:\s*text;[\s\S]*?color:\s*transparent;[\s\S]*?filter:\s*blur\(0\.2px\);[\s\S]*?opacity:\s*0\.62;/
   );
   assert.match(
     css,
