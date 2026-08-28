@@ -44,6 +44,15 @@ test("About origin band keeps decorative numbers clear of the top edge", () => {
   );
 });
 
+test("About decorative numbers preserve their full painted glyph bounds", () => {
+  const css = readOriginCss();
+
+  assert.match(
+    css,
+    /\.story-origin-shelf \.story-origin-shelf__item::before\s*\{[\s\S]*?display:\s*block;[\s\S]*?width:\s*max-content;[\s\S]*?padding-right:\s*0\.16em;[\s\S]*?white-space:\s*nowrap;/
+  );
+});
+
 test("About origin labels override base centering and share one number-to-label gap", () => {
   const css = readOriginCss();
 
