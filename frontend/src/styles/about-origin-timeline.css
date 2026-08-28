@@ -88,13 +88,24 @@
   position: absolute;
   top: 0.1rem;
   left: clamp(1.5rem, 3vw, 2.6rem);
-  color: rgb(98 91 255 / 8%);
+  background: linear-gradient(
+    135deg,
+    rgb(0 140 255 / 36%),
+    rgb(98 91 255 / 68%) 52%,
+    rgb(168 60 240 / 48%)
+  );
+  background-clip: text;
+  color: transparent;
   content: "";
+  filter: blur(0.2px);
   font-family: var(--customer-font-display);
   font-size: clamp(3.2rem, 5.4vw, 5.4rem);
   font-weight: 600;
   letter-spacing: -0.08em;
   line-height: 0.82;
+  opacity: 0.62;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child::before {
@@ -136,7 +147,7 @@
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(3)::after {
-  content: "EVERYDAY ESSENTIALS\A Built for daily life";
+  content: "EVERYDAY ESSENTIALS\A Daily essentials";
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(4) {
