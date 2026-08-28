@@ -28,10 +28,20 @@ test("About origin uses one integrated premium editorial band", () => {
   assert.match(css, /content:\s*"03";/);
   assert.match(css, /content:\s*"LOCAL ROOTS\\A Neighborhood store";/);
   assert.match(css, /content:\s*"PASIG CITY\\A Serving close to home";/);
-  assert.match(css, /content:\s*"EVERYDAY ESSENTIALS\\A Daily essentials";/);
+  assert.match(css, /content:\s*"ESSENTIALS\\A Daily needs";/);
+  assert.doesNotMatch(css, /EVERYDAY ESSENTIALS\\A Daily essentials/);
   assert.doesNotMatch(css, /Built for daily life/);
   assert.doesNotMatch(css, /Built close to home\.|NEIGHBORHOOD ORIGIN|FOUNDING PRINCIPLES/);
   assert.doesNotMatch(css, /content:\s*"2019/);
+});
+
+test("About origin band keeps decorative numbers clear of the top edge", () => {
+  const css = readOriginCss();
+
+  assert.match(
+    css,
+    /\.story-origin-shelf \.story-origin-shelf__item::before\s*\{[\s\S]*?top:\s*0\.55rem;[\s\S]*?line-height:\s*1;/
+  );
 });
 
 test("About origin band uses restrained premium hierarchy and ambient depth", () => {
