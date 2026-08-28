@@ -1,34 +1,27 @@
-/* About Scene 02: founding principles strip. The large 2019 above remains the only year focal point. */
+/* About Scene 02: neighborhood-grocer shelf-edge editorial. The large 2019 above remains the only year focal point. */
 .about-experience .discover-story .story-origin-shelf {
-  --origin-shelf-inline: clamp(1.1rem, 2vw, 1.65rem);
-  --origin-shelf-rail-bottom: 1rem;
+  --origin-shelf-inline: clamp(0.5rem, 1.2vw, 0.9rem);
 
-  min-height: clamp(11.5rem, 18vw, 13.5rem);
-  grid-template-columns: minmax(245px, 0.72fr) minmax(0, 1.28fr);
-  align-items: stretch;
-  gap: clamp(1.5rem, 3.4vw, 3.2rem);
-  padding: clamp(1.25rem, 2vw, 1.65rem) var(--origin-shelf-inline) clamp(1.75rem, 2.4vw, 2rem);
-  border: 1px solid rgb(98 91 255 / 10%);
-  border-radius: 1.45rem;
-  background:
-    radial-gradient(circle at 86% 18%, rgb(98 91 255 / 7%), transparent 31%),
-    linear-gradient(140deg, rgb(255 255 255 / 92%), rgb(245 247 255 / 76%));
-  box-shadow:
-    0 28px 62px rgb(28 34 82 / 11%),
-    inset 0 1px 0 rgb(255 255 255 / 92%);
-  backdrop-filter: blur(18px);
+  min-height: 0;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+  align-items: end;
+  gap: clamp(1.8rem, 4vw, 4rem);
+  padding: clamp(1.1rem, 2vw, 1.5rem) var(--origin-shelf-inline) clamp(1.05rem, 2vw, 1.4rem);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .about-experience .discover-story .story-origin-shelf__sign {
   position: relative;
-  align-self: center;
-  max-width: 12ch;
-  padding-top: 1.75rem;
+  align-self: end;
+  max-width: 13ch;
+  padding-top: 1.3rem;
   color: transparent;
   font-size: 0;
-  font-weight: 520;
-  letter-spacing: -0.04em;
-  line-height: 0.98;
+  line-height: 1;
 }
 
 .about-experience .discover-story .story-origin-shelf__sign::before {
@@ -36,9 +29,9 @@
   top: 0;
   left: 0;
   color: #625bff;
-  content: "FOUNDING PRINCIPLES";
+  content: "NEIGHBORHOOD ORIGIN";
   font-family: var(--customer-font-body);
-  font-size: 0.61rem;
+  font-size: 0.6rem;
   font-weight: 850;
   letter-spacing: 0.18em;
   line-height: 1;
@@ -46,28 +39,28 @@
 
 .about-experience .discover-story .story-origin-shelf__sign::after {
   display: block;
-  max-width: 11ch;
+  max-width: 12ch;
   color: #15182b;
-  content: "What shaped the store.";
+  content: "Built close to home.";
   font-family: var(--customer-font-display);
-  font-size: clamp(1.75rem, 2.65vw, 2.75rem);
+  font-size: clamp(1.9rem, 3vw, 3.15rem);
   font-weight: 520;
-  letter-spacing: -0.04em;
-  line-height: 0.98;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
 }
 
 .about-experience .discover-story .story-origin-shelf__line {
   right: var(--origin-shelf-inline);
-  bottom: var(--origin-shelf-rail-bottom);
+  bottom: 0;
   left: var(--origin-shelf-inline);
   height: 2px;
   background: linear-gradient(
     90deg,
-    rgb(0 140 255 / 56%),
-    rgb(98 91 255 / 78%) 54%,
-    rgb(168 60 240 / 60%)
+    rgb(0 140 255 / 52%),
+    rgb(98 91 255 / 84%) 52%,
+    rgb(168 60 240 / 64%)
   );
-  box-shadow: 0 0 14px rgb(98 91 255 / 16%);
+  box-shadow: 0 0 12px rgb(98 91 255 / 14%);
 }
 
 .about-experience .discover-story .story-origin-shelf__items {
@@ -75,11 +68,10 @@
   display: grid;
   min-width: 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: stretch;
-  align-self: center;
-  gap: 0;
+  align-items: end;
+  gap: clamp(1rem, 2.2vw, 2rem);
   order: 2;
-  padding: 0.8rem 0 1rem;
+  padding: 0 0 0.75rem;
 }
 
 .about-experience .discover-story .story-origin-shelf__items::before,
@@ -91,61 +83,57 @@
   position: relative;
   display: grid;
   height: auto;
-  min-height: 8.4rem;
-  place-items: center;
-  padding: 2.8rem 1.15rem 1.15rem;
+  min-height: 5.4rem;
+  place-items: end start;
+  padding: 1.55rem 0 0;
   overflow: visible;
   border: 0;
-  border-left: 1px solid rgb(98 91 255 / 13%);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
   backdrop-filter: none;
 }
 
-.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child {
-  border-left: 0;
-}
-
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::before {
   position: absolute;
-  top: 1.05rem;
+  top: 0.45rem;
   right: auto;
   bottom: auto;
-  left: 50%;
-  width: 2.15rem;
+  left: 0;
+  width: clamp(2.2rem, 4vw, 4rem);
   height: 2px;
   border: 0;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--story-blue), var(--story-indigo), var(--story-violet));
-  box-shadow: 0 0 12px rgb(98 91 255 / 20%);
+  box-shadow: 0 0 10px rgb(98 91 255 / 16%);
   content: "";
   clip-path: none;
-  transform: translateX(-50%);
+  transform: none;
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::after {
   position: static;
+  max-width: 18ch;
   color: #252a42;
   font-family: var(--customer-font-body);
-  font-size: clamp(0.66rem, 0.8vw, 0.76rem);
+  font-size: clamp(0.62rem, 0.76vw, 0.72rem);
   font-weight: 850;
-  letter-spacing: 0.11em;
-  line-height: 1.7;
-  text-align: center;
+  letter-spacing: 0.12em;
+  line-height: 1.65;
+  text-align: left;
   white-space: pre-line;
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(1)::after {
-  content: "LOCAL BY NATURE\A Neighborhood grocery";
+  content: "LOCAL STORE\A Neighborhood roots";
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(2)::after {
-  content: "BUILT FOR DAILY LIFE\A Everyday essentials";
+  content: "PASIG CITY\A Close to home";
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(3)::after {
-  content: "CLOSE TO HOME\A Familiar Pasig retail";
+  content: "EVERYDAY ESSENTIALS\A Built for daily life";
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(4) {
@@ -158,12 +146,12 @@
 
 @media (max-width: 980px) {
   .about-experience .discover-story .story-origin-shelf {
-    grid-template-columns: minmax(205px, 0.66fr) minmax(0, 1.34fr);
-    gap: 1.15rem;
+    grid-template-columns: minmax(190px, 0.62fr) minmax(0, 1.38fr);
+    gap: 1.4rem;
   }
 
-  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item {
-    padding-inline: 0.75rem;
+  .about-experience .discover-story .story-origin-shelf__items {
+    gap: 1rem;
   }
 }
 
@@ -171,22 +159,23 @@
   .about-experience .discover-story .story-origin-shelf {
     display: block;
     min-height: 0;
-    padding: 1rem 1rem 1.55rem;
+    padding: 0.9rem 0.5rem 1.2rem;
   }
 
   .about-experience .discover-story .story-origin-shelf__sign {
     max-width: 15ch;
-    margin-bottom: 1rem;
-    padding-top: 1.45rem;
+    margin-bottom: 1.2rem;
+    padding-top: 1.35rem;
   }
 
   .about-experience .discover-story .story-origin-shelf__sign::after {
-    font-size: clamp(1.5rem, 6vw, 2.05rem);
+    font-size: clamp(1.7rem, 7vw, 2.35rem);
   }
 
   .about-experience .discover-story .story-origin-shelf__items {
     grid-template-columns: 1fr;
-    padding: 0;
+    gap: 0;
+    padding: 0 0 0.6rem;
   }
 
   .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item {
@@ -194,9 +183,8 @@
     height: auto;
     min-height: 0;
     margin-top: 0;
-    padding: 1.15rem 0.5rem 1.15rem 3.2rem;
-    border-top: 1px solid rgb(98 91 255 / 11%);
-    border-left: 0;
+    padding: 1.1rem 0 1rem 2.4rem;
+    border-top: 1px solid rgb(98 91 255 / 10%);
     place-items: start;
   }
 
@@ -205,16 +193,8 @@
   }
 
   .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::before {
-    top: 50%;
-    right: auto;
-    bottom: auto;
-    left: 0.65rem;
-    width: 1.6rem;
-    height: 2px;
-    transform: translateY(-50%);
-  }
-
-  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::after {
-    text-align: left;
+    top: 1.45rem;
+    left: 0;
+    width: 1.55rem;
   }
 }
