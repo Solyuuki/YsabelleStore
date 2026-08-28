@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
 
-import { catalogImageStorageRoot } from "../../config/env.js";
+import {
+  catalogImageStorageFallbackRoots,
+  catalogImageStorageRoot
+} from "../../config/env.js";
 import { prisma } from "../../database/prismaClient.js";
 import { HttpError } from "../../utils/httpError.js";
 import { runCatalogImageEngine } from "./catalogImageEngineRunner.js";
@@ -17,7 +20,7 @@ type ProductImageUploadFile = {
 export type OwnerProductImageVariant = "original" | "processed" | "card" | "pdp";
 export type PublicProductImageVariant = "card" | "pdp";
 
-const storage = new CatalogImageStorage(catalogImageStorageRoot);
+const storage = new CatalogImageStorage(catalogImageStorageRoot, catalogImageStorageFallbackRoots);
 
 export function approvedProductImageUrl(imageId: string, variant: PublicProductImageVariant) {
   return `/api/storefront/product-images/${encodeURIComponent(imageId)}/${variant}`;
@@ -73,7 +76,7 @@ export async function getLatestProductImageCandidate(productId: string) {
     });
   }
 
-  return prisma.productImageAsset.findFirst({
+  const candidates = await prisma.productImageAsset.findMany({
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     where: {
       productId,
@@ -81,6 +84,46 @@ export async function getLatestProductImageCandidate(productId: string) {
       rejectedAt: null
     }
   });
+
+  for (const candidate of candidates) {
+    if (!(await isReadableCandidate(candidate))) {
+      continue;
+    }
+
+    return candidate;
+  }
+
+  return null;
+}
+
+async function isReadableCandidate(candidate: {
+  originalStorageKey: string;
+  processedStorageKey: string | null;
+  processingStatus: string;
+}) {
+  try {
+    await storage.readStorageKey(candidate.originalStorageKey);
+
+    if (candidate.processingStatus === "READY") {
+      if (!candidate.processedStorageKey) {
+        return false;
+      }
+
+      await storage.readStorageKey(candidate.processedStorageKey);
+    }
+
+    return true;
+  } catch (error) {
+    if (
+      error instanceof HttpError &&
+      (error.code === "PRODUCT_IMAGE_ASSET_NOT_FOUND" ||
+        error.code === "PRODUCT_IMAGE_VARIANT_NOT_FOUND")
+    ) {
+      return false;
+    }
+
+    throw error;
+  }
 }
 
 export async function processProductImageCandidate(candidateId: string) {
