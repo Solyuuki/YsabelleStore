@@ -10,47 +10,36 @@ function readOriginCss() {
   return read("frontend/src/styles/about-origin-timeline.css");
 }
 
-test("About lower origin panel uses founding principles without repeating 2019", () => {
+test("About origin uses an open shelf-edge editorial treatment", () => {
   const css = readOriginCss();
 
+  assert.match(css, /shelf-edge editorial/);
   assert.match(
     css,
-    /\.about-experience \.discover-story \.story-origin-shelf__sign::before[\s\S]*?content:\s*"FOUNDING PRINCIPLES";/
+    /\.story-origin-shelf\s*\{[\s\S]*?border:\s*0;[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;[\s\S]*?backdrop-filter:\s*none;/
   );
-  assert.match(
-    css,
-    /\.about-experience \.discover-story \.story-origin-shelf__items\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\);/
-  );
-  assert.match(css, /content:\s*"LOCAL BY NATURE\\A Neighborhood grocery";/);
-  assert.match(css, /content:\s*"BUILT FOR DAILY LIFE\\A Everyday essentials";/);
-  assert.match(css, /content:\s*"CLOSE TO HOME\\A Familiar Pasig retail";/);
-  assert.match(
-    css,
-    /\.about-experience \.discover-story \.story-origin-shelf \.story-origin-shelf__item:nth-child\(4\)\s*\{[\s\S]*?display:\s*none;/
-  );
+  assert.match(css, /content:\s*"NEIGHBORHOOD ORIGIN";/);
+  assert.match(css, /content:\s*"Built close to home\.";/);
+  assert.match(css, /content:\s*"LOCAL STORE\\A Neighborhood roots";/);
+  assert.match(css, /content:\s*"PASIG CITY\\A Close to home";/);
+  assert.match(css, /content:\s*"EVERYDAY ESSENTIALS\\A Built for daily life";/);
+  assert.doesNotMatch(css, /FOUNDING PRINCIPLES|What shaped the store\./);
   assert.doesNotMatch(css, /content:\s*"2019/);
-  assert.doesNotMatch(css, /2019 \\2192 TODAY/);
-  assert.doesNotMatch(css, /retail-display\.webp|clip-path:/);
 });
 
-test("About origin treatment is owned by its isolated stylesheet", () => {
+test("About origin remains owned by its isolated stylesheet", () => {
   const css = readOriginCss();
   const premium = read("frontend/src/styles/customer-about-premium.css");
 
   assert.match(css, /\.about-experience \.discover-story \.story-origin-shelf\s*\{/);
-  assert.match(
-    css,
-    /\.about-experience \.discover-story \.story-origin-shelf \.story-origin-shelf__item::before/
-  );
   assert.doesNotMatch(premium, /story-origin-shelf/);
-  assert.doesNotMatch(premium, /01 · DAILY|02 · PANTRY|03 · HOME|04 · CARE/);
 });
 
-test("About founding principles stack cleanly on small screens", () => {
+test("About shelf-edge editorial stacks cleanly on small screens", () => {
   const css = readOriginCss();
 
   assert.match(
     css,
-    /@media \(max-width: 840px\)[\s\S]*?\.about-experience \.discover-story \.story-origin-shelf__items\s*\{[\s\S]*?grid-template-columns:\s*1fr;/
+    /@media \(max-width: 840px\)[\s\S]*?\.story-origin-shelf__items\s*\{[\s\S]*?grid-template-columns:\s*1fr;/
   );
 });
