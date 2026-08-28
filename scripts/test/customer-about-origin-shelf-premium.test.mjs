@@ -44,12 +44,16 @@ test("About origin band keeps decorative numbers clear of the top edge", () => {
   );
 });
 
-test("About Pasig copy sits slightly lower without moving the other origin labels", () => {
+test("About Pasig copy has the same breathing room from 02 as the other origin labels", () => {
   const css = readOriginCss();
 
   assert.match(
     css,
-    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\(2\)::after\s*\{[\s\S]*?transform:\s*translateY\(0\.35rem\);/
+    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\(2\)::after\s*\{[\s\S]*?transform:\s*translateX\(1\.5rem\);/
+  );
+  assert.doesNotMatch(
+    css,
+    /\.story-origin-shelf \.story-origin-shelf__item:nth-child\(2\)::after\s*\{[\s\S]*?translateY/
   );
   assert.doesNotMatch(
     css,
