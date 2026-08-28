@@ -34,3 +34,14 @@ test("About beginning shader stays premium and less foggy", () => {
   assert.match(css, /rgb\(0 140 255 \/ 9%\)/);
   assert.match(css, /rgb\(168 60 240 \/ 8%\)/);
 });
+
+test("About progress navigator stays hidden through the welcome scene", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+
+  assert.match(
+    discover,
+    /const progressVisibilityStart = sceneOwnershipStarts\[1\] \?\? rootTop;/
+  );
+  assert.match(discover, /scrollTop >= progressVisibilityStart/);
+  assert.doesNotMatch(discover, /scrollTop >= rootTop - viewportHeight \* 0\.75/);
+});
