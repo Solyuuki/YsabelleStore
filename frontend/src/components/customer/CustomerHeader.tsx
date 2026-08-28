@@ -29,7 +29,7 @@ export function CustomerHeader({
   const links = [
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop" },
-    { href: "/about", label: "About Us" }
+    { href: "/about", label: "About" }
   ];
 
   return (
