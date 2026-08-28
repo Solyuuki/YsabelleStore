@@ -111,3 +111,14 @@ test("About storefront handoff keeps the narrow headline compact", () => {
     /@media \(max-width: 840px\)\s*\{[\s\S]*?\.story-shop__copy h2\s*\{[\s\S]*?max-width:\s*100%;[\s\S]*?font-size:\s*clamp\(2\.75rem,\s*8vw,\s*3\.4rem\);/
   );
 });
+
+test("About storefront handoff waits until scene 06 owns the viewport before revealing", () => {
+  const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
+
+  assert.match(source, /start:\s*"top top\+=76"/);
+  assert.doesNotMatch(source, /start:\s*"top 78%"/);
+  assert.match(
+    source,
+    /end:\s*\(\)\s*=>\s*`\+=\$\{Math\.max\(520,\s*Math\.round\(window\.innerHeight\s*\*\s*0\.72\)\)\}`/
+  );
+});
