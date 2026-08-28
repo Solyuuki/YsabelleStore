@@ -67,6 +67,7 @@
   display: flex;
   height: auto;
   min-height: clamp(6.3rem, 8vw, 7.6rem);
+  align-items: flex-start;
   flex-direction: column;
   justify-content: flex-end;
   padding: 0.85rem clamp(1.5rem, 3vw, 2.6rem) 0;
@@ -128,6 +129,7 @@
   position: relative;
   z-index: 1;
   max-width: 22ch;
+  margin-left: clamp(4.5rem, 5.2vw, 5.4rem);
   color: #232941;
   font-family: var(--customer-font-body);
   font-size: clamp(0.8rem, 0.95vw, 0.94rem);
@@ -136,6 +138,10 @@
   line-height: 1.5;
   text-align: left;
   white-space: pre-line;
+}
+
+.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child::after {
+  margin-left: clamp(4.5rem, 5.2vw, 5.4rem);
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(1)::after {
@@ -209,8 +215,10 @@
     line-height: 1;
   }
 
-  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::after {
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::after,
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child::after {
     max-width: none;
+    margin-left: 0;
     font-size: 0.74rem;
   }
 }
