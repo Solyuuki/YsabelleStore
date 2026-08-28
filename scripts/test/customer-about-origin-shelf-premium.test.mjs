@@ -10,24 +10,33 @@ function readOriginCss() {
   return read("frontend/src/styles/about-origin-timeline.css");
 }
 
-test("About origin uses an open shelf-edge editorial treatment", () => {
+test("About origin uses one integrated premium editorial band", () => {
   const css = readOriginCss();
 
-  assert.match(css, /shelf-edge editorial/);
+  assert.match(css, /integrated origin editorial band/);
   assert.match(
     css,
-    /\.story-origin-shelf\s*\{[\s\S]*?border:\s*0;[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;[\s\S]*?backdrop-filter:\s*none;/
+    /\.story-origin-shelf\s*\{[\s\S]*?display:\s*block;[\s\S]*?border:\s*0;[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;/
   );
-  assert.match(css, /content:\s*"NEIGHBORHOOD ORIGIN";/);
-  assert.match(css, /content:\s*"Built close to home\.";/);
-  assert.match(css, /content:\s*"LOCAL STORE\\A Neighborhood roots";/);
-  assert.match(css, /content:\s*"PASIG CITY\\A Close to home";/);
+  assert.match(
+    css,
+    /\.story-origin-shelf__sign\s*\{[\s\S]*?display:\s*none;/
+  );
+  assert.match(
+    css,
+    /\.story-origin-shelf__items\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\);/
+  );
+  assert.match(css, /content:\s*"01";/);
+  assert.match(css, /content:\s*"02";/);
+  assert.match(css, /content:\s*"03";/);
+  assert.match(css, /content:\s*"LOCAL ROOTS\\A Neighborhood store";/);
+  assert.match(css, /content:\s*"PASIG CITY\\A Serving close to home";/);
   assert.match(css, /content:\s*"EVERYDAY ESSENTIALS\\A Built for daily life";/);
-  assert.doesNotMatch(css, /FOUNDING PRINCIPLES|What shaped the store\./);
+  assert.doesNotMatch(css, /Built close to home\.|NEIGHBORHOOD ORIGIN|FOUNDING PRINCIPLES/);
   assert.doesNotMatch(css, /content:\s*"2019/);
 });
 
-test("About origin remains owned by its isolated stylesheet", () => {
+test("About origin band remains owned by its isolated stylesheet", () => {
   const css = readOriginCss();
   const premium = read("frontend/src/styles/customer-about-premium.css");
 
@@ -35,7 +44,7 @@ test("About origin remains owned by its isolated stylesheet", () => {
   assert.doesNotMatch(premium, /story-origin-shelf/);
 });
 
-test("About shelf-edge editorial stacks cleanly on small screens", () => {
+test("About origin editorial band stacks cleanly on small screens", () => {
   const css = readOriginCss();
 
   assert.match(
