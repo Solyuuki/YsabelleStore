@@ -144,7 +144,6 @@
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(2)::after {
   content: "PASIG CITY\A Serving close to home";
-  transform: translateX(clamp(3.6rem, 4vw, 4.25rem));
 }
 
 .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(3)::after {
@@ -213,9 +212,5 @@
   .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::after {
     max-width: none;
     font-size: 0.74rem;
-  }
-
-  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(2)::after {
-    transform: none;
   }
 }
