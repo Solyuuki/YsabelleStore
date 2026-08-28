@@ -691,6 +691,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
           const location = first<HTMLElement>(".story-location");
           if (location) {
             const realMap = location.querySelector<HTMLElement>(".story-real-map");
+            const locationCopy = location.querySelector<HTMLElement>(".story-location__copy");
             const locationKicker = location.querySelector<HTMLElement>(".story-kicker");
             const locationHeadline = Array.from(
               location.querySelectorAll<HTMLElement>(".story-mask__line")
@@ -710,6 +711,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
 
             if (
               realMap &&
+              locationCopy &&
               locationKicker &&
               locationHeadline.length &&
               mapBadge &&
@@ -722,6 +724,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               locationHandoff
             ) {
               gsap.set(realMap, { autoAlpha: 0, scale: 0.98, y: 18 });
+              gsap.set(locationCopy, { autoAlpha: 0, scale: 0.98, y: 18 });
               gsap.set(locationKicker, { autoAlpha: 0, x: -18 });
               gsap.set(locationHeadline, { autoAlpha: 0, y: 24 });
               gsap.set(mapBadge, { autoAlpha: 0, scale: 0.78, y: 14 });
@@ -743,6 +746,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               });
               locationTimeline
                 .addLabel("map", 0)
+                .to(locationCopy, { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 }, "map+=0.02")
                 .to(
                   realMap,
                   { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
