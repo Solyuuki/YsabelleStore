@@ -33,6 +33,17 @@ test("retailer shell and navigation remove emerald brand styling", () => {
   assert.match(button, /indigo/);
 });
 
+test("shared form controls use the approved indigo focus outline", () => {
+  const input = read("frontend/src/components/ui/input.tsx");
+  const select = read("frontend/src/components/ui/select.tsx");
+  const textarea = read("frontend/src/components/ui/textarea.tsx");
+
+  for (const control of [input, select, textarea]) {
+    assert.match(control, /focus-visible:ring-2 focus-visible:ring-indigo-500/);
+    assert.doesNotMatch(control, /focus-visible:ring-(?:emerald|green)-/);
+  }
+});
+
 test("retailer and staff-login ambient surfaces inherit the ecommerce palette", () => {
   const themePath = "frontend/src/styles/retailer-brand.css";
   assert.equal(existsSync(fileUrl(themePath)), true, "retailer brand stylesheet must exist");
