@@ -180,6 +180,17 @@
   background-color: rgb(98 91 255 / 10%) !important;
 }
 
+.app-shell-ambient [class~="focus-within:border-emerald-400"]:focus-within,
+.app-shell-ambient [class~="focus-within:border-emerald-500"]:focus-within,
+.app-shell-ambient [class~="focus-within:border-green-400"]:focus-within,
+.app-shell-ambient [class~="focus-within:border-green-500"]:focus-within,
+.app-shell-ambient [class~="focus:border-emerald-400"]:focus,
+.app-shell-ambient [class~="focus:border-emerald-500"]:focus,
+.app-shell-ambient [class~="focus:border-green-400"]:focus,
+.app-shell-ambient [class~="focus:border-green-500"]:focus {
+  border-color: var(--ys-indigo) !important;
+}
+
 .app-shell-ambient [class~="focus-visible:border-emerald-500"]:focus-visible,
 .app-shell-ambient [class~="focus-visible:border-green-500"]:focus-visible {
   border-color: var(--ys-violet) !important;
