@@ -17,7 +17,7 @@ test("About location uses a balanced premium map and copy composition", () => {
   assert.match(css, /width:\s*calc\(100% - 1\.1rem\)/);
 });
 
-test("About location copy card animates as one panel instead of leaving an empty rectangle", () => {
+test("About location copy panel enters with its first visible text instead of appearing empty", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
   assert.match(
@@ -25,9 +25,18 @@ test("About location copy card animates as one panel instead of leaving an empty
     /const locationCopy = location\.querySelector<HTMLElement>\("\.story-location__copy"\)/
   );
   assert.match(discover, /gsap\.set\(locationCopy, \{ autoAlpha: 0, scale: 0\.98, y: 18 \}\)/);
-  assert.match(
+  assert.doesNotMatch(
     discover,
     /\.to\(locationCopy, \{ autoAlpha: 1, duration: 0\.1, ease: "power1\.out", scale: 1, y: 0 \}, "map\+=0\.02"\)/
+  );
+  assert.match(discover, /\.addLabel\("copy", 0\.12\)/);
+  assert.match(
+    discover,
+    /\.to\(locationCopy, \{ autoAlpha: 1, duration: 0\.1, ease: "power1\.out", scale: 1, y: 0 \}, "copy"\)/
+  );
+  assert.match(
+    discover,
+    /\.to\(\s*locationKicker,\s*\{ autoAlpha: 1, duration: 0\.07, ease: "power2\.out", x: 0 \},\s*"copy"\s*\)/s
   );
 });
 
