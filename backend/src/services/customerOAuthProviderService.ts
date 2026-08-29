@@ -58,7 +58,7 @@ type GoogleJwtPayload = {
   iat?: unknown;
 };
 
-type JsonWebKeyWithMetadata = JsonWebKey & {
+type JsonWebKeyWithMetadata = Record<string, unknown> & {
   kid?: string;
   alg?: string;
   use?: string;
@@ -151,13 +151,17 @@ async function validateGoogleIdToken(input: {
   if (!Array.isArray(jwks.keys)) throw invalidCallback();
 
   const jwk = (jwks.keys as unknown[])
-    .filter((candidate): candidate is JsonWebKeyWithMetadata => Boolean(candidate && typeof candidate === "object"))
+    .filter(
+      (candidate): candidate is JsonWebKeyWithMetadata =>
+        Boolean(candidate && typeof candidate === "object" && !Array.isArray(candidate))
+    )
     .find((candidate) => candidate.kid === kid && candidate.alg === "RS256" && candidate.use === "sig");
   if (!jwk) throw invalidCallback();
 
   let publicKey;
   try {
-    publicKey = createPublicKey({ key: jwk, format: "jwk" });
+    const publicKeyInput = { key: jwk, format: "jwk" } as Parameters<typeof createPublicKey>[0];
+    publicKey = createPublicKey(publicKeyInput);
   } catch {
     throw invalidCallback();
   }
