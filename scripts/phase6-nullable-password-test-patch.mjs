@@ -26,3 +26,5 @@ for (const patch of patches) {
   }
   await writeFile(patch.path, original.replace(patch.before, patch.after), "utf8");
 }
+
+// Temporary branch-only patch helper; removed after Phase 6 verification.
