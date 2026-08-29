@@ -6,6 +6,7 @@ on:
       - "m1/v0.9/feat/customer-social-auth"
     paths:
       - ".github/workflows/phase6-format.yml"
+      - "backend/src/controllers/customerSocialAuthController.ts"
 
 permissions:
   contents: write
