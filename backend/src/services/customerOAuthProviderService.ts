@@ -73,7 +73,8 @@ function providerError(
 
 function providerUnavailable(): HttpError {
   return new HttpError(503, "Social sign-in is temporarily unavailable.", {
-    code: "SOCIAL_AUTH_PROVIDER_UNAVAILABLE"
+    code: "SOCIAL_AUTH_PROVIDER_UNAVAILABLE",
+    expose: true
   });
 }
 
