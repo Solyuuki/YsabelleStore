@@ -33,12 +33,12 @@
 
 .customer-social-auth__button {
   display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr) 2.25rem;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 0.8rem;
   width: 100%;
   min-height: 54px;
-  padding: 0.7rem 0.9rem;
+  padding: 0.7rem 1.35rem;
   border: 1px solid rgb(98 91 255 / 15%);
   border-radius: 0.95rem;
   background:
@@ -52,18 +52,12 @@
   font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: -0.01em;
-  text-align: center;
+  text-align: left;
   transition:
     transform 160ms ease,
     border-color 160ms ease,
     box-shadow 160ms ease,
     background 160ms ease;
-}
-
-.customer-social-auth__button::after {
-  width: 2.25rem;
-  height: 1px;
-  content: "";
 }
 
 .customer-social-auth__button:hover:not(:disabled) {
@@ -107,6 +101,6 @@
 @media (max-width: 520px) {
   .customer-social-auth__button {
     min-height: 52px;
-    padding-inline: 0.78rem;
+    padding-inline: 1rem;
   }
 }
