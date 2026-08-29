@@ -1,0 +1,35 @@
+name: Phase 6 Persistence Apply
+
+on:
+  push:
+    branches:
+      - "m1/v0.9/feat/customer-social-auth"
+    paths:
+      - "scripts/phase6-schema-apply.mjs"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply persistence patch
+        run: node scripts/phase6-schema-apply.mjs
+
+      - name: Commit persistence layer
+        run: |
+          if git diff --quiet -- database/prisma/schema.prisma database/prisma/migrations; then
+            echo "Persistence patch already applied."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add database/prisma/schema.prisma database/prisma/migrations/20260829071000_customer_social_auth/migration.sql
+          git commit -m "feat(auth): add customer social auth persistence"
+          git push origin HEAD:m1/v0.9/feat/customer-social-auth
