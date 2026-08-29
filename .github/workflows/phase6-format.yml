@@ -1,0 +1,80 @@
+name: Phase 6 Format
+
+on:
+  push:
+    branches:
+      - "m1/v0.9/feat/customer-social-auth"
+    paths:
+      - ".github/workflows/phase6-format.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  format-phase6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: m1/v0.9/feat/customer-social-auth
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format Phase 6 files only
+        run: >-
+          npx prettier --write
+          .github/workflows/ci.yml
+          .github/workflows/phase6-compile-red.yml
+          .github/workflows/phase6-nullable-password-test-patch.yml
+          .github/workflows/phase6-schema-apply.yml
+          .github/workflows/phase6-tdd.yml
+          .github/workflows/phase6-format.yml
+          backend/package.json
+          backend/src/config/env.ts
+          backend/src/controllers/customerSocialAuthController.ts
+          backend/src/middleware/errorHandler.ts
+          backend/src/routes/customerAuth.routes.ts
+          backend/src/services/customerAccountService.ts
+          backend/src/services/customerAuthService.ts
+          backend/src/services/customerOAuthProviderService.ts
+          backend/src/services/customerOAuthService.ts
+          backend/src/services/customerOAuthTransactionService.ts
+          backend/src/services/customerSocialAuthService.ts
+          backend/src/utils/customerOAuthCookie.ts
+          backend/src/utils/httpError.ts
+          backend/test/customer-account-password-concurrency.test.ts
+          backend/test/customer-account-security.test.ts
+          backend/test/customer-auth-password-security.test.ts
+          backend/test/customer-auth.test.ts
+          backend/test/customer-oauth-electron-flow.test.ts
+          backend/test/customer-oauth-flow.test.ts
+          backend/test/customer-oauth-provider.test.ts
+          backend/test/customer-oauth-transaction.test.ts
+          backend/test/customer-social-auth-http.test.ts
+          backend/test/customer-social-auth.test.ts
+          docs/superpowers/plans/2026-08-29-customer-social-auth.md
+          docs/superpowers/specs/2026-08-29-customer-social-auth-design.md
+          frontend/package.json
+          frontend/src/components/customer/CustomerSocialAuthButtons.tsx
+          frontend/src/pages/customer/CustomerLoginPage.tsx
+          frontend/src/pages/customer/CustomerRegisterPage.tsx
+          frontend/src/services/customerSocialAuthService.ts
+          frontend/src/styles/customer-auth-quick-sign.css
+          scripts/customer-social-auth-ui-test.ts
+          scripts/phase6-nullable-password-test-patch.mjs
+          scripts/phase6-schema-apply.mjs
+      - name: Commit formatting if needed
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Phase 6 files are already formatted."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git add .github/workflows/phase6-format.yml
+          git commit -m "style(auth): format phase 6 social auth files"
+          git push origin HEAD:m1/v0.9/feat/customer-social-auth
