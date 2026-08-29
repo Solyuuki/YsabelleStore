@@ -51,7 +51,7 @@ export type CustomerSessionResult = CustomerSessionToken & {
   customer: SafeCustomer;
 };
 
-function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
+export function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
   return {
     id: customer.id,
     name: customer.name,
@@ -182,7 +182,7 @@ export async function loginCustomer(input: CustomerLoginInput): Promise<Customer
             where: { username: classification.normalized }
           });
 
-  if (!customer || customer.status !== "ACTIVE") {
+  if (!customer || customer.status !== "ACTIVE" || !customer.passwordHash) {
     return verifyDummyPassword(parsed.password);
   }
 
