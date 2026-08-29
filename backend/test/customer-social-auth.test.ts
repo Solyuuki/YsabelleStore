@@ -19,6 +19,7 @@ function providerIdentity(
     providerSubject: string;
     email: string | null;
     emailVerified: boolean;
+    emailAuthoritative: boolean;
     name: string;
   }> = {}
 ) {
@@ -27,6 +28,7 @@ function providerIdentity(
     providerSubject: `google-${suffix}`,
     email: `social-${suffix}@example.com`,
     emailVerified: true,
+    emailAuthoritative: false,
     name: "Social Customer",
     ...overrides
   };
@@ -90,7 +92,50 @@ test("returning provider subject signs into the same customer instead of creatin
   );
 });
 
-test("matching an existing customer email requires ownership proof and never creates a duplicate", async () => {
+test("authoritative Google email match auto-links the existing customer and signs in without password proof", async () => {
+  const suffix = randomUUID().slice(0, 8);
+  const email = `existing-google-${suffix}@gmail.com`;
+  const providerSubject = `authoritative-${suffix}`;
+  createdEmails.push(email);
+  const customer = await prisma.customerAccount.create({
+    data: {
+      name: "Existing Google Customer",
+      username: `google.${suffix}`,
+      email,
+      passwordHash: await hashPassword("ExistingPass123!"),
+      status: "ACTIVE"
+    }
+  });
+
+  const result = await authenticateCustomerSocialIdentity(
+    providerIdentity(suffix, {
+      email,
+      providerSubject,
+      emailAuthoritative: true
+    })
+  );
+
+  assert.equal(result.kind, "authenticated");
+  if (result.kind !== "authenticated") return;
+  assert.equal(result.customer.id, customer.id);
+  assert.equal(result.customer.email, email);
+  assert.ok(result.sessionToken.length >= 32);
+  assert.equal(await prisma.customerAccount.count({ where: { email } }), 1);
+  assert.equal(
+    await prisma.customerSocialIdentity.count({
+      where: { provider: "GOOGLE", providerSubject }
+    }),
+    1
+  );
+  assert.equal(
+    await prisma.customerSocialLinkIntent.count({
+      where: { customerAccountId: customer.id, provider: "GOOGLE", usedAt: null }
+    }),
+    0
+  );
+});
+
+test("non-authoritative existing customer email requires ownership proof and never creates a duplicate", async () => {
   const suffix = randomUUID().slice(0, 8);
   const email = `existing-social-${suffix}@example.com`;
   createdEmails.push(email);
