@@ -231,6 +231,7 @@ export function createGoogleCustomerOAuthProvider(
       url.searchParams.set("state", input.state);
       url.searchParams.set("code_challenge", input.pkceChallenge);
       url.searchParams.set("code_challenge_method", "S256");
+      url.searchParams.set("prompt", "select_account");
       if (input.nonce) url.searchParams.set("nonce", input.nonce);
       return url;
     },
