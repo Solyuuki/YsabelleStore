@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { CustomerSocialAuthButtons } from "../frontend/src/components/customer/CustomerSocialAuthButtons.tsx";
 import {
   buildCustomerSocialAuthStartUrl,
+  getCustomerSocialAuthNotice,
   type CustomerSocialAuthProvider
 } from "../frontend/src/services/customerSocialAuthService.ts";
 
@@ -62,12 +63,31 @@ assert.doesNotMatch(registerSource, /<span>Quick sign<\/span>/i);
 assert.doesNotMatch(registerSource, /<span>or create with password<\/span>/i);
 
 assert.equal(
-  buildCustomerSocialAuthStartUrl("google", "/account", "http://localhost:3001").toString(),
-  "http://localhost:3001/api/customer-auth/social/google/start?returnPath=%2Faccount"
+  buildCustomerSocialAuthStartUrl(
+    "google",
+    "/account",
+    "login",
+    "http://localhost:3001"
+  ).toString(),
+  "http://localhost:3001/api/customer-auth/social/google/start?returnPath=%2Faccount&authPage=login"
 );
 assert.equal(
-  buildCustomerSocialAuthStartUrl("facebook", "/", "http://localhost:3001").toString(),
-  "http://localhost:3001/api/customer-auth/social/facebook/start?returnPath=%2F"
+  buildCustomerSocialAuthStartUrl(
+    "facebook",
+    "/account",
+    "register",
+    "http://localhost:3001"
+  ).toString(),
+  "http://localhost:3001/api/customer-auth/social/facebook/start?returnPath=%2Faccount&authPage=register"
 );
+assert.equal(
+  getCustomerSocialAuthNotice("?social=provider_unavailable&provider=google"),
+  "Google sign-in is not configured for this environment yet."
+);
+assert.equal(
+  getCustomerSocialAuthNotice("?social=provider_unavailable&provider=facebook"),
+  "Facebook sign-in is not configured for this environment yet."
+);
+assert.equal(getCustomerSocialAuthNotice("?social=provider_unavailable&provider=apple"), null);
 
 console.log("Customer social auth quick-sign UI contract passed.");
