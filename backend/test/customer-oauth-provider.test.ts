@@ -20,6 +20,7 @@ function signGoogleIdToken(
     subject?: string;
     email?: string;
     emailVerified?: boolean;
+    hostedDomain?: string;
     issuer?: string;
     expiresAtSeconds?: number;
   }
@@ -32,6 +33,7 @@ function signGoogleIdToken(
     sub: input.subject ?? "google-subject-123",
     email: input.email ?? "google@example.com",
     email_verified: input.emailVerified ?? true,
+    hd: input.hostedDomain,
     name: "Google Customer",
     nonce: input.nonce,
     iat: now - 5,
@@ -65,7 +67,11 @@ test("Google provider builds PKCE authorization URL and validates signed ID-toke
   const nonce = "nonce-value-12345678901234567890123456789012";
   const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
   const publicJwk = publicKey.export({ format: "jwk" });
-  const idToken = signGoogleIdToken(privateKey, { clientId, nonce });
+  const idToken = signGoogleIdToken(privateKey, {
+    clientId,
+    nonce,
+    email: "buyer@gmail.com"
+  });
   const calls: string[] = [];
   const provider = createGoogleCustomerOAuthProvider({
     clientId,
@@ -110,14 +116,51 @@ test("Google provider builds PKCE authorization URL and validates signed ID-toke
   assert.deepEqual(identity, {
     provider: "GOOGLE",
     providerSubject: "google-subject-123",
-    email: "google@example.com",
+    email: "buyer@gmail.com",
     emailVerified: true,
+    emailAuthoritative: true,
     name: "Google Customer"
   });
   assert.deepEqual(calls, [
     "https://oauth2.googleapis.com/token",
     "https://www.googleapis.com/oauth2/v3/certs"
   ]);
+});
+
+test("Google provider distinguishes authoritative Workspace email from third-party Google Account email", async () => {
+  const clientId = "expected-client.apps.googleusercontent.com";
+  const nonce = "nonce";
+  const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const publicJwk = publicKey.export({ format: "jwk" });
+
+  async function exchange(email: string, hostedDomain?: string) {
+    const token = signGoogleIdToken(privateKey, {
+      clientId,
+      nonce,
+      email,
+      hostedDomain
+    });
+    const provider = createGoogleCustomerOAuthProvider({
+      clientId,
+      clientSecret: "secret",
+      fetchImpl: async (input) =>
+        String(input).includes("/token")
+          ? jsonResponse({ id_token: token })
+          : jsonResponse({ keys: [{ ...publicJwk, kid: "test-key", alg: "RS256", use: "sig" }] })
+    });
+    return provider.exchangeCodeForIdentity({
+      code: "code",
+      redirectUri: "https://api.example.com/callback",
+      pkceVerifier: "verifier",
+      nonce
+    });
+  }
+
+  const workspace = await exchange("buyer@company.example", "company.example");
+  assert.equal(workspace.emailAuthoritative, true);
+
+  const thirdParty = await exchange("buyer@yahoo.com");
+  assert.equal(thirdParty.emailAuthoritative, false);
 });
 
 test("Google provider rejects nonce mismatch, wrong audience and unverified email", async () => {
@@ -209,6 +252,7 @@ test("Facebook provider validates token app identity before reading minimal prof
     providerSubject: "facebook-user-123",
     email: "facebook@example.com",
     emailVerified: true,
+    emailAuthoritative: false,
     name: "Facebook Customer"
   });
   assert.equal(calls.length, 3);
