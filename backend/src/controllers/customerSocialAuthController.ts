@@ -74,14 +74,34 @@ function socialErrorRedirect(response: Response, code: string): void {
   response.redirect(302, customerFrontendUrl(`/login?social=${status}`));
 }
 
+function socialStartUnavailableRedirect(
+  response: Response,
+  provider: CustomerSocialProvider,
+  authPage: unknown
+): void {
+  const pathname = authPage === "register" ? "/register" : "/login";
+  const query = new URLSearchParams({
+    social: "provider_unavailable",
+    provider: provider.toLowerCase()
+  });
+  response.redirect(302, customerFrontendUrl(`${pathname}?${query.toString()}`));
+}
+
 function readQueryString(request: Request, field: string): string {
   const value = request.query[field];
   return typeof value === "string" ? value : "";
 }
 
 export const startCustomerSocialAuth: RequestHandler = async (request, response, next) => {
+  let provider: CustomerSocialProvider;
   try {
-    const provider = providerFromParam(request.params.provider ?? "");
+    provider = providerFromParam(request.params.provider ?? "");
+  } catch (error) {
+    next(error);
+    return;
+  }
+
+  try {
     const oauthProvider = getConfiguredCustomerOAuthProvider(provider);
     const started = await startCustomerWebOAuth(
       {
@@ -95,6 +115,10 @@ export const startCustomerSocialAuth: RequestHandler = async (request, response,
     setCustomerOAuthBindingCookie(response, provider, started.browserBinding);
     response.redirect(302, started.authorizationUrl.toString());
   } catch (error) {
+    if (error instanceof HttpError && error.code === "SOCIAL_AUTH_PROVIDER_UNAVAILABLE") {
+      socialStartUnavailableRedirect(response, provider, request.query.authPage);
+      return;
+    }
     next(error);
   }
 };
