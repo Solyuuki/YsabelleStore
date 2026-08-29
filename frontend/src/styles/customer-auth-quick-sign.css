@@ -60,6 +60,11 @@
     background 160ms ease;
 }
 
+.customer-social-auth__button > span:last-child {
+  color: #171a2b;
+  font-weight: 900;
+}
+
 .customer-social-auth__button:hover:not(:disabled) {
   transform: translateY(-1px);
   border-color: rgb(98 91 255 / 28%);
