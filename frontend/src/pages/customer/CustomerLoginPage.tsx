@@ -6,6 +6,7 @@ import { CustomerLink } from "@/components/customer/CustomerLink";
 import { CustomerSocialAuthButtons } from "@/components/customer/CustomerSocialAuthButtons";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import {
+  getCustomerSocialAuthNotice,
   startCustomerSocialAuth,
   type CustomerSocialAuthProvider
 } from "@/services/customerSocialAuthService";
@@ -22,7 +23,9 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     null
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(() =>
+    getCustomerSocialAuthNotice(globalThis.location?.search ?? "")
+  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,7 +52,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     setServerError(null);
     setBusySocialProvider(provider);
     try {
-      startCustomerSocialAuth(provider, "/account");
+      startCustomerSocialAuth(provider, "/account", "login");
     } catch (error) {
       setBusySocialProvider(null);
       setServerError(
