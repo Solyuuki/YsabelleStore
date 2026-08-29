@@ -89,5 +89,27 @@ assert.equal(
   "Facebook sign-in is not configured for this environment yet."
 );
 assert.equal(getCustomerSocialAuthNotice("?social=provider_unavailable&provider=apple"), null);
+assert.equal(
+  getCustomerSocialAuthNotice("?social=link_required"),
+  "This Google or Facebook account matches an existing Ysabelle Store account. Sign in once with your existing password to link it securely."
+);
+
+const loginSource = readFileSync(
+  new URL("../frontend/src/pages/customer/CustomerLoginPage.tsx", import.meta.url),
+  "utf8"
+);
+assert.match(loginSource, /completeCustomerSocialLink/);
+const passwordLoginIndex = loginSource.indexOf("await login(");
+const socialLinkIndex = loginSource.indexOf("await completeCustomerSocialLink(");
+const accountNavigationIndex = loginSource.indexOf('navigate("/account")');
+assert.ok(passwordLoginIndex >= 0, "Password login should still be used to prove account ownership.");
+assert.ok(
+  socialLinkIndex > passwordLoginIndex,
+  "Pending social link should complete only after successful password login."
+);
+assert.ok(
+  accountNavigationIndex > socialLinkIndex,
+  "Successful social linking should continue to the customer account page."
+);
 
 console.log("Customer social auth quick-sign UI contract passed.");
