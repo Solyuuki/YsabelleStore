@@ -22,6 +22,7 @@ on:
       - "database/prisma/schema.prisma"
       - "database/prisma/migrations/**"
       - "frontend/src/components/customer/CustomerSocialAuthButtons.tsx"
+      - "frontend/src/pages/customer/CustomerRegisterPage.tsx"
       - "frontend/src/styles/customer-auth-quick-sign.css"
       - "frontend/src/services/customerSocialAuthService.ts"
       - "scripts/customer-social-auth-ui-test.ts"
