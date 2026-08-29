@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -28,6 +29,17 @@ for (const googleBrandColor of ["#4285F4", "#34A853", "#FBBC05", "#EA4335"]) {
 }
 assert.match(markup, /#1877F2/i);
 assert.doesNotMatch(markup, /fill="currentColor"/);
+
+const quickSignCss = readFileSync(
+  new URL("../frontend/src/styles/customer-auth-quick-sign.css", import.meta.url),
+  "utf8"
+);
+assert.match(
+  quickSignCss,
+  /grid-template-columns:\s*2\.25rem\s+minmax\(0,\s*1fr\)\s+2\.25rem;/
+);
+assert.match(quickSignCss, /\.customer-social-auth__button::after\s*\{/);
+assert.match(quickSignCss, /text-align:\s*center;/);
 
 assert.equal(
   buildCustomerSocialAuthStartUrl("google", "/account", "http://localhost:3001").toString(),
