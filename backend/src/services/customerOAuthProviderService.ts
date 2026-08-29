@@ -52,6 +52,7 @@ type GoogleJwtPayload = {
   sub?: unknown;
   email?: unknown;
   email_verified?: unknown;
+  hd?: unknown;
   name?: unknown;
   nonce?: unknown;
   exp?: unknown;
@@ -135,6 +136,11 @@ function audienceMatches(audience: unknown, clientId: string): boolean {
   return false;
 }
 
+function isAuthoritativeGoogleEmail(email: string, hostedDomain: string | null): boolean {
+  const domain = email.split("@")[1]?.toLowerCase() ?? "";
+  return domain === "gmail.com" || Boolean(hostedDomain);
+}
+
 async function validateGoogleIdToken(input: {
   token: string;
   expectedClientId: string;
@@ -196,11 +202,13 @@ async function validateGoogleIdToken(input: {
   const normalizedEmail = email ? normalizeCustomerEmail(email) : null;
   if (!normalizedEmail || parsed.payload.email_verified !== true) throw emailRequired();
 
+  const hostedDomain = stringValue(parsed.payload.hd);
   return {
     provider: "GOOGLE",
     providerSubject: subject,
     email: normalizedEmail,
     emailVerified: true,
+    emailAuthoritative: isAuthoritativeGoogleEmail(normalizedEmail, hostedDomain),
     name: stringValue(parsed.payload.name) ?? normalizedEmail.split("@")[0]!
   };
 }
@@ -319,6 +327,7 @@ export function createFacebookCustomerOAuthProvider(
         providerSubject,
         email: normalizedEmail,
         emailVerified: true,
+        emailAuthoritative: false,
         name: stringValue(profile.name) ?? normalizedEmail.split("@")[0]!
       };
     }
