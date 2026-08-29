@@ -92,16 +92,6 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
           </p>
         </div>
 
-        <div className="customer-auth-quick-divider" aria-hidden="true">
-          <span>Quick sign</span>
-        </div>
-
-        <CustomerSocialAuthButtons busyProvider={busySocialProvider} onStart={handleSocialStart} />
-
-        <div className="customer-auth-quick-divider" aria-hidden="true">
-          <span>or create with password</span>
-        </div>
-
         <form
           aria-busy={submitting}
           className="customer-auth-form customer-auth-form--register"
@@ -266,6 +256,12 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             {submitting ? "Creating account..." : "Create Account"}
           </button>
         </form>
+
+        <div className="customer-auth-quick-divider" aria-hidden="true">
+          <span>or</span>
+        </div>
+
+        <CustomerSocialAuthButtons busyProvider={busySocialProvider} onStart={handleSocialStart} />
 
         <p className="customer-auth-switch">
           Already have an account?{" "}
