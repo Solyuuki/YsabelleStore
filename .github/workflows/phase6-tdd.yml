@@ -9,9 +9,11 @@ on:
       - "backend/src/services/customerSocialAuthService.ts"
       - "backend/src/services/customerOAuthTransactionService.ts"
       - "backend/src/services/customerOAuthProviderService.ts"
+      - "backend/src/services/customerOAuthService.ts"
       - "backend/test/customer-social-auth.test.ts"
       - "backend/test/customer-oauth-transaction.test.ts"
       - "backend/test/customer-oauth-provider.test.ts"
+      - "backend/test/customer-oauth-flow.test.ts"
       - "database/prisma/schema.prisma"
       - "database/prisma/migrations/**"
 
@@ -55,4 +57,4 @@ jobs:
       - name: Compile backend
         run: npm run build --workspace backend
       - name: Run focused Phase 6 backend tests
-        run: npx tsx --test --test-concurrency=1 backend/test/customer-social-auth.test.ts backend/test/customer-oauth-transaction.test.ts backend/test/customer-oauth-provider.test.ts
+        run: npx tsx --test --test-concurrency=1 backend/test/customer-social-auth.test.ts backend/test/customer-oauth-transaction.test.ts backend/test/customer-oauth-provider.test.ts backend/test/customer-oauth-flow.test.ts
