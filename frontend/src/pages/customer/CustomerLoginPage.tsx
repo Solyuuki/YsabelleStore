@@ -6,7 +6,9 @@ import { CustomerLink } from "@/components/customer/CustomerLink";
 import { CustomerSocialAuthButtons } from "@/components/customer/CustomerSocialAuthButtons";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import {
+  completeCustomerSocialLink,
   getCustomerSocialAuthNotice,
+  isCustomerSocialLinkRequired,
   startCustomerSocialAuth,
   type CustomerSocialAuthProvider
 } from "@/services/customerSocialAuthService";
@@ -15,6 +17,7 @@ import { validateCustomerLoginForm } from "@/utils/customerAuthForms";
 
 export function CustomerLoginPage({ navigate }: { navigate: (path: string) => void }) {
   const { login } = useCustomerAuth();
+  const socialLinkRequired = isCustomerSocialLinkRequired(globalThis.location?.search ?? "");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -38,6 +41,11 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     setSubmitting(true);
     try {
       await login({ identifier: identifier.trim(), password });
+      if (socialLinkRequired) {
+        await completeCustomerSocialLink();
+        navigate("/account");
+        return;
+      }
       navigate("/");
     } catch (error) {
       setServerError(
@@ -148,7 +156,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
             disabled={submitting || busySocialProvider !== null}
             type="submit"
           >
-            {submitting ? "Signing in..." : "Sign In"}
+            {submitting ? (socialLinkRequired ? "Linking account..." : "Signing in...") : "Sign In"}
           </button>
         </form>
 
