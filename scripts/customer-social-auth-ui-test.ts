@@ -23,6 +23,12 @@ assert.match(markup, /Continue with Facebook/);
 assert.doesNotMatch(markup, /Coming soon/i);
 assert.match(markup, /type="button"/);
 
+for (const googleBrandColor of ["#4285F4", "#34A853", "#FBBC05", "#EA4335"]) {
+  assert.match(markup, new RegExp(googleBrandColor, "i"));
+}
+assert.match(markup, /#1877F2/i);
+assert.doesNotMatch(markup, /fill="currentColor"/);
+
 assert.equal(
   buildCustomerSocialAuthStartUrl("google", "/account", "http://localhost:3001").toString(),
   "http://localhost:3001/api/customer-auth/social/google/start?returnPath=%2Faccount"
