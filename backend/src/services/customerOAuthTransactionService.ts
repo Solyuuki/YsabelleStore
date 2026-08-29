@@ -115,7 +115,7 @@ export async function createCustomerOAuthTransaction(
       pkceVerifierCiphertext: encryptSecret(pkceVerifier),
       nonceCiphertext: nonce ? encryptSecret(nonce) : null,
       nonceHash: nonce ? hashHex(nonce) : null,
-      electronChallenge: input.transport === "ELECTRON" ? input.electronChallenge ?? null : null,
+      electronChallenge: input.transport === "ELECTRON" ? (input.electronChallenge ?? null) : null,
       returnPath,
       expiresAt
     }

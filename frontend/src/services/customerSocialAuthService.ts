@@ -7,7 +7,10 @@ export function buildCustomerSocialAuthStartUrl(
   returnPath = "/account",
   apiBaseUrl = frontendRuntimeConfig.apiBaseUrl
 ): URL {
-  const url = new URL(`/api/customer-auth/social/${provider}/start`, `${apiBaseUrl.replace(/\/$/, "")}/`);
+  const url = new URL(
+    `/api/customer-auth/social/${provider}/start`,
+    `${apiBaseUrl.replace(/\/$/, "")}/`
+  );
   url.searchParams.set("returnPath", returnPath.startsWith("/") ? returnPath : "/account");
   return url;
 }

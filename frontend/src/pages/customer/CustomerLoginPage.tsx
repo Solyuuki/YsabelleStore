@@ -18,7 +18,9 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(null);
+  const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(
+    null
+  );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -138,7 +140,11 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
             </CustomerLink>
           </div>
 
-          <button className="customer-auth-submit" disabled={submitting || busySocialProvider !== null} type="submit">
+          <button
+            className="customer-auth-submit"
+            disabled={submitting || busySocialProvider !== null}
+            type="submit"
+          >
             {submitting ? "Signing in..." : "Sign In"}
           </button>
         </form>

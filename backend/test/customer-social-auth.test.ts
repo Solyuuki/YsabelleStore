@@ -12,13 +12,16 @@ import { HttpError } from "../src/utils/httpError.js";
 
 const createdEmails: string[] = [];
 
-function providerIdentity(suffix: string, overrides: Partial<{
-  provider: "GOOGLE" | "FACEBOOK";
-  providerSubject: string;
-  email: string | null;
-  emailVerified: boolean;
-  name: string;
-}> = {}) {
+function providerIdentity(
+  suffix: string,
+  overrides: Partial<{
+    provider: "GOOGLE" | "FACEBOOK";
+    providerSubject: string;
+    email: string | null;
+    emailVerified: boolean;
+    name: string;
+  }> = {}
+) {
   return {
     provider: "GOOGLE" as const,
     providerSubject: `google-${suffix}`,
@@ -177,8 +180,13 @@ test("simultaneous first login for one provider identity converges to one custom
     authenticateCustomerSocialIdentity(identity),
     authenticateCustomerSocialIdentity(identity)
   ]);
-  assert.equal(results.every((result) => result.kind === "authenticated"), true);
-  const ids = results.flatMap((result) => (result.kind === "authenticated" ? [result.customer.id] : []));
+  assert.equal(
+    results.every((result) => result.kind === "authenticated"),
+    true
+  );
+  const ids = results.flatMap((result) =>
+    result.kind === "authenticated" ? [result.customer.id] : []
+  );
   assert.equal(new Set(ids).size, 1);
   assert.equal(await prisma.customerAccount.count({ where: { email: identity.email! } }), 1);
   assert.equal(
@@ -196,10 +204,16 @@ test.after(async () => {
   });
   const customerIds = customers.map((customer) => customer.id);
   if (customerIds.length > 0) {
-    await prisma.customerSocialLinkIntent.deleteMany({ where: { customerAccountId: { in: customerIds } } });
-    await prisma.customerSocialIdentity.deleteMany({ where: { customerAccountId: { in: customerIds } } });
+    await prisma.customerSocialLinkIntent.deleteMany({
+      where: { customerAccountId: { in: customerIds } }
+    });
+    await prisma.customerSocialIdentity.deleteMany({
+      where: { customerAccountId: { in: customerIds } }
+    });
     await prisma.customerSession.deleteMany({ where: { customerAccountId: { in: customerIds } } });
-    await prisma.customerPasswordResetToken.deleteMany({ where: { customerAccountId: { in: customerIds } } });
+    await prisma.customerPasswordResetToken.deleteMany({
+      where: { customerAccountId: { in: customerIds } }
+    });
     await prisma.customerAccount.deleteMany({ where: { id: { in: customerIds } } });
   }
 });

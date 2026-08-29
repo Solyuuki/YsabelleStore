@@ -200,7 +200,9 @@ export async function authenticateCustomerSocialIdentity(
       return authenticatedResult(racedIdentity.customerAccount);
     }
 
-    const racedCustomer = await prisma.customerAccount.findUnique({ where: { email: identity.email } });
+    const racedCustomer = await prisma.customerAccount.findUnique({
+      where: { email: identity.email }
+    });
     if (racedCustomer) {
       return createLinkIntent(racedCustomer, identity, now);
     }
@@ -209,10 +211,13 @@ export async function authenticateCustomerSocialIdentity(
   }
 }
 
-export async function completeCustomerSocialLink(input: {
-  linkIntentToken: string;
-  authenticatedCustomerId: string;
-}, now = new Date()): Promise<void> {
+export async function completeCustomerSocialLink(
+  input: {
+    linkIntentToken: string;
+    authenticatedCustomerId: string;
+  },
+  now = new Date()
+): Promise<void> {
   if (!input.linkIntentToken) {
     throw socialError(409, "SOCIAL_AUTH_LINK_CONFLICT");
   }

@@ -66,7 +66,10 @@ test("web oauth start creates a bounded transaction and provider authorization U
   );
 
   assert.equal(start.authorizationUrl.origin, "https://provider.example");
-  assert.equal(start.authorizationUrl.searchParams.get("redirect_uri"), "https://api.example.com/api/customer-auth/social/google/callback");
+  assert.equal(
+    start.authorizationUrl.searchParams.get("redirect_uri"),
+    "https://api.example.com/api/customer-auth/social/google/callback"
+  );
   assert.ok(start.authorizationUrl.searchParams.get("state"));
   assert.ok(start.browserBinding.length >= 32);
   assert.equal(start.expiresAt.getTime(), now.getTime() + 10 * 60 * 1000);
@@ -169,10 +172,16 @@ test.after(async () => {
   });
   const customerIds = customers.map((customer) => customer.id);
   if (customerIds.length > 0) {
-    await prisma.customerSocialLinkIntent.deleteMany({ where: { customerAccountId: { in: customerIds } } });
-    await prisma.customerSocialIdentity.deleteMany({ where: { customerAccountId: { in: customerIds } } });
+    await prisma.customerSocialLinkIntent.deleteMany({
+      where: { customerAccountId: { in: customerIds } }
+    });
+    await prisma.customerSocialIdentity.deleteMany({
+      where: { customerAccountId: { in: customerIds } }
+    });
     await prisma.customerSession.deleteMany({ where: { customerAccountId: { in: customerIds } } });
-    await prisma.customerPasswordResetToken.deleteMany({ where: { customerAccountId: { in: customerIds } } });
+    await prisma.customerPasswordResetToken.deleteMany({
+      where: { customerAccountId: { in: customerIds } }
+    });
     await prisma.customerAccount.deleteMany({ where: { id: { in: customerIds } } });
   }
   await prisma.customerOAuthTransaction.deleteMany({});

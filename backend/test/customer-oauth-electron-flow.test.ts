@@ -139,7 +139,9 @@ test.after(async () => {
     await prisma.customerSocialLinkIntent.deleteMany({ where: { customerAccountId: { in: ids } } });
     await prisma.customerSocialIdentity.deleteMany({ where: { customerAccountId: { in: ids } } });
     await prisma.customerSession.deleteMany({ where: { customerAccountId: { in: ids } } });
-    await prisma.customerPasswordResetToken.deleteMany({ where: { customerAccountId: { in: ids } } });
+    await prisma.customerPasswordResetToken.deleteMany({
+      where: { customerAccountId: { in: ids } }
+    });
     await prisma.customerAccount.deleteMany({ where: { id: { in: ids } } });
   }
   await prisma.customerOAuthTransaction.deleteMany({});

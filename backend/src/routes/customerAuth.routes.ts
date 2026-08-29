@@ -116,7 +116,9 @@ const customerRecoveryIdentifierRateLimit = createAuthRateLimit({
       : null;
   }
 });
-const customerRecoveryVerifyRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRecoveryVerify);
+const customerRecoveryVerifyRateLimit = createAuthRateLimit(
+  AUTH_RATE_LIMITS.customerRecoveryVerify
+);
 const customerRecoveryResetRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRecoveryReset);
 
 customerAuthRouter.use(disableSensitiveResponseCaching);

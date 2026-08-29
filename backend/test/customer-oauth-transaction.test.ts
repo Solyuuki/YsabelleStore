@@ -133,11 +133,7 @@ test("electron handoff requires the private verifier, expires after 90 seconds, 
   const now = new Date("2026-08-29T07:40:00.000Z");
 
   try {
-    const handoff = await createCustomerOAuthHandoff(
-      customer.id,
-      challenge(verifier),
-      now
-    );
+    const handoff = await createCustomerOAuthHandoff(customer.id, challenge(verifier), now);
     assert.equal(handoff.expiresAt.getTime(), now.getTime() + 90_000);
 
     const persisted = await prisma.customerOAuthHandoff.findUniqueOrThrow({

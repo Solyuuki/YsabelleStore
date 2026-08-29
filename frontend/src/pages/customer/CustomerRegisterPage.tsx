@@ -24,7 +24,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(null);
+  const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(
+    null
+  );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -114,58 +116,162 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
           <label className="customer-auth-field" htmlFor="customer-register-name">
             <span>Full name</span>
-            <input aria-describedby={fieldErrors.name ? "customer-register-name-error" : undefined} aria-invalid={Boolean(fieldErrors.name)} autoComplete="name" id="customer-register-name" onChange={(event) => setName(event.target.value)} placeholder="e.g. Juan Dela Cruz" type="text" value={name} />
-            {fieldErrors.name ? <small id="customer-register-name-error">{fieldErrors.name}</small> : null}
+            <input
+              aria-describedby={fieldErrors.name ? "customer-register-name-error" : undefined}
+              aria-invalid={Boolean(fieldErrors.name)}
+              autoComplete="name"
+              id="customer-register-name"
+              onChange={(event) => setName(event.target.value)}
+              placeholder="e.g. Juan Dela Cruz"
+              type="text"
+              value={name}
+            />
+            {fieldErrors.name ? (
+              <small id="customer-register-name-error">{fieldErrors.name}</small>
+            ) : null}
           </label>
 
           <label className="customer-auth-field" htmlFor="customer-register-username">
             <span>Username</span>
-            <input aria-describedby={fieldErrors.username ? "customer-register-username-error" : undefined} aria-invalid={Boolean(fieldErrors.username)} autoComplete="username" id="customer-register-username" onChange={(event) => setUsername(event.target.value)} placeholder="Create your username" type="text" value={username} />
-            {fieldErrors.username ? <small id="customer-register-username-error">{fieldErrors.username}</small> : null}
+            <input
+              aria-describedby={
+                fieldErrors.username ? "customer-register-username-error" : undefined
+              }
+              aria-invalid={Boolean(fieldErrors.username)}
+              autoComplete="username"
+              id="customer-register-username"
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder="Create your username"
+              type="text"
+              value={username}
+            />
+            {fieldErrors.username ? (
+              <small id="customer-register-username-error">{fieldErrors.username}</small>
+            ) : null}
           </label>
 
           <label className="customer-auth-field" htmlFor="customer-register-email">
             <span>Email address</span>
-            <input aria-describedby={fieldErrors.email ? "customer-register-email-error" : undefined} aria-invalid={Boolean(fieldErrors.email)} autoComplete="email" id="customer-register-email" inputMode="email" onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" type="email" value={email} />
-            {fieldErrors.email ? <small id="customer-register-email-error">{fieldErrors.email}</small> : null}
+            <input
+              aria-describedby={fieldErrors.email ? "customer-register-email-error" : undefined}
+              aria-invalid={Boolean(fieldErrors.email)}
+              autoComplete="email"
+              id="customer-register-email"
+              inputMode="email"
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="name@example.com"
+              type="email"
+              value={email}
+            />
+            {fieldErrors.email ? (
+              <small id="customer-register-email-error">{fieldErrors.email}</small>
+            ) : null}
           </label>
 
           <label className="customer-auth-field" htmlFor="customer-register-phone">
-            <span>PH mobile number <small>(optional)</small></span>
-            <input aria-describedby={fieldErrors.phone ? "customer-register-phone-error" : undefined} aria-invalid={Boolean(fieldErrors.phone)} autoComplete="tel" id="customer-register-phone" inputMode="tel" onChange={(event) => setPhone(event.target.value)} placeholder="09XXXXXXXXX" type="tel" value={phone} />
-            {fieldErrors.phone ? <small id="customer-register-phone-error">{fieldErrors.phone}</small> : null}
+            <span>
+              PH mobile number <small>(optional)</small>
+            </span>
+            <input
+              aria-describedby={fieldErrors.phone ? "customer-register-phone-error" : undefined}
+              aria-invalid={Boolean(fieldErrors.phone)}
+              autoComplete="tel"
+              id="customer-register-phone"
+              inputMode="tel"
+              onChange={(event) => setPhone(event.target.value)}
+              placeholder="09XXXXXXXXX"
+              type="tel"
+              value={phone}
+            />
+            {fieldErrors.phone ? (
+              <small id="customer-register-phone-error">{fieldErrors.phone}</small>
+            ) : null}
           </label>
 
           <label className="customer-auth-field" htmlFor="customer-register-password">
             <span>Password</span>
             <span className="customer-auth-password">
-              <input aria-describedby={fieldErrors.password ? "customer-register-password-error" : undefined} aria-invalid={Boolean(fieldErrors.password)} autoComplete="new-password" id="customer-register-password" onChange={(event) => setPassword(event.target.value)} placeholder="Create a strong password" type={showPassword ? "text" : "password"} value={password} />
-              <button aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)} type="button">
-                {showPassword ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
+              <input
+                aria-describedby={
+                  fieldErrors.password ? "customer-register-password-error" : undefined
+                }
+                aria-invalid={Boolean(fieldErrors.password)}
+                autoComplete="new-password"
+                id="customer-register-password"
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Create a strong password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+              />
+              <button
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((current) => !current)}
+                type="button"
+              >
+                {showPassword ? (
+                  <EyeOff aria-hidden="true" size={18} />
+                ) : (
+                  <Eye aria-hidden="true" size={18} />
+                )}
               </button>
             </span>
-            {fieldErrors.password ? <small id="customer-register-password-error">{fieldErrors.password}</small> : null}
+            {fieldErrors.password ? (
+              <small id="customer-register-password-error">{fieldErrors.password}</small>
+            ) : null}
           </label>
 
           <label className="customer-auth-field" htmlFor="customer-register-confirm-password">
             <span>Confirm password</span>
             <span className="customer-auth-password">
-              <input aria-describedby={fieldErrors.confirmPassword ? "customer-register-confirm-password-error" : undefined} aria-invalid={Boolean(fieldErrors.confirmPassword)} autoComplete="new-password" id="customer-register-confirm-password" onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Re-enter your password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} />
-              <button aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} aria-pressed={showConfirmPassword} onClick={() => setShowConfirmPassword((current) => !current)} type="button">
-                {showConfirmPassword ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
+              <input
+                aria-describedby={
+                  fieldErrors.confirmPassword
+                    ? "customer-register-confirm-password-error"
+                    : undefined
+                }
+                aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                autoComplete="new-password"
+                id="customer-register-confirm-password"
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                placeholder="Re-enter your password"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+              />
+              <button
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                aria-pressed={showConfirmPassword}
+                onClick={() => setShowConfirmPassword((current) => !current)}
+                type="button"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff aria-hidden="true" size={18} />
+                ) : (
+                  <Eye aria-hidden="true" size={18} />
+                )}
               </button>
             </span>
-            {fieldErrors.confirmPassword ? <small id="customer-register-confirm-password-error">{fieldErrors.confirmPassword}</small> : null}
+            {fieldErrors.confirmPassword ? (
+              <small id="customer-register-confirm-password-error">
+                {fieldErrors.confirmPassword}
+              </small>
+            ) : null}
           </label>
 
-          <button className="customer-auth-submit" disabled={submitting || busySocialProvider !== null} type="submit">
+          <button
+            className="customer-auth-submit"
+            disabled={submitting || busySocialProvider !== null}
+            type="submit"
+          >
             {submitting ? "Creating account..." : "Create Account"}
           </button>
         </form>
 
         <p className="customer-auth-switch">
           Already have an account?{" "}
-          <CustomerLink href="/login" navigate={navigate}>Sign In</CustomerLink>
+          <CustomerLink href="/login" navigate={navigate}>
+            Sign In
+          </CustomerLink>
         </p>
       </div>
     </CustomerAuthFrame>

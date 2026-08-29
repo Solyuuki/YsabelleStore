@@ -33,7 +33,10 @@ const envSchema = z.object({
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().min(1).optional(),
   FACEBOOK_OAUTH_APP_ID: z.string().min(1).optional(),
   FACEBOOK_OAUTH_APP_SECRET: z.string().min(1).optional(),
-  FACEBOOK_GRAPH_API_VERSION: z.string().regex(/^v\d+\.\d+$/).default("v26.0"),
+  FACEBOOK_GRAPH_API_VERSION: z
+    .string()
+    .regex(/^v\d+\.\d+$/)
+    .default("v26.0"),
   PYTHON_EXECUTABLE: z.string().min(1).default("python"),
   CATALOG_IMAGE_STORAGE_ROOT: z.string().min(1).default(".data/catalog-images"),
   CATALOG_IMAGE_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),

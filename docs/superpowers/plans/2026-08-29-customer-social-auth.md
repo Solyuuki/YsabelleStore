@@ -26,11 +26,13 @@
 ### Task 1: RED — Social-auth persistence and password-compatibility contracts
 
 **Files:**
+
 - Create: `backend/test/customer-social-auth.test.ts`
 - Create: `backend/test/customer-social-auth-concurrency.test.ts`
 - Modify: `backend/package.json`
 
 **Interfaces:**
+
 - Tests expect Prisma models `customerSocialIdentity`, `customerOAuthTransaction`, `customerSocialLinkIntent`, and `customerOAuthHandoff`.
 - Tests expect `resolveCustomerSocialIdentity`, `completeCustomerSocialLink`, `createCustomerOAuthHandoff`, and `redeemCustomerOAuthHandoff` from `backend/src/services/customerSocialAuthService.ts`.
 - Existing `loginCustomer` must accept a social-only customer with `passwordHash = null` and still emit generic invalid credentials.
@@ -45,11 +47,13 @@
 ### Task 2: GREEN — Prisma schema, migration, nullable-password compatibility
 
 **Files:**
+
 - Modify: `database/prisma/schema.prisma`
 - Create: `database/prisma/migrations/20260829150000_customer_social_auth/migration.sql`
 - Modify: `backend/src/services/customerAuthService.ts`
 
 **Interfaces:**
+
 - `CustomerSocialProvider = GOOGLE | FACEBOOK`
 - `CustomerOAuthTransport = WEB | ELECTRON`
 - `CustomerAccount.passwordHash: string | null`
@@ -64,6 +68,7 @@
 ### Task 3: RED/GREEN — OAuth transaction crypto and provider adapters
 
 **Files:**
+
 - Create: `backend/test/customer-social-oauth-crypto.test.ts`
 - Create: `backend/test/customer-social-provider.test.ts`
 - Create: `backend/src/utils/customerSocialOAuthCrypto.ts`
@@ -72,6 +77,7 @@
 - Modify: `.env.example`
 
 **Interfaces:**
+
 - `createOAuthStateMaterial()` returns raw state plus SHA-256 hash.
 - `createPkceMaterial()` returns verifier plus S256 challenge.
 - `protectOAuthSecret()` / `unprotectOAuthSecret()` use `CUSTOMER_OAUTH_TRANSACTION_KEY`.
@@ -89,12 +95,14 @@
 ### Task 4: RED/GREEN — Social identity resolution, linking, replay safety
 
 **Files:**
+
 - Create: `backend/src/services/customerSocialAuthService.ts`
 - Create: `backend/src/utils/customerSocialAuthCookie.ts`
 - Extend: `backend/test/customer-social-auth.test.ts`
 - Extend: `backend/test/customer-social-auth-concurrency.test.ts`
 
 **Interfaces:**
+
 - `resolveCustomerSocialIdentity(identity, now?)` returns either `{ kind: "authenticated", customer, session }` or `{ kind: "link-required", linkIntentToken }`.
 - `completeCustomerSocialLink(customerId, rawIntentToken, now?)` attaches the pending identity exactly once.
 - `createCustomerOAuthHandoff(customerId, verifierChallenge, now?)` returns raw one-use code plus expiry.
@@ -112,6 +120,7 @@
 ### Task 5: RED/GREEN — HTTP OAuth start/callback/link/Electron contracts
 
 **Files:**
+
 - Create: `backend/test/customer-social-auth-http.test.ts`
 - Create: `backend/src/controllers/customerSocialAuthController.ts`
 - Modify: `backend/src/routes/customerAuth.routes.ts`
@@ -119,6 +128,7 @@
 - Modify: `backend/src/middleware/customerAuthSecurity.ts` only if a focused helper is needed.
 
 **Interfaces:**
+
 - `GET /api/customer-auth/social/:provider/start?returnTo=/login`
 - `GET /api/customer-auth/social/:provider/callback`
 - `POST /api/customer-auth/social/link/complete`
@@ -139,6 +149,7 @@
 ### Task 6: RED/GREEN — Customer login/register social UI
 
 **Files:**
+
 - Create: `frontend/src/components/customer/CustomerSocialAuthButtons.tsx`
 - Modify: `frontend/src/pages/customer/CustomerLoginPage.tsx`
 - Modify: `frontend/src/pages/customer/CustomerRegisterPage.tsx`
@@ -148,6 +159,7 @@
 - Create: `scripts/test/customer-social-auth-ui.test.mjs`
 
 **Interfaces:**
+
 - `beginCustomerSocialAuth(provider: "google" | "facebook", returnTo?: string): void | Promise<void>`
 - Browser uses a top-level navigation to the backend start URL.
 - Electron uses the preload social-auth bridge.
@@ -162,6 +174,7 @@
 ### Task 7: RED/GREEN — Packaged Electron system-browser and deep-link handoff
 
 **Files:**
+
 - Create: `electron/src/main/customerSocialAuth.ts`
 - Create: `electron/src/types/customerSocialAuth.ts`
 - Modify: `electron/src/main/main.ts`
@@ -175,6 +188,7 @@
 - Create: `scripts/test/customer-social-auth-electron.test.mjs`
 
 **Interfaces:**
+
 - Preload exposes `socialAuth.start(provider)` and `socialAuth.onResult(listener)` only.
 - Main opens provider URL using `shell.openExternal`.
 - Custom protocol: `ysabellestore://auth/callback?code=<opaque>`.
@@ -191,6 +205,7 @@
 ### Task 8: Regression, security, configuration, and acceptance verification
 
 **Files:**
+
 - Modify documentation only where configuration/runbook updates are factually required.
 
 - [ ] Run Prisma validate/generate and disposable DB schema application.

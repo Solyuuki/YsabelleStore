@@ -152,11 +152,12 @@ async function validateGoogleIdToken(input: {
   if (!Array.isArray(jwks.keys)) throw invalidCallback();
 
   const jwk = (jwks.keys as unknown[])
-    .filter(
-      (candidate): candidate is JsonWebKeyWithMetadata =>
-        Boolean(candidate && typeof candidate === "object" && !Array.isArray(candidate))
+    .filter((candidate): candidate is JsonWebKeyWithMetadata =>
+      Boolean(candidate && typeof candidate === "object" && !Array.isArray(candidate))
     )
-    .find((candidate) => candidate.kid === kid && candidate.alg === "RS256" && candidate.use === "sig");
+    .find(
+      (candidate) => candidate.kid === kid && candidate.alg === "RS256" && candidate.use === "sig"
+    );
   if (!jwk) throw invalidCallback();
 
   let publicKey;
@@ -204,7 +205,9 @@ async function validateGoogleIdToken(input: {
   };
 }
 
-export function createGoogleCustomerOAuthProvider(config: GoogleProviderConfig): CustomerOAuthProvider {
+export function createGoogleCustomerOAuthProvider(
+  config: GoogleProviderConfig
+): CustomerOAuthProvider {
   const clientId = config.clientId.trim();
   const clientSecret = config.clientSecret.trim();
   const fetchImpl = config.fetchImpl ?? fetch;

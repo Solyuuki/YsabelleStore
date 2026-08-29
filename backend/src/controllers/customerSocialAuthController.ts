@@ -48,7 +48,10 @@ function providerFromBody(value: unknown): CustomerSocialProvider {
 }
 
 function publicBackendUrl(): string {
-  return (env.CUSTOMER_OAUTH_PUBLIC_BACKEND_URL ?? `http://localhost:${env.PORT}`).replace(/\/$/, "");
+  return (env.CUSTOMER_OAUTH_PUBLIC_BACKEND_URL ?? `http://localhost:${env.PORT}`).replace(
+    /\/$/,
+    ""
+  );
 }
 
 function callbackUrl(provider: CustomerSocialProvider): string {
@@ -157,7 +160,11 @@ export const completeCustomerSocialAuth: RequestHandler = async (request, respon
   }
 };
 
-export const completeCustomerSocialLinkAccount: RequestHandler = async (request, response, next) => {
+export const completeCustomerSocialLinkAccount: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
   try {
     const customer = getAuthenticatedCustomer(request);
     if (!customer) {

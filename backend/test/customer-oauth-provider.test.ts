@@ -1,9 +1,5 @@
 import assert from "node:assert/strict";
-import {
-  createSign,
-  generateKeyPairSync,
-  type KeyObject
-} from "node:crypto";
+import { createSign, generateKeyPairSync, type KeyObject } from "node:crypto";
 import test from "node:test";
 
 import {
@@ -85,7 +81,9 @@ test("Google provider builds PKCE authorization URL and validates signed ID-toke
         return jsonResponse({ id_token: idToken, access_token: "temporary-google-access-token" });
       }
       if (url === "https://www.googleapis.com/oauth2/v3/certs") {
-        return jsonResponse({ keys: [{ ...publicJwk, kid: "test-key", alg: "RS256", use: "sig" }] });
+        return jsonResponse({
+          keys: [{ ...publicJwk, kid: "test-key", alg: "RS256", use: "sig" }]
+        });
       }
       throw new Error(`Unexpected Google URL: ${url}`);
     }
@@ -149,10 +147,7 @@ test("Google provider rejects nonce mismatch, wrong audience and unverified emai
     expectCode("SOCIAL_AUTH_INVALID_CALLBACK")
   );
   await assert.rejects(
-    run(
-      signGoogleIdToken(privateKey, { clientId: "different-client", nonce: "nonce" }),
-      "nonce"
-    ),
+    run(signGoogleIdToken(privateKey, { clientId: "different-client", nonce: "nonce" }), "nonce"),
     expectCode("SOCIAL_AUTH_INVALID_CALLBACK")
   );
   await assert.rejects(
@@ -251,7 +246,9 @@ test("Facebook provider rejects invalid app identity and missing email", async (
       const url = String(input);
       if (url.includes("/oauth/access_token")) return jsonResponse({ access_token: "access" });
       if (url.includes("/debug_token")) {
-        return jsonResponse({ data: { is_valid: true, app_id: "facebook-app-id", user_id: "user" } });
+        return jsonResponse({
+          data: { is_valid: true, app_id: "facebook-app-id", user_id: "user" }
+        });
       }
       return jsonResponse({ id: "user", name: "User" });
     }
