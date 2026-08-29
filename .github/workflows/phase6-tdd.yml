@@ -6,6 +6,7 @@ on:
       - "m1/v0.9/feat/customer-social-auth"
     paths:
       - ".github/workflows/phase6-tdd.yml"
+      - "backend/src/config/env.ts"
       - "backend/src/services/customerSocialAuthService.ts"
       - "backend/src/services/customerOAuthTransactionService.ts"
       - "backend/src/services/customerOAuthProviderService.ts"
@@ -13,6 +14,7 @@ on:
       - "backend/src/controllers/customerSocialAuthController.ts"
       - "backend/src/routes/customerAuth.routes.ts"
       - "backend/src/utils/customerOAuthCookie.ts"
+      - "backend/test/customer-oauth-env.test.ts"
       - "backend/test/customer-social-auth.test.ts"
       - "backend/test/customer-oauth-transaction.test.ts"
       - "backend/test/customer-oauth-provider.test.ts"
@@ -67,7 +69,7 @@ jobs:
       - name: Compile backend
         run: npm run build --workspace backend
       - name: Run focused Phase 6 backend tests
-        run: npx tsx --test --test-concurrency=1 backend/test/customer-social-auth.test.ts backend/test/customer-oauth-transaction.test.ts backend/test/customer-oauth-provider.test.ts backend/test/customer-oauth-flow.test.ts backend/test/customer-oauth-electron-flow.test.ts backend/test/customer-social-auth-http.test.ts
+        run: npx tsx --test --test-concurrency=1 backend/test/customer-oauth-env.test.ts backend/test/customer-social-auth.test.ts backend/test/customer-oauth-transaction.test.ts backend/test/customer-oauth-provider.test.ts backend/test/customer-oauth-flow.test.ts backend/test/customer-oauth-electron-flow.test.ts backend/test/customer-social-auth-http.test.ts
 
   frontend-social-auth-ui:
     runs-on: ubuntu-latest
