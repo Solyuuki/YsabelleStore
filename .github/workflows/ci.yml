@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - "m1/v0.9/feat/customer-social-auth"
   pull_request:
     branches:
       - main
