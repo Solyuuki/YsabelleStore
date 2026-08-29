@@ -78,4 +78,4 @@ jobs:
           git add -u
           git add .github/workflows/phase6-format.yml
           HUSKY=0 git commit -m "style(auth): format phase 6 social auth files"
-          git push origin HEAD:m1/v0.9/feat/customer-social-auth
+          HUSKY=0 git push origin HEAD:m1/v0.9/feat/customer-social-auth
