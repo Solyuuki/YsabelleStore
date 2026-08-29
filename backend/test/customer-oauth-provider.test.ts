@@ -106,6 +106,7 @@ test("Google provider builds PKCE authorization URL and validates signed ID-toke
   assert.equal(authorizationUrl.searchParams.get("scope"), "openid email profile");
   assert.equal(authorizationUrl.searchParams.get("code_challenge_method"), "S256");
   assert.equal(authorizationUrl.searchParams.get("nonce"), nonce);
+  assert.equal(authorizationUrl.searchParams.get("prompt"), "select_account");
 
   const identity = await provider.exchangeCodeForIdentity({
     code: "provider-code",
