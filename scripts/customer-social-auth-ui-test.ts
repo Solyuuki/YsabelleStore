@@ -38,6 +38,25 @@ assert.match(quickSignCss, /grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\);/
 assert.match(quickSignCss, /padding:\s*0\.7rem\s+1\.35rem;/);
 assert.match(quickSignCss, /text-align:\s*left;/);
 assert.doesNotMatch(quickSignCss, /\.customer-social-auth__button::after\s*\{/);
+assert.match(
+  quickSignCss,
+  /\.customer-social-auth__button\s*>\s*span:last-child\s*\{[^}]*font-weight:\s*900;[^}]*color:\s*#171a2b;/s
+);
+
+const registerSource = readFileSync(
+  new URL("../frontend/src/pages/customer/CustomerRegisterPage.tsx", import.meta.url),
+  "utf8"
+);
+const registerFormEnd = registerSource.indexOf("</form>");
+const registerSocialButtons = registerSource.indexOf("<CustomerSocialAuthButtons");
+assert.ok(registerFormEnd >= 0, "Register password form should exist.");
+assert.ok(registerSocialButtons >= 0, "Register social actions should exist.");
+assert.ok(
+  registerSocialButtons > registerFormEnd,
+  "Register social actions should appear after the password registration form."
+);
+assert.doesNotMatch(registerSource, /<span>Quick sign<\/span>/i);
+assert.doesNotMatch(registerSource, /<span>or create with password<\/span>/i);
 
 assert.equal(
   buildCustomerSocialAuthStartUrl("google", "/account", "http://localhost:3001").toString(),
