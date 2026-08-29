@@ -31,16 +31,31 @@ async function body(response: Response) {
   return (await response.json()) as ApiBody;
 }
 
-test("social provider start fails closed with no-store response when provider credentials are absent", async () => {
+test("browser social provider start returns to login when provider credentials are absent", async () => {
   await withServer(async (baseUrl) => {
     const response = await fetch(`${baseUrl}/api/customer-auth/social/google/start`, {
       redirect: "manual"
     });
-    assert.equal(response.status, 503);
+    assert.equal(response.status, 302);
     assert.match(response.headers.get("cache-control") ?? "", /no-store/i);
-    const payload = await body(response);
-    assert.equal(payload.error?.code, "SOCIAL_AUTH_PROVIDER_UNAVAILABLE");
-    assert.equal(JSON.stringify(payload).includes("secret"), false);
+    assert.equal(
+      response.headers.get("location"),
+      "http://localhost:5173/login?social=provider_unavailable&provider=google"
+    );
+  });
+});
+
+test("browser social provider start returns to register when launched from registration", async () => {
+  await withServer(async (baseUrl) => {
+    const response = await fetch(
+      `${baseUrl}/api/customer-auth/social/facebook/start?authPage=register`,
+      { redirect: "manual" }
+    );
+    assert.equal(response.status, 302);
+    assert.equal(
+      response.headers.get("location"),
+      "http://localhost:5173/register?social=provider_unavailable&provider=facebook"
+    );
   });
 });
 
