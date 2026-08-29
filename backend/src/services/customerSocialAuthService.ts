@@ -14,6 +14,7 @@ export type CustomerSocialIdentityInput = {
   providerSubject: string;
   email: string | null;
   emailVerified: boolean;
+  emailAuthoritative?: boolean;
   name: string;
 };
 
@@ -70,6 +71,7 @@ function normalizeIdentity(input: CustomerSocialIdentityInput) {
     providerSubject,
     email,
     emailVerified: true,
+    emailAuthoritative: input.provider === "GOOGLE" && input.emailAuthoritative === true,
     name: name.slice(0, 120) || email.split("@")[0]!.slice(0, 120)
   };
 }
@@ -128,6 +130,48 @@ async function createLinkIntent(
   };
 }
 
+async function autoLinkAuthoritativeIdentity(
+  customer: CustomerAccount,
+  identity: ReturnType<typeof normalizeIdentity>
+): Promise<CustomerSocialAuthResult> {
+  if (customer.status !== "ACTIVE") {
+    throw socialError(403, "SOCIAL_AUTH_ACCOUNT_UNAVAILABLE", "Customer account is unavailable.");
+  }
+
+  try {
+    await prisma.customerSocialIdentity.create({
+      data: {
+        customerAccountId: customer.id,
+        provider: identity.provider,
+        providerSubject: identity.providerSubject,
+        providerEmail: identity.email,
+        providerEmailVerified: true
+      }
+    });
+  } catch (error) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
+      throw error;
+    }
+
+    const racedIdentity = await prisma.customerSocialIdentity.findUnique({
+      include: { customerAccount: true },
+      where: {
+        provider_providerSubject: {
+          provider: identity.provider,
+          providerSubject: identity.providerSubject
+        }
+      }
+    });
+    if (racedIdentity?.customerAccountId === customer.id) {
+      return authenticatedResult(racedIdentity.customerAccount);
+    }
+
+    throw socialError(409, "SOCIAL_AUTH_LINK_CONFLICT");
+  }
+
+  return authenticatedResult(customer);
+}
+
 export async function authenticateCustomerSocialIdentity(
   input: CustomerSocialIdentityInput,
   now = new Date()
@@ -151,7 +195,9 @@ export async function authenticateCustomerSocialIdentity(
     where: { email: identity.email }
   });
   if (existingCustomer) {
-    return createLinkIntent(existingCustomer, identity, now);
+    return identity.emailAuthoritative
+      ? autoLinkAuthoritativeIdentity(existingCustomer, identity)
+      : createLinkIntent(existingCustomer, identity, now);
   }
 
   try {
@@ -204,7 +250,9 @@ export async function authenticateCustomerSocialIdentity(
       where: { email: identity.email }
     });
     if (racedCustomer) {
-      return createLinkIntent(racedCustomer, identity, now);
+      return identity.emailAuthoritative
+        ? autoLinkAuthoritativeIdentity(racedCustomer, identity)
+        : createLinkIntent(racedCustomer, identity, now);
     }
 
     throw socialError(409, "SOCIAL_AUTH_LINK_CONFLICT");
