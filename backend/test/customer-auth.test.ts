@@ -87,6 +87,7 @@ test("registration normalizes identity, hashes the password, and returns only sa
   assert.equal("passwordHash" in registered.customer, false);
   assert.equal(persisted.email, email);
   assert.equal(persisted.phoneNormalized, normalizedPhone);
+  assert.ok(persisted.passwordHash);
   assert.ok(persisted.passwordHash.startsWith("scrypt$"));
   assert.notEqual(persisted.passwordHash, "CustomerPass123!");
   assert.ok(registered.sessionToken.length >= 32);

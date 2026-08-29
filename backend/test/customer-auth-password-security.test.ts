@@ -58,6 +58,7 @@ test("successful customer login upgrades a legacy password hash before creating 
   assert.equal(session.customer.id, customer.id);
 
   const persisted = await prisma.customerAccount.findUniqueOrThrow({ where: { id: customer.id } });
+  assert.ok(persisted.passwordHash);
   assert.equal(passwordHashNeedsUpgrade(persisted.passwordHash), false);
   assert.notEqual(persisted.passwordHash, legacyHash);
 });

@@ -278,6 +278,7 @@ test("password change verifies the current password, upgrades the hash, revokes 
       assert.equal(rotatedSession.status, 200);
 
       const customer = await prisma.customerAccount.findUniqueOrThrow({ where: { email } });
+      assert.ok(customer.passwordHash);
       assert.equal(await verifyPassword(NEW_PASSWORD, customer.passwordHash), true);
       assert.equal(passwordHashNeedsUpgrade(customer.passwordHash), false);
 
