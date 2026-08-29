@@ -78,6 +78,6 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Run customer social auth UI contract
-        run: npx tsx scripts/customer-social-auth-ui-test.ts
+        run: npx tsx --tsconfig frontend/tsconfig.app.json scripts/customer-social-auth-ui-test.ts
       - name: Build frontend
         run: npm run build --workspace frontend
