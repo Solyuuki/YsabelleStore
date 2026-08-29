@@ -38,10 +38,13 @@ assert.match(quickSignCss, /grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\);/
 assert.match(quickSignCss, /padding:\s*0\.7rem\s+1\.35rem;/);
 assert.match(quickSignCss, /text-align:\s*left;/);
 assert.doesNotMatch(quickSignCss, /\.customer-social-auth__button::after\s*\{/);
-assert.match(
-  quickSignCss,
-  /\.customer-social-auth__button\s*>\s*span:last-child\s*\{[^}]*font-weight:\s*900;[^}]*color:\s*#171a2b;/s
+
+const premiumLabelRule = quickSignCss.match(
+  /\.customer-social-auth__button\s*>\s*span:last-child\s*\{([^}]*)\}/s
 );
+assert.ok(premiumLabelRule, "Premium social label rule should exist.");
+assert.match(premiumLabelRule[1], /font-weight:\s*900;/);
+assert.match(premiumLabelRule[1], /color:\s*#171a2b;/);
 
 const registerSource = readFileSync(
   new URL("../frontend/src/pages/customer/CustomerRegisterPage.tsx", import.meta.url),
