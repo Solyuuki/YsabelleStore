@@ -5,7 +5,6 @@ import type { CustomerSocialProvider } from "@prisma/client";
 import { env } from "../config/env.js";
 import { getAuthenticatedCustomer } from "../middleware/customerAuthMiddleware.js";
 import {
-  completeCustomerElectronOAuth,
   completeCustomerWebOAuth,
   redeemCustomerElectronOAuth,
   startCustomerElectronOAuth,
@@ -113,7 +112,10 @@ export const completeCustomerSocialAuth: RequestHandler = async (request, respon
 
   if (providerError) {
     clearCustomerOAuthBindingCookie(response, provider);
-    socialErrorRedirect(response, providerError === "access_denied" ? "SOCIAL_AUTH_CANCELLED" : "SOCIAL_AUTH_PROVIDER_ERROR");
+    socialErrorRedirect(
+      response,
+      providerError === "access_denied" ? "SOCIAL_AUTH_CANCELLED" : "SOCIAL_AUTH_PROVIDER_ERROR"
+    );
     return;
   }
 
@@ -148,7 +150,10 @@ export const completeCustomerSocialAuth: RequestHandler = async (request, respon
     response.redirect(302, customerFrontendUrl(safeReturnPath(result.returnPath)));
   } catch (error) {
     clearCustomerOAuthBindingCookie(response, provider);
-    socialErrorRedirect(response, error instanceof HttpError ? error.code : "SOCIAL_AUTH_PROVIDER_ERROR");
+    socialErrorRedirect(
+      response,
+      error instanceof HttpError ? error.code : "SOCIAL_AUTH_PROVIDER_ERROR"
+    );
   }
 };
 
@@ -174,9 +179,13 @@ export const completeCustomerSocialLinkAccount: RequestHandler = async (request,
 
 export const startCustomerElectronSocialAuth: RequestHandler = async (request, response, next) => {
   try {
-    const body = request.body && typeof request.body === "object" ? request.body as Record<string, unknown> : {};
+    const body =
+      request.body && typeof request.body === "object"
+        ? (request.body as Record<string, unknown>)
+        : {};
     const provider = providerFromBody(body.provider);
-    const verifierChallenge = typeof body.verifierChallenge === "string" ? body.verifierChallenge : "";
+    const verifierChallenge =
+      typeof body.verifierChallenge === "string" ? body.verifierChallenge : "";
     const oauthProvider = getConfiguredCustomerOAuthProvider(provider);
     const started = await startCustomerElectronOAuth(
       { provider, redirectUri: callbackUrl(provider), verifierChallenge },
@@ -196,7 +205,10 @@ export const startCustomerElectronSocialAuth: RequestHandler = async (request, r
 
 export const redeemCustomerElectronSocialAuth: RequestHandler = async (request, response, next) => {
   try {
-    const body = request.body && typeof request.body === "object" ? request.body as Record<string, unknown> : {};
+    const body =
+      request.body && typeof request.body === "object"
+        ? (request.body as Record<string, unknown>)
+        : {};
     const code = typeof body.code === "string" ? body.code : "";
     const verifier = typeof body.verifier === "string" ? body.verifier : "";
     const session = await redeemCustomerElectronOAuth({ code, verifier });
