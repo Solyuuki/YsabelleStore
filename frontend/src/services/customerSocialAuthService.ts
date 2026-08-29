@@ -1,4 +1,6 @@
 import { frontendRuntimeConfig } from "@/config/runtime";
+import { apiClient } from "@/services/apiClient";
+import type { CustomerAuthErrorPayload } from "@/types/customerAuth";
 
 export type CustomerSocialAuthProvider = "google" | "facebook";
 export type CustomerSocialAuthPage = "login" | "register";
@@ -18,9 +20,19 @@ export function buildCustomerSocialAuthStartUrl(
   return url;
 }
 
+export function isCustomerSocialLinkRequired(search: string): boolean {
+  return new URLSearchParams(search).get("social") === "link_required";
+}
+
 export function getCustomerSocialAuthNotice(search: string): string | null {
   const params = new URLSearchParams(search);
-  if (params.get("social") !== "provider_unavailable") return null;
+  const status = params.get("social");
+
+  if (status === "link_required") {
+    return "This Google or Facebook account matches an existing Ysabelle Store account. Sign in once with your existing password to link it securely.";
+  }
+
+  if (status !== "provider_unavailable") return null;
 
   const provider = params.get("provider");
   if (provider === "google") return "Google sign-in is not configured for this environment yet.";
@@ -28,6 +40,20 @@ export function getCustomerSocialAuthNotice(search: string): string | null {
     return "Facebook sign-in is not configured for this environment yet.";
   }
   return null;
+}
+
+export async function completeCustomerSocialLink(): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/social/link/complete",
+    {
+      method: "POST",
+      credentials: "include"
+    }
+  );
+
+  if (!response.success) {
+    throw new Error(response.message || "Social sign-in method could not be linked.");
+  }
 }
 
 export function startCustomerSocialAuth(
