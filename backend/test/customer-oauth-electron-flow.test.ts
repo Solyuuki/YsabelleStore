@@ -76,7 +76,7 @@ test("Electron social OAuth keeps its private verifier out of the browser and pr
   assert.equal(callback.kind, "authenticated");
   if (callback.kind !== "authenticated") return;
   assert.ok(callback.handoffCode.length >= 32);
-  assert.equal(callback.handoffCode.includes(callback.sessionToken ?? ""), false);
+  assert.equal("sessionToken" in callback, false);
 
   const redeemed = await redeemCustomerElectronOAuth({
     code: callback.handoffCode,
