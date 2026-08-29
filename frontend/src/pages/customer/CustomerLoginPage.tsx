@@ -1,9 +1,14 @@
-import { Eye, EyeOff, KeyRound, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
 import { CustomerLink } from "@/components/customer/CustomerLink";
+import { CustomerSocialAuthButtons } from "@/components/customer/CustomerSocialAuthButtons";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import {
+  startCustomerSocialAuth,
+  type CustomerSocialAuthProvider
+} from "@/services/customerSocialAuthService";
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerLoginForm } from "@/utils/customerAuthForms";
 
@@ -13,6 +18,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -34,6 +40,19 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
       );
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  function handleSocialStart(provider: CustomerSocialAuthProvider) {
+    setServerError(null);
+    setBusySocialProvider(provider);
+    try {
+      startCustomerSocialAuth(provider, "/account");
+    } catch (error) {
+      setBusySocialProvider(null);
+      setServerError(
+        error instanceof Error ? error.message : "Unable to start social sign-in. Please try again."
+      );
     }
   }
 
@@ -119,7 +138,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
             </CustomerLink>
           </div>
 
-          <button className="customer-auth-submit" disabled={submitting} type="submit">
+          <button className="customer-auth-submit" disabled={submitting || busySocialProvider !== null} type="submit">
             {submitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
@@ -128,16 +147,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
           <span>or</span>
         </div>
 
-        <div className="customer-auth-quick-sign" aria-disabled="true">
-          <span className="customer-auth-quick-sign__icon" aria-hidden="true">
-            <ShieldCheck size={19} />
-          </span>
-          <span className="customer-auth-quick-sign__copy">
-            <strong>Quick Sign</strong>
-            <small>Trusted account access</small>
-          </span>
-          <span className="customer-auth-quick-sign__status">Coming soon</span>
-        </div>
+        <CustomerSocialAuthButtons busyProvider={busySocialProvider} onStart={handleSocialStart} />
 
         <p className="customer-auth-switch">
           New to Ysabelle Store?{" "}
