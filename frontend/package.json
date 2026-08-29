@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "tsx --tsconfig tsconfig.app.json ../scripts/customer-auth-frontend-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/customer-auth-ui-contract-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/customer-auth-form-contract-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/customer-account-frontend-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/internal-auth-boundary-frontend-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/system-health-reliability-test.ts",
+    "test": "tsx --tsconfig tsconfig.app.json ../scripts/customer-auth-frontend-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/customer-auth-ui-contract-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/customer-auth-form-contract-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/customer-social-auth-ui-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/customer-account-frontend-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/internal-auth-boundary-frontend-test.ts && tsx --tsconfig tsconfig.app.json ../scripts/system-health-reliability-test.ts",
     "lint": "eslint src vite.config.ts tailwind.config.ts postcss.config.js",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
