@@ -10,6 +10,13 @@ import {
   resetCustomerPasswordAccount,
   verifyCustomerPasswordRecoveryAccount
 } from "../controllers/customerAuthController.js";
+import {
+  completeCustomerSocialAuth,
+  completeCustomerSocialLinkAccount,
+  redeemCustomerElectronSocialAuth,
+  startCustomerElectronSocialAuth,
+  startCustomerSocialAuth
+} from "../controllers/customerSocialAuthController.js";
 import { createAuthRateLimit, derivePrivateRateLimitKey } from "../middleware/authRateLimit.js";
 import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
 import {
@@ -154,5 +161,29 @@ customerAuthRouter.post(
   customerRecoveryResetRateLimit,
   resetCustomerPasswordAccount
 );
+
+customerAuthRouter.get(
+  "/social/:provider/start",
+  requireAllowedCustomerAuthOrigin,
+  startCustomerSocialAuth
+);
+customerAuthRouter.get("/social/:provider/callback", completeCustomerSocialAuth);
+customerAuthRouter.post(
+  "/social/link/complete",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  completeCustomerSocialLinkAccount
+);
+customerAuthRouter.post(
+  "/social/electron/start",
+  requireAllowedCustomerAuthOrigin,
+  startCustomerElectronSocialAuth
+);
+customerAuthRouter.post(
+  "/social/electron/redeem",
+  requireAllowedCustomerAuthOrigin,
+  redeemCustomerElectronSocialAuth
+);
+
 customerAuthRouter.get("/me", requireCustomerAuth, getCurrentCustomer);
 customerAuthRouter.post("/logout", requireAllowedCustomerAuthOrigin, logoutCustomerAccount);
