@@ -17,6 +17,11 @@ const rootEnvPath = path.join(repositoryRoot, ".env");
 
 loadEnv({ path: rootEnvPath });
 
+const optionalNonEmptyString = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.string().min(1).optional()
+);
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(3001),
@@ -29,10 +34,10 @@ const envSchema = z.object({
   CUSTOMER_RECOVERY_FROM_EMAIL: z.string().email().optional(),
   CUSTOMER_OAUTH_PUBLIC_BACKEND_URL: z.string().url().optional(),
   CUSTOMER_OAUTH_TRANSACTION_KEY: z.string().min(32).optional(),
-  GOOGLE_OAUTH_CLIENT_ID: z.string().min(1).optional(),
-  GOOGLE_OAUTH_CLIENT_SECRET: z.string().min(1).optional(),
-  FACEBOOK_OAUTH_APP_ID: z.string().min(1).optional(),
-  FACEBOOK_OAUTH_APP_SECRET: z.string().min(1).optional(),
+  GOOGLE_OAUTH_CLIENT_ID: optionalNonEmptyString,
+  GOOGLE_OAUTH_CLIENT_SECRET: optionalNonEmptyString,
+  FACEBOOK_OAUTH_APP_ID: optionalNonEmptyString,
+  FACEBOOK_OAUTH_APP_SECRET: optionalNonEmptyString,
   FACEBOOK_GRAPH_API_VERSION: z
     .string()
     .regex(/^v\d+\.\d+$/)
