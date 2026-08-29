@@ -34,12 +34,10 @@ const quickSignCss = readFileSync(
   new URL("../frontend/src/styles/customer-auth-quick-sign.css", import.meta.url),
   "utf8"
 );
-assert.match(
-  quickSignCss,
-  /grid-template-columns:\s*2\.25rem\s+minmax\(0,\s*1fr\)\s+2\.25rem;/
-);
-assert.match(quickSignCss, /\.customer-social-auth__button::after\s*\{/);
-assert.match(quickSignCss, /text-align:\s*center;/);
+assert.match(quickSignCss, /grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\);/);
+assert.match(quickSignCss, /padding:\s*0\.7rem\s+1\.35rem;/);
+assert.match(quickSignCss, /text-align:\s*left;/);
+assert.doesNotMatch(quickSignCss, /\.customer-social-auth__button::after\s*\{/);
 
 assert.equal(
   buildCustomerSocialAuthStartUrl("google", "/account", "http://localhost:3001").toString(),
