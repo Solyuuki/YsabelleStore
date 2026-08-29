@@ -98,9 +98,14 @@ async function requireActiveSession(
   return session;
 }
 
-async function requireCurrentPassword(customer: CustomerAccount, currentPassword: string) {
+async function requireCurrentPassword(
+  customer: CustomerAccount,
+  currentPassword: string
+): Promise<string> {
+  if (!customer.passwordHash) throw reauthenticationFailed();
   const matches = await verifyPassword(currentPassword, customer.passwordHash);
   if (!matches) throw reauthenticationFailed();
+  return customer.passwordHash;
 }
 
 export async function updateCustomerProfile(
@@ -160,7 +165,7 @@ export async function changeCustomerPassword(
   const parsed = customerPasswordChangeSchema.parse(input);
   await requireActiveSession(customerAccountId, sessionToken, now);
   const customer = await requireActiveCustomer(customerAccountId);
-  await requireCurrentPassword(customer, parsed.currentPassword);
+  const currentPasswordHash = await requireCurrentPassword(customer, parsed.currentPassword);
 
   const nextPasswordHash = await hashPassword(parsed.newPassword);
   const nextSession = createCustomerSessionMaterial(now);
@@ -170,7 +175,7 @@ export async function changeCustomerPassword(
       data: { passwordHash: nextPasswordHash },
       where: {
         id: customerAccountId,
-        passwordHash: customer.passwordHash,
+        passwordHash: currentPasswordHash,
         status: "ACTIVE"
       }
     });
