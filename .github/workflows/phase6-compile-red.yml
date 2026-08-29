@@ -20,4 +20,5 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build --workspace backend
+      - name: Compile backend for current RED contract
+        run: npm run build --workspace backend
