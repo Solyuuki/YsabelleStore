@@ -21,6 +21,10 @@ on:
       - "backend/test/customer-social-auth-http.test.ts"
       - "database/prisma/schema.prisma"
       - "database/prisma/migrations/**"
+      - "frontend/src/components/customer/CustomerSocialAuthButtons.tsx"
+      - "frontend/src/styles/customer-auth-quick-sign.css"
+      - "frontend/src/services/customerSocialAuthService.ts"
+      - "scripts/customer-social-auth-ui-test.ts"
 
 permissions:
   contents: read
@@ -63,3 +67,17 @@ jobs:
         run: npm run build --workspace backend
       - name: Run focused Phase 6 backend tests
         run: npx tsx --test --test-concurrency=1 backend/test/customer-social-auth.test.ts backend/test/customer-oauth-transaction.test.ts backend/test/customer-oauth-provider.test.ts backend/test/customer-oauth-flow.test.ts backend/test/customer-oauth-electron-flow.test.ts backend/test/customer-social-auth-http.test.ts
+
+  frontend-social-auth-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run customer social auth UI contract
+        run: npx tsx scripts/customer-social-auth-ui-test.ts
+      - name: Build frontend
+        run: npm run build --workspace frontend
