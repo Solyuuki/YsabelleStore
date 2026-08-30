@@ -233,49 +233,45 @@ export const resetCustomerPasswordAccount: RequestHandler = async (request, resp
       });
     }
 
-    const recoveryGrant = readCustomerRecoveryGrantCookie(request);
-    if (!recoveryGrant) {
-      throw new HttpError(400, "The recovery session is invalid or expired. Start again.", {
-        code: "CUSTOMER_RECOVERY_GRANT_INVALID"
-      });
-    }
-
     await resetCustomerPassword({
-      recoveryGrant,
+      recoveryGrant: readCustomerRecoveryGrantCookie(request) ?? "",
       newPassword: parsedBody.data.newPassword
     });
     clearCustomerRecoveryGrantCookie(response);
     clearCustomerSessionCookie(response);
-    response.status(200).json(createSuccessResponse("Password reset successful. Sign in again."));
+    response
+      .status(200)
+      .json(createSuccessResponse("Password reset successful. Sign in with your new password."));
   } catch (error) {
     clearCustomerRecoveryGrantCookie(response);
     next(error);
   }
 };
 
-export const getCustomerSession: RequestHandler = async (request, response, next) => {
-  try {
-    const sessionToken = readCustomerSessionCookie(request);
-    const customer = await getAuthenticatedCustomer(sessionToken);
-    response.status(200).json(
-      createSuccessResponse("Customer session active.", {
-        customer
+export const getCurrentCustomer: RequestHandler = (request, response, next) => {
+  const customer = getAuthenticatedCustomer(request);
+  if (!customer) {
+    next(
+      new HttpError(401, "Customer session is required.", {
+        code: "CUSTOMER_SESSION_REQUIRED"
       })
     );
-  } catch (error) {
-    clearCustomerSessionCookie(response);
-    next(error);
+    return;
   }
+
+  response.status(200).json(createSuccessResponse("Current customer loaded.", { customer }));
 };
 
 export const logoutCustomerAccount: RequestHandler = async (request, response, next) => {
   try {
     const sessionToken = readCustomerSessionCookie(request);
-    await revokeCustomerSession(sessionToken);
+    if (sessionToken) {
+      await revokeCustomerSession(sessionToken);
+    }
+
     clearCustomerSessionCookie(response);
     response.status(200).json(createSuccessResponse("Customer logout successful."));
   } catch (error) {
-    clearCustomerSessionCookie(response);
     next(error);
   }
 };
