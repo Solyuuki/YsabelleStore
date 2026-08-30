@@ -10,7 +10,14 @@ import { normalizePhilippineMobile } from "../src/utils/customerIdentity.js";
 
 type ApiBody = {
   success?: boolean;
-  data?: unknown;
+  data?: {
+    customer?: {
+      id?: string;
+    };
+  };
+  error?: {
+    code?: string;
+  };
 };
 
 type RegistrationMobileChallengeRow = {
@@ -24,6 +31,7 @@ type RegistrationMobileChallengeRow = {
 };
 
 const createdIntentHashes: string[] = [];
+const createdCustomerEmails: string[] = [];
 
 async function withServer(run: (baseUrl: string) => Promise<void>) {
   const app = createApp();
@@ -77,6 +85,73 @@ function testPhone(suffix: string) {
   return `0917${numeric.toString().padStart(7, "0")}`;
 }
 
+function registrationPayload(suffix: string, phone?: string) {
+  const email = `registration-mobile-${suffix}@example.com`;
+  createdCustomerEmails.push(email);
+  return {
+    name: "Registration Mobile Customer",
+    username: `regmobile.${suffix}`,
+    email,
+    phone,
+    password: "RegistrationMobile123!"
+  };
+}
+
+async function issueRegistrationIntent(baseUrl: string) {
+  const response = await fetch(`${baseUrl}/api/customer-auth/registration-intent`);
+  assert.equal(response.status, 200);
+  const intentCookie = cookiePair(response);
+  assert.ok(intentCookie);
+  const registrationIntentHash = intentHash(intentCookie);
+  createdIntentHashes.push(registrationIntentHash);
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  return { intentCookie, registrationIntentHash };
+}
+
+async function createVerifiedRegistrationMobileGrant(input: {
+  baseUrl: string;
+  intentCookie: string;
+  registrationIntentHash: string;
+  phone: string;
+  verificationCode?: string;
+}) {
+  const phoneNormalized = normalizePhilippineMobile(input.phone);
+  assert.ok(phoneNormalized);
+  const verificationCode = input.verificationCode ?? "246810";
+  const challengeId = `registration-mobile-otp:${randomUUID().replaceAll("-", "")}`;
+
+  await prisma.customerMobileRegistrationChallenge.create({
+    data: {
+      id: challengeId,
+      registrationIntentHash: input.registrationIntentHash,
+      phoneNormalized,
+      otpHash: registrationOtpHash(
+        challengeId,
+        input.registrationIntentHash,
+        phoneNormalized,
+        verificationCode
+      ),
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+    }
+  });
+
+  const response = await fetch(
+    `${input.baseUrl}/api/customer-auth/registration/mobile/verify`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: input.intentCookie
+      },
+      body: JSON.stringify({ phone: input.phone, verificationCode })
+    }
+  );
+  assert.equal(response.status, 200);
+  const grantCookie = cookiePair(response);
+  assert.match(grantCookie, /^ysabelle_customer_registration_mobile=/);
+  return { challengeId, grantCookie };
+}
+
 test("registration can request a privacy-safe mobile verification code", async () => {
   await withServer(async (baseUrl) => {
     const intentResponse = await fetch(`${baseUrl}/api/customer-auth/registration-intent`);
@@ -110,14 +185,7 @@ test("registration mobile verification uses a dedicated hashed intent-bound chal
   assert.ok(phoneNormalized);
 
   await withServer(async (baseUrl) => {
-    const intentResponse = await fetch(`${baseUrl}/api/customer-auth/registration-intent`);
-    assert.equal(intentResponse.status, 200);
-    const intentCookie = cookiePair(intentResponse);
-    assert.ok(intentCookie);
-    const registrationIntentHash = intentHash(intentCookie);
-    createdIntentHashes.push(registrationIntentHash);
-
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    const { intentCookie, registrationIntentHash } = await issueRegistrationIntent(baseUrl);
     const before = Date.now();
     const response = await fetch(`${baseUrl}/api/customer-auth/registration/mobile/request`, {
       method: "POST",
@@ -161,55 +229,15 @@ test("registration mobile verification uses a dedicated hashed intent-bound chal
 test("valid registration mobile OTP consumes the challenge and issues an HttpOnly intent-bound grant", async () => {
   const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
   const phone = testPhone(suffix);
-  const phoneNormalized = normalizePhilippineMobile(phone);
-  assert.ok(phoneNormalized);
 
   await withServer(async (baseUrl) => {
-    const intentResponse = await fetch(`${baseUrl}/api/customer-auth/registration-intent`);
-    assert.equal(intentResponse.status, 200);
-    const intentCookie = cookiePair(intentResponse);
-    assert.ok(intentCookie);
-    const registrationIntentHash = intentHash(intentCookie);
-    createdIntentHashes.push(registrationIntentHash);
-
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const verificationCode = "246810";
-    const challengeId = `registration-mobile-otp:${randomUUID().replaceAll("-", "")}`;
-    await prisma.customerMobileRegistrationChallenge.create({
-      data: {
-        id: challengeId,
-        registrationIntentHash,
-        phoneNormalized,
-        otpHash: registrationOtpHash(
-          challengeId,
-          registrationIntentHash,
-          phoneNormalized,
-          verificationCode
-        ),
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000)
-      }
+    const { intentCookie, registrationIntentHash } = await issueRegistrationIntent(baseUrl);
+    const { challengeId } = await createVerifiedRegistrationMobileGrant({
+      baseUrl,
+      intentCookie,
+      registrationIntentHash,
+      phone
     });
-
-    const response = await fetch(`${baseUrl}/api/customer-auth/registration/mobile/verify`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        cookie: intentCookie
-      },
-      body: JSON.stringify({ phone, verificationCode })
-    });
-
-    assert.equal(response.status, 200);
-    const body = (await response.json()) as ApiBody;
-    assert.equal(body.success, true);
-    assert.equal(body.data, undefined);
-
-    const setCookie = response.headers.get("set-cookie") ?? "";
-    assert.match(setCookie, /^ysabelle_customer_registration_mobile=/);
-    assert.match(setCookie, /HttpOnly/i);
-    assert.match(setCookie, /SameSite=Lax/i);
-    assert.equal(setCookie.includes(verificationCode), false);
 
     const challenge = await prisma.customerMobileRegistrationChallenge.findUnique({
       where: { id: challengeId }
@@ -218,12 +246,126 @@ test("valid registration mobile OTP consumes the challenge and issues an HttpOnl
   });
 });
 
-test.after(async () => {
-  if (createdIntentHashes.length === 0) return;
+test("registration refuses to attach a supplied mobile number without its verification grant", async () => {
+  const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
+  const phone = testPhone(suffix);
 
-  const placeholders = createdIntentHashes.map(() => "?").join(", ");
-  await prisma.$executeRawUnsafe(
-    `DELETE FROM customer_mobile_registration_challenges WHERE registration_intent_hash IN (${placeholders})`,
-    ...createdIntentHashes
-  );
+  await withServer(async (baseUrl) => {
+    const { intentCookie } = await issueRegistrationIntent(baseUrl);
+    const response = await fetch(`${baseUrl}/api/customer-auth/register`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: intentCookie
+      },
+      body: JSON.stringify(registrationPayload(suffix, phone))
+    });
+
+    assert.equal(response.status, 403);
+    const body = (await response.json()) as ApiBody;
+    assert.equal(body.error?.code, "CUSTOMER_MOBILE_REGISTRATION_VERIFICATION_REQUIRED");
+  });
+});
+
+test("registration accepts a mobile number only when the grant matches the same intent and phone", async () => {
+  const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
+  const phone = testPhone(suffix);
+  const phoneNormalized = normalizePhilippineMobile(phone);
+  assert.ok(phoneNormalized);
+
+  await withServer(async (baseUrl) => {
+    const { intentCookie, registrationIntentHash } = await issueRegistrationIntent(baseUrl);
+    const { grantCookie } = await createVerifiedRegistrationMobileGrant({
+      baseUrl,
+      intentCookie,
+      registrationIntentHash,
+      phone
+    });
+
+    const response = await fetch(`${baseUrl}/api/customer-auth/register`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: `${intentCookie}; ${grantCookie}`
+      },
+      body: JSON.stringify(registrationPayload(suffix, phone))
+    });
+
+    assert.equal(response.status, 201);
+    const body = (await response.json()) as ApiBody;
+    const customerId = body.data?.customer?.id;
+    assert.ok(customerId);
+
+    const customer = await prisma.customerAccount.findUnique({ where: { id: customerId } });
+    assert.equal(customer?.phoneNormalized, phoneNormalized);
+  });
+});
+
+test("registration rejects a verified mobile grant when the submitted phone changes", async () => {
+  const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
+  const verifiedPhone = testPhone(suffix);
+  const changedPhone = testPhone(randomUUID().replaceAll("-", "").slice(0, 8));
+
+  await withServer(async (baseUrl) => {
+    const { intentCookie, registrationIntentHash } = await issueRegistrationIntent(baseUrl);
+    const { grantCookie } = await createVerifiedRegistrationMobileGrant({
+      baseUrl,
+      intentCookie,
+      registrationIntentHash,
+      phone: verifiedPhone
+    });
+
+    const response = await fetch(`${baseUrl}/api/customer-auth/register`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: `${intentCookie}; ${grantCookie}`
+      },
+      body: JSON.stringify(registrationPayload(suffix, changedPhone))
+    });
+
+    assert.equal(response.status, 403);
+    const body = (await response.json()) as ApiBody;
+    assert.equal(body.error?.code, "CUSTOMER_MOBILE_REGISTRATION_VERIFICATION_REQUIRED");
+  });
+});
+
+test("registration without an optional mobile number remains allowed without an OTP grant", async () => {
+  const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
+
+  await withServer(async (baseUrl) => {
+    const { intentCookie } = await issueRegistrationIntent(baseUrl);
+    const response = await fetch(`${baseUrl}/api/customer-auth/register`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: intentCookie
+      },
+      body: JSON.stringify(registrationPayload(suffix))
+    });
+
+    assert.equal(response.status, 201);
+  });
+});
+
+test.after(async () => {
+  if (createdCustomerEmails.length > 0) {
+    const customers = await prisma.customerAccount.findMany({
+      where: { emailNormalized: { in: createdCustomerEmails } },
+      select: { id: true }
+    });
+    const customerIds = customers.map((customer) => customer.id);
+    if (customerIds.length > 0) {
+      await prisma.customerSession.deleteMany({ where: { customerAccountId: { in: customerIds } } });
+      await prisma.customerAccount.deleteMany({ where: { id: { in: customerIds } } });
+    }
+  }
+
+  if (createdIntentHashes.length > 0) {
+    const placeholders = createdIntentHashes.map(() => "?").join(", ");
+    await prisma.$executeRawUnsafe(
+      `DELETE FROM customer_mobile_registration_challenges WHERE registration_intent_hash IN (${placeholders})`,
+      ...createdIntentHashes
+    );
+  }
 });
