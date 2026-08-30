@@ -1,0 +1,63 @@
+name: Phase 7 registration schema patch
+
+on:
+  push:
+    branches:
+      - "m1/v0.9/feat/customer-mobile-otp"
+    paths:
+      - ".github/workflows/phase7-registration-schema-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: m1/v0.9/feat/customer-mobile-otp
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Add dedicated registration mobile challenge model
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = 'database/prisma/schema.prisma';
+          const source = fs.readFileSync(path, 'utf8');
+          const marker = 'model CustomerSocialIdentity {';
+          const model = `model CustomerMobileRegistrationChallenge {
+            id                     String    @id @db.VarChar(191)
+            registrationIntentHash String    @map("registration_intent_hash") @db.VarChar(64)
+            phoneNormalized        String    @map("phone_normalized") @db.VarChar(16)
+            otpHash                String    @map("otp_hash") @db.VarChar(64)
+            expiresAt              DateTime  @map("expires_at")
+            consumedAt             DateTime? @map("consumed_at")
+            failedAttempts         Int       @default(0) @map("failed_attempts") @db.UnsignedInt
+            createdAt              DateTime  @default(now()) @map("created_at")
+
+            @@index([registrationIntentHash, createdAt], map: "idx_customer_mobile_registration_intent_created")
+            @@index([phoneNormalized, createdAt], map: "idx_customer_mobile_registration_phone_created")
+            @@index([expiresAt], map: "idx_customer_mobile_registration_expires")
+            @@index([consumedAt], map: "idx_customer_mobile_registration_consumed")
+            @@map("customer_mobile_registration_challenges")
+          }
+
+          `;
+          if (source.includes('model CustomerMobileRegistrationChallenge {')) process.exit(0);
+          if (!source.includes(marker)) throw new Error('Schema insertion marker not found.');
+          fs.writeFileSync(path, source.replace(marker, model + marker));
+          NODE
+          npx prisma format --schema database/prisma/schema.prisma
+      - name: Commit schema change
+        run: |
+          if git diff --quiet -- database/prisma/schema.prisma; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add database/prisma/schema.prisma
+          git commit -m "feat(auth): add registration mobile otp challenge storage"
+          git push origin HEAD:m1/v0.9/feat/customer-mobile-otp
