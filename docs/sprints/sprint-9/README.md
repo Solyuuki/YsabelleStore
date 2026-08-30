@@ -32,3 +32,4 @@ Sprint 9 was created from the Sprint 8 release baseline already promoted into th
 | 2026-08-27 | M1 Abarado | m1/v0.9/test/customer-auth-ui-readiness | Sprint documentation and validation evidence were updated for the current branch.                                | Passed            |
 | 2026-08-27 | M1 Abarado | m1/v0.9/feat/phase3-phase4-readiness    | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |
 | 2026-08-27 | M1 Abarado | m1/v0.9/feat/customer-account-recovery  | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |
+| 2026-08-30 | M1 Abarado | m1/v0.9/feat/customer-social-auth       | Sprint documentation and validation evidence were updated for the current branch.                                | Passed            |

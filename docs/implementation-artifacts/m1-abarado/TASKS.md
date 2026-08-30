@@ -58,3 +58,4 @@ A task is complete only when implementation evidence and the matching artifact u
 | YSB-M1-ABARADO-20260824 | Preserve artifact markdown templates during automation updates | Manual QA Required | m1/v0.7/fix/sprint6-sprint7-integration | Perform manual QA on the changed auth/device/UI flow. |
 | YSB-M1-ABARADO-20260826 | Maintain current implementation and documentation evidence     | Completed          | m1/v0.9/feat/customer-auth-access       | Review generated artifact updates before commit.      |
 | YSB-M1-ABARADO-20260827 | Preserve artifact markdown templates during automation updates | Manual QA Required | m1/v0.9/feat/customer-account-recovery  | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M1-ABARADO-20260830 | Maintain current implementation and documentation evidence     | Completed          | m1/v0.9/feat/customer-social-auth       | Review generated artifact updates before commit.      |
