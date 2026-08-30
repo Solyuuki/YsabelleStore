@@ -4,7 +4,7 @@ import type { CustomerSocialAuthProvider } from "@/services/customerSocialAuthSe
 
 type CustomerSocialAuthButtonsProps = {
   busyProvider: CustomerSocialAuthProvider | null;
-  onMobileStart: () => void;
+  onMobileStart?: () => void;
   onStart: (provider: CustomerSocialAuthProvider) => void;
 };
 
@@ -50,20 +50,22 @@ export function CustomerSocialAuthButtons({
         <span>{busyProvider === "google" ? "Opening Google..." : "Continue with Google"}</span>
       </button>
 
-      <button
-        className="customer-social-auth__button customer-social-auth__button--mobile"
-        disabled={busyProvider !== null}
-        onClick={onMobileStart}
-        type="button"
-      >
-        <span className="customer-social-auth__mark customer-social-auth__mark--mobile">
-          <Smartphone aria-hidden="true" size={20} />
-        </span>
-        <span>
-          Continue with Mobile OTP
-          <small>Use your registered PH mobile number</small>
-        </span>
-      </button>
+      {onMobileStart ? (
+        <button
+          className="customer-social-auth__button customer-social-auth__button--mobile"
+          disabled={busyProvider !== null}
+          onClick={onMobileStart}
+          type="button"
+        >
+          <span className="customer-social-auth__mark customer-social-auth__mark--mobile">
+            <Smartphone aria-hidden="true" size={20} />
+          </span>
+          <span>
+            Continue with Mobile OTP
+            <small>Use your registered PH mobile number</small>
+          </span>
+        </button>
+      ) : null}
     </div>
   );
 }
