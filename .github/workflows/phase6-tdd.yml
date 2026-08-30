@@ -1,6 +1,7 @@
 name: Phase 6 TDD
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - "m1/v0.9/feat/customer-social-auth"
