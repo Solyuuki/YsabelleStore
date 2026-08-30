@@ -33,8 +33,8 @@
 ## Phases 5–8
 
 - [ ] Staff/Owner visual re-theme.
-- [ ] Google + Facebook authentication.
-- [ ] Phone OTP + verification.
+- [ ] Google customer authentication; reserve the second Quick Sign slot for Mobile OTP without implementing Phase 7 early.
+- [ ] Phone OTP + verification, activating the reserved Mobile OTP Quick Sign action.
 - [ ] Shipping addresses and delivery-contact verification.
 
 ## Sprint Activity Log
