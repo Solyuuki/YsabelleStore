@@ -318,6 +318,23 @@ model CustomerAccount {
   @@map("customer_accounts")
 }
 
+model CustomerMobileAuthChallenge {
+  id                String    @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String?   @map("customer_account_id") @db.VarChar(191)
+  phoneNormalized   String    @map("phone_normalized") @db.VarChar(16)
+  otpHash           String    @map("otp_hash") @db.VarChar(64)
+  expiresAt         DateTime  @map("expires_at")
+  consumedAt        DateTime? @map("consumed_at")
+  failedAttempts    Int       @default(0) @map("failed_attempts") @db.UnsignedInt
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@index([phoneNormalized, createdAt], map: "idx_customer_mobile_auth_challenges_phone_created")
+  @@index([customerAccountId], map: "idx_customer_mobile_auth_challenges_customer")
+  @@index([expiresAt], map: "idx_customer_mobile_auth_challenges_expires")
+  @@index([consumedAt], map: "idx_customer_mobile_auth_challenges_consumed")
+  @@map("customer_mobile_auth_challenges")
+}
+
 model CustomerSocialIdentity {
   id                    String                 @id @default(cuid()) @db.VarChar(191)
   customerAccountId     String                 @map("customer_account_id") @db.VarChar(191)
