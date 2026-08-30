@@ -43,17 +43,20 @@ const ACCOUNT_HERO_CONTENT: Record<
   orders: {
     eyebrow: "Order center",
     title: "Your orders, organized.",
-    description: "Track signed-in purchases, pickup activity, and your recent order history in one focused view."
+    description:
+      "Track signed-in purchases, pickup activity, and your recent order history in one focused view."
   },
   profile: {
     eyebrow: "Profile",
     title: "Your identity, your account.",
-    description: "Keep your customer name and protected sign-in identifiers clear, current, and easy to review."
+    description:
+      "Keep your customer name and protected sign-in identifiers clear, current, and easy to review."
   },
   security: {
     eyebrow: "Account security",
     title: "Protect your account.",
-    description: "Manage your password and active sessions with security controls built around your customer account."
+    description:
+      "Manage your password and active sessions with security controls built around your customer account."
   }
 };
 
@@ -153,13 +156,18 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       } else if (
         !(ordersResult.reason instanceof DOMException && ordersResult.reason.name === "AbortError")
       ) {
-        setOrdersError(errorMessage(ordersResult.reason, "Your order history could not be loaded."));
+        setOrdersError(
+          errorMessage(ordersResult.reason, "Your order history could not be loaded.")
+        );
       }
 
       if (sessionsResult.status === "fulfilled") {
         setSessions(sessionsResult.value);
       } else if (
-        !(sessionsResult.reason instanceof DOMException && sessionsResult.reason.name === "AbortError")
+        !(
+          sessionsResult.reason instanceof DOMException &&
+          sessionsResult.reason.name === "AbortError"
+        )
       ) {
         setSessionsError(
           errorMessage(sessionsResult.reason, "Your active sessions could not be loaded.")

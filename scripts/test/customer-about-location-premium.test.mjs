@@ -59,5 +59,8 @@ test("About story progress rail uses the premium glass navigation treatment", ()
   assert.match(css, /backdrop-filter:\s*blur\(16px\)/);
   assert.match(css, /box-shadow:\s*0 18px 44px/);
   assert.match(css, /\.discover-story \.discover-progress li\.is-active a/);
-  assert.match(css, /linear-gradient\(135deg, var\(--story-blue\), var\(--story-indigo\), var\(--story-violet\)\)/);
+  assert.match(
+    css,
+    /linear-gradient\(135deg, var\(--story-blue\), var\(--story-indigo\), var\(--story-violet\)\)/
+  );
 });

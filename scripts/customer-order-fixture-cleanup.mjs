@@ -87,7 +87,9 @@ try {
             where: {
               id: { in: candidateCustomerAccountIds },
               OR: [
-                { username: { in: [`customer.a.${fixture.suffix}`, `customer.b.${fixture.suffix}`] } },
+                {
+                  username: { in: [`customer.a.${fixture.suffix}`, `customer.b.${fixture.suffix}`] }
+                },
                 {
                   email: {
                     in: [

@@ -110,7 +110,9 @@ function synchronizeDevelopmentDatabaseSchema() {
   });
 
   if (result.error) {
-    throw new Error(`Unable to synchronize the development database schema: ${result.error.message}`);
+    throw new Error(
+      `Unable to synchronize the development database schema: ${result.error.message}`
+    );
   }
   if (result.status !== 0) {
     throw new Error("Unable to synchronize the development database schema.");

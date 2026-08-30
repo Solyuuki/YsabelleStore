@@ -18,7 +18,10 @@ const authService = fs.readFileSync(
 );
 
 test("customer recovery UI uses a verification-code stage without URL reset tokens", () => {
-  assert.match(recoveryPage, /type RecoveryStage = "identify" \| "verify" \| "reset" \| "complete"/);
+  assert.match(
+    recoveryPage,
+    /type RecoveryStage = "identify" \| "verify" \| "reset" \| "complete"/
+  );
   assert.match(recoveryPage, /autoComplete="one-time-code"/);
   assert.match(recoveryPage, /Enter verification code/);
   assert.match(recoveryPage, /Resend code/);

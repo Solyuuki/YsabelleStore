@@ -68,7 +68,9 @@ try {
   }
 
   if (!shouldApply) {
-    console.info("No database changes made. Re-run with --apply to hide only the exact fixtures above.");
+    console.info(
+      "No database changes made. Re-run with --apply to hide only the exact fixtures above."
+    );
   } else if (fixtures.length > 0) {
     await prisma.$transaction(async (tx) => {
       for (const fixture of fixtures) {

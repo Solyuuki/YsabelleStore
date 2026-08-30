@@ -2,10 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-const statCardUrl = new URL(
-  "../../frontend/src/components/shared/StatCard.tsx",
-  import.meta.url
-);
+const statCardUrl = new URL("../../frontend/src/components/shared/StatCard.tsx", import.meta.url);
 
 test("dashboard stat icons use the retailer brand palette instead of the legacy slate tile", () => {
   const statCard = readFileSync(statCardUrl, "utf8");

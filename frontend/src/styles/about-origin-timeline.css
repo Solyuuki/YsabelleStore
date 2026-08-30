@@ -114,19 +114,31 @@
   -webkit-text-fill-color: transparent;
 }
 
-.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child::before {
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:first-child::before {
   left: 0;
 }
 
-.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(1)::before {
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(1)::before {
   content: "01";
 }
 
-.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(2)::before {
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(2)::before {
   content: "02";
 }
 
-.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(3)::before {
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(3)::before {
   content: "03";
 }
 
@@ -149,15 +161,24 @@
   margin-left: clamp(4.5rem, 5.2vw, 5.4rem);
 }
 
-.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(1)::after {
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(1)::after {
   content: "LOCAL ROOTS\A Neighborhood store";
 }
 
-.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(2)::after {
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(2)::after {
   content: "PASIG CITY\A Serving close to home";
 }
 
-.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(3)::after {
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(3)::after {
   content: "ESSENTIALS\A Daily needs";
 }
 
@@ -182,7 +203,10 @@
     left: 1.2rem;
   }
 
-  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child::before {
+  .about-experience
+    .discover-story
+    .story-origin-shelf
+    .story-origin-shelf__item:first-child::before {
     left: 0;
   }
 }
@@ -213,7 +237,10 @@
   }
 
   .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::before,
-  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child::before {
+  .about-experience
+    .discover-story
+    .story-origin-shelf
+    .story-origin-shelf__item:first-child::before {
     top: 1rem;
     left: 0;
     font-size: 2.35rem;
@@ -221,7 +248,10 @@
   }
 
   .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::after,
-  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child::after {
+  .about-experience
+    .discover-story
+    .story-origin-shelf
+    .story-origin-shelf__item:first-child::after {
     max-width: none;
     margin-left: 0;
     font-size: 0.74rem;

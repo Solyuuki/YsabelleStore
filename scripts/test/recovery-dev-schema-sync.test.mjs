@@ -18,7 +18,11 @@ test("fresh development startup synchronizes the Prisma schema and generated cli
   const schemaSyncIndex = devScript.indexOf("synchronizeDevelopmentDatabaseSchema();");
   const backendStartIndex = devScript.indexOf('console.info("Starting YsabelleStore backend...");');
 
-  assert.notEqual(schemaSyncIndex, -1, "development startup must invoke the database schema/client sync");
+  assert.notEqual(
+    schemaSyncIndex,
+    -1,
+    "development startup must invoke the database schema/client sync"
+  );
   assert.notEqual(backendStartIndex, -1, "development startup must still start the backend");
   assert.ok(
     schemaSyncIndex < backendStartIndex,

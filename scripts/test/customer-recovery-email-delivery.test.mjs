@@ -5,13 +5,7 @@ import test from "node:test";
 
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..");
 const recoveryEmailService = fs.readFileSync(
-  path.join(
-    REPO_ROOT,
-    "backend",
-    "src",
-    "services",
-    "customerRecoveryEmailService.ts"
-  ),
+  path.join(REPO_ROOT, "backend", "src", "services", "customerRecoveryEmailService.ts"),
   "utf8"
 );
 
@@ -27,10 +21,7 @@ test("development recovery email retries a rejected custom sender with the Resen
   );
   assert.match(recoveryEmailService, /from !== DEVELOPMENT_RESEND_FROM_EMAIL/);
   assert.match(recoveryEmailService, /domain.*not verified|verify a domain|testing emails/i);
-  assert.match(
-    recoveryEmailService,
-    /"user-agent": "YsabelleStore\/customer-recovery"/
-  );
+  assert.match(recoveryEmailService, /"user-agent": "YsabelleStore\/customer-recovery"/);
 });
 
 test("recovery email keeps production strict instead of always replacing the configured sender", () => {
@@ -43,12 +34,6 @@ test("recovery email keeps production strict instead of always replacing the con
 test("recovery email presents Ysabelle Store as the sender name for configured and fallback addresses", () => {
   assert.match(recoveryEmailService, /const CUSTOMER_RECOVERY_FROM_NAME = "Ysabelle Store"/);
   assert.match(recoveryEmailService, /function formatRecoveryFromAddress\(email: string\)/);
-  assert.match(
-    recoveryEmailService,
-    /return `\$\{CUSTOMER_RECOVERY_FROM_NAME\} <\$\{email\}>`/
-  );
-  assert.match(
-    recoveryEmailService,
-    /from: formatRecoveryFromAddress\(input\.from\)/
-  );
+  assert.match(recoveryEmailService, /return `\$\{CUSTOMER_RECOVERY_FROM_NAME\} <\$\{email\}>`/);
+  assert.match(recoveryEmailService, /from: formatRecoveryFromAddress\(input\.from\)/);
 });

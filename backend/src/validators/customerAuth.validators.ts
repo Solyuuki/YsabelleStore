@@ -71,7 +71,10 @@ export const customerPasswordRecoveryRequestSchema = z.object({
 
 export const customerPasswordRecoveryVerifySchema = z.object({
   identifier: z.string().trim().min(1).max(191),
-  verificationCode: z.string().trim().regex(/^\d{6}$/)
+  verificationCode: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/)
 });
 
 export const customerPasswordResetSchema = z.object({
@@ -81,7 +84,5 @@ export const customerPasswordResetSchema = z.object({
 export type CustomerRegisterInput = z.infer<typeof customerRegisterSchema>;
 export type CustomerLoginInput = z.infer<typeof customerLoginSchema>;
 export type CustomerPasswordRecoveryRequest = z.infer<typeof customerPasswordRecoveryRequestSchema>;
-export type CustomerPasswordRecoveryVerify = z.infer<
-  typeof customerPasswordRecoveryVerifySchema
->;
+export type CustomerPasswordRecoveryVerify = z.infer<typeof customerPasswordRecoveryVerifySchema>;
 export type CustomerPasswordReset = z.infer<typeof customerPasswordResetSchema>;

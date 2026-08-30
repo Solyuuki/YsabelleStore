@@ -1,9 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import {
-  catalogImageStorageFallbackRoots,
-  catalogImageStorageRoot
-} from "../../config/env.js";
+import { catalogImageStorageFallbackRoots, catalogImageStorageRoot } from "../../config/env.js";
 import { prisma } from "../../database/prismaClient.js";
 import { HttpError } from "../../utils/httpError.js";
 import { runCatalogImageEngine } from "./catalogImageEngineRunner.js";

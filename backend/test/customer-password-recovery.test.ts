@@ -142,7 +142,10 @@ test("recovery OTP is stored only as a keyed hash and expires exactly ten minute
   assert.equal(persisted.expiresAt.getTime(), now.getTime() + CUSTOMER_RECOVERY_OTP_LIFETIME_MS);
   assert.equal(persisted.usedAt, null);
   assert.ok(env.JWT_SECRET);
-  assert.equal(customerRecoveryOtpMatches(env.JWT_SECRET, persisted.id, code, persisted.tokenHash), true);
+  assert.equal(
+    customerRecoveryOtpMatches(env.JWT_SECRET, persisted.id, code, persisted.tokenHash),
+    true
+  );
 });
 
 test("a newer recovery request invalidates an older unused OTP", async () => {

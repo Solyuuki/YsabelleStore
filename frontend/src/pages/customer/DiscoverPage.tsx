@@ -752,7 +752,11 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                   "map+=0.02"
                 )
                 .addLabel("copy", 0.12)
-                .to(locationCopy, { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 }, "copy")
+                .to(
+                  locationCopy,
+                  { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
+                  "copy"
+                )
                 .to(
                   locationKicker,
                   { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },

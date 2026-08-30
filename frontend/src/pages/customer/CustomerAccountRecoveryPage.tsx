@@ -223,8 +223,8 @@ export function CustomerAccountRecoveryPage({
             <>
               <h1>Enter verification code</h1>
               <p>
-                If an eligible account exists, a 6-digit code was sent to its registered email.
-                The code expires in 10 minutes.
+                If an eligible account exists, a 6-digit code was sent to its registered email. The
+                code expires in 10 minutes.
               </p>
             </>
           ) : stage === "reset" ? (

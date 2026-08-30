@@ -25,9 +25,11 @@
 ### Task 1: Build the Phase 3 final-state reconciliation manifest
 
 **Files:**
+
 - Create: `docs/implementation-artifacts/m1-abarado/PHASE3-FINAL-STATE-RECONCILIATION.md`
 
 **Interfaces:**
+
 - Consumes: accepted Phase 3 snapshot `a9ada3a7ef35f06788280268d4d4afad637526b5` and current OTP branch head.
 - Produces: a path-by-path classification of `PRESERVED`, `MISSING`, `REGRESSED`, or `NEWER-PHASE4` used by Tasks 2-5.
 
@@ -49,6 +51,7 @@ git commit -m "docs(phase3): record final-state reconciliation manifest"
 ### Task 2: Restore the accepted About and customer surface polish
 
 **Files:**
+
 - Create/restore test: `scripts/test/customer-about-location-premium.test.mjs`
 - Create/restore: `frontend/src/styles/customer-about-premium.css`
 - Create/restore: `frontend/src/styles/customer-surface-lighting.css`
@@ -56,6 +59,7 @@ git commit -m "docs(phase3): record final-state reconciliation manifest"
 - Modify: `frontend/src/components/customer/CustomerHeader.tsx`
 
 **Interfaces:**
+
 - Consumes: exact accepted Phase 3 CSS and header label.
 - Produces: the approved `About` navigation copy, premium About location/progress treatment, and customer surface lighting without changing Phase 4 routing or recovery behavior.
 
@@ -94,6 +98,7 @@ git commit -m "fix(phase3): restore accepted About storefront polish"
 ### Task 3: Verify and preserve retailer/staff Phase 3 final state
 
 **Files:**
+
 - Test: existing retailer/theme regression tests under `scripts/test/`
 - Inspect: `frontend/src/components/app/AppSidebar.tsx`
 - Inspect: `frontend/src/components/app/SidebarNavItem.tsx`
@@ -104,6 +109,7 @@ git commit -m "fix(phase3): restore accepted About storefront polish"
 - Inspect: `frontend/src/styles/retailer-brand.css`
 
 **Interfaces:**
+
 - Consumes: current restored staff/theme state and accepted Phase 3 snapshot.
 - Produces: proof that already restored sidebar branding, dashboard icon treatment, logout modal, pagination/status/stat surfaces, and palette are preserved.
 
@@ -126,12 +132,14 @@ Use a focused `test(theme): ...` commit before a matching `fix(theme): ...` comm
 ### Task 4: Reconcile customer authentication Phase 3 final state without touching OTP recovery behavior
 
 **Files:**
+
 - Inspect/test: `frontend/src/pages/customer/CustomerLoginPage.tsx`
 - Inspect/test: `frontend/src/pages/customer/CustomerRegisterPage.tsx`
 - Inspect/test: Phase 3 auth CSS files already present under `frontend/src/styles/customer-auth-*.css`
 - Test: existing `scripts/test/customer-auth-*.test.mjs` regressions
 
 **Interfaces:**
+
 - Consumes: accepted Phase 3 login/register visual contracts and current Phase 4 OTP branch.
 - Produces: Phase 3 login/register composition and hints while retaining the newer account-recovery route and OTP UI.
 
@@ -158,10 +166,12 @@ Expected: all PASS.
 ### Task 5: Reconcile accepted Phase 3 catalog/dev-storage final behavior
 
 **Files:**
+
 - Inspect: Phase 3 catalog image storage/recovery files and corresponding current files.
 - Test: existing catalog storage/fixture regression tests.
 
 **Interfaces:**
+
 - Consumes: final Phase 3 snapshot only; transient experiments that were removed before `a9ada3a7` are explicitly excluded.
 - Produces: durable image-storage and storefront fixture-containment behavior if any accepted final-state delta is still missing.
 
@@ -180,9 +190,11 @@ Expected: focused catalog regression PASS. Make no production change if current 
 ### Task 6: Fresh Phase 3 + Phase 4 verification gate before Phase 5
 
 **Files:**
+
 - No production files unless a failing verification reveals a separately diagnosed defect.
 
 **Interfaces:**
+
 - Consumes: Tasks 1-5.
 - Produces: evidence-based go/no-go decision for Phase 5.
 

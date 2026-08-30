@@ -86,7 +86,11 @@ test("legacy repo-local catalog storage migrates to a durable user-level root", 
 test("absolute catalog image storage configuration remains authoritative", () => {
   const absoluteRoot = path.resolve(os.tmpdir(), "ysabelle-catalog-images-absolute");
   const persistentRoot = path.resolve(os.tmpdir(), "ysabelle-catalog-images-persistent");
-  const resolved = resolveCatalogImageStoragePaths("/unused/repository", absoluteRoot, persistentRoot);
+  const resolved = resolveCatalogImageStoragePaths(
+    "/unused/repository",
+    absoluteRoot,
+    persistentRoot
+  );
 
   assert.equal(resolved.root, absoluteRoot);
   assert.deepEqual(resolved.fallbackRoots, []);

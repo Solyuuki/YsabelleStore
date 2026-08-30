@@ -8,7 +8,8 @@ const read = (path) => readFileSync(fileUrl(path), "utf8");
 test("About keeps native scrolling while hiding only the visual scrollbar", () => {
   const main = read("frontend/src/main.tsx");
   const css = read("frontend/src/styles/customer-about-premium.css");
-  const documentScrollbarRule = css.match(/html:has\(\.customer-discover\)\s*\{[^}]*\}/s)?.[0] ?? "";
+  const documentScrollbarRule =
+    css.match(/html:has\(\.customer-discover\)\s*\{[^}]*\}/s)?.[0] ?? "";
 
   assert.match(main, /@\/styles\/customer-about-premium\.css/);
   assert.match(documentScrollbarRule, /scrollbar-width:\s*none/);
@@ -38,10 +39,7 @@ test("About beginning shader stays premium and less foggy", () => {
 test("About progress navigator stays hidden through the welcome scene", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
-  assert.match(
-    discover,
-    /const progressVisibilityStart = sceneOwnershipStarts\[1\] \?\? rootTop;/
-  );
+  assert.match(discover, /const progressVisibilityStart = sceneOwnershipStarts\[1\] \?\? rootTop;/);
   assert.match(discover, /scrollTop >= progressVisibilityStart/);
   assert.doesNotMatch(discover, /scrollTop >= rootTop - viewportHeight \* 0\.75/);
 });

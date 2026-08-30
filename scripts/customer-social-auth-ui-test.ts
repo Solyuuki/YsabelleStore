@@ -96,7 +96,10 @@ assert.match(loginSource, /completeCustomerSocialLink/);
 const passwordLoginIndex = loginSource.indexOf("await login(");
 const socialLinkIndex = loginSource.indexOf("await completeCustomerSocialLink(");
 const accountNavigationIndex = loginSource.indexOf('navigate("/account")');
-assert.ok(passwordLoginIndex >= 0, "Password login should still be used to prove account ownership.");
+assert.ok(
+  passwordLoginIndex >= 0,
+  "Password login should still be used to prove account ownership."
+);
 assert.ok(
   socialLinkIndex > passwordLoginIndex,
   "Pending social link should complete only after successful password login."

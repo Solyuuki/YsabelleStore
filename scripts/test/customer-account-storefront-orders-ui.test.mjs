@@ -99,7 +99,10 @@ test("dynamic account hero keeps its icon in the card's top-right corner", () =>
 test("premium account shell removes the oversized sidebar presentation", () => {
   assert.match(premiumAccountCss, /\.customer-account-rail\s*\{[\s\S]*position:\s*static;/);
   assert.match(premiumAccountCss, /\.customer-account-identity-card\s*\{[\s\S]*display:\s*flex;/);
-  assert.match(premiumAccountCss, /\.customer-account-identity-card h1\s*\{[\s\S]*white-space:\s*nowrap;/);
+  assert.match(
+    premiumAccountCss,
+    /\.customer-account-identity-card h1\s*\{[\s\S]*white-space:\s*nowrap;/
+  );
   assert.match(premiumAccountCss, /\.customer-account-signout\s*\{[\s\S]*width:\s*auto;/);
   assert.match(premiumAccountCss, /\.customer-account-nav button\s*\{/);
   assert.match(premiumAccountCss, /\.customer-account-nav button\[aria-selected="true"\]/);

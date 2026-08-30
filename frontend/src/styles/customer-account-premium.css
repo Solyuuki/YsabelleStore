@@ -285,7 +285,10 @@
 }
 
 .customer-account-order-v2 {
-  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
 }
 
 .customer-account-order-v2:hover {
