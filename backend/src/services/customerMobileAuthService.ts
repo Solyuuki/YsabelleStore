@@ -6,6 +6,7 @@ import { HttpError } from "../utils/httpError.js";
 import { createCustomerSession, toSafeCustomer } from "./customerAuthService.js";
 
 export const CUSTOMER_MOBILE_AUTH_OTP_LIFETIME_MS = 10 * 60 * 1000;
+export const CUSTOMER_MOBILE_AUTH_MAX_FAILED_ATTEMPTS = 5;
 
 const INVALID_MOBILE_AUTH_CODE = {
   code: "CUSTOMER_MOBILE_AUTH_CODE_INVALID",
@@ -99,13 +100,23 @@ export async function verifyCustomerMobileAuth(
     where: {
       phoneNormalized: input.phone,
       consumedAt: null,
-      expiresAt: { gt: now }
+      expiresAt: { gt: now },
+      failedAttempts: { lt: CUSTOMER_MOBILE_AUTH_MAX_FAILED_ATTEMPTS }
     },
     orderBy: { createdAt: "desc" }
   });
 
   if (!challenge?.customerAccountId) throw invalidMobileAuthCode();
   if (!mobileAuthOtpMatches(challenge.id, input.phone, input.verificationCode, challenge.otpHash)) {
+    await prisma.customerMobileAuthChallenge.updateMany({
+      data: { failedAttempts: { increment: 1 } },
+      where: {
+        id: challenge.id,
+        consumedAt: null,
+        expiresAt: { gt: now },
+        failedAttempts: { lt: CUSTOMER_MOBILE_AUTH_MAX_FAILED_ATTEMPTS }
+      }
+    });
     throw invalidMobileAuthCode();
   }
 
@@ -121,7 +132,8 @@ export async function verifyCustomerMobileAuth(
     where: {
       id: challenge.id,
       consumedAt: null,
-      expiresAt: { gt: now }
+      expiresAt: { gt: now },
+      failedAttempts: { lt: CUSTOMER_MOBILE_AUTH_MAX_FAILED_ATTEMPTS }
     }
   });
   if (consumed.count !== 1) throw invalidMobileAuthCode();
