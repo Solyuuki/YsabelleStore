@@ -3,6 +3,7 @@ import type { AddressInfo } from "node:net";
 import test from "node:test";
 
 import { createApp } from "../src/app.js";
+import { prisma } from "../src/database/prismaClient.js";
 
 type ApiBody = {
   success?: boolean;
@@ -48,4 +49,15 @@ test("mobile quick sign request accepts a PH mobile number with a privacy-safe r
     assert.equal(body.data, undefined);
     assert.equal(JSON.stringify(body).includes("09171234567"), false);
   });
+});
+
+test("mobile quick sign keeps OTP challenges in dedicated storage separate from recovery tokens", async () => {
+  const rows = await prisma.$queryRaw<Array<{ tableName: string }>>`
+    SELECT TABLE_NAME AS tableName
+    FROM information_schema.TABLES
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'customer_mobile_auth_challenges'
+  `;
+
+  assert.equal(rows.length, 1);
 });
