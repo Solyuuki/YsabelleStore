@@ -52,18 +52,21 @@ const optionalPhilippineMobileSchema = z
     return normalized;
   });
 
-const requiredPhilippineMobileSchema = z.string().max(40).transform((value, context) => {
-  const normalized = normalizePhilippineMobile(value);
-  if (!normalized) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Enter a valid Philippine mobile number."
-    });
-    return z.NEVER;
-  }
+const requiredPhilippineMobileSchema = z
+  .string()
+  .max(40)
+  .transform((value, context) => {
+    const normalized = normalizePhilippineMobile(value);
+    if (!normalized) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Enter a valid Philippine mobile number."
+      });
+      return z.NEVER;
+    }
 
-  return normalized;
-});
+    return normalized;
+  });
 
 export const customerRegisterSchema = z.object({
   name: z.string().trim().min(2).max(120),
