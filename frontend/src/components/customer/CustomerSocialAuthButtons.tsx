@@ -1,7 +1,10 @@
+import { Smartphone } from "lucide-react";
+
 import type { CustomerSocialAuthProvider } from "@/services/customerSocialAuthService";
 
 type CustomerSocialAuthButtonsProps = {
   busyProvider: CustomerSocialAuthProvider | null;
+  onMobileStart: () => void;
   onStart: (provider: CustomerSocialAuthProvider) => void;
 };
 
@@ -30,6 +33,7 @@ function GoogleMark() {
 
 export function CustomerSocialAuthButtons({
   busyProvider,
+  onMobileStart,
   onStart
 }: CustomerSocialAuthButtonsProps) {
   return (
@@ -44,6 +48,21 @@ export function CustomerSocialAuthButtons({
           <GoogleMark />
         </span>
         <span>{busyProvider === "google" ? "Opening Google..." : "Continue with Google"}</span>
+      </button>
+
+      <button
+        className="customer-social-auth__button customer-social-auth__button--mobile"
+        disabled={busyProvider !== null}
+        onClick={onMobileStart}
+        type="button"
+      >
+        <span className="customer-social-auth__mark customer-social-auth__mark--mobile">
+          <Smartphone aria-hidden="true" size={20} />
+        </span>
+        <span>
+          Continue with Mobile OTP
+          <small>Use your registered PH mobile number</small>
+        </span>
       </button>
     </div>
   );
