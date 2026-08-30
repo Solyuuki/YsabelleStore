@@ -219,7 +219,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             <span className="customer-auth-password">
               <input
                 aria-describedby={
-                  fieldErrors.confirmPassword ? "customer-register-confirm-password-error" : undefined
+                  fieldErrors.confirmPassword
+                    ? "customer-register-confirm-password-error"
+                    : undefined
                 }
                 aria-invalid={Boolean(fieldErrors.confirmPassword)}
                 autoComplete="new-password"
@@ -230,7 +232,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 value={confirmPassword}
               />
               <button
-                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                aria-label={
+                  showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+                }
                 aria-pressed={showConfirmPassword}
                 onClick={() => setShowConfirmPassword((current) => !current)}
                 type="button"
