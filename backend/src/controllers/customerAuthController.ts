@@ -13,7 +13,8 @@ import {
 } from "../services/customerMobileAuthService.js";
 import {
   CustomerMobileRegistrationDeliveryError,
-  requestCustomerMobileRegistrationVerification
+  requestCustomerMobileRegistrationVerification,
+  verifyCustomerMobileRegistrationCode
 } from "../services/customerMobileRegistrationService.js";
 import {
   CustomerRecoveryEmailDeliveryError,
@@ -30,6 +31,7 @@ import {
   readCustomerSessionCookie,
   setCustomerSessionCookie
 } from "../utils/customerAuthCookie.js";
+import { setCustomerMobileRegistrationCookie } from "../utils/customerMobileRegistrationCookie.js";
 import {
   clearCustomerRecoveryGrantCookie,
   readCustomerRecoveryGrantCookie,
@@ -114,6 +116,33 @@ export const requestCustomerRegistrationMobileVerification: RequestHandler = asy
     }
 
     response.status(200).json(createSuccessResponse(CUSTOMER_REGISTRATION_MOBILE_REQUEST_MESSAGE));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyCustomerRegistrationMobileVerification: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const registrationIntentToken = requireValidCustomerRegistrationIntent(request);
+    const parsedBody = customerMobileAuthVerifySchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer registration mobile verification request is invalid.", {
+        code: "INVALID_CUSTOMER_REGISTRATION_MOBILE_VERIFICATION_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    const grant = await verifyCustomerMobileRegistrationCode({
+      phone: parsedBody.data.phone,
+      verificationCode: parsedBody.data.verificationCode,
+      registrationIntentToken
+    });
+    setCustomerMobileRegistrationCookie(response, grant);
+    response.status(200).json(createSuccessResponse("Mobile number verified for registration."));
   } catch (error) {
     next(error);
   }
