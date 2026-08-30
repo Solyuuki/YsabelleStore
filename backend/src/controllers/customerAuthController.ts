@@ -53,6 +53,25 @@ const CUSTOMER_RECOVERY_REQUEST_MESSAGE =
   "If an eligible account exists, a verification code has been sent to its registered email.";
 const CUSTOMER_MOBILE_AUTH_REQUEST_MESSAGE =
   "If an eligible customer account matches that mobile number, a verification code will be sent.";
+const CUSTOMER_REGISTRATION_MOBILE_REQUEST_MESSAGE =
+  "If that mobile number can be used for registration, a verification code will be sent.";
+
+function requireValidCustomerRegistrationIntent(request: Parameters<RequestHandler>[0]): string {
+  const intentToken = readCustomerRegistrationIntentCookie(request);
+  if (!intentToken) {
+    throw new HttpError(403, "Customer registration intent is required.", {
+      code: "CUSTOMER_REGISTRATION_INTENT_REQUIRED"
+    });
+  }
+
+  if (!isCustomerRegistrationIntentValid(intentToken)) {
+    throw new HttpError(403, "Customer registration intent is invalid or expired.", {
+      code: "CUSTOMER_REGISTRATION_INTENT_INVALID"
+    });
+  }
+
+  return intentToken;
+}
 
 export const issueCustomerRegistrationIntent: RequestHandler = (_request, response) => {
   const intentToken = createCustomerRegistrationIntent();
@@ -64,20 +83,31 @@ export const issueCustomerRegistrationIntent: RequestHandler = (_request, respon
   );
 };
 
-export const registerCustomerAccount: RequestHandler = async (request, response, next) => {
+export const requestCustomerRegistrationMobileVerification: RequestHandler = (
+  request,
+  response,
+  next
+) => {
   try {
-    const intentToken = readCustomerRegistrationIntentCookie(request);
-    if (!intentToken) {
-      throw new HttpError(403, "Customer registration intent is required.", {
-        code: "CUSTOMER_REGISTRATION_INTENT_REQUIRED"
+    requireValidCustomerRegistrationIntent(request);
+
+    const parsedBody = customerMobileAuthRequestSchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer registration mobile verification request is invalid.", {
+        code: "INVALID_CUSTOMER_REGISTRATION_MOBILE_REQUEST",
+        details: parsedBody.error.flatten()
       });
     }
 
-    if (!isCustomerRegistrationIntentValid(intentToken)) {
-      throw new HttpError(403, "Customer registration intent is invalid or expired.", {
-        code: "CUSTOMER_REGISTRATION_INTENT_INVALID"
-      });
-    }
+    response.status(200).json(createSuccessResponse(CUSTOMER_REGISTRATION_MOBILE_REQUEST_MESSAGE));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const registerCustomerAccount: RequestHandler = async (request, response, next) => {
+  try {
+    requireValidCustomerRegistrationIntent(request);
 
     const parsedBody = customerRegisterSchema.safeParse(request.body);
     if (!parsedBody.success) {
