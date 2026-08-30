@@ -135,17 +135,14 @@ async function createVerifiedRegistrationMobileGrant(input: {
     }
   });
 
-  const response = await fetch(
-    `${input.baseUrl}/api/customer-auth/registration/mobile/verify`,
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        cookie: input.intentCookie
-      },
-      body: JSON.stringify({ phone: input.phone, verificationCode })
-    }
-  );
+  const response = await fetch(`${input.baseUrl}/api/customer-auth/registration/mobile/verify`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      cookie: input.intentCookie
+    },
+    body: JSON.stringify({ phone: input.phone, verificationCode })
+  });
   assert.equal(response.status, 200);
   const grantCookie = cookiePair(response);
   assert.ok(grantCookie);
@@ -357,7 +354,9 @@ test.after(async () => {
     });
     const customerIds = customers.map((customer) => customer.id);
     if (customerIds.length > 0) {
-      await prisma.customerSession.deleteMany({ where: { customerAccountId: { in: customerIds } } });
+      await prisma.customerSession.deleteMany({
+        where: { customerAccountId: { in: customerIds } }
+      });
       await prisma.customerAccount.deleteMany({ where: { id: { in: customerIds } } });
     }
   }
