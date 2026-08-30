@@ -6,6 +6,7 @@ import test from "node:test";
 import { createApp } from "../src/app.js";
 import { prisma } from "../src/database/prismaClient.js";
 import { registerCustomer } from "../src/services/customerAuthService.js";
+import { normalizePhilippineMobile } from "../src/utils/customerIdentity.js";
 
 type ApiBody = {
   success?: boolean;
@@ -74,6 +75,9 @@ test("mobile quick sign keeps OTP challenges in dedicated storage separate from 
 test("mobile quick sign request creates a short-lived hashed challenge for the matching active customer", async () => {
   const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
   const phone = testPhone(suffix);
+  const phoneNormalized = normalizePhilippineMobile(phone);
+  assert.ok(phoneNormalized);
+
   const registered = await registerCustomer({
     name: "Mobile OTP Customer",
     username: `mobile.${suffix}`,
@@ -97,7 +101,7 @@ test("mobile quick sign request creates a short-lived hashed challenge for the m
   const challenge = await prisma.customerMobileAuthChallenge.findFirst({
     where: {
       customerAccountId: registered.customer.id,
-      phoneNormalized: phone,
+      phoneNormalized,
       consumedAt: null
     },
     orderBy: { createdAt: "desc" }
