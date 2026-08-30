@@ -9,6 +9,7 @@ import {
   requestCustomerMobileAuthAccount,
   requestCustomerPasswordRecoveryAccount,
   resetCustomerPasswordAccount,
+  verifyCustomerMobileAuthAccount,
   verifyCustomerPasswordRecoveryAccount
 } from "../controllers/customerAuthController.js";
 import {
@@ -149,6 +150,11 @@ customerAuthRouter.post(
   "/mobile/request",
   requireAllowedCustomerAuthOrigin,
   requestCustomerMobileAuthAccount
+);
+customerAuthRouter.post(
+  "/mobile/verify",
+  requireAllowedCustomerAuthOrigin,
+  verifyCustomerMobileAuthAccount
 );
 customerAuthRouter.post(
   "/recovery/request",

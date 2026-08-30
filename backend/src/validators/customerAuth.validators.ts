@@ -85,6 +85,14 @@ export const customerMobileAuthRequestSchema = z.object({
   phone: requiredPhilippineMobileSchema
 });
 
+export const customerMobileAuthVerifySchema = z.object({
+  phone: requiredPhilippineMobileSchema,
+  verificationCode: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/)
+});
+
 export const customerPasswordRecoveryRequestSchema = z.object({
   identifier: z.string().trim().min(1).max(191)
 });
@@ -104,6 +112,7 @@ export const customerPasswordResetSchema = z.object({
 export type CustomerRegisterInput = z.infer<typeof customerRegisterSchema>;
 export type CustomerLoginInput = z.infer<typeof customerLoginSchema>;
 export type CustomerMobileAuthRequest = z.infer<typeof customerMobileAuthRequestSchema>;
+export type CustomerMobileAuthVerify = z.infer<typeof customerMobileAuthVerifySchema>;
 export type CustomerPasswordRecoveryRequest = z.infer<typeof customerPasswordRecoveryRequestSchema>;
 export type CustomerPasswordRecoveryVerify = z.infer<typeof customerPasswordRecoveryVerifySchema>;
 export type CustomerPasswordReset = z.infer<typeof customerPasswordResetSchema>;

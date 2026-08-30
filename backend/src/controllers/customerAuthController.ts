@@ -6,7 +6,10 @@ import {
   registerCustomer,
   revokeCustomerSession
 } from "../services/customerAuthService.js";
-import { requestCustomerMobileAuth } from "../services/customerMobileAuthService.js";
+import {
+  requestCustomerMobileAuth,
+  verifyCustomerMobileAuth
+} from "../services/customerMobileAuthService.js";
 import {
   CustomerRecoveryEmailDeliveryError,
   customerRecoveryEmailDelivery
@@ -38,6 +41,7 @@ import { HttpError } from "../utils/httpError.js";
 import {
   customerLoginSchema,
   customerMobileAuthRequestSchema,
+  customerMobileAuthVerifySchema,
   customerPasswordRecoveryRequestSchema,
   customerPasswordRecoveryVerifySchema,
   customerPasswordResetSchema,
@@ -131,6 +135,28 @@ export const requestCustomerMobileAuthAccount: RequestHandler = async (request, 
 
     await requestCustomerMobileAuth(parsedBody.data);
     response.status(200).json(createSuccessResponse(CUSTOMER_MOBILE_AUTH_REQUEST_MESSAGE));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyCustomerMobileAuthAccount: RequestHandler = async (request, response, next) => {
+  try {
+    const parsedBody = customerMobileAuthVerifySchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer mobile sign-in verification request is invalid.", {
+        code: "INVALID_CUSTOMER_MOBILE_AUTH_VERIFICATION_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    const session = await verifyCustomerMobileAuth(parsedBody.data);
+    setCustomerSessionCookie(response, session.sessionToken);
+    response.status(200).json(
+      createSuccessResponse("Mobile verification successful.", {
+        customer: session.customer
+      })
+    );
   } catch (error) {
     next(error);
   }
