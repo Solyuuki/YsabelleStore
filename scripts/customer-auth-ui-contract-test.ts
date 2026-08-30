@@ -12,8 +12,8 @@ assert.equal(getCustomerAuthPageKind("/account"), "account");
 assert.equal(getCustomerAuthPageKind("/shop"), null);
 
 assert.equal(resolveCustomerAuthRedirect("/account", "unauthenticated"), "/login");
-assert.equal(resolveCustomerAuthRedirect("/login", "authenticated"), "/account");
-assert.equal(resolveCustomerAuthRedirect("/register", "authenticated"), "/account");
+assert.equal(resolveCustomerAuthRedirect("/login", "authenticated"), "/");
+assert.equal(resolveCustomerAuthRedirect("/register", "authenticated"), "/");
 assert.equal(resolveCustomerAuthRedirect("/shop", "unauthenticated"), null);
 assert.equal(resolveCustomerAuthRedirect("/checkout", "unauthenticated"), null);
 assert.equal(resolveCustomerAuthRedirect("/account", "loading"), null);
