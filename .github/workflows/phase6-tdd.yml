@@ -6,6 +6,7 @@ on:
     branches:
       - "m1/v0.9/feat/customer-social-auth"
     paths:
+      # Keep the gate itself in scope so Phase 6 workflow changes self-verify.
       - ".github/workflows/phase6-tdd.yml"
       - "tsconfig.json"
       - "backend/src/config/env.ts"
