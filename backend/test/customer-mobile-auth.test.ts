@@ -50,14 +50,14 @@ function testPhone(suffix: string) {
 function mobileOtpHash(
   challengeId: string,
   phoneNormalized: string,
-  verificationCode: string
+  verificationCode: string,
 ) {
   const secret = env.JWT_SECRET?.trim();
   assert.ok(secret);
 
   return createHmac("sha256", secret)
     .update(
-      `customer-mobile-auth-otp:v1:${challengeId}:${phoneNormalized}:${verificationCode}`
+      `customer-mobile-auth-otp:v1:${challengeId}:${phoneNormalized}:${verificationCode}`,
     )
     .digest("hex");
 }
@@ -174,7 +174,7 @@ test("valid mobile OTP consumes its challenge and creates a normal customer sess
     assert.equal(body.success, true);
     assert.equal(
       (body.data as { customer?: { id?: string } } | undefined)?.customer?.id,
-      registered.customer.id
+      registered.customer.id,
     );
 
     const setCookie = response.headers.get("set-cookie") ?? "";
