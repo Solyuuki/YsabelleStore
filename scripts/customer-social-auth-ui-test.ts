@@ -55,31 +55,34 @@ const mobilePanelSource = readFileSync(
   new URL("../frontend/src/components/customer/CustomerMobileAuthPanel.tsx", import.meta.url),
   "utf8"
 );
-assert.match(
+assert.match(mobilePanelSource, /Mobile sign-in/);
+assert.match(mobilePanelSource, /Enter code/);
+assert.match(mobilePanelSource, /Code expires in 10 minutes/);
+assert.match(mobilePanelSource, /Resend code/);
+assert.match(mobilePanelSource, /Resend in/);
+assert.match(mobilePanelSource, /Change number/);
+assert.match(mobilePanelSource, /Other sign-in methods/);
+assert.doesNotMatch(mobilePanelSource, /Secure quick sign-in/);
+assert.doesNotMatch(mobilePanelSource, /Protected verification/);
+assert.doesNotMatch(
   mobilePanelSource,
-  /Use another sign-in method/,
-  "Mobile OTP should use a clear in-flow exit label instead of browser-back language."
+  /Use the Philippine mobile number already linked to your customer account\./
 );
-assert.doesNotMatch(mobilePanelSource, /Back to sign-in options/);
-assert.match(
-  mobilePanelSource,
-  /customer-mobile-auth__security/,
-  "Mobile OTP should expose a compact security/status cue in the premium panel."
-);
+assert.doesNotMatch(mobilePanelSource, /customer-mobile-auth__security/);
 assert.match(
   quickSignCss,
   /backdrop-filter:\s*blur\(18px\)/,
-  "Premium Mobile OTP panel should use restrained glass depth."
+  "Mobile OTP panel should keep restrained glass depth."
 );
 assert.match(
   quickSignCss,
   /\.customer-mobile-auth::before\s*\{/,
-  "Premium Mobile OTP panel should have a contained gradient highlight instead of a flat nested card."
+  "Mobile OTP panel should keep a contained gradient highlight."
 );
-assert.match(
+assert.doesNotMatch(
   quickSignCss,
   /\.customer-mobile-auth__security\s*\{/,
-  "Premium Mobile OTP security cue should have an explicit visual treatment."
+  "Minimal Mobile OTP should not render a separate security information card."
 );
 
 const registerSource = readFileSync(
