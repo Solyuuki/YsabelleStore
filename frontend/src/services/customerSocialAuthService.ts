@@ -2,7 +2,7 @@ import { frontendRuntimeConfig } from "@/config/runtime";
 import { apiClient } from "@/services/apiClient";
 import type { CustomerAuthErrorPayload } from "@/types/customerAuth";
 
-export type CustomerSocialAuthProvider = "google" | "facebook";
+export type CustomerSocialAuthProvider = "google";
 export type CustomerSocialAuthPage = "login" | "register";
 
 export function buildCustomerSocialAuthStartUrl(
@@ -29,16 +29,13 @@ export function getCustomerSocialAuthNotice(search: string): string | null {
   const status = params.get("social");
 
   if (status === "link_required") {
-    return "This Google or Facebook account matches an existing Ysabelle Store account. Sign in once with your existing password to link it securely.";
+    return "This Google account matches an existing Ysabelle Store account. Sign in once with your existing password to link it securely.";
   }
 
   if (status !== "provider_unavailable") return null;
 
   const provider = params.get("provider");
   if (provider === "google") return "Google sign-in is not configured for this environment yet.";
-  if (provider === "facebook") {
-    return "Facebook sign-in is not configured for this environment yet.";
-  }
   return null;
 }
 
