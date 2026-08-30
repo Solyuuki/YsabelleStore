@@ -148,6 +148,7 @@ async function createVerifiedRegistrationMobileGrant(input: {
   );
   assert.equal(response.status, 200);
   const grantCookie = cookiePair(response);
+  assert.ok(grantCookie);
   assert.match(grantCookie, /^ysabelle_customer_registration_mobile=/);
   return { challengeId, grantCookie };
 }
@@ -351,7 +352,7 @@ test("registration without an optional mobile number remains allowed without an 
 test.after(async () => {
   if (createdCustomerEmails.length > 0) {
     const customers = await prisma.customerAccount.findMany({
-      where: { emailNormalized: { in: createdCustomerEmails } },
+      where: { email: { in: createdCustomerEmails } },
       select: { id: true }
     });
     const customerIds = customers.map((customer) => customer.id);
