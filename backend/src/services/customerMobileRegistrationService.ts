@@ -1,10 +1,4 @@
-import {
-  createHash,
-  createHmac,
-  randomBytes,
-  randomInt,
-  timingSafeEqual
-} from "node:crypto";
+import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 
 import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
@@ -35,8 +29,7 @@ type RegistrationMobileGrantPayload = {
 
 function registrationOtpSecret(): string {
   const secret = env.JWT_SECRET?.trim();
-  if (!secret)
-    throw new Error("Customer registration mobile OTP secret is not configured.");
+  if (!secret) throw new Error("Customer registration mobile OTP secret is not configured.");
   return secret;
 }
 
@@ -70,9 +63,7 @@ function createRegistrationMobileGrant(
     phone,
     exp: now.getTime() + CUSTOMER_MOBILE_REGISTRATION_OTP_LIFETIME_MS
   };
-  const encodedPayload = Buffer.from(JSON.stringify(payload), "utf8").toString(
-    "base64url"
-  );
+  const encodedPayload = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
   return `${encodedPayload}.${signRegistrationMobileGrant(encodedPayload)}`;
 }
 
@@ -131,22 +122,11 @@ export function hashCustomerRegistrationIntent(intentToken: string): string {
   return createHash("sha256").update(intentToken).digest("hex");
 }
 
-function createRegistrationOtpMaterial(
-  registrationIntentHash: string,
-  phone: string,
-  now: Date
-) {
+function createRegistrationOtpMaterial(registrationIntentHash: string, phone: string, now: Date) {
   const challengeId = `registration-mobile-otp:${randomBytes(16).toString("hex")}`;
   const verificationCode = randomInt(0, 1_000_000).toString().padStart(6, "0");
-  const otpHash = registrationOtpHash(
-    challengeId,
-    registrationIntentHash,
-    phone,
-    verificationCode
-  );
-  const expiresAt = new Date(
-    now.getTime() + CUSTOMER_MOBILE_REGISTRATION_OTP_LIFETIME_MS
-  );
+  const otpHash = registrationOtpHash(challengeId, registrationIntentHash, phone, verificationCode);
+  const expiresAt = new Date(now.getTime() + CUSTOMER_MOBILE_REGISTRATION_OTP_LIFETIME_MS);
 
   return { challengeId, verificationCode, otpHash, expiresAt };
 }
@@ -249,10 +229,7 @@ export async function verifyCustomerMobileRegistrationCode(input: {
   );
   const suppliedHash = Buffer.from(expectedHash, "hex");
   const storedHash = Buffer.from(challenge.otpHash, "hex");
-  if (
-    suppliedHash.length !== storedHash.length ||
-    !timingSafeEqual(suppliedHash, storedHash)
-  ) {
+  if (suppliedHash.length !== storedHash.length || !timingSafeEqual(suppliedHash, storedHash)) {
     throw new HttpError(400, "Verification code is invalid or expired.", {
       code: "CUSTOMER_MOBILE_REGISTRATION_CODE_INVALID"
     });
