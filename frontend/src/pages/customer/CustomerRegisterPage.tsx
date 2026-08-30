@@ -34,6 +34,18 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
   );
 
   useEffect(() => {
+    function restoreInteractiveState() {
+      setSubmitting(false);
+      setBusySocialProvider(null);
+    }
+
+    globalThis.addEventListener("pageshow", restoreInteractiveState);
+    return () => {
+      globalThis.removeEventListener("pageshow", restoreInteractiveState);
+    };
+  }, []);
+
+  useEffect(() => {
     void prepareCustomerRegistrationIntent().catch(() => {
       // Submission retries preparation and surfaces an actionable error if the service is unavailable.
     });
