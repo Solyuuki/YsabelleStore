@@ -6,6 +6,7 @@ import {
   registerCustomer,
   revokeCustomerSession
 } from "../services/customerAuthService.js";
+import { requestCustomerMobileAuth } from "../services/customerMobileAuthService.js";
 import {
   CustomerRecoveryEmailDeliveryError,
   customerRecoveryEmailDelivery
@@ -118,7 +119,7 @@ export const loginCustomerAccount: RequestHandler = async (request, response, ne
   }
 };
 
-export const requestCustomerMobileAuthAccount: RequestHandler = (request, response, next) => {
+export const requestCustomerMobileAuthAccount: RequestHandler = async (request, response, next) => {
   try {
     const parsedBody = customerMobileAuthRequestSchema.safeParse(request.body);
     if (!parsedBody.success) {
@@ -128,6 +129,7 @@ export const requestCustomerMobileAuthAccount: RequestHandler = (request, respon
       });
     }
 
+    await requestCustomerMobileAuth(parsedBody.data);
     response.status(200).json(createSuccessResponse(CUSTOMER_MOBILE_AUTH_REQUEST_MESSAGE));
   } catch (error) {
     next(error);
