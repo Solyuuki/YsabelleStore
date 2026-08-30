@@ -8,6 +8,7 @@ import {
   registerCustomerAccount,
   requestCustomerMobileAuthAccount,
   requestCustomerPasswordRecoveryAccount,
+  requestCustomerRegistrationMobileVerification,
   resetCustomerPasswordAccount,
   verifyCustomerMobileAuthAccount,
   verifyCustomerPasswordRecoveryAccount
@@ -158,6 +159,11 @@ customerAuthRouter.get(
   "/registration-intent",
   requireAllowedCustomerAuthOrigin,
   issueCustomerRegistrationIntent
+);
+customerAuthRouter.post(
+  "/registration/mobile/request",
+  requireAllowedCustomerAuthOrigin,
+  requestCustomerRegistrationMobileVerification
 );
 customerAuthRouter.post(
   "/register",
