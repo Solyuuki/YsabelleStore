@@ -74,9 +74,7 @@ export function CustomerMobileAuthPanel({
           <Smartphone size={18} />
         </span>
         <div>
-          <strong>
-            {stage === "phone" ? "Sign in with mobile OTP" : "Enter verification code"}
-          </strong>
+          <strong>{stage === "phone" ? "Sign in with mobile OTP" : "Enter verification code"}</strong>
           <p>
             {stage === "phone"
               ? "Use the Philippine mobile number already linked to your customer account."
