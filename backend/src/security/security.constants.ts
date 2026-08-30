@@ -34,6 +34,26 @@ export const AUTH_RATE_LIMITS = {
     maxAttempts: 3,
     scope: "customer-register-identity"
   },
+  customerMobileAuthRequest: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 30,
+    scope: "customer-mobile-auth-request"
+  },
+  customerMobileAuthPhone: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 5,
+    scope: "customer-mobile-auth-phone"
+  },
+  customerMobileAuthVerify: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 50,
+    scope: "customer-mobile-auth-verify"
+  },
+  customerMobileAuthVerifyPhone: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 10,
+    scope: "customer-mobile-auth-verify-phone"
+  },
   customerRecoveryRequest: {
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     maxAttempts: 10,
