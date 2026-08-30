@@ -13,6 +13,8 @@ permissions:
 jobs:
   refresh-status:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_phase6_status
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
