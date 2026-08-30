@@ -1,4 +1,4 @@
-import { ArrowLeft, Smartphone } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Smartphone } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -74,6 +74,7 @@ export function CustomerMobileAuthPanel({
           <Smartphone size={18} />
         </span>
         <div>
+          <span className="customer-mobile-auth__eyebrow">Secure quick sign-in</span>
           <strong>
             {stage === "phone" ? "Sign in with mobile OTP" : "Enter verification code"}
           </strong>
@@ -83,6 +84,14 @@ export function CustomerMobileAuthPanel({
               : `We sent a 6-digit code for ${phone.trim()}.`}
           </p>
         </div>
+      </div>
+
+      <div className="customer-mobile-auth__security" aria-label="Mobile verification security">
+        <ShieldCheck size={15} aria-hidden="true" />
+        <span>
+          <strong>Protected verification</strong>
+          <small>6-digit code · expires in 10 minutes</small>
+        </span>
       </div>
 
       {error ? (
@@ -151,8 +160,8 @@ export function CustomerMobileAuthPanel({
         onClick={onCancel}
         type="button"
       >
-        <ArrowLeft size={16} aria-hidden="true" />
-        Back to sign-in options
+        <ArrowLeft size={15} aria-hidden="true" />
+        Use another sign-in method
       </button>
     </section>
   );
