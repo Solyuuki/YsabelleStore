@@ -110,6 +110,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
           <label className="customer-auth-field" htmlFor="customer-register-name">
             <span>Full name</span>
             <input
+              aria-describedby={fieldErrors.name ? "customer-register-name-error" : undefined}
               aria-invalid={Boolean(fieldErrors.name)}
               autoComplete="name"
               id="customer-register-name"
@@ -126,6 +127,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
           <label className="customer-auth-field" htmlFor="customer-register-username">
             <span>Username</span>
             <input
+              aria-describedby={
+                fieldErrors.username ? "customer-register-username-error" : undefined
+              }
               aria-invalid={Boolean(fieldErrors.username)}
               autoComplete="username"
               id="customer-register-username"
@@ -142,6 +146,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
           <label className="customer-auth-field" htmlFor="customer-register-email">
             <span>Email address</span>
             <input
+              aria-describedby={fieldErrors.email ? "customer-register-email-error" : undefined}
               aria-invalid={Boolean(fieldErrors.email)}
               autoComplete="email"
               id="customer-register-email"
@@ -161,6 +166,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
               PH mobile number <small>(optional)</small>
             </span>
             <input
+              aria-describedby={fieldErrors.phone ? "customer-register-phone-error" : undefined}
               aria-invalid={Boolean(fieldErrors.phone)}
               autoComplete="tel"
               id="customer-register-phone"
@@ -179,6 +185,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             <span>Password</span>
             <span className="customer-auth-password">
               <input
+                aria-describedby={
+                  fieldErrors.password ? "customer-register-password-error" : undefined
+                }
                 aria-invalid={Boolean(fieldErrors.password)}
                 autoComplete="new-password"
                 id="customer-register-password"
@@ -209,6 +218,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             <span>Confirm password</span>
             <span className="customer-auth-password">
               <input
+                aria-describedby={
+                  fieldErrors.confirmPassword ? "customer-register-confirm-password-error" : undefined
+                }
                 aria-invalid={Boolean(fieldErrors.confirmPassword)}
                 autoComplete="new-password"
                 id="customer-register-confirm-password"
