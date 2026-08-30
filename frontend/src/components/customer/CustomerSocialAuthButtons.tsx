@@ -1,5 +1,3 @@
-import { Smartphone } from "lucide-react";
-
 import type { CustomerSocialAuthProvider } from "@/services/customerSocialAuthService";
 
 type CustomerSocialAuthButtonsProps = {
@@ -46,21 +44,6 @@ export function CustomerSocialAuthButtons({
           <GoogleMark />
         </span>
         <span>{busyProvider === "google" ? "Opening Google..." : "Continue with Google"}</span>
-      </button>
-
-      <button
-        aria-describedby="customer-mobile-otp-phase-note"
-        className="customer-social-auth__button customer-social-auth__button--mobile"
-        disabled
-        type="button"
-      >
-        <span className="customer-social-auth__mark" aria-hidden="true">
-          <Smartphone size={21} strokeWidth={2.2} />
-        </span>
-        <span>
-          Continue with Mobile OTP
-          <small id="customer-mobile-otp-phase-note">Available in Phase 7</small>
-        </span>
       </button>
     </div>
   );
