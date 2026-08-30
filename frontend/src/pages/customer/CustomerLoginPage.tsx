@@ -1,5 +1,5 @@
 import { Eye, EyeOff, KeyRound } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
 import { CustomerLink } from "@/components/customer/CustomerLink";
@@ -29,6 +29,18 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
   const [serverError, setServerError] = useState<string | null>(() =>
     getCustomerSocialAuthNotice(globalThis.location?.search ?? "")
   );
+
+  useEffect(() => {
+    function restoreInteractiveState() {
+      setSubmitting(false);
+      setBusySocialProvider(null);
+    }
+
+    globalThis.addEventListener("pageshow", restoreInteractiveState);
+    return () => {
+      globalThis.removeEventListener("pageshow", restoreInteractiveState);
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
