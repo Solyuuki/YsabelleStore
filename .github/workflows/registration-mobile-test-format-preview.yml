@@ -1,0 +1,24 @@
+name: Registration Mobile Test Format Preview
+
+on:
+  push:
+    branches:
+      - m1/v0.9/feat/customer-mobile-otp
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Show exact Prettier diff
+        run: |
+          npx prettier --write backend/test/customer-mobile-registration.test.ts
+          git diff -- backend/test/customer-mobile-registration.test.ts
