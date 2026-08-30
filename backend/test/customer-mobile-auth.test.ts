@@ -7,6 +7,7 @@ import { createApp } from "../src/app.js";
 import { env } from "../src/config/env.js";
 import { prisma } from "../src/database/prismaClient.js";
 import { registerCustomer } from "../src/services/customerAuthService.js";
+import { requestCustomerMobileAuth } from "../src/services/customerMobileAuthService.js";
 import { CUSTOMER_SESSION_COOKIE_NAME } from "../src/utils/customerAuthCookie.js";
 import { normalizePhilippineMobile } from "../src/utils/customerIdentity.js";
 
@@ -124,6 +125,112 @@ test("mobile quick sign request creates a short-lived hashed challenge for the m
   assert.equal(challenge.consumedAt, null);
   assert.ok(challenge.expiresAt.getTime() >= before + 9 * 60 * 1000);
   assert.ok(challenge.expiresAt.getTime() <= after + 11 * 60 * 1000);
+});
+
+test("mobile OTP resend waits 30 seconds before rotating the active challenge", async () => {
+  const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
+  const phone = testPhone(suffix);
+  const phoneNormalized = normalizePhilippineMobile(phone);
+  assert.ok(phoneNormalized);
+
+  const registered = await registerCustomer({
+    name: "Mobile OTP Resend Customer",
+    username: `otpresend.${suffix}`,
+    email: `otpresend-${suffix}@example.com`,
+    phone,
+    password: "MobilePassword123!"
+  });
+  createdCustomerIds.push(registered.customer.id);
+
+  const deliveries: string[] = [];
+  const delivery = async ({ verificationCode }: { phone: string; verificationCode: string }) => {
+    deliveries.push(verificationCode);
+  };
+  const issuedAt = new Date("2026-08-30T12:00:00.000Z");
+
+  await requestCustomerMobileAuth({ phone: phoneNormalized }, delivery, issuedAt);
+  const firstChallenge = await prisma.customerMobileAuthChallenge.findFirst({
+    where: { customerAccountId: registered.customer.id },
+    orderBy: { expiresAt: "desc" }
+  });
+  assert.ok(firstChallenge);
+
+  await requestCustomerMobileAuth(
+    { phone: phoneNormalized },
+    delivery,
+    new Date(issuedAt.getTime() + 29_000)
+  );
+  assert.equal(deliveries.length, 1, "Resend must stay blocked during the 30-second cooldown.");
+  assert.equal(
+    await prisma.customerMobileAuthChallenge.count({
+      where: { customerAccountId: registered.customer.id, consumedAt: null }
+    }),
+    1
+  );
+
+  const resendAt = new Date(issuedAt.getTime() + 30_000);
+  await requestCustomerMobileAuth({ phone: phoneNormalized }, delivery, resendAt);
+  assert.equal(deliveries.length, 2, "A fresh OTP should be delivered after the cooldown.");
+
+  const refreshedFirstChallenge = await prisma.customerMobileAuthChallenge.findUnique({
+    where: { id: firstChallenge.id }
+  });
+  assert.equal(refreshedFirstChallenge?.consumedAt?.getTime(), resendAt.getTime());
+  assert.equal(
+    await prisma.customerMobileAuthChallenge.count({
+      where: { customerAccountId: registered.customer.id, consumedAt: null }
+    }),
+    1
+  );
+});
+
+test("mobile OTP request is privately rate limited per normalized phone", async () => {
+  const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
+  const phone = testPhone(suffix);
+
+  await withServer(async (baseUrl) => {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const response = await fetch(`${baseUrl}/api/customer-auth/mobile/request`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ phone })
+      });
+      assert.equal(response.status, 200);
+    }
+
+    const blocked = await fetch(`${baseUrl}/api/customer-auth/mobile/request`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ phone })
+    });
+    assert.equal(blocked.status, 429);
+    assert.equal((await json(blocked)).error?.code, "AUTH_RATE_LIMITED");
+    assert.ok(blocked.headers.get("retry-after"));
+  });
+});
+
+test("mobile OTP verification is rate limited independently from challenge attempt locking", async () => {
+  const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
+  const phone = testPhone(suffix);
+
+  await withServer(async (baseUrl) => {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const response = await fetch(`${baseUrl}/api/customer-auth/mobile/verify`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ phone, verificationCode: "000000" })
+      });
+      assert.equal(response.status, 400);
+    }
+
+    const blocked = await fetch(`${baseUrl}/api/customer-auth/mobile/verify`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ phone, verificationCode: "000000" })
+    });
+    assert.equal(blocked.status, 429);
+    assert.equal((await json(blocked)).error?.code, "AUTH_RATE_LIMITED");
+  });
 });
 
 test("valid mobile OTP consumes its challenge and creates a normal customer session", async () => {
