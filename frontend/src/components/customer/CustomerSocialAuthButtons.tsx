@@ -1,3 +1,5 @@
+import { Smartphone } from "lucide-react";
+
 import type { CustomerSocialAuthProvider } from "@/services/customerSocialAuthService";
 
 type CustomerSocialAuthButtonsProps = {
@@ -28,18 +30,6 @@ function GoogleMark() {
   );
 }
 
-function FacebookMark() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" fill="#1877F2" r="12" />
-      <path
-        d="M13.52 8.46V7.02c0-.7.47-.86.8-.86h2.04V3.08L13.55 3c-3.12 0-3.83 2.33-3.83 3.82v1.64H7.92v3.55h1.8V21h3.8v-8.99h2.55l.34-3.55h-2.89Z"
-        fill="#FFFFFF"
-      />
-    </svg>
-  );
-}
-
 export function CustomerSocialAuthButtons({
   busyProvider,
   onStart
@@ -59,16 +49,17 @@ export function CustomerSocialAuthButtons({
       </button>
 
       <button
-        className="customer-social-auth__button customer-social-auth__button--facebook"
-        disabled={busyProvider !== null}
-        onClick={() => onStart("facebook")}
+        aria-describedby="customer-mobile-otp-phase-note"
+        className="customer-social-auth__button customer-social-auth__button--mobile"
+        disabled
         type="button"
       >
-        <span className="customer-social-auth__mark">
-          <FacebookMark />
+        <span className="customer-social-auth__mark" aria-hidden="true">
+          <Smartphone size={21} strokeWidth={2.2} />
         </span>
         <span>
-          {busyProvider === "facebook" ? "Opening Facebook..." : "Continue with Facebook"}
+          Continue with Mobile OTP
+          <small id="customer-mobile-otp-phase-note">Available in Phase 7</small>
         </span>
       </button>
     </div>
