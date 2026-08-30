@@ -36,6 +36,7 @@ import {
 import { HttpError } from "../utils/httpError.js";
 import {
   customerLoginSchema,
+  customerMobileAuthRequestSchema,
   customerPasswordRecoveryRequestSchema,
   customerPasswordRecoveryVerifySchema,
   customerPasswordResetSchema,
@@ -44,6 +45,8 @@ import {
 
 const CUSTOMER_RECOVERY_REQUEST_MESSAGE =
   "If an eligible account exists, a verification code has been sent to its registered email.";
+const CUSTOMER_MOBILE_AUTH_REQUEST_MESSAGE =
+  "If an eligible customer account matches that mobile number, a verification code will be sent.";
 
 export const issueCustomerRegistrationIntent: RequestHandler = (_request, response) => {
   const intentToken = createCustomerRegistrationIntent();
@@ -110,6 +113,22 @@ export const loginCustomerAccount: RequestHandler = async (request, response, ne
         customer: session.customer
       })
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const requestCustomerMobileAuthAccount: RequestHandler = (request, response, next) => {
+  try {
+    const parsedBody = customerMobileAuthRequestSchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer mobile sign-in request is invalid.", {
+        code: "INVALID_CUSTOMER_MOBILE_AUTH_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    response.status(200).json(createSuccessResponse(CUSTOMER_MOBILE_AUTH_REQUEST_MESSAGE));
   } catch (error) {
     next(error);
   }
