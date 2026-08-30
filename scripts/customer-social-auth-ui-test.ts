@@ -21,14 +21,10 @@ const markup = renderToStaticMarkup(
 );
 
 assert.match(markup, /Continue with Google/);
-assert.match(markup, /Continue with Mobile OTP/);
-assert.match(markup, /Available in Phase 7/);
+assert.doesNotMatch(markup, /Continue with Mobile OTP/);
+assert.doesNotMatch(markup, /Available in Phase 7/);
 assert.doesNotMatch(markup, /Continue with Facebook/);
 assert.doesNotMatch(markup, /#1877F2/i);
-assert.match(
-  markup,
-  /<button[^>]*disabled=""[^>]*>[\s\S]*?Continue with Mobile OTP[\s\S]*?<\/button>/
-);
 assert.doesNotMatch(markup, /Coming soon/i);
 assert.match(markup, /type="button"/);
 
@@ -49,9 +45,10 @@ assert.doesNotMatch(quickSignCss, /\.customer-social-auth__button::after\s*\{/);
 const premiumLabelRule = quickSignCss.match(
   /\.customer-social-auth__button\s*>\s*span:last-child\s*\{([^}]*)\}/s
 );
-assert.ok(premiumLabelRule, "Premium social label rule should exist.");
-assert.match(premiumLabelRule[1], /font-weight:\s*900;/);
-assert.match(premiumLabelRule[1], /color:\s*#171a2b;/);
+const premiumLabelBody = premiumLabelRule?.[1];
+assert.ok(premiumLabelBody, "Premium social label rule should exist.");
+assert.match(premiumLabelBody, /font-weight:\s*900;/);
+assert.match(premiumLabelBody, /color:\s*#171a2b;/);
 
 const registerSource = readFileSync(
   new URL("../frontend/src/pages/customer/CustomerRegisterPage.tsx", import.meta.url),
