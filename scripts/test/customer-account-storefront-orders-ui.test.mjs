@@ -32,8 +32,15 @@ const premiumAccountCss = fs.existsSync(premiumAccountCssPath)
   : "";
 
 test("successful customer sign-in returns shoppers to the storefront", () => {
-  assert.match(loginPage, /await login\([\s\S]*?navigate\("\/"\)/);
-  assert.doesNotMatch(loginPage, /await login\([\s\S]*?navigate\("\/account"\)/);
+  assert.match(
+    loginPage,
+    /await login\([^;]+;[\s\S]*?if \(socialLinkRequired\) \{[\s\S]*?await completeCustomerSocialLink\(\);[\s\S]*?navigate\("\/account"\);[\s\S]*?return;[\s\S]*?\}[\s\S]*?navigate\("\/"\);/
+  );
+  assert.doesNotMatch(
+    loginPage,
+    /await login\([^;]+;\s*navigate\("\/account"\);/,
+    "ordinary password sign-in must not redirect directly to the account page"
+  );
   assert.match(
     customerRoutes,
     /\(pathname === "\/login" \|\| pathname === "\/register"\)[\s\S]*?return "\/";/
