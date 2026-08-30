@@ -113,71 +113,213 @@
 }
 
 .customer-mobile-auth {
+  position: relative;
+  isolation: isolate;
   display: grid;
   gap: 1rem;
-  padding: 1.05rem;
-  border: 1px solid rgb(98 91 255 / 16%);
-  border-radius: 1rem;
-  background: linear-gradient(145deg, rgb(255 255 255 / 84%), rgb(247 245 255 / 76%));
-  box-shadow: 0 16px 36px rgb(46 50 92 / 8%);
+  overflow: hidden;
+  padding: 1.15rem;
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 1.15rem;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 78%), rgb(249 247 255 / 66%)),
+    rgb(255 255 255 / 58%);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 22px 48px rgb(53 55 105 / 10%),
+    0 5px 16px rgb(78 69 160 / 6%),
+    inset 0 1px 0 rgb(255 255 255 / 94%);
+}
+
+.customer-mobile-auth::before {
+  position: absolute;
+  z-index: -1;
+  top: -5.5rem;
+  right: -4.25rem;
+  width: 13rem;
+  height: 13rem;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgb(103 91 255 / 18%) 0%,
+    rgb(190 80 229 / 10%) 42%,
+    rgb(236 72 153 / 0%) 72%
+  );
+  content: "";
+  pointer-events: none;
 }
 
 .customer-mobile-auth__heading {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
-  gap: 0.75rem;
+  gap: 0.82rem;
+}
+
+.customer-mobile-auth__eyebrow {
+  display: block;
+  margin-bottom: 0.18rem;
+  color: #625bff;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
 }
 
 .customer-mobile-auth__heading strong {
   display: block;
   color: #171a2b;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
+  font-weight: 900;
+  letter-spacing: -0.015em;
 }
 
 .customer-mobile-auth__heading p {
-  margin: 0.25rem 0 0;
+  max-width: 31rem;
+  margin: 0.28rem 0 0;
   color: rgb(71 85 105 / 78%);
-  font-size: 0.76rem;
-  line-height: 1.45;
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
 .customer-mobile-auth__icon {
   display: grid;
-  width: 2.15rem;
-  height: 2.15rem;
+  width: 2.45rem;
+  height: 2.45rem;
   place-items: center;
-  border-radius: 0.72rem;
-  background: linear-gradient(135deg, rgb(221 232 255 / 95%), rgb(246 224 255 / 95%));
+  border: 1px solid rgb(255 255 255 / 82%);
+  border-radius: 0.82rem;
+  background: linear-gradient(135deg, rgb(219 233 255 / 96%), rgb(242 222 255 / 94%));
+  box-shadow:
+    0 9px 20px rgb(77 72 170 / 12%),
+    inset 0 1px 0 rgb(255 255 255 / 90%);
   color: #4f46e5;
+}
+
+.customer-mobile-auth__security {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  justify-self: start;
+  gap: 0.55rem;
+  padding: 0.52rem 0.68rem;
+  border: 1px solid rgb(99 102 241 / 11%);
+  border-radius: 0.78rem;
+  background: rgb(255 255 255 / 52%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 72%);
+  color: #4f46e5;
+}
+
+.customer-mobile-auth__security > span {
+  display: grid;
+  gap: 0.02rem;
+}
+
+.customer-mobile-auth__security strong {
+  color: #2f3351;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.customer-mobile-auth__security small {
+  color: rgb(71 85 105 / 70%);
+  font-size: 0.64rem;
+  font-weight: 700;
 }
 
 .customer-mobile-auth__form {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.82rem;
+}
+
+.customer-mobile-auth .customer-auth-field > span:first-child {
+  color: #252942;
+  font-weight: 850;
+}
+
+.customer-mobile-auth #customer-mobile-auth-phone,
+.customer-mobile-auth #customer-mobile-auth-code {
+  border-color: rgb(99 102 241 / 16%);
+  background: rgb(255 255 255 / 74%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 94%),
+    0 7px 18px rgb(55 65 120 / 5%);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.customer-mobile-auth #customer-mobile-auth-phone:hover,
+.customer-mobile-auth #customer-mobile-auth-code:hover {
+  border-color: rgb(99 102 241 / 28%);
+  background: rgb(255 255 255 / 86%);
+}
+
+.customer-mobile-auth #customer-mobile-auth-phone:focus,
+.customer-mobile-auth #customer-mobile-auth-code:focus {
+  border-color: rgb(79 70 229 / 58%);
+  background: rgb(255 255 255 / 94%);
+  box-shadow:
+    0 0 0 4px rgb(98 91 255 / 12%),
+    0 10px 24px rgb(55 65 120 / 7%);
+}
+
+.customer-mobile-auth #customer-mobile-auth-code {
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+  text-align: center;
+}
+
+.customer-mobile-auth .customer-auth-submit {
+  box-shadow:
+    0 15px 28px rgb(79 70 229 / 17%),
+    inset 0 1px 0 rgb(255 255 255 / 22%);
 }
 
 .customer-mobile-auth__secondary,
 .customer-mobile-auth__back {
-  border: 0;
-  background: transparent;
-  color: #4f46e5;
+  border: 1px solid transparent;
+  border-radius: 0.72rem;
   cursor: pointer;
   font: inherit;
-  font-size: 0.74rem;
-  font-weight: 800;
+  font-size: 0.72rem;
+  font-weight: 850;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
 }
 
 .customer-mobile-auth__secondary {
   justify-self: center;
+  padding: 0.44rem 0.68rem;
+  background: transparent;
+  color: #4f46e5;
+}
+
+.customer-mobile-auth__secondary:hover:not(:disabled) {
+  background: rgb(79 70 229 / 7%);
 }
 
 .customer-mobile-auth__back {
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  gap: 0.35rem;
-  padding: 0.2rem 0;
+  gap: 0.4rem;
+  padding: 0.48rem 0.64rem;
+  border-color: rgb(99 102 241 / 10%);
+  background: rgb(255 255 255 / 42%);
+  color: #424867;
+}
+
+.customer-mobile-auth__back:hover:not(:disabled) {
+  transform: translateX(-1px);
+  border-color: rgb(99 102 241 / 20%);
+  background: rgb(255 255 255 / 72%);
+  color: #4f46e5;
 }
 
 .customer-mobile-auth__secondary:disabled,
@@ -199,6 +341,20 @@
   }
 
   .customer-mobile-auth {
-    padding: 0.9rem;
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  .customer-mobile-auth__security {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-mobile-auth__secondary,
+  .customer-mobile-auth__back,
+  .customer-mobile-auth #customer-mobile-auth-phone,
+  .customer-mobile-auth #customer-mobile-auth-code {
+    transition: none;
   }
 }
