@@ -232,9 +232,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 value={confirmPassword}
               />
               <button
-                aria-label={
-                  showConfirmPassword ? "Hide confirm password" : "Show confirm password"
-                }
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                 aria-pressed={showConfirmPassword}
                 onClick={() => setShowConfirmPassword((current) => !current)}
                 type="button"
