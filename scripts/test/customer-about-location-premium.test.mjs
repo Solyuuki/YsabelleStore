@@ -32,7 +32,7 @@ test("About location copy panel enters with its first visible text instead of ap
   assert.match(discover, /\.addLabel\("copy", 0\.12\)/);
   assert.match(
     discover,
-    /\.to\(locationCopy, \{ autoAlpha: 1, duration: 0\.1, ease: "power1\.out", scale: 1, y: 0 \}, "copy"\)/
+    /\.to\(\s*locationCopy,\s*\{ autoAlpha: 1, duration: 0\.1, ease: "power1\.out", scale: 1, y: 0 \},\s*"copy"\s*\)/s
   );
   assert.match(
     discover,
