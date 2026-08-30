@@ -64,6 +64,16 @@ assert.ok(
 );
 assert.doesNotMatch(registerSource, /<span>Quick sign<\/span>/i);
 assert.doesNotMatch(registerSource, /<span>or create with password<\/span>/i);
+assert.match(
+  registerSource,
+  /addEventListener\(["']pageshow["']/,
+  "Register should clear a stale social busy state when browser history restores the page."
+);
+assert.match(
+  registerSource,
+  /removeEventListener\(["']pageshow["']/,
+  "Register should clean up its browser-history recovery listener."
+);
 
 assert.equal(
   buildCustomerSocialAuthStartUrl(
@@ -90,6 +100,16 @@ const loginSource = readFileSync(
   "utf8"
 );
 assert.match(loginSource, /completeCustomerSocialLink/);
+assert.match(
+  loginSource,
+  /addEventListener\(["']pageshow["']/,
+  "Login should clear a stale social busy state when browser history restores the page."
+);
+assert.match(
+  loginSource,
+  /removeEventListener\(["']pageshow["']/,
+  "Login should clean up its browser-history recovery listener."
+);
 const passwordLoginIndex = loginSource.indexOf("await login(");
 const socialLinkIndex = loginSource.indexOf("await completeCustomerSocialLink(");
 const accountNavigationIndex = loginSource.indexOf('navigate("/account")');
