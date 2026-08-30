@@ -1,9 +1,7 @@
 import type { Request, Response } from "express";
 
 import { env } from "../config/env.js";
-import {
-  CUSTOMER_MOBILE_REGISTRATION_OTP_LIFETIME_MS
-} from "../services/customerMobileRegistrationService.js";
+import { CUSTOMER_MOBILE_REGISTRATION_OTP_LIFETIME_MS } from "../services/customerMobileRegistrationService.js";
 
 export const CUSTOMER_MOBILE_REGISTRATION_COOKIE_NAME = "ysabelle_customer_registration_mobile";
 
