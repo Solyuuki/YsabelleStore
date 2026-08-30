@@ -21,14 +21,20 @@ const markup = renderToStaticMarkup(
 );
 
 assert.match(markup, /Continue with Google/);
-assert.match(markup, /Continue with Facebook/);
+assert.match(markup, /Continue with Mobile OTP/);
+assert.match(markup, /Available in Phase 7/);
+assert.doesNotMatch(markup, /Continue with Facebook/);
+assert.doesNotMatch(markup, /#1877F2/i);
+assert.match(
+  markup,
+  /<button[^>]*disabled=""[^>]*>[\s\S]*?Continue with Mobile OTP[\s\S]*?<\/button>/
+);
 assert.doesNotMatch(markup, /Coming soon/i);
 assert.match(markup, /type="button"/);
 
 for (const googleBrandColor of ["#4285F4", "#34A853", "#FBBC05", "#EA4335"]) {
   assert.match(markup, new RegExp(googleBrandColor, "i"));
 }
-assert.match(markup, /#1877F2/i);
 assert.doesNotMatch(markup, /fill="currentColor"/);
 
 const quickSignCss = readFileSync(
@@ -72,26 +78,14 @@ assert.equal(
   "http://localhost:3001/api/customer-auth/social/google/start?returnPath=%2Faccount&authPage=login"
 );
 assert.equal(
-  buildCustomerSocialAuthStartUrl(
-    "facebook",
-    "/account",
-    "register",
-    "http://localhost:3001"
-  ).toString(),
-  "http://localhost:3001/api/customer-auth/social/facebook/start?returnPath=%2Faccount&authPage=register"
-);
-assert.equal(
   getCustomerSocialAuthNotice("?social=provider_unavailable&provider=google"),
   "Google sign-in is not configured for this environment yet."
 );
-assert.equal(
-  getCustomerSocialAuthNotice("?social=provider_unavailable&provider=facebook"),
-  "Facebook sign-in is not configured for this environment yet."
-);
+assert.equal(getCustomerSocialAuthNotice("?social=provider_unavailable&provider=facebook"), null);
 assert.equal(getCustomerSocialAuthNotice("?social=provider_unavailable&provider=apple"), null);
 assert.equal(
   getCustomerSocialAuthNotice("?social=link_required"),
-  "This Google or Facebook account matches an existing Ysabelle Store account. Sign in once with your existing password to link it securely."
+  "This Google account matches an existing Ysabelle Store account. Sign in once with your existing password to link it securely."
 );
 
 const loginSource = readFileSync(
