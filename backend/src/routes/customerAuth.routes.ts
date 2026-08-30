@@ -45,6 +45,23 @@ function privateIdentityKey(scope: string, kind: string, normalized: string): st
   return derivePrivateRateLimitKey(scope, `${kind}:${normalized}`);
 }
 
+function mobilePhoneRateLimit(
+  config:
+    | typeof AUTH_RATE_LIMITS.customerMobileAuthPhone
+    | typeof AUTH_RATE_LIMITS.customerMobileAuthVerifyPhone
+) {
+  return createAuthRateLimit({
+    ...config,
+    keyResolver(request) {
+      const rawPhone = stringFieldFromBody(request.body, "phone");
+      if (!rawPhone) return null;
+
+      const phone = normalizePhilippineMobile(rawPhone);
+      return phone ? privateIdentityKey(config.scope, "phone", phone) : null;
+    }
+  });
+}
+
 const customerRegisterRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerRegister);
 const customerRegisterUsernameRateLimit = createAuthRateLimit({
   ...AUTH_RATE_LIMITS.customerRegisterIdentity,
@@ -99,6 +116,18 @@ const customerLoginIdentifierRateLimit = createAuthRateLimit({
       : null;
   }
 });
+const customerMobileAuthRequestRateLimit = createAuthRateLimit(
+  AUTH_RATE_LIMITS.customerMobileAuthRequest
+);
+const customerMobileAuthPhoneRateLimit = mobilePhoneRateLimit(
+  AUTH_RATE_LIMITS.customerMobileAuthPhone
+);
+const customerMobileAuthVerifyRateLimit = createAuthRateLimit(
+  AUTH_RATE_LIMITS.customerMobileAuthVerify
+);
+const customerMobileAuthVerifyPhoneRateLimit = mobilePhoneRateLimit(
+  AUTH_RATE_LIMITS.customerMobileAuthVerifyPhone
+);
 const customerRecoveryRequestRateLimit = createAuthRateLimit(
   AUTH_RATE_LIMITS.customerRecoveryRequest
 );
@@ -149,11 +178,15 @@ customerAuthRouter.post(
 customerAuthRouter.post(
   "/mobile/request",
   requireAllowedCustomerAuthOrigin,
+  customerMobileAuthRequestRateLimit,
+  customerMobileAuthPhoneRateLimit,
   requestCustomerMobileAuthAccount
 );
 customerAuthRouter.post(
   "/mobile/verify",
   requireAllowedCustomerAuthOrigin,
+  customerMobileAuthVerifyRateLimit,
+  customerMobileAuthVerifyPhoneRateLimit,
   verifyCustomerMobileAuthAccount
 );
 customerAuthRouter.post(
