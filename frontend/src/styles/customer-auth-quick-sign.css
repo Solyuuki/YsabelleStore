@@ -122,8 +122,7 @@
   border: 1px solid rgb(255 255 255 / 70%);
   border-radius: 1.15rem;
   background:
-    linear-gradient(145deg, rgb(255 255 255 / 78%), rgb(249 247 255 / 66%)),
-    rgb(255 255 255 / 58%);
+    linear-gradient(145deg, rgb(255 255 255 / 78%), rgb(249 247 255 / 66%)), rgb(255 255 255 / 58%);
   backdrop-filter: blur(18px);
   box-shadow:
     0 22px 48px rgb(53 55 105 / 10%),
