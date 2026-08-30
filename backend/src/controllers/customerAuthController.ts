@@ -87,7 +87,6 @@ function requireValidCustomerRegistrationIntent(request: Parameters<RequestHandl
 
 export const issueCustomerRegistrationIntent: RequestHandler = (_request, response) => {
   const intentToken = createCustomerRegistrationIntent();
-  clearCustomerMobileRegistrationCookie(response);
   setCustomerRegistrationIntentCookie(response, intentToken);
   response.status(200).json(
     createSuccessResponse("Customer registration intent issued.", {
