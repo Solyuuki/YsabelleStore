@@ -65,6 +65,15 @@
   font-weight: 900;
 }
 
+.customer-social-auth__button > span:last-child small {
+  display: block;
+  margin-top: 0.12rem;
+  color: rgb(71 85 105 / 72%);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
 .customer-social-auth__button:hover:not(:disabled) {
   transform: translateY(-1px);
   border-color: rgb(98 91 255 / 28%);
@@ -83,6 +92,11 @@
   opacity: 0.65;
 }
 
+.customer-social-auth__button--mobile:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .customer-social-auth__mark {
   display: grid;
   width: 2.25rem;
@@ -96,11 +110,6 @@
 .customer-social-auth__mark svg {
   width: 1.3rem;
   height: 1.3rem;
-}
-
-.customer-social-auth__button--facebook .customer-social-auth__mark svg {
-  width: 1.42rem;
-  height: 1.42rem;
 }
 
 @media (max-width: 520px) {
