@@ -116,7 +116,7 @@
   position: relative;
   isolation: isolate;
   display: grid;
-  gap: 1rem;
+  gap: 0.9rem;
   overflow: hidden;
   padding: 1.15rem;
   border: 1px solid rgb(255 255 255 / 70%);
@@ -140,8 +140,8 @@
   border-radius: 999px;
   background: radial-gradient(
     circle,
-    rgb(103 91 255 / 18%) 0%,
-    rgb(190 80 229 / 10%) 42%,
+    rgb(103 91 255 / 16%) 0%,
+    rgb(190 80 229 / 8%) 42%,
     rgb(236 72 153 / 0%) 72%
   );
   content: "";
@@ -151,84 +151,52 @@
 .customer-mobile-auth__heading {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-  gap: 0.82rem;
-}
-
-.customer-mobile-auth__eyebrow {
-  display: block;
-  margin-bottom: 0.18rem;
-  color: #625bff;
-  font-size: 0.64rem;
-  font-weight: 900;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  align-items: center;
+  gap: 0.72rem;
 }
 
 .customer-mobile-auth__heading strong {
   display: block;
   color: #171a2b;
-  font-size: 0.98rem;
+  font-size: 1rem;
   font-weight: 900;
   letter-spacing: -0.015em;
 }
 
-.customer-mobile-auth__heading p {
-  max-width: 31rem;
-  margin: 0.28rem 0 0;
-  color: rgb(71 85 105 / 78%);
-  font-size: 0.75rem;
-  line-height: 1.5;
-}
-
 .customer-mobile-auth__icon {
   display: grid;
-  width: 2.45rem;
-  height: 2.45rem;
+  width: 2.35rem;
+  height: 2.35rem;
   place-items: center;
   border: 1px solid rgb(255 255 255 / 82%);
-  border-radius: 0.82rem;
+  border-radius: 0.78rem;
   background: linear-gradient(135deg, rgb(219 233 255 / 96%), rgb(242 222 255 / 94%));
   box-shadow:
-    0 9px 20px rgb(77 72 170 / 12%),
+    0 8px 18px rgb(77 72 170 / 10%),
     inset 0 1px 0 rgb(255 255 255 / 90%);
   color: #4f46e5;
 }
 
-.customer-mobile-auth__security {
-  display: inline-grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  justify-self: start;
-  gap: 0.55rem;
-  padding: 0.52rem 0.68rem;
-  border: 1px solid rgb(99 102 241 / 11%);
-  border-radius: 0.78rem;
-  background: rgb(255 255 255 / 52%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 72%);
-  color: #4f46e5;
-}
-
-.customer-mobile-auth__security > span {
-  display: grid;
-  gap: 0.02rem;
-}
-
-.customer-mobile-auth__security strong {
-  color: #2f3351;
-  font-size: 0.7rem;
-  font-weight: 850;
-}
-
-.customer-mobile-auth__security small {
-  color: rgb(71 85 105 / 70%);
-  font-size: 0.64rem;
+.customer-mobile-auth__meta,
+.customer-mobile-auth__hint,
+.customer-mobile-auth__countdown {
+  margin: 0;
+  color: rgb(71 85 105 / 68%);
+  font-size: 0.68rem;
   font-weight: 700;
+}
+
+.customer-mobile-auth__meta {
+  margin-top: 0.12rem;
+}
+
+.customer-mobile-auth__hint {
+  justify-self: center;
 }
 
 .customer-mobile-auth__form {
   display: grid;
-  gap: 0.82rem;
+  gap: 0.78rem;
 }
 
 .customer-mobile-auth .customer-auth-field > span:first-child {
@@ -277,60 +245,63 @@
     inset 0 1px 0 rgb(255 255 255 / 22%);
 }
 
+.customer-mobile-auth__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.75rem;
+  min-height: 2rem;
+  flex-wrap: wrap;
+}
+
 .customer-mobile-auth__secondary,
 .customer-mobile-auth__back {
-  border: 1px solid transparent;
-  border-radius: 0.72rem;
+  border: 0;
+  background: transparent;
+  color: #4f46e5;
   cursor: pointer;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 850;
   transition:
-    border-color 150ms ease,
-    background 150ms ease,
     color 150ms ease,
+    opacity 150ms ease,
     transform 150ms ease;
 }
 
 .customer-mobile-auth__secondary {
-  justify-self: center;
-  padding: 0.44rem 0.68rem;
-  background: transparent;
-  color: #4f46e5;
+  padding: 0.28rem 0.2rem;
 }
 
 .customer-mobile-auth__secondary:hover:not(:disabled) {
-  background: rgb(79 70 229 / 7%);
+  color: #372fc9;
 }
 
 .customer-mobile-auth__back {
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  gap: 0.4rem;
-  padding: 0.48rem 0.64rem;
-  border-color: rgb(99 102 241 / 10%);
-  background: rgb(255 255 255 / 42%);
-  color: #424867;
+  gap: 0.35rem;
+  padding: 0.3rem 0;
+  color: #545b77;
 }
 
 .customer-mobile-auth__back:hover:not(:disabled) {
   transform: translateX(-1px);
-  border-color: rgb(99 102 241 / 20%);
-  background: rgb(255 255 255 / 72%);
   color: #4f46e5;
 }
 
 .customer-mobile-auth__secondary:disabled,
 .customer-mobile-auth__back:disabled {
   cursor: wait;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .customer-mobile-auth__secondary:focus-visible,
 .customer-mobile-auth__back:focus-visible {
   outline: 3px solid rgb(98 91 255 / 22%);
   outline-offset: 3px;
+  border-radius: 0.3rem;
 }
 
 @media (max-width: 520px) {
@@ -342,10 +313,6 @@
   .customer-mobile-auth {
     padding: 1rem;
     border-radius: 1rem;
-  }
-
-  .customer-mobile-auth__security {
-    width: 100%;
   }
 }
 
