@@ -13,6 +13,8 @@ import {
 } from "../services/customerMobileAuthService.js";
 import {
   CustomerMobileRegistrationDeliveryError,
+  hashCustomerRegistrationIntent,
+  readCustomerMobileRegistrationGrant,
   requestCustomerMobileRegistrationVerification,
   verifyCustomerMobileRegistrationCode
 } from "../services/customerMobileRegistrationService.js";
@@ -31,7 +33,11 @@ import {
   readCustomerSessionCookie,
   setCustomerSessionCookie
 } from "../utils/customerAuthCookie.js";
-import { setCustomerMobileRegistrationCookie } from "../utils/customerMobileRegistrationCookie.js";
+import {
+  clearCustomerMobileRegistrationCookie,
+  readCustomerMobileRegistrationCookie,
+  setCustomerMobileRegistrationCookie
+} from "../utils/customerMobileRegistrationCookie.js";
 import {
   clearCustomerRecoveryGrantCookie,
   readCustomerRecoveryGrantCookie,
@@ -81,6 +87,7 @@ function requireValidCustomerRegistrationIntent(request: Parameters<RequestHandl
 
 export const issueCustomerRegistrationIntent: RequestHandler = (_request, response) => {
   const intentToken = createCustomerRegistrationIntent();
+  clearCustomerMobileRegistrationCookie(response);
   setCustomerRegistrationIntentCookie(response, intentToken);
   response.status(200).json(
     createSuccessResponse("Customer registration intent issued.", {
@@ -150,7 +157,7 @@ export const verifyCustomerRegistrationMobileVerification: RequestHandler = asyn
 
 export const registerCustomerAccount: RequestHandler = async (request, response, next) => {
   try {
-    requireValidCustomerRegistrationIntent(request);
+    const registrationIntentToken = requireValidCustomerRegistrationIntent(request);
 
     const parsedBody = customerRegisterSchema.safeParse(request.body);
     if (!parsedBody.success) {
@@ -160,8 +167,25 @@ export const registerCustomerAccount: RequestHandler = async (request, response,
       });
     }
 
+    if (parsedBody.data.phone) {
+      const rawGrant = readCustomerMobileRegistrationCookie(request);
+      const grant = rawGrant ? readCustomerMobileRegistrationGrant(rawGrant) : null;
+      const registrationIntentHash = hashCustomerRegistrationIntent(registrationIntentToken);
+
+      if (
+        !grant ||
+        grant.registrationIntentHash !== registrationIntentHash ||
+        grant.phone !== parsedBody.data.phone
+      ) {
+        throw new HttpError(403, "Mobile number verification is required.", {
+          code: "CUSTOMER_MOBILE_REGISTRATION_VERIFICATION_REQUIRED"
+        });
+      }
+    }
+
     const session = await registerCustomer(parsedBody.data);
     setCustomerSessionCookie(response, session.sessionToken);
+    clearCustomerMobileRegistrationCookie(response);
     clearCustomerRegistrationIntentCookie(response);
 
     response.status(201).json(
