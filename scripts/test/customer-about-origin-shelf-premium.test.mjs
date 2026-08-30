@@ -77,7 +77,7 @@ test("About origin band uses restrained premium hierarchy and ambient depth", ()
   assert.match(css, /\.story-origin-shelf::before\s*\{[\s\S]*?filter:\s*blur\(42px\);/);
   assert.match(
     css,
-    /\.story-origin-shelf \.story-origin-shelf__item::before\s*\{[\s\S]*?background:\s*linear-gradient\(135deg,[\s\S]*?background-clip:\s*text;[\s\S]*?color:\s*transparent;[\s\S]*?filter:\s*blur\(0\.2px\);[\s\S]*?opacity:\s*0\.62;/
+    /\.story-origin-shelf \.story-origin-shelf__item::before\s*\{[\s\S]*?background:\s*linear-gradient\(\s*135deg,[\s\S]*?background-clip:\s*text;[\s\S]*?color:\s*transparent;[\s\S]*?filter:\s*blur\(0\.2px\);[\s\S]*?opacity:\s*0\.62;/
   );
   assert.match(
     css,
@@ -105,6 +105,6 @@ test("About origin editorial band stacks cleanly on small screens", () => {
   );
   assert.match(
     css,
-    /@media \(max-width: 840px\)[\s\S]*?\.story-origin-shelf \.story-origin-shelf__item::after\s*\{[\s\S]*?margin-left:\s*0;/
+    /@media \(max-width: 840px\)[\s\S]*?\.story-origin-shelf \.story-origin-shelf__item::after,[\s\S]*?\.story-origin-shelf__item:first-child::after\s*\{[\s\S]*?margin-left:\s*0;/
   );
 });
