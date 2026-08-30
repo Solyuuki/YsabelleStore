@@ -92,11 +92,6 @@
   opacity: 0.65;
 }
 
-.customer-social-auth__button--mobile:disabled {
-  cursor: not-allowed;
-  opacity: 0.72;
-}
-
 .customer-social-auth__mark {
   display: grid;
   width: 2.25rem;
@@ -107,14 +102,103 @@
   box-shadow: inset 0 0 0 1px rgb(148 163 184 / 18%);
 }
 
+.customer-social-auth__mark--mobile {
+  background: linear-gradient(135deg, rgb(228 237 255 / 96%), rgb(248 231 255 / 94%));
+  color: #4f46e5;
+}
+
 .customer-social-auth__mark svg {
   width: 1.3rem;
   height: 1.3rem;
+}
+
+.customer-mobile-auth {
+  display: grid;
+  gap: 1rem;
+  padding: 1.05rem;
+  border: 1px solid rgb(98 91 255 / 16%);
+  border-radius: 1rem;
+  background: linear-gradient(145deg, rgb(255 255 255 / 84%), rgb(247 245 255 / 76%));
+  box-shadow: 0 16px 36px rgb(46 50 92 / 8%);
+}
+
+.customer-mobile-auth__heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+}
+
+.customer-mobile-auth__heading strong {
+  display: block;
+  color: #171a2b;
+  font-size: 0.95rem;
+}
+
+.customer-mobile-auth__heading p {
+  margin: 0.25rem 0 0;
+  color: rgb(71 85 105 / 78%);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.customer-mobile-auth__icon {
+  display: grid;
+  width: 2.15rem;
+  height: 2.15rem;
+  place-items: center;
+  border-radius: 0.72rem;
+  background: linear-gradient(135deg, rgb(221 232 255 / 95%), rgb(246 224 255 / 95%));
+  color: #4f46e5;
+}
+
+.customer-mobile-auth__form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.customer-mobile-auth__secondary,
+.customer-mobile-auth__back {
+  border: 0;
+  background: transparent;
+  color: #4f46e5;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.customer-mobile-auth__secondary {
+  justify-self: center;
+}
+
+.customer-mobile-auth__back {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 0.35rem;
+  padding: 0.2rem 0;
+}
+
+.customer-mobile-auth__secondary:disabled,
+.customer-mobile-auth__back:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.customer-mobile-auth__secondary:focus-visible,
+.customer-mobile-auth__back:focus-visible {
+  outline: 3px solid rgb(98 91 255 / 22%);
+  outline-offset: 3px;
 }
 
 @media (max-width: 520px) {
   .customer-social-auth__button {
     min-height: 52px;
     padding-inline: 1rem;
+  }
+
+  .customer-mobile-auth {
+    padding: 0.9rem;
   }
 }
