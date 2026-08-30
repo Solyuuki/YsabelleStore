@@ -27,11 +27,7 @@ export function hashCustomerRegistrationIntent(intentToken: string): string {
   return createHash("sha256").update(intentToken).digest("hex");
 }
 
-function createRegistrationOtpMaterial(
-  registrationIntentHash: string,
-  phone: string,
-  now: Date
-) {
+function createRegistrationOtpMaterial(registrationIntentHash: string, phone: string, now: Date) {
   const challengeId = `registration-mobile-otp:${randomBytes(16).toString("hex")}`;
   const verificationCode = randomInt(0, 1_000_000).toString().padStart(6, "0");
   const otpHash = createHmac("sha256", registrationOtpSecret())
