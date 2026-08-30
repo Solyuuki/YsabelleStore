@@ -12,6 +12,10 @@ import {
   verifyCustomerMobileAuth
 } from "../services/customerMobileAuthService.js";
 import {
+  CustomerMobileRegistrationDeliveryError,
+  requestCustomerMobileRegistrationVerification
+} from "../services/customerMobileRegistrationService.js";
+import {
   CustomerRecoveryEmailDeliveryError,
   customerRecoveryEmailDelivery
 } from "../services/customerRecoveryEmailService.js";
@@ -83,13 +87,13 @@ export const issueCustomerRegistrationIntent: RequestHandler = (_request, respon
   );
 };
 
-export const requestCustomerRegistrationMobileVerification: RequestHandler = (
+export const requestCustomerRegistrationMobileVerification: RequestHandler = async (
   request,
   response,
   next
 ) => {
   try {
-    requireValidCustomerRegistrationIntent(request);
+    const registrationIntentToken = requireValidCustomerRegistrationIntent(request);
 
     const parsedBody = customerMobileAuthRequestSchema.safeParse(request.body);
     if (!parsedBody.success) {
@@ -97,6 +101,16 @@ export const requestCustomerRegistrationMobileVerification: RequestHandler = (
         code: "INVALID_CUSTOMER_REGISTRATION_MOBILE_REQUEST",
         details: parsedBody.error.flatten()
       });
+    }
+
+    try {
+      await requestCustomerMobileRegistrationVerification({
+        phone: parsedBody.data.phone,
+        registrationIntentToken
+      });
+    } catch (error) {
+      if (!(error instanceof CustomerMobileRegistrationDeliveryError)) throw error;
+      console.error(JSON.stringify({ event: "customer_mobile_registration_delivery_failed" }));
     }
 
     response.status(200).json(createSuccessResponse(CUSTOMER_REGISTRATION_MOBILE_REQUEST_MESSAGE));
