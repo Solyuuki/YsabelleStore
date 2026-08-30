@@ -47,7 +47,11 @@ test("brand components use the bundled official logo and retain visible fallback
 
   assert.match(header, /YsabelleBrandMark/, "header must render the shared customer mark.");
   assert.match(footer, /YsabelleBrandMark/, "footer must render the shared customer mark.");
-  assert.match(sidebar, /YsabelleBrandMark/, "staff sidebar must render the canonical shared mark.");
+  assert.match(
+    sidebar,
+    /YsabelleBrandMark/,
+    "staff sidebar must render the canonical shared mark."
+  );
   assert.doesNotMatch(sidebar, /\/brand\/ysabelle-logo-v2\.png/);
 
   assert.match(styles, /\.ysabelle-brand-mark__fallback/);
