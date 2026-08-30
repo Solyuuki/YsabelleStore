@@ -7,6 +7,7 @@ on:
       - "m1/v0.9/feat/customer-social-auth"
     paths:
       - ".github/workflows/phase6-tdd.yml"
+      - "tsconfig.json"
       - "backend/src/config/env.ts"
       - "backend/src/services/customerSocialAuthService.ts"
       - "backend/src/services/customerOAuthTransactionService.ts"
