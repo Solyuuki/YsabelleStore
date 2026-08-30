@@ -11,7 +11,8 @@ import {
   requestCustomerRegistrationMobileVerification,
   resetCustomerPasswordAccount,
   verifyCustomerMobileAuthAccount,
-  verifyCustomerPasswordRecoveryAccount
+  verifyCustomerPasswordRecoveryAccount,
+  verifyCustomerRegistrationMobileVerification
 } from "../controllers/customerAuthController.js";
 import {
   completeCustomerSocialAuth,
@@ -164,6 +165,11 @@ customerAuthRouter.post(
   "/registration/mobile/request",
   requireAllowedCustomerAuthOrigin,
   requestCustomerRegistrationMobileVerification
+);
+customerAuthRouter.post(
+  "/registration/mobile/verify",
+  requireAllowedCustomerAuthOrigin,
+  verifyCustomerRegistrationMobileVerification
 );
 customerAuthRouter.post(
   "/register",
