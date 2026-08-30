@@ -6,6 +6,7 @@ import {
   loginCustomerAccount,
   logoutCustomerAccount,
   registerCustomerAccount,
+  requestCustomerMobileAuthAccount,
   requestCustomerPasswordRecoveryAccount,
   resetCustomerPasswordAccount,
   verifyCustomerPasswordRecoveryAccount
@@ -143,6 +144,11 @@ customerAuthRouter.post(
   customerLoginRateLimit,
   customerLoginIdentifierRateLimit,
   loginCustomerAccount
+);
+customerAuthRouter.post(
+  "/mobile/request",
+  requireAllowedCustomerAuthOrigin,
+  requestCustomerMobileAuthAccount
 );
 customerAuthRouter.post(
   "/recovery/request",
