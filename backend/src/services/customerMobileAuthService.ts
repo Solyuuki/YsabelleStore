@@ -105,9 +105,7 @@ export async function verifyCustomerMobileAuth(
   });
 
   if (!challenge?.customerAccountId) throw invalidMobileAuthCode();
-  if (
-    !mobileAuthOtpMatches(challenge.id, input.phone, input.verificationCode, challenge.otpHash)
-  ) {
+  if (!mobileAuthOtpMatches(challenge.id, input.phone, input.verificationCode, challenge.otpHash)) {
     throw invalidMobileAuthCode();
   }
 
