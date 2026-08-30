@@ -13,6 +13,18 @@ const INVALID_MOBILE_AUTH_CODE = {
   message: "The verification code is invalid or expired. Request a new code."
 } as const;
 
+export class CustomerMobileAuthDeliveryError extends Error {
+  public constructor() {
+    super("Customer mobile OTP delivery is unavailable.");
+    this.name = "CustomerMobileAuthDeliveryError";
+  }
+}
+
+export type CustomerMobileAuthDelivery = (input: {
+  phone: string;
+  verificationCode: string;
+}) => Promise<void>;
+
 export type CustomerMobileAuthRequestInput = {
   phone: string;
 };
@@ -60,8 +72,28 @@ function invalidMobileAuthCode(): HttpError {
   });
 }
 
+const defaultCustomerMobileAuthDelivery: CustomerMobileAuthDelivery = async ({
+  phone,
+  verificationCode
+}) => {
+  if (env.NODE_ENV === "development") {
+    console.info(
+      JSON.stringify({
+        event: "customer_mobile_auth_dev_otp",
+        phoneLast4: phone.slice(-4),
+        verificationCode
+      })
+    );
+    return;
+  }
+
+  if (env.NODE_ENV === "test") return;
+  throw new CustomerMobileAuthDeliveryError();
+};
+
 export async function requestCustomerMobileAuth(
   input: CustomerMobileAuthRequestInput,
+  delivery: CustomerMobileAuthDelivery = defaultCustomerMobileAuthDelivery,
   now = new Date()
 ): Promise<void> {
   const customer = await prisma.customerAccount.findUnique({
@@ -90,6 +122,18 @@ export async function requestCustomerMobileAuth(
       }
     });
   });
+
+  try {
+    await delivery({
+      phone: input.phone,
+      verificationCode: otp.verificationCode
+    });
+  } catch (error) {
+    await prisma.customerMobileAuthChallenge.deleteMany({
+      where: { id: otp.challengeId, consumedAt: null }
+    });
+    throw error;
+  }
 }
 
 export async function verifyCustomerMobileAuth(
