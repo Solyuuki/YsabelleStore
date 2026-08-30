@@ -50,7 +50,6 @@ jobs:
           if (!source.includes(marker)) throw new Error('Schema insertion marker not found.');
           fs.writeFileSync(path, source.replace(marker, model + marker));
           NODE
-          npx prisma format --schema database/prisma/schema.prisma
       - name: Commit schema change
         run: |
           if git diff --quiet -- database/prisma/schema.prisma; then
