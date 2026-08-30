@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "m1/v0.9/feat/customer-social-auth"
+      - "m1/v0.9/feat/customer-mobile-otp"
   pull_request:
     branches:
       - main
