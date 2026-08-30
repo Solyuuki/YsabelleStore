@@ -7,6 +7,7 @@ import {
   revokeCustomerSession
 } from "../services/customerAuthService.js";
 import {
+  CustomerMobileAuthDeliveryError,
   requestCustomerMobileAuth,
   verifyCustomerMobileAuth
 } from "../services/customerMobileAuthService.js";
@@ -133,7 +134,13 @@ export const requestCustomerMobileAuthAccount: RequestHandler = async (request, 
       });
     }
 
-    await requestCustomerMobileAuth(parsedBody.data);
+    try {
+      await requestCustomerMobileAuth(parsedBody.data);
+    } catch (error) {
+      if (!(error instanceof CustomerMobileAuthDeliveryError)) throw error;
+      console.error(JSON.stringify({ event: "customer_mobile_auth_delivery_failed" }));
+    }
+
     response.status(200).json(createSuccessResponse(CUSTOMER_MOBILE_AUTH_REQUEST_MESSAGE));
   } catch (error) {
     next(error);
@@ -226,45 +233,49 @@ export const resetCustomerPasswordAccount: RequestHandler = async (request, resp
       });
     }
 
+    const recoveryGrant = readCustomerRecoveryGrantCookie(request);
+    if (!recoveryGrant) {
+      throw new HttpError(400, "The recovery session is invalid or expired. Start again.", {
+        code: "CUSTOMER_RECOVERY_GRANT_INVALID"
+      });
+    }
+
     await resetCustomerPassword({
-      recoveryGrant: readCustomerRecoveryGrantCookie(request) ?? "",
+      recoveryGrant,
       newPassword: parsedBody.data.newPassword
     });
     clearCustomerRecoveryGrantCookie(response);
     clearCustomerSessionCookie(response);
-    response
-      .status(200)
-      .json(createSuccessResponse("Password reset successful. Sign in with your new password."));
+    response.status(200).json(createSuccessResponse("Password reset successful. Sign in again."));
   } catch (error) {
     clearCustomerRecoveryGrantCookie(response);
     next(error);
   }
 };
 
-export const getCurrentCustomer: RequestHandler = (request, response, next) => {
-  const customer = getAuthenticatedCustomer(request);
-  if (!customer) {
-    next(
-      new HttpError(401, "Customer session is required.", {
-        code: "CUSTOMER_SESSION_REQUIRED"
+export const getCustomerSession: RequestHandler = async (request, response, next) => {
+  try {
+    const sessionToken = readCustomerSessionCookie(request);
+    const customer = await getAuthenticatedCustomer(sessionToken);
+    response.status(200).json(
+      createSuccessResponse("Customer session active.", {
+        customer
       })
     );
-    return;
+  } catch (error) {
+    clearCustomerSessionCookie(response);
+    next(error);
   }
-
-  response.status(200).json(createSuccessResponse("Current customer loaded.", { customer }));
 };
 
 export const logoutCustomerAccount: RequestHandler = async (request, response, next) => {
   try {
     const sessionToken = readCustomerSessionCookie(request);
-    if (sessionToken) {
-      await revokeCustomerSession(sessionToken);
-    }
-
+    await revokeCustomerSession(sessionToken);
     clearCustomerSessionCookie(response);
     response.status(200).json(createSuccessResponse("Customer logout successful."));
   } catch (error) {
+    clearCustomerSessionCookie(response);
     next(error);
   }
 };
