@@ -1,9 +1,18 @@
-import { createHash, createHmac, randomBytes, randomInt } from "node:crypto";
+import {
+  createHash,
+  createHmac,
+  randomBytes,
+  randomInt,
+  timingSafeEqual
+} from "node:crypto";
 
 import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
+import { HttpError } from "../utils/httpError.js";
 
 export const CUSTOMER_MOBILE_REGISTRATION_OTP_LIFETIME_MS = 10 * 60 * 1000;
+
+const REGISTRATION_MOBILE_GRANT_VERSION = 1;
 
 export class CustomerMobileRegistrationDeliveryError extends Error {
   public constructor() {
@@ -17,10 +26,99 @@ export type CustomerMobileRegistrationDelivery = (input: {
   verificationCode: string;
 }) => Promise<void>;
 
+type RegistrationMobileGrantPayload = {
+  v: 1;
+  registrationIntentHash: string;
+  phone: string;
+  exp: number;
+};
+
 function registrationOtpSecret(): string {
   const secret = env.JWT_SECRET?.trim();
   if (!secret) throw new Error("Customer registration mobile OTP secret is not configured.");
   return secret;
+}
+
+function registrationOtpHash(
+  challengeId: string,
+  registrationIntentHash: string,
+  phone: string,
+  verificationCode: string
+): string {
+  return createHmac("sha256", registrationOtpSecret())
+    .update(
+      `customer-mobile-registration-otp:v1:${challengeId}:${registrationIntentHash}:${phone}:${verificationCode}`
+    )
+    .digest("hex");
+}
+
+function signRegistrationMobileGrant(encodedPayload: string): string {
+  return createHmac("sha256", registrationOtpSecret())
+    .update(`customer-mobile-registration-grant:v1:${encodedPayload}`)
+    .digest("base64url");
+}
+
+function createRegistrationMobileGrant(
+  registrationIntentHash: string,
+  phone: string,
+  now: Date
+): string {
+  const payload: RegistrationMobileGrantPayload = {
+    v: REGISTRATION_MOBILE_GRANT_VERSION,
+    registrationIntentHash,
+    phone,
+    exp: now.getTime() + CUSTOMER_MOBILE_REGISTRATION_OTP_LIFETIME_MS
+  };
+  const encodedPayload = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  return `${encodedPayload}.${signRegistrationMobileGrant(encodedPayload)}`;
+}
+
+export function readCustomerMobileRegistrationGrant(
+  grant: string,
+  now = new Date()
+): { registrationIntentHash: string; phone: string } | null {
+  const [encodedPayload, suppliedSignature, ...extra] = grant.split(".");
+  if (!encodedPayload || !suppliedSignature || extra.length > 0) return null;
+
+  const expectedSignature = signRegistrationMobileGrant(encodedPayload);
+  let suppliedBuffer: Buffer;
+  let expectedBuffer: Buffer;
+
+  try {
+    suppliedBuffer = Buffer.from(suppliedSignature, "base64url");
+    expectedBuffer = Buffer.from(expectedSignature, "base64url");
+  } catch {
+    return null;
+  }
+
+  if (suppliedBuffer.length !== expectedBuffer.length || !timingSafeEqual(suppliedBuffer, expectedBuffer)) {
+    return null;
+  }
+
+  let payload: unknown;
+  try {
+    payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+
+  if (!payload || typeof payload !== "object") return null;
+  const candidate = payload as Partial<RegistrationMobileGrantPayload>;
+  if (
+    candidate.v !== REGISTRATION_MOBILE_GRANT_VERSION ||
+    typeof candidate.registrationIntentHash !== "string" ||
+    typeof candidate.phone !== "string" ||
+    typeof candidate.exp !== "number" ||
+    !Number.isSafeInteger(candidate.exp) ||
+    candidate.exp <= now.getTime()
+  ) {
+    return null;
+  }
+
+  return {
+    registrationIntentHash: candidate.registrationIntentHash,
+    phone: candidate.phone
+  };
 }
 
 export function hashCustomerRegistrationIntent(intentToken: string): string {
@@ -30,11 +128,12 @@ export function hashCustomerRegistrationIntent(intentToken: string): string {
 function createRegistrationOtpMaterial(registrationIntentHash: string, phone: string, now: Date) {
   const challengeId = `registration-mobile-otp:${randomBytes(16).toString("hex")}`;
   const verificationCode = randomInt(0, 1_000_000).toString().padStart(6, "0");
-  const otpHash = createHmac("sha256", registrationOtpSecret())
-    .update(
-      `customer-mobile-registration-otp:v1:${challengeId}:${registrationIntentHash}:${phone}:${verificationCode}`
-    )
-    .digest("hex");
+  const otpHash = registrationOtpHash(
+    challengeId,
+    registrationIntentHash,
+    phone,
+    verificationCode
+  );
   const expiresAt = new Date(now.getTime() + CUSTOMER_MOBILE_REGISTRATION_OTP_LIFETIME_MS);
 
   return { challengeId, verificationCode, otpHash, expiresAt };
@@ -104,4 +203,60 @@ export async function requestCustomerMobileRegistrationVerification(
     });
     throw error;
   }
+}
+
+export async function verifyCustomerMobileRegistrationCode(input: {
+  phone: string;
+  verificationCode: string;
+  registrationIntentToken: string;
+  now?: Date;
+}): Promise<string> {
+  const now = input.now ?? new Date();
+  const registrationIntentHash = hashCustomerRegistrationIntent(input.registrationIntentToken);
+  const challenge = await prisma.customerMobileRegistrationChallenge.findFirst({
+    where: {
+      registrationIntentHash,
+      phoneNormalized: input.phone,
+      consumedAt: null,
+      expiresAt: { gt: now }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
+  if (!challenge) {
+    throw new HttpError(400, "Verification code is invalid or expired.", {
+      code: "CUSTOMER_MOBILE_REGISTRATION_CODE_INVALID"
+    });
+  }
+
+  const expectedHash = registrationOtpHash(
+    challenge.id,
+    registrationIntentHash,
+    input.phone,
+    input.verificationCode
+  );
+  const suppliedHash = Buffer.from(expectedHash, "hex");
+  const storedHash = Buffer.from(challenge.otpHash, "hex");
+  if (suppliedHash.length !== storedHash.length || !timingSafeEqual(suppliedHash, storedHash)) {
+    throw new HttpError(400, "Verification code is invalid or expired.", {
+      code: "CUSTOMER_MOBILE_REGISTRATION_CODE_INVALID"
+    });
+  }
+
+  const consumed = await prisma.customerMobileRegistrationChallenge.updateMany({
+    data: { consumedAt: now },
+    where: {
+      id: challenge.id,
+      consumedAt: null,
+      expiresAt: { gt: now }
+    }
+  });
+
+  if (consumed.count !== 1) {
+    throw new HttpError(400, "Verification code is invalid or expired.", {
+      code: "CUSTOMER_MOBILE_REGISTRATION_CODE_INVALID"
+    });
+  }
+
+  return createRegistrationMobileGrant(registrationIntentHash, input.phone, now);
 }
