@@ -6,6 +6,7 @@ import { HttpError } from "../utils/httpError.js";
 import { createCustomerSession, toSafeCustomer } from "./customerAuthService.js";
 
 export const CUSTOMER_MOBILE_AUTH_OTP_LIFETIME_MS = 10 * 60 * 1000;
+export const CUSTOMER_MOBILE_AUTH_RESEND_COOLDOWN_MS = 30 * 1000;
 export const CUSTOMER_MOBILE_AUTH_MAX_FAILED_ATTEMPTS = 5;
 
 const INVALID_MOBILE_AUTH_CODE = {
@@ -101,6 +102,21 @@ export async function requestCustomerMobileAuth(
   });
   if (!customer || customer.status !== "ACTIVE") return;
 
+  const activeChallenge = await prisma.customerMobileAuthChallenge.findFirst({
+    where: {
+      phoneNormalized: input.phone,
+      consumedAt: null,
+      expiresAt: { gt: now }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+  if (
+    activeChallenge &&
+    activeChallenge.createdAt.getTime() + CUSTOMER_MOBILE_AUTH_RESEND_COOLDOWN_MS > now.getTime()
+  ) {
+    return;
+  }
+
   const otp = createMobileAuthOtpMaterial(input.phone, now);
 
   await prisma.$transaction(async (transaction) => {
@@ -118,7 +134,8 @@ export async function requestCustomerMobileAuth(
         customerAccountId: customer.id,
         phoneNormalized: input.phone,
         otpHash: otp.otpHash,
-        expiresAt: otp.expiresAt
+        expiresAt: otp.expiresAt,
+        createdAt: now
       }
     });
   });
