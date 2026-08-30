@@ -147,6 +147,36 @@ export async function loginCustomer(input: CustomerLoginInput): Promise<Customer
   return requireCustomer(response);
 }
 
+export async function requestCustomerMobileAuth(phone: string): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/mobile/request",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: { phone: phone.trim() }
+    })
+  );
+
+  requireCustomerAuthSuccess(response, "Mobile verification could not be requested.");
+}
+
+export async function verifyCustomerMobileAuth(input: {
+  phone: string;
+  verificationCode: string;
+}): Promise<Customer> {
+  const response = await apiClient.request<CustomerResponseData, CustomerAuthErrorPayload>(
+    "/api/customer-auth/mobile/verify",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: {
+        phone: input.phone.trim(),
+        verificationCode: input.verificationCode.trim()
+      }
+    })
+  );
+
+  return requireCustomer(response);
+}
+
 export async function registerCustomer(input: CustomerRegisterInput): Promise<Customer> {
   await ensureCustomerRegistrationIntentReady();
 
