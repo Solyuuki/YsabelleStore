@@ -74,7 +74,9 @@ export function CustomerMobileAuthPanel({
           <Smartphone size={18} />
         </span>
         <div>
-          <strong>{stage === "phone" ? "Sign in with mobile OTP" : "Enter verification code"}</strong>
+          <strong>
+            {stage === "phone" ? "Sign in with mobile OTP" : "Enter verification code"}
+          </strong>
           <p>
             {stage === "phone"
               ? "Use the Philippine mobile number already linked to your customer account."
@@ -98,7 +100,9 @@ export function CustomerMobileAuthPanel({
               id="customer-mobile-auth-phone"
               inputMode="tel"
               maxLength={11}
-              onChange={(event) => setPhone(event.target.value.replace(/\D/g, "").slice(0, 11))}
+              onChange={(event) =>
+                setPhone(event.target.value.replace(/\D/g, "").slice(0, 11))
+              }
               placeholder="09XXXXXXXXX"
               type="tel"
               value={phone}
@@ -143,7 +147,12 @@ export function CustomerMobileAuthPanel({
         </form>
       )}
 
-      <button className="customer-mobile-auth__back" disabled={submitting} onClick={onCancel} type="button">
+      <button
+        className="customer-mobile-auth__back"
+        disabled={submitting}
+        onClick={onCancel}
+        type="button"
+      >
         <ArrowLeft size={16} aria-hidden="true" />
         Back to sign-in options
       </button>
