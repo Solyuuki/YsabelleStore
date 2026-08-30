@@ -51,6 +51,37 @@ assert.ok(premiumLabelBody, "Premium social label rule should exist.");
 assert.match(premiumLabelBody, /font-weight:\s*900;/);
 assert.match(premiumLabelBody, /color:\s*#171a2b;/);
 
+const mobilePanelSource = readFileSync(
+  new URL("../frontend/src/components/customer/CustomerMobileAuthPanel.tsx", import.meta.url),
+  "utf8"
+);
+assert.match(
+  mobilePanelSource,
+  /Use another sign-in method/,
+  "Mobile OTP should use a clear in-flow exit label instead of browser-back language."
+);
+assert.doesNotMatch(mobilePanelSource, /Back to sign-in options/);
+assert.match(
+  mobilePanelSource,
+  /customer-mobile-auth__security/,
+  "Mobile OTP should expose a compact security/status cue in the premium panel."
+);
+assert.match(
+  quickSignCss,
+  /backdrop-filter:\s*blur\(18px\)/,
+  "Premium Mobile OTP panel should use restrained glass depth."
+);
+assert.match(
+  quickSignCss,
+  /\.customer-mobile-auth::before\s*\{/,
+  "Premium Mobile OTP panel should have a contained gradient highlight instead of a flat nested card."
+);
+assert.match(
+  quickSignCss,
+  /\.customer-mobile-auth__security\s*\{/,
+  "Premium Mobile OTP security cue should have an explicit visual treatment."
+);
+
 const registerSource = readFileSync(
   new URL("../frontend/src/pages/customer/CustomerRegisterPage.tsx", import.meta.url),
   "utf8"
