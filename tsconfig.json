@@ -5,6 +5,7 @@
     "allowJs": true,
     "baseUrl": ".",
     "checkJs": false,
+    "jsx": "react-jsx",
     "noEmit": true,
     "paths": {
       "@/*": ["frontend/src/*"]
