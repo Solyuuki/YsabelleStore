@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomUUID } from "node:crypto";
 import type { AddressInfo } from "node:net";
 import test from "node:test";
 
 import { createApp } from "../src/app.js";
+import { env } from "../src/config/env.js";
 import { prisma } from "../src/database/prismaClient.js";
 import { normalizePhilippineMobile } from "../src/utils/customerIdentity.js";
 
@@ -53,6 +54,22 @@ function cookieValue(cookie: string) {
 
 function intentHash(intentCookie: string) {
   return createHash("sha256").update(cookieValue(intentCookie)).digest("hex");
+}
+
+function registrationOtpHash(
+  challengeId: string,
+  registrationIntentHash: string,
+  phoneNormalized: string,
+  verificationCode: string
+) {
+  const secret = env.JWT_SECRET?.trim();
+  assert.ok(secret);
+
+  return createHmac("sha256", secret)
+    .update(
+      `customer-mobile-registration-otp:v1:${challengeId}:${registrationIntentHash}:${phoneNormalized}:${verificationCode}`
+    )
+    .digest("hex");
 }
 
 function testPhone(suffix: string) {
@@ -138,6 +155,66 @@ test("registration mobile verification uses a dedicated hashed intent-bound chal
     assert.equal(challenge.consumedAt, null);
     assert.ok(new Date(challenge.expiresAt).getTime() >= before + 9 * 60 * 1000);
     assert.ok(new Date(challenge.expiresAt).getTime() <= after + 11 * 60 * 1000);
+  });
+});
+
+test("valid registration mobile OTP consumes the challenge and issues an HttpOnly intent-bound grant", async () => {
+  const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
+  const phone = testPhone(suffix);
+  const phoneNormalized = normalizePhilippineMobile(phone);
+  assert.ok(phoneNormalized);
+
+  await withServer(async (baseUrl) => {
+    const intentResponse = await fetch(`${baseUrl}/api/customer-auth/registration-intent`);
+    assert.equal(intentResponse.status, 200);
+    const intentCookie = cookiePair(intentResponse);
+    assert.ok(intentCookie);
+    const registrationIntentHash = intentHash(intentCookie);
+    createdIntentHashes.push(registrationIntentHash);
+
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    const verificationCode = "246810";
+    const challengeId = `registration-mobile-otp:${randomUUID().replaceAll("-", "")}`;
+    await prisma.customerMobileRegistrationChallenge.create({
+      data: {
+        id: challengeId,
+        registrationIntentHash,
+        phoneNormalized,
+        otpHash: registrationOtpHash(
+          challengeId,
+          registrationIntentHash,
+          phoneNormalized,
+          verificationCode
+        ),
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+      }
+    });
+
+    const response = await fetch(`${baseUrl}/api/customer-auth/registration/mobile/verify`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: intentCookie
+      },
+      body: JSON.stringify({ phone, verificationCode })
+    });
+
+    assert.equal(response.status, 200);
+    const body = (await response.json()) as ApiBody;
+    assert.equal(body.success, true);
+    assert.equal(body.data, undefined);
+
+    const setCookie = response.headers.get("set-cookie") ?? "";
+    assert.match(setCookie, /^ysabelle_customer_registration_mobile=/);
+    assert.match(setCookie, /HttpOnly/i);
+    assert.match(setCookie, /SameSite=Lax/i);
+    assert.equal(setCookie.includes(verificationCode), false);
+
+    const challenge = await prisma.customerMobileRegistrationChallenge.findUnique({
+      where: { id: challengeId }
+    });
+    assert.ok(challenge?.consumedAt);
   });
 });
 
