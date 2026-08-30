@@ -185,6 +185,65 @@ test("valid mobile OTP consumes its challenge and creates a normal customer sess
   assert.equal(sessions, 1);
 });
 
+test("five wrong mobile OTP attempts permanently lock the current challenge", async () => {
+  const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
+  const phone = testPhone(suffix);
+  const phoneNormalized = normalizePhilippineMobile(phone);
+  assert.ok(phoneNormalized);
+
+  const registered = await registerCustomer({
+    name: "Mobile OTP Locked Customer",
+    username: `otplock.${suffix}`,
+    email: `otplock-${suffix}@example.com`,
+    phone,
+    password: "MobilePassword123!"
+  });
+  createdCustomerIds.push(registered.customer.id);
+  await prisma.customerSession.deleteMany({ where: { customerAccountId: registered.customer.id } });
+
+  const verificationCode = "135790";
+  const challengeId = `mobile-otp:${randomUUID().replaceAll("-", "")}`;
+  await prisma.customerMobileAuthChallenge.create({
+    data: {
+      id: challengeId,
+      customerAccountId: registered.customer.id,
+      phoneNormalized,
+      otpHash: mobileOtpHash(challengeId, phoneNormalized, verificationCode),
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+    }
+  });
+
+  await withServer(async (baseUrl) => {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const response = await fetch(`${baseUrl}/api/customer-auth/mobile/verify`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ phone, verificationCode: "000000" })
+      });
+      assert.equal(response.status, 400);
+      const body = await json(response);
+      assert.equal(body.error?.code, "CUSTOMER_MOBILE_AUTH_CODE_INVALID");
+    }
+
+    const lockedChallenge = await prisma.customerMobileAuthChallenge.findUnique({
+      where: { id: challengeId }
+    });
+    assert.equal(lockedChallenge?.failedAttempts, 5);
+
+    const correctAfterLock = await fetch(`${baseUrl}/api/customer-auth/mobile/verify`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ phone, verificationCode })
+    });
+    assert.equal(correctAfterLock.status, 400);
+  });
+
+  const sessions = await prisma.customerSession.count({
+    where: { customerAccountId: registered.customer.id, revokedAt: null }
+  });
+  assert.equal(sessions, 0);
+});
+
 test.after(async () => {
   if (createdCustomerIds.length === 0) return;
 
