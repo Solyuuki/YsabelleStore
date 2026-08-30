@@ -1,10 +1,12 @@
-import { ArrowLeft, ShieldCheck, Smartphone } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { ArrowLeft, Smartphone } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import {
   requestCustomerMobileAuth,
   verifyCustomerMobileAuth
 } from "@/services/customerAuthService";
+
+const MOBILE_OTP_RESEND_SECONDS = 30;
 
 export function CustomerMobileAuthPanel({
   onCancel,
@@ -16,8 +18,19 @@ export function CustomerMobileAuthPanel({
   const [stage, setStage] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
+  const [resendSeconds, setResendSeconds] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (stage !== "code" || resendSeconds <= 0) return;
+
+    const timeout = globalThis.setTimeout(() => {
+      setResendSeconds((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => globalThis.clearTimeout(timeout);
+  }, [resendSeconds, stage]);
 
   async function handlePhoneSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,6 +44,8 @@ export function CustomerMobileAuthPanel({
     setSubmitting(true);
     try {
       await requestCustomerMobileAuth(phone);
+      setVerificationCode("");
+      setResendSeconds(MOBILE_OTP_RESEND_SECONDS);
       setStage("code");
     } catch (caughtError) {
       setError(
@@ -67,6 +82,33 @@ export function CustomerMobileAuthPanel({
     }
   }
 
+  async function handleResend() {
+    if (submitting || resendSeconds > 0) return;
+
+    setError(null);
+    setSubmitting(true);
+    try {
+      await requestCustomerMobileAuth(phone);
+      setVerificationCode("");
+      setResendSeconds(MOBILE_OTP_RESEND_SECONDS);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to resend the code. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleChangeNumber() {
+    setVerificationCode("");
+    setResendSeconds(0);
+    setError(null);
+    setStage("phone");
+  }
+
   return (
     <section className="customer-mobile-auth" aria-label="Mobile OTP sign in">
       <div className="customer-mobile-auth__heading">
@@ -74,24 +116,11 @@ export function CustomerMobileAuthPanel({
           <Smartphone size={18} />
         </span>
         <div>
-          <span className="customer-mobile-auth__eyebrow">Secure quick sign-in</span>
-          <strong>
-            {stage === "phone" ? "Sign in with mobile OTP" : "Enter verification code"}
-          </strong>
-          <p>
-            {stage === "phone"
-              ? "Use the Philippine mobile number already linked to your customer account."
-              : `We sent a 6-digit code for ${phone.trim()}.`}
-          </p>
+          <strong>{stage === "phone" ? "Mobile sign-in" : "Enter code"}</strong>
+          {stage === "code" ? (
+            <p className="customer-mobile-auth__meta">Sent to •••• {phone.trim().slice(-4)}</p>
+          ) : null}
         </div>
-      </div>
-
-      <div className="customer-mobile-auth__security" aria-label="Mobile verification security">
-        <ShieldCheck size={15} aria-hidden="true" />
-        <span>
-          <strong>Protected verification</strong>
-          <small>6-digit code · expires in 10 minutes</small>
-        </span>
       </div>
 
       {error ? (
@@ -116,13 +145,14 @@ export function CustomerMobileAuthPanel({
             />
           </label>
           <button className="customer-auth-submit" disabled={submitting} type="submit">
-            {submitting ? "Sending code..." : "Send verification code"}
+            {submitting ? "Sending..." : "Send code"}
           </button>
+          <p className="customer-mobile-auth__hint">Code expires in 10 minutes</p>
         </form>
       ) : (
         <form className="customer-mobile-auth__form" onSubmit={handleCodeSubmit} noValidate>
           <label className="customer-auth-field" htmlFor="customer-mobile-auth-code">
-            <span>6-digit verification code</span>
+            <span>Verification code</span>
             <input
               autoComplete="one-time-code"
               id="customer-mobile-auth-code"
@@ -137,20 +167,31 @@ export function CustomerMobileAuthPanel({
             />
           </label>
           <button className="customer-auth-submit" disabled={submitting} type="submit">
-            {submitting ? "Verifying..." : "Verify and sign in"}
+            {submitting ? "Verifying..." : "Verify"}
           </button>
-          <button
-            className="customer-mobile-auth__secondary"
-            disabled={submitting}
-            onClick={() => {
-              setVerificationCode("");
-              setError(null);
-              setStage("phone");
-            }}
-            type="button"
-          >
-            Use a different mobile number
-          </button>
+
+          <div className="customer-mobile-auth__actions">
+            {resendSeconds > 0 ? (
+              <span className="customer-mobile-auth__countdown">Resend in {resendSeconds}s</span>
+            ) : (
+              <button
+                className="customer-mobile-auth__secondary"
+                disabled={submitting}
+                onClick={() => void handleResend()}
+                type="button"
+              >
+                Resend code
+              </button>
+            )}
+            <button
+              className="customer-mobile-auth__secondary"
+              disabled={submitting}
+              onClick={handleChangeNumber}
+              type="button"
+            >
+              Change number
+            </button>
+          </div>
         </form>
       )}
 
@@ -161,7 +202,7 @@ export function CustomerMobileAuthPanel({
         type="button"
       >
         <ArrowLeft size={15} aria-hidden="true" />
-        Use another sign-in method
+        Other sign-in methods
       </button>
     </section>
   );
