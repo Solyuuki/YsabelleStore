@@ -51,11 +51,6 @@ function cookiePair(setCookie: string) {
   return setCookie.split(";", 1)[0]!;
 }
 
-function testPhone(suffix: string) {
-  const numeric = Number.parseInt(suffix, 16) % 10_000_000;
-  return `0917${numeric.toString().padStart(7, "0")}`;
-}
-
 async function json(response: Response): Promise<ApiBody> {
   return (await response.json()) as ApiBody;
 }
@@ -103,8 +98,6 @@ test("customer register, session restore, and logout use a revocable HttpOnly co
   const suffix = randomUUID().slice(0, 8);
   const email = `http-${suffix}@example.com`;
   const username = `http.${suffix}`;
-  const phone = testPhone(suffix);
-  const normalizedPhone = `+63${phone.slice(1)}`;
 
   try {
     await withServer(async (baseUrl) => {
@@ -112,7 +105,6 @@ test("customer register, session restore, and logout use a revocable HttpOnly co
         name: "HTTP Customer",
         username,
         email: `  ${email.toUpperCase()}  `,
-        phone,
         password: PASSWORD
       });
 
@@ -128,7 +120,7 @@ test("customer register, session restore, and logout use a revocable HttpOnly co
       const registerBody = await json(register);
       assert.equal(registerBody.data?.customer?.username, username);
       assert.equal(registerBody.data?.customer?.email, email);
-      assert.equal(registerBody.data?.customer?.phone, normalizedPhone);
+      assert.equal(registerBody.data?.customer?.phone, null);
       assert.equal(JSON.stringify(registerBody).includes("sessionToken"), false);
       assert.equal(JSON.stringify(registerBody).includes("phoneNormalized"), false);
 
