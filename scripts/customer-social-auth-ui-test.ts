@@ -14,6 +14,7 @@ const starts: CustomerSocialAuthProvider[] = [];
 const markup = renderToStaticMarkup(
   createElement(CustomerSocialAuthButtons, {
     busyProvider: null,
+    onMobileStart() {},
     onStart(provider: CustomerSocialAuthProvider) {
       starts.push(provider);
     }
@@ -21,7 +22,7 @@ const markup = renderToStaticMarkup(
 );
 
 assert.match(markup, /Continue with Google/);
-assert.doesNotMatch(markup, /Continue with Mobile OTP/);
+assert.match(markup, /Continue with Mobile OTP/);
 assert.doesNotMatch(markup, /Available in Phase 7/);
 assert.doesNotMatch(markup, /Continue with Facebook/);
 assert.doesNotMatch(markup, /#1877F2/i);
@@ -100,6 +101,8 @@ const loginSource = readFileSync(
   "utf8"
 );
 assert.match(loginSource, /completeCustomerSocialLink/);
+assert.match(loginSource, /CustomerMobileAuthPanel/);
+assert.match(loginSource, /onMobileStart/);
 assert.match(
   loginSource,
   /addEventListener\(["']pageshow["']/,
