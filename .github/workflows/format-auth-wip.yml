@@ -1,0 +1,32 @@
+name: Format verified identity work
+
+on: push
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: m1/v0.9/feat/customer-mobile-otp
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Format only the known WIP files
+        shell: bash
+        run: |
+          if [ "$(git log -1 --format=%s)" != "chore(auth): format verified identity work" ]; then
+            exit 0
+          fi
+          npm ci
+          npx prettier --write docs/superpowers/plans/2026-08-31-customer-verified-identity-quick-sign.md scripts/customer-auth-ui-contract-test.ts
+          rm .github/workflows/format-auth-wip.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/superpowers/plans/2026-08-31-customer-verified-identity-quick-sign.md scripts/customer-auth-ui-contract-test.ts .github/workflows/format-auth-wip.yml
+          git commit -m "style(auth): format verified identity work"
+          git push origin HEAD:m1/v0.9/feat/customer-mobile-otp
