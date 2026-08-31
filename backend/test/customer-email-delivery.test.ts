@@ -16,9 +16,7 @@ type DeliveryModule = {
 };
 
 async function loadDeliveryModule(): Promise<DeliveryModule> {
-  return (await import(
-    "../src/services/customerIdentityEmailDeliveryService.js"
-  )) as DeliveryModule;
+  return (await import("../src/services/customerIdentityEmailDeliveryService.js")) as DeliveryModule;
 }
 
 test("Resend registration delivery sends the Ysabelle-generated verification code", async () => {
@@ -109,34 +107,30 @@ test("Resend delivery fails closed when server credentials are missing", async (
   assert.equal(fetchCalled, false);
 });
 
-test(
-  "Resend delivery does not expose provider responses, API keys, or OTP values on failure",
-  async () => {
-    const module = await loadDeliveryModule();
-    assert.ok(module.createCustomerIdentityEmailDelivery);
+test("Resend delivery does not expose provider responses, API keys, or OTP values on failure", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
 
-    const send = module.createCustomerIdentityEmailDelivery({
-      apiKey: "re_secret_key",
-      from: "auth@example.com",
-      nodeEnv: "production",
-      fetchImpl: async () =>
-        new Response("provider failed re_secret_key otp 123456", { status: 500 })
-    });
+  const send = module.createCustomerIdentityEmailDelivery({
+    apiKey: "re_secret_key",
+    from: "auth@example.com",
+    nodeEnv: "production",
+    fetchImpl: async () => new Response("provider failed re_secret_key otp 123456", { status: 500 })
+  });
 
-    await assert.rejects(
-      () =>
-        send({
-          to: "customer@example.com",
-          verificationCode: "123456",
-          purpose: "authentication"
-        }),
-      (error: unknown) => {
-        assert.ok(error instanceof module.CustomerIdentityEmailDeliveryError);
-        assert.equal(error.message.includes("re_secret_key"), false);
-        assert.equal(error.message.includes("123456"), false);
-        assert.equal(error.message.includes("provider failed"), false);
-        return true;
-      }
-    );
-  }
-);
+  await assert.rejects(
+    () =>
+      send({
+        to: "customer@example.com",
+        verificationCode: "123456",
+        purpose: "authentication"
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof module.CustomerIdentityEmailDeliveryError);
+      assert.equal(error.message.includes("re_secret_key"), false);
+      assert.equal(error.message.includes("123456"), false);
+      assert.equal(error.message.includes("provider failed"), false);
+      return true;
+    }
+  );
+});
