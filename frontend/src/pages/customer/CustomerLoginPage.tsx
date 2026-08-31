@@ -251,8 +251,11 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
             </div>
             <CustomerSocialAuthButtons
               busyProvider={busySocialProvider}
+              googleHelperText="Use your Google account for faster sign-in."
               emailLabel="Email"
+              emailHelperText="Use your verified account email"
               mobileLabel="Mobile"
+              mobileHelperText="Use your registered PH mobile number"
               onEmailStart={() => {
                 setServerError(null);
                 setQuickSignPanel("email");
