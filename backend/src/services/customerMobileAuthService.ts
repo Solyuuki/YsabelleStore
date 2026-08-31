@@ -4,6 +4,10 @@ import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { createCustomerSession, toSafeCustomer } from "./customerAuthService.js";
+import {
+  CustomerMobileSmsDeliveryError,
+  customerMobileSmsDelivery
+} from "./customerMobileSmsDeliveryService.js";
 
 export const CUSTOMER_MOBILE_AUTH_OTP_LIFETIME_MS = 10 * 60 * 1000;
 export const CUSTOMER_MOBILE_AUTH_RESEND_COOLDOWN_MS = 30 * 1000;
@@ -73,23 +77,17 @@ function invalidMobileAuthCode(): HttpError {
   });
 }
 
-const defaultCustomerMobileAuthDelivery: CustomerMobileAuthDelivery = async ({
-  phone,
-  verificationCode
-}) => {
-  if (env.NODE_ENV === "development") {
-    console.info(
-      JSON.stringify({
-        event: "customer_mobile_auth_dev_otp",
-        phoneLast4: phone.slice(-4),
-        verificationCode
-      })
-    );
-    return;
-  }
-
+const defaultCustomerMobileAuthDelivery: CustomerMobileAuthDelivery = async (input) => {
   if (env.NODE_ENV === "test") return;
-  throw new CustomerMobileAuthDeliveryError();
+
+  try {
+    await customerMobileSmsDelivery(input);
+  } catch (error) {
+    if (error instanceof CustomerMobileSmsDeliveryError) {
+      throw new CustomerMobileAuthDeliveryError();
+    }
+    throw error;
+  }
 };
 
 export async function requestCustomerMobileAuth(
