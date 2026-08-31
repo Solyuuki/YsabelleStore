@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 import {
   getCustomerAuthPageKind,
@@ -34,5 +36,22 @@ assert.equal(
   ),
   "authenticated"
 );
+
+const registerSource = readFileSync(
+  resolve(process.cwd(), "src/pages/customer/CustomerRegisterPage.tsx"),
+  "utf8"
+);
+const authServiceSource = readFileSync(
+  resolve(process.cwd(), "src/services/customerAuthService.ts"),
+  "utf8"
+);
+
+assert.match(registerSource, /requestCustomerRegistrationMobileVerification/);
+assert.match(registerSource, /verifyCustomerRegistrationMobileVerification/);
+assert.match(registerSource, /Send code/);
+assert.match(registerSource, /Verify code/);
+assert.match(registerSource, /Verified/);
+assert.match(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/request/);
+assert.match(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/verify/);
 
 console.log("Customer auth UI state contract passed.");
