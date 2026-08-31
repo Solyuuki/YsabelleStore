@@ -45,20 +45,16 @@ const registerSource = readFileSync(
   resolve(process.cwd(), "src/pages/customer/CustomerRegisterPage.tsx"),
   "utf8"
 );
-const registrationMobilePanelSource = readFileSync(
-  resolve(process.cwd(), "src/components/customer/CustomerMobileRegistrationPanel.tsx"),
-  "utf8"
-);
 const emailAuthPanelSource = readFileSync(
   resolve(process.cwd(), "src/components/customer/CustomerEmailAuthPanel.tsx"),
   "utf8"
 );
-const mobileAuthPanelSource = readFileSync(
-  resolve(process.cwd(), "src/components/customer/CustomerMobileAuthPanel.tsx"),
-  "utf8"
-);
 const knownAccountsSource = readFileSync(
   resolve(process.cwd(), "src/components/customer/CustomerKnownAccounts.tsx"),
+  "utf8"
+);
+const socialButtonsSource = readFileSync(
+  resolve(process.cwd(), "src/components/customer/CustomerSocialAuthButtons.tsx"),
   "utf8"
 );
 const authServiceSource = readFileSync(
@@ -66,16 +62,11 @@ const authServiceSource = readFileSync(
   "utf8"
 );
 
-assert.match(registerSource, /CustomerMobileRegistrationPanel/);
-assert.match(registerSource, /onMobileStart/);
-assert.doesNotMatch(registerSource, /customer-register-mobile__action/);
-assert.match(registrationMobilePanelSource, /requestCustomerRegistrationMobileVerification/);
-assert.match(registrationMobilePanelSource, /verifyCustomerRegistrationMobileVerification/);
-assert.match(registrationMobilePanelSource, /Mobile sign-up/);
-assert.match(registrationMobilePanelSource, /Send code/);
-assert.match(registrationMobilePanelSource, /Verify/);
-assert.match(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/request/);
-assert.match(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/verify/);
+assert.doesNotMatch(registerSource, /CustomerMobileRegistrationPanel/);
+assert.doesNotMatch(registerSource, /onMobileStart/);
+assert.doesNotMatch(registerSource, /Verify Mobile Number/);
+assert.doesNotMatch(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/request/);
+assert.doesNotMatch(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/verify/);
 
 assert.match(loginSource, /CustomerKnownAccounts/);
 assert.match(knownAccountsSource, /Known accounts/);
@@ -83,7 +74,6 @@ assert.match(knownAccountsSource, /Continue/);
 assert.match(knownAccountsSource, /Forget/);
 assert.match(knownAccountsSource, /Verification required/);
 assert.match(emailAuthPanelSource, /Remember this account for 30 days/);
-assert.match(mobileAuthPanelSource, /Remember this account for 30 days/);
 assert.match(authServiceSource, /\/api\/customer-auth\/remembered/);
 assert.match(authServiceSource, /rememberFor30Days/);
 assert.doesNotMatch(authServiceSource, /localStorage/);
@@ -91,19 +81,25 @@ assert.doesNotMatch(authServiceSource, /localStorage/);
 assert.match(loginSource, /googleHelperText="Use your Google account for faster sign-in\."/);
 assert.match(loginSource, /emailLabel="Email"/);
 assert.match(loginSource, /emailHelperText="Use your verified account email"/);
-assert.match(loginSource, /mobileLabel="Mobile"/);
-assert.match(loginSource, /mobileHelperText="Use your registered PH mobile number"/);
+assert.doesNotMatch(loginSource, /mobileLabel=/);
+assert.doesNotMatch(loginSource, /mobileHelperText=/);
+assert.doesNotMatch(loginSource, /requestCustomerMobileAuth/);
+assert.doesNotMatch(loginSource, /verifyCustomerMobileAuth/);
+assert.doesNotMatch(socialButtonsSource, /Mobile Quick Sign/);
+assert.doesNotMatch(socialButtonsSource, /onMobileClick/);
+assert.doesNotMatch(authServiceSource, /\/api\/customer-auth\/mobile\/request/);
+assert.doesNotMatch(authServiceSource, /\/api\/customer-auth\/mobile\/verify/);
 assert.doesNotMatch(loginSource, /Continue with Email OTP/);
 assert.doesNotMatch(loginSource, /Continue with Mobile OTP/);
 
 assert.match(registerSource, /Verify Email Address/);
-assert.match(registerSource, /Verify Mobile Number/);
 assert.match(
   registerSource,
   /googleHelperText="Verify your Google account for faster sign-up and sign-in\."/
 );
 assert.match(registerSource, /emailHelperText="Verify the required email for your new account\."/);
-assert.match(registerSource, /mobileHelperText="Verify an optional PH mobile number\."/);
+assert.doesNotMatch(registerSource, /mobileLabel=/);
+assert.doesNotMatch(registerSource, /mobileHelperText=/);
 assert.doesNotMatch(registerSource, /Continue with Email OTP/);
 assert.doesNotMatch(registerSource, /Continue with Mobile OTP/);
 
