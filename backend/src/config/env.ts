@@ -32,6 +32,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1).optional(),
   RESEND_API_KEY: z.string().min(1).optional(),
   CUSTOMER_RECOVERY_FROM_EMAIL: z.string().email().optional(),
+  CUSTOMER_REGISTRATION_DEV_OTP_TO: z.string().email().optional(),
   CUSTOMER_OAUTH_PUBLIC_BACKEND_URL: z.string().url().optional(),
   CUSTOMER_OAUTH_TRANSACTION_KEY: z.string().min(32).optional(),
   GOOGLE_OAUTH_CLIENT_ID: optionalNonEmptyString,
