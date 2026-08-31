@@ -9,24 +9,19 @@ on:
       - ".github/workflows/phase7-tdd.yml"
       - ".env.example"
       - "backend/src/config/env.ts"
-      - "backend/src/services/customerMobileSmsDeliveryService.ts"
-      - "backend/src/services/customerMobileAuthService.ts"
-      - "backend/src/services/customerMobileRegistrationService.ts"
       - "backend/src/services/customerIdentityEmailDeliveryService.ts"
       - "backend/src/services/customerEmailRegistrationService.ts"
       - "backend/src/services/customerEmailAuthService.ts"
+      - "backend/src/services/customerRememberedAuthService.ts"
       - "backend/src/controllers/customerAuthController.ts"
       - "backend/src/controllers/customerEmailVerificationController.ts"
+      - "backend/src/controllers/customerRememberedAuthController.ts"
       - "backend/src/routes/customerAuth.routes.ts"
-      - "backend/test/customer-mobile-sms-delivery.test.ts"
-      - "backend/test/customer-mobile-production-delivery.test.ts"
-      - "backend/test/customer-mobile-auth-delivery.test.ts"
-      - "backend/test/customer-mobile-auth.test.ts"
-      - "backend/test/customer-mobile-registration.test.ts"
       - "backend/test/customer-email-delivery.test.ts"
       - "backend/test/customer-email-registration.test.ts"
       - "backend/test/customer-email-auth.test.ts"
       - "backend/test/customer-legacy-identity-upgrade.test.ts"
+      - "backend/test/customer-remembered-auth.test.ts"
 
 permissions:
   contents: read
@@ -69,12 +64,8 @@ jobs:
       - name: Run focused Phase 7 OTP tests
         run: >-
           npx tsx --test --test-concurrency=1
-          backend/test/customer-mobile-sms-delivery.test.ts
-          backend/test/customer-mobile-production-delivery.test.ts
-          backend/test/customer-mobile-auth-delivery.test.ts
-          backend/test/customer-mobile-auth.test.ts
-          backend/test/customer-mobile-registration.test.ts
           backend/test/customer-email-delivery.test.ts
           backend/test/customer-email-registration.test.ts
           backend/test/customer-email-auth.test.ts
           backend/test/customer-legacy-identity-upgrade.test.ts
+          backend/test/customer-remembered-auth.test.ts
