@@ -13,7 +13,7 @@ export const CUSTOMER_REMEMBERED_MAX_ACCOUNTS = 3;
 export type CustomerRememberedAccount = {
   id: string;
   name: string;
-  method: CustomerRememberedAuthMethod;
+  method: "EMAIL";
   maskedIdentifier: string;
   trusted: boolean;
   trustedUntil: string;
@@ -32,23 +32,15 @@ function maskEmail(email: string): string {
   return `${visible}${"•".repeat(Math.max(3, Math.min(6, local.length - visible.length || 3)))}@${domain}`;
 }
 
-function maskMobile(phone: string | null): string {
-  if (!phone) return "09•••••••••";
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length < 4) return "••••";
-  return `${digits.slice(0, 2)}${"•".repeat(Math.max(4, digits.length - 4))}${digits.slice(-2)}`;
-}
-
 function toRememberedAccount(
   row: {
     id: string;
-    authMethod: CustomerRememberedAuthMethod;
+    authMethod: "EMAIL";
     trustedUntil: Date;
     lastUsedAt: Date | null;
     customerAccount: {
       name: string;
       email: string;
-      phoneNormalized: string | null;
     };
   },
   now: Date
@@ -56,11 +48,8 @@ function toRememberedAccount(
   return {
     id: row.id,
     name: row.customerAccount.name,
-    method: row.authMethod,
-    maskedIdentifier:
-      row.authMethod === "EMAIL"
-        ? maskEmail(row.customerAccount.email)
-        : maskMobile(row.customerAccount.phoneNormalized),
+    method: "EMAIL",
+    maskedIdentifier: maskEmail(row.customerAccount.email),
     trusted: row.trustedUntil.getTime() > now.getTime(),
     trustedUntil: row.trustedUntil.toISOString(),
     lastUsedAt: row.lastUsedAt?.toISOString() ?? null
@@ -74,13 +63,12 @@ export async function listCustomerRememberedAccounts(
   if (!browserTokenHash) return [];
 
   const rows = await prisma.customerRememberedAuth.findMany({
-    where: { browserTokenHash },
+    where: { browserTokenHash, authMethod: "EMAIL" },
     include: {
       customerAccount: {
         select: {
           name: true,
-          email: true,
-          phoneNormalized: true
+          email: true
         }
       }
     },
@@ -97,6 +85,10 @@ export async function rememberCustomerAccount(input: {
   customerAccountId: string;
   now?: Date;
 }): Promise<{ remembered: boolean; slotLimitReached: boolean }> {
+  if (input.authMethod !== "EMAIL") {
+    return { remembered: false, slotLimitReached: false };
+  }
+
   const now = input.now ?? new Date();
   const trustedUntil = new Date(now.getTime() + CUSTOMER_REMEMBERED_TRUST_LIFETIME_MS);
 
@@ -115,7 +107,7 @@ export async function rememberCustomerAccount(input: {
         await transaction.customerRememberedAuth.update({
           where: { id: existing.id },
           data: {
-            authMethod: input.authMethod,
+            authMethod: "EMAIL",
             trustedUntil,
             lastUsedAt: now
           }
@@ -124,7 +116,7 @@ export async function rememberCustomerAccount(input: {
       }
 
       const count = await transaction.customerRememberedAuth.count({
-        where: { browserTokenHash: input.browserTokenHash }
+        where: { browserTokenHash, authMethod: "EMAIL" }
       });
       if (count >= CUSTOMER_REMEMBERED_MAX_ACCOUNTS) {
         return { remembered: false, slotLimitReached: true };
@@ -134,7 +126,7 @@ export async function rememberCustomerAccount(input: {
         data: {
           browserTokenHash: input.browserTokenHash,
           customerAccountId: input.customerAccountId,
-          authMethod: input.authMethod,
+          authMethod: "EMAIL",
           trustedUntil,
           lastUsedAt: now
         }
@@ -154,7 +146,8 @@ export async function continueRememberedCustomer(input: {
   const row = await prisma.customerRememberedAuth.findFirst({
     where: {
       id: input.rememberedAccountId,
-      browserTokenHash: input.browserTokenHash
+      browserTokenHash: input.browserTokenHash,
+      authMethod: "EMAIL"
     },
     include: { customerAccount: true }
   });
@@ -172,7 +165,8 @@ export async function continueRememberedCustomer(input: {
   await prisma.customerRememberedAuth.updateMany({
     where: {
       id: row.id,
-      browserTokenHash: input.browserTokenHash
+      browserTokenHash: input.browserTokenHash,
+      authMethod: "EMAIL"
     },
     data: { lastUsedAt: now }
   });
@@ -215,7 +209,8 @@ export async function getCustomerRememberedAuthRow(input: {
   return prisma.customerRememberedAuth.findFirst({
     where: {
       id: input.rememberedAccountId,
-      browserTokenHash: input.browserTokenHash
+      browserTokenHash: input.browserTokenHash,
+      authMethod: "EMAIL"
     },
     include: { customerAccount: true }
   });
