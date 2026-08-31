@@ -48,6 +48,13 @@ function testPhone(suffix: string) {
   return `0917${numeric.toString().padStart(7, "0")}`;
 }
 
+async function markPhoneVerified(customerAccountId: string) {
+  await prisma.customerAccount.update({
+    where: { id: customerAccountId },
+    data: { phoneVerifiedAt: new Date() }
+  });
+}
+
 function mobileOtpHash(challengeId: string, phoneNormalized: string, verificationCode: string) {
   const secret = env.JWT_SECRET?.trim();
   assert.ok(secret);
@@ -98,6 +105,7 @@ test("mobile quick sign request creates a short-lived hashed challenge for the m
     password: "MobilePassword123!"
   });
   createdCustomerIds.push(registered.customer.id);
+  await markPhoneVerified(registered.customer.id);
 
   const before = Date.now();
   await withServer(async (baseUrl) => {
@@ -141,6 +149,7 @@ test("mobile OTP resend waits 30 seconds before rotating the active challenge", 
     password: "MobilePassword123!"
   });
   createdCustomerIds.push(registered.customer.id);
+  await markPhoneVerified(registered.customer.id);
 
   const deliveries: string[] = [];
   const delivery = async ({ verificationCode }: { phone: string; verificationCode: string }) => {
@@ -247,6 +256,7 @@ test("valid mobile OTP consumes its challenge and creates a normal customer sess
     password: "MobilePassword123!"
   });
   createdCustomerIds.push(registered.customer.id);
+  await markPhoneVerified(registered.customer.id);
   await prisma.customerSession.deleteMany({ where: { customerAccountId: registered.customer.id } });
 
   const verificationCode = "246810";
@@ -306,6 +316,7 @@ test("five wrong mobile OTP attempts permanently lock the current challenge", as
     password: "MobilePassword123!"
   });
   createdCustomerIds.push(registered.customer.id);
+  await markPhoneVerified(registered.customer.id);
   await prisma.customerSession.deleteMany({ where: { customerAccountId: registered.customer.id } });
 
   const verificationCode = "135790";
