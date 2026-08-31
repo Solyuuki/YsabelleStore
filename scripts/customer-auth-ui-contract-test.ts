@@ -88,9 +88,22 @@ assert.match(authServiceSource, /\/api\/customer-auth\/remembered/);
 assert.match(authServiceSource, /rememberFor30Days/);
 assert.doesNotMatch(authServiceSource, /localStorage/);
 
+assert.match(loginSource, /googleHelperText="Use your Google account for faster sign-in\."/);
+assert.match(loginSource, /emailLabel="Email"/);
+assert.match(loginSource, /emailHelperText="Use your verified account email"/);
+assert.match(loginSource, /mobileLabel="Mobile"/);
+assert.match(loginSource, /mobileHelperText="Use your registered PH mobile number"/);
+assert.doesNotMatch(loginSource, /Continue with Email OTP/);
+assert.doesNotMatch(loginSource, /Continue with Mobile OTP/);
+
 assert.match(registerSource, /Verify Email Address/);
 assert.match(registerSource, /Verify Mobile Number/);
-assert.match(registerSource, /Use your Google account for faster sign-up and sign-in\./);
+assert.match(
+  registerSource,
+  /googleHelperText="Verify your Google account for faster sign-up and sign-in\."/
+);
+assert.match(registerSource, /emailHelperText="Verify the required email for your new account\."/);
+assert.match(registerSource, /mobileHelperText="Verify an optional PH mobile number\."/);
 assert.doesNotMatch(registerSource, /Continue with Email OTP/);
 assert.doesNotMatch(registerSource, /Continue with Mobile OTP/);
 
