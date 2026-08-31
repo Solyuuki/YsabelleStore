@@ -13,11 +13,6 @@ import {
   listCustomerRememberedAccounts,
   rememberCustomerAccount
 } from "../services/customerRememberedAuthService.js";
-import {
-  CustomerMobileAuthDeliveryError,
-  requestCustomerMobileAuth,
-  verifyCustomerMobileAuth
-} from "../services/customerMobileAuthService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { setCustomerSessionCookie } from "../utils/customerAuthCookie.js";
 import {
@@ -49,13 +44,13 @@ export async function rememberAuthenticatedCustomerForBrowser(input: {
   authMethod: CustomerRememberedAuthMethod;
   rememberFor30Days: boolean;
 }) {
-  if (!input.rememberFor30Days) {
+  if (!input.rememberFor30Days || input.authMethod !== "EMAIL") {
     return { remembered: false, slotLimitReached: false };
   }
 
   const { tokenHash } = ensureCustomerRememberedBrowserCredential(input.request, input.response);
   return rememberCustomerAccount({
-    authMethod: input.authMethod,
+    authMethod: "EMAIL",
     browserTokenHash: tokenHash,
     customerAccountId: input.customerAccountId
   });
@@ -142,33 +137,18 @@ export const requestCustomerRememberedAuthVerification: RequestHandler = async (
     if (!row || row.customerAccount.status !== "ACTIVE") throw invalidRememberedAccount();
 
     try {
-      if (row.authMethod === "EMAIL") {
-        if (!row.customerAccount.emailVerifiedAt) throw invalidRememberedAccount();
-        await requestCustomerEmailAuth({ email: row.customerAccount.email });
-      } else {
-        if (!row.customerAccount.phoneVerifiedAt || !row.customerAccount.phoneNormalized) {
-          throw invalidRememberedAccount();
-        }
-        await requestCustomerMobileAuth({ phone: row.customerAccount.phoneNormalized });
-      }
+      await requestCustomerEmailAuth({ email: row.customerAccount.email });
     } catch (error) {
-      if (
-        error instanceof CustomerIdentityEmailDeliveryError ||
-        error instanceof CustomerMobileAuthDeliveryError
-      ) {
+      if (error instanceof CustomerIdentityEmailDeliveryError) {
         console.error(JSON.stringify({ event: "customer_remembered_auth_delivery_failed" }));
       } else {
         throw error;
       }
     }
 
-    const [account] = await listCustomerRememberedAccounts(browserTokenHash);
-    const safeAccount =
-      account?.id === row.id
-        ? account
-        : (await listCustomerRememberedAccounts(browserTokenHash)).find(
-            (candidate) => candidate.id === row.id
-          );
+    const safeAccount = (await listCustomerRememberedAccounts(browserTokenHash)).find(
+      (candidate) => candidate.id === row.id
+    );
 
     response.status(200).json(
       createSuccessResponse("A verification code will be sent for this remembered account.", {
@@ -198,23 +178,13 @@ export const verifyCustomerRememberedAuthAccount: RequestHandler = async (
     });
     if (!row || row.customerAccount.status !== "ACTIVE") throw invalidRememberedAccount();
 
-    const session =
-      row.authMethod === "EMAIL"
-        ? await verifyCustomerEmailAuth({
-            email: row.customerAccount.email,
-            verificationCode: parsedBody.data.verificationCode
-          })
-        : row.customerAccount.phoneNormalized
-          ? await verifyCustomerMobileAuth({
-              phone: row.customerAccount.phoneNormalized,
-              verificationCode: parsedBody.data.verificationCode
-            })
-          : null;
-
-    if (!session) throw invalidRememberedAccount();
+    const session = await verifyCustomerEmailAuth({
+      email: row.customerAccount.email,
+      verificationCode: parsedBody.data.verificationCode
+    });
 
     await rememberCustomerAccount({
-      authMethod: row.authMethod,
+      authMethod: "EMAIL",
       browserTokenHash,
       customerAccountId: row.customerAccountId
     });
