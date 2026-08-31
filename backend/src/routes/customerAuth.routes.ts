@@ -20,6 +20,13 @@ import {
   verifyCustomerRegistrationEmailVerification
 } from "../controllers/customerEmailVerificationController.js";
 import {
+  continueCustomerRememberedAuthAccount,
+  forgetCustomerRememberedAuthAccount,
+  listCustomerRememberedAuthAccounts,
+  requestCustomerRememberedAuthVerification,
+  verifyCustomerRememberedAuthAccount
+} from "../controllers/customerRememberedAuthController.js";
+import {
   completeCustomerSocialAuth,
   completeCustomerSocialLinkAccount,
   redeemCustomerElectronSocialAuth,
@@ -247,6 +254,27 @@ customerAuthRouter.post(
   customerLoginRateLimit,
   customerLoginIdentifierRateLimit,
   loginCustomerAccount
+);
+customerAuthRouter.get("/remembered", listCustomerRememberedAuthAccounts);
+customerAuthRouter.post(
+  "/remembered/continue",
+  requireAllowedCustomerAuthOrigin,
+  continueCustomerRememberedAuthAccount
+);
+customerAuthRouter.post(
+  "/remembered/request",
+  requireAllowedCustomerAuthOrigin,
+  requestCustomerRememberedAuthVerification
+);
+customerAuthRouter.post(
+  "/remembered/verify",
+  requireAllowedCustomerAuthOrigin,
+  verifyCustomerRememberedAuthAccount
+);
+customerAuthRouter.delete(
+  "/remembered/:id",
+  requireAllowedCustomerAuthOrigin,
+  forgetCustomerRememberedAuthAccount
 );
 customerAuthRouter.post(
   "/email/request",
