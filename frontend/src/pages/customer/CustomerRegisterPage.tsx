@@ -336,7 +336,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             </div>
             <CustomerSocialAuthButtons
               busyProvider={busySocialProvider}
-              googleHelperText="Use your Google account for faster sign-up and sign-in."
+              googleHelperText="Verify your Google account for faster sign-up and sign-in."
               emailLabel="Verify Email Address"
               emailHelperText="Verify the required email for your new account."
               mobileLabel="Verify Mobile Number"
