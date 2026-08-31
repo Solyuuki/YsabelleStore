@@ -35,8 +35,9 @@ export function CustomerKnownAccounts({
   onUseAnotherAccount: () => void;
 }) {
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [verificationAccount, setVerificationAccount] =
-    useState<CustomerRememberedAccount | null>(null);
+  const [verificationAccount, setVerificationAccount] = useState<CustomerRememberedAccount | null>(
+    null
+  );
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -77,9 +78,7 @@ export function CustomerKnownAccounts({
       }
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to forget this account."
+        caughtError instanceof Error ? caughtError.message : "Unable to forget this account."
       );
     } finally {
       setBusyId(null);
@@ -104,9 +103,7 @@ export function CustomerKnownAccounts({
       await onAuthenticated();
     } catch (caughtError) {
       setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Unable to verify this known account."
+        caughtError instanceof Error ? caughtError.message : "Unable to verify this known account."
       );
     } finally {
       setBusyId(null);
@@ -188,7 +185,7 @@ export function CustomerKnownAccounts({
           <p className="customer-eyebrow">Quick sign in</p>
           <h2>Known accounts</h2>
           <p>
-            Continue on this browser without another code while its 30-day trust is active. {" "}
+            Continue on this browser without another code while its 30-day trust is active.{" "}
             {accounts.length}/{maxAccounts} slots used.
           </p>
         </div>
