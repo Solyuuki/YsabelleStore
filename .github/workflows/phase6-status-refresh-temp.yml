@@ -1,9 +1,9 @@
-name: Phase 6 Status Refresh Temp
+name: Phase 7 Status Refresh Temp
 
 on:
   push:
     branches:
-      - "m1/v0.9/feat/customer-social-auth"
+      - "m1/v0.9/feat/customer-mobile-otp"
     paths:
       - ".github/workflows/phase6-status-refresh-temp.yml"
 
@@ -34,10 +34,8 @@ jobs:
       JWT_SECRET: ci-only-secret
       CUSTOMER_OAUTH_TRANSACTION_KEY: ci-only-oauth-transaction-key-32-bytes-minimum
       FRONTEND_URL: http://localhost:5173
-      YSABELLE_BRANCH: ${{ github.head_ref || github.ref_name }}
-      YSABELLE_BASE_REF: ${{ github.base_ref }}
-      YSABELLE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-      YSABELLE_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+      YSABELLE_BRANCH: ${{ github.ref_name }}
+      YSABELLE_HEAD_SHA: ${{ github.sha }}
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -48,9 +46,19 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Install dependencies
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Node dependencies
         run: npm ci
-      - name: Refresh committed Phase 6 status evidence
+      - name: Install catalog image test dependency
+        run: python -m pip install -r catalog-image-engine/requirements.txt
+      - name: Build disposable CI database
+        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+      - name: Run aggregate read-only code verification
+        run: npm run verify:code
+      - name: Refresh committed Phase 7 status evidence
         run: npm run status:update -- --validation Passed
       - name: Verify refreshed status evidence
         run: npm run verify:status
@@ -63,5 +71,5 @@ jobs:
             echo "No status evidence changes to commit."
             exit 0
           fi
-          git commit -m "docs(auth): refresh phase 6 status evidence"
-          git push origin HEAD:m1/v0.9/feat/customer-social-auth
+          git commit -m "docs(auth): refresh phase 7 status evidence"
+          git push origin HEAD:m1/v0.9/feat/customer-mobile-otp
