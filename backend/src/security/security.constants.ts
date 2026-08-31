@@ -34,6 +34,46 @@ export const AUTH_RATE_LIMITS = {
     maxAttempts: 3,
     scope: "customer-register-identity"
   },
+  customerEmailRegistrationRequest: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 30,
+    scope: "customer-email-registration-request"
+  },
+  customerEmailRegistrationEmail: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 5,
+    scope: "customer-email-registration-email"
+  },
+  customerEmailRegistrationVerify: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 50,
+    scope: "customer-email-registration-verify"
+  },
+  customerEmailRegistrationVerifyEmail: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 10,
+    scope: "customer-email-registration-verify-email"
+  },
+  customerEmailAuthRequest: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 30,
+    scope: "customer-email-auth-request"
+  },
+  customerEmailAuthEmail: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 5,
+    scope: "customer-email-auth-email"
+  },
+  customerEmailAuthVerify: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 50,
+    scope: "customer-email-auth-verify"
+  },
+  customerEmailAuthVerifyEmail: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 10,
+    scope: "customer-email-auth-verify-email"
+  },
   customerMobileAuthRequest: {
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     maxAttempts: 30,
