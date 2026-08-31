@@ -26,7 +26,7 @@ function isValidCustomerUsername(value: string) {
   return !RESERVED_CUSTOMER_USERNAMES.has(normalized);
 }
 
-function isValidPhilippineMobile(value: string) {
+export function isValidPhilippineMobile(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return true;
   if (!/^[+()\d\s-]+$/.test(trimmed)) return false;
