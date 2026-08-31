@@ -41,16 +41,23 @@ const registerSource = readFileSync(
   resolve(process.cwd(), "src/pages/customer/CustomerRegisterPage.tsx"),
   "utf8"
 );
+const registrationMobilePanelSource = readFileSync(
+  resolve(process.cwd(), "src/components/customer/CustomerMobileRegistrationPanel.tsx"),
+  "utf8"
+);
 const authServiceSource = readFileSync(
   resolve(process.cwd(), "src/services/customerAuthService.ts"),
   "utf8"
 );
 
-assert.match(registerSource, /requestCustomerRegistrationMobileVerification/);
-assert.match(registerSource, /verifyCustomerRegistrationMobileVerification/);
-assert.match(registerSource, /Send code/);
-assert.match(registerSource, /Verify code/);
-assert.match(registerSource, /Verified/);
+assert.match(registerSource, /CustomerMobileRegistrationPanel/);
+assert.match(registerSource, /onMobileStart/);
+assert.doesNotMatch(registerSource, /customer-register-mobile__action/);
+assert.match(registrationMobilePanelSource, /requestCustomerRegistrationMobileVerification/);
+assert.match(registrationMobilePanelSource, /verifyCustomerRegistrationMobileVerification/);
+assert.match(registrationMobilePanelSource, /Mobile sign-up/);
+assert.match(registrationMobilePanelSource, /Send code/);
+assert.match(registrationMobilePanelSource, /Verify/);
 assert.match(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/request/);
 assert.match(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/verify/);
 
