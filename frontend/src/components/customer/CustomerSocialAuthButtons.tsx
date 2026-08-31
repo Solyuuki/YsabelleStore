@@ -4,7 +4,10 @@ import type { CustomerSocialAuthProvider } from "@/services/customerSocialAuthSe
 
 type CustomerSocialAuthButtonsProps = {
   busyProvider: CustomerSocialAuthProvider | null;
+  googleHelperText?: string;
+  emailLabel?: string;
   emailHelperText?: string;
+  mobileLabel?: string;
   mobileHelperText?: string;
   onEmailStart?: () => void;
   onMobileStart?: () => void;
@@ -36,7 +39,10 @@ function GoogleMark() {
 
 export function CustomerSocialAuthButtons({
   busyProvider,
+  googleHelperText,
+  emailLabel = "Continue with Email OTP",
   emailHelperText = "Use your verified account email",
+  mobileLabel = "Continue with Mobile OTP",
   mobileHelperText = "Use your registered PH mobile number",
   onEmailStart,
   onMobileStart,
@@ -53,7 +59,10 @@ export function CustomerSocialAuthButtons({
         <span className="customer-social-auth__mark">
           <GoogleMark />
         </span>
-        <span>{busyProvider === "google" ? "Opening Google..." : "Continue with Google"}</span>
+        <span>
+          {busyProvider === "google" ? "Opening Google..." : "Continue with Google"}
+          {googleHelperText ? <small>{googleHelperText}</small> : null}
+        </span>
       </button>
 
       {onEmailStart ? (
@@ -67,7 +76,7 @@ export function CustomerSocialAuthButtons({
             <Mail aria-hidden="true" size={20} />
           </span>
           <span>
-            Continue with Email OTP
+            {emailLabel}
             <small>{emailHelperText}</small>
           </span>
         </button>
@@ -84,7 +93,7 @@ export function CustomerSocialAuthButtons({
             <Smartphone aria-hidden="true" size={20} />
           </span>
           <span>
-            Continue with Mobile OTP
+            {mobileLabel}
             <small>{mobileHelperText}</small>
           </span>
         </button>
