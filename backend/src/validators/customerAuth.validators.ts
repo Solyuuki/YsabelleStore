@@ -73,6 +73,8 @@ const verificationCodeSchema = z
   .trim()
   .regex(/^\d{6}$/);
 
+const rememberedAccountIdSchema = z.string().trim().min(1).max(191);
+
 export const customerRegisterSchema = z.object({
   name: z.string().trim().min(2).max(120),
   username: customerUsernameSchema,
@@ -92,7 +94,8 @@ export const customerEmailAuthRequestSchema = z.object({
 
 export const customerEmailAuthVerifySchema = z.object({
   email: customerEmailSchema,
-  verificationCode: verificationCodeSchema
+  verificationCode: verificationCodeSchema,
+  rememberFor30Days: z.boolean().optional()
 });
 
 export const customerMobileAuthRequestSchema = z.object({
@@ -101,6 +104,16 @@ export const customerMobileAuthRequestSchema = z.object({
 
 export const customerMobileAuthVerifySchema = z.object({
   phone: requiredPhilippineMobileSchema,
+  verificationCode: verificationCodeSchema,
+  rememberFor30Days: z.boolean().optional()
+});
+
+export const customerRememberedContinueSchema = z.object({
+  rememberedAccountId: rememberedAccountIdSchema
+});
+
+export const customerRememberedVerifySchema = z.object({
+  rememberedAccountId: rememberedAccountIdSchema,
   verificationCode: verificationCodeSchema
 });
 
