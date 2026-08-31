@@ -3,10 +3,15 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
 import { CustomerEmailAuthPanel } from "@/components/customer/CustomerEmailAuthPanel";
+import { CustomerKnownAccounts } from "@/components/customer/CustomerKnownAccounts";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { CustomerMobileAuthPanel } from "@/components/customer/CustomerMobileAuthPanel";
 import { CustomerSocialAuthButtons } from "@/components/customer/CustomerSocialAuthButtons";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import {
+  getCustomerRememberedAccounts,
+  type CustomerRememberedAccount
+} from "@/services/customerAuthService";
 import {
   completeCustomerSocialLink,
   getCustomerSocialAuthNotice,
@@ -26,6 +31,10 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [quickSignPanel, setQuickSignPanel] = useState<QuickSignPanel>(null);
+  const [rememberedAccounts, setRememberedAccounts] = useState<CustomerRememberedAccount[]>([]);
+  const [maxRememberedAccounts, setMaxRememberedAccounts] = useState(3);
+  const [rememberedLoaded, setRememberedLoaded] = useState(false);
+  const [showManualLogin, setShowManualLogin] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(
     null
@@ -42,6 +51,28 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     }
     globalThis.addEventListener("pageshow", restoreInteractiveState);
     return () => globalThis.removeEventListener("pageshow", restoreInteractiveState);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void getCustomerRememberedAccounts()
+      .then(({ accounts, maxAccounts }) => {
+        if (!active) return;
+        setRememberedAccounts(accounts);
+        setMaxRememberedAccounts(maxAccounts);
+        setShowManualLogin(accounts.length === 0);
+      })
+      .catch(() => {
+        if (!active) return;
+        setShowManualLogin(true);
+      })
+      .finally(() => {
+        if (active) setRememberedLoaded(true);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -87,6 +118,12 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     navigate("/account");
   }
 
+  const showKnownAccounts =
+    rememberedLoaded &&
+    rememberedAccounts.length > 0 &&
+    !showManualLogin &&
+    quickSignPanel === null;
+
   return (
     <CustomerAuthFrame mode="login" navigate={navigate}>
       <div className="customer-auth-card">
@@ -99,8 +136,33 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
           <p>Sign in with your password or use a verified email/mobile identity for Quick Sign.</p>
         </div>
 
-        {quickSignPanel === null ? (
+        {!rememberedLoaded ? (
+          <div className="customer-known-accounts__loading" role="status">
+            Checking known accounts...
+          </div>
+        ) : showKnownAccounts ? (
+          <CustomerKnownAccounts
+            accounts={rememberedAccounts}
+            maxAccounts={maxRememberedAccounts}
+            onAccountsChange={(accounts) => {
+              setRememberedAccounts(accounts);
+              if (accounts.length === 0) setShowManualLogin(true);
+            }}
+            onAuthenticated={handleOtpVerified}
+            onUseAnotherAccount={() => setShowManualLogin(true)}
+          />
+        ) : quickSignPanel === null ? (
           <>
+            {rememberedAccounts.length > 0 ? (
+              <button
+                className="customer-known-accounts__back-link"
+                onClick={() => setShowManualLogin(false)}
+                type="button"
+              >
+                Back to known accounts
+              </button>
+            ) : null}
+
             <form
               aria-busy={submitting}
               className="customer-auth-form"
