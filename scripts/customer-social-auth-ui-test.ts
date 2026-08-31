@@ -14,7 +14,7 @@ const starts: CustomerSocialAuthProvider[] = [];
 const markup = renderToStaticMarkup(
   createElement(CustomerSocialAuthButtons, {
     busyProvider: null,
-    onMobileStart() {},
+    onEmailStart() {},
     onStart(provider: CustomerSocialAuthProvider) {
       starts.push(provider);
     }
@@ -22,7 +22,8 @@ const markup = renderToStaticMarkup(
 );
 
 assert.match(markup, /Continue with Google/);
-assert.match(markup, /Continue with Mobile OTP/);
+assert.match(markup, /Continue with Email OTP/);
+assert.doesNotMatch(markup, /Continue with Mobile OTP/);
 assert.doesNotMatch(markup, /Available in Phase 7/);
 assert.doesNotMatch(markup, /Continue with Facebook/);
 assert.doesNotMatch(markup, /#1877F2/i);
@@ -51,40 +52,6 @@ assert.ok(premiumLabelBody, "Premium social label rule should exist.");
 assert.match(premiumLabelBody, /font-weight:\s*900;/);
 assert.match(premiumLabelBody, /color:\s*#171a2b;/);
 
-const mobilePanelSource = readFileSync(
-  new URL("../frontend/src/components/customer/CustomerMobileAuthPanel.tsx", import.meta.url),
-  "utf8"
-);
-assert.match(mobilePanelSource, /Mobile sign-in/);
-assert.match(mobilePanelSource, /Enter code/);
-assert.match(mobilePanelSource, /Code expires in 10 minutes/);
-assert.match(mobilePanelSource, /Resend code/);
-assert.match(mobilePanelSource, /Resend in/);
-assert.match(mobilePanelSource, /Change number/);
-assert.match(mobilePanelSource, /Other sign-in methods/);
-assert.doesNotMatch(mobilePanelSource, /Secure quick sign-in/);
-assert.doesNotMatch(mobilePanelSource, /Protected verification/);
-assert.doesNotMatch(
-  mobilePanelSource,
-  /Use the Philippine mobile number already linked to your customer account\./
-);
-assert.doesNotMatch(mobilePanelSource, /customer-mobile-auth__security/);
-assert.match(
-  quickSignCss,
-  /backdrop-filter:\s*blur\(18px\)/,
-  "Mobile OTP panel should keep restrained glass depth."
-);
-assert.match(
-  quickSignCss,
-  /\.customer-mobile-auth::before\s*\{/,
-  "Mobile OTP panel should keep a contained gradient highlight."
-);
-assert.doesNotMatch(
-  quickSignCss,
-  /\.customer-mobile-auth__security\s*\{/,
-  "Minimal Mobile OTP should not render a separate security information card."
-);
-
 const registerSource = readFileSync(
   new URL("../frontend/src/pages/customer/CustomerRegisterPage.tsx", import.meta.url),
   "utf8"
@@ -97,6 +64,9 @@ assert.ok(
   registerSocialButtons > registerFormEnd,
   "Register social actions should appear after the password registration form."
 );
+assert.doesNotMatch(registerSource, /CustomerMobileRegistrationPanel/);
+assert.doesNotMatch(registerSource, /onMobileStart/);
+assert.doesNotMatch(registerSource, /Verify Mobile Number/);
 assert.doesNotMatch(registerSource, /<span>Quick sign<\/span>/i);
 assert.doesNotMatch(registerSource, /<span>or create with password<\/span>/i);
 assert.match(
@@ -135,8 +105,8 @@ const loginSource = readFileSync(
   "utf8"
 );
 assert.match(loginSource, /completeCustomerSocialLink/);
-assert.match(loginSource, /CustomerMobileAuthPanel/);
-assert.match(loginSource, /onMobileStart/);
+assert.doesNotMatch(loginSource, /CustomerMobileAuthPanel/);
+assert.doesNotMatch(loginSource, /onMobileStart/);
 assert.match(
   loginSource,
   /addEventListener\(["']pageshow["']/,
