@@ -42,6 +42,11 @@ enum CustomerOAuthTransport {
   ELECTRON
 }
 
+enum CustomerRememberedAuthMethod {
+  EMAIL
+  MOBILE
+}
+
 enum ProductUnit {
   PIECE
   PACK
@@ -315,9 +320,28 @@ model CustomerAccount {
   socialLinkIntents   CustomerSocialLinkIntent[]
   oauthHandoffs       CustomerOAuthHandoff[]
   orders              CustomerOrder[]
+  rememberedAuth       CustomerRememberedAuth[]
 
   @@index([status], map: "idx_customer_accounts_status")
   @@map("customer_accounts")
+}
+
+model CustomerRememberedAuth {
+  id                String                       @id @default(cuid()) @db.VarChar(191)
+  browserTokenHash  String                       @map("browser_token_hash") @db.VarChar(64)
+  customerAccountId String                       @map("customer_account_id") @db.VarChar(191)
+  authMethod        CustomerRememberedAuthMethod @map("auth_method")
+  trustedUntil      DateTime                     @map("trusted_until")
+  lastUsedAt        DateTime?                    @map("last_used_at")
+  createdAt         DateTime                     @default(now()) @map("created_at")
+  updatedAt         DateTime                     @updatedAt @map("updated_at")
+  customerAccount   CustomerAccount              @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([browserTokenHash, customerAccountId], map: "uq_customer_remembered_auth_browser_customer")
+  @@index([browserTokenHash], map: "idx_customer_remembered_auth_browser")
+  @@index([customerAccountId], map: "idx_customer_remembered_auth_customer")
+  @@index([trustedUntil], map: "idx_customer_remembered_auth_trusted_until")
+  @@map("customer_remembered_auth")
 }
 
 model CustomerMobileAuthChallenge {
