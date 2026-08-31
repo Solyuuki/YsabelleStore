@@ -6,6 +6,11 @@ on:
       - m1/v0.9/feat/customer-mobile-otp
     paths:
       - .github/workflows/test-customer-remembered-auth-targeted.yml
+      - backend/test/customer-remembered-auth.test.ts
+      - backend/src/controllers/customerRememberedAuthController.ts
+      - backend/src/routes/customerAuth.routes.ts
+      - backend/src/services/customerRememberedAuthService.ts
+      - backend/src/utils/customerRememberedAuthCookie.ts
 
 jobs:
   test:
