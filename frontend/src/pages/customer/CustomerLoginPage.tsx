@@ -5,7 +5,6 @@ import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
 import { CustomerEmailAuthPanel } from "@/components/customer/CustomerEmailAuthPanel";
 import { CustomerKnownAccounts } from "@/components/customer/CustomerKnownAccounts";
 import { CustomerLink } from "@/components/customer/CustomerLink";
-import { CustomerMobileAuthPanel } from "@/components/customer/CustomerMobileAuthPanel";
 import { CustomerSocialAuthButtons } from "@/components/customer/CustomerSocialAuthButtons";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import {
@@ -22,7 +21,7 @@ import {
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerLoginForm } from "@/utils/customerAuthForms";
 
-type QuickSignPanel = "email" | "mobile" | null;
+type QuickSignPanel = "email" | null;
 
 export function CustomerLoginPage({ navigate }: { navigate: (path: string) => void }) {
   const { login, refreshSession } = useCustomerAuth();
@@ -133,7 +132,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
           </span>
           <p className="customer-eyebrow">Customer account</p>
           <h1>Welcome back</h1>
-          <p>Sign in with your password or use a verified email/mobile identity for Quick Sign.</p>
+          <p>Sign in with your password, verified email, or Google account.</p>
         </div>
 
         {!rememberedLoaded ? (
@@ -254,26 +253,15 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
               googleHelperText="Use your Google account for faster sign-in."
               emailLabel="Email"
               emailHelperText="Use your verified account email"
-              mobileLabel="Mobile"
-              mobileHelperText="Use your registered PH mobile number"
               onEmailStart={() => {
                 setServerError(null);
                 setQuickSignPanel("email");
               }}
-              onMobileStart={() => {
-                setServerError(null);
-                setQuickSignPanel("mobile");
-              }}
               onStart={handleSocialStart}
             />
           </>
-        ) : quickSignPanel === "email" ? (
-          <CustomerEmailAuthPanel
-            onCancel={() => setQuickSignPanel(null)}
-            onVerified={handleOtpVerified}
-          />
         ) : (
-          <CustomerMobileAuthPanel
+          <CustomerEmailAuthPanel
             onCancel={() => setQuickSignPanel(null)}
             onVerified={handleOtpVerified}
           />
