@@ -5,7 +5,6 @@ import {
   issueCustomerRegistrationIntent,
   loginCustomerAccount,
   logoutCustomerAccount,
-  registerCustomerAccount,
   requestCustomerMobileAuthAccount,
   requestCustomerPasswordRecoveryAccount,
   requestCustomerRegistrationMobileVerification,
@@ -25,6 +24,7 @@ import {
   startCustomerElectronSocialAuth,
   startCustomerSocialAuth
 } from "../controllers/customerSocialAuthController.js";
+import { registerVerifiedCustomerAccount } from "../controllers/customerVerifiedRegistrationController.js";
 import { createAuthRateLimit, derivePrivateRateLimitKey } from "../middleware/authRateLimit.js";
 import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
 import {
@@ -192,7 +192,7 @@ customerAuthRouter.post(
   customerRegisterUsernameRateLimit,
   customerRegisterEmailRateLimit,
   customerRegisterMobileRateLimit,
-  registerCustomerAccount
+  registerVerifiedCustomerAccount
 );
 customerAuthRouter.post(
   "/login",
