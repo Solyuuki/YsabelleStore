@@ -1,13 +1,25 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+type DevelopmentSmtpMessage = {
+  appPassword: string;
+  from: string;
+  html: string;
+  subject: string;
+  text: string;
+  to: string;
+  user: string;
+};
+
 type DeliveryModule = {
   createCustomerIdentityEmailDelivery?: (config: {
     apiKey?: string;
-    from?: string;
+    developmentSmtpAppPassword?: string;
+    developmentSmtpUser?: string;
     fetchImpl: typeof fetch;
+    from?: string;
     nodeEnv?: "development" | "test" | "production";
-    registrationDevOtpTo?: string;
+    smtpSendImpl?: (message: DevelopmentSmtpMessage) => Promise<void>;
   }) => (input: {
     to: string;
     verificationCode: string;
@@ -58,20 +70,24 @@ test("Resend registration delivery sends the Ysabelle-generated verification cod
   assert.match(String(body.html), /123456/);
 });
 
-test("development registration OTP may redirect to a configured QA inbox", async () => {
+test("development Gmail SMTP preserves actual recipients for registration and authentication", async () => {
   const module = await loadDeliveryModule();
   assert.ok(module.createCustomerIdentityEmailDelivery);
 
-  const recipients: string[][] = [];
+  const smtpMessages: DevelopmentSmtpMessage[] = [];
+  let resendCalled = false;
   const send = module.createCustomerIdentityEmailDelivery({
     apiKey: "re_test_key",
-    from: "onboarding@resend.dev",
+    from: "unverified@example.com",
     nodeEnv: "development",
-    registrationDevOtpTo: "qa.owner@gmail.com",
-    fetchImpl: async (_input, init) => {
-      const body = JSON.parse(String(init?.body)) as { to?: string[] };
-      recipients.push(body.to ?? []);
-      return new Response(JSON.stringify({ id: "email_dev_registration" }), { status: 200 });
+    developmentSmtpUser: "qa.sender@gmail.com",
+    developmentSmtpAppPassword: "app-password",
+    smtpSendImpl: async (message) => {
+      smtpMessages.push(message);
+    },
+    fetchImpl: async () => {
+      resendCalled = true;
+      return new Response(JSON.stringify({ id: "unexpected_resend_email" }), { status: 200 });
     }
   });
 
@@ -80,34 +96,22 @@ test("development registration OTP may redirect to a configured QA inbox", async
     verificationCode: "123456",
     purpose: "registration"
   });
-
-  assert.deepEqual(recipients, [["qa.owner@gmail.com"]]);
-});
-
-test("development OTP redirect also routes authentication to the configured QA inbox", async () => {
-  const module = await loadDeliveryModule();
-  assert.ok(module.createCustomerIdentityEmailDelivery);
-
-  let recipient: string[] = [];
-  const send = module.createCustomerIdentityEmailDelivery({
-    apiKey: "re_test_key",
-    from: "onboarding@resend.dev",
-    nodeEnv: "development",
-    registrationDevOtpTo: "qa.owner@gmail.com",
-    fetchImpl: async (_input, init) => {
-      const body = JSON.parse(String(init?.body)) as { to?: string[] };
-      recipient = body.to ?? [];
-      return new Response(JSON.stringify({ id: "email_dev_auth" }), { status: 200 });
-    }
-  });
-
   await send({
     to: "existing.customer@gmail.com",
     verificationCode: "654321",
     purpose: "authentication"
   });
 
-  assert.deepEqual(recipient, ["qa.owner@gmail.com"]);
+  assert.equal(resendCalled, false);
+  assert.deepEqual(
+    smtpMessages.map((message) => message.to),
+    ["brand.new.customer@gmail.com", "existing.customer@gmail.com"]
+  );
+  assert.equal(smtpMessages[0]?.from, "Ysabelle Store <qa.sender@gmail.com>");
+  assert.equal(smtpMessages[0]?.subject, "Verify your Ysabelle Store email");
+  assert.match(smtpMessages[0]?.text ?? "", /123456/);
+  assert.equal(smtpMessages[1]?.subject, "Your Ysabelle Store sign-in code");
+  assert.match(smtpMessages[1]?.text ?? "", /654321/);
 });
 
 test("Resend login delivery uses the authentication email copy", async () => {
