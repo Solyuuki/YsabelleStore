@@ -251,6 +251,8 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
             </div>
             <CustomerSocialAuthButtons
               busyProvider={busySocialProvider}
+              emailLabel="Email"
+              mobileLabel="Mobile"
               onEmailStart={() => {
                 setServerError(null);
                 setQuickSignPanel("email");
