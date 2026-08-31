@@ -15,6 +15,6 @@ test("customer accounts persist explicit email and mobile verification timestamp
   assert.ok(account === null || "phoneVerifiedAt" in account);
 });
 
-test("registration email OTP uses a dedicated challenge model", () => {
+test("registration email OTP uses its dedicated persisted challenge model", () => {
   assert.ok(prisma.customerEmailRegistrationChallenge);
 });
