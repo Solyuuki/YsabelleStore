@@ -1,26 +1,24 @@
 name: Apply customer email identity schema
 
-on:
-  push:
-    branches:
-      - m1/v0.9/feat/customer-mobile-otp
+on: push
 
 permissions:
   contents: write
 
 jobs:
   patch:
-    if: github.event.head_commit.message == 'chore(auth): apply customer email schema patch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: m1/v0.9/feat/customer-mobile-otp
-      - name: Patch Prisma schema and migration
-        run: node scripts/apply-customer-email-schema-patch.mjs
-      - name: Commit generated schema change
+      - name: Apply patch only for the patch commit
         shell: bash
         run: |
+          if [ "$(git log -1 --format=%s)" != "chore(auth): apply customer email schema patch" ]; then
+            exit 0
+          fi
+          node scripts/apply-customer-email-schema-patch.mjs
           rm .github/workflows/apply-customer-email-schema.yml
           rm scripts/apply-customer-email-schema-patch.mjs
           git config user.name "github-actions[bot]"
