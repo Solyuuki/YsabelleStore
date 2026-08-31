@@ -51,7 +51,13 @@ assert.match(registerSource, /verifyCustomerRegistrationMobileVerification/);
 assert.match(registerSource, /Send code/);
 assert.match(registerSource, /Verify code/);
 assert.match(registerSource, /Verified/);
-assert.match(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/request/);
-assert.match(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/verify/);
+assert.match(
+  authServiceSource,
+  /\/api\/customer-auth\/registration\/mobile\/request/
+);
+assert.match(
+  authServiceSource,
+  /\/api\/customer-auth\/registration\/mobile\/verify/
+);
 
 console.log("Customer auth UI state contract passed.");
