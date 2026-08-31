@@ -7,14 +7,17 @@ const EMAIL_OTP_RESEND_SECONDS = 30;
 
 export function CustomerEmailAuthPanel({
   onCancel,
-  onVerified
+  onVerified,
+  rememberDisabled = false
 }: {
   onCancel: () => void;
   onVerified: () => Promise<void> | void;
+  rememberDisabled?: boolean;
 }) {
   const [stage, setStage] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
+  const [rememberFor30Days, setRememberFor30Days] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +65,7 @@ export function CustomerEmailAuthPanel({
 
     setSubmitting(true);
     try {
-      await verifyCustomerEmailAuth({ email, verificationCode });
+      await verifyCustomerEmailAuth({ email, verificationCode, rememberFor30Days });
       await onVerified();
     } catch (caughtError) {
       setError(
@@ -144,6 +147,24 @@ export function CustomerEmailAuthPanel({
               value={verificationCode}
             />
           </label>
+
+          <label className="customer-remember-choice">
+            <input
+              checked={rememberFor30Days}
+              disabled={rememberDisabled || submitting}
+              onChange={(event) => setRememberFor30Days(event.target.checked)}
+              type="checkbox"
+            />
+            <span>
+              Remember this account for 30 days
+              <small>
+                {rememberDisabled
+                  ? "Forget a known account first to free one of the 3 slots."
+                  : "Skip another sign-in code on this browser until the trust expires."}
+              </small>
+            </span>
+          </label>
+
           <button className="customer-auth-submit" disabled={submitting} type="submit">
             {submitting ? "Verifying..." : "Verify"}
           </button>
