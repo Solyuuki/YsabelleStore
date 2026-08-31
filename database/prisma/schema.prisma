@@ -303,6 +303,8 @@ model CustomerAccount {
   email           String                @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
   phone           String?               @db.VarChar(40)
   phoneNormalized String?               @unique(map: "uq_customer_accounts_phone_normalized") @map("phone_normalized") @db.VarChar(16)
+  emailVerifiedAt DateTime?             @map("email_verified_at")
+  phoneVerifiedAt DateTime?             @map("phone_verified_at")
   passwordHash    String?               @map("password_hash") @db.VarChar(255)
   status          CustomerAccountStatus @default(ACTIVE)
   createdAt       DateTime              @default(now()) @map("created_at")
@@ -350,6 +352,40 @@ model CustomerMobileRegistrationChallenge {
   @@index([expiresAt], map: "idx_customer_mobile_registration_expires")
   @@index([consumedAt], map: "idx_customer_mobile_registration_consumed")
   @@map("customer_mobile_registration_challenges")
+}
+
+model CustomerEmailRegistrationChallenge {
+  id                     String    @id @db.VarChar(191)
+  registrationIntentHash String    @map("registration_intent_hash") @db.VarChar(64)
+  emailNormalized        String    @map("email_normalized") @db.VarChar(191)
+  otpHash                String    @map("otp_hash") @db.VarChar(64)
+  expiresAt              DateTime  @map("expires_at")
+  consumedAt             DateTime? @map("consumed_at")
+  failedAttempts         Int       @default(0) @map("failed_attempts") @db.UnsignedInt
+  createdAt              DateTime  @default(now()) @map("created_at")
+
+  @@index([registrationIntentHash, createdAt], map: "idx_customer_email_registration_intent_created")
+  @@index([emailNormalized, createdAt], map: "idx_customer_email_registration_email_created")
+  @@index([expiresAt], map: "idx_customer_email_registration_expires")
+  @@index([consumedAt], map: "idx_customer_email_registration_consumed")
+  @@map("customer_email_registration_challenges")
+}
+
+model CustomerEmailAuthChallenge {
+  id                String    @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String?   @map("customer_account_id") @db.VarChar(191)
+  emailNormalized   String    @map("email_normalized") @db.VarChar(191)
+  otpHash           String    @map("otp_hash") @db.VarChar(64)
+  expiresAt         DateTime  @map("expires_at")
+  consumedAt        DateTime? @map("consumed_at")
+  failedAttempts    Int       @default(0) @map("failed_attempts") @db.UnsignedInt
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@index([emailNormalized, createdAt], map: "idx_customer_email_auth_email_created")
+  @@index([customerAccountId], map: "idx_customer_email_auth_customer")
+  @@index([expiresAt], map: "idx_customer_email_auth_expires")
+  @@index([consumedAt], map: "idx_customer_email_auth_consumed")
+  @@map("customer_email_auth_challenges")
 }
 
 model CustomerSocialIdentity {
