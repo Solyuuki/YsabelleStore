@@ -2,8 +2,8 @@ import { createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto
 
 import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
+import { hashCustomerRegistrationIntent } from "../utils/customerRegistrationIntentHash.js";
 import { HttpError } from "../utils/httpError.js";
-import { hashCustomerRegistrationIntent } from "./customerMobileRegistrationService.js";
 import { sendCustomerIdentityVerificationEmail } from "./customerIdentityEmailDeliveryService.js";
 
 export const CUSTOMER_EMAIL_REGISTRATION_OTP_LIFETIME_MS = 10 * 60 * 1000;
