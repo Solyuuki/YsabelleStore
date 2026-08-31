@@ -18,6 +18,7 @@ type CustomerIdentityEmailDeliveryConfig = {
   from?: string;
   fetchImpl?: typeof fetch;
   nodeEnv?: "development" | "test" | "production";
+  registrationDevOtpTo?: string;
 };
 
 function requireEmailConfiguration(apiKey: string | undefined, from: string | undefined) {
@@ -122,7 +123,8 @@ export function createCustomerIdentityEmailDelivery({
   apiKey = env.RESEND_API_KEY,
   from = env.CUSTOMER_RECOVERY_FROM_EMAIL,
   fetchImpl = fetch,
-  nodeEnv = env.NODE_ENV
+  nodeEnv = env.NODE_ENV,
+  registrationDevOtpTo = env.CUSTOMER_REGISTRATION_DEV_OTP_TO
 }: CustomerIdentityEmailDeliveryConfig = {}) {
   return async (input: {
     to: string;
@@ -132,10 +134,15 @@ export function createCustomerIdentityEmailDelivery({
     if (nodeEnv === "test") return;
 
     const configuration = requireEmailConfiguration(apiKey, from);
+    const deliveryTo =
+      nodeEnv === "development" && input.purpose === "registration" && registrationDevOtpTo?.trim()
+        ? registrationDevOtpTo.trim()
+        : input.to;
+    const deliveryInput = { ...input, to: deliveryTo };
     let response: Response;
 
     try {
-      response = await sendEmailRequest({ ...input, ...configuration }, fetchImpl);
+      response = await sendEmailRequest({ ...deliveryInput, ...configuration }, fetchImpl);
       if (
         !response.ok &&
         configuration.from !== DEVELOPMENT_RESEND_FROM_EMAIL &&
@@ -143,7 +150,7 @@ export function createCustomerIdentityEmailDelivery({
       ) {
         response = await sendEmailRequest(
           {
-            ...input,
+            ...deliveryInput,
             apiKey: configuration.apiKey,
             from: DEVELOPMENT_RESEND_FROM_EMAIL
           },
