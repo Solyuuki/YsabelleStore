@@ -147,6 +147,28 @@ export async function loginCustomer(input: CustomerLoginInput): Promise<Customer
   return requireCustomer(response);
 }
 
+export async function requestCustomerEmailAuth(email: string): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/email/request",
+    customerAuthRequestOptions({ method: "POST", json: { email: email.trim() } })
+  );
+  requireCustomerAuthSuccess(response, "Email verification could not be requested.");
+}
+
+export async function verifyCustomerEmailAuth(input: {
+  email: string;
+  verificationCode: string;
+}): Promise<Customer> {
+  const response = await apiClient.request<CustomerResponseData, CustomerAuthErrorPayload>(
+    "/api/customer-auth/email/verify",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: { email: input.email.trim(), verificationCode: input.verificationCode.trim() }
+    })
+  );
+  return requireCustomer(response);
+}
+
 export async function requestCustomerMobileAuth(phone: string): Promise<void> {
   const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
     "/api/customer-auth/mobile/request",
@@ -175,6 +197,30 @@ export async function verifyCustomerMobileAuth(input: {
   );
 
   return requireCustomer(response);
+}
+
+export async function requestCustomerRegistrationEmailVerification(email: string): Promise<void> {
+  await ensureCustomerRegistrationIntentReady();
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/registration/email/request",
+    customerAuthRequestOptions({ method: "POST", json: { email: email.trim() } })
+  );
+  requireCustomerAuthSuccess(response, "Email verification could not be requested.");
+}
+
+export async function verifyCustomerRegistrationEmailVerification(input: {
+  email: string;
+  verificationCode: string;
+}): Promise<void> {
+  await ensureCustomerRegistrationIntentReady();
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/registration/email/verify",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: { email: input.email.trim(), verificationCode: input.verificationCode.trim() }
+    })
+  );
+  requireCustomerAuthSuccess(response, "The verification code could not be verified.");
 }
 
 export async function requestCustomerRegistrationMobileVerification(phone: string): Promise<void> {
