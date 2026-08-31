@@ -135,7 +135,7 @@ export function createCustomerIdentityEmailDelivery({
 
     const configuration = requireEmailConfiguration(apiKey, from);
     const deliveryTo =
-      nodeEnv === "development" && input.purpose === "registration" && registrationDevOtpTo?.trim()
+      nodeEnv === "development" && registrationDevOtpTo?.trim()
         ? registrationDevOtpTo.trim()
         : input.to;
     const deliveryInput = { ...input, to: deliveryTo };
