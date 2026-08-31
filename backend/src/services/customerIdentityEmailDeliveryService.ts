@@ -13,11 +13,18 @@ export class CustomerIdentityEmailDeliveryError extends Error {
   }
 }
 
-function requireEmailConfiguration() {
-  const apiKey = env.RESEND_API_KEY?.trim();
-  const from = env.CUSTOMER_RECOVERY_FROM_EMAIL?.trim();
-  if (!apiKey || !from) throw new CustomerIdentityEmailDeliveryError();
-  return { apiKey, from };
+type CustomerIdentityEmailDeliveryConfig = {
+  apiKey?: string;
+  from?: string;
+  fetchImpl?: typeof fetch;
+  nodeEnv?: "development" | "test" | "production";
+};
+
+function requireEmailConfiguration(apiKey: string | undefined, from: string | undefined) {
+  const resolvedApiKey = apiKey?.trim();
+  const resolvedFrom = from?.trim();
+  if (!resolvedApiKey || !resolvedFrom) throw new CustomerIdentityEmailDeliveryError();
+  return { apiKey: resolvedApiKey, from: resolvedFrom };
 }
 
 function formatFromAddress(email: string) {
@@ -67,15 +74,18 @@ function emailCopy(purpose: CustomerIdentityEmailPurpose, verificationCode: stri
   return { html, subject, text };
 }
 
-async function sendEmailRequest(input: {
-  apiKey: string;
-  from: string;
-  to: string;
-  verificationCode: string;
-  purpose: CustomerIdentityEmailPurpose;
-}) {
+async function sendEmailRequest(
+  input: {
+    apiKey: string;
+    from: string;
+    to: string;
+    verificationCode: string;
+    purpose: CustomerIdentityEmailPurpose;
+  },
+  fetchImpl: typeof fetch
+) {
   const { html, subject, text } = emailCopy(input.purpose, input.verificationCode);
-  return fetch(RESEND_EMAIL_ENDPOINT, {
+  return fetchImpl(RESEND_EMAIL_ENDPOINT, {
     method: "POST",
     headers: {
       authorization: `Bearer ${input.apiKey}`,
@@ -92,8 +102,11 @@ async function sendEmailRequest(input: {
   });
 }
 
-async function isDevelopmentSenderRestriction(response: Response): Promise<boolean> {
-  if (response.status !== 403 || env.NODE_ENV === "production") return false;
+async function isDevelopmentSenderRestriction(
+  response: Response,
+  nodeEnv: "development" | "test" | "production"
+): Promise<boolean> {
+  if (response.status !== 403 || nodeEnv === "production") return false;
 
   let body = "";
   try {
@@ -105,32 +118,44 @@ async function isDevelopmentSenderRestriction(response: Response): Promise<boole
   return /domain.*not verified|verify a domain|testing emails/i.test(body);
 }
 
-export async function sendCustomerIdentityVerificationEmail(input: {
-  to: string;
-  verificationCode: string;
-  purpose: CustomerIdentityEmailPurpose;
-}): Promise<void> {
-  if (env.NODE_ENV === "test") return;
+export function createCustomerIdentityEmailDelivery({
+  apiKey = env.RESEND_API_KEY,
+  from = env.CUSTOMER_RECOVERY_FROM_EMAIL,
+  fetchImpl = fetch,
+  nodeEnv = env.NODE_ENV
+}: CustomerIdentityEmailDeliveryConfig = {}) {
+  return async (input: {
+    to: string;
+    verificationCode: string;
+    purpose: CustomerIdentityEmailPurpose;
+  }): Promise<void> => {
+    if (nodeEnv === "test") return;
 
-  const { apiKey, from } = requireEmailConfiguration();
-  let response: Response;
+    const configuration = requireEmailConfiguration(apiKey, from);
+    let response: Response;
 
-  try {
-    response = await sendEmailRequest({ ...input, apiKey, from });
-    if (
-      !response.ok &&
-      from !== DEVELOPMENT_RESEND_FROM_EMAIL &&
-      (await isDevelopmentSenderRestriction(response))
-    ) {
-      response = await sendEmailRequest({
-        ...input,
-        apiKey,
-        from: DEVELOPMENT_RESEND_FROM_EMAIL
-      });
+    try {
+      response = await sendEmailRequest({ ...input, ...configuration }, fetchImpl);
+      if (
+        !response.ok &&
+        configuration.from !== DEVELOPMENT_RESEND_FROM_EMAIL &&
+        (await isDevelopmentSenderRestriction(response, nodeEnv))
+      ) {
+        response = await sendEmailRequest(
+          {
+            ...input,
+            apiKey: configuration.apiKey,
+            from: DEVELOPMENT_RESEND_FROM_EMAIL
+          },
+          fetchImpl
+        );
+      }
+    } catch {
+      throw new CustomerIdentityEmailDeliveryError();
     }
-  } catch {
-    throw new CustomerIdentityEmailDeliveryError();
-  }
 
-  if (!response.ok) throw new CustomerIdentityEmailDeliveryError();
+    if (!response.ok) throw new CustomerIdentityEmailDeliveryError();
+  };
 }
+
+export const sendCustomerIdentityVerificationEmail = createCustomerIdentityEmailDelivery();
