@@ -177,6 +177,38 @@ export async function verifyCustomerMobileAuth(input: {
   return requireCustomer(response);
 }
 
+export async function requestCustomerRegistrationMobileVerification(phone: string): Promise<void> {
+  await ensureCustomerRegistrationIntentReady();
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/registration/mobile/request",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: { phone: phone.trim() }
+    })
+  );
+
+  requireCustomerAuthSuccess(response, "Mobile verification could not be requested.");
+}
+
+export async function verifyCustomerRegistrationMobileVerification(input: {
+  phone: string;
+  verificationCode: string;
+}): Promise<void> {
+  await ensureCustomerRegistrationIntentReady();
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-auth/registration/mobile/verify",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: {
+        phone: input.phone.trim(),
+        verificationCode: input.verificationCode.trim()
+      }
+    })
+  );
+
+  requireCustomerAuthSuccess(response, "The verification code could not be verified.");
+}
+
 export async function registerCustomer(input: CustomerRegisterInput): Promise<Customer> {
   await ensureCustomerRegistrationIntentReady();
 
