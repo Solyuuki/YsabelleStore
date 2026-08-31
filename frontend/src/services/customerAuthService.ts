@@ -27,7 +27,7 @@ type CustomerRegistrationIntentData = {
 export type CustomerRememberedAccount = {
   id: string;
   name: string;
-  method: "EMAIL" | "MOBILE";
+  method: "EMAIL";
   maskedIdentifier: string;
   trusted: boolean;
   trustedUntil: string;
@@ -199,38 +199,6 @@ export async function verifyCustomerEmailAuth(input: {
   return requireCustomer(response);
 }
 
-export async function requestCustomerMobileAuth(phone: string): Promise<void> {
-  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
-    "/api/customer-auth/mobile/request",
-    customerAuthRequestOptions({
-      method: "POST",
-      json: { phone: phone.trim() }
-    })
-  );
-
-  requireCustomerAuthSuccess(response, "Mobile verification could not be requested.");
-}
-
-export async function verifyCustomerMobileAuth(input: {
-  phone: string;
-  verificationCode: string;
-  rememberFor30Days?: boolean;
-}): Promise<Customer> {
-  const response = await apiClient.request<CustomerResponseData, CustomerAuthErrorPayload>(
-    "/api/customer-auth/mobile/verify",
-    customerAuthRequestOptions({
-      method: "POST",
-      json: {
-        phone: input.phone.trim(),
-        verificationCode: input.verificationCode.trim(),
-        rememberFor30Days: input.rememberFor30Days === true
-      }
-    })
-  );
-
-  return requireCustomer(response);
-}
-
 export async function getCustomerRememberedAccounts(): Promise<{
   accounts: CustomerRememberedAccount[];
   maxAccounts: number;
@@ -338,38 +306,6 @@ export async function verifyCustomerRegistrationEmailVerification(input: {
       json: { email: input.email.trim(), verificationCode: input.verificationCode.trim() }
     })
   );
-  requireCustomerAuthSuccess(response, "The verification code could not be verified.");
-}
-
-export async function requestCustomerRegistrationMobileVerification(phone: string): Promise<void> {
-  await ensureCustomerRegistrationIntentReady();
-  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
-    "/api/customer-auth/registration/mobile/request",
-    customerAuthRequestOptions({
-      method: "POST",
-      json: { phone: phone.trim() }
-    })
-  );
-
-  requireCustomerAuthSuccess(response, "Mobile verification could not be requested.");
-}
-
-export async function verifyCustomerRegistrationMobileVerification(input: {
-  phone: string;
-  verificationCode: string;
-}): Promise<void> {
-  await ensureCustomerRegistrationIntentReady();
-  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
-    "/api/customer-auth/registration/mobile/verify",
-    customerAuthRequestOptions({
-      method: "POST",
-      json: {
-        phone: input.phone.trim(),
-        verificationCode: input.verificationCode.trim()
-      }
-    })
-  );
-
   requireCustomerAuthSuccess(response, "The verification code could not be verified.");
 }
 
