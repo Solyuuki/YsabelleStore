@@ -100,7 +100,7 @@ export async function requestCustomerMobileAuth(
   const customer = await prisma.customerAccount.findUnique({
     where: { phoneNormalized: input.phone }
   });
-  if (!customer || customer.status !== "ACTIVE") return;
+  if (!customer || customer.status !== "ACTIVE" || !customer.phoneVerifiedAt) return;
 
   const activeChallenge = await prisma.customerMobileAuthChallenge.findFirst({
     where: {
@@ -184,7 +184,12 @@ export async function verifyCustomerMobileAuth(
   const customer = await prisma.customerAccount.findUnique({
     where: { id: challenge.customerAccountId }
   });
-  if (!customer || customer.status !== "ACTIVE" || customer.phoneNormalized !== input.phone) {
+  if (
+    !customer ||
+    customer.status !== "ACTIVE" ||
+    !customer.phoneVerifiedAt ||
+    customer.phoneNormalized !== input.phone
+  ) {
     throw invalidMobileAuthCode();
   }
 
