@@ -16,6 +16,7 @@ import {
   type CustomerSocialAuthProvider
 } from "@/services/customerSocialAuthService";
 import "@/styles/customer-auth-quick-sign.css";
+import "@/styles/customer-register-mobile-otp.css";
 import {
   isValidPhilippineMobile,
   validateCustomerRegisterForm
@@ -291,7 +292,10 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             ) : null}
           </label>
 
-          <label className="customer-auth-field customer-auth-field--mobile-verify" htmlFor="customer-register-phone">
+          <label
+            className="customer-auth-field customer-auth-field--mobile-verify"
+            htmlFor="customer-register-phone"
+          >
             <span>
               PH mobile number <small>(optional)</small>
             </span>
@@ -445,9 +449,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
           <button
             className="customer-auth-submit"
-            disabled={
-              submitting || mobileVerificationBusy || busySocialProvider !== null
-            }
+            disabled={submitting || mobileVerificationBusy || busySocialProvider !== null}
             type="submit"
           >
             {submitting ? "Creating account..." : "Create Account"}
