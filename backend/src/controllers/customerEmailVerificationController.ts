@@ -21,6 +21,7 @@ import {
   customerEmailAuthRequestSchema,
   customerEmailAuthVerifySchema
 } from "../validators/customerAuth.validators.js";
+import { rememberAuthenticatedCustomerForBrowser } from "./customerRememberedAuthController.js";
 
 const CUSTOMER_REGISTRATION_EMAIL_REQUEST_MESSAGE =
   "If that email address can be used for registration, a verification code will be sent.";
@@ -135,9 +136,19 @@ export const verifyCustomerEmailAuthAccount: RequestHandler = async (request, re
 
     const session = await verifyCustomerEmailAuth(parsedBody.data);
     setCustomerSessionCookie(response, session.sessionToken);
+    const remembered = await rememberAuthenticatedCustomerForBrowser({
+      request,
+      response,
+      customerAccountId: session.customer.id,
+      authMethod: "EMAIL",
+      rememberFor30Days: parsedBody.data.rememberFor30Days === true
+    });
+
     response.status(200).json(
       createSuccessResponse("Email verification successful.", {
-        customer: session.customer
+        customer: session.customer,
+        remembered: remembered.remembered,
+        rememberedSlotLimitReached: remembered.slotLimitReached
       })
     );
   } catch (error) {
