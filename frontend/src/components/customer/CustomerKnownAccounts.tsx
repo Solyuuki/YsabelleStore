@@ -8,6 +8,7 @@ import {
   verifyCustomerRememberedVerification,
   type CustomerRememberedAccount
 } from "@/services/customerAuthService";
+import "@/styles/customer-known-accounts.css";
 
 function formatTrust(account: CustomerRememberedAccount) {
   if (!account.trusted) return "Verification required";
