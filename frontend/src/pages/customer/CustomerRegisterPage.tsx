@@ -1,18 +1,29 @@
-import { Eye, EyeOff, UserPlus } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { CustomerSocialAuthButtons } from "@/components/customer/CustomerSocialAuthButtons";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
-import { prepareCustomerRegistrationIntent } from "@/services/customerAuthService";
+import {
+  prepareCustomerRegistrationIntent,
+  requestCustomerRegistrationMobileVerification,
+  verifyCustomerRegistrationMobileVerification
+} from "@/services/customerAuthService";
 import {
   getCustomerSocialAuthNotice,
   startCustomerSocialAuth,
   type CustomerSocialAuthProvider
 } from "@/services/customerSocialAuthService";
 import "@/styles/customer-auth-quick-sign.css";
-import { validateCustomerRegisterForm } from "@/utils/customerAuthForms";
+import {
+  isValidPhilippineMobile,
+  validateCustomerRegisterForm
+} from "@/utils/customerAuthForms";
+
+type MobileVerificationState = "idle" | "sent" | "verified";
+
+const MOBILE_RESEND_COOLDOWN_SECONDS = 30;
 
 export function CustomerRegisterPage({ navigate }: { navigate: (path: string) => void }) {
   const { register } = useCustomerAuth();
@@ -28,6 +39,11 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
   const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(
     null
   );
+  const [mobileVerificationState, setMobileVerificationState] =
+    useState<MobileVerificationState>("idle");
+  const [mobileVerificationCode, setMobileVerificationCode] = useState("");
+  const [mobileVerificationBusy, setMobileVerificationBusy] = useState(false);
+  const [mobileResendSeconds, setMobileResendSeconds] = useState(0);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(() =>
     getCustomerSocialAuthNotice(globalThis.location?.search ?? "")
@@ -37,6 +53,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
     function restoreInteractiveState() {
       setSubmitting(false);
       setBusySocialProvider(null);
+      setMobileVerificationBusy(false);
     }
 
     globalThis.addEventListener("pageshow", restoreInteractiveState);
@@ -47,14 +64,115 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
   useEffect(() => {
     void prepareCustomerRegistrationIntent().catch(() => {
-      // Submission retries preparation and surfaces an actionable error if the service is unavailable.
+      // Submission and mobile verification retry preparation and surface an actionable error.
     });
   }, []);
+
+  useEffect(() => {
+    if (mobileResendSeconds <= 0) return;
+
+    const timer = globalThis.setInterval(() => {
+      setMobileResendSeconds((current) => Math.max(0, current - 1));
+    }, 1_000);
+
+    return () => globalThis.clearInterval(timer);
+  }, [mobileResendSeconds]);
+
+  function handlePhoneChange(value: string) {
+    setPhone(value);
+    setMobileVerificationState("idle");
+    setMobileVerificationCode("");
+    setMobileResendSeconds(0);
+    setFieldErrors((current) => {
+      if (!current.phone) return current;
+      const next = { ...current };
+      delete next.phone;
+      return next;
+    });
+  }
+
+  async function handleRequestMobileCode() {
+    const trimmedPhone = phone.trim();
+    setServerError(null);
+
+    if (!trimmedPhone || !isValidPhilippineMobile(trimmedPhone)) {
+      setFieldErrors((current) => ({
+        ...current,
+        phone: "Enter a valid Philippine mobile number before requesting a code."
+      }));
+      return;
+    }
+
+    setMobileVerificationBusy(true);
+    try {
+      await requestCustomerRegistrationMobileVerification(trimmedPhone);
+      setMobileVerificationState("sent");
+      setMobileVerificationCode("");
+      setMobileResendSeconds(MOBILE_RESEND_COOLDOWN_SECONDS);
+      setFieldErrors((current) => {
+        if (!current.phone) return current;
+        const next = { ...current };
+        delete next.phone;
+        return next;
+      });
+    } catch (error) {
+      setServerError(
+        error instanceof Error
+          ? error.message
+          : "Unable to send the mobile verification code. Please try again."
+      );
+    } finally {
+      setMobileVerificationBusy(false);
+    }
+  }
+
+  async function handleVerifyMobileCode() {
+    const verificationCode = mobileVerificationCode.trim();
+    setServerError(null);
+
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setFieldErrors((current) => ({
+        ...current,
+        phone: "Enter the 6-digit verification code."
+      }));
+      return;
+    }
+
+    setMobileVerificationBusy(true);
+    try {
+      await verifyCustomerRegistrationMobileVerification({
+        phone: phone.trim(),
+        verificationCode
+      });
+      setMobileVerificationState("verified");
+      setMobileVerificationCode("");
+      setMobileResendSeconds(0);
+      setFieldErrors((current) => {
+        if (!current.phone) return current;
+        const next = { ...current };
+        delete next.phone;
+        return next;
+      });
+    } catch (error) {
+      setServerError(
+        error instanceof Error
+          ? error.message
+          : "The verification code could not be verified. Please try again."
+      );
+    } finally {
+      setMobileVerificationBusy(false);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const input = { confirmPassword, email, name, password, phone, username };
     const errors = validateCustomerRegisterForm(input);
+
+    if (phone.trim() && mobileVerificationState !== "verified") {
+      errors.phone = "Verify your mobile number before creating the account.";
+    }
+
     setFieldErrors(errors);
     setServerError(null);
 
@@ -108,7 +226,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
         </div>
 
         <form
-          aria-busy={submitting}
+          aria-busy={submitting || mobileVerificationBusy}
           className="customer-auth-form customer-auth-form--register"
           onSubmit={handleSubmit}
           noValidate
@@ -173,23 +291,85 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             ) : null}
           </label>
 
-          <label className="customer-auth-field" htmlFor="customer-register-phone">
+          <label className="customer-auth-field customer-auth-field--mobile-verify" htmlFor="customer-register-phone">
             <span>
               PH mobile number <small>(optional)</small>
             </span>
-            <input
-              aria-describedby={fieldErrors.phone ? "customer-register-phone-error" : undefined}
-              aria-invalid={Boolean(fieldErrors.phone)}
-              autoComplete="tel"
-              id="customer-register-phone"
-              inputMode="tel"
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="09XXXXXXXXX"
-              type="tel"
-              value={phone}
-            />
+            <span className="customer-register-mobile__input-row">
+              <input
+                aria-describedby={fieldErrors.phone ? "customer-register-phone-error" : undefined}
+                aria-invalid={Boolean(fieldErrors.phone)}
+                autoComplete="tel"
+                disabled={mobileVerificationState === "verified"}
+                id="customer-register-phone"
+                inputMode="tel"
+                onChange={(event) => handlePhoneChange(event.target.value)}
+                placeholder="09XXXXXXXXX"
+                type="tel"
+                value={phone}
+              />
+              {mobileVerificationState === "verified" ? (
+                <span className="customer-register-mobile__verified" role="status">
+                  <CheckCircle2 aria-hidden="true" size={16} />
+                  Verified
+                </span>
+              ) : (
+                <button
+                  className="customer-register-mobile__action"
+                  disabled={mobileVerificationBusy || !phone.trim()}
+                  onClick={() => void handleRequestMobileCode()}
+                  type="button"
+                >
+                  {mobileVerificationBusy && mobileVerificationState === "idle"
+                    ? "Sending..."
+                    : "Send code"}
+                </button>
+              )}
+            </span>
+
+            {mobileVerificationState === "sent" ? (
+              <span className="customer-register-mobile__verification" aria-live="polite">
+                <input
+                  aria-label="Mobile verification code"
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
+                  maxLength={6}
+                  onChange={(event) =>
+                    setMobileVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  placeholder="6-digit code"
+                  type="text"
+                  value={mobileVerificationCode}
+                />
+                <span className="customer-register-mobile__verification-actions">
+                  <button
+                    className="customer-register-mobile__action"
+                    disabled={mobileVerificationBusy || mobileVerificationCode.length !== 6}
+                    onClick={() => void handleVerifyMobileCode()}
+                    type="button"
+                  >
+                    {mobileVerificationBusy ? "Verifying..." : "Verify code"}
+                  </button>
+                  <button
+                    className="customer-register-mobile__link"
+                    disabled={mobileVerificationBusy || mobileResendSeconds > 0}
+                    onClick={() => void handleRequestMobileCode()}
+                    type="button"
+                  >
+                    {mobileResendSeconds > 0
+                      ? `Resend in ${mobileResendSeconds}s`
+                      : "Resend code"}
+                  </button>
+                </span>
+              </span>
+            ) : null}
+
             {fieldErrors.phone ? (
               <small id="customer-register-phone-error">{fieldErrors.phone}</small>
+            ) : mobileVerificationState === "verified" ? (
+              <small className="customer-register-mobile__success">
+                This number will be linked to your account.
+              </small>
             ) : null}
           </label>
 
@@ -265,7 +445,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
           <button
             className="customer-auth-submit"
-            disabled={submitting || busySocialProvider !== null}
+            disabled={
+              submitting || mobileVerificationBusy || busySocialProvider !== null
+            }
             type="submit"
           >
             {submitting ? "Creating account..." : "Create Account"}
