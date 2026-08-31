@@ -22,6 +22,10 @@ test("mobile OTP request delivers the generated six-digit code through the deliv
     phone,
     password: "MobilePassword123!"
   });
+  await prisma.customerAccount.update({
+    where: { id: registered.customer.id },
+    data: { phoneVerifiedAt: new Date() }
+  });
 
   let deliveredCode = "";
   try {
