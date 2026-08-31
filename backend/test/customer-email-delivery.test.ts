@@ -7,6 +7,7 @@ type DeliveryModule = {
     from?: string;
     fetchImpl: typeof fetch;
     nodeEnv?: "development" | "test" | "production";
+    registrationDevOtpTo?: string;
   }) => (input: {
     to: string;
     verificationCode: string;
@@ -55,6 +56,58 @@ test("Resend registration delivery sends the Ysabelle-generated verification cod
   assert.equal(body.subject, "Verify your Ysabelle Store email");
   assert.match(String(body.text), /123456/);
   assert.match(String(body.html), /123456/);
+});
+
+test("development registration OTP may redirect to a configured QA inbox", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+
+  const recipients: string[][] = [];
+  const send = module.createCustomerIdentityEmailDelivery({
+    apiKey: "re_test_key",
+    from: "onboarding@resend.dev",
+    nodeEnv: "development",
+    registrationDevOtpTo: "qa.owner@gmail.com",
+    fetchImpl: async (_input, init) => {
+      const body = JSON.parse(String(init?.body)) as { to?: string[] };
+      recipients.push(body.to ?? []);
+      return new Response(JSON.stringify({ id: "email_dev_registration" }), { status: 200 });
+    }
+  });
+
+  await send({
+    to: "brand.new.customer@gmail.com",
+    verificationCode: "123456",
+    purpose: "registration"
+  });
+
+  assert.deepEqual(recipients, [["qa.owner@gmail.com"]]);
+});
+
+test("development registration redirect never changes authentication recipients", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+
+  let recipient: string[] = [];
+  const send = module.createCustomerIdentityEmailDelivery({
+    apiKey: "re_test_key",
+    from: "onboarding@resend.dev",
+    nodeEnv: "development",
+    registrationDevOtpTo: "qa.owner@gmail.com",
+    fetchImpl: async (_input, init) => {
+      const body = JSON.parse(String(init?.body)) as { to?: string[] };
+      recipient = body.to ?? [];
+      return new Response(JSON.stringify({ id: "email_dev_auth" }), { status: 200 });
+    }
+  });
+
+  await send({
+    to: "existing.customer@gmail.com",
+    verificationCode: "654321",
+    purpose: "authentication"
+  });
+
+  assert.deepEqual(recipient, ["existing.customer@gmail.com"]);
 });
 
 test("Resend login delivery uses the authentication email copy", async () => {
