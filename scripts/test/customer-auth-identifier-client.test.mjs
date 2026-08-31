@@ -66,13 +66,12 @@ test("customer registration intent prewarm remains part of the registration flow
   );
 });
 
-test("Phase 2 customer auth pages do not introduce OAuth or OTP controls", () => {
+test("password auth forms remain available alongside Phase 7 Quick Sign", () => {
   const loginPage = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
   const registerPage = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
-  const combined = `${loginPage}\n${registerPage}`;
 
-  assert.doesNotMatch(
-    combined,
-    /\bGoogle\b|\bFacebook\b|\bOAuth\b|\bOTP\b|one[- ]time code|verification code/i
-  );
+  assert.match(loginPage, /validateCustomerLoginForm/);
+  assert.match(loginPage, />\s*Sign In\s*</);
+  assert.match(registerPage, /validateCustomerRegisterForm/);
+  assert.match(registerPage, /Creating account\.\.\.|Create Account/);
 });
