@@ -1,0 +1,51 @@
+name: Format customer auth batch fast
+
+on:
+  push:
+    branches:
+      - m1/v0.9/feat/customer-mobile-otp
+    paths:
+      - .github/workflows/format-customer-auth-batch-fast.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: m1/v0.9/feat/customer-mobile-otp
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format auth batch
+        run: |
+          npx prettier --write \
+            backend/src/controllers/customerVerifiedRegistrationController.ts \
+            backend/src/routes/customerAuth.routes.ts \
+            backend/src/services/customerEmailAuthService.ts \
+            backend/src/services/customerEmailRegistrationService.ts \
+            backend/src/services/customerIdentityEmailDeliveryService.ts \
+            backend/src/services/customerRememberedAuthService.ts \
+            backend/src/utils/customerRememberedAuthCookie.ts \
+            backend/test/customer-remembered-auth.test.ts \
+            docs/superpowers/plans/2026-08-31-customer-remembered-quick-sign.md \
+            docs/superpowers/specs/2026-08-31-customer-remembered-quick-sign-design.md \
+            frontend/src/components/customer/CustomerEmailAuthPanel.tsx \
+            frontend/src/components/customer/CustomerEmailRegistrationPanel.tsx \
+            frontend/src/pages/customer/CustomerLoginPage.tsx \
+            frontend/src/pages/customer/CustomerRegisterPage.tsx
+          rm -f .github/workflows/format-customer-auth-batch.yml
+          rm -f .github/workflows/format-customer-auth-batch-fast.yml
+      - name: Commit formatting
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'style(auth): format customer auth batch'
+          git push --no-verify origin HEAD:m1/v0.9/feat/customer-mobile-otp
