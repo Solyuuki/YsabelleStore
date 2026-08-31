@@ -24,6 +24,31 @@ type CustomerRegistrationIntentData = {
   ready: boolean;
 };
 
+export type CustomerRememberedAccount = {
+  id: string;
+  name: string;
+  method: "EMAIL" | "MOBILE";
+  maskedIdentifier: string;
+  trusted: boolean;
+  trustedUntil: string;
+  lastUsedAt: string | null;
+};
+
+type CustomerRememberedListData = {
+  accounts: CustomerRememberedAccount[];
+  maxAccounts: number;
+};
+
+type CustomerRememberedContinueData = {
+  verificationRequired: boolean;
+  customer?: Customer;
+  account?: CustomerRememberedAccount;
+};
+
+type CustomerRememberedRequestData = {
+  account: CustomerRememberedAccount | null;
+};
+
 const CUSTOMER_REGISTRATION_INTENT_MIN_AGE_MS = 750;
 const CUSTOMER_REGISTRATION_INTENT_MAX_AGE_MS = 10 * 60 * 1000;
 const CUSTOMER_REGISTRATION_INTENT_REFRESH_MARGIN_MS = 5_000;
@@ -158,12 +183,17 @@ export async function requestCustomerEmailAuth(email: string): Promise<void> {
 export async function verifyCustomerEmailAuth(input: {
   email: string;
   verificationCode: string;
+  rememberFor30Days?: boolean;
 }): Promise<Customer> {
   const response = await apiClient.request<CustomerResponseData, CustomerAuthErrorPayload>(
     "/api/customer-auth/email/verify",
     customerAuthRequestOptions({
       method: "POST",
-      json: { email: input.email.trim(), verificationCode: input.verificationCode.trim() }
+      json: {
+        email: input.email.trim(),
+        verificationCode: input.verificationCode.trim(),
+        rememberFor30Days: input.rememberFor30Days === true
+      }
     })
   );
   return requireCustomer(response);
@@ -184,6 +214,7 @@ export async function requestCustomerMobileAuth(phone: string): Promise<void> {
 export async function verifyCustomerMobileAuth(input: {
   phone: string;
   verificationCode: string;
+  rememberFor30Days?: boolean;
 }): Promise<Customer> {
   const response = await apiClient.request<CustomerResponseData, CustomerAuthErrorPayload>(
     "/api/customer-auth/mobile/verify",
@@ -191,12 +222,99 @@ export async function verifyCustomerMobileAuth(input: {
       method: "POST",
       json: {
         phone: input.phone.trim(),
-        verificationCode: input.verificationCode.trim()
+        verificationCode: input.verificationCode.trim(),
+        rememberFor30Days: input.rememberFor30Days === true
       }
     })
   );
 
   return requireCustomer(response);
+}
+
+export async function getCustomerRememberedAccounts(): Promise<{
+  accounts: CustomerRememberedAccount[];
+  maxAccounts: number;
+}> {
+  const response = await apiClient.request<CustomerRememberedListData, CustomerAuthErrorPayload>(
+    "/api/customer-auth/remembered",
+    customerAuthRequestOptions({ method: "GET" })
+  );
+  if (response.success && response.data) return response.data;
+  throw new CustomerAuthRequestError(
+    response.message || "Known accounts could not be loaded.",
+    response.success ? undefined : response.error?.code
+  );
+}
+
+export async function continueCustomerRememberedAccount(
+  rememberedAccountId: string
+): Promise<
+  | { status: "authenticated"; customer: Customer }
+  | { status: "verification_required"; account: CustomerRememberedAccount }
+> {
+  const response = await apiClient.request<
+    CustomerRememberedContinueData,
+    CustomerAuthErrorPayload
+  >(
+    "/api/customer-auth/remembered/continue",
+    customerAuthRequestOptions({ method: "POST", json: { rememberedAccountId } })
+  );
+
+  if (!response.success || !response.data) {
+    throw new CustomerAuthRequestError(
+      response.message || "Known account sign-in could not continue.",
+      response.success ? undefined : response.error?.code
+    );
+  }
+  if (response.data.verificationRequired) {
+    if (!response.data.account) {
+      throw new CustomerAuthRequestError("This known account requires verification.");
+    }
+    return { status: "verification_required", account: response.data.account };
+  }
+  if (!response.data.customer) {
+    throw new CustomerAuthRequestError("Known account sign-in did not return a customer.");
+  }
+  return { status: "authenticated", customer: response.data.customer };
+}
+
+export async function requestCustomerRememberedVerification(
+  rememberedAccountId: string
+): Promise<CustomerRememberedAccount | null> {
+  const response = await apiClient.request<CustomerRememberedRequestData, CustomerAuthErrorPayload>(
+    "/api/customer-auth/remembered/request",
+    customerAuthRequestOptions({ method: "POST", json: { rememberedAccountId } })
+  );
+  if (response.success) return response.data?.account ?? null;
+  throw new CustomerAuthRequestError(
+    response.message || "Verification could not be requested for this known account.",
+    response.error?.code
+  );
+}
+
+export async function verifyCustomerRememberedVerification(input: {
+  rememberedAccountId: string;
+  verificationCode: string;
+}): Promise<Customer> {
+  const response = await apiClient.request<CustomerResponseData, CustomerAuthErrorPayload>(
+    "/api/customer-auth/remembered/verify",
+    customerAuthRequestOptions({
+      method: "POST",
+      json: {
+        rememberedAccountId: input.rememberedAccountId,
+        verificationCode: input.verificationCode.trim()
+      }
+    })
+  );
+  return requireCustomer(response);
+}
+
+export async function forgetCustomerRememberedAccount(rememberedAccountId: string): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    `/api/customer-auth/remembered/${encodeURIComponent(rememberedAccountId)}`,
+    customerAuthRequestOptions({ method: "DELETE" })
+  );
+  requireCustomerAuthSuccess(response, "This known account could not be forgotten.");
 }
 
 export async function requestCustomerRegistrationEmailVerification(email: string): Promise<void> {
