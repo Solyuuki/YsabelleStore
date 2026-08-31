@@ -71,7 +71,7 @@ test("password auth forms remain available alongside Phase 7 Quick Sign", () => 
   const registerPage = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
 
   assert.match(loginPage, /validateCustomerLoginForm/);
-  assert.match(loginPage, />\s*Sign In\s*</);
+  assert.match(loginPage, /"Sign In"/);
   assert.match(registerPage, /validateCustomerRegisterForm/);
   assert.match(registerPage, /Creating account\.\.\.|Create Account/);
 });
