@@ -68,6 +68,11 @@ const requiredPhilippineMobileSchema = z
     return normalized;
   });
 
+const verificationCodeSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{6}$/);
+
 export const customerRegisterSchema = z.object({
   name: z.string().trim().min(2).max(120),
   username: customerUsernameSchema,
@@ -81,16 +86,22 @@ export const customerLoginSchema = z.object({
   password: z.string().min(1).max(128)
 });
 
+export const customerEmailAuthRequestSchema = z.object({
+  email: customerEmailSchema
+});
+
+export const customerEmailAuthVerifySchema = z.object({
+  email: customerEmailSchema,
+  verificationCode: verificationCodeSchema
+});
+
 export const customerMobileAuthRequestSchema = z.object({
   phone: requiredPhilippineMobileSchema
 });
 
 export const customerMobileAuthVerifySchema = z.object({
   phone: requiredPhilippineMobileSchema,
-  verificationCode: z
-    .string()
-    .trim()
-    .regex(/^\d{6}$/)
+  verificationCode: verificationCodeSchema
 });
 
 export const customerPasswordRecoveryRequestSchema = z.object({
@@ -99,10 +110,7 @@ export const customerPasswordRecoveryRequestSchema = z.object({
 
 export const customerPasswordRecoveryVerifySchema = z.object({
   identifier: z.string().trim().min(1).max(191),
-  verificationCode: z
-    .string()
-    .trim()
-    .regex(/^\d{6}$/)
+  verificationCode: verificationCodeSchema
 });
 
 export const customerPasswordResetSchema = z.object({
@@ -111,6 +119,8 @@ export const customerPasswordResetSchema = z.object({
 
 export type CustomerRegisterInput = z.infer<typeof customerRegisterSchema>;
 export type CustomerLoginInput = z.infer<typeof customerLoginSchema>;
+export type CustomerEmailAuthRequest = z.infer<typeof customerEmailAuthRequestSchema>;
+export type CustomerEmailAuthVerify = z.infer<typeof customerEmailAuthVerifySchema>;
 export type CustomerMobileAuthRequest = z.infer<typeof customerMobileAuthRequestSchema>;
 export type CustomerMobileAuthVerify = z.infer<typeof customerMobileAuthVerifySchema>;
 export type CustomerPasswordRecoveryRequest = z.infer<typeof customerPasswordRecoveryRequestSchema>;
