@@ -14,7 +14,9 @@ import {
   verifyCustomerRegistrationMobileVerification
 } from "../controllers/customerAuthController.js";
 import {
+  requestCustomerEmailAuthAccount,
   requestCustomerRegistrationEmailVerification,
+  verifyCustomerEmailAuthAccount,
   verifyCustomerRegistrationEmailVerification
 } from "../controllers/customerEmailVerificationController.js";
 import {
@@ -64,6 +66,25 @@ function mobilePhoneRateLimit(
 
       const phone = normalizePhilippineMobile(rawPhone);
       return phone ? privateIdentityKey(config.scope, "phone", phone) : null;
+    }
+  });
+}
+
+function emailRateLimit(
+  config:
+    | typeof AUTH_RATE_LIMITS.customerEmailRegistrationEmail
+    | typeof AUTH_RATE_LIMITS.customerEmailRegistrationVerifyEmail
+    | typeof AUTH_RATE_LIMITS.customerEmailAuthEmail
+    | typeof AUTH_RATE_LIMITS.customerEmailAuthVerifyEmail
+) {
+  return createAuthRateLimit({
+    ...config,
+    keyResolver(request) {
+      const rawEmail = stringFieldFromBody(request.body, "email");
+      if (!rawEmail) return null;
+
+      const email = normalizeCustomerEmail(rawEmail);
+      return email ? privateIdentityKey(config.scope, "email", email) : null;
     }
   });
 }
@@ -122,6 +143,24 @@ const customerLoginIdentifierRateLimit = createAuthRateLimit({
       : null;
   }
 });
+const customerEmailRegistrationRequestRateLimit = createAuthRateLimit(
+  AUTH_RATE_LIMITS.customerEmailRegistrationRequest
+);
+const customerEmailRegistrationEmailRateLimit = emailRateLimit(
+  AUTH_RATE_LIMITS.customerEmailRegistrationEmail
+);
+const customerEmailRegistrationVerifyRateLimit = createAuthRateLimit(
+  AUTH_RATE_LIMITS.customerEmailRegistrationVerify
+);
+const customerEmailRegistrationVerifyEmailRateLimit = emailRateLimit(
+  AUTH_RATE_LIMITS.customerEmailRegistrationVerifyEmail
+);
+const customerEmailAuthRequestRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerEmailAuthRequest);
+const customerEmailAuthEmailRateLimit = emailRateLimit(AUTH_RATE_LIMITS.customerEmailAuthEmail);
+const customerEmailAuthVerifyRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerEmailAuthVerify);
+const customerEmailAuthVerifyEmailRateLimit = emailRateLimit(
+  AUTH_RATE_LIMITS.customerEmailAuthVerifyEmail
+);
 const customerMobileAuthRequestRateLimit = createAuthRateLimit(
   AUTH_RATE_LIMITS.customerMobileAuthRequest
 );
@@ -168,11 +207,15 @@ customerAuthRouter.get(
 customerAuthRouter.post(
   "/registration/email/request",
   requireAllowedCustomerAuthOrigin,
+  customerEmailRegistrationRequestRateLimit,
+  customerEmailRegistrationEmailRateLimit,
   requestCustomerRegistrationEmailVerification
 );
 customerAuthRouter.post(
   "/registration/email/verify",
   requireAllowedCustomerAuthOrigin,
+  customerEmailRegistrationVerifyRateLimit,
+  customerEmailRegistrationVerifyEmailRateLimit,
   verifyCustomerRegistrationEmailVerification
 );
 customerAuthRouter.post(
@@ -200,6 +243,20 @@ customerAuthRouter.post(
   customerLoginRateLimit,
   customerLoginIdentifierRateLimit,
   loginCustomerAccount
+);
+customerAuthRouter.post(
+  "/email/request",
+  requireAllowedCustomerAuthOrigin,
+  customerEmailAuthRequestRateLimit,
+  customerEmailAuthEmailRateLimit,
+  requestCustomerEmailAuthAccount
+);
+customerAuthRouter.post(
+  "/email/verify",
+  requireAllowedCustomerAuthOrigin,
+  customerEmailAuthVerifyRateLimit,
+  customerEmailAuthVerifyEmailRateLimit,
+  verifyCustomerEmailAuthAccount
 );
 customerAuthRouter.post(
   "/mobile/request",
