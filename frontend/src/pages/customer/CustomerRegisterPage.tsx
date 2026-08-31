@@ -2,6 +2,7 @@ import { CheckCircle2, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
+import { CustomerEmailRegistrationPanel } from "@/components/customer/CustomerEmailRegistrationPanel";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { CustomerMobileRegistrationPanel } from "@/components/customer/CustomerMobileRegistrationPanel";
 import { CustomerSocialAuthButtons } from "@/components/customer/CustomerSocialAuthButtons";
@@ -15,18 +16,21 @@ import {
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerRegisterForm } from "@/utils/customerAuthForms";
 
+type RegistrationVerificationPanel = "email" | "mobile" | null;
+
 export function CustomerRegisterPage({ navigate }: { navigate: (path: string) => void }) {
   const { register } = useCustomerAuth();
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
   const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showMobileRegistration, setShowMobileRegistration] = useState(false);
+  const [verificationPanel, setVerificationPanel] = useState<RegistrationVerificationPanel>(null);
   const [submitting, setSubmitting] = useState(false);
   const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(
     null
@@ -43,16 +47,25 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
     }
 
     globalThis.addEventListener("pageshow", restoreInteractiveState);
-    return () => {
-      globalThis.removeEventListener("pageshow", restoreInteractiveState);
-    };
+    return () => globalThis.removeEventListener("pageshow", restoreInteractiveState);
   }, []);
 
   useEffect(() => {
     void prepareCustomerRegistrationIntent().catch(() => {
-      // Submission and mobile verification retry preparation and surface an actionable error.
+      // Submission and verification retry preparation and surface an actionable error.
     });
   }, []);
+
+  function handleEmailChange(value: string) {
+    setEmail(value);
+    if (verifiedEmail !== value.trim()) setVerifiedEmail(null);
+    setFieldErrors((current) => {
+      if (!current.email) return current;
+      const next = { ...current };
+      delete next.email;
+      return next;
+    });
+  }
 
   function handlePhoneChange(value: string) {
     setPhone(value);
@@ -70,13 +83,15 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
     const input = { confirmPassword, email, name, password, phone, username };
     const errors = validateCustomerRegisterForm(input);
 
+    if (email.trim() && verifiedEmail !== email.trim()) {
+      errors.email = "Verify this email address using Continue with Email OTP below.";
+    }
     if (phone.trim() && verifiedPhone !== phone.trim()) {
       errors.phone = "Verify this mobile number using Continue with Mobile OTP below.";
     }
 
     setFieldErrors(errors);
     setServerError(null);
-
     if (Object.keys(errors).length > 0) return;
 
     setSubmitting(true);
@@ -120,230 +135,130 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
           </span>
           <p className="customer-eyebrow">Customer account</p>
           <h1>Create your account</h1>
-          <p>
-            Save your customer identity now while guest shopping remains available whenever you
-            prefer.
-          </p>
+          <p>Verify your email and optional mobile number so both can become secure sign-in methods.</p>
         </div>
 
-        {!showMobileRegistration ? (
+        {verificationPanel === null ? (
           <>
-            <form
-              aria-busy={submitting}
-              className="customer-auth-form customer-auth-form--register"
-              onSubmit={handleSubmit}
-              noValidate
-            >
-              {serverError ? (
-                <div className="customer-auth-alert" role="alert">
-                  {serverError}
-                </div>
-              ) : null}
+            <form aria-busy={submitting} className="customer-auth-form customer-auth-form--register" onSubmit={handleSubmit} noValidate>
+              {serverError ? <div className="customer-auth-alert" role="alert">{serverError}</div> : null}
 
               <label className="customer-auth-field" htmlFor="customer-register-name">
                 <span>Full name</span>
-                <input
-                  aria-describedby={fieldErrors.name ? "customer-register-name-error" : undefined}
-                  aria-invalid={Boolean(fieldErrors.name)}
-                  autoComplete="name"
-                  id="customer-register-name"
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="e.g. Juan Dela Cruz"
-                  type="text"
-                  value={name}
-                />
-                {fieldErrors.name ? (
-                  <small id="customer-register-name-error">{fieldErrors.name}</small>
-                ) : null}
+                <input aria-describedby={fieldErrors.name ? "customer-register-name-error" : undefined} aria-invalid={Boolean(fieldErrors.name)} autoComplete="name" id="customer-register-name" onChange={(event) => setName(event.target.value)} placeholder="e.g. Juan Dela Cruz" type="text" value={name} />
+                {fieldErrors.name ? <small id="customer-register-name-error">{fieldErrors.name}</small> : null}
               </label>
 
               <label className="customer-auth-field" htmlFor="customer-register-username">
                 <span>Username</span>
-                <input
-                  aria-describedby={
-                    fieldErrors.username ? "customer-register-username-error" : undefined
-                  }
-                  aria-invalid={Boolean(fieldErrors.username)}
-                  autoComplete="username"
-                  id="customer-register-username"
-                  onChange={(event) => setUsername(event.target.value)}
-                  placeholder="Create your username"
-                  type="text"
-                  value={username}
-                />
-                {fieldErrors.username ? (
-                  <small id="customer-register-username-error">{fieldErrors.username}</small>
-                ) : null}
+                <input aria-describedby={fieldErrors.username ? "customer-register-username-error" : undefined} aria-invalid={Boolean(fieldErrors.username)} autoComplete="username" id="customer-register-username" onChange={(event) => setUsername(event.target.value)} placeholder="Create your username" type="text" value={username} />
+                {fieldErrors.username ? <small id="customer-register-username-error">{fieldErrors.username}</small> : null}
               </label>
 
               <label className="customer-auth-field" htmlFor="customer-register-email">
                 <span>Email address</span>
-                <input
-                  aria-describedby={fieldErrors.email ? "customer-register-email-error" : undefined}
-                  aria-invalid={Boolean(fieldErrors.email)}
-                  autoComplete="email"
-                  id="customer-register-email"
-                  inputMode="email"
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="name@example.com"
-                  type="email"
-                  value={email}
-                />
-                {fieldErrors.email ? (
-                  <small id="customer-register-email-error">{fieldErrors.email}</small>
-                ) : null}
-              </label>
-
-              <label className="customer-auth-field" htmlFor="customer-register-phone">
-                <span>
-                  PH mobile number <small>(optional)</small>
-                </span>
                 <span className="customer-auth-password">
-                  <input
-                    aria-describedby={
-                      fieldErrors.phone ? "customer-register-phone-error" : undefined
-                    }
-                    aria-invalid={Boolean(fieldErrors.phone)}
-                    autoComplete="tel"
-                    id="customer-register-phone"
-                    inputMode="tel"
-                    onChange={(event) => handlePhoneChange(event.target.value)}
-                    placeholder="09XXXXXXXXX"
-                    readOnly={verifiedPhone === phone.trim() && Boolean(phone.trim())}
-                    type="tel"
-                    value={phone}
-                  />
-                  {verifiedPhone === phone.trim() && phone.trim() ? (
+                  <input aria-describedby={fieldErrors.email ? "customer-register-email-error" : undefined} aria-invalid={Boolean(fieldErrors.email)} autoComplete="email" id="customer-register-email" inputMode="email" onChange={(event) => handleEmailChange(event.target.value)} placeholder="name@example.com" type="email" value={email} />
+                  {verifiedEmail === email.trim() && email.trim() ? (
                     <span className="customer-register-mobile__verified" role="status">
-                      <CheckCircle2 aria-hidden="true" size={16} />
-                      Verified
+                      <CheckCircle2 aria-hidden="true" size={16} /> Verified
                     </span>
                   ) : null}
                 </span>
-                {fieldErrors.phone ? (
-                  <small id="customer-register-phone-error">{fieldErrors.phone}</small>
-                ) : verifiedPhone === phone.trim() && phone.trim() ? (
-                  <small>This number will be linked to your account.</small>
-                ) : null}
+                {fieldErrors.email ? <small id="customer-register-email-error">{fieldErrors.email}</small> : verifiedEmail === email.trim() && email.trim() ? <small>This verified email can be used for Email OTP Quick Sign.</small> : null}
+              </label>
+
+              <label className="customer-auth-field" htmlFor="customer-register-phone">
+                <span>PH mobile number <small>(optional)</small></span>
+                <span className="customer-auth-password">
+                  <input aria-describedby={fieldErrors.phone ? "customer-register-phone-error" : undefined} aria-invalid={Boolean(fieldErrors.phone)} autoComplete="tel" id="customer-register-phone" inputMode="tel" onChange={(event) => handlePhoneChange(event.target.value)} placeholder="09XXXXXXXXX" type="tel" value={phone} />
+                  {verifiedPhone === phone.trim() && phone.trim() ? (
+                    <span className="customer-register-mobile__verified" role="status">
+                      <CheckCircle2 aria-hidden="true" size={16} /> Verified
+                    </span>
+                  ) : null}
+                </span>
+                {fieldErrors.phone ? <small id="customer-register-phone-error">{fieldErrors.phone}</small> : verifiedPhone === phone.trim() && phone.trim() ? <small>This verified number can be used for Mobile OTP Quick Sign.</small> : null}
               </label>
 
               <label className="customer-auth-field" htmlFor="customer-register-password">
                 <span>Password</span>
                 <span className="customer-auth-password">
-                  <input
-                    aria-describedby={
-                      fieldErrors.password ? "customer-register-password-error" : undefined
-                    }
-                    aria-invalid={Boolean(fieldErrors.password)}
-                    autoComplete="new-password"
-                    id="customer-register-password"
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Create a strong password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                  />
-                  <button
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    aria-pressed={showPassword}
-                    onClick={() => setShowPassword((current) => !current)}
-                    type="button"
-                  >
-                    {showPassword ? (
-                      <EyeOff aria-hidden="true" size={18} />
-                    ) : (
-                      <Eye aria-hidden="true" size={18} />
-                    )}
+                  <input aria-describedby={fieldErrors.password ? "customer-register-password-error" : undefined} aria-invalid={Boolean(fieldErrors.password)} autoComplete="new-password" id="customer-register-password" onChange={(event) => setPassword(event.target.value)} placeholder="Create a strong password" type={showPassword ? "text" : "password"} value={password} />
+                  <button aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword((current) => !current)} type="button">
+                    {showPassword ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
                   </button>
                 </span>
-                {fieldErrors.password ? (
-                  <small id="customer-register-password-error">{fieldErrors.password}</small>
-                ) : null}
+                {fieldErrors.password ? <small id="customer-register-password-error">{fieldErrors.password}</small> : null}
               </label>
 
               <label className="customer-auth-field" htmlFor="customer-register-confirm-password">
                 <span>Confirm password</span>
                 <span className="customer-auth-password">
-                  <input
-                    aria-describedby={
-                      fieldErrors.confirmPassword
-                        ? "customer-register-confirm-password-error"
-                        : undefined
-                    }
-                    aria-invalid={Boolean(fieldErrors.confirmPassword)}
-                    autoComplete="new-password"
-                    id="customer-register-confirm-password"
-                    onChange={(event) => setConfirmPassword(event.target.value)}
-                    placeholder="Re-enter your password"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                  />
-                  <button
-                    aria-label={
-                      showConfirmPassword ? "Hide confirm password" : "Show confirm password"
-                    }
-                    aria-pressed={showConfirmPassword}
-                    onClick={() => setShowConfirmPassword((current) => !current)}
-                    type="button"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff aria-hidden="true" size={18} />
-                    ) : (
-                      <Eye aria-hidden="true" size={18} />
-                    )}
+                  <input aria-describedby={fieldErrors.confirmPassword ? "customer-register-confirm-password-error" : undefined} aria-invalid={Boolean(fieldErrors.confirmPassword)} autoComplete="new-password" id="customer-register-confirm-password" onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Re-enter your password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} />
+                  <button aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"} aria-pressed={showConfirmPassword} onClick={() => setShowConfirmPassword((current) => !current)} type="button">
+                    {showConfirmPassword ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
                   </button>
                 </span>
-                {fieldErrors.confirmPassword ? (
-                  <small id="customer-register-confirm-password-error">
-                    {fieldErrors.confirmPassword}
-                  </small>
-                ) : null}
+                {fieldErrors.confirmPassword ? <small id="customer-register-confirm-password-error">{fieldErrors.confirmPassword}</small> : null}
               </label>
 
-              <button
-                className="customer-auth-submit"
-                disabled={submitting || busySocialProvider !== null}
-                type="submit"
-              >
+              <button className="customer-auth-submit" disabled={submitting || busySocialProvider !== null} type="submit">
                 {submitting ? "Creating account..." : "Create Account"}
               </button>
             </form>
 
-            <div className="customer-auth-quick-divider" aria-hidden="true">
-              <span>or</span>
-            </div>
+            <div className="customer-auth-quick-divider" aria-hidden="true"><span>or</span></div>
             <CustomerSocialAuthButtons
               busyProvider={busySocialProvider}
-              mobileHelperText="Verify a PH mobile number for your new account"
+              emailHelperText="Verify the required email for your new account"
+              mobileHelperText="Verify an optional PH mobile number"
+              onEmailStart={() => {
+                setServerError(null);
+                setVerificationPanel("email");
+              }}
               onMobileStart={() => {
                 setServerError(null);
-                setShowMobileRegistration(true);
+                setVerificationPanel("mobile");
               }}
               onStart={handleSocialStart}
             />
           </>
+        ) : verificationPanel === "email" ? (
+          <CustomerEmailRegistrationPanel
+            initialEmail={email}
+            onCancel={() => setVerificationPanel(null)}
+            onVerified={(verified) => {
+              setEmail(verified);
+              setVerifiedEmail(verified);
+              setFieldErrors((current) => {
+                const next = { ...current };
+                delete next.email;
+                return next;
+              });
+              setVerificationPanel(null);
+            }}
+          />
         ) : (
           <CustomerMobileRegistrationPanel
             initialPhone={phone}
-            onCancel={() => setShowMobileRegistration(false)}
-            onVerified={(verifiedMobile) => {
-              setPhone(verifiedMobile);
-              setVerifiedPhone(verifiedMobile);
+            onCancel={() => setVerificationPanel(null)}
+            onVerified={(verified) => {
+              setPhone(verified);
+              setVerifiedPhone(verified);
               setFieldErrors((current) => {
-                if (!current.phone) return current;
                 const next = { ...current };
                 delete next.phone;
                 return next;
               });
-              setShowMobileRegistration(false);
+              setVerificationPanel(null);
             }}
           />
         )}
 
         <p className="customer-auth-switch">
           Already have an account?{" "}
-          <CustomerLink href="/login" navigate={navigate}>
-            Sign In
-          </CustomerLink>
+          <CustomerLink href="/login" navigate={navigate}>Sign In</CustomerLink>
         </p>
       </div>
     </CustomerAuthFrame>
