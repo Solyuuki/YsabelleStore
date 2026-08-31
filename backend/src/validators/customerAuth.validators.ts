@@ -52,22 +52,6 @@ const optionalPhilippineMobileSchema = z
     return normalized;
   });
 
-const requiredPhilippineMobileSchema = z
-  .string()
-  .max(40)
-  .transform((value, context) => {
-    const normalized = normalizePhilippineMobile(value);
-    if (!normalized) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Enter a valid Philippine mobile number."
-      });
-      return z.NEVER;
-    }
-
-    return normalized;
-  });
-
 const verificationCodeSchema = z
   .string()
   .trim()
@@ -98,16 +82,6 @@ export const customerEmailAuthVerifySchema = z.object({
   rememberFor30Days: z.boolean().optional()
 });
 
-export const customerMobileAuthRequestSchema = z.object({
-  phone: requiredPhilippineMobileSchema
-});
-
-export const customerMobileAuthVerifySchema = z.object({
-  phone: requiredPhilippineMobileSchema,
-  verificationCode: verificationCodeSchema,
-  rememberFor30Days: z.boolean().optional()
-});
-
 export const customerRememberedContinueSchema = z.object({
   rememberedAccountId: rememberedAccountIdSchema
 });
@@ -134,8 +108,6 @@ export type CustomerRegisterInput = z.infer<typeof customerRegisterSchema>;
 export type CustomerLoginInput = z.infer<typeof customerLoginSchema>;
 export type CustomerEmailAuthRequest = z.infer<typeof customerEmailAuthRequestSchema>;
 export type CustomerEmailAuthVerify = z.infer<typeof customerEmailAuthVerifySchema>;
-export type CustomerMobileAuthRequest = z.infer<typeof customerMobileAuthRequestSchema>;
-export type CustomerMobileAuthVerify = z.infer<typeof customerMobileAuthVerifySchema>;
 export type CustomerPasswordRecoveryRequest = z.infer<typeof customerPasswordRecoveryRequestSchema>;
 export type CustomerPasswordRecoveryVerify = z.infer<typeof customerPasswordRecoveryVerifySchema>;
 export type CustomerPasswordReset = z.infer<typeof customerPasswordResetSchema>;
