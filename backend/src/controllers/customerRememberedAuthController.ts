@@ -27,12 +27,18 @@ import {
 } from "../validators/customerAuth.validators.js";
 
 function invalidRememberedAccount(): HttpError {
-  return new HttpError(400, "This remembered account is no longer available on this browser.", {
-    code: "CUSTOMER_REMEMBERED_ACCOUNT_INVALID"
-  });
+  return new HttpError(
+    400,
+    "This remembered account is no longer available on this browser.",
+    {
+      code: "CUSTOMER_REMEMBERED_ACCOUNT_INVALID"
+    }
+  );
 }
 
-function browserTokenHashFromRequest(request: Parameters<RequestHandler>[0]): string | null {
+function browserTokenHashFromRequest(
+  request: Parameters<RequestHandler>[0]
+): string | null {
   const token = readCustomerRememberedBrowserCookie(request);
   return token ? hashCustomerRememberedBrowserToken(token) : null;
 }
@@ -48,7 +54,10 @@ export async function rememberAuthenticatedCustomerForBrowser(input: {
     return { remembered: false, slotLimitReached: false };
   }
 
-  const { tokenHash } = ensureCustomerRememberedBrowserCredential(input.request, input.response);
+  const { tokenHash } = ensureCustomerRememberedBrowserCredential(
+    input.request,
+    input.response
+  );
   return rememberCustomerAccount({
     authMethod: "EMAIL",
     browserTokenHash: tokenHash,
@@ -98,10 +107,13 @@ export const continueCustomerRememberedAuthAccount: RequestHandler = async (
     if (result.status === "invalid") throw invalidRememberedAccount();
     if (result.status === "verification_required") {
       response.status(200).json(
-        createSuccessResponse("Verification is required to continue with this remembered account.", {
-          verificationRequired: true,
-          account: result.account
-        })
+        createSuccessResponse(
+          "Verification is required to continue with this remembered account.",
+          {
+            verificationRequired: true,
+            account: result.account
+          }
+        )
       );
       return;
     }
@@ -134,26 +146,33 @@ export const requestCustomerRememberedAuthVerification: RequestHandler = async (
       browserTokenHash,
       rememberedAccountId: parsedBody.data.rememberedAccountId
     });
-    if (!row || row.customerAccount.status !== "ACTIVE") throw invalidRememberedAccount();
+    if (!row || row.customerAccount.status !== "ACTIVE") {
+      throw invalidRememberedAccount();
+    }
 
     try {
       await requestCustomerEmailAuth({ email: row.customerAccount.email });
     } catch (error) {
       if (error instanceof CustomerIdentityEmailDeliveryError) {
-        console.error(JSON.stringify({ event: "customer_remembered_auth_delivery_failed" }));
+        console.error(
+          JSON.stringify({ event: "customer_remembered_auth_delivery_failed" })
+        );
       } else {
         throw error;
       }
     }
 
-    const safeAccount = (await listCustomerRememberedAccounts(browserTokenHash)).find(
-      (candidate) => candidate.id === row.id
-    );
+    const safeAccount = (
+      await listCustomerRememberedAccounts(browserTokenHash)
+    ).find((candidate) => candidate.id === row.id);
 
     response.status(200).json(
-      createSuccessResponse("A verification code will be sent for this remembered account.", {
-        account: safeAccount ?? null
-      })
+      createSuccessResponse(
+        "A verification code will be sent for this remembered account.",
+        {
+          account: safeAccount ?? null
+        }
+      )
     );
   } catch (error) {
     next(error);
@@ -176,7 +195,9 @@ export const verifyCustomerRememberedAuthAccount: RequestHandler = async (
       browserTokenHash,
       rememberedAccountId: parsedBody.data.rememberedAccountId
     });
-    if (!row || row.customerAccount.status !== "ACTIVE") throw invalidRememberedAccount();
+    if (!row || row.customerAccount.status !== "ACTIVE") {
+      throw invalidRememberedAccount();
+    }
 
     const session = await verifyCustomerEmailAuth({
       email: row.customerAccount.email,
@@ -208,10 +229,14 @@ export const forgetCustomerRememberedAuthAccount: RequestHandler = async (
   try {
     const rememberedAccountId = request.params.id?.trim();
     const browserTokenHash = browserTokenHashFromRequest(request);
-    if (!rememberedAccountId || !browserTokenHash) throw invalidRememberedAccount();
+    if (!rememberedAccountId || !browserTokenHash) {
+      throw invalidRememberedAccount();
+    }
 
     await forgetRememberedCustomer({ browserTokenHash, rememberedAccountId });
-    response.status(200).json(createSuccessResponse("Remembered account removed from this browser."));
+    response
+      .status(200)
+      .json(createSuccessResponse("Remembered account removed from this browser."));
   } catch (error) {
     next(error);
   }
