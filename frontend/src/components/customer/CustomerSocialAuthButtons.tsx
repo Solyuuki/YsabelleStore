@@ -1,10 +1,12 @@
-import { Smartphone } from "lucide-react";
+import { Mail, Smartphone } from "lucide-react";
 
 import type { CustomerSocialAuthProvider } from "@/services/customerSocialAuthService";
 
 type CustomerSocialAuthButtonsProps = {
   busyProvider: CustomerSocialAuthProvider | null;
+  emailHelperText?: string;
   mobileHelperText?: string;
+  onEmailStart?: () => void;
   onMobileStart?: () => void;
   onStart: (provider: CustomerSocialAuthProvider) => void;
 };
@@ -34,7 +36,9 @@ function GoogleMark() {
 
 export function CustomerSocialAuthButtons({
   busyProvider,
+  emailHelperText = "Use your verified account email",
   mobileHelperText = "Use your registered PH mobile number",
+  onEmailStart,
   onMobileStart,
   onStart
 }: CustomerSocialAuthButtonsProps) {
@@ -51,6 +55,23 @@ export function CustomerSocialAuthButtons({
         </span>
         <span>{busyProvider === "google" ? "Opening Google..." : "Continue with Google"}</span>
       </button>
+
+      {onEmailStart ? (
+        <button
+          className="customer-social-auth__button customer-social-auth__button--email"
+          disabled={busyProvider !== null}
+          onClick={onEmailStart}
+          type="button"
+        >
+          <span className="customer-social-auth__mark customer-social-auth__mark--email">
+            <Mail aria-hidden="true" size={20} />
+          </span>
+          <span>
+            Continue with Email OTP
+            <small>{emailHelperText}</small>
+          </span>
+        </button>
+      ) : null}
 
       {onMobileStart ? (
         <button
