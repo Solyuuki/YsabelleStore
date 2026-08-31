@@ -28,11 +28,11 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [verificationPanel, setVerificationPanel] =
-    useState<RegistrationVerificationPanel>(null);
+  const [verificationPanel, setVerificationPanel] = useState<RegistrationVerificationPanel>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [busySocialProvider, setBusySocialProvider] =
-    useState<CustomerSocialAuthProvider | null>(null);
+  const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(
+    null
+  );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(() =>
     getCustomerSocialAuthNotice(globalThis.location?.search ?? "")
@@ -100,9 +100,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
       navigate("/account");
     } catch (error) {
       setServerError(
-        error instanceof Error
-          ? error.message
-          : "Unable to create your account. Please try again."
+        error instanceof Error ? error.message : "Unable to create your account. Please try again."
       );
     } finally {
       setSubmitting(false);
@@ -117,9 +115,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
     } catch (error) {
       setBusySocialProvider(null);
       setServerError(
-        error instanceof Error
-          ? error.message
-          : "Unable to start social sign-up. Please try again."
+        error instanceof Error ? error.message : "Unable to start social sign-up. Please try again."
       );
     }
   }
@@ -153,9 +149,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
               <label className="customer-auth-field" htmlFor="customer-register-name">
                 <span>Full name</span>
                 <input
-                  aria-describedby={
-                    fieldErrors.name ? "customer-register-name-error" : undefined
-                  }
+                  aria-describedby={fieldErrors.name ? "customer-register-name-error" : undefined}
                   aria-invalid={Boolean(fieldErrors.name)}
                   autoComplete="name"
                   id="customer-register-name"
@@ -222,9 +216,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                   PH mobile number <small>(optional)</small>
                 </span>
                 <input
-                  aria-describedby={
-                    fieldErrors.phone ? "customer-register-phone-error" : undefined
-                  }
+                  aria-describedby={fieldErrors.phone ? "customer-register-phone-error" : undefined}
                   aria-invalid={Boolean(fieldErrors.phone)}
                   autoComplete="tel"
                   id="customer-register-phone"
@@ -272,10 +264,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 ) : null}
               </label>
 
-              <label
-                className="customer-auth-field"
-                htmlFor="customer-register-confirm-password"
-              >
+              <label className="customer-auth-field" htmlFor="customer-register-confirm-password">
                 <span>Confirm password</span>
                 <span className="customer-auth-password">
                   <input
@@ -293,7 +282,9 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                     value={confirmPassword}
                   />
                   <button
-                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                    aria-label={
+                      showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+                    }
                     aria-pressed={showConfirmPassword}
                     onClick={() => setShowConfirmPassword((current) => !current)}
                     type="button"
