@@ -1,4 +1,4 @@
-import { ArrowLeft, Mail, Smartphone, Trash2, UserRoundCheck } from "lucide-react";
+import { ArrowLeft, Mail, Trash2, UserRoundCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -35,9 +35,8 @@ export function CustomerKnownAccounts({
   onUseAnotherAccount: () => void;
 }) {
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [verificationAccount, setVerificationAccount] = useState<CustomerRememberedAccount | null>(
-    null
-  );
+  const [verificationAccount, setVerificationAccount] =
+    useState<CustomerRememberedAccount | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -77,7 +76,11 @@ export function CustomerKnownAccounts({
         setVerificationCode("");
       }
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Unable to forget this account.");
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Unable to forget this account."
+      );
     } finally {
       setBusyId(null);
     }
@@ -111,12 +114,11 @@ export function CustomerKnownAccounts({
   }
 
   if (verificationAccount) {
-    const MethodIcon = verificationAccount.method === "EMAIL" ? Mail : Smartphone;
     return (
       <section className="customer-known-accounts customer-known-accounts--verify">
         <div className="customer-known-accounts__heading">
           <span className="customer-known-accounts__heading-icon" aria-hidden="true">
-            <MethodIcon size={19} />
+            <Mail size={19} />
           </span>
           <div>
             <p className="customer-eyebrow">Known account</p>
@@ -199,47 +201,48 @@ export function CustomerKnownAccounts({
       ) : null}
 
       <div className="customer-known-accounts__list">
-        {accounts.map((account) => {
-          const MethodIcon = account.method === "EMAIL" ? Mail : Smartphone;
-          return (
-            <article className="customer-known-account" key={account.id}>
-              <span className="customer-known-account__icon" aria-hidden="true">
-                <MethodIcon size={19} />
-              </span>
-              <div className="customer-known-account__identity">
-                <strong>{account.name}</strong>
-                <span>{account.maskedIdentifier}</span>
-                <small className={account.trusted ? undefined : "is-expired"}>
-                  {formatTrust(account)}
-                </small>
-              </div>
-              <div className="customer-known-account__actions">
-                <button
-                  className="customer-known-account__continue"
-                  disabled={busyId !== null}
-                  onClick={() => void handleContinue(account)}
-                  type="button"
-                >
-                  {busyId === account.id ? "Opening..." : "Continue"}
-                </button>
-                <button
-                  aria-label={`Forget ${account.name}`}
-                  className="customer-known-account__forget"
-                  disabled={busyId !== null}
-                  onClick={() => void handleForget(account)}
-                  title="Forget this account"
-                  type="button"
-                >
-                  <Trash2 aria-hidden="true" size={16} />
-                  <span>Forget</span>
-                </button>
-              </div>
-            </article>
-          );
-        })}
+        {accounts.map((account) => (
+          <article className="customer-known-account" key={account.id}>
+            <span className="customer-known-account__icon" aria-hidden="true">
+              <Mail size={19} />
+            </span>
+            <div className="customer-known-account__identity">
+              <strong>{account.name}</strong>
+              <span>{account.maskedIdentifier}</span>
+              <small className={account.trusted ? undefined : "is-expired"}>
+                {formatTrust(account)}
+              </small>
+            </div>
+            <div className="customer-known-account__actions">
+              <button
+                className="customer-known-account__continue"
+                disabled={busyId !== null}
+                onClick={() => void handleContinue(account)}
+                type="button"
+              >
+                {busyId === account.id ? "Opening..." : "Continue"}
+              </button>
+              <button
+                aria-label={`Forget ${account.name}`}
+                className="customer-known-account__forget"
+                disabled={busyId !== null}
+                onClick={() => void handleForget(account)}
+                title="Forget this account"
+                type="button"
+              >
+                <Trash2 aria-hidden="true" size={16} />
+                <span>Forget</span>
+              </button>
+            </div>
+          </article>
+        ))}
       </div>
 
-      <button className="customer-known-accounts__other" onClick={onUseAnotherAccount} type="button">
+      <button
+        className="customer-known-accounts__other"
+        onClick={onUseAnotherAccount}
+        type="button"
+      >
         Use another account
       </button>
     </section>
