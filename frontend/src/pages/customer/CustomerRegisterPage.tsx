@@ -84,10 +84,10 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
     const errors = validateCustomerRegisterForm(input);
 
     if (email.trim() && verifiedEmail !== email.trim()) {
-      errors.email = "Verify this email address using Continue with Email OTP below.";
+      errors.email = "Verify this email address using Verify Email Address below.";
     }
     if (phone.trim() && verifiedPhone !== phone.trim()) {
-      errors.phone = "Verify this mobile number using Continue with Mobile OTP below.";
+      errors.phone = "Verify this mobile number using Verify Mobile Number below.";
     }
 
     setFieldErrors(errors);
@@ -215,7 +215,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 {fieldErrors.email ? (
                   <small id="customer-register-email-error">{fieldErrors.email}</small>
                 ) : verifiedEmail === email.trim() && email.trim() ? (
-                  <small>This verified email can be used for Email OTP Quick Sign.</small>
+                  <small>This verified email can be used for Email Quick Sign.</small>
                 ) : null}
               </label>
 
@@ -246,7 +246,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 {fieldErrors.phone ? (
                   <small id="customer-register-phone-error">{fieldErrors.phone}</small>
                 ) : verifiedPhone === phone.trim() && phone.trim() ? (
-                  <small>This verified number can be used for Mobile OTP Quick Sign.</small>
+                  <small>This verified number can be used for Mobile Quick Sign.</small>
                 ) : null}
               </label>
 
@@ -336,8 +336,11 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             </div>
             <CustomerSocialAuthButtons
               busyProvider={busySocialProvider}
-              emailHelperText="Verify the required email for your new account"
-              mobileHelperText="Verify an optional PH mobile number"
+              googleHelperText="Use your Google account for faster sign-up and sign-in."
+              emailLabel="Verify Email Address"
+              emailHelperText="Verify the required email for your new account."
+              mobileLabel="Verify Mobile Number"
+              mobileHelperText="Verify an optional PH mobile number."
               onEmailStart={() => {
                 setServerError(null);
                 setVerificationPanel("email");
