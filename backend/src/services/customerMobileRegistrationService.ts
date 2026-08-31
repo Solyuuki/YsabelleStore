@@ -3,8 +3,13 @@ import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 
 import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
+import {
+  CustomerMobileSmsDeliveryError,
+  customerMobileSmsDelivery
+} from "./customerMobileSmsDeliveryService.js";
 
 export const CUSTOMER_MOBILE_REGISTRATION_OTP_LIFETIME_MS = 10 * 60 * 1000;
+export const CUSTOMER_MOBILE_REGISTRATION_RESEND_COOLDOWN_MS = 30 * 1000;
 
 const REGISTRATION_MOBILE_GRANT_VERSION = 1;
 
@@ -131,23 +136,19 @@ function createRegistrationOtpMaterial(registrationIntentHash: string, phone: st
   return { challengeId, verificationCode, otpHash, expiresAt };
 }
 
-const defaultCustomerMobileRegistrationDelivery: CustomerMobileRegistrationDelivery = async ({
-  phone,
-  verificationCode
-}) => {
-  if (env.NODE_ENV === "development") {
-    console.info(
-      JSON.stringify({
-        event: "customer_mobile_registration_dev_otp",
-        phoneLast4: phone.slice(-4),
-        verificationCode
-      })
-    );
-    return;
-  }
-
+const defaultCustomerMobileRegistrationDelivery: CustomerMobileRegistrationDelivery = async (
+  input
+) => {
   if (env.NODE_ENV === "test") return;
-  throw new CustomerMobileRegistrationDeliveryError();
+
+  try {
+    await customerMobileSmsDelivery(input);
+  } catch (error) {
+    if (error instanceof CustomerMobileSmsDeliveryError) {
+      throw new CustomerMobileRegistrationDeliveryError();
+    }
+    throw error;
+  }
 };
 
 export async function requestCustomerMobileRegistrationVerification(
@@ -161,6 +162,23 @@ export async function requestCustomerMobileRegistrationVerification(
   if (existingCustomer) return;
 
   const registrationIntentHash = hashCustomerRegistrationIntent(input.registrationIntentToken);
+  const activeChallenge = await prisma.customerMobileRegistrationChallenge.findFirst({
+    where: {
+      registrationIntentHash,
+      phoneNormalized: input.phone,
+      consumedAt: null,
+      expiresAt: { gt: now }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+  if (
+    activeChallenge &&
+    activeChallenge.createdAt.getTime() + CUSTOMER_MOBILE_REGISTRATION_RESEND_COOLDOWN_MS >
+      now.getTime()
+  ) {
+    return;
+  }
+
   const otp = createRegistrationOtpMaterial(registrationIntentHash, input.phone, now);
 
   await prisma.$transaction(async (transaction) => {
@@ -179,7 +197,8 @@ export async function requestCustomerMobileRegistrationVerification(
         registrationIntentHash,
         phoneNormalized: input.phone,
         otpHash: otp.otpHash,
-        expiresAt: otp.expiresAt
+        expiresAt: otp.expiresAt,
+        createdAt: now
       }
     });
   });
