@@ -51,6 +51,11 @@ export type CustomerSessionResult = CustomerSessionToken & {
   customer: SafeCustomer;
 };
 
+export type CustomerRegistrationVerification = {
+  emailVerifiedAt?: Date | null;
+  phoneVerifiedAt?: Date | null;
+};
+
 export function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
   return {
     id: customer.id,
@@ -119,7 +124,8 @@ export async function createCustomerSession(
 }
 
 export async function registerCustomer(
-  input: CustomerRegisterInput
+  input: CustomerRegisterInput,
+  verification: CustomerRegistrationVerification = {}
 ): Promise<CustomerSessionResult> {
   const parsed = customerRegisterSchema.parse(input);
   const existing = await prisma.customerAccount.findFirst({
@@ -145,6 +151,8 @@ export async function registerCustomer(
         email: parsed.email,
         phone: parsed.phone ?? null,
         phoneNormalized: parsed.phone ?? null,
+        emailVerifiedAt: verification.emailVerifiedAt ?? null,
+        phoneVerifiedAt: parsed.phone ? (verification.phoneVerifiedAt ?? null) : null,
         passwordHash: await hashPassword(parsed.password),
         status: "ACTIVE"
       }
