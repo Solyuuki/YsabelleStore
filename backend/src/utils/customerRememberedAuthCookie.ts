@@ -53,6 +53,22 @@ export function setCustomerRememberedBrowserCookie(response: Response, token: st
   });
 }
 
+export function ensureCustomerRememberedBrowserCredential(
+  request: Request,
+  response: Response
+): { token: string; tokenHash: string } {
+  let token = readCustomerRememberedBrowserCookie(request);
+  if (!token) {
+    token = createCustomerRememberedBrowserToken();
+    setCustomerRememberedBrowserCookie(response, token);
+  }
+
+  return {
+    token,
+    tokenHash: hashCustomerRememberedBrowserToken(token)
+  };
+}
+
 export function clearCustomerRememberedBrowserCookie(response: Response): void {
   response.cookie(CUSTOMER_REMEMBERED_BROWSER_COOKIE_NAME, "", {
     ...rememberedBrowserCookieOptions,
