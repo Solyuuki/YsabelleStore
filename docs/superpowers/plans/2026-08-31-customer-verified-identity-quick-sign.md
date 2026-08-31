@@ -30,6 +30,7 @@
 ### Task 1: Persist verified identities and purpose-specific email OTP challenges
 
 **Files:**
+
 - Modify: `prisma/schema.prisma`
 - Create: `prisma/migrations/20260831090000_customer_verified_identity_quick_sign/migration.sql`
 - Test: `backend/test/customer-email-registration.test.ts`
@@ -37,6 +38,7 @@
 - Modify: `backend/package.json`
 
 **Interfaces:**
+
 - Produces `CustomerAccount.emailVerifiedAt: DateTime?` and `CustomerAccount.phoneVerifiedAt: DateTime?`.
 - Produces `CustomerEmailRegistrationChallenge` rows keyed by registration-intent hash + normalized email.
 - Produces `CustomerEmailAuthChallenge` rows keyed by customer account + normalized email.
@@ -70,6 +72,7 @@ Commit message: `feat(auth): persist verified customer identities`
 ### Task 2: Registration email OTP and verified-registration enforcement
 
 **Files:**
+
 - Create: `backend/src/services/customerEmailRegistrationService.ts`
 - Create: `backend/src/services/customerIdentityEmailDeliveryService.ts`
 - Create: `backend/src/utils/customerEmailRegistrationCookie.ts`
@@ -81,6 +84,7 @@ Commit message: `feat(auth): persist verified customer identities`
 - Modify: `backend/test/customer-mobile-registration.test.ts`
 
 **Interfaces:**
+
 - Produces `requestCustomerEmailRegistrationVerification({ email, registrationIntentToken })`.
 - Produces `verifyCustomerEmailRegistrationCode({ email, verificationCode, registrationIntentToken }) -> signed grant`.
 - Produces endpoints `POST /api/customer-auth/registration/email/request` and `POST /api/customer-auth/registration/email/verify`.
@@ -124,6 +128,7 @@ Commit message: `feat(auth): require verified identities at registration`
 ### Task 3: Email OTP Quick Sign and verified mobile Quick Sign eligibility
 
 **Files:**
+
 - Create: `backend/src/services/customerEmailAuthService.ts`
 - Modify: `backend/src/services/customerIdentityEmailDeliveryService.ts`
 - Modify: `backend/src/controllers/customerAuthController.ts`
@@ -134,6 +139,7 @@ Commit message: `feat(auth): require verified identities at registration`
 - Modify: `backend/test/customer-mobile-auth.test.ts`
 
 **Interfaces:**
+
 - Produces `requestCustomerEmailAuth({ email })` and `verifyCustomerEmailAuth({ email, verificationCode }) -> CustomerSessionResult`.
 - Produces endpoints `POST /api/customer-auth/email/request` and `POST /api/customer-auth/email/verify`.
 - Mobile-auth request/verify only operate when `phoneVerifiedAt` is non-null.
@@ -174,10 +180,12 @@ Commit message: `feat(auth): add verified email quick sign`
 ### Task 4: Carry verified provider email evidence into customer accounts
 
 **Files:**
+
 - Modify: `backend/src/services/customerSocialAuthService.ts`
 - Modify: `backend/test/customer-social-auth.test.ts`
 
 **Interfaces:**
+
 - Existing Google social-auth flow may set `emailVerifiedAt` for the exact customer email only when current provider input is verified and authoritative.
 - Existing social linking semantics remain unchanged.
 
@@ -204,6 +212,7 @@ Commit message: `feat(auth): record verified google customer email`
 ### Task 5: Register UI for Email/Mobile verification Quick Sign
 
 **Files:**
+
 - Create: `frontend/src/components/customer/CustomerEmailRegistrationPanel.tsx`
 - Modify: `frontend/src/components/customer/CustomerSocialAuthButtons.tsx`
 - Modify: `frontend/src/pages/customer/CustomerRegisterPage.tsx`
@@ -212,6 +221,7 @@ Commit message: `feat(auth): record verified google customer email`
 - Modify: `scripts/customer-auth-ui-contract-test.ts`
 
 **Interfaces:**
+
 - Adds `onEmailStart?: () => void` and configurable helper text to `CustomerSocialAuthButtons`.
 - Adds registration API functions for email request/verify.
 - Email registration panel mirrors the compact Mobile OTP panel interaction: identity -> code -> verify -> return verified identity to form.
@@ -249,6 +259,7 @@ Commit message: `feat(auth): verify register email and mobile identities`
 ### Task 6: Login Email OTP Quick Sign UI
 
 **Files:**
+
 - Create: `frontend/src/components/customer/CustomerEmailAuthPanel.tsx`
 - Modify: `frontend/src/components/customer/CustomerSocialAuthButtons.tsx`
 - Modify: `frontend/src/pages/customer/CustomerLoginPage.tsx`
@@ -256,6 +267,7 @@ Commit message: `feat(auth): verify register email and mobile identities`
 - Modify: `scripts/customer-auth-ui-contract-test.ts`
 
 **Interfaces:**
+
 - Adds frontend API calls for `/email/request` and `/email/verify`.
 - Successful email verification refreshes the normal customer session and navigates exactly like Mobile OTP Quick Sign.
 
@@ -280,9 +292,11 @@ Commit message: `feat(auth): add email otp quick sign ui`
 ### Task 7: QA-ready checkpoint and final Tier 3 verification
 
 **Files:**
+
 - Modify only files needed to fix issues found by tests/manual QA.
 
 **Interfaces:**
+
 - QA-ready head must support registration Email OTP, optional Mobile OTP, Email Quick Sign, Mobile Quick Sign, Google, and password login without purpose crossover.
 
 - [ ] **Step 1: Run targeted auth/backend/frontend checks**
