@@ -5,13 +5,9 @@ import {
   issueCustomerRegistrationIntent,
   loginCustomerAccount,
   logoutCustomerAccount,
-  requestCustomerMobileAuthAccount,
   requestCustomerPasswordRecoveryAccount,
-  requestCustomerRegistrationMobileVerification,
   resetCustomerPasswordAccount,
-  verifyCustomerMobileAuthAccount,
-  verifyCustomerPasswordRecoveryAccount,
-  verifyCustomerRegistrationMobileVerification
+  verifyCustomerPasswordRecoveryAccount
 } from "../controllers/customerAuthController.js";
 import {
   requestCustomerEmailAuthAccount,
@@ -60,23 +56,6 @@ function privateIdentityKey(scope: string, kind: string, normalized: string): st
   return derivePrivateRateLimitKey(scope, `${kind}:${normalized}`);
 }
 
-function mobilePhoneRateLimit(
-  config:
-    | typeof AUTH_RATE_LIMITS.customerMobileAuthPhone
-    | typeof AUTH_RATE_LIMITS.customerMobileAuthVerifyPhone
-) {
-  return createAuthRateLimit({
-    ...config,
-    keyResolver(request) {
-      const rawPhone = stringFieldFromBody(request.body, "phone");
-      if (!rawPhone) return null;
-
-      const phone = normalizePhilippineMobile(rawPhone);
-      return phone ? privateIdentityKey(config.scope, "phone", phone) : null;
-    }
-  });
-}
-
 function emailRateLimit(
   config:
     | typeof AUTH_RATE_LIMITS.customerEmailRegistrationEmail
@@ -89,7 +68,6 @@ function emailRateLimit(
     keyResolver(request) {
       const rawEmail = stringFieldFromBody(request.body, "email");
       if (!rawEmail) return null;
-
       const email = normalizeCustomerEmail(rawEmail);
       return email ? privateIdentityKey(config.scope, "email", email) : null;
     }
@@ -102,7 +80,6 @@ const customerRegisterUsernameRateLimit = createAuthRateLimit({
   keyResolver(request) {
     const rawUsername = stringFieldFromBody(request.body, "username");
     if (!rawUsername) return null;
-
     const username = normalizeCustomerUsername(rawUsername);
     return username
       ? privateIdentityKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, "username", username)
@@ -114,7 +91,6 @@ const customerRegisterEmailRateLimit = createAuthRateLimit({
   keyResolver(request) {
     const rawEmail = stringFieldFromBody(request.body, "email");
     if (!rawEmail) return null;
-
     const email = normalizeCustomerEmail(rawEmail);
     return email
       ? privateIdentityKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, "email", email)
@@ -126,7 +102,6 @@ const customerRegisterMobileRateLimit = createAuthRateLimit({
   keyResolver(request) {
     const rawPhone = stringFieldFromBody(request.body, "phone");
     if (!rawPhone) return null;
-
     const phone = normalizePhilippineMobile(rawPhone);
     return phone
       ? privateIdentityKey(AUTH_RATE_LIMITS.customerRegisterIdentity.scope, "phone", phone)
@@ -139,7 +114,6 @@ const customerLoginIdentifierRateLimit = createAuthRateLimit({
   keyResolver(request) {
     const rawIdentifier = stringFieldFromBody(request.body, "identifier");
     if (!rawIdentifier) return null;
-
     const identity = classifyCustomerLoginIdentifier(rawIdentifier);
     return identity
       ? privateIdentityKey(
@@ -172,18 +146,6 @@ const customerEmailAuthVerifyRateLimit = createAuthRateLimit(
 const customerEmailAuthVerifyEmailRateLimit = emailRateLimit(
   AUTH_RATE_LIMITS.customerEmailAuthVerifyEmail
 );
-const customerMobileAuthRequestRateLimit = createAuthRateLimit(
-  AUTH_RATE_LIMITS.customerMobileAuthRequest
-);
-const customerMobileAuthPhoneRateLimit = mobilePhoneRateLimit(
-  AUTH_RATE_LIMITS.customerMobileAuthPhone
-);
-const customerMobileAuthVerifyRateLimit = createAuthRateLimit(
-  AUTH_RATE_LIMITS.customerMobileAuthVerify
-);
-const customerMobileAuthVerifyPhoneRateLimit = mobilePhoneRateLimit(
-  AUTH_RATE_LIMITS.customerMobileAuthVerifyPhone
-);
 const customerRecoveryRequestRateLimit = createAuthRateLimit(
   AUTH_RATE_LIMITS.customerRecoveryRequest
 );
@@ -192,7 +154,6 @@ const customerRecoveryIdentifierRateLimit = createAuthRateLimit({
   keyResolver(request) {
     const rawIdentifier = stringFieldFromBody(request.body, "identifier");
     if (!rawIdentifier) return null;
-
     const identity = classifyCustomerLoginIdentifier(rawIdentifier);
     return identity
       ? privateIdentityKey(
@@ -228,16 +189,6 @@ customerAuthRouter.post(
   customerEmailRegistrationVerifyRateLimit,
   customerEmailRegistrationVerifyEmailRateLimit,
   verifyCustomerRegistrationEmailVerification
-);
-customerAuthRouter.post(
-  "/registration/mobile/request",
-  requireAllowedCustomerAuthOrigin,
-  requestCustomerRegistrationMobileVerification
-);
-customerAuthRouter.post(
-  "/registration/mobile/verify",
-  requireAllowedCustomerAuthOrigin,
-  verifyCustomerRegistrationMobileVerification
 );
 customerAuthRouter.post(
   "/register",
@@ -291,20 +242,6 @@ customerAuthRouter.post(
   verifyCustomerEmailAuthAccount
 );
 customerAuthRouter.post(
-  "/mobile/request",
-  requireAllowedCustomerAuthOrigin,
-  customerMobileAuthRequestRateLimit,
-  customerMobileAuthPhoneRateLimit,
-  requestCustomerMobileAuthAccount
-);
-customerAuthRouter.post(
-  "/mobile/verify",
-  requireAllowedCustomerAuthOrigin,
-  customerMobileAuthVerifyRateLimit,
-  customerMobileAuthVerifyPhoneRateLimit,
-  verifyCustomerMobileAuthAccount
-);
-customerAuthRouter.post(
   "/recovery/request",
   requireAllowedCustomerAuthOrigin,
   customerRecoveryRequestRateLimit,
@@ -323,7 +260,6 @@ customerAuthRouter.post(
   customerRecoveryResetRateLimit,
   resetCustomerPasswordAccount
 );
-
 customerAuthRouter.get(
   "/social/:provider/start",
   requireAllowedCustomerAuthOrigin,
@@ -346,6 +282,5 @@ customerAuthRouter.post(
   requireAllowedCustomerAuthOrigin,
   redeemCustomerElectronSocialAuth
 );
-
 customerAuthRouter.get("/me", requireCustomerAuth, getCurrentCustomer);
 customerAuthRouter.post("/logout", requireAllowedCustomerAuthOrigin, logoutCustomerAccount);
