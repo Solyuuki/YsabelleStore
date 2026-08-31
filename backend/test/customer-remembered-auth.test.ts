@@ -51,6 +51,38 @@ test("customer remembered quick sign uses dedicated persisted trust rows", () =>
   assert.ok(prisma.customerRememberedAuth);
 });
 
+test("legacy mobile remembered rows are hidden and cannot continue authentication", async () => {
+  const browserTokenHash = `browser-legacy-mobile-${Date.now()}-${Math.random()}`;
+  const now = new Date("2026-08-31T10:00:00.000Z");
+  const customer = await createCustomer(5);
+
+  try {
+    const legacyMobileRow = await prisma.customerRememberedAuth.create({
+      data: {
+        browserTokenHash,
+        customerAccountId: customer.id,
+        authMethod: "MOBILE",
+        trustedUntil: new Date(now.getTime() + 30 * DAY_MS),
+        lastUsedAt: now
+      }
+    });
+
+    const listed = await listCustomerRememberedAccounts(browserTokenHash, now);
+    assert.deepEqual(listed, []);
+
+    const continued = await continueRememberedCustomer({
+      browserTokenHash,
+      rememberedAccountId: legacyMobileRow.id,
+      now
+    });
+    assert.deepEqual(continued, { status: "invalid" });
+  } finally {
+    await prisma.customerRememberedAuth.deleteMany({ where: { browserTokenHash } });
+    await prisma.customerSession.deleteMany({ where: { customerAccountId: customer.id } });
+    await prisma.customerAccount.delete({ where: { id: customer.id } });
+  }
+});
+
 test("a browser remembers at most three distinct customer accounts and forget frees a slot", async () => {
   const browserTokenHash = `browser-${Date.now()}-${Math.random()}`;
   const now = new Date("2026-08-31T10:00:00.000Z");
@@ -78,7 +110,7 @@ test("a browser remembers at most three distinct customer accounts and forget fr
     assert.equal(blocked.slotLimitReached, true);
 
     const existingRenewal = await rememberCustomerAccount({
-      authMethod: "MOBILE",
+      authMethod: "EMAIL",
       browserTokenHash,
       customerAccountId: customers[0]!.id,
       now: new Date(now.getTime() + DAY_MS)
