@@ -133,11 +133,11 @@ export function CustomerMobileRegistrationPanel({
 
       {stage === "phone" ? (
         <form className="customer-mobile-auth__form" onSubmit={handlePhoneSubmit} noValidate>
-          <label className="customer-auth-field" htmlFor="customer-mobile-registration-phone">
+          <label className="customer-auth-field" htmlFor="customer-mobile-auth-phone">
             <span>PH mobile number</span>
             <input
               autoComplete="tel"
-              id="customer-mobile-registration-phone"
+              id="customer-mobile-auth-phone"
               inputMode="tel"
               maxLength={11}
               onChange={(event) => setPhone(event.target.value.replace(/\D/g, "").slice(0, 11))}
@@ -153,11 +153,11 @@ export function CustomerMobileRegistrationPanel({
         </form>
       ) : (
         <form className="customer-mobile-auth__form" onSubmit={handleCodeSubmit} noValidate>
-          <label className="customer-auth-field" htmlFor="customer-mobile-registration-code">
+          <label className="customer-auth-field" htmlFor="customer-mobile-auth-code">
             <span>Verification code</span>
             <input
               autoComplete="one-time-code"
-              id="customer-mobile-registration-code"
+              id="customer-mobile-auth-code"
               inputMode="numeric"
               maxLength={6}
               onChange={(event) =>
