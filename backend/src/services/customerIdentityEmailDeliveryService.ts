@@ -1,8 +1,14 @@
+import { once } from "node:events";
+import { connect as connectTls, type TLSSocket } from "node:tls";
+
 import { env } from "../config/env.js";
 
 const RESEND_EMAIL_ENDPOINT = "https://api.resend.com/emails";
 const DEVELOPMENT_RESEND_FROM_EMAIL = "onboarding@resend.dev";
 const CUSTOMER_IDENTITY_FROM_NAME = "Ysabelle Store";
+const GMAIL_SMTP_HOST = "smtp.gmail.com";
+const GMAIL_SMTP_PORT = 465;
+const SMTP_TIMEOUT_MS = 15_000;
 
 export type CustomerIdentityEmailPurpose = "registration" | "authentication";
 
@@ -13,12 +19,29 @@ export class CustomerIdentityEmailDeliveryError extends Error {
   }
 }
 
+type DevelopmentSmtpMessage = {
+  appPassword: string;
+  from: string;
+  html: string;
+  subject: string;
+  text: string;
+  to: string;
+  user: string;
+};
+
 type CustomerIdentityEmailDeliveryConfig = {
   apiKey?: string;
-  from?: string;
+  developmentSmtpAppPassword?: string;
+  developmentSmtpUser?: string;
   fetchImpl?: typeof fetch;
+  from?: string;
   nodeEnv?: "development" | "test" | "production";
-  registrationDevOtpTo?: string;
+  smtpSendImpl?: (message: DevelopmentSmtpMessage) => Promise<void>;
+};
+
+type SmtpResponse = {
+  code: number;
+  text: string;
 };
 
 function requireEmailConfiguration(apiKey: string | undefined, from: string | undefined) {
@@ -75,6 +98,131 @@ function emailCopy(purpose: CustomerIdentityEmailPurpose, verificationCode: stri
   return { html, subject, text };
 }
 
+function createSmtpResponseReader(socket: TLSSocket) {
+  let buffer = "";
+  let responseLines: string[] = [];
+  const ready: SmtpResponse[] = [];
+  const waiters: Array<{
+    resolve: (response: SmtpResponse) => void;
+    reject: (error: Error) => void;
+  }> = [];
+
+  function rejectWaiters(error: Error) {
+    while (waiters.length > 0) waiters.shift()?.reject(error);
+  }
+
+  socket.on("data", (chunk) => {
+    buffer += chunk.toString("utf8");
+    while (true) {
+      const lineEnd = buffer.indexOf("\n");
+      if (lineEnd < 0) break;
+      const line = buffer.slice(0, lineEnd + 1).replace(/\r?\n$/, "");
+      buffer = buffer.slice(lineEnd + 1);
+      responseLines.push(line);
+
+      const match = /^(\d{3})([ -])/.exec(line);
+      if (!match || match[2] !== " ") continue;
+
+      const response = { code: Number(match[1]), text: responseLines.join("\n") };
+      responseLines = [];
+      const waiter = waiters.shift();
+      if (waiter) waiter.resolve(response);
+      else ready.push(response);
+    }
+  });
+  socket.on("error", (error) => rejectWaiters(error));
+  socket.on("timeout", () => rejectWaiters(new Error("SMTP connection timed out.")));
+
+  return () =>
+    new Promise<SmtpResponse>((resolve, reject) => {
+      const response = ready.shift();
+      if (response) resolve(response);
+      else waiters.push({ resolve, reject });
+    });
+}
+
+async function expectSmtpResponse(
+  readResponse: () => Promise<SmtpResponse>,
+  expectedCodes: number[]
+) {
+  const response = await readResponse();
+  if (!expectedCodes.includes(response.code)) {
+    throw new Error(`Unexpected SMTP response: ${response.code}`);
+  }
+}
+
+function normalizeSmtpBody(value: string) {
+  return value
+    .replace(/\r?\n/g, "\r\n")
+    .split("\r\n")
+    .map((line) => (line.startsWith(".") ? `.${line}` : line))
+    .join("\r\n");
+}
+
+async function sendGmailSmtpMessage(message: DevelopmentSmtpMessage): Promise<void> {
+  const socket = connectTls({
+    host: GMAIL_SMTP_HOST,
+    port: GMAIL_SMTP_PORT,
+    servername: GMAIL_SMTP_HOST,
+    rejectUnauthorized: true
+  });
+  socket.setTimeout(SMTP_TIMEOUT_MS);
+  const readResponse = createSmtpResponseReader(socket);
+
+  try {
+    await once(socket, "secureConnect");
+    await expectSmtpResponse(readResponse, [220]);
+
+    socket.write("EHLO localhost\r\n");
+    await expectSmtpResponse(readResponse, [250]);
+
+    const authPayload = Buffer.from(`\0${message.user}\0${message.appPassword}`, "utf8").toString(
+      "base64"
+    );
+    socket.write(`AUTH PLAIN ${authPayload}\r\n`);
+    await expectSmtpResponse(readResponse, [235]);
+
+    socket.write(`MAIL FROM:<${message.user}>\r\n`);
+    await expectSmtpResponse(readResponse, [250]);
+
+    socket.write(`RCPT TO:<${message.to}>\r\n`);
+    await expectSmtpResponse(readResponse, [250, 251]);
+
+    socket.write("DATA\r\n");
+    await expectSmtpResponse(readResponse, [354]);
+
+    const boundary = "ysabelle-store-otp";
+    const rawMessage = [
+      `From: ${message.from}`,
+      `To: ${message.to}`,
+      `Subject: ${message.subject}`,
+      "MIME-Version: 1.0",
+      `Content-Type: multipart/alternative; boundary=\"${boundary}\"`,
+      "",
+      `--${boundary}`,
+      "Content-Type: text/plain; charset=UTF-8",
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      message.text,
+      `--${boundary}`,
+      "Content-Type: text/html; charset=UTF-8",
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      message.html,
+      `--${boundary}--`,
+      ""
+    ].join("\r\n");
+    socket.write(`${normalizeSmtpBody(rawMessage)}\r\n.\r\n`);
+    await expectSmtpResponse(readResponse, [250]);
+
+    socket.write("QUIT\r\n");
+    await expectSmtpResponse(readResponse, [221]);
+  } finally {
+    socket.end();
+    socket.destroy();
+  }
+}
+
 async function sendEmailRequest(
   input: {
     apiKey: string;
@@ -121,10 +269,12 @@ async function isDevelopmentSenderRestriction(
 
 export function createCustomerIdentityEmailDelivery({
   apiKey = env.RESEND_API_KEY,
-  from = env.CUSTOMER_RECOVERY_FROM_EMAIL,
+  developmentSmtpAppPassword = env.CUSTOMER_DEV_GMAIL_SMTP_APP_PASSWORD,
+  developmentSmtpUser = env.CUSTOMER_DEV_GMAIL_SMTP_USER,
   fetchImpl = fetch,
+  from = env.CUSTOMER_RECOVERY_FROM_EMAIL,
   nodeEnv = env.NODE_ENV,
-  registrationDevOtpTo = env.CUSTOMER_REGISTRATION_DEV_OTP_TO
+  smtpSendImpl = sendGmailSmtpMessage
 }: CustomerIdentityEmailDeliveryConfig = {}) {
   return async (input: {
     to: string;
@@ -133,16 +283,32 @@ export function createCustomerIdentityEmailDelivery({
   }): Promise<void> => {
     if (nodeEnv === "test") return;
 
+    const smtpUser = developmentSmtpUser?.trim();
+    const smtpAppPassword = developmentSmtpAppPassword?.replace(/\s+/g, "").trim();
+    if (nodeEnv === "development" && (smtpUser || smtpAppPassword)) {
+      if (!smtpUser || !smtpAppPassword) throw new CustomerIdentityEmailDeliveryError();
+      const { html, subject, text } = emailCopy(input.purpose, input.verificationCode);
+      try {
+        await smtpSendImpl({
+          appPassword: smtpAppPassword,
+          from: formatFromAddress(smtpUser),
+          html,
+          subject,
+          text,
+          to: input.to,
+          user: smtpUser
+        });
+        return;
+      } catch {
+        throw new CustomerIdentityEmailDeliveryError();
+      }
+    }
+
     const configuration = requireEmailConfiguration(apiKey, from);
-    const deliveryTo =
-      nodeEnv === "development" && registrationDevOtpTo?.trim()
-        ? registrationDevOtpTo.trim()
-        : input.to;
-    const deliveryInput = { ...input, to: deliveryTo };
     let response: Response;
 
     try {
-      response = await sendEmailRequest({ ...deliveryInput, ...configuration }, fetchImpl);
+      response = await sendEmailRequest({ ...input, ...configuration }, fetchImpl);
       if (
         !response.ok &&
         configuration.from !== DEVELOPMENT_RESEND_FROM_EMAIL &&
@@ -150,7 +316,7 @@ export function createCustomerIdentityEmailDelivery({
       ) {
         response = await sendEmailRequest(
           {
-            ...deliveryInput,
+            ...input,
             apiKey: configuration.apiKey,
             from: DEVELOPMENT_RESEND_FROM_EMAIL
           },
