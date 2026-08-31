@@ -35,7 +35,6 @@ function maskEmail(email: string): string {
 function toRememberedAccount(
   row: {
     id: string;
-    authMethod: "EMAIL";
     trustedUntil: Date;
     lastUsedAt: Date | null;
     customerAccount: {
@@ -116,7 +115,7 @@ export async function rememberCustomerAccount(input: {
       }
 
       const count = await transaction.customerRememberedAuth.count({
-        where: { browserTokenHash, authMethod: "EMAIL" }
+        where: { browserTokenHash: input.browserTokenHash, authMethod: "EMAIL" }
       });
       if (count >= CUSTOMER_REMEMBERED_MAX_ACCOUNTS) {
         return { remembered: false, slotLimitReached: true };
