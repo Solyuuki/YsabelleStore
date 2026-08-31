@@ -15,6 +15,10 @@ import {
   verifyCustomerRegistrationMobileVerification
 } from "../controllers/customerAuthController.js";
 import {
+  requestCustomerRegistrationEmailVerification,
+  verifyCustomerRegistrationEmailVerification
+} from "../controllers/customerEmailVerificationController.js";
+import {
   completeCustomerSocialAuth,
   completeCustomerSocialLinkAccount,
   redeemCustomerElectronSocialAuth,
@@ -160,6 +164,16 @@ customerAuthRouter.get(
   "/registration-intent",
   requireAllowedCustomerAuthOrigin,
   issueCustomerRegistrationIntent
+);
+customerAuthRouter.post(
+  "/registration/email/request",
+  requireAllowedCustomerAuthOrigin,
+  requestCustomerRegistrationEmailVerification
+);
+customerAuthRouter.post(
+  "/registration/email/verify",
+  requireAllowedCustomerAuthOrigin,
+  verifyCustomerRegistrationEmailVerification
 );
 customerAuthRouter.post(
   "/registration/mobile/request",
