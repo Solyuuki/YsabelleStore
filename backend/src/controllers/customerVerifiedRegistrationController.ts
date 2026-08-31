@@ -2,7 +2,6 @@ import type { RequestHandler } from "express";
 
 import { registerCustomer } from "../services/customerAuthService.js";
 import { readCustomerEmailRegistrationGrant } from "../services/customerEmailRegistrationService.js";
-import { hashCustomerRegistrationIntent } from "../services/customerMobileRegistrationService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { setCustomerSessionCookie } from "../utils/customerAuthCookie.js";
 import {
@@ -14,6 +13,7 @@ import {
   isCustomerRegistrationIntentValid,
   readCustomerRegistrationIntentCookie
 } from "../utils/customerRegistrationIntent.js";
+import { hashCustomerRegistrationIntent } from "../utils/customerRegistrationIntentHash.js";
 import { HttpError } from "../utils/httpError.js";
 import { customerRegisterSchema } from "../validators/customerAuth.validators.js";
 
