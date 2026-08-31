@@ -14,6 +14,7 @@ on:
       - "backend/src/services/customerMobileRegistrationService.ts"
       - "backend/src/services/customerIdentityEmailDeliveryService.ts"
       - "backend/src/services/customerEmailRegistrationService.ts"
+      - "backend/src/services/customerEmailAuthService.ts"
       - "backend/src/controllers/customerAuthController.ts"
       - "backend/src/controllers/customerEmailVerificationController.ts"
       - "backend/src/routes/customerAuth.routes.ts"
@@ -25,6 +26,7 @@ on:
       - "backend/test/customer-email-delivery.test.ts"
       - "backend/test/customer-email-registration.test.ts"
       - "backend/test/customer-email-auth.test.ts"
+      - "backend/test/customer-legacy-identity-upgrade.test.ts"
 
 permissions:
   contents: read
@@ -75,3 +77,4 @@ jobs:
           backend/test/customer-email-delivery.test.ts
           backend/test/customer-email-registration.test.ts
           backend/test/customer-email-auth.test.ts
+          backend/test/customer-legacy-identity-upgrade.test.ts
