@@ -4,6 +4,7 @@ import type { CustomerSocialAuthProvider } from "@/services/customerSocialAuthSe
 
 type CustomerSocialAuthButtonsProps = {
   busyProvider: CustomerSocialAuthProvider | null;
+  mobileHelperText?: string;
   onMobileStart?: () => void;
   onStart: (provider: CustomerSocialAuthProvider) => void;
 };
@@ -33,6 +34,7 @@ function GoogleMark() {
 
 export function CustomerSocialAuthButtons({
   busyProvider,
+  mobileHelperText = "Use your registered PH mobile number",
   onMobileStart,
   onStart
 }: CustomerSocialAuthButtonsProps) {
@@ -62,7 +64,7 @@ export function CustomerSocialAuthButtons({
           </span>
           <span>
             Continue with Mobile OTP
-            <small>Use your registered PH mobile number</small>
+            <small>{mobileHelperText}</small>
           </span>
         </button>
       ) : null}
