@@ -1,0 +1,44 @@
+name: Targeted remembered customer auth
+
+on:
+  push:
+    branches:
+      - m1/v0.9/feat/customer-mobile-otp
+    paths:
+      - .github/workflows/test-customer-remembered-auth-targeted.yml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ysabellestore_targeted
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_targeted
+      JWT_SECRET: targeted-only-secret
+      CUSTOMER_OAUTH_TRANSACTION_KEY: targeted-only-oauth-transaction-key-32-bytes-minimum
+      FRONTEND_URL: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run prisma:generate
+      - run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+      - name: Run remembered auth regression
+        run: npx tsx --test --test-concurrency=1 backend/test/customer-remembered-auth.test.ts
