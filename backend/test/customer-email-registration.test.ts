@@ -61,7 +61,7 @@ test("registration can request a privacy-safe email verification code", async ()
       body: JSON.stringify({ email: "new.customer@example.com" })
     });
 
-    assert.equal(response.status, 200);
+    assert.equal(response.status, 200, "registration email request endpoint must exist");
     const bodyText = await response.text();
     assert.equal(bodyText.includes("new.customer@example.com"), false);
   });
