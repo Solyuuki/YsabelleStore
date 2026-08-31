@@ -64,18 +64,34 @@ function intentHash(intentCookie: string) {
   return createHash("sha256").update(cookieValue(intentCookie)).digest("hex");
 }
 
-function registrationOtpHash(
+function registrationOtpSecret() {
+  const secret = env.JWT_SECRET?.trim();
+  assert.ok(secret);
+  return secret;
+}
+
+function registrationMobileOtpHash(
   challengeId: string,
   registrationIntentHash: string,
   phoneNormalized: string,
   verificationCode: string
 ) {
-  const secret = env.JWT_SECRET?.trim();
-  assert.ok(secret);
-
-  return createHmac("sha256", secret)
+  return createHmac("sha256", registrationOtpSecret())
     .update(
       `customer-mobile-registration-otp:v1:${challengeId}:${registrationIntentHash}:${phoneNormalized}:${verificationCode}`
+    )
+    .digest("hex");
+}
+
+function registrationEmailOtpHash(
+  challengeId: string,
+  registrationIntentHash: string,
+  email: string,
+  verificationCode: string
+) {
+  return createHmac("sha256", registrationOtpSecret())
+    .update(
+      `customer-email-registration-otp:v1:${challengeId}:${registrationIntentHash}:${email}:${verificationCode}`
     )
     .digest("hex");
 }
@@ -108,6 +124,44 @@ async function issueRegistrationIntent(baseUrl: string) {
   return { intentCookie, registrationIntentHash };
 }
 
+async function createVerifiedRegistrationEmailGrant(input: {
+  baseUrl: string;
+  intentCookie: string;
+  registrationIntentHash: string;
+  email: string;
+}) {
+  const verificationCode = "246811";
+  const challengeId = `registration-email-otp:${randomUUID().replaceAll("-", "")}`;
+  await prisma.customerEmailRegistrationChallenge.create({
+    data: {
+      id: challengeId,
+      registrationIntentHash: input.registrationIntentHash,
+      emailNormalized: input.email,
+      otpHash: registrationEmailOtpHash(
+        challengeId,
+        input.registrationIntentHash,
+        input.email,
+        verificationCode
+      ),
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+    }
+  });
+
+  const response = await fetch(`${input.baseUrl}/api/customer-auth/registration/email/verify`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      cookie: input.intentCookie
+    },
+    body: JSON.stringify({ email: input.email, verificationCode })
+  });
+  assert.equal(response.status, 200);
+  const grantCookie = cookiePair(response);
+  assert.ok(grantCookie);
+  assert.match(grantCookie, /^ysabelle_customer_registration_email=/);
+  return grantCookie;
+}
+
 async function createVerifiedRegistrationMobileGrant(input: {
   baseUrl: string;
   intentCookie: string;
@@ -125,7 +179,7 @@ async function createVerifiedRegistrationMobileGrant(input: {
       id: challengeId,
       registrationIntentHash: input.registrationIntentHash,
       phoneNormalized,
-      otpHash: registrationOtpHash(
+      otpHash: registrationMobileOtpHash(
         challengeId,
         input.registrationIntentHash,
         phoneNormalized,
@@ -249,14 +303,21 @@ test("registration refuses to attach a supplied mobile number without its verifi
   const phone = testPhone(suffix);
 
   await withServer(async (baseUrl) => {
-    const { intentCookie } = await issueRegistrationIntent(baseUrl);
+    const { intentCookie, registrationIntentHash } = await issueRegistrationIntent(baseUrl);
+    const payload = registrationPayload(suffix, phone);
+    const emailGrantCookie = await createVerifiedRegistrationEmailGrant({
+      baseUrl,
+      intentCookie,
+      registrationIntentHash,
+      email: payload.email
+    });
     const response = await fetch(`${baseUrl}/api/customer-auth/register`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        cookie: intentCookie
+        cookie: `${intentCookie}; ${emailGrantCookie}`
       },
-      body: JSON.stringify(registrationPayload(suffix, phone))
+      body: JSON.stringify(payload)
     });
 
     assert.equal(response.status, 403);
@@ -273,6 +334,13 @@ test("registration accepts a mobile number only when the grant matches the same 
 
   await withServer(async (baseUrl) => {
     const { intentCookie, registrationIntentHash } = await issueRegistrationIntent(baseUrl);
+    const payload = registrationPayload(suffix, phone);
+    const emailGrantCookie = await createVerifiedRegistrationEmailGrant({
+      baseUrl,
+      intentCookie,
+      registrationIntentHash,
+      email: payload.email
+    });
     const { grantCookie } = await createVerifiedRegistrationMobileGrant({
       baseUrl,
       intentCookie,
@@ -284,9 +352,9 @@ test("registration accepts a mobile number only when the grant matches the same 
       method: "POST",
       headers: {
         "content-type": "application/json",
-        cookie: `${intentCookie}; ${grantCookie}`
+        cookie: `${intentCookie}; ${emailGrantCookie}; ${grantCookie}`
       },
-      body: JSON.stringify(registrationPayload(suffix, phone))
+      body: JSON.stringify(payload)
     });
 
     assert.equal(response.status, 201);
@@ -296,6 +364,8 @@ test("registration accepts a mobile number only when the grant matches the same 
 
     const customer = await prisma.customerAccount.findUnique({ where: { id: customerId } });
     assert.equal(customer?.phoneNormalized, phoneNormalized);
+    assert.ok(customer?.emailVerifiedAt);
+    assert.ok(customer?.phoneVerifiedAt);
   });
 });
 
@@ -306,6 +376,13 @@ test("registration rejects a verified mobile grant when the submitted phone chan
 
   await withServer(async (baseUrl) => {
     const { intentCookie, registrationIntentHash } = await issueRegistrationIntent(baseUrl);
+    const payload = registrationPayload(suffix, changedPhone);
+    const emailGrantCookie = await createVerifiedRegistrationEmailGrant({
+      baseUrl,
+      intentCookie,
+      registrationIntentHash,
+      email: payload.email
+    });
     const { grantCookie } = await createVerifiedRegistrationMobileGrant({
       baseUrl,
       intentCookie,
@@ -317,9 +394,9 @@ test("registration rejects a verified mobile grant when the submitted phone chan
       method: "POST",
       headers: {
         "content-type": "application/json",
-        cookie: `${intentCookie}; ${grantCookie}`
+        cookie: `${intentCookie}; ${emailGrantCookie}; ${grantCookie}`
       },
-      body: JSON.stringify(registrationPayload(suffix, changedPhone))
+      body: JSON.stringify(payload)
     });
 
     assert.equal(response.status, 403);
@@ -332,14 +409,21 @@ test("registration without an optional mobile number remains allowed without an 
   const suffix = randomUUID().replaceAll("-", "").slice(0, 8);
 
   await withServer(async (baseUrl) => {
-    const { intentCookie } = await issueRegistrationIntent(baseUrl);
+    const { intentCookie, registrationIntentHash } = await issueRegistrationIntent(baseUrl);
+    const payload = registrationPayload(suffix);
+    const emailGrantCookie = await createVerifiedRegistrationEmailGrant({
+      baseUrl,
+      intentCookie,
+      registrationIntentHash,
+      email: payload.email
+    });
     const response = await fetch(`${baseUrl}/api/customer-auth/register`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        cookie: intentCookie
+        cookie: `${intentCookie}; ${emailGrantCookie}`
       },
-      body: JSON.stringify(registrationPayload(suffix))
+      body: JSON.stringify(payload)
     });
 
     assert.equal(response.status, 201);
@@ -362,10 +446,11 @@ test.after(async () => {
   }
 
   if (createdIntentHashes.length > 0) {
-    const placeholders = createdIntentHashes.map(() => "?").join(", ");
-    await prisma.$executeRawUnsafe(
-      `DELETE FROM customer_mobile_registration_challenges WHERE registration_intent_hash IN (${placeholders})`,
-      ...createdIntentHashes
-    );
+    await prisma.customerEmailRegistrationChallenge.deleteMany({
+      where: { registrationIntentHash: { in: createdIntentHashes } }
+    });
+    await prisma.customerMobileRegistrationChallenge.deleteMany({
+      where: { registrationIntentHash: { in: createdIntentHashes } }
+    });
   }
 });
