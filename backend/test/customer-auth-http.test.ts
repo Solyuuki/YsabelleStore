@@ -1,14 +1,18 @@
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
 
 import { createApp } from "../src/app.js";
+import { env } from "../src/config/env.js";
 import { prisma } from "../src/database/prismaClient.js";
 import { registerLocalUser } from "../src/services/authService.js";
+import { hashCustomerRegistrationIntent } from "../src/utils/customerRegistrationIntentHash.js";
 
 const CUSTOMER_COOKIE_NAME = "ysabelle_customer_session";
+const CUSTOMER_EMAIL_REGISTRATION_COOKIE_NAME = "ysabelle_customer_registration_email";
 const PASSWORD = "CustomerPass123!";
+const EMAIL_REGISTRATION_GRANT_LIFETIME_MS = 10 * 60 * 1000;
 
 type ApiBody = {
   success?: boolean;
@@ -65,6 +69,33 @@ async function issueRegistrationIntent(baseUrl: string) {
   return cookie;
 }
 
+function registrationIntentTokenFromCookie(cookie: string): string {
+  const separator = cookie.indexOf("=");
+  assert.ok(separator > 0);
+  return decodeURIComponent(cookie.slice(separator + 1));
+}
+
+function createVerifiedEmailRegistrationCookie(registrationIntentCookie: string, email: string) {
+  const secret = env.JWT_SECRET?.trim();
+  assert.ok(secret, "JWT_SECRET must be configured for customer auth tests.");
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const registrationIntentToken = registrationIntentTokenFromCookie(registrationIntentCookie);
+  const payload = {
+    v: 1,
+    registrationIntentHash: hashCustomerRegistrationIntent(registrationIntentToken),
+    email: normalizedEmail,
+    exp: Date.now() + EMAIL_REGISTRATION_GRANT_LIFETIME_MS
+  };
+  const encodedPayload = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  const signature = createHmac("sha256", secret)
+    .update(`customer-email-registration-grant:v1:${encodedPayload}`)
+    .digest("base64url");
+  const grant = `${encodedPayload}.${signature}`;
+
+  return `${CUSTOMER_EMAIL_REGISTRATION_COOKIE_NAME}=${encodeURIComponent(grant)}`;
+}
+
 async function registerCustomerHttp(
   baseUrl: string,
   input: {
@@ -76,11 +107,15 @@ async function registerCustomerHttp(
   }
 ) {
   const registrationIntentCookie = await issueRegistrationIntent(baseUrl);
+  const verifiedEmailCookie = createVerifiedEmailRegistrationCookie(
+    registrationIntentCookie,
+    input.email
+  );
   return fetch(`${baseUrl}/api/customer-auth/register`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      Cookie: registrationIntentCookie
+      Cookie: `${registrationIntentCookie}; ${verifiedEmailCookie}`
     },
     body: JSON.stringify(input)
   });
