@@ -1,4 +1,4 @@
-import { Mail, Smartphone } from "lucide-react";
+import { Mail } from "lucide-react";
 
 import type { CustomerSocialAuthProvider } from "@/services/customerSocialAuthService";
 
@@ -7,10 +7,7 @@ type CustomerSocialAuthButtonsProps = {
   googleHelperText?: string;
   emailLabel?: string;
   emailHelperText?: string;
-  mobileLabel?: string;
-  mobileHelperText?: string;
   onEmailStart?: () => void;
-  onMobileStart?: () => void;
   onStart: (provider: CustomerSocialAuthProvider) => void;
 };
 
@@ -42,10 +39,7 @@ export function CustomerSocialAuthButtons({
   googleHelperText,
   emailLabel = "Continue with Email OTP",
   emailHelperText = "Use your verified account email",
-  mobileLabel = "Continue with Mobile OTP",
-  mobileHelperText = "Use your registered PH mobile number",
   onEmailStart,
-  onMobileStart,
   onStart
 }: CustomerSocialAuthButtonsProps) {
   return (
@@ -78,23 +72,6 @@ export function CustomerSocialAuthButtons({
           <span>
             {emailLabel}
             <small>{emailHelperText}</small>
-          </span>
-        </button>
-      ) : null}
-
-      {onMobileStart ? (
-        <button
-          className="customer-social-auth__button customer-social-auth__button--mobile"
-          disabled={busyProvider !== null}
-          onClick={onMobileStart}
-          type="button"
-        >
-          <span className="customer-social-auth__mark customer-social-auth__mark--mobile">
-            <Smartphone aria-hidden="true" size={20} />
-          </span>
-          <span>
-            {mobileLabel}
-            <small>{mobileHelperText}</small>
           </span>
         </button>
       ) : null}
