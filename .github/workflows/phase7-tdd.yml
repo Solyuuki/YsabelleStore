@@ -22,6 +22,7 @@ on:
       - "backend/test/customer-mobile-auth-delivery.test.ts"
       - "backend/test/customer-mobile-auth.test.ts"
       - "backend/test/customer-mobile-registration.test.ts"
+      - "backend/test/customer-email-delivery.test.ts"
       - "backend/test/customer-email-registration.test.ts"
       - "backend/test/customer-email-auth.test.ts"
 
@@ -71,5 +72,6 @@ jobs:
           backend/test/customer-mobile-auth-delivery.test.ts
           backend/test/customer-mobile-auth.test.ts
           backend/test/customer-mobile-registration.test.ts
+          backend/test/customer-email-delivery.test.ts
           backend/test/customer-email-registration.test.ts
           backend/test/customer-email-auth.test.ts
