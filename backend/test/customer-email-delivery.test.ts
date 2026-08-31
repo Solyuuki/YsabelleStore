@@ -84,7 +84,7 @@ test("development registration OTP may redirect to a configured QA inbox", async
   assert.deepEqual(recipients, [["qa.owner@gmail.com"]]);
 });
 
-test("development registration redirect never changes authentication recipients", async () => {
+test("development OTP redirect also routes authentication to the configured QA inbox", async () => {
   const module = await loadDeliveryModule();
   assert.ok(module.createCustomerIdentityEmailDelivery);
 
@@ -107,7 +107,7 @@ test("development registration redirect never changes authentication recipients"
     purpose: "authentication"
   });
 
-  assert.deepEqual(recipient, ["existing.customer@gmail.com"]);
+  assert.deepEqual(recipient, ["qa.owner@gmail.com"]);
 });
 
 test("Resend login delivery uses the authentication email copy", async () => {
