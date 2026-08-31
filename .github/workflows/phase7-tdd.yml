@@ -18,6 +18,7 @@ on:
       - "backend/src/controllers/customerEmailVerificationController.ts"
       - "backend/src/routes/customerAuth.routes.ts"
       - "backend/test/customer-mobile-sms-delivery.test.ts"
+      - "backend/test/customer-mobile-production-delivery.test.ts"
       - "backend/test/customer-mobile-auth-delivery.test.ts"
       - "backend/test/customer-mobile-auth.test.ts"
       - "backend/test/customer-mobile-registration.test.ts"
@@ -66,6 +67,7 @@ jobs:
         run: >-
           npx tsx --test --test-concurrency=1
           backend/test/customer-mobile-sms-delivery.test.ts
+          backend/test/customer-mobile-production-delivery.test.ts
           backend/test/customer-mobile-auth-delivery.test.ts
           backend/test/customer-mobile-auth.test.ts
           backend/test/customer-mobile-registration.test.ts
