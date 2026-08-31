@@ -35,7 +35,7 @@ function invalidCode(): HttpError {
 
 export async function requestCustomerEmailAuth(input: { email: string }, now = new Date()) {
   const customer = await prisma.customerAccount.findUnique({ where: { email: input.email } });
-  if (!customer || customer.status !== "ACTIVE" || !customer.emailVerifiedAt) return;
+  if (!customer || customer.status !== "ACTIVE") return;
 
   const activeChallenge = await prisma.customerEmailAuthChallenge.findFirst({
     where: {
@@ -118,12 +118,7 @@ export async function verifyCustomerEmailAuth(
   const customer = await prisma.customerAccount.findUnique({
     where: { id: challenge.customerAccountId }
   });
-  if (
-    !customer ||
-    customer.status !== "ACTIVE" ||
-    !customer.emailVerifiedAt ||
-    customer.email !== input.email
-  ) {
+  if (!customer || customer.status !== "ACTIVE" || customer.email !== input.email) {
     throw invalidCode();
   }
 
@@ -138,6 +133,13 @@ export async function verifyCustomerEmailAuth(
   });
   if (consumed.count !== 1) throw invalidCode();
 
-  const session = await createCustomerSession(customer.id, now);
-  return { customer: toSafeCustomer(customer), ...session };
+  const verifiedCustomer = customer.emailVerifiedAt
+    ? customer
+    : await prisma.customerAccount.update({
+        where: { id: customer.id },
+        data: { emailVerifiedAt: now }
+      });
+
+  const session = await createCustomerSession(verifiedCustomer.id, now);
+  return { customer: toSafeCustomer(verifiedCustomer), ...session };
 }
