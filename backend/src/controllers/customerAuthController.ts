@@ -60,6 +60,7 @@ import {
   customerPasswordResetSchema,
   customerRegisterSchema
 } from "../validators/customerAuth.validators.js";
+import { rememberAuthenticatedCustomerForBrowser } from "./customerRememberedAuthController.js";
 
 const CUSTOMER_RECOVERY_REQUEST_MESSAGE =
   "If an eligible account exists, a verification code has been sent to its registered email.";
@@ -255,9 +256,18 @@ export const verifyCustomerMobileAuthAccount: RequestHandler = async (request, r
 
     const session = await verifyCustomerMobileAuth(parsedBody.data);
     setCustomerSessionCookie(response, session.sessionToken);
+    const remembered = await rememberAuthenticatedCustomerForBrowser({
+      request,
+      response,
+      customerAccountId: session.customer.id,
+      authMethod: "MOBILE",
+      rememberFor30Days: parsedBody.data.rememberFor30Days === true
+    });
     response.status(200).json(
       createSuccessResponse("Mobile verification successful.", {
-        customer: session.customer
+        customer: session.customer,
+        remembered: remembered.remembered,
+        rememberedSlotLimitReached: remembered.slotLimitReached
       })
     );
   } catch (error) {
