@@ -2,20 +2,13 @@ import type { RequestHandler } from "express";
 
 import { registerCustomer } from "../services/customerAuthService.js";
 import { readCustomerEmailRegistrationGrant } from "../services/customerEmailRegistrationService.js";
-import {
-  hashCustomerRegistrationIntent,
-  readCustomerMobileRegistrationGrant
-} from "../services/customerMobileRegistrationService.js";
+import { hashCustomerRegistrationIntent } from "../services/customerMobileRegistrationService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { setCustomerSessionCookie } from "../utils/customerAuthCookie.js";
 import {
   clearCustomerEmailRegistrationCookie,
   readCustomerEmailRegistrationCookie
 } from "../utils/customerEmailRegistrationCookie.js";
-import {
-  clearCustomerMobileRegistrationCookie,
-  readCustomerMobileRegistrationCookie
-} from "../utils/customerMobileRegistrationCookie.js";
 import {
   clearCustomerRegistrationIntentCookie,
   isCustomerRegistrationIntentValid,
@@ -63,32 +56,12 @@ export const registerVerifiedCustomerAccount: RequestHandler = async (request, r
       });
     }
 
-    let phoneVerifiedAt: Date | null = null;
-    if (parsedBody.data.phone) {
-      const rawMobileGrant = readCustomerMobileRegistrationCookie(request);
-      const mobileGrant = rawMobileGrant
-        ? readCustomerMobileRegistrationGrant(rawMobileGrant)
-        : null;
-      if (
-        !mobileGrant ||
-        mobileGrant.registrationIntentHash !== registrationIntentHash ||
-        mobileGrant.phone !== parsedBody.data.phone
-      ) {
-        throw new HttpError(403, "Mobile number verification is required.", {
-          code: "CUSTOMER_MOBILE_REGISTRATION_VERIFICATION_REQUIRED"
-        });
-      }
-      phoneVerifiedAt = new Date();
-    }
-
-    const verifiedAt = new Date();
     const session = await registerCustomer(parsedBody.data, {
-      emailVerifiedAt: verifiedAt,
-      phoneVerifiedAt
+      emailVerifiedAt: new Date(),
+      phoneVerifiedAt: null
     });
     setCustomerSessionCookie(response, session.sessionToken);
     clearCustomerEmailRegistrationCookie(response);
-    clearCustomerMobileRegistrationCookie(response);
     clearCustomerRegistrationIntentCookie(response);
 
     response.status(201).json(
