@@ -107,12 +107,7 @@ export function readCustomerEmailRegistrationGrant(
 function createOtpMaterial(registrationIntentHash: string, email: string, now: Date) {
   const challengeId = `registration-email-otp:${randomBytes(16).toString("hex")}`;
   const verificationCode = randomInt(0, 1_000_000).toString().padStart(6, "0");
-  const otpHash = registrationOtpHash(
-    challengeId,
-    registrationIntentHash,
-    email,
-    verificationCode
-  );
+  const otpHash = registrationOtpHash(challengeId, registrationIntentHash, email, verificationCode);
   const expiresAt = new Date(now.getTime() + CUSTOMER_EMAIL_REGISTRATION_OTP_LIFETIME_MS);
   return { challengeId, verificationCode, otpHash, expiresAt };
 }
@@ -127,7 +122,9 @@ export async function requestCustomerEmailRegistrationVerification(
   input: { email: string; registrationIntentToken: string },
   now = new Date()
 ): Promise<void> {
-  const existingCustomer = await prisma.customerAccount.findUnique({ where: { email: input.email } });
+  const existingCustomer = await prisma.customerAccount.findUnique({
+    where: { email: input.email }
+  });
   if (existingCustomer) return;
 
   const registrationIntentHash = hashCustomerRegistrationIntent(input.registrationIntentToken);
@@ -142,7 +139,8 @@ export async function requestCustomerEmailRegistrationVerification(
   });
   if (
     activeChallenge &&
-    activeChallenge.createdAt.getTime() + CUSTOMER_EMAIL_REGISTRATION_RESEND_COOLDOWN_MS > now.getTime()
+    activeChallenge.createdAt.getTime() + CUSTOMER_EMAIL_REGISTRATION_RESEND_COOLDOWN_MS >
+      now.getTime()
   ) {
     return;
   }
@@ -207,12 +205,7 @@ export async function verifyCustomerEmailRegistrationCode(input: {
   if (!challenge) throw invalidCode();
 
   const actual = Buffer.from(
-    registrationOtpHash(
-      challenge.id,
-      registrationIntentHash,
-      input.email,
-      input.verificationCode
-    ),
+    registrationOtpHash(challenge.id, registrationIntentHash, input.email, input.verificationCode),
     "hex"
   );
   const expected = Buffer.from(challenge.otpHash, "hex");

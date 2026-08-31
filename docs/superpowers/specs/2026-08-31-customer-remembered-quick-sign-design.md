@@ -123,7 +123,9 @@ Raw email/mobile values and browser tokens are never returned.
 Input:
 
 ```ts
-{ rememberedAccountId: string }
+{
+  rememberedAccountId: string;
+}
 ```
 
 Behavior:
@@ -137,7 +139,9 @@ Behavior:
 Input:
 
 ```ts
-{ rememberedAccountId: string }
+{
+  rememberedAccountId: string;
+}
 ```
 
 Only used for an expired remembered row. The server resolves the current verified Email or Mobile identity from the bound customer account and starts the corresponding Email Auth or Mobile Auth OTP flow. Response remains enumeration-safe and exposes only the already-known masked destination.

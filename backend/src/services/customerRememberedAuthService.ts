@@ -1,7 +1,11 @@
 import { Prisma, type CustomerRememberedAuthMethod } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
-import { createCustomerSession, toSafeCustomer, type CustomerSessionResult } from "./customerAuthService.js";
+import {
+  createCustomerSession,
+  toSafeCustomer,
+  type CustomerSessionResult
+} from "./customerAuthService.js";
 
 export const CUSTOMER_REMEMBERED_TRUST_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
 export const CUSTOMER_REMEMBERED_MAX_ACCOUNTS = 3;

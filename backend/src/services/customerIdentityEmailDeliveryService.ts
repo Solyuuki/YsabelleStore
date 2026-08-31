@@ -25,7 +25,8 @@ function formatFromAddress(email: string) {
 }
 
 function emailCopy(purpose: CustomerIdentityEmailPurpose, verificationCode: string) {
-  const title = purpose === "registration" ? "Verify your email address" : "Sign in to Ysabelle Store";
+  const title =
+    purpose === "registration" ? "Verify your email address" : "Sign in to Ysabelle Store";
   const description =
     purpose === "registration"
       ? "Use this one-time code to verify the email address for your new customer account."

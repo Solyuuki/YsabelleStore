@@ -155,9 +155,13 @@ const customerEmailRegistrationVerifyRateLimit = createAuthRateLimit(
 const customerEmailRegistrationVerifyEmailRateLimit = emailRateLimit(
   AUTH_RATE_LIMITS.customerEmailRegistrationVerifyEmail
 );
-const customerEmailAuthRequestRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerEmailAuthRequest);
+const customerEmailAuthRequestRateLimit = createAuthRateLimit(
+  AUTH_RATE_LIMITS.customerEmailAuthRequest
+);
 const customerEmailAuthEmailRateLimit = emailRateLimit(AUTH_RATE_LIMITS.customerEmailAuthEmail);
-const customerEmailAuthVerifyRateLimit = createAuthRateLimit(AUTH_RATE_LIMITS.customerEmailAuthVerify);
+const customerEmailAuthVerifyRateLimit = createAuthRateLimit(
+  AUTH_RATE_LIMITS.customerEmailAuthVerify
+);
 const customerEmailAuthVerifyEmailRateLimit = emailRateLimit(
   AUTH_RATE_LIMITS.customerEmailAuthVerifyEmail
 );

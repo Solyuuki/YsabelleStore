@@ -66,7 +66,9 @@ export const registerVerifiedCustomerAccount: RequestHandler = async (request, r
     let phoneVerifiedAt: Date | null = null;
     if (parsedBody.data.phone) {
       const rawMobileGrant = readCustomerMobileRegistrationCookie(request);
-      const mobileGrant = rawMobileGrant ? readCustomerMobileRegistrationGrant(rawMobileGrant) : null;
+      const mobileGrant = rawMobileGrant
+        ? readCustomerMobileRegistrationGrant(rawMobileGrant)
+        : null;
       if (
         !mobileGrant ||
         mobileGrant.registrationIntentHash !== registrationIntentHash ||

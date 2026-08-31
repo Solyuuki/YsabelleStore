@@ -28,11 +28,13 @@
 ### Task 1: Persist customer remembered browser trust
 
 **Files:**
+
 - Modify: `database/prisma/schema.prisma`
 - Create: `database/prisma/migrations/20260831190000_customer_remembered_quick_sign/migration.sql`
 - Create: `backend/test/customer-remembered-auth.test.ts`
 
 **Interfaces:**
+
 - Produces `CustomerRememberedAuth` Prisma model with `browserTokenHash`, `customerAccountId`, `authMethod`, `trustedUntil`, `lastUsedAt`, `createdAt`, `updatedAt`.
 - Unique key: `(browserTokenHash, customerAccountId)`.
 
@@ -61,11 +63,13 @@ Commit: `feat(auth): persist remembered customer trust`
 ### Task 2: Add remembered-browser token and backend trust service
 
 **Files:**
+
 - Create: `backend/src/utils/customerRememberedAuthCookie.ts`
 - Create: `backend/src/services/customerRememberedAuthService.ts`
 - Modify: `backend/test/customer-remembered-auth.test.ts`
 
 **Interfaces:**
+
 - `readCustomerRememberedBrowserCookie(request): string | undefined`
 - `setCustomerRememberedBrowserCookie(response, token): void`
 - `ensureCustomerRememberedBrowserToken(request, response): { token: string; tokenHash: string }`
@@ -100,6 +104,7 @@ Commit: `feat(auth): add customer remembered browser trust`
 ### Task 3: Integrate remembered trust with Email/Mobile Quick Sign
 
 **Files:**
+
 - Modify: `backend/src/controllers/customerAuthController.ts`
 - Modify: `backend/src/services/customerEmailAuthService.ts`
 - Modify: `backend/src/services/customerMobileAuthService.ts`
@@ -110,6 +115,7 @@ Commit: `feat(auth): add customer remembered browser trust`
 - Modify: `backend/test/customer-remembered-auth.test.ts`
 
 **Interfaces:**
+
 - Email/Mobile verify payload accepts `rememberFor30Days?: boolean`.
 - Successful OTP verification may call `rememberCustomerAccount` with the method used.
 - Add endpoints:
@@ -144,11 +150,13 @@ Commit: `feat(auth): integrate remembered quick sign`
 ### Task 4: Expire remembered trust on password reset
 
 **Files:**
+
 - Modify: `backend/src/services/customerPasswordRecoveryService.ts`
 - Modify: `backend/test/customer-password-recovery.test.ts`
 - Modify: `backend/test/customer-remembered-auth.test.ts`
 
 **Interfaces:**
+
 - Successful password reset calls `expireRememberedTrustForCustomer(customerAccountId, now)`.
 - Rows remain present; `trustedUntil` becomes expired.
 
@@ -173,11 +181,13 @@ Commit: `fix(auth): expire remembered trust after password reset`
 ### Task 5: Add Known Accounts frontend API and state
 
 **Files:**
+
 - Modify: `frontend/src/services/customerAuthService.ts`
 - Create: `frontend/src/components/customer/CustomerKnownAccounts.tsx`
 - Modify: `scripts/customer-auth-ui-contract-test.ts`
 
 **Interfaces:**
+
 - `getCustomerRememberedAccounts()`
 - `continueCustomerRememberedAccount(id)`
 - `requestCustomerRememberedVerification(id)`
@@ -205,6 +215,7 @@ Commit: `feat(auth): add known customer accounts ui`
 ### Task 6: Wire Known Accounts and 30-day remember controls into Login
 
 **Files:**
+
 - Modify: `frontend/src/pages/customer/CustomerLoginPage.tsx`
 - Modify: `frontend/src/components/customer/CustomerEmailAuthPanel.tsx`
 - Modify: `frontend/src/components/customer/CustomerMobileAuthPanel.tsx`
@@ -213,6 +224,7 @@ Commit: `feat(auth): add known customer accounts ui`
 - Modify: `scripts/customer-auth-ui-contract-test.ts`
 
 **Interfaces:**
+
 - Email/Mobile OTP verify calls accept `rememberFor30Days`.
 - Login loads Known Accounts on mount.
 - Valid remembered Continue refreshes session and navigates to account.
@@ -243,11 +255,13 @@ Commit: `feat(auth): wire remembered quick sign login`
 ### Task 7: Clean registration Quick Sign copy
 
 **Files:**
+
 - Modify: `frontend/src/components/customer/CustomerSocialAuthButtons.tsx`
 - Modify: `frontend/src/pages/customer/CustomerRegisterPage.tsx`
 - Modify: `scripts/customer-auth-ui-contract-test.ts`
 
 **Interfaces:**
+
 - Register labels:
   - `Continue with Google` + helper `Use your Google account for faster sign-up and sign-in.`
   - `Verify Email Address` + helper `Verify the required email for your new account.`
@@ -275,6 +289,7 @@ Commit: `style(auth): clarify registration verification actions`
 ### Task 8: QA-ready checkpoint and final verification
 
 **Files:**
+
 - Modify only files required by test/manual QA fixes.
 
 - [ ] **Step 1: Run targeted backend auth tests, Prisma validation, frontend build, and auth UI contract**

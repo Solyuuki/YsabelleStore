@@ -115,7 +115,9 @@ export async function verifyCustomerEmailAuth(
     throw invalidCode();
   }
 
-  const customer = await prisma.customerAccount.findUnique({ where: { id: challenge.customerAccountId } });
+  const customer = await prisma.customerAccount.findUnique({
+    where: { id: challenge.customerAccountId }
+  });
   if (
     !customer ||
     customer.status !== "ACTIVE" ||

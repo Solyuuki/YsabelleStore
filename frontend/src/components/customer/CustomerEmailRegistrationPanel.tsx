@@ -107,7 +107,11 @@ export function CustomerEmailRegistrationPanel({
         </div>
       </div>
 
-      {error ? <div className="customer-auth-alert" role="alert">{error}</div> : null}
+      {error ? (
+        <div className="customer-auth-alert" role="alert">
+          {error}
+        </div>
+      ) : null}
 
       {stage === "email" ? (
         <form className="customer-mobile-auth__form" onSubmit={handleEmailSubmit} noValidate>
@@ -137,7 +141,9 @@ export function CustomerEmailRegistrationPanel({
               id="customer-email-registration-code"
               inputMode="numeric"
               maxLength={6}
-              onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+              onChange={(event) =>
+                setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               placeholder="000000"
               type="text"
               value={verificationCode}
@@ -150,7 +156,12 @@ export function CustomerEmailRegistrationPanel({
             {resendSeconds > 0 ? (
               <span className="customer-mobile-auth__countdown">Resend in {resendSeconds}s</span>
             ) : (
-              <button className="customer-mobile-auth__secondary" disabled={submitting} onClick={() => void handleResend()} type="button">
+              <button
+                className="customer-mobile-auth__secondary"
+                disabled={submitting}
+                onClick={() => void handleResend()}
+                type="button"
+              >
                 Resend code
               </button>
             )}
@@ -171,7 +182,12 @@ export function CustomerEmailRegistrationPanel({
         </form>
       )}
 
-      <button className="customer-mobile-auth__back" disabled={submitting} onClick={onCancel} type="button">
+      <button
+        className="customer-mobile-auth__back"
+        disabled={submitting}
+        onClick={onCancel}
+        type="button"
+      >
         <ArrowLeft size={15} aria-hidden="true" />
         Other sign-up methods
       </button>
