@@ -79,6 +79,8 @@ jobs:
         run: npx tsx backend/src/scripts/buildDriveImageManifest.ts
       - name: Generate image reconciliation artifacts
         run: npx tsx backend/src/scripts/reconcileCatalogImages.ts
+      - name: Generate catalog promotion preview
+        run: npx tsx backend/src/scripts/generateCatalogPromotionPreview.ts
       - name: Upload SARIMA source manifest
         uses: actions/upload-artifact@v4
         with:
@@ -99,4 +101,12 @@ jobs:
             artifacts/catalog/phase9/image-reconciliation.json
             artifacts/catalog/phase9/image-reconciliation.csv
             docs/catalog/phase9-image-reconciliation-report.md
+          if-no-files-found: error
+      - name: Upload catalog promotion preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9-catalog-promotion-preview
+          path: |
+            artifacts/catalog/phase9/catalog-promotion-preview.json
+            docs/catalog/phase9-catalog-promotion-preview.md
           if-no-files-found: error
