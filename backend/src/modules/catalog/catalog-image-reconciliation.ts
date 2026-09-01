@@ -75,6 +75,11 @@ function sharedTokenCount(left: string[], right: string[]) {
   return new Set(left.filter((token) => rightSet.has(token))).size;
 }
 
+function isTokenSubset(smaller: string[], larger: string[]) {
+  const largerSet = new Set(larger);
+  return new Set(smaller).size === smaller.length && smaller.every((token) => largerSet.has(token));
+}
+
 function sameProductFamilyWithMissingSizeEvidence(source: string, image: string) {
   const sourceQuantities = quantityTokens(source);
   const imageQuantities = quantityTokens(image);
@@ -90,6 +95,17 @@ function sameProductFamilyWithSizeConflict(source: string, image: string) {
   return sameTokens(withoutQuantities(source), withoutQuantities(image));
 }
 
+function sameProductFamilyWithMissingDescriptorEvidence(source: string, image: string) {
+  const sourceTokens = withoutQuantities(source);
+  const imageTokens = withoutQuantities(image);
+  if (sourceTokens.length < 3 || imageTokens.length < 3) return false;
+  if (sameTokens(sourceTokens, imageTokens)) return false;
+
+  const shorter = sourceTokens.length < imageTokens.length ? sourceTokens : imageTokens;
+  const longer = sourceTokens.length < imageTokens.length ? imageTokens : sourceTokens;
+  return shorter.length >= 3 && isTokenSubset(shorter, longer);
+}
+
 function sameProductFamilyWithVariantConflict(source: string, image: string) {
   const sourceTokens = withoutQuantities(source);
   const imageTokens = withoutQuantities(image);
@@ -102,7 +118,25 @@ function sameProductFamilyWithVariantConflict(source: string, image: string) {
   );
   const prefixLength = commonPrefixLength === -1 ? minLength : commonPrefixLength;
 
-  return prefixLength >= 2 && sharedTokenCount(sourceTokens, imageTokens) >= 2;
+  return (
+    prefixLength >= 2 &&
+    sharedTokenCount(sourceTokens, imageTokens) >= Math.max(2, minLength - 1)
+  );
+}
+
+function differsByOneLeadingCharacter(left: string, right: string) {
+  return (
+    (left.length === right.length + 1 && left.slice(1) === right) ||
+    (right.length === left.length + 1 && right.slice(1) === left)
+  );
+}
+
+function looksLikeLeadingCharacterTypo(source: string, image: string) {
+  const sourceTokens = withoutQuantities(source);
+  const imageTokens = withoutQuantities(image);
+  if (sourceTokens.length !== imageTokens.length || sourceTokens.length < 3) return false;
+  if (!differsByOneLeadingCharacter(sourceTokens[0]!, imageTokens[0]!)) return false;
+  return sourceTokens.slice(1).every((token, index) => token === imageTokens[index + 1]);
 }
 
 function isGenericSourceIdentity(source: string) {
@@ -222,6 +256,30 @@ export function reconcileCatalogImages(
       continue;
     }
 
+    const resolvedFamilyPeers = orderedSources.filter((peer) => {
+      if (peer.productCode === source.productCode || !outcomes.has(peer.productCode)) return false;
+      return sameTokens(
+        withoutQuantities(peer.sourceNameNormalized),
+        withoutQuantities(source.sourceNameNormalized)
+      );
+    });
+
+    if (resolvedFamilyPeers.length > 0) {
+      outcomes.set(
+        source.productCode,
+        sourceOutcome(
+          source,
+          "NEEDS_REVIEW",
+          [],
+          `Historical source identity shares the same product family with already-resolved ${resolvedFamilyPeers
+            .map((peer) => peer.productCode)
+            .sort()
+            .join(", ")}; review size/package identity before assigning another Drive image.`
+        )
+      );
+      continue;
+    }
+
     const available = orderedImages.filter((image) => !claimedFileIds.has(image.fileId));
     const reorderedExact = available.filter((image) =>
       sameTokens(tokens(source.sourceNameNormalized), tokens(image.normalizedStem))
@@ -291,6 +349,27 @@ export function reconcileCatalogImages(
       continue;
     }
 
+    const descriptorReviewCandidates = available.filter((image) =>
+      sameProductFamilyWithMissingDescriptorEvidence(
+        source.sourceNameNormalized,
+        image.normalizedStem
+      )
+    );
+
+    if (descriptorReviewCandidates.length > 0) {
+      descriptorReviewCandidates.forEach((image) => claimedFileIds.add(image.fileId));
+      outcomes.set(
+        source.productCode,
+        sourceOutcome(
+          source,
+          "NEEDS_REVIEW",
+          descriptorReviewCandidates,
+          "Product-family tokens are compatible, but one side omits identity or packaging descriptors."
+        )
+      );
+      continue;
+    }
+
     const variantConflicts = available.filter((image) =>
       sameProductFamilyWithVariantConflict(source.sourceNameNormalized, image.normalizedStem)
     );
@@ -304,6 +383,24 @@ export function reconcileCatalogImages(
           "VARIANT_SIZE_MISMATCH",
           variantConflicts,
           "Drive asset is in the same normalized product family but variant/flavor evidence conflicts."
+        )
+      );
+      continue;
+    }
+
+    const typoReviewCandidates = available.filter((image) =>
+      looksLikeLeadingCharacterTypo(source.sourceNameNormalized, image.normalizedStem)
+    );
+
+    if (typoReviewCandidates.length > 0) {
+      typoReviewCandidates.forEach((image) => claimedFileIds.add(image.fileId));
+      outcomes.set(
+        source.productCode,
+        sourceOutcome(
+          source,
+          "NEEDS_REVIEW",
+          typoReviewCandidates,
+          "Source and Drive identities differ by a likely leading-character transcription error."
         )
       );
       continue;
