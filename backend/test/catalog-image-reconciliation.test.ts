@@ -52,12 +52,30 @@ test("auto-matches exact identity after punctuation and case normalization", () 
   assert.equal(result.driveOnlyAssets.length, 0);
 });
 
+test("auto-matches a unique identity when all tokens agree but word order differs", () => {
+  const sources = [source("P001", "Alpha Spicy Paksiw Tuna")];
+  const images = [image("alpha", "Alpha Tuna Spicy Paksiw.webp", "image/webp")];
+
+  const { outcome, result } = statusFor("EXACT_MATCH", "P001", sources, images);
+  assert.deepEqual(outcome.assetFileIds, ["alpha"]);
+  assert.equal(result.driveOnlyAssets.length, 0);
+});
+
 test("classifies a conflicting package size as VARIANT_SIZE_MISMATCH", () => {
   const sources = [source("P001", "Gardenia Enriched White Bread 600g")];
   const images = [image("gardenia-400", "Gardenia Enriched White Bread 400g.jpg")];
 
   const { outcome, result } = statusFor("VARIANT_SIZE_MISMATCH", "P001", sources, images);
   assert.deepEqual(outcome.assetFileIds, ["gardenia-400"]);
+  assert.equal(result.driveOnlyAssets.length, 0);
+});
+
+test("keeps a related image in NEEDS_REVIEW when source size evidence is absent from the filename", () => {
+  const sources = [source("P144", "Ligo Sardines in Tomato Sauce Chili Added 155g")];
+  const images = [image("ligo", "Ligo Sardines in Tomato Sauce Chili Added.webp", "image/webp")];
+
+  const { outcome, result } = statusFor("NEEDS_REVIEW", "P144", sources, images);
+  assert.deepEqual(outcome.assetFileIds, ["ligo"]);
   assert.equal(result.driveOnlyAssets.length, 0);
 });
 
@@ -79,6 +97,25 @@ test("keeps equivalent image formats explicit as DUPLICATE_IMAGE", () => {
 
   const { outcome, result } = statusFor("DUPLICATE_IMAGE", "P001", sources, images);
   assert.deepEqual(outcome.assetFileIds, ["lava-jpg", "lava-webp"]);
+  assert.equal(result.driveOnlyAssets.length, 0);
+});
+
+test("does not assign a second image to a token-equivalent historical source identity", () => {
+  const sources = [
+    source("P012", "555 Tuna Spicy Paksiw"),
+    source("P143", "555 Spicy Paksiw Tuna")
+  ];
+  const images = [image("paksiw", "555 Tuna Spicy Paksiw.webp", "image/webp")];
+
+  const result = reconcileCatalogImages(sources, images);
+  const primary = result.sourceOutcomes.find((entry) => entry.productCode === "P012");
+  const duplicateSource = result.sourceOutcomes.find((entry) => entry.productCode === "P143");
+
+  assert.equal(primary?.status, "EXACT_MATCH");
+  assert.deepEqual(primary?.assetFileIds, ["paksiw"]);
+  assert.equal(duplicateSource?.status, "NEEDS_REVIEW");
+  assert.deepEqual(duplicateSource?.assetFileIds, []);
+  assert.match(duplicateSource?.reason ?? "", /P012/);
   assert.equal(result.driveOnlyAssets.length, 0);
 });
 
