@@ -15,6 +15,7 @@ on:
       - "backend/src/scripts/generateOperationalCatalogAudit.ts"
       - "backend/src/scripts/generateUnmatchedCatalogProvenance.ts"
       - "backend/src/scripts/generateCatalogPromotionExecutionManifest.ts"
+      - "backend/src/scripts/generateCatalogPromotionRequiredFieldReadiness.ts"
       - "backend/src/services/productService.ts"
       - "backend/src/validators/product.validators.ts"
       - "backend/test/sarima-source-manifest.test.ts"
@@ -35,6 +36,7 @@ on:
       - "backend/test/generate-catalog-operational-audit.test.ts"
       - "backend/test/generate-unmatched-catalog-provenance.test.ts"
       - "backend/test/generate-catalog-promotion-execution-manifest.test.ts"
+      - "backend/test/generate-catalog-promotion-required-field-readiness.test.ts"
       - "backend/test/reconcile-catalog-images-script.test.ts"
       - "frontend/src/pages/ProductsPage.tsx"
       - "frontend/src/services/catalogApi.ts"
@@ -48,6 +50,7 @@ on:
       - "docs/catalog/phase9-operational-catalog-audit.md"
       - "docs/catalog/phase9-unmatched-catalog-provenance.md"
       - "docs/catalog/phase9-catalog-promotion-execution-manifest.md"
+      - "docs/catalog/phase9-catalog-promotion-required-field-readiness.md"
 
 permissions:
   contents: read
@@ -92,6 +95,7 @@ jobs:
           backend/test/generate-catalog-operational-audit.test.ts
           backend/test/generate-unmatched-catalog-provenance.test.ts
           backend/test/generate-catalog-promotion-execution-manifest.test.ts
+          backend/test/generate-catalog-promotion-required-field-readiness.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
       - name: Run catalog quality filter UI contract
         run: npx tsx scripts/catalog-quality-filter-ui-test.ts
