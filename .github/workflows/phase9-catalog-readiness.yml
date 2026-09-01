@@ -17,6 +17,7 @@ on:
       - "backend/src/scripts/generateCatalogPromotionExecutionManifest.ts"
       - "backend/src/scripts/generateCatalogPromotionRequiredFieldReadiness.ts"
       - "backend/src/scripts/generateCatalogPromotionInactiveStagingPlan.ts"
+      - "backend/src/scripts/generateCatalogPromotionDatabaseMutationPreview.ts"
       - "backend/src/services/productService.ts"
       - "backend/src/validators/product.validators.ts"
       - "backend/test/sarima-source-manifest.test.ts"
@@ -34,12 +35,14 @@ on:
       - "backend/test/catalog-promotion-execution-manifest.test.ts"
       - "backend/test/catalog-promotion-required-field-readiness.test.ts"
       - "backend/test/catalog-promotion-inactive-staging-plan.test.ts"
+      - "backend/test/catalog-promotion-database-mutation-preview.test.ts"
       - "backend/test/generate-catalog-promotion-preview.test.ts"
       - "backend/test/generate-catalog-operational-audit.test.ts"
       - "backend/test/generate-unmatched-catalog-provenance.test.ts"
       - "backend/test/generate-catalog-promotion-execution-manifest.test.ts"
       - "backend/test/generate-catalog-promotion-required-field-readiness.test.ts"
       - "backend/test/generate-catalog-promotion-inactive-staging-plan.test.ts"
+      - "backend/test/generate-catalog-promotion-database-mutation-preview.test.ts"
       - "backend/test/reconcile-catalog-images-script.test.ts"
       - "frontend/src/pages/ProductsPage.tsx"
       - "frontend/src/services/catalogApi.ts"
@@ -55,6 +58,7 @@ on:
       - "docs/catalog/phase9-catalog-promotion-execution-manifest.md"
       - "docs/catalog/phase9-catalog-promotion-required-field-readiness.md"
       - "docs/catalog/phase9-catalog-promotion-inactive-staging-plan.md"
+      - "docs/catalog/phase9-catalog-promotion-database-mutation-preview.md"
 
 permissions:
   contents: read
@@ -96,12 +100,14 @@ jobs:
           backend/test/catalog-promotion-execution-manifest.test.ts
           backend/test/catalog-promotion-required-field-readiness.test.ts
           backend/test/catalog-promotion-inactive-staging-plan.test.ts
+          backend/test/catalog-promotion-database-mutation-preview.test.ts
           backend/test/generate-catalog-promotion-preview.test.ts
           backend/test/generate-catalog-operational-audit.test.ts
           backend/test/generate-unmatched-catalog-provenance.test.ts
           backend/test/generate-catalog-promotion-execution-manifest.test.ts
           backend/test/generate-catalog-promotion-required-field-readiness.test.ts
           backend/test/generate-catalog-promotion-inactive-staging-plan.test.ts
+          backend/test/generate-catalog-promotion-database-mutation-preview.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
       - name: Run catalog quality filter UI contract
         run: npx tsx scripts/catalog-quality-filter-ui-test.ts
