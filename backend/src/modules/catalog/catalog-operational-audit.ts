@@ -59,8 +59,13 @@ export type OperationalFixtureRow = {
 export type UnmatchedOperationalProductRow = {
   productId: string;
   sku: string;
+  barcode: string | null;
   name: string;
+  recordSource: OperationalProductRecordSource;
   dataQualityStatus: OperationalProductQualityStatus;
+  hasInventoryRecord: boolean;
+  relationshipCounts: OperationalRelationshipCounts;
+  protectedReferenceCount: number;
 };
 
 export type OperationalCatalogAudit = {
@@ -287,8 +292,13 @@ export function buildOperationalCatalogAudit(
     .map((product): UnmatchedOperationalProductRow => ({
       productId: product.id,
       sku: product.sku,
+      barcode: product.barcode,
       name: product.name,
-      dataQualityStatus: product.dataQualityStatus
+      recordSource: product.recordSource,
+      dataQualityStatus: product.dataQualityStatus,
+      hasInventoryRecord: product.hasInventoryRecord,
+      relationshipCounts: product.relationshipCounts,
+      protectedReferenceCount: protectedReferenceCount(product)
     }))
     .sort((left, right) => left.productId.localeCompare(right.productId));
 
