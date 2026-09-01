@@ -1,8 +1,7 @@
-import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { ArrowLeft, Mail } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { CustomerVerificationCode } from "@/components/customer/CustomerVerificationCode";
 import { requestCustomerEmailAuth, verifyCustomerEmailAuth } from "@/services/customerAuthService";
 
 const EMAIL_OTP_RESEND_SECONDS = 30;
@@ -134,29 +133,15 @@ export function CustomerEmailAuthPanel({
         </form>
       ) : (
         <form className="customer-mobile-auth__form" onSubmit={handleCodeSubmit} noValidate>
-          <fieldset className="customer-email-otp" disabled={submitting}>
-            <legend>Verification code</legend>
-            <InputOTP
-              aria-describedby="customer-email-otp-hint"
-              aria-label="6-digit verification code"
-              autoComplete="one-time-code"
-              autoFocus
-              className="customer-email-otp__control"
-              containerClassName="customer-email-otp__container"
-              inputMode="numeric"
-              maxLength={6}
-              onChange={setVerificationCode}
-              pattern={REGEXP_ONLY_DIGITS}
-              value={verificationCode}
-            >
-              <InputOTPGroup className="customer-email-otp__group">
-                {Array.from({ length: 6 }, (_, index) => (
-                  <InputOTPSlot className="customer-email-otp__slot" index={index} key={index} />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-            <small id="customer-email-otp-hint">Paste the full code or enter one digit at a time.</small>
-          </fieldset>
+          <CustomerVerificationCode
+            autoFocus
+            disabled={submitting}
+            hint="Paste the full code or enter one digit at a time."
+            invalid={Boolean(error)}
+            label="Verification code"
+            onChange={setVerificationCode}
+            value={verificationCode}
+          />
 
           <label className="customer-remember-choice">
             <input
