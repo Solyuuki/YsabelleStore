@@ -69,9 +69,13 @@ assert.doesNotMatch(authServiceSource, /\/api\/customer-auth\/registration\/mobi
 assert.doesNotMatch(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/verify/);
 
 assert.match(loginSource, /CustomerKnownAccounts/);
+assert.doesNotMatch(loginSource, /showManualLogin/);
 assert.doesNotMatch(loginSource, /Back to known accounts/);
 assert.doesNotMatch(loginSource, /customer-known-accounts__back-link/);
-assert.match(loginSource, /showManualLogin \|\| rememberedAccounts\.length === 0/);
+assert.match(loginSource, /handleEmailQuickSignStart/);
+assert.match(loginSource, /getCustomerRememberedAccounts\(\)/);
+assert.match(loginSource, /quickSignPanel === "email-saved"/);
+assert.match(loginSource, /quickSignPanel === "email-entry"/);
 assert.match(knownAccountsSource, /Email Quick Sign/);
 assert.match(knownAccountsSource, /Saved email accounts/);
 assert.match(knownAccountsSource, /\{accounts\.length\}\/\{maxAccounts\}/);
@@ -79,6 +83,8 @@ assert.match(knownAccountsSource, /customer-known-account__select/);
 assert.match(knownAccountsSource, /MoreVertical/);
 assert.match(knownAccountsSource, /<span>Forget<\/span>/);
 assert.match(knownAccountsSource, /Verification required/);
+assert.match(knownAccountsSource, /Use another email/);
+assert.doesNotMatch(knownAccountsSource, />Use another account</);
 assert.doesNotMatch(knownAccountsSource, /Forget account/);
 assert.doesNotMatch(knownAccountsSource, /className="customer-known-account__continue"/);
 assert.doesNotMatch(knownAccountsSource, /Continue on this browser without another code/);
@@ -88,8 +94,9 @@ assert.match(authServiceSource, /rememberFor30Days/);
 assert.doesNotMatch(authServiceSource, /localStorage/);
 
 assert.match(loginSource, /googleHelperText="Use your Google account for faster sign-in\."/);
-assert.match(loginSource, /emailLabel="Email"/);
+assert.match(loginSource, /emailLabel="Email Quick Sign"/);
 assert.match(loginSource, /emailHelperText="Use your verified account email"/);
+assert.match(loginSource, /onEmailStart=\{\(\) => void handleEmailQuickSignStart\(\)\}/);
 assert.doesNotMatch(loginSource, /mobileLabel=/);
 assert.doesNotMatch(loginSource, /mobileHelperText=/);
 assert.doesNotMatch(loginSource, /requestCustomerMobileAuth/);
