@@ -69,13 +69,17 @@ assert.doesNotMatch(authServiceSource, /\/api\/customer-auth\/registration\/mobi
 assert.doesNotMatch(authServiceSource, /\/api\/customer-auth\/registration\/mobile\/verify/);
 
 assert.match(loginSource, /CustomerKnownAccounts/);
+assert.doesNotMatch(loginSource, /Back to known accounts/);
+assert.doesNotMatch(loginSource, /customer-known-accounts__back-link/);
+assert.match(loginSource, /showManualLogin \|\| rememberedAccounts\.length === 0/);
 assert.match(knownAccountsSource, /Email Quick Sign/);
 assert.match(knownAccountsSource, /Saved email accounts/);
 assert.match(knownAccountsSource, /\{accounts\.length\}\/\{maxAccounts\}/);
 assert.match(knownAccountsSource, /customer-known-account__select/);
 assert.match(knownAccountsSource, /MoreVertical/);
-assert.match(knownAccountsSource, /Forget account/);
+assert.match(knownAccountsSource, /<span>Forget<\/span>/);
 assert.match(knownAccountsSource, /Verification required/);
+assert.doesNotMatch(knownAccountsSource, /Forget account/);
 assert.doesNotMatch(knownAccountsSource, /className="customer-known-account__continue"/);
 assert.doesNotMatch(knownAccountsSource, /Continue on this browser without another code/);
 assert.match(emailAuthPanelSource, /Remember this account for 30 days/);
