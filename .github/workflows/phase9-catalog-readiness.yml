@@ -32,6 +32,7 @@ on:
       - "backend/test/catalog-legacy-runtime-qa-quarantine.test.ts"
       - "backend/test/catalog-promotion-execution-manifest.test.ts"
       - "backend/test/catalog-promotion-required-field-readiness.test.ts"
+      - "backend/test/catalog-promotion-inactive-staging-plan.test.ts"
       - "backend/test/generate-catalog-promotion-preview.test.ts"
       - "backend/test/generate-catalog-operational-audit.test.ts"
       - "backend/test/generate-unmatched-catalog-provenance.test.ts"
@@ -91,6 +92,7 @@ jobs:
           backend/test/catalog-legacy-runtime-qa-quarantine.test.ts
           backend/test/catalog-promotion-execution-manifest.test.ts
           backend/test/catalog-promotion-required-field-readiness.test.ts
+          backend/test/catalog-promotion-inactive-staging-plan.test.ts
           backend/test/generate-catalog-promotion-preview.test.ts
           backend/test/generate-catalog-operational-audit.test.ts
           backend/test/generate-unmatched-catalog-provenance.test.ts
