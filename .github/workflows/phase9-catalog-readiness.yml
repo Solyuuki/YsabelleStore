@@ -53,6 +53,8 @@ jobs:
           backend/test/catalog-image-reconciliation-report.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
       - name: Run catalog image engine tests
+        env:
+          PYTHONPATH: catalog-image-engine
         run: python -m unittest discover -s catalog-image-engine/tests -p 'test_*.py'
       - name: Generate SARIMA source manifest
         run: npx tsx backend/src/scripts/extractSarimaSourceManifest.ts
