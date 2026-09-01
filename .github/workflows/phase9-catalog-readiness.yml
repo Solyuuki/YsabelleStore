@@ -19,6 +19,7 @@ on:
       - "backend/test/catalog-image-reconciliation.test.ts"
       - "backend/test/catalog-image-reconciliation-report.test.ts"
       - "backend/test/catalog-quality-filter.test.ts"
+      - "backend/test/catalog-promotion-preview.test.ts"
       - "backend/test/reconcile-catalog-images-script.test.ts"
       - "frontend/src/pages/ProductsPage.tsx"
       - "frontend/src/services/catalogApi.ts"
@@ -51,7 +52,7 @@ jobs:
         run: npm run build --workspace backend
       - name: Compile frontend
         run: npm run build --workspace frontend
-      - name: Run focused manifest, reconciliation, and catalog filter contract tests
+      - name: Run focused manifest, reconciliation, promotion preview, and catalog filter contract tests
         run: >-
           npx tsx --test
           backend/test/sarima-source-manifest.test.ts
@@ -60,6 +61,7 @@ jobs:
           backend/test/catalog-image-reconciliation.test.ts
           backend/test/catalog-image-reconciliation-report.test.ts
           backend/test/catalog-quality-filter.test.ts
+          backend/test/catalog-promotion-preview.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
       - name: Run catalog quality filter UI contract
         run: npx tsx scripts/catalog-quality-filter-ui-test.ts
