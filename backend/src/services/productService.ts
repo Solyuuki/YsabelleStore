@@ -419,6 +419,10 @@ function buildProductWhere(query: ListProductsQuery, categoryIds?: string[]) {
     where.status = query.status;
   }
 
+  if (query.dataQualityStatus) {
+    where.dataQualityStatus = query.dataQualityStatus;
+  }
+
   if (categoryIds !== undefined) {
     where.categoryId = categoryIds.length > 0 ? { in: categoryIds } : { in: [] };
   }
