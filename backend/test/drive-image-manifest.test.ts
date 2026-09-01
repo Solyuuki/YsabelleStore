@@ -76,17 +76,17 @@ test("rejects non-image metadata from the raw image inventory", () => {
   );
 });
 
-test("accepts the corrected Phase 9 Drive inventory count of 429", () => {
-  assert.doesNotThrow(() => assertExpectedDriveImageCount({ length: 429 }));
+test("accepts the authoritative Phase 9 Drive inventory count of 430", () => {
+  assert.doesNotThrow(() => assertExpectedDriveImageCount({ length: 430 }));
 });
 
 test("rejects stale or incomplete Drive inventory counts", () => {
   assert.throws(
-    () => assertExpectedDriveImageCount({ length: 430 }),
-    /Expected exactly 429 unique raw Drive images; received 430/
+    () => assertExpectedDriveImageCount({ length: 429 }),
+    /Expected exactly 430 unique raw Drive images; received 429/
   );
   assert.throws(
-    () => assertExpectedDriveImageCount({ length: 428 }),
-    /Expected exactly 429 unique raw Drive images; received 428/
+    () => assertExpectedDriveImageCount({ length: 431 }),
+    /Expected exactly 430 unique raw Drive images; received 431/
   );
 });
