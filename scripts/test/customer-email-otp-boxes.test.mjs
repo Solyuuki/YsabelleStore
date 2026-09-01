@@ -44,6 +44,9 @@ test("OTP verification still submits a six-digit code without auto-submitting", 
 
   assert.match(component, /const verificationCode = otpDigits\.join\(""\)/);
   assert.match(component, /verifyCustomerEmailAuth\(\{ email, verificationCode, rememberFor30Days \}\)/);
-  assert.match(component, />\{submitting \? "Verifying\.\.\." : "Verify"\}<\/button>/s);
+  assert.match(
+    component,
+    /<button className="customer-auth-submit" disabled=\{submitting\} type="submit">\s*\{submitting \? "Verifying\.\.\." : "Verify"\}\s*<\/button>/s
+  );
   assert.doesNotMatch(component, /otpDigits\.every\([\s\S]*?handleCodeSubmit/);
 });
