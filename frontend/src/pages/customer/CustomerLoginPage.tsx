@@ -1,4 +1,4 @@
-import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
@@ -21,7 +21,7 @@ import {
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerLoginForm } from "@/utils/customerAuthForms";
 
-type QuickSignPanel = "email" | null;
+type QuickSignPanel = "email-loading" | "email-saved" | "email-entry" | null;
 
 export function CustomerLoginPage({ navigate }: { navigate: (path: string) => void }) {
   const { login, refreshSession } = useCustomerAuth();
@@ -32,8 +32,6 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
   const [quickSignPanel, setQuickSignPanel] = useState<QuickSignPanel>(null);
   const [rememberedAccounts, setRememberedAccounts] = useState<CustomerRememberedAccount[]>([]);
   const [maxRememberedAccounts, setMaxRememberedAccounts] = useState(3);
-  const [rememberedLoaded, setRememberedLoaded] = useState(false);
-  const [showManualLogin, setShowManualLogin] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [busySocialProvider, setBusySocialProvider] = useState<CustomerSocialAuthProvider | null>(
     null
@@ -50,28 +48,6 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     }
     globalThis.addEventListener("pageshow", restoreInteractiveState);
     return () => globalThis.removeEventListener("pageshow", restoreInteractiveState);
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    void getCustomerRememberedAccounts()
-      .then(({ accounts, maxAccounts }) => {
-        if (!active) return;
-        setRememberedAccounts(accounts);
-        setMaxRememberedAccounts(maxAccounts);
-        setShowManualLogin(accounts.length === 0);
-      })
-      .catch(() => {
-        if (!active) return;
-        setShowManualLogin(true);
-      })
-      .finally(() => {
-        if (active) setRememberedLoaded(true);
-      });
-
-    return () => {
-      active = false;
-    };
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -112,6 +88,21 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     }
   }
 
+  async function handleEmailQuickSignStart() {
+    setServerError(null);
+    setQuickSignPanel("email-loading");
+    try {
+      const { accounts, maxAccounts } = await getCustomerRememberedAccounts();
+      setRememberedAccounts(accounts);
+      setMaxRememberedAccounts(maxAccounts);
+      setQuickSignPanel(accounts.length > 0 ? "email-saved" : "email-entry");
+    } catch {
+      setRememberedAccounts([]);
+      setMaxRememberedAccounts(3);
+      setQuickSignPanel("email-entry");
+    }
+  }
+
   async function handleOtpVerified() {
     await refreshSession();
     navigate("/account");
@@ -129,131 +120,133 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
           <p>Sign in with your password, verified email, or Google account.</p>
         </div>
 
-        {!rememberedLoaded ? (
-          <div className="customer-known-accounts__loading" role="status">
-            Checking known accounts...
-          </div>
-        ) : quickSignPanel === null ? (
+        {quickSignPanel === null ? (
           <>
-            {rememberedAccounts.length > 0 ? (
-              <CustomerKnownAccounts
-                accounts={rememberedAccounts}
-                maxAccounts={maxRememberedAccounts}
-                onAccountsChange={(accounts) => {
-                  setRememberedAccounts(accounts);
-                  if (accounts.length === 0) setShowManualLogin(true);
-                }}
-                onAuthenticated={handleOtpVerified}
-                onUseAnotherAccount={() => setShowManualLogin(true)}
-              />
-            ) : null}
-
-            {showManualLogin || rememberedAccounts.length === 0 ? (
-              <>
-                <form
-                  aria-busy={submitting}
-                  className="customer-auth-form"
-                  onSubmit={handleSubmit}
-                  noValidate
-                >
-                  {serverError ? (
-                    <div className="customer-auth-alert" role="alert">
-                      {serverError}
-                    </div>
-                  ) : null}
-
-                  <label className="customer-auth-field" htmlFor="customer-login-identifier">
-                    <span>Username, email or mobile number</span>
-                    <input
-                      aria-describedby={
-                        fieldErrors.identifier ? "customer-login-identifier-error" : undefined
-                      }
-                      aria-invalid={Boolean(fieldErrors.identifier)}
-                      autoComplete="username"
-                      id="customer-login-identifier"
-                      onChange={(event) => setIdentifier(event.target.value)}
-                      placeholder="Username, email, or 09XXXXXXXXX"
-                      type="text"
-                      value={identifier}
-                    />
-                    {fieldErrors.identifier ? (
-                      <small id="customer-login-identifier-error">{fieldErrors.identifier}</small>
-                    ) : null}
-                  </label>
-
-                  <label className="customer-auth-field" htmlFor="customer-login-password">
-                    <span>Password</span>
-                    <span className="customer-auth-password">
-                      <input
-                        aria-describedby={
-                          fieldErrors.password ? "customer-login-password-error" : undefined
-                        }
-                        aria-invalid={Boolean(fieldErrors.password)}
-                        autoComplete="current-password"
-                        id="customer-login-password"
-                        onChange={(event) => setPassword(event.target.value)}
-                        placeholder="Enter your password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                      />
-                      <button
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                        aria-pressed={showPassword}
-                        onClick={() => setShowPassword((current) => !current)}
-                        type="button"
-                      >
-                        {showPassword ? (
-                          <EyeOff aria-hidden="true" size={18} />
-                        ) : (
-                          <Eye aria-hidden="true" size={18} />
-                        )}
-                      </button>
-                    </span>
-                    {fieldErrors.password ? (
-                      <small id="customer-login-password-error">{fieldErrors.password}</small>
-                    ) : null}
-                  </label>
-
-                  <div className="customer-auth-forgot-row">
-                    <CustomerLink href="/account-recovery" navigate={navigate}>
-                      Forgot password?
-                    </CustomerLink>
-                  </div>
-
-                  <button
-                    className="customer-auth-submit"
-                    disabled={submitting || busySocialProvider !== null}
-                    type="submit"
-                  >
-                    {submitting
-                      ? socialLinkRequired
-                        ? "Linking account..."
-                        : "Signing in..."
-                      : "Sign In"}
-                  </button>
-                </form>
-
-                <div className="customer-auth-quick-divider" aria-hidden="true">
-                  <span>or</span>
+            <form
+              aria-busy={submitting}
+              className="customer-auth-form"
+              onSubmit={handleSubmit}
+              noValidate
+            >
+              {serverError ? (
+                <div className="customer-auth-alert" role="alert">
+                  {serverError}
                 </div>
-                <CustomerSocialAuthButtons
-                  busyProvider={busySocialProvider}
-                  googleHelperText="Use your Google account for faster sign-in."
-                  emailLabel="Email"
-                  emailHelperText="Use your verified account email"
-                  onEmailStart={() => {
-                    setServerError(null);
-                    setQuickSignPanel("email");
-                  }}
-                  onStart={handleSocialStart}
+              ) : null}
+
+              <label className="customer-auth-field" htmlFor="customer-login-identifier">
+                <span>Username, email or mobile number</span>
+                <input
+                  aria-describedby={
+                    fieldErrors.identifier ? "customer-login-identifier-error" : undefined
+                  }
+                  aria-invalid={Boolean(fieldErrors.identifier)}
+                  autoComplete="username"
+                  id="customer-login-identifier"
+                  onChange={(event) => setIdentifier(event.target.value)}
+                  placeholder="Username, email, or 09XXXXXXXXX"
+                  type="text"
+                  value={identifier}
                 />
-              </>
-            ) : null}
+                {fieldErrors.identifier ? (
+                  <small id="customer-login-identifier-error">{fieldErrors.identifier}</small>
+                ) : null}
+              </label>
+
+              <label className="customer-auth-field" htmlFor="customer-login-password">
+                <span>Password</span>
+                <span className="customer-auth-password">
+                  <input
+                    aria-describedby={
+                      fieldErrors.password ? "customer-login-password-error" : undefined
+                    }
+                    aria-invalid={Boolean(fieldErrors.password)}
+                    autoComplete="current-password"
+                    id="customer-login-password"
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Enter your password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                  />
+                  <button
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    onClick={() => setShowPassword((current) => !current)}
+                    type="button"
+                  >
+                    {showPassword ? (
+                      <EyeOff aria-hidden="true" size={18} />
+                    ) : (
+                      <Eye aria-hidden="true" size={18} />
+                    )}
+                  </button>
+                </span>
+                {fieldErrors.password ? (
+                  <small id="customer-login-password-error">{fieldErrors.password}</small>
+                ) : null}
+              </label>
+
+              <div className="customer-auth-forgot-row">
+                <CustomerLink href="/account-recovery" navigate={navigate}>
+                  Forgot password?
+                </CustomerLink>
+              </div>
+
+              <button
+                className="customer-auth-submit"
+                disabled={submitting || busySocialProvider !== null}
+                type="submit"
+              >
+                {submitting
+                  ? socialLinkRequired
+                    ? "Linking account..."
+                    : "Signing in..."
+                  : "Sign In"}
+              </button>
+            </form>
+
+            <div className="customer-auth-quick-divider" aria-hidden="true">
+              <span>or</span>
+            </div>
+            <CustomerSocialAuthButtons
+              busyProvider={busySocialProvider}
+              googleHelperText="Use your Google account for faster sign-in."
+              emailLabel="Email Quick Sign"
+              emailHelperText="Use your verified account email"
+              onEmailStart={() => void handleEmailQuickSignStart()}
+              onStart={handleSocialStart}
+            />
+          </>
+        ) : quickSignPanel === "email-loading" ? (
+          <div className="customer-known-accounts__loading" role="status">
+            Checking saved email accounts...
+          </div>
+        ) : quickSignPanel === "email-saved" ? (
+          <>
+            <CustomerKnownAccounts
+              accounts={rememberedAccounts}
+              maxAccounts={maxRememberedAccounts}
+              onAccountsChange={(accounts) => {
+                setRememberedAccounts(accounts);
+                if (accounts.length === 0) setQuickSignPanel("email-entry");
+              }}
+              onAuthenticated={handleOtpVerified}
+              onUseAnotherAccount={() => setQuickSignPanel("email-entry")}
+            />
+            <button
+              className="customer-mobile-auth__back"
+              onClick={() => setQuickSignPanel(null)}
+              type="button"
+            >
+              <ArrowLeft size={15} aria-hidden="true" />
+              Other sign-in methods
+            </button>
           </>
         ) : (
           <CustomerEmailAuthPanel
             onCancel={() => setQuickSignPanel(null)}
             onVerified={handleOtpVerified}
+            rememberDisabled={rememberedAccounts.length >= maxRememberedAccounts}
           />
         )}
 
