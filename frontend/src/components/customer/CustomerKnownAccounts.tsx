@@ -1,5 +1,5 @@
-import { ArrowLeft, Mail, Trash2, UserRoundCheck } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { ArrowLeft, Mail, MoreVertical, Trash2, UserRoundCheck } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import {
   continueCustomerRememberedAccount,
@@ -10,15 +10,15 @@ import {
 } from "@/services/customerAuthService";
 import "@/styles/customer-known-accounts.css";
 
+const TRUST_DAY_MS = 24 * 60 * 60 * 1000;
+
 function formatTrust(account: CustomerRememberedAccount) {
   if (!account.trusted) return "Verification required";
-  const deadline = new Date(account.trustedUntil);
-  if (Number.isNaN(deadline.getTime())) return "Trusted on this device";
-  return `Trusted until ${deadline.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  })}`;
+  const deadline = new Date(account.trustedUntil).getTime();
+  if (Number.isNaN(deadline)) return "Verification required";
+  const daysRemaining = Math.ceil((deadline - Date.now()) / TRUST_DAY_MS);
+  if (daysRemaining <= 0) return "Verification required";
+  return daysRemaining === 1 ? "1 day left" : `${daysRemaining} days left`;
 }
 
 export function CustomerKnownAccounts({
@@ -35,13 +35,37 @@ export function CustomerKnownAccounts({
   onUseAnotherAccount: () => void;
 }) {
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [verificationAccount, setVerificationAccount] = useState<CustomerRememberedAccount | null>(
     null
   );
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!openMenuId) return;
+
+    function closeMenuOnOutsidePress(event: PointerEvent) {
+      const target = event.target;
+      if (!(target instanceof Element) || !target.closest("[data-known-account-menu]")) {
+        setOpenMenuId(null);
+      }
+    }
+
+    function closeMenuOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpenMenuId(null);
+    }
+
+    document.addEventListener("pointerdown", closeMenuOnOutsidePress);
+    document.addEventListener("keydown", closeMenuOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeMenuOnOutsidePress);
+      document.removeEventListener("keydown", closeMenuOnEscape);
+    };
+  }, [openMenuId]);
+
   async function handleContinue(account: CustomerRememberedAccount) {
+    setOpenMenuId(null);
     setBusyId(account.id);
     setError(null);
     try {
@@ -66,6 +90,7 @@ export function CustomerKnownAccounts({
   }
 
   async function handleForget(account: CustomerRememberedAccount) {
+    setOpenMenuId(null);
     setBusyId(account.id);
     setError(null);
     try {
@@ -169,25 +194,29 @@ export function CustomerKnownAccounts({
           type="button"
         >
           <ArrowLeft size={15} aria-hidden="true" />
-          Back to known accounts
+          Back to saved email accounts
         </button>
       </section>
     );
   }
 
   return (
-    <section className="customer-known-accounts" aria-label="Known accounts">
+    <section className="customer-known-accounts" aria-label="Saved email accounts">
       <div className="customer-known-accounts__heading">
         <span className="customer-known-accounts__heading-icon" aria-hidden="true">
           <UserRoundCheck size={20} />
         </span>
-        <div>
-          <p className="customer-eyebrow">Quick sign in</p>
-          <h2>Known accounts</h2>
-          <p>
-            Continue on this browser without another code while its 30-day trust is active.{" "}
-            {accounts.length}/{maxAccounts} slots used.
-          </p>
+        <div className="customer-known-accounts__heading-copy">
+          <p className="customer-eyebrow">Email Quick Sign</p>
+          <div className="customer-known-accounts__title-row">
+            <h2>Saved email accounts</h2>
+            <span
+              aria-label={`${accounts.length} of ${maxAccounts} saved email accounts`}
+              className="customer-known-accounts__capacity"
+            >
+              {accounts.length}/{maxAccounts}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -198,41 +227,63 @@ export function CustomerKnownAccounts({
       ) : null}
 
       <div className="customer-known-accounts__list">
-        {accounts.map((account) => (
-          <article className="customer-known-account" key={account.id}>
-            <span className="customer-known-account__icon" aria-hidden="true">
-              <Mail size={19} />
-            </span>
-            <div className="customer-known-account__identity">
-              <strong>{account.name}</strong>
-              <span>{account.maskedIdentifier}</span>
-              <small className={account.trusted ? undefined : "is-expired"}>
-                {formatTrust(account)}
-              </small>
-            </div>
-            <div className="customer-known-account__actions">
+        {accounts.map((account) => {
+          const menuId = `customer-known-account-menu-${account.id}`;
+          const menuOpen = openMenuId === account.id;
+
+          return (
+            <article className="customer-known-account" key={account.id}>
               <button
-                className="customer-known-account__continue"
+                aria-label={`Continue with ${account.name}`}
+                className="customer-known-account__select"
                 disabled={busyId !== null}
                 onClick={() => void handleContinue(account)}
                 type="button"
               >
-                {busyId === account.id ? "Opening..." : "Continue"}
+                <span className="customer-known-account__icon" aria-hidden="true">
+                  <Mail size={19} />
+                </span>
+                <span className="customer-known-account__identity">
+                  <strong>{account.name}</strong>
+                  <span>{account.maskedIdentifier}</span>
+                  <small className={account.trusted ? undefined : "is-expired"}>
+                    {busyId === account.id ? "Opening..." : formatTrust(account)}
+                  </small>
+                </span>
               </button>
-              <button
-                aria-label={`Forget ${account.name}`}
-                className="customer-known-account__forget"
-                disabled={busyId !== null}
-                onClick={() => void handleForget(account)}
-                title="Forget this account"
-                type="button"
-              >
-                <Trash2 aria-hidden="true" size={16} />
-                <span>Forget</span>
-              </button>
-            </div>
-          </article>
-        ))}
+
+              <div className="customer-known-account__menu-wrap" data-known-account-menu>
+                <button
+                  aria-controls={menuId}
+                  aria-expanded={menuOpen}
+                  aria-haspopup="menu"
+                  aria-label={`More options for ${account.name}`}
+                  className="customer-known-account__menu-trigger"
+                  disabled={busyId !== null}
+                  onClick={() => setOpenMenuId((current) => (current === account.id ? null : account.id))}
+                  type="button"
+                >
+                  <MoreVertical aria-hidden="true" size={19} />
+                </button>
+
+                {menuOpen ? (
+                  <div className="customer-known-account__menu" id={menuId} role="menu">
+                    <button
+                      className="customer-known-account__menu-item"
+                      disabled={busyId !== null}
+                      onClick={() => void handleForget(account)}
+                      role="menuitem"
+                      type="button"
+                    >
+                      <Trash2 aria-hidden="true" size={16} />
+                      <span>Forget account</span>
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </article>
+          );
+        })}
       </div>
 
       <button
