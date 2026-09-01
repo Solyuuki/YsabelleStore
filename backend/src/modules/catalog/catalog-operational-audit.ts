@@ -1,4 +1,5 @@
 import type { CatalogPromotionPreview } from "./catalog-promotion-preview.js";
+import { isDevelopmentCatalogSeedProduct } from "./development-catalog-seed-identities.js";
 import { normalizeSarimaSourceName } from "./sarima-source-manifest.js";
 
 export type OperationalProductRecordSource = "CATALOG" | "IMPORT" | "TEST_FIXTURE" | "INTERNAL";
@@ -71,10 +72,13 @@ export type OperationalCatalogAudit = {
     blocked: number;
     testFixtures: number;
     testFixturesWithProtectedReferences: number;
+    developmentSeedProducts: number;
+    developmentSeedProductsWithProtectedReferences: number;
     unmatchedOperationalProducts: number;
   };
   candidateRows: OperationalCatalogCandidateRow[];
   testFixtures: OperationalFixtureRow[];
+  developmentSeedProducts: OperationalFixtureRow[];
   unmatchedOperationalProducts: UnmatchedOperationalProductRow[];
 };
 
@@ -93,12 +97,30 @@ function normalizedNames(product: OperationalProductSnapshot) {
   );
 }
 
+function toQuarantineRow(product: OperationalProductSnapshot): OperationalFixtureRow {
+  return {
+    productId: product.id,
+    sku: product.sku,
+    name: product.name,
+    protectedReferenceCount: protectedReferenceCount(product),
+    relationshipCounts: product.relationshipCounts,
+    hasInventoryRecord: product.hasInventoryRecord
+  };
+}
+
 export function buildOperationalCatalogAudit(
   preview: CatalogPromotionPreview,
   products: OperationalProductSnapshot[]
 ): OperationalCatalogAudit {
   const fixtures = products.filter((product) => product.recordSource === "TEST_FIXTURE");
-  const operationalProducts = products.filter((product) => product.recordSource !== "TEST_FIXTURE");
+  const developmentSeeds = products.filter(
+    (product) =>
+      product.recordSource !== "TEST_FIXTURE" && isDevelopmentCatalogSeedProduct(product)
+  );
+  const operationalProducts = products.filter(
+    (product) =>
+      product.recordSource !== "TEST_FIXTURE" && !isDevelopmentCatalogSeedProduct(product)
+  );
   const usedOperationalProductIds = new Set<string>();
   const candidateOperationalProductIds = new Set<string>();
 
@@ -158,7 +180,14 @@ export function buildOperationalCatalogAudit(
 
     const directlyMapped = sourceMappingIndex.get(row.productCode) ?? [];
     const mappedFixtures = directlyMapped.filter((product) => product.recordSource === "TEST_FIXTURE");
-    const mappedOperational = directlyMapped.filter((product) => product.recordSource !== "TEST_FIXTURE");
+    const mappedDevelopmentSeeds = directlyMapped.filter(
+      (product) =>
+        product.recordSource !== "TEST_FIXTURE" && isDevelopmentCatalogSeedProduct(product)
+    );
+    const mappedOperational = directlyMapped.filter(
+      (product) =>
+        product.recordSource !== "TEST_FIXTURE" && !isDevelopmentCatalogSeedProduct(product)
+    );
 
     if (mappedFixtures.length > 0) {
       return {
@@ -169,6 +198,18 @@ export function buildOperationalCatalogAudit(
         operationalProductId: null,
         candidateOperationalProductIds: mappedFixtures.map((product) => product.id).sort(),
         reason: "SARIMA source mapping points to a test fixture Product; mapping must be repaired before promotion."
+      };
+    }
+
+    if (mappedDevelopmentSeeds.length > 0) {
+      return {
+        productCode: row.productCode,
+        sourceName: row.sourceName,
+        canonicalProductCode: row.canonicalProductCode,
+        status: "BLOCKED",
+        operationalProductId: null,
+        candidateOperationalProductIds: mappedDevelopmentSeeds.map((product) => product.id).sort(),
+        reason: "SARIMA source mapping points to a known development seed Product; mapping must be reviewed before promotion."
       };
     }
 
@@ -231,14 +272,10 @@ export function buildOperationalCatalogAudit(
   });
 
   const fixtureRows = fixtures
-    .map((product): OperationalFixtureRow => ({
-      productId: product.id,
-      sku: product.sku,
-      name: product.name,
-      protectedReferenceCount: protectedReferenceCount(product),
-      relationshipCounts: product.relationshipCounts,
-      hasInventoryRecord: product.hasInventoryRecord
-    }))
+    .map(toQuarantineRow)
+    .sort((left, right) => left.productId.localeCompare(right.productId));
+  const developmentSeedRows = developmentSeeds
+    .map(toQuarantineRow)
     .sort((left, right) => left.productId.localeCompare(right.productId));
 
   const unmatchedOperationalProducts = operationalProducts
@@ -266,10 +303,15 @@ export function buildOperationalCatalogAudit(
       testFixturesWithProtectedReferences: fixtureRows.filter(
         (row) => row.protectedReferenceCount > 0
       ).length,
+      developmentSeedProducts: developmentSeedRows.length,
+      developmentSeedProductsWithProtectedReferences: developmentSeedRows.filter(
+        (row) => row.protectedReferenceCount > 0
+      ).length,
       unmatchedOperationalProducts: unmatchedOperationalProducts.length
     },
     candidateRows,
     testFixtures: fixtureRows,
+    developmentSeedProducts: developmentSeedRows,
     unmatchedOperationalProducts
   };
 }
