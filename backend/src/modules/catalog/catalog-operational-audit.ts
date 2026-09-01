@@ -135,14 +135,24 @@ export function buildOperationalCatalogAudit(
     }
 
     if (row.identityStatus === "BLOCKED_REVIEW") {
+      const normalizedSourceName = normalizeSarimaSourceName(row.sourceName);
+      const nameCandidates = (nameIndex.get(normalizedSourceName) ?? []).sort((left, right) =>
+        left.id.localeCompare(right.id)
+      );
+      const ids = nameCandidates.map((product) => product.id);
+      ids.forEach((id) => candidateOperationalProductIds.add(id));
+
       return {
         productCode: row.productCode,
         sourceName: row.sourceName,
         canonicalProductCode: row.canonicalProductCode,
         status: "BLOCKED",
         operationalProductId: null,
-        candidateOperationalProductIds: [],
-        reason: "Historical identity remains blocked for manual canonical review before operational promotion."
+        candidateOperationalProductIds: ids,
+        reason:
+          ids.length > 0
+            ? "Historical identity remains blocked for manual canonical review; matching operational Product candidates are surfaced for review but are not auto-mapped."
+            : "Historical identity remains blocked for manual canonical review before operational promotion."
       };
     }
 
