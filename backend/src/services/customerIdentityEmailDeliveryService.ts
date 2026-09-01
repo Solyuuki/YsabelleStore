@@ -197,7 +197,7 @@ async function sendGmailSmtpMessage(message: DevelopmentSmtpMessage): Promise<vo
       `To: ${message.to}`,
       `Subject: ${message.subject}`,
       "MIME-Version: 1.0",
-      `Content-Type: multipart/alternative; boundary=\"${boundary}\"`,
+      `Content-Type: multipart/alternative; boundary="${boundary}"`,
       "",
       `--${boundary}`,
       "Content-Type: text/plain; charset=UTF-8",
