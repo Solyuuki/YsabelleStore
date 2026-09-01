@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerVerificationCode } from "@/components/customer/CustomerVerificationCode";
@@ -6,34 +6,6 @@ import { requestCustomerEmailAuth, verifyCustomerEmailAuth } from "@/services/cu
 import "@/styles/customer-email-quick-sign-reference.css";
 
 const EMAIL_OTP_RESEND_SECONDS = 30;
-
-function EmailQuickSignProgress({ stage }: { stage: "email" | "code" }) {
-  const verifying = stage === "code";
-
-  return (
-    <div className="customer-email-quick-sign__progress" aria-label="Email Quick Sign progress">
-      <div className="customer-email-quick-sign__progress-item">
-        <span
-          className={`customer-email-quick-sign__progress-dot${verifying ? " is-complete" : " is-active"}`}
-          aria-hidden="true"
-        >
-          {verifying ? <CheckCircle2 size={14} /> : 1}
-        </span>
-        <span>Email</span>
-        <span className={`customer-email-quick-sign__progress-line${verifying ? " is-complete" : ""}`} />
-      </div>
-      <div className="customer-email-quick-sign__progress-item">
-        <span
-          className={`customer-email-quick-sign__progress-dot${verifying ? " is-active" : ""}`}
-          aria-hidden="true"
-        >
-          2
-        </span>
-        <span>Verify</span>
-      </div>
-    </div>
-  );
-}
 
 export function CustomerEmailAuthPanel({
   onCancel,
@@ -125,8 +97,6 @@ export function CustomerEmailAuthPanel({
 
   return (
     <section className="customer-mobile-auth customer-email-quick-sign" aria-label="Email OTP sign-in">
-      <EmailQuickSignProgress stage={stage} />
-
       <div className="customer-email-quick-sign__intro">
         <span className="customer-email-quick-sign__icon" aria-hidden="true">
           {stage === "email" ? <Mail size={22} /> : <ShieldCheck size={22} />}
