@@ -51,6 +51,10 @@ function tokens(value: string) {
   return value.split(" ").filter(Boolean);
 }
 
+function tokenSignature(value: string) {
+  return [...tokens(value)].sort().join(" ");
+}
+
 function quantityTokens(value: string) {
   return tokens(value).filter((token) => QUANTITY_TOKEN.test(token));
 }
@@ -69,6 +73,13 @@ function sameTokens(left: string[], right: string[]) {
 function sharedTokenCount(left: string[], right: string[]) {
   const rightSet = new Set(right);
   return new Set(left.filter((token) => rightSet.has(token))).size;
+}
+
+function sameProductFamilyWithMissingSizeEvidence(source: string, image: string) {
+  const sourceQuantities = quantityTokens(source);
+  const imageQuantities = quantityTokens(image);
+  if ((sourceQuantities.length === 0) === (imageQuantities.length === 0)) return false;
+  return sameTokens(withoutQuantities(source), withoutQuantities(image));
 }
 
 function sameProductFamilyWithSizeConflict(source: string, image: string) {
@@ -135,6 +146,19 @@ function sourceOutcome(
   };
 }
 
+function sourceSignatureGroups(sources: SarimaSourceIdentity[]) {
+  const groups = new Map<string, SarimaSourceIdentity[]>();
+
+  for (const source of sources) {
+    const signature = tokenSignature(source.sourceNameNormalized);
+    const group = groups.get(signature) ?? [];
+    group.push(source);
+    groups.set(signature, group);
+  }
+
+  return groups;
+}
+
 export function reconcileCatalogImages(
   sources: SarimaSourceIdentity[],
   images: DriveImageAsset[]
@@ -146,6 +170,7 @@ export function reconcileCatalogImages(
     left.productCode.localeCompare(right.productCode)
   );
   const orderedImages = [...images].sort((left, right) => left.fileId.localeCompare(right.fileId));
+  const signatureGroups = sourceSignatureGroups(orderedSources);
 
   for (const source of orderedSources) {
     const exact = orderedImages.filter(
@@ -177,7 +202,77 @@ export function reconcileCatalogImages(
   for (const source of orderedSources) {
     if (outcomes.has(source.productCode)) continue;
 
+    const signaturePeers = (signatureGroups.get(tokenSignature(source.sourceNameNormalized)) ?? [])
+      .filter((peer) => peer.productCode !== source.productCode);
+    const resolvedPeerCodes = signaturePeers
+      .filter((peer) => outcomes.has(peer.productCode))
+      .map((peer) => peer.productCode)
+      .sort();
+
+    if (resolvedPeerCodes.length > 0) {
+      outcomes.set(
+        source.productCode,
+        sourceOutcome(
+          source,
+          "NEEDS_REVIEW",
+          [],
+          `Token-equivalent historical source identity overlaps ${resolvedPeerCodes.join(", ")}; review source identity before assigning another Drive image.`
+        )
+      );
+      continue;
+    }
+
     const available = orderedImages.filter((image) => !claimedFileIds.has(image.fileId));
+    const reorderedExact = available.filter((image) =>
+      sameTokens(tokens(source.sourceNameNormalized), tokens(image.normalizedStem))
+    );
+
+    if (reorderedExact.length === 1) {
+      reorderedExact.forEach((image) => claimedFileIds.add(image.fileId));
+      outcomes.set(
+        source.productCode,
+        sourceOutcome(
+          source,
+          "EXACT_MATCH",
+          reorderedExact,
+          "Source and Drive identities contain the same normalized identity tokens in a different order."
+        )
+      );
+      continue;
+    }
+
+    if (reorderedExact.length > 1) {
+      reorderedExact.forEach((image) => claimedFileIds.add(image.fileId));
+      outcomes.set(
+        source.productCode,
+        sourceOutcome(
+          source,
+          "DUPLICATE_IMAGE",
+          reorderedExact,
+          "Multiple Drive assets contain the same normalized source identity tokens."
+        )
+      );
+      continue;
+    }
+
+    const missingSizeEvidence = available.filter((image) =>
+      sameProductFamilyWithMissingSizeEvidence(source.sourceNameNormalized, image.normalizedStem)
+    );
+
+    if (missingSizeEvidence.length > 0) {
+      missingSizeEvidence.forEach((image) => claimedFileIds.add(image.fileId));
+      outcomes.set(
+        source.productCode,
+        sourceOutcome(
+          source,
+          "NEEDS_REVIEW",
+          missingSizeEvidence,
+          "Product-family identity agrees, but size/package evidence is present on only one side."
+        )
+      );
+      continue;
+    }
+
     const sizeConflicts = available.filter((image) =>
       sameProductFamilyWithSizeConflict(source.sourceNameNormalized, image.normalizedStem)
     );
