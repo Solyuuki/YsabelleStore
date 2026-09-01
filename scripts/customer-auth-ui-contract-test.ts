@@ -92,15 +92,27 @@ assert.doesNotMatch(authServiceSource, /\/api\/customer-auth\/mobile\/verify/);
 assert.doesNotMatch(loginSource, /Continue with Email OTP/);
 assert.doesNotMatch(loginSource, /Continue with Mobile OTP/);
 
-assert.match(registerSource, /Verify Email Address/);
+assert.match(registerSource, /CustomerEmailAuthPanel/);
+assert.match(registerSource, /CustomerEmailRegistrationPanel/);
+assert.match(registerSource, /emailLabel="Continue with Email OTP"/);
 assert.match(
   registerSource,
   /googleHelperText="Verify your Google account for faster sign-up and sign-in\."/
 );
-assert.match(registerSource, /emailHelperText="Verify the required email for your new account\."/);
+assert.match(
+  registerSource,
+  /emailHelperText="Use only your email to sign in or create an account\."/
+);
+assert.match(registerSource, /setVerificationPanel\("quick-email"\)/);
+assert.match(registerSource, /verificationPanel === "quick-email"/);
+assert.match(registerSource, /onVerified=\{handleQuickSignVerified\}/);
+assert.match(
+  registerSource,
+  /async function handleQuickSignVerified\(\)[\s\S]*?await refreshSession\(\);[\s\S]*?navigate\("\/"\);/
+);
+assert.doesNotMatch(registerSource, /This verified email can be used for Email Quick Sign\./);
 assert.doesNotMatch(registerSource, /mobileLabel=/);
 assert.doesNotMatch(registerSource, /mobileHelperText=/);
-assert.doesNotMatch(registerSource, /Continue with Email OTP/);
 assert.doesNotMatch(registerSource, /Continue with Mobile OTP/);
 
 console.log("Customer auth UI state contract passed.");
