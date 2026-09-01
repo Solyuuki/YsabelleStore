@@ -32,7 +32,7 @@ function build(overrides: {
   stagingRows?: CatalogPromotionInactiveStagingRow[];
   categories?: Array<{ id: string; name: string }>;
   products?: Array<{ id: string; sku: string }>;
-  mappings?: Array<{ sourceKey: string; sourceProductId: string; productId: string }>;
+  mappings?: Array<{ sourceKey: string; sourceProductId: string; canonicalProductId: string }>;
 } = {}) {
   return buildCatalogPromotionDatabaseMutationPreview({
     stagingRows: overrides.stagingRows ?? [baseStagingRow],
@@ -105,7 +105,7 @@ test("database mutation preview surfaces source-product mapping collisions and n
       {
         sourceKey: "existing-source-key",
         sourceProductId: "P001",
-        productId: "prd_existing"
+        canonicalProductId: "prd_existing"
       }
     ]
   });
