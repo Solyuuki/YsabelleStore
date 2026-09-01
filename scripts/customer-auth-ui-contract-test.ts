@@ -75,7 +75,12 @@ assert.doesNotMatch(loginSource, /customer-known-accounts__back-link/);
 assert.match(loginSource, /handleEmailQuickSignStart/);
 assert.match(loginSource, /getCustomerRememberedAccounts\(\)/);
 assert.match(loginSource, /quickSignPanel === "email-saved"/);
-assert.match(loginSource, /quickSignPanel === "email-entry"/);
+assert.match(
+  loginSource,
+  /setQuickSignPanel\(accounts\.length > 0 \? "email-saved" : "email-entry"\)/
+);
+assert.match(loginSource, /onUseAnotherAccount=\{\(\) => setQuickSignPanel\("email-entry"\)\}/);
+assert.match(loginSource, /<CustomerEmailAuthPanel/);
 assert.match(knownAccountsSource, /Email Quick Sign/);
 assert.match(knownAccountsSource, /Saved email accounts/);
 assert.match(knownAccountsSource, /\{accounts\.length\}\/\{maxAccounts\}/);
