@@ -107,6 +107,7 @@ function toMarkdown(audit: OperationalCatalogAudit) {
   const blocked = audit.candidateRows.filter((row) => row.status === "BLOCKED");
   const fixtures = audit.testFixtures;
   const developmentSeeds = audit.developmentSeedProducts;
+  const legacyRuntimeQaProducts = audit.legacyRuntimeQaProducts;
   const unmatched = audit.unmatchedOperationalProducts;
 
   return [
@@ -127,6 +128,8 @@ function toMarkdown(audit: OperationalCatalogAudit) {
     `| Test fixtures with protected references | ${audit.summary.testFixturesWithProtectedReferences} |`,
     `| Development seed products | ${audit.summary.developmentSeedProducts} |`,
     `| Development seeds with protected references | ${audit.summary.developmentSeedProductsWithProtectedReferences} |`,
+    `| Legacy runtime QA products | ${audit.summary.legacyRuntimeQaProducts} |`,
+    `| Legacy runtime QA products with protected references | ${audit.summary.legacyRuntimeQaProductsWithProtectedReferences} |`,
     `| Unmatched non-fixture operational products | ${audit.summary.unmatchedOperationalProducts} |`,
     "",
     "## Blocked Promotion Candidates",
@@ -158,6 +161,17 @@ function toMarkdown(audit: OperationalCatalogAudit) {
     "",
     "Development seeds are exact repository-seeded sample identities. They are quarantined from operational unmatched results but are not deleted, detached, merged, or rewritten by this audit.",
     "",
+    "## Legacy Runtime QA Products",
+    "",
+    ...(legacyRuntimeQaProducts.length > 0
+      ? legacyRuntimeQaProducts.map(
+          (row) =>
+            `- ${row.sku} — ${row.name} — protected references: ${row.protectedReferenceCount}`
+        )
+      : ["- None"]),
+    "",
+    "Legacy runtime QA products are exact provenance-reviewed identities keyed by Product ID, SKU, and barcode. They are quarantined from operational unmatched results but their inventory and transaction history is preserved.",
+    "",
     "Test fixtures are audit findings only. This report does not delete, detach, merge, or rewrite them.",
     "",
     "## Unmatched Operational Products",
@@ -169,7 +183,7 @@ function toMarkdown(audit: OperationalCatalogAudit) {
         )
       : ["- None"]),
     "",
-    "Any destructive fixture cleanup, development-seed cleanup, or operational catalog promotion remains a separate reviewed step.",
+    "Any destructive fixture cleanup, development-seed cleanup, legacy-runtime-QA cleanup, or operational catalog promotion remains a separate reviewed step.",
     ""
   ].join("\n");
 }
