@@ -24,6 +24,7 @@ on:
       - "backend/test/catalog-promotion-preview.test.ts"
       - "backend/test/catalog-operational-audit.test.ts"
       - "backend/test/catalog-operational-audit-blocked-candidates.test.ts"
+      - "backend/test/catalog-development-seed-quarantine.test.ts"
       - "backend/test/generate-catalog-promotion-preview.test.ts"
       - "backend/test/generate-catalog-operational-audit.test.ts"
       - "backend/test/reconcile-catalog-images-script.test.ts"
@@ -72,6 +73,7 @@ jobs:
           backend/test/catalog-promotion-preview.test.ts
           backend/test/catalog-operational-audit.test.ts
           backend/test/catalog-operational-audit-blocked-candidates.test.ts
+          backend/test/catalog-development-seed-quarantine.test.ts
           backend/test/generate-catalog-promotion-preview.test.ts
           backend/test/generate-catalog-operational-audit.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
