@@ -13,6 +13,7 @@ on:
       - "backend/src/scripts/reconcileCatalogImages.ts"
       - "backend/src/scripts/generateCatalogPromotionPreview.ts"
       - "backend/src/scripts/generateOperationalCatalogAudit.ts"
+      - "backend/src/scripts/generateUnmatchedCatalogProvenance.ts"
       - "backend/src/services/productService.ts"
       - "backend/src/validators/product.validators.ts"
       - "backend/test/sarima-source-manifest.test.ts"
@@ -28,6 +29,7 @@ on:
       - "backend/test/catalog-development-seed-quarantine.test.ts"
       - "backend/test/generate-catalog-promotion-preview.test.ts"
       - "backend/test/generate-catalog-operational-audit.test.ts"
+      - "backend/test/generate-unmatched-catalog-provenance.test.ts"
       - "backend/test/reconcile-catalog-images-script.test.ts"
       - "frontend/src/pages/ProductsPage.tsx"
       - "frontend/src/services/catalogApi.ts"
@@ -39,6 +41,7 @@ on:
       - "docs/catalog/phase9-image-reconciliation-report.md"
       - "docs/catalog/phase9-catalog-promotion-preview.md"
       - "docs/catalog/phase9-operational-catalog-audit.md"
+      - "docs/catalog/phase9-unmatched-catalog-provenance.md"
 
 permissions:
   contents: read
@@ -62,7 +65,7 @@ jobs:
         run: npm run build --workspace backend
       - name: Compile frontend
         run: npm run build --workspace frontend
-      - name: Run focused manifest, reconciliation, promotion preview, operational audit, and catalog filter contract tests
+      - name: Run focused manifest, reconciliation, promotion preview, operational audit, provenance, and catalog filter contract tests
         run: >-
           npx tsx --test
           backend/test/sarima-source-manifest.test.ts
@@ -78,6 +81,7 @@ jobs:
           backend/test/catalog-development-seed-quarantine.test.ts
           backend/test/generate-catalog-promotion-preview.test.ts
           backend/test/generate-catalog-operational-audit.test.ts
+          backend/test/generate-unmatched-catalog-provenance.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
       - name: Run catalog quality filter UI contract
         run: npx tsx scripts/catalog-quality-filter-ui-test.ts
