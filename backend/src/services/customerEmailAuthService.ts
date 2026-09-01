@@ -33,9 +33,14 @@ function invalidCode(): HttpError {
   });
 }
 
+function quickSignDisplayName(email: string): string {
+  const localPart = email.split("@", 1)[0]?.trim() ?? "";
+  return (localPart || "Customer").slice(0, 120);
+}
+
 export async function requestCustomerEmailAuth(input: { email: string }, now = new Date()) {
   const customer = await prisma.customerAccount.findUnique({ where: { email: input.email } });
-  if (!customer || customer.status !== "ACTIVE") return;
+  if (customer && customer.status !== "ACTIVE") return;
 
   const activeChallenge = await prisma.customerEmailAuthChallenge.findFirst({
     where: {
@@ -64,7 +69,7 @@ export async function requestCustomerEmailAuth(input: { email: string }, now = n
     await transaction.customerEmailAuthChallenge.create({
       data: {
         id,
-        customerAccountId: customer.id,
+        customerAccountId: customer?.id ?? null,
         emailNormalized: input.email,
         otpHash: hashOtp(id, input.email, verificationCode),
         expiresAt,
@@ -98,7 +103,7 @@ export async function verifyCustomerEmailAuth(
     },
     orderBy: { createdAt: "desc" }
   });
-  if (!challenge?.customerAccountId) throw invalidCode();
+  if (!challenge) throw invalidCode();
 
   const actual = Buffer.from(hashOtp(challenge.id, input.email, input.verificationCode), "hex");
   const expected = Buffer.from(challenge.otpHash, "hex");
@@ -115,30 +120,46 @@ export async function verifyCustomerEmailAuth(
     throw invalidCode();
   }
 
-  const customer = await prisma.customerAccount.findUnique({
-    where: { id: challenge.customerAccountId }
-  });
-  if (!customer || customer.status !== "ACTIVE" || customer.email !== input.email) {
-    throw invalidCode();
-  }
+  const verifiedCustomer = await prisma.$transaction(async (transaction) => {
+    const consumed = await transaction.customerEmailAuthChallenge.updateMany({
+      data: { consumedAt: now },
+      where: {
+        id: challenge.id,
+        consumedAt: null,
+        expiresAt: { gt: now },
+        failedAttempts: { lt: CUSTOMER_EMAIL_AUTH_MAX_FAILED_ATTEMPTS }
+      }
+    });
+    if (consumed.count !== 1) throw invalidCode();
 
-  const consumed = await prisma.customerEmailAuthChallenge.updateMany({
-    data: { consumedAt: now },
-    where: {
-      id: challenge.id,
-      consumedAt: null,
-      expiresAt: { gt: now },
-      failedAttempts: { lt: CUSTOMER_EMAIL_AUTH_MAX_FAILED_ATTEMPTS }
+    const customer = challenge.customerAccountId
+      ? await transaction.customerAccount.findUnique({ where: { id: challenge.customerAccountId } })
+      : await transaction.customerAccount.findUnique({ where: { email: input.email } });
+
+    if (customer) {
+      if (customer.status !== "ACTIVE" || customer.email !== input.email) throw invalidCode();
+      return customer.emailVerifiedAt
+        ? customer
+        : transaction.customerAccount.update({
+            where: { id: customer.id },
+            data: { emailVerifiedAt: now }
+          });
     }
-  });
-  if (consumed.count !== 1) throw invalidCode();
 
-  const verifiedCustomer = customer.emailVerifiedAt
-    ? customer
-    : await prisma.customerAccount.update({
-        where: { id: customer.id },
-        data: { emailVerifiedAt: now }
-      });
+    return transaction.customerAccount.create({
+      data: {
+        name: quickSignDisplayName(input.email),
+        username: null,
+        email: input.email,
+        phone: null,
+        phoneNormalized: null,
+        emailVerifiedAt: now,
+        phoneVerifiedAt: null,
+        passwordHash: null,
+        status: "ACTIVE"
+      }
+    });
+  });
 
   const session = await createCustomerSession(verifiedCustomer.id, now);
   return { customer: toSafeCustomer(verifiedCustomer), ...session };
