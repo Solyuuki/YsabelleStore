@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  assertExpectedDriveImageCount,
   buildDriveImageManifest,
   normalizeDriveImageStem,
   type DriveImageMetadata
@@ -72,5 +73,20 @@ test("rejects non-image metadata from the raw image inventory", () => {
   assert.throws(
     () => buildDriveImageManifest([asset({ mimeType: "application/pdf" })]),
     /Expected image metadata for file-1/
+  );
+});
+
+test("accepts the corrected Phase 9 Drive inventory count of 429", () => {
+  assert.doesNotThrow(() => assertExpectedDriveImageCount({ length: 429 }));
+});
+
+test("rejects stale or incomplete Drive inventory counts", () => {
+  assert.throws(
+    () => assertExpectedDriveImageCount({ length: 430 }),
+    /Expected exactly 429 unique raw Drive images; received 430/
+  );
+  assert.throws(
+    () => assertExpectedDriveImageCount({ length: 428 }),
+    /Expected exactly 429 unique raw Drive images; received 428/
   );
 });
