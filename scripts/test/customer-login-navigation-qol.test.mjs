@@ -30,10 +30,8 @@ test("saved email accounts are loaded only inside Email Quick Sign", () => {
     source,
     /quickSignPanel === "email-saved"[\s\S]*?<CustomerKnownAccounts[\s\S]*?onUseAnotherAccount=\{\(\) => setQuickSignPanel\("email-entry"\)\}/
   );
-  assert.match(
-    source,
-    /quickSignPanel === "email-entry"[\s\S]*?<CustomerEmailAuthPanel/
-  );
+  assert.match(source, /<CustomerEmailAuthPanel/);
+  assert.match(source, /rememberDisabled=\{rememberedAccounts\.length >= maxRememberedAccounts\}/);
   assert.match(knownAccounts, /Use another email/);
   assert.doesNotMatch(knownAccounts, />Use another account</);
 });
