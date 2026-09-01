@@ -291,7 +291,7 @@ export function CustomerKnownAccounts({
         onClick={onUseAnotherAccount}
         type="button"
       >
-        Use another account
+        Use another email
       </button>
     </section>
   );
