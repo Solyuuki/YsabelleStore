@@ -45,7 +45,7 @@ test("shared OTP slots use recovery-style premium proportions", () => {
   assert.match(css, /\.customer-verification-code__slot\[data-active="true"\]/);
 });
 
-test("OTP verification still submits only through the Verify button", () => {
+test("OTP verification still submits only through the Verify code button", () => {
   const component = read("frontend/src/components/customer/CustomerEmailAuthPanel.tsx");
 
   assert.match(component, /const \[verificationCode, setVerificationCode\] = useState\(""\)/);
@@ -54,6 +54,6 @@ test("OTP verification still submits only through the Verify button", () => {
     component,
     /verifyCustomerEmailAuth\(\{ email, verificationCode, rememberFor30Days \}\)/
   );
-  assert.match(component, /submitting \? "Verifying\.\.\." : "Verify"/);
+  assert.match(component, /submitting \? "Verifying code\.\.\." : "Verify code"/);
   assert.doesNotMatch(component, /onComplete=/);
 });
