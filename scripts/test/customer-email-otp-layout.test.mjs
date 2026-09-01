@@ -14,20 +14,20 @@ test("shared OTP label is centered above recovery-style slots", () => {
   );
 });
 
-test("remember-account choice uses the same balanced content width", () => {
-  const css = read("frontend/src/styles/customer-known-accounts.css");
+test("email verification remember choice uses the shared balanced width", () => {
+  const css = read("frontend/src/styles/customer-verification-code.css");
 
   assert.match(
     css,
-    /\.customer-remember-choice\s*\{[\s\S]*?width:\s*min\(100%, 31rem\);[\s\S]*?justify-self:\s*center;[\s\S]*?\}/
+    /\.customer-mobile-auth__form:has\(\.customer-verification-code\) \.customer-remember-choice\s*\{[\s\S]*?width:\s*min\(100%, 31rem\);[\s\S]*?justify-self:\s*center;[\s\S]*?\}/
   );
 });
 
-test("email OTP Verify button uses the same balanced content width", () => {
-  const css = read("frontend/src/styles/customer-auth-quick-sign.css");
+test("email verification Verify button uses the shared balanced width", () => {
+  const css = read("frontend/src/styles/customer-verification-code.css");
 
   assert.match(
     css,
-    /\.customer-mobile-auth \.customer-auth-submit\s*\{[\s\S]*?width:\s*min\(100%, 31rem\);[\s\S]*?justify-self:\s*center;[\s\S]*?\}/
+    /\.customer-mobile-auth__form:has\(\.customer-verification-code\) > \.customer-auth-submit\s*\{[\s\S]*?width:\s*min\(100%, 31rem\);[\s\S]*?justify-self:\s*center;[\s\S]*?\}/
   );
 });
