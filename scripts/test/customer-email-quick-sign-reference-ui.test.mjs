@@ -5,18 +5,32 @@ import { test } from "node:test";
 const fileUrl = (path) => new URL(`../../${path}`, import.meta.url);
 const read = (path) => readFileSync(fileUrl(path), "utf8");
 
-test("Email Quick Sign owns a Recovery-inspired two-step presentation", () => {
+test("Email Quick Sign is direct and does not render a decorative progress stepper", () => {
   const panel = read("frontend/src/components/customer/CustomerEmailAuthPanel.tsx");
+  const css = read("frontend/src/styles/customer-email-quick-sign-reference.css");
 
   assert.match(panel, /customer-email-quick-sign/);
-  assert.match(panel, /customer-email-quick-sign__progress/);
-  assert.match(panel, />Email<\/span>/);
-  assert.match(panel, />Verify<\/span>/);
+  assert.doesNotMatch(panel, /EmailQuickSignProgress/);
+  assert.doesNotMatch(panel, /customer-email-quick-sign__progress/);
+  assert.doesNotMatch(css, /\.customer-email-quick-sign__progress/);
   assert.match(panel, /customer-email-quick-sign__intro/);
   assert.match(panel, /Email Quick Sign/);
   assert.match(panel, /Sign in with email/);
   assert.match(panel, /Enter verification code/);
   assert.match(panel, /6-digit verification code/);
+});
+
+test("Email Quick Sign desktop headings stay on one line while remaining responsive", () => {
+  const css = read("frontend/src/styles/customer-email-quick-sign-reference.css");
+
+  assert.match(
+    css,
+    /\.customer-email-quick-sign__intro h2\s*\{[\s\S]*?max-width:\s*none;[\s\S]*?white-space:\s*nowrap;[\s\S]*?\}/
+  );
+  assert.match(
+    css,
+    /@media \(max-width:\s*560px\)[\s\S]*?\.customer-email-quick-sign__intro h2\s*\{[\s\S]*?white-space:\s*normal;/
+  );
 });
 
 test("Email Quick Sign borrows Recovery proportions without importing Recovery UI", () => {
@@ -29,7 +43,6 @@ test("Email Quick Sign borrows Recovery proportions without importing Recovery U
   assert.doesNotMatch(recovery, /CustomerVerificationCode/);
 
   assert.match(css, /\.customer-email-quick-sign\s*\{[\s\S]*?border:\s*0;[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;/);
-  assert.match(css, /\.customer-email-quick-sign__progress\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(css, /\.customer-email-quick-sign__intro h2\s*\{[\s\S]*?font-family:\s*var\(--customer-font-display\)/);
   assert.match(css, /\.customer-email-quick-sign__form\s*\{[\s\S]*?width:\s*min\(100%, 31rem\)/);
   assert.match(css, /\.customer-email-quick-sign__form > \.customer-auth-submit\s*\{[\s\S]*?min-height:\s*56px/);
