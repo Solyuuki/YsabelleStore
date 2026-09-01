@@ -33,9 +33,9 @@ test("saved email account actions use an inline overflow action with forget only
   assert.doesNotMatch(component, /Forget account/);
   assert.match(component, /event\.key === "Escape"/);
   assert.match(component, /data-known-account-menu/);
-  assert.match(css, /\.customer-known-account__menu\s*\{[\s\S]*?position:\s*static;/);
-  assert.doesNotMatch(css, /\.customer-known-account__menu\s*\{[\s\S]*?top:/);
-  assert.match(css, /\.customer-known-account__menu-wrap\s*\{[\s\S]*?display:\s*flex;/);
+  assert.match(css, /\.customer-known-account__menu\s*\{[^}]*position:\s*static;/);
+  assert.doesNotMatch(css, /\.customer-known-account__menu\s*\{[^}]*\n\s*top\s*:/);
+  assert.match(css, /\.customer-known-account__menu-wrap\s*\{[^}]*display:\s*flex;/);
 });
 
 test("trusted saved email accounts show remaining trust days", () => {
