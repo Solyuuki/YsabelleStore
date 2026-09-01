@@ -14,20 +14,28 @@ test("shared OTP label is centered above recovery-style slots", () => {
   );
 });
 
-test("email verification remember choice uses the shared balanced width", () => {
-  const css = read("frontend/src/styles/customer-verification-code.css");
+test("email verification remember choice follows the Quick Sign balanced form width", () => {
+  const css = read("frontend/src/styles/customer-email-quick-sign-reference.css");
 
   assert.match(
     css,
-    /\.customer-mobile-auth__form:has\(\.customer-verification-code\) \.customer-remember-choice\s*\{[\s\S]*?width:\s*min\(100%, 31rem\);[\s\S]*?justify-self:\s*center;[\s\S]*?\}/
+    /\.customer-email-quick-sign__form\s*\{[\s\S]*?width:\s*min\(100%, 31rem\);[\s\S]*?justify-self:\s*center;[\s\S]*?\}/
+  );
+  assert.match(
+    css,
+    /\.customer-email-quick-sign__form\s*>\s*:is\([\s\S]*?\.customer-email-quick-sign__remember[\s\S]*?\)\s*\{[\s\S]*?width:\s*100%;[\s\S]*?justify-self:\s*stretch;[\s\S]*?\}/
   );
 });
 
-test("email verification Verify button uses the shared balanced width", () => {
-  const css = read("frontend/src/styles/customer-verification-code.css");
+test("email verification Verify code button follows the Quick Sign balanced form width", () => {
+  const css = read("frontend/src/styles/customer-email-quick-sign-reference.css");
 
   assert.match(
     css,
-    /\.customer-mobile-auth__form:has\(\.customer-verification-code\) > \.customer-auth-submit\s*\{[\s\S]*?width:\s*min\(100%, 31rem\);[\s\S]*?justify-self:\s*center;[\s\S]*?\}/
+    /\.customer-email-quick-sign__form\s*\{[\s\S]*?width:\s*min\(100%, 31rem\);[\s\S]*?justify-self:\s*center;[\s\S]*?\}/
+  );
+  assert.match(
+    css,
+    /\.customer-email-quick-sign__form\s*>\s*:is\([\s\S]*?\.customer-auth-submit[\s\S]*?\)\s*\{[\s\S]*?width:\s*100%;[\s\S]*?justify-self:\s*stretch;[\s\S]*?\}/
   );
 });
