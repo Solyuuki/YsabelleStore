@@ -5,28 +5,42 @@ import { test } from "node:test";
 const fileUrl = (path) => new URL(`../../${path}`, import.meta.url);
 const read = (path) => readFileSync(fileUrl(path), "utf8");
 
-test("register Email Quick Sign is email-only and authenticates or creates independently", () => {
+test("customer auth exposes Phase 7 Google and Email OTP Quick Sign actions", () => {
+  const login = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
   const register = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
+  const buttons = read("frontend/src/components/customer/CustomerSocialAuthButtons.tsx");
+  const css = read("frontend/src/styles/customer-auth-quick-sign.css");
 
-  assert.match(register, /CustomerEmailAuthPanel/);
+  for (const page of [login, register]) {
+    assert.match(page, /import "@\/styles\/customer-auth-quick-sign\.css";/);
+    assert.match(page, /CustomerSocialAuthButtons/);
+    assert.match(page, /className="customer-auth-quick-divider"/);
+    assert.doesNotMatch(page, /Coming soon/i);
+    assert.doesNotMatch(page, /Available in Phase 7/i);
+    assert.doesNotMatch(page, /Continue with Facebook/i);
+    assert.doesNotMatch(page, /onMobileStart/);
+  }
+
+  assert.match(buttons, /aria-label="Quick sign-in options"/);
+  assert.match(buttons, /onClick=\{\(\) => onStart\("google"\)\}/);
+  assert.match(buttons, /Continue with Google/);
+  assert.match(buttons, /Opening Google\.\.\./);
+  assert.match(buttons, /Continue with Email OTP/i);
+  assert.match(buttons, /onEmailStart/);
+  assert.doesNotMatch(buttons, /Continue with Mobile OTP/i);
+  assert.doesNotMatch(buttons, /onMobileStart/);
+  assert.doesNotMatch(buttons, /Available in Phase 7/i);
+  assert.doesNotMatch(buttons, /Continue with Facebook/i);
+
+  assert.doesNotMatch(login, /CustomerMobileAuthPanel/);
+  assert.doesNotMatch(login, /onMobileStart/);
+  assert.doesNotMatch(register, /CustomerMobileAuthPanel/);
+  assert.doesNotMatch(register, /CustomerMobileRegistrationPanel/);
   assert.match(register, /CustomerEmailRegistrationPanel/);
-  assert.match(register, /"registration-email"\s*\|\s*"quick-email"\s*\|\s*null/);
-  assert.match(register, /const \{[^}]*refreshSession[^}]*register[^}]*\} = useCustomerAuth\(\)/s);
+
   assert.match(
-    register,
-    /async function handleQuickSignVerified\(\)[\s\S]*?await refreshSession\(\);[\s\S]*?navigate\("\/"\);/
+    css,
+    /\.customer-social-auth__button\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*auto minmax\(0, 1fr\);/
   );
-  assert.match(
-    register,
-    /emailLabel="Continue with Email OTP"[\s\S]*?onEmailStart=\{\(\) => \{[\s\S]*?setVerificationPanel\("quick-email"\);[\s\S]*?\}\}/
-  );
-  assert.match(
-    register,
-    /verificationPanel === "quick-email"[\s\S]*?<CustomerEmailAuthPanel[\s\S]*?onVerified=\{handleQuickSignVerified\}/
-  );
-  assert.match(
-    register,
-    /verifiedEmail !== email\.trim\(\)[\s\S]*?setVerificationPanel\("registration-email"\);[\s\S]*?return;/
-  );
-  assert.doesNotMatch(register, /This verified email can be used for Email Quick Sign\./);
+  assert.match(css, /\.customer-social-auth__button:focus-visible\s*\{/);
 });
