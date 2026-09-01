@@ -16,6 +16,7 @@ on:
       - "backend/test/drive-image-snapshot.test.ts"
       - "backend/test/catalog-image-reconciliation.test.ts"
       - "backend/test/catalog-image-reconciliation-report.test.ts"
+      - "backend/test/reconcile-catalog-images-script.test.ts"
       - "data/forecasting/historical-sales-2024.xlsx"
       - "data/forecasting/historical-sales-2025.xlsx"
       - "artifacts/catalog/phase9/**"
@@ -44,6 +45,7 @@ jobs:
           backend/test/drive-image-snapshot.test.ts
           backend/test/catalog-image-reconciliation.test.ts
           backend/test/catalog-image-reconciliation-report.test.ts
+          backend/test/reconcile-catalog-images-script.test.ts
       - name: Generate SARIMA source manifest
         run: npx tsx backend/src/scripts/extractSarimaSourceManifest.ts
       - name: Generate Drive image manifest
