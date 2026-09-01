@@ -11,6 +11,7 @@ on:
       - "backend/src/scripts/extractSarimaSourceManifest.ts"
       - "backend/test/sarima-source-manifest.test.ts"
       - "backend/test/drive-image-manifest.test.ts"
+      - "backend/test/catalog-image-reconciliation.test.ts"
       - "data/forecasting/historical-sales-2024.xlsx"
       - "data/forecasting/historical-sales-2025.xlsx"
       - "artifacts/catalog/phase9/**"
@@ -30,11 +31,12 @@ jobs:
       - run: npm ci
       - name: Compile backend
         run: npm run build --workspace backend
-      - name: Run focused manifest contract tests
+      - name: Run focused manifest and reconciliation contract tests
         run: >-
           npx tsx --test
           backend/test/sarima-source-manifest.test.ts
           backend/test/drive-image-manifest.test.ts
+          backend/test/catalog-image-reconciliation.test.ts
       - name: Generate SARIMA source manifest
         run: npx tsx backend/src/scripts/extractSarimaSourceManifest.ts
       - name: Upload SARIMA source manifest
