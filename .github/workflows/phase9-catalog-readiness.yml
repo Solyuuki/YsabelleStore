@@ -1,0 +1,33 @@
+name: Phase 9 Catalog Readiness
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "m1/v0.9/feat/catalog-data-readiness"
+    paths:
+      - ".github/workflows/phase9-catalog-readiness.yml"
+      - "backend/src/modules/catalog/**"
+      - "backend/src/scripts/extractSarimaSourceManifest.ts"
+      - "backend/test/sarima-source-manifest.test.ts"
+      - "data/forecasting/historical-sales-2024.xlsx"
+      - "data/forecasting/historical-sales-2025.xlsx"
+      - "artifacts/catalog/phase9/**"
+
+permissions:
+  contents: read
+
+jobs:
+  sarima-source-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Compile backend
+        run: npm run build --workspace backend
+      - name: Run focused manifest contract tests
+        run: npx tsx --test backend/test/sarima-source-manifest.test.ts
