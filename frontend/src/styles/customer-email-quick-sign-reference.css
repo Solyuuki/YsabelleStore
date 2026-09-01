@@ -1,5 +1,5 @@
-.customer-auth-card--email-quick-sign > .customer-auth-card__intro,
-.customer-auth-card--email-quick-sign > .customer-auth-switch {
+.customer-auth-card:has(> .customer-email-quick-sign) > .customer-auth-card__intro,
+.customer-auth-card:has(> .customer-email-quick-sign) > .customer-auth-switch {
   display: none;
 }
 
