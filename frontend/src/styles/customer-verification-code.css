@@ -110,6 +110,17 @@
   text-align: center;
 }
 
+.customer-mobile-auth__form:has(.customer-verification-code) .customer-remember-choice {
+  width: min(100%, 31rem);
+  justify-self: center;
+}
+
+.customer-mobile-auth__form:has(.customer-verification-code) > .customer-auth-submit {
+  width: min(100%, 31rem);
+  min-height: 56px;
+  justify-self: center;
+}
+
 @media (max-width: 560px) {
   .customer-verification-code {
     width: 100%;
