@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
 import {
@@ -6,6 +9,7 @@ import {
   normalizeSarimaSourceName,
   type SarimaManifestInput
 } from "../src/modules/catalog/sarima-source-manifest.js";
+import { extractSarimaSourceManifest } from "../src/scripts/extractSarimaSourceManifest.js";
 
 function productCode(index: number) {
   return `P${String(index).padStart(3, "0")}`;
@@ -31,8 +35,14 @@ function validInput(): SarimaManifestInput {
 
 test("normalizes presentation differences without removing variant or size identity", () => {
   assert.equal(normalizeSarimaSourceName("  Brand — Choco 100G  "), "brand choco 100g");
-  assert.notEqual(normalizeSarimaSourceName("Brand Choco 100g"), normalizeSarimaSourceName("Brand Choco 200g"));
-  assert.notEqual(normalizeSarimaSourceName("Brand Choco"), normalizeSarimaSourceName("Brand Vanilla"));
+  assert.notEqual(
+    normalizeSarimaSourceName("Brand Choco 100g"),
+    normalizeSarimaSourceName("Brand Choco 200g")
+  );
+  assert.notEqual(
+    normalizeSarimaSourceName("Brand Choco"),
+    normalizeSarimaSourceName("Brand Vanilla")
+  );
 });
 
 test("builds exactly P001 through P472 in deterministic order", () => {
@@ -63,7 +73,10 @@ test("rejects missing, duplicate, or out-of-range P-codes", () => {
     productName: "Duplicate P471"
   };
 
-  assert.throws(() => buildSarimaSourceManifest(input), /Expected source codes P001 through P472 exactly once/);
+  assert.throws(
+    () => buildSarimaSourceManifest(input),
+    /Expected source codes P001 through P472 exactly once/
+  );
 });
 
 test("rejects workbook identity conflicts and missing-year warnings", () => {
@@ -86,4 +99,21 @@ test("rejects workbook validation errors", () => {
     () => buildSarimaSourceManifest(input),
     /Cannot build SARIMA source manifest from invalid historical workbooks/
   );
+});
+
+test("extracts the committed 2024 and 2025 workbooks into a 472-row JSON manifest", async () => {
+  const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "ysabelle-phase9-"));
+  const outputPath = path.join(temporaryDirectory, "sarima-source-manifest.json");
+
+  try {
+    const manifest = await extractSarimaSourceManifest(outputPath);
+    const writtenManifest = JSON.parse(await fs.readFile(outputPath, "utf8"));
+
+    assert.equal(manifest.length, 472);
+    assert.equal(manifest[0]?.productCode, "P001");
+    assert.equal(manifest.at(-1)?.productCode, "P472");
+    assert.deepEqual(writtenManifest, manifest);
+  } finally {
+    await fs.rm(temporaryDirectory, { force: true, recursive: true });
+  }
 });
