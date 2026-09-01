@@ -10,6 +10,7 @@ on:
       - "backend/src/modules/catalog/**"
       - "backend/src/scripts/extractSarimaSourceManifest.ts"
       - "backend/test/sarima-source-manifest.test.ts"
+      - "backend/test/drive-image-manifest.test.ts"
       - "data/forecasting/historical-sales-2024.xlsx"
       - "data/forecasting/historical-sales-2025.xlsx"
       - "artifacts/catalog/phase9/**"
@@ -18,7 +19,7 @@ permissions:
   contents: read
 
 jobs:
-  sarima-source-manifest:
+  catalog-manifests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +31,10 @@ jobs:
       - name: Compile backend
         run: npm run build --workspace backend
       - name: Run focused manifest contract tests
-        run: npx tsx --test backend/test/sarima-source-manifest.test.ts
+        run: >-
+          npx tsx --test
+          backend/test/sarima-source-manifest.test.ts
+          backend/test/drive-image-manifest.test.ts
       - name: Generate SARIMA source manifest
         run: npx tsx backend/src/scripts/extractSarimaSourceManifest.ts
       - name: Upload SARIMA source manifest
