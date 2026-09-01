@@ -79,6 +79,15 @@ test("keeps a related image in NEEDS_REVIEW when source size evidence is absent 
   assert.equal(result.driveOnlyAssets.length, 0);
 });
 
+test("keeps a more-specific source in NEEDS_REVIEW when the Drive filename omits packaging descriptors", () => {
+  const sources = [source("P003", "Nescafe Creamy Latte Blue Sachet")];
+  const images = [image("latte", "Nescafe Creamy Latte.webp", "image/webp")];
+
+  const { outcome, result } = statusFor("NEEDS_REVIEW", "P003", sources, images);
+  assert.deepEqual(outcome.assetFileIds, ["latte"]);
+  assert.equal(result.driveOnlyAssets.length, 0);
+});
+
 test("classifies a conflicting flavor in the same product family as VARIANT_SIZE_MISMATCH", () => {
   const sources = [source("P001", "Fudgee Barr Chocolate")];
   const images = [image("vanilla", "Fudgee Barr Vanilla.jpg")];
@@ -86,6 +95,15 @@ test("classifies a conflicting flavor in the same product family as VARIANT_SIZE
   const { outcome, result } = statusFor("VARIANT_SIZE_MISMATCH", "P001", sources, images);
   assert.deepEqual(outcome.assetFileIds, ["vanilla"]);
   assert.equal(result.driveOnlyAssets.length, 0);
+});
+
+test("does not classify an unrelated Lemon Square product as a variant mismatch just because the brand prefix overlaps", () => {
+  const sources = [source("P277", "Lemon Square Whatta Tops Vanilla Cream")];
+  const images = [image("strawberry", "Lemon Square Creamy Strawberry Smoothies Candy.jpg")];
+
+  const { outcome, result } = statusFor("MISSING_IMAGE", "P277", sources, images);
+  assert.deepEqual(outcome.assetFileIds, []);
+  assert.deepEqual(result.driveOnlyAssets.map((entry) => entry.fileId), ["strawberry"]);
 });
 
 test("keeps equivalent image formats explicit as DUPLICATE_IMAGE", () => {
@@ -116,6 +134,43 @@ test("does not assign a second image to a token-equivalent historical source ide
   assert.equal(duplicateSource?.status, "NEEDS_REVIEW");
   assert.deepEqual(duplicateSource?.assetFileIds, []);
   assert.match(duplicateSource?.reason ?? "", /P012/);
+  assert.equal(result.driveOnlyAssets.length, 0);
+});
+
+test("keeps a size-specific historical sibling in NEEDS_REVIEW when a less-specific sibling already claimed the Drive image", () => {
+  const sources = [
+    source("P014", "Ligo Sardines in Tomato Sauce Chili Added"),
+    source("P144", "Ligo Sardines in Tomato Sauce Chili Added 155g")
+  ];
+  const images = [image("ligo", "Ligo Sardines in Tomato Sauce Chili Added.webp", "image/webp")];
+
+  const result = reconcileCatalogImages(sources, images);
+  const primary = result.sourceOutcomes.find((entry) => entry.productCode === "P014");
+  const specific = result.sourceOutcomes.find((entry) => entry.productCode === "P144");
+
+  assert.equal(primary?.status, "EXACT_MATCH");
+  assert.deepEqual(primary?.assetFileIds, ["ligo"]);
+  assert.equal(specific?.status, "NEEDS_REVIEW");
+  assert.deepEqual(specific?.assetFileIds, []);
+  assert.match(specific?.reason ?? "", /P014/);
+  assert.equal(result.driveOnlyAssets.length, 0);
+});
+
+test("keeps a likely leading-character typo as NEEDS_REVIEW instead of splitting it into missing plus Drive-only", () => {
+  const sources = [source("P132", "Bathroom Tissue Roll Tissue Pack")];
+  const images = [image("bathroom", "athroom Tissue Roll Tissue Pack.jpg")];
+
+  const { outcome, result } = statusFor("NEEDS_REVIEW", "P132", sources, images);
+  assert.deepEqual(outcome.assetFileIds, ["bathroom"]);
+  assert.equal(result.driveOnlyAssets.length, 0);
+});
+
+test("keeps a likely brand alias insertion as NEEDS_REVIEW instead of auto-matching", () => {
+  const sources = [source("P151", "Marino Chili Corned Tuna")];
+  const images = [image("san-marino", "San Marino Chili Corned Tuna.jpg")];
+
+  const { outcome, result } = statusFor("NEEDS_REVIEW", "P151", sources, images);
+  assert.deepEqual(outcome.assetFileIds, ["san-marino"]);
   assert.equal(result.driveOnlyAssets.length, 0);
 });
 
