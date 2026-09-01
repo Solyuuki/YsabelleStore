@@ -276,7 +276,7 @@ export function CustomerKnownAccounts({
                       type="button"
                     >
                       <Trash2 aria-hidden="true" size={16} />
-                      <span>Forget account</span>
+                      <span>Forget</span>
                     </button>
                   </div>
                 ) : null}
