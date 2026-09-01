@@ -6,8 +6,11 @@ import { resolve } from "node:path";
 const fileUrl = (path) => new URL(`../../${path}`, import.meta.url);
 const read = (path) => readFileSync(fileUrl(path), "utf8");
 
-test("recovery and email quick sign share one verification-code component", () => {
-  const sharedPath = resolve(new URL("../..", import.meta.url).pathname, "frontend/src/components/customer/CustomerVerificationCode.tsx");
+test("recovery keeps its approved OTP presentation while email quick sign uses the shared input", () => {
+  const sharedPath = resolve(
+    new URL("../..", import.meta.url).pathname,
+    "frontend/src/components/customer/CustomerVerificationCode.tsx"
+  );
   assert.equal(existsSync(sharedPath), true, "shared verification-code component should exist");
 
   const shared = read("frontend/src/components/customer/CustomerVerificationCode.tsx");
@@ -17,15 +20,17 @@ test("recovery and email quick sign share one verification-code component", () =
   assert.match(shared, /InputOTP/);
   assert.match(shared, /InputOTPGroup/);
   assert.match(shared, /InputOTPSlot/);
-  assert.match(shared, /Array\.from\(\{ length: 6 \}/);
-  assert.match(shared, /customer-verification-code__slot/);
-  assert.match(recovery, /CustomerVerificationCode/);
   assert.match(email, /CustomerVerificationCode/);
-  assert.doesNotMatch(recovery, /customer-recovery-code-slots/);
-  assert.doesNotMatch(email, /customer-email-otp__group/);
+
+  assert.doesNotMatch(recovery, /CustomerVerificationCode/);
+  assert.match(recovery, /customer-recovery-code-shell/);
+  assert.match(recovery, /customer-recovery-code-slots/);
+  assert.match(recovery, /customer-recovery-code-slot--filled/);
+  assert.match(recovery, /customer-recovery-code-slot--active/);
+  assert.match(recovery, /customer-recovery-code-input/);
 });
 
-test("shared verification UI preserves recovery proportions", () => {
+test("email quick sign shared verification UI keeps recovery-like proportions without replacing recovery markup", () => {
   const css = read("frontend/src/styles/customer-verification-code.css");
 
   assert.match(css, /width:\s*min\(100%, 31rem\)/);
