@@ -105,6 +105,29 @@ test("operational audit generator reads catalog state and writes a dry-run repor
               reviews: 0,
               imageAssets: 0
             }
+          },
+          {
+            id: "prd_mineral_water_500ml",
+            sku: "BEV-WATER-001",
+            barcode: "4800012345679",
+            name: "Mineral Water 500ml",
+            recordSource: "CATALOG",
+            dataQualityStatus: "NEEDS_REVIEW",
+            sarimaSourceMapping: null,
+            aliases: [],
+            inventory: { id: "inv-water" },
+            _count: {
+              inventoryBatches: 0,
+              inventoryMovements: 2,
+              saleItems: 1,
+              forecastRecords: 0,
+              recommendationRecords: 0,
+              historicalMonthlySales: 0,
+              historicalSalesImportRows: 0,
+              customerOrderItems: 0,
+              reviews: 0,
+              imageAssets: 0
+            }
           }
         ];
       }
@@ -123,10 +146,16 @@ test("operational audit generator reads catalog state and writes a dry-run repor
   assert.equal(audit.summary.new, 1);
   assert.equal(audit.summary.testFixtures, 1);
   assert.equal(audit.summary.testFixturesWithProtectedReferences, 1);
+  assert.equal(audit.summary.developmentSeedProducts, 1);
+  assert.equal(audit.summary.developmentSeedProductsWithProtectedReferences, 1);
+  assert.equal(audit.summary.unmatchedOperationalProducts, 0);
 
   const artifact = JSON.parse(await fs.readFile(jsonPath, "utf8"));
   assert.equal(artifact.summary.existing, 1);
+  assert.equal(artifact.summary.developmentSeedProducts, 1);
   const report = await fs.readFile(reportPath, "utf8");
   assert.match(report, /read-only/i);
   assert.match(report, /No Product, Inventory, InventoryBatch, price, stock, mapping, or fixture data was modified/i);
+  assert.match(report, /Development seed products \| 1/i);
+  assert.match(report, /BEV-WATER-001 — Mineral Water 500ml/i);
 });
