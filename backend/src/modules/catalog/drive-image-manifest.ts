@@ -2,6 +2,8 @@ import path from "node:path";
 
 import { normalizeSarimaSourceName } from "./sarima-source-manifest.js";
 
+const EXPECTED_PHASE9_DRIVE_IMAGE_COUNT = 429;
+
 export type DriveImageMetadata = {
   fileId: string;
   filename: string;
@@ -21,6 +23,14 @@ export function normalizeDriveImageStem(filename: string) {
   const stem = extension ? trimmed.slice(0, -extension.length) : trimmed;
 
   return normalizeSarimaSourceName(stem);
+}
+
+export function assertExpectedDriveImageCount(input: { length: number }) {
+  if (input.length !== EXPECTED_PHASE9_DRIVE_IMAGE_COUNT) {
+    throw new Error(
+      `Expected exactly 429 unique raw Drive images; received ${input.length}.`
+    );
+  }
 }
 
 export function buildDriveImageManifest(items: DriveImageMetadata[]): DriveImageAsset[] {
