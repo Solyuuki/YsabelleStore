@@ -9,8 +9,10 @@ on:
       - ".github/workflows/phase9-catalog-readiness.yml"
       - "backend/src/modules/catalog/**"
       - "backend/src/scripts/extractSarimaSourceManifest.ts"
+      - "backend/src/scripts/buildDriveImageManifest.ts"
       - "backend/test/sarima-source-manifest.test.ts"
       - "backend/test/drive-image-manifest.test.ts"
+      - "backend/test/drive-image-snapshot.test.ts"
       - "backend/test/catalog-image-reconciliation.test.ts"
       - "data/forecasting/historical-sales-2024.xlsx"
       - "data/forecasting/historical-sales-2025.xlsx"
@@ -36,6 +38,7 @@ jobs:
           npx tsx --test
           backend/test/sarima-source-manifest.test.ts
           backend/test/drive-image-manifest.test.ts
+          backend/test/drive-image-snapshot.test.ts
           backend/test/catalog-image-reconciliation.test.ts
       - name: Generate SARIMA source manifest
         run: npx tsx backend/src/scripts/extractSarimaSourceManifest.ts
