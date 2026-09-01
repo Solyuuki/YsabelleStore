@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a deterministic, read-only reconciliation pipeline for the 472 SARIMA source identities and the 429 unique Google Drive image assets, then use the reviewed output to drive safe catalog cleanup and missing-image sourcing.
+**Goal:** Build a deterministic, read-only reconciliation pipeline for the 472 SARIMA source identities and the 430 unique Google Drive image assets, then use the reviewed output to drive safe catalog cleanup and missing-image sourcing.
 
 **Architecture:** Keep historical forecasting identities immutable and produce separate manifest/reconciliation artifacts. Matching is conservative: exact product identity plus compatible variant/size evidence can auto-match; ambiguous, duplicate, and mismatched assets remain review-only. No operational Product, Inventory, InventoryBatch, sales, or forecast-history mutation occurs until the audit is reviewed.
 
@@ -19,7 +19,7 @@
 - `InventoryBatch` remains physical stock authority.
 - Missing image must not hide an otherwise valid identity.
 - No blind delete, duplicate creation, or destructive merge.
-- Revalidated Drive baseline on September 1, 2026: 429 unique raw image files. The earlier 430 count double-counted `Regent Assorted Cakes.jpg` across the Snacks first-page/overflow boundary.
+- Revalidated Drive baseline on September 1, 2026: 430 unique raw image files using direct folder listings. A temporary 429 count came from the Drive image-search path, which omitted AVIF assets; direct Snacks listing returns 156 files including `Hi-Ho O’Puffly BBQ Snack.avif`.
 
 ---
 
@@ -58,10 +58,10 @@
 - [ ] **Step 2: Run targeted test** and verify RED.
 - [ ] **Step 3: Implement minimal manifest builder** that preserves file IDs and category folders and emits deterministic ordering.
 - [ ] **Step 4: Run targeted tests** and verify GREEN.
-- [ ] **Step 5: Export the connected Drive inventory** and assert the manifest contains exactly 429 unique raw image files.
+- [ ] **Step 5: Export the connected Drive inventory using direct folder listings and assert the manifest contains exactly 430 unique raw image files, including AVIF assets.**
 - [ ] **Step 6: Commit** builder, tests, and manifest.
 
-### Task 3: Reconcile 472 source identities against 429 Drive images
+### Task 3: Reconcile 472 source identities against 430 Drive images
 
 **Files:**
 - Create: `scripts/catalog/reconcileCatalogImages.ts`
@@ -80,7 +80,7 @@
 - [ ] **Step 3: Implement conservative matcher**. Auto-match only when identifiable brand/product/variant/size evidence is compatible; never resolve a conflict by dropping tokens.
 - [ ] **Step 4: Run targeted tests** and verify GREEN.
 - [ ] **Step 5: Generate reconciliation artifacts** and report status counts, duplicate groups, misfile candidates, and the exact `MISSING_IMAGE` list.
-- [ ] **Step 6: Validate total accounting** so all 472 sources and all 429 unique raw images are represented exactly once in the audit model, except assets intentionally referenced in an explicit duplicate group.
+- [ ] **Step 6: Validate total accounting** so all 472 sources and all 430 unique raw images are represented exactly once in the audit model, except assets intentionally referenced in an explicit duplicate group.
 - [ ] **Step 7: Commit** matcher, tests, and report.
 
 ### Task 4: Source images for confirmed missing products
@@ -118,6 +118,6 @@
 
 ## Self-review
 
-- Spec coverage: branch/base, historical preservation, independent readiness states, corrected Drive count, conservative matching, external sourcing, and no mutation-before-review are covered.
+- Spec coverage: branch/base, historical preservation, independent readiness states, authoritative Drive count, conservative matching, external sourcing, and no mutation-before-review are covered.
 - Placeholder scan: no TBD/TODO implementation placeholders are used.
 - Type consistency: Task 3 consumes the exact manifests produced in Tasks 1-2; Task 4 consumes only Task 3 `MISSING_IMAGE`; Task 5 consumes approved Task 3-4 outputs.
