@@ -239,11 +239,13 @@
 }
 
 .customer-email-otp legend {
+  justify-self: center;
   margin-bottom: 0.1rem;
   padding: 0;
   color: #252942;
   font-size: 0.78rem;
   font-weight: 850;
+  text-align: center;
 }
 
 .customer-email-otp__container {
@@ -308,6 +310,8 @@
 }
 
 .customer-mobile-auth .customer-auth-submit {
+  width: min(100%, 25rem);
+  justify-self: center;
   box-shadow:
     0 15px 28px rgb(79 70 229 / 17%),
     inset 0 1px 0 rgb(255 255 255 / 22%);
