@@ -21,7 +21,7 @@ test("Email Quick Sign owns a Recovery-inspired two-step presentation", () => {
 
 test("Email Quick Sign borrows Recovery proportions without importing Recovery UI", () => {
   const panel = read("frontend/src/components/customer/CustomerEmailAuthPanel.tsx");
-  const css = read("frontend/src/styles/customer-auth-quick-sign.css");
+  const css = read("frontend/src/styles/customer-email-quick-sign-reference.css");
   const recovery = read("frontend/src/pages/customer/CustomerAccountRecoveryPage.tsx");
 
   assert.doesNotMatch(panel, /customer-auth-recovery\.css/);
@@ -45,7 +45,7 @@ test("Quick Sign OTP slots remain six full Recovery-proportion boxes", () => {
 test("login and registration remove duplicate outer intro only during Email Quick Sign", () => {
   const login = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
   const register = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
-  const css = read("frontend/src/styles/customer-auth-quick-sign.css");
+  const css = read("frontend/src/styles/customer-email-quick-sign-reference.css");
 
   assert.match(login, /customer-auth-card--email-quick-sign/);
   assert.match(register, /customer-auth-card--email-quick-sign/);
