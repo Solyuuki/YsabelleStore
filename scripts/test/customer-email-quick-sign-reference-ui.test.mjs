@@ -1,0 +1,54 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { test } from "node:test";
+
+const fileUrl = (path) => new URL(`../../${path}`, import.meta.url);
+const read = (path) => readFileSync(fileUrl(path), "utf8");
+
+test("Email Quick Sign owns a Recovery-inspired two-step presentation", () => {
+  const panel = read("frontend/src/components/customer/CustomerEmailAuthPanel.tsx");
+
+  assert.match(panel, /customer-email-quick-sign/);
+  assert.match(panel, /customer-email-quick-sign__progress/);
+  assert.match(panel, />Email<\/span>/);
+  assert.match(panel, />Verify<\/span>/);
+  assert.match(panel, /customer-email-quick-sign__intro/);
+  assert.match(panel, /Email Quick Sign/);
+  assert.match(panel, /Sign in with email/);
+  assert.match(panel, /Enter verification code/);
+  assert.match(panel, /6-digit verification code/);
+});
+
+test("Email Quick Sign borrows Recovery proportions without importing Recovery UI", () => {
+  const panel = read("frontend/src/components/customer/CustomerEmailAuthPanel.tsx");
+  const css = read("frontend/src/styles/customer-auth-quick-sign.css");
+  const recovery = read("frontend/src/pages/customer/CustomerAccountRecoveryPage.tsx");
+
+  assert.doesNotMatch(panel, /customer-auth-recovery\.css/);
+  assert.doesNotMatch(panel, /customer-recovery-/);
+  assert.doesNotMatch(recovery, /CustomerVerificationCode/);
+
+  assert.match(css, /\.customer-email-quick-sign\s*\{[\s\S]*?border:\s*0;[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;/);
+  assert.match(css, /\.customer-email-quick-sign__progress\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.customer-email-quick-sign__intro h2\s*\{[\s\S]*?font-family:\s*var\(--customer-font-display\)/);
+  assert.match(css, /\.customer-email-quick-sign__form\s*\{[\s\S]*?width:\s*min\(100%, 31rem\)/);
+  assert.match(css, /\.customer-email-quick-sign__form > \.customer-auth-submit\s*\{[\s\S]*?min-height:\s*56px/);
+});
+
+test("Quick Sign OTP slots remain six full Recovery-proportion boxes", () => {
+  const css = read("frontend/src/styles/customer-verification-code.css");
+
+  assert.match(css, /\.customer-verification-code__group\s*\{[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:\s*repeat\(6, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.customer-verification-code__slot\s*\{[\s\S]*?width:\s*100%;[\s\S]*?min-height:\s*72px/);
+});
+
+test("login and registration remove duplicate outer intro only during Email Quick Sign", () => {
+  const login = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
+  const register = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
+  const css = read("frontend/src/styles/customer-auth-quick-sign.css");
+
+  assert.match(login, /customer-auth-card--email-quick-sign/);
+  assert.match(register, /customer-auth-card--email-quick-sign/);
+  assert.match(css, /\.customer-auth-card--email-quick-sign > \.customer-auth-card__intro\s*\{[\s\S]*?display:\s*none/);
+  assert.match(css, /\.customer-auth-card--email-quick-sign > \.customer-auth-switch\s*\{[\s\S]*?display:\s*none/);
+});
