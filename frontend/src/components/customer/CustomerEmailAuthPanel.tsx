@@ -1,10 +1,38 @@
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerVerificationCode } from "@/components/customer/CustomerVerificationCode";
 import { requestCustomerEmailAuth, verifyCustomerEmailAuth } from "@/services/customerAuthService";
 
 const EMAIL_OTP_RESEND_SECONDS = 30;
+
+function EmailQuickSignProgress({ stage }: { stage: "email" | "code" }) {
+  const verifying = stage === "code";
+
+  return (
+    <div className="customer-email-quick-sign__progress" aria-label="Email Quick Sign progress">
+      <div className="customer-email-quick-sign__progress-item">
+        <span
+          className={`customer-email-quick-sign__progress-dot${verifying ? " is-complete" : " is-active"}`}
+          aria-hidden="true"
+        >
+          {verifying ? <CheckCircle2 size={14} /> : 1}
+        </span>
+        <span>Email</span>
+        <span className={`customer-email-quick-sign__progress-line${verifying ? " is-complete" : ""}`} />
+      </div>
+      <div className="customer-email-quick-sign__progress-item">
+        <span
+          className={`customer-email-quick-sign__progress-dot${verifying ? " is-active" : ""}`}
+          aria-hidden="true"
+        >
+          2
+        </span>
+        <span>Verify</span>
+      </div>
+    </div>
+  );
+}
 
 export function CustomerEmailAuthPanel({
   onCancel,
@@ -95,25 +123,34 @@ export function CustomerEmailAuthPanel({
   }
 
   return (
-    <section className="customer-mobile-auth" aria-label="Email OTP sign-in">
-      <div className="customer-mobile-auth__heading">
-        <span className="customer-mobile-auth__icon" aria-hidden="true">
-          <Mail size={18} />
+    <section className="customer-mobile-auth customer-email-quick-sign" aria-label="Email OTP sign-in">
+      <EmailQuickSignProgress stage={stage} />
+
+      <div className="customer-email-quick-sign__intro">
+        <span className="customer-email-quick-sign__icon" aria-hidden="true">
+          {stage === "email" ? <Mail size={22} /> : <ShieldCheck size={22} />}
         </span>
-        <div>
-          <strong>{stage === "email" ? "Email sign-in" : "Enter code"}</strong>
-          {stage === "code" ? <p className="customer-mobile-auth__meta">Sent to {email}</p> : null}
-        </div>
+        <p className="customer-email-quick-sign__eyebrow">Email Quick Sign</p>
+        <h2>{stage === "email" ? "Sign in with email" : "Enter verification code"}</h2>
+        <p>
+          {stage === "email"
+            ? "Use your verified customer email to continue without a password."
+            : `We sent a 6-digit sign-in code to ${email}. The code expires in 10 minutes.`}
+        </p>
       </div>
 
       {error ? (
-        <div className="customer-auth-alert" role="alert">
+        <div className="customer-auth-alert customer-email-quick-sign__alert" role="alert">
           {error}
         </div>
       ) : null}
 
       {stage === "email" ? (
-        <form className="customer-mobile-auth__form" onSubmit={handleEmailSubmit} noValidate>
+        <form
+          className="customer-mobile-auth__form customer-email-quick-sign__form"
+          onSubmit={handleEmailSubmit}
+          noValidate
+        >
           <label className="customer-auth-field" htmlFor="customer-email-auth-email">
             <span>Email address</span>
             <input
@@ -127,23 +164,25 @@ export function CustomerEmailAuthPanel({
             />
           </label>
           <button className="customer-auth-submit" disabled={submitting} type="submit">
-            {submitting ? "Sending..." : "Send code"}
+            {submitting ? "Sending verification code..." : "Send verification code"}
           </button>
-          <p className="customer-mobile-auth__hint">Code expires in 10 minutes</p>
         </form>
       ) : (
-        <form className="customer-mobile-auth__form" onSubmit={handleCodeSubmit} noValidate>
+        <form
+          className="customer-mobile-auth__form customer-email-quick-sign__form customer-email-quick-sign__form--verify"
+          onSubmit={handleCodeSubmit}
+          noValidate
+        >
           <CustomerVerificationCode
             autoFocus
             disabled={submitting}
-            hint="Paste the full code or enter one digit at a time."
             invalid={Boolean(error)}
-            label="Verification code"
+            label="6-digit verification code"
             onChange={setVerificationCode}
             value={verificationCode}
           />
 
-          <label className="customer-remember-choice">
+          <label className="customer-remember-choice customer-email-quick-sign__remember">
             <input
               checked={rememberFor30Days}
               disabled={rememberDisabled || submitting}
@@ -154,18 +193,29 @@ export function CustomerEmailAuthPanel({
               Remember this account for 30 days
               <small>
                 {rememberDisabled
-                  ? "Forget a known account first to free one of the 3 slots."
-                  : "Skip another sign-in code on this browser until the trust expires."}
+                  ? "Forget a saved email account first to free one of the 3 slots."
+                  : "Skip another email code on this browser while the trust is active."}
               </small>
             </span>
           </label>
 
           <button className="customer-auth-submit" disabled={submitting} type="submit">
-            {submitting ? "Verifying..." : "Verify"}
+            {submitting ? "Verifying code..." : "Verify code"}
           </button>
-          <div className="customer-mobile-auth__actions">
+
+          <div className="customer-email-quick-sign__status" role="status">
+            <span className="customer-email-quick-sign__status-icon" aria-hidden="true">
+              <Mail size={18} />
+            </span>
+            <div>
+              <strong>Sign-in code sent</strong>
+              <span>Paste the full code or enter the six digits above.</span>
+            </div>
+          </div>
+
+          <div className="customer-mobile-auth__actions customer-email-quick-sign__actions">
             {resendSeconds > 0 ? (
-              <span className="customer-mobile-auth__countdown">Resend in {resendSeconds}s</span>
+              <span className="customer-mobile-auth__countdown">Resend code in {resendSeconds}s</span>
             ) : (
               <button
                 className="customer-mobile-auth__secondary"
@@ -194,7 +244,7 @@ export function CustomerEmailAuthPanel({
       )}
 
       <button
-        className="customer-mobile-auth__back"
+        className="customer-mobile-auth__back customer-email-quick-sign__back"
         disabled={submitting}
         onClick={onCancel}
         type="button"
