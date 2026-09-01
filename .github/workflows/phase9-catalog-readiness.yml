@@ -31,3 +31,11 @@ jobs:
         run: npm run build --workspace backend
       - name: Run focused manifest contract tests
         run: npx tsx --test backend/test/sarima-source-manifest.test.ts
+      - name: Generate SARIMA source manifest
+        run: npx tsx backend/src/scripts/extractSarimaSourceManifest.ts
+      - name: Upload SARIMA source manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9-sarima-source-manifest
+          path: artifacts/catalog/phase9/sarima-source-manifest.json
+          if-no-files-found: error
