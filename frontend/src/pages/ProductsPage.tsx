@@ -133,6 +133,9 @@ export function ProductsPage() {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [qualityFilter, setQualityFilter] = useState<"ALL" | ProductRecord["dataQualityStatus"]>(
+    "ALL"
+  );
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
@@ -157,18 +160,21 @@ export function ProductsPage() {
     debouncedSearch: "",
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
+    qualityFilter: "ALL" as typeof qualityFilter,
     statusFilter: "ALL" as typeof statusFilter
   });
   const previousCatalogParamsRef = useRef<{
     debouncedSearch: string;
     page: number;
     pageSize: number;
+    qualityFilter: typeof qualityFilter;
     statusFilter: typeof statusFilter;
     initialized: boolean;
   }>({
     debouncedSearch: "",
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
+    qualityFilter: "ALL",
     statusFilter: "ALL",
     initialized: false
   });
@@ -230,9 +236,10 @@ export function ProductsPage() {
       debouncedSearch,
       page,
       pageSize,
+      qualityFilter,
       statusFilter
     };
-  }, [debouncedSearch, page, pageSize, statusFilter]);
+  }, [debouncedSearch, page, pageSize, qualityFilter, statusFilter]);
 
   useEffect(() => {
     return () => {
@@ -244,6 +251,7 @@ export function ProductsPage() {
     reason: Exclude<CatalogLoadingReason, null>;
     page: number;
     pageSize: number;
+    quality: typeof qualityFilter;
     search: string;
     status: typeof statusFilter;
   }) {
@@ -261,6 +269,7 @@ export function ProductsPage() {
           {
             page: options.page,
             pageSize: options.pageSize,
+            dataQualityStatus: options.quality === "ALL" ? undefined : options.quality,
             search: options.search.trim() || undefined,
             status: options.status === "ALL" ? undefined : options.status
           },
@@ -312,7 +321,10 @@ export function ProductsPage() {
     if (previous.initialized) {
       if (debouncedSearch !== previous.debouncedSearch) {
         reason = "search";
-      } else if (statusFilter !== previous.statusFilter) {
+      } else if (
+        statusFilter !== previous.statusFilter ||
+        qualityFilter !== previous.qualityFilter
+      ) {
         reason = "filter";
       } else if (pageSize !== previous.pageSize) {
         reason = "page-size";
@@ -325,6 +337,7 @@ export function ProductsPage() {
       debouncedSearch,
       page,
       pageSize,
+      qualityFilter,
       statusFilter,
       initialized: true
     };
@@ -333,10 +346,11 @@ export function ProductsPage() {
       reason,
       page,
       pageSize,
+      quality: qualityFilter,
       search: debouncedSearch,
       status: statusFilter
     });
-  }, [debouncedSearch, page, pageSize, statusFilter]);
+  }, [debouncedSearch, page, pageSize, qualityFilter, statusFilter]);
 
   useEffect(() => {
     if (!selectedProductId) {
@@ -357,6 +371,7 @@ export function ProductsPage() {
       reason: "refresh",
       page,
       pageSize,
+      quality: qualityFilter,
       search: debouncedSearch,
       status: statusFilter
     });
@@ -666,9 +681,16 @@ export function ProductsPage() {
   }
 
   function applyProductToCatalog(updatedProduct: ProductRecord) {
-    const { statusFilter: visibleStatusFilter, page: visiblePage } = currentCatalogViewRef.current;
+    const {
+      qualityFilter: visibleQualityFilter,
+      statusFilter: visibleStatusFilter,
+      page: visiblePage
+    } = currentCatalogViewRef.current;
     const statusMatchesFilter =
       visibleStatusFilter === "ALL" || updatedProduct.status === visibleStatusFilter;
+    const qualityMatchesFilter =
+      visibleQualityFilter === "ALL" || updatedProduct.dataQualityStatus === visibleQualityFilter;
+    const productMatchesFilters = statusMatchesFilter && qualityMatchesFilter;
 
     setProducts((current) => {
       const index = current.findIndex((product) => product.id === updatedProduct.id);
@@ -677,7 +699,7 @@ export function ProductsPage() {
         return current;
       }
 
-      if (!statusMatchesFilter) {
+      if (!productMatchesFilters) {
         return current.filter((product) => product.id !== updatedProduct.id);
       }
 
@@ -691,7 +713,7 @@ export function ProductsPage() {
         return current;
       }
 
-      if (statusMatchesFilter) {
+      if (productMatchesFilters) {
         return current;
       }
 
@@ -828,6 +850,12 @@ export function ProductsPage() {
     clearSelection();
   }
 
+  function handleQualityFilterChange(value: typeof qualityFilter) {
+    setQualityFilter(value);
+    setPage(1);
+    clearSelection();
+  }
+
   function handlePageSizeChange(value: number) {
     setPageSize(value);
     setPage(1);
@@ -926,7 +954,7 @@ export function ProductsPage() {
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-2 lg:px-5">
             <div className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px]">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
                 <label className="relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
                   <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <input
@@ -960,6 +988,28 @@ export function ProductsPage() {
                     <option value="ALL">All statuses</option>
                     <option value="ACTIVE">Available</option>
                     <option value="INACTIVE">Unavailable</option>
+                  </select>
+                  {filterIsLoading ? (
+                    <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
+                  ) : null}
+                </label>
+                <label className="relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
+                  <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                  <select
+                    aria-busy={filterIsLoading}
+                    aria-label="Catalog quality"
+                    className={["w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
+                      .filter(Boolean)
+                      .join(" ")}
+                    value={qualityFilter}
+                    onChange={(event) =>
+                      handleQualityFilterChange(event.target.value as typeof qualityFilter)
+                    }
+                  >
+                    <option value="ALL">All quality</option>
+                    <option value="NEEDS_REVIEW">Needs review</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
                   </select>
                   {filterIsLoading ? (
                     <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
