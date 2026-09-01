@@ -11,6 +11,7 @@ on:
       - "backend/src/scripts/extractSarimaSourceManifest.ts"
       - "backend/src/scripts/buildDriveImageManifest.ts"
       - "backend/src/scripts/reconcileCatalogImages.ts"
+      - "backend/src/scripts/generateCatalogPromotionPreview.ts"
       - "backend/src/services/productService.ts"
       - "backend/src/validators/product.validators.ts"
       - "backend/test/sarima-source-manifest.test.ts"
@@ -20,6 +21,7 @@ on:
       - "backend/test/catalog-image-reconciliation-report.test.ts"
       - "backend/test/catalog-quality-filter.test.ts"
       - "backend/test/catalog-promotion-preview.test.ts"
+      - "backend/test/generate-catalog-promotion-preview.test.ts"
       - "backend/test/reconcile-catalog-images-script.test.ts"
       - "frontend/src/pages/ProductsPage.tsx"
       - "frontend/src/services/catalogApi.ts"
@@ -29,6 +31,7 @@ on:
       - "data/forecasting/historical-sales-2025.xlsx"
       - "artifacts/catalog/phase9/**"
       - "docs/catalog/phase9-image-reconciliation-report.md"
+      - "docs/catalog/phase9-catalog-promotion-preview.md"
 
 permissions:
   contents: read
@@ -62,6 +65,7 @@ jobs:
           backend/test/catalog-image-reconciliation-report.test.ts
           backend/test/catalog-quality-filter.test.ts
           backend/test/catalog-promotion-preview.test.ts
+          backend/test/generate-catalog-promotion-preview.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
       - name: Run catalog quality filter UI contract
         run: npx tsx scripts/catalog-quality-filter-ui-test.ts
