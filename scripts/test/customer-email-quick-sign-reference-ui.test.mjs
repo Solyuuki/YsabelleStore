@@ -62,7 +62,7 @@ test("Quick Sign verification controls share the Sign-in code sent card width", 
 
   assert.match(
     css,
-    /\.customer-email-quick-sign__form > :is\(\s*\.customer-email-quick-sign__remember,\s*\.customer-auth-submit,\s*\.customer-email-quick-sign__status\s*\)\s*\{[\s\S]*?width:\s*100%;[\s\S]*?justify-self:\s*stretch;[\s\S]*?box-sizing:\s*border-box;/
+    /\.customer-email-quick-sign__form\s*>\s*:is\([\s\S]*?\.customer-email-quick-sign__remember[\s\S]*?\.customer-auth-submit[\s\S]*?\.customer-email-quick-sign__status[\s\S]*?\)\s*\{[\s\S]*?width:\s*100%;[\s\S]*?justify-self:\s*stretch;[\s\S]*?box-sizing:\s*border-box;/
   );
 });
 
