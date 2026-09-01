@@ -48,6 +48,15 @@ test("Email Quick Sign borrows Recovery proportions without importing Recovery U
   assert.match(css, /\.customer-email-quick-sign__form > \.customer-auth-submit\s*\{[\s\S]*?min-height:\s*56px/);
 });
 
+test("Quick Sign verification controls share the Sign-in code sent card width", () => {
+  const css = read("frontend/src/styles/customer-email-quick-sign-reference.css");
+
+  assert.match(
+    css,
+    /\.customer-email-quick-sign__form > :is\(\s*\.customer-email-quick-sign__remember,\s*\.customer-auth-submit,\s*\.customer-email-quick-sign__status\s*\)\s*\{[\s\S]*?width:\s*100%;[\s\S]*?justify-self:\s*stretch;[\s\S]*?box-sizing:\s*border-box;/
+  );
+});
+
 test("Quick Sign OTP slots remain six full Recovery-proportion boxes", () => {
   const css = read("frontend/src/styles/customer-verification-code.css");
 
