@@ -20,8 +20,9 @@
 ## Image reconciliation input
 
 - SARIMA source cohort: 472 identities (`P001`-`P472`) from the committed 2024 and 2025 historical-sales workbooks.
-- Google Drive image inventory: 430 raw image files across the reviewed category folders.
-- The raw image count is not assumed to equal 430 unique products. Duplicate formats, category misfiles, and variant/size mismatches must be detected.
+- Google Drive image inventory: 429 unique raw image files across the reviewed category folders as revalidated on September 1, 2026.
+- The previous 430-file working baseline was off by one because the Snacks pagination workaround counted `Regent Assorted Cakes.jpg` in both the first 100 results and the `< 2026-08-28T12:18:47Z` overflow slice. The current split is 99 Snacks files at or after the cutoff plus 56 before it, for 155 unique Snacks files and 429 unique raw Drive images overall.
+- The raw image count is not assumed to equal 429 unique products. Duplicate formats, category misfiles, and variant/size mismatches must be detected.
 
 ## Matching rules
 
@@ -47,7 +48,7 @@ After the Drive reconciliation is reviewed, missing images may be researched ext
 ## Initial acceptance criteria
 
 1. Extract and verify exactly 472 unique `P001`-`P472` identities from each committed annual workbook, and verify the paired identity set is consistent across 2024 and 2025.
-2. Produce a structured manifest for all 430 raw Drive image files with file IDs and source folders.
+2. Produce a structured manifest for all 429 unique raw Drive image files with file IDs and source folders.
 3. Reconcile the two manifests deterministically without modifying operational catalog/inventory data.
 4. Report exact counts for all reconciliation statuses and enumerate all ambiguous/mismatch/duplicate cases.
 5. Only after the audit is reviewed may Phase 9 proceed to approved catalog/image assignments or cleanup mutations.
