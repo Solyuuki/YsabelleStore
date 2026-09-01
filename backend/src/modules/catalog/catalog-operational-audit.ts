@@ -158,7 +158,7 @@ export function buildOperationalCatalogAudit(
         status: "BLOCKED",
         operationalProductId: null,
         candidateOperationalProductIds: mappedFixtures.map((product) => product.id).sort(),
-        reason: "SARIMA source mapping points to a TEST_FIXTURE Product; mapping must be repaired before promotion."
+        reason: "SARIMA source mapping points to a test fixture Product; mapping must be repaired before promotion."
       };
     }
 
