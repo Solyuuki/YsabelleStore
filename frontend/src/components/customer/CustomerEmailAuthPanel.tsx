@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerVerificationCode } from "@/components/customer/CustomerVerificationCode";
 import { requestCustomerEmailAuth, verifyCustomerEmailAuth } from "@/services/customerAuthService";
+import "@/styles/customer-email-quick-sign-reference.css";
 
 const EMAIL_OTP_RESEND_SECONDS = 30;
 
