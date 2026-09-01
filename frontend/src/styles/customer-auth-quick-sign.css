@@ -204,8 +204,7 @@
   font-weight: 850;
 }
 
-.customer-mobile-auth #customer-mobile-auth-phone,
-.customer-mobile-auth #customer-mobile-auth-code {
+.customer-mobile-auth #customer-mobile-auth-phone {
   border-color: rgb(99 102 241 / 16%);
   background: rgb(255 255 255 / 74%);
   box-shadow:
@@ -217,14 +216,12 @@
     background 160ms ease;
 }
 
-.customer-mobile-auth #customer-mobile-auth-phone:hover,
-.customer-mobile-auth #customer-mobile-auth-code:hover {
+.customer-mobile-auth #customer-mobile-auth-phone:hover {
   border-color: rgb(99 102 241 / 28%);
   background: rgb(255 255 255 / 86%);
 }
 
-.customer-mobile-auth #customer-mobile-auth-phone:focus,
-.customer-mobile-auth #customer-mobile-auth-code:focus {
+.customer-mobile-auth #customer-mobile-auth-phone:focus {
   border-color: rgb(79 70 229 / 58%);
   background: rgb(255 255 255 / 94%);
   box-shadow:
@@ -232,10 +229,93 @@
     0 10px 24px rgb(55 65 120 / 7%);
 }
 
-.customer-mobile-auth #customer-mobile-auth-code {
-  font-variant-numeric: tabular-nums;
+.customer-email-otp {
+  display: grid;
+  gap: 0.48rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.customer-email-otp legend {
+  margin-bottom: 0.15rem;
+  padding: 0;
+  color: #252942;
+  font-size: 0.78rem;
   font-weight: 850;
-  letter-spacing: 0.18em;
+}
+
+.customer-email-otp__group {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(0.35rem, 1.4vw, 0.62rem);
+  width: 100%;
+}
+
+.customer-email-otp__digit {
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1 / 1.08;
+  padding: 0;
+  border: 1px solid rgb(99 102 241 / 20%);
+  border-radius: 0.88rem;
+  outline: 0;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 92%), rgb(247 246 255 / 82%)), rgb(255 255 255 / 82%);
+  box-shadow:
+    0 8px 20px rgb(55 65 120 / 6%),
+    inset 0 1px 0 rgb(255 255 255 / 98%);
+  color: #171a2b;
+  caret-color: #4f46e5;
+  font: inherit;
+  font-size: clamp(1rem, 3.2vw, 1.28rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.customer-email-otp__digit:hover:not(:disabled) {
+  border-color: rgb(99 102 241 / 34%);
+  background: rgb(255 255 255 / 96%);
+}
+
+.customer-email-otp__digit.is-filled {
+  border-color: rgb(79 70 229 / 34%);
+  background:
+    linear-gradient(145deg, rgb(245 247 255 / 98%), rgb(248 240 255 / 92%)), rgb(255 255 255 / 92%);
+  box-shadow:
+    0 9px 22px rgb(79 70 229 / 9%),
+    inset 0 1px 0 rgb(255 255 255 / 98%);
+}
+
+.customer-email-otp__digit:focus {
+  transform: translateY(-1px);
+  border-color: rgb(79 70 229 / 68%);
+  background: rgb(255 255 255 / 100%);
+  box-shadow:
+    0 0 0 4px rgb(98 91 255 / 13%),
+    0 13px 28px rgb(79 70 229 / 12%),
+    inset 0 1px 0 rgb(255 255 255 / 100%);
+}
+
+.customer-email-otp__digit:disabled {
+  cursor: wait;
+  opacity: 0.66;
+}
+
+.customer-email-otp > small {
+  justify-self: center;
+  margin-top: 0.08rem;
+  color: rgb(71 85 105 / 64%);
+  font-size: 0.64rem;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -314,13 +394,22 @@
     padding: 1rem;
     border-radius: 1rem;
   }
+
+  .customer-email-otp__group {
+    gap: 0.32rem;
+  }
+
+  .customer-email-otp__digit {
+    border-radius: 0.72rem;
+    font-size: 1rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .customer-mobile-auth__secondary,
   .customer-mobile-auth__back,
   .customer-mobile-auth #customer-mobile-auth-phone,
-  .customer-mobile-auth #customer-mobile-auth-code {
+  .customer-email-otp__digit {
     transition: none;
   }
 }
