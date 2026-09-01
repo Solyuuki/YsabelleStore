@@ -42,13 +42,16 @@ test("Quick Sign OTP slots remain six full Recovery-proportion boxes", () => {
   assert.match(css, /\.customer-verification-code__slot\s*\{[\s\S]*?width:\s*100%;[\s\S]*?min-height:\s*72px/);
 });
 
-test("login and registration remove duplicate outer intro only during Email Quick Sign", () => {
-  const login = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
-  const register = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
+test("Email Quick Sign hides duplicate outer intro and switch only while its panel is present", () => {
   const css = read("frontend/src/styles/customer-email-quick-sign-reference.css");
 
-  assert.match(login, /customer-auth-card--email-quick-sign/);
-  assert.match(register, /customer-auth-card--email-quick-sign/);
-  assert.match(css, /\.customer-auth-card--email-quick-sign > \.customer-auth-card__intro\s*\{[\s\S]*?display:\s*none/);
-  assert.match(css, /\.customer-auth-card--email-quick-sign > \.customer-auth-switch\s*\{[\s\S]*?display:\s*none/);
+  assert.match(
+    css,
+    /\.customer-auth-card:has\(> \.customer-email-quick-sign\) > \.customer-auth-card__intro/
+  );
+  assert.match(
+    css,
+    /\.customer-auth-card:has\(> \.customer-email-quick-sign\) > \.customer-auth-switch/
+  );
+  assert.match(css, /display:\s*none/);
 });
