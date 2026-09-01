@@ -11,7 +11,6 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
 import { CustomerLink } from "@/components/customer/CustomerLink";
-import { CustomerVerificationCode } from "@/components/customer/CustomerVerificationCode";
 import {
   requestCustomerPasswordRecovery,
   resetCustomerPassword,
@@ -280,14 +279,44 @@ export function CustomerAccountRecoveryPage({
               onSubmit={(event) => void handleCodeVerification(event)}
               noValidate
             >
-              <CustomerVerificationCode
-                autoFocus
-                disabled={submitting}
-                invalid={Boolean(error)}
-                label="6-digit verification code"
-                onChange={setVerificationCode}
-                value={verificationCode}
-              />
+              <label className="customer-auth-field" htmlFor="customer-recovery-code">
+                <span>6-digit verification code</span>
+                <div className="customer-recovery-code-shell">
+                  <div className="customer-recovery-code-slots" aria-hidden="true">
+                    {Array.from({ length: 6 }, (_, index) => {
+                      const digit = verificationCode[index] ?? "";
+                      const isActive = index === Math.min(verificationCode.length, 5);
+                      return (
+                        <span
+                          className={`customer-recovery-code-slot${
+                            digit
+                              ? " customer-recovery-code-slot--filled"
+                              : " customer-recovery-code-slot--empty"
+                          }${isActive ? " customer-recovery-code-slot--active" : ""}`}
+                          key={index}
+                        >
+                          {digit ? digit : null}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <input
+                    aria-invalid={Boolean(error)}
+                    aria-label="6-digit verification code"
+                    autoComplete="one-time-code"
+                    className="customer-recovery-code-input"
+                    id="customer-recovery-code"
+                    inputMode="numeric"
+                    maxLength={6}
+                    onChange={(event) =>
+                      setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    pattern="[0-9]{6}"
+                    type="text"
+                    value={verificationCode}
+                  />
+                </div>
+              </label>
               <button className="customer-auth-submit" disabled={submitting} type="submit">
                 {submitting ? "Verifying code..." : "Verify code"}
               </button>
