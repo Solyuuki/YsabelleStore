@@ -20,7 +20,7 @@ test("saved email accounts use compact capacity and card-first continue UX", () 
   assert.match(css, /\.customer-known-accounts__capacity\s*\{/);
 });
 
-test("saved email account actions use an overflow menu with forget only", () => {
+test("saved email account actions use a compact overflow menu with forget only", () => {
   const component = read("frontend/src/components/customer/CustomerKnownAccounts.tsx");
   const css = read("frontend/src/styles/customer-known-accounts.css");
 
@@ -29,10 +29,12 @@ test("saved email account actions use an overflow menu with forget only", () => 
   assert.match(component, /aria-expanded=\{menuOpen\}/);
   assert.match(component, /role="menu"/);
   assert.match(component, /role="menuitem"/);
-  assert.match(component, /Forget account/);
+  assert.match(component, /<span>Forget<\/span>/);
+  assert.doesNotMatch(component, /Forget account/);
   assert.match(component, /event\.key === "Escape"/);
   assert.match(component, /data-known-account-menu/);
   assert.match(css, /\.customer-known-account__menu\s*\{/);
+  assert.match(css, /min-width:\s*6\.5rem;/);
 });
 
 test("trusted saved email accounts show remaining trust days", () => {
