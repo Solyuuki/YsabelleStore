@@ -105,11 +105,12 @@
     0 12px 30px rgb(75 70 145 / 8%);
 }
 
-.customer-email-quick-sign__form > :is(
-  .customer-email-quick-sign__remember,
-  .customer-auth-submit,
-  .customer-email-quick-sign__status
-) {
+.customer-email-quick-sign__form
+  > :is(
+    .customer-email-quick-sign__remember,
+    .customer-auth-submit,
+    .customer-email-quick-sign__status
+  ) {
   width: 100%;
   justify-self: stretch;
   box-sizing: border-box;

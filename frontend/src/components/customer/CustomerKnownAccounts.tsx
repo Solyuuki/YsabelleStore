@@ -260,7 +260,9 @@ export function CustomerKnownAccounts({
                   aria-label={`More options for ${account.name}`}
                   className="customer-known-account__menu-trigger"
                   disabled={busyId !== null}
-                  onClick={() => setOpenMenuId((current) => (current === account.id ? null : account.id))}
+                  onClick={() =>
+                    setOpenMenuId((current) => (current === account.id ? null : account.id))
+                  }
                   type="button"
                 >
                   <MoreVertical aria-hidden="true" size={19} />

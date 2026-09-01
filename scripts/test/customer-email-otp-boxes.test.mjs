@@ -50,7 +50,10 @@ test("OTP verification still submits only through the Verify button", () => {
 
   assert.match(component, /const \[verificationCode, setVerificationCode\] = useState\(""\)/);
   assert.match(component, /if \(!\/\^\\d\{6\}\$\/\.test\(verificationCode\)\)/);
-  assert.match(component, /verifyCustomerEmailAuth\(\{ email, verificationCode, rememberFor30Days \}\)/);
+  assert.match(
+    component,
+    /verifyCustomerEmailAuth\(\{ email, verificationCode, rememberFor30Days \}\)/
+  );
   assert.match(component, /submitting \? "Verifying\.\.\." : "Verify"/);
   assert.doesNotMatch(component, /onComplete=/);
 });

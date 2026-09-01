@@ -96,7 +96,10 @@ export function CustomerEmailAuthPanel({
   }
 
   return (
-    <section className="customer-mobile-auth customer-email-quick-sign" aria-label="Email OTP sign-in">
+    <section
+      className="customer-mobile-auth customer-email-quick-sign"
+      aria-label="Email OTP sign-in"
+    >
       <div className="customer-email-quick-sign__intro">
         <span className="customer-email-quick-sign__icon" aria-hidden="true">
           {stage === "email" ? <Mail size={22} /> : <ShieldCheck size={22} />}
@@ -186,7 +189,9 @@ export function CustomerEmailAuthPanel({
 
           <div className="customer-mobile-auth__actions customer-email-quick-sign__actions">
             {resendSeconds > 0 ? (
-              <span className="customer-mobile-auth__countdown">Resend code in {resendSeconds}s</span>
+              <span className="customer-mobile-auth__countdown">
+                Resend code in {resendSeconds}s
+              </span>
             ) : (
               <button
                 className="customer-mobile-auth__secondary"
