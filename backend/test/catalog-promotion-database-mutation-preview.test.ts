@@ -1,0 +1,120 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { buildCatalogPromotionDatabaseMutationPreview } from "../src/modules/catalog/catalog-promotion-database-mutation-preview.js";
+import type { CatalogPromotionInactiveStagingRow } from "../src/modules/catalog/catalog-promotion-inactive-staging-plan.js";
+
+const baseStagingRow: CatalogPromotionInactiveStagingRow = {
+  productCode: "P001",
+  plannedSku: "SARIMA-P001",
+  plannedName: "Sample Shampoo Sachet 13mL",
+  plannedCategory: "Personal Care",
+  plannedSellingPrice: 8.5,
+  sellingPriceProvenance: "LAST_RECORDED_HISTORICAL_PRICE_2025",
+  sellingPriceUsage: "PROVISIONAL_INACTIVE_ONLY",
+  currentSellingPrice: null,
+  currentPriceReadiness: "UNVERIFIED",
+  plannedUnit: "SACHET",
+  unitEvidence: "EXPLICIT_SACHET",
+  plannedStatus: "INACTIVE",
+  plannedDataQualityStatus: "NEEDS_REVIEW",
+  plannedRecordSource: "IMPORT",
+  plannedStorefrontVisible: false,
+  plannedCreateInventory: false,
+  plannedCreateInventoryBatch: false,
+  plannedCreateSarimaMapping: true,
+  imageStatus: "EXACT_MATCH",
+  assetFileIds: ["drive-1"],
+  activationBlockers: ["CURRENT_SELLING_PRICE", "PHYSICAL_STOCK", "QUALITY_APPROVAL"]
+};
+
+function build(overrides: {
+  stagingRows?: CatalogPromotionInactiveStagingRow[];
+  categories?: Array<{ id: string; name: string }>;
+  products?: Array<{ id: string; sku: string }>;
+  mappings?: Array<{ sourceKey: string; sourceProductId: string; productId: string }>;
+} = {}) {
+  return buildCatalogPromotionDatabaseMutationPreview({
+    stagingRows: overrides.stagingRows ?? [baseStagingRow],
+    categories: overrides.categories ?? [{ id: "cat_personal_care", name: "Personal Care" }],
+    products: overrides.products ?? [],
+    mappings: overrides.mappings ?? []
+  });
+}
+
+test("database mutation preview builds a safe inactive Product create payload without inventing cost price", () => {
+  const preview = build();
+  const row = preview.rows[0];
+
+  assert.deepEqual(preview.summary, {
+    candidates: 1,
+    productCreateReady: 1,
+    productCreateBlocked: 0,
+    missingCategories: 0,
+    skuCollisions: 0,
+    sourceProductMappingCollisions: 0,
+    mappingMetadataPending: 1,
+    nullableCostPriceRows: 1,
+    plannedInventoryRows: 0,
+    plannedInventoryBatchRows: 0
+  });
+
+  assert.equal(row?.productMutationReadiness, "READY");
+  assert.equal(row?.mappingMutationReadiness, "NEEDS_SOURCE_METADATA");
+  assert.equal(row?.costPricePolicy, "NULLABLE_NOT_INFERRED");
+  assert.deepEqual(row?.plannedProductCreate, {
+    categoryId: "cat_personal_care",
+    sku: "SARIMA-P001",
+    name: "Sample Shampoo Sachet 13mL",
+    unit: "SACHET",
+    costPrice: null,
+    sellingPrice: 8.5,
+    status: "INACTIVE",
+    recordSource: "IMPORT",
+    dataQualityStatus: "NEEDS_REVIEW",
+    isStorefrontVisible: false
+  });
+  assert.equal(row?.plannedSarimaMappingCreate, null);
+  assert.deepEqual(row?.productBlockers, []);
+  assert.deepEqual(row?.mappingBlockers, ["SOURCE_MAPPING_METADATA_CONTRACT"]);
+});
+
+test("database mutation preview blocks Product creation when the category cannot be resolved", () => {
+  const preview = build({ categories: [] });
+  const row = preview.rows[0];
+
+  assert.equal(row?.productMutationReadiness, "BLOCKED");
+  assert.equal(row?.plannedProductCreate, null);
+  assert.deepEqual(row?.productBlockers, ["CATEGORY_NOT_FOUND"]);
+  assert.equal(preview.summary.missingCategories, 1);
+});
+
+test("database mutation preview blocks Product creation on unique SKU collision", () => {
+  const preview = build({ products: [{ id: "prd_existing", sku: "SARIMA-P001" }] });
+  const row = preview.rows[0];
+
+  assert.equal(row?.productMutationReadiness, "BLOCKED");
+  assert.equal(row?.plannedProductCreate, null);
+  assert.deepEqual(row?.productBlockers, ["SKU_COLLISION"]);
+  assert.equal(preview.summary.skuCollisions, 1);
+});
+
+test("database mutation preview surfaces source-product mapping collisions and never plans inventory mutations", () => {
+  const preview = build({
+    mappings: [
+      {
+        sourceKey: "existing-source-key",
+        sourceProductId: "P001",
+        productId: "prd_existing"
+      }
+    ]
+  });
+  const row = preview.rows[0];
+
+  assert.equal(row?.mappingMutationReadiness, "BLOCKED_COLLISION");
+  assert.deepEqual(row?.mappingBlockers, ["SOURCE_PRODUCT_MAPPING_COLLISION"]);
+  assert.equal(row?.existingMappingProductId, "prd_existing");
+  assert.equal(preview.summary.sourceProductMappingCollisions, 1);
+  assert.equal(preview.summary.plannedInventoryRows, 0);
+  assert.equal(preview.summary.plannedInventoryBatchRows, 0);
+});
