@@ -89,9 +89,16 @@ export async function generateCatalogImageReconciliation(
     images.length
   );
   const output: CatalogImageReconciliationOutput = { report, reconciliation };
+  const jsonArtifact = {
+    sourceCount: report.sourceCount,
+    driveAssetCount: report.driveAssetCount,
+    statusCounts: report.statusCounts,
+    missingProductCodes: report.missingProductCodes,
+    reconciliation
+  };
 
   await Promise.all([
-    writeTextFile(jsonPath, `${JSON.stringify(output, null, 2)}\n`),
+    writeTextFile(jsonPath, `${JSON.stringify(jsonArtifact, null, 2)}\n`),
     writeTextFile(csvPath, toImageReconciliationCsv(reconciliation)),
     writeTextFile(reportPath, `${toImageReconciliationMarkdown(report, reconciliation)}\n`)
   ]);
