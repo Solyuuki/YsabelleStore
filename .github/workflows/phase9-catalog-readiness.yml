@@ -10,13 +10,16 @@ on:
       - "backend/src/modules/catalog/**"
       - "backend/src/scripts/extractSarimaSourceManifest.ts"
       - "backend/src/scripts/buildDriveImageManifest.ts"
+      - "backend/src/scripts/reconcileCatalogImages.ts"
       - "backend/test/sarima-source-manifest.test.ts"
       - "backend/test/drive-image-manifest.test.ts"
       - "backend/test/drive-image-snapshot.test.ts"
       - "backend/test/catalog-image-reconciliation.test.ts"
+      - "backend/test/catalog-image-reconciliation-report.test.ts"
       - "data/forecasting/historical-sales-2024.xlsx"
       - "data/forecasting/historical-sales-2025.xlsx"
       - "artifacts/catalog/phase9/**"
+      - "docs/catalog/phase9-image-reconciliation-report.md"
 
 permissions:
   contents: read
@@ -40,6 +43,7 @@ jobs:
           backend/test/drive-image-manifest.test.ts
           backend/test/drive-image-snapshot.test.ts
           backend/test/catalog-image-reconciliation.test.ts
+          backend/test/catalog-image-reconciliation-report.test.ts
       - name: Generate SARIMA source manifest
         run: npx tsx backend/src/scripts/extractSarimaSourceManifest.ts
       - name: Generate Drive image manifest
