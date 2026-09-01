@@ -11,12 +11,17 @@ on:
       - "backend/src/scripts/extractSarimaSourceManifest.ts"
       - "backend/src/scripts/buildDriveImageManifest.ts"
       - "backend/src/scripts/reconcileCatalogImages.ts"
+      - "backend/src/services/productService.ts"
+      - "backend/src/validators/product.validators.ts"
       - "backend/test/sarima-source-manifest.test.ts"
       - "backend/test/drive-image-manifest.test.ts"
       - "backend/test/drive-image-snapshot.test.ts"
       - "backend/test/catalog-image-reconciliation.test.ts"
       - "backend/test/catalog-image-reconciliation-report.test.ts"
+      - "backend/test/catalog-quality-filter.test.ts"
       - "backend/test/reconcile-catalog-images-script.test.ts"
+      - "frontend/src/pages/ProductsPage.tsx"
+      - "frontend/src/services/catalogApi.ts"
       - "catalog-image-engine/**"
       - "data/forecasting/historical-sales-2024.xlsx"
       - "data/forecasting/historical-sales-2025.xlsx"
@@ -43,7 +48,9 @@ jobs:
         run: python -m pip install -r catalog-image-engine/requirements.txt
       - name: Compile backend
         run: npm run build --workspace backend
-      - name: Run focused manifest and reconciliation contract tests
+      - name: Compile frontend
+        run: npm run build --workspace frontend
+      - name: Run focused manifest, reconciliation, and catalog filter contract tests
         run: >-
           npx tsx --test
           backend/test/sarima-source-manifest.test.ts
@@ -51,6 +58,7 @@ jobs:
           backend/test/drive-image-snapshot.test.ts
           backend/test/catalog-image-reconciliation.test.ts
           backend/test/catalog-image-reconciliation-report.test.ts
+          backend/test/catalog-quality-filter.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
       - name: Run catalog image engine tests
         env:
