@@ -42,9 +42,17 @@ jobs:
           backend/test/catalog-image-reconciliation.test.ts
       - name: Generate SARIMA source manifest
         run: npx tsx backend/src/scripts/extractSarimaSourceManifest.ts
+      - name: Generate Drive image manifest
+        run: npx tsx backend/src/scripts/buildDriveImageManifest.ts
       - name: Upload SARIMA source manifest
         uses: actions/upload-artifact@v4
         with:
           name: phase9-sarima-source-manifest
           path: artifacts/catalog/phase9/sarima-source-manifest.json
+          if-no-files-found: error
+      - name: Upload Drive image manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9-drive-image-manifest
+          path: artifacts/catalog/phase9/drive-image-manifest.json
           if-no-files-found: error
