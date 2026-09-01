@@ -2,6 +2,7 @@ import { CheckCircle2, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { CustomerAuthFrame } from "@/components/customer/CustomerAuthFrame";
+import { CustomerEmailAuthPanel } from "@/components/customer/CustomerEmailAuthPanel";
 import { CustomerEmailRegistrationPanel } from "@/components/customer/CustomerEmailRegistrationPanel";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { CustomerSocialAuthButtons } from "@/components/customer/CustomerSocialAuthButtons";
@@ -15,10 +16,10 @@ import {
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerRegisterForm } from "@/utils/customerAuthForms";
 
-type RegistrationVerificationPanel = "email" | null;
+type RegistrationVerificationPanel = "registration-email" | "quick-email" | null;
 
 export function CustomerRegisterPage({ navigate }: { navigate: (path: string) => void }) {
-  const { register } = useCustomerAuth();
+  const { refreshSession, register } = useCustomerAuth();
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -80,13 +81,14 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
     const input = { confirmPassword, email, name, password, phone, username };
     const errors = validateCustomerRegisterForm(input);
 
-    if (email.trim() && verifiedEmail !== email.trim()) {
-      errors.email = "Verify this email address using Verify Email Address below.";
-    }
-
     setFieldErrors(errors);
     setServerError(null);
     if (Object.keys(errors).length > 0) return;
+
+    if (verifiedEmail !== email.trim()) {
+      setVerificationPanel("registration-email");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -118,6 +120,11 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
         error instanceof Error ? error.message : "Unable to start social sign-up. Please try again."
       );
     }
+  }
+
+  async function handleQuickSignVerified() {
+    await refreshSession();
+    navigate("/");
   }
 
   return (
@@ -207,7 +214,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 {fieldErrors.email ? (
                   <small id="customer-register-email-error">{fieldErrors.email}</small>
                 ) : verifiedEmail === email.trim() && email.trim() ? (
-                  <small>This verified email can be used for Email Quick Sign.</small>
+                  <small>Email verified for manual account creation.</small>
                 ) : null}
               </label>
 
@@ -318,15 +325,20 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
             <CustomerSocialAuthButtons
               busyProvider={busySocialProvider}
               googleHelperText="Verify your Google account for faster sign-up and sign-in."
-              emailLabel="Verify Email Address"
-              emailHelperText="Verify the required email for your new account."
+              emailLabel="Continue with Email OTP"
+              emailHelperText="Use only your email to sign in or create an account."
               onEmailStart={() => {
                 setServerError(null);
-                setVerificationPanel("email");
+                setVerificationPanel("quick-email");
               }}
               onStart={handleSocialStart}
             />
           </>
+        ) : verificationPanel === "quick-email" ? (
+          <CustomerEmailAuthPanel
+            onCancel={() => setVerificationPanel(null)}
+            onVerified={handleQuickSignVerified}
+          />
         ) : (
           <CustomerEmailRegistrationPanel
             initialEmail={email}
