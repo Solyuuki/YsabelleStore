@@ -1,5 +1,6 @@
 import type { CatalogPromotionPreview } from "./catalog-promotion-preview.js";
 import { isDevelopmentCatalogSeedProduct } from "./development-catalog-seed-identities.js";
+import { isLegacyRuntimeQaProduct } from "./legacy-runtime-qa-identities.js";
 import { normalizeSarimaSourceName } from "./sarima-source-manifest.js";
 
 export type OperationalProductRecordSource = "CATALOG" | "IMPORT" | "TEST_FIXTURE" | "INTERNAL";
@@ -79,11 +80,14 @@ export type OperationalCatalogAudit = {
     testFixturesWithProtectedReferences: number;
     developmentSeedProducts: number;
     developmentSeedProductsWithProtectedReferences: number;
+    legacyRuntimeQaProducts: number;
+    legacyRuntimeQaProductsWithProtectedReferences: number;
     unmatchedOperationalProducts: number;
   };
   candidateRows: OperationalCatalogCandidateRow[];
   testFixtures: OperationalFixtureRow[];
   developmentSeedProducts: OperationalFixtureRow[];
+  legacyRuntimeQaProducts: OperationalFixtureRow[];
   unmatchedOperationalProducts: UnmatchedOperationalProductRow[];
 };
 
@@ -122,9 +126,17 @@ export function buildOperationalCatalogAudit(
     (product) =>
       product.recordSource !== "TEST_FIXTURE" && isDevelopmentCatalogSeedProduct(product)
   );
+  const legacyRuntimeQaProducts = products.filter(
+    (product) =>
+      product.recordSource !== "TEST_FIXTURE" &&
+      !isDevelopmentCatalogSeedProduct(product) &&
+      isLegacyRuntimeQaProduct(product)
+  );
   const operationalProducts = products.filter(
     (product) =>
-      product.recordSource !== "TEST_FIXTURE" && !isDevelopmentCatalogSeedProduct(product)
+      product.recordSource !== "TEST_FIXTURE" &&
+      !isDevelopmentCatalogSeedProduct(product) &&
+      !isLegacyRuntimeQaProduct(product)
   );
   const usedOperationalProductIds = new Set<string>();
   const candidateOperationalProductIds = new Set<string>();
@@ -189,9 +201,17 @@ export function buildOperationalCatalogAudit(
       (product) =>
         product.recordSource !== "TEST_FIXTURE" && isDevelopmentCatalogSeedProduct(product)
     );
+    const mappedLegacyRuntimeQaProducts = directlyMapped.filter(
+      (product) =>
+        product.recordSource !== "TEST_FIXTURE" &&
+        !isDevelopmentCatalogSeedProduct(product) &&
+        isLegacyRuntimeQaProduct(product)
+    );
     const mappedOperational = directlyMapped.filter(
       (product) =>
-        product.recordSource !== "TEST_FIXTURE" && !isDevelopmentCatalogSeedProduct(product)
+        product.recordSource !== "TEST_FIXTURE" &&
+        !isDevelopmentCatalogSeedProduct(product) &&
+        !isLegacyRuntimeQaProduct(product)
     );
 
     if (mappedFixtures.length > 0) {
@@ -215,6 +235,18 @@ export function buildOperationalCatalogAudit(
         operationalProductId: null,
         candidateOperationalProductIds: mappedDevelopmentSeeds.map((product) => product.id).sort(),
         reason: "SARIMA source mapping points to a known development seed Product; mapping must be reviewed before promotion."
+      };
+    }
+
+    if (mappedLegacyRuntimeQaProducts.length > 0) {
+      return {
+        productCode: row.productCode,
+        sourceName: row.sourceName,
+        canonicalProductCode: row.canonicalProductCode,
+        status: "BLOCKED",
+        operationalProductId: null,
+        candidateOperationalProductIds: mappedLegacyRuntimeQaProducts.map((product) => product.id).sort(),
+        reason: "SARIMA source mapping points to a provenance-proven legacy runtime QA Product; mapping must be reviewed before promotion."
       };
     }
 
@@ -282,6 +314,9 @@ export function buildOperationalCatalogAudit(
   const developmentSeedRows = developmentSeeds
     .map(toQuarantineRow)
     .sort((left, right) => left.productId.localeCompare(right.productId));
+  const legacyRuntimeQaRows = legacyRuntimeQaProducts
+    .map(toQuarantineRow)
+    .sort((left, right) => left.productId.localeCompare(right.productId));
 
   const unmatchedOperationalProducts = operationalProducts
     .filter(
@@ -317,11 +352,16 @@ export function buildOperationalCatalogAudit(
       developmentSeedProductsWithProtectedReferences: developmentSeedRows.filter(
         (row) => row.protectedReferenceCount > 0
       ).length,
+      legacyRuntimeQaProducts: legacyRuntimeQaRows.length,
+      legacyRuntimeQaProductsWithProtectedReferences: legacyRuntimeQaRows.filter(
+        (row) => row.protectedReferenceCount > 0
+      ).length,
       unmatchedOperationalProducts: unmatchedOperationalProducts.length
     },
     candidateRows,
     testFixtures: fixtureRows,
     developmentSeedProducts: developmentSeedRows,
+    legacyRuntimeQaProducts: legacyRuntimeQaRows,
     unmatchedOperationalProducts
   };
 }
