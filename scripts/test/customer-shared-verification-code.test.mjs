@@ -2,13 +2,14 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const fileUrl = (path) => new URL(`../../${path}`, import.meta.url);
 const read = (path) => readFileSync(fileUrl(path), "utf8");
 
 test("recovery keeps its approved OTP presentation while email quick sign uses the shared input", () => {
   const sharedPath = resolve(
-    new URL("../..", import.meta.url).pathname,
+    fileURLToPath(new URL("../..", import.meta.url)),
     "frontend/src/components/customer/CustomerVerificationCode.tsx"
   );
   assert.equal(existsSync(sharedPath), true, "shared verification-code component should exist");
