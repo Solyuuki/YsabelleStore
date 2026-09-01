@@ -20,7 +20,8 @@ test("promotion preview separates canonical identity from image readiness", () =
     source("P001", "Exact Product"),
     source("P002", "Alias Product"),
     source("P003", "Missing Image Product"),
-    source("P004", "Review Product")
+    source("P004", "Review Product"),
+    source("P005", "Sibling Product")
   ];
   const reconciliation: CatalogImageReconciliation = {
     sourceOutcomes: [
@@ -55,6 +56,14 @@ test("promotion preview separates canonical identity from image readiness", () =
         status: "NEEDS_REVIEW",
         assetFileIds: ["img-4"],
         reason: "Product-family tokens are compatible, but one side omits identity or packaging descriptors."
+      },
+      {
+        productCode: "P005",
+        sourceName: "Sibling Product",
+        sourceNameNormalized: "sibling product",
+        status: "NEEDS_REVIEW",
+        assetFileIds: [],
+        reason: "Historical source identity shares the same product family with already-resolved P001; review size/package identity before assigning another Drive image."
       }
     ],
     driveOnlyAssets: []
@@ -62,8 +71,8 @@ test("promotion preview separates canonical identity from image readiness", () =
 
   const preview = buildCatalogPromotionPreview(sources, reconciliation);
 
-  assert.equal(preview.sourceIdentityCount, 4);
-  assert.equal(preview.canonicalIdentityCount, 2);
+  assert.equal(preview.sourceIdentityCount, 5);
+  assert.equal(preview.canonicalIdentityCount, 3);
   assert.equal(preview.duplicateAliasCount, 1);
   assert.equal(preview.blockedIdentityCount, 1);
 
@@ -79,8 +88,13 @@ test("promotion preview separates canonical identity from image readiness", () =
   assert.equal(missing?.identityStatus, "CANONICAL");
   assert.equal(missing?.imageStatus, "MISSING_IMAGE");
 
-  const blocked = preview.rows.find((row) => row.productCode === "P004");
+  const imageReview = preview.rows.find((row) => row.productCode === "P004");
+  assert.equal(imageReview?.identityStatus, "CANONICAL");
+  assert.equal(imageReview?.imageStatus, "NEEDS_REVIEW");
+
+  const blocked = preview.rows.find((row) => row.productCode === "P005");
   assert.equal(blocked?.identityStatus, "BLOCKED_REVIEW");
+  assert.equal(blocked?.canonicalProductCode, "P001");
 });
 
 test("promotion preview rejects reconciliation that does not cover every source identity exactly once", () => {
