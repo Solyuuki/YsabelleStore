@@ -6,17 +6,22 @@ import { PrismaClient } from "@prisma/client";
 
 import {
   buildCatalogPromotionDatabaseMutationPreview,
+  type ApprovedSeedCategoryReuse,
   type CatalogPromotionDatabaseMutationPreview,
   type DatabaseMutationPreviewCategory,
   type DatabaseMutationPreviewMapping,
   type DatabaseMutationPreviewProduct
 } from "../modules/catalog/catalog-promotion-database-mutation-preview.js";
+import type { CatalogPromotionCategoryMutationPlan } from "../modules/catalog/catalog-promotion-category-mutation-plan.js";
 import { slugifyOperationalCategory } from "../modules/catalog/catalog-promotion-category-operationalization-preview.js";
 import type { CatalogPromotionInactiveStagingRow } from "../modules/catalog/catalog-promotion-inactive-staging-plan.js";
 import { resolveRepositoryPath } from "../modules/forecasting/repository-paths.js";
 
 const DEFAULT_STAGING_PATH = resolveRepositoryPath(
   "reports/catalog-quality/phase9-catalog-promotion-inactive-staging-plan.json"
+);
+const DEFAULT_CATEGORY_PLAN_PATH = resolveRepositoryPath(
+  "reports/catalog-quality/phase9-catalog-promotion-category-mutation-plan.json"
 );
 const DEFAULT_JSON_PATH = resolveRepositoryPath(
   "reports/catalog-quality/phase9-catalog-promotion-database-mutation-preview.json"
@@ -38,6 +43,7 @@ export type CatalogPromotionDatabaseMutationPreviewPrismaClient = {
 export type GenerateCatalogPromotionDatabaseMutationPreviewOptions = {
   client?: CatalogPromotionDatabaseMutationPreviewPrismaClient;
   stagingPath?: string;
+  categoryPlanPath?: string;
   jsonPath?: string;
   reportPath?: string;
 };
@@ -68,6 +74,26 @@ function markdownCell(value: string) {
   return value.replace(/\|/g, "\\|");
 }
 
+function approvedSeedCategoryReuses(
+  categoryPlan: CatalogPromotionCategoryMutationPlan
+): ApprovedSeedCategoryReuse[] {
+  return categoryPlan.rows
+    .filter(
+      (row) =>
+        row.decision === "REUSE_EXISTING" &&
+        row.reuseBasis === "SEED_CATEGORY_EVIDENCE" &&
+        row.existingCategoryId !== null &&
+        row.blockers.length === 0
+    )
+    .map((row) => ({
+      sourceCategory: row.sourceCategory,
+      existingCategoryId: row.existingCategoryId,
+      decision: row.decision,
+      reuseBasis: row.reuseBasis,
+      blockers: [...row.blockers]
+    }));
+}
+
 function toMarkdown(preview: CatalogPromotionDatabaseMutationPreview) {
   const { summary } = preview;
   return [
@@ -81,7 +107,7 @@ function toMarkdown(preview: CatalogPromotionDatabaseMutationPreview) {
     `- ${summary.productCreateReady} Product create payloads are structurally ready`,
     `- ${summary.productCreateBlocked} Product create payloads remain blocked`,
     `- ${summary.missingCategories} rows reference an unresolved category`,
-    `- ${summary.developmentSeedCategoryMatches} rows resolve only to a development-seed category and remain blocked`,
+    `- ${summary.developmentSeedCategoryMatches} rows resolve only to a development-seed category without final-plan reuse approval and remain blocked`,
     `- ${summary.skuCollisions} rows collide with an existing Product SKU`,
     `- ${summary.sourceProductMappingCollisions} rows collide with an existing SARIMA source-product mapping`,
     `- ${summary.mappingMetadataPending} rows still require the full SARIMA mapping metadata contract`,
@@ -93,7 +119,7 @@ function toMarkdown(preview: CatalogPromotionDatabaseMutationPreview) {
     "",
     "The Product schema permits nullable `costPrice`, so unavailable cost is represented as `null`; this preview never substitutes zero, selling price, or a guessed margin.",
     "",
-    "Exact development-seed category identities are not accepted as operational taxonomy. Matching rows remain blocked until an operational category is proven or separately approved.",
+    "Exact development-seed category identities remain blocked unless the final category mutation plan independently proves the exact source category and category ID reusable with `SEED_CATEGORY_EVIDENCE` and zero blockers. Slug-only seed reuse is never authorized by this preview.",
     "",
     "The SARIMA mapping schema requires source identity and historical evidence metadata beyond the staging row. Therefore `plannedSarimaMappingCreate` remains null until that mapping metadata contract is assembled and reviewed.",
     "",
@@ -119,10 +145,14 @@ export async function generateCatalogPromotionDatabaseMutationPreview(
     options.client ??
     (new PrismaClient() as unknown as CatalogPromotionDatabaseMutationPreviewPrismaClient);
   const stagingPath = options.stagingPath ?? DEFAULT_STAGING_PATH;
+  const categoryPlanPath = options.categoryPlanPath ?? DEFAULT_CATEGORY_PLAN_PATH;
   const jsonPath = options.jsonPath ?? DEFAULT_JSON_PATH;
   const reportPath = options.reportPath ?? DEFAULT_REPORT_PATH;
 
-  const staging = await readJson<StagingArtifact>(stagingPath);
+  const [staging, categoryPlan] = await Promise.all([
+    readJson<StagingArtifact>(stagingPath),
+    readJson<CatalogPromotionCategoryMutationPlan>(categoryPlanPath)
+  ]);
   const categoryNames = uniqueSorted(staging.stageableRows.map((row) => row.plannedCategory));
   const categorySlugs = uniqueSorted(categoryNames.map(slugifyOperationalCategory));
   const skus = uniqueSorted(staging.stageableRows.map((row) => row.plannedSku));
@@ -157,7 +187,8 @@ export async function generateCatalogPromotionDatabaseMutationPreview(
       stagingRows: staging.stageableRows,
       categories,
       products,
-      mappings
+      mappings,
+      approvedSeedCategoryReuses: approvedSeedCategoryReuses(categoryPlan)
     });
 
     await Promise.all([
