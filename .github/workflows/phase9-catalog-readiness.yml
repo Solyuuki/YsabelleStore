@@ -43,6 +43,7 @@ on:
       - "backend/test/catalog-approved-import-demotion.test.ts"
       - "backend/test/catalog-existing-sarima-rehabilitation-readiness.test.ts"
       - "backend/test/catalog-existing-sarima-barcode-evidence.test.ts"
+      - "backend/test/generate-existing-sarima-barcode-evidence.test.ts"
       - "backend/test/catalog-promotion-preview.test.ts"
       - "backend/test/catalog-operational-audit.test.ts"
       - "backend/test/catalog-operational-audit-blocked-candidates.test.ts"
@@ -129,6 +130,7 @@ jobs:
           backend/test/catalog-approved-import-demotion.test.ts
           backend/test/catalog-existing-sarima-rehabilitation-readiness.test.ts
           backend/test/catalog-existing-sarima-barcode-evidence.test.ts
+          backend/test/generate-existing-sarima-barcode-evidence.test.ts
           backend/test/catalog-promotion-preview.test.ts
           backend/test/catalog-operational-audit.test.ts
           backend/test/catalog-operational-audit-blocked-candidates.test.ts
