@@ -1,10 +1,14 @@
 import type { CatalogPromotionInactiveStagingRow } from "./catalog-promotion-inactive-staging-plan.js";
+import { slugifyOperationalCategory } from "./catalog-promotion-category-operationalization-preview.js";
 import { isDevelopmentCatalogSeedCategory } from "./development-catalog-seed-category-identities.js";
 
 export type DatabaseMutationPreviewCategory = {
   id: string;
   name: string;
   slug?: string;
+  isActive?: boolean;
+  recordSource?: "CATALOG" | "IMPORT" | "TEST_FIXTURE" | "INTERNAL";
+  dataQualityStatus?: "APPROVED" | "NEEDS_REVIEW" | "REJECTED";
 };
 
 export type DatabaseMutationPreviewProduct = {
@@ -77,6 +81,15 @@ function normalize(value: string) {
   return value.trim().toLocaleLowerCase("en-US");
 }
 
+function isOperationallyReusableSlugCategory(category: DatabaseMutationPreviewCategory) {
+  return (
+    !isDevelopmentCatalogSeedCategory(category) &&
+    category.recordSource !== "TEST_FIXTURE" &&
+    category.isActive === true &&
+    category.dataQualityStatus !== "REJECTED"
+  );
+}
+
 export function buildCatalogPromotionDatabaseMutationPreview(input: {
   stagingRows: CatalogPromotionInactiveStagingRow[];
   categories: DatabaseMutationPreviewCategory[];
@@ -84,11 +97,19 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
   mappings: DatabaseMutationPreviewMapping[];
 }): CatalogPromotionDatabaseMutationPreview {
   const categoriesByName = new Map<string, DatabaseMutationPreviewCategory[]>();
+  const categoriesBySlug = new Map<string, DatabaseMutationPreviewCategory[]>();
   for (const category of input.categories) {
-    const key = normalize(category.name);
-    const values = categoriesByName.get(key) ?? [];
-    values.push(category);
-    categoriesByName.set(key, values);
+    const nameKey = normalize(category.name);
+    const nameValues = categoriesByName.get(nameKey) ?? [];
+    nameValues.push(category);
+    categoriesByName.set(nameKey, nameValues);
+
+    if (category.slug) {
+      const slugKey = normalize(category.slug);
+      const slugValues = categoriesBySlug.get(slugKey) ?? [];
+      slugValues.push(category);
+      categoriesBySlug.set(slugKey, slugValues);
+    }
   }
 
   const productSkuSet = new Set(input.products.map((product) => normalize(product.sku)));
@@ -101,14 +122,32 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
 
   const rows = input.stagingRows.map((staging): CatalogPromotionDatabaseMutationPreviewRow => {
     const productBlockers: ProductMutationBlocker[] = [];
-    const categoryMatches = categoriesByName.get(normalize(staging.plannedCategory)) ?? [];
+    const exactNameMatches = categoriesByName.get(normalize(staging.plannedCategory)) ?? [];
+    let categoryMatches = exactNameMatches;
 
-    if (categoryMatches.length === 0) {
-      productBlockers.push("CATEGORY_NOT_FOUND");
-    } else if (categoryMatches.length > 1) {
-      productBlockers.push("CATEGORY_AMBIGUOUS");
-    } else if (isDevelopmentCatalogSeedCategory(categoryMatches[0]!)) {
-      productBlockers.push("DEVELOPMENT_SEED_CATEGORY");
+    if (exactNameMatches.length === 0) {
+      const candidateSlug = slugifyOperationalCategory(staging.plannedCategory);
+      const slugMatches = categoriesBySlug.get(normalize(candidateSlug)) ?? [];
+
+      if (slugMatches.length === 1) {
+        const candidate = slugMatches[0]!;
+        const isSemanticSlugEquivalent = slugifyOperationalCategory(candidate.name) === candidateSlug;
+        categoryMatches =
+          isSemanticSlugEquivalent && isOperationallyReusableSlugCategory(candidate) ? [candidate] : [];
+      } else if (slugMatches.length > 1) {
+        productBlockers.push("CATEGORY_AMBIGUOUS");
+        categoryMatches = [];
+      }
+    }
+
+    if (productBlockers.length === 0) {
+      if (categoryMatches.length === 0) {
+        productBlockers.push("CATEGORY_NOT_FOUND");
+      } else if (categoryMatches.length > 1) {
+        productBlockers.push("CATEGORY_AMBIGUOUS");
+      } else if (isDevelopmentCatalogSeedCategory(categoryMatches[0]!)) {
+        productBlockers.push("DEVELOPMENT_SEED_CATEGORY");
+      }
     }
 
     if (productSkuSet.has(normalize(staging.plannedSku))) {
