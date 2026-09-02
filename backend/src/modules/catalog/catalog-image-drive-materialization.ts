@@ -40,6 +40,51 @@ function normalizedExtension(asset: DriveImageAsset) {
   );
 }
 
+function detectSupportedImageContentType(bytes: Buffer): "image/jpeg" | "image/png" | "image/webp" | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return "image/jpeg";
+  }
+
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47 &&
+    bytes[4] === 0x0d &&
+    bytes[5] === 0x0a &&
+    bytes[6] === 0x1a &&
+    bytes[7] === 0x0a
+  ) {
+    return "image/png";
+  }
+
+  if (
+    bytes.length >= 12 &&
+    bytes.subarray(0, 4).toString("ascii") === "RIFF" &&
+    bytes.subarray(8, 12).toString("ascii") === "WEBP"
+  ) {
+    return "image/webp";
+  }
+
+  return null;
+}
+
+function resolveDownloadedContentType(bytes: Buffer, contentType: string | null) {
+  const normalized = contentType?.toLowerCase() ?? null;
+  if (normalized?.startsWith("image/")) return normalized;
+
+  if (normalized === "application/octet-stream") {
+    const detected = detectSupportedImageContentType(bytes);
+    if (!detected) {
+      throw new Error("octet-stream bytes are not a supported image");
+    }
+    return detected;
+  }
+
+  throw new Error(`non-image response content type ${normalized ?? "unknown"}`);
+}
+
 export function buildCatalogDriveMaterializationPlan(input: {
   rows: ExistingSarimaImageEnrichmentPreviewRow[];
   driveAssets: DriveImageAsset[];
@@ -122,13 +167,10 @@ export async function materializeCatalogDriveImages(input: {
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
         const downloaded = await download(row.downloadUrl);
-        const contentType = downloaded.contentType?.toLowerCase() ?? null;
-        if (!contentType?.startsWith("image/")) {
-          throw new Error(`non-image response content type ${contentType ?? "unknown"}`);
-        }
         if (downloaded.bytes.length === 0) {
           throw new Error("empty image response");
         }
+        const contentType = resolveDownloadedContentType(downloaded.bytes, downloaded.contentType);
 
         await fs.mkdir(path.dirname(absoluteSourcePath), { recursive: true });
         await fs.writeFile(absoluteSourcePath, downloaded.bytes);
