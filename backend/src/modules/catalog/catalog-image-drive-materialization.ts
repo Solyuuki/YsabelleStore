@@ -22,6 +22,7 @@ export type CatalogDriveMaterializationResult = {
   sha256: string | null;
   sizeBytes: number | null;
   contentType: string | null;
+  attempts: number;
   error: string | null;
 };
 
@@ -103,37 +104,55 @@ export async function materializeCatalogDriveImages(input: {
   plan: CatalogDriveMaterializationPlanRow[];
   repositoryRoot: string;
   download?: CatalogDriveDownloader;
+  maxAttempts?: number;
 }): Promise<CatalogDriveMaterializationResult[]> {
   const download = input.download ?? defaultCatalogDriveDownloader;
+  const maxAttempts = input.maxAttempts ?? 2;
+  if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 3) {
+    throw new Error("CATALOG_IMAGE_DRIVE_MATERIALIZATION_INVALID_ATTEMPTS: maxAttempts must be an integer from 1 to 3");
+  }
+
   const results: CatalogDriveMaterializationResult[] = [];
 
   for (const row of input.plan) {
     const absoluteSourcePath = path.resolve(input.repositoryRoot, row.sourcePath);
-    try {
-      const downloaded = await download(row.downloadUrl);
-      const contentType = downloaded.contentType?.toLowerCase() ?? null;
-      if (!contentType?.startsWith("image/")) {
-        throw new Error(`non-image response content type ${contentType ?? "unknown"}`);
-      }
-      if (downloaded.bytes.length === 0) {
-        throw new Error("empty image response");
-      }
+    let lastError: string | null = null;
+    let completed = false;
 
-      await fs.mkdir(path.dirname(absoluteSourcePath), { recursive: true });
-      await fs.writeFile(absoluteSourcePath, downloaded.bytes);
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        const downloaded = await download(row.downloadUrl);
+        const contentType = downloaded.contentType?.toLowerCase() ?? null;
+        if (!contentType?.startsWith("image/")) {
+          throw new Error(`non-image response content type ${contentType ?? "unknown"}`);
+        }
+        if (downloaded.bytes.length === 0) {
+          throw new Error("empty image response");
+        }
 
-      results.push({
-        productCode: row.productCode,
-        fileId: row.fileId,
-        sourcePath: row.sourcePath,
-        usable: true,
-        sha256: createHash("sha256").update(downloaded.bytes).digest("hex"),
-        sizeBytes: downloaded.bytes.length,
-        contentType,
-        error: null
-      });
-    } catch (error) {
-      await fs.rm(absoluteSourcePath, { force: true }).catch(() => undefined);
+        await fs.mkdir(path.dirname(absoluteSourcePath), { recursive: true });
+        await fs.writeFile(absoluteSourcePath, downloaded.bytes);
+
+        results.push({
+          productCode: row.productCode,
+          fileId: row.fileId,
+          sourcePath: row.sourcePath,
+          usable: true,
+          sha256: createHash("sha256").update(downloaded.bytes).digest("hex"),
+          sizeBytes: downloaded.bytes.length,
+          contentType,
+          attempts: attempt,
+          error: null
+        });
+        completed = true;
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error);
+        await fs.rm(absoluteSourcePath, { force: true }).catch(() => undefined);
+      }
+    }
+
+    if (!completed) {
       results.push({
         productCode: row.productCode,
         fileId: row.fileId,
@@ -142,7 +161,8 @@ export async function materializeCatalogDriveImages(input: {
         sha256: null,
         sizeBytes: null,
         contentType: null,
-        error: error instanceof Error ? error.message : String(error)
+        attempts: maxAttempts,
+        error: lastError
       });
     }
   }
