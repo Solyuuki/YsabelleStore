@@ -20,6 +20,7 @@ on:
       - "backend/src/scripts/generateExistingSarimaBarcodeEnrichmentPreview.ts"
       - "backend/src/scripts/executeExistingSarimaBarcodeEnrichment.ts"
       - "backend/src/scripts/generateExistingSarimaBarcodeWriteVerification.ts"
+      - "backend/src/scripts/generateExistingSarimaImageEnrichmentPreview.ts"
       - "backend/src/scripts/generateUnmatchedCatalogProvenance.ts"
       - "backend/src/scripts/generateCatalogPromotionExecutionManifest.ts"
       - "backend/src/scripts/generateCatalogPromotionRequiredFieldReadiness.ts"
@@ -50,6 +51,7 @@ on:
       - "backend/test/catalog-existing-sarima-barcode-enrichment-preview.test.ts"
       - "backend/test/catalog-existing-sarima-barcode-enrichment-execution.test.ts"
       - "backend/test/catalog-existing-sarima-barcode-write-verification.test.ts"
+      - "backend/test/catalog-existing-sarima-image-enrichment-preview.test.ts"
       - "backend/test/catalog-promotion-preview.test.ts"
       - "backend/test/catalog-operational-audit.test.ts"
       - "backend/test/catalog-operational-audit-blocked-candidates.test.ts"
@@ -92,6 +94,7 @@ on:
       - "docs/catalog/phase9-existing-sarima-rehabilitation-readiness.md"
       - "docs/catalog/phase9-existing-sarima-barcode-evidence.md"
       - "docs/catalog/phase9-existing-sarima-barcode-enrichment-preview.md"
+      - "docs/catalog/phase9-existing-sarima-image-enrichment-preview.md"
       - "docs/catalog/phase9-unmatched-catalog-provenance.md"
       - "docs/catalog/phase9-catalog-promotion-execution-manifest.md"
       - "docs/catalog/phase9-catalog-promotion-required-field-readiness.md"
@@ -141,6 +144,7 @@ jobs:
           backend/test/catalog-existing-sarima-barcode-enrichment-preview.test.ts
           backend/test/catalog-existing-sarima-barcode-enrichment-execution.test.ts
           backend/test/catalog-existing-sarima-barcode-write-verification.test.ts
+          backend/test/catalog-existing-sarima-image-enrichment-preview.test.ts
           backend/test/catalog-promotion-preview.test.ts
           backend/test/catalog-operational-audit.test.ts
           backend/test/catalog-operational-audit-blocked-candidates.test.ts
