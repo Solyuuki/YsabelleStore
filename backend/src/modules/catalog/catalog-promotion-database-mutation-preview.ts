@@ -22,6 +22,14 @@ export type DatabaseMutationPreviewMapping = {
   canonicalProductId: string;
 };
 
+export type ApprovedSeedCategoryReuse = {
+  sourceCategory: string;
+  existingCategoryId: string | null;
+  decision: "REUSE_EXISTING" | string;
+  reuseBasis: "SEED_CATEGORY_EVIDENCE" | string | null;
+  blockers: string[];
+};
+
 export type ProductMutationBlocker =
   | "CATEGORY_NOT_FOUND"
   | "CATEGORY_AMBIGUOUS"
@@ -90,11 +98,27 @@ function isOperationallyReusableSlugCategory(category: DatabaseMutationPreviewCa
   );
 }
 
+function hasApprovedSeedCategoryReuse(
+  staging: CatalogPromotionInactiveStagingRow,
+  category: DatabaseMutationPreviewCategory,
+  approvals: ApprovedSeedCategoryReuse[]
+) {
+  return approvals.some(
+    (approval) =>
+      approval.sourceCategory === staging.plannedCategory &&
+      approval.existingCategoryId === category.id &&
+      approval.decision === "REUSE_EXISTING" &&
+      approval.reuseBasis === "SEED_CATEGORY_EVIDENCE" &&
+      approval.blockers.length === 0
+  );
+}
+
 export function buildCatalogPromotionDatabaseMutationPreview(input: {
   stagingRows: CatalogPromotionInactiveStagingRow[];
   categories: DatabaseMutationPreviewCategory[];
   products: DatabaseMutationPreviewProduct[];
   mappings: DatabaseMutationPreviewMapping[];
+  approvedSeedCategoryReuses?: ApprovedSeedCategoryReuse[];
 }): CatalogPromotionDatabaseMutationPreview {
   const categoriesByName = new Map<string, DatabaseMutationPreviewCategory[]>();
   const categoriesBySlug = new Map<string, DatabaseMutationPreviewCategory[]>();
@@ -119,6 +143,8 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
     values.push(mapping);
     mappingsBySourceProductId.set(mapping.sourceProductId, values);
   }
+
+  const approvedSeedCategoryReuses = input.approvedSeedCategoryReuses ?? [];
 
   const rows = input.stagingRows.map((staging): CatalogPromotionDatabaseMutationPreviewRow => {
     const productBlockers: ProductMutationBlocker[] = [];
@@ -145,7 +171,14 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
         productBlockers.push("CATEGORY_NOT_FOUND");
       } else if (categoryMatches.length > 1) {
         productBlockers.push("CATEGORY_AMBIGUOUS");
-      } else if (isDevelopmentCatalogSeedCategory(categoryMatches[0]!)) {
+      } else if (
+        isDevelopmentCatalogSeedCategory(categoryMatches[0]!) &&
+        !hasApprovedSeedCategoryReuse(
+          staging,
+          categoryMatches[0]!,
+          approvedSeedCategoryReuses
+        )
+      ) {
         productBlockers.push("DEVELOPMENT_SEED_CATEGORY");
       }
     }
