@@ -97,6 +97,67 @@ test("materialization writes downloaded bytes and records SHA-256 provenance", a
   }
 });
 
+test("materialization accepts octet-stream only when bytes identify a supported image type", async () => {
+  const cases = [
+    {
+      name: "jpeg",
+      bytes: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]),
+      expectedContentType: "image/jpeg"
+    },
+    {
+      name: "png",
+      bytes: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]),
+      expectedContentType: "image/png"
+    },
+    {
+      name: "webp",
+      bytes: Buffer.from("RIFF1234WEBPVP8 ", "ascii"),
+      expectedContentType: "image/webp"
+    }
+  ];
+
+  for (const fixture of cases) {
+    const root = await mkdtemp(path.join(os.tmpdir(), `ysabelle-drive-octet-${fixture.name}-`));
+    try {
+      const plan = buildCatalogDriveMaterializationPlan({ rows, driveAssets });
+      const result = await materializeCatalogDriveImages({
+        plan,
+        repositoryRoot: root,
+        download: async () => ({ bytes: fixture.bytes, contentType: "application/octet-stream" })
+      });
+
+      assert.equal(result[0]?.usable, true, fixture.name);
+      assert.equal(result[0]?.contentType, fixture.expectedContentType, fixture.name);
+      assert.equal(result[0]?.attempts, 1, fixture.name);
+      assert.equal(result[0]?.error, null, fixture.name);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  }
+});
+
+test("octet-stream garbage stays unusable and never enters CIQE staging", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "ysabelle-drive-octet-garbage-"));
+  try {
+    const plan = buildCatalogDriveMaterializationPlan({ rows, driveAssets });
+    const result = await materializeCatalogDriveImages({
+      plan,
+      repositoryRoot: root,
+      maxAttempts: 1,
+      download: async () => ({
+        bytes: Buffer.from("<html>Google Drive access page</html>"),
+        contentType: "application/octet-stream"
+      })
+    });
+
+    assert.equal(result[0]?.usable, false);
+    assert.equal(result[0]?.contentType, null);
+    assert.match(result[0]?.error ?? "", /octet-stream bytes are not a supported image/i);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("materialization retries a transient Drive download failure once and records attempts", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "ysabelle-drive-materialize-retry-"));
   try {
