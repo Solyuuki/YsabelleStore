@@ -48,6 +48,7 @@ on:
       - "backend/test/generate-catalog-promotion-inactive-staging-plan.test.ts"
       - "backend/test/generate-catalog-promotion-database-mutation-preview.test.ts"
       - "backend/test/generate-catalog-promotion-category-gap-plan.test.ts"
+      - "backend/test/generate-catalog-promotion-category-operationalization-preview.test.ts"
       - "backend/test/reconcile-catalog-images-script.test.ts"
       - "frontend/src/pages/ProductsPage.tsx"
       - "frontend/src/services/catalogApi.ts"
@@ -118,6 +119,7 @@ jobs:
           backend/test/generate-catalog-promotion-inactive-staging-plan.test.ts
           backend/test/generate-catalog-promotion-database-mutation-preview.test.ts
           backend/test/generate-catalog-promotion-category-gap-plan.test.ts
+          backend/test/generate-catalog-promotion-category-operationalization-preview.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
       - name: Run catalog quality filter UI contract
         run: npx tsx scripts/catalog-quality-filter-ui-test.ts
