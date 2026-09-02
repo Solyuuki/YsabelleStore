@@ -36,8 +36,10 @@ type CiqeDiagnostic = {
 
 type CiqeResultRow = {
   productCode: string;
+  fileId?: string;
   status: string;
   diagnostics?: unknown;
+  error?: string;
 };
 
 type CiqeSummary = {
