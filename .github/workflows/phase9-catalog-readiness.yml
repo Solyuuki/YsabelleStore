@@ -16,6 +16,7 @@ on:
       - "backend/src/scripts/generateApprovedProductBarcodeAudit.ts"
       - "backend/src/scripts/executeApprovedImportDemotion.ts"
       - "backend/src/scripts/generateExistingSarimaRehabilitationReadiness.ts"
+      - "backend/src/scripts/generateExistingSarimaBarcodeEvidence.ts"
       - "backend/src/scripts/generateUnmatchedCatalogProvenance.ts"
       - "backend/src/scripts/generateCatalogPromotionExecutionManifest.ts"
       - "backend/src/scripts/generateCatalogPromotionRequiredFieldReadiness.ts"
@@ -41,6 +42,7 @@ on:
       - "backend/test/catalog-approved-barcode-policy.test.ts"
       - "backend/test/catalog-approved-import-demotion.test.ts"
       - "backend/test/catalog-existing-sarima-rehabilitation-readiness.test.ts"
+      - "backend/test/catalog-existing-sarima-barcode-evidence.test.ts"
       - "backend/test/catalog-promotion-preview.test.ts"
       - "backend/test/catalog-operational-audit.test.ts"
       - "backend/test/catalog-operational-audit-blocked-candidates.test.ts"
@@ -81,6 +83,7 @@ on:
       - "docs/catalog/phase9-operational-catalog-audit.md"
       - "docs/catalog/phase9-approved-product-barcode-audit.md"
       - "docs/catalog/phase9-existing-sarima-rehabilitation-readiness.md"
+      - "docs/catalog/phase9-existing-sarima-barcode-evidence.md"
       - "docs/catalog/phase9-unmatched-catalog-provenance.md"
       - "docs/catalog/phase9-catalog-promotion-execution-manifest.md"
       - "docs/catalog/phase9-catalog-promotion-required-field-readiness.md"
@@ -125,6 +128,7 @@ jobs:
           backend/test/catalog-approved-barcode-policy.test.ts
           backend/test/catalog-approved-import-demotion.test.ts
           backend/test/catalog-existing-sarima-rehabilitation-readiness.test.ts
+          backend/test/catalog-existing-sarima-barcode-evidence.test.ts
           backend/test/catalog-promotion-preview.test.ts
           backend/test/catalog-operational-audit.test.ts
           backend/test/catalog-operational-audit-blocked-candidates.test.ts
