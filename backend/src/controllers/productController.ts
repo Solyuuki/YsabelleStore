@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 
+import { assertApprovedProductBarcode } from "../services/catalogQualityPolicy.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import { createCategorySchema } from "../validators/category.validators.js";
@@ -25,6 +26,12 @@ export const createProductController: RequestHandler = async (request, response,
     const body = parseOrThrow(createProductSchema, request.body, {
       message: "Product request is invalid.",
       code: "INVALID_PRODUCT_REQUEST"
+    });
+
+    assertApprovedProductBarcode({
+      barcode: body.barcode,
+      dataQualityStatus: body.dataQualityStatus ?? "NEEDS_REVIEW",
+      isStorefrontVisible: body.isStorefrontVisible ?? false
     });
 
     const product = await createProduct(body);
@@ -102,6 +109,13 @@ export const updateProductController: RequestHandler = async (request, response,
     const body = parseOrThrow(updateProductSchema, request.body, {
       message: "Product update request is invalid.",
       code: "INVALID_PRODUCT_UPDATE_REQUEST"
+    });
+
+    const existingProduct = await getProductById(params.id);
+    assertApprovedProductBarcode({
+      barcode: body.barcode !== undefined ? body.barcode : existingProduct.barcode,
+      dataQualityStatus: body.dataQualityStatus ?? existingProduct.dataQualityStatus,
+      isStorefrontVisible: body.isStorefrontVisible ?? existingProduct.isStorefrontVisible
     });
 
     const product = await updateProduct(params.id, body);
