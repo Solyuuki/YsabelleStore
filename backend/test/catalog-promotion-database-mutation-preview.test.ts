@@ -28,9 +28,18 @@ const baseStagingRow: CatalogPromotionInactiveStagingRow = {
   activationBlockers: ["CURRENT_SELLING_PRICE", "PHYSICAL_STOCK", "QUALITY_APPROVAL"]
 };
 
+type TestCategory = {
+  id: string;
+  name: string;
+  slug?: string;
+  isActive?: boolean;
+  recordSource?: "CATALOG" | "IMPORT" | "TEST_FIXTURE" | "INTERNAL";
+  dataQualityStatus?: "APPROVED" | "NEEDS_REVIEW" | "REJECTED";
+};
+
 function build(overrides: {
   stagingRows?: CatalogPromotionInactiveStagingRow[];
-  categories?: Array<{ id: string; name: string; slug?: string }>;
+  categories?: TestCategory[];
   products?: Array<{ id: string; sku: string }>;
   mappings?: Array<{ sourceKey: string; sourceProductId: string; canonicalProductId: string }>;
 } = {}) {
@@ -116,6 +125,120 @@ test("same category name with a non-seed identity remains eligible for operation
   assert.equal(row?.productMutationReadiness, "READY");
   assert.equal(row?.plannedProductCreate?.categoryId, "cat_operational_beverages");
   assert.deepEqual(row?.productBlockers, []);
+});
+
+test("database mutation preview reuses Frozen & Chilled for Frozen / Chilled through guarded slug equivalence", () => {
+  const preview = build({
+    stagingRows: [{ ...baseStagingRow, productCode: "P040", plannedCategory: "Frozen / Chilled" }],
+    categories: [
+      {
+        id: "cat_frozen_chilled",
+        name: "Frozen & Chilled",
+        slug: "frozen-chilled",
+        isActive: true,
+        recordSource: "INTERNAL",
+        dataQualityStatus: "APPROVED"
+      }
+    ]
+  });
+  const row = preview.rows[0];
+
+  assert.equal(row?.productMutationReadiness, "READY");
+  assert.equal(row?.plannedProductCreate?.categoryId, "cat_frozen_chilled");
+  assert.deepEqual(row?.productBlockers, []);
+  assert.equal(preview.summary.missingCategories, 0);
+});
+
+test("database mutation preview gives exact-name resolution priority over slug equivalence", () => {
+  const preview = build({
+    stagingRows: [{ ...baseStagingRow, plannedCategory: "Frozen / Chilled" }],
+    categories: [
+      {
+        id: "cat_exact",
+        name: "Frozen / Chilled",
+        slug: "frozen-chilled-exact",
+        isActive: true,
+        recordSource: "IMPORT",
+        dataQualityStatus: "APPROVED"
+      },
+      {
+        id: "cat_slug_equivalent",
+        name: "Frozen & Chilled",
+        slug: "frozen-chilled",
+        isActive: true,
+        recordSource: "INTERNAL",
+        dataQualityStatus: "APPROVED"
+      }
+    ]
+  });
+
+  assert.equal(preview.rows[0]?.plannedProductCreate?.categoryId, "cat_exact");
+});
+
+test("database mutation preview keeps unrelated or unsafe slug collisions blocked", () => {
+  const unsafeCases: TestCategory[] = [
+    {
+      id: "cat_unrelated",
+      name: "Different Category",
+      slug: "frozen-chilled",
+      isActive: true,
+      recordSource: "INTERNAL",
+      dataQualityStatus: "APPROVED"
+    },
+    {
+      id: "cat_inactive",
+      name: "Frozen & Chilled",
+      slug: "frozen-chilled",
+      isActive: false,
+      recordSource: "INTERNAL",
+      dataQualityStatus: "APPROVED"
+    },
+    {
+      id: "cat_fixture",
+      name: "Frozen & Chilled",
+      slug: "frozen-chilled",
+      isActive: true,
+      recordSource: "TEST_FIXTURE",
+      dataQualityStatus: "APPROVED"
+    },
+    {
+      id: "cat_rejected",
+      name: "Frozen & Chilled",
+      slug: "frozen-chilled",
+      isActive: true,
+      recordSource: "IMPORT",
+      dataQualityStatus: "REJECTED"
+    }
+  ];
+
+  for (const category of unsafeCases) {
+    const preview = build({
+      stagingRows: [{ ...baseStagingRow, plannedCategory: "Frozen / Chilled" }],
+      categories: [category]
+    });
+
+    assert.equal(preview.rows[0]?.productMutationReadiness, "BLOCKED", category.id);
+    assert.equal(preview.rows[0]?.plannedProductCreate, null, category.id);
+  }
+});
+
+test("database mutation preview does not reuse a development seed through slug equivalence", () => {
+  const preview = build({
+    stagingRows: [{ ...baseStagingRow, plannedCategory: "Canned / Goods" }],
+    categories: [
+      {
+        id: "cat_canned_goods",
+        name: "Canned Goods",
+        slug: "canned-goods",
+        isActive: true,
+        recordSource: "CATALOG",
+        dataQualityStatus: "NEEDS_REVIEW"
+      }
+    ]
+  });
+
+  assert.equal(preview.rows[0]?.productMutationReadiness, "BLOCKED");
+  assert.equal(preview.rows[0]?.plannedProductCreate, null);
 });
 
 test("database mutation preview blocks Product creation on unique SKU collision", () => {
