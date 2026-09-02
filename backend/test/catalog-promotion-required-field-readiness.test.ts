@@ -59,7 +59,7 @@ test("conflicting explicit packaging signals remain review-required", () => {
   });
 });
 
-test("unit remains unresolved when packaging is not explicit instead of defaulting to PIECE", () => {
+test("explicit-only resolver still refuses to guess generic products", () => {
   assert.deepEqual(resolveExplicitProductUnit("Oishi Ridges Barbecue Flavor 60g"), {
     unit: null,
     evidence: "REVIEW_REQUIRED"
@@ -70,35 +70,91 @@ test("unit remains unresolved when packaging is not explicit instead of defaulti
   });
 });
 
-test("reviewed source-product overrides resolve otherwise ambiguous retail units", () => {
+test("catalog readiness resolves a discrete canned-good SKU as one retail piece", () => {
   const readiness = buildCatalogPromotionRequiredFieldReadiness({
     executionRows: [
       {
         ...baseRow,
         productCode: "P008",
         plannedSku: "SARIMA-P008",
-        plannedName: "Century Tuna Flakes in Oil"
+        plannedName: "Century Tuna Flakes in Oil",
+        plannedCategory: "Canned Goods"
       }
     ],
     historicalProducts: [{ productCode: "P008", historicalSellingPrice2025: 42 }]
   });
 
   assert.equal(readiness.rows[0]?.proposedUnit, "PIECE");
-  assert.equal(readiness.rows[0]?.unitEvidence, "REVIEWED_PRODUCT_OVERRIDE");
+  assert.equal(readiness.rows[0]?.unitEvidence, "CATEGORY_SINGLE_RETAIL_ITEM");
   assert.equal(readiness.rows[0]?.writeReadiness, "BLOCKED_CURRENT_PRICE");
 });
 
-test("reviewed source-product overrides are name-bound and do not silently follow a reused code", () => {
+test("catalog readiness maps pouch to PACK because ProductUnit has no pouch value", () => {
   const readiness = buildCatalogPromotionRequiredFieldReadiness({
     executionRows: [
       {
         ...baseRow,
-        productCode: "P008",
-        plannedSku: "SARIMA-P008",
-        plannedName: "Unrelated Replacement Product 155g"
+        productCode: "P101",
+        plannedSku: "SARIMA-P101",
+        plannedName: "Magnolia Real Mayonnaise Pouch",
+        plannedCategory: "Baking / Spreads & Dessert Ingredients"
       }
     ],
-    historicalProducts: [{ productCode: "P008", historicalSellingPrice2025: 42 }]
+    historicalProducts: [{ productCode: "P101", historicalSellingPrice2025: 30 }]
+  });
+
+  assert.equal(readiness.rows[0]?.proposedUnit, "PACK");
+  assert.equal(readiness.rows[0]?.unitEvidence, "EXPLICIT_POUCH_AS_PACK");
+});
+
+test("reviewed overrides resolve source names with conflicting explicit packaging signals", () => {
+  const readiness = buildCatalogPromotionRequiredFieldReadiness({
+    executionRows: [
+      {
+        ...baseRow,
+        productCode: "P021",
+        plannedSku: "SARIMA-P021",
+        plannedName: "Downy Fabric Conditioner Twin / Larger Sachet Pack",
+        plannedCategory: "Laundry Supplies"
+      }
+    ],
+    historicalProducts: [{ productCode: "P021", historicalSellingPrice2025: 18 }]
+  });
+
+  assert.equal(readiness.rows[0]?.proposedUnit, "PACK");
+  assert.equal(readiness.rows[0]?.unitEvidence, "REVIEWED_PRODUCT_OVERRIDE");
+});
+
+test("repacked rice keeps a reviewed weight unit instead of becoming a generic piece", () => {
+  const readiness = buildCatalogPromotionRequiredFieldReadiness({
+    executionRows: [
+      {
+        ...baseRow,
+        productCode: "P216",
+        plannedSku: "SARIMA-P216",
+        plannedName: "Repacked Rice / Bigas",
+        plannedCategory: "Rice & Staples"
+      }
+    ],
+    historicalProducts: [{ productCode: "P216", historicalSellingPrice2025: 58 }]
+  });
+
+  assert.equal(readiness.rows[0]?.proposedUnit, "KILOGRAM");
+  assert.equal(readiness.rows[0]?.unitEvidence, "REVIEWED_PRODUCT_OVERRIDE");
+});
+
+test("unknown taxonomy remains fail-closed when no explicit or reviewed unit evidence exists", () => {
+  const readiness = buildCatalogPromotionRequiredFieldReadiness({
+    executionRows: [
+      {
+        ...baseRow,
+        productCode: "PX01",
+        plannedSku: "SARIMA-PX01",
+        plannedName: "Mystery Commodity 500g",
+        plannedCategory: "Unreviewed Taxonomy"
+      }
+    ],
+    historicalProducts: [{ productCode: "PX01", historicalSellingPrice2025: 50 }]
   });
 
   assert.equal(readiness.rows[0]?.proposedUnit, null);
@@ -106,7 +162,7 @@ test("reviewed source-product overrides are name-bound and do not silently follo
   assert.equal(readiness.rows[0]?.writeReadiness, "BLOCKED_CURRENT_PRICE_AND_UNIT");
 });
 
-test("the committed 472-row source catalog has complete evidence-backed unit resolution", async () => {
+test("every committed source identity has deterministic unit evidence before NEW-row filtering", async () => {
   const historical = await loadHistoricalSalesData();
   assert.equal(historical.validation.valid, true);
   assert.equal(historical.products.length, 472);
@@ -115,7 +171,8 @@ test("the committed 472-row source catalog has complete evidence-backed unit res
     ...baseRow,
     productCode: product.productId,
     plannedSku: `SARIMA-${product.productId}`,
-    plannedName: product.productName
+    plannedName: product.productName,
+    plannedCategory: product.category
   }));
   const historicalProducts = historical.products.map((product) => ({
     productCode: product.productId,
@@ -128,7 +185,7 @@ test("the committed 472-row source catalog has complete evidence-backed unit res
   });
 
   assert.equal(readiness.summary.candidates, 472);
-  assert.equal(readiness.summary.explicitUnitResolved, 472);
+  assert.equal(readiness.summary.unitResolved, 472);
   assert.equal(readiness.summary.unitNeedsReview, 0);
   assert.equal(readiness.rows.filter((row) => row.proposedUnit === null).length, 0);
 });
@@ -138,18 +195,20 @@ test("historical price is review evidence only and never unlocks current-price r
     executionRows: [
       {
         ...baseRow,
-        plannedName: "Sunsilk Shampoo Sachet 13mL"
+        plannedName: "Sunsilk Shampoo Sachet 13mL",
+        plannedCategory: "Personal Care / Hygiene"
       },
       {
         ...baseRow,
-        productCode: "P002",
-        plannedSku: "SARIMA-P002",
-        plannedName: "Oishi Ridges Barbecue Flavor 60g"
+        productCode: "PX02",
+        plannedSku: "SARIMA-PX02",
+        plannedName: "Unknown Loose Commodity 60g",
+        plannedCategory: "Unreviewed Taxonomy"
       }
     ],
     historicalProducts: [
       { productCode: "P001", historicalSellingPrice2025: 8.5 },
-      { productCode: "P002", historicalSellingPrice2025: 22 }
+      { productCode: "PX02", historicalSellingPrice2025: 22 }
     ]
   });
 
@@ -158,6 +217,7 @@ test("historical price is review evidence only and never unlocks current-price r
     historicalPriceEvidenceAvailable: 2,
     currentPriceVerified: 0,
     explicitUnitResolved: 1,
+    unitResolved: 1,
     unitNeedsReview: 1,
     readyToCreate: 0
   });
