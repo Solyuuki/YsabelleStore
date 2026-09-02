@@ -162,3 +162,78 @@ test("database mutation preview generator fetches canonical slug candidates so P
   assert.equal(result.rows[0]?.plannedProductCreate?.categoryId, "cat_frozen_chilled");
   assert.equal(result.summary.missingCategories, 0);
 });
+
+test("database mutation preview generator consumes the final category plan before allowing an adopted seed category", async () => {
+  const temp = await fs.mkdtemp(path.join(os.tmpdir(), "catalog-db-mutation-seed-reuse-"));
+  const stagingPath = path.join(temp, "staging.json");
+  const categoryPlanPath = path.join(temp, "category-plan.json");
+  const jsonPath = path.join(temp, "preview.json");
+  const reportPath = path.join(temp, "preview.md");
+
+  await fs.writeFile(
+    stagingPath,
+    JSON.stringify({
+      stageableRows: [
+        {
+          ...stagingRow,
+          productCode: "P008",
+          plannedSku: "SARIMA-P008",
+          plannedName: "Century Tuna Flakes in Oil",
+          plannedCategory: "Canned Goods",
+          plannedUnit: "PIECE",
+          unitEvidence: "CATEGORY_SINGLE_RETAIL_ITEM"
+        }
+      ]
+    }),
+    "utf8"
+  );
+  await fs.writeFile(
+    categoryPlanPath,
+    JSON.stringify({
+      rows: [
+        {
+          sourceCategory: "Canned Goods",
+          candidateCount: 44,
+          decision: "REUSE_EXISTING",
+          existingCategoryId: "cat_canned_goods",
+          reuseBasis: "SEED_CATEGORY_EVIDENCE",
+          blockers: [],
+          proposedCategoryCreate: null,
+          seedAdoptionEvidence: []
+        }
+      ]
+    }),
+    "utf8"
+  );
+
+  const client: CatalogPromotionDatabaseMutationPreviewPrismaClient = {
+    category: {
+      async findMany() {
+        return [
+          {
+            id: "cat_canned_goods",
+            name: "Canned Goods",
+            slug: "canned-goods",
+            isActive: true,
+            recordSource: "CATALOG",
+            dataQualityStatus: "NEEDS_REVIEW"
+          }
+        ];
+      }
+    },
+    product: { async findMany() { return []; } },
+    sarimaSourceProductMapping: { async findMany() { return []; } }
+  };
+
+  const result = await (generateCatalogPromotionDatabaseMutationPreview as any)({
+    client,
+    stagingPath,
+    categoryPlanPath,
+    jsonPath,
+    reportPath
+  });
+
+  assert.equal(result.rows[0]?.productMutationReadiness, "READY");
+  assert.equal(result.rows[0]?.plannedProductCreate?.categoryId, "cat_canned_goods");
+  assert.equal(result.summary.developmentSeedCategoryMatches, 0);
+});
