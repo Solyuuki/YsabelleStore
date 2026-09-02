@@ -46,7 +46,16 @@ test("database mutation preview generator performs constrained reads only and wr
     category: {
       async findMany(args) {
         calls.push({ model: "category", args });
-        return [{ id: "cat_personal_care", name: "Personal Care" }];
+        return [
+          {
+            id: "cat_personal_care",
+            name: "Personal Care",
+            slug: "personal-care",
+            isActive: true,
+            recordSource: "INTERNAL",
+            dataQualityStatus: "APPROVED"
+          }
+        ];
       }
     },
     product: {
@@ -72,7 +81,20 @@ test("database mutation preview generator performs constrained reads only and wr
 
   assert.equal(calls.length, 3);
   assert.deepEqual(calls.map((call) => call.model), ["category", "product", "mapping"]);
-  assert.deepEqual((calls[0]!.args as any).where.name.in, ["Personal Care"]);
+  assert.deepEqual((calls[0]!.args as any).where, {
+    OR: [
+      { name: { in: ["Personal Care"] } },
+      { slug: { in: ["personal-care"] } }
+    ]
+  });
+  assert.deepEqual((calls[0]!.args as any).select, {
+    id: true,
+    name: true,
+    slug: true,
+    isActive: true,
+    recordSource: true,
+    dataQualityStatus: true
+  });
   assert.deepEqual((calls[1]!.args as any).where.sku.in, ["SARIMA-P001"]);
   assert.deepEqual((calls[2]!.args as any).where.sourceProductId.in, ["P001"]);
 
@@ -91,4 +113,52 @@ test("database mutation preview generator performs constrained reads only and wr
   assert.match(report, /does not execute/i);
   assert.match(report, /costPrice.*null/i);
   assert.match(report, /mapping metadata/i);
+});
+
+test("database mutation preview generator fetches canonical slug candidates so P040 can resolve without a write", async () => {
+  const temp = await fs.mkdtemp(path.join(os.tmpdir(), "catalog-db-mutation-p040-"));
+  const stagingPath = path.join(temp, "staging.json");
+  const jsonPath = path.join(temp, "preview.json");
+  const reportPath = path.join(temp, "preview.md");
+  const p040 = {
+    ...stagingRow,
+    productCode: "P040",
+    plannedSku: "SARIMA-P040",
+    plannedCategory: "Frozen / Chilled"
+  };
+
+  await fs.writeFile(stagingPath, JSON.stringify({ stageableRows: [p040] }), "utf8");
+
+  let categoryArgs: unknown;
+  const client: CatalogPromotionDatabaseMutationPreviewPrismaClient = {
+    category: {
+      async findMany(args) {
+        categoryArgs = args;
+        return [
+          {
+            id: "cat_frozen_chilled",
+            name: "Frozen & Chilled",
+            slug: "frozen-chilled",
+            isActive: true,
+            recordSource: "INTERNAL",
+            dataQualityStatus: "APPROVED"
+          }
+        ];
+      }
+    },
+    product: { async findMany() { return []; } },
+    sarimaSourceProductMapping: { async findMany() { return []; } }
+  };
+
+  const result = await generateCatalogPromotionDatabaseMutationPreview({
+    client,
+    stagingPath,
+    jsonPath,
+    reportPath
+  });
+
+  assert.deepEqual((categoryArgs as any).where.OR[1].slug.in, ["frozen-chilled"]);
+  assert.equal(result.rows[0]?.productMutationReadiness, "READY");
+  assert.equal(result.rows[0]?.plannedProductCreate?.categoryId, "cat_frozen_chilled");
+  assert.equal(result.summary.missingCategories, 0);
 });
