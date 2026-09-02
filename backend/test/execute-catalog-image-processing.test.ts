@@ -91,7 +91,7 @@ const promotion = {
   ]
 };
 
-test("execution materializes Drive sources, regenerates CIQE jobs, and runs engine without DB writes", async () => {
+test("execution materializes Drive sources, regenerates CIQE jobs, and emits remediation without DB writes", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "ysabelle-image-processing-"));
   try {
     const artifacts = path.join(root, "artifacts/catalog/phase9");
@@ -123,18 +123,35 @@ test("execution materializes Drive sources, regenerates CIQE jobs, and runs engi
     assert.equal(result.ciqeJobs, 1);
     assert.equal(ciqeJobsSeen, 1);
     assert.deepEqual(result.ciqeCounts, { APPROVED: 1, REJECTED: 0, PROCESS_ERROR: 0 });
+    assert.deepEqual(result.remediation, {
+      products: 2,
+      ciqeApproved: 1,
+      webFallbackCandidates: 1,
+      driveMaterializationFailed: 0,
+      ciqeRejected: 0,
+      reconciliationRequiresWeb: 1,
+      blockedIdentityReview: 0,
+      processErrors: 0
+    });
 
     const materializations = JSON.parse(
       await readFile(path.join(artifacts, "image-source-drive-materializations.json"), "utf8")
     );
     assert.equal(materializations[0].productCode, "P022");
     assert.equal(materializations[0].usable, true);
+
+    const remediation = JSON.parse(
+      await readFile(path.join(reports, "phase9-image-remediation-candidates.json"), "utf8")
+    );
+    assert.equal(remediation.rows.length, 1);
+    assert.equal(remediation.rows[0].productCode, "P091");
+    assert.equal(remediation.rows[0].reason, "RECONCILIATION_REQUIRES_WEB");
   } finally {
     await rm(root, { recursive: true, force: true });
   }
 });
 
-test("unusable Drive download never enters CIQE", async () => {
+test("exhausted unusable Drive download becomes remediation candidate and never enters CIQE", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "ysabelle-image-processing-fail-"));
   try {
     const artifacts = path.join(root, "artifacts/catalog/phase9");
@@ -157,6 +174,17 @@ test("unusable Drive download never enters CIQE", async () => {
     assert.equal(result.materialization.usable, 0);
     assert.equal(result.selection.needsDriveMaterialization, 1);
     assert.equal(result.ciqeJobs, 0);
+    assert.equal(result.remediation.driveMaterializationFailed, 1);
+    assert.equal(result.remediation.reconciliationRequiresWeb, 1);
+    assert.equal(result.remediation.webFallbackCandidates, 2);
+
+    const remediation = JSON.parse(
+      await readFile(path.join(reports, "phase9-image-remediation-candidates.json"), "utf8")
+    );
+    const p022 = remediation.rows.find((row: { productCode: string }) => row.productCode === "P022");
+    assert.equal(p022.reason, "DRIVE_MATERIALIZATION_FAILED");
+    assert.equal(p022.driveAttempts, 2);
+    assert.match(p022.driveError, /non-image response/i);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
