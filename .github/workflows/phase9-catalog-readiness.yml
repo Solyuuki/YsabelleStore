@@ -13,6 +13,7 @@ on:
       - "backend/src/scripts/reconcileCatalogImages.ts"
       - "backend/src/scripts/generateCatalogPromotionPreview.ts"
       - "backend/src/scripts/generateOperationalCatalogAudit.ts"
+      - "backend/src/scripts/generateApprovedProductBarcodeAudit.ts"
       - "backend/src/scripts/generateUnmatchedCatalogProvenance.ts"
       - "backend/src/scripts/generateCatalogPromotionExecutionManifest.ts"
       - "backend/src/scripts/generateCatalogPromotionRequiredFieldReadiness.ts"
@@ -24,6 +25,7 @@ on:
       - "backend/src/scripts/executeCatalogPromotionCategoryMutationPlan.ts"
       - "backend/src/scripts/executeTestFixtureCleanup.ts"
       - "backend/src/scripts/executeKnownNonProductionCatalogCleanup.ts"
+      - "backend/src/services/catalogQualityPolicy.ts"
       - "backend/src/services/productService.ts"
       - "backend/src/validators/product.validators.ts"
       - "backend/test/sarima-source-manifest.test.ts"
@@ -32,6 +34,8 @@ on:
       - "backend/test/catalog-image-reconciliation.test.ts"
       - "backend/test/catalog-image-reconciliation-report.test.ts"
       - "backend/test/catalog-quality-filter.test.ts"
+      - "backend/test/catalog-approved-barcode-audit.test.ts"
+      - "backend/test/catalog-approved-barcode-policy.test.ts"
       - "backend/test/catalog-promotion-preview.test.ts"
       - "backend/test/catalog-operational-audit.test.ts"
       - "backend/test/catalog-operational-audit-blocked-candidates.test.ts"
@@ -70,6 +74,7 @@ on:
       - "docs/catalog/phase9-image-reconciliation-report.md"
       - "docs/catalog/phase9-catalog-promotion-preview.md"
       - "docs/catalog/phase9-operational-catalog-audit.md"
+      - "docs/catalog/phase9-approved-product-barcode-audit.md"
       - "docs/catalog/phase9-unmatched-catalog-provenance.md"
       - "docs/catalog/phase9-catalog-promotion-execution-manifest.md"
       - "docs/catalog/phase9-catalog-promotion-required-field-readiness.md"
@@ -110,6 +115,8 @@ jobs:
           backend/test/catalog-image-reconciliation.test.ts
           backend/test/catalog-image-reconciliation-report.test.ts
           backend/test/catalog-quality-filter.test.ts
+          backend/test/catalog-approved-barcode-audit.test.ts
+          backend/test/catalog-approved-barcode-policy.test.ts
           backend/test/catalog-promotion-preview.test.ts
           backend/test/catalog-operational-audit.test.ts
           backend/test/catalog-operational-audit-blocked-candidates.test.ts
