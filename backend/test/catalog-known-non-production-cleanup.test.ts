@@ -257,6 +257,21 @@ test("cleanup removes only the exact approved 11-style graph after all guards pa
   });
 });
 
+test("development seed identity remains exact by id and sku when the existing row has a barcode", async () => {
+  const cleanup = await loadCleanupModule();
+  const withBarcode = state({
+    products: [
+      { id: "dev-1", sku: "DEV-001", barcode: "4800012345678", recordSource: "CATALOG" },
+      { id: "qa-1", sku: "QA-001", barcode: "4800000000001", recordSource: "CATALOG" }
+    ]
+  });
+  const { client } = fakeClient(withBarcode);
+
+  const result = await cleanup.executeKnownNonProductionCatalogCleanup({ client, authorization });
+
+  assert.equal(result.summary.deletedProducts, 2);
+});
+
 test("cleanup aborts before deletes when an approved identity no longer matches", async () => {
   const cleanup = await loadCleanupModule();
   const bad = state({
@@ -266,6 +281,23 @@ test("cleanup aborts before deletes when an approved identity no longer matches"
     ]
   });
   const { client, deletes } = fakeClient(bad);
+
+  await assert.rejects(
+    () => cleanup.executeKnownNonProductionCatalogCleanup({ client, authorization }),
+    /KNOWN_NON_PRODUCTION_CLEANUP_IDENTITY_MISMATCH/
+  );
+  assert.deepEqual(deletes, []);
+});
+
+test("legacy runtime QA identity still requires the approved barcode", async () => {
+  const cleanup = await loadCleanupModule();
+  const wrongBarcode = state({
+    products: [
+      { id: "dev-1", sku: "DEV-001", barcode: null, recordSource: "CATALOG" },
+      { id: "qa-1", sku: "QA-001", barcode: "4800000000999", recordSource: "CATALOG" }
+    ]
+  });
+  const { client, deletes } = fakeClient(wrongBarcode);
 
   await assert.rejects(
     () => cleanup.executeKnownNonProductionCatalogCleanup({ client, authorization }),
