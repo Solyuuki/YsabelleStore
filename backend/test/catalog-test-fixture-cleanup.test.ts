@@ -160,7 +160,7 @@ function fakeClient(initial: FakeState) {
   };
 
   const client: TestFixtureCleanupClient = {
-    async $transaction(callback) {
+    async $transaction<T>(callback: (tx: TestFixtureCleanupTransaction) => Promise<T>): Promise<T> {
       return callback(tx);
     }
   };
