@@ -1,5 +1,8 @@
 import { prisma } from "../database/prismaClient.js";
-import { executeApprovedImportDemotion } from "../modules/catalog/catalog-approved-import-demotion.js";
+import {
+  executeApprovedImportDemotion,
+  type ApprovedImportDemotionClient
+} from "../modules/catalog/catalog-approved-import-demotion.js";
 
 const APPLY_FLAG = "--apply-approved-import-demotion";
 
@@ -36,7 +39,7 @@ async function main() {
   }
 
   const result = await executeApprovedImportDemotion({
-    client: prisma,
+    client: prisma as unknown as ApprovedImportDemotionClient,
     authorization
   });
 
