@@ -183,7 +183,7 @@ export async function executeTestFixtureCleanup(input: {
       tx.forecastRecord.count({ where: { productId: { in: fixtureIds } } }),
       tx.recommendationRecord.count({ where: { productId: { in: fixtureIds } } }),
       tx.historicalMonthlySales.count({ where: { productId: { in: fixtureIds } } }),
-      tx.historicalSalesImportRow.count({ where: { productId: { in: fixtureIds } } }),
+      tx.historicalSalesImportRow.count({ where: { matchedProductId: { in: fixtureIds } } }),
       tx.customerOrderItem.count({ where: { productId: { in: fixtureIds } } }),
       tx.productReview.count({ where: { productId: { in: fixtureIds } } }),
       tx.productImageAsset.count({ where: { productId: { in: fixtureIds } } })
