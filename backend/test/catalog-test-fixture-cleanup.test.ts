@@ -71,6 +71,7 @@ function state(overrides: Partial<FakeState> = {}): FakeState {
 
 function fakeClient(initial: FakeState) {
   const deletes: string[] = [];
+  let historicalImportRowCountArgs: unknown;
   const tx: TestFixtureCleanupTransaction = {
     product: {
       async findMany() {
@@ -153,7 +154,12 @@ function fakeClient(initial: FakeState) {
     forecastRecord: { async count() { return initial.forecasts; } },
     recommendationRecord: { async count() { return initial.recommendations; } },
     historicalMonthlySales: { async count() { return initial.historicalMonthlySales; } },
-    historicalSalesImportRow: { async count() { return initial.historicalImportRows; } },
+    historicalSalesImportRow: {
+      async count(args: unknown) {
+        historicalImportRowCountArgs = args;
+        return initial.historicalImportRows;
+      }
+    },
     customerOrderItem: { async count() { return initial.customerOrderItems; } },
     productReview: { async count() { return initial.reviews; } },
     productImageAsset: { async count() { return initial.images; } }
@@ -165,7 +171,11 @@ function fakeClient(initial: FakeState) {
     }
   };
 
-  return { client, deletes };
+  return {
+    client,
+    deletes,
+    getHistoricalImportRowCountArgs: () => historicalImportRowCountArgs
+  };
 }
 
 test("cleanup deletes only the exact approved TEST_FIXTURE graph after all guards pass", async () => {
@@ -189,6 +199,16 @@ test("cleanup deletes only the exact approved TEST_FIXTURE graph after all guard
     deletedInventoryBatches: 1,
     deletedInventories: 2,
     deletedProducts: 2
+  });
+});
+
+test("cleanup checks historical import rows through matchedProductId", async () => {
+  const { client, getHistoricalImportRowCountArgs } = fakeClient(state());
+
+  await executeTestFixtureCleanup({ client, authorization });
+
+  assert.deepEqual(getHistoricalImportRowCountArgs(), {
+    where: { matchedProductId: { in: ["fixture-1", "fixture-2"] } }
   });
 });
 
