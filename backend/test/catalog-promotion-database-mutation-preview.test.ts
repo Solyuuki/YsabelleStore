@@ -30,13 +30,15 @@ const baseStagingRow: CatalogPromotionInactiveStagingRow = {
 
 function build(overrides: {
   stagingRows?: CatalogPromotionInactiveStagingRow[];
-  categories?: Array<{ id: string; name: string }>;
+  categories?: Array<{ id: string; name: string; slug?: string }>;
   products?: Array<{ id: string; sku: string }>;
   mappings?: Array<{ sourceKey: string; sourceProductId: string; canonicalProductId: string }>;
 } = {}) {
   return buildCatalogPromotionDatabaseMutationPreview({
     stagingRows: overrides.stagingRows ?? [baseStagingRow],
-    categories: overrides.categories ?? [{ id: "cat_personal_care", name: "Personal Care" }],
+    categories: overrides.categories ?? [
+      { id: "cat_personal_care", name: "Personal Care", slug: "personal-care" }
+    ],
     products: overrides.products ?? [],
     mappings: overrides.mappings ?? []
   });
@@ -51,6 +53,7 @@ test("database mutation preview builds a safe inactive Product create payload wi
     productCreateReady: 1,
     productCreateBlocked: 0,
     missingCategories: 0,
+    developmentSeedCategoryMatches: 0,
     skuCollisions: 0,
     sourceProductMappingCollisions: 0,
     mappingMetadataPending: 1,
@@ -87,6 +90,32 @@ test("database mutation preview blocks Product creation when the category cannot
   assert.equal(row?.plannedProductCreate, null);
   assert.deepEqual(row?.productBlockers, ["CATEGORY_NOT_FOUND"]);
   assert.equal(preview.summary.missingCategories, 1);
+});
+
+test("database mutation preview blocks exact development seed categories instead of treating them as operational taxonomy", () => {
+  const preview = build({
+    stagingRows: [{ ...baseStagingRow, plannedCategory: "Beverages" }],
+    categories: [{ id: "cat_beverages", name: "Beverages", slug: "beverages" }]
+  });
+  const row = preview.rows[0];
+
+  assert.equal(row?.productMutationReadiness, "BLOCKED");
+  assert.equal(row?.plannedProductCreate, null);
+  assert.deepEqual(row?.productBlockers, ["DEVELOPMENT_SEED_CATEGORY"]);
+  assert.equal((preview.summary as any).developmentSeedCategoryMatches, 1);
+  assert.equal(preview.summary.missingCategories, 0);
+});
+
+test("same category name with a non-seed identity remains eligible for operational resolution", () => {
+  const preview = build({
+    stagingRows: [{ ...baseStagingRow, plannedCategory: "Beverages" }],
+    categories: [{ id: "cat_operational_beverages", name: "Beverages", slug: "beverages-operational" }]
+  });
+  const row = preview.rows[0];
+
+  assert.equal(row?.productMutationReadiness, "READY");
+  assert.equal(row?.plannedProductCreate?.categoryId, "cat_operational_beverages");
+  assert.deepEqual(row?.productBlockers, []);
 });
 
 test("database mutation preview blocks Product creation on unique SKU collision", () => {
