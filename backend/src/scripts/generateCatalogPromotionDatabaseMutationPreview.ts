@@ -80,6 +80,7 @@ function toMarkdown(preview: CatalogPromotionDatabaseMutationPreview) {
     `- ${summary.productCreateReady} Product create payloads are structurally ready`,
     `- ${summary.productCreateBlocked} Product create payloads remain blocked`,
     `- ${summary.missingCategories} rows reference an unresolved category`,
+    `- ${summary.developmentSeedCategoryMatches} rows resolve only to a development-seed category and remain blocked`,
     `- ${summary.skuCollisions} rows collide with an existing Product SKU`,
     `- ${summary.sourceProductMappingCollisions} rows collide with an existing SARIMA source-product mapping`,
     `- ${summary.mappingMetadataPending} rows still require the full SARIMA mapping metadata contract`,
@@ -90,6 +91,8 @@ function toMarkdown(preview: CatalogPromotionDatabaseMutationPreview) {
     "## Safety Boundary",
     "",
     "The Product schema permits nullable `costPrice`, so unavailable cost is represented as `null`; this preview never substitutes zero, selling price, or a guessed margin.",
+    "",
+    "Exact development-seed category identities are not accepted as operational taxonomy. Matching rows remain blocked until an operational category is proven or separately approved.",
     "",
     "The SARIMA mapping schema requires source identity and historical evidence metadata beyond the staging row. Therefore `plannedSarimaMappingCreate` remains null until that mapping metadata contract is assembled and reviewed.",
     "",
@@ -127,7 +130,7 @@ export async function generateCatalogPromotionDatabaseMutationPreview(
     const [categories, products, mappings] = await Promise.all([
       client.category.findMany({
         where: { name: { in: categoryNames } },
-        select: { id: true, name: true }
+        select: { id: true, name: true, slug: true }
       }),
       client.product.findMany({
         where: { sku: { in: skus } },
