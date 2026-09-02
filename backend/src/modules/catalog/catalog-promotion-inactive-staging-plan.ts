@@ -13,12 +13,25 @@ export type InactiveStagingReadinessRow = {
   historicalPriceMeaning: "LAST_RECORDED_HISTORICAL_PRICE_2025" | "UNAVAILABLE";
   currentSellingPrice: null;
   currentPriceReadiness: "UNVERIFIED";
-  proposedUnit: "BOTTLE" | "BOX" | "PACK" | "SACHET" | null;
+  proposedUnit:
+    | "PIECE"
+    | "PACK"
+    | "BOX"
+    | "BOTTLE"
+    | "SACHET"
+    | "KILOGRAM"
+    | "GRAM"
+    | "LITER"
+    | "MILLILITER"
+    | null;
   unitEvidence:
     | "EXPLICIT_BOTTLE"
     | "EXPLICIT_BOX"
     | "EXPLICIT_PACK"
     | "EXPLICIT_SACHET"
+    | "EXPLICIT_POUCH_AS_PACK"
+    | "CATEGORY_SINGLE_RETAIL_ITEM"
+    | "REVIEWED_PRODUCT_OVERRIDE"
     | "REVIEW_REQUIRED";
 };
 
@@ -32,12 +45,8 @@ export type CatalogPromotionInactiveStagingRow = {
   sellingPriceUsage: "PROVISIONAL_INACTIVE_ONLY";
   currentSellingPrice: null;
   currentPriceReadiness: "UNVERIFIED";
-  plannedUnit: "BOTTLE" | "BOX" | "PACK" | "SACHET";
-  unitEvidence:
-    | "EXPLICIT_BOTTLE"
-    | "EXPLICIT_BOX"
-    | "EXPLICIT_PACK"
-    | "EXPLICIT_SACHET";
+  plannedUnit: Exclude<InactiveStagingReadinessRow["proposedUnit"], null>;
+  unitEvidence: Exclude<InactiveStagingReadinessRow["unitEvidence"], "REVIEW_REQUIRED">;
   plannedStatus: "INACTIVE";
   plannedDataQualityStatus: "NEEDS_REVIEW";
   plannedRecordSource: "IMPORT";
