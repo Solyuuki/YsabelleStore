@@ -124,7 +124,11 @@ function assertZero(label: string, actual: number) {
   }
 }
 
-function identityKey(row: { id: string; sku: string; barcode?: string | null }) {
+function developmentIdentityKey(row: { id: string; sku: string }) {
+  return `${row.id}\u0000${row.sku}`;
+}
+
+function legacyQaIdentityKey(row: { id: string; sku: string; barcode: string | null }) {
   return `${row.id}\u0000${row.sku}\u0000${row.barcode ?? ""}`;
 }
 
@@ -155,10 +159,12 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
 
     assertExact("approved products", productRows.length, cleanupIds.length);
 
-    const expectedIdentityKeys = new Set([
-      ...input.authorization.developmentSeeds.map((row) => identityKey(row)),
-      ...input.authorization.legacyRuntimeQa.map((row) => identityKey(row))
-    ]);
+    const expectedDevelopmentIdentityKeys = new Set(
+      input.authorization.developmentSeeds.map((row) => developmentIdentityKey(row))
+    );
+    const expectedLegacyIdentityKeys = new Set(
+      input.authorization.legacyRuntimeQa.map((row) => legacyQaIdentityKey(row))
+    );
 
     for (const product of productRows) {
       if (product.recordSource !== "CATALOG") {
@@ -167,10 +173,18 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
           `product ${product.id} recordSource expected CATALOG, found ${product.recordSource}`
         );
       }
-      if (!expectedIdentityKeys.has(identityKey(product))) {
+
+      const matchesDevelopmentSeed =
+        devIdSet.has(product.id) &&
+        expectedDevelopmentIdentityKeys.has(developmentIdentityKey(product));
+      const matchesLegacyRuntimeQa =
+        legacyIdSet.has(product.id) &&
+        expectedLegacyIdentityKeys.has(legacyQaIdentityKey(product));
+
+      if (!matchesDevelopmentSeed && !matchesLegacyRuntimeQa) {
         fail(
           "KNOWN_NON_PRODUCTION_CLEANUP_IDENTITY_MISMATCH",
-          `product ${product.id} no longer matches its approved id/sku/barcode identity`
+          `product ${product.id} no longer matches its approved cohort identity`
         );
       }
     }
