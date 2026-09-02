@@ -33,13 +33,19 @@ const stagingRow = {
   activationBlockers: ["CURRENT_SELLING_PRICE", "PHYSICAL_STOCK", "QUALITY_APPROVAL"]
 };
 
+async function writeEmptyCategoryPlan(filePath: string) {
+  await fs.writeFile(filePath, JSON.stringify({ rows: [] }), "utf8");
+}
+
 test("database mutation preview generator performs constrained reads only and writes a non-mutating review artifact", async () => {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), "catalog-db-mutation-preview-"));
   const stagingPath = path.join(temp, "staging.json");
+  const categoryPlanPath = path.join(temp, "category-plan.json");
   const jsonPath = path.join(temp, "preview.json");
   const reportPath = path.join(temp, "preview.md");
 
   await fs.writeFile(stagingPath, JSON.stringify({ stageableRows: [stagingRow] }), "utf8");
+  await writeEmptyCategoryPlan(categoryPlanPath);
 
   const calls: Array<{ model: string; args: unknown }> = [];
   const client: CatalogPromotionDatabaseMutationPreviewPrismaClient = {
@@ -75,6 +81,7 @@ test("database mutation preview generator performs constrained reads only and wr
   const result = await generateCatalogPromotionDatabaseMutationPreview({
     client,
     stagingPath,
+    categoryPlanPath,
     jsonPath,
     reportPath
   });
@@ -118,6 +125,7 @@ test("database mutation preview generator performs constrained reads only and wr
 test("database mutation preview generator fetches canonical slug candidates so P040 can resolve without a write", async () => {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), "catalog-db-mutation-p040-"));
   const stagingPath = path.join(temp, "staging.json");
+  const categoryPlanPath = path.join(temp, "category-plan.json");
   const jsonPath = path.join(temp, "preview.json");
   const reportPath = path.join(temp, "preview.md");
   const p040 = {
@@ -128,6 +136,7 @@ test("database mutation preview generator fetches canonical slug candidates so P
   };
 
   await fs.writeFile(stagingPath, JSON.stringify({ stageableRows: [p040] }), "utf8");
+  await writeEmptyCategoryPlan(categoryPlanPath);
 
   let categoryArgs: unknown;
   const client: CatalogPromotionDatabaseMutationPreviewPrismaClient = {
@@ -153,6 +162,7 @@ test("database mutation preview generator fetches canonical slug candidates so P
   const result = await generateCatalogPromotionDatabaseMutationPreview({
     client,
     stagingPath,
+    categoryPlanPath,
     jsonPath,
     reportPath
   });
@@ -225,7 +235,7 @@ test("database mutation preview generator consumes the final category plan befor
     sarimaSourceProductMapping: { async findMany() { return []; } }
   };
 
-  const result = await (generateCatalogPromotionDatabaseMutationPreview as any)({
+  const result = await generateCatalogPromotionDatabaseMutationPreview({
     client,
     stagingPath,
     categoryPlanPath,
