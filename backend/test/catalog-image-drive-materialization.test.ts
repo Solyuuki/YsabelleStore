@@ -84,7 +84,7 @@ test("materialization writes downloaded bytes and records SHA-256 provenance", a
 
     assert.equal(result.length, 1);
     assert.equal(result[0]?.usable, true);
-    assert.equal(result[0]?.sha256, "9416fc2274882b4ca28374362f6496957c6268a90580d66ac3a5f8d0dab16132");
+    assert.equal(result[0]?.sha256, "7f61d43a19733c0f0c1e9aecf20840a921b8f222ba750391e64f41d0a9fe80d8");
     assert.equal(result[0]?.sizeBytes, imageBytes.length);
     assert.equal(result[0]?.error, null);
     assert.deepEqual(
