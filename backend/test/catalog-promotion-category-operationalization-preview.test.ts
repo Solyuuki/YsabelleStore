@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildCatalogPromotionCategoryOperationalizationPreview } from "../src/modules/catalog/catalog-promotion-category-operationalization-preview.js";
+import type {
+  CatalogPromotionCategoryGapPlanRow,
+  CategoryGapDatabaseCategory
+} from "../src/modules/catalog/catalog-promotion-category-gap-plan.js";
 
 const gapRows = [
   {
@@ -44,7 +48,7 @@ const gapRows = [
       isStorefrontVisible: false
     }
   }
-] as const;
+] satisfies CatalogPromotionCategoryGapPlanRow[];
 
 const allCategories = [
   {
@@ -65,7 +69,7 @@ const allCategories = [
     dataQualityStatus: "NEEDS_REVIEW",
     isStorefrontVisible: false
   }
-] as const;
+] satisfies CategoryGapDatabaseCategory[];
 
 const categoryProducts = [
   { id: "prd_sardines_155g", sku: "CAN-SARD-001", categoryId: "cat_canned_goods" }
@@ -73,8 +77,8 @@ const categoryProducts = [
 
 test("operationalization preview proposes hidden import categories for missing taxonomy and performs zero writes", () => {
   const preview = buildCatalogPromotionCategoryOperationalizationPreview({
-    gapRows: [...gapRows],
-    allCategories: [...allCategories],
+    gapRows,
+    allCategories,
     categoryProducts
   });
 
@@ -118,7 +122,7 @@ test("operationalization preview proposes hidden import categories for missing t
 
 test("operationalization preview blocks a proposed category when generated slug collides with another database category", () => {
   const preview = buildCatalogPromotionCategoryOperationalizationPreview({
-    gapRows: [gapRows[0]],
+    gapRows: [gapRows[0]!],
     allCategories: [
       ...allCategories,
       {
