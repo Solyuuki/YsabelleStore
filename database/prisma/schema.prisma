@@ -32,6 +32,21 @@ enum CustomerAccountStatus {
   INACTIVE
 }
 
+enum CustomerSocialProvider {
+  GOOGLE
+  FACEBOOK
+}
+
+enum CustomerOAuthTransport {
+  WEB
+  ELECTRON
+}
+
+enum CustomerRememberedAuthMethod {
+  EMAIL
+  MOBILE
+}
+
 enum ProductUnit {
   PIECE
   PACK
@@ -287,19 +302,200 @@ model TrustedDevice {
 }
 
 model CustomerAccount {
-  id           String                @id @default(cuid()) @db.VarChar(191)
-  name         String                @db.VarChar(120)
-  email        String                @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
-  phone        String?               @db.VarChar(40)
-  passwordHash String                @map("password_hash") @db.VarChar(255)
-  status       CustomerAccountStatus @default(ACTIVE)
-  createdAt    DateTime              @default(now()) @map("created_at")
-  updatedAt    DateTime              @updatedAt @map("updated_at")
-  sessions     CustomerSession[]
-  orders       CustomerOrder[]
+  id              String                @id @default(cuid()) @db.VarChar(191)
+  name            String                @db.VarChar(120)
+  username        String?               @unique(map: "uq_customer_accounts_username") @db.VarChar(30)
+  email           String                @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
+  phone           String?               @db.VarChar(40)
+  phoneNormalized String?               @unique(map: "uq_customer_accounts_phone_normalized") @map("phone_normalized") @db.VarChar(16)
+  emailVerifiedAt DateTime?             @map("email_verified_at")
+  phoneVerifiedAt DateTime?             @map("phone_verified_at")
+  passwordHash    String?               @map("password_hash") @db.VarChar(255)
+  status          CustomerAccountStatus @default(ACTIVE)
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  sessions            CustomerSession[]
+  passwordResetTokens CustomerPasswordResetToken[]
+  socialIdentities    CustomerSocialIdentity[]
+  socialLinkIntents   CustomerSocialLinkIntent[]
+  oauthHandoffs       CustomerOAuthHandoff[]
+  orders              CustomerOrder[]
+  rememberedAuth       CustomerRememberedAuth[]
 
   @@index([status], map: "idx_customer_accounts_status")
   @@map("customer_accounts")
+}
+
+model CustomerRememberedAuth {
+  id                String                       @id @default(cuid()) @db.VarChar(191)
+  browserTokenHash  String                       @map("browser_token_hash") @db.VarChar(64)
+  customerAccountId String                       @map("customer_account_id") @db.VarChar(191)
+  authMethod        CustomerRememberedAuthMethod @map("auth_method")
+  trustedUntil      DateTime                     @map("trusted_until")
+  lastUsedAt        DateTime?                    @map("last_used_at")
+  createdAt         DateTime                     @default(now()) @map("created_at")
+  updatedAt         DateTime                     @updatedAt @map("updated_at")
+  customerAccount   CustomerAccount              @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([browserTokenHash, customerAccountId], map: "uq_customer_remembered_auth_browser_customer")
+  @@index([browserTokenHash], map: "idx_customer_remembered_auth_browser")
+  @@index([customerAccountId], map: "idx_customer_remembered_auth_customer")
+  @@index([trustedUntil], map: "idx_customer_remembered_auth_trusted_until")
+  @@map("customer_remembered_auth")
+}
+
+model CustomerMobileAuthChallenge {
+  id                String    @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String?   @map("customer_account_id") @db.VarChar(191)
+  phoneNormalized   String    @map("phone_normalized") @db.VarChar(16)
+  otpHash           String    @map("otp_hash") @db.VarChar(64)
+  expiresAt         DateTime  @map("expires_at")
+  consumedAt        DateTime? @map("consumed_at")
+  failedAttempts    Int       @default(0) @map("failed_attempts") @db.UnsignedInt
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@index([phoneNormalized, createdAt], map: "idx_customer_mobile_auth_challenges_phone_created")
+  @@index([customerAccountId], map: "idx_customer_mobile_auth_challenges_customer")
+  @@index([expiresAt], map: "idx_customer_mobile_auth_challenges_expires")
+  @@index([consumedAt], map: "idx_customer_mobile_auth_challenges_consumed")
+  @@map("customer_mobile_auth_challenges")
+}
+
+model CustomerMobileRegistrationChallenge {
+  id                     String    @id @db.VarChar(191)
+  registrationIntentHash String    @map("registration_intent_hash") @db.VarChar(64)
+  phoneNormalized        String    @map("phone_normalized") @db.VarChar(16)
+  otpHash                String    @map("otp_hash") @db.VarChar(64)
+  expiresAt              DateTime  @map("expires_at")
+  consumedAt             DateTime? @map("consumed_at")
+  failedAttempts         Int       @default(0) @map("failed_attempts") @db.UnsignedInt
+  createdAt              DateTime  @default(now()) @map("created_at")
+
+  @@index([registrationIntentHash, createdAt], map: "idx_customer_mobile_registration_intent_created")
+  @@index([phoneNormalized, createdAt], map: "idx_customer_mobile_registration_phone_created")
+  @@index([expiresAt], map: "idx_customer_mobile_registration_expires")
+  @@index([consumedAt], map: "idx_customer_mobile_registration_consumed")
+  @@map("customer_mobile_registration_challenges")
+}
+
+model CustomerEmailRegistrationChallenge {
+  id                     String    @id @db.VarChar(191)
+  registrationIntentHash String    @map("registration_intent_hash") @db.VarChar(64)
+  emailNormalized        String    @map("email_normalized") @db.VarChar(191)
+  otpHash                String    @map("otp_hash") @db.VarChar(64)
+  expiresAt              DateTime  @map("expires_at")
+  consumedAt             DateTime? @map("consumed_at")
+  failedAttempts         Int       @default(0) @map("failed_attempts") @db.UnsignedInt
+  createdAt              DateTime  @default(now()) @map("created_at")
+
+  @@index([registrationIntentHash, createdAt], map: "idx_customer_email_registration_intent_created")
+  @@index([emailNormalized, createdAt], map: "idx_customer_email_registration_email_created")
+  @@index([expiresAt], map: "idx_customer_email_registration_expires")
+  @@index([consumedAt], map: "idx_customer_email_registration_consumed")
+  @@map("customer_email_registration_challenges")
+}
+
+model CustomerEmailAuthChallenge {
+  id                String    @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String?   @map("customer_account_id") @db.VarChar(191)
+  emailNormalized   String    @map("email_normalized") @db.VarChar(191)
+  otpHash           String    @map("otp_hash") @db.VarChar(64)
+  expiresAt         DateTime  @map("expires_at")
+  consumedAt        DateTime? @map("consumed_at")
+  failedAttempts    Int       @default(0) @map("failed_attempts") @db.UnsignedInt
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@index([emailNormalized, createdAt], map: "idx_customer_email_auth_email_created")
+  @@index([customerAccountId], map: "idx_customer_email_auth_customer")
+  @@index([expiresAt], map: "idx_customer_email_auth_expires")
+  @@index([consumedAt], map: "idx_customer_email_auth_consumed")
+  @@map("customer_email_auth_challenges")
+}
+
+model CustomerSocialIdentity {
+  id                    String                 @id @default(cuid()) @db.VarChar(191)
+  customerAccountId     String                 @map("customer_account_id") @db.VarChar(191)
+  provider              CustomerSocialProvider
+  providerSubject       String                 @map("provider_subject") @db.VarChar(191)
+  providerEmail         String?                @map("provider_email") @db.VarChar(191)
+  providerEmailVerified Boolean                @default(false) @map("provider_email_verified")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  customerAccount       CustomerAccount        @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([provider, providerSubject], map: "uq_customer_social_identities_provider_subject")
+  @@unique([customerAccountId, provider], map: "uq_customer_social_identities_customer_provider")
+  @@index([providerEmail], map: "idx_customer_social_identities_email")
+  @@map("customer_social_identities")
+}
+
+model CustomerSocialLinkIntent {
+  id                String                 @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String                 @map("customer_account_id") @db.VarChar(191)
+  tokenHash         String                 @unique(map: "uq_customer_social_link_intents_token_hash") @map("token_hash") @db.VarChar(64)
+  provider          CustomerSocialProvider
+  providerSubject   String                 @map("provider_subject") @db.VarChar(191)
+  providerEmail     String                 @map("provider_email") @db.VarChar(191)
+  expiresAt         DateTime               @map("expires_at")
+  usedAt            DateTime?              @map("used_at")
+  createdAt         DateTime               @default(now()) @map("created_at")
+  customerAccount   CustomerAccount        @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([customerAccountId], map: "idx_customer_social_link_intents_customer")
+  @@index([expiresAt], map: "idx_customer_social_link_intents_expires")
+  @@index([usedAt], map: "idx_customer_social_link_intents_used")
+  @@map("customer_social_link_intents")
+}
+
+model CustomerOAuthTransaction {
+  id                     String                 @id @default(cuid()) @db.VarChar(191)
+  provider               CustomerSocialProvider
+  transport              CustomerOAuthTransport
+  stateHash              String                 @unique(map: "uq_customer_oauth_transactions_state_hash") @map("state_hash") @db.VarChar(64)
+  browserBindingHash     String?                @map("browser_binding_hash") @db.VarChar(64)
+  pkceVerifierCiphertext String                 @map("pkce_verifier_ciphertext") @db.Text
+  nonceCiphertext        String?                @map("nonce_ciphertext") @db.Text
+  nonceHash              String?                @map("nonce_hash") @db.VarChar(64)
+  electronChallenge      String?                @map("electron_challenge") @db.VarChar(86)
+  returnPath             String                 @default("/") @map("return_path") @db.VarChar(255)
+  expiresAt              DateTime               @map("expires_at")
+  consumedAt             DateTime?              @map("consumed_at")
+  createdAt              DateTime               @default(now()) @map("created_at")
+
+  @@index([expiresAt], map: "idx_customer_oauth_transactions_expires")
+  @@index([consumedAt], map: "idx_customer_oauth_transactions_consumed")
+  @@map("customer_oauth_transactions")
+}
+
+model CustomerOAuthHandoff {
+  id                String          @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String          @map("customer_account_id") @db.VarChar(191)
+  codeHash          String          @unique(map: "uq_customer_oauth_handoffs_code_hash") @map("code_hash") @db.VarChar(64)
+  verifierChallenge String          @map("verifier_challenge") @db.VarChar(86)
+  expiresAt         DateTime        @map("expires_at")
+  usedAt            DateTime?       @map("used_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([customerAccountId], map: "idx_customer_oauth_handoffs_customer")
+  @@index([expiresAt], map: "idx_customer_oauth_handoffs_expires")
+  @@index([usedAt], map: "idx_customer_oauth_handoffs_used")
+  @@map("customer_oauth_handoffs")
+}
+
+model CustomerPasswordResetToken {
+  id                String          @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String          @map("customer_account_id") @db.VarChar(191)
+  tokenHash         String          @unique(map: "uq_customer_password_reset_tokens_token_hash") @map("token_hash") @db.VarChar(64)
+  expiresAt         DateTime        @map("expires_at")
+  usedAt            DateTime?       @map("used_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([customerAccountId], map: "idx_customer_password_reset_tokens_customer")
+  @@index([expiresAt], map: "idx_customer_password_reset_tokens_expires")
+  @@index([usedAt], map: "idx_customer_password_reset_tokens_used")
+  @@map("customer_password_reset_tokens")
 }
 
 model CustomerSession {
@@ -493,9 +689,6 @@ model ProductDuplicateCandidate {
   @@map("product_duplicate_candidates")
 }
 
-// Preserves the authoritative workbook identity used by the fallback SARIMA pipeline.
-// This intentionally does not reuse ProductCanonicalMapping, which is reserved for
-// catalog-product deduplication and has two Product foreign keys.
 model SarimaSourceProductMapping {
   id                     String                         @id @default(cuid()) @db.VarChar(191)
   sourceKey              String                         @unique(map: "uq_sarima_source_mapping_key") @map("source_key") @db.VarChar(80)
@@ -890,7 +1083,7 @@ model RecommendationRecord {
   reason              String                 @db.Text
   status              RecommendationStatus   @default(OPEN)
   generatedAt         DateTime               @default(now()) @map("generated_at")
-  resolvedAt          DateTime?              @map("resolved_at")
+  resolvedAt          DateTime?               @map("resolved_at")
   createdAt           DateTime               @default(now()) @map("created_at")
   product             Product                @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   forecastRecord      ForecastRecord?        @relation(fields: [forecastRecordId], references: [id], onDelete: SetNull, onUpdate: Cascade)

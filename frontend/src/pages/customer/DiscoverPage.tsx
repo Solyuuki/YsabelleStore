@@ -98,7 +98,7 @@ function useDeferredStoryScene(sceneId: string, rootMargin: string) {
 }
 
 function DeferredIntelligenceScene() {
-  const { isActivated, sceneRef } = useDeferredStoryScene("discover-smarter", "0px 0px 20% 0px");
+  const { isActivated, sceneRef } = useDeferredStoryScene("discover-smarter", "0px 0px 220% 0px");
 
   if (!isActivated) {
     return (
@@ -219,16 +219,15 @@ function initializeIntelligenceTimeline(
       pin: intelligence,
       pinSpacing: true,
       anticipatePin: 1,
-      fastScrollEnd: true,
       invalidateOnRefresh: true,
-      scrub: 0.55
+      scrub: 0.35
     }
   });
 
   intelligenceTimeline
     .to(intelligenceKicker, { autoAlpha: 1, duration: 0.1, ease: "power2.out", x: 0 }, 0.02)
     .to(intelligenceHeadline, { autoAlpha: 1, duration: 0.16, stagger: 0.035, y: 0 }, 0.1)
-    .to(intelligenceCopy, { autoAlpha: 1, duration: 0.12, x: 0 }, 0.2)
+    .to(intelligenceCopy, { autoAlpha: 1, duration: 0.12, x: -0 }, 0.2)
     .to(
       intelligenceSystem,
       { autoAlpha: 1, duration: 0.18, ease: "power1.out", scale: 1, y: 0 },
@@ -423,7 +422,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             return () => root.classList.remove("story-reduced-motion");
           }
 
-          const scrub = desktop ? 0.9 : tablet ? 0.55 : 0.35;
+          const scrub = desktop ? 0.45 : tablet ? 0.32 : 0.22;
           const progressFill = first<HTMLElement>(".discover-progress__fill");
 
           if (progressFill) {
@@ -536,7 +535,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                       anticipatePin: 1,
                       invalidateOnRefresh: true,
                       onToggle: ({ isActive }) => setBeginningAtmosphere(isActive),
-                      scrub: 0.9
+                      scrub: 0.45
                     }
                   : {
                       trigger: beginning,
@@ -639,7 +638,6 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                   trigger: essentials,
                   start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 84%",
                   end: desktop ? "bottom bottom" : "bottom 16%",
-                  fastScrollEnd: true,
                   invalidateOnRefresh: true,
                   scrub
                 }
@@ -693,6 +691,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
           const location = first<HTMLElement>(".story-location");
           if (location) {
             const realMap = location.querySelector<HTMLElement>(".story-real-map");
+            const locationCopy = location.querySelector<HTMLElement>(".story-location__copy");
             const locationKicker = location.querySelector<HTMLElement>(".story-kicker");
             const locationHeadline = Array.from(
               location.querySelectorAll<HTMLElement>(".story-mask__line")
@@ -712,6 +711,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
 
             if (
               realMap &&
+              locationCopy &&
               locationKicker &&
               locationHeadline.length &&
               mapBadge &&
@@ -724,6 +724,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               locationHandoff
             ) {
               gsap.set(realMap, { autoAlpha: 0, scale: 0.98, y: 18 });
+              gsap.set(locationCopy, { autoAlpha: 0, scale: 0.98, y: 18 });
               gsap.set(locationKicker, { autoAlpha: 0, x: -18 });
               gsap.set(locationHeadline, { autoAlpha: 0, y: 24 });
               gsap.set(mapBadge, { autoAlpha: 0, scale: 0.78, y: 14 });
@@ -750,10 +751,16 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                   { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
                   "map+=0.02"
                 )
+                .addLabel("copy", 0.12)
+                .to(
+                  locationCopy,
+                  { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
+                  "copy"
+                )
                 .to(
                   locationKicker,
                   { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                  0.14
+                  "copy"
                 )
                 .addLabel("headline", 0.2)
                 .to(
@@ -805,7 +812,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             }
             initializeIntelligence(candidate);
             window.requestAnimationFrame(() => {
-              if (mounted) ScrollTrigger.refresh();
+              if (mounted) ScrollTrigger.refresh(true);
             });
           };
 
@@ -963,8 +970,9 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
 
             if (progressFill) progressFill.style.transform = `scaleY(${progress})`;
 
+            const progressVisibilityStart = sceneOwnershipStarts[1] ?? rootTop;
             const nextProgressActive =
-              scrollTop >= rootTop - viewportHeight * 0.75 &&
+              scrollTop >= progressVisibilityStart &&
               scrollTop <= rootBottom - viewportHeight * 0.25;
             if (nextProgressActive !== progressActive) {
               progressActive = nextProgressActive;
@@ -1015,7 +1023,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
       window.cancelAnimationFrame(refreshFrame);
       refreshFrame = window.requestAnimationFrame(() => {
         refreshFrame = 0;
-        if (mounted) ScrollTrigger.refresh();
+        if (mounted) ScrollTrigger.refresh(true);
       });
     };
 

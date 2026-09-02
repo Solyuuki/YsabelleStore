@@ -1,0 +1,223 @@
+name: Phase 9 Catalog Readiness
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "m1/v0.9/feat/catalog-data-readiness"
+    paths:
+      - ".github/workflows/phase9-catalog-readiness.yml"
+      - "backend/src/modules/catalog/**"
+      - "backend/src/scripts/extractSarimaSourceManifest.ts"
+      - "backend/src/scripts/buildDriveImageManifest.ts"
+      - "backend/src/scripts/reconcileCatalogImages.ts"
+      - "backend/src/scripts/generateCatalogPromotionPreview.ts"
+      - "backend/src/scripts/generateCatalogImageSourceSelection.ts"
+      - "backend/src/scripts/generateOperationalCatalogAudit.ts"
+      - "backend/src/scripts/generateApprovedProductBarcodeAudit.ts"
+      - "backend/src/scripts/executeApprovedImportDemotion.ts"
+      - "backend/src/scripts/generateExistingSarimaRehabilitationReadiness.ts"
+      - "backend/src/scripts/generateExistingSarimaBarcodeEvidence.ts"
+      - "backend/src/scripts/generateExistingSarimaBarcodeEnrichmentPreview.ts"
+      - "backend/src/scripts/executeExistingSarimaBarcodeEnrichment.ts"
+      - "backend/src/scripts/generateExistingSarimaBarcodeWriteVerification.ts"
+      - "backend/src/scripts/generateExistingSarimaImageEnrichmentPreview.ts"
+      - "backend/src/scripts/generateUnmatchedCatalogProvenance.ts"
+      - "backend/src/scripts/generateCatalogPromotionExecutionManifest.ts"
+      - "backend/src/scripts/generateCatalogPromotionRequiredFieldReadiness.ts"
+      - "backend/src/scripts/generateCatalogPromotionInactiveStagingPlan.ts"
+      - "backend/src/scripts/generateCatalogPromotionDatabaseMutationPreview.ts"
+      - "backend/src/scripts/generateCatalogPromotionCategoryGapPlan.ts"
+      - "backend/src/scripts/generateCatalogPromotionCategoryOperationalizationPreview.ts"
+      - "backend/src/scripts/generateCatalogPromotionCategoryMutationPlan.ts"
+      - "backend/src/scripts/executeCatalogPromotionCategoryMutationPlan.ts"
+      - "backend/src/scripts/executeTestFixtureCleanup.ts"
+      - "backend/src/scripts/executeKnownNonProductionCatalogCleanup.ts"
+      - "backend/src/controllers/productController.ts"
+      - "backend/src/services/catalogQualityPolicy.ts"
+      - "backend/src/services/productService.ts"
+      - "backend/src/validators/product.validators.ts"
+      - "backend/test/sarima-source-manifest.test.ts"
+      - "backend/test/drive-image-manifest.test.ts"
+      - "backend/test/drive-image-snapshot.test.ts"
+      - "backend/test/catalog-image-reconciliation.test.ts"
+      - "backend/test/catalog-image-reconciliation-report.test.ts"
+      - "backend/test/catalog-image-source-selection.test.ts"
+      - "backend/test/generate-catalog-image-source-selection.test.ts"
+      - "backend/test/catalog-quality-filter.test.ts"
+      - "backend/test/catalog-approved-barcode-audit.test.ts"
+      - "backend/test/catalog-approved-barcode-policy.test.ts"
+      - "backend/test/catalog-approved-import-demotion.test.ts"
+      - "backend/test/catalog-existing-sarima-rehabilitation-readiness.test.ts"
+      - "backend/test/catalog-existing-sarima-barcode-evidence.test.ts"
+      - "backend/test/generate-existing-sarima-barcode-evidence.test.ts"
+      - "backend/test/catalog-existing-sarima-barcode-enrichment-preview.test.ts"
+      - "backend/test/catalog-existing-sarima-barcode-enrichment-execution.test.ts"
+      - "backend/test/catalog-existing-sarima-barcode-write-verification.test.ts"
+      - "backend/test/catalog-existing-sarima-image-enrichment-preview.test.ts"
+      - "backend/test/catalog-promotion-preview.test.ts"
+      - "backend/test/catalog-operational-audit.test.ts"
+      - "backend/test/catalog-operational-audit-blocked-candidates.test.ts"
+      - "backend/test/catalog-operational-unmatched-evidence.test.ts"
+      - "backend/test/catalog-development-seed-quarantine.test.ts"
+      - "backend/test/catalog-legacy-runtime-qa-quarantine.test.ts"
+      - "backend/test/catalog-promotion-execution-manifest.test.ts"
+      - "backend/test/catalog-promotion-required-field-readiness.test.ts"
+      - "backend/test/catalog-promotion-inactive-staging-plan.test.ts"
+      - "backend/test/catalog-promotion-database-mutation-preview.test.ts"
+      - "backend/test/catalog-promotion-category-gap-plan.test.ts"
+      - "backend/test/catalog-promotion-category-operationalization-preview.test.ts"
+      - "backend/test/catalog-promotion-category-mutation-plan.test.ts"
+      - "backend/test/catalog-promotion-category-mutation-execution.test.ts"
+      - "backend/test/catalog-test-fixture-cleanup.test.ts"
+      - "backend/test/catalog-known-non-production-cleanup.test.ts"
+      - "backend/test/execute-catalog-promotion-category-mutation-plan.test.ts"
+      - "backend/test/generate-catalog-promotion-preview.test.ts"
+      - "backend/test/generate-catalog-operational-audit.test.ts"
+      - "backend/test/generate-unmatched-catalog-provenance.test.ts"
+      - "backend/test/generate-catalog-promotion-execution-manifest.test.ts"
+      - "backend/test/generate-catalog-promotion-required-field-readiness.test.ts"
+      - "backend/test/generate-catalog-promotion-inactive-staging-plan.test.ts"
+      - "backend/test/generate-catalog-promotion-database-mutation-preview.test.ts"
+      - "backend/test/generate-catalog-promotion-category-gap-plan.test.ts"
+      - "backend/test/generate-catalog-promotion-category-operationalization-preview.test.ts"
+      - "backend/test/generate-catalog-promotion-category-mutation-plan.test.ts"
+      - "backend/test/reconcile-catalog-images-script.test.ts"
+      - "frontend/src/pages/ProductsPage.tsx"
+      - "frontend/src/services/catalogApi.ts"
+      - "scripts/catalog-quality-filter-ui-test.ts"
+      - "catalog-image-engine/**"
+      - "data/forecasting/historical-sales-2024.xlsx"
+      - "data/forecasting/historical-sales-2025.xlsx"
+      - "artifacts/catalog/phase9/**"
+      - "docs/catalog/phase9-image-reconciliation-report.md"
+      - "docs/catalog/phase9-catalog-promotion-preview.md"
+      - "docs/catalog/phase9-operational-catalog-audit.md"
+      - "docs/catalog/phase9-approved-product-barcode-audit.md"
+      - "docs/catalog/phase9-existing-sarima-rehabilitation-readiness.md"
+      - "docs/catalog/phase9-existing-sarima-barcode-evidence.md"
+      - "docs/catalog/phase9-existing-sarima-barcode-enrichment-preview.md"
+      - "docs/catalog/phase9-existing-sarima-image-enrichment-preview.md"
+      - "docs/catalog/phase9-unmatched-catalog-provenance.md"
+      - "docs/catalog/phase9-catalog-promotion-execution-manifest.md"
+      - "docs/catalog/phase9-catalog-promotion-required-field-readiness.md"
+      - "docs/catalog/phase9-catalog-promotion-inactive-staging-plan.md"
+      - "docs/catalog/phase9-catalog-promotion-database-mutation-preview.md"
+      - "docs/catalog/phase9-catalog-promotion-category-gap-plan.md"
+      - "docs/catalog/phase9-catalog-promotion-category-operationalization-preview.md"
+      - "docs/catalog/phase9-catalog-promotion-category-mutation-plan.md"
+
+permissions:
+  contents: read
+
+jobs:
+  catalog-manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm ci
+      - name: Install catalog image engine dependencies
+        run: python -m pip install -r catalog-image-engine/requirements.txt
+      - name: Compile backend
+        run: npm run build --workspace backend
+      - name: Compile frontend
+        run: npm run build --workspace frontend
+      - name: Run focused catalog readiness contracts
+        run: >-
+          npx tsx --test
+          backend/test/sarima-source-manifest.test.ts
+          backend/test/drive-image-manifest.test.ts
+          backend/test/drive-image-snapshot.test.ts
+          backend/test/catalog-image-reconciliation.test.ts
+          backend/test/catalog-image-reconciliation-report.test.ts
+          backend/test/catalog-image-source-selection.test.ts
+          backend/test/generate-catalog-image-source-selection.test.ts
+          backend/test/catalog-quality-filter.test.ts
+          backend/test/catalog-approved-barcode-audit.test.ts
+          backend/test/catalog-approved-barcode-policy.test.ts
+          backend/test/catalog-approved-import-demotion.test.ts
+          backend/test/catalog-existing-sarima-rehabilitation-readiness.test.ts
+          backend/test/catalog-existing-sarima-barcode-evidence.test.ts
+          backend/test/generate-existing-sarima-barcode-evidence.test.ts
+          backend/test/catalog-existing-sarima-barcode-enrichment-preview.test.ts
+          backend/test/catalog-existing-sarima-barcode-enrichment-execution.test.ts
+          backend/test/catalog-existing-sarima-barcode-write-verification.test.ts
+          backend/test/catalog-existing-sarima-image-enrichment-preview.test.ts
+          backend/test/catalog-promotion-preview.test.ts
+          backend/test/catalog-operational-audit.test.ts
+          backend/test/catalog-operational-audit-blocked-candidates.test.ts
+          backend/test/catalog-operational-unmatched-evidence.test.ts
+          backend/test/catalog-development-seed-quarantine.test.ts
+          backend/test/catalog-legacy-runtime-qa-quarantine.test.ts
+          backend/test/catalog-promotion-execution-manifest.test.ts
+          backend/test/catalog-promotion-required-field-readiness.test.ts
+          backend/test/catalog-promotion-inactive-staging-plan.test.ts
+          backend/test/catalog-promotion-database-mutation-preview.test.ts
+          backend/test/catalog-promotion-category-gap-plan.test.ts
+          backend/test/catalog-promotion-category-operationalization-preview.test.ts
+          backend/test/catalog-promotion-category-mutation-plan.test.ts
+          backend/test/catalog-promotion-category-mutation-execution.test.ts
+          backend/test/catalog-test-fixture-cleanup.test.ts
+          backend/test/catalog-known-non-production-cleanup.test.ts
+          backend/test/execute-catalog-promotion-category-mutation-plan.test.ts
+          backend/test/generate-catalog-promotion-preview.test.ts
+          backend/test/generate-catalog-operational-audit.test.ts
+          backend/test/generate-unmatched-catalog-provenance.test.ts
+          backend/test/generate-catalog-promotion-execution-manifest.test.ts
+          backend/test/generate-catalog-promotion-required-field-readiness.test.ts
+          backend/test/generate-catalog-promotion-inactive-staging-plan.test.ts
+          backend/test/generate-catalog-promotion-database-mutation-preview.test.ts
+          backend/test/generate-catalog-promotion-category-gap-plan.test.ts
+          backend/test/generate-catalog-promotion-category-operationalization-preview.test.ts
+          backend/test/generate-catalog-promotion-category-mutation-plan.test.ts
+          backend/test/reconcile-catalog-images-script.test.ts
+      - name: Run catalog quality filter UI contract
+        run: npx tsx scripts/catalog-quality-filter-ui-test.ts
+      - name: Run catalog image engine tests
+        env:
+          PYTHONPATH: catalog-image-engine
+        run: python -m unittest discover -s catalog-image-engine/tests -p 'test_*.py'
+      - name: Generate SARIMA source manifest
+        run: npx tsx backend/src/scripts/extractSarimaSourceManifest.ts
+      - name: Generate Drive image manifest
+        run: npx tsx backend/src/scripts/buildDriveImageManifest.ts
+      - name: Generate image reconciliation artifacts
+        run: npx tsx backend/src/scripts/reconcileCatalogImages.ts
+      - name: Generate catalog promotion preview
+        run: npx tsx backend/src/scripts/generateCatalogPromotionPreview.ts
+      - name: Upload SARIMA source manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9-sarima-source-manifest
+          path: artifacts/catalog/phase9/sarima-source-manifest.json
+          if-no-files-found: error
+      - name: Upload Drive image manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9-drive-image-manifest
+          path: artifacts/catalog/phase9/drive-image-manifest.json
+          if-no-files-found: error
+      - name: Upload image reconciliation bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9-image-reconciliation
+          path: |
+            artifacts/catalog/phase9/image-reconciliation.json
+            artifacts/catalog/phase9/image-reconciliation.csv
+            docs/catalog/phase9-image-reconciliation-report.md
+          if-no-files-found: error
+      - name: Upload catalog promotion preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9-catalog-promotion-preview
+          path: |
+            artifacts/catalog/phase9/catalog-promotion-preview.json
+            docs/catalog/phase9-catalog-promotion-preview.md
+          if-no-files-found: error

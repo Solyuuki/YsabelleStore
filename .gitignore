@@ -17,9 +17,11 @@ electron/release/
 database/prisma/generated/
 database/prisma/*.db
 
+# Python bytecode/cache directories
+**/__pycache__/
+*.py[cod]
+
 forecasting-service/.venv/
-forecasting-service/__pycache__/
-forecasting-service/**/__pycache__/
 forecasting-service/data/*
 forecasting-service/outputs/*
 !forecasting-service/data/.gitkeep

@@ -111,6 +111,30 @@ class CatalogImageQualityTests(unittest.TestCase):
         self.assertIn("BACKGROUND_COMPLEXITY_RISK", diagnostic_codes(result))
         self.assertIsNone(result["metrics"]["foregroundOccupancy"])
 
+    def test_white_catalog_background_does_not_create_false_exposure_warning(self) -> None:
+        image = Image.new("RGB", (900, 900), "white")
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((300, 135, 600, 765), fill=(190, 205, 220))
+        for y in range(190, 720, 30):
+            draw.line((340, y, 560, y), fill=(120, 145, 175), width=6)
+        path = self.save("white-canvas-light-product.png", image)
+
+        result = analyze_image_path(path)
+
+        self.assertGreater(result["metrics"]["luminance"], 235)
+        self.assertNotIn("EXPOSURE_RISK", diagnostic_codes(result))
+        self.assertLess(result["metrics"]["exposureLuminance"], 235)
+
+    def test_genuinely_overexposed_foreground_still_gets_exposure_warning(self) -> None:
+        image = Image.new("RGB", (900, 900), "white")
+        ImageDraw.Draw(image).rectangle((250, 120, 650, 780), fill=(220, 240, 250))
+        path = self.save("overexposed-product.png", image)
+
+        result = analyze_image_path(path)
+
+        self.assertIn("EXPOSURE_RISK", diagnostic_codes(result))
+        self.assertGreater(result["metrics"]["exposureLuminance"], 235)
+
     def test_clean_well_framed_source_can_be_approved(self) -> None:
         image = Image.new("RGB", (900, 900), "white")
         draw = ImageDraw.Draw(image)

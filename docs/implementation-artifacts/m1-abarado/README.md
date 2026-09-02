@@ -73,13 +73,13 @@ This artifact set is reconstructed from repository evidence available on `sprint
 
 ## Current Work Snapshot
 
-| Item                 | Value                                                                                                                                                           |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validation status    | Passed                                                                                                                                                          |
-| Last update          | 2026-08-24                                                                                                                                                      |
-| Current branch       | m1/v0.7/fix/sprint6-sprint7-integration                                                                                                                         |
-| Current work areas   | Scripts / CI<br>Other<br>Backend<br>Database<br>Docs<br>Electron<br>Frontend                                                                                    |
-| Current work summary | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. |
+| Item                 | Value                                                                            |
+| -------------------- | -------------------------------------------------------------------------------- |
+| Validation status    | Passed                                                                           |
+| Last update          | 2026-09-01                                                                       |
+| Current branch       | m1/v0.9/feat/customer-mobile-otp                                                 |
+| Current work areas   | Other                                                                            |
+| Current work summary | Updated the implementation evidence and validation notes for the current branch. |
 
 ## Current Work Snapshot
 

@@ -356,6 +356,7 @@ export async function fetchProducts(
   query: {
     search?: string;
     status?: string;
+    dataQualityStatus?: CatalogQualityStatus;
     page?: number;
     pageSize?: number;
   } = {},

@@ -1,0 +1,38 @@
+name: Phase 9 Drive Image Materialization
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "m1/v0.9/feat/catalog-data-readiness"
+    paths:
+      - ".github/workflows/phase9-drive-image-materialization.yml"
+      - "backend/src/modules/catalog/catalog-image-drive-materialization.ts"
+      - "backend/src/modules/catalog/catalog-image-remediation-candidates.ts"
+      - "backend/src/scripts/materializeCatalogDriveImages.ts"
+      - "backend/src/scripts/executeCatalogImageProcessing.ts"
+      - "backend/test/catalog-image-drive-materialization.test.ts"
+      - "backend/test/catalog-image-remediation-candidates.test.ts"
+      - "backend/test/execute-catalog-image-processing.test.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  drive-materialization-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Compile backend
+        run: npm run build --workspace backend
+      - name: Run Drive image materialization contracts
+        run: >-
+          npx tsx --test
+          backend/test/catalog-image-drive-materialization.test.ts
+          backend/test/catalog-image-remediation-candidates.test.ts
+          backend/test/execute-catalog-image-processing.test.ts

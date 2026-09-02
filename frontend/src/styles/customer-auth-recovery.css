@@ -1,0 +1,593 @@
+.customer-auth-page--recovery {
+  min-height: calc(100vh - 76px);
+  padding: clamp(1.5rem, 4vw, 4rem) 1.25rem;
+  background:
+    radial-gradient(circle at 14% 14%, rgb(39 145 255 / 22%), transparent 25rem),
+    radial-gradient(circle at 88% 20%, rgb(140 80 255 / 22%), transparent 28rem),
+    radial-gradient(circle at 72% 86%, rgb(244 63 140 / 18%), transparent 27rem),
+    linear-gradient(135deg, #eaf4ff 0%, #f0edff 48%, #fff0f7 100%);
+}
+
+.customer-auth-page--recovery::before,
+.customer-auth-page--recovery::after {
+  width: 34rem;
+  height: 34rem;
+  border-radius: 50%;
+  filter: blur(54px) saturate(145%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.customer-auth-page--recovery::before {
+  top: -9rem;
+  left: -7rem;
+  background: radial-gradient(
+    circle,
+    rgb(0 140 255 / 38%),
+    rgb(98 91 255 / 14%) 56%,
+    transparent 72%
+  );
+  animation: ysabelle-recovery-drift 18s ease-in-out infinite alternate;
+}
+
+.customer-auth-page--recovery::after {
+  right: -8rem;
+  bottom: -10rem;
+  background: radial-gradient(
+    circle,
+    rgb(244 63 140 / 32%),
+    rgb(168 60 240 / 18%) 56%,
+    transparent 72%
+  );
+  animation: ysabelle-recovery-drift 21s ease-in-out infinite alternate-reverse;
+}
+
+.customer-auth-page--recovery .customer-auth-stage {
+  width: min(100%, 44rem);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin-inline: auto;
+}
+
+.customer-auth-page--recovery .customer-auth-stage::before {
+  inset: -1.6rem;
+  border-radius: 3.2rem;
+  background: conic-gradient(
+    from 210deg,
+    rgb(0 140 255 / 18%),
+    rgb(98 91 255 / 22%),
+    rgb(168 60 240 / 18%),
+    rgb(244 63 140 / 17%),
+    rgb(0 140 255 / 18%)
+  );
+  filter: blur(38px);
+  opacity: 0.9;
+}
+
+.customer-auth-page--recovery .customer-auth-stage__panel {
+  width: 100%;
+  min-width: 0;
+  padding: clamp(1.6rem, 3.5vw, 2.8rem);
+  border: 1px solid rgb(255 255 255 / 76%);
+  border-radius: 2rem;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 78%), rgb(247 247 255 / 72%)), rgb(255 255 255 / 70%);
+  box-shadow:
+    0 30px 90px rgb(34 38 76 / 18%),
+    0 0 48px rgb(98 91 255 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 88%),
+    inset 0 -1px 0 rgb(114 88 245 / 6%);
+  backdrop-filter: blur(30px) saturate(155%);
+}
+
+.customer-recovery-card {
+  width: 100%;
+  max-width: none;
+}
+
+.customer-recovery-progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.7rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgb(110 92 240 / 10%);
+  border-radius: 1.2rem;
+  background: linear-gradient(135deg, rgb(255 255 255 / 64%), rgb(246 245 255 / 52%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 78%);
+}
+
+.customer-recovery-progress__item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.customer-recovery-progress__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgb(74 72 103 / 58%);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.customer-recovery-progress__dot {
+  display: inline-grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border: 1px solid rgb(95 84 205 / 16%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 72%);
+  color: rgb(78 69 158 / 72%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 86%);
+}
+
+.customer-recovery-progress__step--active {
+  color: #2e2751;
+}
+
+.customer-recovery-progress__step--active .customer-recovery-progress__dot,
+.customer-recovery-progress__step--complete .customer-recovery-progress__dot {
+  border-color: transparent;
+  background: linear-gradient(135deg, #168cff, #7658f4 58%, #e957a8);
+  color: #fff;
+  box-shadow: 0 8px 18px rgb(98 91 255 / 24%);
+}
+
+.customer-recovery-progress__line {
+  flex: 1;
+  height: 1px;
+  margin-inline: 0.55rem;
+  background: rgb(93 86 146 / 16%);
+}
+
+.customer-recovery-progress__line--complete {
+  background: linear-gradient(90deg, #2e8cff, #8a5cf0);
+}
+
+.customer-recovery-intro {
+  max-width: 36rem;
+  margin: 0 auto 1.55rem;
+  text-align: center;
+}
+
+.customer-recovery-intro h1 {
+  max-width: 12ch;
+  margin: 0.55rem auto 0;
+  font-size: clamp(2.15rem, 4.5vw, 3.15rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.customer-recovery-intro > p:last-child {
+  max-width: 31rem;
+  margin: 0.8rem auto 0;
+  color: rgb(71 70 96 / 78%);
+  line-height: 1.62;
+}
+
+.customer-recovery-icon {
+  display: inline-grid;
+  width: 3.2rem;
+  height: 3.2rem;
+  place-items: center;
+  margin-inline: auto;
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #168cff 0%, #6f59f1 58%, #df4ea0 100%);
+  color: #fff;
+  box-shadow:
+    0 14px 30px rgb(98 91 255 / 25%),
+    inset 0 1px 0 rgb(255 255 255 / 35%);
+}
+
+.customer-recovery-form {
+  gap: 1rem;
+}
+
+.customer-recovery-form .customer-auth-field > span:first-child {
+  color: #27243f;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.customer-recovery-form .customer-auth-field input {
+  min-height: 56px;
+  border-color: rgb(106 95 180 / 18%);
+  background: linear-gradient(180deg, rgb(255 255 255 / 82%), rgb(249 248 255 / 76%));
+  color: #1f1c36;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 90%),
+    inset 0 0 0 1px rgb(104 89 212 / 2%);
+}
+
+.customer-recovery-form .customer-auth-field input:focus {
+  border-color: rgb(98 91 255 / 48%);
+  box-shadow:
+    0 0 0 4px rgb(98 91 255 / 10%),
+    0 12px 30px rgb(75 70 145 / 8%);
+}
+
+.customer-recovery-code-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.customer-recovery-code-shell::before {
+  position: absolute;
+  inset: -0.55rem -0.6rem;
+  z-index: -1;
+  border-radius: 1.6rem;
+  background: radial-gradient(
+    circle at center,
+    rgb(98 91 255 / 16%),
+    rgb(214 75 157 / 8%) 48%,
+    transparent 76%
+  );
+  filter: blur(24px);
+  content: "";
+  pointer-events: none;
+}
+
+.customer-recovery-code-slots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.customer-recovery-code-slot {
+  position: relative;
+  display: grid;
+  min-height: 72px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(98 91 255 / 16%);
+  border-radius: 1.05rem;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 94%), rgb(245 244 255 / 88%)),
+    linear-gradient(135deg, rgb(22 140 255 / 8%), rgb(118 88 244 / 9%), rgb(233 87 168 / 8%));
+  color: #25213d;
+  font-size: clamp(1.7rem, 4vw, 2.05rem);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  box-shadow:
+    0 14px 34px rgb(70 64 136 / 8%),
+    inset 0 1px 0 rgb(255 255 255 / 96%),
+    inset 0 -1px 0 rgb(98 91 255 / 5%);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease,
+    background 150ms ease;
+}
+
+.customer-recovery-code-slot::before {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    rgb(255 255 255 / 24%),
+    transparent 48%,
+    rgb(129 92 246 / 5%)
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.customer-recovery-code-slot--empty {
+  color: transparent;
+}
+
+.customer-recovery-code-slot--empty::after {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: rgb(87 78 150 / 22%);
+  box-shadow: 0 1px 2px rgb(35 31 67 / 8%);
+  content: "";
+}
+
+.customer-recovery-code-slot--filled {
+  border-color: rgb(98 91 255 / 28%);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 98%), rgb(242 240 255 / 94%)),
+    linear-gradient(135deg, rgb(22 140 255 / 12%), rgb(118 88 244 / 12%), rgb(233 87 168 / 10%));
+  box-shadow:
+    0 16px 38px rgb(98 91 255 / 11%),
+    inset 0 1px 0 rgb(255 255 255 / 98%);
+}
+
+.customer-recovery-code-slot--active {
+  border-color: transparent;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 96%), rgb(245 241 255 / 94%)) padding-box,
+    linear-gradient(135deg, #168cff, #7658f4 58%, #e957a8) border-box;
+  box-shadow:
+    0 0 0 4px rgb(98 91 255 / 9%),
+    0 18px 38px rgb(98 91 255 / 16%),
+    inset 0 1px 0 rgb(255 255 255 / 98%);
+  transform: translateY(-2px);
+}
+
+.customer-recovery-code-slot--active.customer-recovery-code-slot--empty::after {
+  background: linear-gradient(135deg, #168cff, #7658f4 58%, #e957a8);
+  box-shadow: 0 0 0 5px rgb(98 91 255 / 8%);
+}
+
+.customer-recovery-code-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-height: 72px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: transparent !important;
+  caret-color: transparent;
+  opacity: 0;
+  cursor: text;
+}
+
+.customer-recovery-form .customer-auth-submit {
+  position: relative;
+  min-height: 56px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 18%);
+  background: linear-gradient(115deg, #168cff 0%, #6259ef 48%, #d94b9d 100%);
+  box-shadow:
+    0 16px 34px rgb(98 91 255 / 26%),
+    0 0 30px rgb(244 63 140 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 22%);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
+}
+
+.customer-recovery-form .customer-auth-submit::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(105deg, transparent 28%, rgb(255 255 255 / 22%) 47%, transparent 66%);
+  transform: translateX(-130%);
+  transition: transform 360ms ease;
+}
+
+.customer-recovery-form .customer-auth-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: saturate(108%);
+  box-shadow:
+    0 20px 38px rgb(98 91 255 / 30%),
+    0 0 34px rgb(244 63 140 / 12%);
+}
+
+.customer-recovery-form .customer-auth-submit:hover:not(:disabled)::after {
+  transform: translateX(130%);
+}
+
+.customer-recovery-alert {
+  margin-bottom: 1rem;
+}
+
+.customer-recovery-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  padding: 0.9rem 0.95rem;
+  border: 1px solid rgb(111 92 240 / 13%);
+  border-radius: 1rem;
+  background: linear-gradient(
+    135deg,
+    rgb(238 246 255 / 70%),
+    rgb(248 242 255 / 72%),
+    rgb(255 242 249 / 68%)
+  );
+  color: #413b66;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 72%);
+}
+
+.customer-recovery-status__icon {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.72rem;
+  background: rgb(112 88 232 / 9%);
+  color: #7058e8;
+}
+
+.customer-recovery-status div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.customer-recovery-status strong {
+  color: #24203d;
+  font-size: 0.92rem;
+}
+
+.customer-recovery-status span {
+  color: rgb(71 70 96 / 78%);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.customer-recovery-status--success {
+  border-color: rgb(84 110 236 / 14%);
+  background: linear-gradient(
+    135deg,
+    rgb(238 246 255 / 76%),
+    rgb(242 241 255 / 76%),
+    rgb(255 242 249 / 70%)
+  );
+}
+
+.customer-recovery-status--success .customer-recovery-status__icon {
+  background: linear-gradient(135deg, rgb(22 140 255 / 10%), rgb(114 88 245 / 12%));
+  color: #6658e6;
+}
+
+.customer-recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem 0.9rem;
+  margin-top: 1.1rem;
+}
+
+.customer-recovery-back,
+.customer-recovery-secondary,
+.customer-recovery-tertiary,
+.customer-auth-recovery-link {
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.customer-recovery-secondary {
+  min-height: 2.6rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid rgb(98 91 255 / 14%);
+  border-radius: 0.8rem;
+  background: rgb(255 255 255 / 54%);
+  color: #5d50ce;
+  font-weight: 800;
+}
+
+.customer-recovery-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.customer-recovery-tertiary {
+  border: 0;
+  background: transparent;
+  color: rgb(70 65 110 / 72%);
+  font-weight: 750;
+}
+
+.customer-recovery-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  background: transparent;
+  color: #24203d;
+  font-weight: 800;
+}
+
+.customer-recovery-back:hover,
+.customer-recovery-secondary:hover:not(:disabled),
+.customer-recovery-tertiary:hover,
+.customer-auth-recovery-link:hover {
+  color: #cc478f;
+}
+
+.customer-auth-recovery-link-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -0.35rem;
+}
+
+.customer-auth-recovery-link {
+  color: #6253d7;
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+@keyframes ysabelle-recovery-drift {
+  from {
+    transform: translate3d(-2%, -2%, 0) scale(0.96);
+  }
+
+  to {
+    transform: translate3d(8%, 10%, 0) scale(1.08);
+  }
+}
+
+@media (min-width: 761px) {
+  .customer-recovery-intro h1 {
+    max-width: none;
+    white-space: nowrap;
+    font-size: clamp(2.5rem, 3.6vw, 3.05rem);
+  }
+}
+
+@media (max-width: 760px) {
+  .customer-auth-page--recovery {
+    min-height: calc(100vh - 64px);
+    padding: 1rem 0.8rem 2rem;
+  }
+
+  .customer-auth-page--recovery .customer-auth-stage {
+    width: min(100%, 36rem);
+  }
+
+  .customer-auth-page--recovery .customer-auth-stage__panel {
+    padding: 1.2rem 0.95rem 1.45rem;
+    border-radius: 1.45rem;
+  }
+
+  .customer-recovery-progress {
+    padding: 0.65rem 0.55rem;
+  }
+
+  .customer-recovery-progress__step {
+    gap: 0.3rem;
+    font-size: 0.68rem;
+  }
+
+  .customer-recovery-progress__dot {
+    width: 1.55rem;
+    height: 1.55rem;
+  }
+
+  .customer-recovery-progress__line {
+    margin-inline: 0.3rem;
+  }
+
+  .customer-recovery-intro h1 {
+    max-width: 13ch;
+    font-size: clamp(2rem, 10vw, 2.75rem);
+    white-space: normal;
+  }
+
+  .customer-recovery-code-slots {
+    gap: 0.42rem;
+  }
+
+  .customer-recovery-code-slot {
+    min-height: 60px;
+    border-radius: 0.82rem;
+    font-size: 1.45rem;
+  }
+
+  .customer-recovery-code-input {
+    min-height: 60px !important;
+  }
+
+  .customer-recovery-actions {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-auth-page--recovery::before,
+  .customer-auth-page--recovery::after,
+  .customer-recovery-form .customer-auth-submit,
+  .customer-recovery-form .customer-auth-submit::after,
+  .customer-recovery-code-slot {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}

@@ -6,6 +6,7 @@ import test from "node:test";
 import { createApp } from "../src/app.js";
 import { prisma } from "../src/database/prismaClient.js";
 import { registerCustomer } from "../src/services/customerAuthService.js";
+import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
 
 const CUSTOMER_COOKIE_NAME = "ysabelle_customer_session";
 const PASSWORD = "CustomerPass123!";
@@ -49,77 +50,77 @@ function customerCookie(sessionToken: string) {
   return `${CUSTOMER_COOKIE_NAME}=${sessionToken}`;
 }
 
+function testPhone(suffix: string, offset = 0) {
+  const numeric = (Number.parseInt(suffix, 16) + offset) % 10_000_000;
+  return `0917${numeric.toString().padStart(7, "0")}`;
+}
+
 async function createFixture() {
+  const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
-  const category = await prisma.category.create({
-    data: {
-      name: `Customer Order Test ${suffix}`,
-      slug: `customer-order-test-${suffix}`,
-      isActive: true,
-      recordSource: "CATALOG",
-      dataQualityStatus: "APPROVED",
-      isStorefrontVisible: true
-    }
-  });
-  const product = await prisma.product.create({
-    data: {
-      categoryId: category.id,
-      sku: `CUSTOMER-ORDER-${suffix}`,
-      name: `Customer Order Product ${suffix}`,
-      imageUrl: `/images/products/customer-order-${suffix}.webp`,
-      unit: "PIECE",
-      costPrice: "10.00",
-      sellingPrice: "15.00",
-      reorderLevel: 2,
-      targetStockLevel: 8,
-      status: "ACTIVE",
-      recordSource: "CATALOG",
-      dataQualityStatus: "APPROVED",
-      isStorefrontVisible: true,
-      inventory: { create: { quantityOnHand: 8 } },
-      inventoryBatches: {
-        create: {
-          batchCode: `CUSTOMER-ORDER-BATCH-${suffix}`,
-          quantityReceived: 8,
-          quantityRemaining: 8,
-          unitCost: "10.00",
-          status: "AVAILABLE"
+
+  try {
+    const category = await prisma.category.create({
+      data: {
+        name: `Customer Order Test ${suffix}`,
+        slug: `customer-order-test-${suffix}`,
+        isActive: true,
+        recordSource: "CATALOG",
+        dataQualityStatus: "APPROVED",
+        isStorefrontVisible: true
+      }
+    });
+    const product = await prisma.product.create({
+      data: {
+        categoryId: category.id,
+        sku: `CUSTOMER-ORDER-${suffix}`,
+        name: `Customer Order Product ${suffix}`,
+        imageUrl: `/images/products/customer-order-${suffix}.webp`,
+        unit: "PIECE",
+        costPrice: "10.00",
+        sellingPrice: "15.00",
+        reorderLevel: 2,
+        targetStockLevel: 8,
+        status: "ACTIVE",
+        recordSource: "CATALOG",
+        dataQualityStatus: "APPROVED",
+        isStorefrontVisible: true,
+        inventory: { create: { quantityOnHand: 8 } },
+        inventoryBatches: {
+          create: {
+            batchCode: `CUSTOMER-ORDER-BATCH-${suffix}`,
+            quantityReceived: 8,
+            quantityRemaining: 8,
+            unitCost: "10.00",
+            status: "AVAILABLE"
+          }
         }
       }
-    }
-  });
-  const customerA = await registerCustomer({
-    name: "Customer A",
-    email: `customer-a-${suffix}@example.com`,
-    phone: "09171234567",
-    password: PASSWORD
-  });
-  const customerB = await registerCustomer({
-    name: "Customer B",
-    email: `customer-b-${suffix}@example.com`,
-    phone: "09179876543",
-    password: PASSWORD
-  });
+    });
+    const customerA = await registerCustomer({
+      name: "Customer A",
+      username: `customer.a.${suffix}`,
+      email: `customer-a-${suffix}@example.com`,
+      phone: testPhone(suffix),
+      password: PASSWORD
+    });
+    const customerB = await registerCustomer({
+      name: "Customer B",
+      username: `customer.b.${suffix}`,
+      email: `customer-b-${suffix}@example.com`,
+      phone: testPhone(suffix, 1),
+      password: PASSWORD
+    });
 
-  return { category, customerA, customerB, product };
+    return { category, customerA, customerB, product, scope };
+  } catch (error) {
+    await scope.cleanup();
+    throw error;
+  }
 }
 
 async function cleanupFixture(fixture: Awaited<ReturnType<typeof createFixture>>) {
-  await prisma.customerOrder.deleteMany({
-    where: { items: { some: { productId: fixture.product.id } } }
-  });
-  await prisma.customerSession.deleteMany({
-    where: {
-      customerAccountId: { in: [fixture.customerA.customer.id, fixture.customerB.customer.id] }
-    }
-  });
-  await prisma.customerAccount.deleteMany({
-    where: { id: { in: [fixture.customerA.customer.id, fixture.customerB.customer.id] } }
-  });
-  await prisma.inventoryBatch.deleteMany({ where: { productId: fixture.product.id } });
-  await prisma.inventory.deleteMany({ where: { productId: fixture.product.id } });
-  await prisma.product.delete({ where: { id: fixture.product.id } });
-  await prisma.category.delete({ where: { id: fixture.category.id } });
+  await fixture.scope.cleanup();
 }
 
 function orderInput(productId: string, customerName: string) {

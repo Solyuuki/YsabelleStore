@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - "m1/v0.9/feat/customer-social-auth"
+      - "m1/v0.9/feat/customer-mobile-otp"
   pull_request:
     branches:
       - main
@@ -40,6 +42,7 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
       JWT_SECRET: ci-only-secret
+      CUSTOMER_OAUTH_TRANSACTION_KEY: ci-only-oauth-transaction-key-32-bytes-minimum
       FRONTEND_URL: http://localhost:5173
       YSABELLE_BRANCH: ${{ github.head_ref || github.ref_name }}
       YSABELLE_BASE_REF: ${{ github.base_ref }}

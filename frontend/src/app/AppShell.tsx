@@ -18,6 +18,7 @@ import { HistoricalSalesPage } from "@/pages/HistoricalSalesPage";
 import { ProtectedPage } from "@/pages/ProtectedPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
+import "@/styles/auth-brand.css";
 import { wait } from "@/utils/timing";
 
 const LAUNCH_SPLASH_DELAY_MS = 250;

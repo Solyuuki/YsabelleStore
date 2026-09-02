@@ -81,7 +81,7 @@ export function LogoutConfirmationModal({
       className="logout-modal-enter fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-6 py-8 backdrop-blur-sm"
       role="dialog"
     >
-      <div className="w-[min(92vw,600px)] rounded-md border border-slate-200 bg-white text-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.24)]">
+      <div className="w-[min(92vw,600px)] overflow-hidden rounded-xl border border-indigo-100 bg-white/95 text-slate-950 shadow-[0_28px_90px_rgba(30,41,59,0.26)] backdrop-blur-xl">
         <div className="flex items-start gap-5 border-b border-slate-100 px-7 py-6">
           <div
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-50 text-amber-700"
@@ -101,7 +101,7 @@ export function LogoutConfirmationModal({
         </div>
 
         <div className="px-7 py-5">
-          <div className="flex items-center gap-3.5 rounded-md border border-emerald-100 bg-emerald-50/80 px-4 py-3.5 text-sm leading-6 text-emerald-800">
+          <div className="flex items-center gap-3.5 rounded-lg border border-indigo-200 bg-indigo-50/80 px-4 py-3.5 text-sm leading-6 text-indigo-800 shadow-[0_8px_24px_rgba(98,91,255,0.07)]">
             <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>
               {isLoggingOut
@@ -111,7 +111,7 @@ export function LogoutConfirmationModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-slate-100 px-7 py-5">
+        <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/55 px-7 py-5">
           <Button
             className="h-11 px-4"
             disabled={isLoggingOut}
@@ -123,7 +123,7 @@ export function LogoutConfirmationModal({
             Cancel
           </Button>
           <Button
-            className="h-11 bg-amber-600 px-4 text-white hover:bg-amber-700"
+            className="h-11 border-0 bg-gradient-to-r from-rose-500 via-fuchsia-500 to-fuchsia-600 px-4 text-white shadow-[0_10px_26px_rgba(217,70,239,0.2)] hover:from-rose-600 hover:via-fuchsia-600 hover:to-fuchsia-700"
             disabled={isLoggingOut}
             onClick={onConfirm}
             ref={confirmButtonRef}
