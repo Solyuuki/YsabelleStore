@@ -90,12 +90,19 @@ test("approved barcode audit separates missing barcodes without guessing provena
   });
 
   assert.deepEqual(
-    audit.rows.map((row) => ({
-      id: row.productId,
-      barcodeStatus: row.barcodeStatus,
-      sarimaSourceProductId: row.sarimaSourceProductId,
-      protectedReferenceCount: row.protectedReferenceCount
-    })),
+    audit.rows.map(
+      (row: {
+        barcodeStatus: "MISSING" | "PRESENT";
+        productId: string;
+        protectedReferenceCount: number;
+        sarimaSourceProductId: string | null;
+      }) => ({
+        id: row.productId,
+        barcodeStatus: row.barcodeStatus,
+        sarimaSourceProductId: row.sarimaSourceProductId,
+        protectedReferenceCount: row.protectedReferenceCount
+      })
+    ),
     [
       {
         id: "historical-approved",
