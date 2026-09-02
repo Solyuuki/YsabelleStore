@@ -41,6 +41,7 @@ on:
       - "backend/test/drive-image-snapshot.test.ts"
       - "backend/test/catalog-image-reconciliation.test.ts"
       - "backend/test/catalog-image-reconciliation-report.test.ts"
+      - "backend/test/catalog-image-source-selection.test.ts"
       - "backend/test/catalog-quality-filter.test.ts"
       - "backend/test/catalog-approved-barcode-audit.test.ts"
       - "backend/test/catalog-approved-barcode-policy.test.ts"
@@ -134,6 +135,7 @@ jobs:
           backend/test/drive-image-snapshot.test.ts
           backend/test/catalog-image-reconciliation.test.ts
           backend/test/catalog-image-reconciliation-report.test.ts
+          backend/test/catalog-image-source-selection.test.ts
           backend/test/catalog-quality-filter.test.ts
           backend/test/catalog-approved-barcode-audit.test.ts
           backend/test/catalog-approved-barcode-policy.test.ts
