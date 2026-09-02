@@ -44,6 +44,7 @@ on:
       - "backend/test/catalog-promotion-category-operationalization-preview.test.ts"
       - "backend/test/catalog-promotion-category-mutation-plan.test.ts"
       - "backend/test/catalog-promotion-category-mutation-execution.test.ts"
+      - "backend/test/execute-catalog-promotion-category-mutation-plan.test.ts"
       - "backend/test/generate-catalog-promotion-preview.test.ts"
       - "backend/test/generate-catalog-operational-audit.test.ts"
       - "backend/test/generate-unmatched-catalog-provenance.test.ts"
@@ -119,6 +120,7 @@ jobs:
           backend/test/catalog-promotion-category-operationalization-preview.test.ts
           backend/test/catalog-promotion-category-mutation-plan.test.ts
           backend/test/catalog-promotion-category-mutation-execution.test.ts
+          backend/test/execute-catalog-promotion-category-mutation-plan.test.ts
           backend/test/generate-catalog-promotion-preview.test.ts
           backend/test/generate-catalog-operational-audit.test.ts
           backend/test/generate-unmatched-catalog-provenance.test.ts
