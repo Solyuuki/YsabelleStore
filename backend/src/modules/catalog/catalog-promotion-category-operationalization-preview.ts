@@ -37,8 +37,10 @@ export type CatalogPromotionCategoryOperationalizationPreviewRow = {
   sourceCategory: string;
   candidateCount: number;
   decision: CategoryOperationalizationDecision;
+  candidateSlug: string | null;
   proposedCategory: ProposedOperationalCategory | null;
   existingCategoryId: string | null;
+  collisionCategories: CategoryGapDatabaseCategory[];
   seedCategoryProductReferences: number;
   seedCategoryNonSeedProductReferences: number;
   seedCategoryProducts: CategoryOperationalizationSeedProduct[];
@@ -76,6 +78,12 @@ export function slugifyOperationalCategory(value: string) {
     .replace(/-+/g, "-");
 }
 
+function sortCategories(categories: CategoryGapDatabaseCategory[]) {
+  return [...categories].sort((left, right) =>
+    left.id.localeCompare(right.id)
+  );
+}
+
 export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
   gapRows: CatalogPromotionCategoryGapPlanRow[];
   allCategories: CategoryGapDatabaseCategory[];
@@ -108,8 +116,10 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
             sourceCategory: gap.sourceCategory,
             candidateCount: gap.candidateCount,
             decision: "BLOCKED_NAME_COLLISION",
+            candidateSlug: proposedSlug,
             proposedCategory: null,
             existingCategoryId: null,
+            collisionCategories: sortCategories(nameCollisions),
             seedCategoryProductReferences: 0,
             seedCategoryNonSeedProductReferences: 0,
             seedCategoryProducts: []
@@ -121,8 +131,10 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
             sourceCategory: gap.sourceCategory,
             candidateCount: gap.candidateCount,
             decision: "BLOCKED_SLUG_COLLISION",
+            candidateSlug: proposedSlug,
             proposedCategory: null,
             existingCategoryId: null,
+            collisionCategories: sortCategories(slugCollisions),
             seedCategoryProductReferences: 0,
             seedCategoryNonSeedProductReferences: 0,
             seedCategoryProducts: []
@@ -133,6 +145,7 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
           sourceCategory: gap.sourceCategory,
           candidateCount: gap.candidateCount,
           decision: "PROPOSE_CREATE",
+          candidateSlug: proposedSlug,
           proposedCategory: {
             name: gap.sourceCategory,
             slug: proposedSlug,
@@ -142,6 +155,7 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
             isStorefrontVisible: false
           },
           existingCategoryId: null,
+          collisionCategories: [],
           seedCategoryProductReferences: 0,
           seedCategoryNonSeedProductReferences: 0,
           seedCategoryProducts: []
@@ -153,8 +167,10 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
           sourceCategory: gap.sourceCategory,
           candidateCount: gap.candidateCount,
           decision: "REUSE_EXISTING",
+          candidateSlug: null,
           proposedCategory: null,
           existingCategoryId: gap.matchedCategory.id,
+          collisionCategories: [],
           seedCategoryProductReferences: 0,
           seedCategoryNonSeedProductReferences: 0,
           seedCategoryProducts: []
@@ -176,8 +192,10 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
           sourceCategory: gap.sourceCategory,
           candidateCount: gap.candidateCount,
           decision: "REVIEW_ADOPT_SEED",
+          candidateSlug: null,
           proposedCategory: null,
           existingCategoryId: gap.matchedCategory.id,
+          collisionCategories: [],
           seedCategoryProductReferences: references.length,
           seedCategoryNonSeedProductReferences: nonSeedReferences,
           seedCategoryProducts: references
@@ -188,8 +206,10 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
         sourceCategory: gap.sourceCategory,
         candidateCount: gap.candidateCount,
         decision: "REVIEW_REQUIRED",
+        candidateSlug: null,
         proposedCategory: null,
         existingCategoryId: gap.matchedCategory?.id ?? null,
+        collisionCategories: [],
         seedCategoryProductReferences: 0,
         seedCategoryNonSeedProductReferences: 0,
         seedCategoryProducts: []
