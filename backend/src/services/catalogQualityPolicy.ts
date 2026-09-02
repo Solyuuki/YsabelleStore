@@ -6,9 +6,28 @@ import {
 } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
+import { HttpError } from "../utils/httpError.js";
+
 const unresolvedDuplicateStatuses = ["PENDING", "CONFIRMED"] as const;
 
 export const APPROVED_STOREFRONT_PRODUCT_IMAGE_PREFIX = "/images/products/";
+
+export function assertApprovedProductBarcode(input: {
+  barcode: string | null | undefined;
+  dataQualityStatus: "APPROVED" | "NEEDS_REVIEW" | "REJECTED";
+  isStorefrontVisible: boolean;
+}) {
+  const requiresVerifiedBarcode =
+    input.dataQualityStatus === CatalogQualityStatus.APPROVED || input.isStorefrontVisible;
+
+  if (requiresVerifiedBarcode && !input.barcode?.trim()) {
+    throw new HttpError(
+      422,
+      "Approved or storefront-visible products require a verified barcode.",
+      { code: "PRODUCT_BARCODE_APPROVAL_REQUIRED" }
+    );
+  }
+}
 
 export const approvedStorefrontProductImageWhere = {
   OR: [
@@ -39,6 +58,7 @@ export const approvedStorefrontCategoryWhere = {
 } satisfies Prisma.CategoryWhereInput;
 
 export const approvedStorefrontProductCoreWhere = {
+  barcode: { not: null },
   dataQualityStatus: CatalogQualityStatus.APPROVED,
   duplicateCandidatesLeft: {
     none: { status: { in: [...unresolvedDuplicateStatuses] } }
