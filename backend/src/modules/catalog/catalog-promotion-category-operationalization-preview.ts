@@ -2,6 +2,7 @@ import type {
   CatalogPromotionCategoryGapPlanRow,
   CategoryGapDatabaseCategory
 } from "./catalog-promotion-category-gap-plan.js";
+import { isDevelopmentCatalogSeedCategory } from "./development-catalog-seed-category-identities.js";
 import { isDevelopmentCatalogSeedProduct } from "./development-catalog-seed-identities.js";
 
 export type CategoryOperationalizationProduct = {
@@ -27,6 +28,8 @@ export type CategoryOperationalizationDecision =
   | "BLOCKED_SLUG_COLLISION"
   | "REVIEW_REQUIRED";
 
+export type CategoryOperationalizationReuseBasis = "EXACT_NAME" | "SLUG_EQUIVALENCE";
+
 export type CategoryOperationalizationSeedProduct = {
   id: string;
   sku: string;
@@ -38,6 +41,7 @@ export type CatalogPromotionCategoryOperationalizationPreviewRow = {
   candidateCount: number;
   decision: CategoryOperationalizationDecision;
   candidateSlug: string | null;
+  reuseBasis: CategoryOperationalizationReuseBasis | null;
   proposedCategory: ProposedOperationalCategory | null;
   existingCategoryId: string | null;
   collisionCategories: CategoryGapDatabaseCategory[];
@@ -79,8 +83,15 @@ export function slugifyOperationalCategory(value: string) {
 }
 
 function sortCategories(categories: CategoryGapDatabaseCategory[]) {
-  return [...categories].sort((left, right) =>
-    left.id.localeCompare(right.id)
+  return [...categories].sort((left, right) => left.id.localeCompare(right.id));
+}
+
+function isOperationallyReusableCategory(category: CategoryGapDatabaseCategory) {
+  return (
+    !isDevelopmentCatalogSeedCategory(category) &&
+    category.recordSource !== "TEST_FIXTURE" &&
+    category.isActive &&
+    category.dataQualityStatus !== "REJECTED"
   );
 }
 
@@ -117,6 +128,7 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
             candidateCount: gap.candidateCount,
             decision: "BLOCKED_NAME_COLLISION",
             candidateSlug: proposedSlug,
+            reuseBasis: null,
             proposedCategory: null,
             existingCategoryId: null,
             collisionCategories: sortCategories(nameCollisions),
@@ -126,12 +138,36 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
           };
         }
 
+        if (slugCollisions.length === 1) {
+          const existing = slugCollisions[0]!;
+          const existingNameSlug = slugifyOperationalCategory(existing.name);
+          if (
+            existingNameSlug === proposedSlug &&
+            isOperationallyReusableCategory(existing)
+          ) {
+            return {
+              sourceCategory: gap.sourceCategory,
+              candidateCount: gap.candidateCount,
+              decision: "REUSE_EXISTING",
+              candidateSlug: proposedSlug,
+              reuseBasis: "SLUG_EQUIVALENCE",
+              proposedCategory: null,
+              existingCategoryId: existing.id,
+              collisionCategories: [existing],
+              seedCategoryProductReferences: 0,
+              seedCategoryNonSeedProductReferences: 0,
+              seedCategoryProducts: []
+            };
+          }
+        }
+
         if (slugCollisions.length > 0) {
           return {
             sourceCategory: gap.sourceCategory,
             candidateCount: gap.candidateCount,
             decision: "BLOCKED_SLUG_COLLISION",
             candidateSlug: proposedSlug,
+            reuseBasis: null,
             proposedCategory: null,
             existingCategoryId: null,
             collisionCategories: sortCategories(slugCollisions),
@@ -146,6 +182,7 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
           candidateCount: gap.candidateCount,
           decision: "PROPOSE_CREATE",
           candidateSlug: proposedSlug,
+          reuseBasis: null,
           proposedCategory: {
             name: gap.sourceCategory,
             slug: proposedSlug,
@@ -168,6 +205,7 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
           candidateCount: gap.candidateCount,
           decision: "REUSE_EXISTING",
           candidateSlug: null,
+          reuseBasis: "EXACT_NAME",
           proposedCategory: null,
           existingCategoryId: gap.matchedCategory.id,
           collisionCategories: [],
@@ -193,6 +231,7 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
           candidateCount: gap.candidateCount,
           decision: "REVIEW_ADOPT_SEED",
           candidateSlug: null,
+          reuseBasis: null,
           proposedCategory: null,
           existingCategoryId: gap.matchedCategory.id,
           collisionCategories: [],
@@ -207,6 +246,7 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
         candidateCount: gap.candidateCount,
         decision: "REVIEW_REQUIRED",
         candidateSlug: null,
+        reuseBasis: null,
         proposedCategory: null,
         existingCategoryId: gap.matchedCategory?.id ?? null,
         collisionCategories: [],
