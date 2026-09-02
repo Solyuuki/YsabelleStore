@@ -223,11 +223,6 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
       where: { productId: { in: cleanupIds } },
       select: { saleId: true, productId: true }
     });
-    assertExact(
-      "sale items",
-      cleanupSaleItems.length,
-      input.authorization.expectedSaleItems
-    );
     const devSaleItem = cleanupSaleItems.find((row) => devIdSet.has(row.productId));
     if (devSaleItem) {
       fail(
@@ -246,7 +241,6 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
     }
 
     const touchedSaleIds = [...new Set(cleanupSaleItems.map((row) => row.saleId))];
-    assertExact("touched sales", touchedSaleIds.length, input.authorization.expectedSales);
 
     const allTouchedSaleItems =
       touchedSaleIds.length === 0
@@ -264,6 +258,13 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
         `sale ${mixedSaleItem.saleId} contains operational product ${mixedSaleItem.productId}`
       );
     }
+
+    assertExact(
+      "sale items",
+      cleanupSaleItems.length,
+      input.authorization.expectedSaleItems
+    );
+    assertExact("touched sales", touchedSaleIds.length, input.authorization.expectedSales);
 
     const movementRows = await tx.inventoryMovement.findMany({
       where: { productId: { in: cleanupIds } },
