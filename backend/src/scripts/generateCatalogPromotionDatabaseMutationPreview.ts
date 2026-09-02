@@ -11,6 +11,7 @@ import {
   type DatabaseMutationPreviewMapping,
   type DatabaseMutationPreviewProduct
 } from "../modules/catalog/catalog-promotion-database-mutation-preview.js";
+import { slugifyOperationalCategory } from "../modules/catalog/catalog-promotion-category-operationalization-preview.js";
 import type { CatalogPromotionInactiveStagingRow } from "../modules/catalog/catalog-promotion-inactive-staging-plan.js";
 import { resolveRepositoryPath } from "../modules/forecasting/repository-paths.js";
 
@@ -123,14 +124,24 @@ export async function generateCatalogPromotionDatabaseMutationPreview(
 
   const staging = await readJson<StagingArtifact>(stagingPath);
   const categoryNames = uniqueSorted(staging.stageableRows.map((row) => row.plannedCategory));
+  const categorySlugs = uniqueSorted(categoryNames.map(slugifyOperationalCategory));
   const skus = uniqueSorted(staging.stageableRows.map((row) => row.plannedSku));
   const sourceProductIds = uniqueSorted(staging.stageableRows.map((row) => row.productCode));
 
   try {
     const [categories, products, mappings] = await Promise.all([
       client.category.findMany({
-        where: { name: { in: categoryNames } },
-        select: { id: true, name: true, slug: true }
+        where: {
+          OR: [{ name: { in: categoryNames } }, { slug: { in: categorySlugs } }]
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          isActive: true,
+          recordSource: true,
+          dataQualityStatus: true
+        }
       }),
       client.product.findMany({
         where: { sku: { in: skus } },
