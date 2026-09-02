@@ -25,6 +25,7 @@ on:
       - "backend/src/scripts/executeCatalogPromotionCategoryMutationPlan.ts"
       - "backend/src/scripts/executeTestFixtureCleanup.ts"
       - "backend/src/scripts/executeKnownNonProductionCatalogCleanup.ts"
+      - "backend/src/controllers/productController.ts"
       - "backend/src/services/catalogQualityPolicy.ts"
       - "backend/src/services/productService.ts"
       - "backend/src/validators/product.validators.ts"
