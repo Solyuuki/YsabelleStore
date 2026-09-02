@@ -127,7 +127,7 @@ export async function generateExistingSarimaRehabilitationReadiness(
 
   const identities = EXISTING_SARIMA_REHABILITATION_IDENTITIES;
   const productIds = identities.map((row) => row.id);
-  const sourceCodes = new Set(identities.map((row) => row.sarimaSourceProductId));
+  const sourceCodes = new Set<string>(identities.map((row) => row.sarimaSourceProductId));
 
   const [productRows, promotionArtifact] = await Promise.all([
     client.product.findMany({
