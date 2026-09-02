@@ -1,8 +1,10 @@
 import type { CatalogPromotionInactiveStagingRow } from "./catalog-promotion-inactive-staging-plan.js";
+import { isDevelopmentCatalogSeedCategory } from "./development-catalog-seed-category-identities.js";
 
 export type DatabaseMutationPreviewCategory = {
   id: string;
   name: string;
+  slug?: string;
 };
 
 export type DatabaseMutationPreviewProduct = {
@@ -19,6 +21,7 @@ export type DatabaseMutationPreviewMapping = {
 export type ProductMutationBlocker =
   | "CATEGORY_NOT_FOUND"
   | "CATEGORY_AMBIGUOUS"
+  | "DEVELOPMENT_SEED_CATEGORY"
   | "SKU_COLLISION";
 
 export type MappingMutationBlocker =
@@ -59,6 +62,7 @@ export type CatalogPromotionDatabaseMutationPreview = {
     productCreateReady: number;
     productCreateBlocked: number;
     missingCategories: number;
+    developmentSeedCategoryMatches: number;
     skuCollisions: number;
     sourceProductMappingCollisions: number;
     mappingMetadataPending: number;
@@ -103,6 +107,8 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
       productBlockers.push("CATEGORY_NOT_FOUND");
     } else if (categoryMatches.length > 1) {
       productBlockers.push("CATEGORY_AMBIGUOUS");
+    } else if (isDevelopmentCatalogSeedCategory(categoryMatches[0]!)) {
+      productBlockers.push("DEVELOPMENT_SEED_CATEGORY");
     }
 
     if (productSkuSet.has(normalize(staging.plannedSku))) {
@@ -158,6 +164,9 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
       productCreateReady: rows.filter((row) => row.productMutationReadiness === "READY").length,
       productCreateBlocked: rows.filter((row) => row.productMutationReadiness === "BLOCKED").length,
       missingCategories: rows.filter((row) => row.productBlockers.includes("CATEGORY_NOT_FOUND")).length,
+      developmentSeedCategoryMatches: rows.filter((row) =>
+        row.productBlockers.includes("DEVELOPMENT_SEED_CATEGORY")
+      ).length,
       skuCollisions: rows.filter((row) => row.productBlockers.includes("SKU_COLLISION")).length,
       sourceProductMappingCollisions: rows.filter(
         (row) => row.mappingMutationReadiness === "BLOCKED_COLLISION"
