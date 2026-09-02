@@ -37,19 +37,29 @@ type TestCategory = {
   dataQualityStatus?: "APPROVED" | "NEEDS_REVIEW" | "REJECTED";
 };
 
+type ApprovedSeedCategoryReuse = {
+  sourceCategory: string;
+  existingCategoryId: string;
+  decision: "REUSE_EXISTING";
+  reuseBasis: "SEED_CATEGORY_EVIDENCE";
+  blockers: string[];
+};
+
 function build(overrides: {
   stagingRows?: CatalogPromotionInactiveStagingRow[];
   categories?: TestCategory[];
   products?: Array<{ id: string; sku: string }>;
   mappings?: Array<{ sourceKey: string; sourceProductId: string; canonicalProductId: string }>;
+  approvedSeedCategoryReuses?: ApprovedSeedCategoryReuse[];
 } = {}) {
-  return buildCatalogPromotionDatabaseMutationPreview({
+  return (buildCatalogPromotionDatabaseMutationPreview as any)({
     stagingRows: overrides.stagingRows ?? [baseStagingRow],
     categories: overrides.categories ?? [
       { id: "cat_personal_care", name: "Personal Care", slug: "personal-care" }
     ],
     products: overrides.products ?? [],
-    mappings: overrides.mappings ?? []
+    mappings: overrides.mappings ?? [],
+    approvedSeedCategoryReuses: overrides.approvedSeedCategoryReuses ?? []
   });
 }
 
@@ -111,8 +121,75 @@ test("database mutation preview blocks exact development seed categories instead
   assert.equal(row?.productMutationReadiness, "BLOCKED");
   assert.equal(row?.plannedProductCreate, null);
   assert.deepEqual(row?.productBlockers, ["DEVELOPMENT_SEED_CATEGORY"]);
-  assert.equal((preview.summary as any).developmentSeedCategoryMatches, 1);
+  assert.equal(preview.summary.developmentSeedCategoryMatches, 1);
   assert.equal(preview.summary.missingCategories, 0);
+});
+
+test("database mutation preview accepts an exact seed category only when the final category plan approved that exact reuse", () => {
+  const preview = build({
+    stagingRows: [
+      {
+        ...baseStagingRow,
+        productCode: "P008",
+        plannedSku: "SARIMA-P008",
+        plannedName: "Century Tuna Flakes in Oil",
+        plannedCategory: "Canned Goods"
+      }
+    ],
+    categories: [
+      {
+        id: "cat_canned_goods",
+        name: "Canned Goods",
+        slug: "canned-goods",
+        isActive: true,
+        recordSource: "CATALOG",
+        dataQualityStatus: "NEEDS_REVIEW"
+      }
+    ],
+    approvedSeedCategoryReuses: [
+      {
+        sourceCategory: "Canned Goods",
+        existingCategoryId: "cat_canned_goods",
+        decision: "REUSE_EXISTING",
+        reuseBasis: "SEED_CATEGORY_EVIDENCE",
+        blockers: []
+      }
+    ]
+  });
+
+  assert.equal(preview.rows[0]?.productMutationReadiness, "READY");
+  assert.equal(preview.rows[0]?.plannedProductCreate?.categoryId, "cat_canned_goods");
+  assert.deepEqual(preview.rows[0]?.productBlockers, []);
+  assert.equal(preview.summary.developmentSeedCategoryMatches, 0);
+});
+
+test("database mutation preview keeps seed categories blocked when approval does not match the exact category identity", () => {
+  const preview = build({
+    stagingRows: [{ ...baseStagingRow, plannedCategory: "Canned Goods" }],
+    categories: [
+      {
+        id: "cat_canned_goods",
+        name: "Canned Goods",
+        slug: "canned-goods",
+        isActive: true,
+        recordSource: "CATALOG",
+        dataQualityStatus: "NEEDS_REVIEW"
+      }
+    ],
+    approvedSeedCategoryReuses: [
+      {
+        sourceCategory: "Canned Goods",
+        existingCategoryId: "cat_other",
+        decision: "REUSE_EXISTING",
+        reuseBasis: "SEED_CATEGORY_EVIDENCE",
+        blockers: []
+      }
+    ]
+  });
+
+  assert.equal(preview.rows[0]?.productMutationReadiness, "BLOCKED");
+  assert.equal(preview.rows[0]?.plannedProductCreate, null);
+  assert.deepEqual(preview.rows[0]?.productBlockers, ["DEVELOPMENT_SEED_CATEGORY"]);
 });
 
 test("same category name with a non-seed identity remains eligible for operational resolution", () => {
@@ -233,6 +310,15 @@ test("database mutation preview does not reuse a development seed through slug e
         isActive: true,
         recordSource: "CATALOG",
         dataQualityStatus: "NEEDS_REVIEW"
+      }
+    ],
+    approvedSeedCategoryReuses: [
+      {
+        sourceCategory: "Canned Goods",
+        existingCategoryId: "cat_canned_goods",
+        decision: "REUSE_EXISTING",
+        reuseBasis: "SEED_CATEGORY_EVIDENCE",
+        blockers: []
       }
     ]
   });
