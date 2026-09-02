@@ -20,6 +20,7 @@ on:
       - "backend/src/scripts/generateCatalogPromotionDatabaseMutationPreview.ts"
       - "backend/src/scripts/generateCatalogPromotionCategoryGapPlan.ts"
       - "backend/src/scripts/generateCatalogPromotionCategoryOperationalizationPreview.ts"
+      - "backend/src/scripts/generateCatalogPromotionCategoryMutationPlan.ts"
       - "backend/src/services/productService.ts"
       - "backend/src/validators/product.validators.ts"
       - "backend/test/sarima-source-manifest.test.ts"
@@ -50,6 +51,7 @@ on:
       - "backend/test/generate-catalog-promotion-database-mutation-preview.test.ts"
       - "backend/test/generate-catalog-promotion-category-gap-plan.test.ts"
       - "backend/test/generate-catalog-promotion-category-operationalization-preview.test.ts"
+      - "backend/test/generate-catalog-promotion-category-mutation-plan.test.ts"
       - "backend/test/reconcile-catalog-images-script.test.ts"
       - "frontend/src/pages/ProductsPage.tsx"
       - "frontend/src/services/catalogApi.ts"
@@ -68,6 +70,7 @@ on:
       - "docs/catalog/phase9-catalog-promotion-database-mutation-preview.md"
       - "docs/catalog/phase9-catalog-promotion-category-gap-plan.md"
       - "docs/catalog/phase9-catalog-promotion-category-operationalization-preview.md"
+      - "docs/catalog/phase9-catalog-promotion-category-mutation-plan.md"
 
 permissions:
   contents: read
@@ -122,6 +125,7 @@ jobs:
           backend/test/generate-catalog-promotion-database-mutation-preview.test.ts
           backend/test/generate-catalog-promotion-category-gap-plan.test.ts
           backend/test/generate-catalog-promotion-category-operationalization-preview.test.ts
+          backend/test/generate-catalog-promotion-category-mutation-plan.test.ts
           backend/test/reconcile-catalog-images-script.test.ts
       - name: Run catalog quality filter UI contract
         run: npx tsx scripts/catalog-quality-filter-ui-test.ts
