@@ -98,6 +98,8 @@ test("operationalization preview proposes hidden import categories for missing t
 
   const proposed = preview.rows.find((row) => row.sourceCategory === "Snacks / Biscuits & Confectionery");
   assert.equal(proposed?.decision, "PROPOSE_CREATE");
+  assert.equal(proposed?.candidateSlug, "snacks-biscuits-confectionery");
+  assert.deepEqual(proposed?.collisionCategories, []);
   assert.deepEqual(proposed?.proposedCategory, {
     name: "Snacks / Biscuits & Confectionery",
     slug: "snacks-biscuits-confectionery",
@@ -120,25 +122,26 @@ test("operationalization preview proposes hidden import categories for missing t
   ]);
 });
 
-test("operationalization preview blocks a proposed category when generated slug collides with another database category", () => {
+test("operationalization preview blocks a proposed category when generated slug collides with another database category and surfaces the collision evidence", () => {
+  const collisionCategory = {
+    id: "cat_collision",
+    name: "Different Category",
+    slug: "snacks-biscuits-confectionery",
+    isActive: true,
+    recordSource: "IMPORT",
+    dataQualityStatus: "NEEDS_REVIEW",
+    isStorefrontVisible: false
+  } satisfies CategoryGapDatabaseCategory;
+
   const preview = buildCatalogPromotionCategoryOperationalizationPreview({
     gapRows: [gapRows[0]!],
-    allCategories: [
-      ...allCategories,
-      {
-        id: "cat_collision",
-        name: "Different Category",
-        slug: "snacks-biscuits-confectionery",
-        isActive: true,
-        recordSource: "IMPORT",
-        dataQualityStatus: "NEEDS_REVIEW",
-        isStorefrontVisible: false
-      }
-    ],
+    allCategories: [...allCategories, collisionCategory],
     categoryProducts: []
   });
 
   assert.equal(preview.rows[0]?.decision, "BLOCKED_SLUG_COLLISION");
+  assert.equal(preview.rows[0]?.candidateSlug, "snacks-biscuits-confectionery");
+  assert.deepEqual(preview.rows[0]?.collisionCategories, [collisionCategory]);
   assert.equal(preview.rows[0]?.proposedCategory, null);
   assert.equal(preview.summary.blockedSlugCollision, 1);
 });
