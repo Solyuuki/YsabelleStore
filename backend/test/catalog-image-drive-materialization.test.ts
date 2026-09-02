@@ -86,6 +86,7 @@ test("materialization writes downloaded bytes and records SHA-256 provenance", a
     assert.equal(result[0]?.usable, true);
     assert.equal(result[0]?.sha256, "7f61d43a19733c0f0c1e9aecf20840a921b8f222ba750391e64f41d0a9fe80d8");
     assert.equal(result[0]?.sizeBytes, imageBytes.length);
+    assert.equal(result[0]?.attempts, 1);
     assert.equal(result[0]?.error, null);
     assert.deepEqual(
       await readFile(path.join(root, ".data/catalog-image-staging/P022/source.jpg")),
@@ -96,18 +97,51 @@ test("materialization writes downloaded bytes and records SHA-256 provenance", a
   }
 });
 
-test("failed or non-image downloads are recorded unusable and do not create trusted materialization", async () => {
-  const root = await mkdtemp(path.join(os.tmpdir(), "ysabelle-drive-materialize-fail-"));
+test("materialization retries a transient Drive download failure once and records attempts", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "ysabelle-drive-materialize-retry-"));
   try {
     const plan = buildCatalogDriveMaterializationPlan({ rows, driveAssets });
+    const imageBytes = Buffer.from([0xff, 0xd8, 0xff, 0xdb, 0x00, 0x43, 0x00]);
+    let attempts = 0;
     const result = await materializeCatalogDriveImages({
       plan,
       repositoryRoot: root,
-      download: async () => ({ bytes: Buffer.from("<html>login</html>"), contentType: "text/html" })
+      maxAttempts: 2,
+      download: async () => {
+        attempts += 1;
+        if (attempts === 1) throw new Error("HTTP 503 Service Unavailable");
+        return { bytes: imageBytes, contentType: "image/jpeg" };
+      }
     });
 
+    assert.equal(attempts, 2);
+    assert.equal(result[0]?.usable, true);
+    assert.equal(result[0]?.attempts, 2);
+    assert.equal(result[0]?.error, null);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("failed or non-image downloads are recorded unusable with final attempt diagnostics", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "ysabelle-drive-materialize-fail-"));
+  try {
+    const plan = buildCatalogDriveMaterializationPlan({ rows, driveAssets });
+    let attempts = 0;
+    const result = await materializeCatalogDriveImages({
+      plan,
+      repositoryRoot: root,
+      maxAttempts: 2,
+      download: async () => {
+        attempts += 1;
+        return { bytes: Buffer.from("<html>login</html>"), contentType: "text/html" };
+      }
+    });
+
+    assert.equal(attempts, 2);
     assert.equal(result[0]?.usable, false);
     assert.equal(result[0]?.sha256, null);
+    assert.equal(result[0]?.attempts, 2);
     assert.match(result[0]?.error ?? "", /non-image response/i);
   } finally {
     await rm(root, { recursive: true, force: true });
