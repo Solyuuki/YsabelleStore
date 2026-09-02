@@ -159,7 +159,10 @@ function fakeClient(initial: FakeState) {
     },
     saleItem: {
       async findMany(args: any) {
-        if (args?.where?.productId?.in) return initial.saleItems;
+        if (args?.where?.productId?.in) {
+          const productIds = new Set(args.where.productId.in);
+          return initial.saleItems.filter((item) => productIds.has(item.productId));
+        }
         const saleIds = new Set(args?.where?.saleId?.in ?? []);
         return initial.saleItems.filter((item) => saleIds.has(item.saleId));
       }
