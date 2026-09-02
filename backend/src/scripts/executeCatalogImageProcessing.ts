@@ -8,6 +8,7 @@ import {
   materializeCatalogDriveImages,
   type CatalogDriveDownloader
 } from "../modules/catalog/catalog-image-drive-materialization.js";
+import { buildCatalogImageRemediationCandidates } from "../modules/catalog/catalog-image-remediation-candidates.js";
 import {
   buildCatalogImageEngineJobs,
   buildCatalogImageSourceSelection,
@@ -130,6 +131,10 @@ export async function executeCatalogImageProcessing(options: {
     repositoryRoot,
     "reports/catalog-quality/phase9-image-engine-summary.json"
   );
+  const remediationPath = path.join(
+    repositoryRoot,
+    "reports/catalog-quality/phase9-image-remediation-candidates.json"
+  );
   const ciqeOutputRoot = path.join(repositoryRoot, ".data/catalog-image-engine-output");
 
   const [preview, driveAssets, promotion, webEvidence] = await Promise.all([
@@ -174,6 +179,14 @@ export async function executeCatalogImageProcessing(options: {
     summaryPath: ciqeSummaryPath
   });
 
+  const remediation = buildCatalogImageRemediationCandidates({
+    selection,
+    materializations,
+    ciqe,
+    maxDriveAttempts: 2
+  });
+  await writeJson(remediationPath, remediation);
+
   return {
     materialization: {
       total: materializations.length,
@@ -183,10 +196,12 @@ export async function executeCatalogImageProcessing(options: {
     selection: selection.summary,
     ciqeJobs: jobs.length,
     ciqeCounts: ciqe.counts,
+    remediation: remediation.summary,
     materializationsPath,
     selectionPath,
     jobsPath,
     ciqeSummaryPath,
+    remediationPath,
     ciqeOutputRoot
   };
 }
