@@ -14,6 +14,7 @@ on:
       - "backend/src/scripts/generateCatalogPromotionPreview.ts"
       - "backend/src/scripts/generateOperationalCatalogAudit.ts"
       - "backend/src/scripts/generateApprovedProductBarcodeAudit.ts"
+      - "backend/src/scripts/executeApprovedImportDemotion.ts"
       - "backend/src/scripts/generateUnmatchedCatalogProvenance.ts"
       - "backend/src/scripts/generateCatalogPromotionExecutionManifest.ts"
       - "backend/src/scripts/generateCatalogPromotionRequiredFieldReadiness.ts"
@@ -37,6 +38,7 @@ on:
       - "backend/test/catalog-quality-filter.test.ts"
       - "backend/test/catalog-approved-barcode-audit.test.ts"
       - "backend/test/catalog-approved-barcode-policy.test.ts"
+      - "backend/test/catalog-approved-import-demotion.test.ts"
       - "backend/test/catalog-promotion-preview.test.ts"
       - "backend/test/catalog-operational-audit.test.ts"
       - "backend/test/catalog-operational-audit-blocked-candidates.test.ts"
@@ -118,6 +120,7 @@ jobs:
           backend/test/catalog-quality-filter.test.ts
           backend/test/catalog-approved-barcode-audit.test.ts
           backend/test/catalog-approved-barcode-policy.test.ts
+          backend/test/catalog-approved-import-demotion.test.ts
           backend/test/catalog-promotion-preview.test.ts
           backend/test/catalog-operational-audit.test.ts
           backend/test/catalog-operational-audit-blocked-candidates.test.ts
