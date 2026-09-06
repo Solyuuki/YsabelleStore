@@ -311,15 +311,16 @@ function ShopProductGrid({
   navigate: (path: string) => void;
   products: StorefrontProduct[];
 }) {
-  const reveal = useRevealOnView<HTMLDivElement>({
-    rootMargin: "0px 0px -8% 0px",
-    threshold: 0.18
-  });
+  const [hasEntered, setHasEntered] = useState(false);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setHasEntered(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   return (
     <div
-      className={`customer-product-grid shop-product-grid ${reveal.isVisible ? "is-visible" : ""}`}
-      ref={reveal.ref}
+      className={`customer-product-grid shop-product-grid ${hasEntered ? "is-visible" : ""}`}
     >
       {products.map((product, index) => (
         <div
