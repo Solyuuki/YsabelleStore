@@ -6,6 +6,7 @@ import test from "node:test";
 
 import { runCatalogPromotionCategoryMutationExecution } from "../src/scripts/executeCatalogPromotionCategoryMutationPlan.js";
 import type { CatalogPromotionCategoryMutationPlan } from "../src/modules/catalog/catalog-promotion-category-mutation-plan.js";
+import type { CategoryMutationClient } from "../src/modules/catalog/catalog-promotion-category-mutation-execution.js";
 
 function buildPlan(): CatalogPromotionCategoryMutationPlan {
   const createRows = Array.from({ length: 12 }, (_, index) => ({
@@ -55,8 +56,8 @@ test("guarded category mutation CLI applies exactly the approved 12-create plan"
   await fs.writeFile(planPath, JSON.stringify(buildPlan()), "utf8");
 
   const created: string[] = [];
-  const client = {
-    async $transaction<T>(callback: (tx: any) => Promise<T>) {
+  const client: CategoryMutationClient = {
+    async $transaction(callback) {
       return callback({
         category: {
           async findMany() {
@@ -95,8 +96,8 @@ test("guarded category mutation CLI applies exactly the approved 12-create plan"
 });
 
 test("guarded category mutation CLI refuses execution without the explicit apply flag", async () => {
-  const client = {
-    async $transaction<T>(_callback: (tx: any) => Promise<T>) {
+  const client: CategoryMutationClient = {
+    async $transaction<T>(): Promise<T> {
       throw new Error("transaction must not open");
     }
   };

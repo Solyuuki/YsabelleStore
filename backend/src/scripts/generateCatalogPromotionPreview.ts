@@ -100,9 +100,7 @@ function toMarkdown(preview: CatalogPromotionPreview) {
     "## Image-Readiness Exceptions on Canonical Candidates",
     "",
     ...(imageReview.length > 0
-      ? imageReview.map(
-          (row) => `- ${row.productCode} — ${row.sourceName} — ${row.imageStatus}`
-        )
+      ? imageReview.map((row) => `- ${row.productCode} — ${row.sourceName} — ${row.imageStatus}`)
       : ["- None"]),
     "",
     "## Missing Images on Canonical Candidates",
@@ -134,7 +132,9 @@ export async function generateCatalogPromotionPreview(
     "image reconciliation artifact"
   );
   if (!artifact?.reconciliation) {
-    throw new Error(`Image reconciliation artifact is missing reconciliation data: ${reconciliationPath}.`);
+    throw new Error(
+      `Image reconciliation artifact is missing reconciliation data: ${reconciliationPath}.`
+    );
   }
 
   const preview = buildCatalogPromotionPreview(sources, artifact.reconciliation);

@@ -27,9 +27,7 @@ export function normalizeDriveImageStem(filename: string) {
 
 export function assertExpectedDriveImageCount(input: { length: number }) {
   if (input.length !== EXPECTED_PHASE9_DRIVE_IMAGE_COUNT) {
-    throw new Error(
-      `Expected exactly 430 unique raw Drive images; received ${input.length}.`
-    );
+    throw new Error(`Expected exactly 430 unique raw Drive images; received ${input.length}.`);
   }
 }
 

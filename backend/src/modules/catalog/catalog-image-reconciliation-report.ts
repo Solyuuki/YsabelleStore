@@ -77,15 +77,7 @@ export function toImageReconciliationCsv(reconciliation: CatalogImageReconciliat
   }
 
   for (const asset of reconciliation.driveOnlyAssets) {
-    rows.push([
-      "",
-      "",
-      "DRIVE_ONLY",
-      asset.fileId,
-      asset.filename,
-      asset.folderName,
-      asset.reason
-    ]);
+    rows.push(["", "", "DRIVE_ONLY", asset.fileId, asset.filename, asset.folderName, asset.reason]);
   }
 
   return `${rows.map((row) => row.map(csvCell).join(",")).join("\n")}\n`;

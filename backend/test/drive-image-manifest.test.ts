@@ -40,10 +40,7 @@ test("preserves duplicate-format assets instead of collapsing them during ingest
   assert.equal(manifest.length, 2);
   assert.equal(manifest[0]?.normalizedStem, "lemon square lava cake");
   assert.equal(manifest[1]?.normalizedStem, "lemon square lava cake");
-  assert.deepEqual(
-    manifest.map((entry) => entry.fileId).sort(),
-    ["jpg", "webp"]
-  );
+  assert.deepEqual(manifest.map((entry) => entry.fileId).sort(), ["jpg", "webp"]);
 });
 
 test("preserves Drive provenance needed for later reconciliation", () => {

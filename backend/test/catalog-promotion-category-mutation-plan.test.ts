@@ -3,7 +3,9 @@ import test from "node:test";
 
 import { buildCatalogPromotionCategoryMutationPlan } from "../src/modules/catalog/catalog-promotion-category-mutation-plan.js";
 
-const operationalization = {
+type CategoryMutationPlanInput = Parameters<typeof buildCatalogPromotionCategoryMutationPlan>[0];
+
+const operationalization: CategoryMutationPlanInput["operationalization"] = {
   summary: {
     sourceCategories: 3,
     proposeCreate: 1,
@@ -71,7 +73,7 @@ const operationalization = {
   ]
 } as const;
 
-const audit = {
+const audit: CategoryMutationPlanInput["audit"] = {
   candidateRows: [
     {
       productCode: "P088",
@@ -94,7 +96,7 @@ const audit = {
   ]
 } as const;
 
-const sources = [
+const sources: CategoryMutationPlanInput["sources"] = [
   {
     category: "Canned Goods",
     productCode: "P014",
@@ -120,9 +122,9 @@ const sources = [
 
 test("final category mutation plan clears seed-category reuse when every non-seed Product reference is category-aligned", () => {
   const plan = buildCatalogPromotionCategoryMutationPlan({
-    operationalization: operationalization as any,
-    audit: audit as any,
-    sources: sources as any
+    operationalization: operationalization,
+    audit: audit,
+    sources: sources
   });
 
   assert.deepEqual(plan.summary, {
@@ -140,14 +142,20 @@ test("final category mutation plan clears seed-category reuse when every non-see
   assert.equal(canned?.reuseBasis, "SEED_CATEGORY_EVIDENCE");
   assert.deepEqual(canned?.blockers, []);
   assert.deepEqual(
-    canned?.seedAdoptionEvidence.map((evidence) => [evidence.productId, evidence.auditStatus, evidence.categoryAligned]),
+    canned?.seedAdoptionEvidence.map((evidence) => [
+      evidence.productId,
+      evidence.auditStatus,
+      evidence.categoryAligned
+    ]),
     [
       ["prd_sarima_p088", "EXISTING", true],
       ["prd_sarima_p144", "BLOCKED", true]
     ]
   );
 
-  const snacks = plan.rows.find((row) => row.sourceCategory === "Snacks / Biscuits & Confectionery");
+  const snacks = plan.rows.find(
+    (row) => row.sourceCategory === "Snacks / Biscuits & Confectionery"
+  );
   assert.equal(snacks?.decision, "CREATE_CATEGORY");
   assert.equal(snacks?.proposedCategoryCreate?.slug, "snacks-biscuits-confectionery");
 
@@ -157,14 +165,16 @@ test("final category mutation plan clears seed-category reuse when every non-see
 });
 
 test("final category mutation plan keeps seed adoption blocked when a blocked identity crosses source categories", () => {
-  const mismatchedSources = sources.map((source) =>
-    source.productCode === "P014" ? { ...source, category: "Condiments & Cooking Ingredients" } : source
+  const mismatchedSources: CategoryMutationPlanInput["sources"] = sources.map((source) =>
+    source.productCode === "P014"
+      ? { ...source, category: "Condiments & Cooking Ingredients" }
+      : source
   );
 
   const plan = buildCatalogPromotionCategoryMutationPlan({
-    operationalization: operationalization as any,
-    audit: audit as any,
-    sources: mismatchedSources as any
+    operationalization: operationalization,
+    audit: audit,
+    sources: mismatchedSources
   });
 
   const canned = plan.rows.find((row) => row.sourceCategory === "Canned Goods");

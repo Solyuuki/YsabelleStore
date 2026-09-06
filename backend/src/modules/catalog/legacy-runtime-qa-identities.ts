@@ -23,9 +23,7 @@ export const LEGACY_RUNTIME_QA_IDENTITIES: readonly LegacyRuntimeQaIdentity[] = 
 ] as const;
 
 const legacyRuntimeQaIdentityKeys = new Set(
-  LEGACY_RUNTIME_QA_IDENTITIES.map(
-    ({ id, sku, barcode }) => `${id}\u0000${sku}\u0000${barcode}`
-  )
+  LEGACY_RUNTIME_QA_IDENTITIES.map(({ id, sku, barcode }) => `${id}\u0000${sku}\u0000${barcode}`)
 );
 
 export function isLegacyRuntimeQaProduct(product: {

@@ -25,9 +25,7 @@ const DEFAULT_DRIVE_MANIFEST_PATH = resolveRepositoryPath(
 const DEFAULT_JSON_PATH = resolveRepositoryPath(
   "artifacts/catalog/phase9/image-reconciliation.json"
 );
-const DEFAULT_CSV_PATH = resolveRepositoryPath(
-  "artifacts/catalog/phase9/image-reconciliation.csv"
-);
+const DEFAULT_CSV_PATH = resolveRepositoryPath("artifacts/catalog/phase9/image-reconciliation.csv");
 const DEFAULT_REPORT_PATH = resolveRepositoryPath(
   "docs/catalog/phase9-image-reconciliation-report.md"
 );
@@ -76,18 +74,11 @@ export async function generateCatalogImageReconciliation(
   const csvPath = options.csvPath ?? DEFAULT_CSV_PATH;
   const reportPath = options.reportPath ?? DEFAULT_REPORT_PATH;
 
-  const sources = await readJsonArray<SarimaSourceIdentity>(
-    sarimaManifestPath,
-    "SARIMA source"
-  );
+  const sources = await readJsonArray<SarimaSourceIdentity>(sarimaManifestPath, "SARIMA source");
   const images = await readJsonArray<DriveImageAsset>(driveManifestPath, "Drive image");
 
   const reconciliation = reconcileCatalogImages(sources, images);
-  const report = buildImageReconciliationReport(
-    reconciliation,
-    sources.length,
-    images.length
-  );
+  const report = buildImageReconciliationReport(reconciliation, sources.length, images.length);
   const output: CatalogImageReconciliationOutput = { report, reconciliation };
   const jsonArtifact = {
     sourceCount: report.sourceCount,

@@ -96,7 +96,9 @@ test("operationalization preview proposes hidden import categories for missing t
     actualMutationsPerformed: 0
   });
 
-  const proposed = preview.rows.find((row) => row.sourceCategory === "Snacks / Biscuits & Confectionery");
+  const proposed = preview.rows.find(
+    (row) => row.sourceCategory === "Snacks / Biscuits & Confectionery"
+  );
   assert.equal(proposed?.decision, "PROPOSE_CREATE");
   assert.equal(proposed?.candidateSlug, "snacks-biscuits-confectionery");
   assert.equal(proposed?.reuseBasis, null);

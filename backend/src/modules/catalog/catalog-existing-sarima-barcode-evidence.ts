@@ -1,9 +1,7 @@
 import { EXISTING_SARIMA_REHABILITATION_IDENTITIES } from "./catalog-existing-sarima-rehabilitation-readiness.js";
 
 export const EXISTING_SARIMA_BARCODE_EVIDENCE_IDENTITIES =
-  EXISTING_SARIMA_REHABILITATION_IDENTITIES.filter(
-    (row) => row.sarimaSourceProductId !== "P144"
-  );
+  EXISTING_SARIMA_REHABILITATION_IDENTITIES.filter((row) => row.sarimaSourceProductId !== "P144");
 
 export type BarcodeEvidenceSourceType =
   | "MANUFACTURER"
@@ -100,16 +98,16 @@ function isAuthoritative(source: BarcodeEvidenceSource) {
 }
 
 function exactUnitSources(entry: ExistingSarimaBarcodeEvidenceInput) {
-  return entry.sources.filter(
-    (source) => source.exactProductIdentity && source.exactRetailUnit
-  );
+  return entry.sources.filter((source) => source.exactProductIdentity && source.exactRetailUnit);
 }
 
 function matchesCandidate(source: BarcodeEvidenceSource, candidateBarcode: string) {
   return source.observedBarcode === candidateBarcode;
 }
 
-function determineStatus(entry: ExistingSarimaBarcodeEvidenceInput): ExistingSarimaBarcodeEvidenceStatus {
+function determineStatus(
+  entry: ExistingSarimaBarcodeEvidenceInput
+): ExistingSarimaBarcodeEvidenceStatus {
   if (entry.conflictReason) return "CONFLICTING_EVIDENCE";
   if (!entry.candidateBarcode && entry.sources.length === 0) return "NOT_FOUND";
   if (!entry.candidateBarcode || !isValidGtin(entry.candidateBarcode)) return "NEEDS_PHYSICAL_SCAN";
@@ -172,9 +170,7 @@ export function buildExistingSarimaBarcodeEvidence(input: {
 
       const status = determineStatus(evidence);
       const exact = exactUnitSources(evidence).filter((source) =>
-        evidence.candidateBarcode
-          ? matchesCandidate(source, evidence.candidateBarcode)
-          : false
+        evidence.candidateBarcode ? matchesCandidate(source, evidence.candidateBarcode) : false
       );
       const authoritative = exact.filter(isAuthoritative);
       const retailerKeys = new Set(

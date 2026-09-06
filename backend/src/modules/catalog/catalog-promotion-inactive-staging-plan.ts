@@ -123,11 +123,7 @@ export function buildCatalogPromotionInactiveStagingPlan(input: {
       plannedCreateSarimaMapping: true,
       imageStatus: execution.imageStatus,
       assetFileIds: [...execution.assetFileIds],
-      activationBlockers: [
-        "CURRENT_SELLING_PRICE",
-        "PHYSICAL_STOCK",
-        "QUALITY_APPROVAL"
-      ]
+      activationBlockers: ["CURRENT_SELLING_PRICE", "PHYSICAL_STOCK", "QUALITY_APPROVAL"]
     });
   }
 

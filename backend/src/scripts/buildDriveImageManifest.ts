@@ -10,9 +10,7 @@ import {
 import { loadDriveImageMetadataSnapshot } from "../modules/catalog/drive-image-snapshot.js";
 import { resolveRepositoryPath } from "../modules/forecasting/repository-paths.js";
 
-const DEFAULT_SNAPSHOT_DIR = resolveRepositoryPath(
-  "artifacts/catalog/phase9/drive-image-metadata"
-);
+const DEFAULT_SNAPSHOT_DIR = resolveRepositoryPath("artifacts/catalog/phase9/drive-image-metadata");
 const DEFAULT_OUTPUT_PATH = resolveRepositoryPath(
   "artifacts/catalog/phase9/drive-image-manifest.json"
 );
@@ -40,12 +38,8 @@ function isDirectExecution() {
 }
 
 if (isDirectExecution()) {
-  const snapshotDir = process.argv[2]
-    ? path.resolve(process.argv[2])
-    : DEFAULT_SNAPSHOT_DIR;
-  const outputPath = process.argv[3]
-    ? path.resolve(process.argv[3])
-    : DEFAULT_OUTPUT_PATH;
+  const snapshotDir = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_SNAPSHOT_DIR;
+  const outputPath = process.argv[3] ? path.resolve(process.argv[3]) : DEFAULT_OUTPUT_PATH;
   const manifest = await generateDriveImageManifest(snapshotDir, outputPath);
 
   console.log(

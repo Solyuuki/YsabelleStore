@@ -93,7 +93,9 @@ function toCsv(manifest: CatalogPromotionExecutionManifest) {
       row.inventoryReadiness,
       row.writeReadiness,
       row.blockingFields.join(";")
-    ].map(csvCell).join(",")
+    ]
+      .map(csvCell)
+      .join(",")
   );
 
   return `${header.join(",")}\n${lines.join("\n")}\n`;
@@ -178,7 +180,10 @@ export async function generateCatalogPromotionExecutionManifest(
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

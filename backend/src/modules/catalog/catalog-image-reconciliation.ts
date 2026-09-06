@@ -119,8 +119,7 @@ function sameProductFamilyWithVariantConflict(source: string, image: string) {
   const prefixLength = commonPrefixLength === -1 ? minLength : commonPrefixLength;
 
   return (
-    prefixLength >= 2 &&
-    sharedTokenCount(sourceTokens, imageTokens) >= Math.max(2, minLength - 1)
+    prefixLength >= 2 && sharedTokenCount(sourceTokens, imageTokens) >= Math.max(2, minLength - 1)
   );
 }
 
@@ -142,8 +141,7 @@ function looksLikeLeadingCharacterTypo(source: string, image: string) {
 function isGenericSourceIdentity(source: string) {
   const sourceTokens = withoutQuantities(source);
   return (
-    sourceTokens.length <= 3 &&
-    sourceTokens.some((token) => GENERIC_IDENTITY_TOKENS.has(token))
+    sourceTokens.length <= 3 && sourceTokens.some((token) => GENERIC_IDENTITY_TOKENS.has(token))
   );
 }
 
@@ -209,15 +207,19 @@ export function reconcileCatalogImages(
   for (const source of orderedSources) {
     const exact = orderedImages.filter(
       (image) =>
-        !claimedFileIds.has(image.fileId) &&
-        image.normalizedStem === source.sourceNameNormalized
+        !claimedFileIds.has(image.fileId) && image.normalizedStem === source.sourceNameNormalized
     );
 
     if (exact.length === 1) {
       exact.forEach((image) => claimedFileIds.add(image.fileId));
       outcomes.set(
         source.productCode,
-        sourceOutcome(source, "EXACT_MATCH", exact, "Normalized source and Drive identities match exactly.")
+        sourceOutcome(
+          source,
+          "EXACT_MATCH",
+          exact,
+          "Normalized source and Drive identities match exactly."
+        )
       );
     } else if (exact.length > 1) {
       exact.forEach((image) => claimedFileIds.add(image.fileId));
@@ -236,8 +238,9 @@ export function reconcileCatalogImages(
   for (const source of orderedSources) {
     if (outcomes.has(source.productCode)) continue;
 
-    const signaturePeers = (signatureGroups.get(tokenSignature(source.sourceNameNormalized)) ?? [])
-      .filter((peer) => peer.productCode !== source.productCode);
+    const signaturePeers = (
+      signatureGroups.get(tokenSignature(source.sourceNameNormalized)) ?? []
+    ).filter((peer) => peer.productCode !== source.productCode);
     const resolvedPeerCodes = signaturePeers
       .filter((peer) => outcomes.has(peer.productCode))
       .map((peer) => peer.productCode)

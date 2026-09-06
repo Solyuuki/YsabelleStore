@@ -138,16 +138,24 @@ test("preview proposes CIQE creation only for exact-match products and blocks mi
     existingActiveImages: 1
   });
 
-  assert.deepEqual(preview.rows.map((row) => ({
-    code: row.sarimaSourceProductId,
-    status: row.status,
-    action: row.proposedAction,
-    fileIds: row.catalogImageFileIds
-  })), [
-    { code: "P022", status: "READY", action: "CREATE_ENGINE_ASSET", fileIds: ["drive-p022"] },
-    { code: "P091", status: "BLOCKED_VARIANT_SIZE_MISMATCH", action: "NONE", fileIds: ["drive-p091-a", "drive-p091-b"] },
-    { code: "P144", status: "BLOCKED_NEEDS_REVIEW", action: "NONE", fileIds: [] }
-  ]);
+  assert.deepEqual(
+    preview.rows.map((row) => ({
+      code: row.sarimaSourceProductId,
+      status: row.status,
+      action: row.proposedAction,
+      fileIds: row.catalogImageFileIds
+    })),
+    [
+      { code: "P022", status: "READY", action: "CREATE_ENGINE_ASSET", fileIds: ["drive-p022"] },
+      {
+        code: "P091",
+        status: "BLOCKED_VARIANT_SIZE_MISMATCH",
+        action: "NONE",
+        fileIds: ["drive-p091-a", "drive-p091-b"]
+      },
+      { code: "P144", status: "BLOCKED_NEEDS_REVIEW", action: "NONE", fileIds: [] }
+    ]
+  );
 });
 
 test("preview reuses a DB image asset only when diagnostics explicitly link the same Drive file ID", () => {
@@ -213,34 +221,37 @@ test("preview blocks exact-match file IDs assigned across multiple products", ()
 
 test("preview fails closed if a Product leaves the rehabilitation state or SARIMA identity drifts", () => {
   assert.throws(
-    () => buildExistingSarimaImageEnrichmentPreview({
-      identities,
-      products: [{ ...products[0]!, status: "ACTIVE" }, products[1]!, products[2]!],
-      promotionRows,
-      driveAssets
-    }),
+    () =>
+      buildExistingSarimaImageEnrichmentPreview({
+        identities,
+        products: [{ ...products[0]!, status: "ACTIVE" }, products[1]!, products[2]!],
+        promotionRows,
+        driveAssets
+      }),
     /EXISTING_SARIMA_IMAGE_ENRICHMENT_STATE_MISMATCH/
   );
 
   assert.throws(
-    () => buildExistingSarimaImageEnrichmentPreview({
-      identities,
-      products: [{ ...products[0]!, sarimaSourceProductId: "P999" }, products[1]!, products[2]!],
-      promotionRows,
-      driveAssets
-    }),
+    () =>
+      buildExistingSarimaImageEnrichmentPreview({
+        identities,
+        products: [{ ...products[0]!, sarimaSourceProductId: "P999" }, products[1]!, products[2]!],
+        promotionRows,
+        driveAssets
+      }),
     /EXISTING_SARIMA_IMAGE_ENRICHMENT_IDENTITY_MISMATCH/
   );
 });
 
 test("preview fails closed when an EXACT_MATCH references a Drive file ID missing from the manifest", () => {
   assert.throws(
-    () => buildExistingSarimaImageEnrichmentPreview({
-      identities,
-      products,
-      promotionRows,
-      driveAssets: driveAssets.filter((asset) => asset.fileId !== "drive-p022")
-    }),
+    () =>
+      buildExistingSarimaImageEnrichmentPreview({
+        identities,
+        products,
+        promotionRows,
+        driveAssets: driveAssets.filter((asset) => asset.fileId !== "drive-p022")
+      }),
     /EXISTING_SARIMA_IMAGE_ENRICHMENT_DRIVE_ASSET_MISSING/
   );
 });

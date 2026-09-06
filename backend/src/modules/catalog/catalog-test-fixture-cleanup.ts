@@ -37,9 +37,7 @@ export type TestFixtureCleanupTransaction = {
 };
 
 export type TestFixtureCleanupClient = {
-  $transaction<T>(
-    callback: (tx: TestFixtureCleanupTransaction) => Promise<T>
-  ): Promise<T>;
+  $transaction<T>(callback: (tx: TestFixtureCleanupTransaction) => Promise<T>): Promise<T>;
 };
 
 export type TestFixtureCleanupAuthorization = {
@@ -79,10 +77,7 @@ function assertExact(label: string, actual: number, expected: number) {
 
 function assertZero(label: string, actual: number) {
   if (actual !== 0) {
-    fail(
-      "TEST_FIXTURE_CLEANUP_CROSS_BOUNDARY_REFERENCE",
-      `${label} must be 0, found ${actual}`
-    );
+    fail("TEST_FIXTURE_CLEANUP_CROSS_BOUNDARY_REFERENCE", `${label} must be 0, found ${actual}`);
   }
 }
 
@@ -99,19 +94,13 @@ export async function executeTestFixtureCleanup(input: {
     const fixtureIds = fixtureRows.map((row) => row.id);
     const fixtureIdSet = new Set(fixtureIds);
 
-    assertExact(
-      "fixture products",
-      fixtureIds.length,
-      input.authorization.expectedFixtureProducts
-    );
+    assertExact("fixture products", fixtureIds.length, input.authorization.expectedFixtureProducts);
 
     const fixtureSaleItems = await tx.saleItem.findMany({
       where: { productId: { in: fixtureIds } },
       select: { saleId: true, productId: true }
     });
-    const touchedSaleIds = [
-      ...new Set(fixtureSaleItems.map((item) => item.saleId))
-    ];
+    const touchedSaleIds = [...new Set(fixtureSaleItems.map((item) => item.saleId))];
     const allTouchedSaleItems =
       touchedSaleIds.length === 0
         ? []
@@ -120,9 +109,7 @@ export async function executeTestFixtureCleanup(input: {
             select: { saleId: true, productId: true }
           });
 
-    const mixedSaleItem = allTouchedSaleItems.find(
-      (item) => !fixtureIdSet.has(item.productId)
-    );
+    const mixedSaleItem = allTouchedSaleItems.find((item) => !fixtureIdSet.has(item.productId));
     if (mixedSaleItem) {
       fail(
         "TEST_FIXTURE_CLEANUP_MIXED_SALE",
@@ -194,11 +181,7 @@ export async function executeTestFixtureCleanup(input: {
       fixtureSaleItems.length,
       input.authorization.expectedSaleItems
     );
-    assertExact(
-      "test-only sales",
-      touchedSaleIds.length,
-      input.authorization.expectedSales
-    );
+    assertExact("test-only sales", touchedSaleIds.length, input.authorization.expectedSales);
     assertExact("persisted touched sales", saleCount, input.authorization.expectedSales);
     assertExact("inventories", inventoryCount, input.authorization.expectedInventories);
     assertExact("inventory batches", batchCount, input.authorization.expectedInventoryBatches);

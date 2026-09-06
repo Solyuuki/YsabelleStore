@@ -93,7 +93,10 @@ test("renders an answer-first markdown report with no operational mutation claim
   const markdown = toImageReconciliationMarkdown(report, reconciliation);
 
   assert.match(markdown, /# Phase 9 Image Reconciliation Report/);
-  assert.match(markdown, /No operational Product, Inventory, InventoryBatch, or current-price data was modified/);
+  assert.match(
+    markdown,
+    /No operational Product, Inventory, InventoryBatch, or current-price data was modified/
+  );
   assert.match(markdown, /\| EXACT_MATCH \| 1 \|/);
   assert.match(markdown, /P005 — Missing Product/);
   assert.match(markdown, /Drive Only\.jpg/);

@@ -164,9 +164,9 @@ export function buildExistingSarimaImageEnrichmentPreview(input: {
       return asset;
     });
 
-    const conflictCodes = [...new Set(
-      promotion.assetFileIds.flatMap((fileId) => fileOwners.get(fileId) ?? [])
-    )]
+    const conflictCodes = [
+      ...new Set(promotion.assetFileIds.flatMap((fileId) => fileOwners.get(fileId) ?? []))
+    ]
       .filter((code) => code !== identity.sarimaSourceProductId)
       .sort();
 
@@ -218,14 +218,23 @@ export function buildExistingSarimaImageEnrichmentPreview(input: {
     summary: {
       products: rows.length,
       exactMatchCandidates: rows.filter((row) => row.catalogImageStatus === "EXACT_MATCH").length,
-      readyCreateEngineAsset: rows.filter((row) => row.proposedAction === "CREATE_ENGINE_ASSET").length,
-      readyReuseEngineAsset: rows.filter((row) => row.proposedAction === "REUSE_ENGINE_ASSET").length,
+      readyCreateEngineAsset: rows.filter((row) => row.proposedAction === "CREATE_ENGINE_ASSET")
+        .length,
+      readyReuseEngineAsset: rows.filter((row) => row.proposedAction === "REUSE_ENGINE_ASSET")
+        .length,
       blockedNeedsReview: rows.filter((row) => row.status === "BLOCKED_NEEDS_REVIEW").length,
-      blockedVariantSizeMismatch: rows.filter((row) => row.status === "BLOCKED_VARIANT_SIZE_MISMATCH").length,
+      blockedVariantSizeMismatch: rows.filter(
+        (row) => row.status === "BLOCKED_VARIANT_SIZE_MISMATCH"
+      ).length,
       blockedDuplicateImage: rows.filter((row) => row.status === "BLOCKED_DUPLICATE_IMAGE").length,
       blockedMissingImage: rows.filter((row) => row.status === "BLOCKED_MISSING_IMAGE").length,
-      crossProductFileIdConflicts: rows.filter((row) => row.status === "BLOCKED_CROSS_PRODUCT_FILE_CONFLICT").length,
-      existingDatabaseImageAssets: rows.reduce((count, row) => count + row.existingImageAssetIds.length, 0),
+      crossProductFileIdConflicts: rows.filter(
+        (row) => row.status === "BLOCKED_CROSS_PRODUCT_FILE_CONFLICT"
+      ).length,
+      existingDatabaseImageAssets: rows.reduce(
+        (count, row) => count + row.existingImageAssetIds.length,
+        0
+      ),
       existingActiveImages: rows.filter((row) => row.activeImageAssetId !== null).length
     },
     rows

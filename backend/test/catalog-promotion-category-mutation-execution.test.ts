@@ -1,8 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { executeCatalogPromotionCategoryMutationPlan } from "../src/modules/catalog/catalog-promotion-category-mutation-execution.js";
+import {
+  executeCatalogPromotionCategoryMutationPlan,
+  type CategoryMutationClient
+} from "../src/modules/catalog/catalog-promotion-category-mutation-execution.js";
 import type { CatalogPromotionCategoryMutationPlan } from "../src/modules/catalog/catalog-promotion-category-mutation-plan.js";
+
+type CategoryMutationTransaction = Parameters<
+  Parameters<CategoryMutationClient["$transaction"]>[0]
+>[0];
+type CategorySnapshot = Awaited<
+  ReturnType<CategoryMutationTransaction["category"]["findMany"]>
+>[number];
 
 const plan: CatalogPromotionCategoryMutationPlan = {
   summary: {
@@ -82,8 +92,8 @@ function authorization() {
 test("authorized category execution creates only planned categories inside one transaction", async () => {
   const created: Array<Record<string, unknown>> = [];
   let transactionCalls = 0;
-  const client = {
-    async $transaction<T>(callback: (tx: any) => Promise<T>) {
+  const client: CategoryMutationClient = {
+    async $transaction(callback) {
       transactionCalls += 1;
       return callback({
         category: {
@@ -133,7 +143,7 @@ test("authorized category execution creates only planned categories inside one t
 });
 
 test("authorized category execution is idempotent when planned create categories already exist exactly", async () => {
-  const existing = [
+  const existing: CategorySnapshot[] = [
     breadCategory,
     {
       id: "cat_snacks_import",
@@ -155,8 +165,8 @@ test("authorized category execution is idempotent when planned create categories
     }
   ];
   let createCalls = 0;
-  const client = {
-    async $transaction<T>(callback: (tx: any) => Promise<T>) {
+  const client: CategoryMutationClient = {
+    async $transaction(callback) {
       return callback({
         category: {
           async findMany() {
@@ -188,8 +198,8 @@ test("authorized category execution is idempotent when planned create categories
 
 test("authorized category execution aborts on category drift before any create", async () => {
   let createCalls = 0;
-  const client = {
-    async $transaction<T>(callback: (tx: any) => Promise<T>) {
+  const client: CategoryMutationClient = {
+    async $transaction(callback) {
       return callback({
         category: {
           async findMany() {
@@ -228,8 +238,8 @@ test("authorized category execution aborts on category drift before any create",
 
 test("authorized category execution rejects plan count drift before opening a transaction", async () => {
   let transactionCalls = 0;
-  const client = {
-    async $transaction<T>(_callback: (tx: any) => Promise<T>) {
+  const client: CategoryMutationClient = {
+    async $transaction<T>(): Promise<T> {
       transactionCalls += 1;
       throw new Error("should not run");
     }

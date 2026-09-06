@@ -39,7 +39,8 @@ test("promotion preview separates canonical identity from image readiness", () =
         sourceNameNormalized: "alias product",
         status: "NEEDS_REVIEW",
         assetFileIds: [],
-        reason: "Token-equivalent historical source identity overlaps P001; review source identity before assigning another Drive image."
+        reason:
+          "Token-equivalent historical source identity overlaps P001; review source identity before assigning another Drive image."
       },
       {
         productCode: "P003",
@@ -55,7 +56,8 @@ test("promotion preview separates canonical identity from image readiness", () =
         sourceNameNormalized: "review product",
         status: "NEEDS_REVIEW",
         assetFileIds: ["img-4"],
-        reason: "Product-family tokens are compatible, but one side omits identity or packaging descriptors."
+        reason:
+          "Product-family tokens are compatible, but one side omits identity or packaging descriptors."
       },
       {
         productCode: "P005",
@@ -63,7 +65,8 @@ test("promotion preview separates canonical identity from image readiness", () =
         sourceNameNormalized: "sibling product",
         status: "NEEDS_REVIEW",
         assetFileIds: [],
-        reason: "Historical source identity shares the same product family with already-resolved P001; review size/package identity before assigning another Drive image."
+        reason:
+          "Historical source identity shares the same product family with already-resolved P001; review size/package identity before assigning another Drive image."
       }
     ],
     driveOnlyAssets: []

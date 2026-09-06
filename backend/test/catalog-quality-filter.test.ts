@@ -17,6 +17,12 @@ test("product list query rejects unknown catalog quality statuses", () => {
 });
 
 test("product service applies the catalog quality status to the database filter", () => {
-  const source = readFileSync(resolve(process.cwd(), "backend/src/services/productService.ts"), "utf8");
-  assert.match(source, /if \(query\.dataQualityStatus\) \{[\s\S]*?where\.dataQualityStatus = query\.dataQualityStatus;/);
+  const source = readFileSync(
+    resolve(process.cwd(), "backend/src/services/productService.ts"),
+    "utf8"
+  );
+  assert.match(
+    source,
+    /if \(query\.dataQualityStatus\) \{[\s\S]*?where\.dataQualityStatus = query\.dataQualityStatus;/
+  );
 });

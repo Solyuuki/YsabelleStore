@@ -140,8 +140,7 @@ async function writeText(filePath: string, contents: string) {
 export async function generateCatalogPromotionRequiredFieldReadiness(
   options: GenerateCatalogPromotionRequiredFieldReadinessOptions = {}
 ): Promise<CatalogPromotionRequiredFieldReadiness> {
-  const executionManifestPath =
-    options.executionManifestPath ?? DEFAULT_EXECUTION_MANIFEST_PATH;
+  const executionManifestPath = options.executionManifestPath ?? DEFAULT_EXECUTION_MANIFEST_PATH;
   const jsonPath = options.jsonPath ?? DEFAULT_JSON_PATH;
   const csvPath = options.csvPath ?? DEFAULT_CSV_PATH;
   const reportPath = options.reportPath ?? DEFAULT_REPORT_PATH;
@@ -169,7 +168,10 @@ export async function generateCatalogPromotionRequiredFieldReadiness(
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

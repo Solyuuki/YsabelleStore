@@ -1,12 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildDriveImageManifest, type DriveImageMetadata } from "../src/modules/catalog/drive-image-manifest.js";
+import {
+  buildDriveImageManifest,
+  type DriveImageMetadata
+} from "../src/modules/catalog/drive-image-manifest.js";
 import {
   reconcileCatalogImages,
   type ImageReconciliationStatus
 } from "../src/modules/catalog/catalog-image-reconciliation.js";
-import { normalizeSarimaSourceName, type SarimaSourceIdentity } from "../src/modules/catalog/sarima-source-manifest.js";
+import {
+  normalizeSarimaSourceName,
+  type SarimaSourceIdentity
+} from "../src/modules/catalog/sarima-source-manifest.js";
 
 function source(productCode: string, sourceName: string): SarimaSourceIdentity {
   return {
@@ -103,7 +109,10 @@ test("does not classify an unrelated Lemon Square product as a variant mismatch 
 
   const { outcome, result } = statusFor("MISSING_IMAGE", "P277", sources, images);
   assert.deepEqual(outcome.assetFileIds, []);
-  assert.deepEqual(result.driveOnlyAssets.map((entry) => entry.fileId), ["strawberry"]);
+  assert.deepEqual(
+    result.driveOnlyAssets.map((entry) => entry.fileId),
+    ["strawberry"]
+  );
 });
 
 test("keeps equivalent image formats explicit as DUPLICATE_IMAGE", () => {
@@ -192,5 +201,8 @@ test("reports an unrelated asset as DRIVE_ONLY and leaves the source MISSING_IMA
 
   const { outcome, result } = statusFor("MISSING_IMAGE", "P001", sources, images);
   assert.deepEqual(outcome.assetFileIds, []);
-  assert.deepEqual(result.driveOnlyAssets.map((entry) => entry.fileId), ["plate"]);
+  assert.deepEqual(
+    result.driveOnlyAssets.map((entry) => entry.fileId),
+    ["plate"]
+  );
 });

@@ -65,6 +65,7 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
   const product = await prisma.product.create({
     data: {
       categoryId: category.id,
+      barcode: `TEST-STOREFRONT-${suffix}`,
       sku: `STOREFRONT-${suffix}`,
       name: `Storefront Test Product ${suffix}`,
       imageUrl: `/images/products/storefront-test-${suffix}.webp`,

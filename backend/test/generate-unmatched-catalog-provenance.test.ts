@@ -18,16 +18,13 @@ test("unmatched catalog provenance generator reads only unresolved products and 
   await fs.writeFile(
     auditPath,
     JSON.stringify({
-      unmatchedOperationalProducts: [
-        { productId: "product-a" },
-        { productId: "product-b" }
-      ]
+      unmatchedOperationalProducts: [{ productId: "product-a" }, { productId: "product-b" }]
     }),
     "utf8"
   );
 
   let findManyCalls = 0;
-  let capturedArgs: any;
+  let capturedArgs: unknown;
   const client: UnmatchedCatalogProvenancePrismaClient = {
     product: {
       async findMany(args) {
@@ -113,7 +110,10 @@ test("unmatched catalog provenance generator reads only unresolved products and 
   });
 
   assert.equal(findManyCalls, 1);
-  assert.deepEqual(capturedArgs.where.id.in, ["product-a", "product-b"]);
+  assert.deepEqual((capturedArgs as { where: { id: { in: string[] } } }).where.id.in, [
+    "product-a",
+    "product-b"
+  ]);
   assert.equal(result.requestedProductCount, 2);
   assert.equal(result.resolvedProductCount, 1);
   assert.equal(result.missingProductCount, 1);

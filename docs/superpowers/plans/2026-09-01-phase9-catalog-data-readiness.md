@@ -26,6 +26,7 @@
 ### Task 1: Extract authoritative SARIMA identity manifest
 
 **Files:**
+
 - Create: `scripts/catalog/extractSarimaSourceManifest.ts`
 - Create: `scripts/catalog/__tests__/extractSarimaSourceManifest.test.ts`
 - Read only: `data/forecasting/historical-sales-2024.xlsx`
@@ -33,6 +34,7 @@
 - Generate: `artifacts/catalog/phase9/sarima-source-manifest.json`
 
 **Interfaces:**
+
 - Produces `SarimaSourceIdentity { productCode, sourceName, sourceNameNormalized, yearsPresent }`.
 - Produces exactly one row for each `P001`-`P472` identity when annual workbook identities agree.
 
@@ -46,11 +48,13 @@
 ### Task 2: Build Drive image manifest
 
 **Files:**
+
 - Create: `scripts/catalog/buildDriveImageManifest.ts`
 - Create: `scripts/catalog/__tests__/buildDriveImageManifest.test.ts`
 - Generate: `artifacts/catalog/phase9/drive-image-manifest.json`
 
 **Interfaces:**
+
 - Consumes Drive metadata exported from the connected Google Drive inventory.
 - Produces `DriveImageAsset { fileId, filename, folderId, folderName, extension, normalizedStem }`.
 
@@ -64,6 +68,7 @@
 ### Task 3: Reconcile 472 source identities against 430 Drive images
 
 **Files:**
+
 - Create: `scripts/catalog/reconcileCatalogImages.ts`
 - Create: `scripts/catalog/__tests__/reconcileCatalogImages.test.ts`
 - Generate: `artifacts/catalog/phase9/image-reconciliation.json`
@@ -71,6 +76,7 @@
 - Generate: `docs/catalog/phase9-image-reconciliation-report.md`
 
 **Interfaces:**
+
 - Consumes `sarima-source-manifest.json` and `drive-image-manifest.json`.
 - Produces one source-side outcome per SARIMA identity plus explicit Drive-only/duplicate asset outcomes.
 - Status enum: `EXACT_MATCH | NEEDS_REVIEW | VARIANT_SIZE_MISMATCH | DUPLICATE_IMAGE | DRIVE_ONLY | MISSING_IMAGE`.
@@ -86,10 +92,12 @@
 ### Task 4: Source images for confirmed missing products
 
 **Files:**
+
 - Generate: `artifacts/catalog/phase9/external-image-candidates.json`
 - Generate: `docs/catalog/phase9-external-image-review.md`
 
 **Interfaces:**
+
 - Consumes only reviewed `MISSING_IMAGE` rows from Task 3.
 - Produces candidate records containing source product code/name, exact candidate identity, source URL, source type, variant/size evidence, and review status.
 
@@ -102,10 +110,12 @@
 ### Task 5: Apply approved catalog readiness cleanup
 
 **Files:**
+
 - Modify only the catalog/service/schema/mapping files proven necessary by the reviewed audit.
 - Add targeted tests beside affected catalog/storefront/inventory modules.
 
 **Interfaces:**
+
 - Consumes approved reconciliation decisions from Tasks 3-4.
 - Must preserve historical source mapping and batch-authoritative stock.
 

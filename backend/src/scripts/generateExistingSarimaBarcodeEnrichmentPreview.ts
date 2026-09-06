@@ -102,11 +102,13 @@ async function writeText(filePath: string, contents: string) {
   await fs.writeFile(filePath, contents, "utf8");
 }
 
-export async function generateExistingSarimaBarcodeEnrichmentPreview(options: {
-  client?: BarcodeEnrichmentPreviewPrismaClient;
-  jsonPath?: string;
-  reportPath?: string;
-} = {}) {
+export async function generateExistingSarimaBarcodeEnrichmentPreview(
+  options: {
+    client?: BarcodeEnrichmentPreviewPrismaClient;
+    jsonPath?: string;
+    reportPath?: string;
+  } = {}
+) {
   const client = options.client ?? (prisma as unknown as BarcodeEnrichmentPreviewPrismaClient);
   const ids = EXISTING_SARIMA_BARCODE_EVIDENCE_IDENTITIES.map((row) => row.id);
 
@@ -148,7 +150,11 @@ export async function generateExistingSarimaBarcodeEnrichmentPreview(options: {
     .filter((row): row is RawBarcodeOwner & { barcode: string } => Boolean(row.barcode))
     .map((row) => ({ id: row.id, sku: row.sku, name: row.name, barcode: row.barcode }));
 
-  const preview = buildExistingSarimaBarcodeEnrichmentPreview({ products, evidence, barcodeOwners });
+  const preview = buildExistingSarimaBarcodeEnrichmentPreview({
+    products,
+    evidence,
+    barcodeOwners
+  });
   const jsonPath = options.jsonPath ?? DEFAULT_JSON_PATH;
   const reportPath = options.reportPath ?? DEFAULT_REPORT_PATH;
 
@@ -162,7 +168,10 @@ export async function generateExistingSarimaBarcodeEnrichmentPreview(options: {
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

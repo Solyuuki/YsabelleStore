@@ -165,7 +165,10 @@ export async function generateExistingSarimaRehabilitationReadiness(
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

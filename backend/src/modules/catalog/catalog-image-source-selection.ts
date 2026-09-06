@@ -116,7 +116,9 @@ export function buildCatalogImageSourceSelection(input: {
   const rows = input.rows.map((row): CatalogImageSourceSelectionRow => {
     const promotion = promotionByCode.get(row.sarimaSourceProductId);
     if (!promotion) {
-      throw new Error(`CATALOG_IMAGE_SOURCE_SELECTION_IDENTITY_MISMATCH: missing promotion row for ${row.sarimaSourceProductId}`);
+      throw new Error(
+        `CATALOG_IMAGE_SOURCE_SELECTION_IDENTITY_MISMATCH: missing promotion row for ${row.sarimaSourceProductId}`
+      );
     }
 
     if (promotion.identityStatus !== "CANONICAL") {
@@ -135,9 +137,11 @@ export function buildCatalogImageSourceSelection(input: {
     }
 
     if (row.catalogImageStatus === "EXACT_MATCH") {
-      const expectedFileId = row.catalogImageFileIds.length === 1 ? row.catalogImageFileIds[0]! : null;
+      const expectedFileId =
+        row.catalogImageFileIds.length === 1 ? row.catalogImageFileIds[0]! : null;
       const materializations = (driveByProductCode.get(row.sarimaSourceProductId) ?? []).filter(
-        (entry) => entry.usable && entry.fileId === expectedFileId && entry.sourcePath.trim().length > 0
+        (entry) =>
+          entry.usable && entry.fileId === expectedFileId && entry.sourcePath.trim().length > 0
       );
 
       if (expectedFileId && materializations.length === 1) {
@@ -170,7 +174,9 @@ export function buildCatalogImageSourceSelection(input: {
       };
     }
 
-    const selectedWeb = chooseLicensedWebEvidence(webByProductCode.get(row.sarimaSourceProductId) ?? []);
+    const selectedWeb = chooseLicensedWebEvidence(
+      webByProductCode.get(row.sarimaSourceProductId) ?? []
+    );
     if (selectedWeb) {
       return {
         productCode: row.sarimaSourceProductId,
@@ -206,8 +212,10 @@ export function buildCatalogImageSourceSelection(input: {
       products: rows.length,
       readyDrive: rows.filter((row) => row.status === "READY_DRIVE").length,
       readyLicensedWeb: rows.filter((row) => row.status === "READY_LICENSED_WEB").length,
-      needsDriveMaterialization: rows.filter((row) => row.status === "NEEDS_DRIVE_MATERIALIZATION").length,
-      needsLicensedWebFallback: rows.filter((row) => row.status === "NEEDS_LICENSED_WEB_FALLBACK").length,
+      needsDriveMaterialization: rows.filter((row) => row.status === "NEEDS_DRIVE_MATERIALIZATION")
+        .length,
+      needsLicensedWebFallback: rows.filter((row) => row.status === "NEEDS_LICENSED_WEB_FALLBACK")
+        .length,
       blockedIdentityReview: rows.filter((row) => row.status === "BLOCKED_IDENTITY_REVIEW").length
     }
   };

@@ -7,14 +7,14 @@ No operational Product, Inventory, InventoryBatch, or current-price data was mod
 
 ## Status Summary
 
-| Status | Count |
-| --- | ---: |
-| EXACT_MATCH | 418 |
-| NEEDS_REVIEW | 10 |
-| VARIANT_SIZE_MISMATCH | 4 |
-| DUPLICATE_IMAGE | 1 |
-| MISSING_IMAGE | 39 |
-| DRIVE_ONLY | 1 |
+| Status                | Count |
+| --------------------- | ----: |
+| EXACT_MATCH           |   418 |
+| NEEDS_REVIEW          |    10 |
+| VARIANT_SIZE_MISMATCH |     4 |
+| DUPLICATE_IMAGE       |     1 |
+| MISSING_IMAGE         |    39 |
+| DRIVE_ONLY            |     1 |
 
 ## Needs Review
 
@@ -38,7 +38,7 @@ No operational Product, Inventory, InventoryBatch, or current-price data was mod
 
 ## Duplicate Images
 
-- P278 — Lemon Square Lava Cake — Drive IDs: 1MAH3yi8UFeDhvLG5yTmEpjseyovKKpq6, 1z_NMcHJW6yutmzAwZohiEMICLOSngqc_ — Multiple Drive assets normalize to the same source identity.
+- P278 — Lemon Square Lava Cake — Drive IDs: 1MAH3yi8UFeDhvLG5yTmEpjseyovKKpq6, 1z*NMcHJW6yutmzAwZohiEMICLOSngqc* — Multiple Drive assets normalize to the same source identity.
 
 ## Missing Images
 

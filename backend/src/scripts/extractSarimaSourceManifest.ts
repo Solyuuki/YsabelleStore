@@ -36,9 +36,7 @@ function isDirectExecution() {
 }
 
 if (isDirectExecution()) {
-  const outputPath = process.argv[2]
-    ? path.resolve(process.argv[2])
-    : DEFAULT_OUTPUT_PATH;
+  const outputPath = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_OUTPUT_PATH;
   const manifest = await extractSarimaSourceManifest(outputPath);
 
   console.log(

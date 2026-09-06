@@ -45,14 +45,16 @@ type ApprovedSeedCategoryReuse = {
   blockers: string[];
 };
 
-function build(overrides: {
-  stagingRows?: CatalogPromotionInactiveStagingRow[];
-  categories?: TestCategory[];
-  products?: Array<{ id: string; sku: string }>;
-  mappings?: Array<{ sourceKey: string; sourceProductId: string; canonicalProductId: string }>;
-  approvedSeedCategoryReuses?: ApprovedSeedCategoryReuse[];
-} = {}) {
-  return (buildCatalogPromotionDatabaseMutationPreview as any)({
+function build(
+  overrides: {
+    stagingRows?: CatalogPromotionInactiveStagingRow[];
+    categories?: TestCategory[];
+    products?: Array<{ id: string; sku: string }>;
+    mappings?: Array<{ sourceKey: string; sourceProductId: string; canonicalProductId: string }>;
+    approvedSeedCategoryReuses?: ApprovedSeedCategoryReuse[];
+  } = {}
+) {
+  return buildCatalogPromotionDatabaseMutationPreview({
     stagingRows: overrides.stagingRows ?? [baseStagingRow],
     categories: overrides.categories ?? [
       { id: "cat_personal_care", name: "Personal Care", slug: "personal-care" }
@@ -195,7 +197,9 @@ test("database mutation preview keeps seed categories blocked when approval does
 test("same category name with a non-seed identity remains eligible for operational resolution", () => {
   const preview = build({
     stagingRows: [{ ...baseStagingRow, plannedCategory: "Beverages" }],
-    categories: [{ id: "cat_operational_beverages", name: "Beverages", slug: "beverages-operational" }]
+    categories: [
+      { id: "cat_operational_beverages", name: "Beverages", slug: "beverages-operational" }
+    ]
   });
   const row = preview.rows[0];
 

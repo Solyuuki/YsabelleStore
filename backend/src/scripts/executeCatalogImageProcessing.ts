@@ -95,20 +95,18 @@ export const defaultCatalogImageCiqeRunner: CatalogImageCiqeRunner = async ({
   await fs.mkdir(outputRoot, { recursive: true });
   await fs.mkdir(path.dirname(summaryPath), { recursive: true });
 
-  await runProcess(
-    pythonCommand,
-    [batchScript, jobsPath, outputRoot, summaryPath],
-    repositoryRoot
-  );
+  await runProcess(pythonCommand, [batchScript, jobsPath, outputRoot, summaryPath], repositoryRoot);
 
   return readJson<CatalogImageCiqeSummary>(summaryPath);
 };
 
-export async function executeCatalogImageProcessing(options: {
-  repositoryRoot?: string;
-  download?: CatalogDriveDownloader;
-  runCiqe?: CatalogImageCiqeRunner;
-} = {}) {
+export async function executeCatalogImageProcessing(
+  options: {
+    repositoryRoot?: string;
+    download?: CatalogDriveDownloader;
+    runCiqe?: CatalogImageCiqeRunner;
+  } = {}
+) {
   const repositoryRoot = path.resolve(options.repositoryRoot ?? process.cwd());
   const previewPath = path.join(
     repositoryRoot,
@@ -118,10 +116,7 @@ export async function executeCatalogImageProcessing(options: {
   const driveManifestPath = path.join(artifactsRoot, "drive-image-manifest.json");
   const promotionPath = path.join(artifactsRoot, "catalog-promotion-preview.json");
   const webEvidencePath = path.join(artifactsRoot, "image-source-web-evidence.json");
-  const materializationsPath = path.join(
-    artifactsRoot,
-    "image-source-drive-materializations.json"
-  );
+  const materializationsPath = path.join(artifactsRoot, "image-source-drive-materializations.json");
   const jobsPath = path.join(artifactsRoot, "image-engine-jobs.json");
   const selectionPath = path.join(
     repositoryRoot,
@@ -208,7 +203,10 @@ export async function executeCatalogImageProcessing(options: {
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

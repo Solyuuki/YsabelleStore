@@ -62,7 +62,10 @@ function rows(overrides: Partial<ProductRow>[] = []): ProductRow[] {
   return base.map((row, index) => ({ ...row, ...(overrides[index] ?? {}) }));
 }
 
-function fakeClient(productRows: ProductRow[], collisionRows: Array<{ id: string; sku: string; name: string; barcode: string }> = []) {
+function fakeClient(
+  productRows: ProductRow[],
+  collisionRows: Array<{ id: string; sku: string; name: string; barcode: string }> = []
+) {
   const updateCalls: unknown[] = [];
   const findCalls: unknown[] = [];
   let findIndex = 0;
@@ -136,7 +139,9 @@ test("aborts before writes if any target state drifted", async () => {
 });
 
 test("aborts before writes if Product/SARIMA identity drifted", async () => {
-  const { client, updateCalls } = fakeClient(rows([{ sarimaSourceMapping: { sourceProductId: "P999" } }]));
+  const { client, updateCalls } = fakeClient(
+    rows([{ sarimaSourceMapping: { sourceProductId: "P999" } }])
+  );
   await assert.rejects(
     () => executeExistingSarimaBarcodeEnrichment({ client, authorization }),
     /EXISTING_SARIMA_BARCODE_ENRICHMENT_IDENTITY_MISMATCH/
@@ -161,7 +166,8 @@ test("aborts and rolls back when any conditional barcode update does not affect 
   const tx = {
     product: {
       async findMany(args: unknown) {
-        if ((args as { select?: { sarimaSourceMapping?: unknown } }).select?.sarimaSourceMapping) return productRows;
+        if ((args as { select?: { sarimaSourceMapping?: unknown } }).select?.sarimaSourceMapping)
+          return productRows;
         return [];
       },
       async updateMany(args: unknown) {

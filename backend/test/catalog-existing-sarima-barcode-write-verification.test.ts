@@ -27,15 +27,25 @@ test("verification confirms exact barcode values while review/inactive/hidden st
     authorization,
     products: [
       {
-        id: "p1", sku: "SARIMA-P022", name: "Gardenia Enriched White Bread 600g",
-        barcode: "4806502720615", recordSource: "IMPORT", status: "INACTIVE",
-        dataQualityStatus: "NEEDS_REVIEW", isStorefrontVisible: false,
+        id: "p1",
+        sku: "SARIMA-P022",
+        name: "Gardenia Enriched White Bread 600g",
+        barcode: "4806502720615",
+        recordSource: "IMPORT",
+        status: "INACTIVE",
+        dataQualityStatus: "NEEDS_REVIEW",
+        isStorefrontVisible: false,
         sarimaSourceProductId: "P022"
       },
       {
-        id: "p2", sku: "SARIMA-P088", name: "Fresca Tuna Flakes in Oil 175g",
-        barcode: "748485900094", recordSource: "IMPORT", status: "INACTIVE",
-        dataQualityStatus: "NEEDS_REVIEW", isStorefrontVisible: false,
+        id: "p2",
+        sku: "SARIMA-P088",
+        name: "Fresca Tuna Flakes in Oil 175g",
+        barcode: "748485900094",
+        recordSource: "IMPORT",
+        status: "INACTIVE",
+        dataQualityStatus: "NEEDS_REVIEW",
+        isStorefrontVisible: false,
         sarimaSourceProductId: "P088"
       }
     ]
@@ -48,7 +58,10 @@ test("verification confirms exact barcode values while review/inactive/hidden st
     preservedSarimaMappings: 2,
     discrepancies: 0
   });
-  assert.equal(result.rows.every((row) => row.status === "VERIFIED"), true);
+  assert.equal(
+    result.rows.every((row) => row.status === "VERIFIED"),
+    true
+  );
 });
 
 test("verification surfaces any barcode or state discrepancy instead of treating it as success", () => {
@@ -56,15 +69,25 @@ test("verification surfaces any barcode or state discrepancy instead of treating
     authorization,
     products: [
       {
-        id: "p1", sku: "SARIMA-P022", name: "Gardenia Enriched White Bread 600g",
-        barcode: "WRONG", recordSource: "IMPORT", status: "INACTIVE",
-        dataQualityStatus: "NEEDS_REVIEW", isStorefrontVisible: false,
+        id: "p1",
+        sku: "SARIMA-P022",
+        name: "Gardenia Enriched White Bread 600g",
+        barcode: "WRONG",
+        recordSource: "IMPORT",
+        status: "INACTIVE",
+        dataQualityStatus: "NEEDS_REVIEW",
+        isStorefrontVisible: false,
         sarimaSourceProductId: "P022"
       },
       {
-        id: "p2", sku: "SARIMA-P088", name: "Fresca Tuna Flakes in Oil 175g",
-        barcode: "748485900094", recordSource: "IMPORT", status: "ACTIVE",
-        dataQualityStatus: "NEEDS_REVIEW", isStorefrontVisible: false,
+        id: "p2",
+        sku: "SARIMA-P088",
+        name: "Fresca Tuna Flakes in Oil 175g",
+        barcode: "748485900094",
+        recordSource: "IMPORT",
+        status: "ACTIVE",
+        dataQualityStatus: "NEEDS_REVIEW",
+        isStorefrontVisible: false,
         sarimaSourceProductId: "P088"
       }
     ]
@@ -77,17 +100,23 @@ test("verification surfaces any barcode or state discrepancy instead of treating
 
 test("verification fails closed if an authorized Product is missing", () => {
   assert.throws(
-    () => buildExistingSarimaBarcodeWriteVerification({
-      authorization,
-      products: [
-        {
-          id: "p1", sku: "SARIMA-P022", name: "Gardenia Enriched White Bread 600g",
-          barcode: "4806502720615", recordSource: "IMPORT", status: "INACTIVE",
-          dataQualityStatus: "NEEDS_REVIEW", isStorefrontVisible: false,
-          sarimaSourceProductId: "P022"
-        }
-      ]
-    }),
+    () =>
+      buildExistingSarimaBarcodeWriteVerification({
+        authorization,
+        products: [
+          {
+            id: "p1",
+            sku: "SARIMA-P022",
+            name: "Gardenia Enriched White Bread 600g",
+            barcode: "4806502720615",
+            recordSource: "IMPORT",
+            status: "INACTIVE",
+            dataQualityStatus: "NEEDS_REVIEW",
+            isStorefrontVisible: false,
+            sarimaSourceProductId: "P022"
+          }
+        ]
+      }),
     /EXISTING_SARIMA_BARCODE_WRITE_VERIFICATION_IDENTITY_MISMATCH/
   );
 });

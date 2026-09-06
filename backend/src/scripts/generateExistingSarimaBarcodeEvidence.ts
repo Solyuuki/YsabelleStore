@@ -64,8 +64,20 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
     sarimaSourceProductId: "P022",
     candidateBarcode: "4806502720615",
     sources: [
-      source("RETAILER", "Puregold", "https://puregold.com.ph/pgcatalog/product/view/title/GARDENIA%20WHITE%20BREAD%20REGULAR%20%20%20600G%20/barcode/4806502720615", "4806502720615", "puregold.com.ph"),
-      source("RETAILER", "Ever Supermarket via foodpanda", "https://www.foodpanda.ph/shop/ncld/ever-supermarket-maligaya", "4806502720615", "ever-supermarket-foodpanda")
+      source(
+        "RETAILER",
+        "Puregold",
+        "https://puregold.com.ph/pgcatalog/product/view/title/GARDENIA%20WHITE%20BREAD%20REGULAR%20%20%20600G%20/barcode/4806502720615",
+        "4806502720615",
+        "puregold.com.ph"
+      ),
+      source(
+        "RETAILER",
+        "Ever Supermarket via foodpanda",
+        "https://www.foodpanda.ph/shop/ncld/ever-supermarket-maligaya",
+        "4806502720615",
+        "ever-supermarket-foodpanda"
+      )
     ]
   },
   {
@@ -74,7 +86,13 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
     sarimaSourceProductId: "P038",
     candidateBarcode: "4808887970531",
     sources: [
-      source("RETAILER", "Sta. Lucia Grocers", "https://staluciagrocers.com/products/purefoods-classic-tocino-450g", "4808887970531", "staluciagrocers.com")
+      source(
+        "RETAILER",
+        "Sta. Lucia Grocers",
+        "https://staluciagrocers.com/products/purefoods-classic-tocino-450g",
+        "4808887970531",
+        "staluciagrocers.com"
+      )
     ]
   },
   {
@@ -90,8 +108,20 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
     sarimaSourceProductId: "P065",
     candidateBarcode: "4800011179049",
     sources: [
-      source("MARKETPLACE", "eBay business seller", "https://www.ebay.ca/itm/116294137904", "4800011179049", "ebay-koji-beauty"),
-      source("OTHER", "Neneng POS public catalog", "https://www.nenengpos.online/", "4800011179049", "nenengpos.online")
+      source(
+        "MARKETPLACE",
+        "eBay business seller",
+        "https://www.ebay.ca/itm/116294137904",
+        "4800011179049",
+        "ebay-koji-beauty"
+      ),
+      source(
+        "OTHER",
+        "Neneng POS public catalog",
+        "https://www.nenengpos.online/",
+        "4800011179049",
+        "nenengpos.online"
+      )
     ]
   },
   {
@@ -114,8 +144,20 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
     sarimaSourceProductId: "P088",
     candidateBarcode: "748485900094",
     sources: [
-      source("RETAILER", "Puregold", "https://puregold.com.ph/pgcatalog/product/view/title/FRESCA%20TUNA%20%20FLAKES%20IN%20OIL%20%20175G/barcode/748485900094", "748485900094", "puregold.com.ph"),
-      source("RETAILER", "Sta. Lucia Grocers", "https://staluciagrocers.com/products/fresca-tuna-flakes-in-oil-175g", "748485900094", "staluciagrocers.com")
+      source(
+        "RETAILER",
+        "Puregold",
+        "https://puregold.com.ph/pgcatalog/product/view/title/FRESCA%20TUNA%20%20FLAKES%20IN%20OIL%20%20175G/barcode/748485900094",
+        "748485900094",
+        "puregold.com.ph"
+      ),
+      source(
+        "RETAILER",
+        "Sta. Lucia Grocers",
+        "https://staluciagrocers.com/products/fresca-tuna-flakes-in-oil-175g",
+        "748485900094",
+        "staluciagrocers.com"
+      )
     ]
   },
   {
@@ -145,8 +187,20 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
     sarimaSourceProductId: "P217",
     candidateBarcode: "4801981107971",
     sources: [
-      source("RETAILER", "Ever Supermarket", "https://ever.ph/pages/promos", "4801981107971", "ever.ph"),
-      source("RETAILER", "Iloilo Supermart", "https://store.iloilosupermart.com/product/wilkins-pure-500ml/", "4801981107971", "store.iloilosupermart.com")
+      source(
+        "RETAILER",
+        "Ever Supermarket",
+        "https://ever.ph/pages/promos",
+        "4801981107971",
+        "ever.ph"
+      ),
+      source(
+        "RETAILER",
+        "Iloilo Supermart",
+        "https://store.iloilosupermart.com/product/wilkins-pure-500ml/",
+        "4801981107971",
+        "store.iloilosupermart.com"
+      )
     ]
   },
   {
@@ -155,8 +209,20 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
     sarimaSourceProductId: "P218",
     candidateBarcode: "4800049720107",
     sources: [
-      source("RETAILER", "Talcreco", "https://talcreco.com/consumer-goods", "4800049720107", "talcreco.com"),
-      source("RETAILER", "Sta. Lucia Grocers", "https://staluciagrocers.com/products/natures-spring-purified-drinking-water-350ml", "4800049720107", "staluciagrocers.com")
+      source(
+        "RETAILER",
+        "Talcreco",
+        "https://talcreco.com/consumer-goods",
+        "4800049720107",
+        "talcreco.com"
+      ),
+      source(
+        "RETAILER",
+        "Sta. Lucia Grocers",
+        "https://staluciagrocers.com/products/natures-spring-purified-drinking-water-350ml",
+        "4800049720107",
+        "staluciagrocers.com"
+      )
     ]
   },
   {
@@ -172,8 +238,20 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
     sarimaSourceProductId: "P241",
     candidateBarcode: "4800024556929",
     sources: [
-      source("RETAILER", "Del Monte Kitchenomics", "https://kitchenomics.com/del-monte-tomato-sauce-original-style-250g.html", "4800024556929", "kitchenomics.com"),
-      source("RETAILER", "Iloilo Supermart", "https://store.iloilosupermart.com/product/del-monte-tomato-sauce-250g-sup/", "4800024556929", "store.iloilosupermart.com")
+      source(
+        "RETAILER",
+        "Del Monte Kitchenomics",
+        "https://kitchenomics.com/del-monte-tomato-sauce-original-style-250g.html",
+        "4800024556929",
+        "kitchenomics.com"
+      ),
+      source(
+        "RETAILER",
+        "Iloilo Supermart",
+        "https://store.iloilosupermart.com/product/del-monte-tomato-sauce-250g-sup/",
+        "4800024556929",
+        "store.iloilosupermart.com"
+      )
     ]
   },
   {
@@ -182,7 +260,13 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
     sarimaSourceProductId: "P261",
     candidateBarcode: "4801981116072",
     sources: [
-      source("RETAILER", "Ever Supermarket via foodpanda", "https://www.foodpanda.ph/shop/ncld/ever-supermarket-maligaya", "4801981116072", "ever-supermarket-foodpanda")
+      source(
+        "RETAILER",
+        "Ever Supermarket via foodpanda",
+        "https://www.foodpanda.ph/shop/ncld/ever-supermarket-maligaya",
+        "4801981116072",
+        "ever-supermarket-foodpanda"
+      )
     ]
   },
   {
@@ -191,8 +275,20 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
     sarimaSourceProductId: "P370",
     candidateBarcode: "4800016644504",
     sources: [
-      source("RETAILER", "Ever Supermarket via foodpanda", "https://www.foodpanda.ph/shop/pc7e/ever-supermarket-paco", "4800016644504", "ever-supermarket-foodpanda"),
-      source("RETAILER", "Iloilo Supermart", "https://store.iloilosupermart.com/product/piattos-cheese-85g/", "4800016644504", "store.iloilosupermart.com")
+      source(
+        "RETAILER",
+        "Ever Supermarket via foodpanda",
+        "https://www.foodpanda.ph/shop/pc7e/ever-supermarket-paco",
+        "4800016644504",
+        "ever-supermarket-foodpanda"
+      ),
+      source(
+        "RETAILER",
+        "Iloilo Supermart",
+        "https://store.iloilosupermart.com/product/piattos-cheese-85g/",
+        "4800016644504",
+        "store.iloilosupermart.com"
+      )
     ]
   },
   {
@@ -221,7 +317,9 @@ export const EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE: ExistingSarimaBarcodeEvi
 function toProduct(row: RawProductRow): ExistingSarimaBarcodeProduct {
   const sourceProductId = row.sarimaSourceMapping?.sourceProductId;
   if (!sourceProductId) {
-    throw new Error(`EXISTING_SARIMA_BARCODE_EVIDENCE_IDENTITY_MISMATCH: ${row.id} has no SARIMA source mapping`);
+    throw new Error(
+      `EXISTING_SARIMA_BARCODE_EVIDENCE_IDENTITY_MISMATCH: ${row.id} has no SARIMA source mapping`
+    );
   }
 
   return {
@@ -264,8 +362,9 @@ function toMarkdown(matrix: ExistingSarimaBarcodeEvidence) {
     "",
     "| SARIMA | Product | Status | Candidate | Verified | Sources |",
     "| --- | --- | --- | --- | --- | ---: |",
-    ...matrix.rows.map((row) =>
-      `| ${row.sarimaSourceProductId} | ${row.name.replaceAll("|", "\\|")} | ${row.status} | ${row.candidateBarcode ?? "-"} | ${row.verifiedBarcode ?? "-"} | ${row.sourceCount} |`
+    ...matrix.rows.map(
+      (row) =>
+        `| ${row.sarimaSourceProductId} | ${row.name.replaceAll("|", "\\|")} | ${row.status} | ${row.candidateBarcode ?? "-"} | ${row.verifiedBarcode ?? "-"} | ${row.sourceCount} |`
     ),
     "",
     "Policy: a checksum-valid GTIN is VERIFIED_EXTERNAL only when supported by an exact product/exact retail-unit manufacturer or authorized-distributor source, or by at least two independent exact-unit retailer sources. Marketplace-only, single-retailer, ambiguous pack-unit, or unsupported candidates remain unresolved for physical scan.",
@@ -279,11 +378,13 @@ async function writeText(filePath: string, contents: string) {
   await fs.writeFile(filePath, contents, "utf8");
 }
 
-export async function generateExistingSarimaBarcodeEvidence(options: {
-  client?: ExistingSarimaBarcodeEvidencePrismaClient;
-  jsonPath?: string;
-  reportPath?: string;
-} = {}) {
+export async function generateExistingSarimaBarcodeEvidence(
+  options: {
+    client?: ExistingSarimaBarcodeEvidencePrismaClient;
+    jsonPath?: string;
+    reportPath?: string;
+  } = {}
+) {
   const client = options.client ?? (prisma as unknown as ExistingSarimaBarcodeEvidencePrismaClient);
   const ids = EXISTING_SARIMA_BARCODE_EVIDENCE_IDENTITIES.map((row) => row.id);
 
@@ -324,7 +425,10 @@ export async function generateExistingSarimaBarcodeEvidence(options: {
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

@@ -6,7 +6,10 @@ import test from "node:test";
 
 import { generateCatalogImageReconciliation } from "../src/scripts/reconcileCatalogImages.js";
 import { buildDriveImageManifest } from "../src/modules/catalog/drive-image-manifest.js";
-import { normalizeSarimaSourceName, type SarimaSourceIdentity } from "../src/modules/catalog/sarima-source-manifest.js";
+import {
+  normalizeSarimaSourceName,
+  type SarimaSourceIdentity
+} from "../src/modules/catalog/sarima-source-manifest.js";
 
 function source(productCode: string, sourceName: string): SarimaSourceIdentity {
   return {

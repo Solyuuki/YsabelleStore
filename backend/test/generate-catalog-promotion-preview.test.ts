@@ -53,7 +53,8 @@ test("catalog promotion preview script writes a dry-run artifact without databas
             sourceNameNormalized: "alias product",
             status: "NEEDS_REVIEW",
             assetFileIds: [],
-            reason: "Token-equivalent historical source identity overlaps P001; review source identity before assigning another Drive image."
+            reason:
+              "Token-equivalent historical source identity overlaps P001; review source identity before assigning another Drive image."
           }
         ],
         driveOnlyAssets: []

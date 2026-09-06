@@ -27,12 +27,8 @@ const DEFAULT_WEB_EVIDENCE_PATH = resolveRepositoryPath(
 const DEFAULT_SELECTION_PATH = resolveRepositoryPath(
   "reports/catalog-quality/phase9-image-source-selection.json"
 );
-const DEFAULT_JOBS_PATH = resolveRepositoryPath(
-  "artifacts/catalog/phase9/image-engine-jobs.json"
-);
-const DEFAULT_REPORT_PATH = resolveRepositoryPath(
-  "docs/catalog/phase9-image-source-selection.md"
-);
+const DEFAULT_JOBS_PATH = resolveRepositoryPath("artifacts/catalog/phase9/image-engine-jobs.json");
+const DEFAULT_REPORT_PATH = resolveRepositoryPath("docs/catalog/phase9-image-source-selection.md");
 
 type PromotionArtifact = { rows: ExistingSarimaPromotionEvidence[] };
 
@@ -45,13 +41,19 @@ type CatalogImageSourceArtifactsInput = {
 
 export function buildCatalogImageSourceArtifacts(input: CatalogImageSourceArtifactsInput) {
   if (!input.preview || !Array.isArray(input.preview.rows)) {
-    throw new Error("CATALOG_IMAGE_SOURCE_SELECTION_INVALID_PREVIEW: preview.rows must be an array");
+    throw new Error(
+      "CATALOG_IMAGE_SOURCE_SELECTION_INVALID_PREVIEW: preview.rows must be an array"
+    );
   }
   if (!input.promotion || !Array.isArray(input.promotion.rows)) {
-    throw new Error("CATALOG_IMAGE_SOURCE_SELECTION_INVALID_PROMOTION: promotion.rows must be an array");
+    throw new Error(
+      "CATALOG_IMAGE_SOURCE_SELECTION_INVALID_PROMOTION: promotion.rows must be an array"
+    );
   }
   if (!Array.isArray(input.driveMaterializations)) {
-    throw new Error("CATALOG_IMAGE_SOURCE_SELECTION_INVALID_DRIVE_MATERIALIZATIONS: expected an array");
+    throw new Error(
+      "CATALOG_IMAGE_SOURCE_SELECTION_INVALID_DRIVE_MATERIALIZATIONS: expected an array"
+    );
   }
   if (!Array.isArray(input.webEvidence)) {
     throw new Error("CATALOG_IMAGE_SOURCE_SELECTION_INVALID_WEB_EVIDENCE: expected an array");
@@ -117,8 +119,9 @@ function toMarkdown(artifacts: ReturnType<typeof buildCatalogImageSourceArtifact
     "",
     "| Product code | Product | Status | Source kind | Source reference | License basis |",
     "| --- | --- | --- | --- | --- | --- |",
-    ...selection.rows.map((row) =>
-      `| ${row.productCode} | ${row.name.replaceAll("|", "\\|")} | ${row.status} | ${row.selectedSourceKind ?? "—"} | ${row.selectedSourceReference ?? "—"} | ${(row.licenseBasis ?? "—").replaceAll("|", "\\|")} |`
+    ...selection.rows.map(
+      (row) =>
+        `| ${row.productCode} | ${row.name.replaceAll("|", "\\|")} | ${row.status} | ${row.selectedSourceKind ?? "—"} | ${row.selectedSourceReference ?? "—"} | ${(row.licenseBasis ?? "—").replaceAll("|", "\\|")} |`
     ),
     "",
     "Retailer/public product pages without explicit commercial-use rights are never promoted to licensed-web sources. Identity-blocked products never enter CIQE.",
@@ -126,18 +129,21 @@ function toMarkdown(artifacts: ReturnType<typeof buildCatalogImageSourceArtifact
   ].join("\n");
 }
 
-export async function generateCatalogImageSourceSelection(options: {
-  previewPath?: string;
-  promotionPath?: string;
-  driveMaterializationsPath?: string;
-  webEvidencePath?: string;
-  selectionPath?: string;
-  jobsPath?: string;
-  reportPath?: string;
-} = {}) {
+export async function generateCatalogImageSourceSelection(
+  options: {
+    previewPath?: string;
+    promotionPath?: string;
+    driveMaterializationsPath?: string;
+    webEvidencePath?: string;
+    selectionPath?: string;
+    jobsPath?: string;
+    reportPath?: string;
+  } = {}
+) {
   const previewPath = options.previewPath ?? DEFAULT_PREVIEW_PATH;
   const promotionPath = options.promotionPath ?? DEFAULT_PROMOTION_PATH;
-  const driveMaterializationsPath = options.driveMaterializationsPath ?? DEFAULT_DRIVE_MATERIALIZATIONS_PATH;
+  const driveMaterializationsPath =
+    options.driveMaterializationsPath ?? DEFAULT_DRIVE_MATERIALIZATIONS_PATH;
   const webEvidencePath = options.webEvidencePath ?? DEFAULT_WEB_EVIDENCE_PATH;
   const selectionPath = options.selectionPath ?? DEFAULT_SELECTION_PATH;
   const jobsPath = options.jobsPath ?? DEFAULT_JOBS_PATH;
@@ -180,7 +186,10 @@ export async function generateCatalogImageSourceSelection(options: {
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

@@ -32,11 +32,7 @@ export type OperationalProductSnapshot = {
   relationshipCounts: OperationalRelationshipCounts;
 };
 
-export type OperationalCatalogCandidateStatus =
-  | "EXISTING"
-  | "NEW"
-  | "DUPLICATE_ALIAS"
-  | "BLOCKED";
+export type OperationalCatalogCandidateStatus = "EXISTING" | "NEW" | "DUPLICATE_ALIAS" | "BLOCKED";
 
 export type OperationalCatalogCandidateRow = {
   productCode: string;
@@ -123,8 +119,7 @@ export function buildOperationalCatalogAudit(
 ): OperationalCatalogAudit {
   const fixtures = products.filter((product) => product.recordSource === "TEST_FIXTURE");
   const developmentSeeds = products.filter(
-    (product) =>
-      product.recordSource !== "TEST_FIXTURE" && isDevelopmentCatalogSeedProduct(product)
+    (product) => product.recordSource !== "TEST_FIXTURE" && isDevelopmentCatalogSeedProduct(product)
   );
   const legacyRuntimeQaProducts = products.filter(
     (product) =>
@@ -196,7 +191,9 @@ export function buildOperationalCatalogAudit(
     }
 
     const directlyMapped = sourceMappingIndex.get(row.productCode) ?? [];
-    const mappedFixtures = directlyMapped.filter((product) => product.recordSource === "TEST_FIXTURE");
+    const mappedFixtures = directlyMapped.filter(
+      (product) => product.recordSource === "TEST_FIXTURE"
+    );
     const mappedDevelopmentSeeds = directlyMapped.filter(
       (product) =>
         product.recordSource !== "TEST_FIXTURE" && isDevelopmentCatalogSeedProduct(product)
@@ -222,7 +219,8 @@ export function buildOperationalCatalogAudit(
         status: "BLOCKED",
         operationalProductId: null,
         candidateOperationalProductIds: mappedFixtures.map((product) => product.id).sort(),
-        reason: "SARIMA source mapping points to a test fixture Product; mapping must be repaired before promotion."
+        reason:
+          "SARIMA source mapping points to a test fixture Product; mapping must be repaired before promotion."
       };
     }
 
@@ -234,7 +232,8 @@ export function buildOperationalCatalogAudit(
         status: "BLOCKED",
         operationalProductId: null,
         candidateOperationalProductIds: mappedDevelopmentSeeds.map((product) => product.id).sort(),
-        reason: "SARIMA source mapping points to a known development seed Product; mapping must be reviewed before promotion."
+        reason:
+          "SARIMA source mapping points to a known development seed Product; mapping must be reviewed before promotion."
       };
     }
 
@@ -245,8 +244,11 @@ export function buildOperationalCatalogAudit(
         canonicalProductCode: row.canonicalProductCode,
         status: "BLOCKED",
         operationalProductId: null,
-        candidateOperationalProductIds: mappedLegacyRuntimeQaProducts.map((product) => product.id).sort(),
-        reason: "SARIMA source mapping points to a provenance-proven legacy runtime QA Product; mapping must be reviewed before promotion."
+        candidateOperationalProductIds: mappedLegacyRuntimeQaProducts
+          .map((product) => product.id)
+          .sort(),
+        reason:
+          "SARIMA source mapping points to a provenance-proven legacy runtime QA Product; mapping must be reviewed before promotion."
       };
     }
 
@@ -274,7 +276,8 @@ export function buildOperationalCatalogAudit(
         status: "BLOCKED",
         operationalProductId: null,
         candidateOperationalProductIds: ids,
-        reason: "Multiple operational Products claim the same SARIMA source identity; manual mapping repair is required."
+        reason:
+          "Multiple operational Products claim the same SARIMA source identity; manual mapping repair is required."
       };
     }
 
@@ -293,7 +296,8 @@ export function buildOperationalCatalogAudit(
         status: "BLOCKED",
         operationalProductId: null,
         candidateOperationalProductIds: ids,
-        reason: "One or more operational Products match only by normalized name/alias; name evidence alone is insufficient to auto-map."
+        reason:
+          "One or more operational Products match only by normalized name/alias; name evidence alone is insufficient to auto-map."
       };
     }
 
@@ -304,7 +308,8 @@ export function buildOperationalCatalogAudit(
       status: "NEW",
       operationalProductId: null,
       candidateOperationalProductIds: [],
-      reason: "No existing operational Product mapping or defensible identifier-backed match was found."
+      reason:
+        "No existing operational Product mapping or defensible identifier-backed match was found."
     };
   });
 
@@ -324,17 +329,19 @@ export function buildOperationalCatalogAudit(
         !usedOperationalProductIds.has(product.id) &&
         !candidateOperationalProductIds.has(product.id)
     )
-    .map((product): UnmatchedOperationalProductRow => ({
-      productId: product.id,
-      sku: product.sku,
-      barcode: product.barcode,
-      name: product.name,
-      recordSource: product.recordSource,
-      dataQualityStatus: product.dataQualityStatus,
-      hasInventoryRecord: product.hasInventoryRecord,
-      relationshipCounts: product.relationshipCounts,
-      protectedReferenceCount: protectedReferenceCount(product)
-    }))
+    .map(
+      (product): UnmatchedOperationalProductRow => ({
+        productId: product.id,
+        sku: product.sku,
+        barcode: product.barcode,
+        name: product.name,
+        recordSource: product.recordSource,
+        dataQualityStatus: product.dataQualityStatus,
+        hasInventoryRecord: product.hasInventoryRecord,
+        relationshipCounts: product.relationshipCounts,
+        protectedReferenceCount: protectedReferenceCount(product)
+      })
+    )
     .sort((left, right) => left.productId.localeCompare(right.productId));
 
   return {

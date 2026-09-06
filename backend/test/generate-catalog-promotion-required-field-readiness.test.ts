@@ -4,9 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import {
-  generateCatalogPromotionRequiredFieldReadiness
-} from "../src/scripts/generateCatalogPromotionRequiredFieldReadiness.js";
+import { generateCatalogPromotionRequiredFieldReadiness } from "../src/scripts/generateCatalogPromotionRequiredFieldReadiness.js";
 
 const executionManifest = {
   summary: {

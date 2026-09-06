@@ -158,5 +158,8 @@ test("duplicate proposed barcode across verified targets is blocked for every af
   assert.equal(preview.summary.readyToWrite, 0);
   assert.equal(preview.summary.blockedBarcodeCollisions, 2);
   assert.equal(preview.summary.plannedBarcodeWrites, 0);
-  assert.equal(preview.rows.every((row) => row.status === "BLOCKED_BARCODE_COLLISION"), true);
+  assert.equal(
+    preview.rows.every((row) => row.status === "BLOCKED_BARCODE_COLLISION"),
+    true
+  );
 });

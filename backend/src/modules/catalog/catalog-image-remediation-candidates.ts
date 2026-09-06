@@ -67,7 +67,9 @@ export function buildCatalogImageRemediationCandidates(input: {
   maxDriveAttempts: number;
 }): CatalogImageRemediationResult {
   if (!Number.isInteger(input.maxDriveAttempts) || input.maxDriveAttempts < 1) {
-    throw new Error("CATALOG_IMAGE_REMEDIATION_INVALID_ATTEMPTS: maxDriveAttempts must be a positive integer");
+    throw new Error(
+      "CATALOG_IMAGE_REMEDIATION_INVALID_ATTEMPTS: maxDriveAttempts must be a positive integer"
+    );
   }
 
   const materializationByProductCode = new Map(
@@ -138,9 +140,8 @@ export function buildCatalogImageRemediationCandidates(input: {
         (row) => row.reason === "DRIVE_MATERIALIZATION_FAILED"
       ).length,
       ciqeRejected: rows.filter((row) => row.reason === "CIQE_REJECTED").length,
-      reconciliationRequiresWeb: rows.filter(
-        (row) => row.reason === "RECONCILIATION_REQUIRES_WEB"
-      ).length,
+      reconciliationRequiresWeb: rows.filter((row) => row.reason === "RECONCILIATION_REQUIRES_WEB")
+        .length,
       blockedIdentityReview: input.selection.summary.blockedIdentityReview,
       processErrors: input.ciqe.counts.PROCESS_ERROR
     },

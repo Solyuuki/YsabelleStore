@@ -20,9 +20,7 @@ test("loads the authoritative Phase 9 Drive snapshot with all 430 unique raw ima
 test("preserves AVIF assets that the Drive image-search path can omit", async () => {
   const metadata = await loadDriveImageMetadataSnapshot(snapshotDir);
 
-  const snackAvif = metadata.find(
-    (entry) => entry.fileId === "1MY7Qi0mGt0dafyc6QtQKXc3LSXSthke4"
-  );
+  const snackAvif = metadata.find((entry) => entry.fileId === "1MY7Qi0mGt0dafyc6QtQKXc3LSXSthke4");
   assert.ok(snackAvif);
   assert.equal(snackAvif.filename, "Hi-Ho O’Puffly BBQ Snack.avif");
   assert.equal(snackAvif.mimeType, "image/avif");

@@ -151,7 +151,8 @@ export async function generateCatalogPromotionCategoryGapPlan(
 ): Promise<CatalogPromotionCategoryGapPlan> {
   const ownsClient = !options.client;
   const client =
-    options.client ?? (new PrismaClient() as unknown as CatalogPromotionCategoryGapPlanPrismaClient);
+    options.client ??
+    (new PrismaClient() as unknown as CatalogPromotionCategoryGapPlanPrismaClient);
   const executionPath = options.executionPath ?? DEFAULT_EXECUTION_PATH;
   const jsonPath = options.jsonPath ?? DEFAULT_JSON_PATH;
   const csvPath = options.csvPath ?? DEFAULT_CSV_PATH;
@@ -195,7 +196,10 @@ export async function generateCatalogPromotionCategoryGapPlan(
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

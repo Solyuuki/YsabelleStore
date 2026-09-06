@@ -5,10 +5,7 @@ import type {
 } from "./catalog-image-reconciliation.js";
 import type { SarimaSourceIdentity } from "./sarima-source-manifest.js";
 
-export type CatalogPromotionIdentityStatus =
-  | "CANONICAL"
-  | "DUPLICATE_ALIAS"
-  | "BLOCKED_REVIEW";
+export type CatalogPromotionIdentityStatus = "CANONICAL" | "DUPLICATE_ALIAS" | "BLOCKED_REVIEW";
 
 export type CatalogPromotionPreviewRow = {
   productCode: string;
@@ -39,7 +36,11 @@ const FAMILY_OVERLAP =
   /^Historical source identity shares the same product family with already-resolved (P\d{3})(?:, P\d{3})*;/;
 
 function referencedCanonicalCode(outcome: SourceImageOutcome) {
-  return outcome.reason.match(TOKEN_EQUIVALENT_OVERLAP)?.[1] ?? outcome.reason.match(FAMILY_OVERLAP)?.[1] ?? null;
+  return (
+    outcome.reason.match(TOKEN_EQUIVALENT_OVERLAP)?.[1] ??
+    outcome.reason.match(FAMILY_OVERLAP)?.[1] ??
+    null
+  );
 }
 
 function identityStatusFor(outcome: SourceImageOutcome): CatalogPromotionIdentityStatus {
@@ -70,7 +71,9 @@ function assertCompleteCoverage(
     sourceCodes.every((code) => outcomeSet.has(code));
 
   if (!complete) {
-    throw new Error("Catalog promotion preview requires reconciliation to cover every SARIMA source identity exactly once.");
+    throw new Error(
+      "Catalog promotion preview requires reconciliation to cover every SARIMA source identity exactly once."
+    );
   }
 }
 
@@ -91,7 +94,9 @@ export function buildCatalogPromotionPreview(
       const identityStatus = identityStatusFor(outcome);
       const referencedCode = referencedCanonicalCode(outcome);
       const canonicalProductCode =
-        identityStatus === "CANONICAL" ? source.productCode : (referencedCode ?? source.productCode);
+        identityStatus === "CANONICAL"
+          ? source.productCode
+          : (referencedCode ?? source.productCode);
 
       return {
         productCode: source.productCode,

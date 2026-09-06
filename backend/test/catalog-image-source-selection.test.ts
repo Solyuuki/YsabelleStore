@@ -225,7 +225,12 @@ test("CIQE jobs include only selected sources and preserve provenance reference"
     rows,
     promotionRows,
     driveMaterializations: [
-      { productCode: "P022", fileId: "drive-p022", sourcePath: "staging/P022/source.jpg", usable: true }
+      {
+        productCode: "P022",
+        fileId: "drive-p022",
+        sourcePath: "staging/P022/source.jpg",
+        usable: true
+      }
     ],
     webEvidence: [
       {

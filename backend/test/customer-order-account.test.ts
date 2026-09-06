@@ -73,6 +73,7 @@ async function createFixture() {
     const product = await prisma.product.create({
       data: {
         categoryId: category.id,
+        barcode: `TEST-CUSTOMER-ORDER-${suffix}`,
         sku: `CUSTOMER-ORDER-${suffix}`,
         name: `Customer Order Product ${suffix}`,
         imageUrl: `/images/products/customer-order-${suffix}.webp`,

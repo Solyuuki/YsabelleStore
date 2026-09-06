@@ -92,7 +92,10 @@ function toCsv(preview: CatalogPromotionCategoryOperationalizationPreview) {
       row.seedCategoryProductReferences,
       row.seedCategoryNonSeedProductReferences,
       row.seedCategoryProducts
-        .map((product) => `${product.id}:${product.sku}:${product.isDevelopmentSeed ? "SEED" : "NON_SEED"}`)
+        .map(
+          (product) =>
+            `${product.id}:${product.sku}:${product.isDevelopmentSeed ? "SEED" : "NON_SEED"}`
+        )
         .join(";")
     ]
       .map(csvCell)
@@ -162,7 +165,8 @@ export async function generateCatalogPromotionCategoryOperationalizationPreview(
   const seedCategoryIds = uniqueSorted(
     gap.rows
       .filter(
-        (row) => row.resolutionStatus === "DEVELOPMENT_SEED_CATEGORY" && row.matchedCategory !== null
+        (row) =>
+          row.resolutionStatus === "DEVELOPMENT_SEED_CATEGORY" && row.matchedCategory !== null
       )
       .map((row) => row.matchedCategory!.id)
   );
@@ -208,7 +212,10 @@ export async function generateCatalogPromotionCategoryOperationalizationPreview(
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

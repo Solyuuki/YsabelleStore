@@ -81,8 +81,9 @@ function toMarkdown(plan: CatalogPromotionCategoryMutationPlan) {
     "",
     "| Source category | Candidates | Decision | Reuse basis | Existing category | Proposed slug | Blockers |",
     "| --- | ---: | --- | --- | --- | --- | --- |",
-    ...plan.rows.map((row) =>
-      `| ${markdownCell(row.sourceCategory)} | ${row.candidateCount} | ${row.decision} | ${row.reuseBasis ?? "—"} | ${row.existingCategoryId ?? "—"} | ${row.proposedCategoryCreate?.slug ?? "—"} | ${row.blockers.length > 0 ? markdownCell(row.blockers.join(", ")) : "—"} |`
+    ...plan.rows.map(
+      (row) =>
+        `| ${markdownCell(row.sourceCategory)} | ${row.candidateCount} | ${row.decision} | ${row.reuseBasis ?? "—"} | ${row.existingCategoryId ?? "—"} | ${row.proposedCategoryCreate?.slug ?? "—"} | ${row.blockers.length > 0 ? markdownCell(row.blockers.join(", ")) : "—"} |`
     ),
     "",
     "## Seed Adoption Evidence",
@@ -149,7 +150,10 @@ export async function generateCatalogPromotionCategoryMutationPlan(
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

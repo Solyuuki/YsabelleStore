@@ -35,9 +35,7 @@ export type PromotionRequiredFieldReadinessRow = {
   currentPriceReadiness: "UNVERIFIED";
   proposedUnit: ResolvedProductUnit | null;
   unitEvidence: ProductUnitEvidence;
-  writeReadiness:
-    | "BLOCKED_CURRENT_PRICE"
-    | "BLOCKED_CURRENT_PRICE_AND_UNIT";
+  writeReadiness: "BLOCKED_CURRENT_PRICE" | "BLOCKED_CURRENT_PRICE_AND_UNIT";
 };
 
 export type CatalogPromotionRequiredFieldReadiness = {
@@ -112,9 +110,7 @@ const REVIEWED_PRODUCT_UNIT_OVERRIDES = new Map<
 
 function hasWord(value: string, word: string) {
   const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}(?:s)?(?:$|[^\\p{L}\\p{N}])`, "iu").test(
-    value
-  );
+  return new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}(?:s)?(?:$|[^\\p{L}\\p{N}])`, "iu").test(value);
 }
 
 function hasBottleMorphology(value: string) {
@@ -186,36 +182,29 @@ export function buildCatalogPromotionRequiredFieldReadiness(input: {
     ])
   );
 
-  const rows = input.executionRows.map(
-    (executionRow): PromotionRequiredFieldReadinessRow => {
-      const historicalSellingPrice2025 =
-        historicalPriceByCode.get(executionRow.productCode) ?? null;
-      const unitResolution = resolveCatalogProductUnit({
-        productCode: executionRow.productCode,
-        plannedName: executionRow.plannedName,
-        plannedCategory: executionRow.plannedCategory
-      });
+  const rows = input.executionRows.map((executionRow): PromotionRequiredFieldReadinessRow => {
+    const historicalSellingPrice2025 = historicalPriceByCode.get(executionRow.productCode) ?? null;
+    const unitResolution = resolveCatalogProductUnit({
+      productCode: executionRow.productCode,
+      plannedName: executionRow.plannedName,
+      plannedCategory: executionRow.plannedCategory
+    });
 
-      return {
-        productCode: executionRow.productCode,
-        plannedSku: executionRow.plannedSku,
-        plannedName: executionRow.plannedName,
-        historicalSellingPrice2025,
-        historicalPriceMeaning:
-          historicalSellingPrice2025 === null
-            ? "UNAVAILABLE"
-            : "LAST_RECORDED_HISTORICAL_PRICE_2025",
-        currentSellingPrice: null,
-        currentPriceReadiness: "UNVERIFIED",
-        proposedUnit: unitResolution.unit,
-        unitEvidence: unitResolution.evidence,
-        writeReadiness:
-          unitResolution.unit === null
-            ? "BLOCKED_CURRENT_PRICE_AND_UNIT"
-            : "BLOCKED_CURRENT_PRICE"
-      };
-    }
-  );
+    return {
+      productCode: executionRow.productCode,
+      plannedSku: executionRow.plannedSku,
+      plannedName: executionRow.plannedName,
+      historicalSellingPrice2025,
+      historicalPriceMeaning:
+        historicalSellingPrice2025 === null ? "UNAVAILABLE" : "LAST_RECORDED_HISTORICAL_PRICE_2025",
+      currentSellingPrice: null,
+      currentPriceReadiness: "UNVERIFIED",
+      proposedUnit: unitResolution.unit,
+      unitEvidence: unitResolution.evidence,
+      writeReadiness:
+        unitResolution.unit === null ? "BLOCKED_CURRENT_PRICE_AND_UNIT" : "BLOCKED_CURRENT_PRICE"
+    };
+  });
 
   return {
     summary: {

@@ -9,6 +9,12 @@ import {
   type CatalogPromotionCategoryOperationalizationPreviewPrismaClient
 } from "../src/scripts/generateCatalogPromotionCategoryOperationalizationPreview.js";
 
+type CategoryQueryArgs = { select: Record<string, boolean> };
+type ProductQueryArgs = {
+  where: { categoryId: { in: string[] } };
+  select: Record<string, boolean>;
+};
+
 const gapArtifact = {
   summary: {
     candidateRows: 205,
@@ -105,9 +111,7 @@ test("operationalization preview generator reads categories and seed-category Pr
     product: {
       async findMany(args) {
         calls.push({ model: "product", args });
-        return [
-          { id: "prd_sardines_155g", sku: "CAN-SARD-001", categoryId: "cat_canned_goods" }
-        ];
+        return [{ id: "prd_sardines_155g", sku: "CAN-SARD-001", categoryId: "cat_canned_goods" }];
       }
     }
   };
@@ -120,8 +124,11 @@ test("operationalization preview generator reads categories and seed-category Pr
     reportPath
   });
 
-  assert.deepEqual(calls.map((call) => call.model), ["category", "product"]);
-  assert.deepEqual((calls[0]!.args as any).select, {
+  assert.deepEqual(
+    calls.map((call) => call.model),
+    ["category", "product"]
+  );
+  assert.deepEqual((calls[0]!.args as CategoryQueryArgs).select, {
     id: true,
     name: true,
     slug: true,
@@ -130,8 +137,12 @@ test("operationalization preview generator reads categories and seed-category Pr
     dataQualityStatus: true,
     isStorefrontVisible: true
   });
-  assert.deepEqual((calls[1]!.args as any).where.categoryId.in, ["cat_canned_goods"]);
-  assert.deepEqual((calls[1]!.args as any).select, { id: true, sku: true, categoryId: true });
+  assert.deepEqual((calls[1]!.args as ProductQueryArgs).where.categoryId.in, ["cat_canned_goods"]);
+  assert.deepEqual((calls[1]!.args as ProductQueryArgs).select, {
+    id: true,
+    sku: true,
+    categoryId: true
+  });
 
   assert.equal(preview.summary.proposeCreate, 1);
   assert.equal(preview.summary.reuseExisting, 1);

@@ -115,147 +115,142 @@ export function buildCatalogPromotionCategoryOperationalizationPreview(input: {
     categoriesBySlug.set(slugKey, slugRows);
   }
 
-  const rows = input.gapRows.map(
-    (gap): CatalogPromotionCategoryOperationalizationPreviewRow => {
-      if (gap.resolutionStatus === "MISSING_CATEGORY") {
-        const proposedSlug = slugifyOperationalCategory(gap.sourceCategory);
-        const nameCollisions = categoriesByNormalizedName.get(normalize(gap.sourceCategory)) ?? [];
-        const slugCollisions = categoriesBySlug.get(normalize(proposedSlug)) ?? [];
+  const rows = input.gapRows.map((gap): CatalogPromotionCategoryOperationalizationPreviewRow => {
+    if (gap.resolutionStatus === "MISSING_CATEGORY") {
+      const proposedSlug = slugifyOperationalCategory(gap.sourceCategory);
+      const nameCollisions = categoriesByNormalizedName.get(normalize(gap.sourceCategory)) ?? [];
+      const slugCollisions = categoriesBySlug.get(normalize(proposedSlug)) ?? [];
 
-        if (nameCollisions.length > 0) {
-          return {
-            sourceCategory: gap.sourceCategory,
-            candidateCount: gap.candidateCount,
-            decision: "BLOCKED_NAME_COLLISION",
-            candidateSlug: proposedSlug,
-            reuseBasis: null,
-            proposedCategory: null,
-            existingCategoryId: null,
-            collisionCategories: sortCategories(nameCollisions),
-            seedCategoryProductReferences: 0,
-            seedCategoryNonSeedProductReferences: 0,
-            seedCategoryProducts: []
-          };
-        }
-
-        if (slugCollisions.length === 1) {
-          const existing = slugCollisions[0]!;
-          const existingNameSlug = slugifyOperationalCategory(existing.name);
-          if (
-            existingNameSlug === proposedSlug &&
-            isOperationallyReusableCategory(existing)
-          ) {
-            return {
-              sourceCategory: gap.sourceCategory,
-              candidateCount: gap.candidateCount,
-              decision: "REUSE_EXISTING",
-              candidateSlug: proposedSlug,
-              reuseBasis: "SLUG_EQUIVALENCE",
-              proposedCategory: null,
-              existingCategoryId: existing.id,
-              collisionCategories: [existing],
-              seedCategoryProductReferences: 0,
-              seedCategoryNonSeedProductReferences: 0,
-              seedCategoryProducts: []
-            };
-          }
-        }
-
-        if (slugCollisions.length > 0) {
-          return {
-            sourceCategory: gap.sourceCategory,
-            candidateCount: gap.candidateCount,
-            decision: "BLOCKED_SLUG_COLLISION",
-            candidateSlug: proposedSlug,
-            reuseBasis: null,
-            proposedCategory: null,
-            existingCategoryId: null,
-            collisionCategories: sortCategories(slugCollisions),
-            seedCategoryProductReferences: 0,
-            seedCategoryNonSeedProductReferences: 0,
-            seedCategoryProducts: []
-          };
-        }
-
+      if (nameCollisions.length > 0) {
         return {
           sourceCategory: gap.sourceCategory,
           candidateCount: gap.candidateCount,
-          decision: "PROPOSE_CREATE",
+          decision: "BLOCKED_NAME_COLLISION",
           candidateSlug: proposedSlug,
           reuseBasis: null,
-          proposedCategory: {
-            name: gap.sourceCategory,
-            slug: proposedSlug,
-            isActive: true,
-            recordSource: "IMPORT",
-            dataQualityStatus: "NEEDS_REVIEW",
-            isStorefrontVisible: false
-          },
-          existingCategoryId: null,
-          collisionCategories: [],
-          seedCategoryProductReferences: 0,
-          seedCategoryNonSeedProductReferences: 0,
-          seedCategoryProducts: []
-        };
-      }
-
-      if (gap.resolutionStatus === "EXISTING_STAGING_ELIGIBLE" && gap.matchedCategory) {
-        return {
-          sourceCategory: gap.sourceCategory,
-          candidateCount: gap.candidateCount,
-          decision: "REUSE_EXISTING",
-          candidateSlug: null,
-          reuseBasis: "EXACT_NAME",
           proposedCategory: null,
-          existingCategoryId: gap.matchedCategory.id,
-          collisionCategories: [],
+          existingCategoryId: null,
+          collisionCategories: sortCategories(nameCollisions),
           seedCategoryProductReferences: 0,
           seedCategoryNonSeedProductReferences: 0,
           seedCategoryProducts: []
         };
       }
 
-      if (gap.resolutionStatus === "DEVELOPMENT_SEED_CATEGORY" && gap.matchedCategory) {
-        const references = input.categoryProducts
-          .filter((product) => product.categoryId === gap.matchedCategory!.id)
-          .map((product) => ({
-            id: product.id,
-            sku: product.sku,
-            isDevelopmentSeed: isDevelopmentCatalogSeedProduct(product)
-          }))
-          .sort((left, right) => left.id.localeCompare(right.id));
-        const nonSeedReferences = references.filter((product) => !product.isDevelopmentSeed).length;
+      if (slugCollisions.length === 1) {
+        const existing = slugCollisions[0]!;
+        const existingNameSlug = slugifyOperationalCategory(existing.name);
+        if (existingNameSlug === proposedSlug && isOperationallyReusableCategory(existing)) {
+          return {
+            sourceCategory: gap.sourceCategory,
+            candidateCount: gap.candidateCount,
+            decision: "REUSE_EXISTING",
+            candidateSlug: proposedSlug,
+            reuseBasis: "SLUG_EQUIVALENCE",
+            proposedCategory: null,
+            existingCategoryId: existing.id,
+            collisionCategories: [existing],
+            seedCategoryProductReferences: 0,
+            seedCategoryNonSeedProductReferences: 0,
+            seedCategoryProducts: []
+          };
+        }
+      }
 
+      if (slugCollisions.length > 0) {
         return {
           sourceCategory: gap.sourceCategory,
           candidateCount: gap.candidateCount,
-          decision: "REVIEW_ADOPT_SEED",
-          candidateSlug: null,
+          decision: "BLOCKED_SLUG_COLLISION",
+          candidateSlug: proposedSlug,
           reuseBasis: null,
           proposedCategory: null,
-          existingCategoryId: gap.matchedCategory.id,
-          collisionCategories: [],
-          seedCategoryProductReferences: references.length,
-          seedCategoryNonSeedProductReferences: nonSeedReferences,
-          seedCategoryProducts: references
+          existingCategoryId: null,
+          collisionCategories: sortCategories(slugCollisions),
+          seedCategoryProductReferences: 0,
+          seedCategoryNonSeedProductReferences: 0,
+          seedCategoryProducts: []
         };
       }
 
       return {
         sourceCategory: gap.sourceCategory,
         candidateCount: gap.candidateCount,
-        decision: "REVIEW_REQUIRED",
-        candidateSlug: null,
+        decision: "PROPOSE_CREATE",
+        candidateSlug: proposedSlug,
         reuseBasis: null,
-        proposedCategory: null,
-        existingCategoryId: gap.matchedCategory?.id ?? null,
+        proposedCategory: {
+          name: gap.sourceCategory,
+          slug: proposedSlug,
+          isActive: true,
+          recordSource: "IMPORT",
+          dataQualityStatus: "NEEDS_REVIEW",
+          isStorefrontVisible: false
+        },
+        existingCategoryId: null,
         collisionCategories: [],
         seedCategoryProductReferences: 0,
         seedCategoryNonSeedProductReferences: 0,
         seedCategoryProducts: []
       };
     }
-  );
+
+    if (gap.resolutionStatus === "EXISTING_STAGING_ELIGIBLE" && gap.matchedCategory) {
+      return {
+        sourceCategory: gap.sourceCategory,
+        candidateCount: gap.candidateCount,
+        decision: "REUSE_EXISTING",
+        candidateSlug: null,
+        reuseBasis: "EXACT_NAME",
+        proposedCategory: null,
+        existingCategoryId: gap.matchedCategory.id,
+        collisionCategories: [],
+        seedCategoryProductReferences: 0,
+        seedCategoryNonSeedProductReferences: 0,
+        seedCategoryProducts: []
+      };
+    }
+
+    if (gap.resolutionStatus === "DEVELOPMENT_SEED_CATEGORY" && gap.matchedCategory) {
+      const references = input.categoryProducts
+        .filter((product) => product.categoryId === gap.matchedCategory!.id)
+        .map((product) => ({
+          id: product.id,
+          sku: product.sku,
+          isDevelopmentSeed: isDevelopmentCatalogSeedProduct(product)
+        }))
+        .sort((left, right) => left.id.localeCompare(right.id));
+      const nonSeedReferences = references.filter((product) => !product.isDevelopmentSeed).length;
+
+      return {
+        sourceCategory: gap.sourceCategory,
+        candidateCount: gap.candidateCount,
+        decision: "REVIEW_ADOPT_SEED",
+        candidateSlug: null,
+        reuseBasis: null,
+        proposedCategory: null,
+        existingCategoryId: gap.matchedCategory.id,
+        collisionCategories: [],
+        seedCategoryProductReferences: references.length,
+        seedCategoryNonSeedProductReferences: nonSeedReferences,
+        seedCategoryProducts: references
+      };
+    }
+
+    return {
+      sourceCategory: gap.sourceCategory,
+      candidateCount: gap.candidateCount,
+      decision: "REVIEW_REQUIRED",
+      candidateSlug: null,
+      reuseBasis: null,
+      proposedCategory: null,
+      existingCategoryId: gap.matchedCategory?.id ?? null,
+      collisionCategories: [],
+      seedCategoryProductReferences: 0,
+      seedCategoryNonSeedProductReferences: 0,
+      seedCategoryProducts: []
+    };
+  });
 
   const count = (decision: CategoryOperationalizationDecision) =>
     rows.filter((row) => row.decision === decision).length;

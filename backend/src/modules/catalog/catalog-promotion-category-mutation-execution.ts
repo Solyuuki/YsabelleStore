@@ -45,16 +45,22 @@ function fail(code: string, detail?: string): never {
 
 function createRows(plan: CatalogPromotionCategoryMutationPlan) {
   return plan.rows.filter(
-    (row): row is CatalogPromotionCategoryMutationPlanRow & {
+    (
+      row
+    ): row is CatalogPromotionCategoryMutationPlanRow & {
       decision: "CREATE_CATEGORY";
-      proposedCategoryCreate: NonNullable<CatalogPromotionCategoryMutationPlanRow["proposedCategoryCreate"]>;
+      proposedCategoryCreate: NonNullable<
+        CatalogPromotionCategoryMutationPlanRow["proposedCategoryCreate"]
+      >;
     } => row.decision === "CREATE_CATEGORY" && Boolean(row.proposedCategoryCreate)
   );
 }
 
 function reuseRows(plan: CatalogPromotionCategoryMutationPlan) {
   return plan.rows.filter(
-    (row): row is CatalogPromotionCategoryMutationPlanRow & {
+    (
+      row
+    ): row is CatalogPromotionCategoryMutationPlanRow & {
       decision: "REUSE_EXISTING";
       existingCategoryId: string;
     } => row.decision === "REUSE_EXISTING" && Boolean(row.existingCategoryId)
@@ -96,7 +102,10 @@ function isExactPlannedCategory(
   );
 }
 
-function assertReusableCategory(row: CatalogPromotionCategoryMutationPlanRow, existing: CategorySnapshot | undefined) {
+function assertReusableCategory(
+  row: CatalogPromotionCategoryMutationPlanRow,
+  existing: CategorySnapshot | undefined
+) {
   if (!existing) {
     fail("CATEGORY_MUTATION_DATABASE_DRIFT", `reuse target missing for ${row.sourceCategory}`);
   }
@@ -105,7 +114,10 @@ function assertReusableCategory(row: CatalogPromotionCategoryMutationPlanRow, ex
     existing.recordSource === "TEST_FIXTURE" ||
     existing.dataQualityStatus === "REJECTED"
   ) {
-    fail("CATEGORY_MUTATION_DATABASE_DRIFT", `reuse target is no longer eligible for ${row.sourceCategory}`);
+    fail(
+      "CATEGORY_MUTATION_DATABASE_DRIFT",
+      `reuse target is no longer eligible for ${row.sourceCategory}`
+    );
   }
 }
 

@@ -87,23 +87,35 @@ test("database mutation preview generator performs constrained reads only and wr
   });
 
   assert.equal(calls.length, 3);
-  assert.deepEqual(calls.map((call) => call.model), ["category", "product", "mapping"]);
-  assert.deepEqual((calls[0]!.args as any).where, {
-    OR: [
-      { name: { in: ["Personal Care"] } },
-      { slug: { in: ["personal-care"] } }
-    ]
+  assert.deepEqual(
+    calls.map((call) => call.model),
+    ["category", "product", "mapping"]
+  );
+  assert.deepEqual(calls[0]!.args, {
+    where: {
+      OR: [{ name: { in: ["Personal Care"] } }, { slug: { in: ["personal-care"] } }]
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      isActive: true,
+      recordSource: true,
+      dataQualityStatus: true
+    }
   });
-  assert.deepEqual((calls[0]!.args as any).select, {
-    id: true,
-    name: true,
-    slug: true,
-    isActive: true,
-    recordSource: true,
-    dataQualityStatus: true
+  assert.deepEqual(calls[1]!.args, {
+    where: { sku: { in: ["SARIMA-P001"] } },
+    select: { id: true, sku: true }
   });
-  assert.deepEqual((calls[1]!.args as any).where.sku.in, ["SARIMA-P001"]);
-  assert.deepEqual((calls[2]!.args as any).where.sourceProductId.in, ["P001"]);
+  assert.deepEqual(calls[2]!.args, {
+    where: { sourceProductId: { in: ["P001"] } },
+    select: {
+      sourceKey: true,
+      sourceProductId: true,
+      canonicalProductId: true
+    }
+  });
 
   assert.equal(result.summary.productCreateReady, 1);
   assert.equal(result.summary.plannedInventoryRows, 0);
@@ -155,8 +167,16 @@ test("database mutation preview generator fetches canonical slug candidates so P
         ];
       }
     },
-    product: { async findMany() { return []; } },
-    sarimaSourceProductMapping: { async findMany() { return []; } }
+    product: {
+      async findMany() {
+        return [];
+      }
+    },
+    sarimaSourceProductMapping: {
+      async findMany() {
+        return [];
+      }
+    }
   };
 
   const result = await generateCatalogPromotionDatabaseMutationPreview({
@@ -167,7 +187,19 @@ test("database mutation preview generator fetches canonical slug candidates so P
     reportPath
   });
 
-  assert.deepEqual((categoryArgs as any).where.OR[1].slug.in, ["frozen-chilled"]);
+  assert.deepEqual(categoryArgs, {
+    where: {
+      OR: [{ name: { in: ["Frozen / Chilled"] } }, { slug: { in: ["frozen-chilled"] } }]
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      isActive: true,
+      recordSource: true,
+      dataQualityStatus: true
+    }
+  });
   assert.equal(result.rows[0]?.productMutationReadiness, "READY");
   assert.equal(result.rows[0]?.plannedProductCreate?.categoryId, "cat_frozen_chilled");
   assert.equal(result.summary.missingCategories, 0);
@@ -231,8 +263,16 @@ test("database mutation preview generator consumes the final category plan befor
         ];
       }
     },
-    product: { async findMany() { return []; } },
-    sarimaSourceProductMapping: { async findMany() { return []; } }
+    product: {
+      async findMany() {
+        return [];
+      }
+    },
+    sarimaSourceProductMapping: {
+      async findMany() {
+        return [];
+      }
+    }
   };
 
   const result = await generateCatalogPromotionDatabaseMutationPreview({

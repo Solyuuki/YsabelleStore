@@ -66,7 +66,8 @@ test("materialization plan contains only exact Drive create candidates with dete
       filename: "Gardenia Enriched White Bread 600g.jpg",
       mimeType: "image/jpeg",
       sourcePath: ".data/catalog-image-staging/P022/source.jpg",
-      downloadUrl: "https://drive.usercontent.google.com/download?id=drive-p022&export=download&confirm=t"
+      downloadUrl:
+        "https://drive.usercontent.google.com/download?id=drive-p022&export=download&confirm=t"
     }
   ]);
 });
@@ -84,7 +85,10 @@ test("materialization writes downloaded bytes and records SHA-256 provenance", a
 
     assert.equal(result.length, 1);
     assert.equal(result[0]?.usable, true);
-    assert.equal(result[0]?.sha256, "7f61d43a19733c0f0c1e9aecf20840a921b8f222ba750391e64f41d0a9fe80d8");
+    assert.equal(
+      result[0]?.sha256,
+      "7f61d43a19733c0f0c1e9aecf20840a921b8f222ba750391e64f41d0a9fe80d8"
+    );
     assert.equal(result[0]?.sizeBytes, imageBytes.length);
     assert.equal(result[0]?.attempts, 1);
     assert.equal(result[0]?.error, null);

@@ -9,6 +9,11 @@ import {
   type CatalogPromotionCategoryGapPlanPrismaClient
 } from "../src/scripts/generateCatalogPromotionCategoryGapPlan.js";
 
+type CategoryFindManyArgs = {
+  where: { name: { in: string[] } };
+  select: Record<string, boolean>;
+};
+
 const executionArtifact = {
   rows: [
     { productCode: "P001", plannedCategory: "Personal Care / Hygiene" },
@@ -54,11 +59,11 @@ test("category gap generator performs one constrained category read and writes r
   });
 
   assert.equal(calls.length, 1);
-  assert.deepEqual((calls[0] as any).where.name.in, [
+  assert.deepEqual((calls[0] as CategoryFindManyArgs).where.name.in, [
     "Beverages / Coffee & Milk",
     "Personal Care / Hygiene"
   ]);
-  assert.deepEqual((calls[0] as any).select, {
+  assert.deepEqual((calls[0] as CategoryFindManyArgs).select, {
     id: true,
     name: true,
     slug: true,

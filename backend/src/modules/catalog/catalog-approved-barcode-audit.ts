@@ -69,21 +69,23 @@ export function buildApprovedProductBarcodeAudit(
   products: ApprovedProductBarcodeAuditInputRow[]
 ): ApprovedProductBarcodeAudit {
   const rows = products
-    .map((product): ApprovedProductBarcodeAuditRow => ({
-      productId: product.id,
-      sku: product.sku,
-      barcode: product.barcode,
-      barcodeStatus: hasBarcode(product.barcode) ? "PRESENT" : "MISSING",
-      name: product.name,
-      categoryName: product.categoryName,
-      recordSource: product.recordSource,
-      status: product.status,
-      isStorefrontVisible: product.isStorefrontVisible,
-      sarimaSourceProductId: product.sarimaSourceProductId,
-      hasInventoryRecord: product.hasInventoryRecord,
-      relationshipCounts: product.relationshipCounts,
-      protectedReferenceCount: protectedReferenceCount(product)
-    }))
+    .map(
+      (product): ApprovedProductBarcodeAuditRow => ({
+        productId: product.id,
+        sku: product.sku,
+        barcode: product.barcode,
+        barcodeStatus: hasBarcode(product.barcode) ? "PRESENT" : "MISSING",
+        name: product.name,
+        categoryName: product.categoryName,
+        recordSource: product.recordSource,
+        status: product.status,
+        isStorefrontVisible: product.isStorefrontVisible,
+        sarimaSourceProductId: product.sarimaSourceProductId,
+        hasInventoryRecord: product.hasInventoryRecord,
+        relationshipCounts: product.relationshipCounts,
+        protectedReferenceCount: protectedReferenceCount(product)
+      })
+    )
     .sort((left, right) => {
       if (left.barcodeStatus !== right.barcodeStatus) {
         return left.barcodeStatus === "MISSING" ? -1 : 1;
@@ -104,8 +106,9 @@ export function buildApprovedProductBarcodeAudit(
       activeApprovedMissingBarcode: missing.filter((row) => row.status === "ACTIVE").length,
       storefrontApprovedMissingBarcode: missing.filter((row) => row.isStorefrontVisible).length,
       sarimaMappedApproved: rows.filter((row) => Boolean(row.sarimaSourceProductId)).length,
-      sarimaMappedApprovedMissingBarcode: missing.filter((row) => Boolean(row.sarimaSourceProductId))
-        .length
+      sarimaMappedApprovedMissingBarcode: missing.filter((row) =>
+        Boolean(row.sarimaSourceProductId)
+      ).length
     },
     rows
   };

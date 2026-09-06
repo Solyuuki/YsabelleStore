@@ -241,6 +241,7 @@ async function createCategory(label: string) {
 async function createProduct(categoryId: string, name: string, token: string, stock: number) {
   return prisma.product.create({
     data: {
+      barcode: `DETAIL-BARCODE-${token}`,
       categoryId,
       costPrice: "10.00",
       dataQualityStatus: "APPROVED",

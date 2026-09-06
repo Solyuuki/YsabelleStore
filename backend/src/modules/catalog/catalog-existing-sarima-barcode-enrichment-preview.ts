@@ -50,7 +50,10 @@ function assertTargetState(product: ExistingSarimaBarcodeProduct) {
   }
 }
 
-function assertEvidenceIdentity(product: ExistingSarimaBarcodeProduct, evidence: ExistingSarimaBarcodeEvidenceRow) {
+function assertEvidenceIdentity(
+  product: ExistingSarimaBarcodeProduct,
+  evidence: ExistingSarimaBarcodeEvidenceRow
+) {
   if (
     evidence.productId !== product.id ||
     evidence.sku !== product.sku ||
@@ -117,9 +120,12 @@ export function buildExistingSarimaBarcodeEnrichmentPreview(input: {
       const databaseCollisionIds = (databaseOwnersByBarcode.get(evidence.verifiedBarcode) ?? [])
         .filter((owner) => owner.id !== product.id)
         .map((owner) => owner.id);
-      const proposalCollisionIds = (proposalOwners.get(evidence.verifiedBarcode) ?? [])
-        .filter((id) => id !== product.id);
-      const collisionProductIds = [...new Set([...databaseCollisionIds, ...proposalCollisionIds])].sort();
+      const proposalCollisionIds = (proposalOwners.get(evidence.verifiedBarcode) ?? []).filter(
+        (id) => id !== product.id
+      );
+      const collisionProductIds = [
+        ...new Set([...databaseCollisionIds, ...proposalCollisionIds])
+      ].sort();
 
       return {
         productId: product.id,
@@ -134,7 +140,9 @@ export function buildExistingSarimaBarcodeEnrichmentPreview(input: {
     .sort((left, right) => left.sarimaSourceProductId.localeCompare(right.sarimaSourceProductId));
 
   const readyToWrite = rows.filter((row) => row.status === "READY").length;
-  const blockedBarcodeCollisions = rows.filter((row) => row.status === "BLOCKED_BARCODE_COLLISION").length;
+  const blockedBarcodeCollisions = rows.filter(
+    (row) => row.status === "BLOCKED_BARCODE_COLLISION"
+  ).length;
 
   return {
     summary: {

@@ -70,7 +70,11 @@ async function readPreview(filePath: string): Promise<CatalogPromotionPreview> {
     throw new Error(`Invalid catalog promotion preview JSON: ${filePath}.`, { cause: error });
   }
 
-  if (!parsed || typeof parsed !== "object" || !Array.isArray((parsed as CatalogPromotionPreview).rows)) {
+  if (
+    !parsed ||
+    typeof parsed !== "object" ||
+    !Array.isArray((parsed as CatalogPromotionPreview).rows)
+  ) {
     throw new Error(`Catalog promotion preview is malformed: ${filePath}.`);
   }
 
@@ -135,10 +139,7 @@ function toMarkdown(audit: OperationalCatalogAudit) {
     "## Blocked Promotion Candidates",
     "",
     ...(blocked.length > 0
-      ? blocked.map(
-          (row) =>
-            `- ${row.productCode} — ${row.sourceName} — ${row.reason}`
-        )
+      ? blocked.map((row) => `- ${row.productCode} — ${row.sourceName} — ${row.reason}`)
       : ["- None"]),
     "",
     "## Test Fixtures",
@@ -177,10 +178,7 @@ function toMarkdown(audit: OperationalCatalogAudit) {
     "## Unmatched Operational Products",
     "",
     ...(unmatched.length > 0
-      ? unmatched.map(
-          (row) =>
-            `- ${row.sku} — ${row.name} — quality: ${row.dataQualityStatus}`
-        )
+      ? unmatched.map((row) => `- ${row.sku} — ${row.name} — quality: ${row.dataQualityStatus}`)
       : ["- None"]),
     "",
     "Any destructive fixture cleanup, development-seed cleanup, legacy-runtime-QA cleanup, or operational catalog promotion remains a separate reviewed step.",

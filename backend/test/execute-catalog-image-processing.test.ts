@@ -98,9 +98,18 @@ test("execution materializes Drive sources, regenerates CIQE jobs, and emits rem
     const reports = path.join(root, "reports/catalog-quality");
     await mkdir(artifacts, { recursive: true });
     await mkdir(reports, { recursive: true });
-    await writeFile(path.join(reports, "phase9-existing-sarima-image-enrichment-preview.json"), JSON.stringify(preview));
-    await writeFile(path.join(artifacts, "drive-image-manifest.json"), JSON.stringify(driveManifest));
-    await writeFile(path.join(artifacts, "catalog-promotion-preview.json"), JSON.stringify(promotion));
+    await writeFile(
+      path.join(reports, "phase9-existing-sarima-image-enrichment-preview.json"),
+      JSON.stringify(preview)
+    );
+    await writeFile(
+      path.join(artifacts, "drive-image-manifest.json"),
+      JSON.stringify(driveManifest)
+    );
+    await writeFile(
+      path.join(artifacts, "catalog-promotion-preview.json"),
+      JSON.stringify(promotion)
+    );
 
     const imageBytes = Buffer.from([0xff, 0xd8, 0xff, 0xdb]);
     let ciqeJobsSeen = 0;
@@ -111,7 +120,11 @@ test("execution materializes Drive sources, regenerates CIQE jobs, and emits rem
         ciqeJobsSeen = jobs.length;
         return {
           counts: { APPROVED: jobs.length, REJECTED: 0, PROCESS_ERROR: 0 },
-          results: jobs.map((job) => ({ productCode: job.productCode, fileId: job.fileId, status: "APPROVED" }))
+          results: jobs.map((job) => ({
+            productCode: job.productCode,
+            fileId: job.fileId,
+            status: "APPROVED"
+          }))
         };
       }
     });
@@ -158,9 +171,18 @@ test("exhausted unusable Drive download becomes remediation candidate and never 
     const reports = path.join(root, "reports/catalog-quality");
     await mkdir(artifacts, { recursive: true });
     await mkdir(reports, { recursive: true });
-    await writeFile(path.join(reports, "phase9-existing-sarima-image-enrichment-preview.json"), JSON.stringify(preview));
-    await writeFile(path.join(artifacts, "drive-image-manifest.json"), JSON.stringify(driveManifest));
-    await writeFile(path.join(artifacts, "catalog-promotion-preview.json"), JSON.stringify(promotion));
+    await writeFile(
+      path.join(reports, "phase9-existing-sarima-image-enrichment-preview.json"),
+      JSON.stringify(preview)
+    );
+    await writeFile(
+      path.join(artifacts, "drive-image-manifest.json"),
+      JSON.stringify(driveManifest)
+    );
+    await writeFile(
+      path.join(artifacts, "catalog-promotion-preview.json"),
+      JSON.stringify(promotion)
+    );
 
     const result = await executeCatalogImageProcessing({
       repositoryRoot: root,
@@ -181,7 +203,9 @@ test("exhausted unusable Drive download becomes remediation candidate and never 
     const remediation = JSON.parse(
       await readFile(path.join(reports, "phase9-image-remediation-candidates.json"), "utf8")
     );
-    const p022 = remediation.rows.find((row: { productCode: string }) => row.productCode === "P022");
+    const p022 = remediation.rows.find(
+      (row: { productCode: string }) => row.productCode === "P022"
+    );
     assert.equal(p022.reason, "DRIVE_MATERIALIZATION_FAILED");
     assert.equal(p022.driveAttempts, 2);
     assert.match(p022.driveError, /non-image response/i);

@@ -40,7 +40,9 @@ function normalizedExtension(asset: DriveImageAsset) {
   );
 }
 
-function detectSupportedImageContentType(bytes: Buffer): "image/jpeg" | "image/png" | "image/webp" | null {
+function detectSupportedImageContentType(
+  bytes: Buffer
+): "image/jpeg" | "image/png" | "image/webp" | null {
   if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
     return "image/jpeg";
   }
@@ -154,7 +156,9 @@ export async function materializeCatalogDriveImages(input: {
   const download = input.download ?? defaultCatalogDriveDownloader;
   const maxAttempts = input.maxAttempts ?? 2;
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 3) {
-    throw new Error("CATALOG_IMAGE_DRIVE_MATERIALIZATION_INVALID_ATTEMPTS: maxAttempts must be an integer from 1 to 3");
+    throw new Error(
+      "CATALOG_IMAGE_DRIVE_MATERIALIZATION_INVALID_ATTEMPTS: maxAttempts must be an integer from 1 to 3"
+    );
   }
 
   const results: CatalogDriveMaterializationResult[] = [];

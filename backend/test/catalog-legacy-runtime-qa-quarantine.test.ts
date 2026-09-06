@@ -47,7 +47,10 @@ const preview: CatalogPromotionPreview = {
   ]
 };
 
-function product(overrides: Partial<OperationalProductSnapshot> & Pick<OperationalProductSnapshot, "id" | "sku" | "barcode" | "name">): OperationalProductSnapshot {
+function product(
+  overrides: Partial<OperationalProductSnapshot> &
+    Pick<OperationalProductSnapshot, "id" | "sku" | "barcode" | "name">
+): OperationalProductSnapshot {
   return {
     id: overrides.id,
     sku: overrides.sku,

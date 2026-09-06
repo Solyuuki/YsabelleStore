@@ -7,7 +7,10 @@ import {
 } from "../src/modules/catalog/catalog-operational-audit.js";
 import type { CatalogPromotionPreview } from "../src/modules/catalog/catalog-promotion-preview.js";
 
-function product(overrides: Partial<OperationalProductSnapshot> & Pick<OperationalProductSnapshot, "id" | "name" | "sku">): OperationalProductSnapshot {
+function product(
+  overrides: Partial<OperationalProductSnapshot> &
+    Pick<OperationalProductSnapshot, "id" | "name" | "sku">
+): OperationalProductSnapshot {
   return {
     id: overrides.id,
     sku: overrides.sku,
@@ -162,22 +165,32 @@ test("operational audit separates mapped existing, ambiguous existing, new, alia
   assert.equal(audit.summary.testFixturesWithProtectedReferences, 1);
   assert.equal(audit.summary.unmatchedOperationalProducts, 1);
 
-  const mapped = audit.candidateRows.find((row: { productCode: string }) => row.productCode === "P001");
+  const mapped = audit.candidateRows.find(
+    (row: { productCode: string }) => row.productCode === "P001"
+  );
   assert.equal(mapped?.status, "EXISTING");
   assert.equal(mapped?.operationalProductId, "db-mapped");
 
-  const ambiguous = audit.candidateRows.find((row: { productCode: string }) => row.productCode === "P002");
+  const ambiguous = audit.candidateRows.find(
+    (row: { productCode: string }) => row.productCode === "P002"
+  );
   assert.equal(ambiguous?.status, "BLOCKED");
   assert.deepEqual(ambiguous?.candidateOperationalProductIds, ["db-name-collision"]);
 
-  const alias = audit.candidateRows.find((row: { productCode: string }) => row.productCode === "P003");
+  const alias = audit.candidateRows.find(
+    (row: { productCode: string }) => row.productCode === "P003"
+  );
   assert.equal(alias?.status, "DUPLICATE_ALIAS");
   assert.equal(alias?.canonicalProductCode, "P001");
 
-  const blocked = audit.candidateRows.find((row: { productCode: string }) => row.productCode === "P004");
+  const blocked = audit.candidateRows.find(
+    (row: { productCode: string }) => row.productCode === "P004"
+  );
   assert.equal(blocked?.status, "BLOCKED");
 
-  const fresh = audit.candidateRows.find((row: { productCode: string }) => row.productCode === "P005");
+  const fresh = audit.candidateRows.find(
+    (row: { productCode: string }) => row.productCode === "P005"
+  );
   assert.equal(fresh?.status, "NEW");
   assert.deepEqual(fresh?.candidateOperationalProductIds, []);
 
@@ -198,7 +211,9 @@ test("a canonical source mapped to a TEST_FIXTURE product is blocked instead of 
   ];
 
   const audit = buildOperationalCatalogAudit(preview, products);
-  const row = audit.candidateRows.find((candidate: { productCode: string }) => candidate.productCode === "P001");
+  const row = audit.candidateRows.find(
+    (candidate: { productCode: string }) => candidate.productCode === "P001"
+  );
 
   assert.equal(row?.status, "BLOCKED");
   assert.match(row?.reason ?? "", /test fixture/i);

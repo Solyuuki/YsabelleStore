@@ -30,9 +30,7 @@ export type ApprovedImportDemotionTransaction = {
 };
 
 export type ApprovedImportDemotionClient = {
-  $transaction<T>(
-    callback: (tx: ApprovedImportDemotionTransaction) => Promise<T>
-  ): Promise<T>;
+  $transaction<T>(callback: (tx: ApprovedImportDemotionTransaction) => Promise<T>): Promise<T>;
 };
 
 export type ApprovedImportDemotionResult = {
@@ -47,11 +45,7 @@ function fail(code: string, detail?: string): never {
   throw new Error(detail ? `${code}: ${detail}` : code);
 }
 
-function identityKey(row: {
-  id: string;
-  sku: string;
-  sarimaSourceProductId: string;
-}) {
+function identityKey(row: { id: string; sku: string; sarimaSourceProductId: string }) {
   return `${row.id}\u0000${row.sku}\u0000${row.sarimaSourceProductId}`;
 }
 
@@ -93,9 +87,7 @@ export async function executeApprovedImportDemotion(input: {
       );
     }
 
-    const expectedByKey = new Map(
-      identities.map((row) => [identityKey(row), row])
-    );
+    const expectedByKey = new Map(identities.map((row) => [identityKey(row), row]));
 
     let storefrontRowsHidden = 0;
 

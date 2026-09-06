@@ -119,7 +119,9 @@ async function readUnmatchedProductIds(filePath: string) {
   }
 
   if (!Array.isArray(parsed.unmatchedOperationalProducts)) {
-    throw new Error(`Operational catalog audit is missing unmatchedOperationalProducts: ${filePath}.`);
+    throw new Error(
+      `Operational catalog audit is missing unmatchedOperationalProducts: ${filePath}.`
+    );
   }
 
   const ids = parsed.unmatchedOperationalProducts
@@ -225,7 +227,12 @@ function toMarkdown(result: UnmatchedCatalogProvenance) {
   ];
 
   if (result.missingProductIds.length > 0) {
-    lines.push("## Missing Product IDs", "", ...result.missingProductIds.map((id) => `- ${id}`), "");
+    lines.push(
+      "## Missing Product IDs",
+      "",
+      ...result.missingProductIds.map((id) => `- ${id}`),
+      ""
+    );
   }
 
   for (const product of result.products) {
@@ -308,85 +315,86 @@ export async function generateUnmatchedCatalogProvenance(
   const reportPath = options.reportPath ?? DEFAULT_REPORT_PATH;
   const productIds = await readUnmatchedProductIds(auditPath);
 
-  const rows = productIds.length === 0
-    ? []
-    : await client.product.findMany({
-        where: { id: { in: productIds } },
-        orderBy: [{ id: "asc" }],
-        select: {
-          id: true,
-          sku: true,
-          barcode: true,
-          name: true,
-          description: true,
-          brand: true,
-          variant: true,
-          status: true,
-          recordSource: true,
-          dataQualityStatus: true,
-          costPrice: true,
-          sellingPrice: true,
-          createdAt: true,
-          updatedAt: true,
-          category: { select: { id: true, name: true, slug: true } },
-          inventory: {
-            select: {
-              quantityOnHand: true,
-              lastStockUpdatedAt: true,
-              createdAt: true,
-              updatedAt: true
-            }
-          },
-          inventoryBatches: {
-            orderBy: [{ receivedAt: "asc" }, { id: "asc" }],
-            select: {
-              id: true,
-              batchCode: true,
-              quantityReceived: true,
-              quantityRemaining: true,
-              unitCost: true,
-              receivedAt: true,
-              expiresAt: true,
-              status: true,
-              createdAt: true
-            }
-          },
-          inventoryMovements: {
-            orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-            select: {
-              id: true,
-              type: true,
-              quantity: true,
-              quantityBefore: true,
-              quantityAfter: true,
-              reason: true,
-              referenceType: true,
-              referenceId: true,
-              createdAt: true
-            }
-          },
-          saleItems: {
-            orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-            select: {
-              id: true,
-              quantity: true,
-              unitPrice: true,
-              totalAmount: true,
-              createdAt: true,
-              sale: {
-                select: {
-                  id: true,
-                  saleNumber: true,
-                  saleDate: true,
-                  status: true,
-                  notes: true,
-                  createdAt: true
+  const rows =
+    productIds.length === 0
+      ? []
+      : await client.product.findMany({
+          where: { id: { in: productIds } },
+          orderBy: [{ id: "asc" }],
+          select: {
+            id: true,
+            sku: true,
+            barcode: true,
+            name: true,
+            description: true,
+            brand: true,
+            variant: true,
+            status: true,
+            recordSource: true,
+            dataQualityStatus: true,
+            costPrice: true,
+            sellingPrice: true,
+            createdAt: true,
+            updatedAt: true,
+            category: { select: { id: true, name: true, slug: true } },
+            inventory: {
+              select: {
+                quantityOnHand: true,
+                lastStockUpdatedAt: true,
+                createdAt: true,
+                updatedAt: true
+              }
+            },
+            inventoryBatches: {
+              orderBy: [{ receivedAt: "asc" }, { id: "asc" }],
+              select: {
+                id: true,
+                batchCode: true,
+                quantityReceived: true,
+                quantityRemaining: true,
+                unitCost: true,
+                receivedAt: true,
+                expiresAt: true,
+                status: true,
+                createdAt: true
+              }
+            },
+            inventoryMovements: {
+              orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+              select: {
+                id: true,
+                type: true,
+                quantity: true,
+                quantityBefore: true,
+                quantityAfter: true,
+                reason: true,
+                referenceType: true,
+                referenceId: true,
+                createdAt: true
+              }
+            },
+            saleItems: {
+              orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+              select: {
+                id: true,
+                quantity: true,
+                unitPrice: true,
+                totalAmount: true,
+                createdAt: true,
+                sale: {
+                  select: {
+                    id: true,
+                    saleNumber: true,
+                    saleDate: true,
+                    status: true,
+                    notes: true,
+                    createdAt: true
+                  }
                 }
               }
             }
           }
-        }
-      });
+        });
 
   const result = buildResult(productIds, rows);
 

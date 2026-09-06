@@ -158,6 +158,7 @@
 | 2026-08-27 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-08-30 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-09-01 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
+| 2026-09-06 | `npm run verify:code`                    | Passed  | The aggregate read-only code verification completed successfully. |
 
 ## Manual Review Evidence
 
@@ -180,6 +181,7 @@
 | 2026-08-27 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 | 2026-08-30 | Changed files                                                          | Not required by changed files | No changed user-facing flow was detected by the artifact update.                                                                                                    |
 | 2026-09-01 | Changed files                                                          | Not required by changed files | No changed user-facing flow was detected by the artifact update.                                                                                                    |
+| 2026-09-06 | Changed files                                                          | Not required by changed files | No changed user-facing flow was detected by the artifact update.                                                                                                    |
 
 ## Discontinued Product Normalization
 

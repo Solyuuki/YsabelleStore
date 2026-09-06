@@ -237,6 +237,7 @@ async function createSellableProduct(input: {
   return prisma.product.create({
     data: {
       categoryId: input.categoryId,
+      barcode: `TEST-${input.sku}`,
       costPrice: "10",
       dataQualityStatus: "APPROVED",
       imageUrl:

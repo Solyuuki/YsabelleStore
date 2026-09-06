@@ -54,7 +54,9 @@ export function buildExistingSarimaBarcodeWriteVerification(input: {
 
       const discrepancies: string[] = [];
       if (product.barcode !== identity.barcode) {
-        discrepancies.push(`barcode expected=${identity.barcode} actual=${product.barcode ?? "null"}`);
+        discrepancies.push(
+          `barcode expected=${identity.barcode} actual=${product.barcode ?? "null"}`
+        );
       }
 
       const reviewStatePreserved =
@@ -66,7 +68,8 @@ export function buildExistingSarimaBarcodeWriteVerification(input: {
         discrepancies.push("review/inactive/hidden state changed");
       }
 
-      const sarimaMappingPreserved = product.sarimaSourceProductId === identity.sarimaSourceProductId;
+      const sarimaMappingPreserved =
+        product.sarimaSourceProductId === identity.sarimaSourceProductId;
       if (!sarimaMappingPreserved) {
         discrepancies.push(
           `SARIMA mapping expected=${identity.sarimaSourceProductId} actual=${product.sarimaSourceProductId ?? "null"}`

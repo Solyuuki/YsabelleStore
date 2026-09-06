@@ -1,7 +1,4 @@
-import type {
-  OperationalCatalogAudit,
-  OperationalCatalogCandidateRow
-} from "./catalog-operational-audit.js";
+import type { OperationalCatalogAudit } from "./catalog-operational-audit.js";
 import type {
   CatalogPromotionPreview,
   CatalogPromotionPreviewRow
@@ -73,16 +70,16 @@ function assertUniqueCoverage(
   };
 
   if (!isExactSet(auditCodes)) {
-    throw new Error("Operational audit must cover every promotion preview product code exactly once.");
+    throw new Error(
+      "Operational audit must cover every promotion preview product code exactly once."
+    );
   }
 
   if (!isExactSet(sourceCodes)) {
-    throw new Error("Source manifest must cover every promotion preview product code exactly once.");
+    throw new Error(
+      "Source manifest must cover every promotion preview product code exactly once."
+    );
   }
-}
-
-function auditIndex(rows: OperationalCatalogCandidateRow[]) {
-  return new Map(rows.map((row) => [row.productCode, row]));
 }
 
 export function buildCatalogPromotionExecutionManifest(
@@ -91,7 +88,6 @@ export function buildCatalogPromotionExecutionManifest(
   const { preview, audit, sources } = input;
   assertUniqueCoverage(preview, audit, sources);
 
-  const audits = auditIndex(audit.candidateRows);
   const previews = new Map(preview.rows.map((row) => [row.productCode, row]));
   const sourceIndex = new Map(sources.map((row) => [row.productCode, row]));
 
@@ -123,8 +119,7 @@ export function buildCatalogPromotionExecutionManifest(
       assetFileIds: [...previewRow.assetFileIds],
       priceReadiness: previewRow.priceReadiness,
       inventoryReadiness: previewRow.inventoryReadiness,
-      writeReadiness:
-        blockingFields.length === 0 ? "READY_TO_CREATE" : "BLOCKED_REQUIRED_FIELDS",
+      writeReadiness: blockingFields.length === 0 ? "READY_TO_CREATE" : "BLOCKED_REQUIRED_FIELDS",
       blockingFields
     };
   });

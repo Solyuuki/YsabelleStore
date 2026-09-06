@@ -155,7 +155,10 @@ test("operational audit generator reads catalog state and writes a dry-run repor
   assert.equal(artifact.summary.developmentSeedProducts, 1);
   const report = await fs.readFile(reportPath, "utf8");
   assert.match(report, /read-only/i);
-  assert.match(report, /No Product, Inventory, InventoryBatch, price, stock, mapping, or fixture data was modified/i);
+  assert.match(
+    report,
+    /No Product, Inventory, InventoryBatch, price, stock, mapping, or fixture data was modified/i
+  );
   assert.match(report, /Development seed products \| 1/i);
   assert.match(report, /BEV-WATER-001 — Mineral Water 500ml/i);
 });

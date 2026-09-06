@@ -222,7 +222,14 @@ test("CIQE process errors fail closed and never become automatic web replacement
     materializations: [materializations[0]!],
     ciqe: {
       counts: { APPROVED: 0, REJECTED: 0, PROCESS_ERROR: 1 },
-      results: [{ productCode: "P022", fileId: "drive-p022", status: "PROCESS_ERROR", error: "decode crash" }]
+      results: [
+        {
+          productCode: "P022",
+          fileId: "drive-p022",
+          status: "PROCESS_ERROR",
+          error: "decode crash"
+        }
+      ]
     },
     maxDriveAttempts: 2
   });

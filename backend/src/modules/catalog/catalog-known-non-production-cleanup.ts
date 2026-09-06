@@ -60,9 +60,7 @@ export type KnownNonProductionCleanupTransaction = {
 };
 
 export type KnownNonProductionCleanupClient = {
-  $transaction<T>(
-    callback: (tx: KnownNonProductionCleanupTransaction) => Promise<T>
-  ): Promise<T>;
+  $transaction<T>(callback: (tx: KnownNonProductionCleanupTransaction) => Promise<T>): Promise<T>;
 };
 
 export type KnownNonProductionCleanupAuthorization = {
@@ -178,8 +176,7 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
         devIdSet.has(product.id) &&
         expectedDevelopmentIdentityKeys.has(developmentIdentityKey(product));
       const matchesLegacyRuntimeQa =
-        legacyIdSet.has(product.id) &&
-        expectedLegacyIdentityKeys.has(legacyQaIdentityKey(product));
+        legacyIdSet.has(product.id) && expectedLegacyIdentityKeys.has(legacyQaIdentityKey(product));
 
       if (!matchesDevelopmentSeed && !matchesLegacyRuntimeQa) {
         fail(
@@ -191,10 +188,7 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
 
     const duplicateRows = await tx.productDuplicateCandidate.findMany({
       where: {
-        OR: [
-          { leftProductId: { in: cleanupIds } },
-          { rightProductId: { in: cleanupIds } }
-        ]
+        OR: [{ leftProductId: { in: cleanupIds } }, { rightProductId: { in: cleanupIds } }]
       },
       select: { id: true, leftProductId: true, rightProductId: true },
       orderBy: { id: "asc" }
@@ -205,9 +199,7 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
       input.authorization.expectedProductDuplicateCandidates
     );
     const crossBoundaryDuplicate = duplicateRows.find(
-      (row) =>
-        !cleanupIdSet.has(row.leftProductId) ||
-        !cleanupIdSet.has(row.rightProductId)
+      (row) => !cleanupIdSet.has(row.leftProductId) || !cleanupIdSet.has(row.rightProductId)
     );
     if (crossBoundaryDuplicate) {
       fail(
@@ -221,11 +213,7 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
       select: { id: true, canonicalProductId: true },
       orderBy: { id: "asc" }
     });
-    assertExact(
-      "product aliases",
-      aliasRows.length,
-      input.authorization.expectedProductAliases
-    );
+    assertExact("product aliases", aliasRows.length, input.authorization.expectedProductAliases);
     if (aliasRows.some((row) => !cleanupIdSet.has(row.canonicalProductId))) {
       fail(
         "KNOWN_NON_PRODUCTION_CLEANUP_CROSS_BOUNDARY_REFERENCE",
@@ -244,9 +232,7 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
         `development seed ${devSaleItem.productId} unexpectedly participates in sale ${devSaleItem.saleId}`
       );
     }
-    const unexpectedSaleProduct = cleanupSaleItems.find(
-      (row) => !legacyIdSet.has(row.productId)
-    );
+    const unexpectedSaleProduct = cleanupSaleItems.find((row) => !legacyIdSet.has(row.productId));
     if (unexpectedSaleProduct) {
       fail(
         "KNOWN_NON_PRODUCTION_CLEANUP_CROSS_BOUNDARY_REFERENCE",
@@ -263,9 +249,7 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
             where: { saleId: { in: touchedSaleIds } },
             select: { saleId: true, productId: true }
           });
-    const mixedSaleItem = allTouchedSaleItems.find(
-      (row) => !cleanupIdSet.has(row.productId)
-    );
+    const mixedSaleItem = allTouchedSaleItems.find((row) => !cleanupIdSet.has(row.productId));
     if (mixedSaleItem) {
       fail(
         "KNOWN_NON_PRODUCTION_CLEANUP_MIXED_SALE",
@@ -273,11 +257,7 @@ export async function executeKnownNonProductionCatalogCleanup(input: {
       );
     }
 
-    assertExact(
-      "sale items",
-      cleanupSaleItems.length,
-      input.authorization.expectedSaleItems
-    );
+    assertExact("sale items", cleanupSaleItems.length, input.authorization.expectedSaleItems);
     assertExact("touched sales", touchedSaleIds.length, input.authorization.expectedSales);
 
     const movementRows = await tx.inventoryMovement.findMany({

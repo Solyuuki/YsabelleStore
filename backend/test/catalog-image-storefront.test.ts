@@ -23,6 +23,7 @@ test("storefront accepts an active approved CIQE image and keeps list payload ca
     });
     const product = await prisma.product.create({
       data: {
+        barcode: `CIQE-BARCODE-${suffix}`,
         categoryId: category.id,
         costPrice: "10",
         dataQualityStatus: "APPROVED",
@@ -92,6 +93,7 @@ test("storefront still accepts legacy curated product images without an active C
     const imageUrl = `/images/products/legacy-${suffix}.webp`;
     const product = await prisma.product.create({
       data: {
+        barcode: `LEGACY-BARCODE-${suffix}`,
         categoryId: category.id,
         costPrice: "10",
         dataQualityStatus: "APPROVED",

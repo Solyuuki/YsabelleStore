@@ -8,6 +8,25 @@ import {
   type TestFixtureCleanupTransaction
 } from "../src/modules/catalog/catalog-test-fixture-cleanup.js";
 
+type QueryWhere = {
+  productId?: { in?: string[] };
+  saleId?: { in?: string[] };
+  id?: { in?: string[] };
+  canonicalProductId?: { in?: string[] };
+  entityId?: { in?: string[] };
+  sourceProductId?: unknown;
+  leftProductId?: unknown;
+  NOT?: {
+    entityId?: { in?: string[] };
+    canonicalProductId?: { in?: string[] };
+  };
+};
+
+function queryWhere(args: unknown): QueryWhere {
+  if (!args || typeof args !== "object") return {};
+  return (args as { where?: QueryWhere }).where ?? {};
+}
+
 type FakeState = {
   fixtureIds: string[];
   saleItems: Array<{ saleId: string; productId: string }>;
@@ -83,36 +102,44 @@ function fakeClient(initial: FakeState) {
       }
     },
     inventory: {
-      async count() { return initial.inventories; },
+      async count() {
+        return initial.inventories;
+      },
       async deleteMany() {
         deletes.push("inventories");
         return { count: initial.inventories };
       }
     },
     inventoryBatch: {
-      async count() { return initial.batches; },
+      async count() {
+        return initial.batches;
+      },
       async deleteMany() {
         deletes.push("batches");
         return { count: initial.batches };
       }
     },
     inventoryMovement: {
-      async count() { return initial.movements; },
+      async count() {
+        return initial.movements;
+      },
       async deleteMany() {
         deletes.push("movements");
         return { count: initial.movements };
       }
     },
     saleItem: {
-      async findMany(args: any) {
-        if (args?.where?.productId?.in) return initial.saleItems;
-        const saleIds = new Set(args?.where?.saleId?.in ?? []);
+      async findMany(args) {
+        const where = queryWhere(args);
+        if (where.productId?.in) return initial.saleItems;
+        const saleIds = new Set(where.saleId?.in ?? []);
         return initial.saleItems.filter((item) => saleIds.has(item.saleId));
       }
     },
     sale: {
-      async count(args: any) {
-        const saleIds = new Set(args?.where?.id?.in ?? []);
+      async count(args) {
+        const where = queryWhere(args);
+        const saleIds = new Set(where.id?.in ?? []);
         return [...saleIds].length;
       },
       async deleteMany() {
@@ -121,8 +148,8 @@ function fakeClient(initial: FakeState) {
       }
     },
     catalogAuditLog: {
-      async count(args: any) {
-        const where = args?.where ?? {};
+      async count(args) {
+        const where = queryWhere(args);
         const canonical = Boolean(where.canonicalProductId?.in);
         const entity = Boolean(where.entityId?.in);
         const notEntity = Boolean(where.NOT?.entityId?.in);
@@ -137,32 +164,66 @@ function fakeClient(initial: FakeState) {
         return { count: initial.auditBoth };
       }
     },
-    productAlias: { async count() { return initial.aliases; } },
+    productAlias: {
+      async count() {
+        return initial.aliases;
+      }
+    },
     productCanonicalMapping: {
-      async count(args: any) {
-        if (args?.where?.sourceProductId) return initial.mappingsAsSource;
+      async count(args) {
+        const where = queryWhere(args);
+        if (where.sourceProductId) return initial.mappingsAsSource;
         return initial.mappingsAsCanonical;
       }
     },
-    sarimaSourceProductMapping: { async count() { return initial.sarimaMappings; } },
+    sarimaSourceProductMapping: {
+      async count() {
+        return initial.sarimaMappings;
+      }
+    },
     productDuplicateCandidate: {
-      async count(args: any) {
-        if (args?.where?.leftProductId) return initial.duplicatesLeft;
+      async count(args) {
+        const where = queryWhere(args);
+        if (where.leftProductId) return initial.duplicatesLeft;
         return initial.duplicatesRight;
       }
     },
-    forecastRecord: { async count() { return initial.forecasts; } },
-    recommendationRecord: { async count() { return initial.recommendations; } },
-    historicalMonthlySales: { async count() { return initial.historicalMonthlySales; } },
+    forecastRecord: {
+      async count() {
+        return initial.forecasts;
+      }
+    },
+    recommendationRecord: {
+      async count() {
+        return initial.recommendations;
+      }
+    },
+    historicalMonthlySales: {
+      async count() {
+        return initial.historicalMonthlySales;
+      }
+    },
     historicalSalesImportRow: {
       async count(args: unknown) {
         historicalImportRowCountArgs = args;
         return initial.historicalImportRows;
       }
     },
-    customerOrderItem: { async count() { return initial.customerOrderItems; } },
-    productReview: { async count() { return initial.reviews; } },
-    productImageAsset: { async count() { return initial.images; } }
+    customerOrderItem: {
+      async count() {
+        return initial.customerOrderItems;
+      }
+    },
+    productReview: {
+      async count() {
+        return initial.reviews;
+      }
+    },
+    productImageAsset: {
+      async count() {
+        return initial.images;
+      }
+    }
   };
 
   const client: TestFixtureCleanupClient = {

@@ -8,11 +8,30 @@ import {
 
 test("external evidence manifest covers exactly 19 identity-clear products and excludes P144", () => {
   assert.equal(EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE.length, 19);
-  const codes = EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE.map((row) => row.sarimaSourceProductId).sort();
+  const codes = EXISTING_SARIMA_EXTERNAL_BARCODE_EVIDENCE.map(
+    (row) => row.sarimaSourceProductId
+  ).sort();
   assert.equal(codes.includes("P144"), false);
   assert.deepEqual(codes, [
-    "P022", "P038", "P054", "P065", "P078", "P080", "P088", "P091", "P098", "P102",
-    "P217", "P218", "P237", "P241", "P261", "P370", "P385", "P425", "P443"
+    "P022",
+    "P038",
+    "P054",
+    "P065",
+    "P078",
+    "P080",
+    "P088",
+    "P091",
+    "P098",
+    "P102",
+    "P217",
+    "P218",
+    "P237",
+    "P241",
+    "P261",
+    "P370",
+    "P385",
+    "P425",
+    "P443"
   ]);
 });
 
@@ -63,5 +82,8 @@ test("generated matrix verifies only evidence that meets the independent-source 
 
   assert.equal(matrix.summary.products, 19);
   assert.equal(matrix.summary.verifiedExternal, 6);
-  assert.equal(matrix.summary.needsPhysicalScan + matrix.summary.conflictingEvidence + matrix.summary.notFound, 13);
+  assert.equal(
+    matrix.summary.needsPhysicalScan + matrix.summary.conflictingEvidence + matrix.summary.notFound,
+    13
+  );
 });

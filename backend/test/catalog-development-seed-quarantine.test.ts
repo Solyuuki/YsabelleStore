@@ -24,7 +24,10 @@ const zeroRelationships = {
   imageAssets: 0
 };
 
-function product(overrides: Partial<OperationalProductSnapshot> & Pick<OperationalProductSnapshot, "id" | "name" | "sku">): OperationalProductSnapshot {
+function product(
+  overrides: Partial<OperationalProductSnapshot> &
+    Pick<OperationalProductSnapshot, "id" | "name" | "sku">
+): OperationalProductSnapshot {
   return {
     id: overrides.id,
     sku: overrides.sku,
@@ -79,9 +82,18 @@ test("development catalog seed identity list contains the exact eight legacy sam
 });
 
 test("development seed detection requires the exact seeded id and sku pair", () => {
-  assert.equal(isDevelopmentCatalogSeedProduct({ id: "prd_mineral_water_500ml", sku: "BEV-WATER-001" }), true);
-  assert.equal(isDevelopmentCatalogSeedProduct({ id: "different-id", sku: "BEV-WATER-001" }), false);
-  assert.equal(isDevelopmentCatalogSeedProduct({ id: "prd_mineral_water_500ml", sku: "DIFFERENT-SKU" }), false);
+  assert.equal(
+    isDevelopmentCatalogSeedProduct({ id: "prd_mineral_water_500ml", sku: "BEV-WATER-001" }),
+    true
+  );
+  assert.equal(
+    isDevelopmentCatalogSeedProduct({ id: "different-id", sku: "BEV-WATER-001" }),
+    false
+  );
+  assert.equal(
+    isDevelopmentCatalogSeedProduct({ id: "prd_mineral_water_500ml", sku: "DIFFERENT-SKU" }),
+    false
+  );
 });
 
 test("operational audit quarantines exact development seeds without hiding near-collision operational rows", () => {

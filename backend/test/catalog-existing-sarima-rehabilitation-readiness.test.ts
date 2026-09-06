@@ -11,8 +11,26 @@ test("approved-import rehabilitation cohort is locked to the exact 20 SARIMA ide
   assert.deepEqual(
     EXISTING_SARIMA_REHABILITATION_IDENTITIES.map((row) => row.sarimaSourceProductId).sort(),
     [
-      "P022", "P038", "P054", "P065", "P078", "P080", "P088", "P091", "P098", "P102",
-      "P144", "P217", "P218", "P237", "P241", "P261", "P370", "P385", "P425", "P443"
+      "P022",
+      "P038",
+      "P054",
+      "P065",
+      "P078",
+      "P080",
+      "P088",
+      "P091",
+      "P098",
+      "P102",
+      "P144",
+      "P217",
+      "P218",
+      "P237",
+      "P241",
+      "P261",
+      "P370",
+      "P385",
+      "P425",
+      "P443"
     ]
   );
 });
@@ -73,8 +91,10 @@ test("readiness matrix reports barcode evidence, database images, image-engine o
         canonicalProductCode: "P014",
         imageStatus: "NEEDS_REVIEW",
         assetFileIds: [],
-        identityReason: "Historical source identity shares the same product family with already-resolved P014.",
-        imageReason: "Historical source identity shares the same product family with already-resolved P014."
+        identityReason:
+          "Historical source identity shares the same product family with already-resolved P014.",
+        imageReason:
+          "Historical source identity shares the same product family with already-resolved P014."
       }
     ]
   });
@@ -121,11 +141,13 @@ test("readiness matrix reports barcode evidence, database images, image-engine o
       existingImageAssetCount: 1,
       catalogImageStatus: "NEEDS_REVIEW",
       catalogImageAssetFileIds: [],
-      catalogImageReason: "Historical source identity shares the same product family with already-resolved P014.",
+      catalogImageReason:
+        "Historical source identity shares the same product family with already-resolved P014.",
       identityStatus: "BLOCKED_REVIEW",
       canonicalProductCode: "P014",
       identityReadiness: "BLOCKED",
-      identityReason: "Historical source identity shares the same product family with already-resolved P014."
+      identityReason:
+        "Historical source identity shares the same product family with already-resolved P014."
     }
   ]);
 });

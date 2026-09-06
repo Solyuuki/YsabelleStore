@@ -157,9 +157,12 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
 
       if (slugMatches.length === 1) {
         const candidate = slugMatches[0]!;
-        const isSemanticSlugEquivalent = slugifyOperationalCategory(candidate.name) === candidateSlug;
+        const isSemanticSlugEquivalent =
+          slugifyOperationalCategory(candidate.name) === candidateSlug;
         categoryMatches =
-          isSemanticSlugEquivalent && isOperationallyReusableSlugCategory(candidate) ? [candidate] : [];
+          isSemanticSlugEquivalent && isOperationallyReusableSlugCategory(candidate)
+            ? [candidate]
+            : [];
       } else if (slugMatches.length > 1) {
         productBlockers.push("CATEGORY_AMBIGUOUS");
         categoryMatches = [];
@@ -173,11 +176,7 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
         productBlockers.push("CATEGORY_AMBIGUOUS");
       } else if (
         isDevelopmentCatalogSeedCategory(categoryMatches[0]!) &&
-        !hasApprovedSeedCategoryReuse(
-          staging,
-          categoryMatches[0]!,
-          approvedSeedCategoryReuses
-        )
+        !hasApprovedSeedCategoryReuse(staging, categoryMatches[0]!, approvedSeedCategoryReuses)
       ) {
         productBlockers.push("DEVELOPMENT_SEED_CATEGORY");
       }
@@ -235,7 +234,8 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
       candidates: rows.length,
       productCreateReady: rows.filter((row) => row.productMutationReadiness === "READY").length,
       productCreateBlocked: rows.filter((row) => row.productMutationReadiness === "BLOCKED").length,
-      missingCategories: rows.filter((row) => row.productBlockers.includes("CATEGORY_NOT_FOUND")).length,
+      missingCategories: rows.filter((row) => row.productBlockers.includes("CATEGORY_NOT_FOUND"))
+        .length,
       developmentSeedCategoryMatches: rows.filter((row) =>
         row.productBlockers.includes("DEVELOPMENT_SEED_CATEGORY")
       ).length,
@@ -246,7 +246,8 @@ export function buildCatalogPromotionDatabaseMutationPreview(input: {
       mappingMetadataPending: rows.filter(
         (row) => row.mappingMutationReadiness === "NEEDS_SOURCE_METADATA"
       ).length,
-      nullableCostPriceRows: rows.filter((row) => row.plannedProductCreate?.costPrice === null).length,
+      nullableCostPriceRows: rows.filter((row) => row.plannedProductCreate?.costPrice === null)
+        .length,
       plannedInventoryRows: 0,
       plannedInventoryBatchRows: 0
     },

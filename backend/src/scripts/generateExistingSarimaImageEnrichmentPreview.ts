@@ -15,10 +15,18 @@ import {
 import type { DriveImageAsset } from "../modules/catalog/drive-image-manifest.js";
 import { resolveRepositoryPath } from "../modules/forecasting/repository-paths.js";
 
-const DEFAULT_PROMOTION_PATH = resolveRepositoryPath("artifacts/catalog/phase9/catalog-promotion-preview.json");
-const DEFAULT_DRIVE_MANIFEST_PATH = resolveRepositoryPath("artifacts/catalog/phase9/drive-image-manifest.json");
-const DEFAULT_JSON_PATH = resolveRepositoryPath("reports/catalog-quality/phase9-existing-sarima-image-enrichment-preview.json");
-const DEFAULT_REPORT_PATH = resolveRepositoryPath("docs/catalog/phase9-existing-sarima-image-enrichment-preview.md");
+const DEFAULT_PROMOTION_PATH = resolveRepositoryPath(
+  "artifacts/catalog/phase9/catalog-promotion-preview.json"
+);
+const DEFAULT_DRIVE_MANIFEST_PATH = resolveRepositoryPath(
+  "artifacts/catalog/phase9/drive-image-manifest.json"
+);
+const DEFAULT_JSON_PATH = resolveRepositoryPath(
+  "reports/catalog-quality/phase9-existing-sarima-image-enrichment-preview.json"
+);
+const DEFAULT_REPORT_PATH = resolveRepositoryPath(
+  "docs/catalog/phase9-existing-sarima-image-enrichment-preview.md"
+);
 
 type RawProductRow = {
   id: string;
@@ -92,8 +100,9 @@ function toMarkdown(preview: ExistingSarimaImageEnrichmentPreview) {
     "",
     "| SARIMA | Product | Engine status | Preview status | Proposed action | Drive file IDs | Existing DB assets |",
     "| --- | --- | --- | --- | --- | --- | ---: |",
-    ...preview.rows.map((row) =>
-      `| ${row.sarimaSourceProductId} | ${row.name.replaceAll("|", "\\|")} | ${row.catalogImageStatus} | ${row.status} | ${row.proposedAction} | ${row.catalogImageFileIds.join(", ") || "—"} | ${row.existingImageAssetIds.length} |`
+    ...preview.rows.map(
+      (row) =>
+        `| ${row.sarimaSourceProductId} | ${row.name.replaceAll("|", "\\|")} | ${row.catalogImageStatus} | ${row.status} | ${row.proposedAction} | ${row.catalogImageFileIds.join(", ") || "—"} | ${row.existingImageAssetIds.length} |`
     ),
     "",
     "Only Catalog Image Engine EXACT_MATCH rows can become write candidates. Existing DB images are reusable only when diagnostics explicitly retain the same source Drive file ID.",
@@ -106,13 +115,15 @@ async function writeText(filePath: string, contents: string) {
   await fs.writeFile(filePath, contents, "utf8");
 }
 
-export async function generateExistingSarimaImageEnrichmentPreview(options: {
-  client?: ExistingSarimaImageEnrichmentPrismaClient;
-  promotionPath?: string;
-  driveManifestPath?: string;
-  jsonPath?: string;
-  reportPath?: string;
-} = {}) {
+export async function generateExistingSarimaImageEnrichmentPreview(
+  options: {
+    client?: ExistingSarimaImageEnrichmentPrismaClient;
+    promotionPath?: string;
+    driveManifestPath?: string;
+    jsonPath?: string;
+    reportPath?: string;
+  } = {}
+) {
   const client = options.client ?? (prisma as unknown as ExistingSarimaImageEnrichmentPrismaClient);
   const promotionPath = options.promotionPath ?? DEFAULT_PROMOTION_PATH;
   const driveManifestPath = options.driveManifestPath ?? DEFAULT_DRIVE_MANIFEST_PATH;
@@ -154,10 +165,14 @@ export async function generateExistingSarimaImageEnrichmentPreview(options: {
   ]);
 
   if (!promotionArtifact || !Array.isArray(promotionArtifact.rows)) {
-    throw new Error(`EXISTING_SARIMA_IMAGE_ENRICHMENT_INVALID_PROMOTION_ARTIFACT: ${promotionPath}`);
+    throw new Error(
+      `EXISTING_SARIMA_IMAGE_ENRICHMENT_INVALID_PROMOTION_ARTIFACT: ${promotionPath}`
+    );
   }
   if (!Array.isArray(driveAssets)) {
-    throw new Error(`EXISTING_SARIMA_IMAGE_ENRICHMENT_INVALID_DRIVE_MANIFEST: ${driveManifestPath}`);
+    throw new Error(
+      `EXISTING_SARIMA_IMAGE_ENRICHMENT_INVALID_DRIVE_MANIFEST: ${driveManifestPath}`
+    );
   }
 
   const preview = buildExistingSarimaImageEnrichmentPreview({
@@ -177,7 +192,10 @@ export async function generateExistingSarimaImageEnrichmentPreview(options: {
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

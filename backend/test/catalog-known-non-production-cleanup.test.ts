@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import type {
+  KnownNonProductionCleanupClient,
+  KnownNonProductionCleanupTransaction
+} from "../src/modules/catalog/catalog-known-non-production-cleanup.js";
+
 type ProductRow = {
   id: string;
   sku: string;
@@ -16,6 +21,24 @@ type MovementRow = {
   referenceType: string | null;
   referenceId: string | null;
 };
+
+type QueryWhere = {
+  productId?: { in?: string[] };
+  saleId?: { in?: string[] };
+  id?: { in?: string[] };
+  canonicalProductId?: { in?: string[] };
+  entityId?: { in?: string[] };
+  sourceProductId?: unknown;
+  NOT?: {
+    entityId?: { in?: string[] };
+    canonicalProductId?: { in?: string[] };
+  };
+};
+
+function queryWhere(args: unknown): QueryWhere {
+  if (!args || typeof args !== "object") return {};
+  return (args as { where?: QueryWhere }).where ?? {};
+}
 
 type FakeState = {
   products: ProductRow[];
@@ -109,11 +132,11 @@ async function loadCleanupModule() {
 
 function fakeClient(initial: FakeState) {
   const deletes: string[] = [];
-  let productFindArgs: any;
+  let productFindArgs: unknown;
 
-  const tx = {
+  const tx: KnownNonProductionCleanupTransaction = {
     product: {
-      async findMany(args: any) {
+      async findMany(args) {
         productFindArgs = args;
         return initial.products;
       },
@@ -123,53 +146,65 @@ function fakeClient(initial: FakeState) {
       }
     },
     productAlias: {
-      async findMany() { return initial.aliases; },
+      async findMany() {
+        return initial.aliases;
+      },
       async deleteMany() {
         deletes.push("aliases");
         return { count: initial.aliases.length };
       }
     },
     productDuplicateCandidate: {
-      async findMany() { return initial.duplicates; },
+      async findMany() {
+        return initial.duplicates;
+      },
       async deleteMany() {
         deletes.push("duplicates");
         return { count: initial.duplicates.length };
       }
     },
     inventory: {
-      async count() { return initial.inventories; },
+      async count() {
+        return initial.inventories;
+      },
       async deleteMany() {
         deletes.push("inventories");
         return { count: initial.inventories };
       }
     },
     inventoryBatch: {
-      async count() { return initial.batches; },
+      async count() {
+        return initial.batches;
+      },
       async deleteMany() {
         deletes.push("batches");
         return { count: initial.batches };
       }
     },
     inventoryMovement: {
-      async findMany() { return initial.movements; },
+      async findMany() {
+        return initial.movements;
+      },
       async deleteMany() {
         deletes.push("movements");
         return { count: initial.movements.length };
       }
     },
     saleItem: {
-      async findMany(args: any) {
-        if (args?.where?.productId?.in) {
-          const productIds = new Set(args.where.productId.in);
+      async findMany(args) {
+        const where = queryWhere(args);
+        if (where.productId?.in) {
+          const productIds = new Set(where.productId.in);
           return initial.saleItems.filter((item) => productIds.has(item.productId));
         }
-        const saleIds = new Set(args?.where?.saleId?.in ?? []);
+        const saleIds = new Set(where.saleId?.in ?? []);
         return initial.saleItems.filter((item) => saleIds.has(item.saleId));
       }
     },
     sale: {
-      async count(args: any) {
-        const saleIds = new Set(args?.where?.id?.in ?? []);
+      async count(args) {
+        const where = queryWhere(args);
+        const saleIds = new Set(where.id?.in ?? []);
         return saleIds.size;
       },
       async deleteMany() {
@@ -178,8 +213,8 @@ function fakeClient(initial: FakeState) {
       }
     },
     catalogAuditLog: {
-      async count(args: any) {
-        const where = args?.where ?? {};
+      async count(args) {
+        const where = queryWhere(args);
         const canonical = Boolean(where.canonicalProductId?.in);
         const entity = Boolean(where.entityId?.in);
         const notEntity = Boolean(where.NOT?.entityId?.in);
@@ -195,23 +230,56 @@ function fakeClient(initial: FakeState) {
       }
     },
     productCanonicalMapping: {
-      async count(args: any) {
-        if (args?.where?.sourceProductId) return initial.mappingsAsSource;
+      async count(args) {
+        const where = queryWhere(args);
+        if (where.sourceProductId) return initial.mappingsAsSource;
         return initial.mappingsAsCanonical;
       }
     },
-    sarimaSourceProductMapping: { async count() { return initial.sarimaMappings; } },
-    forecastRecord: { async count() { return initial.forecasts; } },
-    recommendationRecord: { async count() { return initial.recommendations; } },
-    historicalMonthlySales: { async count() { return initial.historicalMonthlySales; } },
-    historicalSalesImportRow: { async count() { return initial.historicalImportRows; } },
-    customerOrderItem: { async count() { return initial.customerOrderItems; } },
-    productReview: { async count() { return initial.reviews; } },
-    productImageAsset: { async count() { return initial.images; } }
+    sarimaSourceProductMapping: {
+      async count() {
+        return initial.sarimaMappings;
+      }
+    },
+    forecastRecord: {
+      async count() {
+        return initial.forecasts;
+      }
+    },
+    recommendationRecord: {
+      async count() {
+        return initial.recommendations;
+      }
+    },
+    historicalMonthlySales: {
+      async count() {
+        return initial.historicalMonthlySales;
+      }
+    },
+    historicalSalesImportRow: {
+      async count() {
+        return initial.historicalImportRows;
+      }
+    },
+    customerOrderItem: {
+      async count() {
+        return initial.customerOrderItems;
+      }
+    },
+    productReview: {
+      async count() {
+        return initial.reviews;
+      }
+    },
+    productImageAsset: {
+      async count() {
+        return initial.images;
+      }
+    }
   };
 
-  const client = {
-    async $transaction<T>(callback: (transaction: typeof tx) => Promise<T>): Promise<T> {
+  const client: KnownNonProductionCleanupClient = {
+    $transaction: async (callback) => {
       return callback(tx);
     }
   };
@@ -329,9 +397,7 @@ test("cleanup aborts before deletes when a touched sale includes an operational 
 test("cleanup aborts before deletes when duplicate evidence crosses the cleanup boundary", async () => {
   const cleanup = await loadCleanupModule();
   const crossed = state({
-    duplicates: [
-      { id: "duplicate-1", leftProductId: "qa-1", rightProductId: "real-product" }
-    ]
+    duplicates: [{ id: "duplicate-1", leftProductId: "qa-1", rightProductId: "real-product" }]
   });
   const { client, deletes } = fakeClient(crossed);
 
