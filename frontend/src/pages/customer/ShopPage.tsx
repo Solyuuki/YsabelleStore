@@ -311,16 +311,8 @@ function ShopProductGrid({
   navigate: (path: string) => void;
   products: StorefrontProduct[];
 }) {
-  const reveal = useRevealOnView<HTMLDivElement>({
-    rootMargin: "0px 0px -8% 0px",
-    threshold: 0.18
-  });
-
   return (
-    <div
-      className={`customer-product-grid shop-product-grid ${reveal.isVisible ? "is-visible" : ""}`}
-      ref={reveal.ref}
-    >
+    <div className="customer-product-grid shop-product-grid is-visible">
       {products.map((product, index) => (
         <div
           className="shop-product-reveal"
