@@ -20,3 +20,17 @@ test("availability applies immediately and keeps keyboard search submission", ()
   assert.match(source, /onSubmit=\{submit\}/);
   assert.doesNotMatch(source, /const \[availability, setAvailability\]/);
 });
+
+test("loaded products stay visible without animation gating while sidebar keeps its reveal", () => {
+  const productGridStart = source.indexOf("function ShopProductGrid");
+  assert.notEqual(productGridStart, -1);
+
+  const productGridSource = source.slice(productGridStart);
+  assert.doesNotMatch(productGridSource, /useRevealOnView/);
+  assert.doesNotMatch(productGridSource, /requestAnimationFrame/);
+  assert.doesNotMatch(productGridSource, /hasEntered/);
+  assert.match(productGridSource, /className="customer-product-grid shop-product-grid is-visible"/);
+
+  assert.match(source, /const categoryNavigationReveal = useRevealOnView<HTMLElement>/);
+  assert.match(source, /ref=\{categoryNavigationReveal\.ref\}/);
+});
