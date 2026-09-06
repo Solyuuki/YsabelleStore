@@ -32,6 +32,34 @@ export type CatalogImageReconciliation = {
   driveOnlyAssets: DriveOnlyAssetOutcome[];
 };
 
+type ReviewedImageAssignment = {
+  productCode: string;
+  sourceNameNormalized: string;
+  category: string;
+  fileId: string;
+  filename: string;
+  normalizedStem: string;
+  folderId: string;
+  folderName: string;
+  mimeType: string;
+  extension: string;
+};
+
+const REVIEWED_IMAGE_ASSIGNMENTS: Readonly<Record<string, ReviewedImageAssignment>> = Object.freeze({
+  P132: Object.freeze({
+    productCode: "P132",
+    sourceNameNormalized: "bathroom tissue roll tissue pack",
+    category: "Tissue & Cotton",
+    fileId: "17Zwte8tmtuuTy-Nlr2GnL2ciBPxdP5gA",
+    filename: "athroom Tissue Roll  Tissue Pack.jpg",
+    normalizedStem: "athroom tissue roll tissue pack",
+    folderId: "1NY8q65dwiXlJli1FEEdViGQEAGUxEHHS",
+    folderName: "Tissue & Cotton",
+    mimeType: "image/jpeg",
+    extension: ".jpg"
+  })
+});
+
 const QUANTITY_TOKEN = /^\d+(?:\.\d+)?(?:g|kg|ml|l|oz|pcs?|packs?|s)$/i;
 const GENERIC_IDENTITY_TOKENS = new Set([
   "bottle",
@@ -191,6 +219,39 @@ function sourceSignatureGroups(sources: SarimaSourceIdentity[]) {
   return groups;
 }
 
+function reviewedAssignmentFor(source: SarimaSourceIdentity) {
+  const assignment = REVIEWED_IMAGE_ASSIGNMENTS[source.productCode];
+  if (!assignment) return null;
+  if (assignment.productCode !== source.productCode) return null;
+  if (assignment.sourceNameNormalized !== source.sourceNameNormalized) return null;
+  if (assignment.category !== source.category) return null;
+  return assignment;
+}
+
+function matchesReviewedAssignment(image: DriveImageAsset, assignment: ReviewedImageAssignment) {
+  return (
+    image.fileId === assignment.fileId &&
+    image.filename === assignment.filename &&
+    image.normalizedStem === assignment.normalizedStem &&
+    image.folderId === assignment.folderId &&
+    image.folderName === assignment.folderName &&
+    image.mimeType === assignment.mimeType &&
+    image.extension === assignment.extension
+  );
+}
+
+function resemblesReviewedAssignment(image: DriveImageAsset, assignment: ReviewedImageAssignment) {
+  return (
+    image.fileId === assignment.fileId ||
+    (image.filename === assignment.filename &&
+      image.normalizedStem === assignment.normalizedStem &&
+      image.folderId === assignment.folderId &&
+      image.folderName === assignment.folderName &&
+      image.mimeType === assignment.mimeType &&
+      image.extension === assignment.extension)
+  );
+}
+
 export function reconcileCatalogImages(
   sources: SarimaSourceIdentity[],
   images: DriveImageAsset[]
@@ -205,6 +266,46 @@ export function reconcileCatalogImages(
   const signatureGroups = sourceSignatureGroups(orderedSources);
 
   for (const source of orderedSources) {
+    const reviewedAssignment = reviewedAssignmentFor(source);
+    if (reviewedAssignment) {
+      const pinnedAsset = orderedImages.find(
+        (image) =>
+          !claimedFileIds.has(image.fileId) &&
+          image.fileId === reviewedAssignment.fileId &&
+          matchesReviewedAssignment(image, reviewedAssignment)
+      );
+
+      if (pinnedAsset) {
+        claimedFileIds.add(pinnedAsset.fileId);
+        outcomes.set(
+          source.productCode,
+          sourceOutcome(
+            source,
+            "EXACT_MATCH",
+            [pinnedAsset],
+            "Explicitly reviewed source-to-Drive assignment matches the pinned asset identity and metadata."
+          )
+        );
+      } else {
+        const reviewCandidates = orderedImages.filter(
+          (image) =>
+            !claimedFileIds.has(image.fileId) &&
+            resemblesReviewedAssignment(image, reviewedAssignment)
+        );
+        reviewCandidates.forEach((image) => claimedFileIds.add(image.fileId));
+        outcomes.set(
+          source.productCode,
+          sourceOutcome(
+            source,
+            "NEEDS_REVIEW",
+            reviewCandidates,
+            "Explicitly reviewed source-to-Drive assignment could not be validated against the pinned asset identity and metadata."
+          )
+        );
+      }
+      continue;
+    }
+
     const exact = orderedImages.filter(
       (image) =>
         !claimedFileIds.has(image.fileId) && image.normalizedStem === source.sourceNameNormalized
