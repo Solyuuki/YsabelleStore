@@ -20,3 +20,16 @@ test("availability applies immediately and keeps keyboard search submission", ()
   assert.match(source, /onSubmit=\{submit\}/);
   assert.doesNotMatch(source, /const \[availability, setAvailability\]/);
 });
+
+test("loaded products reveal on mount without waiting for viewport while sidebar keeps its reveal", () => {
+  const productGridStart = source.indexOf("function ShopProductGrid");
+  assert.notEqual(productGridStart, -1);
+
+  const productGridSource = source.slice(productGridStart);
+  assert.doesNotMatch(productGridSource, /useRevealOnView/);
+  assert.match(productGridSource, /requestAnimationFrame\(\(\) => setHasEntered\(true\)\)/);
+  assert.match(productGridSource, /hasEntered \? "is-visible" : ""/);
+
+  assert.match(source, /const categoryNavigationReveal = useRevealOnView<HTMLElement>/);
+  assert.match(source, /ref=\{categoryNavigationReveal\.ref\}/);
+});
