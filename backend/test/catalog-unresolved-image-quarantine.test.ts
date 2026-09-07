@@ -99,7 +99,7 @@ test("frozen unresolved authorization contains exactly 53 unique identities and 
   );
   assert.equal(
     UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES.some(
-      (row) => row.productCode === PROTECTED_REVIEWED_PRODUCT_CODE
+      (row) => String(row.productCode) === PROTECTED_REVIEWED_PRODUCT_CODE
     ),
     false
   );
@@ -202,7 +202,7 @@ test("quarantine requires the complete frozen authorization and protects P132", 
 
   const withP132 = UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES.map((row, index) =>
     index === 0
-      ? { ...row, productCode: "P132", sourceName: "Bathroom Tissue Roll \/ Tissue Pack" }
+      ? { ...row, productCode: "P132", sourceName: "Bathroom Tissue Roll / Tissue Pack" }
       : row
   );
   await assert.rejects(
