@@ -1,49 +1,170 @@
 import { Boxes, ChartNoAxesCombined, LineChart, PackageOpen, ReceiptText } from "lucide-react";
+import { useEffect, useState } from "react";
 
+import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchDashboardSummary, type DashboardSummary } from "@/services/dashboardApi";
 
-const dashboardStats = [
-  {
-    title: "Today's Sales",
-    value: "PHP 0.00",
-    detail: "No sales recorded",
-    tone: "info",
-    icon: ReceiptText
-  },
-  {
-    title: "Inventory Status",
-    value: "Ready",
-    detail: "Stock workspace ready",
-    tone: "success",
-    icon: Boxes
-  },
-  {
-    title: "Low Stock",
-    value: "0 items",
-    detail: "No items flagged",
-    tone: "warning",
-    icon: PackageOpen
-  },
-  {
-    title: "Near Expiry",
-    value: "0 batches",
-    detail: "No batches flagged",
-    tone: "warning",
-    icon: ChartNoAxesCombined
-  },
-  {
-    title: "Forecast Summary",
-    value: "Protected",
-    detail: "Owner verification required",
-    tone: "info",
-    icon: LineChart
-  }
-] as const;
+const currencyFormatter = new Intl.NumberFormat("en-PH", {
+  currency: "PHP",
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+  style: "currency"
+});
+
+function formatCurrency(value: string) {
+  return currencyFormatter.format(Number(value));
+}
 
 export function DashboardPage() {
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSummary(initial = false) {
+      if (initial) setLoading(true);
+
+      try {
+        const result = await fetchDashboardSummary();
+        if (!active) return;
+        setSummary(result);
+        setError(null);
+      } catch (requestError) {
+        if (!active) return;
+        setError(
+          requestError instanceof Error ? requestError.message : "Unable to load dashboard summary."
+        );
+      } finally {
+        if (active && initial) setLoading(false);
+      }
+    }
+
+    void loadSummary(true);
+    const intervalId = window.setInterval(() => void loadSummary(false), 30_000);
+    const handleFocus = () => void loadSummary(false);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
+
+  const forecastStat = summary
+    ? summary.forecast.access === "AVAILABLE"
+      ? {
+          value: `${summary.forecast.forecastUnits2026.toLocaleString()} units`,
+          detail: `${summary.forecast.totalProductsForecasted} products forecasted`,
+          tone: summary.forecast.failedProducts > 0 ? ("warning" as const) : ("info" as const)
+        }
+      : summary.forecast.access === "RESTRICTED"
+        ? {
+            value: "Protected",
+            detail: "Owner verification required",
+            tone: "info" as const
+          }
+        : {
+            value: "Unavailable",
+            detail: "Forecast is not ready",
+            tone: "warning" as const
+          }
+    : null;
+
+  const dashboardStats = summary
+    ? [
+        {
+          title: "Today's Sales",
+          value: formatCurrency(summary.sales.todayAmount),
+          detail:
+            summary.sales.completedSales === 1
+              ? "1 completed sale"
+              : `${summary.sales.completedSales} completed sales`,
+          tone: "info" as const,
+          icon: ReceiptText
+        },
+        {
+          title: "Inventory Status",
+          value: `${summary.inventory.trackedItems} items`,
+          detail:
+            summary.inventory.unlinkedCatalogItems === 0
+              ? `${summary.inventory.inStockItems} in stock • ${summary.inventory.outOfStockItems} out`
+              : `${summary.inventory.unlinkedCatalogItems} catalog items need linking`,
+          tone:
+            summary.inventory.unlinkedCatalogItems === 0
+              ? ("success" as const)
+              : ("warning" as const),
+          icon: Boxes
+        },
+        {
+          title: "Low Stock",
+          value: `${summary.inventory.lowStockItems} items`,
+          detail:
+            summary.inventory.lowStockItems > 0 ? "Needs replenishment" : "No items flagged",
+          tone: "warning" as const,
+          icon: PackageOpen
+        },
+        {
+          title: "Near Expiry",
+          value: `${summary.expiry.nearExpiryBatches} batches`,
+          detail:
+            summary.expiry.expiredBatches > 0
+              ? `${summary.expiry.expiredBatches} expired batches also need attention`
+              : `Next ${summary.expiry.windowDays} days`,
+          tone: "warning" as const,
+          icon: ChartNoAxesCombined
+        },
+        {
+          title: "Forecast Summary",
+          value: forecastStat?.value ?? "Unavailable",
+          detail: forecastStat?.detail ?? "Forecast is not ready",
+          tone: forecastStat?.tone ?? ("info" as const),
+          icon: LineChart
+        }
+      ]
+    : [];
+
+  const activityMax = summary
+    ? Math.max(1, ...summary.sales.activity.map((bucket) => Number(bucket.totalAmount)))
+    : 1;
+
+  const syncItems = summary
+    ? [
+        {
+          label: "Catalog → inventory",
+          value:
+            summary.inventory.unlinkedCatalogItems === 0
+              ? "Synced"
+              : `${summary.inventory.unlinkedCatalogItems} missing`,
+          variant:
+            summary.inventory.unlinkedCatalogItems === 0
+              ? ("success" as const)
+              : ("warning" as const)
+        },
+        {
+          label: "Tracked active products",
+          value: String(summary.inventory.trackedItems),
+          variant: "info" as const
+        },
+        {
+          label: "Out of stock",
+          value: String(summary.inventory.outOfStockItems),
+          variant: summary.inventory.outOfStockItems > 0 ? ("warning" as const) : ("success" as const)
+        },
+        {
+          label: "Sales today",
+          value: String(summary.sales.completedSales),
+          variant: "info" as const
+        }
+      ]
+    : [];
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -52,57 +173,77 @@ export function DashboardPage() {
         description="A quick operating view for sales, stock, expiry attention, and forecast access."
       />
 
-      <section className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3">
-        {dashboardStats.map((stat) => (
-          <StatCard key={stat.title} {...stat} />
-        ))}
-      </section>
+      {loading && !summary ? (
+        <LoadingState
+          badge="Synchronizing"
+          label="Loading live store operations"
+          helper="Sales, inventory, expiry, and forecast status are being read from the current database."
+        />
+      ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">
+      {error ? (
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between gap-4">
-              <CardTitle>Retail activity</CardTitle>
-              <StatusBadge variant="info">Today</StatusBadge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid h-60 grid-cols-12 items-end gap-2 rounded-md border border-slate-200 bg-slate-50 p-4">
-              {[32, 44, 28, 56, 40, 70, 54, 62, 38, 80, 52, 66].map((height, index) => (
-                <div
-                  className="rounded-sm bg-emerald-600"
-                  key={`${height}-${index}`}
-                  style={{ height: `${height}%` }}
-                />
-              ))}
-            </div>
-          </CardContent>
+          <CardContent className="py-4 text-sm text-amber-700">{error}</CardContent>
         </Card>
+      ) : null}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Opening checklist</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[
-                "Ready to continue",
-                "Navigation ready",
-                "Owner areas marked",
-                "Counter workspace ready"
-              ].map((item) => (
-                <div
-                  className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
-                  key={item}
-                >
-                  <span className="text-sm text-slate-700">{item}</span>
-                  <StatusBadge variant="success">Ready</StatusBadge>
+      {summary ? (
+        <>
+          <section className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3">
+            {dashboardStats.map((stat) => (
+              <StatCard key={stat.title} {...stat} />
+            ))}
+          </section>
+
+          <section className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-4">
+                  <CardTitle>Retail activity</CardTitle>
+                  <StatusBadge variant="info">Today</StatusBadge>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+              </CardHeader>
+              <CardContent>
+                <div className="grid h-60 grid-cols-12 items-end gap-2 rounded-md border border-slate-200 bg-slate-50 p-4">
+                  {summary.sales.activity.map((bucket) => {
+                    const amount = Number(bucket.totalAmount);
+                    const height = amount > 0 ? Math.max(8, Math.round((amount / activityMax) * 100)) : 4;
+
+                    return (
+                      <div
+                        aria-label={`${bucket.label}: ${formatCurrency(bucket.totalAmount)}`}
+                        className={amount > 0 ? "rounded-sm bg-emerald-600" : "rounded-sm bg-slate-200"}
+                        key={bucket.label}
+                        style={{ height: `${height}%` }}
+                        title={`${bucket.label}: ${formatCurrency(bucket.totalAmount)} • ${bucket.saleCount} sale${bucket.saleCount === 1 ? "" : "s"}`}
+                      />
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>System sync</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {syncItems.map((item) => (
+                    <div
+                      className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
+                      key={item.label}
+                    >
+                      <span className="text-sm text-slate-700">{item.label}</span>
+                      <StatusBadge variant={item.variant}>{item.value}</StatusBadge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        </>
+      ) : null}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { authRouter } from "./auth.routes.js";
 import { categoryRouter } from "./category.routes.js";
 import { customerAccountRouter } from "./customerAccount.routes.js";
 import { customerAuthRouter } from "./customerAuth.routes.js";
+import { dashboardRouter } from "./dashboard.routes.js";
 import { healthRouter } from "./health.routes.js";
 import { historicalSalesRouter } from "./historicalSales.routes.js";
 import { inventoryRouter } from "./inventory.routes.js";
@@ -20,6 +21,7 @@ export const apiRouteGroups: readonly RouteGroup[] = [
   { path: "/api/products", module: "POS product search", status: "implemented" },
   { path: "/api/catalog/products", module: "Catalog products", status: "implemented" },
   { path: "/api/catalog/categories", module: "Catalog categories", status: "implemented" },
+  { path: "/api/dashboard", module: "Operational dashboard", status: "implemented" },
   { path: "/api/sales", module: "Sales", status: "planned" },
   { path: "/api/inventory", module: "Inventory", status: "implemented" },
   { path: "/api/inventory/import", module: "Inventory stock import", status: "implemented" },
@@ -43,6 +45,7 @@ export const router = Router();
 router.use("/auth", authRouter);
 router.use("/customer-auth", customerAuthRouter);
 router.use("/customer-account", customerAccountRouter);
+router.use("/dashboard", dashboardRouter);
 router.use("/forecasts", forecastRouter);
 router.use("/historical-sales", historicalSalesRouter);
 router.use("/health", healthRouter);

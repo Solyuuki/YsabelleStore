@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { createApp } from "./app.js";
 import { corsOrigins, databaseTarget, env } from "./config/env.js";
+import { ensureCatalogInventoryShells } from "./services/inventoryBootstrapService.js";
 
 const app = createApp();
 
@@ -13,6 +14,18 @@ const server = app.listen(env.PORT, () => {
   console.info(`YsabelleStore backend listening at http://localhost:${env.PORT}`);
   console.info(`Database target: ${database}`);
   console.info(`Allowed renderer origins: ${corsOrigins.join(", ")}`);
+
+  void ensureCatalogInventoryShells()
+    .then((result) => {
+      if (result.created > 0) {
+        console.info(
+          `[inventory-bootstrap] Created ${result.created} missing zero-stock inventory record(s).`
+        );
+      }
+    })
+    .catch((error) => {
+      console.error("[inventory-bootstrap] Unable to synchronize catalog inventory shells.", error);
+    });
 });
 
 server.on("error", (error: NodeJS.ErrnoException) => {
