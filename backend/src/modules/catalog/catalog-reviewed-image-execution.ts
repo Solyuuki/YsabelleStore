@@ -2,6 +2,7 @@ import type {
   CatalogImageReconciliation,
   SourceImageOutcome
 } from "./catalog-image-reconciliation.js";
+import { getReviewedCatalogImageApproval } from "./catalog-reviewed-image-approval.js";
 import type { DriveImageAsset } from "./drive-image-manifest.js";
 import type { SarimaSourceIdentity } from "./sarima-source-manifest.js";
 
@@ -17,6 +18,8 @@ export type ReviewedCatalogImageExecutionTarget = {
   extension: string;
   folderId: string;
   folderName: string;
+  reviewedSha256: string;
+  reviewedFileSizeBytes: number;
 };
 
 function exactlyOne<T>(rows: T[], message: string): T {
@@ -62,6 +65,27 @@ export function buildReviewedCatalogImageExecutionTarget(input: {
     );
   }
 
+  const approval = getReviewedCatalogImageApproval(productCode);
+  if (!approval) {
+    throw new Error(`CATALOG_REVIEWED_IMAGE_APPROVAL_MISSING: ${productCode}`);
+  }
+
+  if (
+    approval.sourceNameNormalized !== source.sourceNameNormalized ||
+    approval.category !== source.category ||
+    approval.fileId !== asset.fileId ||
+    approval.filename !== asset.filename ||
+    approval.normalizedStem !== asset.normalizedStem ||
+    approval.mimeType !== asset.mimeType ||
+    approval.extension !== asset.extension ||
+    approval.folderId !== asset.folderId ||
+    approval.folderName !== asset.folderName
+  ) {
+    throw new Error(
+      `CATALOG_REVIEWED_IMAGE_APPROVAL_MISMATCH: ${productCode} no longer matches reviewed source and Drive metadata`
+    );
+  }
+
   return {
     productCode,
     expectedSku: `SARIMA-${productCode}`,
@@ -73,6 +97,27 @@ export function buildReviewedCatalogImageExecutionTarget(input: {
     mimeType: asset.mimeType,
     extension: asset.extension,
     folderId: asset.folderId,
-    folderName: asset.folderName
+    folderName: asset.folderName,
+    reviewedSha256: approval.sha256,
+    reviewedFileSizeBytes: approval.fileSizeBytes
   };
+}
+
+export function assertReviewedCatalogImageMaterialization(
+  target: ReviewedCatalogImageExecutionTarget,
+  materialized: {
+    sha256: string | null;
+    sizeBytes: number | null;
+    contentType: string | null;
+  }
+) {
+  if (
+    materialized.sha256 !== target.reviewedSha256 ||
+    materialized.sizeBytes !== target.reviewedFileSizeBytes ||
+    materialized.contentType !== target.mimeType
+  ) {
+    throw new Error(
+      `CATALOG_REVIEWED_IMAGE_CONTENT_MISMATCH: ${target.productCode} downloaded bytes do not match reviewed evidence`
+    );
+  }
 }
