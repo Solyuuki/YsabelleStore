@@ -10,12 +10,37 @@ const VERIFIED_BARCODES = [
     evidence: "existing approved YsabelleStore barcode enrichment"
   },
   {
+    id: "prd_sarima_p065_dr_wongs_sulfur_soap_80g",
+    sku: "SARIMA-P065",
+    name: "Dr. Wong's Sulfur Soap 80g",
+    sarimaSourceProductId: "P065",
+    barcode: "4800011179049",
+    evidence: "verified exact 80g Dr. Wong's Sulfur Soap retail unit from Philippine retailer listings"
+  },
+  {
+    id: "prd_sarima_p078_sunsilk_perfect_straight_13ml",
+    sku: "SARIMA-P078",
+    name: "Sunsilk Perfect Straight Shampoo Sachet 13mL",
+    sarimaSourceProductId: "P078",
+    barcode: "4800888191939",
+    evidence: "verified exact Sunsilk Perfect Straight 13mL sachet retail unit from Philippine retailer listings"
+  },
+  {
     id: "prd_sarima_p088_fresca_tuna_175g",
     sku: "SARIMA-P088",
     name: "Fresca Tuna Flakes in Oil 175g",
     sarimaSourceProductId: "P088",
     barcode: "748485900094",
     evidence: "existing approved YsabelleStore barcode enrichment"
+  },
+  {
+    id: "prd_sarima_p144_ligo_sardines_155g",
+    sku: "SARIMA-P144",
+    name: "Ligo Sardines in Tomato Sauce Chili Added",
+    sarimaSourceProductId: "P144",
+    barcode: "072810293606",
+    evidence:
+      "verified exact 155g chili-added retail unit from CEE distributor catalog and independent retailer listings"
   },
   {
     id: "prd_sarima_p217_wilkins_500ml",
@@ -34,12 +59,29 @@ const VERIFIED_BARCODES = [
     evidence: "existing approved YsabelleStore barcode enrichment"
   },
   {
+    id: "prd_sarima_p237_pocari_sweat_500ml",
+    sku: "SARIMA-P237",
+    name: "Pocari Sweat 500mL",
+    sarimaSourceProductId: "P237",
+    barcode: "8997035563414",
+    evidence: "verified exact Pocari Sweat 500mL bottle retail unit from multiple retailer listings"
+  },
+  {
     id: "prd_sarima_p241_del_monte_tomato_sauce_250g",
     sku: "SARIMA-P241",
     name: "Del Monte Original Style Tomato Sauce 250g",
     sarimaSourceProductId: "P241",
     barcode: "4800024556929",
     evidence: "existing approved YsabelleStore barcode enrichment"
+  },
+  {
+    id: "prd_sarima_p261_coca_cola_15l",
+    sku: "SARIMA-P261",
+    name: "Coca-Cola 1.5L",
+    sarimaSourceProductId: "P261",
+    barcode: "4801981116072",
+    evidence:
+      "verified Philippine 1.5L Coca-Cola Original Taste Less Sugar retail unit from Ever Supermarket and independent local retailer listings"
   },
   {
     id: "prd_sarima_p370_piattos_cheese_85g",
@@ -50,22 +92,12 @@ const VERIFIED_BARCODES = [
     evidence: "existing approved YsabelleStore barcode enrichment"
   },
   {
-    id: "prd_sarima_p144_ligo_sardines_155g",
-    sku: "SARIMA-P144",
-    name: "Ligo Sardines in Tomato Sauce Chili Added",
-    sarimaSourceProductId: "P144",
-    barcode: "072810293606",
-    evidence:
-      "verified exact 155g chili-added retail unit from CEE distributor catalog and independent retailer listings"
-  },
-  {
-    id: "prd_sarima_p261_coca_cola_15l",
-    sku: "SARIMA-P261",
-    name: "Coca-Cola 1.5L",
-    sarimaSourceProductId: "P261",
-    barcode: "4801981116072",
-    evidence:
-      "verified Philippine 1.5L Coca-Cola Original Taste Less Sugar retail unit from Ever Supermarket and independent local retailer listings"
+    id: "prd_sarima_p385_nescafe_classic_80g",
+    sku: "SARIMA-P385",
+    name: "Nescafe Classic 80g",
+    sarimaSourceProductId: "P385",
+    barcode: "4800361393683",
+    evidence: "verified exact Nescafe Classic 80g retail unit from Philippine retailer listings"
   }
 ] as const;
 
