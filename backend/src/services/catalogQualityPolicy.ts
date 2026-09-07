@@ -22,6 +22,20 @@ const unresolvedCatalogImageExclusionWhere = {
   }
 } satisfies Prisma.ProductWhereInput;
 
+/**
+ * The storefront serializer currently emits Product.imageUrl. Until active CIQE storage keys are
+ * serialized into customer-facing URLs, do not admit a product card unless imageUrl itself is a
+ * usable relative or HTTP(S) URL. This prevents the UI from rendering its "Catalog image pending"
+ * fallback for products that are otherwise valid or have reviewed image evidence.
+ */
+export const renderableStorefrontProductImageWhere = {
+  OR: [
+    { imageUrl: { startsWith: "/" } },
+    { imageUrl: { startsWith: "https://" } },
+    { imageUrl: { startsWith: "http://" } }
+  ]
+} satisfies Prisma.ProductWhereInput;
+
 export const APPROVED_STOREFRONT_PRODUCT_IMAGE_PREFIX = "/images/products/";
 
 export function assertApprovedProductBarcode(input: {
@@ -93,11 +107,15 @@ export const approvedStorefrontProductCoreWhere = {
  * forecasting, inventory, and sales keep their existing domain policies.
  *
  * Products whose frozen Phase 9 source image outcome is unresolved are excluded here even when a
- * stale local imageUrl still matches the legacy path convention. This keeps broken placeholders
- * out of the customer catalog without deleting products or operational history.
+ * stale local imageUrl still matches the legacy path convention. The renderable URL requirement
+ * also prevents an approved active asset with no serialized imageUrl from creating a pending card.
  */
 export const temporaryImageReadyStorefrontProductWhere = {
-  AND: [approvedStorefrontProductCoreWhere, approvedStorefrontProductImageWhere]
+  AND: [
+    approvedStorefrontProductCoreWhere,
+    approvedStorefrontProductImageWhere,
+    renderableStorefrontProductImageWhere
+  ]
 } satisfies Prisma.ProductWhereInput;
 
 export function isPresentationCatalogEnabled(environment: NodeJS.ProcessEnv = process.env) {
@@ -115,19 +133,24 @@ export const presentationStorefrontCategoryWhere = {
 } satisfies Prisma.CategoryWhereInput;
 
 export const presentationStorefrontProductWhere = {
-  dataQualityStatus: {
-    not: CatalogQualityStatus.REJECTED
-  },
-  recordSource: {
-    not: CatalogRecordSource.TEST_FIXTURE
-  },
-  sellingPrice: {
-    gt: 0
-  },
-  sarimaSourceMapping: {
-    isNot: null
-  },
-  ...unresolvedCatalogImageExclusionWhere
+  AND: [
+    {
+      dataQualityStatus: {
+        not: CatalogQualityStatus.REJECTED
+      },
+      recordSource: {
+        not: CatalogRecordSource.TEST_FIXTURE
+      },
+      sellingPrice: {
+        gt: 0
+      },
+      sarimaSourceMapping: {
+        isNot: null
+      },
+      ...unresolvedCatalogImageExclusionWhere
+    },
+    renderableStorefrontProductImageWhere
+  ]
 } satisfies Prisma.ProductWhereInput;
 
 export function storefrontCategoryWhere(
