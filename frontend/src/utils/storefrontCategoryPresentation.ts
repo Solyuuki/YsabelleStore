@@ -61,10 +61,10 @@ const essentialShelfItems = [
     slug: "kitchen-dining"
   },
   {
-    alt: "Glass mug of coffee beside a glass of milk with coffee beans on a cafe table",
+    alt: "Packaged coffee products arranged across supermarket shelves",
     category: "Coffee & Milk",
     imageUrl:
-      "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788802712/coffee-milk-pexels-13520599.webp",
+      "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788805225/coffee-milk-pexels-8766369.webp",
     slug: "coffee-milk"
   }
 ] as const satisfies readonly StorefrontCategoryPresentation[];
