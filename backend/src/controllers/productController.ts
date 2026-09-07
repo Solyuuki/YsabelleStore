@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 
 import { assertApprovedProductBarcode } from "../services/catalogQualityPolicy.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
+import { HttpError } from "../utils/httpError.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import { createCategorySchema } from "../validators/category.validators.js";
 import {
@@ -137,6 +138,24 @@ export const changeProductStatusController: RequestHandler = async (request, res
       message: "Product availability request is invalid.",
       code: "INVALID_PRODUCT_AVAILABILITY_REQUEST"
     });
+
+    if (body.status === "ACTIVE") {
+      const existingProduct = await getProductById(params.id);
+
+      if (!existingProduct.operationalReadiness.ready) {
+        throw new HttpError(
+          422,
+          "Complete the product's operational requirements before setting it to Available.",
+          {
+            code: "PRODUCT_OPERATIONAL_READINESS_REQUIRED",
+            details: {
+              blockers: existingProduct.operationalReadiness.blockers,
+              productId: existingProduct.id
+            }
+          }
+        );
+      }
+    }
 
     const product = await changeProductStatus(params.id, body);
 
