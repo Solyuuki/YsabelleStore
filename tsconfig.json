@@ -7,7 +7,7 @@
     "jsx": "react-jsx",
     "noEmit": true,
     "paths": {
-      "@/*": ["frontend/src/*"]
+      "@/*": ["./frontend/src/*"]
     },
     "types": ["node"]
   },
