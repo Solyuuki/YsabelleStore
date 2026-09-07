@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { createApp } from "./app.js";
 import { corsOrigins, databaseTarget, env } from "./config/env.js";
+import { ensureKnownCatalogBarcodes } from "./services/catalogKnownBarcodeBootstrapService.js";
 import { ensureCatalogInventoryShells } from "./services/inventoryBootstrapService.js";
 
 const app = createApp();
@@ -25,6 +26,16 @@ const server = app.listen(env.PORT, () => {
     })
     .catch((error) => {
       console.error("[inventory-bootstrap] Unable to synchronize catalog inventory shells.", error);
+    });
+
+  void ensureKnownCatalogBarcodes()
+    .then((result) => {
+      if (result.updated > 0) {
+        console.info(`[catalog-barcode-bootstrap] Backfilled ${result.updated} verified barcode(s).`);
+      }
+    })
+    .catch((error) => {
+      console.error("[catalog-barcode-bootstrap] Unable to apply verified barcode backfill.", error);
     });
 });
 
