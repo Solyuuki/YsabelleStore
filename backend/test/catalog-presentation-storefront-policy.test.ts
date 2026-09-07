@@ -27,12 +27,22 @@ test("renderable storefront image gate accepts relative and HTTP(S) URLs only", 
 });
 
 test("presentation catalog keeps mapped SARIMA products while excluding unresolved identities and missing image URLs", () => {
-  assert.ok(Array.isArray(presentationStorefrontProductWhere.AND));
-  assert.equal(presentationStorefrontProductWhere.AND.length, 2);
-  const [coreWhere, imageWhere] = presentationStorefrontProductWhere.AND;
+  const andWhere = presentationStorefrontProductWhere.AND;
+  assert.ok(Array.isArray(andWhere));
+  assert.equal(andWhere.length, 2);
+
+  const coreWhere = andWhere[0];
+  const imageWhere = andWhere[1];
   assert.deepEqual(imageWhere, renderableStorefrontProductImageWhere);
-  assert.deepEqual(coreWhere.sarimaSourceMapping, { isNot: null });
-  assert.deepEqual(coreWhere.NOT, {
+  assert.ok(coreWhere && typeof coreWhere === "object" && "sarimaSourceMapping" in coreWhere);
+  assert.ok(coreWhere && typeof coreWhere === "object" && "NOT" in coreWhere);
+
+  const narrowedCoreWhere = coreWhere as {
+    sarimaSourceMapping: unknown;
+    NOT: unknown;
+  };
+  assert.deepEqual(narrowedCoreWhere.sarimaSourceMapping, { isNot: null });
+  assert.deepEqual(narrowedCoreWhere.NOT, {
     sarimaSourceMapping: {
       is: {
         sourceProductId: {
@@ -44,9 +54,10 @@ test("presentation catalog keeps mapped SARIMA products while excluding unresolv
 });
 
 test("strict temporary image-ready gate also requires a serialized image URL", () => {
-  assert.ok(Array.isArray(temporaryImageReadyStorefrontProductWhere.AND));
-  assert.equal(temporaryImageReadyStorefrontProductWhere.AND.length, 3);
-  assert.deepEqual(temporaryImageReadyStorefrontProductWhere.AND[2], renderableStorefrontProductImageWhere);
+  const andWhere = temporaryImageReadyStorefrontProductWhere.AND;
+  assert.ok(Array.isArray(andWhere));
+  assert.equal(andWhere.length, 3);
+  assert.deepEqual(andWhere[2], renderableStorefrontProductImageWhere);
 });
 
 test("presentation category product gate includes presentation products", () => {
