@@ -143,9 +143,13 @@ export const changeProductStatusController: RequestHandler = async (request, res
       const existingProduct = await getProductById(params.id);
 
       if (!existingProduct.operationalReadiness.ready) {
+        const blockerMessage = existingProduct.operationalReadiness.blockers
+          .map((blocker) => blocker.label)
+          .join(", ");
+
         throw new HttpError(
           422,
-          "Complete the product's operational requirements before setting it to Available.",
+          `Cannot set product to Available: ${blockerMessage}.`,
           {
             code: "PRODUCT_OPERATIONAL_READINESS_REQUIRED",
             details: {
