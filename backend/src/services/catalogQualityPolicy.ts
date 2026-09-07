@@ -7,6 +7,7 @@ import {
 import type { Prisma } from "@prisma/client";
 
 import { UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES } from "../modules/catalog/catalog-unresolved-image-cleanup-authorization.js";
+import { RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS } from "../modules/catalog/storefront-category-taxonomy.js";
 import { HttpError } from "../utils/httpError.js";
 
 const unresolvedDuplicateStatuses = ["PENDING", "CONFIRMED"] as const;
@@ -14,11 +15,20 @@ const unresolvedCatalogImageSourceIds = UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTIT
   (row) => row.productCode
 );
 
-const unresolvedCatalogImageExclusionWhere = {
+const storefrontCatalogExclusionWhere = {
   NOT: {
-    sarimaSourceMapping: {
-      is: { sourceProductId: { in: unresolvedCatalogImageSourceIds } }
-    }
+    OR: [
+      {
+        sarimaSourceMapping: {
+          is: { sourceProductId: { in: unresolvedCatalogImageSourceIds } }
+        }
+      },
+      {
+        sarimaSourceMapping: {
+          is: { sourceProductId: { in: [...RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS] } }
+        }
+      }
+    ]
   }
 } satisfies Prisma.ProductWhereInput;
 
@@ -93,7 +103,7 @@ export const approvedStorefrontProductCoreWhere = {
     none: { status: { in: [...unresolvedDuplicateStatuses] } }
   },
   isStorefrontVisible: true,
-  ...unresolvedCatalogImageExclusionWhere,
+  ...storefrontCatalogExclusionWhere,
   recordSource: { not: CatalogRecordSource.TEST_FIXTURE },
   sellingPrice: { gt: 0 },
   sourceMapping: { is: null },
@@ -107,8 +117,10 @@ export const approvedStorefrontProductCoreWhere = {
  * forecasting, inventory, and sales keep their existing domain policies.
  *
  * Products whose frozen Phase 9 source image outcome is unresolved are excluded here even when a
- * stale local imageUrl still matches the legacy path convention. The renderable URL requirement
- * also prevents an approved active asset with no serialized imageUrl from creating a pending card.
+ * stale local imageUrl still matches the legacy path convention. Restricted alcohol identities are
+ * also fail-closed at the query layer, independent of database cleanup state. The renderable URL
+ * requirement prevents an approved active asset with no serialized imageUrl from creating a
+ * pending card.
  */
 export const temporaryImageReadyStorefrontProductWhere = {
   AND: [
@@ -147,7 +159,7 @@ export const presentationStorefrontProductWhere = {
       sarimaSourceMapping: {
         isNot: null
       },
-      ...unresolvedCatalogImageExclusionWhere
+      ...storefrontCatalogExclusionWhere
     },
     renderableStorefrontProductImageWhere
   ]
