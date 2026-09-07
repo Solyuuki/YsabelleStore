@@ -1,4 +1,5 @@
 import type { DriveImageAsset } from "./drive-image-manifest.js";
+import { getReviewedCatalogImageApproval } from "./catalog-reviewed-image-approval.js";
 import type { SarimaSourceIdentity } from "./sarima-source-manifest.js";
 
 export type ImageReconciliationStatus =
@@ -31,34 +32,6 @@ export type CatalogImageReconciliation = {
   sourceOutcomes: SourceImageOutcome[];
   driveOnlyAssets: DriveOnlyAssetOutcome[];
 };
-
-type ReviewedImageAssignment = {
-  productCode: string;
-  sourceNameNormalized: string;
-  category: string;
-  fileId: string;
-  filename: string;
-  normalizedStem: string;
-  folderId: string;
-  folderName: string;
-  mimeType: string;
-  extension: string;
-};
-
-const REVIEWED_IMAGE_ASSIGNMENTS: Readonly<Record<string, ReviewedImageAssignment>> = Object.freeze({
-  P132: Object.freeze({
-    productCode: "P132",
-    sourceNameNormalized: "bathroom tissue roll tissue pack",
-    category: "Tissue & Cotton",
-    fileId: "17Zwte8tmtuuTy-Nlr2GnL2ciBPxdP5gA",
-    filename: "athroom Tissue Roll  Tissue Pack.jpg",
-    normalizedStem: "athroom tissue roll tissue pack",
-    folderId: "1NY8q65dwiXlJli1FEEdViGQEAGUxEHHS",
-    folderName: "Tissue & Cotton",
-    mimeType: "image/jpeg",
-    extension: ".jpg"
-  })
-});
 
 const QUANTITY_TOKEN = /^\d+(?:\.\d+)?(?:g|kg|ml|l|oz|pcs?|packs?|s)$/i;
 const GENERIC_IDENTITY_TOKENS = new Set([
@@ -220,7 +193,7 @@ function sourceSignatureGroups(sources: SarimaSourceIdentity[]) {
 }
 
 function reviewedAssignmentFor(source: SarimaSourceIdentity) {
-  const assignment = REVIEWED_IMAGE_ASSIGNMENTS[source.productCode];
+  const assignment = getReviewedCatalogImageApproval(source.productCode);
   if (!assignment) return null;
   if (assignment.productCode !== source.productCode) return null;
   if (assignment.sourceNameNormalized !== source.sourceNameNormalized) return null;
@@ -228,7 +201,10 @@ function reviewedAssignmentFor(source: SarimaSourceIdentity) {
   return assignment;
 }
 
-function matchesReviewedAssignment(image: DriveImageAsset, assignment: ReviewedImageAssignment) {
+function matchesReviewedAssignment(
+  image: DriveImageAsset,
+  assignment: NonNullable<ReturnType<typeof getReviewedCatalogImageApproval>>
+) {
   return (
     image.fileId === assignment.fileId &&
     image.filename === assignment.filename &&
@@ -240,7 +216,10 @@ function matchesReviewedAssignment(image: DriveImageAsset, assignment: ReviewedI
   );
 }
 
-function resemblesReviewedAssignment(image: DriveImageAsset, assignment: ReviewedImageAssignment) {
+function resemblesReviewedAssignment(
+  image: DriveImageAsset,
+  assignment: NonNullable<ReturnType<typeof getReviewedCatalogImageApproval>>
+) {
   return (
     image.fileId === assignment.fileId ||
     (image.filename === assignment.filename &&
