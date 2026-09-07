@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { CustomerOrderStatus, InventoryBatchStatus, Prisma, SaleStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { compareStorefrontCategoryNames } from "../modules/catalog/storefront-category-taxonomy.js";
 import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
 import { HttpError } from "../utils/httpError.js";
 import type {
@@ -134,7 +135,6 @@ export async function listStorefrontCategories() {
   const categoryProductWhere = storefrontCategoryProductWhere(presentationMode);
 
   const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
     where: {
       AND: [categoryWhere, { products: { some: categoryProductWhere } }]
     },
@@ -155,13 +155,15 @@ export async function listStorefrontCategories() {
     }
   });
 
-  return categories.map(({ _count, products, ...category }) => ({
-    ...category,
-    productCount: _count.products,
-    representativeProducts: products.filter(
-      (product): product is typeof product & { imageUrl: string } => Boolean(product.imageUrl)
-    )
-  }));
+  return categories
+    .sort((left, right) => compareStorefrontCategoryNames(left.name, right.name))
+    .map(({ _count, products, ...category }) => ({
+      ...category,
+      productCount: _count.products,
+      representativeProducts: products.filter(
+        (product): product is typeof product & { imageUrl: string } => Boolean(product.imageUrl)
+      )
+    }));
 }
 
 export async function listStorefrontProducts(query: StorefrontProductQuery) {
