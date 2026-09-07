@@ -1,0 +1,31 @@
+name: Catalog Unresolved Image Quarantine
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "m1/v0.9/feat/catalog-data-readiness"
+    paths:
+      - ".github/workflows/catalog-unresolved-image-quarantine.yml"
+      - "backend/src/modules/catalog/catalog-unresolved-image-cleanup-authorization.ts"
+      - "backend/src/modules/catalog/catalog-unresolved-image-quarantine.ts"
+      - "backend/src/scripts/executeUnresolvedCatalogImageQuarantine.ts"
+      - "backend/test/catalog-unresolved-image-quarantine.test.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Compile backend
+        run: npm run build --workspace backend
+      - name: Run guarded quarantine contracts
+        run: npx tsx --test backend/test/catalog-unresolved-image-quarantine.test.ts
