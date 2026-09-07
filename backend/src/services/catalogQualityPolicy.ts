@@ -7,7 +7,10 @@ import {
 import type { Prisma } from "@prisma/client";
 
 import { UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES } from "../modules/catalog/catalog-unresolved-image-cleanup-authorization.js";
-import { RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS } from "../modules/catalog/storefront-category-taxonomy.js";
+import {
+  RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS,
+  STOREFRONT_CATEGORY_NAMES
+} from "../modules/catalog/storefront-category-taxonomy.js";
 import { HttpError } from "../utils/httpError.js";
 
 const unresolvedDuplicateStatuses = ["PENDING", "CONFIRMED"] as const;
@@ -31,6 +34,10 @@ const storefrontCatalogExclusionWhere = {
     ]
   }
 } satisfies Prisma.ProductWhereInput;
+
+const canonicalStorefrontCategoryWhere = {
+  name: { in: [...STOREFRONT_CATEGORY_NAMES] }
+} satisfies Prisma.CategoryWhereInput;
 
 /**
  * The storefront serializer currently emits Product.imageUrl. Until active CIQE storage keys are
@@ -87,6 +94,7 @@ export const approvedStorefrontProductImageWhere = {
 } satisfies Prisma.ProductWhereInput;
 
 export const approvedStorefrontCategoryWhere = {
+  ...canonicalStorefrontCategoryWhere,
   dataQualityStatus: CatalogQualityStatus.APPROVED,
   isActive: true,
   isStorefrontVisible: true,
@@ -135,6 +143,7 @@ export function isPresentationCatalogEnabled(environment: NodeJS.ProcessEnv = pr
 }
 
 export const presentationStorefrontCategoryWhere = {
+  ...canonicalStorefrontCategoryWhere,
   dataQualityStatus: {
     not: CatalogQualityStatus.REJECTED
   },
