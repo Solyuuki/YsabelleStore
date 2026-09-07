@@ -20,8 +20,8 @@ provenance. License and source pages were reviewed on 2026-09-08.
 | Personal Care    | `personal-care-retail-display.webp`                                                                             | Packaged hair and personal-care products on retail shelves       | Polina Tankilevitch | [Pexels photo 3735654](https://www.pexels.com/photo/beauty-products-on-shelves-3735654/)                             |
 | Household        | `household-retail-display.webp`                                                                                 | Neutral bottled cleaners and laundry products on a display shelf | Ron Lach            | [Pexels photo 10558189](https://www.pexels.com/photo/bottles-of-cleaning-products-standing-on-metal-shelf-10558189/) |
 | Kitchen & Dining | `kitchen-dining-retail-display.webp`                                                                            | Cookware arranged on a kitchenware store display                 | Théo Cold           | [Pexels photo 34005916](https://www.pexels.com/photo/variety-of-non-stick-frying-pans-on-store-display-34005916/)    |
-| Coffee & Milk    | `https://res.cloudinary.com/gnqoa3sp/image/upload/v1788802712/coffee-milk-pexels-13520599.webp`                 | Coffee, a separate glass of milk, and coffee beans in a cafe     | 23 Audiovisual      | [Pexels photo 13520599](https://www.pexels.com/photo/a-drinking-glass-with-milk-beside-the-glass-mug-with-coffee-13520599/) |
+| Coffee & Milk    | `https://res.cloudinary.com/gnqoa3sp/image/upload/v1788805225/coffee-milk-pexels-8766369.webp`                 | Packaged coffee products arranged across supermarket shelves     | Dmitry Limonov      | [Pexels photo 8766369](https://www.pexels.com/photo/products-on-market-shelves-8766369/)                             |
 
 Processing: local category originals were downloaded from the Pexels image CDN and stored as 640 x
-640 WebP derivatives. The Coffee & Milk cover is likewise delivered as a 640 x 640 WebP derivative
-through Cloudinary. Runtime UI does not hotlink the Pexels source image.
+640 WebP derivatives. The Coffee & Milk cover is delivered as a 640 x 320 WebP derivative through
+Cloudinary to preserve the storefront card crop. Runtime UI does not hotlink the Pexels source image.
