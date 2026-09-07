@@ -7,6 +7,11 @@ import type {
   User
 } from "@prisma/client";
 
+import {
+  getProductOperationalReadiness,
+  type ProductOperationalReadiness
+} from "./productOperationalReadiness.js";
+
 export type ProductWithRelations = Product & {
   category: Category;
   inventory: Inventory | null;
@@ -78,6 +83,7 @@ export type ProductSummary = {
   dataQualityStatus: Product["dataQualityStatus"];
   isStorefrontVisible: boolean;
   qualityWarnings: string[];
+  operationalReadiness: ProductOperationalReadiness;
   category: CategorySummary;
   inventory: InventorySummary;
   createdAt: Date;
@@ -136,14 +142,8 @@ export type PosLookupSummary = {
 };
 
 export function computeStockStatus(quantityOnHand: number, reorderLevel: number): StockStatusView {
-  if (quantityOnHand <= 0) {
-    return "OUT_OF_STOCK";
-  }
-
-  if (quantityOnHand <= reorderLevel) {
-    return "LOW_STOCK";
-  }
-
+  if (quantityOnHand <= 0) return "OUT_OF_STOCK";
+  if (quantityOnHand <= reorderLevel) return "LOW_STOCK";
   return "IN_STOCK";
 }
 
@@ -175,6 +175,7 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     ...(hasUnresolvedDuplicate ? ["UNRESOLVED_DUPLICATE"] : []),
     ...(!product.isStorefrontVisible ? ["STOREFRONT_HIDDEN"] : [])
   ];
+  const operationalReadiness = getProductOperationalReadiness(product);
 
   return {
     id: product.id,
@@ -198,6 +199,7 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     dataQualityStatus: product.dataQualityStatus,
     isStorefrontVisible: product.isStorefrontVisible,
     qualityWarnings,
+    operationalReadiness,
     category: serializeCategory(product.category),
     inventory: {
       inventoryId: inventory?.id ?? "",
