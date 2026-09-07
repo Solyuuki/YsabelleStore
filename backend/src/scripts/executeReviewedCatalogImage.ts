@@ -9,7 +9,10 @@ import {
   type CatalogDriveMaterializationPlanRow
 } from "../modules/catalog/catalog-image-drive-materialization.js";
 import { reconcileCatalogImages } from "../modules/catalog/catalog-image-reconciliation.js";
-import { buildReviewedCatalogImageExecutionTarget } from "../modules/catalog/catalog-reviewed-image-execution.js";
+import {
+  assertReviewedCatalogImageMaterialization,
+  buildReviewedCatalogImageExecutionTarget
+} from "../modules/catalog/catalog-reviewed-image-execution.js";
 import type { DriveImageAsset } from "../modules/catalog/drive-image-manifest.js";
 import {
   normalizeSarimaSourceName,
@@ -135,6 +138,8 @@ export async function executeReviewedCatalogImage(options: {
         `CATALOG_REVIEWED_IMAGE_DOWNLOAD_FAILED: ${target.productCode} ${materialized?.error ?? "unknown error"}`
       );
     }
+
+    assertReviewedCatalogImageMaterialization(target, materialized);
 
     const absoluteSourcePath = path.join(workingRoot, sourcePath);
     const preflightOutput = path.join(workingRoot, "preflight");
