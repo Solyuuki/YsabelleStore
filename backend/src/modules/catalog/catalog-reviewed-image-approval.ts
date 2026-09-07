@@ -14,6 +14,7 @@ export type ReviewedCatalogImageApproval = {
   reviewEvidence: string;
 };
 
+// Reviewed approvals bind source identity, Drive metadata, and immutable byte evidence.
 const REVIEWED_CATALOG_IMAGE_APPROVALS: Readonly<
   Record<string, ReviewedCatalogImageApproval>
 > = Object.freeze({
