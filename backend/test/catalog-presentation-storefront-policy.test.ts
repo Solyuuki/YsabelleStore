@@ -1,15 +1,20 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES } from "../src/modules/catalog/catalog-unresolved-image-cleanup-authorization.js";
+import {
+  RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS,
+  STOREFRONT_CATEGORY_NAMES
+} from "../src/modules/catalog/storefront-category-taxonomy.js";
 import {
   isPresentationCatalogEnabled,
+  presentationStorefrontCategoryWhere,
   presentationStorefrontProductWhere,
   renderableStorefrontProductImageWhere,
   storefrontCategoryProductWhere,
   storefrontProductWhere,
   temporaryImageReadyStorefrontProductWhere
 } from "../src/services/catalogQualityPolicy.js";
-import { UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES } from "../src/modules/catalog/catalog-unresolved-image-cleanup-authorization.js";
 
 test("presentation mode is opt-in", () => {
   assert.equal(isPresentationCatalogEnabled({}), false);
@@ -26,7 +31,13 @@ test("renderable storefront image gate accepts relative and HTTP(S) URLs only", 
   });
 });
 
-test("presentation catalog keeps mapped SARIMA products while excluding unresolved identities and missing image URLs", () => {
+test("presentation categories are limited to the clean storefront taxonomy", () => {
+  assert.deepEqual(presentationStorefrontCategoryWhere.name, {
+    in: [...STOREFRONT_CATEGORY_NAMES]
+  });
+});
+
+test("presentation catalog excludes unresolved images, restricted alcohol, and missing image URLs", () => {
   const andWhere = presentationStorefrontProductWhere.AND;
   assert.ok(Array.isArray(andWhere));
   assert.equal(andWhere.length, 2);
@@ -43,13 +54,26 @@ test("presentation catalog keeps mapped SARIMA products while excluding unresolv
   };
   assert.deepEqual(narrowedCoreWhere.sarimaSourceMapping, { isNot: null });
   assert.deepEqual(narrowedCoreWhere.NOT, {
-    sarimaSourceMapping: {
-      is: {
-        sourceProductId: {
-          in: UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES.map((row) => row.productCode)
+    OR: [
+      {
+        sarimaSourceMapping: {
+          is: {
+            sourceProductId: {
+              in: UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES.map((row) => row.productCode)
+            }
+          }
+        }
+      },
+      {
+        sarimaSourceMapping: {
+          is: {
+            sourceProductId: {
+              in: [...RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS]
+            }
+          }
         }
       }
-    }
+    ]
   });
 });
 
