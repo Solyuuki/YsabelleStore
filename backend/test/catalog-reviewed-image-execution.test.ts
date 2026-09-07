@@ -5,6 +5,7 @@ import { reconcileCatalogImages } from "../src/modules/catalog/catalog-image-rec
 import { buildReviewedCatalogImageExecutionTarget } from "../src/modules/catalog/catalog-reviewed-image-execution.js";
 import {
   buildDriveImageManifest,
+  type DriveImageAsset,
   type DriveImageMetadata
 } from "../src/modules/catalog/drive-image-manifest.js";
 import {
@@ -84,7 +85,17 @@ test("refuses execution when the Drive asset no longer satisfies the reviewed P1
 
 test("refuses non-image Drive assets even when reconciliation input is forged as exact", () => {
   const sources = [p132Source()];
-  const images = [p132Image({ mimeType: "application/pdf", filename: "Tissue and Cotton.pdf" })];
+  const images: DriveImageAsset[] = [
+    {
+      fileId: P132_FILE_ID,
+      filename: "Tissue and Cotton.pdf",
+      folderId: "1NY8q65dwiXlJli1FEEdViGQEAGUxEHHS",
+      folderName: "Tissue & Cotton",
+      mimeType: "application/pdf",
+      extension: ".pdf",
+      normalizedStem: normalizeSarimaSourceName("Tissue and Cotton")
+    }
+  ];
 
   assert.throws(
     () =>
