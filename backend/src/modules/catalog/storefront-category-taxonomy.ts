@@ -80,11 +80,14 @@ export const STOREFRONT_CATEGORY_TAXONOMY = [
 ] as const;
 
 export type StorefrontCategoryName = (typeof STOREFRONT_CATEGORY_TAXONOMY)[number]["name"];
+export type StorefrontCategoryTaxonomyRow = (typeof STOREFRONT_CATEGORY_TAXONOMY)[number];
 
 export const STOREFRONT_CATEGORY_NAMES = STOREFRONT_CATEGORY_TAXONOMY.map((row) => row.name);
 
-const categoryRank = new Map(STOREFRONT_CATEGORY_NAMES.map((name, index) => [name, index]));
-const categoryBySource = new Map(
+const categoryRank = new Map<string, number>(
+  STOREFRONT_CATEGORY_NAMES.map((name, index) => [name, index])
+);
+const categoryBySource = new Map<string, StorefrontCategoryTaxonomyRow>(
   STOREFRONT_CATEGORY_TAXONOMY.flatMap((row) =>
     row.sourceCategories.map((sourceCategory) => [sourceCategory, row] as const)
   )
