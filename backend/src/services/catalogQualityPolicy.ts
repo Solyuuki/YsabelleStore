@@ -6,9 +6,13 @@ import {
 } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
+import { UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES } from "../modules/catalog/catalog-unresolved-image-cleanup-authorization.js";
 import { HttpError } from "../utils/httpError.js";
 
 const unresolvedDuplicateStatuses = ["PENDING", "CONFIRMED"] as const;
+const unresolvedCatalogImageSourceIds = UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES.map(
+  (row) => row.productCode
+);
 
 export const APPROVED_STOREFRONT_PRODUCT_IMAGE_PREFIX = "/images/products/";
 
@@ -67,6 +71,11 @@ export const approvedStorefrontProductCoreWhere = {
     none: { status: { in: [...unresolvedDuplicateStatuses] } }
   },
   isStorefrontVisible: true,
+  NOT: {
+    sarimaSourceMapping: {
+      is: { sourceProductId: { in: unresolvedCatalogImageSourceIds } }
+    }
+  },
   recordSource: { not: CatalogRecordSource.TEST_FIXTURE },
   sellingPrice: { gt: 0 },
   sourceMapping: { is: null },
@@ -78,6 +87,10 @@ export const approvedStorefrontProductCoreWhere = {
  * Sprint 6 extends the gate to also trust the currently active CIQE asset when processing and
  * image quality are both approved. It remains presentation-only: internal product validity,
  * forecasting, inventory, and sales keep their existing domain policies.
+ *
+ * Products whose frozen Phase 9 source image outcome is unresolved are excluded here even when a
+ * stale local imageUrl still matches the legacy path convention. This keeps broken placeholders
+ * out of the customer catalog without deleting products or operational history.
  */
 export const temporaryImageReadyStorefrontProductWhere = {
   AND: [approvedStorefrontProductCoreWhere, approvedStorefrontProductImageWhere]
