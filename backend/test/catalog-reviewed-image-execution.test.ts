@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { reconcileCatalogImages } from "../src/modules/catalog/catalog-image-reconciliation.js";
-import { buildReviewedCatalogImageExecutionTarget } from "../src/modules/catalog/catalog-reviewed-image-execution.js";
+import {
+  assertReviewedCatalogImageMaterialization,
+  buildReviewedCatalogImageExecutionTarget
+} from "../src/modules/catalog/catalog-reviewed-image-execution.js";
 import {
   buildDriveImageManifest,
   type DriveImageAsset,
@@ -15,6 +18,8 @@ import {
 
 const P132_FILE_ID = "17ZwteNRUJ1ShzSyU3YNoSDb1xOJTsJzZ";
 const P132_FOLDER_ID = "1NY76Nb4AlGqXcpW5B99_STKlN1hhX4M6";
+const P132_SHA256 = "359dd332c8c239951ebd0e55e1857f93879bb8e6bf123de55675d1dd7fc1e1f0";
+const P132_SIZE_BYTES = 15877;
 
 function p132Source(): SarimaSourceIdentity {
   return {
@@ -39,31 +44,54 @@ function p132Image(overrides: Partial<DriveImageMetadata> = {}) {
   ])[0]!;
 }
 
-test("builds a current-catalog execution target only after reviewed reconciliation is exact", () => {
+function p132Target() {
   const sources = [p132Source()];
   const images = [p132Image()];
-  const reconciliation = reconcileCatalogImages(sources, images);
+  return buildReviewedCatalogImageExecutionTarget({
+    productCode: "P132",
+    sources,
+    images,
+    reconciliation: reconcileCatalogImages(sources, images)
+  });
+}
 
-  assert.deepEqual(
-    buildReviewedCatalogImageExecutionTarget({
-      productCode: "P132",
-      sources,
-      images,
-      reconciliation
-    }),
-    {
-      productCode: "P132",
-      expectedSku: "SARIMA-P132",
-      sourceName: "Bathroom Tissue Roll Tissue Pack",
-      sourceNameNormalized: "bathroom tissue roll tissue pack",
-      category: "Tissue & Cotton",
-      fileId: P132_FILE_ID,
-      filename: "athroom Tissue Roll  Tissue Pack.jpg",
-      mimeType: "image/jpeg",
-      extension: ".jpg",
-      folderId: P132_FOLDER_ID,
-      folderName: "Tissue & Cotton"
-    }
+test("builds a current-catalog execution target only after reviewed reconciliation is exact", () => {
+  assert.deepEqual(p132Target(), {
+    productCode: "P132",
+    expectedSku: "SARIMA-P132",
+    sourceName: "Bathroom Tissue Roll Tissue Pack",
+    sourceNameNormalized: "bathroom tissue roll tissue pack",
+    category: "Tissue & Cotton",
+    fileId: P132_FILE_ID,
+    filename: "athroom Tissue Roll  Tissue Pack.jpg",
+    mimeType: "image/jpeg",
+    extension: ".jpg",
+    folderId: P132_FOLDER_ID,
+    folderName: "Tissue & Cotton",
+    reviewedSha256: P132_SHA256,
+    reviewedFileSizeBytes: P132_SIZE_BYTES
+  });
+});
+
+test("accepts materialized P132 bytes only when hash, size, and MIME match reviewed evidence", () => {
+  assert.doesNotThrow(() =>
+    assertReviewedCatalogImageMaterialization(p132Target(), {
+      sha256: P132_SHA256,
+      sizeBytes: P132_SIZE_BYTES,
+      contentType: "image/jpeg"
+    })
+  );
+});
+
+test("fails closed when materialized P132 bytes differ from reviewed evidence", () => {
+  assert.throws(
+    () =>
+      assertReviewedCatalogImageMaterialization(p132Target(), {
+        sha256: "0".repeat(64),
+        sizeBytes: P132_SIZE_BYTES,
+        contentType: "image/jpeg"
+      }),
+    /CATALOG_REVIEWED_IMAGE_CONTENT_MISMATCH/
   );
 });
 
