@@ -14,6 +14,9 @@ import {
   type SarimaSourceIdentity
 } from "../src/modules/catalog/sarima-source-manifest.js";
 
+const P132_FILE_ID = "17ZwteNRUJ1ShzSyU3YNoSDb1xOJTsJzZ";
+const P132_FOLDER_ID = "1NY76Nb4AlGqXcpW5B99_STKlN1hhX4M6";
+
 function source(
   productCode: string,
   sourceName: string,
@@ -42,9 +45,9 @@ function image(fileId: string, filename: string, mimeType = "image/jpeg") {
 
 function reviewedP132Image(overrides: Partial<DriveImageMetadata> = {}) {
   const metadata: DriveImageMetadata = {
-    fileId: "17Zwte8tmtuuTy-Nlr2GnL2ciBPxdP5gA",
+    fileId: P132_FILE_ID,
     filename: "athroom Tissue Roll  Tissue Pack.jpg",
-    folderId: "1NY8q65dwiXlJli1FEEdViGQEAGUxEHHS",
+    folderId: P132_FOLDER_ID,
     folderName: "Tissue & Cotton",
     mimeType: "image/jpeg",
     ...overrides
@@ -183,21 +186,17 @@ test("keeps a size-specific historical sibling in NEEDS_REVIEW when a less-speci
 });
 
 test("promotes the explicitly reviewed P132 Drive asset only when its pinned identity and metadata match", () => {
-  const sources = [
-    source("P132", "Bathroom Tissue Roll Tissue Pack", "Tissue & Cotton")
-  ];
+  const sources = [source("P132", "Bathroom Tissue Roll Tissue Pack", "Tissue & Cotton")];
   const images = [reviewedP132Image()];
 
   const { outcome, result } = statusFor("EXACT_MATCH", "P132", sources, images);
-  assert.deepEqual(outcome.assetFileIds, ["17Zwte8tmtuuTy-Nlr2GnL2ciBPxdP5gA"]);
+  assert.deepEqual(outcome.assetFileIds, [P132_FILE_ID]);
   assert.match(outcome.reason, /Explicitly reviewed/);
   assert.equal(result.driveOnlyAssets.length, 0);
 });
 
 test("keeps P132 fail-closed when a same-name typo asset has an unapproved Drive file ID", () => {
-  const sources = [
-    source("P132", "Bathroom Tissue Roll Tissue Pack", "Tissue & Cotton")
-  ];
+  const sources = [source("P132", "Bathroom Tissue Roll Tissue Pack", "Tissue & Cotton")];
   const images = [reviewedP132Image({ fileId: "wrong-drive-file-id" })];
 
   const { outcome, result } = statusFor("NEEDS_REVIEW", "P132", sources, images);
@@ -207,13 +206,11 @@ test("keeps P132 fail-closed when a same-name typo asset has an unapproved Drive
 });
 
 test("keeps P132 fail-closed when the pinned Drive file moves to unexpected metadata", () => {
-  const sources = [
-    source("P132", "Bathroom Tissue Roll Tissue Pack", "Tissue & Cotton")
-  ];
+  const sources = [source("P132", "Bathroom Tissue Roll Tissue Pack", "Tissue & Cotton")];
   const images = [reviewedP132Image({ folderId: "unexpected-folder" })];
 
   const { outcome, result } = statusFor("NEEDS_REVIEW", "P132", sources, images);
-  assert.deepEqual(outcome.assetFileIds, ["17Zwte8tmtuuTy-Nlr2GnL2ciBPxdP5gA"]);
+  assert.deepEqual(outcome.assetFileIds, [P132_FILE_ID]);
   assert.match(outcome.reason, /could not be validated/);
   assert.equal(result.driveOnlyAssets.length, 0);
 });
