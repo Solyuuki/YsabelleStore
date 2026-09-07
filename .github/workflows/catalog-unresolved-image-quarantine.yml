@@ -26,6 +26,13 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Compile backend
-        run: npm run build --workspace backend
+        run: npm run build --workspace backend 2>&1 | tee quarantine-backend-build.log
+      - name: Upload compile diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalog-unresolved-image-quarantine-build-log
+          path: quarantine-backend-build.log
+          if-no-files-found: error
       - name: Run guarded quarantine contracts
         run: npx tsx --test backend/test/catalog-unresolved-image-quarantine.test.ts
