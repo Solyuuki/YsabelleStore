@@ -102,6 +102,39 @@ test(
   }
 );
 
+test(
+  "dashboard inventory parity counts unavailable catalog products that already have inventory shells",
+  { concurrency: false },
+  async () => {
+    const now = new Date("2026-09-08T08:00:00.000Z");
+    const before = await getDashboardSummary("STAFF", now);
+    const category = await createCategory({ name: uniqueLabel("Inactive Dashboard Category") });
+
+    await createProduct({
+      categoryId: category.id,
+      costPrice: "10.00",
+      dataQualityStatus: "APPROVED",
+      isStorefrontVisible: false,
+      name: uniqueLabel("Inactive Dashboard Product"),
+      reorderLevel: 2,
+      sellingPrice: "15.00",
+      sku: uniqueSku("DASH-INACTIVE"),
+      status: "INACTIVE",
+      targetStockLevel: 5,
+      unit: "PIECE"
+    });
+
+    const after = await getDashboardSummary("STAFF", now);
+
+    assert.equal(after.inventory.catalogItems, before.inventory.catalogItems + 1);
+    assert.equal(after.inventory.trackedItems, before.inventory.trackedItems + 1);
+    assert.equal(after.inventory.unavailableItems, before.inventory.unavailableItems + 1);
+    assert.equal(after.inventory.availableItems, before.inventory.availableItems);
+    assert.equal(after.inventory.unlinkedCatalogItems, before.inventory.unlinkedCatalogItems);
+    assert.equal(after.inventory.outOfStockItems, before.inventory.outOfStockItems);
+  }
+);
+
 test("dashboard summary reflects live sales, stock, and near-expiry state", { concurrency: false }, async () => {
   const now = new Date("2026-09-08T08:00:00.000Z");
   const before = await getDashboardSummary("STAFF", now);
@@ -143,7 +176,9 @@ test("dashboard summary reflects live sales, stock, and near-expiry state", { co
   assert.equal(after.sales.completedSales, before.sales.completedSales + 1);
   assert.equal(Number(after.sales.todayAmount), Number(before.sales.todayAmount) + 25);
   assert.equal(afterActivityCount, beforeActivityCount + 1);
+  assert.equal(after.inventory.catalogItems, before.inventory.catalogItems + 1);
   assert.equal(after.inventory.trackedItems, before.inventory.trackedItems + 1);
+  assert.equal(after.inventory.availableItems, before.inventory.availableItems + 1);
   assert.equal(after.inventory.lowStockItems, before.inventory.lowStockItems + 1);
   assert.equal(after.expiry.nearExpiryBatches, before.expiry.nearExpiryBatches + 1);
   assert.equal(after.forecast.access, "RESTRICTED");

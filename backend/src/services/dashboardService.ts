@@ -42,10 +42,13 @@ export type DashboardSummary = {
     todayAmount: string;
   };
   inventory: {
+    availableItems: number;
+    catalogItems: number;
     inStockItems: number;
     lowStockItems: number;
     outOfStockItems: number;
     trackedItems: number;
+    unavailableItems: number;
     unlinkedCatalogItems: number;
   };
   expiry: {
@@ -66,7 +69,8 @@ export async function getDashboardSummary(
   const [
     todaySales,
     inventoryRows,
-    operationalProductCount,
+    catalogItems,
+    availableItems,
     nearExpiryBatches,
     expiredBatches,
     forecast
@@ -87,17 +91,22 @@ export async function getDashboardSummary(
     prisma.inventory.findMany({
       where: {
         product: {
-          recordSource: { not: "TEST_FIXTURE" },
-          status: "ACTIVE"
+          recordSource: { not: "TEST_FIXTURE" }
         }
       },
       select: {
         quantityOnHand: true,
         product: {
           select: {
-            reorderLevel: true
+            reorderLevel: true,
+            status: true
           }
         }
+      }
+    }),
+    prisma.product.count({
+      where: {
+        recordSource: { not: "TEST_FIXTURE" }
       }
     }),
     prisma.product.count({
@@ -161,6 +170,10 @@ export async function getDashboardSummary(
   let inStockItems = 0;
 
   for (const inventory of inventoryRows) {
+    if (inventory.product.status !== "ACTIVE") {
+      continue;
+    }
+
     if (inventory.quantityOnHand <= 0) {
       outOfStockItems += 1;
     } else if (inventory.quantityOnHand <= inventory.product.reorderLevel) {
@@ -169,6 +182,8 @@ export async function getDashboardSummary(
       inStockItems += 1;
     }
   }
+
+  const trackedItems = inventoryRows.length;
 
   return {
     generatedAt: now.toISOString(),
@@ -182,11 +197,14 @@ export async function getDashboardSummary(
       todayAmount: todayAmount.toFixed(2)
     },
     inventory: {
+      availableItems,
+      catalogItems,
       inStockItems,
       lowStockItems,
       outOfStockItems,
-      trackedItems: inventoryRows.length,
-      unlinkedCatalogItems: Math.max(0, operationalProductCount - inventoryRows.length)
+      trackedItems,
+      unavailableItems: Math.max(0, catalogItems - availableItems),
+      unlinkedCatalogItems: Math.max(0, catalogItems - trackedItems)
     },
     expiry: {
       expiredBatches,

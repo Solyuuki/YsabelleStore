@@ -19,6 +19,10 @@ function formatCurrency(value: string) {
   return currencyFormatter.format(Number(value));
 }
 
+function formatCount(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 export function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,19 +86,16 @@ export function DashboardPage() {
         {
           title: "Today's Sales",
           value: formatCurrency(summary.sales.todayAmount),
-          detail:
-            summary.sales.completedSales === 1
-              ? "1 completed sale"
-              : `${summary.sales.completedSales} completed sales`,
+          detail: formatCount(summary.sales.completedSales, "completed sale"),
           tone: "info" as const,
           icon: ReceiptText
         },
         {
           title: "Inventory Status",
-          value: `${summary.inventory.trackedItems} items`,
+          value: formatCount(summary.inventory.trackedItems, "item"),
           detail:
             summary.inventory.unlinkedCatalogItems === 0
-              ? `${summary.inventory.inStockItems} in stock • ${summary.inventory.outOfStockItems} out`
+              ? `${summary.inventory.availableItems} available • ${summary.inventory.unavailableItems} unavailable`
               : `${summary.inventory.unlinkedCatalogItems} catalog items need linking`,
           tone:
             summary.inventory.unlinkedCatalogItems === 0
@@ -104,7 +105,7 @@ export function DashboardPage() {
         },
         {
           title: "Low Stock",
-          value: `${summary.inventory.lowStockItems} items`,
+          value: formatCount(summary.inventory.lowStockItems, "item"),
           detail:
             summary.inventory.lowStockItems > 0 ? "Needs replenishment" : "No items flagged",
           tone: "warning" as const,
@@ -112,7 +113,7 @@ export function DashboardPage() {
         },
         {
           title: "Near Expiry",
-          value: `${summary.expiry.nearExpiryBatches} batches`,
+          value: formatCount(summary.expiry.nearExpiryBatches, "batch", "batches"),
           detail:
             summary.expiry.expiredBatches > 0
               ? `${summary.expiry.expiredBatches} expired batches also need attention`
@@ -148,14 +149,22 @@ export function DashboardPage() {
               : ("warning" as const)
         },
         {
-          label: "Tracked active products",
-          value: String(summary.inventory.trackedItems),
+          label: "Catalog products",
+          value: String(summary.inventory.catalogItems),
           variant: "info" as const
         },
         {
-          label: "Out of stock",
-          value: String(summary.inventory.outOfStockItems),
-          variant: summary.inventory.outOfStockItems > 0 ? ("warning" as const) : ("success" as const)
+          label: "Inventory records",
+          value: String(summary.inventory.trackedItems),
+          variant:
+            summary.inventory.unlinkedCatalogItems === 0
+              ? ("success" as const)
+              : ("warning" as const)
+        },
+        {
+          label: "Available products",
+          value: String(summary.inventory.availableItems),
+          variant: "info" as const
         },
         {
           label: "Sales today",
@@ -207,12 +216,15 @@ export function DashboardPage() {
                 <div className="grid h-60 grid-cols-12 items-end gap-2 rounded-md border border-slate-200 bg-slate-50 p-4">
                   {summary.sales.activity.map((bucket) => {
                     const amount = Number(bucket.totalAmount);
-                    const height = amount > 0 ? Math.max(8, Math.round((amount / activityMax) * 100)) : 4;
+                    const height =
+                      amount > 0 ? Math.max(8, Math.round((amount / activityMax) * 100)) : 4;
 
                     return (
                       <div
                         aria-label={`${bucket.label}: ${formatCurrency(bucket.totalAmount)}`}
-                        className={amount > 0 ? "rounded-sm bg-emerald-600" : "rounded-sm bg-slate-200"}
+                        className={
+                          amount > 0 ? "rounded-sm bg-emerald-600" : "rounded-sm bg-slate-200"
+                        }
                         key={bucket.label}
                         style={{ height: `${height}%` }}
                         title={`${bucket.label}: ${formatCurrency(bucket.totalAmount)} • ${bucket.saleCount} sale${bucket.saleCount === 1 ? "" : "s"}`}

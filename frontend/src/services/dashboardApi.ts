@@ -32,10 +32,13 @@ export type DashboardSummary = {
     todayAmount: string;
   };
   inventory: {
+    availableItems: number;
+    catalogItems: number;
     inStockItems: number;
     lowStockItems: number;
     outOfStockItems: number;
     trackedItems: number;
+    unavailableItems: number;
     unlinkedCatalogItems: number;
   };
   expiry: {
