@@ -13,7 +13,8 @@ import {
   type SarimaSourceIdentity
 } from "../src/modules/catalog/sarima-source-manifest.js";
 
-const P132_FILE_ID = "17Zwte8tmtuuTy-Nlr2GnL2ciBPxdP5gA";
+const P132_FILE_ID = "17ZwteNRUJ1ShzSyU3YNoSDb1xOJTsJzZ";
+const P132_FOLDER_ID = "1NY76Nb4AlGqXcpW5B99_STKlN1hhX4M6";
 
 function p132Source(): SarimaSourceIdentity {
   return {
@@ -30,7 +31,7 @@ function p132Image(overrides: Partial<DriveImageMetadata> = {}) {
     {
       fileId: P132_FILE_ID,
       filename: "athroom Tissue Roll  Tissue Pack.jpg",
-      folderId: "1NY8q65dwiXlJli1FEEdViGQEAGUxEHHS",
+      folderId: P132_FOLDER_ID,
       folderName: "Tissue & Cotton",
       mimeType: "image/jpeg",
       ...overrides
@@ -60,7 +61,7 @@ test("builds a current-catalog execution target only after reviewed reconciliati
       filename: "athroom Tissue Roll  Tissue Pack.jpg",
       mimeType: "image/jpeg",
       extension: ".jpg",
-      folderId: "1NY8q65dwiXlJli1FEEdViGQEAGUxEHHS",
+      folderId: P132_FOLDER_ID,
       folderName: "Tissue & Cotton"
     }
   );
@@ -89,7 +90,7 @@ test("refuses non-image Drive assets even when reconciliation input is forged as
     {
       fileId: P132_FILE_ID,
       filename: "Tissue and Cotton.pdf",
-      folderId: "1NY8q65dwiXlJli1FEEdViGQEAGUxEHHS",
+      folderId: P132_FOLDER_ID,
       folderName: "Tissue & Cotton",
       mimeType: "application/pdf",
       extension: ".pdf",
