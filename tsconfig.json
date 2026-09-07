@@ -3,7 +3,6 @@
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "allowJs": true,
-    "baseUrl": ".",
     "checkJs": false,
     "jsx": "react-jsx",
     "noEmit": true,
