@@ -59,6 +59,42 @@ const essentialShelfItems = [
     category: "Kitchen & Dining",
     imageUrl: "/images/discover/essentials/kitchen-dining-retail-display.webp",
     slug: "kitchen-dining"
+  },
+  {
+    alt: "Packaged crackers, chips, and snacks arranged on a grocery shelf",
+    category: "Snacks & Confectionery",
+    imageUrl: "/images/discover/essentials/snacks-retail-display.webp",
+    slug: "snacks-confectionery"
+  },
+  {
+    alt: "Baking ingredients arranged for dessert preparation",
+    category: "Baking & Dessert",
+    imageUrl: "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788803114/baking-dessert-pexels-8456734.webp",
+    slug: "baking-dessert"
+  },
+  {
+    alt: "Packaged hair and personal care products on retail shelves",
+    category: "Personal Care & Hygiene",
+    imageUrl: "/images/discover/essentials/personal-care-retail-display.webp",
+    slug: "personal-care-hygiene"
+  },
+  {
+    alt: "Bottled and canned beverages arranged on a grocery shelf",
+    category: "Juice, Tea, Soda & Water",
+    imageUrl: "/images/discover/essentials/beverages-retail-display.webp",
+    slug: "juice-tea-soda-water"
+  },
+  {
+    alt: "Cooking spices and condiments arranged on a kitchen table",
+    category: "Condiments & Cooking",
+    imageUrl: "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788803157/condiments-cooking-pexels-531446.webp",
+    slug: "condiments-cooking"
+  },
+  {
+    alt: "Coffee, milk, and coffee beans arranged for serving",
+    category: "Coffee & Milk",
+    imageUrl: "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788803185/coffee-milk-pexels-13520599.webp",
+    slug: "coffee-milk"
   }
 ] as const satisfies readonly StorefrontCategoryPresentation[];
 
