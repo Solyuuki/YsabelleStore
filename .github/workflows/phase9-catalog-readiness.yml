@@ -7,6 +7,7 @@ on:
       - "m1/v0.9/feat/catalog-data-readiness"
     paths:
       - ".github/workflows/phase9-catalog-readiness.yml"
+      - "package.json"
       - "backend/src/modules/catalog/**"
       - "backend/src/scripts/extractSarimaSourceManifest.ts"
       - "backend/src/scripts/buildDriveImageManifest.ts"
@@ -33,6 +34,7 @@ on:
       - "backend/src/scripts/executeCatalogPromotionCategoryMutationPlan.ts"
       - "backend/src/scripts/executeTestFixtureCleanup.ts"
       - "backend/src/scripts/executeKnownNonProductionCatalogCleanup.ts"
+      - "backend/src/scripts/cleanupStorefrontCategoryTaxonomy.ts"
       - "backend/src/controllers/productController.ts"
       - "backend/src/services/catalogQualityPolicy.ts"
       - "backend/src/services/storefrontService.ts"
@@ -47,6 +49,8 @@ on:
       - "backend/test/generate-catalog-image-source-selection.test.ts"
       - "backend/test/catalog-quality-filter.test.ts"
       - "backend/test/catalog-presentation-storefront-policy.test.ts"
+      - "backend/test/storefront-category-taxonomy.test.ts"
+      - "backend/test/storefront-category-taxonomy-cleanup.test.ts"
       - "backend/test/catalog-approved-barcode-audit.test.ts"
       - "backend/test/catalog-approved-barcode-policy.test.ts"
       - "backend/test/catalog-approved-import-demotion.test.ts"
@@ -143,6 +147,8 @@ jobs:
           backend/test/generate-catalog-image-source-selection.test.ts
           backend/test/catalog-quality-filter.test.ts
           backend/test/catalog-presentation-storefront-policy.test.ts
+          backend/test/storefront-category-taxonomy.test.ts
+          backend/test/storefront-category-taxonomy-cleanup.test.ts
           backend/test/catalog-approved-barcode-audit.test.ts
           backend/test/catalog-approved-barcode-policy.test.ts
           backend/test/catalog-approved-import-demotion.test.ts
