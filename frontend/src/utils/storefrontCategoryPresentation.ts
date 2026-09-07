@@ -91,9 +91,9 @@ const essentialShelfItems = [
     slug: "condiments-cooking"
   },
   {
-    alt: "Packaged coffee products arranged across supermarket shelves",
+    alt: "Coffee maker, milk jug, coffee cup, and roasted coffee beans on a dark studio surface",
     category: "Coffee & Milk",
-    imageUrl: "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788805225/coffee-milk-pexels-8766369.webp",
+    imageUrl: "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788805764/coffee-milk-premium-pexels-16444396.webp",
     slug: "coffee-milk"
   }
 ] as const satisfies readonly StorefrontCategoryPresentation[];
