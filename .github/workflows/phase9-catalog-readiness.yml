@@ -35,6 +35,7 @@ on:
       - "backend/src/scripts/executeKnownNonProductionCatalogCleanup.ts"
       - "backend/src/controllers/productController.ts"
       - "backend/src/services/catalogQualityPolicy.ts"
+      - "backend/src/services/storefrontService.ts"
       - "backend/src/services/productService.ts"
       - "backend/src/validators/product.validators.ts"
       - "backend/test/sarima-source-manifest.test.ts"
@@ -45,6 +46,7 @@ on:
       - "backend/test/catalog-image-source-selection.test.ts"
       - "backend/test/generate-catalog-image-source-selection.test.ts"
       - "backend/test/catalog-quality-filter.test.ts"
+      - "backend/test/catalog-presentation-storefront-policy.test.ts"
       - "backend/test/catalog-approved-barcode-audit.test.ts"
       - "backend/test/catalog-approved-barcode-policy.test.ts"
       - "backend/test/catalog-approved-import-demotion.test.ts"
@@ -140,6 +142,7 @@ jobs:
           backend/test/catalog-image-source-selection.test.ts
           backend/test/generate-catalog-image-source-selection.test.ts
           backend/test/catalog-quality-filter.test.ts
+          backend/test/catalog-presentation-storefront-policy.test.ts
           backend/test/catalog-approved-barcode-audit.test.ts
           backend/test/catalog-approved-barcode-policy.test.ts
           backend/test/catalog-approved-import-demotion.test.ts
