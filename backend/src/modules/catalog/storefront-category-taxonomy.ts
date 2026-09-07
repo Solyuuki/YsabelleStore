@@ -1,4 +1,10 @@
 export const RESTRICTED_ALCOHOL_SOURCE_CATEGORY = "Beverages / Alcohol";
+export const RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS = ["P254", "P255"] as const;
+
+export const RETIRED_RESTRICTED_CATEGORY = {
+  name: "Restricted / Retired",
+  slug: "restricted-retired"
+} as const;
 
 export const STOREFRONT_CATEGORY_TAXONOMY = [
   {
