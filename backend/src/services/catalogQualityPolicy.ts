@@ -14,6 +14,14 @@ const unresolvedCatalogImageSourceIds = UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTIT
   (row) => row.productCode
 );
 
+const unresolvedCatalogImageExclusionWhere = {
+  NOT: {
+    sarimaSourceMapping: {
+      is: { sourceProductId: { in: unresolvedCatalogImageSourceIds } }
+    }
+  }
+} satisfies Prisma.ProductWhereInput;
+
 export const APPROVED_STOREFRONT_PRODUCT_IMAGE_PREFIX = "/images/products/";
 
 export function assertApprovedProductBarcode(input: {
@@ -71,11 +79,7 @@ export const approvedStorefrontProductCoreWhere = {
     none: { status: { in: [...unresolvedDuplicateStatuses] } }
   },
   isStorefrontVisible: true,
-  NOT: {
-    sarimaSourceMapping: {
-      is: { sourceProductId: { in: unresolvedCatalogImageSourceIds } }
-    }
-  },
+  ...unresolvedCatalogImageExclusionWhere,
   recordSource: { not: CatalogRecordSource.TEST_FIXTURE },
   sellingPrice: { gt: 0 },
   sourceMapping: { is: null },
@@ -96,6 +100,52 @@ export const temporaryImageReadyStorefrontProductWhere = {
   AND: [approvedStorefrontProductCoreWhere, approvedStorefrontProductImageWhere]
 } satisfies Prisma.ProductWhereInput;
 
+export function isPresentationCatalogEnabled(environment: NodeJS.ProcessEnv = process.env) {
+  return environment.YSABELLE_PRESENTATION_CATALOG === "1";
+}
+
+export const presentationStorefrontCategoryWhere = {
+  dataQualityStatus: {
+    not: CatalogQualityStatus.REJECTED
+  },
+  isActive: true,
+  recordSource: {
+    not: CatalogRecordSource.TEST_FIXTURE
+  }
+} satisfies Prisma.CategoryWhereInput;
+
+export const presentationStorefrontProductWhere = {
+  dataQualityStatus: {
+    not: CatalogQualityStatus.REJECTED
+  },
+  recordSource: {
+    not: CatalogRecordSource.TEST_FIXTURE
+  },
+  sellingPrice: {
+    gt: 0
+  },
+  sarimaSourceMapping: {
+    isNot: null
+  },
+  ...unresolvedCatalogImageExclusionWhere
+} satisfies Prisma.ProductWhereInput;
+
+export function storefrontCategoryWhere(
+  presentationMode = isPresentationCatalogEnabled()
+): Prisma.CategoryWhereInput {
+  return presentationMode ? presentationStorefrontCategoryWhere : approvedStorefrontCategoryWhere;
+}
+
+export function storefrontCategoryProductWhere(
+  presentationMode = isPresentationCatalogEnabled()
+): Prisma.ProductWhereInput {
+  return presentationMode
+    ? {
+        OR: [temporaryImageReadyStorefrontProductWhere, presentationStorefrontProductWhere]
+      }
+    : temporaryImageReadyStorefrontProductWhere;
+}
+
 export const operationalCatalogProductWhere = {
   dataQualityStatus: { not: CatalogQualityStatus.REJECTED },
   recordSource: { not: CatalogRecordSource.TEST_FIXTURE },
@@ -103,12 +153,17 @@ export const operationalCatalogProductWhere = {
 } satisfies Prisma.ProductWhereInput;
 
 export function storefrontProductWhere(
-  additionalWhere: Prisma.ProductWhereInput = {}
+  additionalWhere: Prisma.ProductWhereInput = {},
+  presentationMode = isPresentationCatalogEnabled()
 ): Prisma.ProductWhereInput {
   return {
     AND: [
-      temporaryImageReadyStorefrontProductWhere,
-      { category: { is: approvedStorefrontCategoryWhere } },
+      storefrontCategoryProductWhere(presentationMode),
+      {
+        category: {
+          is: storefrontCategoryWhere(presentationMode)
+        }
+      },
       additionalWhere
     ]
   };
