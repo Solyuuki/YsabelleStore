@@ -11,9 +11,10 @@ import type {
   StorefrontProductQuery
 } from "../validators/storefront.validators.js";
 import {
-  approvedStorefrontCategoryWhere,
-  storefrontProductWhere,
-  temporaryImageReadyStorefrontProductWhere
+  isPresentationCatalogEnabled,
+  storefrontCategoryProductWhere,
+  storefrontCategoryWhere,
+  storefrontProductWhere
 } from "./catalogQualityPolicy.js";
 import { getSellableStockQuantity } from "./stockDomainService.js";
 
@@ -128,13 +129,14 @@ async function serializeStorefrontProducts(products: StorefrontProductRecord[]) 
 }
 
 export async function listStorefrontCategories() {
+  const presentationMode = isPresentationCatalogEnabled();
+  const categoryWhere = storefrontCategoryWhere(presentationMode);
+  const categoryProductWhere = storefrontCategoryProductWhere(presentationMode);
+
   const categories = await prisma.category.findMany({
     orderBy: { name: "asc" },
     where: {
-      AND: [
-        approvedStorefrontCategoryWhere,
-        { products: { some: temporaryImageReadyStorefrontProductWhere } }
-      ]
+      AND: [categoryWhere, { products: { some: categoryProductWhere } }]
     },
     select: {
       id: true,
@@ -145,10 +147,10 @@ export async function listStorefrontCategories() {
         orderBy: [{ name: "asc" }, { id: "asc" }],
         select: { id: true, imageUrl: true, name: true },
         take: 3,
-        where: temporaryImageReadyStorefrontProductWhere
+        where: categoryProductWhere
       },
       _count: {
-        select: { products: { where: temporaryImageReadyStorefrontProductWhere } }
+        select: { products: { where: categoryProductWhere } }
       }
     }
   });
