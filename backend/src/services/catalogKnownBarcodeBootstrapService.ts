@@ -1,5 +1,15 @@
 import { prisma } from "../database/prismaClient.js";
 
+type VerifiedBarcodeEntry = {
+  id: string;
+  sku: string;
+  name: string;
+  sarimaSourceProductId: string;
+  barcode: string;
+  evidence: string;
+  sources?: readonly string[];
+};
+
 const VERIFIED_BARCODES = [
   {
     id: "prd_sarima_p022_gardenia_white_bread_600g",
@@ -39,8 +49,11 @@ const VERIFIED_BARCODES = [
     name: "Ligo Sardines in Tomato Sauce Chili Added",
     sarimaSourceProductId: "P144",
     barcode: "072810293606",
-    evidence:
-      "verified exact 155g chili-added retail unit from CEE distributor catalog and independent retailer listings"
+    evidence: "verified exact 155g chili-added Ligo retail unit",
+    sources: [
+      "https://pinoyfood.de/shop/canned-jarred-food/ligo-sardines-in-tomato-sauce-chili-added-155g/",
+      "https://www.kabayanfilipinostore.com/products/ligo-sardines-in-tomato-sauce-chili-added-155g"
+    ]
   },
   {
     id: "prd_sarima_p217_wilkins_500ml",
@@ -64,7 +77,10 @@ const VERIFIED_BARCODES = [
     name: "Pocari Sweat 500mL",
     sarimaSourceProductId: "P237",
     barcode: "8997035563414",
-    evidence: "verified exact Pocari Sweat 500mL bottle retail unit from multiple retailer listings"
+    evidence: "verified exact Pocari Sweat 500mL bottle retail unit",
+    sources: [
+      "https://repository.unhas.ac.id/11033/3/A021171305_skripsi_05-11-2021%20Dapus-lamp.pdf"
+    ]
   },
   {
     id: "prd_sarima_p241_del_monte_tomato_sauce_250g",
@@ -80,8 +96,8 @@ const VERIFIED_BARCODES = [
     name: "Coca-Cola 1.5L",
     sarimaSourceProductId: "P261",
     barcode: "4801981116072",
-    evidence:
-      "verified Philippine 1.5L Coca-Cola Original Taste Less Sugar retail unit from Ever Supermarket and independent local retailer listings"
+    evidence: "verified Philippine Coca-Cola Original Taste Less Sugar PET 1.5L retail unit",
+    sources: ["https://ever.ph/pages/shop-and-win-christmas-papremyo"]
   },
   {
     id: "prd_sarima_p370_piattos_cheese_85g",
@@ -99,19 +115,64 @@ const VERIFIED_BARCODES = [
     barcode: "4800361393683",
     evidence: "verified exact Nescafe Classic 80g retail unit from Philippine retailer listings"
   }
-] as const;
+] as const satisfies readonly VerifiedBarcodeEntry[];
 
 export type CatalogKnownBarcodeBootstrapResult = {
   alreadyPresent: number;
+  blocked: Array<{ code: string; sku: string; message: string }>;
   missingProducts: number;
   updated: number;
 };
 
+class KnownBarcodeBlocker extends Error {
+  constructor(
+    public readonly code: string,
+    message: string
+  ) {
+    super(message);
+    this.name = "KnownBarcodeBlocker";
+  }
+}
+
 export async function ensureKnownCatalogBarcodes(): Promise<CatalogKnownBarcodeBootstrapResult> {
+  let alreadyPresent = 0;
+  let missingProducts = 0;
+  let updated = 0;
+  const blocked: CatalogKnownBarcodeBootstrapResult["blocked"] = [];
+
+  for (const entry of VERIFIED_BARCODES) {
+    try {
+      const outcome = await applyKnownBarcode(entry);
+
+      if (outcome === "ALREADY_PRESENT") alreadyPresent += 1;
+      if (outcome === "MISSING_PRODUCT") missingProducts += 1;
+      if (outcome === "UPDATED") updated += 1;
+    } catch (error) {
+      if (error instanceof KnownBarcodeBlocker) {
+        blocked.push({ code: error.code, sku: entry.sku, message: error.message });
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  return { alreadyPresent, blocked, missingProducts, updated };
+}
+
+async function applyKnownBarcode(
+  entry: VerifiedBarcodeEntry
+): Promise<"ALREADY_PRESENT" | "MISSING_PRODUCT" | "UPDATED"> {
+  if (!isValidGtin(entry.barcode)) {
+    throw new KnownBarcodeBlocker(
+      "INVALID_GTIN",
+      `${entry.sku} verified barcode failed the GS1 check-digit validation.`
+    );
+  }
+
   return prisma.$transaction(async (tx) => {
-    const ids = VERIFIED_BARCODES.map((entry) => entry.id);
-    const rows = await tx.product.findMany({
-      where: { id: { in: ids } },
+    const row = await tx.product.findUnique({
+      where: { id: entry.id },
       select: {
         id: true,
         sku: true,
@@ -121,93 +182,96 @@ export async function ensureKnownCatalogBarcodes(): Promise<CatalogKnownBarcodeB
         sarimaSourceMapping: { select: { sourceProductId: true } }
       }
     });
-    const rowById = new Map(rows.map((row) => [row.id, row]));
 
-    let alreadyPresent = 0;
-    let missingProducts = 0;
-    let updated = 0;
+    if (!row) return "MISSING_PRODUCT";
 
-    for (const entry of VERIFIED_BARCODES) {
-      const row = rowById.get(entry.id);
-
-      if (!row) {
-        missingProducts += 1;
-        continue;
-      }
-
-      if (
-        row.sku !== entry.sku ||
-        row.name !== entry.name ||
-        row.recordSource !== "IMPORT" ||
-        row.sarimaSourceMapping?.sourceProductId !== entry.sarimaSourceProductId
-      ) {
-        throw new Error(
-          `CATALOG_KNOWN_BARCODE_IDENTITY_MISMATCH: ${entry.id} no longer matches the verified catalog identity.`
-        );
-      }
-
-      if (row.barcode === entry.barcode) {
-        alreadyPresent += 1;
-        continue;
-      }
-
-      if (row.barcode !== null) {
-        throw new Error(
-          `CATALOG_KNOWN_BARCODE_CONFLICT: ${entry.id} already has a different barcode (${row.barcode}).`
-        );
-      }
-
-      const collision = await tx.product.findFirst({
-        where: {
-          barcode: entry.barcode,
-          id: { not: entry.id }
-        },
-        select: { id: true, sku: true }
-      });
-
-      if (collision) {
-        throw new Error(
-          `CATALOG_KNOWN_BARCODE_COLLISION: ${entry.barcode} is already assigned to ${collision.sku} (${collision.id}).`
-        );
-      }
-
-      const result = await tx.product.updateMany({
-        where: {
-          id: entry.id,
-          sku: entry.sku,
-          barcode: null,
-          recordSource: "IMPORT"
-        },
-        data: { barcode: entry.barcode }
-      });
-
-      if (result.count !== 1) {
-        throw new Error(
-          `CATALOG_KNOWN_BARCODE_WRITE_MISMATCH: ${entry.id} barcode update affected ${result.count} rows.`
-        );
-      }
-
-      await tx.catalogAuditLog.create({
-        data: {
-          action: "VERIFIED_BARCODE_BACKFILL",
-          automated: true,
-          actor: "backend-startup",
-          canonicalProductId: entry.id,
-          entityId: entry.id,
-          entityType: "PRODUCT",
-          evidence: {
-            barcode: entry.barcode,
-            evidence: entry.evidence,
-            sarimaSourceProductId: entry.sarimaSourceProductId,
-            sku: entry.sku
-          },
-          reason: "Backfilled a verified barcode onto an exact catalog identity with no existing barcode."
-        }
-      });
-
-      updated += 1;
+    if (
+      row.sku !== entry.sku ||
+      row.name !== entry.name ||
+      row.recordSource !== "IMPORT" ||
+      row.sarimaSourceMapping?.sourceProductId !== entry.sarimaSourceProductId
+    ) {
+      throw new KnownBarcodeBlocker(
+        "IDENTITY_MISMATCH",
+        `${entry.sku} no longer matches the verified Product/SARIMA identity.`
+      );
     }
 
-    return { alreadyPresent, missingProducts, updated };
+    if (row.barcode === entry.barcode) return "ALREADY_PRESENT";
+
+    if (row.barcode !== null) {
+      throw new KnownBarcodeBlocker(
+        "EXISTING_BARCODE_CONFLICT",
+        `${entry.sku} already has a different barcode (${row.barcode}).`
+      );
+    }
+
+    const collision = await tx.product.findFirst({
+      where: {
+        barcode: entry.barcode,
+        id: { not: entry.id }
+      },
+      select: { id: true, sku: true }
+    });
+
+    if (collision) {
+      throw new KnownBarcodeBlocker(
+        "BARCODE_COLLISION",
+        `${entry.barcode} is already assigned to ${collision.sku} (${collision.id}).`
+      );
+    }
+
+    const result = await tx.product.updateMany({
+      where: {
+        id: entry.id,
+        sku: entry.sku,
+        barcode: null,
+        recordSource: "IMPORT"
+      },
+      data: { barcode: entry.barcode }
+    });
+
+    if (result.count !== 1) {
+      throw new KnownBarcodeBlocker(
+        "WRITE_MISMATCH",
+        `${entry.sku} barcode update affected ${result.count} rows.`
+      );
+    }
+
+    await tx.catalogAuditLog.create({
+      data: {
+        action: "VERIFIED_BARCODE_BACKFILL",
+        automated: true,
+        actor: "backend-startup",
+        canonicalProductId: entry.id,
+        entityId: entry.id,
+        entityType: "PRODUCT",
+        evidence: {
+          barcode: entry.barcode,
+          evidence: entry.evidence,
+          sarimaSourceProductId: entry.sarimaSourceProductId,
+          sku: entry.sku,
+          sources: entry.sources ? [...entry.sources] : []
+        },
+        reason: "Backfilled a verified barcode onto an exact catalog identity with no existing barcode."
+      }
+    });
+
+    return "UPDATED";
   });
+}
+
+export function isValidGtin(value: string): boolean {
+  if (!/^\d+$/.test(value) || ![8, 12, 13, 14].includes(value.length)) return false;
+
+  const digits = value.split("").map(Number);
+  const checkDigit = digits.pop();
+  if (checkDigit === undefined) return false;
+
+  const weightedSum = digits
+    .reverse()
+    .reduce((sum, digit, index) => sum + digit * (index % 2 === 0 ? 3 : 1), 0);
+  const expectedCheckDigit = (10 - (weightedSum % 10)) % 10;
+
+  return expectedCheckDigit === checkDigit;
 }
