@@ -30,8 +30,14 @@ const server = app.listen(env.PORT, () => {
 
   void ensureKnownCatalogBarcodes()
     .then((result) => {
-      if (result.updated > 0) {
-        console.info(`[catalog-barcode-bootstrap] Backfilled ${result.updated} verified barcode(s).`);
+      console.info(
+        `[catalog-barcode-bootstrap] updated=${result.updated} alreadyPresent=${result.alreadyPresent} missingProducts=${result.missingProducts} blocked=${result.blocked.length}`
+      );
+
+      for (const blocker of result.blocked) {
+        console.warn(
+          `[catalog-barcode-bootstrap] ${blocker.sku} blocked (${blocker.code}): ${blocker.message}`
+        );
       }
     })
     .catch((error) => {
