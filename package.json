@@ -27,6 +27,8 @@
     "catalog:audit": "node --env-file=.env scripts/catalog-quality-audit.mjs",
     "catalog:clean": "node --env-file=.env scripts/catalog-clean.mjs",
     "catalog:clean:apply": "node --env-file=.env scripts/catalog-clean.mjs --apply",
+    "catalog:taxonomy:clean": "tsx backend/src/scripts/cleanupStorefrontCategoryTaxonomy.ts",
+    "catalog:taxonomy:clean:apply": "tsx backend/src/scripts/cleanupStorefrontCategoryTaxonomy.ts --apply-storefront-taxonomy-cleanup",
     "sprint6:fixtures:clean": "node --env-file=.env scripts/sprint6-backfill-fixture-cleanup.mjs",
     "sprint6:fixtures:clean:apply": "node --env-file=.env scripts/sprint6-backfill-fixture-cleanup.mjs --apply",
     "customer-order-fixtures:clean": "node --env-file=.env scripts/customer-order-fixture-cleanup.mjs",
