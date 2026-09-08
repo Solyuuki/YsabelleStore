@@ -15,7 +15,8 @@ import { PosPage } from "@/pages/PosPage";
 import { SalesPage } from "@/pages/SalesPage";
 import { ForecastPage } from "@/pages/ForecastPage";
 import { HistoricalSalesPage } from "@/pages/HistoricalSalesPage";
-import { ProtectedPage } from "@/pages/ProtectedPage";
+import { ReportsPage } from "@/pages/ReportsPage";
+import { SettingsPage } from "@/pages/SettingsPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
 import "@/styles/auth-brand.css";
@@ -274,20 +275,13 @@ function renderRoute(
       return <ForecastPage />;
     case "/historical-sales":
       return <HistoricalSalesPage />;
+    case "/reports":
+      return <ReportsPage />;
     case "/users":
       return <UserManagementPage error={error} onRegister={register} user={user} />;
+    case "/settings":
+      return <SettingsPage />;
     default:
-      if (route.protected) {
-        return (
-          <ProtectedPage
-            description={route.description}
-            hasOwnerAccess={user?.role === "OWNER"}
-            icon={route.icon}
-            title={route.label}
-          />
-        );
-      }
-
       return <NotFoundPage onNavigate={navigate} />;
   }
 }
