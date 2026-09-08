@@ -7,6 +7,7 @@ import { StatCard } from "@/components/shared/StatCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchDashboardSummary, type DashboardSummary } from "@/services/dashboardApi";
+import { getWorkstationPreferences } from "@/services/workstationPreferences";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
@@ -27,6 +28,7 @@ export function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [preferences] = useState(getWorkstationPreferences);
 
   useEffect(() => {
     let active = true;
@@ -50,16 +52,29 @@ export function DashboardPage() {
     }
 
     void loadSummary(true);
-    const intervalId = window.setInterval(() => void loadSummary(false), 30_000);
+    const intervalId =
+      preferences.dashboardRefreshSeconds > 0
+        ? window.setInterval(
+            () => void loadSummary(false),
+            preferences.dashboardRefreshSeconds * 1000
+          )
+        : null;
     const handleFocus = () => void loadSummary(false);
-    window.addEventListener("focus", handleFocus);
+
+    if (preferences.refreshDashboardOnFocus) {
+      window.addEventListener("focus", handleFocus);
+    }
 
     return () => {
       active = false;
-      window.clearInterval(intervalId);
-      window.removeEventListener("focus", handleFocus);
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+      }
+      if (preferences.refreshDashboardOnFocus) {
+        window.removeEventListener("focus", handleFocus);
+      }
     };
-  }, []);
+  }, [preferences.dashboardRefreshSeconds, preferences.refreshDashboardOnFocus]);
 
   const forecastStat = summary
     ? summary.forecast.access === "AVAILABLE"
@@ -121,13 +136,17 @@ export function DashboardPage() {
           tone: "warning" as const,
           icon: ChartNoAxesCombined
         },
-        {
-          title: "Forecast Summary",
-          value: forecastStat?.value ?? "Unavailable",
-          detail: forecastStat?.detail ?? "Forecast is not ready",
-          tone: forecastStat?.tone ?? ("info" as const),
-          icon: LineChart
-        }
+        ...(preferences.showForecastSummary
+          ? [
+              {
+                title: "Forecast Summary",
+                value: forecastStat?.value ?? "Unavailable",
+                detail: forecastStat?.detail ?? "Forecast is not ready",
+                tone: forecastStat?.tone ?? ("info" as const),
+                icon: LineChart
+              }
+            ]
+          : [])
       ]
     : [];
 
