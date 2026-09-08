@@ -30,11 +30,25 @@ const authorization = {
       verifiedBarcode: "4800016627262"
     },
     {
+      id: "cmtk4sfpk00u9ib1gqi2s9vbh",
+      sku: "SARIMA-P294",
+      sarimaSourceProductId: "P294",
+      expectedCurrentBarcode: "YSB-SARIMA-P294",
+      verifiedBarcode: "4800016627279"
+    },
+    {
       id: "cmtk4sfps00udib1g7rgqc1d1",
       sku: "SARIMA-P295",
       sarimaSourceProductId: "P295",
       expectedCurrentBarcode: "YSB-SARIMA-P295",
       verifiedBarcode: "4800016628269"
+    },
+    {
+      id: "cmtk4sfq100uhib1g7192iwhy",
+      sku: "SARIMA-P296",
+      sarimaSourceProductId: "P296",
+      expectedCurrentBarcode: "YSB-SARIMA-P296",
+      verifiedBarcode: "4800194117425"
     },
     {
       id: "cmtk4sfqj00upib1ga6p6o0k9",
@@ -49,6 +63,13 @@ const authorization = {
       sarimaSourceProductId: "P300",
       expectedCurrentBarcode: "YSB-SARIMA-P300",
       verifiedBarcode: "4800016625534"
+    },
+    {
+      id: "cmtk4sfrq00v9ib1gji0fipxy",
+      sku: "SARIMA-P303",
+      sarimaSourceProductId: "P303",
+      expectedCurrentBarcode: "YSB-SARIMA-P303",
+      verifiedBarcode: "4800194116466"
     },
     {
       id: "cmtk4sfs100vdib1gq7um2p8c",
