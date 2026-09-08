@@ -40,14 +40,16 @@ export function AppSidebar({
   onToggleSidebar,
   user
 }: AppSidebarProps) {
+  const isOwner = user?.role === "OWNER";
   const mainItems = appRoutes.filter((item) => mainRoutes.includes(item.path));
   const visibleMainItems = mainItems.filter((item) =>
     item.allowedRoles.includes(user?.role ?? "STAFF")
   );
-  const ownerItems = appRoutes.filter(
-    (item) =>
-      ownerRoutesWithUsers.includes(item.path) && item.allowedRoles.includes(user?.role ?? "STAFF")
-  );
+  const ownerItems = isOwner
+    ? appRoutes.filter(
+        (item) => ownerRoutesWithUsers.includes(item.path) && item.allowedRoles.includes("OWNER")
+      )
+    : [];
 
   return (
     <aside
@@ -96,13 +98,15 @@ export function AppSidebar({
           title="MAIN"
           onNavigate={onNavigate}
         />
-        <SidebarSection
-          activePath={activePath}
-          collapsed={collapsed}
-          items={ownerItems}
-          title="OWNER AREA"
-          onNavigate={onNavigate}
-        />
+        {isOwner && ownerItems.length > 0 ? (
+          <SidebarSection
+            activePath={activePath}
+            collapsed={collapsed}
+            items={ownerItems}
+            title="OWNER AREA"
+            onNavigate={onNavigate}
+          />
+        ) : null}
       </nav>
 
       <div className="border-t border-violet-200/45 p-3">
