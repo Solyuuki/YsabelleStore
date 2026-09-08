@@ -93,7 +93,7 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/reports",
     label: "Reports",
-    description: "Protected reporting module shell",
+    description: "Live sales, inventory, and expiry reporting",
     icon: FileBarChart,
     allowedRoles: ["OWNER"],
     protected: true
@@ -108,7 +108,7 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/settings",
     label: "Settings",
-    description: "Protected system settings shell",
+    description: "Owner workstation preferences and system readiness",
     icon: Settings,
     allowedRoles: ["OWNER"],
     protected: true
