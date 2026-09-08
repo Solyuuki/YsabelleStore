@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { createApp } from "./app.js";
 import { corsOrigins, databaseTarget, env } from "./config/env.js";
+import { ensureInternalCatalogBarcodes } from "./services/catalogInternalBarcodeBootstrapService.js";
 import { ensureKnownCatalogBarcodes } from "./services/catalogKnownBarcodeBootstrapService.js";
 import { ensureCatalogInventoryShells } from "./services/inventoryBootstrapService.js";
 
@@ -29,7 +30,7 @@ const server = app.listen(env.PORT, () => {
     });
 
   void ensureKnownCatalogBarcodes()
-    .then((result) => {
+    .then(async (result) => {
       console.info(
         `[catalog-barcode-bootstrap] updated=${result.updated} alreadyPresent=${result.alreadyPresent} missingProducts=${result.missingProducts} blocked=${result.blocked.length}`
       );
@@ -39,9 +40,20 @@ const server = app.listen(env.PORT, () => {
           `[catalog-barcode-bootstrap] ${blocker.sku} blocked (${blocker.code}): ${blocker.message}`
         );
       }
+
+      const internalResult = await ensureInternalCatalogBarcodes();
+      console.info(
+        `[catalog-internal-barcode-bootstrap] updated=${internalResult.updated} alreadyPresent=${internalResult.alreadyPresent} blocked=${internalResult.blocked.length}`
+      );
+
+      for (const blocker of internalResult.blocked) {
+        console.warn(
+          `[catalog-internal-barcode-bootstrap] ${blocker.sku} blocked (${blocker.code}): ${blocker.message}`
+        );
+      }
     })
     .catch((error) => {
-      console.error("[catalog-barcode-bootstrap] Unable to apply verified barcode backfill.", error);
+      console.error("[catalog-barcode-bootstrap] Unable to apply catalog barcode bootstrap.", error);
     });
 });
 
