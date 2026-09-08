@@ -45,7 +45,9 @@ function hasValidGs1CheckDigit(value: string): boolean {
   let weight = 3;
 
   for (let index = digits.length - 1; index >= 0; index -= 1) {
-    sum += digits[index] * weight;
+    const digit = digits[index];
+    if (digit === undefined) return false;
+    sum += digit * weight;
     weight = weight === 3 ? 1 : 3;
   }
 
