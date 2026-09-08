@@ -65,15 +65,20 @@ export function ReportsPage() {
     };
   }, []);
 
-  const recentGrossSales = useMemo(
-    () => sales.reduce((sum, sale) => sum + Number(sale.totalAmount), 0),
+  const completedSales = useMemo(
+    () => sales.filter((sale) => sale.status === "COMPLETED"),
     [sales]
+  );
+  const recentGrossSales = useMemo(
+    () => completedSales.reduce((sum, sale) => sum + Number(sale.totalAmount), 0),
+    [completedSales]
   );
   const recentUnits = useMemo(
-    () => sales.reduce((sum, sale) => sum + sale.itemCount, 0),
-    [sales]
+    () => completedSales.reduce((sum, sale) => sum + sale.itemCount, 0),
+    [completedSales]
   );
-  const averageReceipt = sales.length > 0 ? recentGrossSales / sales.length : 0;
+  const averageReceipt =
+    completedSales.length > 0 ? recentGrossSales / completedSales.length : 0;
 
   const stats = summary
     ? [
@@ -87,7 +92,7 @@ export function ReportsPage() {
         {
           title: "Recent gross",
           value: currency(recentGrossSales),
-          detail: `Across the latest ${sales.length} persisted receipt${sales.length === 1 ? "" : "s"}`,
+          detail: `Across ${completedSales.length} completed receipt${completedSales.length === 1 ? "" : "s"} in the latest 50 records`,
           tone: "success" as const,
           icon: CalendarClock
         },
@@ -151,12 +156,12 @@ export function ReportsPage() {
                 <CardTitle>Recent receipt metrics</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <MetricRow label="Receipts analyzed" value={sales.length.toLocaleString()} />
+                <MetricRow label="Completed receipts analyzed" value={completedSales.length.toLocaleString()} />
                 <MetricRow label="Units sold" value={recentUnits.toLocaleString()} />
                 <MetricRow label="Gross sales" value={currency(recentGrossSales)} />
                 <MetricRow label="Average receipt" value={currency(averageReceipt)} />
                 <p className="pt-2 text-xs leading-5 text-slate-500">
-                  This section uses the latest 50 persisted receipts, not a full historical accounting period.
+                  Metrics include completed sales only and use up to the latest 50 persisted sale records. This is an operational view, not a full accounting-period statement.
                 </p>
               </CardContent>
             </Card>
