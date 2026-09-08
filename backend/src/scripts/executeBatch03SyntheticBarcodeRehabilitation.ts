@@ -75,15 +75,16 @@ async function resolveAuthorization() {
         row.barcode === target.expectedCurrentBarcode &&
         row.sarimaSourceMapping?.sourceProductId === target.sarimaSourceProductId
     );
+    const match = matches[0];
 
-    if (matches.length !== 1) {
+    if (matches.length !== 1 || !match) {
       throw new Error(
         `BATCH_03_SYNTHETIC_BARCODE_REHABILITATION_IDENTITY_RESOLUTION_MISMATCH: ${target.sku} expected exactly 1 current YSB/SARIMA row, found ${matches.length}`
       );
     }
 
     return {
-      id: matches[0].id,
+      id: match.id,
       ...target
     };
   });
