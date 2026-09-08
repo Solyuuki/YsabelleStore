@@ -1,4 +1,5 @@
 import { prisma } from "../database/prismaClient.js";
+import { isYsabelleInternalBarcode } from "../utils/catalogBarcode.js";
 
 type VerifiedBarcodeEntry = {
   id: string;
@@ -45,9 +46,9 @@ const VERIFIED_BARCODES = [
   },
   {
     id: "prd_sarima_p144_ligo_sardines_155g",
-    sku: "SARIMA-P144",
+    sku: "SARIMA-P014",
     name: "Ligo Sardines in Tomato Sauce Chili Added",
-    sarimaSourceProductId: "P144",
+    sarimaSourceProductId: "P014",
     barcode: "072810293606",
     evidence: "verified exact 155g chili-added Ligo retail unit",
     sources: [
@@ -199,10 +200,11 @@ async function applyKnownBarcode(
 
     if (row.barcode === entry.barcode) return "ALREADY_PRESENT";
 
-    if (row.barcode !== null) {
+    const replacingInternalBarcode = isYsabelleInternalBarcode(row.barcode);
+    if (row.barcode !== null && !replacingInternalBarcode) {
       throw new KnownBarcodeBlocker(
         "EXISTING_BARCODE_CONFLICT",
-        `${entry.sku} already has a different barcode (${row.barcode}).`
+        `${entry.sku} already has a different external barcode (${row.barcode}).`
       );
     }
 
@@ -221,11 +223,12 @@ async function applyKnownBarcode(
       );
     }
 
+    const previousBarcode = row.barcode;
     const result = await tx.product.updateMany({
       where: {
         id: entry.id,
         sku: entry.sku,
-        barcode: null,
+        barcode: row.barcode,
         recordSource: "IMPORT"
       },
       data: { barcode: entry.barcode }
@@ -240,7 +243,9 @@ async function applyKnownBarcode(
 
     await tx.catalogAuditLog.create({
       data: {
-        action: "VERIFIED_BARCODE_BACKFILL",
+        action: replacingInternalBarcode
+          ? "VERIFIED_BARCODE_REPLACED_INTERNAL"
+          : "VERIFIED_BARCODE_BACKFILL",
         automated: true,
         actor: "backend-startup",
         canonicalProductId: entry.id,
@@ -249,11 +254,14 @@ async function applyKnownBarcode(
         evidence: {
           barcode: entry.barcode,
           evidence: entry.evidence,
+          previousBarcode,
           sarimaSourceProductId: entry.sarimaSourceProductId,
           sku: entry.sku,
           sources: entry.sources ? [...entry.sources] : []
         },
-        reason: "Backfilled a verified barcode onto an exact catalog identity with no existing barcode."
+        reason: replacingInternalBarcode
+          ? "Replaced a YsabelleStore internal fallback barcode with a verified external barcode."
+          : "Backfilled a verified barcode onto an exact catalog identity with no existing barcode."
       }
     });
 
