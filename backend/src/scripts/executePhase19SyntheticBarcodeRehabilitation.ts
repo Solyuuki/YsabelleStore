@@ -23,14 +23,14 @@ const authorization = {
     { id: "cmtk4sg4b0119ib1givun6zi7", sku: "SARIMA-P357", sarimaSourceProductId: "P357", expectedCurrentBarcode: "YSB-SARIMA-P357", verifiedBarcode: "4800010042146" },
     { id: "cmtk4sg4v011hib1g60i3c9rp", sku: "SARIMA-P359", sarimaSourceProductId: "P359", expectedCurrentBarcode: "YSB-SARIMA-P359", verifiedBarcode: "4800092113338" },
     { id: "cmtk4sg5t011tib1g7tz23qf2", sku: "SARIMA-P362", sarimaSourceProductId: "P362", expectedCurrentBarcode: "YSB-SARIMA-P362", verifiedBarcode: "4800092116513" },
-    { id: "cmtk4sg680121ib1gsnokt9r8", sku: "SARIMA-P365", sarimaSourceProductId: "P365", expectedCurrentBarcode: "YSB-SARIMA-P365", verifiedBarcode: "4800092115707" }
+    { id: "cmtk4sg680121ib1gsnokt9r8", sku: "SARIMA-P365", sarimaSourceProductId: "P365", expectedCurrentBarcode: "YSB-SARIMA-P365", verifiedBarcode: "4800092115707" },
+    { id: "cmtk4sg77012hib1gs4pj0qnt", sku: "SARIMA-P369", sarimaSourceProductId: "P369", expectedCurrentBarcode: "YSB-SARIMA-P369", verifiedBarcode: "4800016633782" },
+    { id: "cmtk4sg7p012pib1goei3nu04", sku: "SARIMA-P372", sarimaSourceProductId: "P372", expectedCurrentBarcode: "YSB-SARIMA-P372", verifiedBarcode: "4800194115445" }
   ]
 } as const;
 
 async function main() {
-  if (!process.argv.includes(APPLY_FLAG)) {
-    throw new Error(`PHASE_19_SYNTHETIC_BARCODE_REHABILITATION_EXPLICIT_APPLY_REQUIRED: rerun with ${APPLY_FLAG}`);
-  }
+  if (!process.argv.includes(APPLY_FLAG)) throw new Error(`PHASE_19_SYNTHETIC_BARCODE_REHABILITATION_EXPLICIT_APPLY_REQUIRED: rerun with ${APPLY_FLAG}`);
   const result = await executeSyntheticBarcodeRehabilitation({ client: prisma as unknown as SyntheticBarcodeRehabilitationClient, authorization });
   console.log(JSON.stringify(result.summary, null, 2));
 }
