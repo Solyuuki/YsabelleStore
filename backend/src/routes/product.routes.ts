@@ -16,8 +16,9 @@ import {
   updateProductController
 } from "../controllers/productController.js";
 import {
-  getProductImportTemplateController,
+  importGoogleDriveProductsController,
   importProductsController,
+  previewGoogleDriveProductImportController,
   previewProductImportController
 } from "../controllers/productImportController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
@@ -28,7 +29,6 @@ export const productRouter = Router();
 
 productRouter.use(requireAuth);
 
-productRouter.get("/import/template", requireRole("OWNER"), getProductImportTemplateController);
 productRouter.post(
   "/import/preview",
   requireRole("OWNER"),
@@ -40,6 +40,16 @@ productRouter.post(
   requireRole("OWNER"),
   productImportUpload.single("file"),
   importProductsController
+);
+productRouter.post(
+  "/import/google-drive/preview",
+  requireRole("OWNER"),
+  previewGoogleDriveProductImportController
+);
+productRouter.post(
+  "/import/google-drive",
+  requireRole("OWNER"),
+  importGoogleDriveProductsController
 );
 productRouter.get("/categories", requireRole("OWNER", "STAFF"), listCategoriesController);
 productRouter.post("/", requireRole("OWNER"), createProductController);
