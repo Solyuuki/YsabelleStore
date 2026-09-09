@@ -7,7 +7,7 @@ import { AppLayout } from "@/layouts/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { DashboardPage } from "@/pages/DashboardPage";
-import { ProductsPage } from "@/pages/ProductsPage";
+import { ProductsPagePackageImport } from "@/pages/ProductsPagePackageImport";
 import { InventoryPage } from "@/pages/InventoryPage";
 import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -266,7 +266,7 @@ function renderRoute(
     case "/pos":
       return <PosPage />;
     case "/products":
-      return <ProductsPage />;
+      return <ProductsPagePackageImport />;
     case "/inventory":
       return <InventoryPage />;
     case "/sales":
