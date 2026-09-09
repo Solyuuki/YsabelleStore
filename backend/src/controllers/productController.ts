@@ -13,7 +13,6 @@ import {
   updateProductSchema
 } from "../validators/product.validators.js";
 import {
-  changeProductStatus,
   createCategory,
   createProduct,
   listCategories,
@@ -141,29 +140,44 @@ export const changeProductStatusController: RequestHandler = async (request, res
 
     const existingProduct = await getProductById(params.id);
 
+    if (existingProduct.status === "DISCONTINUED") {
+      throw new HttpError(409, "Discontinued products cannot use the availability action.", {
+        code: "INVALID_PRODUCT_STATUS_TRANSITION",
+        details: {
+          currentStatus: existingProduct.status,
+          productId: existingProduct.id,
+          requestedStatus: body.status
+        }
+      });
+    }
+
+    if (existingProduct.status === body.status) {
+      throw new HttpError(409, "The product status changed elsewhere. Refresh and try again.", {
+        code: "INVALID_PRODUCT_STATUS_TRANSITION",
+        details: {
+          currentStatus: existingProduct.status,
+          productId: existingProduct.id,
+          requestedStatus: body.status
+        }
+      });
+    }
+
     if (body.status === "ACTIVE") {
-      if (!existingProduct.operationalReadiness.ready) {
-        const blockerMessage = existingProduct.operationalReadiness.blockers
-          .map((blocker) => blocker.label)
-          .join(", ");
+      assertApprovedProductBarcode({
+        barcode: existingProduct.barcode,
+        dataQualityStatus: "APPROVED",
+        isStorefrontVisible: true
+      });
 
-        throw new HttpError(
-          422,
-          `Cannot set product to Available: ${blockerMessage}.`,
-          {
-            code: "PRODUCT_OPERATIONAL_READINESS_REQUIRED",
-            details: {
-              blockers: existingProduct.operationalReadiness.blockers,
-              productId: existingProduct.id
-            }
-          }
-        );
-      }
+      const product = await updateProduct(params.id, {
+        dataQualityStatus: "APPROVED",
+        isStorefrontVisible: true,
+        status: "ACTIVE"
+      });
 
-      const product = await changeProductStatus(params.id, body);
       response
         .status(200)
-        .json(createSuccessResponse("Product status updated successfully.", product));
+        .json(createSuccessResponse("Product set to Available successfully.", product));
       return;
     }
 
