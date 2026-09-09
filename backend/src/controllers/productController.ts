@@ -1,8 +1,8 @@
 import type { RequestHandler } from "express";
 
 import { assertApprovedProductBarcode } from "../services/catalogQualityPolicy.js";
+import { changeProductAvailability } from "../services/productAvailabilityService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
-import { HttpError } from "../utils/httpError.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import { createCategorySchema } from "../validators/category.validators.js";
 import {
@@ -138,69 +138,13 @@ export const changeProductStatusController: RequestHandler = async (request, res
       code: "INVALID_PRODUCT_AVAILABILITY_REQUEST"
     });
 
-    const existingProduct = await getProductById(params.id);
+    const product = await changeProductAvailability(params.id, body);
+    const message =
+      body.status === "ACTIVE"
+        ? "Product enabled for sale successfully."
+        : "Product disabled from sale successfully.";
 
-    if (existingProduct.status === "DISCONTINUED") {
-      throw new HttpError(409, "Discontinued products cannot use the availability action.", {
-        code: "INVALID_PRODUCT_STATUS_TRANSITION",
-        details: {
-          currentStatus: existingProduct.status,
-          productId: existingProduct.id,
-          requestedStatus: body.status
-        }
-      });
-    }
-
-    if (existingProduct.status === body.status) {
-      throw new HttpError(409, "The product status changed elsewhere. Refresh and try again.", {
-        code: "INVALID_PRODUCT_STATUS_TRANSITION",
-        details: {
-          currentStatus: existingProduct.status,
-          productId: existingProduct.id,
-          requestedStatus: body.status
-        }
-      });
-    }
-
-    if (body.status === "ACTIVE") {
-      assertApprovedProductBarcode({
-        barcode: existingProduct.barcode,
-        dataQualityStatus: "APPROVED",
-        isStorefrontVisible: true
-      });
-
-      const product = await updateProduct(params.id, {
-        dataQualityStatus: "APPROVED",
-        isStorefrontVisible: true,
-        status: "ACTIVE"
-      });
-
-      response
-        .status(200)
-        .json(createSuccessResponse("Product set to Available successfully.", product));
-      return;
-    }
-
-    if (existingProduct.status !== "ACTIVE") {
-      throw new HttpError(409, "Only an Available product can be moved back to review.", {
-        code: "INVALID_PRODUCT_STATUS_TRANSITION",
-        details: {
-          currentStatus: existingProduct.status,
-          productId: existingProduct.id,
-          requestedStatus: body.status
-        }
-      });
-    }
-
-    const product = await updateProduct(params.id, {
-      dataQualityStatus: "NEEDS_REVIEW",
-      isStorefrontVisible: false,
-      status: "INACTIVE"
-    });
-
-    response
-      .status(200)
-      .json(createSuccessResponse("Product moved to review successfully.", product));
+    response.status(200).json(createSuccessResponse(message, product));
   } catch (error) {
     next(error);
   }
