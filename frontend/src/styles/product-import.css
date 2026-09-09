@@ -1,0 +1,32 @@
+/* Products import dialog: keep the existing component structure while aligning it
+   with the owner workspace violet interaction language. */
+
+[aria-describedby="import-products-description"] .space-y-4 > .sr-only + div {
+  display: none;
+}
+
+[aria-describedby="import-products-description"] [aria-label="Upload product file"] {
+  border-color: #c4b5fd !important;
+  background: rgba(245, 243, 255, 0.78) !important;
+}
+
+[aria-describedby="import-products-description"] [aria-label="Upload product file"]:hover {
+  border-color: #a78bfa !important;
+  background: #f5f3ff !important;
+}
+
+[aria-describedby="import-products-description"] [aria-label="Upload product file"]:focus-visible {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 2px #ddd6fe !important;
+}
+
+[aria-describedby="import-products-description"] [aria-label="Upload product file"] > div > div:first-child {
+  border-color: #c4b5fd !important;
+  color: #6d28d9 !important;
+}
+
+[aria-describedby="import-products-description"] [aria-label="Upload product file"].border-emerald-500 {
+  border-color: #7c3aed !important;
+  background: #ede9fe !important;
+  box-shadow: 0 0 0 2px #ddd6fe !important;
+}
