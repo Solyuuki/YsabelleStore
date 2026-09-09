@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 
 import { assertApprovedProductBarcode } from "../services/catalogQualityPolicy.js";
 import { changeProductAvailability } from "../services/productAvailabilityService.js";
+import { listCatalogProducts } from "../services/productCatalogListService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import { createCategorySchema } from "../validators/category.validators.js";
@@ -17,7 +18,6 @@ import {
   createProduct,
   listCategories,
   getProductById,
-  listProducts,
   updateProduct
 } from "../services/productService.js";
 
@@ -74,7 +74,7 @@ export const listProductsController: RequestHandler = async (request, response, 
       code: "INVALID_PRODUCT_QUERY"
     });
 
-    const result = await listProducts(query);
+    const result = await listCatalogProducts(query);
 
     response
       .status(200)
