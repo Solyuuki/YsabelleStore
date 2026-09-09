@@ -139,9 +139,9 @@ export const changeProductStatusController: RequestHandler = async (request, res
       code: "INVALID_PRODUCT_AVAILABILITY_REQUEST"
     });
 
-    if (body.status === "ACTIVE") {
-      const existingProduct = await getProductById(params.id);
+    const existingProduct = await getProductById(params.id);
 
+    if (body.status === "ACTIVE") {
       if (!existingProduct.operationalReadiness.ready) {
         const blockerMessage = existingProduct.operationalReadiness.blockers
           .map((blocker) => blocker.label)
@@ -159,13 +159,34 @@ export const changeProductStatusController: RequestHandler = async (request, res
           }
         );
       }
+
+      const product = await changeProductStatus(params.id, body);
+      response
+        .status(200)
+        .json(createSuccessResponse("Product status updated successfully.", product));
+      return;
     }
 
-    const product = await changeProductStatus(params.id, body);
+    if (existingProduct.status !== "ACTIVE") {
+      throw new HttpError(409, "Only an Available product can be moved back to review.", {
+        code: "INVALID_PRODUCT_STATUS_TRANSITION",
+        details: {
+          currentStatus: existingProduct.status,
+          productId: existingProduct.id,
+          requestedStatus: body.status
+        }
+      });
+    }
+
+    const product = await updateProduct(params.id, {
+      dataQualityStatus: "NEEDS_REVIEW",
+      isStorefrontVisible: false,
+      status: "INACTIVE"
+    });
 
     response
       .status(200)
-      .json(createSuccessResponse("Product status updated successfully.", product));
+      .json(createSuccessResponse("Product moved to review successfully.", product));
   } catch (error) {
     next(error);
   }
