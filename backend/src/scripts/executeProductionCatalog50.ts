@@ -7,6 +7,7 @@ import {
   executeProductionCatalog50,
   type ProductionCatalog50Client
 } from "../modules/catalog/catalog-production-ready-50-execution.js";
+import { assertProductionCatalog50Names } from "../modules/catalog/catalog-production-ready-50-name-guard.js";
 
 const APPLY_FLAG = "--apply-production-catalog-50";
 
@@ -15,9 +16,10 @@ export async function runProductionCatalog50(options: {
   client?: ProductionCatalog50Client;
 }) {
   const client = options.client ?? (prisma as unknown as ProductionCatalog50Client);
+  const plan = await buildProductionCatalog50Plan({ client });
+  assertProductionCatalog50Names(plan);
 
   if (!options.apply) {
-    const plan = await buildProductionCatalog50Plan({ client });
     return {
       mode: "PREVIEW" as const,
       summary: plan.summary,
