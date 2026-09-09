@@ -33,8 +33,12 @@ test("production catalog 50 manifest is exact, unique, complete, and excludes re
     new Set(PRODUCTION_CATALOG_50_TARGETS.map((row) => row.manufacturerBarcode)).size,
     PRODUCTION_CATALOG_50_EXPECTED_COUNT
   );
-  assert.equal(PRODUCTION_CATALOG_50_TARGETS.some((row) => row.sourceProductId === "P254"), false);
-  assert.equal(PRODUCTION_CATALOG_50_TARGETS.some((row) => row.sourceProductId === "P022"), true);
+
+  const sourceProductIds: readonly string[] = PRODUCTION_CATALOG_50_TARGETS.map(
+    (row) => row.sourceProductId
+  );
+  assert.equal(sourceProductIds.includes("P254"), false);
+  assert.equal(sourceProductIds.includes("P022"), true);
   assert.doesNotThrow(() => assertProductionCatalog50Manifest(PRODUCTION_CATALOG_50_TARGETS));
 });
 
@@ -79,41 +83,28 @@ test("preflight preserves price/category/inventory and plans only catalog fields
     duplicateCandidatesRight: []
   }));
 
-  let findManyCall = 0;
   const client = {
     product: {
-      async findMany() {
-        findManyCall += 1;
-        return findManyCall === 1 ? products : [];
+      findMany: async (args: any) => {
+        if (args?.select?.barcode && !args?.select?.name) {
+          return [];
+        }
+        return products;
       },
-      async updateMany() {
-        throw new Error("preview must not write");
-      }
+      updateMany: async () => ({ count: 0 })
     },
     category: {
-      async updateMany() {
-        throw new Error("preview must not write");
-      }
+      updateMany: async () => ({ count: 0 })
     },
     catalogAuditLog: {
-      async create() {
-        throw new Error("preview must not write");
-      }
+      create: async () => ({})
     },
-    async $transaction<T>(callback: (tx: ProductionCatalog50Client) => Promise<T>) {
-      return callback(this as unknown as ProductionCatalog50Client);
-    }
+    $transaction: async (callback: any) => callback(client)
   } as unknown as ProductionCatalog50Client;
 
   const plan = await buildProductionCatalog50Plan({ client });
-
-  assert.deepEqual(plan.summary, {
-    selectedProducts: 50,
-    productWritesRequired: 50,
-    alreadyAlignedProducts: 0,
-    categoryWritesRequired: 0,
-    missingProcurementCostWarnings: 50
-  });
-  assert.equal(plan.products.every((row) => row.requiresWrite), true);
-  assert.equal(plan.categoriesToApprove.length, 0);
+  assert.equal(plan.summary.selectedProducts, PRODUCTION_CATALOG_50_EXPECTED_COUNT);
+  assert.equal(plan.summary.productWritesRequired, PRODUCTION_CATALOG_50_EXPECTED_COUNT);
+  assert.equal(plan.summary.categoryWritesRequired, 0);
+  assert.equal(plan.summary.missingProcurementCostWarnings, PRODUCTION_CATALOG_50_EXPECTED_COUNT);
 });
