@@ -37,6 +37,7 @@ export type MovementWithRelations = InventoryMovement & {
 };
 
 export type ProductStatusView = "ACTIVE" | "INACTIVE" | "DISCONTINUED";
+export type ProductAvailabilityView = "AVAILABLE" | "UNAVAILABLE";
 export type StockStatusView = "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
 
 export type CategorySummary = {
@@ -78,6 +79,8 @@ export type ProductSummary = {
   reorderLevel: number;
   targetStockLevel: number;
   status: ProductStatusView;
+  availabilityStatus: ProductAvailabilityView;
+  isAvailable: boolean;
   isActive: boolean;
   recordSource: Product["recordSource"];
   dataQualityStatus: Product["dataQualityStatus"];
@@ -147,12 +150,8 @@ export function computeStockStatus(quantityOnHand: number, reorderLevel: number)
   return "IN_STOCK";
 }
 
-function getEffectiveProductStatus(product: Product, quantityOnHand: number): ProductStatusView {
-  if (product.status === "DISCONTINUED") {
-    return "DISCONTINUED";
-  }
-
-  return product.status === "ACTIVE" && quantityOnHand > 0 ? "ACTIVE" : "INACTIVE";
+function isProductAvailable(product: Product, quantityOnHand: number) {
+  return product.status === "ACTIVE" && quantityOnHand > 0;
 }
 
 export function serializeCategory(category: Category): CategorySummary {
@@ -172,7 +171,7 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
   const inventory = product.inventory ?? null;
   const quantityOnHand = inventory?.quantityOnHand ?? 0;
   const stockStatus = computeStockStatus(quantityOnHand, product.reorderLevel);
-  const effectiveStatus = getEffectiveProductStatus(product, quantityOnHand);
+  const available = isProductAvailable(product, quantityOnHand);
   const hasUnresolvedDuplicate = [
     ...(product.duplicateCandidatesLeft ?? []),
     ...(product.duplicateCandidatesRight ?? [])
@@ -202,8 +201,10 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     sellingPrice: product.sellingPrice.toString(),
     reorderLevel: product.reorderLevel,
     targetStockLevel: product.targetStockLevel,
-    status: effectiveStatus,
-    isActive: effectiveStatus === "ACTIVE",
+    status: product.status,
+    availabilityStatus: available ? "AVAILABLE" : "UNAVAILABLE",
+    isAvailable: available,
+    isActive: product.status === "ACTIVE",
     recordSource: product.recordSource,
     dataQualityStatus: product.dataQualityStatus,
     isStorefrontVisible: product.isStorefrontVisible,
