@@ -2,7 +2,7 @@ import multer from "multer";
 
 import { PRODUCT_IMAGE_UPLOAD_LIMITS } from "../security/security.constants.js";
 
-const PRODUCT_IMPORT_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+const PRODUCT_IMPORT_FILE_SIZE_BYTES = 100 * 1024 * 1024;
 
 const memoryStorage = multer.memoryStorage();
 
