@@ -18,10 +18,6 @@ export function getProductStatusLabel(status: ProductRecord["status"]) {
     return "AVAILABLE";
   }
 
-  if (status === "INACTIVE") {
-    return "NEEDS REVIEW";
-  }
-
   return "UNAVAILABLE";
 }
 
