@@ -18,21 +18,69 @@ const basePrisma = new PrismaClient({
   log: prismaLogLevels
 });
 
+function applyProductListGuards(where: Prisma.ProductWhereInput | undefined): Prisma.ProductWhereInput {
+  const sourceWhere = where ?? {};
+  const requestedStatus = sourceWhere.status;
+  let availabilityWhere: Prisma.ProductWhereInput | null = null;
+  let baseWhere = sourceWhere;
+
+  // Products-page ACTIVE/INACTIVE filters represent effective sale availability.
+  // An ACTIVE product with zero physical stock is unavailable until stock is recorded.
+  if (requestedStatus === "ACTIVE" || requestedStatus === "INACTIVE") {
+    const { status: _status, ...withoutStatus } = sourceWhere;
+    baseWhere = withoutStatus;
+
+    availabilityWhere =
+      requestedStatus === "ACTIVE"
+        ? {
+            status: "ACTIVE",
+            inventory: {
+              is: {
+                quantityOnHand: { gt: 0 }
+              }
+            }
+          }
+        : {
+            OR: [
+              { status: "INACTIVE" },
+              {
+                status: "ACTIVE",
+                inventory: { is: null }
+              },
+              {
+                status: "ACTIVE",
+                inventory: {
+                  is: {
+                    quantityOnHand: { lte: 0 }
+                  }
+                }
+              }
+            ]
+          };
+  }
+
+  return {
+    AND: [
+      baseWhere,
+      ...(availabilityWhere ? [availabilityWhere] : []),
+      {
+        sku: {
+          notIn: [...RETIRED_OPERATIONAL_PRODUCT_SKUS]
+        }
+      }
+    ]
+  };
+}
+
 const operationalPrisma = basePrisma.$extends({
   query: {
     product: {
       async findMany({ args, query }) {
-        args.where = {
-          AND: [
-            args.where ?? {},
-            {
-              sku: {
-                notIn: [...RETIRED_OPERATIONAL_PRODUCT_SKUS]
-              }
-            }
-          ]
-        };
-
+        args.where = applyProductListGuards(args.where);
+        return query(args);
+      },
+      async count({ args, query }) {
+        args.where = applyProductListGuards(args.where);
         return query(args);
       }
     }
@@ -43,7 +91,7 @@ const operationalPrisma = basePrisma.$extends({
 // the application, but Prisma's generated extension type is intentionally narrower
 // than PrismaClient and caused transaction helpers/tests to reject the shared client.
 // Keep one canonical PrismaClient contract at the application boundary while the
-// operational findMany guard remains active at runtime.
+// operational catalog guards remain active at runtime.
 export const prisma: PrismaClient = operationalPrisma as unknown as PrismaClient;
 
 export type DatabaseHealth =
