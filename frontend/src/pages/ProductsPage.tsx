@@ -1,4 +1,4 @@
-﻿import {
+import {
   Download,
   FileUp,
   Filter,
@@ -46,7 +46,6 @@ import {
 import { Tooltip } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  downloadProductImportTemplate,
   createProduct,
   createCategory,
   fetchCategories,
@@ -82,7 +81,6 @@ const CATALOG_FILTER_MINIMUM_MS = 450;
 const CATALOG_PAGINATION_MINIMUM_MS = 400;
 const CATALOG_PAGE_SIZE_MINIMUM_MS = 400;
 const CATALOG_REFRESH_MINIMUM_MS = 350;
-const TEMPLATE_DOWNLOAD_MINIMUM_MS = 600;
 const PREVIEW_LOADING_MINIMUM_MS = 500;
 const IMPORT_LOADING_MINIMUM_MS = 700;
 const CATEGORY_CREATE_MINIMUM_MS = 450;
@@ -141,7 +139,6 @@ export function ProductsPage() {
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
   const [catalogLoadingReason, setCatalogLoadingReason] = useState<CatalogLoadingReason>("initial");
   const [catalogError, setCatalogError] = useState<string | null>(null);
-  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [importState, setImportState] = useState<ImportState>({
     file: null,
     preview: null,
@@ -400,42 +397,6 @@ export function ProductsPage() {
   function openImportDialog() {
     resetImportFlow();
     setIsImportDialogOpen(true);
-  }
-
-  async function handleTemplateDownload() {
-    if (isDownloadingTemplate) {
-      return;
-    }
-
-    setIsDownloadingTemplate(true);
-
-    try {
-      const csv = await waitForMinimumDuration(
-        downloadProductImportTemplate(),
-        TEMPLATE_DOWNLOAD_MINIMUM_MS
-      );
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-
-      anchor.href = url;
-      anchor.download = "product-import-template.csv";
-      anchor.click();
-      window.URL.revokeObjectURL(url);
-      pushToast({
-        message: "The product import template is ready.",
-        title: "Template downloaded",
-        variant: "success"
-      });
-    } catch {
-      pushToast({
-        message: "The product import template could not be downloaded. Please try again.",
-        title: "Download failed",
-        variant: "error"
-      });
-    } finally {
-      setIsDownloadingTemplate(false);
-    }
   }
 
   function getImportFileValidationError(file: File) {
@@ -915,19 +876,6 @@ export function ProductsPage() {
         description="Import products, verify catalog state, and keep current stock aligned with inventory and POS."
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              disabled={isDownloadingTemplate}
-              variant="secondary"
-              onClick={handleTemplateDownload}
-              type="button"
-            >
-              {isDownloadingTemplate ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : (
-                <Download className="h-4 w-4" aria-hidden="true" />
-              )}
-              {isDownloadingTemplate ? "Downloading..." : "Template"}
-            </Button>
             <Button onClick={() => setIsCreateDialogOpen(true)} type="button" variant="secondary">
               <Plus className="h-4 w-4" aria-hidden="true" />
               Add Product
