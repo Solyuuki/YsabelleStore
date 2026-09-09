@@ -135,13 +135,13 @@ async function assertStorefrontQualityGate(input: {
   }
 
   if (
-    input.status !== "ACTIVE" ||
+    input.status === "DISCONTINUED" ||
     input.sellingPrice.lessThanOrEqualTo(0) ||
     input.name.trim().length < 3
   ) {
     throw new HttpError(
       422,
-      "Storefront products require a customer-safe name, active status, and positive price.",
+      "Storefront products require a customer-safe name, non-discontinued status, and positive price.",
       { code: "PRODUCT_STOREFRONT_GATE_FAILED" }
     );
   }
