@@ -26,27 +26,27 @@ export function getAvailabilityAction(
 ): ProductAvailabilityAction | null {
   if (status === "ACTIVE") {
     return {
-      buttonLabel: "Available",
-      compactButtonLabel: "Available",
+      buttonLabel: "Set to Unavailable",
+      compactButtonLabel: "Unavailable",
       compactLoadingLabel: "Updating…",
-      loadingLabel: "Updating availability...",
+      loadingLabel: "Setting to Unavailable...",
       nextStatus: "INACTIVE",
-      successMessage: "The product is unavailable in POS.",
+      successMessage: "The product is no longer available in POS.",
       successTitle: "Product unavailable",
-      tooltip: "Currently available. Click to make this product unavailable in POS."
+      tooltip: "Make this product unavailable in POS"
     };
   }
 
   if (status === "INACTIVE") {
     return {
-      buttonLabel: "Unavailable",
-      compactButtonLabel: "Unavailable",
+      buttonLabel: "Set to Available",
+      compactButtonLabel: "Available",
       compactLoadingLabel: "Updating…",
-      loadingLabel: "Updating availability...",
+      loadingLabel: "Setting to Available...",
       nextStatus: "ACTIVE",
-      successMessage: "The product is available in POS.",
+      successMessage: "The product is available in POS again when valid stock is present.",
       successTitle: "Product available",
-      tooltip: "Currently unavailable. Click to make this product available in POS."
+      tooltip: "Make this product available in POS"
     };
   }
 
