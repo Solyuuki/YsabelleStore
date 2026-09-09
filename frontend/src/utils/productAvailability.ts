@@ -14,7 +14,15 @@ export type ProductAvailabilityAction = {
 };
 
 export function getProductStatusLabel(status: ProductRecord["status"]) {
-  return status === "ACTIVE" ? "AVAILABLE" : "UNAVAILABLE";
+  if (status === "ACTIVE") {
+    return "AVAILABLE";
+  }
+
+  if (status === "INACTIVE") {
+    return "NEEDS REVIEW";
+  }
+
+  return "UNAVAILABLE";
 }
 
 export function getProductStatusVariant(status: ProductRecord["status"]) {
