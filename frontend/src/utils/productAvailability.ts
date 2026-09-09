@@ -32,8 +32,8 @@ export function getAvailabilityAction(
       loadingLabel: "Setting to Unavailable...",
       nextStatus: "INACTIVE",
       successMessage:
-        "The product is no longer available in POS. Its inventory and history were preserved.",
-      successTitle: "Product unavailable",
+        "The product is now UNAVAILABLE in POS and has been removed from the Available filter. Its inventory and history were preserved.",
+      successTitle: "Moved to Unavailable",
       tooltip: "Make this product unavailable in POS"
     };
   }
@@ -45,8 +45,9 @@ export function getAvailabilityAction(
       compactLoadingLabel: "Updating…",
       loadingLabel: "Setting to Available...",
       nextStatus: "ACTIVE",
-      successMessage: "The product is available in POS again when valid stock is present.",
-      successTitle: "Product available",
+      successMessage:
+        "The product is now AVAILABLE in POS and will appear in the Available filter when the catalog view refreshes.",
+      successTitle: "Moved to Available",
       tooltip: "Make this product available in POS"
     };
   }
