@@ -18,7 +18,7 @@ const basePrisma = new PrismaClient({
   log: prismaLogLevels
 });
 
-export const prisma = basePrisma.$extends({
+const operationalPrisma = basePrisma.$extends({
   query: {
     product: {
       async findMany({ args, query }) {
@@ -38,6 +38,13 @@ export const prisma = basePrisma.$extends({
     }
   }
 });
+
+// Prisma client extensions preserve the runtime client/transaction surface used by
+// the application, but Prisma's generated extension type is intentionally narrower
+// than PrismaClient and caused transaction helpers/tests to reject the shared client.
+// Keep one canonical PrismaClient contract at the application boundary while the
+// operational findMany guard remains active at runtime.
+export const prisma: PrismaClient = operationalPrisma as unknown as PrismaClient;
 
 export type DatabaseHealth =
   | {
