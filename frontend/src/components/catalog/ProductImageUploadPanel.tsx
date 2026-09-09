@@ -3,8 +3,7 @@ import {
   ImagePlus,
   LoaderCircle,
   RefreshCw,
-  ShieldAlert,
-  Upload
+  ShieldAlert
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -363,19 +362,17 @@ export function ProductImageUploadPanel({
             result, then only allows an approved optimized image to be published.
           </p>
         </div>
-        <Button
-          disabled={disabled || isBusy}
-          onClick={openPicker}
-          type="button"
-          variant="secondary"
-        >
-          {selectedFile || candidate ? (
+        {selectedFile || candidate ? (
+          <Button
+            disabled={disabled || isBusy}
+            onClick={openPicker}
+            type="button"
+            variant="secondary"
+          >
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
-          ) : (
-            <Upload className="h-4 w-4" aria-hidden="true" />
-          )}
-          {selectedFile || candidate ? "Upload Another" : "Choose image"}
-        </Button>
+            Upload Another
+          </Button>
+        ) : null}
       </div>
 
       <input
