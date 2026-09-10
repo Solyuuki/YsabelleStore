@@ -1,7 +1,12 @@
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
-import { Prisma, type ProductStatus, type ProductUnit } from "@prisma/client";
+import {
+  Prisma,
+  ProductBarcodeSource,
+  type ProductStatus,
+  type ProductUnit
+} from "@prisma/client";
 import { readSheet } from "read-excel-file/node";
 
 import { prisma } from "../database/prismaClient.js";
@@ -13,6 +18,10 @@ import {
 } from "../utils/catalogIdentity.js";
 import { HttpError } from "../utils/httpError.js";
 import { normalizeCode, normalizeWhitespace } from "../utils/normalizers.js";
+import {
+  ensureInternalBarcodeForProductInTransaction,
+  registerProductBarcodeInTransaction
+} from "./productBarcodeService.js";
 import { createOpeningStockBatch, assertStockInvariant } from "./stockDomainService.js";
 import { operationalProductWhere } from "./catalogQualityPolicy.js";
 
@@ -104,6 +113,13 @@ type PreviewRow = {
   valid: boolean;
   errors: ImportIssue[];
   warnings: ImportIssue[];
+};
+
+type ProductConflict = {
+  id: string;
+  sku: string;
+  barcode: string | null;
+  barcodes: Array<{ barcode: string }>;
 };
 
 export type ProductImportPreview = {
@@ -979,16 +995,16 @@ function normalizeImportRow(
   };
 }
 
-function addConflictIssues(
-  previewRows: PreviewRow[],
-  conflicts: Array<{ id: string; sku: string; barcode: string | null }>
-) {
+function addConflictIssues(previewRows: PreviewRow[], conflicts: ProductConflict[]) {
   const skuConflictMap = new Map(conflicts.map((conflict) => [conflict.sku, conflict.id]));
-  const barcodeConflictMap = new Map(
-    conflicts
-      .filter((conflict) => conflict.barcode)
-      .map((conflict) => [conflict.barcode as string, conflict.id])
-  );
+  const barcodeConflictMap = new Map<string, string>();
+
+  for (const conflict of conflicts) {
+    if (conflict.barcode) barcodeConflictMap.set(conflict.barcode, conflict.id);
+    for (const registration of conflict.barcodes) {
+      barcodeConflictMap.set(registration.barcode, conflict.id);
+    }
+  }
 
   previewRows.forEach((row) => {
     if (!row.normalizedData) {
@@ -1019,7 +1035,7 @@ function addConflictIssues(
             row.rowNumber,
             "barcode",
             "BARCODE_ALREADY_EXISTS",
-            "This barcode already exists in the database.",
+            "This barcode is already registered to a product in the database.",
             row.normalizedData.barcode,
             barcodeConflict
           )
@@ -1142,7 +1158,7 @@ async function validateSpreadsheetImport(file: UploadFile): Promise<ProductImpor
         0,
         "rows",
         "NO_DATA_ROWS",
-        "The import file does not contain any product rows."
+        "The product import file does not contain any product rows."
       )
     );
   }
@@ -1215,12 +1231,19 @@ async function validateSpreadsheetImport(file: UploadFile): Promise<ProductImpor
       select: {
         id: true,
         sku: true,
-        barcode: true
+        barcode: true,
+        barcodes: {
+          where: barcodeValues.length > 0 ? { barcode: { in: barcodeValues } } : undefined,
+          select: { barcode: true }
+        }
       },
       where: {
         OR: [
           skuValues.length > 0 ? { sku: { in: skuValues } } : undefined,
-          barcodeValues.length > 0 ? { barcode: { in: barcodeValues } } : undefined
+          barcodeValues.length > 0 ? { barcode: { in: barcodeValues } } : undefined,
+          barcodeValues.length > 0
+            ? { barcodes: { some: { barcode: { in: barcodeValues } } } }
+            : undefined
         ].filter(Boolean) as Prisma.ProductWhereInput[]
       }
     });
@@ -1377,6 +1400,24 @@ export async function importProductsFromFile(
           }
         }
       });
+
+      if (row.barcode) {
+        await registerProductBarcodeInTransaction(tx, {
+          productId: product.id,
+          barcode: row.barcode,
+          source: ProductBarcodeSource.IMPORT,
+          registeredById: performedById,
+          sourceReference: importId,
+          makePrimary: true,
+          automated: true
+        });
+      } else {
+        await ensureInternalBarcodeForProductInTransaction(tx, {
+          productId: product.id,
+          registeredById: performedById,
+          sourceReference: importId
+        });
+      }
 
       const identity = normalizeProductIdentity(row.name);
       const candidateProductIds = new Set([
