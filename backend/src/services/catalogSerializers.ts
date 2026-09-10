@@ -11,10 +11,12 @@ import {
   getProductOperationalReadiness,
   type ProductOperationalReadiness
 } from "./productOperationalReadiness.js";
+import { calculateStockTruth } from "./stockTruth.js";
 
 export type ProductWithRelations = Product & {
   category: Category;
   inventory: Inventory | null;
+  inventoryBatches?: InventoryBatch[];
   duplicateCandidatesLeft?: Array<{ status: string }>;
   duplicateCandidatesRight?: Array<{ status: string }>;
 };
@@ -144,14 +146,42 @@ export type PosLookupSummary = {
   category: CategorySummary;
 };
 
+type StockSnapshot = {
+  availableQuantity: number;
+  batchCount: number;
+  nearestExpiry: Date | null;
+};
+
 export function computeStockStatus(quantityOnHand: number, reorderLevel: number): StockStatusView {
   if (quantityOnHand <= 0) return "OUT_OF_STOCK";
   if (quantityOnHand <= reorderLevel) return "LOW_STOCK";
   return "IN_STOCK";
 }
 
-function isProductAvailable(product: Product, quantityOnHand: number) {
-  return product.status === "ACTIVE" && quantityOnHand > 0;
+function getStockSnapshot(
+  physicalQuantity: number,
+  batches: InventoryBatch[] | undefined
+): StockSnapshot {
+  // Some internal callers intentionally do not join batches. Preserve their historical
+  // behavior while every sellable-facing query explicitly includes canonical batch data.
+  if (batches === undefined) {
+    return {
+      availableQuantity: physicalQuantity,
+      batchCount: 0,
+      nearestExpiry: null
+    };
+  }
+
+  const truth = calculateStockTruth(batches);
+  return {
+    availableQuantity: truth.sellableStock,
+    batchCount: truth.batchCount,
+    nearestExpiry: truth.nearestExpiry
+  };
+}
+
+function isProductAvailable(product: Product, sellableQuantity: number) {
+  return product.status === "ACTIVE" && sellableQuantity > 0;
 }
 
 export function serializeCategory(category: Category): CategorySummary {
@@ -170,8 +200,9 @@ export function serializeCategory(category: Category): CategorySummary {
 export function serializeProduct(product: ProductWithRelations): ProductSummary {
   const inventory = product.inventory ?? null;
   const quantityOnHand = inventory?.quantityOnHand ?? 0;
-  const stockStatus = computeStockStatus(quantityOnHand, product.reorderLevel);
-  const available = isProductAvailable(product, quantityOnHand);
+  const stockSnapshot = getStockSnapshot(quantityOnHand, product.inventoryBatches);
+  const stockStatus = computeStockStatus(stockSnapshot.availableQuantity, product.reorderLevel);
+  const available = isProductAvailable(product, stockSnapshot.availableQuantity);
   const hasUnresolvedDuplicate = [
     ...(product.duplicateCandidatesLeft ?? []),
     ...(product.duplicateCandidatesRight ?? [])
@@ -214,12 +245,12 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     inventory: {
       inventoryId: inventory?.id ?? "",
       currentQuantity: quantityOnHand,
-      availableQuantity: quantityOnHand,
+      availableQuantity: stockSnapshot.availableQuantity,
       stockStatus,
       lastStockUpdatedAt: inventory?.lastStockUpdatedAt ?? null,
       version: inventory?.version ?? 0,
-      batchCount: 0,
-      nearestExpiry: null
+      batchCount: stockSnapshot.batchCount,
+      nearestExpiry: stockSnapshot.nearestExpiry
     },
     createdAt: product.createdAt,
     updatedAt: product.updatedAt
@@ -228,22 +259,18 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
 
 export function serializeInventory(inventory: InventoryWithRelations): InventorySummaryRow {
   const product = inventory.product;
-  const stockStatus = computeStockStatus(inventory.quantityOnHand, product.reorderLevel);
-  const activeBatches = product.inventoryBatches ?? [];
-  const expiries = activeBatches
-    .map((batch) => batch.expiresAt)
-    .filter((expiry): expiry is Date => expiry !== null)
-    .sort((left, right) => left.getTime() - right.getTime());
+  const stockSnapshot = getStockSnapshot(inventory.quantityOnHand, product.inventoryBatches);
+  const stockStatus = computeStockStatus(stockSnapshot.availableQuantity, product.reorderLevel);
 
   return {
     inventoryId: inventory.id,
     currentQuantity: inventory.quantityOnHand,
-    availableQuantity: inventory.quantityOnHand,
+    availableQuantity: stockSnapshot.availableQuantity,
     stockStatus,
     lastStockUpdatedAt: inventory.lastStockUpdatedAt ?? null,
     version: inventory.version,
-    batchCount: activeBatches.length,
-    nearestExpiry: expiries[0] ?? null,
+    batchCount: stockSnapshot.batchCount,
+    nearestExpiry: stockSnapshot.nearestExpiry,
     productId: product.id,
     productName: product.name,
     sku: product.sku,
@@ -259,7 +286,7 @@ export function serializeInventory(inventory: InventoryWithRelations): Inventory
     category: serializeCategory(product.category),
     createdAt: inventory.createdAt,
     updatedAt: inventory.updatedAt,
-    availability: product.status === "ACTIVE" && inventory.quantityOnHand > 0
+    availability: product.status === "ACTIVE" && stockSnapshot.availableQuantity > 0
   };
 }
 
@@ -288,7 +315,8 @@ export function serializeMovement(movement: MovementWithRelations): MovementSumm
 
 export function serializePosLookup(product: ProductWithRelations): PosLookupSummary {
   const inventory = product.inventory ?? null;
-  const currentStock = inventory?.quantityOnHand ?? 0;
+  const physicalStock = inventory?.quantityOnHand ?? 0;
+  const sellableStock = getStockSnapshot(physicalStock, product.inventoryBatches).availableQuantity;
 
   return {
     productId: product.id,
@@ -296,10 +324,10 @@ export function serializePosLookup(product: ProductWithRelations): PosLookupSumm
     sku: product.sku,
     barcode: product.barcode ?? null,
     sellingPrice: product.sellingPrice.toString(),
-    currentStock,
-    available: product.status === "ACTIVE" && currentStock > 0,
+    currentStock: sellableStock,
+    available: product.status === "ACTIVE" && sellableStock > 0,
     isActive: product.status === "ACTIVE",
-    stockStatus: computeStockStatus(currentStock, product.reorderLevel),
+    stockStatus: computeStockStatus(sellableStock, product.reorderLevel),
     category: serializeCategory(product.category)
   };
 }
