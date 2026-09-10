@@ -222,6 +222,7 @@ export function ReceivingPage() {
                 </div>
               ) : products.length === 0 ? (
                 <EmptyState
+                  icon={Search}
                   title="No matching products"
                   description="Try another product name, SKU, or registered barcode."
                 />
@@ -264,6 +265,7 @@ export function ReceivingPage() {
             {!selectedProduct ? (
               <div className="py-16">
                 <EmptyState
+                  icon={PackageCheck}
                   title="Choose the product being received"
                   description="The selected canonical product anchors barcode enrollment, batch creation, and stock movement."
                 />
