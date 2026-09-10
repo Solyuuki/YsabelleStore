@@ -1,18 +1,20 @@
 import {
-  FileUp,
-  Boxes,
-  ClipboardList,
   ArrowUpDown,
+  Boxes,
+  CalendarDays,
+  ChevronDown,
   CircleCheck,
+  ClipboardList,
+  FileUp,
   Filter,
   History,
   LoaderCircle,
-  Plus,
+  Minus,
   PackagePlus,
   PencilLine,
-  Tag,
+  Plus,
   Search,
-  ChevronDown,
+  Tag,
   X
 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
@@ -55,6 +57,7 @@ import {
   fetchMovements,
   stockInInventory,
   type InventoryListQuery,
+  type InventoryMovementQuery,
   type InventoryMovementType,
   type InventoryRecord,
   type InventorySortBy,
@@ -74,6 +77,8 @@ const INVENTORY_UPDATE_MINIMUM_MS = 400;
 const DETAILS_MINIMUM_MS = 450;
 const MOVEMENTS_MINIMUM_MS = 450;
 const MUTATION_MINIMUM_MS = 550;
+const MOVEMENT_PAGE_SIZE = 10;
+const MOVEMENT_ASCENDING_FETCH_SIZE = 100;
 
 type LoadingReason =
   | "initial"
@@ -86,6 +91,7 @@ type LoadingReason =
 type StockStatusFilter = "ALL" | "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
 type ProductStatusFilter = "ALL" | "ACTIVE" | "INACTIVE" | "DISCONTINUED";
 type SortOrder = "asc" | "desc";
+type MovementDateRange = "ALL_TIME" | "TODAY" | "LAST_7_DAYS" | "LAST_30_DAYS" | "THIS_MONTH" | "CUSTOM";
 
 const stockStatusDisplay = {
   IN_STOCK: { label: "IN STOCK", variant: "success" as const },
@@ -106,9 +112,9 @@ const movementTypes: InventoryMovementType[] = [
 ];
 
 const adjustmentReasonOptions = [
+  { label: "Physical count", value: "Physical count correction" },
   { label: "Damaged", value: "Damaged" },
   { label: "Expired", value: "Expired" },
-  { label: "Physical count correction", value: "Physical count correction" },
   { label: "Returned item", value: "Returned item" },
   { label: "Other", value: "OTHER" }
 ] as const;
@@ -118,7 +124,7 @@ type AdjustmentReasonPreset = (typeof adjustmentReasonOptions)[number]["value"];
 function formatMovementAction(type: string) {
   switch (type) {
     case "STOCK_IN":
-      return "Stock added";
+      return "Stock received";
     case "ADJUSTMENT_IN":
       return "Quantity increased";
     case "ADJUSTMENT_OUT":
@@ -144,14 +150,142 @@ function formatMovementReason(item: MovementRecord) {
   return item.reason ?? "No reason recorded";
 }
 
+function isReductionMovement(type: string) {
+  return (
+    type === "SALE" ||
+    type === "ADJUSTMENT_OUT" ||
+    type === "RETURN_OUT" ||
+    type === "DAMAGE" ||
+    type === "EXPIRED"
+  );
+}
+
 function formatMovementChange(item: MovementRecord) {
-  const isReduction =
-    item.type === "SALE" ||
-    item.type === "ADJUSTMENT_OUT" ||
-    item.type === "RETURN_OUT" ||
-    item.type === "DAMAGE" ||
-    item.type === "EXPIRED";
-  return `${isReduction ? "-" : "+"}${item.quantity}`;
+  return `${isReductionMovement(item.type) ? "-" : "+"}${item.quantity}`;
+}
+
+function formatMovementSource(item: MovementRecord) {
+  if (!item.referenceType) return null;
+  return item.referenceType
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/(^|\s)\S/g, (character) => character.toUpperCase());
+}
+
+function localDateFromInput(value: string, endOfDay: boolean) {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+
+  return new Date(
+    year,
+    month - 1,
+    day,
+    endOfDay ? 23 : 0,
+    endOfDay ? 59 : 0,
+    endOfDay ? 59 : 0,
+    endOfDay ? 999 : 0
+  );
+}
+
+function buildMovementDateWindow(
+  range: MovementDateRange,
+  customFrom: string,
+  customTo: string
+): { from?: string; to?: string; error?: string } {
+  if (range === "ALL_TIME") return {};
+
+  if (range === "CUSTOM") {
+    const fromDate = customFrom ? localDateFromInput(customFrom, false) : null;
+    const toDate = customTo ? localDateFromInput(customTo, true) : null;
+
+    if (fromDate && toDate && fromDate.getTime() > toDate.getTime()) {
+      return { error: "Start date must be on or before the end date." };
+    }
+
+    return {
+      ...(fromDate ? { from: fromDate.toISOString() } : {}),
+      ...(toDate ? { to: toDate.toISOString() } : {})
+    };
+  }
+
+  const now = new Date();
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+
+  if (range === "LAST_7_DAYS") {
+    start.setDate(start.getDate() - 6);
+  } else if (range === "LAST_30_DAYS") {
+    start.setDate(start.getDate() - 29);
+  } else if (range === "THIS_MONTH") {
+    start.setDate(1);
+  }
+
+  return {
+    from: start.toISOString(),
+    to: now.toISOString()
+  };
+}
+
+async function fetchAscendingMovementPage(
+  productId: string,
+  baseQuery: Omit<InventoryMovementQuery, "page" | "pageSize">,
+  page: number,
+  pageSize: number,
+  signal: AbortSignal
+): Promise<{ items: MovementRecord[]; meta: PaginationMeta }> {
+  const probe = await fetchMovements(
+    productId,
+    { ...baseQuery, page: 1, pageSize: 1 },
+    { signal }
+  );
+  const totalItems = probe.meta.totalItems;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+  if (totalItems === 0) {
+    return {
+      items: [],
+      meta: { page: 1, pageSize, totalItems: 0, totalPages: 1 }
+    };
+  }
+
+  const normalizedPage = Math.min(page, totalPages);
+  const ascendingStart = (normalizedPage - 1) * pageSize;
+  const ascendingEndExclusive = Math.min(ascendingStart + pageSize, totalItems);
+  const descendingStart = totalItems - ascendingEndExclusive;
+  const descendingEndExclusive = totalItems - ascendingStart;
+  const firstServerPage = Math.floor(descendingStart / MOVEMENT_ASCENDING_FETCH_SIZE) + 1;
+  const lastServerPage = Math.floor((descendingEndExclusive - 1) / MOVEMENT_ASCENDING_FETCH_SIZE) + 1;
+  const requests: Array<Promise<{ items: MovementRecord[]; meta: PaginationMeta }>> = [];
+
+  for (let serverPage = firstServerPage; serverPage <= lastServerPage; serverPage += 1) {
+    requests.push(
+      fetchMovements(
+        productId,
+        {
+          ...baseQuery,
+          page: serverPage,
+          pageSize: MOVEMENT_ASCENDING_FETCH_SIZE
+        },
+        { signal }
+      )
+    );
+  }
+
+  const chunks = await Promise.all(requests);
+  const descendingItems = chunks.flatMap((chunk) => chunk.items);
+  const firstGlobalIndex = (firstServerPage - 1) * MOVEMENT_ASCENDING_FETCH_SIZE;
+  const sliceStart = descendingStart - firstGlobalIndex;
+  const sliceEnd = descendingEndExclusive - firstGlobalIndex;
+
+  return {
+    items: descendingItems.slice(sliceStart, sliceEnd).reverse(),
+    meta: {
+      page: normalizedPage,
+      pageSize,
+      totalItems,
+      totalPages
+    }
+  };
 }
 
 export function InventoryPage() {
@@ -393,7 +527,7 @@ export function InventoryPage() {
       return true;
     } catch (mutationError) {
       pushToast({
-        title: successTitle === "Stock added" ? "Unable to add stock" : "Unable to update stock",
+        title: successTitle === "Stock received" ? "Unable to receive stock" : "Unable to update stock",
         message:
           mutationError instanceof Error
             ? mutationError.message
@@ -416,21 +550,15 @@ export function InventoryPage() {
         title="Inventory"
         description="Monitor stock levels, batches, expiry dates, and inventory movements."
         actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={() => setStockInOpen(true)} type="button" variant="secondary">
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Add Stock
-            </Button>
-            <Button
-              onClick={() => setImportOpen(true)}
-              ref={importTriggerRef}
-              type="button"
-              variant="default"
-            >
-              <FileUp className="h-4 w-4" aria-hidden="true" />
-              Import Stock
-            </Button>
-          </div>
+          <Button
+            onClick={() => setImportOpen(true)}
+            ref={importTriggerRef}
+            type="button"
+            variant="default"
+          >
+            <FileUp className="h-4 w-4" aria-hidden="true" />
+            Import Stock
+          </Button>
         }
       />
 
@@ -547,7 +675,7 @@ export function InventoryPage() {
               description={
                 search || stockStatus !== "ALL" || productStatus !== "ALL" || categoryId !== "ALL"
                   ? "Try changing your search or filters."
-                  : "Products appear here automatically. Add stock when inventory arrives."
+                  : "Products appear here automatically. Receive stock when inventory arrives."
               }
               icon={Boxes}
               title={
@@ -620,7 +748,7 @@ export function InventoryPage() {
             ? handleMutation(
                 selectedInventory.productId,
                 () => stockInInventory(selectedInventory.productId, input),
-                "Stock added",
+                "Stock received",
                 "Inventory and batch quantities were updated successfully."
               )
             : Promise.resolve(false)
@@ -638,8 +766,8 @@ export function InventoryPage() {
             ? handleMutation(
                 selectedInventory.productId,
                 () => adjustInventoryStock(selectedInventory.productId, input),
-                "Stock updated",
-                "The inventory adjustment was recorded in movement history."
+                "Stock adjusted",
+                "The inventory correction was recorded in stock activity."
               )
             : Promise.resolve(false)
         }
@@ -650,7 +778,7 @@ export function InventoryPage() {
         onImported={() => void loadInventory("refresh")}
         triggerRef={importTriggerRef}
       />
-      <MovementHistoryDialog
+      <StockActivityDialog
         inventory={selectedInventory}
         open={movementsOpen}
         refreshVersion={movementRefreshVersion}
@@ -797,6 +925,7 @@ function StockStatusBadge({ status }: { status: InventoryRecord["stockStatus"] }
   const display = stockStatusDisplay[status];
   return <StatusBadge variant={display.variant}>{display.label}</StatusBadge>;
 }
+
 function ExpiryValue({ quantity, value }: { quantity: number; value: string | null }) {
   if (quantity <= 0) return <>No stock yet</>;
   if (!value) return <>No expiry</>;
@@ -808,6 +937,7 @@ function ExpiryValue({ quantity, value }: { quantity: number; value: string | nu
     </span>
   );
 }
+
 function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === "AbortError";
 }
@@ -844,7 +974,7 @@ function InventoryDetailsDialog({
     >
       <DialogContent
         aria-describedby="inventory-details-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col gap-0 p-0"
+        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[860px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -860,7 +990,7 @@ function InventoryDetailsDialog({
           </DialogClose>
           <DialogTitle>{inventory?.productName ?? "Inventory details"}</DialogTitle>
           <DialogDescription id="inventory-details-description">
-            Review catalog and current inventory information.
+            Current stock position, product reference, and operational controls.
           </DialogDescription>
         </DialogHeader>
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
@@ -872,106 +1002,136 @@ function InventoryDetailsDialog({
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : inventory ? (
-            <div className="space-y-6">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Detail label="SKU" value={inventory.sku} />
-                <Detail label="Barcode" value={inventory.barcode ?? "Not set"} />
-                <Detail label="Category" value={inventory.category.name} />
-                <Detail label="Unit" value={inventory.unit} />
-                <Detail
-                  label="Availability"
-                  value={inventory.status === "ACTIVE" ? "Available" : inventory.status}
-                />
-                <Detail label="Current quantity" value={String(inventory.currentQuantity)} />
-                <Detail label="Reorder level" value={String(inventory.reorderLevel)} />
-                <Detail label="Target stock level" value={String(inventory.targetStockLevel)} />
-                <Detail
-                  label="Stock status"
-                  value={stockStatusDisplay[inventory.stockStatus].label}
-                />
-                <Detail label="Batch count" value={String(inventory.batchCount)} />
-                <Detail
-                  label="Nearest expiry"
-                  value={
-                    inventory.currentQuantity <= 0
-                      ? "No stock yet"
-                      : inventory.nearestExpiry
-                        ? new Date(inventory.nearestExpiry).toLocaleDateString()
-                        : "No expiry"
-                  }
-                />
-                <Detail
-                  label="Last updated"
-                  value={
-                    inventory.lastStockUpdatedAt
-                      ? new Date(inventory.lastStockUpdatedAt).toLocaleString()
-                      : "Not yet updated"
-                  }
+            <div className="space-y-5">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <InventoryMetric label="On hand" value={String(inventory.currentQuantity)} />
+                <InventoryMetric label="Reorder at" value={String(inventory.reorderLevel)} />
+                <InventoryMetric label="Target" value={String(inventory.targetStockLevel)} />
+                <InventoryMetric
+                  label="Status"
+                  value={<StockStatusBadge status={inventory.stockStatus} />}
                 />
               </div>
-              <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Description
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-700">
-                  {inventory.description ?? "No description provided."}
-                </p>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <InfoPanel title="Stock lifecycle">
+                  <InfoLine label="Batches" value={inventory.batchCount === 0 ? "None" : String(inventory.batchCount)} />
+                  <InfoLine
+                    label="Expiry"
+                    value={
+                      inventory.currentQuantity <= 0
+                        ? "No stock yet"
+                        : inventory.nearestExpiry
+                          ? new Date(inventory.nearestExpiry).toLocaleDateString()
+                          : "No expiry"
+                    }
+                  />
+                  <InfoLine
+                    label="Last stock update"
+                    value={
+                      inventory.lastStockUpdatedAt
+                        ? new Date(inventory.lastStockUpdatedAt).toLocaleString()
+                        : "Not yet updated"
+                    }
+                  />
+                </InfoPanel>
+
+                <InfoPanel title="Product reference">
+                  <InfoLine label="SKU" value={inventory.sku} />
+                  <InfoLine label="Barcode" value={inventory.barcode ?? "Not set"} />
+                  <InfoLine label="Category" value={inventory.category.name} />
+                  <InfoLine label="Unit" value={inventory.unit} />
+                  <InfoLine
+                    label="Availability"
+                    value={inventory.status === "ACTIVE" ? "Available" : inventory.status}
+                  />
+                </InfoPanel>
               </div>
+
+              {inventory.description ? (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Product note
+                  </p>
+                  <p className="mt-1.5 text-sm leading-6 text-slate-700">{inventory.description}</p>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>
-        <DialogFooter className="bg-white/95">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Close
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onOpenMovements}
-            disabled={!inventory || isLoading}
-          >
-            <History className="h-4 w-4" />
-            History
-          </Button>
-          {isOwner ? (
-            <>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={onOpenAdjust}
-                disabled={!inventory || isLoading || mutationPending}
-              >
-                <PencilLine className="h-4 w-4" />
-                Adjust
-              </Button>
-              <Button
-                type="button"
-                onClick={onOpenStockIn}
-                disabled={!inventory || isLoading || mutationPending}
-              >
-                <PackagePlus className="h-4 w-4" />
-                Add stock
-              </Button>
-            </>
-          ) : null}
+        <DialogFooter className="border-t border-slate-200 bg-white/95">
+          <div className="flex w-full flex-wrap items-center justify-between gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onOpenMovements}
+              disabled={!inventory || isLoading}
+            >
+              <History className="h-4 w-4" />
+              Stock activity
+            </Button>
+            {isOwner ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={onOpenAdjust}
+                  disabled={!inventory || isLoading || mutationPending}
+                >
+                  <PencilLine className="h-4 w-4" />
+                  Adjust quantity
+                </Button>
+                <Button
+                  type="button"
+                  onClick={onOpenStockIn}
+                  disabled={!inventory || isLoading || mutationPending}
+                >
+                  <PackagePlus className="h-4 w-4" />
+                  Receive stock
+                </Button>
+              </div>
+            ) : null}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-function Detail({ label, value }: { label: string; value: string }) {
+
+function InventoryMetric({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="rounded-md border border-slate-200 p-3">
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
       <p className="text-xs font-medium text-slate-500">{label}</p>
-      <p className="mt-1 break-words text-sm font-medium text-slate-900">{value}</p>
+      <div className="mt-1.5 min-h-6 text-xl font-semibold tabular-nums text-slate-950">{value}</div>
     </div>
   );
 }
+
+function InfoPanel({ children, title }: { children: ReactNode; title: string }) {
+  return (
+    <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <h3 className="text-sm font-semibold text-slate-950">{title}</h3>
+      <div className="mt-3 divide-y divide-slate-100">{children}</div>
+    </section>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+      <span className="text-sm text-slate-500">{label}</span>
+      <span className="max-w-[65%] break-words text-right text-sm font-medium text-slate-900">
+        {value}
+      </span>
+    </div>
+  );
+}
+
 function DetailsSkeleton() {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {Array.from({ length: 10 }, (_, index) => (
-        <div className="h-16 loading-shimmer rounded-md bg-slate-100" key={index} />
+      {Array.from({ length: 8 }, (_, index) => (
+        <div className="h-20 loading-shimmer rounded-lg bg-slate-100" key={index} />
       ))}
     </div>
   );
@@ -995,6 +1155,7 @@ function StockInDialog({
   const [expiresAt, setExpiresAt] = useState("");
   const [noExpirationDate, setNoExpirationDate] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     if (open) {
       setQuantity("");
@@ -1004,6 +1165,7 @@ function StockInDialog({
       setError(null);
     }
   }, [open]);
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const parsed = Number(quantity);
@@ -1023,6 +1185,7 @@ function StockInDialog({
     });
     if (succeeded) onClose();
   }
+
   return (
     <Dialog
       open={open}
@@ -1032,12 +1195,24 @@ function StockInDialog({
     >
       <DialogContent
         aria-describedby="stock-in-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col gap-0 p-0"
+        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[720px] flex-col gap-0 p-0"
       >
-        <DialogHeader className="border-b border-slate-200 px-6 py-5">
-          <DialogTitle>Stock in</DialogTitle>
+        <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
+          <DialogClose asChild>
+            <Button
+              aria-label="Close receive stock"
+              className="absolute right-4 top-4"
+              disabled={pending}
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogClose>
+          <DialogTitle>Receive stock</DialogTitle>
           <DialogDescription id="stock-in-description">
-            Record incoming stock without exposing audit details.
+            Record incoming stock for this product with its batch and expiry information.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -1045,14 +1220,20 @@ function StockInDialog({
           className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5"
           onSubmit={(event) => void submit(event)}
         >
-          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-            <p className="font-medium text-slate-900">{inventory?.productName}</p>
-            <p className="mt-1">
-              Current quantity: <strong>{inventory?.currentQuantity ?? 0}</strong>
-            </p>
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-950">{inventory?.productName}</p>
+              <p className="mt-1 text-xs text-slate-500">SKU: {inventory?.sku}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">On hand</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">
+                {inventory?.currentQuantity ?? 0}
+              </p>
+            </div>
           </div>
           <Field
-            label="Quantity"
+            label="Quantity received"
             id="stock-in-quantity"
             inputMode="numeric"
             value={quantity}
@@ -1092,8 +1273,8 @@ function StockInDialog({
             Cancel
           </Button>
           <Button disabled={pending} form="stock-in-form" type="submit">
-            {pending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-            {pending ? "Adding stock…" : "Add stock"}
+            {pending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <PackagePlus className="h-4 w-4" />}
+            {pending ? "Receiving stock…" : "Receive stock"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1122,6 +1303,14 @@ function StockAdjustmentDialog({
   );
   const [customReason, setCustomReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const currentQuantity = inventory?.currentQuantity ?? 0;
+  const parsedQuantity = Number(quantity);
+  const validQuantity = Number.isInteger(parsedQuantity) && parsedQuantity > 0 ? parsedQuantity : 0;
+  const previewQuantity =
+    movementType === "ADJUSTMENT_IN"
+      ? currentQuantity + validQuantity
+      : Math.max(0, currentQuantity - validQuantity);
+
   useEffect(() => {
     if (open) {
       setMovementType("ADJUSTMENT_IN");
@@ -1131,14 +1320,20 @@ function StockAdjustmentDialog({
       setError(null);
     }
   }, [open]);
+
+  function changeQuantity(delta: number) {
+    const next = Math.max(1, validQuantity + delta);
+    setQuantity(String(next));
+    setError(null);
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const parsed = Number(quantity);
-    if (!Number.isInteger(parsed) || parsed < 1) {
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
       setError("Quantity must be a positive whole number.");
       return;
     }
-    if (movementType === "ADJUSTMENT_OUT" && parsed > (inventory?.currentQuantity ?? 0)) {
+    if (movementType === "ADJUSTMENT_OUT" && parsedQuantity > currentQuantity) {
       setError("Removal quantity cannot exceed current stock.");
       return;
     }
@@ -1149,11 +1344,12 @@ function StockAdjustmentDialog({
     }
     const succeeded = await onSubmit({
       movementType,
-      quantity: parsed,
+      quantity: parsedQuantity,
       reason: selectedReason
     });
     if (succeeded) onClose();
   }
+
   return (
     <Dialog
       open={open}
@@ -1163,68 +1359,168 @@ function StockAdjustmentDialog({
     >
       <DialogContent
         aria-describedby="stock-adjustment-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col gap-0 p-0"
+        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
-        <DialogHeader className="border-b border-slate-200 px-6 py-5">
-          <DialogTitle>Adjust stock</DialogTitle>
+        <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
+          <DialogClose asChild>
+            <Button
+              aria-label="Close quantity adjustment"
+              className="absolute right-4 top-4"
+              disabled={pending}
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogClose>
+          <DialogTitle>Adjust quantity</DialogTitle>
           <DialogDescription id="stock-adjustment-description">
-            Adjust inventory quantities with a clear reason.
+            Correct the recorded stock count. Supplier deliveries should be recorded through Receiving.
           </DialogDescription>
         </DialogHeader>
         <form
           id="stock-adjustment-form"
-          className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5"
+          className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
           onSubmit={(event) => void submit(event)}
         >
-          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-            <p className="font-medium text-slate-900">{inventory?.productName}</p>
-            <p className="mt-1">
-              Current quantity: <strong>{inventory?.currentQuantity ?? 0}</strong>
-            </p>
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-950">{inventory?.productName}</p>
+              <p className="mt-1 text-xs text-slate-500">SKU: {inventory?.sku}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Current stock</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-950">{currentQuantity}</p>
+            </div>
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="adjustment-direction">Adjustment type</Label>
-            <Select
-              id="adjustment-direction"
-              value={movementType}
-              onChange={(event) =>
-                setMovementType(event.target.value as StockAdjustmentRequest["movementType"])
-              }
-            >
-              <option value="ADJUSTMENT_IN">Add quantity</option>
-              <option value="ADJUSTMENT_OUT">Remove quantity</option>
-            </Select>
+            <Label>Adjustment direction</Label>
+            <div className="grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
+              <Button
+                aria-pressed={movementType === "ADJUSTMENT_IN"}
+                className="w-full"
+                type="button"
+                variant={movementType === "ADJUSTMENT_IN" ? "default" : "ghost"}
+                onClick={() => {
+                  setMovementType("ADJUSTMENT_IN");
+                  setError(null);
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Add
+              </Button>
+              <Button
+                aria-pressed={movementType === "ADJUSTMENT_OUT"}
+                className="w-full"
+                disabled={currentQuantity <= 0}
+                type="button"
+                variant={movementType === "ADJUSTMENT_OUT" ? "default" : "ghost"}
+                onClick={() => {
+                  setMovementType("ADJUSTMENT_OUT");
+                  setError(null);
+                }}
+              >
+                <Minus className="h-4 w-4" />
+                Remove
+              </Button>
+            </div>
           </div>
-          <Field
-            label="Quantity"
-            id="adjustment-quantity"
-            inputMode="numeric"
-            value={quantity}
-            onChange={setQuantity}
-          />
+
           <div className="space-y-2">
-            <Label htmlFor="adjustment-reason">Reason</Label>
-            <Select
-              id="adjustment-reason"
-              value={reasonPreset}
-              onChange={(event) => setReasonPreset(event.target.value as AdjustmentReasonPreset)}
-            >
-              {adjustmentReasonOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
+            <Label htmlFor="adjustment-quantity">Quantity</Label>
+            <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
+              <Button
+                aria-label="Decrease adjustment quantity"
+                disabled={pending || validQuantity <= 1}
+                size="icon"
+                type="button"
+                variant="secondary"
+                onClick={() => changeQuantity(-1)}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <Input
+                id="adjustment-quantity"
+                aria-label="Adjustment quantity"
+                className="h-11 text-center text-lg font-semibold tabular-nums"
+                inputMode="numeric"
+                value={quantity}
+                onChange={(event) => {
+                  setQuantity(event.target.value);
+                  setError(null);
+                }}
+              />
+              <Button
+                aria-label="Increase adjustment quantity"
+                disabled={pending}
+                size="icon"
+                type="button"
+                variant="secondary"
+                onClick={() => changeQuantity(1)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
+
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
+            <div>
+              <p className="text-xs font-medium text-slate-500">Current</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">{currentQuantity}</p>
+            </div>
+            <span className="text-lg text-slate-400" aria-hidden="true">→</span>
+            <div>
+              <p className="text-xs font-medium text-slate-500">After adjustment</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">{previewQuantity}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2.5">
+            <Label>Reason</Label>
+            <div className="flex flex-wrap gap-2">
+              {adjustmentReasonOptions.map((option) => {
+                const selected = reasonPreset === option.value;
+                return (
+                  <button
+                    aria-pressed={selected}
+                    className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
+                      selected
+                        ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      setReasonPreset(option.value);
+                      setError(null);
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {reasonPreset === "OTHER" ? (
             <Field
               label="Custom reason"
               id="adjustment-custom-reason"
               value={customReason}
-              onChange={setCustomReason}
+              onChange={(value) => {
+                setCustomReason(value);
+                setError(null);
+              }}
             />
           ) : null}
-          {error ? <p className="text-sm text-red-700">{error}</p> : null}
+
+          <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            Adjustments are for corrections such as physical counts, damaged items, expiry, or returns—not routine supplier restocking.
+          </div>
+
+          {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
         </form>
         <DialogFooter className="border-t border-slate-200 bg-white/95">
           <Button disabled={pending} type="button" variant="secondary" onClick={onClose}>
@@ -1232,7 +1528,7 @@ function StockAdjustmentDialog({
           </Button>
           <Button disabled={pending} form="stock-adjustment-form" type="submit">
             {pending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-            {pending ? "Updating stock…" : "Update stock"}
+            {pending ? "Saving adjustment…" : "Save adjustment"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1272,7 +1568,7 @@ function Field({
   );
 }
 
-function MovementHistoryDialog({
+function StockActivityDialog({
   inventory,
   onClose,
   open,
@@ -1286,43 +1582,87 @@ function MovementHistoryDialog({
   const [items, setItems] = useState<MovementRecord[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [movementType, setMovementType] = useState<"ALL" | InventoryMovementType>("ALL");
+  const [dateRange, setDateRange] = useState<MovementDateRange>("ALL_TIME");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const requestRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
+
   const load = async () => {
     if (!inventory) return;
+    const dateWindow = buildMovementDateWindow(dateRange, customFrom, customTo);
+    if (dateWindow.error) {
+      setError(dateWindow.error);
+      setItems([]);
+      setMeta(null);
+      return;
+    }
+
     const id = ++requestRef.current;
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
     setLoading(true);
     setError(null);
+
+    const baseQuery: Omit<InventoryMovementQuery, "page" | "pageSize"> = {
+      movementType: movementType === "ALL" ? undefined : movementType,
+      from: dateWindow.from,
+      to: dateWindow.to
+    };
+
     try {
-      const result = await waitForMinimumDuration(
-        fetchMovements(
-          inventory.productId,
-          { movementType: movementType === "ALL" ? undefined : movementType, page, pageSize: 10 },
-          { signal: controller.signal }
-        ),
-        MOVEMENTS_MINIMUM_MS
-      );
+      const request =
+        sortOrder === "asc"
+          ? fetchAscendingMovementPage(
+              inventory.productId,
+              baseQuery,
+              page,
+              MOVEMENT_PAGE_SIZE,
+              controller.signal
+            )
+          : fetchMovements(
+              inventory.productId,
+              { ...baseQuery, page, pageSize: MOVEMENT_PAGE_SIZE },
+              { signal: controller.signal }
+            );
+      const result = await waitForMinimumDuration(request, MOVEMENTS_MINIMUM_MS);
+
       if (id === requestRef.current) {
         setItems(result.items);
         setMeta(result.meta);
+        if (result.meta.totalPages > 0 && page > result.meta.totalPages) {
+          setPage(result.meta.totalPages);
+        }
       }
     } catch (loadError) {
-      if (id === requestRef.current && !isAbortError(loadError))
-        setError("Unable to load movement history.");
+      if (id === requestRef.current && !isAbortError(loadError)) {
+        setError("Unable to load stock activity.");
+      }
     } finally {
       if (id === requestRef.current) setLoading(false);
     }
   };
+
   useEffect(() => {
     if (open) void load();
-  }, [open, inventory?.productId, movementType, page, refreshVersion]);
+  }, [
+    open,
+    inventory?.productId,
+    movementType,
+    dateRange,
+    customFrom,
+    customTo,
+    sortOrder,
+    page,
+    refreshVersion
+  ]);
   useEffect(() => () => abortRef.current?.abort(), []);
+
   return (
     <Dialog
       open={open}
@@ -1331,94 +1671,200 @@ function MovementHistoryDialog({
       }}
     >
       <DialogContent
-        aria-describedby="movement-history-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[900px] flex-col gap-0 p-0"
+        aria-describedby="stock-activity-description"
+        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[1040px] flex-col gap-0 p-0"
       >
-        <DialogHeader className="border-b border-slate-200 px-6 py-5">
-          <DialogTitle>Movement history</DialogTitle>
-          <DialogDescription id="movement-history-description">
-            Audited inventory changes for {inventory?.productName ?? "this product"}.
+        <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
+          <DialogClose asChild>
+            <Button
+              aria-label="Close stock activity"
+              className="absolute right-4 top-4"
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogClose>
+          <DialogTitle>Stock activity</DialogTitle>
+          <DialogDescription id="stock-activity-description">
+            Chronological inventory ledger for {inventory?.productName ?? "this product"}.
           </DialogDescription>
         </DialogHeader>
+
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
-          <div className="max-w-xs">
-            <Label htmlFor="movement-type">Movement type</Label>
-            <Select
-              id="movement-type"
-              className="mt-2"
-              value={movementType}
-              onChange={(event) => {
-                setMovementType(event.target.value as typeof movementType);
-                setPage(1);
-              }}
-            >
-              <option value="ALL">All movements</option>
-              {movementTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type.replaceAll("_", " ")}
-                </option>
-              ))}
-            </Select>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="stock-activity-date-range">Date range</Label>
+              <div className="relative">
+                <CalendarDays
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                  aria-hidden="true"
+                />
+                <Select
+                  id="stock-activity-date-range"
+                  className="pl-9"
+                  value={dateRange}
+                  onChange={(event) => {
+                    setDateRange(event.target.value as MovementDateRange);
+                    setPage(1);
+                  }}
+                >
+                  <option value="ALL_TIME">All time</option>
+                  <option value="TODAY">Today</option>
+                  <option value="LAST_7_DAYS">Last 7 days</option>
+                  <option value="LAST_30_DAYS">Last 30 days</option>
+                  <option value="THIS_MONTH">This month</option>
+                  <option value="CUSTOM">Custom range</option>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="movement-type">Movement</Label>
+              <Select
+                id="movement-type"
+                value={movementType}
+                onChange={(event) => {
+                  setMovementType(event.target.value as typeof movementType);
+                  setPage(1);
+                }}
+              >
+                <option value="ALL">All movements</option>
+                {movementTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {formatMovementAction(type)}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="stock-activity-sort">Order</Label>
+              <Select
+                id="stock-activity-sort"
+                value={sortOrder}
+                onChange={(event) => {
+                  setSortOrder(event.target.value as SortOrder);
+                  setPage(1);
+                }}
+              >
+                <option value="desc">Latest first</option>
+                <option value="asc">Oldest first</option>
+              </Select>
+            </div>
           </div>
+
+          {dateRange === "CUSTOM" ? (
+            <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
+              <Field
+                id="stock-activity-from"
+                label="From"
+                type="date"
+                value={customFrom}
+                onChange={(value) => {
+                  setCustomFrom(value);
+                  setPage(1);
+                }}
+              />
+              <Field
+                id="stock-activity-to"
+                label="To"
+                type="date"
+                value={customTo}
+                onChange={(value) => {
+                  setCustomTo(value);
+                  setPage(1);
+                }}
+              />
+            </div>
+          ) : null}
+
           {error ? (
             <Alert variant="destructive">
-              <AlertTitle>Unable to load movement history</AlertTitle>
+              <AlertTitle>Unable to load stock activity</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
+
           {loading && items.length === 0 ? (
             <DetailsSkeleton />
           ) : items.length === 0 && !loading && !error ? (
             <EmptyState
-              description="Stock movements will appear after stock-in, adjustments, or sales."
+              description="Try another date range or movement filter. New stock changes will appear here automatically."
               icon={ClipboardList}
-              title="No movements recorded"
+              title="No stock activity found"
             />
           ) : (
             <div className={loading ? "opacity-60" : ""}>
-              <div className="overflow-hidden rounded-md border border-slate-200">
-                <Table>
-                  <TableHeader className="bg-slate-100">
+              <div className="max-h-[430px] overflow-auto rounded-lg border border-slate-200">
+                <Table className="min-w-[820px]">
+                  <TableHeader className="sticky top-0 z-10 bg-slate-100">
                     <TableRow>
-                      <TableHead>Action</TableHead>
-                      <TableHead className="text-right">Before</TableHead>
-                      <TableHead className="text-right">Change</TableHead>
-                      <TableHead className="text-right">After</TableHead>
-                      <TableHead className="hidden md:table-cell">Reason</TableHead>
-                      <TableHead className="hidden lg:table-cell">Actor</TableHead>
-                      <TableHead>Date</TableHead>
+                      <TableHead className="w-[17%]">Date & time</TableHead>
+                      <TableHead className="w-[22%]">Activity</TableHead>
+                      <TableHead className="w-[10%] text-center">Change</TableHead>
+                      <TableHead className="w-[15%] text-center">Stock</TableHead>
+                      <TableHead className="w-[24%]">Reason</TableHead>
+                      <TableHead className="w-[12%]">Actor</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">
-                          {formatMovementAction(item.type)}
-                        </TableCell>
-                        <TableCell className="text-right">{item.quantityBefore}</TableCell>
-                        <TableCell className="text-right">{formatMovementChange(item)}</TableCell>
-                        <TableCell className="text-right">{item.quantityAfter}</TableCell>
-                        <TableCell className="hidden max-w-48 text-xs text-slate-600 md:table-cell">
-                          {formatMovementReason(item)}
-                        </TableCell>
-                        <TableCell className="hidden text-xs text-slate-600 lg:table-cell">
-                          {item.performedBy?.name ?? "System"}
-                        </TableCell>
-                        <TableCell className="text-xs text-slate-600">
-                          {new Date(item.createdAt).toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {items.map((item) => {
+                      const date = new Date(item.createdAt);
+                      const source = formatMovementSource(item);
+                      const reduction = isReductionMovement(item.type);
+
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell className="align-middle">
+                            <div className="font-medium text-slate-900">
+                              {date.toLocaleDateString()}
+                            </div>
+                            <div className="mt-0.5 text-xs text-slate-500">
+                              {date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-middle">
+                            <div className="font-medium text-slate-900">
+                              {formatMovementAction(item.type)}
+                            </div>
+                            {source ? <div className="mt-0.5 text-xs text-slate-500">{source}</div> : null}
+                          </TableCell>
+                          <TableCell className="align-middle text-center">
+                            <span
+                              className={`inline-flex min-w-12 justify-center rounded-full px-2 py-1 text-sm font-semibold tabular-nums ${
+                                reduction
+                                  ? "bg-red-50 text-red-700"
+                                  : "bg-emerald-50 text-emerald-700"
+                              }`}
+                            >
+                              {formatMovementChange(item)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="align-middle text-center font-medium tabular-nums text-slate-800">
+                            {item.quantityBefore} <span className="text-slate-400">→</span> {item.quantityAfter}
+                          </TableCell>
+                          <TableCell className="align-middle text-sm text-slate-600">
+                            {formatMovementReason(item)}
+                          </TableCell>
+                          <TableCell className="align-middle text-sm text-slate-600">
+                            {item.performedBy?.name ?? "System"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
+
               {meta && meta.totalItems > 0 ? (
                 <AppPagination
                   className="mt-4"
                   isLoading={loading}
-                  itemLabel="movements"
-                  page={page}
-                  pageSize={10}
+                  itemLabel="stock movements"
+                  page={meta.page}
+                  pageSize={MOVEMENT_PAGE_SIZE}
                   totalItems={meta.totalItems}
                   totalPages={meta.totalPages}
                   onPageChange={setPage}
