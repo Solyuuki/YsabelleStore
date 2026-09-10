@@ -705,22 +705,24 @@ function InventoryTable({
   rows: InventoryRecord[];
 }) {
   return (
-    <div className="overflow-hidden rounded-md border border-slate-200">
-      <Table className="table-fixed">
-        <TableHeader className="bg-slate-100">
-          <TableRow>
-            <TableHead className="w-[48%] sm:w-[42%] lg:w-[40%]">Product</TableHead>
-            <TableHead className="hidden md:table-cell md:w-[18%]">SKU</TableHead>
-            <TableHead className="w-[19%] sm:w-[16%]">Stock</TableHead>
-            <TableHead className="hidden sm:table-cell sm:w-[22%] lg:w-[16%]">Expiry</TableHead>
-            <TableHead className="w-[33%] text-right sm:w-[20%] lg:w-[18%]">Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[980px] table-fixed border-collapse text-left text-sm">
+        <thead className="bg-slate-100 text-slate-700">
+          <tr>
+            <th className="w-[29%] px-3 py-2.5">Product</th>
+            <th className="w-[14%] px-3 py-2.5">SKU</th>
+            <th className="w-[9%] px-3 py-2.5 text-center">Stock</th>
+            <th className="w-[16%] px-3 py-2.5 text-center">Restock levels</th>
+            <th className="w-[14%] px-3 py-2.5">Expiry</th>
+            <th className="w-[7%] px-3 py-2.5 text-center">Batches</th>
+            <th className="w-[11%] px-3 py-2.5 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
           {rows.map((row) => (
-            <TableRow
+            <tr
               aria-label={`View inventory for ${row.productName}`}
-              className="cursor-pointer bg-white transition-colors hover:bg-emerald-50/50 focus-visible:bg-emerald-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
+              className="cursor-pointer border-t border-slate-200 bg-white transition-colors hover:bg-emerald-50/40 focus-visible:bg-emerald-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
               key={row.inventoryId}
               tabIndex={0}
               onClick={() => onOpenDetails(row.productId)}
@@ -731,43 +733,45 @@ function InventoryTable({
                 }
               }}
             >
-              <TableCell className="align-middle py-3">
-                <p className="font-medium text-slate-950">{row.productName}</p>
-                <p className="mt-1 text-xs text-slate-500">
-                  {row.barcode ?? row.unit} · {row.category.name}
-                </p>
-                <p className="mt-1 text-xs text-slate-500 md:hidden">SKU: {row.sku}</p>
-              </TableCell>
-              <TableCell className="hidden align-middle break-words text-slate-600 md:table-cell">
-                {row.sku}
-              </TableCell>
-              <TableCell className="align-middle">
-                <p className="font-semibold text-slate-950">{row.currentQuantity}</p>
-                <p className="mt-1 whitespace-nowrap text-xs text-slate-500">
-                  Reorder {row.reorderLevel} · Target {row.targetStockLevel}
-                </p>
-              </TableCell>
-              <TableCell className="hidden align-middle text-slate-600 sm:table-cell">
-                <div className="space-y-1">
-                  <p className="text-sm">
-                    <ExpiryValue quantity={row.currentQuantity} value={row.nearestExpiry} />
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {row.batchCount === 0
-                      ? "No batches"
-                      : `${row.batchCount} ${row.batchCount === 1 ? "batch" : "batches"}`}
-                  </p>
+              <td className="px-3 py-3 align-middle">
+                <div className="font-medium text-slate-950">{row.productName}</div>
+                <div className="mt-0.5 text-xs leading-5 text-slate-500">
+                  {row.barcode ?? "No barcode"} · {row.category.name}
                 </div>
-              </TableCell>
-              <TableCell className="align-middle text-right">
-                <div className="flex justify-end">
+              </td>
+              <td className="px-3 py-3 align-middle break-words text-slate-700">{row.sku}</td>
+              <td className="px-3 py-3 align-middle text-center">
+                <div className="tabular-nums text-base font-semibold text-slate-950">
+                  {row.currentQuantity}
+                </div>
+                <div className="mt-0.5 text-xs text-slate-500">on hand</div>
+              </td>
+              <td className="px-3 py-3 align-middle text-center">
+                <div className="inline-flex items-center gap-2 whitespace-nowrap text-sm tabular-nums text-slate-700">
+                  <span>
+                    <span className="font-semibold text-slate-950">{row.reorderLevel}</span> reorder
+                  </span>
+                  <span className="text-slate-300">/</span>
+                  <span>
+                    <span className="font-semibold text-slate-950">{row.targetStockLevel}</span> target
+                  </span>
+                </div>
+              </td>
+              <td className="px-3 py-3 align-middle text-slate-700">
+                <ExpiryValue quantity={row.currentQuantity} value={row.nearestExpiry} />
+              </td>
+              <td className="px-3 py-3 align-middle text-center tabular-nums text-slate-700">
+                {row.batchCount === 0 ? "None" : row.batchCount}
+              </td>
+              <td className="px-3 py-3 align-middle text-center">
+                <div className="inline-flex justify-center">
                   <StockStatusBadge status={row.stockStatus} />
                 </div>
-              </TableCell>
-            </TableRow>
+              </td>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
+        </tbody>
+      </table>
     </div>
   );
 }
