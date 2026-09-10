@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   ProductCatalogQoLEnhancements,
@@ -45,41 +45,44 @@ export function ProductsPage() {
   const [sortOrder, setSortOrder] = useState<CatalogSortOrder>("desc");
   const importTriggerRef = useRef<HTMLButtonElement | null>(null);
 
+  useEffect(() => {
+    function interceptLegacyImportTrigger(event: MouseEvent) {
+      if (isPackageImportOpen || !window.location.pathname.endsWith("/products")) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const button = target.closest("button");
+      if (!(button instanceof HTMLButtonElement)) {
+        return;
+      }
+
+      if (button.textContent?.trim() !== IMPORT_BUTTON_LABEL) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      importTriggerRef.current = button;
+      setIsPackageImportOpen(true);
+    }
+
+    document.addEventListener("click", interceptLegacyImportTrigger, true);
+    return () => {
+      document.removeEventListener("click", interceptLegacyImportTrigger, true);
+    };
+  }, [isPackageImportOpen]);
+
   function handleSortOrderChange(nextOrder: CatalogSortOrder) {
     if (nextOrder === sortOrder) return;
     activeCatalogSortOrder = nextOrder;
     setSortOrder(nextOrder);
     setCatalogRevision((current) => current + 1);
   }
-
-  function interceptLegacyImportTrigger(event: MouseEvent) {
-    if (isPackageImportOpen || !window.location.pathname.endsWith("/products")) {
-      return;
-    }
-
-    const target = event.target;
-    if (!(target instanceof Element)) {
-      return;
-    }
-
-    const button = target.closest("button");
-    if (!(button instanceof HTMLButtonElement)) {
-      return;
-    }
-
-    if (button.textContent?.trim() !== IMPORT_BUTTON_LABEL) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    importTriggerRef.current = button;
-    setIsPackageImportOpen(true);
-  }
-
-  // Capture the legacy import button without coupling the new package flow to the large legacy page.
-  document.removeEventListener("click", interceptLegacyImportTrigger, true);
-  document.addEventListener("click", interceptLegacyImportTrigger, true);
 
   return (
     <>
