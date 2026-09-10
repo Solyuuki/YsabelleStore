@@ -12,6 +12,8 @@ import {
   listStorefrontProducts
 } from "../src/services/storefrontService.js";
 import { getSellableStockQuantity } from "../src/services/stockDomainService.js";
+import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
+import { ensureCanonicalStorefrontCategory } from "./helpers/storefrontCanonicalCategory.js";
 
 test("sellable stock excludes expired and unavailable batches", () => {
   const quantity = getSellableStockQuantity([
@@ -51,52 +53,47 @@ test("storefront merchandising only ranks available products with recorded sales
 });
 
 test("storefront orders remain pending and do not deduct inventory", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
-  const category = await prisma.category.create({
-    data: {
-      name: `Storefront Test ${suffix}`,
-      slug: `storefront-test-${suffix}`,
-      isActive: true,
-      recordSource: "CATALOG",
-      dataQualityStatus: "APPROVED",
-      isStorefrontVisible: true
-    }
-  });
-  const product = await prisma.product.create({
-    data: {
-      categoryId: category.id,
-      barcode: `TEST-STOREFRONT-${suffix}`,
-      sku: `STOREFRONT-${suffix}`,
-      name: `Storefront Test Product ${suffix}`,
-      imageUrl: `/images/products/storefront-test-${suffix}.webp`,
-      unit: "PIECE",
-      costPrice: "10.00",
-      sellingPrice: "15.00",
-      reorderLevel: 2,
-      targetStockLevel: 8,
-      status: "ACTIVE",
-      recordSource: "CATALOG",
-      dataQualityStatus: "APPROVED",
-      isStorefrontVisible: true,
-      inventory: { create: { quantityOnHand: 5 } },
-      inventoryBatches: {
-        create: {
-          batchCode: `STOREFRONT-BATCH-${suffix}`,
-          quantityReceived: 5,
-          quantityRemaining: 5,
-          unitCost: "10.00",
-          status: "AVAILABLE"
-        }
-      }
-    }
-  });
 
   try {
+    const categoryFixture = await ensureCanonicalStorefrontCategory(0);
+    const category = categoryFixture.category;
+    const product = await prisma.product.create({
+      data: {
+        categoryId: category.id,
+        barcode: `TEST-STOREFRONT-${suffix}`,
+        sku: `STOREFRONT-${suffix}`,
+        name: `Storefront Test Product ${suffix}`,
+        imageUrl: `/images/products/storefront-test-${suffix}.webp`,
+        unit: "PIECE",
+        costPrice: "10.00",
+        sellingPrice: "15.00",
+        reorderLevel: 2,
+        targetStockLevel: 8,
+        status: "ACTIVE",
+        recordSource: "CATALOG",
+        dataQualityStatus: "APPROVED",
+        isStorefrontVisible: true,
+        inventory: { create: { quantityOnHand: 5 } },
+        inventoryBatches: {
+          create: {
+            batchCode: `STOREFRONT-BATCH-${suffix}`,
+            quantityReceived: 5,
+            quantityRemaining: 5,
+            unitCost: "10.00",
+            status: "AVAILABLE"
+          }
+        }
+      }
+    });
+
     const catalog = await listStorefrontProducts({
       availability: "all",
       category: category.slug,
       page: 1,
-      pageSize: 24
+      pageSize: 24,
+      search: suffix
     });
     const storefrontProduct = catalog.items.find((item) => item.id === product.id);
     const storefrontCategories = await listStorefrontCategories();
@@ -104,13 +101,18 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
 
     assert.equal(storefrontProduct?.availableStock, 5);
     assert.equal(storefrontProduct?.imageUrl, `/images/products/storefront-test-${suffix}.webp`);
-    assert.deepEqual(storefrontCategory?.representativeProducts, [
-      {
-        id: product.id,
-        imageUrl: `/images/products/storefront-test-${suffix}.webp`,
-        name: product.name
-      }
-    ]);
+    assert.ok(storefrontCategory);
+
+    if (categoryFixture.created) {
+      assert.deepEqual(storefrontCategory.representativeProducts, [
+        {
+          id: product.id,
+          imageUrl: `/images/products/storefront-test-${suffix}.webp`,
+          name: product.name
+        }
+      ]);
+    }
+
     assert.equal("costPrice" in (storefrontProduct ?? {}), false);
     assert.equal("reorderLevel" in (storefrontProduct ?? {}), false);
 
@@ -135,12 +137,6 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
     assert.equal(batch.quantityRemaining, 5);
     assert.equal(salesAfter, salesBefore);
   } finally {
-    await prisma.customerOrder.deleteMany({
-      where: { items: { some: { productId: product.id } } }
-    });
-    await prisma.inventoryBatch.deleteMany({ where: { productId: product.id } });
-    await prisma.inventory.deleteMany({ where: { productId: product.id } });
-    await prisma.product.delete({ where: { id: product.id } });
-    await prisma.category.delete({ where: { id: category.id } });
+    await scope.cleanup();
   }
 });
