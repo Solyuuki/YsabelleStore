@@ -123,7 +123,7 @@ export function ReceivingPage() {
         confirmNewBarcode
       });
 
-      if (!response.success || !response.data) {
+      if (!response.success) {
         const code = response.error?.code;
         const details = response.error?.details;
 
@@ -150,6 +150,12 @@ export function ReceivingPage() {
 
         setBarcodeConfirmation(null);
         setError(response.message || "Unable to receive stock.");
+        return false;
+      }
+
+      if (!response.data) {
+        setBarcodeConfirmation(null);
+        setError("The receiving service did not return the updated inventory record.");
         return false;
       }
 
