@@ -115,6 +115,44 @@ test(
 );
 
 test(
+  "manufacturer barcode discovered later becomes primary while preserving the printed YSB fallback",
+  { concurrency: false },
+  async () => {
+    const product = await createProduct(productInput({ barcode: null }));
+    const internalBarcode = product.barcode;
+    const manufacturerBarcode = externalBarcode("LATER-MFG");
+
+    assert.match(internalBarcode ?? "", /^YSB-/);
+
+    const registered = await enrollReceivingBarcode({
+      productId: product.id,
+      barcode: manufacturerBarcode,
+      confirmed: true,
+      sourceReference: "manufacturer-discovery-qa"
+    });
+
+    const [registrations, persisted] = await Promise.all([
+      listProductBarcodes(product.id),
+      prisma.product.findUniqueOrThrow({
+        where: { id: product.id },
+        select: { barcode: true }
+      })
+    ]);
+
+    assert.equal(registered.created, true);
+    assert.equal(persisted.barcode, manufacturerBarcode);
+    assert.equal(registrations.filter((record) => record.isPrimary).length, 1);
+    assert.equal(registrations.find((record) => record.isPrimary)?.barcode, manufacturerBarcode);
+    assert.equal(registrations.find((record) => record.barcode === internalBarcode)?.isPrimary, false);
+    assert.equal(registrations.some((record) => record.barcode === internalBarcode), true);
+
+    const legacyLabelResolution = await resolveProductBarcode(internalBarcode ?? "");
+    assert.equal(legacyLabelResolution.found, true);
+    assert.equal(legacyLabelResolution.product?.id, product.id);
+  }
+);
+
+test(
   "secondary manufacturer barcode is idempotent and resolves in POS and inventory without becoming primary",
   { concurrency: false },
   async () => {
