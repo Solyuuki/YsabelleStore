@@ -88,3 +88,4 @@
 | 2026-08-30 | Review generated artifact updates before commit.      | Documentation and validation review.                                | Scripts / CI                                                                    | Normal   |
 | 2026-09-01 | Review generated artifact updates before commit.      | Documentation and validation review.                                | Other                                                                           | Normal   |
 | 2026-09-06 | Review generated artifact updates before commit.      | Backend/database validation and migration application.              | Scripts / CI<br>Other<br>Backend<br>Docs                                        | High     |
+| 2026-09-10 | Review generated artifact updates before commit.      | Backend/database validation and migration application.              | Backend                                                                         | High     |

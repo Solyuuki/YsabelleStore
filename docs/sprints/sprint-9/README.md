@@ -35,3 +35,4 @@ Sprint 9 was created from the Sprint 8 release baseline already promoted into th
 | 2026-08-30 | M1 Abarado | m1/v0.9/feat/customer-social-auth       | Sprint documentation and validation evidence were updated for the current branch.                                | Passed            |
 | 2026-09-01 | M1 Abarado | m1/v0.9/feat/customer-mobile-otp        | Sprint documentation and validation evidence were updated for the current branch.                                | Passed            |
 | 2026-09-06 | M1 Abarado | unknown                                 | Sprint documentation and validation evidence were updated for the current branch.                                | Passed            |
+| 2026-09-10 | M1 Abarado | m1/v0.9/feat/catalog-data-readiness     | Sprint documentation and validation evidence were updated for the current branch.                                | Passed            |

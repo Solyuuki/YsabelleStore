@@ -76,9 +76,9 @@ This artifact set is reconstructed from repository evidence available on `sprint
 | Item                 | Value                                                                            |
 | -------------------- | -------------------------------------------------------------------------------- |
 | Validation status    | Passed                                                                           |
-| Last update          | 2026-09-06                                                                       |
-| Current branch       | unknown                                                                          |
-| Current work areas   | Scripts / CI<br>Other<br>Backend<br>Docs                                         |
+| Last update          | 2026-09-10                                                                       |
+| Current branch       | m1/v0.9/feat/catalog-data-readiness                                              |
+| Current work areas   | Backend                                                                          |
 | Current work summary | Updated the implementation evidence and validation notes for the current branch. |
 
 ## Current Work Snapshot
