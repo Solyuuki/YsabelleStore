@@ -21,22 +21,22 @@ test("stock truth excludes expired and ineligible batches without changing physi
         status: InventoryBatchStatus.AVAILABLE
       },
       {
-        batchCode: "EXPIRED",
+        batchCode: "EXPIRED-BY-DATE",
         expiresAt: new Date("2026-09-10T00:00:00.000Z"),
         quantityRemaining: 5,
         status: InventoryBatchStatus.AVAILABLE
       },
       {
-        batchCode: "QUARANTINED",
+        batchCode: "EXPIRED-STATUS",
         expiresAt: new Date("2026-10-20T00:00:00.000Z"),
         quantityRemaining: 7,
-        status: InventoryBatchStatus.QUARANTINED
+        status: InventoryBatchStatus.EXPIRED
       },
       {
-        batchCode: "RECALLED",
+        batchCode: "REMOVED",
         expiresAt: new Date("2026-11-01T00:00:00.000Z"),
         quantityRemaining: 11,
-        status: InventoryBatchStatus.RECALLED
+        status: InventoryBatchStatus.REMOVED
       }
     ],
     businessNow
@@ -44,7 +44,7 @@ test("stock truth excludes expired and ineligible batches without changing physi
 
   assert.equal(truth.physicalOnHand, 33);
   assert.equal(truth.sellableStock, 10);
-  assert.equal(truth.expiredStock, 5);
+  assert.equal(truth.expiredStock, 12);
   assert.equal(truth.sellableBatchCount, 1);
   assert.equal(truth.batchCount, 4);
 });
@@ -99,7 +99,7 @@ test("expiry is evaluated by Asia/Manila business date and remains sellable thro
   );
 });
 
-test("zero and depleted quantities never become sellable stock", () => {
+test("zero, depleted, and removed quantities never become sellable stock", () => {
   const truth = calculateStockTruth(
     [
       {
@@ -111,12 +111,17 @@ test("zero and depleted quantities never become sellable stock", () => {
         expiresAt: null,
         quantityRemaining: 8,
         status: InventoryBatchStatus.DEPLETED
+      },
+      {
+        expiresAt: null,
+        quantityRemaining: 4,
+        status: InventoryBatchStatus.REMOVED
       }
     ],
     businessNow
   );
 
-  assert.equal(truth.physicalOnHand, 8);
+  assert.equal(truth.physicalOnHand, 12);
   assert.equal(truth.sellableStock, 0);
   assert.equal(truth.sellableBatchCount, 0);
 });
