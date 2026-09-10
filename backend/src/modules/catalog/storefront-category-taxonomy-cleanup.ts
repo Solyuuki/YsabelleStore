@@ -33,29 +33,56 @@ const LEGACY_CATEGORY_NAMES = [
 const CLEANUP_REFERENCE_TYPE = "CATALOG_TAXONOMY_RETIREMENT";
 const CLEANUP_REFERENCE_ID = "restricted-alcohol-v1";
 
+type CategoryIdentityRow = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+type SourceMappingRow = {
+  sourceProductId: string;
+  sourceCategory: string;
+  canonicalProduct: {
+    id: string;
+    categoryId: string;
+    inventory: {
+      id: string;
+      quantityOnHand: number;
+    } | null;
+  };
+};
+
+type PostRemapCategoryRow = {
+  id: string;
+  name: string;
+  _count: {
+    products: number;
+  };
+};
+
 export type StorefrontTaxonomyCleanupClient = {
   $transaction<T>(callback: (tx: StorefrontTaxonomyCleanupClient) => Promise<T>): Promise<T>;
   category: {
-    findMany(args?: unknown): Promise<any[]>;
-    create(args: unknown): Promise<any>;
-    update(args: unknown): Promise<any>;
-    delete(args: unknown): Promise<any>;
+    findMany(args?: unknown): Promise<unknown[]>;
+    create(args: unknown): Promise<unknown>;
+    update(args: unknown): Promise<unknown>;
+    delete(args: unknown): Promise<unknown>;
   };
   sarimaSourceProductMapping: {
-    findMany(args?: unknown): Promise<any[]>;
+    findMany(args?: unknown): Promise<unknown[]>;
   };
   product: {
-    update(args: unknown): Promise<any>;
+    update(args: unknown): Promise<unknown>;
   };
   inventory: {
-    update(args: unknown): Promise<any>;
+    update(args: unknown): Promise<unknown>;
   };
   inventoryBatch: {
     updateMany(args: unknown): Promise<{ count: number }>;
   };
   inventoryMovement: {
-    findFirst(args: unknown): Promise<any | null>;
-    create(args: unknown): Promise<any>;
+    findFirst(args: unknown): Promise<unknown | null>;
+    create(args: unknown): Promise<unknown>;
   };
 };
 
@@ -63,7 +90,7 @@ function normalize(value: string) {
   return value.trim().toLocaleLowerCase("en-US");
 }
 
-function assertSourceMappingSet(mappings: any[]) {
+function assertSourceMappingSet(mappings: SourceMappingRow[]) {
   const restrictedIds = new Set<string>(RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS);
   const seenRestrictedIds = new Set<string>();
 
@@ -102,7 +129,7 @@ function assertSourceMappingSet(mappings: any[]) {
 
 async function ensureCategory(
   tx: StorefrontTaxonomyCleanupClient,
-  existingCategories: any[],
+  existingCategories: CategoryIdentityRow[],
   input: {
     name: string;
     slug: string;
@@ -110,7 +137,7 @@ async function ensureCategory(
     visible: boolean;
     quality: CatalogQualityStatus;
   }
-) {
+): Promise<CategoryIdentityRow> {
   const nameMatches = existingCategories.filter((row) => normalize(row.name) === normalize(input.name));
   const slugMatches = existingCategories.filter((row) => normalize(row.slug) === normalize(input.slug));
   const candidateIds = new Set([...nameMatches, ...slugMatches].map((row) => row.id));
@@ -132,12 +159,12 @@ async function ensureCategory(
   };
 
   if (existing) {
-    const updated = await tx.category.update({ where: { id: existing.id }, data });
+    const updated = (await tx.category.update({ where: { id: existing.id }, data })) as CategoryIdentityRow;
     Object.assign(existing, updated);
     return updated;
   }
 
-  const created = await tx.category.create({ data });
+  const created = (await tx.category.create({ data })) as CategoryIdentityRow;
   existingCategories.push(created);
   return created;
 }
@@ -146,7 +173,7 @@ export async function executeStorefrontCategoryTaxonomyCleanup(input: {
   client: StorefrontTaxonomyCleanupClient;
 }) {
   return input.client.$transaction(async (tx) => {
-    const [categories, mappings] = await Promise.all([
+    const [rawCategories, rawMappings] = await Promise.all([
       tx.category.findMany({
         select: {
           id: true,
@@ -170,10 +197,12 @@ export async function executeStorefrontCategoryTaxonomyCleanup(input: {
         }
       })
     ]);
+    const categories = rawCategories as CategoryIdentityRow[];
+    const mappings = rawMappings as SourceMappingRow[];
 
     assertSourceMappingSet(mappings);
 
-    const categoryByPublicName = new Map<string, any>();
+    const categoryByPublicName = new Map<string, CategoryIdentityRow>();
     for (const taxonomy of STOREFRONT_CATEGORY_TAXONOMY) {
       const category = await ensureCategory(tx, categories, {
         name: taxonomy.name,
@@ -289,13 +318,13 @@ export async function executeStorefrontCategoryTaxonomyCleanup(input: {
     let legacyCategoriesDeleted = 0;
     let legacyCategoriesDeactivated = 0;
 
-    const postRemapCategories = await tx.category.findMany({
+    const postRemapCategories = (await tx.category.findMany({
       select: {
         id: true,
         name: true,
         _count: { select: { products: true } }
       }
-    });
+    })) as PostRemapCategoryRow[];
 
     for (const category of postRemapCategories) {
       const normalizedName = normalize(category.name);
