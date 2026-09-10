@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LineChart,
   Package,
+  PackageCheck,
   ReceiptText,
   History,
   ScanBarcode,
@@ -21,6 +22,7 @@ export type AppRoutePath =
   | "/pos"
   | "/products"
   | "/inventory"
+  | "/receiving"
   | "/sales"
   | "/forecast"
   | "/historical-sales"
@@ -66,6 +68,13 @@ export const appRoutes: readonly AppRoute[] = [
     description: "Stock monitoring and movement workspace",
     icon: Boxes,
     allowedRoles: ["OWNER", "STAFF"]
+  },
+  {
+    path: "/receiving",
+    label: "Receiving",
+    description: "Barcode-aware incoming stock and batch receiving",
+    icon: PackageCheck,
+    allowedRoles: ["OWNER"]
   },
   {
     path: "/sales",
