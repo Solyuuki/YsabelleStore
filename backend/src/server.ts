@@ -5,6 +5,7 @@ import { corsOrigins, databaseTarget, env } from "./config/env.js";
 import { ensureInternalCatalogBarcodes } from "./services/catalogInternalBarcodeBootstrapService.js";
 import { ensureKnownCatalogBarcodes } from "./services/catalogKnownBarcodeBootstrapService.js";
 import { ensureCatalogInventoryShells } from "./services/inventoryBootstrapService.js";
+import { synchronizeLegacyPrimaryBarcodes } from "./services/productBarcodeService.js";
 
 const app = createApp();
 
@@ -51,6 +52,11 @@ const server = app.listen(env.PORT, () => {
           `[catalog-internal-barcode-bootstrap] ${blocker.sku} blocked (${blocker.code}): ${blocker.message}`
         );
       }
+
+      const identityResult = await synchronizeLegacyPrimaryBarcodes();
+      console.info(
+        `[product-barcode-identity-sync] scanned=${identityResult.scanned} synchronized=${identityResult.synchronized}`
+      );
     })
     .catch((error) => {
       console.error("[catalog-barcode-bootstrap] Unable to apply catalog barcode bootstrap.", error);
