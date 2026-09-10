@@ -22,6 +22,7 @@ const mainRoutes: readonly AppRoutePath[] = [
   "/pos",
   "/products",
   "/inventory",
+  "/receiving",
   "/sales"
 ];
 
