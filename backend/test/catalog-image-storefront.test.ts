@@ -5,22 +5,14 @@ import test from "node:test";
 import { prisma } from "../src/database/prismaClient.js";
 import { listStorefrontProducts } from "../src/services/storefrontService.js";
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
+import { ensureCanonicalStorefrontCategory } from "./helpers/storefrontCanonicalCategory.js";
 
 test("storefront accepts an active approved CIQE image and keeps list payload card-only", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
 
   try {
-    const category = await prisma.category.create({
-      data: {
-        dataQualityStatus: "APPROVED",
-        isActive: true,
-        isStorefrontVisible: true,
-        name: `CIQE Storefront ${suffix}`,
-        recordSource: "CATALOG",
-        slug: `ciqe-storefront-${suffix}`
-      }
-    });
+    const { category } = await ensureCanonicalStorefrontCategory(0);
     const product = await prisma.product.create({
       data: {
         barcode: `CIQE-BARCODE-${suffix}`,
@@ -63,7 +55,8 @@ test("storefront accepts an active approved CIQE image and keeps list payload ca
       availability: "all",
       category: category.slug,
       page: 1,
-      pageSize: 24
+      pageSize: 24,
+      search: suffix
     });
     const storefrontProduct = catalog.items.find((item) => item.id === product.id);
 
@@ -80,16 +73,7 @@ test("storefront still accepts legacy curated product images without an active C
   const suffix = randomUUID().slice(0, 8);
 
   try {
-    const category = await prisma.category.create({
-      data: {
-        dataQualityStatus: "APPROVED",
-        isActive: true,
-        isStorefrontVisible: true,
-        name: `Legacy Storefront ${suffix}`,
-        recordSource: "CATALOG",
-        slug: `legacy-storefront-${suffix}`
-      }
-    });
+    const { category } = await ensureCanonicalStorefrontCategory(0);
     const imageUrl = `/images/products/legacy-${suffix}.webp`;
     const product = await prisma.product.create({
       data: {
@@ -111,7 +95,8 @@ test("storefront still accepts legacy curated product images without an active C
       availability: "all",
       category: category.slug,
       page: 1,
-      pageSize: 24
+      pageSize: 24,
+      search: suffix
     });
     const storefrontProduct = catalog.items.find((item) => item.id === product.id);
 
