@@ -69,6 +69,8 @@
     "prisma:validate": "prisma validate --schema database/prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema database/prisma/schema.prisma",
     "prisma:sync:dev": "prisma db push --schema database/prisma/schema.prisma --skip-generate && npm run prisma:generate",
+    "db:migration-history:doctor": "node --env-file=.env --import tsx backend/src/scripts/reconcileLocalMigrationHistory.ts",
+    "db:migration-history:repair": "node --env-file=.env --import tsx backend/src/scripts/reconcileLocalMigrationHistory.ts --apply",
     "barcode:migration:doctor": "node --env-file=.env --import tsx backend/src/scripts/productBarcodeMigrationDoctor.ts",
     "test:barcode-identity": "node --env-file=.env --import tsx --test --test-concurrency=1 backend/test/product-barcode-identity.test.ts",
     "db:seed": "node --env-file=.env database/seed/development-preflight.mjs",
