@@ -19,9 +19,11 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.2",
     "multer": "^2.2.0",
     "read-excel-file": "^9.3.1",
     "saxen": "^11.0.2",
+    "tesseract.js": "^7.0.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
