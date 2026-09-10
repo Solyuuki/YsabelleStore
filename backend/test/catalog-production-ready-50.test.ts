@@ -83,10 +83,12 @@ test("preflight preserves price/category/inventory and plans only catalog fields
     duplicateCandidatesRight: []
   }));
 
-  const client = {
+  let client: ProductionCatalog50Client;
+  client = {
     product: {
-      findMany: async (args: any) => {
-        if (args?.select?.barcode && !args?.select?.name) {
+      findMany: async (args: unknown) => {
+        const query = args as { select?: { barcode?: boolean; name?: boolean } };
+        if (query.select?.barcode && !query.select?.name) {
           return [];
         }
         return products;
@@ -99,8 +101,9 @@ test("preflight preserves price/category/inventory and plans only catalog fields
     catalogAuditLog: {
       create: async () => ({})
     },
-    $transaction: async (callback: any) => callback(client)
-  } as unknown as ProductionCatalog50Client;
+    $transaction: async <T>(callback: (tx: ProductionCatalog50Client) => Promise<T>) =>
+      callback(client)
+  };
 
   const plan = await buildProductionCatalog50Plan({ client });
   assert.equal(plan.summary.selectedProducts, PRODUCTION_CATALOG_50_EXPECTED_COUNT);
