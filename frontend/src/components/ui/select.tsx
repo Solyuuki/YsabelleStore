@@ -3,7 +3,7 @@ import { forwardRef, type SelectHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
-  function Select({ className, ...props }, ref) {
+  function Select({ className, style, ...props }, ref) {
     return (
       <select
         className={cn(
@@ -11,6 +11,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
           className
         )}
         ref={ref}
+        style={{ colorScheme: "light", ...style }}
         {...props}
       />
     );
