@@ -9,6 +9,7 @@ import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ProductsPage } from "@/pages/ProductsPage";
 import { InventoryPage } from "@/pages/InventoryPage";
+import { ReceivingPage } from "@/pages/ReceivingPage";
 import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
@@ -30,6 +31,7 @@ const validRoutePaths = new Set<string>([
   "/pos",
   "/products",
   "/inventory",
+  "/receiving",
   "/sales",
   "/forecast",
   "/historical-sales",
@@ -269,6 +271,8 @@ function renderRoute(
       return <ProductsPage />;
     case "/inventory":
       return <InventoryPage />;
+    case "/receiving":
+      return <ReceivingPage />;
     case "/sales":
       return <SalesPage />;
     case "/forecast":
