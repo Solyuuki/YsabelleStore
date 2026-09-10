@@ -15,6 +15,7 @@ import {
   normalizeProductIdentity
 } from "../src/utils/catalogIdentity.js";
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
+import { ensureCanonicalStorefrontCategory } from "./helpers/storefrontCanonicalCategory.js";
 
 test("canonical size notation normalizes equivalent units without collapsing variants", () => {
   assert.equal(normalizeCanonicalProductName("Coca-Cola 1500 ml"), "Coca-Cola 1.5L");
@@ -99,16 +100,11 @@ test("storefront and merchandising enforce durable catalog quality fields", asyn
   const suffix = randomUUID().slice(0, 8);
 
   try {
-    const category = await prisma.category.create({
-      data: {
-        dataQualityStatus: "APPROVED",
-        isActive: true,
-        isStorefrontVisible: true,
-        name: `Quality Gate ${suffix}`,
-        recordSource: "CATALOG",
-        slug: `quality-gate-${suffix}`
-      }
-    });
+    const categoryFixture = await ensureCanonicalStorefrontCategory(0);
+    const category = categoryFixture.category;
+    const baselineCategories = await listStorefrontCategories();
+    const baselineProductCount =
+      baselineCategories.find((item) => item.id === category.id)?.productCount ?? 0;
     const approved = await createSellableProduct({
       categoryId: category.id,
       name: `Approved Product ${suffix}`,
@@ -182,7 +178,8 @@ test("storefront and merchandising enforce durable catalog quality fields", asyn
         availability: "all",
         category: category.slug,
         page: 1,
-        pageSize: 24
+        pageSize: 24,
+        search: suffix
       }),
       listStorefrontCategories(),
       listStorefrontMerchandising()
@@ -206,14 +203,27 @@ test("storefront and merchandising enforce durable catalog quality fields", asyn
       false
     );
     const storefrontCategory = categories.find((item) => item.id === category.id);
-    assert.equal(storefrontCategory?.productCount, 1);
-    assert.deepEqual(storefrontCategory?.representativeProducts, [
-      {
-        id: approved.id,
-        imageUrl: approved.imageUrl,
-        name: approved.name
-      }
-    ]);
+    assert.equal(storefrontCategory?.productCount, baselineProductCount + 1);
+
+    if (categoryFixture.created) {
+      assert.deepEqual(storefrontCategory?.representativeProducts, [
+        {
+          id: approved.id,
+          imageUrl: approved.imageUrl,
+          name: approved.name
+        }
+      ]);
+    } else {
+      assert.equal(
+        storefrontCategory?.representativeProducts.some((product) => product.id === fixture.id),
+        false
+      );
+      assert.equal(
+        storefrontCategory?.representativeProducts.some((product) => product.id === imageLess.id),
+        false
+      );
+    }
+
     assert.equal(
       merchandising.trending.some((entry) => entry.product.id === fixture.id),
       false
