@@ -4,11 +4,11 @@ import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 import {
-  importGoogleDriveProductPackage,
+  downloadGoogleDriveProductPackage,
   importProductPackage,
-  previewGoogleDriveProductPackage,
   previewProductPackage
 } from "../services/productPackageImportService.js";
+import { preparePackageImageIdentity } from "../services/productPackageImageIdentityService.js";
 
 type RequestWithFile = Parameters<RequestHandler>[0] & {
   file?: Express.Multer.File;
@@ -40,7 +40,8 @@ function getGoogleDriveLink(request: Parameters<RequestHandler>[0]) {
 
 export const previewProductImportController: RequestHandler = async (request, response, next) => {
   try {
-    const file = getUploadedPackage(request as RequestWithFile);
+    const uploaded = getUploadedPackage(request as RequestWithFile);
+    const file = await preparePackageImageIdentity(uploaded);
     const result = await previewProductPackage(file);
 
     response
@@ -53,7 +54,8 @@ export const previewProductImportController: RequestHandler = async (request, re
 
 export const importProductsController: RequestHandler = async (request, response, next) => {
   try {
-    const file = getUploadedPackage(request as RequestWithFile);
+    const uploaded = getUploadedPackage(request as RequestWithFile);
+    const file = await preparePackageImageIdentity(uploaded);
     const actor = getAuthenticatedUser(request);
     const result = await importProductPackage(file, actor?.id);
 
@@ -71,7 +73,9 @@ export const previewGoogleDriveProductImportController: RequestHandler = async (
   next
 ) => {
   try {
-    const result = await previewGoogleDriveProductPackage(getGoogleDriveLink(request));
+    const downloaded = await downloadGoogleDriveProductPackage(getGoogleDriveLink(request));
+    const file = await preparePackageImageIdentity(downloaded);
+    const result = await previewProductPackage(file, "GOOGLE_DRIVE");
     response
       .status(200)
       .json(createSuccessResponse("Google Drive product package scan completed successfully.", result));
@@ -87,7 +91,9 @@ export const importGoogleDriveProductsController: RequestHandler = async (
 ) => {
   try {
     const actor = getAuthenticatedUser(request);
-    const result = await importGoogleDriveProductPackage(getGoogleDriveLink(request), actor?.id);
+    const downloaded = await downloadGoogleDriveProductPackage(getGoogleDriveLink(request));
+    const file = await preparePackageImageIdentity(downloaded);
+    const result = await importProductPackage(file, actor?.id, "GOOGLE_DRIVE");
     response
       .status(201)
       .json(createSuccessResponse("Google Drive product package import completed successfully.", result));
