@@ -17,6 +17,10 @@ function fail(message) {
   throw new Error(`QA reset aborted: ${message}`);
 }
 
+function normalizeQaName(value) {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("en-US");
+}
+
 try {
   const products = await prisma.product.findMany({
     where: { sku: { in: targetSkus } },
@@ -63,7 +67,7 @@ try {
     if (product.barcode !== target.barcode) {
       fail(`${target.sku} barcode mismatch. Expected ${target.barcode}, found ${product.barcode ?? "NULL"}.`);
     }
-    if (product.name !== target.name) {
+    if (normalizeQaName(product.name) !== normalizeQaName(target.name)) {
       fail(`${target.sku} name mismatch. Expected "${target.name}", found "${product.name}".`);
     }
     if (product._count.saleItems > 0 || product._count.customerOrderItems > 0) {
@@ -79,7 +83,7 @@ try {
 
   if (!apply) {
     console.log("\nDry run only. All five targets passed safety checks.");
-    console.log("Run again with --apply to remove them for the 5-product ZIP QA test.");
+    console.log("Run again with --apply to remove them for the 5-product package QA test.");
     process.exitCode = 0;
   } else {
     const productIds = products.map((product) => product.id);
@@ -115,7 +119,7 @@ try {
     if (remaining !== 0) fail(`${remaining} target product(s) still remain after reset.`);
 
     console.log("\nQA reset complete: removed exactly 5 target products and non-transactional dependent records.");
-    console.log("You can now test ysabelle_qa_5_products.zip as five new products.");
+    console.log("You can now test the five-product Local or Google Drive package as new products.");
   }
 } finally {
   await prisma.$disconnect();
