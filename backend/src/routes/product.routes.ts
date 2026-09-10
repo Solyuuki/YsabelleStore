@@ -8,6 +8,12 @@ import {
   uploadProductImageController
 } from "../controllers/productImageController.js";
 import {
+  enrollReceivingBarcodeController,
+  listProductBarcodesController,
+  registerProductBarcodeController,
+  setPrimaryProductBarcodeController
+} from "../controllers/productBarcodeController.js";
+import {
   changeProductStatusController,
   createProductController,
   getProductController,
@@ -54,6 +60,26 @@ productRouter.post(
 productRouter.get("/categories", requireRole("OWNER", "STAFF"), listCategoriesController);
 productRouter.post("/", requireRole("OWNER"), createProductController);
 productRouter.get("/", requireRole("OWNER", "STAFF"), listProductsController);
+productRouter.get(
+  "/:productId/barcodes",
+  requireRole("OWNER", "STAFF"),
+  listProductBarcodesController
+);
+productRouter.post(
+  "/:productId/barcodes",
+  requireRole("OWNER"),
+  registerProductBarcodeController
+);
+productRouter.patch(
+  "/:productId/barcodes/:barcodeId/primary",
+  requireRole("OWNER"),
+  setPrimaryProductBarcodeController
+);
+productRouter.post(
+  "/:productId/barcodes/enroll-receiving",
+  requireRole("OWNER"),
+  enrollReceivingBarcodeController
+);
 productRouter.post(
   "/:id/images",
   requireRole("OWNER"),
