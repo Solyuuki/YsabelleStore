@@ -59,7 +59,6 @@ export async function executeReviewedCatalogImage(options: {
   apply: boolean;
   repositoryRoot?: string;
 }) {
-  const repositoryRoot = path.resolve(options.repositoryRoot ?? process.cwd());
   const [sources, images] = await Promise.all([
     readJsonArray<SarimaSourceIdentity>(SOURCE_MANIFEST_PATH, "SOURCE_MANIFEST"),
     readJsonArray<DriveImageAsset>(DRIVE_MANIFEST_PATH, "DRIVE_MANIFEST")
