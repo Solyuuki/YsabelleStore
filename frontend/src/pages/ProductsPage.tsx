@@ -6,6 +6,7 @@ import {
 } from "@/components/catalog/ProductCatalogQoLEnhancements";
 import { ProductPackageImportDialog } from "@/components/catalog/ProductPackageImportDialog";
 import { ProductsPage as ProductsPageLegacy } from "@/pages/ProductsPageLegacy";
+import "@/pages/products-page-overrides.css";
 import { apiClient } from "@/services/apiClient";
 
 const IMPORT_BUTTON_LABEL = "Import Products";
@@ -86,7 +87,9 @@ export function ProductsPage() {
 
   return (
     <>
-      <ProductsPageLegacy key={catalogRevision} />
+      <div className="products-page-no-actions contents">
+        <ProductsPageLegacy key={catalogRevision} />
+      </div>
       <ProductCatalogQoLEnhancements
         onSortOrderChange={handleSortOrderChange}
         sortOrder={sortOrder}
