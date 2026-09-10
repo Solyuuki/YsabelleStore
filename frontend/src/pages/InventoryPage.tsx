@@ -1,5 +1,4 @@
 import {
-  Download,
   FileUp,
   Boxes,
   ClipboardList,
@@ -67,7 +66,6 @@ import {
 } from "@/services/catalogApi";
 import { waitForMinimumDuration } from "@/utils/timing";
 import { InventoryImportDialog } from "@/components/inventory/InventoryImportDialog";
-import { downloadInventoryStockImportTemplate } from "@/services/catalogApi";
 
 const DEFAULT_PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 350;
@@ -75,7 +73,6 @@ const INVENTORY_INITIAL_MINIMUM_MS = 500;
 const INVENTORY_UPDATE_MINIMUM_MS = 400;
 const DETAILS_MINIMUM_MS = 450;
 const MOVEMENTS_MINIMUM_MS = 450;
-const INVENTORY_TEMPLATE_DOWNLOAD_MINIMUM_MS = 450;
 const MUTATION_MINIMUM_MS = 550;
 
 type LoadingReason =
@@ -179,7 +176,6 @@ export function InventoryPage() {
   const [selectedInventory, setSelectedInventory] = useState<InventoryRecord | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
-  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [stockInOpen, setStockInOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
@@ -366,42 +362,6 @@ export function InventoryPage() {
     setDetailsError(null);
   }
 
-  async function handleTemplateDownload() {
-    if (isDownloadingTemplate) {
-      return;
-    }
-
-    setIsDownloadingTemplate(true);
-
-    try {
-      const csv = await waitForMinimumDuration(
-        downloadInventoryStockImportTemplate(),
-        INVENTORY_TEMPLATE_DOWNLOAD_MINIMUM_MS
-      );
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-
-      anchor.href = url;
-      anchor.download = "inventory-stock-import-template.csv";
-      anchor.click();
-      window.URL.revokeObjectURL(url);
-      pushToast({
-        title: "Template downloaded",
-        message: "The inventory stock import template is ready.",
-        variant: "success"
-      });
-    } catch {
-      pushToast({
-        title: "Download failed",
-        message: "The inventory stock import template could not be downloaded.",
-        variant: "error"
-      });
-    } finally {
-      setIsDownloadingTemplate(false);
-    }
-  }
-
   function updateVisibleInventory(updated: InventoryRecord) {
     const view = viewRef.current;
     const stillMatches =
@@ -457,19 +417,6 @@ export function InventoryPage() {
         description="Monitor stock levels, batches, expiry dates, and inventory movements."
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              disabled={isDownloadingTemplate}
-              onClick={() => void handleTemplateDownload()}
-              type="button"
-              variant="secondary"
-            >
-              {isDownloadingTemplate ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : (
-                <Download className="h-4 w-4" aria-hidden="true" />
-              )}
-              {isDownloadingTemplate ? "Downloading..." : "Template"}
-            </Button>
             <Button onClick={() => setStockInOpen(true)} type="button" variant="secondary">
               <Plus className="h-4 w-4" aria-hidden="true" />
               Add Stock
@@ -571,8 +518,8 @@ export function InventoryPage() {
             >
               <option value="updatedAt:desc">Recently updated</option>
               <option value="productName:asc">Product name</option>
-              <option value="quantityOnHand:asc">Lowest quantity</option>
-              <option value="quantityOnHand:desc">Highest quantity</option>
+              <option value="quantityOnHand:asc">Lowest stock</option>
+              <option value="quantityOnHand:desc">Highest stock</option>
               <option value="reorderLevel:asc">Reorder level</option>
             </FilterSelect>
           </div>
@@ -600,7 +547,7 @@ export function InventoryPage() {
               description={
                 search || stockStatus !== "ALL" || productStatus !== "ALL" || categoryId !== "ALL"
                   ? "Try changing your search or filters."
-                  : "Create products first, then add stock through Inventory."
+                  : "Products appear here automatically. Add stock when inventory arrives."
               }
               icon={Boxes}
               title={
@@ -762,23 +709,22 @@ function InventoryTable({
       <Table className="table-fixed">
         <TableHeader className="bg-slate-100">
           <TableRow>
-            <TableHead className="w-[48%] sm:w-[38%] lg:w-[24%]">Product</TableHead>
-            <TableHead className="hidden lg:table-cell lg:w-[11%]">SKU</TableHead>
-            <TableHead className="hidden xl:table-cell xl:w-[11%]">Category</TableHead>
-            <TableHead className="w-[13%] text-right sm:w-[10%]">Quantity</TableHead>
+            <TableHead className="w-[48%] sm:w-[38%] lg:w-[25%]">Product</TableHead>
+            <TableHead className="hidden lg:table-cell lg:w-[12%]">SKU</TableHead>
+            <TableHead className="hidden xl:table-cell xl:w-[12%]">Category</TableHead>
+            <TableHead className="w-[14%] text-right sm:w-[11%]">Stock</TableHead>
             <TableHead className="hidden lg:table-cell lg:w-[9%] text-right">Reorder</TableHead>
             <TableHead className="hidden xl:table-cell xl:w-[9%] text-right">Target</TableHead>
-            <TableHead className="w-[18%] sm:w-[15%]">Status</TableHead>
-            <TableHead className="hidden md:table-cell md:w-[12%]">Nearest expiry</TableHead>
+            <TableHead className="hidden md:table-cell md:w-[15%]">Expiry</TableHead>
             <TableHead className="hidden xl:table-cell xl:w-[8%] text-right">Batches</TableHead>
-            <TableHead className="w-[21%] text-center sm:w-[12%]">Action</TableHead>
+            <TableHead className="w-[24%] text-right sm:w-[19%]">Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((row) => (
             <TableRow
               aria-label={`View inventory for ${row.productName}`}
-              className="cursor-pointer bg-white hover:bg-emerald-50/40 focus-within:bg-emerald-50/70"
+              className="cursor-pointer bg-white transition-colors hover:bg-emerald-50/50 focus-visible:bg-emerald-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
               key={row.inventoryId}
               tabIndex={0}
               onClick={() => onOpenDetails(row.productId)}
@@ -814,28 +760,16 @@ function InventoryTable({
               <TableCell className="hidden text-right text-slate-600 xl:table-cell">
                 {row.targetStockLevel}
               </TableCell>
-              <TableCell>
-                <StockStatusBadge status={row.stockStatus} />
-              </TableCell>
               <TableCell className="hidden text-xs text-slate-600 md:table-cell">
-                <ExpiryValue value={row.nearestExpiry} />
+                <ExpiryValue quantity={row.currentQuantity} value={row.nearestExpiry} />
               </TableCell>
               <TableCell className="hidden text-right text-slate-600 xl:table-cell">
-                {row.batchCount}
+                {row.batchCount === 0 ? "—" : row.batchCount}
               </TableCell>
-              <TableCell className="text-center">
-                <Button
-                  aria-label={`View details for ${row.productName}`}
-                  size="sm"
-                  type="button"
-                  variant="secondary"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onOpenDetails(row.productId);
-                  }}
-                >
-                  View
-                </Button>
+              <TableCell className="text-right">
+                <div className="flex justify-end">
+                  <StockStatusBadge status={row.stockStatus} />
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -866,7 +800,8 @@ function StockStatusBadge({ status }: { status: InventoryRecord["stockStatus"] }
   const display = stockStatusDisplay[status];
   return <StatusBadge variant={display.variant}>{display.label}</StatusBadge>;
 }
-function ExpiryValue({ value }: { value: string | null }) {
+function ExpiryValue({ quantity, value }: { quantity: number; value: string | null }) {
+  if (quantity <= 0) return <>No stock yet</>;
   if (!value) return <>No expiry</>;
   const date = new Date(value);
   const isPast = date.getTime() < Date.now();
@@ -961,9 +896,11 @@ function InventoryDetailsDialog({
                 <Detail
                   label="Nearest expiry"
                   value={
-                    inventory.nearestExpiry
-                      ? new Date(inventory.nearestExpiry).toLocaleDateString()
-                      : "No expiry"
+                    inventory.currentQuantity <= 0
+                      ? "No stock yet"
+                      : inventory.nearestExpiry
+                        ? new Date(inventory.nearestExpiry).toLocaleDateString()
+                        : "No expiry"
                   }
                 />
                 <Detail
