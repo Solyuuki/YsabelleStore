@@ -709,15 +709,11 @@ function InventoryTable({
       <Table className="table-fixed">
         <TableHeader className="bg-slate-100">
           <TableRow>
-            <TableHead className="w-[48%] sm:w-[38%] lg:w-[25%]">Product</TableHead>
-            <TableHead className="hidden lg:table-cell lg:w-[12%]">SKU</TableHead>
-            <TableHead className="hidden xl:table-cell xl:w-[12%]">Category</TableHead>
-            <TableHead className="w-[14%] text-right sm:w-[11%]">Stock</TableHead>
-            <TableHead className="hidden lg:table-cell lg:w-[9%] text-right">Reorder</TableHead>
-            <TableHead className="hidden xl:table-cell xl:w-[9%] text-right">Target</TableHead>
-            <TableHead className="hidden md:table-cell md:w-[15%]">Expiry</TableHead>
-            <TableHead className="hidden xl:table-cell xl:w-[8%] text-right">Batches</TableHead>
-            <TableHead className="w-[24%] text-right sm:w-[19%]">Status</TableHead>
+            <TableHead className="w-[48%] sm:w-[42%] lg:w-[40%]">Product</TableHead>
+            <TableHead className="hidden md:table-cell md:w-[18%]">SKU</TableHead>
+            <TableHead className="w-[19%] sm:w-[16%]">Stock</TableHead>
+            <TableHead className="hidden sm:table-cell sm:w-[22%] lg:w-[16%]">Expiry</TableHead>
+            <TableHead className="w-[33%] text-right sm:w-[20%] lg:w-[18%]">Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -735,38 +731,35 @@ function InventoryTable({
                 }
               }}
             >
-              <TableCell>
+              <TableCell className="align-middle py-3">
                 <p className="font-medium text-slate-950">{row.productName}</p>
-                <p className="mt-1 text-xs text-slate-500">{row.barcode ?? row.unit}</p>
-                <div className="mt-2 space-y-1 text-xs text-slate-500 lg:hidden">
-                  <p>SKU: {row.sku}</p>
-                  <p>
-                    {row.category.name} · Reorder {row.reorderLevel} · Target {row.targetStockLevel}
+                <p className="mt-1 text-xs text-slate-500">
+                  {row.barcode ?? row.unit} · {row.category.name}
+                </p>
+                <p className="mt-1 text-xs text-slate-500 md:hidden">SKU: {row.sku}</p>
+              </TableCell>
+              <TableCell className="hidden align-middle break-words text-slate-600 md:table-cell">
+                {row.sku}
+              </TableCell>
+              <TableCell className="align-middle">
+                <p className="font-semibold text-slate-950">{row.currentQuantity}</p>
+                <p className="mt-1 whitespace-nowrap text-xs text-slate-500">
+                  Reorder {row.reorderLevel} · Target {row.targetStockLevel}
+                </p>
+              </TableCell>
+              <TableCell className="hidden align-middle text-slate-600 sm:table-cell">
+                <div className="space-y-1">
+                  <p className="text-sm">
+                    <ExpiryValue quantity={row.currentQuantity} value={row.nearestExpiry} />
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {row.batchCount === 0
+                      ? "No batches"
+                      : `${row.batchCount} ${row.batchCount === 1 ? "batch" : "batches"}`}
                   </p>
                 </div>
               </TableCell>
-              <TableCell className="hidden break-words text-slate-600 lg:table-cell">
-                {row.sku}
-              </TableCell>
-              <TableCell className="hidden text-slate-600 xl:table-cell">
-                {row.category.name}
-              </TableCell>
-              <TableCell className="text-right font-semibold text-slate-950">
-                {row.currentQuantity}
-              </TableCell>
-              <TableCell className="hidden text-right text-slate-600 lg:table-cell">
-                {row.reorderLevel}
-              </TableCell>
-              <TableCell className="hidden text-right text-slate-600 xl:table-cell">
-                {row.targetStockLevel}
-              </TableCell>
-              <TableCell className="hidden text-xs text-slate-600 md:table-cell">
-                <ExpiryValue quantity={row.currentQuantity} value={row.nearestExpiry} />
-              </TableCell>
-              <TableCell className="hidden text-right text-slate-600 xl:table-cell">
-                {row.batchCount === 0 ? "—" : row.batchCount}
-              </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="align-middle text-right">
                 <div className="flex justify-end">
                   <StockStatusBadge status={row.stockStatus} />
                 </div>
