@@ -7,6 +7,7 @@ import { createApp } from "../src/app.js";
 import { prisma } from "../src/database/prismaClient.js";
 import { registerCustomer } from "../src/services/customerAuthService.js";
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
+import { ensureCanonicalStorefrontCategory } from "./helpers/storefrontCanonicalCategory.js";
 
 const CUSTOMER_COOKIE_NAME = "ysabelle_customer_session";
 const PASSWORD = "CustomerPass123!";
@@ -60,16 +61,7 @@ async function createFixture() {
   const suffix = randomUUID().slice(0, 8);
 
   try {
-    const category = await prisma.category.create({
-      data: {
-        name: `Customer Order Test ${suffix}`,
-        slug: `customer-order-test-${suffix}`,
-        isActive: true,
-        recordSource: "CATALOG",
-        dataQualityStatus: "APPROVED",
-        isStorefrontVisible: true
-      }
-    });
+    const { category } = await ensureCanonicalStorefrontCategory(0);
     const product = await prisma.product.create({
       data: {
         categoryId: category.id,
