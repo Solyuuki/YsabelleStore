@@ -1427,11 +1427,6 @@ function MovementHistoryDialog({
             </div>
           )}
         </div>
-        <DialogFooter>
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Close
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
