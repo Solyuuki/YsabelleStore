@@ -9,7 +9,6 @@ import {
   movementHistoryController,
   stockInController
 } from "../controllers/inventoryController.js";
-import { enrollReceivingBarcodeController } from "../controllers/productBarcodeController.js";
 import {
   confirmInventoryStockImportController,
   getInventoryStockImportTemplateController,
@@ -48,11 +47,6 @@ inventoryRouter.get(
   getInventoryByProductController
 );
 inventoryRouter.post("/deduct", requireRole("OWNER", "STAFF"), deductStockController);
-inventoryRouter.post(
-  "/:productId/barcodes/enroll",
-  requireRole("OWNER"),
-  enrollReceivingBarcodeController
-);
 inventoryRouter.post("/:productId/stock-in", requireRole("OWNER"), stockInController);
 inventoryRouter.post("/:productId/adjust", requireRole("OWNER"), adjustStockController);
 inventoryRouter.get(
