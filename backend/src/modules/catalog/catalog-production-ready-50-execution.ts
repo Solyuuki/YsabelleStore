@@ -57,7 +57,7 @@ type BarcodeOwnerRow = {
 export type ProductionCatalog50Client = {
   $transaction<T>(callback: (tx: ProductionCatalog50Client) => Promise<T>): Promise<T>;
   product: {
-    findMany(args: unknown): Promise<any[]>;
+    findMany(args: unknown): Promise<unknown[]>;
     updateMany(args: unknown): Promise<{ count: number }>;
   };
   category: {
