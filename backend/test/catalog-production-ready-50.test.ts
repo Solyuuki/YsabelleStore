@@ -83,8 +83,7 @@ test("preflight preserves price/category/inventory and plans only catalog fields
     duplicateCandidatesRight: []
   }));
 
-  let client: ProductionCatalog50Client;
-  client = {
+  const client: ProductionCatalog50Client = {
     product: {
       findMany: async (args: unknown) => {
         const query = args as { select?: { barcode?: boolean; name?: boolean } };
