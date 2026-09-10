@@ -28,6 +28,9 @@ forecasting-service/outputs/*
 !forecasting-service/outputs/.gitkeep
 !forecasting-service/outputs/README.md
 
+# Tesseract.js runtime language-data cache
+backend/*.traineddata
+
 # Generated product image candidates and variants
 .data/
 
