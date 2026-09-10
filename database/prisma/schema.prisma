@@ -99,6 +99,20 @@ enum ProductSizeUnit {
   PIECE
 }
 
+enum ProductBarcodeType {
+  MANUFACTURER
+  INTERNAL
+}
+
+enum ProductBarcodeSource {
+  MANUAL
+  IMPORT
+  RECEIVING_SCAN
+  SYSTEM_INTERNAL
+  VERIFIED_BOOTSTRAP
+  MIGRATION
+}
+
 enum ProductAliasType {
   RAW_NAME
   SKU
@@ -274,6 +288,7 @@ model User {
   forecastRecords          ForecastRecord[]
   recommendationNotes      RecommendationRecord[]
   trustedDevices           TrustedDevice[]
+  registeredProductBarcodes ProductBarcode[]             @relation("ProductBarcodeRegisteredBy")
   historicalSalesImports   HistoricalSalesImportBatch[] @relation("HistoricalSalesImportedBy")
   historicalSalesRollbacks HistoricalSalesImportBatch[] @relation("HistoricalSalesRolledBackBy")
   invalidatedMonthlySales  HistoricalMonthlySales[]     @relation("HistoricalSalesInvalidatedBy")
@@ -408,7 +423,7 @@ model CustomerEmailAuthChallenge {
   @@index([emailNormalized, createdAt], map: "idx_customer_email_auth_email_created")
   @@index([customerAccountId], map: "idx_customer_email_auth_customer")
   @@index([expiresAt], map: "idx_customer_email_auth_expires")
-  @@index([consumedAt], map: "idx_customer_email_auth_consumed")
+  @@index([consumedAt], map: "idx_customer_email_auth_challenges_consumed")
   @@map("customer_email_auth_challenges")
 }
 
@@ -510,8 +525,8 @@ model CustomerSession {
   customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([customerAccountId], map: "idx_customer_sessions_customer")
-  @@index([expiresAt], map: "idx_customer_sessions_expires")
-  @@index([revokedAt], map: "idx_customer_sessions_revoked")
+  @@index([expiresAt], map: "idx_customer_sessions_expires_at")
+  @@index([revokedAt], map: "idx_customer_sessions_revoked_at")
   @@map("customer_sessions")
 }
 
@@ -560,6 +575,7 @@ model Product {
   category                  Category                    @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   activeImageAsset          ProductImageAsset?          @relation("ActiveProductImage", fields: [activeImageAssetId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   imageAssets               ProductImageAsset[]         @relation("ProductImageAssets")
+  barcodes                  ProductBarcode[]
   inventory                 Inventory?
   inventoryBatches          InventoryBatch[]
   inventoryMovements        InventoryMovement[]
@@ -584,6 +600,27 @@ model Product {
   @@index([isStorefrontVisible, dataQualityStatus, status], map: "idx_products_storefront_quality")
   @@index([recordSource, dataQualityStatus], map: "idx_products_source_quality")
   @@map("products")
+}
+
+model ProductBarcode {
+  id              String               @id @default(cuid()) @db.VarChar(191)
+  productId       String               @map("product_id") @db.VarChar(191)
+  barcode         String               @unique(map: "uq_product_barcodes_barcode") @db.VarChar(80)
+  type            ProductBarcodeType
+  isPrimary       Boolean              @default(false) @map("is_primary")
+  source          ProductBarcodeSource
+  registeredById  String?              @map("registered_by_id") @db.VarChar(191)
+  sourceReference String?              @map("source_reference") @db.VarChar(191)
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  product         Product              @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  registeredBy    User?                @relation("ProductBarcodeRegisteredBy", fields: [registeredById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([productId, isPrimary], map: "idx_product_barcodes_product_primary")
+  @@index([productId, type], map: "idx_product_barcodes_product_type")
+  @@index([source, createdAt], map: "idx_product_barcodes_source_created")
+  @@index([registeredById], map: "idx_product_barcodes_registered_by")
+  @@map("product_barcodes")
 }
 
 model ProductImageAsset {
@@ -1031,7 +1068,7 @@ model HistoricalMonthlySales {
   createdAt           DateTime                    @default(now()) @map("created_at")
   updatedAt           DateTime                    @updatedAt @map("updated_at")
   invalidatedAt       DateTime?                   @map("invalidated_at")
-  invalidatedByUserId String?                     @map("invalidated_by_user_id") @db.VarChar(191)
+  invalidatedByUserId String?                     @map("invalidated_by_id") @db.VarChar(191)
   invalidationReason  String?                     @map("invalidation_reason") @db.VarChar(500)
   product             Product                     @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   importBatch         HistoricalSalesImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: Restrict, onUpdate: Cascade)
@@ -1062,7 +1099,7 @@ model HistoricalSalesImportRow {
   errorMessage      String?                    @map("error_message") @db.VarChar(500)
   warningCodes      Json?                      @map("warning_codes")
   matchedProductId  String?                    @map("matched_product_id") @db.VarChar(191)
-  createdAt         DateTime                   @default(now()) @map("created_at")
+  createdAt          DateTime                   @default(now()) @map("created_at")
   importBatch       HistoricalSalesImportBatch @relation(fields: [importBatchId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   matchedProduct    Product?                   @relation(fields: [matchedProductId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
@@ -1086,8 +1123,8 @@ model RecommendationRecord {
   resolvedAt          DateTime?               @map("resolved_at")
   createdAt           DateTime               @default(now()) @map("created_at")
   product             Product                @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  forecastRecord      ForecastRecord?        @relation(fields: [forecastRecordId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  generatedBy         User?                  @relation(fields: [generatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  forecastRecord      ForecastRecord?         @relation(fields: [forecastRecordId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  generatedBy         User?                   @relation(fields: [generatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([productId, severity], map: "idx_recommendations_product_severity")
   @@index([type, status], map: "idx_recommendations_type_status")
