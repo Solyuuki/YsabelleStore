@@ -8,7 +8,6 @@ import {
   uploadProductImageController
 } from "../controllers/productImageController.js";
 import {
-  enrollReceivingBarcodeController,
   listProductBarcodesController,
   registerProductBarcodeController,
   setPrimaryProductBarcodeController
@@ -74,11 +73,6 @@ productRouter.patch(
   "/:productId/barcodes/:barcodeId/primary",
   requireRole("OWNER"),
   setPrimaryProductBarcodeController
-);
-productRouter.post(
-  "/:productId/barcodes/enroll-receiving",
-  requireRole("OWNER"),
-  enrollReceivingBarcodeController
 );
 productRouter.post(
   "/:id/images",
