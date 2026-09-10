@@ -1,8 +1,4 @@
-import {
-  CatalogQualityStatus,
-  CatalogRecordSource,
-  ProductStatus
-} from "@prisma/client";
+import { CatalogQualityStatus, CatalogRecordSource, ProductStatus } from "@prisma/client";
 
 import {
   RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS,
@@ -350,9 +346,7 @@ export async function buildProductionCatalog50Plan(input: {
     select: { id: true, sku: true, barcode: true }
   })) as BarcodeOwnerRow[];
 
-  const targetByBarcode = new Map(
-    plannedProducts.map((row) => [row.manufacturerBarcode, row])
-  );
+  const targetByBarcode = new Map(plannedProducts.map((row) => [row.manufacturerBarcode, row]));
   const collisions = barcodeOwners.filter((owner) => {
     if (!owner.barcode) return false;
     const target = targetByBarcode.get(owner.barcode);
@@ -399,9 +393,7 @@ export async function buildProductionCatalog50Plan(input: {
   };
 }
 
-export async function executeProductionCatalog50(input: {
-  client: ProductionCatalog50Client;
-}) {
+export async function executeProductionCatalog50(input: { client: ProductionCatalog50Client }) {
   return input.client.$transaction(async (tx) => {
     const plan = await buildProductionCatalog50Plan({ client: tx });
 

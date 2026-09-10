@@ -1,10 +1,7 @@
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import type { ProductAvailabilityStatusRequest } from "../validators/product.validators.js";
-import {
-  serializeProduct,
-  type ProductSummary
-} from "./catalogSerializers.js";
+import { serializeProduct, type ProductSummary } from "./catalogSerializers.js";
 
 const productInclude = {
   category: true,

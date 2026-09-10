@@ -22,7 +22,9 @@ export function normalizeWorkstationPreferences(value: unknown): WorkstationPref
   }
 
   const candidate = value as Partial<WorkstationPreferences>;
-  const refreshSeconds = VALID_REFRESH_SECONDS.has(candidate.dashboardRefreshSeconds as DashboardRefreshSeconds)
+  const refreshSeconds = VALID_REFRESH_SECONDS.has(
+    candidate.dashboardRefreshSeconds as DashboardRefreshSeconds
+  )
     ? (candidate.dashboardRefreshSeconds as DashboardRefreshSeconds)
     : DEFAULT_WORKSTATION_PREFERENCES.dashboardRefreshSeconds;
 

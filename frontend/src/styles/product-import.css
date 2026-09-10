@@ -20,12 +20,16 @@
   box-shadow: 0 0 0 2px #ddd6fe !important;
 }
 
-[aria-describedby="import-products-description"] [aria-label="Upload product file"] > div > div:first-child {
+[aria-describedby="import-products-description"]
+  [aria-label="Upload product file"]
+  > div
+  > div:first-child {
   border-color: #c4b5fd !important;
   color: #6d28d9 !important;
 }
 
-[aria-describedby="import-products-description"] [aria-label="Upload product file"].border-emerald-500 {
+[aria-describedby="import-products-description"]
+  [aria-label="Upload product file"].border-emerald-500 {
   border-color: #7c3aed !important;
   background: #ede9fe !important;
   box-shadow: 0 0 0 2px #ddd6fe !important;

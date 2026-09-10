@@ -41,7 +41,9 @@ export function SettingsPage() {
       } catch (error) {
         if (!active) return;
         setHealth(null);
-        setHealthError(error instanceof Error ? error.message : "Unable to load backend readiness.");
+        setHealthError(
+          error instanceof Error ? error.message : "Unable to load backend readiness."
+        );
       } finally {
         if (active) setHealthLoading(false);
       }
@@ -114,11 +116,15 @@ export function SettingsPage() {
               <input
                 checked={preferences.refreshDashboardOnFocus}
                 className="mt-1 h-4 w-4"
-                onChange={(event) => updatePreference("refreshDashboardOnFocus", event.target.checked)}
+                onChange={(event) =>
+                  updatePreference("refreshDashboardOnFocus", event.target.checked)
+                }
                 type="checkbox"
               />
               <span>
-                <span className="block text-sm font-medium text-slate-900">Refresh when window regains focus</span>
+                <span className="block text-sm font-medium text-slate-900">
+                  Refresh when window regains focus
+                </span>
                 <span className="mt-1 block text-sm text-slate-500">
                   Pull fresh sales and inventory state when returning to YsabelleStore.
                 </span>
@@ -133,7 +139,9 @@ export function SettingsPage() {
                 type="checkbox"
               />
               <span>
-                <span className="block text-sm font-medium text-slate-900">Show forecast summary on Dashboard</span>
+                <span className="block text-sm font-medium text-slate-900">
+                  Show forecast summary on Dashboard
+                </span>
                 <span className="mt-1 block text-sm text-slate-500">
                   Controls only the Dashboard card; it does not change forecast generation or data.
                 </span>

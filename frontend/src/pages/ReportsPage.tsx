@@ -52,7 +52,9 @@ export function ReportsPage() {
       } catch (requestError) {
         if (!active) return;
         setError(
-          requestError instanceof Error ? requestError.message : "Operational reports could not be loaded."
+          requestError instanceof Error
+            ? requestError.message
+            : "Operational reports could not be loaded."
         );
       } finally {
         if (active) setLoading(false);
@@ -77,8 +79,7 @@ export function ReportsPage() {
     () => completedSales.reduce((sum, sale) => sum + sale.itemCount, 0),
     [completedSales]
   );
-  const averageReceipt =
-    completedSales.length > 0 ? recentGrossSales / completedSales.length : 0;
+  const averageReceipt = completedSales.length > 0 ? recentGrossSales / completedSales.length : 0;
 
   const stats = summary
     ? [
@@ -106,7 +107,10 @@ export function ReportsPage() {
         {
           title: "Low stock",
           value: summary.inventory.lowStockItems.toLocaleString(),
-          detail: summary.inventory.lowStockItems > 0 ? "Needs replenishment attention" : "No items flagged",
+          detail:
+            summary.inventory.lowStockItems > 0
+              ? "Needs replenishment attention"
+              : "No items flagged",
           tone: "warning" as const,
           icon: PackageOpen
         },
@@ -156,12 +160,16 @@ export function ReportsPage() {
                 <CardTitle>Recent receipt metrics</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <MetricRow label="Completed receipts analyzed" value={completedSales.length.toLocaleString()} />
+                <MetricRow
+                  label="Completed receipts analyzed"
+                  value={completedSales.length.toLocaleString()}
+                />
                 <MetricRow label="Units sold" value={recentUnits.toLocaleString()} />
                 <MetricRow label="Gross sales" value={currency(recentGrossSales)} />
                 <MetricRow label="Average receipt" value={currency(averageReceipt)} />
                 <p className="pt-2 text-xs leading-5 text-slate-500">
-                  Metrics include completed sales only and use up to the latest 50 persisted sale records. This is an operational view, not a full accounting-period statement.
+                  Metrics include completed sales only and use up to the latest 50 persisted sale
+                  records. This is an operational view, not a full accounting-period statement.
                 </p>
               </CardContent>
             </Card>
@@ -184,7 +192,10 @@ export function ReportsPage() {
                   <HealthTile label="Catalog products" value={summary.inventory.catalogItems} />
                   <HealthTile label="Inventory records" value={summary.inventory.trackedItems} />
                   <HealthTile label="Available products" value={summary.inventory.availableItems} />
-                  <HealthTile label="Unavailable products" value={summary.inventory.unavailableItems} />
+                  <HealthTile
+                    label="Unavailable products"
+                    value={summary.inventory.unavailableItems}
+                  />
                   <HealthTile label="In stock" value={summary.inventory.inStockItems} />
                   <HealthTile label="Out of stock" value={summary.inventory.outOfStockItems} />
                 </div>

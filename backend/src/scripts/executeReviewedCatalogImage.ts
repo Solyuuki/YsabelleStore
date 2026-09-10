@@ -46,9 +46,7 @@ function parseArguments(argv: string[]) {
   const apply = argv.includes("--apply");
 
   if (!/^P\d{3}$/.test(productCode)) {
-    throw new Error(
-      "CATALOG_REVIEWED_IMAGE_PRODUCT_CODE_REQUIRED: pass --product-code=P###"
-    );
+    throw new Error("CATALOG_REVIEWED_IMAGE_PRODUCT_CODE_REQUIRED: pass --product-code=P###");
   }
 
   return { productCode, apply };
@@ -209,7 +207,10 @@ export async function executeReviewedCatalogImage(options: {
 
 function isDirectExecution() {
   const entryPoint = process.argv[1];
-  return Boolean(entryPoint) && path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url));
+  return (
+    Boolean(entryPoint) &&
+    path.resolve(entryPoint!) === path.resolve(fileURLToPath(import.meta.url))
+  );
 }
 
 if (isDirectExecution()) {

@@ -80,10 +80,7 @@ export function ProductPackageImportDialog({
     ((source === "LOCAL" && Boolean(file)) ||
       (source === "GOOGLE_DRIVE" && driveUrl.trim().length > 0));
   const canImport = Boolean(
-    preview &&
-      preview.invalidRows === 0 &&
-      preview.errors.length === 0 &&
-      phase === "preview-ready"
+    preview && preview.invalidRows === 0 && preview.errors.length === 0 && phase === "preview-ready"
   );
   const visibleIssues = useMemo(() => {
     if (!preview) return [];
@@ -212,7 +209,9 @@ export function ProductPackageImportDialog({
     } catch (importError) {
       if (sessionId !== sessionRef.current) return;
       setPhase("preview-ready");
-      setError(importError instanceof Error ? importError.message : "Product package import failed.");
+      setError(
+        importError instanceof Error ? importError.message : "Product package import failed."
+      );
     }
   }
 
@@ -273,7 +272,8 @@ export function ProductPackageImportDialog({
             </div>
             <DialogDescription id="product-package-import-description" className="max-w-prose">
               Import a product package from your computer or Google Drive. The system scans folders,
-              validates catalog data, matches product images, and rejects blocking issues before import.
+              validates catalog data, matches product images, and rejects blocking issues before
+              import.
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -287,10 +287,12 @@ export function ProductPackageImportDialog({
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm font-semibold text-slate-950">Product package requirements</p>
+                    <p className="text-sm font-semibold text-slate-950">
+                      Product package requirements
+                    </p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      A package may contain one or many products. Include exactly one product data file;
-                      product images are optional.
+                      A package may contain one or many products. Include exactly one product data
+                      file; product images are optional.
                     </p>
                   </div>
                   <Button
@@ -308,7 +310,9 @@ export function ProductPackageImportDialog({
                 <div className="mt-4 grid gap-4 text-sm text-slate-700 md:grid-cols-2">
                   <div className="rounded-xl border border-violet-100 bg-white/80 p-4">
                     <p className="font-semibold text-slate-950">1. Product data file</p>
-                    <p className="mt-2 leading-6">Use one CSV or XLSX file with these required columns:</p>
+                    <p className="mt-2 leading-6">
+                      Use one CSV or XLSX file with these required columns:
+                    </p>
                     <p className="mt-2 break-words font-mono text-xs leading-5 text-slate-600">
                       name, sku, category, unit, costPrice, sellingPrice, reorderLevel, initialStock
                     </p>
@@ -321,13 +325,16 @@ export function ProductPackageImportDialog({
                     <p className="font-semibold text-slate-950">2. Product images (optional)</p>
                     <p className="mt-2 leading-6">Supported: JPG, JPEG, PNG, and WebP.</p>
                     <p className="mt-2 leading-6">
-                      Name each image using the product SKU or product name so the system can match it.
+                      Name each image using the product SKU or product name so the system can match
+                      it.
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Example package</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Example package
+                  </p>
                   <pre className="mt-2 overflow-x-auto whitespace-pre text-xs leading-5 text-slate-700">{`products.zip
 ├── products.xlsx
 └── images/
@@ -336,8 +343,8 @@ export function ProductPackageImportDialog({
                 </div>
 
                 <p className="mt-3 text-xs leading-5 text-slate-500">
-                  Nested folders are supported. The package is scanned and validated first; nothing is
-                  written to the catalog until you confirm the import.
+                  Nested folders are supported. The package is scanned and validated first; nothing
+                  is written to the catalog until you confirm the import.
                 </p>
               </section>
             ) : null}
@@ -450,10 +457,13 @@ export function ProductPackageImportDialog({
                     <HardDrive className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-slate-950">Shared Google Drive package</p>
+                    <p className="text-sm font-semibold text-slate-950">
+                      Shared Google Drive package
+                    </p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
                       Paste a shared Google Drive file link to one supported archive. Private Drive
-                      folders require a separate Google OAuth connection and are not silently accessed.
+                      folders require a separate Google OAuth connection and are not silently
+                      accessed.
                     </p>
                     <Input
                       className="mt-4 bg-white"
@@ -478,12 +488,20 @@ export function ProductPackageImportDialog({
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <FileArchive className="h-4 w-4 shrink-0 text-violet-700" aria-hidden="true" />
+                      <FileArchive
+                        className="h-4 w-4 shrink-0 text-violet-700"
+                        aria-hidden="true"
+                      />
                       <p className="truncate text-sm font-semibold text-slate-950">{file.name}</p>
                     </div>
                     <p className="mt-1 text-sm text-slate-600">{formatFileSize(file.size)}</p>
                   </div>
-                  <Button disabled={isBusy} onClick={() => selectFile(null)} type="button" variant="ghost">
+                  <Button
+                    disabled={isBusy}
+                    onClick={() => selectFile(null)}
+                    type="button"
+                    variant="ghost"
+                  >
                     Remove
                   </Button>
                 </div>
@@ -495,7 +513,11 @@ export function ProductPackageImportDialog({
                 <LoadingState
                   badge="Package scan"
                   helper="Recursively discovering files, reading product data, matching images, checking duplicates, and running image quality validation. Nothing is written to the catalog during this scan."
-                  label={source === "GOOGLE_DRIVE" ? "Downloading and scanning package..." : "Scanning package..."}
+                  label={
+                    source === "GOOGLE_DRIVE"
+                      ? "Downloading and scanning package..."
+                      : "Scanning package..."
+                  }
                 />
                 <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                   <ScanStep icon={FolderSearch2} label="Discover folders and files" />
@@ -512,12 +534,18 @@ export function ProductPackageImportDialog({
                   <div>
                     <p className="text-sm font-semibold text-slate-950">Package scan complete</p>
                     <p className="mt-1 text-sm text-slate-600">
-                      {preview.package.filesScanned} files across {preview.package.foldersScanned} folders ·{" "}
-                      {preview.totalRows} product records
+                      {preview.package.filesScanned} files across {preview.package.foldersScanned}{" "}
+                      folders · {preview.totalRows} product records
                     </p>
                   </div>
-                  <StatusBadge variant={preview.invalidRows === 0 && preview.errors.length === 0 ? "success" : "error"}>
-                    {preview.invalidRows === 0 && preview.errors.length === 0 ? "Ready" : "Rejected"}
+                  <StatusBadge
+                    variant={
+                      preview.invalidRows === 0 && preview.errors.length === 0 ? "success" : "error"
+                    }
+                  >
+                    {preview.invalidRows === 0 && preview.errors.length === 0
+                      ? "Ready"
+                      : "Rejected"}
                   </StatusBadge>
                 </div>
 
@@ -530,24 +558,33 @@ export function ProductPackageImportDialog({
 
                 <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
                   <p>
-                    Data file: <span className="font-medium text-slate-900">{preview.package.dataFileName}</span>
+                    Data file:{" "}
+                    <span className="font-medium text-slate-900">
+                      {preview.package.dataFileName}
+                    </span>
                   </p>
                   <p className="mt-1">
-                    Archive: {preview.package.archiveType.toUpperCase()} · extractor {preview.package.extractionEngine}
+                    Archive: {preview.package.archiveType.toUpperCase()} · extractor{" "}
+                    {preview.package.extractionEngine}
                   </p>
                   <p className="mt-1">
-                    Images found {preview.package.imagesFound} · unmatched {preview.package.unmatchedImages} · ignored files {preview.package.ignoredFiles}
+                    Images found {preview.package.imagesFound} · unmatched{" "}
+                    {preview.package.unmatchedImages} · ignored files {preview.package.ignoredFiles}
                   </p>
                 </div>
 
                 {preview.errors.length > 0 ? (
                   <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
                     <p className="text-sm font-semibold text-red-900">
-                      Import blocked · {preview.errors.length} blocking issue{preview.errors.length === 1 ? "" : "s"}
+                      Import blocked · {preview.errors.length} blocking issue
+                      {preview.errors.length === 1 ? "" : "s"}
                     </p>
                     <div className="mt-2 space-y-2">
                       {visibleIssues.map((issue, index) => (
-                        <div className="text-sm text-red-800" key={`${issue.code}-${issue.rowNumber ?? 0}-${index}`}>
+                        <div
+                          className="text-sm text-red-800"
+                          key={`${issue.code}-${issue.rowNumber ?? 0}-${index}`}
+                        >
                           {issue.rowNumber ? `Row ${issue.rowNumber}: ` : ""}
                           {issue.message}
                           {issue.value ? ` (${issue.value})` : ""}
@@ -562,9 +599,12 @@ export function ProductPackageImportDialog({
                   </div>
                 ) : (
                   <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3">
-                    <p className="text-sm font-medium text-violet-950">All blocking validations passed.</p>
+                    <p className="text-sm font-medium text-violet-950">
+                      All blocking validations passed.
+                    </p>
                     <p className="mt-1 text-sm leading-6 text-violet-800">
-                      Products remain in catalog review after import. Final storefront approval stays separate.
+                      Products remain in catalog review after import. Final storefront approval
+                      stays separate.
                     </p>
                   </div>
                 )}
@@ -578,8 +618,9 @@ export function ProductPackageImportDialog({
                   <div>
                     <p className="text-sm font-semibold text-violet-950">Import complete</p>
                     <p className="mt-1 text-sm leading-6 text-violet-800">
-                      {summary.importedRows} products created, {summary.inventoryRowsCreated} inventory records created,
-                      and {summary.imagesImported} validated images attached.
+                      {summary.importedRows} products created, {summary.inventoryRowsCreated}{" "}
+                      inventory records created, and {summary.imagesImported} validated images
+                      attached.
                     </p>
                   </div>
                 </div>
@@ -590,10 +631,14 @@ export function ProductPackageImportDialog({
 
         <DialogFooter className="shrink-0 border-t border-slate-200 bg-slate-50/90 px-6 py-4 backdrop-blur">
           {phase === "success" ? (
-            <Button onClick={close} type="button">Close</Button>
+            <Button onClick={close} type="button">
+              Close
+            </Button>
           ) : phase === "importing" ? (
             <>
-              <Button disabled type="button" variant="secondary">Cancel</Button>
+              <Button disabled type="button" variant="secondary">
+                Cancel
+              </Button>
               <Button disabled type="button">
                 <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                 Importing validated products...
@@ -601,11 +646,16 @@ export function ProductPackageImportDialog({
             </>
           ) : preview && phase === "preview-ready" ? (
             <>
-              <Button disabled={isBusy} onClick={() => {
-                setPreview(null);
-                setError(null);
-                setPhase("idle");
-              }} type="button" variant="secondary">
+              <Button
+                disabled={isBusy}
+                onClick={() => {
+                  setPreview(null);
+                  setError(null);
+                  setPhase("idle");
+                }}
+                type="button"
+                variant="secondary"
+              >
                 Change source
               </Button>
               <Button disabled={!canImport} onClick={() => void confirmImport()} type="button">
@@ -614,7 +664,9 @@ export function ProductPackageImportDialog({
             </>
           ) : (
             <>
-              <Button disabled={isBusy} onClick={close} type="button" variant="secondary">Cancel</Button>
+              <Button disabled={isBusy} onClick={close} type="button" variant="secondary">
+                Cancel
+              </Button>
               <Button disabled={!canScan} onClick={() => void scanPackage()} type="button">
                 {phase === "scanning" ? (
                   <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />

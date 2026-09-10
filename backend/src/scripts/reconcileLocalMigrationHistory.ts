@@ -172,7 +172,9 @@ async function verifyPasswordRecovery(): Promise<CheckResult> {
     nullable: false,
     varcharLength: 64
   });
-  await requireColumn(failures, "customer_password_reset_tokens", "expires_at", { nullable: false });
+  await requireColumn(failures, "customer_password_reset_tokens", "expires_at", {
+    nullable: false
+  });
   await requireColumn(failures, "customer_password_reset_tokens", "used_at", { nullable: true });
   await requireIndex(
     failures,

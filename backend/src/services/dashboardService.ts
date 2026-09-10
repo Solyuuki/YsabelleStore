@@ -147,10 +147,7 @@ export async function getDashboardSummary(
     getDashboardForecast(role)
   ]);
 
-  const activityTotals = Array.from(
-    { length: SALES_BUCKET_COUNT },
-    () => new Prisma.Decimal(0)
-  );
+  const activityTotals = Array.from({ length: SALES_BUCKET_COUNT }, () => new Prisma.Decimal(0));
   const activityCounts = Array.from({ length: SALES_BUCKET_COUNT }, () => 0);
   let todayAmount = new Prisma.Decimal(0);
 

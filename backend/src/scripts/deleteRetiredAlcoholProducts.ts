@@ -23,12 +23,20 @@ async function main() {
   });
 
   if (products.length === 0) {
-    console.log(JSON.stringify({ mode: apply ? "APPLY" : "PREVIEW", deleted: 0, alreadyAbsent: true }, null, 2));
+    console.log(
+      JSON.stringify(
+        { mode: apply ? "APPLY" : "PREVIEW", deleted: 0, alreadyAbsent: true },
+        null,
+        2
+      )
+    );
     return;
   }
 
   if (products.length !== EXPECTED_PRODUCTS.length) {
-    throw new Error(`Expected exactly ${EXPECTED_PRODUCTS.length} retired alcohol products, found ${products.length}.`);
+    throw new Error(
+      `Expected exactly ${EXPECTED_PRODUCTS.length} retired alcohol products, found ${products.length}.`
+    );
   }
 
   for (const expected of EXPECTED_PRODUCTS) {
@@ -36,17 +44,29 @@ async function main() {
     if (!product || product.name !== expected.name) {
       throw new Error(`Identity guard failed for ${expected.sku}. Refusing deletion.`);
     }
-    if (product.dataQualityStatus !== "REJECTED" || product.status !== "DISCONTINUED" || product.isStorefrontVisible) {
-      throw new Error(`${expected.sku} is not in the required REJECTED + DISCONTINUED + hidden retirement state.`);
+    if (
+      product.dataQualityStatus !== "REJECTED" ||
+      product.status !== "DISCONTINUED" ||
+      product.isStorefrontVisible
+    ) {
+      throw new Error(
+        `${expected.sku} is not in the required REJECTED + DISCONTINUED + hidden retirement state.`
+      );
     }
   }
 
   if (!apply) {
-    console.log(JSON.stringify({
-      mode: "PREVIEW",
-      products,
-      applyCommand: `npx tsx backend/src/scripts/deleteRetiredAlcoholProducts.ts ${APPLY_FLAG}`
-    }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          mode: "PREVIEW",
+          products,
+          applyCommand: `npx tsx backend/src/scripts/deleteRetiredAlcoholProducts.ts ${APPLY_FLAG}`
+        },
+        null,
+        2
+      )
+    );
     return;
   }
 
@@ -60,10 +80,14 @@ async function main() {
   });
 
   if (result.count !== EXPECTED_PRODUCTS.length) {
-    throw new Error(`Deletion count guard failed: expected ${EXPECTED_PRODUCTS.length}, deleted ${result.count}.`);
+    throw new Error(
+      `Deletion count guard failed: expected ${EXPECTED_PRODUCTS.length}, deleted ${result.count}.`
+    );
   }
 
-  console.log(JSON.stringify({ mode: "APPLIED", deleted: result.count, skus: RETIRED_SKUS }, null, 2));
+  console.log(
+    JSON.stringify({ mode: "APPLIED", deleted: result.count, skus: RETIRED_SKUS }, null, 2)
+  );
 }
 
 main()

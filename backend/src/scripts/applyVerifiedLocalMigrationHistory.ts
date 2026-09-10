@@ -104,7 +104,9 @@ async function main() {
   const missing = TARGET_MIGRATIONS.filter((migration) => !verifiedApplied.has(migration));
 
   if (missing.length > 0) {
-    throw new Error(`Migration history verification failed after reconciliation: ${missing.join(", ")}`);
+    throw new Error(
+      `Migration history verification failed after reconciliation: ${missing.join(", ")}`
+    );
   }
 
   console.info("MIGRATION_HISTORY_RECONCILIATION=APPLIED");

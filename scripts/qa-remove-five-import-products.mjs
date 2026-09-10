@@ -3,7 +3,11 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const TARGETS = [
-  { sku: "SARIMA-P218", barcode: "4800049720107", name: "Nature's Spring Purified Drinking Water 350mL" },
+  {
+    sku: "SARIMA-P218",
+    barcode: "4800049720107",
+    name: "Nature's Spring Purified Drinking Water 350mL"
+  },
   { sku: "SARIMA-P217", barcode: "4801981107971", name: "Wilkins Pure Drinking Water 500mL" },
   { sku: "SARIMA-P237", barcode: "8997035563414", name: "Pocari Sweat 500mL" },
   { sku: "SARIMA-P261", barcode: "4801981116072", name: "Coca-Cola 1.5L" },
@@ -52,7 +56,8 @@ try {
       stock: product.inventory?.quantityOnHand ?? 0,
       saleItems: product._count.saleItems,
       orderItems: product._count.customerOrderItems,
-      historicalRows: product._count.historicalMonthlySales + product._count.historicalSalesImportRows
+      historicalRows:
+        product._count.historicalMonthlySales + product._count.historicalSalesImportRows
     }))
   );
 
@@ -65,7 +70,9 @@ try {
     const product = bySku.get(target.sku);
     if (!product) fail(`missing ${target.sku}.`);
     if (product.barcode !== target.barcode) {
-      fail(`${target.sku} barcode mismatch. Expected ${target.barcode}, found ${product.barcode ?? "NULL"}.`);
+      fail(
+        `${target.sku} barcode mismatch. Expected ${target.barcode}, found ${product.barcode ?? "NULL"}.`
+      );
     }
     if (normalizeQaName(product.name) !== normalizeQaName(target.name)) {
       fail(`${target.sku} name mismatch. Expected "${target.name}", found "${product.name}".`);
@@ -91,21 +98,17 @@ try {
     await prisma.$transaction(async (tx) => {
       await tx.productDuplicateCandidate.deleteMany({
         where: {
-          OR: [
-            { leftProductId: { in: productIds } },
-            { rightProductId: { in: productIds } }
-          ]
+          OR: [{ leftProductId: { in: productIds } }, { rightProductId: { in: productIds } }]
         }
       });
       await tx.productCanonicalMapping.deleteMany({
         where: {
-          OR: [
-            { sourceProductId: { in: productIds } },
-            { canonicalProductId: { in: productIds } }
-          ]
+          OR: [{ sourceProductId: { in: productIds } }, { canonicalProductId: { in: productIds } }]
         }
       });
-      await tx.sarimaSourceProductMapping.deleteMany({ where: { canonicalProductId: { in: productIds } } });
+      await tx.sarimaSourceProductMapping.deleteMany({
+        where: { canonicalProductId: { in: productIds } }
+      });
       await tx.productAlias.deleteMany({ where: { canonicalProductId: { in: productIds } } });
       await tx.recommendationRecord.deleteMany({ where: { productId: { in: productIds } } });
       await tx.forecastRecord.deleteMany({ where: { productId: { in: productIds } } });
@@ -118,7 +121,9 @@ try {
     const remaining = await prisma.product.count({ where: { sku: { in: targetSkus } } });
     if (remaining !== 0) fail(`${remaining} target product(s) still remain after reset.`);
 
-    console.log("\nQA reset complete: removed exactly 5 target products and non-transactional dependent records.");
+    console.log(
+      "\nQA reset complete: removed exactly 5 target products and non-transactional dependent records."
+    );
     console.log("You can now test the five-product Local or Google Drive package as new products.");
   }
 } finally {

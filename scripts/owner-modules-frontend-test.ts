@@ -20,7 +20,10 @@ assert.deepEqual(
     showForecastSummary: false
   }
 );
-assert.equal(normalizeWorkstationPreferences({ dashboardRefreshSeconds: 15 }).dashboardRefreshSeconds, 30);
+assert.equal(
+  normalizeWorkstationPreferences({ dashboardRefreshSeconds: 15 }).dashboardRefreshSeconds,
+  30
+);
 
 const appShellSource = readFileSync(resolve(process.cwd(), "src/app/AppShell.tsx"), "utf8");
 const reportsSource = readFileSync(resolve(process.cwd(), "src/pages/ReportsPage.tsx"), "utf8");

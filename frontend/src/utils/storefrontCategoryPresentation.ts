@@ -69,7 +69,8 @@ const essentialShelfItems = [
   {
     alt: "Baking ingredients arranged for dessert preparation",
     category: "Baking & Dessert",
-    imageUrl: "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788803114/baking-dessert-pexels-8456734.webp",
+    imageUrl:
+      "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788803114/baking-dessert-pexels-8456734.webp",
     slug: "baking-dessert"
   },
   {
@@ -87,13 +88,15 @@ const essentialShelfItems = [
   {
     alt: "Cooking spices and condiments arranged on a kitchen table",
     category: "Condiments & Cooking",
-    imageUrl: "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788803157/condiments-cooking-pexels-531446.webp",
+    imageUrl:
+      "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788803157/condiments-cooking-pexels-531446.webp",
     slug: "condiments-cooking"
   },
   {
     alt: "Coffee maker, milk jug, coffee cup, and roasted coffee beans on a dark studio surface",
     category: "Coffee & Milk",
-    imageUrl: "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788805764/coffee-milk-premium-pexels-16444396.webp",
+    imageUrl:
+      "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788805764/coffee-milk-premium-pexels-16444396.webp",
     slug: "coffee-milk"
   }
 ] as const satisfies readonly StorefrontCategoryPresentation[];

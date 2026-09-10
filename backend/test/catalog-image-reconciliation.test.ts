@@ -17,11 +17,7 @@ import {
 const P132_FILE_ID = "17ZwteNRUJ1ShzSyU3YNoSDb1xOJTsJzZ";
 const P132_FOLDER_ID = "1NY76Nb4AlGqXcpW5B99_STKlN1hhX4M6";
 
-function source(
-  productCode: string,
-  sourceName: string,
-  category = "Test"
-): SarimaSourceIdentity {
+function source(productCode: string, sourceName: string, category = "Test"): SarimaSourceIdentity {
   return {
     category,
     productCode,

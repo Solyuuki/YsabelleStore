@@ -50,7 +50,9 @@ export function ProductCatalogQoLEnhancements({
       const statusSelect = allSelects.find((select) =>
         Array.from(select.options).some((option) => option.textContent?.trim() === "All statuses")
       );
-      const qualitySelect = document.querySelector<HTMLSelectElement>('select[aria-label="Catalog quality"]');
+      const qualitySelect = document.querySelector<HTMLSelectElement>(
+        'select[aria-label="Catalog quality"]'
+      );
       const statusLabel = statusSelect?.closest<HTMLLabelElement>("label");
       const qualityLabel = qualitySelect?.closest<HTMLLabelElement>("label");
       const toolbar = statusLabel?.parentElement;
@@ -73,7 +75,9 @@ export function ProductCatalogQoLEnhancements({
         statusLabel.insertBefore(statusIconHost, statusSelect);
       }
 
-      let qualityIconHost = qualityLabel.querySelector<HTMLElement>('[data-qol-quality-icon="true"]');
+      let qualityIconHost = qualityLabel.querySelector<HTMLElement>(
+        '[data-qol-quality-icon="true"]'
+      );
       if (!qualityIconHost) {
         qualityIconHost = document.createElement("span");
         qualityIconHost.dataset.qolQualityIcon = "true";
@@ -114,10 +118,20 @@ export function ProductCatalogQoLEnhancements({
       observer.disconnect();
       if (statusFilterIcon) statusFilterIcon.style.display = "";
       if (qualityFilterIcon) qualityFilterIcon.style.display = "";
-      document.querySelectorAll('[data-qol-status-icon="true"], [data-qol-quality-icon="true"], [data-qol-sort-host="true"]').forEach((node) => node.remove());
-      document.querySelectorAll<HTMLElement>('[data-catalog-toolbar-qol="true"]').forEach((node) => delete node.dataset.catalogToolbarQol);
-      document.querySelectorAll<HTMLElement>('[data-package-dropzone="selected"]').forEach((node) => delete node.dataset.packageDropzone);
-      document.querySelectorAll<HTMLElement>('[data-package-file-card="true"]').forEach((node) => delete node.dataset.packageFileCard);
+      document
+        .querySelectorAll(
+          '[data-qol-status-icon="true"], [data-qol-quality-icon="true"], [data-qol-sort-host="true"]'
+        )
+        .forEach((node) => node.remove());
+      document
+        .querySelectorAll<HTMLElement>('[data-catalog-toolbar-qol="true"]')
+        .forEach((node) => delete node.dataset.catalogToolbarQol);
+      document
+        .querySelectorAll<HTMLElement>('[data-package-dropzone="selected"]')
+        .forEach((node) => delete node.dataset.packageDropzone);
+      document
+        .querySelectorAll<HTMLElement>('[data-package-file-card="true"]')
+        .forEach((node) => delete node.dataset.packageFileCard);
       setHosts(EMPTY_HOSTS);
     };
   }, []);
@@ -146,12 +160,8 @@ export function ProductCatalogQoLEnhancements({
         }
       `}</style>
 
-      {hosts.statusIcon
-        ? createPortal(<AvailabilityIcon />, hosts.statusIcon)
-        : null}
-      {hosts.qualityIcon
-        ? createPortal(<QualityIcon />, hosts.qualityIcon)
-        : null}
+      {hosts.statusIcon ? createPortal(<AvailabilityIcon />, hosts.statusIcon) : null}
+      {hosts.qualityIcon ? createPortal(<QualityIcon />, hosts.qualityIcon) : null}
       {hosts.sort
         ? createPortal(
             <label className="relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
@@ -175,7 +185,14 @@ export function ProductCatalogQoLEnhancements({
 
 function AvailabilityIcon() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <circle cx="12" cy="12" r="9" />
       <path d="M8 12h8" />
       <path d="M12 8v8" />
@@ -185,7 +202,14 @@ function AvailabilityIcon() {
 
 function QualityIcon() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <path d="M12 3 5 6v5c0 4.7 2.9 8.3 7 10 4.1-1.7 7-5.3 7-10V6l-7-3Z" />
       <path d="m9.5 12 1.7 1.7 3.5-3.7" />
     </svg>
@@ -194,7 +218,14 @@ function QualityIcon() {
 
 function SortIcon() {
   return (
-    <svg aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4 shrink-0 text-slate-500"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <path d="M8 6h10" />
       <path d="M8 12h7" />
       <path d="M8 18h4" />

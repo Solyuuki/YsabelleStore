@@ -65,24 +65,25 @@ export function Tooltip({ children, className, content, sideOffset = 10 }: Toolt
     };
   }, [open, updatePosition]);
 
-  const tooltip = open && typeof document !== "undefined"
-    ? createPortal(
-        <span
-          ref={tooltipRef}
-          aria-hidden="true"
-          className={cn(
-            "pointer-events-none fixed z-[100] whitespace-nowrap rounded-md border border-slate-200",
-            "bg-slate-950 px-2.5 py-1 type-caption text-white shadow-lg",
-            "transition-opacity duration-150",
-            position ? "opacity-100" : "opacity-0"
-          )}
-          style={position ?? { left: 0, top: 0 }}
-        >
-          {content}
-        </span>,
-        document.body
-      )
-    : null;
+  const tooltip =
+    open && typeof document !== "undefined"
+      ? createPortal(
+          <span
+            ref={tooltipRef}
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none fixed z-[100] whitespace-nowrap rounded-md border border-slate-200",
+              "bg-slate-950 px-2.5 py-1 type-caption text-white shadow-lg",
+              "transition-opacity duration-150",
+              position ? "opacity-100" : "opacity-0"
+            )}
+            style={position ?? { left: 0, top: 0 }}
+          >
+            {content}
+          </span>,
+          document.body
+        )
+      : null;
 
   return (
     <span

@@ -433,10 +433,7 @@ function buildProductWhere(query: ListProductsQuery, categoryIds?: string[]) {
   }
 
   if (query.barcode) {
-    where.OR = [
-      { barcode: query.barcode },
-      { barcodes: { some: { barcode: query.barcode } } }
-    ];
+    where.OR = [{ barcode: query.barcode }, { barcodes: { some: { barcode: query.barcode } } }];
   }
 
   if (query.search) {
@@ -446,10 +443,7 @@ function buildProductWhere(query: ListProductsQuery, categoryIds?: string[]) {
       { barcode: { contains: query.search } },
       { barcodes: { some: { barcode: { contains: query.search } } } }
     ];
-    where.AND = [
-      ...(where.OR ? [{ OR: where.OR }] : []),
-      { OR: searchConditions }
-    ];
+    where.AND = [...(where.OR ? [{ OR: where.OR }] : []), { OR: searchConditions }];
     delete where.OR;
   }
 

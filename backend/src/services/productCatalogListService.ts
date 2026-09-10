@@ -3,10 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../database/prismaClient.js";
 import type { ListProductsQuery } from "../validators/product.validators.js";
 import { buildPaginationMeta, type PaginationMeta } from "../utils/pagination.js";
-import {
-  serializeProduct,
-  type ProductSummary
-} from "./catalogSerializers.js";
+import { serializeProduct, type ProductSummary } from "./catalogSerializers.js";
 
 type ProductListResult = {
   items: ProductSummary[];
@@ -53,7 +50,9 @@ async function resolveCategoryFilter(query: ListProductsQuery) {
   return categories.map((category) => category.id);
 }
 
-function buildAvailabilityWhere(status: ListProductsQuery["status"]): Prisma.ProductWhereInput | null {
+function buildAvailabilityWhere(
+  status: ListProductsQuery["status"]
+): Prisma.ProductWhereInput | null {
   if (status === "ACTIVE") {
     return {
       status: "ACTIVE",
@@ -104,10 +103,7 @@ function buildProductWhere(
   if (query.sku) clauses.push({ sku: query.sku });
   if (query.barcode) {
     clauses.push({
-      OR: [
-        { barcode: query.barcode },
-        { barcodes: { some: { barcode: query.barcode } } }
-      ]
+      OR: [{ barcode: query.barcode }, { barcodes: { some: { barcode: query.barcode } } }]
     });
   }
   if (query.search) {

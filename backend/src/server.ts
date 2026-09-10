@@ -59,7 +59,10 @@ const server = app.listen(env.PORT, () => {
       );
     })
     .catch((error) => {
-      console.error("[catalog-barcode-bootstrap] Unable to apply catalog barcode bootstrap.", error);
+      console.error(
+        "[catalog-barcode-bootstrap] Unable to apply catalog barcode bootstrap.",
+        error
+      );
     });
 });
 

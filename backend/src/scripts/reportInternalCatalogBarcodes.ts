@@ -102,11 +102,17 @@ async function main() {
     missingBarcodes: missingProducts.length,
     scannableCoveragePercent:
       products.length > 0
-        ? Number((((internalProducts.length + externalProducts.length) / products.length) * 100).toFixed(2))
+        ? Number(
+            (((internalProducts.length + externalProducts.length) / products.length) * 100).toFixed(
+              2
+            )
+          )
         : 0,
     ysbByCategory: [...byCategory.entries()]
       .map(([category, count]) => ({ category, count }))
-      .sort((left, right) => right.count - left.count || left.category.localeCompare(right.category))
+      .sort(
+        (left, right) => right.count - left.count || left.category.localeCompare(right.category)
+      )
   };
 
   console.log(JSON.stringify({ summary, rows }, null, 2));

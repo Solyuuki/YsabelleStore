@@ -18,7 +18,9 @@ const basePrisma = new PrismaClient({
   log: prismaLogLevels
 });
 
-function applyRetiredProductGuard(where: Prisma.ProductWhereInput | undefined): Prisma.ProductWhereInput {
+function applyRetiredProductGuard(
+  where: Prisma.ProductWhereInput | undefined
+): Prisma.ProductWhereInput {
   return {
     AND: [
       where ?? {},

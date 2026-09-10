@@ -69,7 +69,10 @@ function assertAuthorization(authorization: SyntheticBarcodeRehabilitationAuthor
     const expectedSku = `SARIMA-${identity.sarimaSourceProductId}`;
     const expectedSyntheticBarcode = `YSB-${identity.sku}`;
 
-    if (identity.sku !== expectedSku || identity.expectedCurrentBarcode !== expectedSyntheticBarcode) {
+    if (
+      identity.sku !== expectedSku ||
+      identity.expectedCurrentBarcode !== expectedSyntheticBarcode
+    ) {
       fail(
         "SYNTHETIC_BARCODE_REHABILITATION_AUTHORIZATION_MISMATCH",
         `${identity.id} does not preserve the expected SARIMA/YSB identity relationship`

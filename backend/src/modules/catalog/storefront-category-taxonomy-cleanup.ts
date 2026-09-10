@@ -138,8 +138,12 @@ async function ensureCategory(
     quality: CatalogQualityStatus;
   }
 ): Promise<CategoryIdentityRow> {
-  const nameMatches = existingCategories.filter((row) => normalize(row.name) === normalize(input.name));
-  const slugMatches = existingCategories.filter((row) => normalize(row.slug) === normalize(input.slug));
+  const nameMatches = existingCategories.filter(
+    (row) => normalize(row.name) === normalize(input.name)
+  );
+  const slugMatches = existingCategories.filter(
+    (row) => normalize(row.slug) === normalize(input.slug)
+  );
   const candidateIds = new Set([...nameMatches, ...slugMatches].map((row) => row.id));
 
   if (candidateIds.size > 1) {
@@ -159,7 +163,10 @@ async function ensureCategory(
   };
 
   if (existing) {
-    const updated = (await tx.category.update({ where: { id: existing.id }, data })) as CategoryIdentityRow;
+    const updated = (await tx.category.update({
+      where: { id: existing.id },
+      data
+    })) as CategoryIdentityRow;
     Object.assign(existing, updated);
     return updated;
   }

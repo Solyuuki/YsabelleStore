@@ -336,10 +336,7 @@ function findSevenZipExecutable() {
     process.platform === "win32" ? "7zz.exe" : "7zz",
     process.platform === "win32" ? "7za.exe" : "7za",
     ...(process.platform === "win32"
-      ? [
-          "C:\\Program Files\\7-Zip\\7z.exe",
-          "C:\\Program Files (x86)\\7-Zip\\7z.exe"
-        ]
+      ? ["C:\\Program Files\\7-Zip\\7z.exe", "C:\\Program Files (x86)\\7-Zip\\7z.exe"]
       : [])
   ];
 
@@ -388,13 +385,18 @@ async function extractWithSevenZip(archivePath: string, output: string) {
   });
 }
 
-async function extractArchive(archivePath: string, output: string, type: ProductPackageArchiveType) {
+async function extractArchive(
+  archivePath: string,
+  output: string,
+  type: ProductPackageArchiveType
+) {
   await mkdir(output, { recursive: true });
   if (type === "rar" || type === "7z") {
     return extractWithSevenZip(archivePath, output);
   }
 
-  const python = process.env.PYTHON_EXECUTABLE?.trim() || (process.platform === "win32" ? "python" : "python3");
+  const python =
+    process.env.PYTHON_EXECUTABLE?.trim() || (process.platform === "win32" ? "python" : "python3");
   const pythonKind = type === "zip" ? "zip" : "tar";
   try {
     await runCommand(python, ["-c", PYTHON_ARCHIVE_SCRIPT, archivePath, output, pythonKind]);
@@ -437,7 +439,11 @@ async function walkExtracted(root: string) {
       if (!stats.isFile()) continue;
 
       totalBytes += stats.size;
-      files.push({ absolutePath, relativePath: relativePath.replace(/\\/g, "/"), size: stats.size });
+      files.push({
+        absolutePath,
+        relativePath: relativePath.replace(/\\/g, "/"),
+        size: stats.size
+      });
       if (files.length > PRODUCT_PACKAGE_MAX_FILES) {
         throw new HttpError(422, "Product package contains too many files.", {
           code: "PRODUCT_PACKAGE_TOO_MANY_FILES",
@@ -470,7 +476,10 @@ function mimeTypeForImage(fileName: string) {
   return "image/jpeg";
 }
 
-async function preparePackage(file: UploadFile, sourceType: ProductPackageSourceType): Promise<PreparedPackage> {
+async function preparePackage(
+  file: UploadFile,
+  sourceType: ProductPackageSourceType
+): Promise<PreparedPackage> {
   if (!file.originalname.trim()) {
     throw new HttpError(400, "Product package file name is invalid.", {
       code: "PRODUCT_PACKAGE_NAME_INVALID"
@@ -520,9 +529,13 @@ async function preparePackage(file: UploadFile, sourceType: ProductPackageSource
       DATA_EXTENSIONS.has(path.extname(candidate.relativePath).toLowerCase())
     );
     if (dataFiles.length === 0) {
-      throw new HttpError(422, "Product package does not contain a CSV or XLSX product data file.", {
-        code: "PRODUCT_PACKAGE_DATA_FILE_MISSING"
-      });
+      throw new HttpError(
+        422,
+        "Product package does not contain a CSV or XLSX product data file.",
+        {
+          code: "PRODUCT_PACKAGE_DATA_FILE_MISSING"
+        }
+      );
     }
     if (dataFiles.length > PRODUCT_PACKAGE_MAX_DATA_FILES) {
       throw new HttpError(422, "Product package must contain exactly one product data file.", {
@@ -596,7 +609,8 @@ function matchImages(preview: ProductImportPreview, images: ExtractedFile[]) {
       row.errors.push({
         code: "PRODUCT_PACKAGE_AMBIGUOUS_IMAGE",
         field: "image",
-        message: "More than one package image matches this product. Keep one image named after the SKU or product name.",
+        message:
+          "More than one package image matches this product. Keep one image named after the SKU or product name.",
         rowNumber: row.rowNumber,
         value: candidates.map((candidate) => candidate.relativePath).join(", ")
       });
@@ -606,7 +620,8 @@ function matchImages(preview: ProductImportPreview, images: ExtractedFile[]) {
       row.warnings.push({
         code: "PRODUCT_PACKAGE_IMAGE_NOT_FOUND",
         field: "image",
-        message: "No package image matched this product. The product can still be reviewed without an image.",
+        message:
+          "No package image matched this product. The product can still be reviewed without an image.",
         rowNumber: row.rowNumber,
         value: row.normalizedData.sku
       });
@@ -632,7 +647,11 @@ function matchImages(preview: ProductImportPreview, images: ExtractedFile[]) {
   return { matches, errors, warnings, usedImages };
 }
 
-async function validateMatchedImages(preview: ProductImportPreview, matches: ImageMatch[], root: string) {
+async function validateMatchedImages(
+  preview: ProductImportPreview,
+  matches: ImageMatch[],
+  root: string
+) {
   let approved = 0;
 
   for (const match of matches) {
@@ -664,7 +683,8 @@ async function validateMatchedImages(preview: ProductImportPreview, matches: Ima
       row.errors.push({
         code: "PRODUCT_PACKAGE_IMAGE_INVALID",
         field: "image",
-        message: error instanceof Error ? error.message : "Matched product image could not be validated.",
+        message:
+          error instanceof Error ? error.message : "Matched product image could not be validated.",
         rowNumber: row.rowNumber,
         value: match.image.relativePath
       });
@@ -793,10 +813,14 @@ export async function importProductPackage(
         size: match.image.size
       });
       if (candidate.processingStatus !== "READY" || candidate.qualityStatus !== "APPROVED") {
-        throw new HttpError(500, "A previously validated package image failed during final processing.", {
-          code: "PRODUCT_PACKAGE_IMAGE_COMMIT_FAILED",
-          details: { sku: match.sku }
-        });
+        throw new HttpError(
+          500,
+          "A previously validated package image failed during final processing.",
+          {
+            code: "PRODUCT_PACKAGE_IMAGE_COMMIT_FAILED",
+            details: { sku: match.sku }
+          }
+        );
       }
       await approveProductImageCandidate(productId, candidate.id);
       imagesImported += 1;
@@ -859,10 +883,14 @@ export async function downloadGoogleDriveProductPackage(link: string): Promise<U
 
   const response = await fetch(downloadUrl, { redirect: "follow" });
   if (!response.ok || !response.body) {
-    throw new HttpError(422, "Google Drive package could not be downloaded. Check sharing access.", {
-      code: "GOOGLE_DRIVE_DOWNLOAD_FAILED",
-      details: { status: response.status }
-    });
+    throw new HttpError(
+      422,
+      "Google Drive package could not be downloaded. Check sharing access.",
+      {
+        code: "GOOGLE_DRIVE_DOWNLOAD_FAILED",
+        details: { status: response.status }
+      }
+    );
   }
   const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
   if (contentType.includes("text/html")) {
@@ -892,9 +920,13 @@ export async function downloadGoogleDriveProductPackage(link: string): Promise<U
   if (!originalname || !archiveSuffix(originalname)) {
     const type = contentType.includes("zip") ? ".zip" : null;
     if (!type) {
-      throw new HttpError(415, "Google Drive file name does not identify a supported archive type.", {
-        code: "UNSUPPORTED_PRODUCT_PACKAGE_TYPE"
-      });
+      throw new HttpError(
+        415,
+        "Google Drive file name does not identify a supported archive type.",
+        {
+          code: "UNSUPPORTED_PRODUCT_PACKAGE_TYPE"
+        }
+      );
     }
     originalname = `google-drive-product-package${type}`;
   }

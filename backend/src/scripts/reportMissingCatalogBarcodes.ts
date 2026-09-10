@@ -96,7 +96,9 @@ async function main() {
       totalProducts > 0 ? Number(((productsWithBarcode / totalProducts) * 100).toFixed(2)) : 0,
     missingByCategory: [...byCategory.entries()]
       .map(([category, count]) => ({ category, count }))
-      .sort((left, right) => right.count - left.count || left.category.localeCompare(right.category))
+      .sort(
+        (left, right) => right.count - left.count || left.category.localeCompare(right.category)
+      )
   };
 
   console.log(JSON.stringify({ summary, rows }, null, 2));

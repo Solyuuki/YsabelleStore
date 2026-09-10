@@ -136,7 +136,11 @@ function scoreCandidate(ocrText: string, candidate: ProductCandidate): number {
   return score;
 }
 
-function resolveUniqueCandidate(ocrText: string, candidates: ProductCandidate[], claimedSkus: Set<string>) {
+function resolveUniqueCandidate(
+  ocrText: string,
+  candidates: ProductCandidate[],
+  claimedSkus: Set<string>
+) {
   const ranked: RankedCandidate[] = candidates
     .filter((candidate) => !claimedSkus.has(candidate.sku))
     .map((candidate) => ({ ...candidate, score: scoreCandidate(ocrText, candidate) }))

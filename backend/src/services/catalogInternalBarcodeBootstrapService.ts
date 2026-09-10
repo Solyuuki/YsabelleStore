@@ -77,7 +77,11 @@ async function applyInternalBarcode(product: {
       throw new InternalBarcodeBlocker("PRODUCT_NOT_FOUND", `${product.sku} no longer exists.`);
     }
 
-    if (current.sku !== product.sku || current.name !== product.name || current.recordSource !== product.recordSource) {
+    if (
+      current.sku !== product.sku ||
+      current.name !== product.name ||
+      current.recordSource !== product.recordSource
+    ) {
       throw new InternalBarcodeBlocker(
         "IDENTITY_CHANGED",
         `${product.sku} changed identity during internal barcode assignment.`

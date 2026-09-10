@@ -45,8 +45,9 @@ export function ReceivingPage() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conflictDetails, setConflictDetails] = useState<ReceivingBarcodeErrorDetails | null>(null);
-  const [barcodeConfirmation, setBarcodeConfirmation] =
-    useState<PendingBarcodeConfirmation | null>(null);
+  const [barcodeConfirmation, setBarcodeConfirmation] = useState<PendingBarcodeConfirmation | null>(
+    null
+  );
   const requestRef = useRef(0);
 
   useEffect(() => {
@@ -175,7 +176,9 @@ export function ReceivingPage() {
     } catch (requestError) {
       setBarcodeConfirmation(null);
       setError(
-        requestError instanceof Error ? requestError.message : "Unable to reach the receiving service."
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to reach the receiving service."
       );
       return false;
     } finally {
@@ -248,7 +251,9 @@ export function ReceivingPage() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-950">{product.name}</p>
+                          <p className="truncate text-sm font-semibold text-slate-950">
+                            {product.name}
+                          </p>
                           <p className="mt-1 text-xs text-slate-500">SKU: {product.sku}</p>
                           <p className="mt-1 break-all text-xs text-slate-500">
                             Primary barcode: {product.barcode ?? "Not set"}
@@ -285,7 +290,9 @@ export function ReceivingPage() {
                       <p className="mt-1 text-xs text-slate-500">SKU: {selectedProduct.sku}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">On hand</p>
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        On hand
+                      </p>
                       <p className="mt-1 text-xl font-semibold text-slate-950">
                         {selectedProduct.inventory.currentQuantity}
                       </p>
@@ -315,7 +322,8 @@ export function ReceivingPage() {
                     />
                   </div>
                   <p className="text-xs text-slate-500">
-                    Manufacturer UPC/EAN/GTIN or existing YSB label. No fixed digit length is assumed.
+                    Manufacturer UPC/EAN/GTIN or existing YSB label. No fixed digit length is
+                    assumed.
                   </p>
                 </div>
 
@@ -371,14 +379,18 @@ export function ReceivingPage() {
                     <AlertDescription>
                       <div className="space-y-3">
                         <p>
-                          <span className="font-mono font-semibold">{barcodeConfirmation.barcode}</span>{" "}
+                          <span className="font-mono font-semibold">
+                            {barcodeConfirmation.barcode}
+                          </span>{" "}
                           is not yet registered.
                         </p>
                         <div className="rounded-md border border-slate-200 bg-white p-3">
                           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                             Current product
                           </p>
-                          <p className="mt-1 font-semibold text-slate-900">{selectedProduct.name}</p>
+                          <p className="mt-1 font-semibold text-slate-900">
+                            {selectedProduct.name}
+                          </p>
                           <p className="mt-1 text-xs text-slate-500">SKU: {selectedProduct.sku}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -449,7 +461,8 @@ export function ReceivingPage() {
                 {!error && !barcodeConfirmation && barcodeInput.trim() ? (
                   <div className="flex items-center gap-2 text-xs text-slate-500">
                     <CircleCheck className="h-4 w-4 text-emerald-600" aria-hidden="true" />
-                    Known barcodes receive immediately. Unknown barcodes stop before any stock change and ask once for confirmation.
+                    Known barcodes receive immediately. Unknown barcodes stop before any stock
+                    change and ask once for confirmation.
                   </div>
                 ) : null}
               </form>

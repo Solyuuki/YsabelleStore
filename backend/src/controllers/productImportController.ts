@@ -78,7 +78,9 @@ export const previewGoogleDriveProductImportController: RequestHandler = async (
     const result = await previewProductPackage(file, "GOOGLE_DRIVE");
     response
       .status(200)
-      .json(createSuccessResponse("Google Drive product package scan completed successfully.", result));
+      .json(
+        createSuccessResponse("Google Drive product package scan completed successfully.", result)
+      );
   } catch (error) {
     next(error);
   }
@@ -96,7 +98,9 @@ export const importGoogleDriveProductsController: RequestHandler = async (
     const result = await importProductPackage(file, actor?.id, "GOOGLE_DRIVE");
     response
       .status(201)
-      .json(createSuccessResponse("Google Drive product package import completed successfully.", result));
+      .json(
+        createSuccessResponse("Google Drive product package import completed successfully.", result)
+      );
   } catch (error) {
     next(error);
   }

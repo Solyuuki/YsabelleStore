@@ -17,7 +17,9 @@ export const getDashboardSummaryController: RequestHandler = async (request, res
 
     const summary = await getDashboardSummary(user.role);
 
-    response.status(200).json(createSuccessResponse("Dashboard summary loaded successfully.", summary));
+    response
+      .status(200)
+      .json(createSuccessResponse("Dashboard summary loaded successfully.", summary));
   } catch (error) {
     next(error);
   }

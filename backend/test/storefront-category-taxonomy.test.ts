@@ -28,7 +28,10 @@ test("storefront taxonomy exposes fourteen clean public categories in UX order",
     "Personal Care & Hygiene",
     "Tissue & Cotton"
   ]);
-  assert.equal(STOREFRONT_CATEGORY_NAMES.some((name) => name.includes("/")), false);
+  assert.equal(
+    STOREFRONT_CATEGORY_NAMES.some((name) => name.includes("/")),
+    false
+  );
 });
 
 test("canonical source categories map to clean public labels", () => {
@@ -59,7 +62,10 @@ test("restricted alcohol is intentionally outside the public taxonomy", () => {
   assert.equal(RESTRICTED_ALCOHOL_SOURCE_CATEGORY, "Beverages / Alcohol");
   assert.deepEqual(RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS, ["P254", "P255"]);
   assert.equal(storefrontCategoryForSource(RESTRICTED_ALCOHOL_SOURCE_CATEGORY), null);
-  assert.equal(STOREFRONT_CATEGORY_NAMES.some((name) => /alcohol/i.test(name)), false);
+  assert.equal(
+    STOREFRONT_CATEGORY_NAMES.some((name) => /alcohol/i.test(name)),
+    false
+  );
 });
 
 test("category comparator preserves logical merchandising order", () => {

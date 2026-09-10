@@ -1,10 +1,4 @@
-import {
-  CheckCircle2,
-  ImagePlus,
-  LoaderCircle,
-  RefreshCw,
-  ShieldAlert
-} from "lucide-react";
+import { CheckCircle2, ImagePlus, LoaderCircle, RefreshCw, ShieldAlert } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { LoadingState } from "@/components/shared/LoadingState";

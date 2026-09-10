@@ -24,7 +24,9 @@ export const listProductBarcodesController: RequestHandler = async (request, res
       code: "INVALID_PRODUCT_ID"
     });
     const records = await listProductBarcodes(params.productId);
-    response.status(200).json(createSuccessResponse("Product barcodes loaded successfully.", records));
+    response
+      .status(200)
+      .json(createSuccessResponse("Product barcodes loaded successfully.", records));
   } catch (error) {
     next(error);
   }
@@ -54,7 +56,9 @@ export const registerProductBarcodeController: RequestHandler = async (request, 
       .status(result.created ? 201 : 200)
       .json(
         createSuccessResponse(
-          result.created ? "Product barcode registered successfully." : "Product barcode already registered.",
+          result.created
+            ? "Product barcode registered successfully."
+            : "Product barcode already registered.",
           result
         )
       );
@@ -63,7 +67,11 @@ export const registerProductBarcodeController: RequestHandler = async (request, 
   }
 };
 
-export const setPrimaryProductBarcodeController: RequestHandler = async (request, response, next) => {
+export const setPrimaryProductBarcodeController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
   try {
     const params = parseOrThrow(productBarcodeIdParamSchema, request.params, {
       message: "Product barcode id is invalid.",
@@ -106,7 +114,9 @@ export const enrollReceivingBarcodeController: RequestHandler = async (request, 
       .status(result.created ? 201 : 200)
       .json(
         createSuccessResponse(
-          result.created ? "Receiving barcode registered successfully." : "Barcode is already registered to this product.",
+          result.created
+            ? "Receiving barcode registered successfully."
+            : "Barcode is already registered to this product.",
           result
         )
       );

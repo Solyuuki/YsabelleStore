@@ -13,7 +13,9 @@ async function main() {
   const [products, productsWithBarcode, invalidLegacyBarcodes, duplicateLegacyBarcodes, tableRows] =
     await Promise.all([
       prisma.$queryRaw<CountRow[]>`SELECT COUNT(*) AS count FROM products`,
-      prisma.$queryRaw<CountRow[]>`SELECT COUNT(*) AS count FROM products WHERE barcode IS NOT NULL`,
+      prisma.$queryRaw<
+        CountRow[]
+      >`SELECT COUNT(*) AS count FROM products WHERE barcode IS NOT NULL`,
       prisma.$queryRaw<CountRow[]>`
         SELECT COUNT(*) AS count
         FROM products
@@ -49,14 +51,18 @@ async function main() {
 
   if (invalidLegacyCount > 0 || duplicateLegacyBarcodes.length > 0) {
     console.error("BARCODE_MIGRATION_DOCTOR=BLOCKED");
-    console.error("Legacy barcode data must be corrected before the expand-first migration is applied.");
+    console.error(
+      "Legacy barcode data must be corrected before the expand-first migration is applied."
+    );
     process.exitCode = 1;
     return;
   }
 
   if (!productBarcodesTableExists) {
     console.info("BARCODE_MIGRATION_DOCTOR=READY_TO_MIGRATE");
-    console.info("No destructive action was performed. The legacy barcode set is safe for backfill.");
+    console.info(
+      "No destructive action was performed. The legacy barcode set is safe for backfill."
+    );
     return;
   }
 
@@ -127,7 +133,9 @@ async function main() {
   console.info(`Duplicate registered barcode groups: ${duplicateRegistrations.length}`);
   console.info(`Orphan barcode registrations: ${orphanRegistrations.length}`);
   console.info(`Legacy mirrors missing from identity table: ${missingLegacyRegistrations.length}`);
-  console.info(`Products with barcode identities but no primary: ${missingPrimaryRegistrations.length}`);
+  console.info(
+    `Products with barcode identities but no primary: ${missingPrimaryRegistrations.length}`
+  );
   console.info(`Products with multiple primary identities: ${multiplePrimaryRegistrations.length}`);
   console.info(`Primary identity / products.barcode mismatches: ${primaryMirrorMismatches.length}`);
 
@@ -141,7 +149,9 @@ async function main() {
 
   if (blockers > 0) {
     console.error("BARCODE_MIGRATION_DOCTOR=BLOCKED");
-    console.error("Barcode identity integrity checks failed. Do not promote this database to staging.");
+    console.error(
+      "Barcode identity integrity checks failed. Do not promote this database to staging."
+    );
     process.exitCode = 1;
     return;
   }

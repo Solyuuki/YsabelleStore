@@ -33,11 +33,7 @@ async function loadModule() {
   return loaded;
 }
 
-function fakeClient(input: {
-  mappings?: Mapping[];
-  products?: Product[];
-  updateCount?: number;
-}) {
+function fakeClient(input: { mappings?: Mapping[]; products?: Product[]; updateCount?: number }) {
   const mappings = input.mappings ?? [];
   const products = input.products ?? [];
   const updates: unknown[] = [];
@@ -69,7 +65,12 @@ function fakeClient(input: {
     }
   };
 
-  return { client, updates, getMappingFindArgs: () => mappingFindArgs, getProductFindArgs: () => productFindArgs };
+  return {
+    client,
+    updates,
+    getMappingFindArgs: () => mappingFindArgs,
+    getProductFindArgs: () => productFindArgs
+  };
 }
 
 const p212Mapping: Mapping = {
@@ -206,7 +207,11 @@ test("quarantine requires the complete frozen authorization and protects P132", 
       : row
   );
   await assert.rejects(
-    () => quarantine.executeUnresolvedCatalogImageQuarantine({ client: fake.client, identities: withP132 }),
+    () =>
+      quarantine.executeUnresolvedCatalogImageQuarantine({
+        client: fake.client,
+        identities: withP132
+      }),
     /CATALOG_UNRESOLVED_IMAGE_PROTECTED_PRODUCT/
   );
 });

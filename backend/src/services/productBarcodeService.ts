@@ -119,9 +119,13 @@ function assertRegistrationTypeAllowed(type: ProductBarcodeType, source: Product
     source !== ProductBarcodeSource.SYSTEM_INTERNAL &&
     source !== ProductBarcodeSource.MIGRATION
   ) {
-    throw new HttpError(422, "YSB internal barcodes are system-managed and cannot be enrolled manually.", {
-      code: "PRODUCT_INTERNAL_BARCODE_RESERVED"
-    });
+    throw new HttpError(
+      422,
+      "YSB internal barcodes are system-managed and cannot be enrolled manually.",
+      {
+        code: "PRODUCT_INTERNAL_BARCODE_RESERVED"
+      }
+    );
   }
 }
 
@@ -141,7 +145,10 @@ async function findBarcodeWithProduct(db: BarcodeDb, barcode: string) {
   });
 }
 
-function barcodeConflict(existing: Awaited<ReturnType<typeof findBarcodeWithProduct>>, requestedProductId: string) {
+function barcodeConflict(
+  existing: Awaited<ReturnType<typeof findBarcodeWithProduct>>,
+  requestedProductId: string
+) {
   if (!existing || existing.productId === requestedProductId) return;
   throw new HttpError(409, "Barcode is already assigned to another product.", {
     code: "PRODUCT_BARCODE_CONFLICT",
@@ -265,7 +272,11 @@ async function promoteBarcodeInTransaction(
     });
   }
 
-  if (!previousPrimary || previousPrimary.id !== promoted.id || product.barcode !== promoted.barcode) {
+  if (
+    !previousPrimary ||
+    previousPrimary.id !== promoted.id ||
+    product.barcode !== promoted.barcode
+  ) {
     await writeBarcodeAudit(db, {
       record: promoted,
       action: "PRODUCT_BARCODE_PRIMARY_CHANGED",
@@ -394,7 +405,9 @@ export async function registerProductBarcode(input: RegisterBarcodeInput) {
   return prisma.$transaction((tx) => registerProductBarcodeInTransaction(tx, input));
 }
 
-export async function resolveProductBarcode(barcodeInput: string): Promise<ProductBarcodeResolution> {
+export async function resolveProductBarcode(
+  barcodeInput: string
+): Promise<ProductBarcodeResolution> {
   const barcode = normalizeProductBarcode(barcodeInput);
   const registered = await prisma.productBarcode.findUnique({
     where: { barcode },

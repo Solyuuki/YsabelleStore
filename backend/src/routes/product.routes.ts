@@ -64,11 +64,7 @@ productRouter.get(
   requireRole("OWNER", "STAFF"),
   listProductBarcodesController
 );
-productRouter.post(
-  "/:productId/barcodes",
-  requireRole("OWNER"),
-  registerProductBarcodeController
-);
+productRouter.post("/:productId/barcodes", requireRole("OWNER"), registerProductBarcodeController);
 productRouter.patch(
   "/:productId/barcodes/:barcodeId/primary",
   requireRole("OWNER"),

@@ -136,7 +136,9 @@ function printHttpResult(email, result) {
   );
 }
 
-const apiBaseUrl = (process.env.VITE_API_BASE_URL || `http://localhost:${process.env.PORT || "3001"}`).replace(/\/+$/, "");
+const apiBaseUrl = (
+  process.env.VITE_API_BASE_URL || `http://localhost:${process.env.PORT || "3001"}`
+).replace(/\/+$/, "");
 
 try {
   console.info(`Development auth DB: ${describeDatabaseTarget(process.env.DATABASE_URL)}`);

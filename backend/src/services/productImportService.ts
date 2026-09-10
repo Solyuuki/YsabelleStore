@@ -1,12 +1,7 @@
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
-import {
-  Prisma,
-  ProductBarcodeSource,
-  type ProductStatus,
-  type ProductUnit
-} from "@prisma/client";
+import { Prisma, ProductBarcodeSource, type ProductStatus, type ProductUnit } from "@prisma/client";
 import { readSheet } from "read-excel-file/node";
 
 import { prisma } from "../database/prismaClient.js";

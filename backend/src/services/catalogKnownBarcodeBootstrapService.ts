@@ -26,7 +26,8 @@ const VERIFIED_BARCODES = [
     name: "Dr. Wong's Sulfur Soap 80g",
     sarimaSourceProductId: "P065",
     barcode: "4800011179049",
-    evidence: "verified exact 80g Dr. Wong's Sulfur Soap retail unit from Philippine retailer listings"
+    evidence:
+      "verified exact 80g Dr. Wong's Sulfur Soap retail unit from Philippine retailer listings"
   },
   {
     id: "prd_sarima_p078_sunsilk_perfect_straight_13ml",
@@ -34,7 +35,8 @@ const VERIFIED_BARCODES = [
     name: "Sunsilk Perfect Straight Shampoo Sachet 13mL",
     sarimaSourceProductId: "P078",
     barcode: "4800888191939",
-    evidence: "verified exact Sunsilk Perfect Straight 13mL sachet retail unit from Philippine retailer listings"
+    evidence:
+      "verified exact Sunsilk Perfect Straight 13mL sachet retail unit from Philippine retailer listings"
   },
   {
     id: "prd_sarima_p088_fresca_tuna_175g",

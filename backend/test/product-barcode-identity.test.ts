@@ -143,8 +143,14 @@ test(
     assert.equal(persisted.barcode, manufacturerBarcode);
     assert.equal(registrations.filter((record) => record.isPrimary).length, 1);
     assert.equal(registrations.find((record) => record.isPrimary)?.barcode, manufacturerBarcode);
-    assert.equal(registrations.find((record) => record.barcode === internalBarcode)?.isPrimary, false);
-    assert.equal(registrations.some((record) => record.barcode === internalBarcode), true);
+    assert.equal(
+      registrations.find((record) => record.barcode === internalBarcode)?.isPrimary,
+      false
+    );
+    assert.equal(
+      registrations.some((record) => record.barcode === internalBarcode),
+      true
+    );
 
     const legacyLabelResolution = await resolveProductBarcode(internalBarcode ?? "");
     assert.equal(legacyLabelResolution.found, true);
@@ -212,7 +218,10 @@ test(
     assert.equal(registrations.length, 2);
     assert.equal(registrations.filter((record) => record.isPrimary).length, 1);
     assert.equal(registrations.find((record) => record.isPrimary)?.barcode, replacementBarcode);
-    assert.equal(registrations.some((record) => record.barcode === originalBarcode), true);
+    assert.equal(
+      registrations.some((record) => record.barcode === originalBarcode),
+      true
+    );
 
     const oldResolution = await resolveProductBarcode(originalBarcode);
     assert.equal(oldResolution.found, true);
@@ -289,20 +298,16 @@ test(
   }
 );
 
-test(
-  "POS lookup never learns an unknown barcode",
-  { concurrency: false },
-  async () => {
-    const unknownBarcode = externalBarcode("UNKNOWN");
-    const beforeCount = await prisma.productBarcode.count();
-    const result = await searchPosProducts(unknownBarcode, { page: 1, pageSize: 10 });
-    const afterCount = await prisma.productBarcode.count();
+test("POS lookup never learns an unknown barcode", { concurrency: false }, async () => {
+  const unknownBarcode = externalBarcode("UNKNOWN");
+  const beforeCount = await prisma.productBarcode.count();
+  const result = await searchPosProducts(unknownBarcode, { page: 1, pageSize: 10 });
+  const afterCount = await prisma.productBarcode.count();
 
-    assert.equal(result.products.length, 0);
-    assert.equal(afterCount, beforeCount);
-    assert.equal(await prisma.productBarcode.count({ where: { barcode: unknownBarcode } }), 0);
-  }
-);
+  assert.equal(result.products.length, 0);
+  assert.equal(afterCount, beforeCount);
+  assert.equal(await prisma.productBarcode.count({ where: { barcode: unknownBarcode } }), 0);
+});
 
 test(
   "unknown YSB values cannot be enrolled through receiving",

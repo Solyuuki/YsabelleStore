@@ -121,8 +121,7 @@ export function DashboardPage() {
         {
           title: "Low Stock",
           value: formatCount(summary.inventory.lowStockItems, "item"),
-          detail:
-            summary.inventory.lowStockItems > 0 ? "Needs replenishment" : "No items flagged",
+          detail: summary.inventory.lowStockItems > 0 ? "Needs replenishment" : "No items flagged",
           tone: "warning" as const,
           icon: PackageOpen
         },

@@ -135,54 +135,64 @@ test(
   }
 );
 
-test("dashboard summary reflects live sales, stock, and near-expiry state", { concurrency: false }, async () => {
-  const now = new Date("2026-09-08T08:00:00.000Z");
-  const before = await getDashboardSummary("STAFF", now);
-  const category = await createCategory({ name: uniqueLabel("Dashboard Category") });
-  const product = await createProduct({
-    categoryId: category.id,
-    costPrice: "10.00",
-    dataQualityStatus: "APPROVED",
-    isStorefrontVisible: false,
-    name: uniqueLabel("Dashboard Product"),
-    reorderLevel: 5,
-    sellingPrice: "15.00",
-    sku: uniqueSku("DASH"),
-    status: "ACTIVE",
-    targetStockLevel: 10,
-    unit: "PIECE"
-  });
+test(
+  "dashboard summary reflects live sales, stock, and near-expiry state",
+  { concurrency: false },
+  async () => {
+    const now = new Date("2026-09-08T08:00:00.000Z");
+    const before = await getDashboardSummary("STAFF", now);
+    const category = await createCategory({ name: uniqueLabel("Dashboard Category") });
+    const product = await createProduct({
+      categoryId: category.id,
+      costPrice: "10.00",
+      dataQualityStatus: "APPROVED",
+      isStorefrontVisible: false,
+      name: uniqueLabel("Dashboard Product"),
+      reorderLevel: 5,
+      sellingPrice: "15.00",
+      sku: uniqueSku("DASH"),
+      status: "ACTIVE",
+      targetStockLevel: 10,
+      unit: "PIECE"
+    });
 
-  await addStock(product.id, {
-    batchCode: uniqueLabel("DASH-BATCH"),
-    expiresAt: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
-    quantity: 2
-  });
+    await addStock(product.id, {
+      batchCode: uniqueLabel("DASH-BATCH"),
+      expiresAt: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      quantity: 2
+    });
 
-  await prisma.sale.create({
-    data: {
-      saleDate: new Date("2026-09-08T04:15:00.000Z"),
-      saleNumber: uniqueLabel("DASH-SALE"),
-      status: "COMPLETED",
-      subtotalAmount: new Prisma.Decimal("25.00"),
-      totalAmount: new Prisma.Decimal("25.00")
-    }
-  });
+    await prisma.sale.create({
+      data: {
+        saleDate: new Date("2026-09-08T04:15:00.000Z"),
+        saleNumber: uniqueLabel("DASH-SALE"),
+        status: "COMPLETED",
+        subtotalAmount: new Prisma.Decimal("25.00"),
+        totalAmount: new Prisma.Decimal("25.00")
+      }
+    });
 
-  const after = await getDashboardSummary("STAFF", now);
-  const beforeActivityCount = before.sales.activity.reduce((sum, bucket) => sum + bucket.saleCount, 0);
-  const afterActivityCount = after.sales.activity.reduce((sum, bucket) => sum + bucket.saleCount, 0);
+    const after = await getDashboardSummary("STAFF", now);
+    const beforeActivityCount = before.sales.activity.reduce(
+      (sum, bucket) => sum + bucket.saleCount,
+      0
+    );
+    const afterActivityCount = after.sales.activity.reduce(
+      (sum, bucket) => sum + bucket.saleCount,
+      0
+    );
 
-  assert.equal(after.sales.completedSales, before.sales.completedSales + 1);
-  assert.equal(Number(after.sales.todayAmount), Number(before.sales.todayAmount) + 25);
-  assert.equal(afterActivityCount, beforeActivityCount + 1);
-  assert.equal(after.inventory.catalogItems, before.inventory.catalogItems + 1);
-  assert.equal(after.inventory.trackedItems, before.inventory.trackedItems + 1);
-  assert.equal(after.inventory.availableItems, before.inventory.availableItems + 1);
-  assert.equal(after.inventory.lowStockItems, before.inventory.lowStockItems + 1);
-  assert.equal(after.expiry.nearExpiryBatches, before.expiry.nearExpiryBatches + 1);
-  assert.equal(after.forecast.access, "RESTRICTED");
-});
+    assert.equal(after.sales.completedSales, before.sales.completedSales + 1);
+    assert.equal(Number(after.sales.todayAmount), Number(before.sales.todayAmount) + 25);
+    assert.equal(afterActivityCount, beforeActivityCount + 1);
+    assert.equal(after.inventory.catalogItems, before.inventory.catalogItems + 1);
+    assert.equal(after.inventory.trackedItems, before.inventory.trackedItems + 1);
+    assert.equal(after.inventory.availableItems, before.inventory.availableItems + 1);
+    assert.equal(after.inventory.lowStockItems, before.inventory.lowStockItems + 1);
+    assert.equal(after.expiry.nearExpiryBatches, before.expiry.nearExpiryBatches + 1);
+    assert.equal(after.forecast.access, "RESTRICTED");
+  }
+);
 
 function uniqueLabel(prefix: string) {
   return `${prefix}-${randomUUID().slice(0, 8)}`;
