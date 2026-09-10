@@ -591,7 +591,11 @@ export async function ensureInternalBarcodeForProductInTransaction(
   }
 
   for (let attempt = 0; attempt < MAX_INTERNAL_BARCODE_ATTEMPTS; attempt += 1) {
-    const candidate = buildYsabelleInternalBarcode(product.id, product.sku, attempt);
+    const candidate = buildYsabelleInternalBarcode({
+      id: product.id,
+      sku: product.sku,
+      attempt
+    });
     const [aliasCollision, mirrorCollision] = await Promise.all([
       db.productBarcode.findUnique({ where: { barcode: candidate }, select: { productId: true } }),
       db.product.findUnique({ where: { barcode: candidate }, select: { id: true } })
