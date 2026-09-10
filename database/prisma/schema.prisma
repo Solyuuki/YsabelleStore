@@ -99,6 +99,20 @@ enum ProductSizeUnit {
   PIECE
 }
 
+enum ProductBarcodeType {
+  MANUFACTURER
+  INTERNAL
+}
+
+enum ProductBarcodeSource {
+  MANUAL
+  IMPORT
+  RECEIVING_SCAN
+  SYSTEM_INTERNAL
+  VERIFIED_BOOTSTRAP
+  MIGRATION
+}
+
 enum ProductAliasType {
   RAW_NAME
   SKU
@@ -274,6 +288,7 @@ model User {
   forecastRecords          ForecastRecord[]
   recommendationNotes      RecommendationRecord[]
   trustedDevices           TrustedDevice[]
+  registeredProductBarcodes ProductBarcode[]             @relation("ProductBarcodeRegisteredBy")
   historicalSalesImports   HistoricalSalesImportBatch[] @relation("HistoricalSalesImportedBy")
   historicalSalesRollbacks HistoricalSalesImportBatch[] @relation("HistoricalSalesRolledBackBy")
   invalidatedMonthlySales  HistoricalMonthlySales[]     @relation("HistoricalSalesInvalidatedBy")
@@ -560,6 +575,7 @@ model Product {
   category                  Category                    @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   activeImageAsset          ProductImageAsset?          @relation("ActiveProductImage", fields: [activeImageAssetId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   imageAssets               ProductImageAsset[]         @relation("ProductImageAssets")
+  barcodes                  ProductBarcode[]
   inventory                 Inventory?
   inventoryBatches          InventoryBatch[]
   inventoryMovements        InventoryMovement[]
@@ -584,6 +600,27 @@ model Product {
   @@index([isStorefrontVisible, dataQualityStatus, status], map: "idx_products_storefront_quality")
   @@index([recordSource, dataQualityStatus], map: "idx_products_source_quality")
   @@map("products")
+}
+
+model ProductBarcode {
+  id              String               @id @default(cuid()) @db.VarChar(191)
+  productId       String               @map("product_id") @db.VarChar(191)
+  barcode         String               @unique(map: "uq_product_barcodes_barcode") @db.VarChar(80)
+  type            ProductBarcodeType
+  isPrimary       Boolean              @default(false) @map("is_primary")
+  source          ProductBarcodeSource
+  registeredById  String?              @map("registered_by_id") @db.VarChar(191)
+  sourceReference String?              @map("source_reference") @db.VarChar(191)
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  product         Product              @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  registeredBy    User?                @relation("ProductBarcodeRegisteredBy", fields: [registeredById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([productId, isPrimary], map: "idx_product_barcodes_product_primary")
+  @@index([productId, type], map: "idx_product_barcodes_product_type")
+  @@index([source, createdAt], map: "idx_product_barcodes_source_created")
+  @@index([registeredById], map: "idx_product_barcodes_registered_by")
+  @@map("product_barcodes")
 }
 
 model ProductImageAsset {
