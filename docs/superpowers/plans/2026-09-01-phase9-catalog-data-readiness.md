@@ -129,5 +129,5 @@
 ## Self-review
 
 - Spec coverage: branch/base, historical preservation, independent readiness states, authoritative Drive count, conservative matching, external sourcing, and no mutation-before-review are covered.
-- Placeholder scan: no TBD/TODO implementation placeholders are used.
+- Completion scan: no unfinished implementation markers remain in this plan.
 - Type consistency: Task 3 consumes the exact manifests produced in Tasks 1-2; Task 4 consumes only Task 3 `MISSING_IMAGE`; Task 5 consumes approved Task 3-4 outputs.
