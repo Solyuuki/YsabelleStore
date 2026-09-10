@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 
+import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
 import { assertApprovedProductBarcode } from "../services/catalogQualityPolicy.js";
 import { changeProductAvailability } from "../services/productAvailabilityService.js";
 import { listCatalogProducts } from "../services/productCatalogListService.js";
@@ -34,7 +35,8 @@ export const createProductController: RequestHandler = async (request, response,
       isStorefrontVisible: body.isStorefrontVisible ?? false
     });
 
-    const product = await createProduct(body);
+    const actor = getAuthenticatedUser(request);
+    const product = await createProduct(body, actor?.id);
 
     response.status(201).json(createSuccessResponse("Product created successfully.", product));
   } catch (error) {
@@ -118,7 +120,8 @@ export const updateProductController: RequestHandler = async (request, response,
       isStorefrontVisible: body.isStorefrontVisible ?? existingProduct.isStorefrontVisible
     });
 
-    const product = await updateProduct(params.id, body);
+    const actor = getAuthenticatedUser(request);
+    const product = await updateProduct(params.id, body, actor?.id);
 
     response.status(200).json(createSuccessResponse("Product updated successfully.", product));
   } catch (error) {
