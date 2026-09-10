@@ -82,6 +82,7 @@ function buildPosWhere(query: string) {
             { name: { contains: normalizedQuery } },
             { sku: { contains: normalizedQuery } },
             { barcode: { contains: normalizedQuery } },
+            { barcodes: { some: { barcode: { contains: normalizedQuery } } } },
             { description: { contains: normalizedQuery } },
             {
               category: {
@@ -116,7 +117,10 @@ export async function searchPosProducts(
   const products = await prisma.product.findMany({
     include: {
       category: true,
-      inventory: true
+      inventory: true,
+      barcodes: {
+        select: { barcode: true }
+      }
     },
     orderBy: [
       {
@@ -131,20 +135,30 @@ export async function searchPosProducts(
     where
   });
 
+  const normalizedQueryKey = normalizedQuery.toLowerCase();
+
   return {
     catalogCount: totalItems,
     query: normalizedQuery,
-    products: products.map((product) => ({
-      availableStock: product.inventory?.quantityOnHand ?? 0,
-      barcode: product.barcode,
-      categoryName: product.category.name,
-      id: product.id,
-      isActive: product.status === "ACTIVE",
-      name: product.name,
-      sku: product.sku,
-      sellingPrice: product.sellingPrice.toString(),
-      unit: product.unit
-    })),
+    products: products.map((product) => {
+      const matchedBarcode = normalizedQuery
+        ? product.barcodes.find(
+            (registration) => registration.barcode.toLowerCase() === normalizedQueryKey
+          )?.barcode
+        : undefined;
+
+      return {
+        availableStock: product.inventory?.quantityOnHand ?? 0,
+        barcode: matchedBarcode ?? product.barcode,
+        categoryName: product.category.name,
+        id: product.id,
+        isActive: product.status === "ACTIVE",
+        name: product.name,
+        sku: product.sku,
+        sellingPrice: product.sellingPrice.toString(),
+        unit: product.unit
+      };
+    }),
     meta: {
       page,
       pageSize: options.pageSize,
