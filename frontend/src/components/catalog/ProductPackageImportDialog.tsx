@@ -3,7 +3,6 @@ import {
   FileArchive,
   FolderSearch2,
   HardDrive,
-  ImageCheck,
   Link2,
   LoaderCircle,
   ShieldCheck,
@@ -418,7 +417,7 @@ export function ProductPackageImportDialog({
                 <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                   <ScanStep icon={FolderSearch2} label="Discover folders and files" />
                   <ScanStep icon={ShieldCheck} label="Validate catalog records" />
-                  <ScanStep icon={ImageCheck} label="Match and inspect images" />
+                  <ScanStep icon={CheckCircle2} label="Match and inspect images" />
                   <ScanStep icon={CheckCircle2} label="Build final import preview" />
                 </div>
               </div>
