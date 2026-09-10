@@ -29,12 +29,10 @@ export const createProductController: RequestHandler = async (request, response,
       code: "INVALID_PRODUCT_REQUEST"
     });
 
-    assertApprovedProductBarcode({
-      barcode: body.barcode,
-      dataQualityStatus: body.dataQualityStatus ?? "NEEDS_REVIEW",
-      isStorefrontVisible: body.isStorefrontVisible ?? false
-    });
-
+    // A missing manufacturer barcode is valid at creation time. createProduct atomically allocates
+    // a system-managed YSB fallback before the product is returned, including for approved records.
+    // Keeping this decision inside the transaction prevents the controller from rejecting a product
+    // that can safely receive an internal physical identifier.
     const actor = getAuthenticatedUser(request);
     const product = await createProduct(body, actor?.id);
 
