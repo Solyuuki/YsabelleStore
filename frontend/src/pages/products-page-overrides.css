@@ -1,0 +1,4 @@
+.products-page-no-actions table thead th:last-child,
+.products-page-no-actions table tbody td:last-child {
+  display: none;
+}

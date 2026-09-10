@@ -26,9 +26,9 @@ export function AppLayout({
   return (
     <div className="app-shell-ambient relative flex min-h-screen overflow-hidden text-foreground">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="app-shell-orb left-[8%] top-[8%] h-[clamp(18rem,26vw,28rem)] w-[clamp(18rem,26vw,28rem)] bg-emerald-200/35" />
-        <div className="app-shell-orb right-[6%] top-[12%] h-[clamp(16rem,24vw,26rem)] w-[clamp(16rem,24vw,26rem)] bg-emerald-100/35 animation-delay-7000" />
-        <div className="app-shell-orb bottom-[4%] left-[32%] h-[clamp(15rem,22vw,24rem)] w-[clamp(15rem,22vw,24rem)] bg-stone-200/35 animation-delay-14000" />
+        <div className="app-shell-orb left-[8%] top-[8%] h-[clamp(18rem,26vw,28rem)] w-[clamp(18rem,26vw,28rem)] bg-blue-200/35" />
+        <div className="app-shell-orb right-[6%] top-[12%] h-[clamp(16rem,24vw,26rem)] w-[clamp(16rem,24vw,26rem)] bg-violet-200/35 animation-delay-7000" />
+        <div className="app-shell-orb bottom-[4%] left-[32%] h-[clamp(15rem,22vw,24rem)] w-[clamp(15rem,22vw,24rem)] bg-pink-200/35 animation-delay-14000" />
       </div>
 
       <AppSidebar

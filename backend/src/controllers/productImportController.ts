@@ -4,19 +4,20 @@ import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 import {
-  getProductImportTemplateCsv,
-  importProductsFromFile,
-  previewProductImport
-} from "../services/productImportService.js";
+  downloadGoogleDriveProductPackage,
+  importProductPackage,
+  previewProductPackage
+} from "../services/productPackageImportService.js";
+import { preparePackageImageIdentity } from "../services/productPackageImageIdentityService.js";
 
 type RequestWithFile = Parameters<RequestHandler>[0] & {
   file?: Express.Multer.File;
 };
 
-function getUploadedFile(request: RequestWithFile) {
+function getUploadedPackage(request: RequestWithFile) {
   if (!request.file) {
-    throw new HttpError(400, "A CSV or Excel file is required.", {
-      code: "PRODUCT_IMPORT_FILE_REQUIRED"
+    throw new HttpError(400, "A product package archive is required.", {
+      code: "PRODUCT_PACKAGE_FILE_REQUIRED"
     });
   }
 
@@ -27,22 +28,25 @@ function getUploadedFile(request: RequestWithFile) {
   };
 }
 
-export const getProductImportTemplateController: RequestHandler = (_request, response) => {
-  response
-    .status(200)
-    .setHeader("Content-Type", "text/csv; charset=utf-8")
-    .setHeader("Content-Disposition", 'attachment; filename="product-import-template.csv"')
-    .send(getProductImportTemplateCsv());
-};
+function getGoogleDriveLink(request: Parameters<RequestHandler>[0]) {
+  const link = typeof request.body?.url === "string" ? request.body.url.trim() : "";
+  if (!link) {
+    throw new HttpError(400, "A Google Drive package link is required.", {
+      code: "GOOGLE_DRIVE_LINK_REQUIRED"
+    });
+  }
+  return link;
+}
 
 export const previewProductImportController: RequestHandler = async (request, response, next) => {
   try {
-    const file = getUploadedFile(request as RequestWithFile);
-    const result = await previewProductImport(file);
+    const uploaded = getUploadedPackage(request as RequestWithFile);
+    const file = await preparePackageImageIdentity(uploaded);
+    const result = await previewProductPackage(file);
 
     response
       .status(200)
-      .json(createSuccessResponse("Product import preview generated successfully.", result));
+      .json(createSuccessResponse("Product package scan completed successfully.", result));
   } catch (error) {
     next(error);
   }
@@ -50,13 +54,53 @@ export const previewProductImportController: RequestHandler = async (request, re
 
 export const importProductsController: RequestHandler = async (request, response, next) => {
   try {
-    const file = getUploadedFile(request as RequestWithFile);
+    const uploaded = getUploadedPackage(request as RequestWithFile);
+    const file = await preparePackageImageIdentity(uploaded);
     const actor = getAuthenticatedUser(request);
-    const result = await importProductsFromFile(file, actor?.id);
+    const result = await importProductPackage(file, actor?.id);
 
     response
       .status(201)
-      .json(createSuccessResponse("Product import completed successfully.", result));
+      .json(createSuccessResponse("Product package import completed successfully.", result));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const previewGoogleDriveProductImportController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const downloaded = await downloadGoogleDriveProductPackage(getGoogleDriveLink(request));
+    const file = await preparePackageImageIdentity(downloaded);
+    const result = await previewProductPackage(file, "GOOGLE_DRIVE");
+    response
+      .status(200)
+      .json(
+        createSuccessResponse("Google Drive product package scan completed successfully.", result)
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const importGoogleDriveProductsController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const actor = getAuthenticatedUser(request);
+    const downloaded = await downloadGoogleDriveProductPackage(getGoogleDriveLink(request));
+    const file = await preparePackageImageIdentity(downloaded);
+    const result = await importProductPackage(file, actor?.id, "GOOGLE_DRIVE");
+    response
+      .status(201)
+      .json(
+        createSuccessResponse("Google Drive product package import completed successfully.", result)
+      );
   } catch (error) {
     next(error);
   }

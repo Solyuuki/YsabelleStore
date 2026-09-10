@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, ProductBarcodeSource } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import {
@@ -28,6 +28,11 @@ import {
   type ProductSummary,
   type ProductWithRelations
 } from "./catalogSerializers.js";
+import {
+  ensureInternalBarcodeForProductInTransaction,
+  registerProductBarcodeInTransaction,
+  resolveProductBarcode
+} from "./productBarcodeService.js";
 import { assertStockInvariant } from "./stockDomainService.js";
 
 type ProductListResult = {
@@ -135,13 +140,13 @@ async function assertStorefrontQualityGate(input: {
   }
 
   if (
-    input.status !== "ACTIVE" ||
+    input.status === "DISCONTINUED" ||
     input.sellingPrice.lessThanOrEqualTo(0) ||
     input.name.trim().length < 3
   ) {
     throw new HttpError(
       422,
-      "Storefront products require a customer-safe name, active status, and positive price.",
+      "Storefront products require a customer-safe name, non-discontinued status, and positive price.",
       { code: "PRODUCT_STOREFRONT_GATE_FAILED" }
     );
   }
@@ -280,16 +285,12 @@ async function detectDuplicateProductBarcode(
     return;
   }
 
-  const existing = await prisma.product.findUnique({
-    where: {
-      barcode
-    },
-    select: {
-      id: true
-    }
-  });
+  const [mirror, identity] = await Promise.all([
+    prisma.product.findUnique({ where: { barcode }, select: { id: true } }),
+    prisma.productBarcode.findUnique({ where: { barcode }, select: { productId: true } })
+  ]);
 
-  if (existing && existing.id !== productId) {
+  if ((mirror && mirror.id !== productId) || (identity && identity.productId !== productId)) {
     throwDuplicateProductError("barcode");
   }
 }
@@ -419,6 +420,10 @@ function buildProductWhere(query: ListProductsQuery, categoryIds?: string[]) {
     where.status = query.status;
   }
 
+  if (query.dataQualityStatus) {
+    where.dataQualityStatus = query.dataQualityStatus;
+  }
+
   if (categoryIds !== undefined) {
     where.categoryId = categoryIds.length > 0 ? { in: categoryIds } : { in: [] };
   }
@@ -428,15 +433,18 @@ function buildProductWhere(query: ListProductsQuery, categoryIds?: string[]) {
   }
 
   if (query.barcode) {
-    where.barcode = query.barcode;
+    where.OR = [{ barcode: query.barcode }, { barcodes: { some: { barcode: query.barcode } } }];
   }
 
   if (query.search) {
-    where.OR = [
+    const searchConditions: Prisma.ProductWhereInput[] = [
       { name: { contains: query.search } },
       { sku: { contains: query.search } },
-      { barcode: { contains: query.search } }
+      { barcode: { contains: query.search } },
+      { barcodes: { some: { barcode: { contains: query.search } } } }
     ];
+    where.AND = [...(where.OR ? [{ OR: where.OR }] : []), { OR: searchConditions }];
+    delete where.OR;
   }
 
   return where;
@@ -452,7 +460,10 @@ function asProductSummary(product: ProductWithRelations): ProductSummary {
   return serializeProduct(product);
 }
 
-export async function createProduct(input: CreateProductRequest): Promise<ProductSummary> {
+export async function createProduct(
+  input: CreateProductRequest,
+  performedById?: string
+): Promise<ProductSummary> {
   const normalized = normalizeProductInput(input);
   const {
     name,
@@ -535,6 +546,23 @@ export async function createProduct(input: CreateProductRequest): Promise<Produc
         }
       });
 
+      if (barcode) {
+        await registerProductBarcodeInTransaction(tx, {
+          productId: createdProduct.id,
+          barcode,
+          source: ProductBarcodeSource.MANUAL,
+          registeredById: performedById,
+          sourceReference: "catalog-product-create",
+          makePrimary: true
+        });
+      } else {
+        await ensureInternalBarcodeForProductInTransaction(tx, {
+          productId: createdProduct.id,
+          registeredById: performedById,
+          sourceReference: "catalog-product-create"
+        });
+      }
+
       await assertStockInvariant(tx, createdProduct.id);
 
       return tx.product.findUniqueOrThrow({
@@ -603,11 +631,13 @@ export async function getProductById(productId: string): Promise<ProductSummary>
 
 export async function updateProduct(
   productId: string,
-  input: UpdateProductRequest
+  input: UpdateProductRequest,
+  performedById?: string
 ): Promise<ProductSummary> {
   const existingProduct = await ensureProductAvailability(productId);
   const normalized = normalizeProductInput(input);
   const data: Prisma.ProductUpdateInput = {};
+  const barcodeUpdateRequested = normalized.barcode !== undefined;
 
   if (normalized.name !== undefined) {
     data.name = normalized.name;
@@ -618,9 +648,15 @@ export async function updateProduct(
     data.sku = normalized.sku;
   }
 
-  if (normalized.barcode !== undefined) {
+  if (barcodeUpdateRequested) {
+    if (normalized.barcode === null && existingProduct.barcode !== null) {
+      throw new HttpError(
+        422,
+        "Primary barcodes cannot be cleared from the legacy product field. Register or promote a replacement barcode instead.",
+        { code: "PRODUCT_BARCODE_CLEAR_REQUIRES_MANAGEMENT" }
+      );
+    }
     await detectDuplicateProductBarcode(normalized.barcode, existingProduct.id);
-    data.barcode = normalized.barcode;
   }
 
   if (normalized.categoryId !== undefined) {
@@ -688,7 +724,7 @@ export async function updateProduct(
     data.status = normalized.status;
   }
 
-  if (Object.keys(data).length === 0) {
+  if (Object.keys(data).length === 0 && !barcodeUpdateRequested) {
     throw new HttpError(400, "At least one product field must be supplied.", {
       code: "EMPTY_PRODUCT_UPDATE"
     });
@@ -725,36 +761,62 @@ export async function updateProduct(
 
   try {
     const updatedProduct = await prisma.$transaction(async (transaction) => {
-      const updated = await transaction.product.update({
-        data,
-        include: productInclude,
-        where: {
-          id: existingProduct.id
+      if (Object.keys(data).length > 0) {
+        await transaction.product.update({
+          data,
+          where: { id: existingProduct.id }
+        });
+      }
+
+      if (barcodeUpdateRequested) {
+        if (normalized.barcode) {
+          await registerProductBarcodeInTransaction(transaction, {
+            productId: existingProduct.id,
+            barcode: normalized.barcode,
+            source: ProductBarcodeSource.MANUAL,
+            registeredById: performedById,
+            sourceReference: "catalog-product-update",
+            makePrimary: true
+          });
+        } else {
+          await ensureInternalBarcodeForProductInTransaction(transaction, {
+            productId: existingProduct.id,
+            registeredById: performedById,
+            sourceReference: "catalog-product-update"
+          });
         }
+      }
+
+      const updated = await transaction.product.findUniqueOrThrow({
+        include: productInclude,
+        where: { id: existingProduct.id }
       });
 
       if (
         normalized.dataQualityStatus !== undefined ||
         normalized.isStorefrontVisible !== undefined ||
         normalized.name !== undefined ||
-        normalized.categoryId !== undefined
+        normalized.categoryId !== undefined ||
+        barcodeUpdateRequested
       ) {
         await transaction.catalogAuditLog.create({
           data: {
             action: "MANUAL_PRODUCT_UPDATE",
             automated: false,
-            actor: "owner-api",
+            actor: performedById ?? "owner-api",
             canonicalProductId: existingProduct.id,
             entityId: existingProduct.id,
             entityType: "PRODUCT",
             evidence: {
               after: {
+                barcode: updated.barcode,
                 categoryId: updated.categoryId,
                 dataQualityStatus: updated.dataQualityStatus,
                 isStorefrontVisible: updated.isStorefrontVisible,
                 name: updated.name
               },
               before: {
+                barcode: existingProduct.barcode,
                 categoryId: existingProduct.categoryId,
                 dataQualityStatus: existingProduct.dataQualityStatus,
                 isStorefrontVisible: existingProduct.isStorefrontVisible,
@@ -868,13 +930,17 @@ export async function changeProductStatus(
 }
 
 export async function getProductForLookup(barcode: string): Promise<ProductSummary> {
+  const resolution = await resolveProductBarcode(barcode);
+  if (!resolution.found || !resolution.product) {
+    throw new HttpError(404, "Product not found.", {
+      code: "PRODUCT_NOT_FOUND"
+    });
+  }
+
   const product = await prisma.product.findUnique({
     include: productInclude,
-    where: {
-      barcode
-    }
+    where: { id: resolution.product.id }
   });
-
   if (!product) {
     throw new HttpError(404, "Product not found.", {
       code: "PRODUCT_NOT_FOUND"

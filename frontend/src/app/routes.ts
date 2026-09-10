@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LineChart,
   Package,
+  PackageCheck,
   ReceiptText,
   History,
   ScanBarcode,
@@ -21,6 +22,7 @@ export type AppRoutePath =
   | "/pos"
   | "/products"
   | "/inventory"
+  | "/receiving"
   | "/sales"
   | "/forecast"
   | "/historical-sales"
@@ -68,6 +70,13 @@ export const appRoutes: readonly AppRoute[] = [
     allowedRoles: ["OWNER", "STAFF"]
   },
   {
+    path: "/receiving",
+    label: "Receiving",
+    description: "Barcode-aware incoming stock and batch receiving",
+    icon: PackageCheck,
+    allowedRoles: ["OWNER"]
+  },
+  {
     path: "/sales",
     label: "Sales",
     description: "Sales history module shell",
@@ -93,7 +102,7 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/reports",
     label: "Reports",
-    description: "Protected reporting module shell",
+    description: "Live sales, inventory, and expiry reporting",
     icon: FileBarChart,
     allowedRoles: ["OWNER"],
     protected: true
@@ -108,7 +117,7 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/settings",
     label: "Settings",
-    description: "Protected system settings shell",
+    description: "Owner workstation preferences and system readiness",
     icon: Settings,
     allowedRoles: ["OWNER"],
     protected: true

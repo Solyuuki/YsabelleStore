@@ -18,8 +18,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
   void _next;
 
   const isFileSizeError = error instanceof MulterError && error.code === "LIMIT_FILE_SIZE";
-  const isSafeHttpError =
-    error instanceof HttpError && error.statusCode < HTTP_STATUS.INTERNAL_SERVER_ERROR;
+  const isSafeHttpError = error instanceof HttpError && error.expose;
   const requestId = getRequestId(response);
 
   const statusCode = isSafeHttpError

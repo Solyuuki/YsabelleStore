@@ -1,5 +1,9 @@
 import type { RequestHandler } from "express";
 
+import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
+import { assertApprovedProductBarcode } from "../services/catalogQualityPolicy.js";
+import { changeProductAvailability } from "../services/productAvailabilityService.js";
+import { listCatalogProducts } from "../services/productCatalogListService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import { createCategorySchema } from "../validators/category.validators.js";
@@ -11,12 +15,10 @@ import {
   updateProductSchema
 } from "../validators/product.validators.js";
 import {
-  changeProductStatus,
   createCategory,
   createProduct,
   listCategories,
   getProductById,
-  listProducts,
   updateProduct
 } from "../services/productService.js";
 
@@ -27,7 +29,12 @@ export const createProductController: RequestHandler = async (request, response,
       code: "INVALID_PRODUCT_REQUEST"
     });
 
-    const product = await createProduct(body);
+    // A missing manufacturer barcode is valid at creation time. createProduct atomically allocates
+    // a system-managed YSB fallback before the product is returned, including for approved records.
+    // Keeping this decision inside the transaction prevents the controller from rejecting a product
+    // that can safely receive an internal physical identifier.
+    const actor = getAuthenticatedUser(request);
+    const product = await createProduct(body, actor?.id);
 
     response.status(201).json(createSuccessResponse("Product created successfully.", product));
   } catch (error) {
@@ -67,7 +74,7 @@ export const listProductsController: RequestHandler = async (request, response, 
       code: "INVALID_PRODUCT_QUERY"
     });
 
-    const result = await listProducts(query);
+    const result = await listCatalogProducts(query);
 
     response
       .status(200)
@@ -104,7 +111,15 @@ export const updateProductController: RequestHandler = async (request, response,
       code: "INVALID_PRODUCT_UPDATE_REQUEST"
     });
 
-    const product = await updateProduct(params.id, body);
+    const existingProduct = await getProductById(params.id);
+    assertApprovedProductBarcode({
+      barcode: body.barcode !== undefined ? body.barcode : existingProduct.barcode,
+      dataQualityStatus: body.dataQualityStatus ?? existingProduct.dataQualityStatus,
+      isStorefrontVisible: body.isStorefrontVisible ?? existingProduct.isStorefrontVisible
+    });
+
+    const actor = getAuthenticatedUser(request);
+    const product = await updateProduct(params.id, body, actor?.id);
 
     response.status(200).json(createSuccessResponse("Product updated successfully.", product));
   } catch (error) {
@@ -124,11 +139,13 @@ export const changeProductStatusController: RequestHandler = async (request, res
       code: "INVALID_PRODUCT_AVAILABILITY_REQUEST"
     });
 
-    const product = await changeProductStatus(params.id, body);
+    const product = await changeProductAvailability(params.id, body);
+    const message =
+      body.status === "ACTIVE"
+        ? "Product enabled for sale successfully."
+        : "Product disabled from sale successfully.";
 
-    response
-      .status(200)
-      .json(createSuccessResponse("Product status updated successfully.", product));
+    response.status(200).json(createSuccessResponse(message, product));
   } catch (error) {
     next(error);
   }

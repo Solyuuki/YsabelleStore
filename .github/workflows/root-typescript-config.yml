@@ -1,0 +1,28 @@
+name: Root TypeScript Config
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "m1/v0.9/feat/catalog-data-readiness"
+    paths:
+      - "tsconfig.json"
+      - "tsconfig.base.json"
+      - "package.json"
+      - "scripts/**/*.ts"
+      - ".github/workflows/root-typescript-config.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck:scripts

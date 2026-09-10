@@ -1,0 +1,303 @@
+{
+  "checkpoint": "batch04",
+  "branch": "m1/v0.9/feat/catalog-data-readiness",
+  "sourceSnapshot": "reportInternalCatalogBarcodes output generated 2026-09-08T05:54:00.442Z",
+  "policy": {
+    "verifiedRule": "valid GTIN plus at least one authoritative exact-unit source OR two independent exact-unit retailers",
+    "noGuessing": true
+  },
+  "summary": {
+    "products": 20,
+    "verified": 3,
+    "ambiguous": 5,
+    "conflict": 1,
+    "noReliableEvidence": 11
+  },
+  "rows": [
+    {
+      "sarimaSourceProductId": "P028",
+      "sku": "SARIMA-P028",
+      "expectedCurrentBarcode": "YSB-SARIMA-P028",
+      "name": "Marby Pre-Sliced Mongo Bread 300g",
+      "status": "AMBIGUOUS",
+      "verifiedBarcode": null,
+      "reason": "Found Marby Mongo Bread barcode evidence only for a different 380g retail unit; exact 300g GTIN not established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P029",
+      "sku": "SARIMA-P029",
+      "expectedCurrentBarcode": "YSB-SARIMA-P029",
+      "name": "Marby Piyaya Original Flavor 90g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Searches found current Marby Piyaya barcode evidence for 300g/380g, not the 90g retail unit.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P038",
+      "sku": "SARIMA-P038",
+      "expectedCurrentBarcode": "YSB-SARIMA-P038",
+      "name": "Purefoods Classic Tocino 450g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "One barcode-bearing exact-unit retailer found (4808887970531); second independent barcode-bearing retailer or authoritative source not yet found.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "St. Lucia Grocers",
+          "url": "https://staluciagrocers.com/products/purefoods-classic-tocino-450g",
+          "observedBarcode": "4808887970531",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P051",
+      "sku": "SARIMA-P051",
+      "expectedCurrentBarcode": "YSB-SARIMA-P051",
+      "name": "Hapee Mouth Defense Toothpaste 150g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 150g GTIN not established from reliable barcode-bearing sources.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P052",
+      "sku": "SARIMA-P052",
+      "expectedCurrentBarcode": "YSB-SARIMA-P052",
+      "name": "Empress Shampoo Green Sachet, Strength & Healthy Hair 21mL",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact single-sachet 21mL GTIN not established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P053",
+      "sku": "SARIMA-P053",
+      "expectedCurrentBarcode": "YSB-SARIMA-P053",
+      "name": "Empress Shampoo Pink Sachet, Smooth & Shiny 21mL",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact single-sachet 21mL GTIN not established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P054",
+      "sku": "SARIMA-P054",
+      "expectedCurrentBarcode": "YSB-SARIMA-P054",
+      "name": "Sunsilk Anti-Dandruff & Silky Shampoo Sachet 13.5ml",
+      "status": "AMBIGUOUS",
+      "verifiedBarcode": null,
+      "reason": "Barcode-bearing results refer to 12-sachet / 11+1 strip packs and Healthy & Strong naming; source row is a single sachet and variant wording is not exact.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P061",
+      "sku": "SARIMA-P061",
+      "expectedCurrentBarcode": "YSB-SARIMA-P061",
+      "name": "Irish Spring Original Soap 113g",
+      "status": "CONFLICT",
+      "verifiedBarcode": null,
+      "reason": "Observed UPC 035000141088 is associated with multi-bar packaging in reliable retail listings while the catalog row is one PIECE; do not assign to a single bar.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P070",
+      "sku": "SARIMA-P070",
+      "expectedCurrentBarcode": "YSB-SARIMA-P070",
+      "name": "Modess Regular Pads 8+2",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 8+2 product identity is confirmed in retailers/import descriptions, but no GTIN was established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P071",
+      "sku": "SARIMA-P071",
+      "expectedCurrentBarcode": "YSB-SARIMA-P071",
+      "name": "Sisters Overnight Pads 10+2",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 10+2 product exists, but no barcode-bearing exact-unit source was established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P072",
+      "sku": "SARIMA-P072",
+      "expectedCurrentBarcode": "YSB-SARIMA-P072",
+      "name": "Sisters Day Pads 8+1",
+      "status": "AMBIGUOUS",
+      "verifiedBarcode": null,
+      "reason": "4806506318832 is well-supported for Sisters Silk Floss Day Use 8+1, but the SARIMA identity omits Silk Floss/cover variant; hold until image/physical identity confirms exact variant.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Puregold",
+          "url": "https://puregold.com.ph/pgcatalog/product/view/title/SISTERS%20SANITARY%20NAPKIN%20SILK%20FLOSS%20DAY%20USE%208%2B1/barcode/4806506318832",
+          "observedBarcode": "4806506318832",
+          "exactProductIdentity": false,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P073",
+      "sku": "SARIMA-P073",
+      "expectedCurrentBarcode": "YSB-SARIMA-P073",
+      "name": "Sisters Night Pads 8 Pads",
+      "status": "AMBIGUOUS",
+      "verifiedBarcode": null,
+      "reason": "Generic source identity can match multiple 8-pad Sisters night variants (for example Silk Floss vs Net Side) with different barcodes.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P074",
+      "sku": "SARIMA-P074",
+      "expectedCurrentBarcode": "YSB-SARIMA-P074",
+      "name": "Those Days Regular Pads 8 Pads, Red Pack",
+      "status": "VERIFIED",
+      "verifiedBarcode": "4801288850082",
+      "reason": "Multiple independent Philippine retailers agree on the exact Those Days regular/with-wings 8-pad retail unit and GTIN.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Ever Supermarket",
+          "url": "https://ever.ph/pages/promos",
+          "observedBarcode": "4801288850082",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Iloilo Supermart",
+          "url": "https://store.iloilosupermart.com/product/those-days-sntry-npkn-w-wing-8s/",
+          "observedBarcode": "4801288850082",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Puregold",
+          "url": "https://puregold.com.ph/pgcatalog/product/view/title/THOSE%20DAYS%20NAPKIN%20WITH%20WINGS%208S%20%20235MM/barcode/4801288850082",
+          "observedBarcode": "4801288850082",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P075",
+      "sku": "SARIMA-P075",
+      "expectedCurrentBarcode": "YSB-SARIMA-P075",
+      "name": "Those Days All Night Pads 8 Pads, Purple Pack",
+      "status": "VERIFIED",
+      "verifiedBarcode": "4801288870080",
+      "reason": "Multiple independent Philippine retailers agree on the exact Those Days All Night 8-pad retail unit and GTIN.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "St. Lucia Grocers",
+          "url": "https://staluciagrocers.com/products/those-days-all-night-8-sanitary-napkins-280mm-with-black-leak-shield",
+          "observedBarcode": "4801288870080",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Iloilo Supermart",
+          "url": "https://store.iloilosupermart.com/product/those-days-napkin-wings-all-night-8s/",
+          "observedBarcode": "4801288870080",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Puregold",
+          "url": "https://puregold.com.ph/index.php/pgcatalog/product/view/category/HEALTH%20%26%20BEAUTY%20CARE/subcategory/SANITARY%20HYGIENE/title/THOSE%20DAYS%20ALL%20NIGHT%20WINGS%208S/barcode/4801288870080",
+          "observedBarcode": "4801288870080",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P079",
+      "sku": "SARIMA-P079",
+      "expectedCurrentBarcode": "YSB-SARIMA-P079",
+      "name": "Closeup Red Hot Gel Toothpaste 95mL / 125g",
+      "status": "AMBIGUOUS",
+      "verifiedBarcode": null,
+      "reason": "Source identity mixes 95mL and 125g; exact retail-unit GTIN cannot be safely selected without package-image confirmation.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P080",
+      "sku": "SARIMA-P080",
+      "expectedCurrentBarcode": "YSB-SARIMA-P080",
+      "name": "Colgate Maximum Cavity Protection Toothpaste 74g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Official and retailer sources confirm the 74g product, but no barcode-bearing exact-unit source was established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P089",
+      "sku": "SARIMA-P089",
+      "expectedCurrentBarcode": "YSB-SARIMA-P089",
+      "name": "Fresca Tuna Hot & Spicy 175g",
+      "status": "VERIFIED",
+      "verifiedBarcode": "748485900087",
+      "reason": "Two independent Philippine retailers expose the same UPC for the exact 175g Hot & Spicy retail unit.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "St. Lucia Grocers",
+          "url": "https://staluciagrocers.com/products/fresca-tuna-hot--spicy-175g",
+          "observedBarcode": "748485900087",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Puregold",
+          "url": "https://puregold.com.ph/pgcatalog/product/view/title/FRESCA%20TUNA%20FLAKES%20HOT%20%26%20SPICY%20175G/barcode/748485900087",
+          "observedBarcode": "748485900087",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P090",
+      "sku": "SARIMA-P090",
+      "expectedCurrentBarcode": "YSB-SARIMA-P090",
+      "name": "Star Nutri-Meats Giniling in Tomato Sauce 100g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 100g product is confirmed, but no barcode-bearing exact-unit source was established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P091",
+      "sku": "SARIMA-P091",
+      "expectedCurrentBarcode": "YSB-SARIMA-P091",
+      "name": "Star Nutri-Meats Giniling Afritada 100g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 100g GTIN not established from reliable barcode-bearing sources.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P092",
+      "sku": "SARIMA-P092",
+      "expectedCurrentBarcode": "YSB-SARIMA-P092",
+      "name": "Star Nutri-Meats Ulam Caldereta 155g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 155g GTIN not established from reliable barcode-bearing sources.",
+      "sources": []
+    }
+  ]
+}

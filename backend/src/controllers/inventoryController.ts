@@ -13,7 +13,6 @@ import {
   stockInSchema
 } from "../validators/inventory.validators.js";
 import {
-  addStock,
   adjustStock,
   deductStock,
   getInventoryByProductId,
@@ -21,6 +20,7 @@ import {
   listInventory,
   lookupInventoryByBarcode
 } from "../services/inventoryService.js";
+import { receiveStock } from "../services/receivingStockService.js";
 
 export const listInventoryController: RequestHandler = async (request, response, next) => {
   try {
@@ -81,7 +81,7 @@ export const stockInController: RequestHandler = async (request, response, next)
     });
     const actor = getAuthenticatedUser(request);
 
-    const result = await addStock(params.productId, body, actor?.id);
+    const result = await receiveStock(params.productId, body, actor?.id);
 
     response.status(200).json(createSuccessResponse("Stock updated successfully.", result));
   } catch (error) {

@@ -17,14 +17,19 @@ electron/release/
 database/prisma/generated/
 database/prisma/*.db
 
+# Python bytecode/cache directories
+**/__pycache__/
+*.py[cod]
+
 forecasting-service/.venv/
-forecasting-service/__pycache__/
-forecasting-service/**/__pycache__/
 forecasting-service/data/*
 forecasting-service/outputs/*
 !forecasting-service/data/.gitkeep
 !forecasting-service/outputs/.gitkeep
 !forecasting-service/outputs/README.md
+
+# Tesseract.js runtime language-data cache
+backend/*.traineddata
 
 # Generated product image candidates and variants
 .data/

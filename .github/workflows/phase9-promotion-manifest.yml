@@ -1,0 +1,33 @@
+name: Phase 9 Promotion Manifest
+
+on:
+  push:
+    branches:
+      - "m1/v0.9/feat/catalog-promotion-execution-manifest"
+    paths:
+      - ".github/workflows/phase9-promotion-manifest.yml"
+      - "backend/src/modules/catalog/catalog-promotion-execution-manifest.ts"
+      - "backend/src/scripts/generateCatalogPromotionExecutionManifest.ts"
+      - "backend/test/catalog-promotion-execution-manifest.test.ts"
+      - "backend/test/generate-catalog-promotion-execution-manifest.test.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  promotion-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Compile backend
+        run: npm run build --workspace backend
+      - name: Run promotion execution manifest contracts
+        run: >-
+          npx tsx --test
+          backend/test/catalog-promotion-execution-manifest.test.ts
+          backend/test/generate-catalog-promotion-execution-manifest.test.ts

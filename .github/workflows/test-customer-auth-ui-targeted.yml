@@ -1,0 +1,30 @@
+name: Targeted customer auth UI
+
+on:
+  push:
+    branches:
+      - m1/v0.9/feat/customer-mobile-otp
+    paths:
+      - .github/workflows/test-customer-auth-ui-targeted.yml
+      - scripts/customer-auth-ui-contract-test.ts
+      - frontend/src/components/customer/CustomerKnownAccounts.tsx
+      - frontend/src/components/customer/CustomerEmailAuthPanel.tsx
+      - frontend/src/components/customer/CustomerMobileAuthPanel.tsx
+      - frontend/src/components/customer/CustomerSocialAuthButtons.tsx
+      - frontend/src/pages/customer/CustomerLoginPage.tsx
+      - frontend/src/pages/customer/CustomerRegisterPage.tsx
+      - frontend/src/services/customerAuthService.ts
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run customer auth UI contract
+        working-directory: frontend
+        run: npx tsx --tsconfig tsconfig.app.json ../scripts/customer-auth-ui-contract-test.ts

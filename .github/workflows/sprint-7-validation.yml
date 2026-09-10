@@ -39,6 +39,7 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
       JWT_SECRET: sprint-7-ci-only-secret
+      CUSTOMER_OAUTH_TRANSACTION_KEY: sprint-7-ci-only-oauth-transaction-key-32-bytes-minimum
       FRONTEND_URL: http://localhost:5173
     steps:
       - name: Checkout committed Sprint 7 state

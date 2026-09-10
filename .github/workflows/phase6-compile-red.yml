@@ -1,0 +1,24 @@
+name: Phase 6 RED Compile
+
+on:
+  push:
+    branches:
+      - "m1/v0.9/feat/customer-social-auth"
+    paths:
+      - ".github/workflows/phase6-compile-red.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Compile backend for current RED contract
+        run: npm run build --workspace backend

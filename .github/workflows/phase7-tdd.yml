@@ -1,0 +1,71 @@
+name: Phase 7 TDD
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "m1/v0.9/feat/customer-mobile-otp"
+    paths:
+      - ".github/workflows/phase7-tdd.yml"
+      - ".env.example"
+      - "backend/src/config/env.ts"
+      - "backend/src/services/customerIdentityEmailDeliveryService.ts"
+      - "backend/src/services/customerEmailRegistrationService.ts"
+      - "backend/src/services/customerEmailAuthService.ts"
+      - "backend/src/services/customerRememberedAuthService.ts"
+      - "backend/src/controllers/customerAuthController.ts"
+      - "backend/src/controllers/customerEmailVerificationController.ts"
+      - "backend/src/controllers/customerRememberedAuthController.ts"
+      - "backend/src/routes/customerAuth.routes.ts"
+      - "backend/test/customer-email-delivery.test.ts"
+      - "backend/test/customer-email-registration.test.ts"
+      - "backend/test/customer-email-auth.test.ts"
+      - "backend/test/customer-legacy-identity-upgrade.test.ts"
+      - "backend/test/customer-remembered-auth.test.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  customer-otp-delivery:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ysabellestore_phase7
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_phase7
+      JWT_SECRET: phase7-test-jwt-secret
+      FRONTEND_URL: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run prisma:generate
+      - run: npm run prisma:validate
+      - run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+      - name: Compile backend
+        run: npm run build --workspace backend
+      - name: Run focused Phase 7 OTP tests
+        run: >-
+          npx tsx --test --test-concurrency=1
+          backend/test/customer-email-delivery.test.ts
+          backend/test/customer-email-registration.test.ts
+          backend/test/customer-email-auth.test.ts
+          backend/test/customer-legacy-identity-upgrade.test.ts
+          backend/test/customer-remembered-auth.test.ts

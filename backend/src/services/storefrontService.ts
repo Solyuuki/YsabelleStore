@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { CustomerOrderStatus, InventoryBatchStatus, Prisma, SaleStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { compareStorefrontCategoryNames } from "../modules/catalog/storefront-category-taxonomy.js";
 import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
 import { HttpError } from "../utils/httpError.js";
 import type {
@@ -11,9 +12,10 @@ import type {
   StorefrontProductQuery
 } from "../validators/storefront.validators.js";
 import {
-  approvedStorefrontCategoryWhere,
-  storefrontProductWhere,
-  temporaryImageReadyStorefrontProductWhere
+  isPresentationCatalogEnabled,
+  storefrontCategoryProductWhere,
+  storefrontCategoryWhere,
+  storefrontProductWhere
 } from "./catalogQualityPolicy.js";
 import { getSellableStockQuantity } from "./stockDomainService.js";
 
@@ -128,13 +130,13 @@ async function serializeStorefrontProducts(products: StorefrontProductRecord[]) 
 }
 
 export async function listStorefrontCategories() {
+  const presentationMode = isPresentationCatalogEnabled();
+  const categoryWhere = storefrontCategoryWhere(presentationMode);
+  const categoryProductWhere = storefrontCategoryProductWhere(presentationMode);
+
   const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
     where: {
-      AND: [
-        approvedStorefrontCategoryWhere,
-        { products: { some: temporaryImageReadyStorefrontProductWhere } }
-      ]
+      AND: [categoryWhere, { products: { some: categoryProductWhere } }]
     },
     select: {
       id: true,
@@ -145,21 +147,23 @@ export async function listStorefrontCategories() {
         orderBy: [{ name: "asc" }, { id: "asc" }],
         select: { id: true, imageUrl: true, name: true },
         take: 3,
-        where: temporaryImageReadyStorefrontProductWhere
+        where: categoryProductWhere
       },
       _count: {
-        select: { products: { where: temporaryImageReadyStorefrontProductWhere } }
+        select: { products: { where: categoryProductWhere } }
       }
     }
   });
 
-  return categories.map(({ _count, products, ...category }) => ({
-    ...category,
-    productCount: _count.products,
-    representativeProducts: products.filter(
-      (product): product is typeof product & { imageUrl: string } => Boolean(product.imageUrl)
-    )
-  }));
+  return categories
+    .sort((left, right) => compareStorefrontCategoryNames(left.name, right.name))
+    .map(({ _count, products, ...category }) => ({
+      ...category,
+      productCount: _count.products,
+      representativeProducts: products.filter(
+        (product): product is typeof product & { imageUrl: string } => Boolean(product.imageUrl)
+      )
+    }));
 }
 
 export async function listStorefrontProducts(query: StorefrontProductQuery) {

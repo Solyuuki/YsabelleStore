@@ -108,8 +108,8 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: root,
-            start: "top 78%",
-            end: "top 24%",
+            start: "top top+=76",
+            end: () => `+=${Math.max(520, Math.round(window.innerHeight * 0.72))}`,
             invalidateOnRefresh: true,
             scrub: 0.55
           }

@@ -23,19 +23,26 @@ async function main() {
 
     const responseBody = url.endsWith("/api/customer-auth/logout")
       ? { success: true, message: "Customer logout successful." }
-      : {
-          success: true,
-          message: "Customer authentication successful.",
-          data: {
-            customer: {
-              id: "customer-1",
-              name: "Maria Customer",
-              email: "maria@example.com",
-              phone: "09171234567",
-              status: "ACTIVE"
-            }
+      : url.endsWith("/api/customer-auth/registration-intent")
+        ? {
+            success: true,
+            message: "Customer registration intent prepared.",
+            data: { ready: true }
           }
-        };
+        : {
+            success: true,
+            message: "Customer authentication successful.",
+            data: {
+              customer: {
+                id: "customer-1",
+                name: "Maria Customer",
+                username: "maria.customer",
+                email: "maria@example.com",
+                phone: "09171234567",
+                status: "ACTIVE"
+              }
+            }
+          };
 
     return new Response(JSON.stringify(responseBody), {
       headers: { "content-type": "application/json" },
@@ -46,6 +53,7 @@ async function main() {
   try {
     const currentCustomer = await customerAuthModule.getCurrentCustomer();
     assert.equal(currentCustomer?.email, "maria@example.com");
+    assert.equal(currentCustomer?.username, "maria.customer");
 
     const meRequest = requests.at(-1);
     assert.ok(meRequest, "Expected current-customer request to be sent.");
@@ -55,7 +63,7 @@ async function main() {
     assert.equal(new Headers(meRequest.init.headers).has("Authorization"), false);
 
     const loggedIn = await customerAuthModule.loginCustomer({
-      email: "maria@example.com",
+      identifier: "maria@example.com",
       password: "CustomerPass123!"
     });
     assert.equal(loggedIn.email, "maria@example.com");
@@ -66,7 +74,7 @@ async function main() {
     assert.equal(loginRequest.init.method, "POST");
     assert.equal(loginRequest.init.credentials, "include");
     assert.deepEqual(JSON.parse(String(loginRequest.init.body)), {
-      email: "maria@example.com",
+      identifier: "maria@example.com",
       password: "CustomerPass123!"
     });
 
@@ -74,7 +82,8 @@ async function main() {
       email: "maria@example.com",
       name: "Maria Customer",
       password: "CustomerPass123!",
-      phone: "09171234567"
+      phone: "09171234567",
+      username: "maria.customer"
     });
     assert.equal(registered.id, "customer-1");
 
@@ -83,6 +92,13 @@ async function main() {
     assert.equal(new URL(registerRequest.url).pathname, "/api/customer-auth/register");
     assert.equal(registerRequest.init.method, "POST");
     assert.equal(registerRequest.init.credentials, "include");
+    assert.deepEqual(JSON.parse(String(registerRequest.init.body)), {
+      email: "maria@example.com",
+      name: "Maria Customer",
+      password: "CustomerPass123!",
+      phone: "09171234567",
+      username: "maria.customer"
+    });
 
     await customerAuthModule.logoutCustomer();
     const logoutRequest = requests.at(-1);

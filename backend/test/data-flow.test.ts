@@ -61,15 +61,26 @@ test("create product does not require opening stock batches", { concurrency: fal
   const sku = uniqueSku("ROLLBACK");
 
   const product = await withPatchedTransaction(
-    (tx) => ({
-      ...tx,
-      inventoryBatch: {
-        ...tx.inventoryBatch,
-        create: (async () => {
-          throw new Error("Synthetic opening batch failure.");
-        }) as unknown as typeof tx.inventoryBatch.create
-      }
-    }),
+    (tx) =>
+      new Proxy(tx, {
+        get(target, property, receiver) {
+          if (property !== "inventoryBatch") {
+            return Reflect.get(target, property, receiver);
+          }
+
+          return new Proxy(target.inventoryBatch, {
+            get(delegate, delegateProperty, delegateReceiver) {
+              if (delegateProperty === "create") {
+                return async () => {
+                  throw new Error("Synthetic opening batch failure.");
+                };
+              }
+
+              return Reflect.get(delegate, delegateProperty, delegateReceiver);
+            }
+          });
+        }
+      }) as Prisma.TransactionClient,
     async () => createProduct(buildProductInput({ sku }))
   );
 
@@ -547,15 +558,26 @@ test("POS checkout rolls back when a later write fails", { concurrency: false },
   const cashier = await createTestCashier();
 
   await withPatchedTransaction(
-    (tx) => ({
-      ...tx,
-      saleItem: {
-        ...tx.saleItem,
-        create: (async () => {
-          throw new Error("Synthetic sale item failure.");
-        }) as unknown as typeof tx.saleItem.create
-      }
-    }),
+    (tx) =>
+      new Proxy(tx, {
+        get(target, property, receiver) {
+          if (property !== "saleItem") {
+            return Reflect.get(target, property, receiver);
+          }
+
+          return new Proxy(target.saleItem, {
+            get(delegate, delegateProperty, delegateReceiver) {
+              if (delegateProperty === "create") {
+                return async () => {
+                  throw new Error("Synthetic sale item failure.");
+                };
+              }
+
+              return Reflect.get(delegate, delegateProperty, delegateReceiver);
+            }
+          });
+        }
+      }) as Prisma.TransactionClient,
     async () => {
       await assert.rejects(() =>
         checkoutPosSale({

@@ -9,9 +9,51 @@ const prismaLogLevels: Prisma.PrismaClientOptions["log"] =
 const DATABASE_AVAILABLE_MESSAGE = "Database connection is available.";
 const DATABASE_UNAVAILABLE_MESSAGE = "Database connection is unavailable.";
 
-export const prisma = new PrismaClient({
+// These source identities are permanently retired from YsabelleStore's operational
+// catalog because the store does not sell alcohol. Their Product rows remain in the
+// database only to preserve referential integrity for historical/source records.
+const RETIRED_OPERATIONAL_PRODUCT_SKUS = ["SARIMA-P254", "SARIMA-P255"] as const;
+
+const basePrisma = new PrismaClient({
   log: prismaLogLevels
 });
+
+function applyRetiredProductGuard(
+  where: Prisma.ProductWhereInput | undefined
+): Prisma.ProductWhereInput {
+  return {
+    AND: [
+      where ?? {},
+      {
+        sku: {
+          notIn: [...RETIRED_OPERATIONAL_PRODUCT_SKUS]
+        }
+      }
+    ]
+  };
+}
+
+const operationalPrisma = basePrisma.$extends({
+  query: {
+    product: {
+      async findMany({ args, query }) {
+        args.where = applyRetiredProductGuard(args.where);
+        return query(args);
+      },
+      async count({ args, query }) {
+        args.where = applyRetiredProductGuard(args.where);
+        return query(args);
+      }
+    }
+  }
+});
+
+// Prisma client extensions preserve the runtime client/transaction surface used by
+// the application, but Prisma's generated extension type is intentionally narrower
+// than PrismaClient and caused transaction helpers/tests to reject the shared client.
+// Keep one canonical PrismaClient contract at the application boundary while the
+// operational catalog guard remains active at runtime.
+export const prisma: PrismaClient = operationalPrisma as unknown as PrismaClient;
 
 export type DatabaseHealth =
   | {

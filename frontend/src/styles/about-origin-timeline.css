@@ -1,0 +1,259 @@
+/* About Scene 02: integrated origin editorial band. The large 2019 above remains the only year focal point. */
+.about-experience .discover-story .story-origin-shelf {
+  --origin-band-glow: radial-gradient(circle at 52% 55%, rgb(98 91 255 / 9%), transparent 58%);
+
+  position: relative;
+  display: block;
+  min-height: 0;
+  padding: clamp(0.9rem, 1.6vw, 1.2rem) 0 clamp(0.95rem, 1.7vw, 1.2rem);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  isolation: isolate;
+}
+
+.about-experience .discover-story .story-origin-shelf::before {
+  position: absolute;
+  z-index: -1;
+  top: 8%;
+  right: 8%;
+  bottom: 12%;
+  left: 8%;
+  background: var(--origin-band-glow);
+  content: "";
+  filter: blur(42px);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.about-experience .discover-story .story-origin-shelf__sign {
+  display: none;
+}
+
+.about-experience .discover-story .story-origin-shelf__line {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgb(0 140 255 / 40%),
+    rgb(98 91 255 / 80%) 52%,
+    rgb(168 60 240 / 58%)
+  );
+  box-shadow: 0 0 12px rgb(98 91 255 / 12%);
+}
+
+.about-experience .discover-story .story-origin-shelf__items {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0;
+  order: 2;
+  padding: clamp(0.55rem, 1vw, 0.8rem) 0 clamp(0.8rem, 1.3vw, 1rem);
+  overflow: visible;
+}
+
+.about-experience .discover-story .story-origin-shelf__items::before,
+.about-experience .discover-story .story-origin-shelf__items::after {
+  content: none;
+}
+
+.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item {
+  position: relative;
+  display: flex;
+  height: auto;
+  min-height: clamp(6.3rem, 8vw, 7.6rem);
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0.85rem clamp(1.5rem, 3vw, 2.6rem) 0;
+  overflow: visible;
+  border: 0;
+  border-left: 1px solid rgb(98 91 255 / 7%);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::before {
+  position: absolute;
+  display: block;
+  top: 0.55rem;
+  left: clamp(1.5rem, 3vw, 2.6rem);
+  width: max-content;
+  padding-right: 0.16em;
+  background: linear-gradient(
+    135deg,
+    rgb(0 140 255 / 36%),
+    rgb(98 91 255 / 68%) 52%,
+    rgb(168 60 240 / 48%)
+  );
+  background-clip: text;
+  color: transparent;
+  content: "";
+  filter: blur(0.2px);
+  font-family: var(--customer-font-display);
+  font-size: clamp(3.2rem, 5.4vw, 5.4rem);
+  font-weight: 600;
+  letter-spacing: -0.08em;
+  line-height: 1;
+  opacity: 0.62;
+  white-space: nowrap;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:first-child::before {
+  left: 0;
+}
+
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(1)::before {
+  content: "01";
+}
+
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(2)::before {
+  content: "02";
+}
+
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(3)::before {
+  content: "03";
+}
+
+.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::after {
+  position: relative;
+  z-index: 1;
+  max-width: 22ch;
+  margin-left: clamp(4.5rem, 5.2vw, 5.4rem);
+  color: #232941;
+  font-family: var(--customer-font-body);
+  font-size: clamp(0.8rem, 0.95vw, 0.94rem);
+  font-weight: 760;
+  letter-spacing: 0.095em;
+  line-height: 1.5;
+  text-align: left;
+  white-space: pre-line;
+}
+
+.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child::after {
+  margin-left: clamp(4.5rem, 5.2vw, 5.4rem);
+}
+
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(1)::after {
+  content: "LOCAL ROOTS\A Neighborhood store";
+}
+
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(2)::after {
+  content: "PASIG CITY\A Serving close to home";
+}
+
+.about-experience
+  .discover-story
+  .story-origin-shelf
+  .story-origin-shelf__item:nth-child(3)::after {
+  content: "ESSENTIALS\A Daily needs";
+}
+
+.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:nth-child(4) {
+  display: none;
+}
+
+.about-experience .discover-story .story-origin-shelf .story-origin-shelf__item svg {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item {
+    padding-inline: 1.2rem;
+  }
+
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child {
+    padding-left: 0;
+  }
+
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::before {
+    left: 1.2rem;
+  }
+
+  .about-experience
+    .discover-story
+    .story-origin-shelf
+    .story-origin-shelf__item:first-child::before {
+    left: 0;
+  }
+}
+
+@media (max-width: 840px) {
+  .about-experience .discover-story .story-origin-shelf {
+    display: block;
+    min-height: 0;
+    padding: 0.75rem 0 1rem;
+  }
+
+  .about-experience .discover-story .story-origin-shelf__items {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0;
+  }
+
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item,
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child {
+    min-height: 0;
+    padding: 1.1rem 0.5rem 1.05rem 3.4rem;
+    border-top: 1px solid rgb(98 91 255 / 8%);
+    border-left: 0;
+  }
+
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item:first-child {
+    border-top: 0;
+  }
+
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::before,
+  .about-experience
+    .discover-story
+    .story-origin-shelf
+    .story-origin-shelf__item:first-child::before {
+    top: 1rem;
+    left: 0;
+    font-size: 2.35rem;
+    line-height: 1;
+  }
+
+  .about-experience .discover-story .story-origin-shelf .story-origin-shelf__item::after,
+  .about-experience
+    .discover-story
+    .story-origin-shelf
+    .story-origin-shelf__item:first-child::after {
+    max-width: none;
+    margin-left: 0;
+    font-size: 0.74rem;
+  }
+}

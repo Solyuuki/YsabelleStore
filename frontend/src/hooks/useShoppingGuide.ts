@@ -5,6 +5,9 @@ const GUIDE_PENDING_KEY = "ysabelle:shopping-guide:pending";
 const GUIDE_COMPLETE_KEY = "ysabelle:shopping-guide:complete";
 const GUIDE_SCROLL_TIMEOUT_MS = 900;
 const GUIDE_TARGET_WAIT_MS = 4_000;
+const GUIDE_ROUTE_TRANSITION_CLASS = "ysabelle-guide-route-transition";
+const GUIDE_ROUTE_EXIT_MS = 120;
+const GUIDE_ROUTE_ENTER_MS = 180;
 const GUIDE_SCROLLING_CLASS = "ysabelle-guide-scrolling";
 const GUIDE_FINISHING_CLASS = "ysabelle-guide-finishing";
 const GUIDE_FINISH_DURATION_MS = 180;
@@ -254,19 +257,56 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
   }
 
   function startGuide() {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     if (pathname !== "/") {
       sessionStorage.setItem(GUIDE_PENDING_KEY, "true");
-      navigate("/");
+
+      if (prefersReducedMotion) {
+        navigate("/");
+        return;
+      }
+
+      document.documentElement.classList.add(GUIDE_ROUTE_TRANSITION_CLASS);
+      window.setTimeout(() => navigate("/"), GUIDE_ROUTE_EXIT_MS);
       return;
     }
+
     window.setTimeout(runGuide, 500);
   }
 
   useEffect(() => {
     if (pathname !== "/" || sessionStorage.getItem(GUIDE_PENDING_KEY) !== "true") return;
+
     sessionStorage.removeItem(GUIDE_PENDING_KEY);
-    const timeout = window.setTimeout(runGuide, 700);
-    return () => window.clearTimeout(timeout);
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let cancelled = false;
+    let startTimeout: number | null = null;
+
+    if (prefersReducedMotion) {
+      document.documentElement.classList.remove(GUIDE_ROUTE_TRANSITION_CLASS);
+    } else {
+      requestAnimationFrame(() => {
+        if (!cancelled) document.documentElement.classList.remove(GUIDE_ROUTE_TRANSITION_CLASS);
+      });
+    }
+
+    waitForGuideTarget(0, () => {
+      if (cancelled) return;
+
+      startTimeout = window.setTimeout(
+        () => {
+          if (!cancelled) runGuide();
+        },
+        prefersReducedMotion ? 0 : GUIDE_ROUTE_ENTER_MS
+      );
+    });
+
+    return () => {
+      cancelled = true;
+      if (startTimeout !== null) window.clearTimeout(startTimeout);
+      document.documentElement.classList.remove(GUIDE_ROUTE_TRANSITION_CLASS);
+    };
   }, [pathname]);
 
   return { startGuide };

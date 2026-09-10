@@ -14,7 +14,11 @@ export type ProductAvailabilityAction = {
 };
 
 export function getProductStatusLabel(status: ProductRecord["status"]) {
-  return status === "ACTIVE" ? "AVAILABLE" : "UNAVAILABLE";
+  if (status === "ACTIVE") {
+    return "AVAILABLE";
+  }
+
+  return "UNAVAILABLE";
 }
 
 export function getProductStatusVariant(status: ProductRecord["status"]) {
@@ -31,8 +35,7 @@ export function getAvailabilityAction(
       compactLoadingLabel: "Updating…",
       loadingLabel: "Setting to Unavailable...",
       nextStatus: "INACTIVE",
-      successMessage:
-        "The product is no longer available in POS. Its inventory and history were preserved.",
+      successMessage: "The product is no longer available in POS.",
       successTitle: "Product unavailable",
       tooltip: "Make this product unavailable in POS"
     };

@@ -1,0 +1,354 @@
+{
+  "checkpoint": "batch05",
+  "branch": "m1/v0.9/feat/catalog-data-readiness",
+  "sourceSnapshot": "reportInternalCatalogBarcodes output generated 2026-09-08T05:54:00.442Z",
+  "policy": {
+    "verifiedRule": "valid GTIN plus at least one authoritative exact-unit source OR two independent exact-unit retailers",
+    "isolateAmbiguousOrConflicting": true,
+    "noGuessing": true
+  },
+  "summary": {
+    "products": 20,
+    "verified": 6,
+    "ambiguous": 3,
+    "conflict": 3,
+    "noReliableEvidence": 8
+  },
+  "rows": [
+    {
+      "sarimaSourceProductId": "P098",
+      "sku": "SARIMA-P098",
+      "expectedCurrentBarcode": "YSB-SARIMA-P098",
+      "name": "Argentina Chicken Luncheon Meat 340g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 340g product is widely listed, but no exact-unit GTIN was established from two independent barcode-bearing retailers or an authoritative source.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P102",
+      "sku": "SARIMA-P102",
+      "expectedCurrentBarcode": "YSB-SARIMA-P102",
+      "name": "Lady's Choice Real Mayonnaise 72mL",
+      "status": "AMBIGUOUS",
+      "verifiedBarcode": null,
+      "reason": "Current manufacturer and retailer references use an 80mL sachet while the SARIMA row says 72mL; isolate until source image/physical pack confirms the exact retail unit.",
+      "sources": [
+        {
+          "sourceType": "MANUFACTURER",
+          "sourceName": "Lady's Choice Philippines",
+          "url": "https://www.ladyschoice.com.ph/contact-us/faq.html",
+          "observedBarcode": null,
+          "exactProductIdentity": true,
+          "exactRetailUnit": false
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P103",
+      "sku": "SARIMA-P103",
+      "expectedCurrentBarcode": "YSB-SARIMA-P103",
+      "name": "Lady's Choice Chicken Spread 27mL",
+      "status": "VERIFIED",
+      "verifiedBarcode": "4800888607119",
+      "reason": "Two independent retailers expose the same GTIN for the exact 27mL chicken spread sachet.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "St. Lucia Grocers",
+          "url": "https://staluciagrocers.com/products/ladys-choice-chicken-spread-breakfast-sulit-pack-27ml",
+          "observedBarcode": "4800888607119",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "TripoLLL Online Store",
+          "url": "https://tripolll-store.catalog.kyte.site/spread",
+          "observedBarcode": "4800888607119",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P122",
+      "sku": "SARIMA-P122",
+      "expectedCurrentBarcode": "YSB-SARIMA-P122",
+      "name": "Hokkaido Mackerel in Oil 425g",
+      "status": "VERIFIED",
+      "verifiedBarcode": "4800158987019",
+      "reason": "Puregold and St. Lucia Grocers agree on the exact Hokkaido 425g mackerel-in-oil retail unit and GTIN.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Puregold",
+          "url": "https://puregold.com.ph/pgcatalog/product/view/title/HOKKAIDO%20MACKEREL%20IN%20NATURAL%20OIL%20%20%20425G/barcode/4800158987019",
+          "observedBarcode": "4800158987019",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "St. Lucia Grocers",
+          "url": "https://staluciagrocers.com/products/hokkaido-mackerel-in-oil-salt-added-15oz-425g",
+          "observedBarcode": "4800158987019",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P123",
+      "sku": "SARIMA-P123",
+      "expectedCurrentBarcode": "YSB-SARIMA-P123",
+      "name": "SABA Mackerel in Natural Oil 155g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Legacy inventory data suggests UPC 096785013298, but the strict two-independent-retailer/authoritative exact-unit evidence threshold is not met yet.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P135",
+      "sku": "SARIMA-P135",
+      "expectedCurrentBarcode": "YSB-SARIMA-P135",
+      "name": "Those Days Pads 8s",
+      "status": "AMBIGUOUS",
+      "verifiedBarcode": null,
+      "reason": "The generic 8-pad identity can refer to multiple Those Days variants with distinct GTINs (for example regular no-wings versus thins); isolate until exact pack variant is confirmed.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P136",
+      "sku": "SARIMA-P136",
+      "expectedCurrentBarcode": "YSB-SARIMA-P136",
+      "name": "Empress Shampoo Smooth & Shiny Sachet 21ml",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 21mL product is confirmed in current retail listings, but no exact-unit GTIN was established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P141",
+      "sku": "SARIMA-P141",
+      "expectedCurrentBarcode": "YSB-SARIMA-P141",
+      "name": "Magnolia Cheezee 160g",
+      "status": "VERIFIED",
+      "verifiedBarcode": "4805358317031",
+      "reason": "Multiple independent Philippine retailers agree on the exact Magnolia Cheezee 160g retail unit and GTIN.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Citimart",
+          "url": "https://www.citimartdelivery.com.ph/products/1024799",
+          "observedBarcode": "4805358317031",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Puregold",
+          "url": "https://puregold.com.ph/pgcatalog/product/view/title/MAGNOLIA%20CHEEZEE%20BLOCK%20%20160G%20/barcode/4805358317031",
+          "observedBarcode": "4805358317031",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Iloilo Supermart",
+          "url": "https://store.iloilosupermart.com/product/magnolia-cheezee-regular-165g/",
+          "observedBarcode": "4805358317031",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P154",
+      "sku": "SARIMA-P154",
+      "expectedCurrentBarcode": "YSB-SARIMA-P154",
+      "name": "Fresh Confidence Ultra Freeze Toothpaste Sachet 20g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 20g GTIN not established from reliable barcode-bearing sources.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P188",
+      "sku": "SARIMA-P188",
+      "expectedCurrentBarcode": "YSB-SARIMA-P188",
+      "name": "Mama Sita's Barbecue Marinade Sulit Pack 1kg",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 1kg retail-unit GTIN not established from reliable barcode-bearing sources.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P191",
+      "sku": "SARIMA-P191",
+      "expectedCurrentBarcode": "YSB-SARIMA-P191",
+      "name": "Ajinomoto Crispy Fry Breading Mix Spicy 1kg",
+      "status": "CONFLICT",
+      "verifiedBarcode": null,
+      "reason": "Observed official retail spicy product sizes conflict with the 1kg SARIMA identity; 1kg official product evidence points to a different foodservice/all-purpose identity.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P195",
+      "sku": "SARIMA-P195",
+      "expectedCurrentBarcode": "YSB-SARIMA-P195",
+      "name": "Jolly Whole Corn Kernels 250g",
+      "status": "CONFLICT",
+      "verifiedBarcode": null,
+      "reason": "Available brand listings associate whole kernel corn with other sizes while 250g aligns to a different corn product; source identity appears mismatched.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P198",
+      "sku": "SARIMA-P198",
+      "expectedCurrentBarcode": "YSB-SARIMA-P198",
+      "name": "Jersey Buko Pandan Condensed Creamer 390g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 390g product identity is visible in catalog references, but no strict-threshold GTIN evidence was established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P199",
+      "sku": "SARIMA-P199",
+      "expectedCurrentBarcode": "YSB-SARIMA-P199",
+      "name": "Jersey Melon Condensed Creamer 390g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 390g product identity is visible in catalog references, but no strict-threshold GTIN evidence was established.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P262",
+      "sku": "SARIMA-P262",
+      "expectedCurrentBarcode": "YSB-SARIMA-P262",
+      "name": "Creamline Ube Queso Pastillas Ice Cream 1.3L",
+      "status": "CONFLICT",
+      "verifiedBarcode": null,
+      "reason": "Conflicting official/product-sheet GTINs were observed for the 1.3L retail jar; isolate until the exact package barcode is reconciled.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P267",
+      "sku": "SARIMA-P267",
+      "expectedCurrentBarcode": "YSB-SARIMA-P267",
+      "name": "Wilkins Pure Drinking Water 800ml",
+      "status": "AMBIGUOUS",
+      "verifiedBarcode": null,
+      "reason": "Current Coca-Cola/retailer lineups readily show Wilkins Pure 330mL, 500mL and 1L; the historical 800mL identity needs package-image confirmation before barcode assignment.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P317",
+      "sku": "SARIMA-P317",
+      "expectedCurrentBarcode": "YSB-SARIMA-P317",
+      "name": "Nature's Spring Distilled Drinking Water 10L",
+      "status": "VERIFIED",
+      "verifiedBarcode": "4800049720244",
+      "reason": "Talcreco and current Ever/Foodpanda retail listings independently expose the same exact-unit GTIN for Nature's Spring Distilled Water 10L.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Talcreco",
+          "url": "https://talcreco.com/consumer-goods",
+          "observedBarcode": "4800049720244",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Ever Supermarket via foodpanda",
+          "url": "https://www.foodpanda.ph/shop/pya1/ever-supermarket-pearl-drive",
+          "observedBarcode": "4800049720244",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P318",
+      "sku": "SARIMA-P318",
+      "expectedCurrentBarcode": "YSB-SARIMA-P318",
+      "name": "Wilkins Distilled Drinking Water 7L",
+      "status": "VERIFIED",
+      "verifiedBarcode": "4801981164714",
+      "reason": "Puregold and independent retailers agree on the exact Wilkins Distilled Water 7L retail-unit GTIN.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Puregold",
+          "url": "https://puregold.com.ph/pgcatalog/product/view/title/WILKINS%20DISTILLED%20DRINKING%20WATER%207000ML/barcode/4801981164714",
+          "observedBarcode": "4801981164714",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "North Azure Grocery",
+          "url": "https://northazuregrocery.com/product/wilkins-distilled-7l-3s/",
+          "observedBarcode": "4801981164714",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Talcreco",
+          "url": "https://talcreco.com/consumer-goods",
+          "observedBarcode": "4801981164714",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    },
+    {
+      "sarimaSourceProductId": "P387",
+      "sku": "SARIMA-P387",
+      "expectedCurrentBarcode": "YSB-SARIMA-P387",
+      "name": "Great Taste Granules Strong 80g",
+      "status": "NO_RELIABLE_EVIDENCE",
+      "verifiedBarcode": null,
+      "reason": "Exact 80g product is confirmed by current retailers, but an exact-unit GTIN was not established from strict-threshold barcode-bearing sources.",
+      "sources": []
+    },
+    {
+      "sarimaSourceProductId": "P397",
+      "sku": "SARIMA-P397",
+      "expectedCurrentBarcode": "YSB-SARIMA-P397",
+      "name": "Alaska Fortified Powdered Milk Drink 300g",
+      "status": "VERIFIED",
+      "verifiedBarcode": "4800575144590",
+      "reason": "Citimart, Iloilo Supermart and Talcreco independently expose the same exact-unit GTIN for the 300g product.",
+      "sources": [
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Citimart",
+          "url": "https://www.citimartdelivery.com.ph/products/1646544",
+          "observedBarcode": "4800575144590",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Iloilo Supermart",
+          "url": "https://store.iloilosupermart.com/product/alaska-fortified-powdered-milk-330g/",
+          "observedBarcode": "4800575144590",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        },
+        {
+          "sourceType": "RETAILER",
+          "sourceName": "Talcreco",
+          "url": "https://talcreco.com/consumer-goods",
+          "observedBarcode": "4800575144590",
+          "exactProductIdentity": true,
+          "exactRetailUnit": true
+        }
+      ]
+    }
+  ]
+}

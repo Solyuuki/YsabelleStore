@@ -26,7 +26,7 @@ test("customer and staff brand marks use shared bundled logo components", () => 
   assert.match(app, /import "@\/styles\/brand\.css";/);
   assert.match(header, /YsabelleBrandMark/);
   assert.match(footer, /YsabelleBrandMark/);
-  assert.match(sidebar, /BrandLogo/);
+  assert.match(sidebar, /YsabelleBrandMark/);
   assert.match(
     sharedCustomerMark,
     /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/

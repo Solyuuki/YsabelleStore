@@ -118,6 +118,12 @@ export class ApiClient {
       interceptedPayload = await interceptor(interceptedPayload);
     }
 
+    interceptedPayload = reconcileProductStatusMutationResponse({
+      context,
+      json,
+      response: interceptedPayload
+    });
+
     return interceptedPayload as ApiResponse<TData, TError, TMeta>;
   }
 
@@ -151,4 +157,57 @@ function resolveUrl(path: string, baseUrl: string): URL {
   }
 
   return new URL(path, `${baseUrl.replace(/\/+$/, "")}/`);
+}
+
+function reconcileProductStatusMutationResponse(input: {
+  context: ApiRequestContext;
+  json: unknown;
+  response: ApiResponse;
+}): ApiResponse {
+  const isProductStatusMutation =
+    input.context.init.method?.toUpperCase() === "PATCH" &&
+    /\/api\/catalog\/products\/[^/]+\/status$/.test(input.context.url.pathname);
+
+  if (!isProductStatusMutation || !input.response.success || !isRecord(input.response.data)) {
+    return input.response;
+  }
+
+  if (!isRecord(input.json)) {
+    return input.response;
+  }
+
+  const requestedStatus = input.json.status;
+
+  if (requestedStatus !== "ACTIVE" && requestedStatus !== "INACTIVE") {
+    return input.response;
+  }
+
+  const returnedStatus = input.response.data.status;
+
+  if (returnedStatus !== requestedStatus) {
+    return {
+      ...input.response,
+      success: false,
+      message: "The server did not confirm the requested product availability state.",
+      error: {
+        code: "PRODUCT_STATUS_CONFIRMATION_MISMATCH",
+        requestedStatus,
+        returnedStatus
+      }
+    };
+  }
+
+  return {
+    ...input.response,
+    data: {
+      ...input.response.data,
+      status: requestedStatus,
+      isActive: requestedStatus === "ACTIVE",
+      ...(requestedStatus === "INACTIVE" ? { isStorefrontVisible: false } : {})
+    }
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

@@ -1,0 +1,75 @@
+name: Phase 7 Status Refresh Temp
+
+on:
+  push:
+    branches:
+      - "m1/v0.9/feat/customer-mobile-otp"
+    paths:
+      - ".github/workflows/phase6-status-refresh-temp.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-status:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ysabellestore_ci
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
+      JWT_SECRET: ci-only-secret
+      CUSTOMER_OAUTH_TRANSACTION_KEY: ci-only-oauth-transaction-key-32-bytes-minimum
+      FRONTEND_URL: http://localhost:5173
+      YSABELLE_BRANCH: ${{ github.ref_name }}
+      YSABELLE_HEAD_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Node dependencies
+        run: npm ci
+      - name: Install catalog image test dependency
+        run: python -m pip install -r catalog-image-engine/requirements.txt
+      - name: Build disposable CI database
+        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+      - name: Run aggregate read-only code verification
+        run: npm run verify:code
+      - name: Refresh committed Phase 7 status evidence
+        run: npm run status:update -- --validation Passed
+      - name: Verify refreshed status evidence
+        run: npm run verify:status
+      - name: Commit refreshed status evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/implementation-artifacts/m1-abarado docs/sprints/sprint-9
+          if git diff --cached --quiet; then
+            echo "No status evidence changes to commit."
+            exit 0
+          fi
+          git commit -m "docs(auth): refresh phase 7 status evidence"
+          git push origin HEAD:m1/v0.9/feat/customer-mobile-otp

@@ -19,6 +19,7 @@ import {
   type PosLookupSummary,
   type ProductWithRelations
 } from "./catalogSerializers.js";
+import { resolveProductBarcode } from "./productBarcodeService.js";
 import {
   allocateStockForSale,
   applyStockAdjustment,
@@ -125,7 +126,8 @@ function buildInventoryFilter(query: InventoryListQuery, categoryIds?: string[])
     productFilters.OR = [
       { name: { contains: query.search } },
       { sku: { contains: query.search } },
-      { barcode: { contains: query.search } }
+      { barcode: { contains: query.search } },
+      { barcodes: { some: { barcode: { contains: query.search } } } }
     ];
   }
 
@@ -359,11 +361,16 @@ export async function getInventoryByProductId(productId: string): Promise<Invent
 }
 
 export async function lookupInventoryByBarcode(barcode: string): Promise<PosLookupSummary> {
+  const resolution = await resolveProductBarcode(barcode);
+  if (!resolution.found || !resolution.product) {
+    throw new HttpError(404, "Product not found.", {
+      code: "PRODUCT_NOT_FOUND"
+    });
+  }
+
   const product = await prisma.product.findUnique({
     include: productLookupInclude,
-    where: {
-      barcode
-    }
+    where: { id: resolution.product.id }
   });
 
   if (!product) {

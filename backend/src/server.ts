@@ -2,6 +2,10 @@ import "dotenv/config";
 
 import { createApp } from "./app.js";
 import { corsOrigins, databaseTarget, env } from "./config/env.js";
+import { ensureInternalCatalogBarcodes } from "./services/catalogInternalBarcodeBootstrapService.js";
+import { ensureKnownCatalogBarcodes } from "./services/catalogKnownBarcodeBootstrapService.js";
+import { ensureCatalogInventoryShells } from "./services/inventoryBootstrapService.js";
+import { synchronizeLegacyPrimaryBarcodes } from "./services/productBarcodeService.js";
 
 const app = createApp();
 
@@ -13,6 +17,53 @@ const server = app.listen(env.PORT, () => {
   console.info(`YsabelleStore backend listening at http://localhost:${env.PORT}`);
   console.info(`Database target: ${database}`);
   console.info(`Allowed renderer origins: ${corsOrigins.join(", ")}`);
+
+  void ensureCatalogInventoryShells()
+    .then((result) => {
+      if (result.created > 0) {
+        console.info(
+          `[inventory-bootstrap] Created ${result.created} missing zero-stock inventory record(s).`
+        );
+      }
+    })
+    .catch((error) => {
+      console.error("[inventory-bootstrap] Unable to synchronize catalog inventory shells.", error);
+    });
+
+  void ensureKnownCatalogBarcodes()
+    .then(async (result) => {
+      console.info(
+        `[catalog-barcode-bootstrap] updated=${result.updated} alreadyPresent=${result.alreadyPresent} missingProducts=${result.missingProducts} blocked=${result.blocked.length}`
+      );
+
+      for (const blocker of result.blocked) {
+        console.warn(
+          `[catalog-barcode-bootstrap] ${blocker.sku} blocked (${blocker.code}): ${blocker.message}`
+        );
+      }
+
+      const internalResult = await ensureInternalCatalogBarcodes();
+      console.info(
+        `[catalog-internal-barcode-bootstrap] updated=${internalResult.updated} alreadyPresent=${internalResult.alreadyPresent} blocked=${internalResult.blocked.length}`
+      );
+
+      for (const blocker of internalResult.blocked) {
+        console.warn(
+          `[catalog-internal-barcode-bootstrap] ${blocker.sku} blocked (${blocker.code}): ${blocker.message}`
+        );
+      }
+
+      const identityResult = await synchronizeLegacyPrimaryBarcodes();
+      console.info(
+        `[product-barcode-identity-sync] scanned=${identityResult.scanned} synchronized=${identityResult.synchronized}`
+      );
+    })
+    .catch((error) => {
+      console.error(
+        "[catalog-barcode-bootstrap] Unable to apply catalog barcode bootstrap.",
+        error
+      );
+    });
 });
 
 server.on("error", (error: NodeJS.ErrnoException) => {

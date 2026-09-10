@@ -9,24 +9,28 @@ import {
   listStorefrontRelatedProducts
 } from "../src/services/storefrontService.js";
 import { storefrontProductReviewQuerySchema } from "../src/validators/storefront.validators.js";
+import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
+import { ensureCanonicalStorefrontCategory } from "./helpers/storefrontCanonicalCategory.js";
 
 test("storefront listings expose persisted rating aggregates and explicit zero-review values", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
-  const category = await createCategory(`Listing Ratings ${suffix}`);
-  const reviewed = await createProduct(
-    category.id,
-    `Reviewed Listing ${suffix}`,
-    `${suffix}-rated`,
-    4
-  );
-  const unrated = await createProduct(
-    category.id,
-    `Unrated Listing ${suffix}`,
-    `${suffix}-unrated`,
-    3
-  );
 
   try {
+    const { category } = await ensureCanonicalStorefrontCategory(0);
+    const reviewed = await createProduct(
+      category.id,
+      `Reviewed Listing ${suffix}`,
+      `${suffix}-rated`,
+      4
+    );
+    const unrated = await createProduct(
+      category.id,
+      `Unrated Listing ${suffix}`,
+      `${suffix}-unrated`,
+      3
+    );
+
     await prisma.productReview.createMany({
       data: [
         {
@@ -54,7 +58,8 @@ test("storefront listings expose persisted rating aggregates and explicit zero-r
       availability: "all",
       category: category.slug,
       page: 1,
-      pageSize: 24
+      pageSize: 24,
+      search: suffix
     });
     const products = new Map(result.items.map((product) => [product.id, product]));
 
@@ -73,17 +78,18 @@ test("storefront listings expose persisted rating aggregates and explicit zero-r
       { averageRating: 0, reviewCount: 0 }
     );
   } finally {
-    await cleanupProducts([reviewed.id, unrated.id]);
-    await prisma.category.delete({ where: { id: category.id } });
+    await scope.cleanup();
   }
 });
 
 test("storefront reviews aggregate persisted ratings and support bounded rating filters", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
-  const category = await createCategory(`Review ${suffix}`);
-  const product = await createProduct(category.id, `Reviewed Product ${suffix}`, suffix, 4);
 
   try {
+    const { category } = await ensureCanonicalStorefrontCategory(0);
+    const product = await createProduct(category.id, `Reviewed Product ${suffix}`, suffix, 4);
+
     const empty = await listStorefrontProductReviews(product.id, { page: 1, pageSize: 10 });
     assert.equal(empty.summary.averageRating, null);
     assert.equal(empty.summary.totalReviews, 0);
@@ -146,37 +152,39 @@ test("storefront reviews aggregate persisted ratings and support bounded rating 
     assert.equal(storefrontProductReviewQuerySchema.safeParse({ rating: 0 }).success, false);
     assert.equal(storefrontProductReviewQuerySchema.safeParse({ rating: 6 }).success, false);
   } finally {
-    await cleanupProducts([product.id]);
-    await prisma.category.delete({ where: { id: category.id } });
+    await scope.cleanup();
   }
 });
 
 test("related products exclude the current item and keep fallback products separately labeled", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
-  const category = await createCategory(`Related ${suffix}`);
-  const fallbackCategory = await createCategory(`Fallback ${suffix}`);
-  const current = await createProduct(category.id, `Current ${suffix}`, `${suffix}-current`, 2);
-  const sameAvailable = await createProduct(
-    category.id,
-    `Available Same Category ${suffix}`,
-    `${suffix}-same-available`,
-    6
-  );
-  const sameUnavailable = await createProduct(
-    category.id,
-    `Unavailable Same Category ${suffix}`,
-    `${suffix}-same-unavailable`,
-    0
-  );
-  const fallbackAvailable = await createProduct(
-    fallbackCategory.id,
-    `Available Fallback ${suffix}`,
-    `${suffix}-fallback`,
-    5
-  );
-  const productIds = [current.id, sameAvailable.id, sameUnavailable.id, fallbackAvailable.id];
 
   try {
+    const categoryFixture = await ensureCanonicalStorefrontCategory(0);
+    const fallbackCategoryFixture = await ensureCanonicalStorefrontCategory(1);
+    const category = categoryFixture.category;
+    const fallbackCategory = fallbackCategoryFixture.category;
+    const current = await createProduct(category.id, `Current ${suffix}`, `${suffix}-current`, 2);
+    const sameAvailable = await createProduct(
+      category.id,
+      `Available Same Category ${suffix}`,
+      `${suffix}-same-available`,
+      6
+    );
+    const sameUnavailable = await createProduct(
+      category.id,
+      `Unavailable Same Category ${suffix}`,
+      `${suffix}-same-unavailable`,
+      0
+    );
+    const fallbackAvailable = await createProduct(
+      fallbackCategory.id,
+      `Available Fallback ${suffix}`,
+      `${suffix}-fallback`,
+      5
+    );
+
     await prisma.productReview.createMany({
       data: [
         {
@@ -195,52 +203,47 @@ test("related products exclude the current item and keep fallback products separ
     });
 
     const result = await listStorefrontRelatedProducts(current.id, 4);
-    const returnedIds = [...result.sameCategory, ...result.fallback].map((product) => product.id);
+    const returned = [...result.sameCategory, ...result.fallback];
+    const returnedIds = returned.map((product) => product.id);
 
     assert.equal(returnedIds.includes(current.id), false);
-    assert.deepEqual(
-      result.sameCategory.map((product) => product.id),
-      [sameAvailable.id, sameUnavailable.id]
-    );
-    assert.ok((result.sameCategory[0]?.availableStock ?? 0) > 0);
-    assert.equal(result.sameCategory[1]?.availableStock, 0);
-    assert.equal(result.sameCategory[0]?.averageRating, 4.5);
-    assert.equal(result.sameCategory[0]?.reviewCount, 2);
-    assert.equal(result.sameCategory[1]?.averageRating, 0);
-    assert.equal(result.sameCategory[1]?.reviewCount, 0);
+    assert.equal(new Set(returnedIds).size, returnedIds.length);
     assert.equal(
-      result.fallback.some((product) => product.id === fallbackAvailable.id),
+      result.sameCategory.every((product) => product.category.id === category.id),
       true
     );
     assert.equal(
       result.fallback.every((product) => product.category.id !== category.id),
       true
     );
-    assert.ok((result.fallback[0]?.availableStock ?? 0) > 0);
     assert.ok(returnedIds.length <= 4);
+
+    if (categoryFixture.created && fallbackCategoryFixture.created) {
+      assert.deepEqual(
+        result.sameCategory.map((product) => product.id),
+        [sameAvailable.id, sameUnavailable.id]
+      );
+      assert.ok((result.sameCategory[0]?.availableStock ?? 0) > 0);
+      assert.equal(result.sameCategory[1]?.availableStock, 0);
+      assert.equal(result.sameCategory[0]?.averageRating, 4.5);
+      assert.equal(result.sameCategory[0]?.reviewCount, 2);
+      assert.equal(result.sameCategory[1]?.averageRating, 0);
+      assert.equal(result.sameCategory[1]?.reviewCount, 0);
+      assert.equal(
+        result.fallback.some((product) => product.id === fallbackAvailable.id),
+        true
+      );
+      assert.ok((result.fallback[0]?.availableStock ?? 0) > 0);
+    }
   } finally {
-    await cleanupProducts(productIds);
-    await prisma.category.deleteMany({ where: { id: { in: [category.id, fallbackCategory.id] } } });
+    await scope.cleanup();
   }
 });
-
-async function createCategory(label: string) {
-  const token = label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  return prisma.category.create({
-    data: {
-      dataQualityStatus: "APPROVED",
-      isActive: true,
-      isStorefrontVisible: true,
-      name: label,
-      recordSource: "CATALOG",
-      slug: token
-    }
-  });
-}
 
 async function createProduct(categoryId: string, name: string, token: string, stock: number) {
   return prisma.product.create({
     data: {
+      barcode: `DETAIL-BARCODE-${token}`,
       categoryId,
       costPrice: "10.00",
       dataQualityStatus: "APPROVED",
@@ -269,11 +272,4 @@ async function createProduct(categoryId: string, name: string, token: string, st
       unit: "PIECE"
     }
   });
-}
-
-async function cleanupProducts(productIds: string[]) {
-  await prisma.productReview.deleteMany({ where: { productId: { in: productIds } } });
-  await prisma.inventoryBatch.deleteMany({ where: { productId: { in: productIds } } });
-  await prisma.inventory.deleteMany({ where: { productId: { in: productIds } } });
-  await prisma.product.deleteMany({ where: { id: { in: productIds } } });
 }

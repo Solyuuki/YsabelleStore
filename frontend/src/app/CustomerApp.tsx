@@ -7,6 +7,7 @@ import { AboutExperiencePage } from "@/pages/customer/AboutExperiencePage";
 import { CartPage } from "@/pages/customer/CartPage";
 import { CheckoutPage } from "@/pages/customer/CheckoutPage";
 import { CustomerAccountPage } from "@/pages/customer/CustomerAccountPage";
+import { CustomerAccountRecoveryPage } from "@/pages/customer/CustomerAccountRecoveryPage";
 import { CustomerHomePage } from "@/pages/customer/CustomerHomePage";
 import { CustomerLoginPage } from "@/pages/customer/CustomerLoginPage";
 import { CustomerNotFoundPage } from "@/pages/customer/CustomerNotFoundPage";
@@ -18,6 +19,11 @@ import { ShopPage } from "@/pages/customer/ShopPage";
 import "driver.js/dist/driver.css";
 import "@/styles/customer.css";
 import "@/styles/customer-auth.css";
+import "@/styles/customer-account.css";
+import "@/styles/customer-account-premium.css";
+import "@/styles/auth-brand.css";
+import "@/styles/customer-header-actions.css";
+import "@/styles/customer-guide-route-transition.css";
 import "@/styles/brand.css";
 import "@/styles/shopping-guide.css";
 import { getCustomerAuthPageKind, resolveCustomerAuthRedirect } from "@/utils/customerRoutes";
@@ -97,6 +103,8 @@ function CustomerAppRoutes({
   else if (pathname === "/discover") page = <DiscoverPage navigate={navigate} />;
   else if (pathname === "/login") page = <CustomerLoginPage navigate={navigate} />;
   else if (pathname === "/register") page = <CustomerRegisterPage navigate={navigate} />;
+  else if (pathname === "/account-recovery")
+    page = <CustomerAccountRecoveryPage location={location} navigate={navigate} />;
   else if (pathname === "/account") page = <CustomerAccountPage navigate={navigate} />;
   else page = <CustomerNotFoundPage navigate={navigate} />;
 

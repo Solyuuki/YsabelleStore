@@ -7,6 +7,11 @@ import type {
   User
 } from "@prisma/client";
 
+import {
+  getProductOperationalReadiness,
+  type ProductOperationalReadiness
+} from "./productOperationalReadiness.js";
+
 export type ProductWithRelations = Product & {
   category: Category;
   inventory: Inventory | null;
@@ -32,6 +37,7 @@ export type MovementWithRelations = InventoryMovement & {
 };
 
 export type ProductStatusView = "ACTIVE" | "INACTIVE" | "DISCONTINUED";
+export type ProductAvailabilityView = "AVAILABLE" | "UNAVAILABLE";
 export type StockStatusView = "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
 
 export type CategorySummary = {
@@ -73,11 +79,14 @@ export type ProductSummary = {
   reorderLevel: number;
   targetStockLevel: number;
   status: ProductStatusView;
+  availabilityStatus: ProductAvailabilityView;
+  isAvailable: boolean;
   isActive: boolean;
   recordSource: Product["recordSource"];
   dataQualityStatus: Product["dataQualityStatus"];
   isStorefrontVisible: boolean;
   qualityWarnings: string[];
+  operationalReadiness: ProductOperationalReadiness;
   category: CategorySummary;
   inventory: InventorySummary;
   createdAt: Date;
@@ -136,15 +145,13 @@ export type PosLookupSummary = {
 };
 
 export function computeStockStatus(quantityOnHand: number, reorderLevel: number): StockStatusView {
-  if (quantityOnHand <= 0) {
-    return "OUT_OF_STOCK";
-  }
-
-  if (quantityOnHand <= reorderLevel) {
-    return "LOW_STOCK";
-  }
-
+  if (quantityOnHand <= 0) return "OUT_OF_STOCK";
+  if (quantityOnHand <= reorderLevel) return "LOW_STOCK";
   return "IN_STOCK";
+}
+
+function isProductAvailable(product: Product, quantityOnHand: number) {
+  return product.status === "ACTIVE" && quantityOnHand > 0;
 }
 
 export function serializeCategory(category: Category): CategorySummary {
@@ -164,6 +171,7 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
   const inventory = product.inventory ?? null;
   const quantityOnHand = inventory?.quantityOnHand ?? 0;
   const stockStatus = computeStockStatus(quantityOnHand, product.reorderLevel);
+  const available = isProductAvailable(product, quantityOnHand);
   const hasUnresolvedDuplicate = [
     ...(product.duplicateCandidatesLeft ?? []),
     ...(product.duplicateCandidatesRight ?? [])
@@ -175,6 +183,7 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     ...(hasUnresolvedDuplicate ? ["UNRESOLVED_DUPLICATE"] : []),
     ...(!product.isStorefrontVisible ? ["STOREFRONT_HIDDEN"] : [])
   ];
+  const operationalReadiness = getProductOperationalReadiness(product);
 
   return {
     id: product.id,
@@ -193,11 +202,14 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     reorderLevel: product.reorderLevel,
     targetStockLevel: product.targetStockLevel,
     status: product.status,
+    availabilityStatus: available ? "AVAILABLE" : "UNAVAILABLE",
+    isAvailable: available,
     isActive: product.status === "ACTIVE",
     recordSource: product.recordSource,
     dataQualityStatus: product.dataQualityStatus,
     isStorefrontVisible: product.isStorefrontVisible,
     qualityWarnings,
+    operationalReadiness,
     category: serializeCategory(product.category),
     inventory: {
       inventoryId: inventory?.id ?? "",

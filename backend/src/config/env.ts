@@ -1,8 +1,14 @@
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { config as loadEnv } from "dotenv";
 import { z } from "zod";
+
+import {
+  resolveCatalogImageStoragePaths,
+  resolveDefaultCatalogImagePersistentRoot
+} from "./catalogImageStoragePaths.js";
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFilePath);
@@ -10,6 +16,11 @@ const repositoryRoot = path.resolve(currentDirectory, "../../..");
 const rootEnvPath = path.join(repositoryRoot, ".env");
 
 loadEnv({ path: rootEnvPath });
+
+const optionalNonEmptyString = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.string().min(1).optional()
+);
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -19,6 +30,20 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().url().optional(),
   DATABASE_URL: z.string().url().optional(),
   JWT_SECRET: z.string().min(1).optional(),
+  RESEND_API_KEY: z.string().min(1).optional(),
+  CUSTOMER_RECOVERY_FROM_EMAIL: z.string().email().optional(),
+  CUSTOMER_DEV_GMAIL_SMTP_USER: z.string().email().optional(),
+  CUSTOMER_DEV_GMAIL_SMTP_APP_PASSWORD: optionalNonEmptyString,
+  CUSTOMER_OAUTH_PUBLIC_BACKEND_URL: z.string().url().optional(),
+  CUSTOMER_OAUTH_TRANSACTION_KEY: z.string().min(32).optional(),
+  GOOGLE_OAUTH_CLIENT_ID: optionalNonEmptyString,
+  GOOGLE_OAUTH_CLIENT_SECRET: optionalNonEmptyString,
+  FACEBOOK_OAUTH_APP_ID: optionalNonEmptyString,
+  FACEBOOK_OAUTH_APP_SECRET: optionalNonEmptyString,
+  FACEBOOK_GRAPH_API_VERSION: z
+    .string()
+    .regex(/^v\d+\.\d+$/)
+    .default("v26.0"),
   PYTHON_EXECUTABLE: z.string().min(1).default("python"),
   CATALOG_IMAGE_STORAGE_ROOT: z.string().min(1).default(".data/catalog-images"),
   CATALOG_IMAGE_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
@@ -38,7 +63,21 @@ if (!parsedEnv.success) {
 }
 
 export const env = parsedEnv.data;
-export const catalogImageStorageRoot = path.resolve(repositoryRoot, env.CATALOG_IMAGE_STORAGE_ROOT);
+const developmentCatalogImagePersistentRoot =
+  env.NODE_ENV === "development" && !path.isAbsolute(env.CATALOG_IMAGE_STORAGE_ROOT)
+    ? resolveDefaultCatalogImagePersistentRoot({
+        environment: process.env,
+        homeDirectory: os.homedir(),
+        platform: process.platform
+      })
+    : undefined;
+const catalogImageStoragePaths = resolveCatalogImageStoragePaths(
+  repositoryRoot,
+  env.CATALOG_IMAGE_STORAGE_ROOT,
+  developmentCatalogImagePersistentRoot
+);
+export const catalogImageStorageRoot = catalogImageStoragePaths.root;
+export const catalogImageStorageFallbackRoots = catalogImageStoragePaths.fallbackRoots;
 
 const defaultCorsOrigins = [
   env.FRONTEND_URL,

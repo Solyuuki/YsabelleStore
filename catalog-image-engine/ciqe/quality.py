@@ -20,6 +20,17 @@ def _diagnostic(code: str, message: str, severity: str = "warning") -> dict[str,
     return {"code": code, "message": message, "severity": severity}
 
 
+def _empty_metrics() -> dict[str, Any]:
+    return {
+        "luminance": None,
+        "exposureLuminance": None,
+        "contrastStdDev": None,
+        "sharpnessRms": None,
+        "foregroundOccupancy": None,
+        "touchesSafeMargin": None,
+    }
+
+
 def _decode_failure_result() -> dict[str, Any]:
     return {
         "status": "REJECTED",
@@ -27,13 +38,7 @@ def _decode_failure_result() -> dict[str, Any]:
         "diagnostics": [
             _diagnostic("DECODE_FAILED", "Image could not be decoded safely.", "error")
         ],
-        "metrics": {
-            "luminance": None,
-            "contrastStdDev": None,
-            "sharpnessRms": None,
-            "foregroundOccupancy": None,
-            "touchesSafeMargin": None,
-        },
+        "metrics": _empty_metrics(),
     }
 
 
@@ -71,7 +76,9 @@ def _median(values: list[int]) -> int:
     return ordered[midpoint] if count % 2 else (ordered[midpoint - 1] + ordered[midpoint]) // 2
 
 
-def _foreground_metrics(rgba: Image.Image) -> tuple[float | None, bool | None]:
+def _foreground_metrics(
+    rgba: Image.Image,
+) -> tuple[float | None, bool | None, Image.Image | None]:
     alpha = rgba.getchannel("A")
     width, height = rgba.size
 
@@ -81,7 +88,7 @@ def _foreground_metrics(rgba: Image.Image) -> tuple[float | None, bool | None]:
         rgb = rgba.convert("RGB")
         samples = _edge_samples(rgb)
         if not samples:
-            return None, None
+            return None, None, None
 
         background = tuple(
             _median([sample[channel] for sample in samples]) for channel in range(3)
@@ -97,7 +104,7 @@ def _foreground_metrics(rgba: Image.Image) -> tuple[float | None, bool | None]:
             _median(edge_deviations) > 14
             or edge_outlier_ratio > MAX_COMPLEX_EDGE_OUTLIER_RATIO
         ):
-            return None, None
+            return None, None, None
 
         difference = ImageChops.difference(
             rgb, Image.new("RGB", rgb.size, background)
@@ -107,7 +114,7 @@ def _foreground_metrics(rgba: Image.Image) -> tuple[float | None, bool | None]:
 
     bounding_box = mask.getbbox()
     if bounding_box is None:
-        return 0.0, False
+        return 0.0, False, mask
 
     occupancy = float(ImageStat.Stat(mask).mean[0] / 255.0)
     left, top, right, bottom = bounding_box
@@ -119,7 +126,7 @@ def _foreground_metrics(rgba: Image.Image) -> tuple[float | None, bool | None]:
         or right >= width - margin_x
         or bottom >= height - margin_y
     )
-    return occupancy, touches_safe_margin
+    return occupancy, touches_safe_margin, mask
 
 
 def _sharpness_rms(gray: Image.Image) -> float:
@@ -154,13 +161,7 @@ def analyze_image_path(path: str | Path) -> dict[str, Any]:
                                 "error",
                             )
                         ],
-                        "metrics": {
-                            "luminance": None,
-                            "contrastStdDev": None,
-                            "sharpnessRms": None,
-                            "foregroundOccupancy": None,
-                            "touchesSafeMargin": None,
-                        },
+                        "metrics": _empty_metrics(),
                     }
 
                 image.load()
@@ -201,10 +202,16 @@ def analyze_image_path(path: str | Path) -> dict[str, Any]:
     luminance = float(statistics.mean[0])
     contrast = float(statistics.stddev[0])
     sharpness = _sharpness_rms(gray)
-    occupancy, touches_safe_margin = _foreground_metrics(analysis)
+    occupancy, touches_safe_margin, foreground_mask = _foreground_metrics(analysis)
     source_is_opaque = analysis.getchannel("A").getextrema()[0] >= 250
 
-    if luminance < 35 or luminance > 235:
+    exposure_luminance = luminance
+    if foreground_mask is not None and foreground_mask.getbbox() is not None:
+        foreground_statistics = ImageStat.Stat(gray, foreground_mask)
+        if foreground_statistics.count[0] > 0:
+            exposure_luminance = float(foreground_statistics.mean[0])
+
+    if exposure_luminance < 35 or exposure_luminance > 235:
         diagnostics.append(
             _diagnostic("EXPOSURE_RISK", "Image exposure is outside the preferred catalog range.")
         )
@@ -257,6 +264,7 @@ def analyze_image_path(path: str | Path) -> dict[str, Any]:
         "diagnostics": diagnostics,
         "metrics": {
             "luminance": round(luminance, 3),
+            "exposureLuminance": round(exposure_luminance, 3),
             "contrastStdDev": round(contrast, 3),
             "sharpnessRms": round(sharpness, 3),
             "foregroundOccupancy": None if occupancy is None else round(occupancy, 6),

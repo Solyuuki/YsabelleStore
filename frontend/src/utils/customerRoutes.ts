@@ -1,6 +1,6 @@
 import type { CustomerAuthStatus } from "@/types/customerAuth";
 
-export type CustomerAuthPageKind = "login" | "register" | "account";
+export type CustomerAuthPageKind = "login" | "register" | "recovery" | "account";
 
 /**
  * Customer-facing Shop routes own their search context through the Shop toolbar.
@@ -14,6 +14,7 @@ export function isCustomerShopRoute(pathname: string) {
 export function getCustomerAuthPageKind(pathname: string): CustomerAuthPageKind | null {
   if (pathname === "/login") return "login";
   if (pathname === "/register") return "register";
+  if (pathname === "/account-recovery") return "recovery";
   if (pathname === "/account") return "account";
   return null;
 }
@@ -29,7 +30,7 @@ export function resolveCustomerAuthRedirect(
   }
 
   if ((pathname === "/login" || pathname === "/register") && status === "authenticated") {
-    return "/account";
+    return "/";
   }
 
   return null;

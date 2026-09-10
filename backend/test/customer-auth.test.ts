@@ -19,6 +19,11 @@ function rememberCustomer(customerId: string) {
   return customerId;
 }
 
+function testPhone(suffix: string) {
+  const numeric = Number.parseInt(suffix, 16) % 10_000_000;
+  return `0917${numeric.toString().padStart(7, "0")}`;
+}
+
 function expectHttpError(
   error: unknown,
   expected: { code: string; message: string; status: number }
@@ -36,7 +41,7 @@ test("customer account and finite session persist independently from internal us
     data: {
       name: "Customer Auth Test",
       email: `customer-auth-${suffix}@example.com`,
-      phone: "09171234567",
+      phone: testPhone(suffix),
       passwordHash: "scrypt$test-placeholder",
       status: "ACTIVE"
     }
@@ -60,10 +65,13 @@ test("customer account and finite session persist independently from internal us
 test("registration normalizes identity, hashes the password, and returns only safe customer data", async () => {
   const suffix = randomUUID().slice(0, 8);
   const email = `customer-${suffix}@example.com`;
+  const phone = testPhone(suffix);
+  const normalizedPhone = `+63${phone.slice(1)}`;
   const registered = await registerCustomer({
     name: "  Maria Customer  ",
+    username: `Maria.${suffix.toUpperCase()}`,
     email: `  ${email.toUpperCase()}  `,
-    phone: " 09171234567 ",
+    phone: ` ${phone} `,
     password: "CustomerPass123!"
   });
   rememberCustomer(registered.customer.id);
@@ -73,10 +81,13 @@ test("registration normalizes identity, hashes the password, and returns only sa
   });
 
   assert.equal(registered.customer.name, "Maria Customer");
+  assert.equal(registered.customer.username, `maria.${suffix}`);
   assert.equal(registered.customer.email, email);
-  assert.equal(registered.customer.phone, "09171234567");
+  assert.equal(registered.customer.phone, normalizedPhone);
   assert.equal("passwordHash" in registered.customer, false);
   assert.equal(persisted.email, email);
+  assert.equal(persisted.phoneNormalized, normalizedPhone);
+  assert.ok(persisted.passwordHash);
   assert.ok(persisted.passwordHash.startsWith("scrypt$"));
   assert.notEqual(persisted.passwordHash, "CustomerPass123!");
   assert.ok(registered.sessionToken.length >= 32);
@@ -89,13 +100,13 @@ test("registration normalizes identity, hashes the password, and returns only sa
   assert.notEqual(storedSession.tokenHash, registered.sessionToken);
 });
 
-test("registration rejects an already registered email after normalization", async () => {
+test("registration rejects an already registered email after normalization with a generic conflict", async () => {
   const suffix = randomUUID().slice(0, 8);
   const email = `duplicate-${suffix}@example.com`;
   const first = await registerCustomer({
     name: "First Customer",
+    username: `duplicate.first.${suffix}`,
     email,
-    phone: "09171234567",
     password: "CustomerPass123!"
   });
   rememberCustomer(first.customer.id);
@@ -103,15 +114,15 @@ test("registration rejects an already registered email after normalization", asy
   await assert.rejects(
     registerCustomer({
       name: "Second Customer",
+      username: `duplicate.second.${suffix}`,
       email: ` ${email.toUpperCase()} `,
-      phone: "09179876543",
       password: "CustomerPass456!"
     }),
     (error) =>
       expectHttpError(error, {
         status: 409,
-        code: "CUSTOMER_EMAIL_ALREADY_REGISTERED",
-        message: "An account with this email already exists."
+        code: "CUSTOMER_ACCOUNT_CONFLICT",
+        message: "Unable to create customer account with the supplied details."
       })
   );
 });
@@ -121,6 +132,7 @@ test("missing customer and wrong password return the same public credential erro
   const email = `login-${suffix}@example.com`;
   const registered = await registerCustomer({
     name: "Login Customer",
+    username: `login.${suffix}`,
     email,
     password: "CustomerPass123!"
   });
@@ -129,15 +141,19 @@ test("missing customer and wrong password return the same public credential erro
   const expected = {
     status: 401,
     code: "INVALID_CUSTOMER_CREDENTIALS",
-    message: "Invalid email or password."
+    message: "Invalid credentials."
   };
 
   await assert.rejects(
-    loginCustomer({ email: `missing-${suffix}@example.com`, password: "CustomerPass123!" }),
+    loginCustomer({
+      identifier: `missing-${suffix}@example.com`,
+      password: "CustomerPass123!"
+    }),
     (error) => expectHttpError(error, expected)
   );
-  await assert.rejects(loginCustomer({ email, password: "DefinitelyWrong123!" }), (error) =>
-    expectHttpError(error, expected)
+  await assert.rejects(
+    loginCustomer({ identifier: email, password: "DefinitelyWrong123!" }),
+    (error) => expectHttpError(error, expected)
   );
 });
 
@@ -146,6 +162,7 @@ test("inactive customer cannot log in and active customer receives a new finite 
   const email = `inactive-${suffix}@example.com`;
   const registered = await registerCustomer({
     name: "Inactive Customer",
+    username: `inactive.${suffix}`,
     email,
     password: "CustomerPass123!"
   });
@@ -156,19 +173,24 @@ test("inactive customer cannot log in and active customer receives a new finite 
     where: { id: registered.customer.id }
   });
 
-  await assert.rejects(loginCustomer({ email, password: "CustomerPass123!" }), (error) =>
-    expectHttpError(error, {
-      status: 401,
-      code: "INVALID_CUSTOMER_CREDENTIALS",
-      message: "Invalid email or password."
-    })
+  await assert.rejects(
+    loginCustomer({ identifier: email, password: "CustomerPass123!" }),
+    (error) =>
+      expectHttpError(error, {
+        status: 401,
+        code: "INVALID_CUSTOMER_CREDENTIALS",
+        message: "Invalid credentials."
+      })
   );
 
   await prisma.customerAccount.update({
     data: { status: "ACTIVE" },
     where: { id: registered.customer.id }
   });
-  const session = await loginCustomer({ email: email.toUpperCase(), password: "CustomerPass123!" });
+  const session = await loginCustomer({
+    identifier: email.toUpperCase(),
+    password: "CustomerPass123!"
+  });
   assert.equal(session.customer.id, registered.customer.id);
   assert.ok(session.expiresAt.getTime() > Date.now());
 });
@@ -238,6 +260,7 @@ test("valid session resolves safe customer identity and updates last-used timest
 
   assert.equal(resolved.id, customer.id);
   assert.equal(resolved.email, customer.email);
+  assert.equal(resolved.username, null);
   assert.equal("passwordHash" in resolved, false);
 
   const persisted = await prisma.customerSession.findUniqueOrThrow({

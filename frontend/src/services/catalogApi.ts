@@ -52,11 +52,14 @@ export type ProductRecord = {
   reorderLevel: number;
   targetStockLevel: number;
   status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
+  availabilityStatus: "AVAILABLE" | "UNAVAILABLE";
+  isAvailable: boolean;
   isActive: boolean;
   recordSource: CatalogRecordSource;
   dataQualityStatus: CatalogQualityStatus;
   isStorefrontVisible: boolean;
   qualityWarnings: string[];
+  operationalReadiness?: unknown;
   category: ProductCategorySummary;
   inventory: ProductInventorySummary;
   createdAt: string;
@@ -356,6 +359,7 @@ export async function fetchProducts(
   query: {
     search?: string;
     status?: string;
+    dataQualityStatus?: CatalogQualityStatus;
     page?: number;
     pageSize?: number;
   } = {},

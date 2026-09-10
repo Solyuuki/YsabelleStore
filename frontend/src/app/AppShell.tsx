@@ -9,15 +9,18 @@ import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ProductsPage } from "@/pages/ProductsPage";
 import { InventoryPage } from "@/pages/InventoryPage";
+import { ReceivingPage } from "@/pages/ReceivingPage";
 import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PosPage } from "@/pages/PosPage";
 import { SalesPage } from "@/pages/SalesPage";
 import { ForecastPage } from "@/pages/ForecastPage";
 import { HistoricalSalesPage } from "@/pages/HistoricalSalesPage";
-import { ProtectedPage } from "@/pages/ProtectedPage";
+import { ReportsPage } from "@/pages/ReportsPage";
+import { SettingsPage } from "@/pages/SettingsPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
+import "@/styles/auth-brand.css";
 import { wait } from "@/utils/timing";
 
 const LAUNCH_SPLASH_DELAY_MS = 250;
@@ -28,6 +31,7 @@ const validRoutePaths = new Set<string>([
   "/pos",
   "/products",
   "/inventory",
+  "/receiving",
   "/sales",
   "/forecast",
   "/historical-sales",
@@ -267,26 +271,21 @@ function renderRoute(
       return <ProductsPage />;
     case "/inventory":
       return <InventoryPage />;
+    case "/receiving":
+      return <ReceivingPage />;
     case "/sales":
       return <SalesPage />;
     case "/forecast":
       return <ForecastPage />;
     case "/historical-sales":
       return <HistoricalSalesPage />;
+    case "/reports":
+      return <ReportsPage />;
     case "/users":
       return <UserManagementPage error={error} onRegister={register} user={user} />;
+    case "/settings":
+      return <SettingsPage />;
     default:
-      if (route.protected) {
-        return (
-          <ProtectedPage
-            description={route.description}
-            hasOwnerAccess={user?.role === "OWNER"}
-            icon={route.icon}
-            title={route.label}
-          />
-        );
-      }
-
       return <NotFoundPage onNavigate={navigate} />;
   }
 }
