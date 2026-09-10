@@ -4,7 +4,14 @@ import { resolve } from "node:path";
 
 import { appRoutes, canRoleAccessRoute } from "../frontend/src/app/routes.ts";
 
-const ownerOnlyPaths = ["/products", "/forecast", "/reports", "/users", "/settings"] as const;
+const ownerOnlyPaths = [
+  "/products",
+  "/receiving",
+  "/forecast",
+  "/reports",
+  "/users",
+  "/settings"
+] as const;
 
 for (const path of ownerOnlyPaths) {
   const route = appRoutes.find((item) => item.path === path);
