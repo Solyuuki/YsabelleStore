@@ -5,7 +5,7 @@ import test from "node:test";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const productsSource = fs.readFileSync(
-  path.join(root, "frontend/src/pages/ProductsPage.tsx"),
+  path.join(root, "frontend/src/pages/ProductsPageLegacy.tsx"),
   "utf8"
 );
 const panelSource = fs.readFileSync(
