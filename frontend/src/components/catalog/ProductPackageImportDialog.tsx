@@ -71,6 +71,7 @@ export function ProductPackageImportDialog({
   const [phase, setPhase] = useState<ImportPhase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const sessionRef = useRef(0);
 
   const isBusy = phase === "scanning" || phase === "importing";
@@ -100,6 +101,7 @@ export function ProductPackageImportDialog({
     setPhase("idle");
     setError(null);
     setIsDragging(false);
+    setShowGuide(false);
     if (inputRef.current) inputRef.current.value = "";
   }, [isOpen]);
 
@@ -249,7 +251,26 @@ export function ProductPackageImportDialog({
             </Button>
           </DialogClose>
           <div className="space-y-2">
-            <DialogTitle>Import products</DialogTitle>
+            <div className="flex items-center gap-3">
+              <DialogTitle>Import products</DialogTitle>
+              <Button
+                aria-expanded={showGuide}
+                aria-controls="product-package-guide"
+                className="h-7 gap-1.5 rounded-full px-2.5 text-xs"
+                disabled={isBusy}
+                onClick={() => setShowGuide((current) => !current)}
+                type="button"
+                variant="secondary"
+              >
+                <span
+                  aria-hidden="true"
+                  className="flex h-4 w-4 items-center justify-center rounded-full border border-current text-[10px] font-bold"
+                >
+                  ?
+                </span>
+                Guide
+              </Button>
+            </div>
             <DialogDescription id="product-package-import-description" className="max-w-prose">
               Import a product package from your computer or Google Drive. The system scans folders,
               validates catalog data, matches product images, and rejects blocking issues before import.
@@ -259,6 +280,68 @@ export function ProductPackageImportDialog({
 
         <div className="flex-1 overflow-y-auto px-6 py-5">
           <div className="space-y-5">
+            {showGuide ? (
+              <section
+                className="rounded-2xl border border-violet-200 bg-violet-50/70 p-5"
+                id="product-package-guide"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-950">Product package requirements</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      A package may contain one or many products. Include exactly one product data file;
+                      product images are optional.
+                    </p>
+                  </div>
+                  <Button
+                    aria-label="Hide product package guide"
+                    className="shrink-0"
+                    onClick={() => setShowGuide(false)}
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    Hide
+                  </Button>
+                </div>
+
+                <div className="mt-4 grid gap-4 text-sm text-slate-700 md:grid-cols-2">
+                  <div className="rounded-xl border border-violet-100 bg-white/80 p-4">
+                    <p className="font-semibold text-slate-950">1. Product data file</p>
+                    <p className="mt-2 leading-6">Use one CSV or XLSX file with these required columns:</p>
+                    <p className="mt-2 break-words font-mono text-xs leading-5 text-slate-600">
+                      name, sku, category, unit, costPrice, sellingPrice, reorderLevel, initialStock
+                    </p>
+                    <p className="mt-3 leading-6">
+                      Optional: targetStockLevel, status, description, imageUrl, barcode.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-violet-100 bg-white/80 p-4">
+                    <p className="font-semibold text-slate-950">2. Product images (optional)</p>
+                    <p className="mt-2 leading-6">Supported: JPG, JPEG, PNG, and WebP.</p>
+                    <p className="mt-2 leading-6">
+                      Name each image using the product SKU or product name so the system can match it.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Example package</p>
+                  <pre className="mt-2 overflow-x-auto whitespace-pre text-xs leading-5 text-slate-700">{`products.zip
+├── products.xlsx
+└── images/
+    ├── SARIMA-P218.jpg
+    └── SARIMA-P261.png`}</pre>
+                </div>
+
+                <p className="mt-3 text-xs leading-5 text-slate-500">
+                  Nested folders are supported. The package is scanned and validated first; nothing is
+                  written to the catalog until you confirm the import.
+                </p>
+              </section>
+            ) : null}
+
             <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
               <Button
                 className="justify-center"
