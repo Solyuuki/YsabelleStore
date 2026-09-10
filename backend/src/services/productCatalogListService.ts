@@ -102,13 +102,21 @@ function buildProductWhere(
     clauses.push({ categoryId: categoryIds.length > 0 ? { in: categoryIds } : { in: [] } });
   }
   if (query.sku) clauses.push({ sku: query.sku });
-  if (query.barcode) clauses.push({ barcode: query.barcode });
+  if (query.barcode) {
+    clauses.push({
+      OR: [
+        { barcode: query.barcode },
+        { barcodes: { some: { barcode: query.barcode } } }
+      ]
+    });
+  }
   if (query.search) {
     clauses.push({
       OR: [
         { name: { contains: query.search } },
         { sku: { contains: query.search } },
-        { barcode: { contains: query.search } }
+        { barcode: { contains: query.search } },
+        { barcodes: { some: { barcode: { contains: query.search } } } }
       ]
     });
   }
