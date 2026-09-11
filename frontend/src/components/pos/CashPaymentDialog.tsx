@@ -1,7 +1,9 @@
-import { Banknote, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +12,8 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
@@ -72,58 +76,53 @@ export function CashPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !isSubmitting && onOpenChange(nextOpen)}>
-      <DialogContent className="w-[calc(100vw-32px)] max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Banknote className="h-5 w-5 text-indigo-600" aria-hidden="true" />
-            Cash payment
-          </DialogTitle>
+      <DialogContent className="w-[calc(100vw-32px)] max-w-[480px] p-0">
+        <DialogHeader className="border-b border-slate-200 px-6 py-5">
+          <DialogTitle>Cash payment</DialogTitle>
           <DialogDescription>
-            Confirm the customer tender before the sale is committed and inventory is deducted.
+            Enter the amount received from the customer, then confirm the sale.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 py-2">
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm font-medium text-slate-600">Amount due</span>
-              <span className="text-2xl font-bold text-slate-950">
+        <div className="space-y-5 px-6 py-5">
+          <Card>
+            <CardContent className="flex items-center justify-between gap-4 p-4">
+              <div>
+                <p className="type-body-sm font-medium text-slate-500">Amount due</p>
+                <p className="mt-1 text-xs text-slate-400">Cash sale</p>
+              </div>
+              <p className="text-2xl font-semibold tracking-tight text-slate-950">
                 {currencyFormatter.format(total)}
-              </span>
-            </div>
-          </div>
+              </p>
+            </CardContent>
+          </Card>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700" htmlFor="cash-received">
-              Cash received
-            </label>
-            <div className="flex h-14 items-center rounded-md border border-slate-300 bg-white px-4 shadow-sm focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100">
-              <span className="mr-2 text-lg font-semibold text-slate-500">₱</span>
-              <input
-                ref={inputRef}
-                id="cash-received"
-                inputMode="decimal"
-                className="min-w-0 flex-1 bg-transparent text-xl font-semibold text-slate-950 outline-none"
-                placeholder="0.00"
-                type="text"
-                value={cashInput}
-                onChange={(event) => {
-                  const nextValue = event.target.value;
-                  if (/^\d{0,10}(?:\.\d{0,2})?$/.test(nextValue)) {
-                    setCashInput(nextValue);
-                  }
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    submitPayment();
-                  }
-                }}
-              />
-            </div>
+            <Label htmlFor="cash-received">Cash received</Label>
+            <Input
+              ref={inputRef}
+              id="cash-received"
+              inputMode="decimal"
+              placeholder="0.00"
+              type="text"
+              value={cashInput}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                if (/^\d{0,10}(?:\.\d{0,2})?$/.test(nextValue)) {
+                  setCashInput(nextValue);
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  submitPayment();
+                }
+              }}
+            />
+            <p className="type-body-sm text-slate-500">Enter the cash tendered in Philippine pesos.</p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" aria-label="Quick cash amounts">
             <Button
               disabled={isSubmitting}
               size="sm"
@@ -147,35 +146,30 @@ export function CashPaymentDialog({
             ))}
           </div>
 
-          <div
-            className={`rounded-lg border p-4 ${
-              hasValidCash
-                ? "border-emerald-200 bg-emerald-50"
-                : "border-slate-200 bg-slate-50"
-            }`}
-          >
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm font-medium text-slate-600">Change</span>
-              <span
-                className={`text-xl font-bold ${
-                  hasValidCash ? "text-emerald-700" : "text-slate-400"
-                }`}
-              >
-                {currencyFormatter.format(change)}
-              </span>
-            </div>
-            {hasCashInput && !hasValidCash ? (
-              <p className="mt-2 text-sm text-amber-700">
-                Cash received must cover the full amount due.
-              </p>
-            ) : null}
-          </div>
+          <Card>
+            <CardContent className="space-y-3 p-4">
+              <div className="flex items-center justify-between gap-4 text-sm">
+                <span className="text-slate-500">Cash received</span>
+                <span className="font-medium text-slate-950">
+                  {hasCashInput && Number.isFinite(cashReceived)
+                    ? currencyFormatter.format(cashReceived)
+                    : "—"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-3">
+                <span className="font-medium text-slate-700">Change</span>
+                <span className="text-lg font-semibold text-slate-950">
+                  {currencyFormatter.format(change)}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
 
-          {error ? (
-            <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </p>
+          {hasCashInput && !hasValidCash ? (
+            <Alert>Cash received must cover the full amount due.</Alert>
           ) : null}
+
+          {error ? <Alert variant="destructive">{error}</Alert> : null}
         </div>
 
         <DialogFooter>
