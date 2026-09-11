@@ -18,15 +18,6 @@ function latestByProduct<T extends { productId: string }>(rows: T[]) {
 
 export async function listRestockPlanningCandidates(query: RestockPlanningQuery) {
   const products = await prisma.product.findMany({
-    include: {
-      inventoryBatches: {
-        select: {
-          expiresAt: true,
-          quantityRemaining: true,
-          status: true
-        }
-      }
-    },
     orderBy: [{ name: "asc" }, { id: "asc" }],
     where: {
       dataQualityStatus: { not: "REJECTED" },
@@ -46,7 +37,13 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
     select: {
       barcode: true,
       id: true,
-      inventoryBatches: true,
+      inventoryBatches: {
+        select: {
+          expiresAt: true,
+          quantityRemaining: true,
+          status: true
+        }
+      },
       name: true,
       reorderLevel: true,
       sku: true,
@@ -143,7 +140,10 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
     let recommendedQuantity = 0;
     let rationale = "No replenishment is currently required by the stock policy.";
 
-    if (recommendation?.recommendedQuantity !== null && recommendation?.recommendedQuantity !== undefined) {
+    if (
+      recommendation?.recommendedQuantity !== null &&
+      recommendation?.recommendedQuantity !== undefined
+    ) {
       recommendationId = recommendation.id;
       recommendationSource = recommendation.forecastRecordId
         ? "SARIMA"
@@ -246,9 +246,10 @@ export async function dismissRestockRecommendation(
       });
     }
 
+    const resolvedAt = new Date();
     await tx.recommendationRecord.update({
       data: {
-        resolvedAt: new Date(),
+        resolvedAt,
         status: "DISMISSED"
       },
       where: { id: recommendation.id }
@@ -271,7 +272,7 @@ export async function dismissRestockRecommendation(
 
     return {
       id: recommendation.id,
-      resolvedAt: new Date().toISOString(),
+      resolvedAt: resolvedAt.toISOString(),
       status: "DISMISSED" as const
     };
   });
