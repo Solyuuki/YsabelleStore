@@ -274,6 +274,22 @@ enum RecommendationStatus {
   DISMISSED
 }
 
+enum RestockOrderStatus {
+  DRAFT
+  APPROVED
+  AWAITING_DELIVERY
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+enum RestockRecommendationSource {
+  SARIMA
+  LOW_STOCK
+  TARGET_STOCK
+  MANUAL
+}
+
 model User {
   id                       String                       @id @default(cuid()) @db.VarChar(191)
   name                     String                       @db.VarChar(120)
@@ -292,6 +308,8 @@ model User {
   historicalSalesImports   HistoricalSalesImportBatch[] @relation("HistoricalSalesImportedBy")
   historicalSalesRollbacks HistoricalSalesImportBatch[] @relation("HistoricalSalesRolledBackBy")
   invalidatedMonthlySales  HistoricalMonthlySales[]     @relation("HistoricalSalesInvalidatedBy")
+  createdRestockOrders     RestockOrder[]               @relation("RestockOrderCreatedBy")
+  approvedRestockOrders    RestockOrder[]               @relation("RestockOrderApprovedBy")
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
@@ -593,6 +611,7 @@ model Product {
   duplicateCandidatesLeft   ProductDuplicateCandidate[] @relation("DuplicateCandidateLeft")
   duplicateCandidatesRight  ProductDuplicateCandidate[] @relation("DuplicateCandidateRight")
   canonicalAuditLogs        CatalogAuditLog[]
+  restockOrderLines         RestockOrderLine[]
 
   @@index([categoryId, status], map: "idx_products_category_status")
   @@index([name], map: "idx_products_name")
@@ -1125,6 +1144,7 @@ model RecommendationRecord {
   product             Product                @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   forecastRecord      ForecastRecord?        @relation(fields: [forecastRecordId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   generatedBy         User?                  @relation(fields: [generatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  restockOrderLines   RestockOrderLine[]
 
   @@index([productId, severity], map: "idx_recommendations_product_severity")
   @@index([type, status], map: "idx_recommendations_type_status")
@@ -1132,4 +1152,50 @@ model RecommendationRecord {
   @@index([generatedAt], map: "idx_recommendations_generated_at")
   @@index([generatedById], map: "idx_recommendations_generated_by")
   @@map("recommendation_records")
+}
+
+model RestockOrder {
+  id           String             @id @default(cuid()) @db.VarChar(191)
+  orderNumber  String             @unique(map: "uq_restock_orders_order_number") @map("order_number") @db.VarChar(80)
+  status       RestockOrderStatus @default(DRAFT)
+  createdById  String             @map("created_by_id") @db.VarChar(191)
+  approvedById String?            @map("approved_by_id") @db.VarChar(191)
+  notes        String?            @db.VarChar(1000)
+  approvedAt   DateTime?          @map("approved_at")
+  version      Int                @default(0) @db.UnsignedInt
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  createdBy    User               @relation("RestockOrderCreatedBy", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  approvedBy   User?              @relation("RestockOrderApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  lines        RestockOrderLine[]
+
+  @@index([status, createdAt], map: "idx_restock_orders_status_created")
+  @@index([createdById, createdAt], map: "idx_restock_orders_created_by")
+  @@index([approvedById], map: "idx_restock_orders_approved_by")
+  @@map("restock_orders")
+}
+
+model RestockOrderLine {
+  id                   String                      @id @default(cuid()) @db.VarChar(191)
+  restockOrderId       String                      @map("restock_order_id") @db.VarChar(191)
+  productId            String                      @map("product_id") @db.VarChar(191)
+  recommendationId     String?                     @map("recommendation_id") @db.VarChar(191)
+  recommendationSource RestockRecommendationSource @default(MANUAL) @map("recommendation_source")
+  recommendedQuantity  Int                         @default(0) @map("recommended_quantity") @db.UnsignedInt
+  requestedQuantity    Int                         @default(0) @map("requested_quantity") @db.UnsignedInt
+  receivedQuantity     Int                         @default(0) @map("received_quantity") @db.UnsignedInt
+  isSelected           Boolean                     @default(true) @map("is_selected")
+  ownerOverrideReason  String?                     @map("owner_override_reason") @db.VarChar(500)
+  notes                String?                     @db.VarChar(500)
+  createdAt            DateTime                    @default(now()) @map("created_at")
+  updatedAt            DateTime                    @updatedAt @map("updated_at")
+  order                RestockOrder                @relation(fields: [restockOrderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product              Product                     @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  recommendation       RecommendationRecord?        @relation(fields: [recommendationId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([restockOrderId, productId], map: "uq_restock_order_lines_order_product")
+  @@index([productId], map: "idx_restock_order_lines_product")
+  @@index([recommendationId], map: "idx_restock_order_lines_recommendation")
+  @@index([restockOrderId, isSelected], map: "idx_restock_order_lines_order_selected")
+  @@map("restock_order_lines")
 }
