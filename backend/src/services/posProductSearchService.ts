@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { operationalProductWhere } from "./catalogQualityPolicy.js";
@@ -34,32 +34,49 @@ const posProductInclude = {
 
 type PosProductRecord = Prisma.ProductGetPayload<{ include: typeof posProductInclude }>;
 
+function parseSellingPriceQuery(query: string) {
+  const normalized = query.trim().replace(/^₱\s*/u, "").replaceAll(",", "");
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) return null;
+
+  try {
+    return new Prisma.Decimal(normalized);
+  } catch {
+    return null;
+  }
+}
+
 function buildPosWhere(query: string) {
   const normalizedQuery = query.trim();
 
-  return operationalProductWhere(
-    normalizedQuery
-      ? {
-          status: "ACTIVE" as const,
-          OR: [
-            { name: { contains: normalizedQuery } },
-            { sku: { contains: normalizedQuery } },
-            { barcode: { contains: normalizedQuery } },
-            { barcodes: { some: { barcode: { contains: normalizedQuery } } } },
-            { description: { contains: normalizedQuery } },
-            {
-              category: {
-                name: {
-                  contains: normalizedQuery
-                }
-              }
-            }
-          ]
+  if (!normalizedQuery) {
+    return operationalProductWhere({ status: "ACTIVE" as const });
+  }
+
+  const searchConditions: Prisma.ProductWhereInput[] = [
+    { name: { contains: normalizedQuery } },
+    { sku: { contains: normalizedQuery } },
+    { barcode: { contains: normalizedQuery } },
+    { barcodes: { some: { barcode: { contains: normalizedQuery } } } },
+    { description: { contains: normalizedQuery } },
+    {
+      category: {
+        name: {
+          contains: normalizedQuery
         }
-      : {
-          status: "ACTIVE" as const
-        }
-  );
+      }
+    }
+  ];
+
+  const sellingPrice = parseSellingPriceQuery(normalizedQuery);
+  if (sellingPrice !== null) {
+    searchConditions.push({ sellingPrice });
+  }
+
+  return operationalProductWhere({
+    status: "ACTIVE" as const,
+    OR: searchConditions
+  });
 }
 
 function serializePosProduct(
