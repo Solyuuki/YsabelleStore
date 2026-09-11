@@ -48,9 +48,9 @@ const restockOrderInclude = {
         }
       }
     },
-    orderBy: [{ isSelected: "desc" as const }, { createdAt: "asc" as const }]
+    orderBy: [{ isSelected: "desc" }, { createdAt: "asc" }]
   }
-} as const;
+} satisfies Prisma.RestockOrderInclude;
 
 type RestockTransaction = Prisma.TransactionClient;
 type DraftLine = CreateRestockOrderRequest["lines"][number];
