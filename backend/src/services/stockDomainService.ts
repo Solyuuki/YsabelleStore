@@ -10,11 +10,7 @@ import {
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { serializeInventory, type InventorySummaryRow } from "./catalogSerializers.js";
-import {
-  calculateStockTruth,
-  getDaysUntilExpiry,
-  isBatchSellable
-} from "./stockTruth.js";
+import { calculateStockTruth, getDaysUntilExpiry, isBatchSellable } from "./stockTruth.js";
 
 type TransactionClient = Prisma.TransactionClient | PrismaClient;
 
@@ -136,23 +132,18 @@ function getPhysicalBatchTotal(
     return batches.reduce(
       (total, batch) =>
         total +
-        (isBatchSellable(
-          {
-            expiresAt: batch.expiresAt ?? null,
-            quantityRemaining: batch.quantityRemaining,
-            status: batch.status
-          }
-        )
+        (isBatchSellable({
+          expiresAt: batch.expiresAt ?? null,
+          quantityRemaining: batch.quantityRemaining,
+          status: batch.status
+        })
           ? batch.quantityRemaining
           : 0),
       0
     );
   }
 
-  return batches.reduce(
-    (total, batch) => total + Math.max(0, batch.quantityRemaining),
-    0
-  );
+  return batches.reduce((total, batch) => total + Math.max(0, batch.quantityRemaining), 0);
 }
 
 function asInventorySummary(inventory: InventoryWithRelations): InventorySummaryRow {
@@ -861,7 +852,9 @@ export async function auditStock(tx: TransactionClient = prisma): Promise<StockA
     const anomalyCodes = [
       ...(difference !== 0 ? ["AGGREGATE_BATCH_MISMATCH"] : []),
       ...(truth.expiredStock > 0 ? ["EXPIRED_STOCK_QUARANTINED"] : []),
-      ...(batches.some((batch) => batch.status === InventoryBatchStatus.REMOVED && batch.quantityRemaining > 0)
+      ...(batches.some(
+        (batch) => batch.status === InventoryBatchStatus.REMOVED && batch.quantityRemaining > 0
+      )
         ? ["REMOVED_BATCH_HAS_QUANTITY"]
         : []),
       ...(batches.some((batch) => batch.quantityRemaining < 0) ? ["NEGATIVE_BATCH_QUANTITY"] : [])

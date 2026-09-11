@@ -120,7 +120,15 @@ test("mapped source identities resolve to the canonical POS product", async () =
   for (const query of sourceQueries) {
     const result = await searchPosProducts(query, { page: 1, pageSize: 20 });
     assert.equal(result.products.length, 1, `expected one canonical result for ${query}`);
-    assert.equal(result.products[0]?.id, canonical.id, `expected ${query} to resolve canonical product`);
-    assert.notEqual(result.products[0]?.id, source.id, "source duplicate must never be sold directly");
+    assert.equal(
+      result.products[0]?.id,
+      canonical.id,
+      `expected ${query} to resolve canonical product`
+    );
+    assert.notEqual(
+      result.products[0]?.id,
+      source.id,
+      "source duplicate must never be sold directly"
+    );
   }
 });

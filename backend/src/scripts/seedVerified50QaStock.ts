@@ -92,8 +92,10 @@ function shelfLifeProfileForSku(sku: string): ShelfLifeProfile {
   if (skuGroups.cannedFishMeat.has(sku)) {
     return {
       days: 730,
-      basis: "USDA/FSIS low-acid commercially canned foods: 2–5 years best-quality range; QA uses conservative 2-year bound.",
-      assumption: "Unopened can stored cool and dry; replace with printed batch date when actual stock is received."
+      basis:
+        "USDA/FSIS low-acid commercially canned foods: 2–5 years best-quality range; QA uses conservative 2-year bound.",
+      assumption:
+        "Unopened can stored cool and dry; replace with printed batch date when actual stock is received."
     };
   }
 
@@ -101,14 +103,16 @@ function shelfLifeProfileForSku(sku: string): ShelfLifeProfile {
     return {
       days: 7,
       basis: "Gardenia Philippines G-Lock uses a 7-day freshness guide for retail bread.",
-      assumption: "Unopened retail loaf stored cool and dry; printed best-before remains authoritative."
+      assumption:
+        "Unopened retail loaf stored cool and dry; printed best-before remains authoritative."
     };
   }
 
   if (skuGroups.marbyPastry.has(sku)) {
     return {
       days: 10,
-      basis: "USDA FoodKeeper pantry guidance for pastries: 5–10 days; QA uses upper bound for sealed packaged pastry.",
+      basis:
+        "USDA FoodKeeper pantry guidance for pastries: 5–10 days; QA uses upper bound for sealed packaged pastry.",
       assumption: "Sealed ambient packaged pastry; replace with package date when available."
     };
   }
@@ -116,31 +120,38 @@ function shelfLifeProfileForSku(sku: string): ShelfLifeProfile {
   if (sku === "SARIMA-P038") {
     return {
       days: 60,
-      basis: "FoodSafety.gov frozen processed-meat quality guidance commonly spans about 1–2 months; QA uses 60 days.",
-      assumption: "Purefoods Tocino treated as continuously frozen stock for this baseline; do not reuse this date if stored chilled."
+      basis:
+        "FoodSafety.gov frozen processed-meat quality guidance commonly spans about 1–2 months; QA uses 60 days.",
+      assumption:
+        "Purefoods Tocino treated as continuously frozen stock for this baseline; do not reuse this date if stored chilled."
     };
   }
 
   if (skuGroups.noFabricatedExpiry.has(sku)) {
     return {
       days: null,
-      basis: "No defensible generic printed-expiry proxy. FDA notes cosmetic shelf life is manufacturer-determined and not universally date-labeled.",
-      assumption: "Use actual manufacturer/lot expiry or PAO from the package when receiving physical stock."
+      basis:
+        "No defensible generic printed-expiry proxy. FDA notes cosmetic shelf life is manufacturer-determined and not universally date-labeled.",
+      assumption:
+        "Use actual manufacturer/lot expiry or PAO from the package when receiving physical stock."
     };
   }
 
   if (skuGroups.processedCheese.has(sku)) {
     return {
       days: 180,
-      basis: "Magnolia Cheezee retail case listing states 6-month shelf life; QA uses the same conservative processed-cheese profile.",
-      assumption: "Unopened processed cheese under labeled storage conditions; printed best-before remains authoritative."
+      basis:
+        "Magnolia Cheezee retail case listing states 6-month shelf life; QA uses the same conservative processed-cheese profile.",
+      assumption:
+        "Unopened processed cheese under labeled storage conditions; printed best-before remains authoritative."
     };
   }
 
   if (skuGroups.saucesAndShelfStableDairy.has(sku)) {
     return {
       days: 365,
-      basis: "Conservative one-year QA quality window for unopened shelf-stable sauce/spread/filled-milk products where exact lot dating is unavailable.",
+      basis:
+        "Conservative one-year QA quality window for unopened shelf-stable sauce/spread/filled-milk products where exact lot dating is unavailable.",
       assumption: "Cool, dry storage; replace with package best-before/expiry for real receiving."
     };
   }
@@ -148,8 +159,10 @@ function shelfLifeProfileForSku(sku: string): ShelfLifeProfile {
   if (skuGroups.bottledWater.has(sku)) {
     return {
       days: 365,
-      basis: "One-year QA quality-rotation proxy for sealed bottled water; FDA regulates bottled-water safety but lot-specific quality dating remains manufacturer/label driven.",
-      assumption: "This is an operational rotation date, not a claim that sealed water becomes unsafe after one year."
+      basis:
+        "One-year QA quality-rotation proxy for sealed bottled water; FDA regulates bottled-water safety but lot-specific quality dating remains manufacturer/label driven.",
+      assumption:
+        "This is an operational rotation date, not a claim that sealed water becomes unsafe after one year."
     };
   }
 
@@ -164,7 +177,8 @@ function shelfLifeProfileForSku(sku: string): ShelfLifeProfile {
   if (skuGroups.generalBeverage.has(sku)) {
     return {
       days: 365,
-      basis: "Conservative one-year QA quality window for unopened shelf-stable bottled tea/sports beverages when exact lot dating is unavailable.",
+      basis:
+        "Conservative one-year QA quality window for unopened shelf-stable bottled tea/sports beverages when exact lot dating is unavailable.",
       assumption: "Printed manufacturer best-before is authoritative for real stock."
     };
   }
@@ -172,7 +186,8 @@ function shelfLifeProfileForSku(sku: string): ShelfLifeProfile {
   if (skuGroups.packagedSnack.has(sku)) {
     return {
       days: 270,
-      basis: "Nine-month QA quality window for sealed packaged chips/cookies/crackers; intended as a conservative operational baseline.",
+      basis:
+        "Nine-month QA quality window for sealed packaged chips/cookies/crackers; intended as a conservative operational baseline.",
       assumption: "Cool, dry storage; replace with printed best-before for real receiving."
     };
   }
@@ -180,7 +195,8 @@ function shelfLifeProfileForSku(sku: string): ShelfLifeProfile {
   if (skuGroups.chocolate.has(sku)) {
     return {
       days: 365,
-      basis: "USDA FoodKeeper guidance lists unopened chocolate at about 1–2 years; QA uses conservative 1-year bound.",
+      basis:
+        "USDA FoodKeeper guidance lists unopened chocolate at about 1–2 years; QA uses conservative 1-year bound.",
       assumption: "Unopened product stored cool and dry."
     };
   }
@@ -188,7 +204,8 @@ function shelfLifeProfileForSku(sku: string): ShelfLifeProfile {
   if (sku === "SARIMA-P386") {
     return {
       days: 365,
-      basis: "USDA FoodKeeper guidance for unopened instant coffee: about 1 year in a cool, dry pantry.",
+      basis:
+        "USDA FoodKeeper guidance for unopened instant coffee: about 1 year in a cool, dry pantry.",
       assumption: "Unopened sticks kept dry and away from heat."
     };
   }
@@ -196,8 +213,10 @@ function shelfLifeProfileForSku(sku: string): ShelfLifeProfile {
   if (skuGroups.powderedMilk.has(sku)) {
     return {
       days: 1095,
-      basis: "USDA FoodKeeper guidance for unopened powdered milk: about 3–5 years; QA uses conservative 3-year bound.",
-      assumption: "Unopened powder kept cool and dry; printed brand date is authoritative for real stock."
+      basis:
+        "USDA FoodKeeper guidance for unopened powdered milk: about 3–5 years; QA uses conservative 3-year bound.",
+      assumption:
+        "Unopened powder kept cool and dry; printed brand date is authoritative for real stock."
     };
   }
 

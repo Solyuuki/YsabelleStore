@@ -21,10 +21,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  requestAutomaticReceiptPrint,
-  requestReceiptPrint
-} from "@/services/receiptPrint";
+import { requestAutomaticReceiptPrint, requestReceiptPrint } from "@/services/receiptPrint";
 import { checkoutPosSale, searchPosProducts } from "@/services/posService";
 import type { PosProduct, PosSale } from "@/types/pos";
 import { buildRetailReceiptDataFromSale } from "@/utils/receipt";
@@ -272,7 +269,10 @@ export function PosPage() {
         page: requestPage,
         pageSize: PRODUCT_RESULTS_PAGE_SIZE
       });
-      const remainingMs = Math.max(0, MIN_SEARCH_LOADING_MS - (window.performance.now() - startedAt));
+      const remainingMs = Math.max(
+        0,
+        MIN_SEARCH_LOADING_MS - (window.performance.now() - startedAt)
+      );
 
       if (remainingMs > 0) await wait(remainingMs);
 
@@ -310,7 +310,10 @@ export function PosPage() {
         focusScannerInput();
       }
     } catch {
-      const remainingMs = Math.max(0, MIN_SEARCH_LOADING_MS - (window.performance.now() - startedAt));
+      const remainingMs = Math.max(
+        0,
+        MIN_SEARCH_LOADING_MS - (window.performance.now() - startedAt)
+      );
       if (remainingMs > 0) await wait(remainingMs);
 
       setSearchState((current) => ({
@@ -426,7 +429,9 @@ export function PosPage() {
       }
     } catch {
       setReceiptPrintStatus("error");
-      setReceiptPrintError("Sale completed, but automatic receipt printing failed. Reprint is available.");
+      setReceiptPrintError(
+        "Sale completed, but automatic receipt printing failed. Reprint is available."
+      );
       pushToast({
         message: "The sale is safe, but the receipt printer did not complete the print request.",
         title: "Receipt print failed",
@@ -470,7 +475,8 @@ export function PosPage() {
                 <div>
                   <CardTitle>Product search</CardTitle>
                   <p className="mt-1 text-sm text-slate-500">
-                    USB barcode scanners work as keyboard input. Plug in the scanner and scan; no pairing step is required.
+                    USB barcode scanners work as keyboard input. Plug in the scanner and scan; no
+                    pairing step is required.
                   </p>
                 </div>
                 <StatusBadge variant={searchBadge.variant}>{searchBadge.label}</StatusBadge>
@@ -569,12 +575,16 @@ export function PosPage() {
                           return (
                             <tr
                               className={`border-t border-slate-200 transition-colors ${
-                                isOutOfStock ? "bg-slate-50/70 text-slate-400" : "hover:bg-indigo-50/50"
+                                isOutOfStock
+                                  ? "bg-slate-50/70 text-slate-400"
+                                  : "hover:bg-indigo-50/50"
                               }`}
                               key={product.id}
                             >
                               <td className="px-4 py-3">
-                                <p className="font-medium text-slate-900">{product.barcode ?? product.sku}</p>
+                                <p className="font-medium text-slate-900">
+                                  {product.barcode ?? product.sku}
+                                </p>
                                 <p className="text-xs text-slate-500">{product.sku}</p>
                               </td>
                               <td className="px-4 py-3">
@@ -584,10 +594,16 @@ export function PosPage() {
                               <td className="px-4 py-3">
                                 <StatusBadge
                                   variant={
-                                    isOutOfStock ? "error" : product.availableStock <= 5 ? "warning" : "success"
+                                    isOutOfStock
+                                      ? "error"
+                                      : product.availableStock <= 5
+                                        ? "warning"
+                                        : "success"
                                   }
                                 >
-                                  {isOutOfStock ? "Out of stock" : `${product.availableStock} in stock`}
+                                  {isOutOfStock
+                                    ? "Out of stock"
+                                    : `${product.availableStock} in stock`}
                                 </StatusBadge>
                               </td>
                               <td className="px-4 py-3 font-medium text-slate-900">
@@ -732,8 +748,12 @@ export function PosPage() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-950">{line.product.name}</p>
-                          <p className="mt-1 text-xs text-slate-500">{line.product.barcode ?? line.product.sku}</p>
+                          <p className="truncate text-sm font-semibold text-slate-950">
+                            {line.product.name}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {line.product.barcode ?? line.product.sku}
+                          </p>
                         </div>
                         <Button
                           aria-label={`Remove ${line.product.name}`}
@@ -775,15 +795,21 @@ export function PosPage() {
                         </div>
 
                         <div className="text-right">
-                          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Line total</p>
+                          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                            Line total
+                          </p>
                           <p className="mt-1 text-sm font-semibold text-slate-950">
-                            {currencyFormatter.format(Number(line.product.sellingPrice) * line.quantity)}
+                            {currencyFormatter.format(
+                              Number(line.product.sellingPrice) * line.quantity
+                            )}
                           </p>
                         </div>
                       </div>
 
                       <div className="mt-3 flex justify-between text-xs text-slate-500">
-                        <span>Unit {currencyFormatter.format(Number(line.product.sellingPrice))}</span>
+                        <span>
+                          Unit {currencyFormatter.format(Number(line.product.sellingPrice))}
+                        </span>
                         <span>Available {line.product.availableStock}</span>
                       </div>
                     </div>
@@ -809,11 +835,7 @@ export function PosPage() {
                   </div>
 
                   <div className="mt-3 grid grid-cols-2 gap-3">
-                    <Button
-                      disabled={isCheckingOut}
-                      type="button"
-                      onClick={openCashPayment}
-                    >
+                    <Button disabled={isCheckingOut} type="button" onClick={openCashPayment}>
                       Cash · {currencyFormatter.format(cartSummary.total)}
                     </Button>
                     <Button

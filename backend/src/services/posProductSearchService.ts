@@ -143,11 +143,7 @@ async function findExactIdentityProduct(query: string) {
     where: {
       dataQualityStatus: { not: CatalogQualityStatus.REJECTED },
       recordSource: { not: CatalogRecordSource.TEST_FIXTURE },
-      OR: [
-        { sku: query },
-        { barcode: query },
-        { barcodes: { some: { barcode: query } } }
-      ]
+      OR: [{ sku: query }, { barcode: query }, { barcodes: { some: { barcode: query } } }]
     }
   });
 

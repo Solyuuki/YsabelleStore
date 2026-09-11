@@ -63,10 +63,7 @@ test("available and low-stock batches remain sellable when not expired", () => {
 
   assert.equal(isBatchSellable(availableBatch, businessNow), true);
   assert.equal(isBatchSellable(lowStockBatch, businessNow), true);
-  assert.equal(
-    calculateStockTruth([availableBatch, lowStockBatch], businessNow).sellableStock,
-    6
-  );
+  assert.equal(calculateStockTruth([availableBatch, lowStockBatch], businessNow).sellableStock, 6);
 });
 
 test("expiry is evaluated by Asia/Manila business date and remains sellable through expiry day", () => {

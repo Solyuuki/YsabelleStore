@@ -119,7 +119,9 @@ export function CashPaymentDialog({
                 }
               }}
             />
-            <p className="type-body-sm text-slate-500">Enter the cash tendered in Philippine pesos.</p>
+            <p className="type-body-sm text-slate-500">
+              Enter the cash tendered in Philippine pesos.
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-2" aria-label="Quick cash amounts">

@@ -91,7 +91,13 @@ type LoadingReason =
 type StockStatusFilter = "ALL" | "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
 type ProductStatusFilter = "ALL" | "ACTIVE" | "INACTIVE" | "DISCONTINUED";
 type SortOrder = "asc" | "desc";
-type MovementDateRange = "ALL_TIME" | "TODAY" | "LAST_7_DAYS" | "LAST_30_DAYS" | "THIS_MONTH" | "CUSTOM";
+type MovementDateRange =
+  | "ALL_TIME"
+  | "TODAY"
+  | "LAST_7_DAYS"
+  | "LAST_30_DAYS"
+  | "THIS_MONTH"
+  | "CUSTOM";
 
 const stockStatusDisplay = {
   IN_STOCK: { label: "IN STOCK", variant: "success" as const },
@@ -233,11 +239,7 @@ async function fetchAscendingMovementPage(
   pageSize: number,
   signal: AbortSignal
 ): Promise<{ items: MovementRecord[]; meta: PaginationMeta }> {
-  const probe = await fetchMovements(
-    productId,
-    { ...baseQuery, page: 1, pageSize: 1 },
-    { signal }
-  );
+  const probe = await fetchMovements(productId, { ...baseQuery, page: 1, pageSize: 1 }, { signal });
   const totalItems = probe.meta.totalItems;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 
@@ -254,7 +256,8 @@ async function fetchAscendingMovementPage(
   const descendingStart = totalItems - ascendingEndExclusive;
   const descendingEndExclusive = totalItems - ascendingStart;
   const firstServerPage = Math.floor(descendingStart / MOVEMENT_ASCENDING_FETCH_SIZE) + 1;
-  const lastServerPage = Math.floor((descendingEndExclusive - 1) / MOVEMENT_ASCENDING_FETCH_SIZE) + 1;
+  const lastServerPage =
+    Math.floor((descendingEndExclusive - 1) / MOVEMENT_ASCENDING_FETCH_SIZE) + 1;
   const requests: Array<Promise<{ items: MovementRecord[]; meta: PaginationMeta }>> = [];
 
   for (let serverPage = firstServerPage; serverPage <= lastServerPage; serverPage += 1) {
@@ -527,7 +530,8 @@ export function InventoryPage() {
       return true;
     } catch (mutationError) {
       pushToast({
-        title: successTitle === "Stock received" ? "Unable to receive stock" : "Unable to update stock",
+        title:
+          successTitle === "Stock received" ? "Unable to receive stock" : "Unable to update stock",
         message:
           mutationError instanceof Error
             ? mutationError.message
@@ -881,7 +885,8 @@ function InventoryTable({
                   </span>
                   <span className="text-slate-300">/</span>
                   <span>
-                    <span className="font-semibold text-slate-950">{row.targetStockLevel}</span> target
+                    <span className="font-semibold text-slate-950">{row.targetStockLevel}</span>{" "}
+                    target
                   </span>
                 </div>
               </td>
@@ -1015,7 +1020,10 @@ function InventoryDetailsDialog({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <InfoPanel title="Stock lifecycle">
-                  <InfoLine label="Batches" value={inventory.batchCount === 0 ? "None" : String(inventory.batchCount)} />
+                  <InfoLine
+                    label="Batches"
+                    value={inventory.batchCount === 0 ? "None" : String(inventory.batchCount)}
+                  />
                   <InfoLine
                     label="Expiry"
                     value={
@@ -1102,7 +1110,9 @@ function InventoryMetric({ label, value }: { label: string; value: ReactNode }) 
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
       <p className="text-xs font-medium text-slate-500">{label}</p>
-      <div className="mt-1.5 min-h-6 text-xl font-semibold tabular-nums text-slate-950">{value}</div>
+      <div className="mt-1.5 min-h-6 text-xl font-semibold tabular-nums text-slate-950">
+        {value}
+      </div>
     </div>
   );
 }
@@ -1230,7 +1240,8 @@ function StockInDialog({
           </DialogClose>
           <DialogTitle>Receive stock</DialogTitle>
           <DialogDescription id="stock-in-description">
-            Record the delivered quantity, supplier batch, and printed expiry before adding it to physical stock.
+            Record the delivered quantity, supplier batch, and printed expiry before adding it to
+            physical stock.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -1240,7 +1251,9 @@ function StockInDialog({
         >
           <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3.5">
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-950">{inventory?.productName}</p>
+              <p className="truncate text-sm font-semibold text-slate-950">
+                {inventory?.productName}
+              </p>
               <p className="mt-1 truncate text-xs text-slate-500">
                 SKU {inventory?.sku} · {inventory?.barcode ?? "No barcode"}
               </p>
@@ -1257,7 +1270,9 @@ function StockInDialog({
             <div className="flex flex-wrap items-end justify-between gap-2">
               <div>
                 <Label htmlFor="stock-in-quantity">Quantity received</Label>
-                <p className="mt-1 text-xs text-slate-500">Count the units that physically arrived.</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Count the units that physically arrived.
+                </p>
               </div>
               <div className="flex items-center gap-1.5" aria-label="Quick quantity additions">
                 {[5, 10, 25].map((amount) => (
@@ -1315,17 +1330,27 @@ function StockInDialog({
             <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
               <div>
                 <p className="text-xs font-medium text-slate-500">Current</p>
-                <p className="mt-1 text-lg font-semibold tabular-nums text-slate-950">{currentQuantity}</p>
+                <p className="mt-1 text-lg font-semibold tabular-nums text-slate-950">
+                  {currentQuantity}
+                </p>
               </div>
-              <span className="text-slate-300" aria-hidden="true">+</span>
+              <span className="text-slate-300" aria-hidden="true">
+                +
+              </span>
               <div>
                 <p className="text-xs font-medium text-slate-500">Incoming</p>
-                <p className="mt-1 text-lg font-semibold tabular-nums text-slate-950">{validQuantity}</p>
+                <p className="mt-1 text-lg font-semibold tabular-nums text-slate-950">
+                  {validQuantity}
+                </p>
               </div>
-              <span className="text-slate-300" aria-hidden="true">=</span>
+              <span className="text-slate-300" aria-hidden="true">
+                =
+              </span>
               <div>
                 <p className="text-xs font-medium text-slate-500">After receipt</p>
-                <p className="mt-1 text-lg font-semibold tabular-nums text-emerald-700">{projectedQuantity}</p>
+                <p className="mt-1 text-lg font-semibold tabular-nums text-emerald-700">
+                  {projectedQuantity}
+                </p>
               </div>
             </div>
           </section>
@@ -1335,7 +1360,9 @@ function StockInDialog({
               <Tag className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <div>
                 <h3 className="text-sm font-semibold text-slate-950">Batch details</h3>
-                <p className="mt-0.5 text-xs text-slate-500">Use the details printed on the delivered package or carton.</p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Use the details printed on the delivered package or carton.
+                </p>
               </div>
             </div>
 
@@ -1403,7 +1430,9 @@ function StockInDialog({
                     setError(null);
                   }}
                 />
-                <p className="text-xs text-slate-500">Enter the manufacturer/package expiry, not an estimated shelf-life date.</p>
+                <p className="text-xs text-slate-500">
+                  Enter the manufacturer/package expiry, not an estimated shelf-life date.
+                </p>
               </div>
             ) : (
               <div className="flex items-start gap-2 rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800">
@@ -1425,7 +1454,11 @@ function StockInDialog({
             Cancel
           </Button>
           <Button disabled={pending} form="stock-in-form" type="submit">
-            {pending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <PackagePlus className="h-4 w-4" />}
+            {pending ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              <PackagePlus className="h-4 w-4" />
+            )}
             {pending ? "Receiving stock…" : "Confirm receipt"}
           </Button>
         </DialogFooter>
@@ -1528,7 +1561,8 @@ function StockAdjustmentDialog({
           </DialogClose>
           <DialogTitle>Adjust quantity</DialogTitle>
           <DialogDescription id="stock-adjustment-description">
-            Correct the recorded stock count. Supplier deliveries should be recorded through Receiving.
+            Correct the recorded stock count. Supplier deliveries should be recorded through
+            Receiving.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -1538,12 +1572,18 @@ function StockAdjustmentDialog({
         >
           <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-950">{inventory?.productName}</p>
+              <p className="truncate text-sm font-semibold text-slate-950">
+                {inventory?.productName}
+              </p>
               <p className="mt-1 text-xs text-slate-500">SKU: {inventory?.sku}</p>
             </div>
             <div className="text-right">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Current stock</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-950">{currentQuantity}</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                Current stock
+              </p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-950">
+                {currentQuantity}
+              </p>
             </div>
           </div>
 
@@ -1620,12 +1660,18 @@ function StockAdjustmentDialog({
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
             <div>
               <p className="text-xs font-medium text-slate-500">Current</p>
-              <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">{currentQuantity}</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">
+                {currentQuantity}
+              </p>
             </div>
-            <span className="text-lg text-slate-400" aria-hidden="true">→</span>
+            <span className="text-lg text-slate-400" aria-hidden="true">
+              →
+            </span>
             <div>
               <p className="text-xs font-medium text-slate-500">After adjustment</p>
-              <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">{previewQuantity}</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">
+                {previewQuantity}
+              </p>
             </div>
           </div>
 
@@ -1669,7 +1715,8 @@ function StockAdjustmentDialog({
           ) : null}
 
           <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-            Adjustments are for corrections such as physical counts, damaged items, expiry, or returns—not routine supplier restocking.
+            Adjustments are for corrections such as physical counts, damaged items, expiry, or
+            returns—not routine supplier restocking.
           </div>
 
           {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
@@ -1981,7 +2028,9 @@ function StockActivityDialog({
                             <div className="font-medium text-slate-900">
                               {formatMovementAction(item.type)}
                             </div>
-                            {source ? <div className="mt-0.5 text-xs text-slate-500">{source}</div> : null}
+                            {source ? (
+                              <div className="mt-0.5 text-xs text-slate-500">{source}</div>
+                            ) : null}
                           </TableCell>
                           <TableCell className="align-middle text-center">
                             <span
@@ -1995,7 +2044,8 @@ function StockActivityDialog({
                             </span>
                           </TableCell>
                           <TableCell className="align-middle text-center font-medium tabular-nums text-slate-800">
-                            {item.quantityBefore} <span className="text-slate-400">→</span> {item.quantityAfter}
+                            {item.quantityBefore} <span className="text-slate-400">→</span>{" "}
+                            {item.quantityAfter}
                           </TableCell>
                           <TableCell className="align-middle text-sm text-slate-600">
                             {formatMovementReason(item)}

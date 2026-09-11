@@ -54,8 +54,7 @@ function businessDaySerial(value: Date) {
 
 function expirationDaySerial(value: Date) {
   return Math.floor(
-    Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()) /
-      MILLISECONDS_PER_DAY
+    Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()) / MILLISECONDS_PER_DAY
   );
 }
 
