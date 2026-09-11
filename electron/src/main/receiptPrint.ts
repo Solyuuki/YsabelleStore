@@ -171,9 +171,7 @@ function chooseAutomaticPrinter(printers: PrinterInfo[]) {
 
   return (
     physicalPrinters.find(isLikelyReceiptPrinter) ??
-    (physicalPrinters.length === 1 ? physicalPrinters[0] : null) ??
-    physicalPrinters.find((printer) => printer.isDefault) ??
-    null
+    (physicalPrinters.length === 1 ? physicalPrinters[0] : null)
   );
 }
 
@@ -213,9 +211,7 @@ function toReceiptPrinterInfo(printer: PrinterInfo): ReceiptPrinterInfo {
   return {
     description: printer.description ?? "",
     displayName: printer.displayName || printer.name,
-    isDefault: printer.isDefault,
-    name: printer.name,
-    status: printer.status
+    name: printer.name
   };
 }
 
@@ -300,10 +296,7 @@ async function printWindowContents(printWindow: BrowserWindow) {
   });
 }
 
-function settlePrint(
-  requestId: string,
-  result: Omit<ReceiptPrintResult, "requestId">
-) {
+function settlePrint(requestId: string, result: Omit<ReceiptPrintResult, "requestId">) {
   const entry = pendingPrints.get(requestId);
 
   if (!entry || entry.settled) {
