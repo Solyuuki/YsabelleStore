@@ -10,6 +10,14 @@ const optionalTextSchema = (maxLength: number) =>
     return value;
   }, z.string().max(maxLength).nullable().optional());
 
+const optionalSearchSchema = z.preprocess((value) => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  }
+  return value;
+}, z.string().max(160).optional());
+
 export const restockOrderStatusSchema = z.enum([
   "DRAFT",
   "APPROVED",
@@ -28,6 +36,10 @@ export const restockRecommendationSourceSchema = z.enum([
 
 export const restockOrderIdParamSchema = z.object({
   orderId: z.string().trim().min(1).max(191)
+});
+
+export const restockRecommendationIdParamSchema = z.object({
+  recommendationId: z.string().trim().min(1).max(191)
 });
 
 const restockDraftLineSchema = z
@@ -101,8 +113,29 @@ export const restockOrderListQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20)
 });
 
+export const restockPlanningQuerySchema = z.object({
+  search: optionalSearchSchema,
+  includeZero: z
+    .preprocess((value) => {
+      if (value === "true") return true;
+      if (value === "false") return false;
+      return value;
+    }, z.boolean())
+    .default(false),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20)
+});
+
+export const dismissRestockRecommendationSchema = z.object({
+  reason: z.string().trim().min(3).max(500)
+});
+
 export type CreateRestockOrderRequest = z.infer<typeof createRestockOrderSchema>;
 export type ReplaceRestockOrderLinesRequest = z.infer<typeof replaceRestockOrderLinesSchema>;
 export type UpdateRestockOrderRequest = z.infer<typeof updateRestockOrderSchema>;
 export type ApproveRestockOrderRequest = z.infer<typeof approveRestockOrderSchema>;
 export type RestockOrderListQuery = z.infer<typeof restockOrderListQuerySchema>;
+export type RestockPlanningQuery = z.infer<typeof restockPlanningQuerySchema>;
+export type DismissRestockRecommendationRequest = z.infer<
+  typeof dismissRestockRecommendationSchema
+>;
