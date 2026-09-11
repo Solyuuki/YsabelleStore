@@ -12,6 +12,17 @@ const apiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.t
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.match(reportsSource, /<RestockPlanningPanel \/>/);
 assert.match(reportsSource, /Restock actions are grouped separately below/);
+assert.match(reportsSource, /Download report/);
+assert.match(reportsSource, /Print \/ Save PDF/);
+assert.match(reportsSource, /Excel-compatible CSV/);
+assert.match(reportsSource, /ResponsiveContainer/);
+assert.match(reportsSource, /fetchAllInventory/);
+assert.match(reportsSource, /fetchAllRestockPlanning/);
+assert.ok(
+  reportsSource.indexOf("<RestockPlanningPanel />") <
+    reportsSource.indexOf("Recent receipt metrics"),
+  "Restock planner should stay above secondary report detail cards."
+);
 
 assert.match(panelSource, /Recommended restock/);
 assert.match(panelSource, /Restock planner/);
