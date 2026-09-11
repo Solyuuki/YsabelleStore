@@ -35,11 +35,7 @@ function requireActorId(request: Request) {
   return actorId;
 }
 
-export const listRestockPlanningController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const listRestockPlanningController: RequestHandler = async (request, response, next) => {
   try {
     const query = parseOrThrow(restockPlanningQuerySchema, request.query, {
       message: "Restock planning query is invalid.",
@@ -99,7 +95,9 @@ export const listRestockOrdersController: RequestHandler = async (request, respo
 
     response
       .status(200)
-      .json(createSuccessResponse("Restock orders loaded successfully.", result.items, result.meta));
+      .json(
+        createSuccessResponse("Restock orders loaded successfully.", result.items, result.meta)
+      );
   } catch (error) {
     next(error);
   }
