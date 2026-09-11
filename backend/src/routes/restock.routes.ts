@@ -3,8 +3,10 @@ import { Router } from "express";
 import {
   approveRestockOrderController,
   createRestockOrderController,
+  dismissRestockRecommendationController,
   getRestockOrderController,
   listRestockOrdersController,
+  listRestockPlanningController,
   replaceRestockOrderLinesController,
   updateRestockOrderController
 } from "../controllers/restockController.js";
@@ -15,6 +17,11 @@ const router = Router();
 
 router.use(requireAuth, requireRole("OWNER"));
 
+router.get("/planning", listRestockPlanningController);
+router.post(
+  "/recommendations/:recommendationId/dismiss",
+  dismissRestockRecommendationController
+);
 router.get("/", listRestockOrdersController);
 router.post("/", createRestockOrderController);
 router.get("/:orderId", getRestockOrderController);
