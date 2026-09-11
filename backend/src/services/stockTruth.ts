@@ -59,6 +59,9 @@ function expirationDaySerial(value: Date) {
   );
 }
 
+export function getDaysUntilExpiry(expiresAt: Date, now?: Date): number;
+export function getDaysUntilExpiry(expiresAt: null, now?: Date): null;
+export function getDaysUntilExpiry(expiresAt: Date | null, now?: Date): number | null;
 export function getDaysUntilExpiry(expiresAt: Date | null, now = new Date()) {
   if (!expiresAt) return null;
   return expirationDaySerial(expiresAt) - businessDaySerial(now);
@@ -88,7 +91,10 @@ export function getBatchLifecycleStatus(
 
   const daysUntilExpiry = getDaysUntilExpiry(batch.expiresAt, now);
 
-  if (batch.status === InventoryBatchStatus.EXPIRED || (daysUntilExpiry !== null && daysUntilExpiry < 0)) {
+  if (
+    batch.status === InventoryBatchStatus.EXPIRED ||
+    (daysUntilExpiry !== null && daysUntilExpiry < 0)
+  ) {
     return "EXPIRED";
   }
 
