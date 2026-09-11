@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 
 import { getBranch } from "./lib/git-utils.mjs";
@@ -28,20 +27,3 @@ console.log(`member: ${context.member?.key ?? "sprint-integration"}`);
 console.log(`activeSprint: ${context.sprint.sprintNumber}`);
 console.log(`sprintDir: ${context.sprint.sprintDir}`);
 console.log("PASS: Guardrail preconditions are satisfied.");
-
-if (process.env.CI === "true") {
-  const diagnosticFiles = [
-    "backend/src/controllers/restockController.ts",
-    "backend/src/services/restockService.ts",
-    "frontend/src/components/reports/RestockPlanningPanel.tsx",
-    "scripts/restock-phase4-6-ui-contract-test.ts"
-  ];
-
-  execFileSync("npx", ["prettier", "--write", ...diagnosticFiles], { stdio: "inherit" });
-  const diff = execFileSync("git", ["diff", "--", ...diagnosticFiles], {
-    encoding: "utf8"
-  });
-  console.log("FORMAT_DIAGNOSTIC_BEGIN");
-  console.log(diff);
-  console.log("FORMAT_DIAGNOSTIC_END");
-}
