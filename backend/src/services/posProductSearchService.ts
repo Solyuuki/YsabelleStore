@@ -1,5 +1,8 @@
+import type { Prisma } from "@prisma/client";
+
 import { prisma } from "../database/prismaClient.js";
 import { operationalProductWhere } from "./catalogQualityPolicy.js";
+import { resolveProductBarcode } from "./productBarcodeService.js";
 import { getSellableStockQuantity } from "./stockDomainService.js";
 
 type PosProductResult = {
@@ -20,6 +23,16 @@ type PaginationMeta = {
   totalItems: number;
   totalPages: number;
 };
+
+const posProductInclude = {
+  category: true,
+  inventoryBatches: true,
+  barcodes: {
+    select: { barcode: true }
+  }
+} as const;
+
+type PosProductRecord = Prisma.ProductGetPayload<{ include: typeof posProductInclude }>;
 
 function buildPosWhere(query: string) {
   const normalizedQuery = query.trim();
@@ -49,6 +62,60 @@ function buildPosWhere(query: string) {
   );
 }
 
+function serializePosProduct(
+  product: PosProductRecord,
+  matchedBarcode?: string | null
+): PosProductResult {
+  return {
+    availableStock: getSellableStockQuantity(product.inventoryBatches),
+    barcode: matchedBarcode ?? product.barcode,
+    categoryName: product.category.name,
+    id: product.id,
+    isActive: product.status === "ACTIVE",
+    name: product.name,
+    sku: product.sku,
+    sellingPrice: product.sellingPrice.toString(),
+    unit: product.unit
+  };
+}
+
+async function findExactIdentityProduct(query: string) {
+  const skuMatch = await prisma.product.findFirst({
+    include: posProductInclude,
+    where: operationalProductWhere({
+      status: "ACTIVE",
+      sku: query
+    })
+  });
+
+  if (skuMatch) {
+    return {
+      matchedBarcode: skuMatch.barcode,
+      product: skuMatch
+    };
+  }
+
+  if (query.length > 80) return null;
+
+  const barcodeResolution = await resolveProductBarcode(query);
+  if (!barcodeResolution.found || !barcodeResolution.product) return null;
+
+  const product = await prisma.product.findFirst({
+    include: posProductInclude,
+    where: operationalProductWhere({
+      id: barcodeResolution.product.id,
+      status: "ACTIVE"
+    })
+  });
+
+  if (!product) return null;
+
+  return {
+    matchedBarcode: barcodeResolution.barcode,
+    product
+  };
+}
+
 export async function searchPosProducts(
   query: string,
   options: { page: number; pageSize: number }
@@ -59,19 +126,33 @@ export async function searchPosProducts(
   meta: PaginationMeta;
 }> {
   const normalizedQuery = query.trim();
+
+  if (normalizedQuery) {
+    const exactIdentityMatch = await findExactIdentityProduct(normalizedQuery);
+    if (exactIdentityMatch) {
+      return {
+        catalogCount: 1,
+        query: normalizedQuery,
+        products: [
+          serializePosProduct(exactIdentityMatch.product, exactIdentityMatch.matchedBarcode)
+        ],
+        meta: {
+          page: 1,
+          pageSize: options.pageSize,
+          totalItems: 1,
+          totalPages: 1
+        }
+      };
+    }
+  }
+
   const where = buildPosWhere(normalizedQuery);
   const totalItems = await prisma.product.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalItems / options.pageSize));
   const page = Math.min(Math.max(options.page, 1), totalPages);
 
   const products = await prisma.product.findMany({
-    include: {
-      category: true,
-      inventoryBatches: true,
-      barcodes: {
-        select: { barcode: true }
-      }
-    },
+    include: posProductInclude,
     orderBy: [
       {
         updatedAt: "desc"
@@ -97,17 +178,7 @@ export async function searchPosProducts(
           )?.barcode
         : undefined;
 
-      return {
-        availableStock: getSellableStockQuantity(product.inventoryBatches),
-        barcode: matchedBarcode ?? product.barcode,
-        categoryName: product.category.name,
-        id: product.id,
-        isActive: product.status === "ACTIVE",
-        name: product.name,
-        sku: product.sku,
-        sellingPrice: product.sellingPrice.toString(),
-        unit: product.unit
-      };
+      return serializePosProduct(product, matchedBarcode);
     }),
     meta: {
       page,
