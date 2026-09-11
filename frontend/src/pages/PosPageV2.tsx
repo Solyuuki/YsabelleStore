@@ -95,6 +95,7 @@ export function PosPage() {
   const [lastTouchedProductId, setLastTouchedProductId] = useState<string | null>(null);
 
   const scannerInputRef = useRef<HTMLInputElement | null>(null);
+  const cartLinesRef = useRef<CartLine[]>([]);
   const cartItemRefs = useRef(new Map<string, HTMLDivElement>());
   const { pushToast } = useToast();
 
@@ -118,6 +119,17 @@ export function PosPage() {
 
     return () => window.cancelAnimationFrame(rafId);
   }, []);
+
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      if (!isCashDialogOpen && !isReceiptDialogOpen) {
+        focusScannerInput();
+      }
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+    return () => window.removeEventListener("focus", handleWindowFocus);
+  }, [isCashDialogOpen, isReceiptDialogOpen]);
 
   useEffect(() => {
     setProductResultsPage(1);
@@ -149,7 +161,7 @@ export function PosPage() {
           ? { label: "Found", variant: "success" as const }
           : searchState.status === "no-match"
             ? { label: "No match", variant: "warning" as const }
-            : { label: "Scanner ready", variant: "info" as const };
+            : { label: "USB scanner ready", variant: "info" as const };
 
   const cartBadge = isCheckingOut
     ? { label: "Processing", variant: "info" as const }
@@ -163,6 +175,11 @@ export function PosPage() {
     window.requestAnimationFrame(() => {
       scannerInputRef.current?.focus({ preventScroll: true });
     });
+  }
+
+  function commitCartLines(nextLines: CartLine[]) {
+    cartLinesRef.current = nextLines;
+    setCartLines(nextLines);
   }
 
   function clearScannerInput() {
@@ -188,38 +205,31 @@ export function PosPage() {
       return false;
     }
 
-    let added = false;
+    const currentLines = cartLinesRef.current;
+    const existingLine = currentLines.find((line) => line.product.id === product.id);
 
-    setCheckoutError(null);
-    setCartLines((currentLines) => {
-      const existingLine = currentLines.find((line) => line.product.id === product.id);
-
-      if (!existingLine) {
-        added = true;
-        return [...currentLines, { product, quantity: 1 }];
-      }
-
-      if (existingLine.quantity >= product.availableStock) {
-        setCheckoutError(`Only ${product.availableStock} units are available for ${product.name}.`);
-        return currentLines;
-      }
-
-      added = true;
-      return currentLines.map((line) =>
-        line.product.id === product.id ? { ...line, quantity: line.quantity + 1 } : line
-      );
-    });
-
-    if (added) {
-      setLastTouchedProductId(product.id);
+    if (existingLine && existingLine.quantity >= product.availableStock) {
+      setCheckoutError(`Only ${product.availableStock} units are available for ${product.name}.`);
+      focusScannerInput();
+      return false;
     }
 
-    if (added && options.clearScannerAfterAction !== false) {
+    const nextLines = existingLine
+      ? currentLines.map((line) =>
+          line.product.id === product.id ? { ...line, quantity: line.quantity + 1 } : line
+        )
+      : [...currentLines, { product, quantity: 1 }];
+
+    setCheckoutError(null);
+    commitCartLines(nextLines);
+    setLastTouchedProductId(product.id);
+
+    if (options.clearScannerAfterAction !== false) {
       clearScannerInput();
       focusScannerInput();
     }
 
-    if (added && options.announceAdded) {
+    if (options.announceAdded) {
       pushToast({
         message: `${product.name} added to the current sale.`,
         title: "Product added",
@@ -227,7 +237,7 @@ export function PosPage() {
       });
     }
 
-    return added;
+    return true;
   }
 
   async function handleSearch(options: { autoAddExactMatch?: boolean; page?: number } = {}) {
@@ -239,7 +249,13 @@ export function PosPage() {
 
     if (!trimmedQuery) {
       setSearchState(initialSearchState);
+      focusScannerInput();
       return;
+    }
+
+    if (options.autoAddExactMatch) {
+      clearScannerInput();
+      focusScannerInput();
     }
 
     setSearchState((current) => ({
@@ -268,6 +284,7 @@ export function PosPage() {
           products: [],
           status: "error"
         }));
+        focusScannerInput();
         return;
       }
 
@@ -289,6 +306,8 @@ export function PosPage() {
           announceAdded: false,
           clearScannerAfterAction: true
         });
+      } else {
+        focusScannerInput();
       }
     } catch {
       const remainingMs = Math.max(0, MIN_SEARCH_LOADING_MS - (window.performance.now() - startedAt));
@@ -301,34 +320,36 @@ export function PosPage() {
         products: [],
         status: "error"
       }));
+      focusScannerInput();
     }
   }
 
   function updateLineQuantity(productId: string, delta: number) {
     setCheckoutError(null);
-    setCartLines((currentLines) =>
-      currentLines.map((line) => {
-        if (line.product.id !== productId) return line;
+    const nextLines = cartLinesRef.current.map((line) => {
+      if (line.product.id !== productId) return line;
 
-        return {
-          ...line,
-          quantity: Math.min(line.product.availableStock, Math.max(1, line.quantity + delta))
-        };
-      })
-    );
+      return {
+        ...line,
+        quantity: Math.min(line.product.availableStock, Math.max(1, line.quantity + delta))
+      };
+    });
+
+    commitCartLines(nextLines);
     setLastTouchedProductId(productId);
+    focusScannerInput();
   }
 
   function removeLine(productId: string) {
     setCheckoutError(null);
-    setCartLines((currentLines) => currentLines.filter((line) => line.product.id !== productId));
+    commitCartLines(cartLinesRef.current.filter((line) => line.product.id !== productId));
     cartItemRefs.current.delete(productId);
     focusScannerInput();
   }
 
   function handleVoidSale() {
     setCheckoutError(null);
-    setCartLines([]);
+    commitCartLines([]);
     setSearchState(initialSearchState);
     clearScannerInput();
     focusScannerInput();
@@ -366,7 +387,7 @@ export function PosPage() {
       setReceiptPrintError(null);
       setReceiptPrintStatus("idle");
       setIsCashDialogOpen(false);
-      setCartLines([]);
+      commitCartLines([]);
       setSearchState(initialSearchState);
       clearScannerInput();
       focusScannerInput();
@@ -449,7 +470,7 @@ export function PosPage() {
                 <div>
                   <CardTitle>Product search</CardTitle>
                   <p className="mt-1 text-sm text-slate-500">
-                    Scan a barcode to add instantly, or search by product name, barcode, SKU, or price.
+                    USB barcode scanners work as keyboard input. Plug in the scanner and scan; no pairing step is required.
                   </p>
                 </div>
                 <StatusBadge variant={searchBadge.variant}>{searchBadge.label}</StatusBadge>
@@ -473,6 +494,12 @@ export function PosPage() {
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
                     onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        void handleSearch({ autoAddExactMatch: true });
+                        return;
+                      }
+
                       if (event.key === "Escape") {
                         event.preventDefault();
                         clearScannerInput();
