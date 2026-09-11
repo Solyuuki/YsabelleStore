@@ -1155,6 +1155,10 @@ function StockInDialog({
   const [expiresAt, setExpiresAt] = useState("");
   const [noExpirationDate, setNoExpirationDate] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const currentQuantity = inventory?.currentQuantity ?? 0;
+  const parsedQuantity = Number(quantity);
+  const validQuantity = Number.isInteger(parsedQuantity) && parsedQuantity > 0 ? parsedQuantity : 0;
+  const projectedQuantity = currentQuantity + validQuantity;
 
   useEffect(() => {
     if (open) {
@@ -1166,10 +1170,20 @@ function StockInDialog({
     }
   }, [open]);
 
+  function changeQuantity(delta: number) {
+    const next = Math.max(1, validQuantity + delta);
+    setQuantity(String(next));
+    setError(null);
+  }
+
+  function addQuickQuantity(amount: number) {
+    setQuantity(String(validQuantity + amount));
+    setError(null);
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const parsed = Number(quantity);
-    if (!Number.isInteger(parsed) || parsed < 1) {
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
       setError("Quantity must be a positive whole number.");
       return;
     }
@@ -1178,10 +1192,14 @@ function StockInDialog({
       setError("Batch/Lot number is required.");
       return;
     }
+    if (!noExpirationDate && !expiresAt) {
+      setError("Enter the printed expiration date or choose No expiry.");
+      return;
+    }
     const succeeded = await onSubmit({
-      quantity: parsed,
+      quantity: parsedQuantity,
       batchCode: trimmedBatchCode,
-      expiresAt: noExpirationDate || !expiresAt ? null : expiresAt
+      expiresAt: noExpirationDate ? null : expiresAt
     });
     if (succeeded) onClose();
   }
@@ -1195,7 +1213,7 @@ function StockInDialog({
     >
       <DialogContent
         aria-describedby="stock-in-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[720px] flex-col gap-0 p-0"
+        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1212,61 +1230,195 @@ function StockInDialog({
           </DialogClose>
           <DialogTitle>Receive stock</DialogTitle>
           <DialogDescription id="stock-in-description">
-            Record incoming stock for this product with its batch and expiry information.
+            Record the delivered quantity, supplier batch, and printed expiry before adding it to physical stock.
           </DialogDescription>
         </DialogHeader>
         <form
           id="stock-in-form"
-          className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5"
+          className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
           onSubmit={(event) => void submit(event)}
         >
-          <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3.5">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-slate-950">{inventory?.productName}</p>
-              <p className="mt-1 text-xs text-slate-500">SKU: {inventory?.sku}</p>
+              <p className="mt-1 truncate text-xs text-slate-500">
+                SKU {inventory?.sku} · {inventory?.barcode ?? "No barcode"}
+              </p>
             </div>
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">On hand</p>
-              <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">
-                {inventory?.currentQuantity ?? 0}
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-950">
+                {currentQuantity}
               </p>
             </div>
           </div>
-          <Field
-            label="Quantity received"
-            id="stock-in-quantity"
-            inputMode="numeric"
-            value={quantity}
-            onChange={setQuantity}
-          />
-          <Field
-            label="Batch/Lot number"
-            id="stock-in-batch-code"
-            value={batchCode}
-            onChange={setBatchCode}
-          />
-          <Field
-            disabled={noExpirationDate}
-            label="Expiration date"
-            id="stock-in-expiration-date"
-            type="date"
-            value={expiresAt}
-            onChange={setExpiresAt}
-          />
-          <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-            <input
-              checked={noExpirationDate}
-              className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-              type="checkbox"
-              onChange={(event) => {
-                const checked = event.target.checked;
-                setNoExpirationDate(checked);
-                if (checked) setExpiresAt("");
-              }}
-            />
-            <span>No expiration date</span>
-          </label>
-          {error ? <p className="text-sm text-red-700">{error}</p> : null}
+
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <Label htmlFor="stock-in-quantity">Quantity received</Label>
+                <p className="mt-1 text-xs text-slate-500">Count the units that physically arrived.</p>
+              </div>
+              <div className="flex items-center gap-1.5" aria-label="Quick quantity additions">
+                {[5, 10, 25].map((amount) => (
+                  <Button
+                    key={amount}
+                    disabled={pending}
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                    onClick={() => addQuickQuantity(amount)}
+                  >
+                    +{amount}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
+              <Button
+                aria-label="Decrease received quantity"
+                disabled={pending || validQuantity <= 1}
+                size="icon"
+                type="button"
+                variant="secondary"
+                onClick={() => changeQuantity(-1)}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <Input
+                autoFocus
+                id="stock-in-quantity"
+                aria-label="Quantity received"
+                className="h-11 text-center text-lg font-semibold tabular-nums"
+                inputMode="numeric"
+                placeholder="0"
+                value={quantity}
+                onChange={(event) => {
+                  if (/^\d*$/.test(event.target.value)) {
+                    setQuantity(event.target.value);
+                    setError(null);
+                  }
+                }}
+              />
+              <Button
+                aria-label="Increase received quantity"
+                disabled={pending}
+                size="icon"
+                type="button"
+                variant="secondary"
+                onClick={() => changeQuantity(1)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
+              <div>
+                <p className="text-xs font-medium text-slate-500">Current</p>
+                <p className="mt-1 text-lg font-semibold tabular-nums text-slate-950">{currentQuantity}</p>
+              </div>
+              <span className="text-slate-300" aria-hidden="true">+</span>
+              <div>
+                <p className="text-xs font-medium text-slate-500">Incoming</p>
+                <p className="mt-1 text-lg font-semibold tabular-nums text-slate-950">{validQuantity}</p>
+              </div>
+              <span className="text-slate-300" aria-hidden="true">=</span>
+              <div>
+                <p className="text-xs font-medium text-slate-500">After receipt</p>
+                <p className="mt-1 text-lg font-semibold tabular-nums text-emerald-700">{projectedQuantity}</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-slate-500" aria-hidden="true" />
+              <div>
+                <h3 className="text-sm font-semibold text-slate-950">Batch details</h3>
+                <p className="mt-0.5 text-xs text-slate-500">Use the details printed on the delivered package or carton.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="stock-in-batch-code">Batch/Lot number</Label>
+                <Input
+                  id="stock-in-batch-code"
+                  placeholder="e.g. LOT-240911-A"
+                  value={batchCode}
+                  onChange={(event) => {
+                    setBatchCode(event.target.value);
+                    setError(null);
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Expiry type</Label>
+                <div className="grid grid-cols-2 gap-1 rounded-md bg-slate-100 p-1">
+                  <Button
+                    aria-pressed={!noExpirationDate}
+                    className="w-full"
+                    disabled={pending}
+                    size="sm"
+                    type="button"
+                    variant={!noExpirationDate ? "default" : "ghost"}
+                    onClick={() => {
+                      setNoExpirationDate(false);
+                      setError(null);
+                    }}
+                  >
+                    <CalendarDays className="h-4 w-4" />
+                    Has expiry
+                  </Button>
+                  <Button
+                    aria-pressed={noExpirationDate}
+                    className="w-full"
+                    disabled={pending}
+                    size="sm"
+                    type="button"
+                    variant={noExpirationDate ? "default" : "ghost"}
+                    onClick={() => {
+                      setNoExpirationDate(true);
+                      setExpiresAt("");
+                      setError(null);
+                    }}
+                  >
+                    <CircleCheck className="h-4 w-4" />
+                    No expiry
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {!noExpirationDate ? (
+              <div className="space-y-2">
+                <Label htmlFor="stock-in-expiration-date">Expiration date</Label>
+                <Input
+                  id="stock-in-expiration-date"
+                  type="date"
+                  value={expiresAt}
+                  onChange={(event) => {
+                    setExpiresAt(event.target.value);
+                    setError(null);
+                  }}
+                />
+                <p className="text-xs text-slate-500">Enter the manufacturer/package expiry, not an estimated shelf-life date.</p>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2 rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800">
+                <CircleCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>This batch will be recorded without an expiration date.</span>
+              </div>
+            )}
+          </section>
+
+          {error ? (
+            <Alert variant="destructive">
+              <AlertTitle>Check receiving details</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : null}
         </form>
         <DialogFooter className="border-t border-slate-200 bg-white/95">
           <Button disabled={pending} type="button" variant="secondary" onClick={onClose}>
@@ -1274,7 +1426,7 @@ function StockInDialog({
           </Button>
           <Button disabled={pending} form="stock-in-form" type="submit">
             {pending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <PackagePlus className="h-4 w-4" />}
-            {pending ? "Receiving stock…" : "Receive stock"}
+            {pending ? "Receiving stock…" : "Confirm receipt"}
           </Button>
         </DialogFooter>
       </DialogContent>
