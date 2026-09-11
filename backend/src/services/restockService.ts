@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { Prisma, type PrismaClient, RestockOrderStatus } from "@prisma/client";
+import { Prisma, RestockOrderStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
@@ -52,7 +52,7 @@ const restockOrderInclude = {
   }
 } as const;
 
-type RestockTransaction = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
+type RestockTransaction = Prisma.TransactionClient;
 type DraftLine = CreateRestockOrderRequest["lines"][number];
 
 function isKnownPrismaError(error: unknown): error is Prisma.PrismaClientKnownRequestError {
@@ -138,7 +138,8 @@ async function assertRestockLineReferences(tx: RestockTransaction, lines: DraftL
 
     if (
       !["RESTOCK", "LOW_STOCK"].includes(recommendation.type) ||
-      recommendation.status === "RESOLVED"
+      recommendation.status === "RESOLVED" ||
+      recommendation.status === "DISMISSED"
     ) {
       throw new HttpError(422, "The selected recommendation is not available for restocking.", {
         code: "RESTOCK_RECOMMENDATION_INELIGIBLE",
@@ -180,7 +181,10 @@ async function loadRestockOrder(orderId: string) {
   return order;
 }
 
-function assertDraft(order: { id: string; status: RestockOrderStatus; version: number }, expectedVersion: number) {
+function assertDraft(
+  order: { id: string; status: RestockOrderStatus; version: number },
+  expectedVersion: number
+) {
   if (order.status !== RestockOrderStatus.DRAFT) {
     throw new HttpError(409, "Only draft restock orders can be edited.", {
       code: "RESTOCK_ORDER_NOT_DRAFT",
