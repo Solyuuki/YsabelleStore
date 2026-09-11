@@ -11,18 +11,22 @@ const apiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.t
 
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.match(reportsSource, /<RestockPlanningPanel \/>/);
+assert.match(reportsSource, /Restock actions are grouped separately below/);
 
 assert.match(panelSource, /Recommended restock/);
-assert.match(panelSource, /Add existing product/);
-assert.match(panelSource, /Owner override reason/);
-assert.match(panelSource, /Dismiss recommendation/);
-assert.match(panelSource, /Create draft/);
-assert.match(panelSource, /Save draft changes/);
-assert.match(panelSource, /Approve selected lines/);
+assert.match(panelSource, /Restock planner/);
+assert.match(panelSource, /Add product/);
+assert.match(panelSource, /Order quantity/);
+assert.match(panelSource, /Why did you change the suggested quantity/);
+assert.match(panelSource, /More details and stock settings/);
+assert.match(panelSource, /Not needed/);
+assert.match(panelSource, /Review restock/);
+assert.match(panelSource, /Save for later/);
+assert.match(panelSource, /Confirm restock/);
 assert.match(panelSource, /Inventory has not changed/);
-assert.match(panelSource, /Physical[\s\S]*Inventory[\s\S]*remain unchanged/);
-assert.match(panelSource, /New Product creation is intentionally reserved for Phase 7/);
+assert.match(panelSource, /Physical Inventory is unchanged/);
 assert.match(panelSource, /updateProduct/);
+assert.match(panelSource, /DialogContent/);
 
 assert.doesNotMatch(panelSource, /createProduct\s*\(/);
 assert.doesNotMatch(panelSource, /stockInInventory\s*\(/);
@@ -43,4 +47,4 @@ assert.match(
   /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/approve/
 );
 
-console.log("Restock Phase 4-6 Reports UI contract passed.");
+console.log("Restock Phase 4-6 Reports QoL contract passed.");
