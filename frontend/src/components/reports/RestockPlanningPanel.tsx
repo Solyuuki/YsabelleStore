@@ -1,8 +1,27 @@
+import {
+  CheckCircle2,
+  ChevronDown,
+  PackagePlus,
+  RefreshCw,
+  Search,
+  Settings2,
+  Trash2
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { updateProduct } from "@/services/catalogApi";
@@ -74,19 +93,19 @@ function needsOverrideReason(line: PlanLine) {
 }
 
 function validatePlan(lines: PlanLine[]) {
-  if (lines.length === 0) return "Add at least one product to the restock plan.";
+  if (lines.length === 0) return "Add at least one product to the restock list.";
 
   const selected = lines.filter((line) => line.isSelected);
-  if (selected.length === 0) return "Select at least one line before creating or approving a restock.";
+  if (selected.length === 0) return "Include at least one product before reviewing the restock.";
   if (selected.some((line) => line.requestedQuantity < 1)) {
-    return "Selected restock lines require a requested quantity greater than zero.";
+    return "Every included product needs an order quantity greater than zero.";
   }
 
-  const missingReason = lines.find(
+  const missingReason = selected.find(
     (line) => needsOverrideReason(line) && line.ownerOverrideReason.trim().length === 0
   );
   if (missingReason) {
-    return `Explain the quantity override for ${missingReason.candidate.product.name}.`;
+    return `Add a reason for changing ${missingReason.candidate.product.name}'s suggested quantity.`;
   }
 
   return null;
@@ -99,6 +118,25 @@ function statusVariant(status: RestockOrder["status"]) {
     return "warning" as const;
   }
   return "info" as const;
+}
+
+function statusLabel(status: RestockOrder["status"]) {
+  switch (status) {
+    case "DRAFT":
+      return "Saved for later";
+    case "APPROVED":
+      return "Confirmed";
+    case "AWAITING_DELIVERY":
+      return "Awaiting delivery";
+    case "PARTIALLY_RECEIVED":
+      return "Partially received";
+    case "RECEIVED":
+      return "Received";
+    case "CANCELLED":
+      return "Cancelled";
+    default:
+      return status;
+  }
 }
 
 export function RestockPlanningPanel() {
@@ -114,6 +152,8 @@ export function RestockPlanningPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<RestockPlanningCandidate[]>([]);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const loadRecommendations = useCallback(async () => {
     setLoading(true);
@@ -126,6 +166,10 @@ export function RestockPlanningPanel() {
       setDraftOrder(null);
       setDraftDirty(false);
       setDraftNotes("");
+      setSearchTerm("");
+      setSearchResults([]);
+      setCatalogOpen(false);
+      setReviewOpen(false);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -141,17 +185,15 @@ export function RestockPlanningPanel() {
     void loadRecommendations();
   }, [loadRecommendations]);
 
-  const selectedCount = useMemo(
-    () => lines.filter((line) => line.isSelected).length,
-    [lines]
-  );
+  const selectedLines = useMemo(() => lines.filter((line) => line.isSelected), [lines]);
+  const selectedCount = selectedLines.length;
   const requestedUnits = useMemo(
-    () =>
-      lines.reduce(
-        (sum, line) => sum + (line.isSelected ? Math.max(0, line.requestedQuantity) : 0),
-        0
-      ),
-    [lines]
+    () => selectedLines.reduce((sum, line) => sum + Math.max(0, line.requestedQuantity), 0),
+    [selectedLines]
+  );
+  const overrideCount = useMemo(
+    () => selectedLines.filter((line) => needsOverrideReason(line)).length,
+    [selectedLines]
   );
   const editable = !draftOrder || draftOrder.status === "DRAFT";
 
@@ -161,12 +203,14 @@ export function RestockPlanningPanel() {
     );
     if (draftOrder?.status === "DRAFT") setDraftDirty(true);
     setNotice(null);
+    setError(null);
   }
 
   function removeLine(productId: string) {
     setLines((current) => current.filter((line) => line.candidate.product.id !== productId));
     if (draftOrder?.status === "DRAFT") setDraftDirty(true);
     setNotice(null);
+    setError(null);
   }
 
   async function searchExistingProducts() {
@@ -203,7 +247,8 @@ export function RestockPlanningPanel() {
       current.filter((item) => item.product.id !== candidate.product.id)
     );
     if (draftOrder?.status === "DRAFT") setDraftDirty(true);
-    setNotice(`${candidate.product.name} added to the current restock plan.`);
+    setNotice(`${candidate.product.name} added to the restock list.`);
+    setError(null);
   }
 
   async function saveStockPolicy(line: PlanLine) {
@@ -256,10 +301,10 @@ export function RestockPlanningPanel() {
         );
       }
 
-      setNotice(`Stock policy updated for ${line.candidate.product.name}.`);
+      setNotice(`Stock settings updated for ${line.candidate.product.name}.`);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "Stock policy could not be updated."
+        requestError instanceof Error ? requestError.message : "Stock settings could not be updated."
       );
     } finally {
       setBusyAction(null);
@@ -270,7 +315,7 @@ export function RestockPlanningPanel() {
     if (!line.recommendationId || draftOrder) return;
     const reason = dismissReasons[line.candidate.product.id]?.trim() ?? "";
     if (reason.length < 3) {
-      setError("A dismissal reason of at least three characters is required.");
+      setError("Add a short reason before marking this recommendation as not needed.");
       return;
     }
 
@@ -282,96 +327,123 @@ export function RestockPlanningPanel() {
       setLines((current) =>
         current.filter((item) => item.candidate.product.id !== line.candidate.product.id)
       );
-      setNotice(`${line.candidate.product.name} recommendation dismissed with an audit reason.`);
+      setNotice(`${line.candidate.product.name} marked as not needed.`);
     } catch (requestError) {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "The restock recommendation could not be dismissed."
+          : "The restock recommendation could not be updated."
       );
     } finally {
       setBusyAction(null);
     }
   }
 
-  async function createDraft() {
+  async function saveForLater() {
     const validationError = validatePlan(lines);
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    setBusyAction("create");
+    setBusyAction("save-for-later");
     setError(null);
     setNotice(null);
+
     try {
-      const order = await createRestockOrder({
-        notes: draftNotes.trim() || null,
-        lines: lines.map(toDraftLine)
-      });
+      let order = draftOrder;
+
+      if (!order) {
+        order = await createRestockOrder({
+          notes: draftNotes.trim() || null,
+          lines: lines.map(toDraftLine)
+        });
+      } else if (order.status === "DRAFT" && draftDirty) {
+        order = await replaceRestockOrderLines(order.id, {
+          expectedVersion: order.version,
+          lines: lines.map(toDraftLine)
+        });
+      }
+
+      if (!order || order.status !== "DRAFT") return;
+
       setDraftOrder(order);
       setDraftDirty(false);
-      setNotice(`Draft ${order.orderNumber} created. Inventory has not changed.`);
+      setDraftNotes(order.notes ?? draftNotes);
+      setReviewOpen(false);
+      setNotice(`${order.orderNumber} saved for later. Inventory has not changed.`);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Restock draft could not be created.");
+      setError(requestError instanceof Error ? requestError.message : "Restock list could not be saved.");
     } finally {
       setBusyAction(null);
     }
   }
 
-  async function saveDraftChanges() {
-    if (!draftOrder || draftOrder.status !== "DRAFT") return;
+  async function confirmRestock() {
     const validationError = validatePlan(lines);
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    setBusyAction("save");
+    setBusyAction("confirm");
     setError(null);
     setNotice(null);
-    try {
-      const order = await replaceRestockOrderLines(draftOrder.id, {
-        expectedVersion: draftOrder.version,
-        lines: lines.map(toDraftLine)
-      });
-      setDraftOrder(order);
-      setDraftDirty(false);
-      setNotice(`Draft ${order.orderNumber} saved at version ${order.version}.`);
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Restock draft could not be saved.");
-    } finally {
-      setBusyAction(null);
-    }
-  }
+    let savedBeforeApproval = false;
 
-  async function approveSelectedLines() {
-    if (!draftOrder || draftOrder.status !== "DRAFT") return;
-    if (draftDirty) {
-      setError("Save draft changes before approval so the approved lines match the current screen.");
-      return;
-    }
-    const validationError = validatePlan(lines);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    setBusyAction("approve");
-    setError(null);
-    setNotice(null);
     try {
-      const order = await approveRestockOrder(draftOrder.id, draftOrder.version);
-      setDraftOrder(order);
+      let order = draftOrder;
+
+      if (!order) {
+        order = await createRestockOrder({
+          notes: draftNotes.trim() || null,
+          lines: lines.map(toDraftLine)
+        });
+        savedBeforeApproval = true;
+        setDraftOrder(order);
+        setDraftDirty(false);
+        setDraftNotes(order.notes ?? draftNotes);
+      } else if (order.status === "DRAFT" && draftDirty) {
+        order = await replaceRestockOrderLines(order.id, {
+          expectedVersion: order.version,
+          lines: lines.map(toDraftLine)
+        });
+        savedBeforeApproval = true;
+        setDraftOrder(order);
+        setDraftDirty(false);
+      }
+
+      if (!order || order.status !== "DRAFT") return;
+
+      const approved = await approveRestockOrder(order.id, order.version);
+      setDraftOrder(approved);
       setDraftDirty(false);
+      setReviewOpen(false);
       setNotice(
-        `${order.orderNumber} approved. ${selectedCount} selected line${selectedCount === 1 ? "" : "s"} now count as incoming stock; physical Inventory is unchanged.`
+        `${approved.orderNumber} confirmed. ${selectedCount} product${selectedCount === 1 ? "" : "s"} and ${requestedUnits.toLocaleString()} units are now on the way. Physical Inventory is unchanged.`
       );
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Restock order could not be approved.");
+      const message =
+        requestError instanceof Error ? requestError.message : "Restock order could not be confirmed.";
+      setError(
+        savedBeforeApproval
+          ? `Your restock list was saved, but confirmation did not finish. ${message}`
+          : message
+      );
     } finally {
       setBusyAction(null);
     }
+  }
+
+  function openReview() {
+    const validationError = validatePlan(lines);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setError(null);
+    setReviewOpen(true);
   }
 
   return (
@@ -379,119 +451,160 @@ export function RestockPlanningPanel() {
       <CardHeader>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <CardTitle>Recommended restock</CardTitle>
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <Badge variant="info">Recommended restock</Badge>
+              {draftOrder ? (
+                <Badge variant={statusVariant(draftOrder.status)}>{statusLabel(draftOrder.status)}</Badge>
+              ) : null}
+            </div>
+            <CardTitle>Restock planner</CardTitle>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
-              Review forecast and stock signals, customize quantities, then create an Owner-approved
-              restock order. This planning workflow never creates physical stock.
+              Review what the store needs, adjust the order quantity, or add an existing product.
+              Advanced stock settings stay out of the way until you need them.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="info">{selectedCount} selected</Badge>
-            <Badge>{requestedUnits.toLocaleString()} requested units</Badge>
+            <Badge>{selectedCount} products</Badge>
+            <Badge>{requestedUnits.toLocaleString()} units</Badge>
             <Button
+              aria-label="Refresh restock recommendations"
               disabled={loading || Boolean(draftOrder) || busyAction !== null}
               onClick={() => void loadRecommendations()}
               size="sm"
               type="button"
               variant="secondary"
             >
-              Refresh recommendations
+              <RefreshCw aria-hidden="true" className="h-4 w-4" />
+              Refresh
             </Button>
           </div>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-5">
         {error ? (
-          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {error}
-          </div>
+          <Alert variant="destructive">
+            <AlertTitle>Action needed</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         ) : null}
+
         {notice ? (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            {notice}
-          </div>
+          <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+            <AlertTitle>Updated</AlertTitle>
+            <AlertDescription>{notice}</AlertDescription>
+          </Alert>
         ) : null}
 
         {draftOrder ? (
-          <div className="flex flex-col gap-2 rounded-md border border-blue-200 bg-blue-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-950">{draftOrder.orderNumber}</p>
-              <p className="text-xs text-slate-600">
-                Version {draftOrder.version}
-                {draftDirty ? " • unsaved line changes" : " • saved"}
+              <p className="mt-0.5 text-xs text-slate-500">
+                {draftOrder.status === "DRAFT"
+                  ? draftDirty
+                    ? "Changes will be saved when you review or save for later."
+                    : "Your restock list is saved."
+                  : "This restock has been confirmed and is waiting for the delivery workflow."}
               </p>
             </div>
-            <Badge variant={statusVariant(draftOrder.status)}>{draftOrder.status}</Badge>
+            <Badge variant={statusVariant(draftOrder.status)}>{statusLabel(draftOrder.status)}</Badge>
           </div>
         ) : null}
 
-        <section className="rounded-md border border-slate-200 bg-slate-50 p-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end">
-            <div className="flex-1">
-              <label className="mb-1 block text-xs font-medium uppercase tracking-[0.12em] text-slate-500">
-                Add existing product
-              </label>
-              <Input
-                disabled={!editable || searching}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") void searchExistingProducts();
-                }}
-                placeholder="Search by product name, SKU, or barcode"
-                value={searchTerm}
-              />
-            </div>
+        {editable ? (
+          <div className="flex flex-wrap items-center gap-2">
             <Button
-              disabled={!editable || searching || busyAction !== null}
-              onClick={() => void searchExistingProducts()}
+              disabled={busyAction !== null}
+              onClick={() => setCatalogOpen((current) => !current)}
               type="button"
               variant="secondary"
             >
-              {searching ? "Searching…" : "Search catalog"}
+              <PackagePlus aria-hidden="true" className="h-4 w-4" />
+              Add product
             </Button>
+            <p className="text-xs text-slate-500">
+              You can add any product that already exists in the catalog, even without a recommendation.
+            </p>
           </div>
+        ) : null}
 
-          {searchResults.length > 0 ? (
-            <div className="mt-3 grid gap-2">
-              {searchResults.slice(0, 8).map((candidate) => (
-                <div
-                  className="flex flex-col gap-2 rounded-md border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between"
-                  key={candidate.product.id}
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-slate-950">{candidate.product.name}</p>
-                    <p className="text-xs text-slate-500">
-                      {candidate.product.sku} • sellable {candidate.sellableStock} • suggested {candidate.recommendedQuantity}
-                    </p>
-                  </div>
-                  <Button
-                    disabled={!editable || busyAction !== null}
-                    onClick={() => addExistingProduct(candidate)}
-                    size="sm"
-                    type="button"
-                  >
-                    Add existing product
-                  </Button>
-                </div>
-              ))}
+        {catalogOpen && editable ? (
+          <section className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end">
+              <div className="flex-1">
+                <label className="mb-1 block text-xs font-medium text-slate-600">
+                  Search existing products
+                </label>
+                <Input
+                  disabled={searching}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") void searchExistingProducts();
+                  }}
+                  placeholder="Product name, SKU, or barcode"
+                  value={searchTerm}
+                />
+              </div>
+              <Button
+                disabled={searching || busyAction !== null}
+                onClick={() => void searchExistingProducts()}
+                type="button"
+                variant="secondary"
+              >
+                <Search aria-hidden="true" className="h-4 w-4" />
+                {searching ? "Searching…" : "Search"}
+              </Button>
             </div>
-          ) : null}
-          <p className="mt-3 text-xs leading-5 text-slate-500">
-            New Product creation is intentionally reserved for Phase 7; this Phase 6 control only
-            adds products that already exist in the canonical catalog.
-          </p>
-        </section>
+
+            {searchResults.length > 0 ? (
+              <div className="mt-3 grid gap-2">
+                {searchResults.slice(0, 8).map((candidate) => (
+                  <div
+                    className="flex flex-col gap-2 rounded-md border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between"
+                    key={candidate.product.id}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-950">
+                        {candidate.product.name}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {candidate.product.sku} • Current stock {candidate.sellableStock}
+                        {candidate.recommendedQuantity > 0
+                          ? ` • Suggested ${candidate.recommendedQuantity}`
+                          : ""}
+                      </p>
+                    </div>
+                    <Button
+                      disabled={busyAction !== null}
+                      onClick={() => addExistingProduct(candidate)}
+                      size="sm"
+                      type="button"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         {loading ? (
-          <div className="rounded-md border border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-            Loading restock planning data…
+          <div className="rounded-lg border border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+            Loading restock suggestions…
           </div>
         ) : null}
 
         {!loading && lines.length === 0 ? (
-          <div className="rounded-md border border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-            No products currently require restocking. Use catalog search above to add an existing
-            product manually.
+          <div className="rounded-lg border border-dashed border-slate-300 px-4 py-10 text-center">
+            <CheckCircle2 aria-hidden="true" className="mx-auto h-8 w-8 text-emerald-600" />
+            <p className="mt-3 text-sm font-semibold text-slate-950">
+              No products need restocking right now.
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Add a product manually if the Owner wants to place a custom restock.
+            </p>
           </div>
         ) : null}
 
@@ -503,230 +616,373 @@ export function RestockPlanningPanel() {
             const lineBusy = busyAction?.endsWith(productId) ?? false;
 
             return (
-              <article className="rounded-md border border-slate-200 p-4" key={productId}>
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="flex items-start gap-3">
-                    <input
-                      aria-label={`Select ${line.candidate.product.name} for restock`}
-                      checked={line.isSelected}
-                      className="mt-1 h-4 w-4 rounded border-slate-300"
-                      disabled={!editable}
-                      onChange={(event) =>
-                        updateLine(productId, (current) => ({
-                          ...current,
-                          isSelected: event.target.checked
-                        }))
-                      }
-                      type="checkbox"
+              <article className="rounded-lg border border-slate-200 p-4" key={productId}>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <label className="flex min-w-0 items-start gap-3">
+                      <input
+                        aria-label={`Include ${line.candidate.product.name} in restock`}
+                        checked={line.isSelected}
+                        className="mt-1 h-4 w-4 rounded border-slate-300"
+                        disabled={!editable}
+                        onChange={(event) =>
+                          updateLine(productId, (current) => ({
+                            ...current,
+                            isSelected: event.target.checked
+                          }))
+                        }
+                        type="checkbox"
+                      />
+                      <span className="min-w-0">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold text-slate-950">
+                            {line.candidate.product.name}
+                          </span>
+                          {line.recommendationSource === "MANUAL" ? (
+                            <Badge>Custom</Badge>
+                          ) : (
+                            <Badge variant="info">Suggested</Badge>
+                          )}
+                        </span>
+                        <span className="mt-1 block text-xs text-slate-500">
+                          {line.candidate.product.sku}
+                          {line.candidate.product.barcode
+                            ? ` • ${line.candidate.product.barcode}`
+                            : ""}
+                        </span>
+                      </span>
+                    </label>
+
+                    <Button
+                      aria-label={`Remove ${line.candidate.product.name} from restock`}
+                      disabled={!editable || busyAction !== null}
+                      onClick={() => removeLine(productId)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      <Trash2 aria-hidden="true" className="h-4 w-4" />
+                      Remove
+                    </Button>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <SummaryValue label="Current stock" value={line.candidate.sellableStock} />
+                    <SummaryValue
+                      label="Suggested"
+                      value={line.recommendationSource === "MANUAL" ? "Custom" : line.recommendedQuantity}
                     />
                     <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-semibold text-slate-950">{line.candidate.product.name}</p>
-                        <Badge>{line.recommendationSource}</Badge>
-                      </div>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {line.candidate.product.sku}
-                        {line.candidate.product.barcode
-                          ? ` • ${line.candidate.product.barcode}`
-                          : " • no manufacturer barcode"}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    disabled={!editable || busyAction !== null}
-                    onClick={() => removeLine(productId)}
-                    size="sm"
-                    type="button"
-                    variant="ghost"
-                  >
-                    Remove item
-                  </Button>
-                </div>
-
-                <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
-                  <Metric label="Sellable" value={line.candidate.sellableStock} />
-                  <Metric label="Physical" value={line.candidate.physicalOnHand} />
-                  <Metric label="Quarantined" value={line.candidate.quarantinedStock} />
-                  <Metric label="Incoming" value={line.candidate.incomingStock} />
-                  <Metric label="Suggested" value={line.recommendedQuantity} />
-                  <Metric
-                    label="Forecast demand"
-                    value={line.candidate.forecast?.currentMonthDemand ?? "—"}
-                  />
-                </div>
-
-                <p className="mt-3 text-xs leading-5 text-slate-500">{line.candidate.rationale}</p>
-
-                <div className="mt-4 grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-600">Requested quantity</label>
-                    <Input
-                      aria-label={`Requested quantity for ${line.candidate.product.name}`}
-                      disabled={!editable}
-                      min={0}
-                      onChange={(event) =>
-                        updateLine(productId, (current) => ({
-                          ...current,
-                          requestedQuantity: asNonNegativeInteger(event.target.value)
-                        }))
-                      }
-                      type="number"
-                      value={line.requestedQuantity}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-600">
-                      Owner override reason {overrideRequired ? "(required)" : ""}
-                    </label>
-                    <Input
-                      aria-label={`Owner override reason for ${line.candidate.product.name}`}
-                      disabled={!editable}
-                      onChange={(event) =>
-                        updateLine(productId, (current) => ({
-                          ...current,
-                          ownerOverrideReason: event.target.value
-                        }))
-                      }
-                      placeholder={overrideRequired ? "Why is the quantity different?" : "Optional"}
-                      value={line.ownerOverrideReason}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-600">Target stock</label>
-                    <Input
-                      aria-label={`Target stock for ${line.candidate.product.name}`}
-                      disabled={Boolean(draftOrder)}
-                      min={0}
-                      onChange={(event) =>
-                        updateLine(productId, (current) => ({
-                          ...current,
-                          policyTargetStockLevel: asNonNegativeInteger(event.target.value)
-                        }))
-                      }
-                      type="number"
-                      value={line.policyTargetStockLevel}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-600">Reorder level</label>
-                    <div className="flex gap-2">
+                      <label className="mb-1 block text-xs font-medium text-slate-600">
+                        Order quantity
+                      </label>
                       <Input
-                        aria-label={`Reorder level for ${line.candidate.product.name}`}
-                        disabled={Boolean(draftOrder)}
+                        aria-label={`Order quantity for ${line.candidate.product.name}`}
+                        disabled={!editable || !line.isSelected}
                         min={0}
                         onChange={(event) =>
                           updateLine(productId, (current) => ({
                             ...current,
-                            policyReorderLevel: asNonNegativeInteger(event.target.value)
+                            requestedQuantity: asNonNegativeInteger(event.target.value)
                           }))
                         }
                         type="number"
-                        value={line.policyReorderLevel}
+                        value={line.requestedQuantity}
                       />
-                      <Button
-                        disabled={Boolean(draftOrder) || lineBusy || busyAction !== null}
-                        onClick={() => void saveStockPolicy(line)}
-                        size="sm"
-                        type="button"
-                        variant="secondary"
-                      >
-                        Save policy
-                      </Button>
                     </div>
                   </div>
-                </div>
 
-                {line.recommendationId ? (
-                  <div className="mt-3 flex flex-col gap-2 rounded-md border border-slate-100 bg-slate-50 p-3 md:flex-row md:items-end">
-                    <div className="flex-1">
-                      <label className="mb-1 block text-xs font-medium text-slate-600">
-                        Dismiss recommendation reason
+                  {overrideRequired && line.isSelected ? (
+                    <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+                      <label className="mb-1 block text-xs font-medium text-amber-900">
+                        Why did you change the suggested quantity? <span aria-hidden="true">*</span>
                       </label>
                       <Input
-                        disabled={Boolean(draftOrder)}
+                        aria-label={`Reason for changing suggested quantity for ${line.candidate.product.name}`}
+                        disabled={!editable}
                         onChange={(event) =>
-                          setDismissReasons((current) => ({
+                          updateLine(productId, (current) => ({
                             ...current,
-                            [productId]: event.target.value
+                            ownerOverrideReason: event.target.value
                           }))
                         }
-                        placeholder="Required for audited dismissal"
-                        value={dismissReason}
+                        placeholder="Example: weekend demand or supplier pack size"
+                        value={line.ownerOverrideReason}
                       />
                     </div>
-                    <Button
-                      disabled={Boolean(draftOrder) || dismissReason.trim().length < 3 || busyAction !== null}
-                      onClick={() => void dismissRecommendation(line)}
-                      type="button"
-                      variant="secondary"
-                    >
-                      Dismiss recommendation
-                    </Button>
-                  </div>
-                ) : null}
+                  ) : null}
+
+                  <details className="group rounded-md border border-slate-100 bg-slate-50">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-medium text-slate-700">
+                      <span className="flex items-center gap-2">
+                        <Settings2 aria-hidden="true" className="h-4 w-4" />
+                        More details and stock settings
+                      </span>
+                      <ChevronDown
+                        aria-hidden="true"
+                        className="h-4 w-4 transition-transform group-open:rotate-180"
+                      />
+                    </summary>
+
+                    <div className="space-y-4 border-t border-slate-200 p-3">
+                      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                        <Metric label="Physical" value={line.candidate.physicalOnHand} />
+                        <Metric label="Quarantined" value={line.candidate.quarantinedStock} />
+                        <Metric label="On the way" value={line.candidate.incomingStock} />
+                        <Metric
+                          label="Forecast demand"
+                          value={line.candidate.forecast?.currentMonthDemand ?? "—"}
+                        />
+                      </div>
+
+                      <p className="text-xs leading-5 text-slate-500">{line.candidate.rationale}</p>
+
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-slate-600">
+                            Target stock
+                          </label>
+                          <Input
+                            aria-label={`Target stock for ${line.candidate.product.name}`}
+                            disabled={Boolean(draftOrder)}
+                            min={0}
+                            onChange={(event) =>
+                              updateLine(productId, (current) => ({
+                                ...current,
+                                policyTargetStockLevel: asNonNegativeInteger(event.target.value)
+                              }))
+                            }
+                            type="number"
+                            value={line.policyTargetStockLevel}
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-slate-600">
+                            Reorder level
+                          </label>
+                          <Input
+                            aria-label={`Reorder level for ${line.candidate.product.name}`}
+                            disabled={Boolean(draftOrder)}
+                            min={0}
+                            onChange={(event) =>
+                              updateLine(productId, (current) => ({
+                                ...current,
+                                policyReorderLevel: asNonNegativeInteger(event.target.value)
+                              }))
+                            }
+                            type="number"
+                            value={line.policyReorderLevel}
+                          />
+                        </div>
+                      </div>
+
+                      {!draftOrder ? (
+                        <div className="flex justify-end">
+                          <Button
+                            disabled={lineBusy || busyAction !== null}
+                            onClick={() => void saveStockPolicy(line)}
+                            size="sm"
+                            type="button"
+                            variant="secondary"
+                          >
+                            Save stock settings
+                          </Button>
+                        </div>
+                      ) : null}
+
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-slate-600">
+                          Item note <span className="font-normal text-slate-400">(optional)</span>
+                        </label>
+                        <Input
+                          disabled={!editable}
+                          onChange={(event) =>
+                            updateLine(productId, (current) => ({
+                              ...current,
+                              notes: event.target.value
+                            }))
+                          }
+                          placeholder="Delivery or ordering note for this item"
+                          value={line.notes}
+                        />
+                      </div>
+
+                      {line.recommendationId && !draftOrder ? (
+                        <div className="rounded-md border border-slate-200 bg-white p-3">
+                          <p className="text-xs font-medium text-slate-700">
+                            Don't need this recommendation?
+                          </p>
+                          <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-end">
+                            <div className="flex-1">
+                              <label className="mb-1 block text-xs text-slate-500">Reason</label>
+                              <Input
+                                onChange={(event) =>
+                                  setDismissReasons((current) => ({
+                                    ...current,
+                                    [productId]: event.target.value
+                                  }))
+                                }
+                                placeholder="Example: supplier already delivered"
+                                value={dismissReason}
+                              />
+                            </div>
+                            <Button
+                              disabled={dismissReason.trim().length < 3 || busyAction !== null}
+                              onClick={() => void dismissRecommendation(line)}
+                              type="button"
+                              variant="secondary"
+                            >
+                              Not needed
+                            </Button>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </details>
+                </div>
               </article>
             );
           })}
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600">Restock notes</label>
-            <Textarea
-              disabled={!editable}
-              onChange={(event) => {
-                setDraftNotes(event.target.value);
-                if (draftOrder?.status === "DRAFT") setDraftDirty(true);
-              }}
-              placeholder="Optional owner notes for this restock order"
-              value={draftNotes}
-            />
-          </div>
-          <div className="flex flex-wrap items-end gap-2 lg:justify-end">
-            {!draftOrder ? (
+        {!loading && lines.length > 0 ? (
+          <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-950">
+                {selectedCount} product{selectedCount === 1 ? "" : "s"} • {requestedUnits.toLocaleString()} units
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Planning only. Confirming a restock adds incoming stock, but physical Inventory stays
+                unchanged until the delivery is actually received.
+              </p>
+            </div>
+            {draftOrder?.status === "APPROVED" ? (
+              <Badge variant="success">Restock confirmed</Badge>
+            ) : (
               <Button
-                disabled={loading || busyAction !== null || lines.length === 0}
-                onClick={() => void createDraft()}
+                disabled={!editable || selectedCount === 0 || busyAction !== null}
+                onClick={openReview}
                 type="button"
               >
-                {busyAction === "create" ? "Creating…" : "Create draft"}
+                Review restock
               </Button>
-            ) : null}
-            {draftOrder?.status === "DRAFT" ? (
-              <>
-                <Button
-                  disabled={!draftDirty || busyAction !== null || lines.length === 0}
-                  onClick={() => void saveDraftChanges()}
-                  type="button"
-                  variant="secondary"
-                >
-                  {busyAction === "save" ? "Saving…" : "Save draft changes"}
-                </Button>
-                <Button
-                  disabled={draftDirty || busyAction !== null || selectedCount === 0}
-                  onClick={() => void approveSelectedLines()}
-                  type="button"
-                >
-                  {busyAction === "approve" ? "Approving…" : "Approve selected lines"}
-                </Button>
-              </>
-            ) : null}
+            )}
           </div>
-        </div>
-
-        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
-          Restock approval creates procurement intent and canonical incoming stock only. Physical
-          Inventory, batches, and stock movements remain unchanged until goods actually arrive in a
-          later receiving phase.
-        </div>
+        ) : null}
       </CardContent>
+
+      <Dialog onOpenChange={setReviewOpen} open={reviewOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Review restock</DialogTitle>
+            <DialogDescription>
+              Check the products and quantities before you save or confirm the restock.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="max-h-[60vh] space-y-4 overflow-y-auto px-6 pb-2">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <SummaryValue label="Products" value={selectedCount} />
+              <SummaryValue label="Total units" value={requestedUnits} />
+              <SummaryValue label="Quantity changes" value={overrideCount} />
+            </div>
+
+            <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
+              {selectedLines.map((line) => (
+                <div
+                  className="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between"
+                  key={line.candidate.product.id}
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-950">{line.candidate.product.name}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Current {line.candidate.sellableStock}
+                      {line.recommendationSource === "MANUAL"
+                        ? " • Custom restock"
+                        : ` • Suggested ${line.recommendedQuantity}`}
+                    </p>
+                    {needsOverrideReason(line) ? (
+                      <p className="mt-1 text-xs text-amber-700">
+                        Changed quantity: {line.ownerOverrideReason}
+                      </p>
+                    ) : null}
+                  </div>
+                  <p className="text-sm font-semibold text-slate-950">
+                    {line.requestedQuantity.toLocaleString()} units
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {!draftOrder ? (
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">
+                  Restock note <span className="font-normal text-slate-400">(optional)</span>
+                </label>
+                <Textarea
+                  onChange={(event) => setDraftNotes(event.target.value)}
+                  placeholder="General note for this restock order"
+                  value={draftNotes}
+                />
+              </div>
+            ) : draftOrder.notes ? (
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs font-medium text-slate-500">Restock note</p>
+                <p className="mt-1 text-sm text-slate-700">{draftOrder.notes}</p>
+              </div>
+            ) : null}
+
+            <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+              <AlertTitle>Physical stock will not change yet</AlertTitle>
+              <AlertDescription>
+                Confirming creates the approved incoming quantity only. Inventory increases later,
+                when the actual delivery is received.
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button disabled={busyAction !== null} type="button" variant="secondary">
+                Back
+              </Button>
+            </DialogClose>
+            <Button
+              disabled={busyAction !== null}
+              onClick={() => void saveForLater()}
+              type="button"
+              variant="secondary"
+            >
+              {busyAction === "save-for-later" ? "Saving…" : "Save for later"}
+            </Button>
+            <Button
+              disabled={busyAction !== null}
+              onClick={() => void confirmRestock()}
+              type="button"
+            >
+              {busyAction === "confirm" ? "Confirming…" : "Confirm restock"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+  );
+}
+
+function SummaryValue({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-md bg-slate-50 px-3 py-2">
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className="mt-1 text-base font-semibold text-slate-950">
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </p>
+    </div>
   );
 }
 
 function Metric({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-md bg-slate-50 px-3 py-2">
+    <div className="rounded-md bg-white px-3 py-2">
       <p className="text-[11px] uppercase tracking-[0.12em] text-slate-400">{label}</p>
       <p className="mt-1 text-sm font-semibold text-slate-950">
         {typeof value === "number" ? value.toLocaleString() : value}
