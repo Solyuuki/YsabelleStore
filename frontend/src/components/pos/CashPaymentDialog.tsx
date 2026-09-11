@@ -48,7 +48,9 @@ export function CashPaymentDialog({
   const [cashInput, setCashInput] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const cashReceived = Number(cashInput);
-  const hasValidCash = Number.isFinite(cashReceived) && cashReceived >= total && cashReceived >= 0;
+  const hasCashInput = cashInput.trim().length > 0;
+  const hasValidCash =
+    hasCashInput && Number.isFinite(cashReceived) && cashReceived >= total && cashReceived >= 0;
   const change = hasValidCash ? cashReceived - total : 0;
   const suggestions = useMemo(() => buildTenderSuggestions(total), [total]);
 
@@ -102,12 +104,15 @@ export function CashPaymentDialog({
                 id="cash-received"
                 inputMode="decimal"
                 className="min-w-0 flex-1 bg-transparent text-xl font-semibold text-slate-950 outline-none"
-                min="0"
                 placeholder="0.00"
-                step="0.01"
-                type="number"
+                type="text"
                 value={cashInput}
-                onChange={(event) => setCashInput(event.target.value)}
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  if (/^\d{0,10}(?:\.\d{0,2})?$/.test(nextValue)) {
+                    setCashInput(nextValue);
+                  }
+                }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
@@ -159,7 +164,7 @@ export function CashPaymentDialog({
                 {currencyFormatter.format(change)}
               </span>
             </div>
-            {cashInput && !hasValidCash ? (
+            {hasCashInput && !hasValidCash ? (
               <p className="mt-2 text-sm text-amber-700">
                 Cash received must cover the full amount due.
               </p>
