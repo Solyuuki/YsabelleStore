@@ -1,8 +1,7 @@
-import { Prisma } from "@prisma/client";
+import { CatalogQualityStatus, CatalogRecordSource, Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { operationalProductWhere } from "./catalogQualityPolicy.js";
-import { resolveProductBarcode } from "./productBarcodeService.js";
 import { getSellableStockQuantity } from "./stockDomainService.js";
 
 type PosProductResult = {
@@ -46,6 +45,39 @@ function parseSellingPriceQuery(query: string) {
   }
 }
 
+function buildIdentitySearchConditions(query: string): Prisma.ProductWhereInput[] {
+  return [
+    { name: { contains: query } },
+    { sku: { contains: query } },
+    { barcode: { contains: query } },
+    { barcodes: { some: { barcode: { contains: query } } } },
+    { description: { contains: query } },
+    {
+      category: {
+        name: {
+          contains: query
+        }
+      }
+    }
+  ];
+}
+
+function buildMappedSourceAliasCondition(query: string): Prisma.ProductWhereInput {
+  return {
+    canonicalMappings: {
+      some: {
+        sourceProduct: {
+          is: {
+            dataQualityStatus: { not: CatalogQualityStatus.REJECTED },
+            recordSource: { not: CatalogRecordSource.TEST_FIXTURE },
+            OR: buildIdentitySearchConditions(query)
+          }
+        }
+      }
+    }
+  };
+}
+
 function buildPosWhere(query: string) {
   const normalizedQuery = query.trim();
 
@@ -54,18 +86,8 @@ function buildPosWhere(query: string) {
   }
 
   const searchConditions: Prisma.ProductWhereInput[] = [
-    { name: { contains: normalizedQuery } },
-    { sku: { contains: normalizedQuery } },
-    { barcode: { contains: normalizedQuery } },
-    { barcodes: { some: { barcode: { contains: normalizedQuery } } } },
-    { description: { contains: normalizedQuery } },
-    {
-      category: {
-        name: {
-          contains: normalizedQuery
-        }
-      }
-    }
+    ...buildIdentitySearchConditions(normalizedQuery),
+    buildMappedSourceAliasCondition(normalizedQuery)
   ];
 
   const sellingPrice = parseSellingPriceQuery(normalizedQuery);
@@ -96,39 +118,53 @@ function serializePosProduct(
   };
 }
 
-async function findExactIdentityProduct(query: string) {
-  const skuMatch = await prisma.product.findFirst({
+async function loadOperationalProduct(productId: string) {
+  return prisma.product.findFirst({
     include: posProductInclude,
     where: operationalProductWhere({
-      status: "ACTIVE",
-      sku: query
-    })
-  });
-
-  if (skuMatch) {
-    return {
-      matchedBarcode: skuMatch.barcode,
-      product: skuMatch
-    };
-  }
-
-  if (query.length > 80) return null;
-
-  const barcodeResolution = await resolveProductBarcode(query);
-  if (!barcodeResolution.found || !barcodeResolution.product) return null;
-
-  const product = await prisma.product.findFirst({
-    include: posProductInclude,
-    where: operationalProductWhere({
-      id: barcodeResolution.product.id,
+      id: productId,
       status: "ACTIVE"
     })
   });
+}
 
+async function findExactIdentityProduct(query: string) {
+  const identityMatch = await prisma.product.findFirst({
+    select: {
+      barcode: true,
+      barcodes: {
+        select: { barcode: true }
+      },
+      id: true,
+      sourceMapping: {
+        select: { canonicalProductId: true }
+      }
+    },
+    where: {
+      dataQualityStatus: { not: CatalogQualityStatus.REJECTED },
+      recordSource: { not: CatalogRecordSource.TEST_FIXTURE },
+      OR: [
+        { sku: query },
+        { barcode: query },
+        { barcodes: { some: { barcode: query } } }
+      ]
+    }
+  });
+
+  if (!identityMatch) return null;
+
+  const targetProductId = identityMatch.sourceMapping?.canonicalProductId ?? identityMatch.id;
+  const product = await loadOperationalProduct(targetProductId);
   if (!product) return null;
 
+  const matchedBarcode =
+    identityMatch.barcode === query ||
+    identityMatch.barcodes.some((registration) => registration.barcode === query)
+      ? query
+      : product.barcode;
+
   return {
-    matchedBarcode: barcodeResolution.barcode,
+    matchedBarcode,
     product
   };
 }
