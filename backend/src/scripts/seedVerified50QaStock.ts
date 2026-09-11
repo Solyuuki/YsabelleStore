@@ -7,6 +7,7 @@ import { getSellableStockQuantity, stockInBatch } from "../services/stockDomainS
 const APPLY = process.argv.includes("--apply");
 const EXPECTED_PRODUCT_COUNT = 50;
 const QA_REFERENCE = "QA_VERIFIED_50_STOCK_V2";
+const QA_MOVEMENT_REASON = "Verified-50 baseline stock seed.";
 
 type ShelfLifeProfile = {
   days: number | null;
@@ -313,7 +314,7 @@ try {
             unitCost: row.unitCost,
             expiresAt: row.expiresAt,
             batchCode: row.batchCode,
-            reason: `Verified-50 baseline stock. ${row.shelfLife.basis} ${row.shelfLife.assumption}`,
+            reason: QA_MOVEMENT_REASON,
             referenceId: QA_REFERENCE,
             referenceType: "QA_STOCK_SEED"
           });
