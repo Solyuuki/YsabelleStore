@@ -87,8 +87,7 @@ function toDraftLine(line: PlanLine): RestockDraftLineInput {
 
 function needsOverrideReason(line: PlanLine) {
   return (
-    line.recommendationSource !== "MANUAL" &&
-    line.requestedQuantity !== line.recommendedQuantity
+    line.recommendationSource !== "MANUAL" && line.requestedQuantity !== line.recommendedQuantity
   );
 }
 
@@ -233,7 +232,9 @@ export function RestockPlanningPanel() {
       setSearchResults(result.items.filter((candidate) => !existingIds.has(candidate.product.id)));
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "Existing products could not be searched."
+        requestError instanceof Error
+          ? requestError.message
+          : "Existing products could not be searched."
       );
     } finally {
       setSearching(false);
@@ -304,7 +305,9 @@ export function RestockPlanningPanel() {
       setNotice(`Stock settings updated for ${line.candidate.product.name}.`);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "Stock settings could not be updated."
+        requestError instanceof Error
+          ? requestError.message
+          : "Stock settings could not be updated."
       );
     } finally {
       setBusyAction(null);
@@ -373,7 +376,9 @@ export function RestockPlanningPanel() {
       setReviewOpen(false);
       setNotice(`${order.orderNumber} saved for later. Inventory has not changed.`);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Restock list could not be saved.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Restock list could not be saved."
+      );
     } finally {
       setBusyAction(null);
     }
@@ -424,7 +429,9 @@ export function RestockPlanningPanel() {
       );
     } catch (requestError) {
       const message =
-        requestError instanceof Error ? requestError.message : "Restock order could not be confirmed.";
+        requestError instanceof Error
+          ? requestError.message
+          : "Restock order could not be confirmed.";
       setError(
         savedBeforeApproval
           ? `Your restock list was saved, but confirmation did not finish. ${message}`
@@ -454,7 +461,9 @@ export function RestockPlanningPanel() {
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <Badge variant="info">Recommended restock</Badge>
               {draftOrder ? (
-                <Badge variant={statusVariant(draftOrder.status)}>{statusLabel(draftOrder.status)}</Badge>
+                <Badge variant={statusVariant(draftOrder.status)}>
+                  {statusLabel(draftOrder.status)}
+                </Badge>
               ) : null}
             </div>
             <CardTitle>Restock planner</CardTitle>
@@ -508,7 +517,9 @@ export function RestockPlanningPanel() {
                   : "This restock has been confirmed and is waiting for the delivery workflow."}
               </p>
             </div>
-            <Badge variant={statusVariant(draftOrder.status)}>{statusLabel(draftOrder.status)}</Badge>
+            <Badge variant={statusVariant(draftOrder.status)}>
+              {statusLabel(draftOrder.status)}
+            </Badge>
           </div>
         ) : null}
 
@@ -524,7 +535,8 @@ export function RestockPlanningPanel() {
               Add product
             </Button>
             <p className="text-xs text-slate-500">
-              You can add any product that already exists in the catalog, even without a recommendation.
+              You can add any product that already exists in the catalog, even without a
+              recommendation.
             </p>
           </div>
         ) : null}
@@ -670,7 +682,9 @@ export function RestockPlanningPanel() {
                     <SummaryValue label="Current stock" value={line.candidate.sellableStock} />
                     <SummaryValue
                       label="Suggested"
-                      value={line.recommendationSource === "MANUAL" ? "Custom" : line.recommendedQuantity}
+                      value={
+                        line.recommendationSource === "MANUAL" ? "Custom" : line.recommendedQuantity
+                      }
                     />
                     <div>
                       <label className="mb-1 block text-xs font-medium text-slate-600">
@@ -849,11 +863,12 @@ export function RestockPlanningPanel() {
           <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-950">
-                {selectedCount} product{selectedCount === 1 ? "" : "s"} • {requestedUnits.toLocaleString()} units
+                {selectedCount} product{selectedCount === 1 ? "" : "s"} •{" "}
+                {requestedUnits.toLocaleString()} units
               </p>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                Planning only. Confirming a restock adds incoming stock, but physical Inventory stays
-                unchanged until the delivery is actually received.
+                Planning only. Confirming a restock adds incoming stock, but physical Inventory
+                stays unchanged until the delivery is actually received.
               </p>
             </div>
             {draftOrder?.status === "APPROVED" ? (
