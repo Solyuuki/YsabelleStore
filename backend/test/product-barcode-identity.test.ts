@@ -6,7 +6,7 @@ import { ProductBarcodeSource, ProductBarcodeType } from "@prisma/client";
 
 import { prisma } from "../src/database/prismaClient.js";
 import { lookupInventoryByBarcode } from "../src/services/inventoryService.js";
-import { searchPosProducts } from "../src/services/posService.js";
+import { searchPosProducts } from "../src/services/posProductSearchService.js";
 import {
   enrollReceivingBarcode,
   listProductBarcodes,
@@ -202,6 +202,16 @@ test(
     assert.equal(inventory.productId, product.id);
   }
 );
+
+test("exact SKU resolves through the live POS search service", { concurrency: false }, async () => {
+  const product = await createProduct(productInput());
+  const pos = await searchPosProducts(product.sku, { page: 1, pageSize: 10 });
+
+  assert.equal(pos.products.length, 1);
+  assert.equal(pos.products[0]?.id, product.id);
+  assert.equal(pos.products[0]?.sku, product.sku);
+  assert.equal(pos.meta.totalItems, 1);
+});
 
 test(
   "manual barcode replacement promotes the new barcode but preserves the old physical identifier",
