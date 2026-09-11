@@ -204,10 +204,7 @@ function assertDraft(
   }
 }
 
-export async function createRestockOrder(
-  input: CreateRestockOrderRequest,
-  createdById: string
-) {
+export async function createRestockOrder(input: CreateRestockOrderRequest, createdById: string) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       const orderId = await prisma.$transaction(async (tx) => {
@@ -271,10 +268,7 @@ export async function getRestockOrder(orderId: string) {
   return await loadRestockOrder(orderId);
 }
 
-export async function updateRestockOrder(
-  orderId: string,
-  input: UpdateRestockOrderRequest
-) {
+export async function updateRestockOrder(orderId: string, input: UpdateRestockOrderRequest) {
   const existing = await prisma.restockOrder.findUnique({
     select: { id: true, status: true, version: true },
     where: { id: orderId }
