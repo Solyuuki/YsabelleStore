@@ -28,29 +28,10 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path("frontend/src/pages/ReportsPage.tsx")
           source = path.read_text()
-
-          old_handler = '''  async function handlePrintReport() {
-            setExportBusy("print");
-            setExportError(null);
-
-            try {
-              const snapshot = await prepareExportSnapshot();
-              openPrintableReport(snapshot);
-              setExportOpen(false);
-            } catch (exportRequestError) {
-              setExportError(
-                exportRequestError instanceof Error
-                  ? exportRequestError.message
-                  : "The printable report could not be prepared."
-              );
-            } finally {
-              setExportBusy(null);
-            }
-          }
-          '''
 
           new_handler = '''  async function handlePrintReport() {
             setExportError(null);
@@ -83,24 +64,7 @@ jobs:
             } finally {
               setExportBusy(null);
             }
-          }
-          '''
-
-          old_renderer = '''function openPrintableReport(snapshot: ReportExportSnapshot) {
-            const printWindow = window.open("", "_blank", "width=1100,height=800");
-
-            if (!printWindow) {
-              throw new Error("Pop-up was blocked. Allow pop-ups for Ysabelle Store and try again.");
-            }
-
-            printWindow.opener = null;
-            printWindow.document.open();
-            printWindow.document.write(buildPrintableReport(snapshot));
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.setTimeout(() => printWindow.print(), 250);
-          }
-          '''
+          }'''
 
           new_renderer = '''function renderPrintableReport(printWindow: Window, snapshot: ReportExportSnapshot) {
             printWindow.document.open();
@@ -108,21 +72,36 @@ jobs:
             printWindow.document.close();
             printWindow.focus();
             printWindow.setTimeout(() => printWindow.print(), 250);
-          }
-          '''
+          }'''
 
-          if old_handler not in source:
-              raise SystemExit("Expected print handler was not found.")
-          if old_renderer not in source:
-              raise SystemExit("Expected printable renderer was not found.")
+          source, handler_count = re.subn(
+              r'  async function handlePrintReport\(\) \{.*?\n  \}\n\n  return \(',
+              new_handler + '\n\n  return (',
+              source,
+              count=1,
+              flags=re.S,
+          )
+          source, renderer_count = re.subn(
+              r'function openPrintableReport\(snapshot: ReportExportSnapshot\) \{.*?\n\}\n\nfunction buildPrintableReport',
+              new_renderer + '\n\nfunction buildPrintableReport',
+              source,
+              count=1,
+              flags=re.S,
+          )
 
-          source = source.replace(old_handler, new_handler).replace(old_renderer, new_renderer)
+          if handler_count != 1:
+              raise SystemExit(f"Expected one print handler replacement, got {handler_count}.")
+          if renderer_count != 1:
+              raise SystemExit(f"Expected one printable renderer replacement, got {renderer_count}.")
+
           path.write_text(source)
           PY
       - name: Normalize Reports QoL formatting with CI formatter
         run: npx prettier --write frontend/src/pages/ReportsPage.tsx
       - name: Verify Reports QoL formatting
         run: npx prettier --check frontend/src/pages/ReportsPage.tsx
+      - name: Build frontend after print QoL patch
+        run: npm run build --workspace frontend
       - name: Commit QoL fix if needed
         shell: bash
         run: |
