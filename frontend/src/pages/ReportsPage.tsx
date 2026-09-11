@@ -210,14 +210,28 @@ export function ReportsPage() {
   }
 
   async function handlePrintReport() {
-    setExportBusy("print");
     setExportError(null);
+
+    const printWindow = window.open("", "_blank", "width=1100,height=800");
+    if (!printWindow) {
+      setExportError("Pop-up was blocked. Allow pop-ups for Ysabelle Store and try again.");
+      return;
+    }
+
+    printWindow.opener = null;
+    printWindow.document.open();
+    printWindow.document.write(
+      '<!doctype html><title>Preparing report…</title><p style="font:14px Arial;padding:24px">Preparing Ysabelle Store report…</p>'
+    );
+    printWindow.document.close();
+    setExportBusy("print");
 
     try {
       const snapshot = await prepareExportSnapshot();
-      openPrintableReport(snapshot);
+      renderPrintableReport(printWindow, snapshot);
       setExportOpen(false);
     } catch (exportRequestError) {
+      printWindow.close();
       setExportError(
         exportRequestError instanceof Error
           ? exportRequestError.message
@@ -631,14 +645,7 @@ function downloadReportCsv(snapshot: ReportExportSnapshot) {
   URL.revokeObjectURL(url);
 }
 
-function openPrintableReport(snapshot: ReportExportSnapshot) {
-  const printWindow = window.open("", "_blank", "width=1100,height=800");
-
-  if (!printWindow) {
-    throw new Error("Pop-up was blocked. Allow pop-ups for Ysabelle Store and try again.");
-  }
-
-  printWindow.opener = null;
+function renderPrintableReport(printWindow: Window, snapshot: ReportExportSnapshot) {
   printWindow.document.open();
   printWindow.document.write(buildPrintableReport(snapshot));
   printWindow.document.close();
