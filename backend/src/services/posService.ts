@@ -169,7 +169,7 @@ export async function searchPosProducts(
 }
 
 export async function checkoutPosSale(input: {
-  cashReceived: string;
+  cashReceived?: string;
   cashierId: string;
   cashierName: string;
   notes?: string | null;
@@ -185,7 +185,6 @@ export async function checkoutPosSale(input: {
 
   const saleDate = new Date();
   const saleNumber = generateSaleNumber(saleDate);
-  const cashReceived = toDecimal(input.cashReceived);
 
   const result: CheckoutResult = await prisma.$transaction(async (tx) => {
     const products = await tx.product.findMany({
@@ -238,6 +237,8 @@ export async function checkoutPosSale(input: {
     );
     const discountAmount = new Prisma.Decimal(0);
     const totalAmount = subtotalAmount.sub(discountAmount);
+    const cashReceived =
+      input.cashReceived === undefined ? totalAmount : toDecimal(input.cashReceived);
 
     if (cashReceived.lessThan(totalAmount)) {
       throw new HttpError(422, "Cash received is less than the sale total.", {
