@@ -185,13 +185,6 @@ export function PosPage() {
     options: { announceAdded?: boolean; clearScannerAfterAction?: boolean } = {}
   ) {
     if (product.availableStock <= 0) {
-      const message = "This product is out of stock.";
-      setCheckoutError(message);
-      setSearchState((current) => ({
-        ...current,
-        error: message,
-        status: "error"
-      }));
       return false;
     }
 
@@ -213,13 +206,7 @@ export function PosPage() {
       }
 
       if (existingLine.quantity >= product.availableStock) {
-        const message = `Only ${product.availableStock} units are available for ${product.name}.`;
-        setCheckoutError(message);
-        setSearchState((current) => ({
-          ...current,
-          error: message,
-          status: "error"
-        }));
+        setCheckoutError(`Only ${product.availableStock} units are available for ${product.name}.`);
         return currentLines;
       }
 
@@ -395,18 +382,7 @@ export function PosPage() {
       });
 
       if (!response.success || !response.data) {
-        const message = response.message || "Checkout failed.";
-        setCheckoutError(message);
-        setSearchState((current) => ({
-          ...current,
-          error: message,
-          status: "error"
-        }));
-        pushToast({
-          message,
-          title: "Checkout failed",
-          variant: "error"
-        });
+        setCheckoutError(response.message || "Checkout failed.");
         return;
       }
 
@@ -427,18 +403,7 @@ export function PosPage() {
         void handleSearch();
       }
     } catch {
-      const message = "The POS checkout service is unavailable.";
-      setCheckoutError(message);
-      setSearchState((current) => ({
-        ...current,
-        error: message,
-        status: "error"
-      }));
-      pushToast({
-        message,
-        title: "Checkout failed",
-        variant: "error"
-      });
+      setCheckoutError("The POS checkout service is unavailable.");
     } finally {
       setIsCheckingOut(false);
     }
@@ -491,7 +456,7 @@ export function PosPage() {
                 <div>
                   <CardTitle>Product search</CardTitle>
                   <p className="mt-1 text-sm text-slate-500">
-                    Use a USB barcode scanner or manually search by product name, barcode, or SKU.
+                    Use a USB barcode scanner or search by product name, barcode, SKU, or price.
                   </p>
                 </div>
                 <StatusBadge variant={searchBadge.variant}>{searchBadge.label}</StatusBadge>
@@ -510,7 +475,7 @@ export function PosPage() {
                   <input
                     aria-label="Scan barcode or search product"
                     className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-                    placeholder="Scan barcode or type product name / SKU"
+                    placeholder="Scan barcode or search name / SKU / price"
                     ref={scannerInputRef}
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
@@ -565,7 +530,7 @@ export function PosPage() {
               {searchState.isLoading ? (
                 <LoadingState
                   badge="Searching"
-                  helper="Checking the live product catalog for matching barcodes, SKUs, and item names."
+                  helper="Checking the live product catalog for matching barcodes, SKUs, prices, and item names."
                   label="Loading product matches"
                 />
               ) : shouldShowNoResults ? (
@@ -686,7 +651,7 @@ export function PosPage() {
                 </div>
               ) : (
                 <EmptyState
-                  description="Enter a barcode, SKU, or product name to search inventory."
+                  description="Enter a barcode, SKU, product name, or price to search inventory."
                   icon={PackageSearch}
                   title={searchState.status === "ready" ? "No search yet" : "No match"}
                 />
