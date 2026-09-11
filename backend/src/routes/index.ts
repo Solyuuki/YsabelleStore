@@ -13,6 +13,7 @@ import { inventoryRouter } from "./inventory.routes.js";
 import { posRouter } from "./pos.routes.js";
 import { productRouter } from "./product.routes.js";
 import { productsRouter } from "./products.routes.js";
+import restockRouter from "./restock.routes.js";
 import { salesRouter } from "./sales.routes.js";
 import { searchRouter } from "./search.routes.js";
 import { storefrontRouter } from "./storefront.routes.js";
@@ -32,6 +33,7 @@ export const apiRouteGroups: readonly RouteGroup[] = [
     module: "Historical sales data management",
     status: "implemented"
   },
+  { path: "/api/restock-orders", module: "Restock orders", status: "implemented" },
   { path: "/api/recommendations", module: "Recommendations", status: "planned" },
   { path: "/api/imports", module: "Imports", status: "planned" },
   { path: "/api/reports", module: "Reports", status: "planned" },
@@ -54,6 +56,7 @@ router.use("/pos", posRouter);
 router.use("/catalog/products", productRouter);
 router.use("/catalog/categories", categoryRouter);
 router.use("/inventory", inventoryRouter);
+router.use("/restock-orders", restockRouter);
 router.use("/sales", salesRouter);
 router.use("/search", searchRouter);
 router.use("/storefront", storefrontRouter);
