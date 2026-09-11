@@ -60,7 +60,10 @@ function isKnownPrismaError(error: unknown): error is Prisma.PrismaClientKnownRe
 }
 
 function generateRestockOrderNumber(date = new Date()) {
-  const timestamp = date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "");
+  const timestamp = date
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}Z$/, "");
   const suffix = randomBytes(3).toString("hex").toUpperCase();
   return `RO-${timestamp}-${suffix}`;
 }
@@ -156,9 +159,7 @@ function lineCreateData(orderId: string, line: DraftLine) {
     order: { connect: { id: orderId } },
     ownerOverrideReason: line.ownerOverrideReason ?? null,
     product: { connect: { id: line.productId } },
-    recommendation: line.recommendationId
-      ? { connect: { id: line.recommendationId } }
-      : undefined,
+    recommendation: line.recommendationId ? { connect: { id: line.recommendationId } } : undefined,
     recommendationSource: line.recommendationSource,
     recommendedQuantity: line.recommendedQuantity,
     requestedQuantity: line.requestedQuantity,
