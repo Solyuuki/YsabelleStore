@@ -8,12 +8,12 @@ assert.match(pageSource, /product name, barcode, SKU, or price/);
 assert.match(pageSource, /Scan barcode or search name \/ SKU \/ price/);
 
 const addProductToCartSource = pageSource.match(
-  /function addProductToCart\([\s\S]*?\n  async function handleSearch/
+  /function addProductToCart\([\s\S]*?\n {2}async function handleSearch/
 )?.[0];
 assert.ok(addProductToCartSource, "POS add-to-cart handler must remain present.");
 
 const outOfStockGuard = addProductToCartSource.match(
-  /if \(product\.availableStock <= 0\) \{([\s\S]*?)\n    \}/
+  /if \(product\.availableStock <= 0\) \{([\s\S]*?)\n {4}\}/
 )?.[1];
 assert.ok(outOfStockGuard, "POS must guard out-of-stock products before cart mutation.");
 assert.doesNotMatch(
@@ -28,7 +28,7 @@ assert.match(
 );
 
 const checkoutSource = pageSource.match(
-  /async function handleCheckout\(\) \{[\s\S]*?\n  function handleVoidSale/
+  /async function handleCheckout\(\) \{[\s\S]*?\n {2}function handleVoidSale/
 )?.[0];
 assert.ok(checkoutSource, "POS checkout handler must remain present.");
 assert.doesNotMatch(
