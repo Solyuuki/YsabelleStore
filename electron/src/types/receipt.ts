@@ -25,9 +25,9 @@ export type ReceiptPrintPayload = {
 export type ReceiptPrinterInfo = {
   description: string;
   displayName: string;
-  isDefault: boolean;
+  isDefault?: boolean;
   name: string;
-  status: number;
+  status?: number;
 };
 
 export type ReceiptPrinterSelectionSource = "auto" | "none" | "saved";
