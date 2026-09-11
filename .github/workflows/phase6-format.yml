@@ -3,7 +3,7 @@ name: Phase 6 Format
 on:
   push:
     branches:
-      - "sprint/v0.10/sprint-10"
+      - "m1/v0.9/feat/customer-social-auth"
     paths:
       - ".github/workflows/phase6-format.yml"
   workflow_dispatch:
@@ -17,100 +17,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: sprint/v0.10/sprint-10
+          ref: m1/v0.9/feat/customer-social-auth
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Apply reliable print-window behavior
+      - name: Normalize repository formatting with CI formatter
+        run: npx prettier --write .
+      - name: Verify repository formatting
+        run: npx prettier --check .
+      - name: Commit formatting if needed
         shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path("frontend/src/pages/ReportsPage.tsx")
-          source = path.read_text()
-
-          new_handler = '''  async function handlePrintReport() {
-            setExportError(null);
-
-            const printWindow = window.open("", "_blank", "width=1100,height=800");
-            if (!printWindow) {
-              setExportError("Pop-up was blocked. Allow pop-ups for Ysabelle Store and try again.");
-              return;
-            }
-
-            printWindow.opener = null;
-            printWindow.document.open();
-            printWindow.document.write(
-              '<!doctype html><title>Preparing report…</title><p style="font:14px Arial;padding:24px">Preparing Ysabelle Store report…</p>'
-            );
-            printWindow.document.close();
-            setExportBusy("print");
-
-            try {
-              const snapshot = await prepareExportSnapshot();
-              renderPrintableReport(printWindow, snapshot);
-              setExportOpen(false);
-            } catch (exportRequestError) {
-              printWindow.close();
-              setExportError(
-                exportRequestError instanceof Error
-                  ? exportRequestError.message
-                  : "The printable report could not be prepared."
-              );
-            } finally {
-              setExportBusy(null);
-            }
-          }'''
-
-          new_renderer = '''function renderPrintableReport(printWindow: Window, snapshot: ReportExportSnapshot) {
-            printWindow.document.open();
-            printWindow.document.write(buildPrintableReport(snapshot));
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.setTimeout(() => printWindow.print(), 250);
-          }'''
-
-          source, handler_count = re.subn(
-              r'  async function handlePrintReport\(\) \{.*?\n  \}\n\n  return \(',
-              new_handler + '\n\n  return (',
-              source,
-              count=1,
-              flags=re.S,
-          )
-          source, renderer_count = re.subn(
-              r'function openPrintableReport\(snapshot: ReportExportSnapshot\) \{.*?\n\}\n\nfunction buildPrintableReport',
-              new_renderer + '\n\nfunction buildPrintableReport',
-              source,
-              count=1,
-              flags=re.S,
-          )
-
-          if handler_count != 1:
-              raise SystemExit(f"Expected one print handler replacement, got {handler_count}.")
-          if renderer_count != 1:
-              raise SystemExit(f"Expected one printable renderer replacement, got {renderer_count}.")
-
-          path.write_text(source)
-          PY
-      - name: Normalize Reports QoL formatting with CI formatter
-        run: npx prettier --write frontend/src/pages/ReportsPage.tsx
-      - name: Verify Reports QoL formatting
-        run: npx prettier --check frontend/src/pages/ReportsPage.tsx
-      - name: Build frontend after print QoL patch
-        run: npm run build --workspace frontend
-      - name: Commit QoL fix if needed
-        shell: bash
-        run: |
-          if git diff --quiet -- frontend/src/pages/ReportsPage.tsx; then
-            echo "ReportsPage is already up to date."
+          if git diff --quiet; then
+            echo "Repository is already formatted."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frontend/src/pages/ReportsPage.tsx
-          HUSKY=0 git commit -m "fix(reports): make printable export popup reliable"
-          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
+          git add -u
+          git add .github/workflows/phase6-format.yml
+          HUSKY=0 git commit -m "style: normalize repository formatting for phase 6 gate"
+          HUSKY=0 git push origin HEAD:m1/v0.9/feat/customer-social-auth
