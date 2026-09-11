@@ -90,3 +90,37 @@ test("POS search resolves name, SKU, primary barcode, alternate barcode, and pri
     );
   }
 });
+
+test("mapped source identities resolve to the canonical POS product", async () => {
+  const sourceToken = token();
+  const canonicalToken = token();
+  const source = await createProduct(productInput(sourceToken));
+  const canonical = await createProduct({
+    ...productInput(canonicalToken),
+    name: `Canonical POS Product ${canonicalToken}`,
+    sellingPrice: "888.88"
+  });
+
+  await prisma.productCanonicalMapping.create({
+    data: {
+      sourceProductId: source.id,
+      canonicalProductId: canonical.id,
+      matchType: "MANUAL_REVIEW",
+      action: "MAPPED",
+      reason: "POS canonical identity regression fixture.",
+      evidence: {
+        test: "pos-mapped-identity"
+      },
+      automated: false
+    }
+  });
+
+  const sourceQueries = [source.name, source.sku, source.barcode ?? ""];
+
+  for (const query of sourceQueries) {
+    const result = await searchPosProducts(query, { page: 1, pageSize: 20 });
+    assert.equal(result.products.length, 1, `expected one canonical result for ${query}`);
+    assert.equal(result.products[0]?.id, canonical.id, `expected ${query} to resolve canonical product`);
+    assert.notEqual(result.products[0]?.id, source.id, "source duplicate must never be sold directly");
+  }
+});
