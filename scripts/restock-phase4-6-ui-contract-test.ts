@@ -29,9 +29,18 @@ assert.doesNotMatch(panelSource, /stockInInventory\s*\(/);
 assert.doesNotMatch(apiSource, /\/api\/inventory\/.*stock-in/);
 
 assert.match(apiSource, /\/api\/restock-orders\/planning/);
-assert.match(apiSource, /\/api\/restock-orders\/recommendations\/\$\{encodeURIComponent\(recommendationId\)\}\/dismiss/);
+assert.match(
+  apiSource,
+  /\/api\/restock-orders\/recommendations\/\$\{encodeURIComponent\(recommendationId\)\}\/dismiss/
+);
 assert.match(apiSource, /"\/api\/restock-orders"/);
-assert.match(apiSource, /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/lines/);
-assert.match(apiSource, /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/approve/);
+assert.match(
+  apiSource,
+  /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/lines/
+);
+assert.match(
+  apiSource,
+  /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/approve/
+);
 
 console.log("Restock Phase 4-6 Reports UI contract passed.");
