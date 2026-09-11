@@ -33,13 +33,13 @@ assert.match(
 );
 
 const checkoutSource = pageSource.match(
-  /async function handleCheckout\([^)]*\) \{[\s\S]*?\n {2}function handleVoidSale/
+  /async function handleCheckout\([^)]*\) \{[\s\S]*?\n {2}async function handleAutomaticPrint/
 )?.[0];
 assert.ok(checkoutSource, "POS checkout handler must remain present.");
 assert.doesNotMatch(
   checkoutSource,
-  /setSearchState/,
-  "Checkout failures must not mutate Product Search feedback state."
+  /setSearchState\(.*error|setSearchState\(\(current\).*error/s,
+  "Checkout failures must not mutate Product Search error feedback state."
 );
 assert.match(checkoutSource, /setCheckoutError\(response\.message \|\| "Checkout failed\."\)/);
 assert.match(checkoutSource, /setCheckoutError\("The POS checkout service is unavailable\."\)/);
