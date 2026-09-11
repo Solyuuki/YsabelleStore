@@ -7,9 +7,7 @@ export const receiptPrintReadyChannel = "ysabellestore:request:receipt-print-rea
 export type ReceiptPrinterInfo = {
   description: string;
   displayName: string;
-  isDefault: boolean;
   name: string;
-  status: number;
 };
 
 export type ReceiptPrinterStatus = {
