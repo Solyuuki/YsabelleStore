@@ -130,7 +130,7 @@ export function ReportsPage() {
       <PageHeader
         eyebrow="Owner area"
         title="Reports"
-        description="Live operational reporting for sales, stock health, expiry attention, and Owner-controlled restock planning from the current database."
+        description="A quick operational view of sales, stock health, and expiry attention. Restock actions are grouped separately below so the report stays easy to scan."
       />
 
       {loading && !summary ? (
@@ -149,13 +149,11 @@ export function ReportsPage() {
 
       {summary ? (
         <>
-          <section className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3">
+          <section className="grid gap-4 lg:grid-cols-3 xl:grid-cols-5">
             {stats.map((stat) => (
               <StatCard key={stat.title} {...stat} />
             ))}
           </section>
-
-          <RestockPlanningPanel />
 
           <section className="grid gap-4 xl:grid-cols-[0.7fr_1.3fr]">
             <Card>
@@ -205,6 +203,8 @@ export function ReportsPage() {
               </CardContent>
             </Card>
           </section>
+
+          <RestockPlanningPanel />
         </>
       ) : null}
     </div>
