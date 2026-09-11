@@ -1,7 +1,8 @@
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
-import { stockInBatch } from "../services/stockDomainService.js";
+import { storefrontProductWhere } from "../services/catalogQualityPolicy.js";
+import { getSellableStockQuantity, stockInBatch } from "../services/stockDomainService.js";
 
 const APPLY = process.argv.includes("--apply");
 const EXPECTED_PRODUCT_COUNT = 50;
@@ -174,10 +175,15 @@ try {
       { maxWait: 10_000, timeout: 120_000 }
     );
 
-    const [batchCount, movementCount, aggregateStock] = await Promise.all([
+    const [batchCount, movementCount, aggregateStock, storefrontProducts] = await Promise.all([
       prisma.inventoryBatch.count({ where: { batchCode: { startsWith: "QA50-" } } }),
       prisma.inventoryMovement.count({ where: { referenceId: QA_REFERENCE } }),
-      prisma.inventory.aggregate({ _sum: { quantityOnHand: true } })
+      prisma.inventory.aggregate({ _sum: { quantityOnHand: true } }),
+      prisma.product.findMany({
+        include: { inventoryBatches: true },
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        where: storefrontProductWhere()
+      })
     ]);
 
     if (batchCount !== EXPECTED_PRODUCT_COUNT || movementCount !== EXPECTED_PRODUCT_COUNT) {
@@ -186,10 +192,22 @@ try {
       );
     }
 
+    const storefrontSellable = storefrontProducts.filter(
+      (product) => getSellableStockQuantity(product.inventoryBatches) > 0
+    );
+
     console.log(
       `\nVerified-50 stock seed complete. Created ${batchCount} batches and ${movementCount} stock-in movements.`
     );
     console.log(`Current aggregate physical stock: ${aggregateStock._sum.quantityOnHand ?? 0}`);
+    console.log(`Storefront-eligible products:     ${storefrontProducts.length}`);
+    console.log(`Storefront products with stock:   ${storefrontSellable.length}`);
+
+    if (storefrontProducts.length !== storefrontSellable.length) {
+      console.warn(
+        "Some storefront-eligible products still have zero sellable stock; inspect their batch lifecycle before storefront QA."
+      );
+    }
   }
 } finally {
   await prisma.$disconnect();
