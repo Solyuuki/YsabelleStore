@@ -3,9 +3,7 @@ import type { RetailReceiptData } from "@/types/receipt";
 type ReceiptPrinterInfo = {
   description: string;
   displayName: string;
-  isDefault: boolean;
   name: string;
-  status: number;
 };
 
 type ReceiptPrinterStatus = {
