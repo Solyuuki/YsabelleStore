@@ -18,6 +18,10 @@ function getBridge(): PrintBridge | undefined {
   return (window.electron ?? window.ysabelleStore) as PrintBridge | undefined;
 }
 
+export function hasNativeReceiptPrinter() {
+  return Boolean(getBridge()?.receipt?.print);
+}
+
 export function encodeReceiptPayload(receipt: RetailReceiptData) {
   const json = JSON.stringify(receipt);
   const utf8Bytes = new TextEncoder().encode(json);
@@ -56,6 +60,21 @@ export function getReceiptPreviewUrl(receipt: RetailReceiptData) {
   url.searchParams.set("data", encodeReceiptPayload(receipt));
 
   return url.toString();
+}
+
+/**
+ * Automatically print only through the desktop/native receipt bridge. Browser QA must stay
+ * nonblocking after checkout; manual reprint can still open the browser print preview.
+ */
+export async function requestAutomaticReceiptPrint(receipt: RetailReceiptData) {
+  const bridge = getBridge();
+
+  if (!bridge?.receipt?.print) {
+    return false;
+  }
+
+  await bridge.receipt.print(receipt);
+  return true;
 }
 
 export async function requestReceiptPrint(receipt: RetailReceiptData) {
