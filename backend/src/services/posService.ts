@@ -331,9 +331,9 @@ export async function checkoutPosSale(input: {
     return {
       sale: {
         cashierName: input.cashierName,
-        cashReceived: cashReceived.toFixed(2),
+        cashReceived: cashReceived.toString(),
         discountAmount: sale.discountAmount.toString(),
-        change: change.toFixed(2),
+        change: change.toString(),
         id: sale.id,
         itemCount: saleItems.reduce((sum, item) => sum + item.quantity, 0),
         items: saleItems,
