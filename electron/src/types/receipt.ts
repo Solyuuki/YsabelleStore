@@ -21,3 +21,28 @@ export type ReceiptPrintPayload = {
   taxAmount?: string | null;
   total: string;
 };
+
+export type ReceiptPrinterInfo = {
+  description: string;
+  displayName: string;
+  isDefault: boolean;
+  name: string;
+  status: number;
+};
+
+export type ReceiptPrinterSelectionSource = "auto" | "none" | "saved";
+
+export type ReceiptPrinterStatus = {
+  activePrinterName: string | null;
+  availablePrinters: ReceiptPrinterInfo[];
+  isAvailable: boolean;
+  selectedPrinterName: string | null;
+  source: ReceiptPrinterSelectionSource;
+};
+
+export type ReceiptPrintResult = {
+  printed: boolean;
+  printerName: string | null;
+  reason: string | null;
+  requestId: string;
+};
