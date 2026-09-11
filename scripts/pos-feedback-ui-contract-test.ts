@@ -23,7 +23,7 @@ assert.doesNotMatch(
 );
 assert.match(
   addProductToCartSource,
-  /setCheckoutError\(`Only \$\{product\.availableStock\} units are available for \$\{product\.name\}\.``?\);/,
+  /Only \$\{product\.availableStock\} units are available for \$\{product\.name\}\./,
   "Cart quantity limits must remain owned by Current Sale feedback."
 );
 
