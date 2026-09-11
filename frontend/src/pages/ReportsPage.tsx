@@ -25,17 +25,10 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import {
-  fetchInventory,
-  type InventoryRecord,
-  type PaginationMeta
-} from "@/services/catalogApi";
+import { fetchInventory, type InventoryRecord, type PaginationMeta } from "@/services/catalogApi";
 import { fetchDashboardSummary, type DashboardSummary } from "@/services/dashboardApi";
 import { listRecentSales } from "@/services/posService";
-import {
-  listRestockPlanning,
-  type RestockPlanningCandidate
-} from "@/services/restockApi";
+import { listRestockPlanning, type RestockPlanningCandidate } from "@/services/restockApi";
 import type { PosSale } from "@/types/pos";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
@@ -184,7 +177,10 @@ export function ReportsPage() {
       throw new Error("Report data is not ready yet.");
     }
 
-    const [inventory, restock] = await Promise.all([fetchAllInventory(), fetchAllRestockPlanning()]);
+    const [inventory, restock] = await Promise.all([
+      fetchAllInventory(),
+      fetchAllRestockPlanning()
+    ]);
 
     return {
       completedSales,
@@ -290,8 +286,8 @@ export function ReportsPage() {
                 ))}
               </div>
               <div className="border-t border-slate-100 px-4 py-2 text-xs text-slate-500">
-                Live snapshot generated {formatGeneratedAt(summary.generatedAt)}. Recent sales metrics use
-                up to the latest 50 persisted sale records.
+                Live snapshot generated {formatGeneratedAt(summary.generatedAt)}. Recent sales
+                metrics use up to the latest 50 persisted sale records.
               </div>
             </CardContent>
           </Card>
@@ -311,8 +307,8 @@ export function ReportsPage() {
                   <MiniMetric label="Average receipt" value={currency(averageReceipt)} />
                 </div>
                 <p className="mt-3 text-xs leading-5 text-slate-500">
-                  Operational snapshot only. Download the report for a clean printable or spreadsheet
-                  copy with detailed stock rows.
+                  Operational snapshot only. Download the report for a clean printable or
+                  spreadsheet copy with detailed stock rows.
                 </p>
               </CardContent>
             </Card>
@@ -389,7 +385,11 @@ function CompactSummaryStat({ detail, icon: Icon, label, value, warning }: Compa
         <span className="truncate">{label}</span>
       </div>
       <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{value}</p>
-      <p className={warning ? "mt-1 truncate text-xs text-amber-700" : "mt-1 truncate text-xs text-slate-500"}>
+      <p
+        className={
+          warning ? "mt-1 truncate text-xs text-amber-700" : "mt-1 truncate text-xs text-slate-500"
+        }
+      >
         {detail}
       </p>
     </div>
@@ -474,13 +474,16 @@ function InventoryHealthCard({ summary }: { summary: DashboardSummary }) {
             <span className="font-semibold text-slate-700">{inventory.availableItems}</span> active
           </span>
           <span>
-            <span className="font-semibold text-slate-700">{inventory.unavailableItems}</span> inactive
+            <span className="font-semibold text-slate-700">{inventory.unavailableItems}</span>{" "}
+            inactive
           </span>
           <span>
-            <span className="font-semibold text-slate-700">{inventory.lowStockItems}</span> low stock
+            <span className="font-semibold text-slate-700">{inventory.lowStockItems}</span> low
+            stock
           </span>
           <span>
-            <span className="font-semibold text-slate-700">{inventory.outOfStockItems}</span> out of stock
+            <span className="font-semibold text-slate-700">{inventory.outOfStockItems}</span> out of
+            stock
           </span>
         </div>
       </CardContent>
@@ -500,7 +503,11 @@ function HealthValue({
   return (
     <div className="min-w-0">
       <p className="truncate text-xs text-slate-500">{label}</p>
-      <p className={warning ? "text-lg font-semibold text-amber-700" : "text-lg font-semibold text-slate-950"}>
+      <p
+        className={
+          warning ? "text-lg font-semibold text-amber-700" : "text-lg font-semibold text-slate-950"
+        }
+      >
         {value.toLocaleString()}
       </p>
     </div>
@@ -508,7 +515,9 @@ function HealthValue({
 }
 
 async function fetchAllInventory() {
-  return fetchEveryPage<InventoryRecord>((page) => fetchInventory({ page, pageSize: EXPORT_PAGE_SIZE }));
+  return fetchEveryPage<InventoryRecord>((page) =>
+    fetchInventory({ page, pageSize: EXPORT_PAGE_SIZE })
+  );
 }
 
 async function fetchAllRestockPlanning() {
