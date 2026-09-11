@@ -106,10 +106,11 @@ export async function listRestockPlanning(
   options: Pick<RequestInit, "signal"> = {}
 ): Promise<{ items: RestockPlanningCandidate[]; meta: PaginationMeta }> {
   const queryString = buildQueryString(query);
-  const response = await apiClient.request<RestockPlanningCandidate[], { code?: string }, PaginationMeta>(
-    `/api/restock-orders/planning${queryString ? `?${queryString}` : ""}`,
-    options
-  );
+  const response = await apiClient.request<
+    RestockPlanningCandidate[],
+    { code?: string },
+    PaginationMeta
+  >(`/api/restock-orders/planning${queryString ? `?${queryString}` : ""}`, options);
 
   if (!response.success || !response.data) {
     throw new Error(response.message);
