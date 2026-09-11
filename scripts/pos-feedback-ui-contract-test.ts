@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const pageSource = readFileSync(resolve(process.cwd(), "src/pages/PosPage.tsx"), "utf8");
+const pageSource = readFileSync(resolve(process.cwd(), "src/pages/PosPageV2.tsx"), "utf8");
 
-assert.match(pageSource, /product name, barcode, SKU, or price/);
+assert.match(pageSource, /USB barcode scanners work as keyboard input/);
 assert.match(pageSource, /Scan barcode or search name \/ SKU \/ price/);
 
 const addProductToCartSource = pageSource.match(
@@ -16,10 +16,15 @@ const outOfStockGuard = addProductToCartSource.match(
   /if \(product\.availableStock <= 0\) \{([\s\S]*?)\n {4}\}/
 )?.[1];
 assert.ok(outOfStockGuard, "POS must guard out-of-stock products before cart mutation.");
+assert.match(
+  outOfStockGuard,
+  /setCheckoutError/,
+  "Out-of-stock feedback must remain owned by Current Sale."
+);
 assert.doesNotMatch(
   outOfStockGuard,
-  /setCheckoutError|setSearchState|pushToast/,
-  "Finding an out-of-stock product must not create duplicate search/cart/toast errors."
+  /setSearchState|pushToast/,
+  "Finding an out-of-stock product must not create duplicate search or toast feedback."
 );
 assert.match(
   addProductToCartSource,
@@ -28,7 +33,7 @@ assert.match(
 );
 
 const checkoutSource = pageSource.match(
-  /async function handleCheckout\(\) \{[\s\S]*?\n {2}function handleVoidSale/
+  /async function handleCheckout\([^)]*\) \{[\s\S]*?\n {2}function handleVoidSale/
 )?.[0];
 assert.ok(checkoutSource, "POS checkout handler must remain present.");
 assert.doesNotMatch(
