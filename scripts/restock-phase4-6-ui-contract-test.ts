@@ -38,13 +38,7 @@ assert.match(
   /\/api\/restock-orders\/recommendations\/\$\{encodeURIComponent\(recommendationId\)\}\/dismiss/
 );
 assert.match(apiSource, /"\/api\/restock-orders"/);
-assert.match(
-  apiSource,
-  /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/lines/
-);
-assert.match(
-  apiSource,
-  /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/approve/
-);
+assert.match(apiSource, /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/lines/);
+assert.match(apiSource, /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/approve/);
 
 console.log("Restock Phase 4-6 Reports QoL contract passed.");
