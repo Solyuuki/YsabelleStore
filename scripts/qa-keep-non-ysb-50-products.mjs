@@ -194,7 +194,9 @@ try {
 
   if (!APPLY) {
     console.log("\nDry run passed. No database rows were changed.");
-    console.log("Run `npm run qa:catalog50:apply` to permanently remove the non-survivor products.");
+    console.log(
+      "Run `node --env-file=.env scripts/qa-keep-non-ysb-50-products.mjs --apply` to permanently remove the non-survivor products."
+    );
   } else {
     await applyPlan(plan);
     console.log(
