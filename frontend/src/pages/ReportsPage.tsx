@@ -1,6 +1,7 @@
 import { Boxes, CalendarClock, PackageOpen, ReceiptText, TriangleAlert } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
@@ -129,7 +130,7 @@ export function ReportsPage() {
       <PageHeader
         eyebrow="Owner area"
         title="Reports"
-        description="Live operational reporting for sales, stock health, and expiry attention from the current database."
+        description="Live operational reporting for sales, stock health, expiry attention, and Owner-controlled restock planning from the current database."
       />
 
       {loading && !summary ? (
@@ -153,6 +154,8 @@ export function ReportsPage() {
               <StatCard key={stat.title} {...stat} />
             ))}
           </section>
+
+          <RestockPlanningPanel />
 
           <section className="grid gap-4 xl:grid-cols-[0.7fr_1.3fr]">
             <Card>
