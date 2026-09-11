@@ -4,6 +4,7 @@ const prisma = new PrismaClient();
 const APPLY = process.argv.includes("--apply");
 const EXPECTED_KEEP_COUNT = 50;
 const INTERNAL_PREFIX = "YSB-";
+const VERIFIED_SKU_PREFIX = "SARIMA-";
 
 function fail(message) {
   throw new Error(`Verified-50 QA cleanup aborted: ${message}`);
@@ -29,8 +30,16 @@ function assertLocalDatabase() {
   }
 }
 
+function isExternalBarcode(barcode) {
+  return Boolean(barcode) && !barcode.startsWith(INTERNAL_PREFIX);
+}
+
 function isKeepProduct(product) {
-  return Boolean(product.barcode) && !product.barcode.startsWith(INTERNAL_PREFIX);
+  return (
+    product.sku.startsWith(VERIFIED_SKU_PREFIX) &&
+    product.dataQualityStatus === "APPROVED" &&
+    isExternalBarcode(product.barcode)
+  );
 }
 
 async function loadPlan() {
@@ -61,21 +70,40 @@ async function loadPlan() {
   const keep = products.filter(isKeepProduct);
   const remove = products.filter((product) => !isKeepProduct(product));
   const internal = remove.filter((product) => product.barcode?.startsWith(INTERNAL_PREFIX));
+  const rejectedSarimaExternal = remove.filter(
+    (product) =>
+      product.sku.startsWith(VERIFIED_SKU_PREFIX) &&
+      isExternalBarcode(product.barcode) &&
+      product.dataQualityStatus !== "APPROVED"
+  );
+  const legacyExternal = remove.filter(
+    (product) => !product.sku.startsWith(VERIFIED_SKU_PREFIX) && isExternalBarcode(product.barcode)
+  );
   const missingBarcode = remove.filter((product) => !product.barcode);
 
-  return { products, keep, remove, internal, missingBarcode };
+  return {
+    products,
+    keep,
+    remove,
+    internal,
+    rejectedSarimaExternal,
+    legacyExternal,
+    missingBarcode
+  };
 }
 
 function printPlan(plan) {
-  console.log(`\n${APPLY ? "APPLY" : "DRY RUN"} — verified-50 local QA catalog cleanup`);
+  console.log(`\n${APPLY ? "APPLY" : "DRY RUN"} — exact verified-50 local QA catalog cleanup`);
   console.log(`Products before:             ${plan.products.length}`);
-  console.log(`Products to keep:            ${plan.keep.length}`);
+  console.log(`Approved SARIMA to keep:     ${plan.keep.length}`);
   console.log(`YSB internal products:       ${plan.internal.length}`);
+  console.log(`Rejected SARIMA external:    ${plan.rejectedSarimaExternal.length}`);
+  console.log(`Legacy/non-SARIMA external:  ${plan.legacyExternal.length}`);
   console.log(`Products with no barcode:    ${plan.missingBarcode.length}`);
   console.log(`Products to delete:          ${plan.remove.length}`);
   console.log(`Required survivors:          ${EXPECTED_KEEP_COUNT}`);
 
-  console.log("\nProducts that would remain:");
+  console.log("\nVerified products that would remain:");
   console.table(
     plan.keep.map((product) => ({
       sku: product.sku,
@@ -91,7 +119,7 @@ function printPlan(plan) {
 async function assertPlan(plan) {
   if (plan.keep.length !== EXPECTED_KEEP_COUNT) {
     fail(
-      `expected exactly ${EXPECTED_KEEP_COUNT} non-YSB products to remain, found ${plan.keep.length}. No rows were changed.`
+      `expected exactly ${EXPECTED_KEEP_COUNT} APPROVED SARIMA products with external barcodes, found ${plan.keep.length}. No rows were changed.`
     );
   }
 
@@ -166,7 +194,12 @@ async function applyPlan(plan) {
       }
 
       const remaining = await tx.product.findMany({
-        select: { id: true, sku: true, barcode: true },
+        select: {
+          id: true,
+          sku: true,
+          barcode: true,
+          dataQualityStatus: true
+        },
         orderBy: [{ sku: "asc" }, { id: "asc" }]
       });
 
@@ -174,11 +207,11 @@ async function applyPlan(plan) {
         fail(`post-cleanup product count is ${remaining.length}, expected ${EXPECTED_KEEP_COUNT}.`);
       }
 
-      const unexpected = remaining.find(
-        (product) => !product.barcode || product.barcode.startsWith(INTERNAL_PREFIX)
-      );
+      const unexpected = remaining.find((product) => !isKeepProduct(product));
       if (unexpected) {
-        fail(`post-cleanup survivor ${unexpected.sku} still has a missing/internal barcode.`);
+        fail(
+          `post-cleanup survivor ${unexpected.sku} is outside the APPROVED SARIMA external-barcode cohort.`
+        );
       }
     },
     { maxWait: 10_000, timeout: 120_000 }
@@ -195,12 +228,12 @@ try {
   if (!APPLY) {
     console.log("\nDry run passed. No database rows were changed.");
     console.log(
-      "Run `node --env-file=.env scripts/qa-keep-non-ysb-50-products.mjs --apply` to permanently remove the non-survivor products."
+      "Run `node --env-file=.env scripts/qa-keep-non-ysb-50-products.mjs --apply` to permanently keep only the exact verified 50-product QA cohort."
     );
   } else {
     await applyPlan(plan);
     console.log(
-      `\nVerified-50 QA cleanup complete. Deleted ${plan.remove.length} products; exactly ${EXPECTED_KEEP_COUNT} non-YSB products remain.`
+      `\nVerified-50 QA cleanup complete. Deleted ${plan.remove.length} products; exactly ${EXPECTED_KEEP_COUNT} APPROVED SARIMA products with external barcodes remain.`
     );
   }
 } finally {
