@@ -8,12 +8,18 @@ import {
   restockOrderStatusSchema
 } from "../src/validators/restock.validators.js";
 
-const restockRouteSource = readFileSync(new URL("../src/routes/restock.routes.ts", import.meta.url), "utf8");
+const restockRouteSource = readFileSync(
+  new URL("../src/routes/restock.routes.ts", import.meta.url),
+  "utf8"
+);
 const restockServiceSource = readFileSync(
   new URL("../src/services/restockService.ts", import.meta.url),
   "utf8"
 );
-const posServiceSource = readFileSync(new URL("../src/services/posService.ts", import.meta.url), "utf8");
+const posServiceSource = readFileSync(
+  new URL("../src/services/posService.ts", import.meta.url),
+  "utf8"
+);
 
 test("Phase 4 restock lifecycle exposes the six planned statuses", () => {
   assert.deepEqual(restockOrderStatusSchema.options, [
@@ -79,7 +85,10 @@ test("Phase 5 only sales dirty affected SARIMA results", () => {
   assert.equal(getDomainChangeEffects("STOCK_ADJUSTED").forecast, "NONE");
   assert.equal(getDomainChangeEffects("TARGET_CHANGED").forecast, "NONE");
   assert.equal(getDomainChangeEffects("REORDER_LEVEL_CHANGED").forecast, "NONE");
-  assert.match(posServiceSource, /invalidateForecastCache\(normalizedItems\.map\(\(item\) => item\.productId\)\)/);
+  assert.match(
+    posServiceSource,
+    /invalidateForecastCache\(normalizedItems\.map\(\(item\) => item\.productId\)\)/
+  );
 });
 
 test("Phase 4-6 restock API is Owner-only and exposes planning through approval", () => {
@@ -87,8 +96,14 @@ test("Phase 4-6 restock API is Owner-only and exposes planning through approval"
   assert.match(restockRouteSource, /router\.get\("\/planning", listRestockPlanningController\)/);
   assert.match(restockRouteSource, /\/recommendations\/:recommendationId\/dismiss/);
   assert.match(restockRouteSource, /router\.post\("\/", createRestockOrderController\)/);
-  assert.match(restockRouteSource, /router\.put\("\/:orderId\/lines", replaceRestockOrderLinesController\)/);
-  assert.match(restockRouteSource, /router\.post\("\/:orderId\/approve", approveRestockOrderController\)/);
+  assert.match(
+    restockRouteSource,
+    /router\.put\("\/:orderId\/lines", replaceRestockOrderLinesController\)/
+  );
+  assert.match(
+    restockRouteSource,
+    /router\.post\("\/:orderId\/approve", approveRestockOrderController\)/
+  );
 });
 
 test("Phase 4-6 approval creates incoming intent without physical stock mutation", () => {
