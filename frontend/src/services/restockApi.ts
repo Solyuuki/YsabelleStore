@@ -78,18 +78,24 @@ export type RestockOrder = {
   lines: RestockOrderLine[];
 };
 
-type PaginationMeta = {
+export type PaginationMeta = {
   page: number;
   pageSize: number;
   totalItems: number;
   totalPages: number;
 };
 
-function buildQueryString(params: Record<string, string | number | boolean | undefined>) {
+type QueryValue = string | number | boolean | readonly string[] | undefined;
+
+function buildQueryString(params: Record<string, QueryValue>) {
   const query = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined || value === "") return;
+    if (Array.isArray(value)) {
+      if (value.length > 0) query.set(key, value.join(","));
+      return;
+    }
     query.set(key, String(value));
   });
 
@@ -129,7 +135,9 @@ export async function listRestockPlanning(
 
 export async function listRestockOrders(
   query: {
+    search?: string;
     status?: RestockOrderStatus;
+    statuses?: readonly RestockOrderStatus[];
     page?: number;
     pageSize?: number;
   } = {},
