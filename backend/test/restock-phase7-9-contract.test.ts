@@ -42,6 +42,7 @@ test("Phase 9 receipt validation separates delivered, damaged and accepted quant
         lineId: "line-1",
         deliveredQuantity: 47,
         damagedQuantity: 2,
+        damageReason: "Two cans were dented during delivery.",
         acceptedQuantity: 45,
         batchCode: "BATCH-001",
         noExpiration: true
@@ -55,6 +56,7 @@ test("Phase 9 receipt validation separates delivered, damaged and accepted quant
         lineId: "line-1",
         deliveredQuantity: 5,
         damagedQuantity: 6,
+        damageReason: "Packaging was damaged during delivery.",
         acceptedQuantity: 0
       }
     ]
@@ -66,6 +68,7 @@ test("Phase 9 receipt validation separates delivered, damaged and accepted quant
         lineId: "line-1",
         deliveredQuantity: 10,
         damagedQuantity: 2,
+        damageReason: "Two units arrived damaged.",
         acceptedQuantity: 9,
         batchCode: "BATCH-001",
         noExpiration: true
@@ -76,6 +79,24 @@ test("Phase 9 receipt validation separates delivered, damaged and accepted quant
   assert.equal(valid.success, true);
   assert.equal(damagedTooHigh.success, false);
   assert.equal(acceptedTooHigh.success, false);
+});
+
+test("Damaged restock receipt requires a supplier return reason", () => {
+  const missingDamageReason = receiveRestockOrderSchema.safeParse({
+    expectedVersion: 2,
+    lines: [
+      {
+        lineId: "line-1",
+        deliveredQuantity: 4,
+        damagedQuantity: 1,
+        acceptedQuantity: 3,
+        batchCode: "BATCH-001",
+        noExpiration: true
+      }
+    ]
+  });
+
+  assert.equal(missingDamageReason.success, false);
 });
 
 test("Accepted restock stock requires batch and explicit expiration policy", () => {
