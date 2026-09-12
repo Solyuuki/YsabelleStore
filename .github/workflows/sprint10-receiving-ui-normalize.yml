@@ -1,0 +1,52 @@
+name: Sprint 10 Receiving UI Normalize
+
+on:
+  push:
+    branches:
+      - "sprint/v0.10/sprint-10"
+    paths:
+      - ".github/workflows/sprint10-receiving-ui-normalize.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Remove stale import and normalize Receiving UI
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("frontend/src/pages/ReceivingPage.tsx")
+          source = path.read_text()
+          source = source.replace("  History,\n", "")
+          path.write_text(source)
+          PY
+          npx prettier --write frontend/src/pages/ReceivingPage.tsx
+      - name: Validate frontend UI
+        run: |
+          npm run typecheck --workspace frontend
+          npm test --workspace frontend
+          npm run build --workspace frontend
+      - name: Commit normalized Receiving UI
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/pages/ReceivingPage.tsx
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          HUSKY=0 git commit -m "style(receiving): normalize compact delivery UI"
+          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
