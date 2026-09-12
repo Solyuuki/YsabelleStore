@@ -1,6 +1,8 @@
 import {
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   PackagePlus,
   RefreshCw,
   Search,
@@ -37,6 +39,10 @@ import {
   type RestockRecommendationSource
 } from "@/services/restockApi";
 
+const RESTOCK_PAGE_SIZE = 8;
+const CATALOG_PAGE_SIZE = 10;
+const REVIEW_PAGE_SIZE = 12;
+
 type PlanLine = {
   candidate: RestockPlanningCandidate;
   isSelected: boolean;
@@ -48,6 +54,13 @@ type PlanLine = {
   recommendationSource: RestockRecommendationSource;
   recommendedQuantity: number;
   requestedQuantity: number;
+};
+
+type PaginationMeta = {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
 };
 
 function asNonNegativeInteger(value: string) {
@@ -138,6 +151,11 @@ function statusLabel(status: RestockOrder["status"]) {
   }
 }
 
+function clampPage(page: number, totalItems: number, pageSize: number) {
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  return Math.min(Math.max(1, page), totalPages);
+}
+
 export function RestockPlanningPanel() {
   const [lines, setLines] = useState<PlanLine[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,8 +169,13 @@ export function RestockPlanningPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<RestockPlanningCandidate[]>([]);
+  const [catalogMeta, setCatalogMeta] = useState<PaginationMeta | null>(null);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [restockPage, setRestockPage] = useState(1);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(() => new Set());
 
   const loadRecommendations = useCallback(async () => {
     setLoading(true);
@@ -167,8 +190,13 @@ export function RestockPlanningPanel() {
       setDraftNotes("");
       setSearchTerm("");
       setSearchResults([]);
+      setCatalogMeta(null);
+      setCatalogError(null);
       setCatalogOpen(false);
       setReviewOpen(false);
+      setRestockPage(1);
+      setReviewPage(1);
+      setExpandedProductIds(new Set());
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -195,6 +223,32 @@ export function RestockPlanningPanel() {
     [selectedLines]
   );
   const editable = !draftOrder || draftOrder.status === "DRAFT";
+  const lineIds = useMemo(
+    () => new Set(lines.map((line) => line.candidate.product.id)),
+    [lines]
+  );
+
+  const restockPageCount = Math.max(1, Math.ceil(lines.length / RESTOCK_PAGE_SIZE));
+  const normalizedRestockPage = clampPage(restockPage, lines.length, RESTOCK_PAGE_SIZE);
+  const pagedLines = useMemo(() => {
+    const start = (normalizedRestockPage - 1) * RESTOCK_PAGE_SIZE;
+    return lines.slice(start, start + RESTOCK_PAGE_SIZE);
+  }, [lines, normalizedRestockPage]);
+
+  const reviewPageCount = Math.max(1, Math.ceil(selectedLines.length / REVIEW_PAGE_SIZE));
+  const normalizedReviewPage = clampPage(reviewPage, selectedLines.length, REVIEW_PAGE_SIZE);
+  const pagedSelectedLines = useMemo(() => {
+    const start = (normalizedReviewPage - 1) * REVIEW_PAGE_SIZE;
+    return selectedLines.slice(start, start + REVIEW_PAGE_SIZE);
+  }, [selectedLines, normalizedReviewPage]);
+
+  useEffect(() => {
+    if (restockPage !== normalizedRestockPage) setRestockPage(normalizedRestockPage);
+  }, [normalizedRestockPage, restockPage]);
+
+  useEffect(() => {
+    if (reviewPage !== normalizedReviewPage) setReviewPage(normalizedReviewPage);
+  }, [normalizedReviewPage, reviewPage]);
 
   function updateLine(productId: string, update: (line: PlanLine) => PlanLine) {
     setLines((current) =>
@@ -207,31 +261,46 @@ export function RestockPlanningPanel() {
 
   function removeLine(productId: string) {
     setLines((current) => current.filter((line) => line.candidate.product.id !== productId));
+    setExpandedProductIds((current) => {
+      if (!current.has(productId)) return current;
+      const next = new Set(current);
+      next.delete(productId);
+      return next;
+    });
     if (draftOrder?.status === "DRAFT") setDraftDirty(true);
     setNotice(null);
     setError(null);
   }
 
-  async function searchExistingProducts() {
+  function toggleDetails(productId: string) {
+    setExpandedProductIds((current) => {
+      const next = new Set(current);
+      if (next.has(productId)) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
+  }
+
+  async function searchExistingProducts(targetPage = 1) {
     const normalized = searchTerm.trim();
     if (normalized.length < 2) {
-      setError("Enter at least two characters to search existing products.");
+      setCatalogError("Enter at least two characters to search existing products.");
       return;
     }
 
     setSearching(true);
-    setError(null);
+    setCatalogError(null);
     try {
       const result = await listRestockPlanning({
         search: normalized,
         includeZero: true,
-        page: 1,
-        pageSize: 50
+        page: targetPage,
+        pageSize: CATALOG_PAGE_SIZE
       });
-      const existingIds = new Set(lines.map((line) => line.candidate.product.id));
-      setSearchResults(result.items.filter((candidate) => !existingIds.has(candidate.product.id)));
+      setSearchResults(result.items);
+      setCatalogMeta(result.meta);
     } catch (requestError) {
-      setError(
+      setCatalogError(
         requestError instanceof Error
           ? requestError.message
           : "Existing products could not be searched."
@@ -242,13 +311,13 @@ export function RestockPlanningPanel() {
   }
 
   function addExistingProduct(candidate: RestockPlanningCandidate) {
+    if (lineIds.has(candidate.product.id)) return;
+
     const manual = candidate.recommendedQuantity === 0;
     setLines((current) => [...current, makePlanLine(candidate, manual)]);
-    setSearchResults((current) =>
-      current.filter((item) => item.product.id !== candidate.product.id)
-    );
     if (draftOrder?.status === "DRAFT") setDraftDirty(true);
     setNotice(`${candidate.product.name} added to the restock list.`);
+    setCatalogError(null);
     setError(null);
   }
 
@@ -450,6 +519,7 @@ export function RestockPlanningPanel() {
     }
 
     setError(null);
+    setReviewPage(1);
     setReviewOpen(true);
   }
 
@@ -469,11 +539,11 @@ export function RestockPlanningPanel() {
             <CardTitle>Restock planner</CardTitle>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
               Review what the store needs, adjust the order quantity, or add an existing product.
-              Advanced stock settings stay out of the way until you need them.
+              Large restock lists stay paged so this workspace remains easy to scan.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge>{selectedCount} products</Badge>
+            <Badge>{selectedCount.toLocaleString()} products</Badge>
             <Badge>{requestedUnits.toLocaleString()} units</Badge>
             <Button
               aria-label="Refresh restock recommendations"
@@ -490,7 +560,7 @@ export function RestockPlanningPanel() {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-4">
         {error ? (
           <Alert variant="destructive">
             <AlertTitle>Action needed</AlertTitle>
@@ -506,7 +576,7 @@ export function RestockPlanningPanel() {
         ) : null}
 
         {draftOrder ? (
-          <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-950">{draftOrder.orderNumber}</p>
               <p className="mt-0.5 text-xs text-slate-500">
@@ -524,82 +594,44 @@ export function RestockPlanningPanel() {
         ) : null}
 
         {editable ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              disabled={busyAction !== null}
-              onClick={() => setCatalogOpen((current) => !current)}
-              type="button"
-              variant="secondary"
-            >
-              <PackagePlus aria-hidden="true" className="h-4 w-4" />
-              Add product
-            </Button>
-            <p className="text-xs text-slate-500">
-              You can add any product that already exists in the catalog, even without a
-              recommendation.
-            </p>
-          </div>
-        ) : null}
-
-        {catalogOpen && editable ? (
-          <section className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-end">
-              <div className="flex-1">
-                <label className="mb-1 block text-xs font-medium text-slate-600">
-                  Search existing products
-                </label>
-                <Input
-                  disabled={searching}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") void searchExistingProducts();
-                  }}
-                  placeholder="Product name, SKU, or barcode"
-                  value={searchTerm}
-                />
-              </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
-                disabled={searching || busyAction !== null}
-                onClick={() => void searchExistingProducts()}
+                disabled={busyAction !== null}
+                onClick={() => {
+                  setCatalogError(null);
+                  setCatalogOpen(true);
+                }}
                 type="button"
                 variant="secondary"
               >
-                <Search aria-hidden="true" className="h-4 w-4" />
-                {searching ? "Searching…" : "Search"}
+                <PackagePlus aria-hidden="true" className="h-4 w-4" />
+                Add product
               </Button>
+              <p className="text-xs text-slate-500">
+                Search the catalog without expanding the restock page.
+              </p>
             </div>
-
-            {searchResults.length > 0 ? (
-              <div className="mt-3 grid gap-2">
-                {searchResults.slice(0, 8).map((candidate) => (
-                  <div
-                    className="flex flex-col gap-2 rounded-md border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between"
-                    key={candidate.product.id}
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-slate-950">
-                        {candidate.product.name}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {candidate.product.sku} • Current stock {candidate.sellableStock}
-                        {candidate.recommendedQuantity > 0
-                          ? ` • Suggested ${candidate.recommendedQuantity}`
-                          : ""}
-                      </p>
-                    </div>
-                    <Button
-                      disabled={busyAction !== null}
-                      onClick={() => addExistingProduct(candidate)}
-                      size="sm"
-                      type="button"
-                    >
-                      Add
-                    </Button>
-                  </div>
-                ))}
-              </div>
+            {lines.length > RESTOCK_PAGE_SIZE ? (
+              <PaginationControls
+                currentPage={normalizedRestockPage}
+                label={`${lines.length.toLocaleString()} items`}
+                onNext={() => setRestockPage((current) => current + 1)}
+                onPrevious={() => setRestockPage((current) => current - 1)}
+                totalPages={restockPageCount}
+              />
             ) : null}
-          </section>
+          </div>
+        ) : lines.length > RESTOCK_PAGE_SIZE ? (
+          <div className="flex justify-end">
+            <PaginationControls
+              currentPage={normalizedRestockPage}
+              label={`${lines.length.toLocaleString()} items`}
+              onNext={() => setRestockPage((current) => current + 1)}
+              onPrevious={() => setRestockPage((current) => current - 1)}
+              totalPages={restockPageCount}
+            />
+          </div>
         ) : null}
 
         {loading ? (
@@ -620,271 +652,419 @@ export function RestockPlanningPanel() {
           </div>
         ) : null}
 
-        <div className="space-y-3">
-          {lines.map((line) => {
-            const productId = line.candidate.product.id;
-            const overrideRequired = needsOverrideReason(line);
-            const dismissReason = dismissReasons[productId] ?? "";
-            const lineBusy = busyAction?.endsWith(productId) ?? false;
+        {!loading && lines.length > 0 ? (
+          <div className="overflow-hidden rounded-lg border border-slate-200">
+            <div className="hidden grid-cols-[minmax(260px,1fr)_110px_130px_170px_150px] gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.08em] text-slate-400 lg:grid">
+              <span>Product</span>
+              <span>Current</span>
+              <span>Suggested</span>
+              <span>Order quantity</span>
+              <span className="text-right">Actions</span>
+            </div>
 
-            return (
-              <article className="rounded-lg border border-slate-200 p-4" key={productId}>
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <label className="flex min-w-0 items-start gap-3">
-                      <input
-                        aria-label={`Include ${line.candidate.product.name} in restock`}
-                        checked={line.isSelected}
-                        className="mt-1 h-4 w-4 rounded border-slate-300"
-                        disabled={!editable}
-                        onChange={(event) =>
-                          updateLine(productId, (current) => ({
-                            ...current,
-                            isSelected: event.target.checked
-                          }))
-                        }
-                        type="checkbox"
-                      />
-                      <span className="min-w-0">
-                        <span className="flex flex-wrap items-center gap-2">
-                          <span className="font-semibold text-slate-950">
-                            {line.candidate.product.name}
-                          </span>
-                          {line.recommendationSource === "MANUAL" ? (
-                            <Badge>Custom</Badge>
-                          ) : (
-                            <Badge variant="info">Suggested</Badge>
-                          )}
-                        </span>
-                        <span className="mt-1 block text-xs text-slate-500">
-                          {line.candidate.product.sku}
-                          {line.candidate.product.barcode
-                            ? ` • ${line.candidate.product.barcode}`
-                            : ""}
-                        </span>
-                      </span>
-                    </label>
+            <div className="divide-y divide-slate-100">
+              {pagedLines.map((line) => {
+                const productId = line.candidate.product.id;
+                const overrideRequired = needsOverrideReason(line);
+                const dismissReason = dismissReasons[productId] ?? "";
+                const lineBusy = busyAction?.endsWith(productId) ?? false;
+                const expanded = expandedProductIds.has(productId);
 
-                    <Button
-                      aria-label={`Remove ${line.candidate.product.name} from restock`}
-                      disabled={!editable || busyAction !== null}
-                      onClick={() => removeLine(productId)}
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      <Trash2 aria-hidden="true" className="h-4 w-4" />
-                      Remove
-                    </Button>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <SummaryValue label="Current stock" value={line.candidate.sellableStock} />
-                    <SummaryValue
-                      label="Suggested"
-                      value={
-                        line.recommendationSource === "MANUAL" ? "Custom" : line.recommendedQuantity
-                      }
-                    />
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-slate-600">
-                        Order quantity
-                      </label>
-                      <Input
-                        aria-label={`Order quantity for ${line.candidate.product.name}`}
-                        disabled={!editable || !line.isSelected}
-                        min={0}
-                        onChange={(event) =>
-                          updateLine(productId, (current) => ({
-                            ...current,
-                            requestedQuantity: asNonNegativeInteger(event.target.value)
-                          }))
-                        }
-                        type="number"
-                        value={line.requestedQuantity}
-                      />
-                    </div>
-                  </div>
-
-                  {overrideRequired && line.isSelected ? (
-                    <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
-                      <label className="mb-1 block text-xs font-medium text-amber-900">
-                        Why did you change the suggested quantity? <span aria-hidden="true">*</span>
-                      </label>
-                      <Input
-                        aria-label={`Reason for changing suggested quantity for ${line.candidate.product.name}`}
-                        disabled={!editable}
-                        onChange={(event) =>
-                          updateLine(productId, (current) => ({
-                            ...current,
-                            ownerOverrideReason: event.target.value
-                          }))
-                        }
-                        placeholder="Example: weekend demand or supplier pack size"
-                        value={line.ownerOverrideReason}
-                      />
-                    </div>
-                  ) : null}
-
-                  <details className="group rounded-md border border-slate-100 bg-slate-50">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-medium text-slate-700">
-                      <span className="flex items-center gap-2">
-                        <Settings2 aria-hidden="true" className="h-4 w-4" />
-                        More details and stock settings
-                      </span>
-                      <ChevronDown
-                        aria-hidden="true"
-                        className="h-4 w-4 transition-transform group-open:rotate-180"
-                      />
-                    </summary>
-
-                    <div className="space-y-4 border-t border-slate-200 p-3">
-                      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                        <Metric label="Physical" value={line.candidate.physicalOnHand} />
-                        <Metric label="Quarantined" value={line.candidate.quarantinedStock} />
-                        <Metric label="On the way" value={line.candidate.incomingStock} />
-                        <Metric
-                          label="Forecast demand"
-                          value={line.candidate.forecast?.currentMonthDemand ?? "—"}
-                        />
-                      </div>
-
-                      <p className="text-xs leading-5 text-slate-500">{line.candidate.rationale}</p>
-
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <div>
-                          <label className="mb-1 block text-xs font-medium text-slate-600">
-                            Target stock
-                          </label>
-                          <Input
-                            aria-label={`Target stock for ${line.candidate.product.name}`}
-                            disabled={Boolean(draftOrder)}
-                            min={0}
-                            onChange={(event) =>
-                              updateLine(productId, (current) => ({
-                                ...current,
-                                policyTargetStockLevel: asNonNegativeInteger(event.target.value)
-                              }))
-                            }
-                            type="number"
-                            value={line.policyTargetStockLevel}
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-1 block text-xs font-medium text-slate-600">
-                            Reorder level
-                          </label>
-                          <Input
-                            aria-label={`Reorder level for ${line.candidate.product.name}`}
-                            disabled={Boolean(draftOrder)}
-                            min={0}
-                            onChange={(event) =>
-                              updateLine(productId, (current) => ({
-                                ...current,
-                                policyReorderLevel: asNonNegativeInteger(event.target.value)
-                              }))
-                            }
-                            type="number"
-                            value={line.policyReorderLevel}
-                          />
-                        </div>
-                      </div>
-
-                      {!draftOrder ? (
-                        <div className="flex justify-end">
-                          <Button
-                            disabled={lineBusy || busyAction !== null}
-                            onClick={() => void saveStockPolicy(line)}
-                            size="sm"
-                            type="button"
-                            variant="secondary"
-                          >
-                            Save stock settings
-                          </Button>
-                        </div>
-                      ) : null}
-
-                      <div>
-                        <label className="mb-1 block text-xs font-medium text-slate-600">
-                          Item note <span className="font-normal text-slate-400">(optional)</span>
-                        </label>
-                        <Input
+                return (
+                  <article className="bg-white" key={productId}>
+                    <div className="grid gap-3 px-3 py-3 lg:grid-cols-[minmax(260px,1fr)_110px_130px_170px_150px] lg:items-center">
+                      <label className="flex min-w-0 items-start gap-3">
+                        <input
+                          aria-label={`Include ${line.candidate.product.name} in restock`}
+                          checked={line.isSelected}
+                          className="mt-1 h-4 w-4 rounded border-slate-300"
                           disabled={!editable}
                           onChange={(event) =>
                             updateLine(productId, (current) => ({
                               ...current,
-                              notes: event.target.value
+                              isSelected: event.target.checked
                             }))
                           }
-                          placeholder="Delivery or ordering note for this item"
-                          value={line.notes}
+                          type="checkbox"
+                        />
+                        <span className="min-w-0">
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span className="truncate text-sm font-semibold text-slate-950">
+                              {line.candidate.product.name}
+                            </span>
+                            {line.recommendationSource === "MANUAL" ? (
+                              <Badge>Custom</Badge>
+                            ) : (
+                              <Badge variant="info">Suggested</Badge>
+                            )}
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs text-slate-500">
+                            {line.candidate.product.sku}
+                            {line.candidate.product.barcode
+                              ? ` • ${line.candidate.product.barcode}`
+                              : ""}
+                          </span>
+                        </span>
+                      </label>
+
+                      <CompactValue label="Current" value={line.candidate.sellableStock} />
+                      <CompactValue
+                        label="Suggested"
+                        value={
+                          line.recommendationSource === "MANUAL"
+                            ? "Custom"
+                            : line.recommendedQuantity
+                        }
+                      />
+
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-slate-500 lg:hidden">
+                          Order quantity
+                        </label>
+                        <Input
+                          aria-label={`Order quantity for ${line.candidate.product.name}`}
+                          disabled={!editable || !line.isSelected}
+                          min={0}
+                          onChange={(event) =>
+                            updateLine(productId, (current) => ({
+                              ...current,
+                              requestedQuantity: asNonNegativeInteger(event.target.value)
+                            }))
+                          }
+                          type="number"
+                          value={line.requestedQuantity}
                         />
                       </div>
 
-                      {line.recommendationId && !draftOrder ? (
-                        <div className="rounded-md border border-slate-200 bg-white p-3">
-                          <p className="text-xs font-medium text-slate-700">
-                            Don't need this recommendation?
-                          </p>
-                          <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-end">
-                            <div className="flex-1">
-                              <label className="mb-1 block text-xs text-slate-500">Reason</label>
-                              <Input
-                                onChange={(event) =>
-                                  setDismissReasons((current) => ({
-                                    ...current,
-                                    [productId]: event.target.value
-                                  }))
-                                }
-                                placeholder="Example: supplier already delivered"
-                                value={dismissReason}
-                              />
-                            </div>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          aria-expanded={expanded}
+                          aria-label={`${expanded ? "Hide" : "Show"} details for ${line.candidate.product.name}`}
+                          onClick={() => toggleDetails(productId)}
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                        >
+                          <Settings2 aria-hidden="true" className="h-4 w-4" />
+                          Details
+                          <ChevronDown
+                            aria-hidden="true"
+                            className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+                          />
+                        </Button>
+                        <Button
+                          aria-label={`Remove ${line.candidate.product.name} from restock`}
+                          disabled={!editable || busyAction !== null}
+                          onClick={() => removeLine(productId)}
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                        >
+                          <Trash2 aria-hidden="true" className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {overrideRequired && line.isSelected ? (
+                      <div className="border-t border-amber-100 bg-amber-50 px-3 py-3">
+                        <label className="mb-1 block text-xs font-medium text-amber-900">
+                          Why did you change the suggested quantity? <span aria-hidden="true">*</span>
+                        </label>
+                        <Input
+                          aria-label={`Reason for changing suggested quantity for ${line.candidate.product.name}`}
+                          disabled={!editable}
+                          onChange={(event) =>
+                            updateLine(productId, (current) => ({
+                              ...current,
+                              ownerOverrideReason: event.target.value
+                            }))
+                          }
+                          placeholder="Example: weekend demand or supplier pack size"
+                          value={line.ownerOverrideReason}
+                        />
+                      </div>
+                    ) : null}
+
+                    {expanded ? (
+                      <div className="space-y-4 border-t border-slate-200 bg-slate-50 px-3 py-4">
+                        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                          <Metric label="Physical" value={line.candidate.physicalOnHand} />
+                          <Metric label="Quarantined" value={line.candidate.quarantinedStock} />
+                          <Metric label="On the way" value={line.candidate.incomingStock} />
+                          <Metric
+                            label="Forecast demand"
+                            value={line.candidate.forecast?.currentMonthDemand ?? "—"}
+                          />
+                        </div>
+
+                        <p className="text-xs leading-5 text-slate-500">
+                          {line.candidate.rationale}
+                        </p>
+
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div>
+                            <label className="mb-1 block text-xs font-medium text-slate-600">
+                              Target stock
+                            </label>
+                            <Input
+                              aria-label={`Target stock for ${line.candidate.product.name}`}
+                              disabled={Boolean(draftOrder)}
+                              min={0}
+                              onChange={(event) =>
+                                updateLine(productId, (current) => ({
+                                  ...current,
+                                  policyTargetStockLevel: asNonNegativeInteger(event.target.value)
+                                }))
+                              }
+                              type="number"
+                              value={line.policyTargetStockLevel}
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-xs font-medium text-slate-600">
+                              Reorder level
+                            </label>
+                            <Input
+                              aria-label={`Reorder level for ${line.candidate.product.name}`}
+                              disabled={Boolean(draftOrder)}
+                              min={0}
+                              onChange={(event) =>
+                                updateLine(productId, (current) => ({
+                                  ...current,
+                                  policyReorderLevel: asNonNegativeInteger(event.target.value)
+                                }))
+                              }
+                              type="number"
+                              value={line.policyReorderLevel}
+                            />
+                          </div>
+                        </div>
+
+                        {!draftOrder ? (
+                          <div className="flex justify-end">
                             <Button
-                              disabled={dismissReason.trim().length < 3 || busyAction !== null}
-                              onClick={() => void dismissRecommendation(line)}
+                              disabled={lineBusy || busyAction !== null}
+                              onClick={() => void saveStockPolicy(line)}
+                              size="sm"
                               type="button"
                               variant="secondary"
                             >
-                              Not needed
+                              Save stock settings
                             </Button>
                           </div>
+                        ) : null}
+
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-slate-600">
+                            Item note <span className="font-normal text-slate-400">(optional)</span>
+                          </label>
+                          <Input
+                            disabled={!editable}
+                            onChange={(event) =>
+                              updateLine(productId, (current) => ({
+                                ...current,
+                                notes: event.target.value
+                              }))
+                            }
+                            placeholder="Delivery or ordering note for this item"
+                            value={line.notes}
+                          />
                         </div>
-                      ) : null}
-                    </div>
-                  </details>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+
+                        {line.recommendationId && !draftOrder ? (
+                          <div className="rounded-md border border-slate-200 bg-white p-3">
+                            <p className="text-xs font-medium text-slate-700">
+                              Don't need this recommendation?
+                            </p>
+                            <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-end">
+                              <div className="flex-1">
+                                <label className="mb-1 block text-xs text-slate-500">Reason</label>
+                                <Input
+                                  onChange={(event) =>
+                                    setDismissReasons((current) => ({
+                                      ...current,
+                                      [productId]: event.target.value
+                                    }))
+                                  }
+                                  placeholder="Example: supplier already delivered"
+                                  value={dismissReason}
+                                />
+                              </div>
+                              <Button
+                                disabled={dismissReason.trim().length < 3 || busyAction !== null}
+                                onClick={() => void dismissRecommendation(line)}
+                                type="button"
+                                variant="secondary"
+                              >
+                                Not needed
+                              </Button>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
 
         {!loading && lines.length > 0 ? (
-          <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-950">
-                {selectedCount} product{selectedCount === 1 ? "" : "s"} •{" "}
+                {selectedCount.toLocaleString()} product{selectedCount === 1 ? "" : "s"} •{" "}
                 {requestedUnits.toLocaleString()} units
               </p>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                Planning only. Confirming a restock adds incoming stock, but physical Inventory
-                stays unchanged until the delivery is actually received.
+                Showing {((normalizedRestockPage - 1) * RESTOCK_PAGE_SIZE + 1).toLocaleString()}–
+                {Math.min(
+                  normalizedRestockPage * RESTOCK_PAGE_SIZE,
+                  lines.length
+                ).toLocaleString()}{" "}
+                of {lines.length.toLocaleString()} products. Physical Inventory stays unchanged
+                until delivery is actually received.
               </p>
             </div>
-            {draftOrder?.status === "APPROVED" ? (
-              <Badge variant="success">Restock confirmed</Badge>
-            ) : (
-              <Button
-                disabled={!editable || selectedCount === 0 || busyAction !== null}
-                onClick={openReview}
-                type="button"
-              >
-                Review restock
-              </Button>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {lines.length > RESTOCK_PAGE_SIZE ? (
+                <PaginationControls
+                  currentPage={normalizedRestockPage}
+                  label="Restock list"
+                  onNext={() => setRestockPage((current) => current + 1)}
+                  onPrevious={() => setRestockPage((current) => current - 1)}
+                  totalPages={restockPageCount}
+                />
+              ) : null}
+              {draftOrder?.status === "APPROVED" ? (
+                <Badge variant="success">Restock confirmed</Badge>
+              ) : (
+                <Button
+                  disabled={!editable || selectedCount === 0 || busyAction !== null}
+                  onClick={openReview}
+                  type="button"
+                >
+                  Review restock
+                </Button>
+              )}
+            </div>
           </div>
         ) : null}
       </CardContent>
+
+      <Dialog
+        onOpenChange={(open) => {
+          setCatalogOpen(open);
+          if (!open) setCatalogError(null);
+        }}
+        open={catalogOpen}
+      >
+        <DialogContent className="max-w-[820px]">
+          <DialogHeader>
+            <DialogTitle>Add product</DialogTitle>
+            <DialogDescription>
+              Search existing catalog products. Results stay paged so large catalogs do not stretch
+              the Reports page.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 px-6 pb-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                autoFocus
+                disabled={searching}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") void searchExistingProducts(1);
+                }}
+                placeholder="Product name, SKU, or barcode"
+                value={searchTerm}
+              />
+              <Button
+                disabled={searching || busyAction !== null}
+                onClick={() => void searchExistingProducts(1)}
+                type="button"
+                variant="secondary"
+              >
+                <Search aria-hidden="true" className="h-4 w-4" />
+                {searching ? "Searching…" : "Search"}
+              </Button>
+            </div>
+
+            {catalogError ? (
+              <Alert variant="destructive">
+                <AlertTitle>Search needs attention</AlertTitle>
+                <AlertDescription>{catalogError}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            {searchResults.length > 0 ? (
+              <div className="max-h-[50vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
+                {searchResults.map((candidate) => {
+                  const alreadyAdded = lineIds.has(candidate.product.id);
+
+                  return (
+                    <div
+                      className="flex flex-col gap-2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+                      key={candidate.product.id}
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-950">
+                          {candidate.product.name}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs text-slate-500">
+                          {candidate.product.sku} • Current stock {candidate.sellableStock}
+                          {candidate.recommendedQuantity > 0
+                            ? ` • Suggested ${candidate.recommendedQuantity}`
+                            : ""}
+                        </p>
+                      </div>
+                      <Button
+                        disabled={alreadyAdded || busyAction !== null}
+                        onClick={() => addExistingProduct(candidate)}
+                        size="sm"
+                        type="button"
+                        variant={alreadyAdded ? "secondary" : "default"}
+                      >
+                        {alreadyAdded ? "Added" : "Add"}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : catalogMeta ? (
+              <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
+                No matching products found.
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
+                Enter at least two characters to search the catalog.
+              </div>
+            )}
+
+            {catalogMeta && catalogMeta.totalPages > 1 ? (
+              <div className="flex justify-end">
+                <PaginationControls
+                  currentPage={catalogMeta.page}
+                  label={`${catalogMeta.totalItems.toLocaleString()} matches`}
+                  onNext={() => void searchExistingProducts(catalogMeta.page + 1)}
+                  onPrevious={() => void searchExistingProducts(catalogMeta.page - 1)}
+                  totalPages={catalogMeta.totalPages}
+                />
+              </div>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Done
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog onOpenChange={setReviewOpen} open={reviewOpen}>
         <DialogContent>
@@ -903,7 +1083,7 @@ export function RestockPlanningPanel() {
             </div>
 
             <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
-              {selectedLines.map((line) => (
+              {pagedSelectedLines.map((line) => (
                 <div
                   className="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between"
                   key={line.candidate.product.id}
@@ -928,6 +1108,18 @@ export function RestockPlanningPanel() {
                 </div>
               ))}
             </div>
+
+            {selectedLines.length > REVIEW_PAGE_SIZE ? (
+              <div className="flex justify-end">
+                <PaginationControls
+                  currentPage={normalizedReviewPage}
+                  label={`${selectedLines.length.toLocaleString()} selected`}
+                  onNext={() => setReviewPage((current) => current + 1)}
+                  onPrevious={() => setReviewPage((current) => current - 1)}
+                  totalPages={reviewPageCount}
+                />
+              </div>
+            ) : null}
 
             {!draftOrder ? (
               <div>
@@ -981,6 +1173,60 @@ export function RestockPlanningPanel() {
         </DialogContent>
       </Dialog>
     </Card>
+  );
+}
+
+function CompactValue({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 lg:block">
+      <span className="text-xs font-medium text-slate-500 lg:hidden">{label}</span>
+      <span className="text-sm font-semibold text-slate-950">
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </span>
+    </div>
+  );
+}
+
+function PaginationControls({
+  currentPage,
+  label,
+  onNext,
+  onPrevious,
+  totalPages
+}: {
+  currentPage: number;
+  label: string;
+  onNext: () => void;
+  onPrevious: () => void;
+  totalPages: number;
+}) {
+  return (
+    <div className="flex items-center gap-1 text-xs text-slate-500">
+      <span className="mr-1 hidden sm:inline">{label}</span>
+      <Button
+        aria-label={`Previous page of ${label}`}
+        disabled={currentPage <= 1}
+        onClick={onPrevious}
+        size="sm"
+        type="button"
+        variant="ghost"
+      >
+        <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+      </Button>
+      <span className="min-w-[78px] text-center tabular-nums">
+        Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
+      </span>
+      <Button
+        aria-label={`Next page of ${label}`}
+        disabled={currentPage >= totalPages}
+        onClick={onNext}
+        size="sm"
+        type="button"
+        variant="ghost"
+      >
+        <ChevronRight aria-hidden="true" className="h-4 w-4" />
+      </Button>
+    </div>
   );
 }
 
