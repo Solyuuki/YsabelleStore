@@ -58,10 +58,12 @@ assert.match(returnDialogSource, /Download PDF/);
 assert.match(returnDialogSource, /Print/);
 assert.match(returnDialogSource, /Excel-compatible CSV/);
 assert.match(returnDialogSource, /Supplier \/ manufacturer/);
+assert.match(returnDialogSource, /deliveryReference/);
 assert.match(returnExportSource, /damagedQuantity/);
 assert.match(returnExportSource, /damageReason/);
 assert.match(returnExportSource, /returnQuantity/);
 assert.match(returnExportSource, /returnScope/);
+assert.match(returnExportSource, /Supplier \/ Manufacturer/);
 assert.match(returnExportSource, /safeCsvText/);
 assert.match(routesSource, /path: "\/receiving"[\s\S]*?icon: Truck/);
 
