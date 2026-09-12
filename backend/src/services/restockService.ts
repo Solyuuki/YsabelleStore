@@ -244,7 +244,11 @@ export async function createRestockOrder(input: CreateRestockOrderRequest, creat
 }
 
 export async function listRestockOrders(query: RestockOrderListQuery) {
-  const where = query.status ? { status: query.status } : undefined;
+  const statuses = query.status ? [query.status] : query.statuses;
+  const where: Prisma.RestockOrderWhereInput = {
+    ...(statuses?.length ? { status: statuses.length === 1 ? statuses[0] : { in: statuses } } : {}),
+    ...(query.search ? { orderNumber: { contains: query.search } } : {})
+  };
   const [totalItems, orders] = await prisma.$transaction([
     prisma.restockOrder.count({ where }),
     prisma.restockOrder.findMany({

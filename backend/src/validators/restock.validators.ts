@@ -29,7 +29,14 @@ export const restockOrderStatusSchema = z.enum([
 
 const optionalRestockStatusesSchema = z.preprocess((value) => {
   if (typeof value === "string") {
-    const statuses = [...new Set(value.split(",").map((item) => item.trim()).filter(Boolean))];
+    const statuses = [
+      ...new Set(
+        value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      )
+    ];
     return statuses.length > 0 ? statuses : undefined;
   }
   return value;

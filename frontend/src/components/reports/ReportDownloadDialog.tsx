@@ -371,8 +371,8 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
               <Alert>
                 <AlertTitle>No supplier-ready restock order yet</AlertTitle>
                 <AlertDescription>
-                  Confirm the Restock Planner first. Drafts and cancelled orders are intentionally not
-                  exported as supplier orders.
+                  Confirm the Restock Planner first. Drafts and cancelled orders are intentionally
+                  not exported as supplier orders.
                 </AlertDescription>
               </Alert>
             )

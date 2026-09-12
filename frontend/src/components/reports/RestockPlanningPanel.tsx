@@ -3,15 +3,13 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  FileSpreadsheet,
   PackagePlus,
-  Printer,
   RefreshCw,
   Search,
   Settings2,
   Trash2
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -40,11 +38,6 @@ import {
   type RestockPlanningCandidate,
   type RestockRecommendationSource
 } from "@/services/restockApi";
-import {
-  downloadRestockSupplierCsv,
-  printRestockSupplierCopy,
-  type RestockSupplierSnapshot
-} from "@/utils/restockExport";
 
 const RESTOCK_PAGE_SIZE = 8;
 const CATALOG_PAGE_SIZE = 10;
@@ -163,7 +156,12 @@ function clampPage(page: number, totalItems: number, pageSize: number) {
   return Math.min(Math.max(1, page), totalPages);
 }
 
-export function RestockPlanningPanel() {
+type RestockPlanningPanelProps = {
+  onOpenOrders: () => void;
+  onOrdersChanged: () => void;
+};
+
+export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockPlanningPanelProps) {
   const [lines, setLines] = useState<PlanLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyAction, setBusyAction] = useState<string | null>(null);
@@ -183,8 +181,7 @@ export function RestockPlanningPanel() {
   const [restockPage, setRestockPage] = useState(1);
   const [reviewPage, setReviewPage] = useState(1);
   const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(() => new Set());
-  const [supplierExportOpen, setSupplierExportOpen] = useState(false);
-  const [supplierExportError, setSupplierExportError] = useState<string | null>(null);
+  const confirmLockRef = useRef(false);
 
   const loadRecommendations = useCallback(async () => {
     setLoading(true);
@@ -450,6 +447,7 @@ export function RestockPlanningPanel() {
       setDraftNotes(order.notes ?? draftNotes);
       setReviewOpen(false);
       setNotice(`${order.orderNumber} saved for later. Inventory has not changed.`);
+      onOrdersChanged();
     } catch (requestError) {
       setError(
         requestError instanceof Error ? requestError.message : "Restock list could not be saved."
@@ -465,6 +463,8 @@ export function RestockPlanningPanel() {
       setError(validationError);
       return;
     }
+    if (confirmLockRef.current) return;
+    confirmLockRef.current = true;
 
     setBusyAction("confirm");
     setError(null);
@@ -499,9 +499,8 @@ export function RestockPlanningPanel() {
       setDraftOrder(approved);
       setDraftDirty(false);
       setReviewOpen(false);
-      setNotice(
-        `${approved.orderNumber} confirmed. ${selectedCount} product${selectedCount === 1 ? "" : "s"} and ${requestedUnits.toLocaleString()} units are now on the way. Physical Inventory is unchanged.`
-      );
+      setNotice(null);
+      onOrdersChanged();
     } catch (requestError) {
       const message =
         requestError instanceof Error
@@ -513,65 +512,9 @@ export function RestockPlanningPanel() {
           : message
       );
     } finally {
+      confirmLockRef.current = false;
       setBusyAction(null);
     }
-  }
-
-  function buildSupplierSnapshot(): RestockSupplierSnapshot | null {
-    if (!draftOrder || draftOrder.status === "DRAFT" || draftOrder.status === "CANCELLED") {
-      return null;
-    }
-
-    const exportLines = draftOrder.lines
-      .filter((line) => line.isSelected && line.requestedQuantity > 0)
-      .map((line) => ({
-        barcode: line.product.barcode,
-        notes: line.notes ?? null,
-        productName: line.product.name,
-        quantity: line.requestedQuantity,
-        sku: line.product.sku
-      }));
-
-    if (exportLines.length === 0) return null;
-
-    return {
-      generatedAt: new Date().toISOString(),
-      lines: exportLines,
-      notes: draftOrder.notes,
-      orderNumber: draftOrder.orderNumber,
-      preparedBy: draftOrder.approvedBy?.name ?? draftOrder.createdBy?.name ?? null,
-      statusLabel: statusLabel(draftOrder.status)
-    };
-  }
-
-  function handleSupplierPrint() {
-    setSupplierExportError(null);
-    const snapshot = buildSupplierSnapshot();
-    if (!snapshot) {
-      setSupplierExportError("Confirm the restock before creating a supplier copy.");
-      return;
-    }
-
-    if (!printRestockSupplierCopy(snapshot)) {
-      setSupplierExportError(
-        "Pop-up was blocked. Allow pop-ups for Ysabelle Store and try Print / Save PDF again."
-      );
-      return;
-    }
-
-    setSupplierExportOpen(false);
-  }
-
-  function handleSupplierCsv() {
-    setSupplierExportError(null);
-    const snapshot = buildSupplierSnapshot();
-    if (!snapshot) {
-      setSupplierExportError("Confirm the restock before creating a supplier copy.");
-      return;
-    }
-
-    downloadRestockSupplierCsv(snapshot);
-    setSupplierExportOpen(false);
   }
 
   function openReview() {
@@ -637,7 +580,7 @@ export function RestockPlanningPanel() {
           </Alert>
         ) : null}
 
-        {draftOrder ? (
+        {draftOrder?.status === "DRAFT" ? (
           <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-950">{draftOrder.orderNumber}</p>
@@ -652,6 +595,41 @@ export function RestockPlanningPanel() {
             <Badge variant={statusVariant(draftOrder.status)}>
               {statusLabel(draftOrder.status)}
             </Badge>
+          </div>
+        ) : null}
+
+        {draftOrder && draftOrder.status !== "DRAFT" ? (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <CheckCircle2 aria-hidden="true" className="h-5 w-5 text-emerald-600" />
+                  <p className="font-semibold text-emerald-950">Restock confirmed</p>
+                  <Badge variant="success">{statusLabel(draftOrder.status)}</Badge>
+                </div>
+                <p className="mt-2 text-sm font-semibold text-slate-950">
+                  {draftOrder.orderNumber}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-emerald-800">
+                  {selectedCount.toLocaleString()} product{selectedCount === 1 ? "" : "s"} ·{" "}
+                  {requestedUnits.toLocaleString()} units. Physical inventory is unchanged until the
+                  delivery is actually received.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  disabled={busyAction !== null}
+                  onClick={() => void loadRecommendations()}
+                  type="button"
+                  variant="secondary"
+                >
+                  Start new restock
+                </Button>
+                <Button onClick={onOpenOrders} type="button">
+                  View orders
+                </Button>
+              </div>
+            </div>
           </div>
         ) : null}
 
@@ -684,16 +662,6 @@ export function RestockPlanningPanel() {
               />
             ) : null}
           </div>
-        ) : lines.length > RESTOCK_PAGE_SIZE ? (
-          <div className="flex justify-end">
-            <PaginationControls
-              currentPage={normalizedRestockPage}
-              label={`${lines.length.toLocaleString()} items`}
-              onNext={() => setRestockPage((current) => current + 1)}
-              onPrevious={() => setRestockPage((current) => current - 1)}
-              totalPages={restockPageCount}
-            />
-          </div>
         ) : null}
 
         {loading ? (
@@ -714,7 +682,7 @@ export function RestockPlanningPanel() {
           </div>
         ) : null}
 
-        {!loading && lines.length > 0 ? (
+        {!loading && lines.length > 0 && editable ? (
           <div className="overflow-hidden rounded-lg border border-slate-200">
             <div className="hidden grid-cols-[minmax(260px,1fr)_110px_130px_170px_150px] gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.08em] text-slate-400 lg:grid">
               <span>Product</span>
@@ -976,7 +944,7 @@ export function RestockPlanningPanel() {
           </div>
         ) : null}
 
-        {!loading && lines.length > 0 ? (
+        {!loading && lines.length > 0 && editable ? (
           <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-950">
@@ -1000,29 +968,13 @@ export function RestockPlanningPanel() {
                   totalPages={restockPageCount}
                 />
               ) : null}
-              {draftOrder?.status === "APPROVED" ? (
-                <>
-                  <Badge variant="success">Restock confirmed</Badge>
-                  <Button
-                    onClick={() => {
-                      setSupplierExportError(null);
-                      setSupplierExportOpen(true);
-                    }}
-                    type="button"
-                  >
-                    <Printer aria-hidden="true" className="h-4 w-4" />
-                    Export supplier copy
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  disabled={!editable || selectedCount === 0 || busyAction !== null}
-                  onClick={openReview}
-                  type="button"
-                >
-                  Review restock
-                </Button>
-              )}
+              <Button
+                disabled={!editable || selectedCount === 0 || busyAction !== null}
+                onClick={openReview}
+                type="button"
+              >
+                Review restock
+              </Button>
             </div>
           </div>
         ) : null}
@@ -1142,7 +1094,7 @@ export function RestockPlanningPanel() {
       </Dialog>
 
       <Dialog onOpenChange={setReviewOpen} open={reviewOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[88vh] max-w-[760px] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Review restock</DialogTitle>
             <DialogDescription>
@@ -1150,14 +1102,14 @@ export function RestockPlanningPanel() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="max-h-[60vh] space-y-4 overflow-y-auto px-6 pb-2">
+          <div className="space-y-4 px-6 pb-2">
             <div className="grid gap-3 sm:grid-cols-3">
               <SummaryValue label="Products" value={selectedCount} />
               <SummaryValue label="Total units" value={requestedUnits} />
               <SummaryValue label="Quantity changes" value={overrideCount} />
             </div>
 
-            <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
+            <div className="max-h-[36vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
               {pagedSelectedLines.map((line) => (
                 <div
                   className="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between"
@@ -1244,82 +1196,6 @@ export function RestockPlanningPanel() {
             >
               {busyAction === "confirm" ? "Confirming…" : "Confirm restock"}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        onOpenChange={(open) => {
-          setSupplierExportOpen(open);
-          if (!open) setSupplierExportError(null);
-        }}
-        open={supplierExportOpen}
-      >
-        <DialogContent className="max-w-[620px]">
-          <DialogHeader>
-            <DialogTitle>Export restock order</DialogTitle>
-            <DialogDescription>
-              Create a supplier-facing copy of the confirmed restock. It includes only the products,
-              identifiers, quantities, and ordering notes needed to fulfill the order.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 px-6 pb-2">
-            <Alert>
-              <AlertTitle>Supplier copy</AlertTitle>
-              <AlertDescription>
-                Internal stock levels, forecasts, reorder settings, and recommendation logic are not
-                included. Supplier / Manufacturer is left blank for manual entry until supplier
-                management is introduced in a later phase.
-              </AlertDescription>
-            </Alert>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button
-                className="h-auto min-h-24 items-start justify-start whitespace-normal p-4 text-left"
-                onClick={handleSupplierPrint}
-                type="button"
-                variant="secondary"
-              >
-                <Printer className="mt-0.5 h-5 w-5 shrink-0" />
-                <span>
-                  <span className="block font-semibold text-slate-950">Print / Save PDF</span>
-                  <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
-                    Clean A4 supplier copy with repeating table headers for long restock orders.
-                  </span>
-                </span>
-              </Button>
-
-              <Button
-                className="h-auto min-h-24 items-start justify-start whitespace-normal p-4 text-left"
-                onClick={handleSupplierCsv}
-                type="button"
-                variant="secondary"
-              >
-                <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0" />
-                <span>
-                  <span className="block font-semibold text-slate-950">Excel-compatible CSV</span>
-                  <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
-                    Spreadsheet-ready order lines for sending or further supplier processing.
-                  </span>
-                </span>
-              </Button>
-            </div>
-
-            {supplierExportError ? (
-              <Alert variant="destructive">
-                <AlertTitle>Export needs attention</AlertTitle>
-                <AlertDescription>{supplierExportError}</AlertDescription>
-              </Alert>
-            ) : null}
-          </div>
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary">
-                Close
-              </Button>
-            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>

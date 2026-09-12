@@ -274,7 +274,8 @@ export function ReportsPage() {
                   type="button"
                   variant={restockView === "orders" ? "default" : "secondary"}
                 >
-                  Orders{restockOrderCount === null ? "" : ` (${restockOrderCount.toLocaleString()})`}
+                  Orders
+                  {restockOrderCount === null ? "" : ` (${restockOrderCount.toLocaleString()})`}
                 </Button>
               </div>
             </div>
@@ -322,7 +323,10 @@ export function ReportsPage() {
                       <p className="text-[11px] text-slate-400">Gross value of recent receipts</p>
                       <div className="mt-2 h-28">
                         <ResponsiveContainer height="100%" width="100%">
-                          <LineChart data={recentReceiptChartData} margin={{ bottom: 4, left: 4, right: 4, top: 4 }}>
+                          <LineChart
+                            data={recentReceiptChartData}
+                            margin={{ bottom: 4, left: 4, right: 4, top: 4 }}
+                          >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="label" hide />
                             <Tooltip
