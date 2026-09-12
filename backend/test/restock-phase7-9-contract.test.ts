@@ -122,7 +122,7 @@ test("Restock Arrived reuses the canonical receiving engine and only stocks acce
   assert.match(lifecycleSource, /receiveStockInTransaction\s*\(/);
   assert.match(lifecycleSource, /quantity:\s*receiptLine\.acceptedQuantity/);
   assert.match(lifecycleSource, /referenceType:\s*"RESTOCK_RECEIPT"/);
-  assert.match(lifecycleSource, /damaged=.*accepted=/);
+  assert.match(lifecycleSource, /damaged[\s\S]*accepted/);
   assert.doesNotMatch(lifecycleSource, /inventoryBatch\.(create|upsert)\s*\(/);
   assert.doesNotMatch(lifecycleSource, /inventoryMovement\.(create|upsert)\s*\(/);
   assert.match(receivingSource, /export async function receiveStockInTransaction/);
@@ -136,4 +136,16 @@ test("Restock receipt claims the expected version before physical stock mutation
   assert.ok(receiveIndex > claimIndex);
   assert.match(lifecycleSource, /RESTOCK_RECEIPT_VERSION_CONFLICT/);
   assert.match(lifecycleSource, /confirmOverDelivery/);
+});
+
+test("Supplier-facing order notes are not polluted by receiving actor audit metadata", () => {
+  const awaitingStart = lifecycleSource.indexOf("export async function markRestockOrderAwaitingDelivery");
+  const cancelStart = lifecycleSource.indexOf("export async function cancelRestockOrder");
+  const receiveStart = lifecycleSource.indexOf("export async function receiveRestockOrder");
+  const awaitingBlock = lifecycleSource.slice(awaitingStart, cancelStart);
+  const receivingBlock = lifecycleSource.slice(receiveStart);
+
+  assert.doesNotMatch(awaitingBlock, /actor=/);
+  assert.doesNotMatch(receivingBlock, /actor=/);
+  assert.match(receivingBlock, /safeReceiptSummary/);
 });

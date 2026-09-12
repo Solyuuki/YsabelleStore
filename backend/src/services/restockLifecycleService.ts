@@ -22,7 +22,7 @@ const CANCELLABLE_STATUSES = [
   RestockOrderStatus.AWAITING_DELIVERY
 ] as const;
 
-function appendBoundedAuditNote(existing: string | null, event: string, maxLength: number) {
+function appendBoundedNote(existing: string | null, event: string, maxLength: number) {
   const next = [existing?.trim(), event.trim()].filter(Boolean).join("\n");
   if (next.length <= maxLength) return next;
 
@@ -47,19 +47,45 @@ function assertVersion(
   }
 }
 
-function auditStamp(action: string, actorId: string, detail?: string) {
-  const base = `[${action} ${new Date().toISOString()} actor=${actorId}]`;
-  return detail ? `${base} ${detail}` : base;
+function cancellationAudit(actorId: string, reason: string) {
+  return `[CANCELLED ${new Date().toISOString()} actor=${actorId}] reason=${reason}`;
+}
+
+function receiptSummary(input: {
+  delivered: number;
+  damaged: number;
+  accepted: number;
+  rejected: number;
+  batchCode?: string | null;
+  expiresAt?: Date | null;
+  noExpiration: boolean;
+}) {
+  const details = [
+    `delivered=${input.delivered}`,
+    `damaged=${input.damaged}`,
+    `accepted=${input.accepted}`,
+    `other_rejected=${input.rejected}`,
+    input.batchCode ? `batch=${input.batchCode}` : null,
+    input.noExpiration
+      ? "expiry=NONE"
+      : input.expiresAt
+        ? `expiry=${input.expiresAt.toISOString().slice(0, 10)}`
+        : null
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return `[Receipt ${new Date().toISOString()}] ${details}`;
 }
 
 export async function markRestockOrderAwaitingDelivery(
   orderId: string,
   input: AdvanceRestockOrderRequest,
-  actorId: string
+  _actorId: string
 ) {
   await prisma.$transaction(async (tx) => {
     const existing = await tx.restockOrder.findUnique({
-      select: { id: true, notes: true, status: true, version: true },
+      select: { id: true, status: true, version: true },
       where: { id: orderId }
     });
 
@@ -79,11 +105,6 @@ export async function markRestockOrderAwaitingDelivery(
 
     const updated = await tx.restockOrder.updateMany({
       data: {
-        notes: appendBoundedAuditNote(
-          existing.notes,
-          auditStamp("AWAITING_DELIVERY", actorId),
-          1000
-        ),
         status: RestockOrderStatus.AWAITING_DELIVERY,
         version: { increment: 1 }
       },
@@ -141,9 +162,9 @@ export async function cancelRestockOrder(
 
     const updated = await tx.restockOrder.updateMany({
       data: {
-        notes: appendBoundedAuditNote(
+        notes: appendBoundedNote(
           existing.notes,
-          auditStamp("CANCELLED", actorId, `reason=${input.reason}`),
+          cancellationAudit(actorId, input.reason),
           1000
         ),
         status: RestockOrderStatus.CANCELLED,
@@ -199,8 +220,8 @@ export async function receiveRestockOrder(
       });
     }
 
-    // Optimistic version claim happens before physical stock mutation. Concurrent or duplicate
-    // submissions using the same order version fail here and roll back without touching inventory.
+    // Claim the expected version before physical stock mutation. Duplicate/concurrent submissions
+    // using the same version fail here, so the transaction exits without changing inventory.
     const versionClaim = await tx.restockOrder.updateMany({
       data: { version: { increment: 1 } },
       where: {
@@ -211,9 +232,11 @@ export async function receiveRestockOrder(
     });
 
     if (versionClaim.count !== 1) {
-      throw new HttpError(409, "This delivery was already submitted or the order changed. Refresh and review the latest receipt state.", {
-        code: "RESTOCK_RECEIPT_VERSION_CONFLICT"
-      });
+      throw new HttpError(
+        409,
+        "This delivery was already submitted or the order changed. Refresh and review the latest receipt state.",
+        { code: "RESTOCK_RECEIPT_VERSION_CONFLICT" }
+      );
     }
 
     const lineById = new Map(order.lines.map((line) => [line.id, line]));
@@ -229,21 +252,29 @@ export async function receiveRestockOrder(
 
       const remaining = Math.max(0, orderLine.requestedQuantity - orderLine.receivedQuantity);
       if (receiptLine.acceptedQuantity > remaining && !receiptLine.confirmOverDelivery) {
-        throw new HttpError(422, "Accepted quantity exceeds the remaining order quantity. Confirm the over-delivery before receiving it.", {
-          code: "RESTOCK_OVER_DELIVERY_CONFIRMATION_REQUIRED",
-          details: {
-            acceptedQuantity: receiptLine.acceptedQuantity,
-            lineId: receiptLine.lineId,
-            remainingQuantity: remaining
+        throw new HttpError(
+          422,
+          "Accepted quantity exceeds the remaining order quantity. Confirm the over-delivery before receiving it.",
+          {
+            code: "RESTOCK_OVER_DELIVERY_CONFIRMATION_REQUIRED",
+            details: {
+              acceptedQuantity: receiptLine.acceptedQuantity,
+              lineId: receiptLine.lineId,
+              remainingQuantity: remaining
+            }
           }
-        });
+        );
       }
 
       if (receiptLine.acceptedQuantity > 0 && orderLine.product.status === "DISCONTINUED") {
-        throw new HttpError(422, "Discontinued products cannot create new sellable stock from a restock receipt.", {
-          code: "RESTOCK_PRODUCT_DISCONTINUED",
-          details: { productId: orderLine.productId }
-        });
+        throw new HttpError(
+          422,
+          "Discontinued products cannot create new sellable stock from a restock receipt.",
+          {
+            code: "RESTOCK_PRODUCT_DISCONTINUED",
+            details: { productId: orderLine.productId }
+          }
+        );
       }
 
       const referenceId = `${order.id}:${orderLine.id}:v${input.expectedVersion}`;
@@ -278,30 +309,23 @@ export async function receiveRestockOrder(
         );
       }
 
-      const discrepancy =
-        receiptLine.deliveredQuantity - receiptLine.damagedQuantity - receiptLine.acceptedQuantity;
-      const lineAudit = auditStamp(
-        "RECEIPT",
-        actorId,
-        [
-          `delivered=${receiptLine.deliveredQuantity}`,
-          `damaged=${receiptLine.damagedQuantity}`,
-          `accepted=${receiptLine.acceptedQuantity}`,
-          `other_rejected=${Math.max(0, discrepancy)}`,
-          receiptLine.batchCode ? `batch=${receiptLine.batchCode}` : null,
-          receiptLine.noExpiration
-            ? "expiry=NONE"
-            : receiptLine.expiresAt
-              ? `expiry=${receiptLine.expiresAt.toISOString().slice(0, 10)}`
-              : null
-        ]
-          .filter(Boolean)
-          .join(" ")
+      const rejectedQuantity = Math.max(
+        0,
+        receiptLine.deliveredQuantity - receiptLine.damagedQuantity - receiptLine.acceptedQuantity
       );
+      const safeReceiptSummary = receiptSummary({
+        accepted: receiptLine.acceptedQuantity,
+        batchCode: receiptLine.batchCode,
+        damaged: receiptLine.damagedQuantity,
+        delivered: receiptLine.deliveredQuantity,
+        expiresAt: receiptLine.expiresAt,
+        noExpiration: receiptLine.noExpiration,
+        rejected: rejectedQuantity
+      });
 
       await tx.restockOrderLine.update({
         data: {
-          notes: appendBoundedAuditNote(orderLine.notes, lineAudit, 500),
+          notes: appendBoundedNote(orderLine.notes, safeReceiptSummary, 500),
           receivedQuantity: { increment: receiptLine.acceptedQuantity }
         },
         where: { id: orderLine.id }
@@ -326,23 +350,9 @@ export async function receiveRestockOrder(
       : anyReceived
         ? RestockOrderStatus.PARTIALLY_RECEIVED
         : RestockOrderStatus.AWAITING_DELIVERY;
-    const deliveredTotal = input.lines.reduce((sum, line) => sum + line.deliveredQuantity, 0);
-    const damagedTotal = input.lines.reduce((sum, line) => sum + line.damagedQuantity, 0);
-    const acceptedTotal = input.lines.reduce((sum, line) => sum + line.acceptedQuantity, 0);
 
     await tx.restockOrder.update({
-      data: {
-        notes: appendBoundedAuditNote(
-          order.notes,
-          auditStamp(
-            "DELIVERY",
-            actorId,
-            `delivered=${deliveredTotal} damaged=${damagedTotal} accepted=${acceptedTotal}`
-          ),
-          1000
-        ),
-        status: nextStatus
-      },
+      data: { status: nextStatus },
       where: { id: orderId }
     });
   });

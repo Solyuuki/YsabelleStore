@@ -78,6 +78,20 @@ export type RestockOrder = {
   lines: RestockOrderLine[];
 };
 
+export type RestockReceiptLineInput = {
+  lineId: string;
+  deliveredQuantity: number;
+  damagedQuantity: number;
+  acceptedQuantity: number;
+  batchCode?: string | null;
+  expiresAt?: string | null;
+  noExpiration: boolean;
+  scannedBarcode?: string | null;
+  confirmNewBarcode?: boolean;
+  confirmOverDelivery?: boolean;
+  unitCost?: number;
+};
+
 export type PaginationMeta = {
   page: number;
   pageSize: number;
@@ -199,6 +213,25 @@ export async function createRestockOrder(input: {
   return response.data;
 }
 
+export async function createRestockRequest(input: {
+  notes?: string | null;
+  lines: RestockDraftLineInput[];
+}) {
+  const response = await apiClient.request<RestockOrder, { code?: string; details?: unknown }>(
+    "/api/restock-orders/requests",
+    {
+      method: "POST",
+      json: input
+    }
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
 export async function replaceRestockOrderLines(
   orderId: string,
   input: { expectedVersion: number; lines: RestockDraftLineInput[] }
@@ -224,6 +257,63 @@ export async function approveRestockOrder(orderId: string, expectedVersion: numb
     {
       method: "POST",
       json: { expectedVersion }
+    }
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function markRestockOrderAwaitingDelivery(
+  orderId: string,
+  expectedVersion: number
+) {
+  const response = await apiClient.request<RestockOrder, { code?: string; details?: unknown }>(
+    `/api/restock-orders/${encodeURIComponent(orderId)}/await-delivery`,
+    {
+      method: "POST",
+      json: { expectedVersion }
+    }
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function cancelRestockOrder(
+  orderId: string,
+  input: { expectedVersion: number; reason: string }
+) {
+  const response = await apiClient.request<RestockOrder, { code?: string; details?: unknown }>(
+    `/api/restock-orders/${encodeURIComponent(orderId)}/cancel`,
+    {
+      method: "POST",
+      json: input
+    }
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function receiveRestockOrder(
+  orderId: string,
+  input: { expectedVersion: number; lines: RestockReceiptLineInput[] }
+) {
+  const response = await apiClient.request<RestockOrder, { code?: string; details?: unknown }>(
+    `/api/restock-orders/${encodeURIComponent(orderId)}/receipts`,
+    {
+      method: "POST",
+      json: input
     }
   );
 

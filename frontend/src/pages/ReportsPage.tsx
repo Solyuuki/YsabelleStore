@@ -22,8 +22,10 @@ import {
 } from "recharts";
 
 import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
+import { RestockNewProductCard } from "@/components/reports/RestockNewProductCard";
 import { RestockOrderHistoryPanel } from "@/components/reports/RestockOrderHistoryPanel";
 import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
+import { RestockReceivingPanel } from "@/components/reports/RestockReceivingPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
@@ -63,7 +65,7 @@ export function ReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
-  const [restockView, setRestockView] = useState<"plan" | "orders">("plan");
+  const [restockView, setRestockView] = useState<"plan" | "orders" | "receiving">("plan");
   const [restockOrderCount, setRestockOrderCount] = useState<number | null>(null);
   const [restockOrdersRefreshVersion, setRestockOrdersRefreshVersion] = useState(0);
 
@@ -255,7 +257,8 @@ export function ReportsPage() {
               <div>
                 <h2 className="text-base font-semibold text-slate-950">Restock</h2>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Plan a new restock or reopen persisted orders without mixing the two workflows.
+                  Plan, track, and receive restocks as separate steps so physical inventory changes
+                  only when goods actually arrive.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -278,16 +281,36 @@ export function ReportsPage() {
                   Orders
                   {restockOrderCount === null ? "" : ` (${restockOrderCount.toLocaleString()})`}
                 </Button>
+                <Button
+                  aria-pressed={restockView === "receiving"}
+                  onClick={() => setRestockView("receiving")}
+                  size="sm"
+                  type="button"
+                  variant={restockView === "receiving" ? "default" : "secondary"}
+                >
+                  Receiving
+                </Button>
               </div>
             </div>
 
             {restockView === "plan" ? (
-              <RestockPlanningPanel
-                onOpenOrders={() => setRestockView("orders")}
-                onOrdersChanged={notifyRestockOrdersChanged}
+              <div className="space-y-3">
+                <RestockNewProductCard
+                  onOpenOrders={() => setRestockView("orders")}
+                  onOrderCreated={notifyRestockOrdersChanged}
+                />
+                <RestockPlanningPanel
+                  onOpenOrders={() => setRestockView("orders")}
+                  onOrdersChanged={notifyRestockOrdersChanged}
+                />
+              </div>
+            ) : restockView === "orders" ? (
+              <RestockOrderHistoryPanel
+                refreshVersion={refreshVersion + restockOrdersRefreshVersion}
               />
             ) : (
-              <RestockOrderHistoryPanel
+              <RestockReceivingPanel
+                onOrdersChanged={notifyRestockOrdersChanged}
                 refreshVersion={refreshVersion + restockOrdersRefreshVersion}
               />
             )}
