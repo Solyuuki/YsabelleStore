@@ -1,0 +1,70 @@
+name: Restock QoL Apply
+
+on:
+  push:
+    branches:
+      - sprint/v0.10/sprint-10
+    paths:
+      - scripts/apply-restock-qol.mjs
+      - .github/workflows/restock-qol-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-restock-qol:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply scoped QoL changes
+        run: node scripts/apply-restock-qol.mjs
+
+      - name: Format touched files
+        run: >-
+          npx prettier --write
+          backend/src/services/restockService.ts
+          backend/src/validators/restock.validators.ts
+          frontend/src/services/restockApi.ts
+          frontend/src/components/reports/RestockPlanningPanel.tsx
+          frontend/src/components/reports/RestockOrderHistoryPanel.tsx
+          frontend/src/components/reports/ReportDownloadDialog.tsx
+          frontend/src/pages/ReportsPage.tsx
+
+      - name: Typecheck repository
+        run: npm run typecheck
+
+      - name: Run frontend contracts
+        run: npm test --workspace frontend --if-present
+
+      - name: Commit QoL result
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No QoL changes produced."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/src/services/restockService.ts
+          git add backend/src/validators/restock.validators.ts
+          git add frontend/src/services/restockApi.ts
+          git add frontend/src/components/reports/RestockPlanningPanel.tsx
+          git add frontend/src/components/reports/RestockOrderHistoryPanel.tsx
+          git add frontend/src/components/reports/ReportDownloadDialog.tsx
+          git add frontend/src/pages/ReportsPage.tsx
+          HUSKY=0 git commit -m "feat(reports): polish restock workflow qol"
+          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
