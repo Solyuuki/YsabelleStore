@@ -36,15 +36,40 @@
 - [x] Allow target-stock and reorder-level updates before draft creation.
 - [x] Support audited recommendation dismissal.
 - [x] Support draft creation, draft line replacement, and selected-line approval.
-- [x] Keep Phase 7 new Product creation out of the Phase 6 UI.
 - [x] Keep physical Inventory unchanged by planning and approval.
-- [ ] Complete exact-head CI certification and Owner browser QA.
+- [x] Complete exact-head automated certification for the Phase 4–6 implementation baseline.
+- [ ] Complete Owner browser QA for the combined Restock workspace.
 
-## Phase 7–15
+## Phase 7 — New Product from Restock/Reports
 
-- [ ] Phase 7 — New Product from Restock/Reports.
-- [ ] Phase 8 — Restock Approval Lifecycle hardening.
-- [ ] Phase 9 — Arrival / Receiving Upgrade.
+- [x] Reuse the canonical Product create pipeline from Reports instead of creating a second Product engine.
+- [x] Preserve Product duplicate, barcode, category, pricing, quality, and storefront validation.
+- [x] Create the normal zero-stock Inventory shell and link the new canonical productId to a manual restock draft.
+- [x] Keep physical Inventory unchanged until receiving.
+- [x] Add Phase 7 frontend contract coverage.
+
+## Phase 8 — Restock Approval Lifecycle
+
+- [x] Preserve DRAFT → APPROVED Owner approval with optimistic versioning.
+- [x] Add APPROVED → AWAITING_DELIVERY lifecycle transition.
+- [x] Add reason-required audited cancellation while preserving order history.
+- [x] Block cancellation after physical stock has been received.
+- [x] Add a STAFF/OWNER request entry point while keeping approval and lifecycle actions Owner-controlled.
+- [x] Add Phase 8 backend/frontend regression contracts.
+
+## Phase 9 — Arrival / Receiving Upgrade
+
+- [x] Reuse the canonical transactional receiving and stock-domain engines.
+- [x] Record delivered, damaged, and accepted quantities separately.
+- [x] Add only accepted quantity to physical Inventory.
+- [x] Preserve batch, expiry/no-expiration, barcode enrollment, movement history, and inventory aggregate invariants.
+- [x] Require explicit confirmation for over-delivery.
+- [x] Use optimistic order version claims to block duplicate/concurrent receipt submission.
+- [x] Support partial and multiple deliveries with PARTIALLY_RECEIVED / RECEIVED progression.
+- [x] Add Phase 9 backend/frontend regression contracts.
+
+## Phase 10–15
+
 - [ ] Phase 10 — Bulk Delivery Workflow.
 - [ ] Phase 11 — Forecast-driven Restocking.
 - [ ] Phase 12 — Fast SARIMA Pipeline.
@@ -54,4 +79,4 @@
 
 ## Sprint Activity Log
 
-Phase 4–6 is currently under exact-head automated certification on `sprint/v0.10/sprint-10`; manual Owner QA follows only after the branch quality gates are green.
+Phases 7–9 are implemented on `sprint/v0.10/sprint-10` and are under exact-head automated certification. Manual Owner browser QA remains an explicit gate for the combined Reports → Restock → Receiving experience before the implementation is treated as visually certified.
