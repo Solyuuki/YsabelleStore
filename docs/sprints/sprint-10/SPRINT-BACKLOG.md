@@ -42,11 +42,11 @@
 
 ## Phase 7 — New Product from Restock/Reports
 
-- [x] Reuse the canonical Product create pipeline from Reports instead of creating a second Product engine.
+- [x] Historical implementation reused the canonical Product create pipeline rather than creating a second backend Product engine.
 - [x] Preserve Product duplicate, barcode, category, pricing, quality, and storefront validation.
-- [x] Create the normal zero-stock Inventory shell and link the new canonical productId to a manual restock draft.
 - [x] Keep physical Inventory unchanged until receiving.
-- [x] Add Phase 7 frontend contract coverage.
+- [x] Retire the standalone Reports new-product restock entry after architecture review; Products remains the sole product-creation surface.
+- [x] Keep Reports and Restock limited to existing canonical Products.
 
 ## Phase 8 — Restock Approval Lifecycle
 
@@ -76,12 +76,12 @@
 - [ ] Create a Delivery Session review surface before any physical stock mutation.
 - [ ] Support product identification by existing Restock Order, SKU, Product search, barcode, and YSB internal label without requiring a scanner.
 - [ ] Show per-line expected quantity, received quantity, batch/lot, and expiry/no-expiry state.
-- [ ] Summarize total lines, discrepancies, missing expiry values, and unknown products before completion.
-- [ ] Route unknown/new products through the canonical Product Quick Add validation pipeline.
-- [ ] Preserve Phase 9 damaged/return-report handling when bulk delivery lines contain damaged accepted/rejected quantities.
+- [ ] Summarize total lines, discrepancies, missing expiry values, and unresolved products before completion.
+- [ ] Keep unknown products unresolved until they are matched to an existing canonical Product or created through Products, then return to the Delivery Session; Inventory/Reports/Receiving must not create Products.
+- [ ] Preserve Phase 9 damaged/return-report handling when bulk delivery lines linked to a Restock Order contain damaged or rejected quantities.
 - [ ] Preserve partial-delivery semantics: physically missing units remain pending and are not treated as damaged returns.
 - [ ] Complete receipt only after blocking delivery-session issues are resolved.
-- [ ] Reuse canonical Product, Batch, Inventory Movement, and stock-domain authorities; no direct UI Inventory mutation shortcut.
+- [ ] Reuse canonical Product, Restock receiving, Batch, Inventory Movement, and stock-domain authorities; no direct UI Inventory mutation shortcut.
 - [ ] Add Phase 10 backend/frontend regression contracts and scale coverage for large delivery sessions.
 - [ ] Complete exact-head automated certification and Owner browser QA for Phase 10.
 
@@ -110,4 +110,4 @@
 
 ## Sprint Activity Log
 
-Phases 7–9 are implemented and Owner-tested on `sprint/v0.10/sprint-10`. Phase 10 is the active implementation slice and evolves the legacy Inventory bulk-stock flow into a validated Delivery Session workflow while preserving the certified Receiving and stock-domain invariants.
+Phases 7–9 are implemented and Owner-tested on `sprint/v0.10/sprint-10`. Phase 10 is the active implementation slice and evolves the legacy Inventory bulk-stock flow into a validated Delivery Session workflow while preserving the certified Receiving and stock-domain invariants. Product creation remains owned exclusively by Products; unresolved delivery rows must be resolved against that canonical catalog before stock can be received.

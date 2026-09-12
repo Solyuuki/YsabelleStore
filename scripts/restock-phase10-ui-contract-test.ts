@@ -23,14 +23,22 @@ assert.match(dialogSource, /sourceType: "SPREADSHEET"/);
 assert.doesNotMatch(dialogSource, /confirmInventoryStockImport/);
 assert.match(dialogSource, /lookupInventoryByBarcode/);
 assert.match(dialogSource, /fetchProducts/);
-assert.match(dialogSource, /max-w-\[760px\]/);
+assert.doesNotMatch(dialogSource, /ProductQuickAddDialog/);
+assert.doesNotMatch(dialogSource, /createProduct\s*\(/);
+assert.match(dialogSource, /No canonical Product matched/);
 assert.doesNotMatch(dialogSource, /Google Drive/);
 assert.doesNotMatch(dialogSource, /ZIP|RAR|TAR\.GZ|package archive/i);
 
 assert.match(apiSource, /\/api\/inventory\/delivery-sessions\/complete/);
 assert.match(apiSource, /sourceType: BulkDeliverySourceType/);
+assert.match(apiSource, /restockOrderId/);
+assert.match(apiSource, /expectedOrderVersion/);
+assert.match(apiSource, /restockOrderLineId/);
 assert.match(apiSource, /receivedQuantity/);
+assert.match(apiSource, /damagedQuantity/);
+assert.match(apiSource, /acceptedQuantity/);
 assert.match(apiSource, /batchCode/);
 assert.match(apiSource, /noExpiration/);
+assert.match(apiSource, /requiresReturnReport/);
 
 console.log("Restock Phase 10 bulk delivery UI contract passed.");
