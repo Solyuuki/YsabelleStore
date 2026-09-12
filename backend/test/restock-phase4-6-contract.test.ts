@@ -46,7 +46,10 @@ test("Restock order history supports paged reference search and multi-status fil
   assert.equal(query.search, "RO-2026");
   assert.deepEqual(query.statuses, ["APPROVED", "AWAITING_DELIVERY", "PARTIALLY_RECEIVED"]);
   assert.match(restockServiceSource, /orderNumber: \{ contains: query\.search \}/);
-  assert.match(restockServiceSource, /status: statuses\.length === 1 \? statuses\[0\] : \{ in: statuses \}/);
+  assert.match(
+    restockServiceSource,
+    /status: statuses\.length === 1 \? statuses\[0\] : \{ in: statuses \}/
+  );
 });
 
 test("Phase 6 selected lines require positive requested quantity", () => {

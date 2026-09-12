@@ -131,7 +131,10 @@ assert.match(reportDialogSource, /Supplier order/);
 assert.match(reportDialogSource, /supplier-order-select/);
 assert.match(reportDialogSource, /SUPPLIER_ORDER_PAGE_SIZE/);
 assert.match(reportDialogSource, /statuses: SUPPLIER_EXPORT_STATUSES/);
-assert.match(reportDialogSource, /The exact order selected here will be used for PDF, Print, or CSV export\./);
+assert.match(
+  reportDialogSource,
+  /The exact order selected here will be used for PDF, Print, or CSV export\./
+);
 assert.doesNotMatch(reportDialogSource, /fetchLatestSupplierOrder/);
 assert.match(reportDialogSource, /exportBusy === "print" \? "Preparing…" : "Print"/);
 assert.match(reportDialogSource, /Excel-compatible CSV/);
