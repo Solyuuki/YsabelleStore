@@ -139,7 +139,9 @@ test("Restock receipt claims the expected version before physical stock mutation
 });
 
 test("Supplier-facing order notes are not polluted by receiving actor audit metadata", () => {
-  const awaitingStart = lifecycleSource.indexOf("export async function markRestockOrderAwaitingDelivery");
+  const awaitingStart = lifecycleSource.indexOf(
+    "export async function markRestockOrderAwaitingDelivery"
+  );
   const cancelStart = lifecycleSource.indexOf("export async function cancelRestockOrder");
   const receiveStart = lifecycleSource.indexOf("export async function receiveRestockOrder");
   const awaitingBlock = lifecycleSource.slice(awaitingStart, cancelStart);

@@ -237,7 +237,9 @@ export const cancelRestockOrderController: RequestHandler = async (request, resp
     });
     const order = await cancelRestockOrder(params.orderId, body, requireActorId(request));
 
-    response.status(200).json(createSuccessResponse("Restock order cancelled successfully.", order));
+    response
+      .status(200)
+      .json(createSuccessResponse("Restock order cancelled successfully.", order));
   } catch (error) {
     next(error);
   }
@@ -255,7 +257,9 @@ export const receiveRestockOrderController: RequestHandler = async (request, res
     });
     const order = await receiveRestockOrder(params.orderId, body, requireActorId(request));
 
-    response.status(200).json(createSuccessResponse("Restock delivery received successfully.", order));
+    response
+      .status(200)
+      .json(createSuccessResponse("Restock delivery received successfully.", order));
   } catch (error) {
     next(error);
   }

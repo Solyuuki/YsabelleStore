@@ -1,19 +1,5 @@
-import {
-  LoaderCircle,
-  PackageCheck,
-  RefreshCw,
-  Send,
-  ShieldAlert,
-  Truck
-} from "lucide-react";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-  type ReactNode
-} from "react";
+import { LoaderCircle, PackageCheck, RefreshCw, Send, ShieldAlert, Truck } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -209,10 +195,7 @@ export function RestockReceivingPanel({
     setReceiptError(null);
   }
 
-  function updateReceiptRow(
-    lineId: string,
-    update: (current: ReceiptRowState) => ReceiptRowState
-  ) {
+  function updateReceiptRow(lineId: string, update: (current: ReceiptRowState) => ReceiptRowState) {
     setReceiptRows((current) => {
       const row = current[lineId];
       if (!row) return current;
@@ -377,7 +360,7 @@ export function RestockReceivingPanel({
 
         <CardContent className="space-y-3">
           {error ? (
-            <Alert variant="destructive">
+            <Alert variant="danger">
               <AlertTitle>Receiving needs attention</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -400,7 +383,8 @@ export function RestockReceivingPanel({
               <PackageCheck aria-hidden="true" className="mx-auto h-8 w-8 text-slate-400" />
               <p className="mt-3 text-sm font-semibold text-slate-950">No active deliveries.</p>
               <p className="mt-1 text-sm text-slate-500">
-                Confirm a restock plan first. Received and cancelled orders remain in Orders history.
+                Confirm a restock plan first. Received and cancelled orders remain in Orders
+                history.
               </p>
             </div>
           ) : null}
@@ -430,7 +414,9 @@ export function RestockReceivingPanel({
                         <p className="truncate text-sm font-semibold text-slate-950">
                           {order.orderNumber}
                         </p>
-                        <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+                        <Badge variant={statusVariant(order.status)}>
+                          {statusLabel(order.status)}
+                        </Badge>
                       </div>
                       <p className="mt-1 text-xs text-slate-500">
                         {lines.length.toLocaleString()} product{lines.length === 1 ? "" : "s"} ·{" "}
@@ -512,7 +498,7 @@ export function RestockReceivingPanel({
 
               <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
                 {receiptError ? (
-                  <Alert variant="destructive">
+                  <Alert variant="danger">
                     <AlertTitle>Receipt not saved</AlertTitle>
                     <AlertDescription>{receiptError}</AlertDescription>
                   </Alert>
@@ -546,8 +532,9 @@ export function RestockReceivingPanel({
                               {line.product.name}
                             </p>
                             <p className="mt-0.5 text-xs text-slate-500">
-                              SKU {line.product.sku} · Ordered {line.requestedQuantity.toLocaleString()} ·
-                              Already accepted {line.receivedQuantity.toLocaleString()} · Remaining{" "}
+                              SKU {line.product.sku} · Ordered{" "}
+                              {line.requestedQuantity.toLocaleString()} · Already accepted{" "}
+                              {line.receivedQuantity.toLocaleString()} · Remaining{" "}
                               {remaining.toLocaleString()}
                             </p>
                           </div>
@@ -564,7 +551,11 @@ export function RestockReceivingPanel({
                               type="number"
                               value={row.deliveredQuantity}
                               onChange={(event) =>
-                                updateReceiptQuantity(line.id, "deliveredQuantity", event.target.value)
+                                updateReceiptQuantity(
+                                  line.id,
+                                  "deliveredQuantity",
+                                  event.target.value
+                                )
                               }
                             />
                           </Field>
@@ -575,7 +566,11 @@ export function RestockReceivingPanel({
                               type="number"
                               value={row.damagedQuantity}
                               onChange={(event) =>
-                                updateReceiptQuantity(line.id, "damagedQuantity", event.target.value)
+                                updateReceiptQuantity(
+                                  line.id,
+                                  "damagedQuantity",
+                                  event.target.value
+                                )
                               }
                             />
                           </Field>
@@ -586,7 +581,11 @@ export function RestockReceivingPanel({
                               type="number"
                               value={row.acceptedQuantity}
                               onChange={(event) =>
-                                updateReceiptQuantity(line.id, "acceptedQuantity", event.target.value)
+                                updateReceiptQuantity(
+                                  line.id,
+                                  "acceptedQuantity",
+                                  event.target.value
+                                )
                               }
                             />
                           </Field>
@@ -666,8 +665,8 @@ export function RestockReceivingPanel({
                           </div>
                         ) : (
                           <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
-                            No units from this line will be added to inventory. The delivery discrepancy
-                            is still recorded on the restock line.
+                            No units from this line will be added to inventory. The delivery
+                            discrepancy is still recorded on the restock line.
                           </div>
                         )}
 
@@ -685,8 +684,8 @@ export function RestockReceivingPanel({
                               type="checkbox"
                             />
                             <span>
-                              Confirm over-delivery: accept {accepted.toLocaleString()} although only{" "}
-                              {remaining.toLocaleString()} units remain on the order.
+                              Confirm over-delivery: accept {accepted.toLocaleString()} although
+                              only {remaining.toLocaleString()} units remain on the order.
                             </span>
                           </label>
                         ) : null}
@@ -743,11 +742,12 @@ export function RestockReceivingPanel({
               </DialogHeader>
 
               <div className="space-y-4 px-6 pb-2">
-                <Alert variant="destructive">
+                <Alert variant="danger">
                   <ShieldAlert aria-hidden="true" className="h-4 w-4" />
                   <AlertTitle>Confirm cancellation</AlertTitle>
                   <AlertDescription>
-                    This does not remove order history. Orders with received stock cannot be cancelled.
+                    This does not remove order history. Orders with received stock cannot be
+                    cancelled.
                   </AlertDescription>
                 </Alert>
                 <Field label="Cancellation reason">
@@ -776,7 +776,7 @@ export function RestockReceivingPanel({
                 <Button
                   disabled={cancelSaving || cancelReason.trim().length < 3}
                   type="submit"
-                  variant="destructive"
+                  variant="danger"
                 >
                   {cancelSaving ? (
                     <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />

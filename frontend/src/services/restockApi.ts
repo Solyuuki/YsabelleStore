@@ -267,10 +267,7 @@ export async function approveRestockOrder(orderId: string, expectedVersion: numb
   return response.data;
 }
 
-export async function markRestockOrderAwaitingDelivery(
-  orderId: string,
-  expectedVersion: number
-) {
+export async function markRestockOrderAwaitingDelivery(orderId: string, expectedVersion: number) {
   const response = await apiClient.request<RestockOrder, { code?: string; details?: unknown }>(
     `/api/restock-orders/${encodeURIComponent(orderId)}/await-delivery`,
     {

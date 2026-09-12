@@ -20,12 +20,7 @@ const router = Router();
 
 // Staff may submit a custom procurement request, but approval and every lifecycle action
 // remain Owner-controlled. Owner requests may use either this endpoint or the normal draft API.
-router.post(
-  "/requests",
-  requireAuth,
-  requireRole("OWNER", "STAFF"),
-  createRestockOrderController
-);
+router.post("/requests", requireAuth, requireRole("OWNER", "STAFF"), createRestockOrderController);
 
 router.use(requireAuth, requireRole("OWNER"));
 

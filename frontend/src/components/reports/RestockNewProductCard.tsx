@@ -268,7 +268,10 @@ export function RestockNewProductCard({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Product name">
-                  <Input value={form.name} onChange={(event) => update("name", event.target.value)} />
+                  <Input
+                    value={form.name}
+                    onChange={(event) => update("name", event.target.value)}
+                  />
                 </Field>
                 <Field label="SKU">
                   <Input value={form.sku} onChange={(event) => update("sku", event.target.value)} />

@@ -162,11 +162,7 @@ export async function cancelRestockOrder(
 
     const updated = await tx.restockOrder.updateMany({
       data: {
-        notes: appendBoundedNote(
-          existing.notes,
-          cancellationAudit(actorId, input.reason),
-          1000
-        ),
+        notes: appendBoundedNote(existing.notes, cancellationAudit(actorId, input.reason), 1000),
         status: RestockOrderStatus.CANCELLED,
         version: { increment: 1 }
       },
@@ -244,10 +240,14 @@ export async function receiveRestockOrder(
     for (const receiptLine of input.lines) {
       const orderLine = lineById.get(receiptLine.lineId);
       if (!orderLine || !orderLine.isSelected) {
-        throw new HttpError(422, "A receipt line does not belong to the selected restock order lines.", {
-          code: "RESTOCK_RECEIPT_LINE_MISMATCH",
-          details: { lineId: receiptLine.lineId }
-        });
+        throw new HttpError(
+          422,
+          "A receipt line does not belong to the selected restock order lines.",
+          {
+            code: "RESTOCK_RECEIPT_LINE_MISMATCH",
+            details: { lineId: receiptLine.lineId }
+          }
+        );
       }
 
       const remaining = Math.max(0, orderLine.requestedQuantity - orderLine.receivedQuantity);
