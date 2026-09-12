@@ -27,6 +27,14 @@ export const restockOrderStatusSchema = z.enum([
   "CANCELLED"
 ]);
 
+const optionalRestockStatusesSchema = z.preprocess((value) => {
+  if (typeof value === "string") {
+    const statuses = [...new Set(value.split(",").map((item) => item.trim()).filter(Boolean))];
+    return statuses.length > 0 ? statuses : undefined;
+  }
+  return value;
+}, z.array(restockOrderStatusSchema).min(1).max(restockOrderStatusSchema.options.length).optional());
+
 export const restockRecommendationSourceSchema = z.enum([
   "SARIMA",
   "LOW_STOCK",
@@ -108,7 +116,9 @@ export const approveRestockOrderSchema = z.object({
 });
 
 export const restockOrderListQuerySchema = z.object({
+  search: optionalSearchSchema,
   status: restockOrderStatusSchema.optional(),
+  statuses: optionalRestockStatusesSchema,
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20)
 });
