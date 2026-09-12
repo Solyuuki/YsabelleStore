@@ -101,7 +101,8 @@ export function ProductQuickAddDialog({
         }));
       })
       .catch(() => {
-        if (active) setError("Categories could not be loaded. Add the Product from Products instead.");
+        if (active)
+          setError("Categories could not be loaded. Add the Product from Products instead.");
       })
       .finally(() => {
         if (active) setCategoriesLoading(false);
@@ -162,7 +163,9 @@ export function ProductQuickAddDialog({
       onCreated(response.data);
       onOpenChange(false);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "The Product could not be created.");
+      setError(
+        requestError instanceof Error ? requestError.message : "The Product could not be created."
+      );
     } finally {
       setSaving(false);
     }

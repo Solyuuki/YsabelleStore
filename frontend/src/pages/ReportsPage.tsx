@@ -237,8 +237,8 @@ export function ReportsPage() {
               <div>
                 <h2 className="text-base font-semibold text-slate-950">Restock forecast</h2>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Review forecast-driven restock recommendations before projected stockouts. Approved
-                  tickets move to Receiving for the physical delivery.
+                  Review forecast-driven restock recommendations before projected stockouts.
+                  Approved tickets move to Receiving for the physical delivery.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
