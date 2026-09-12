@@ -29,7 +29,7 @@ assert.match(panelSource, /Restock planner/);
 assert.match(panelSource, /Add product/);
 assert.match(panelSource, /Order quantity/);
 assert.match(panelSource, /Why did you change the suggested quantity/);
-assert.match(panelSource, /More details and stock settings/);
+assert.match(panelSource, /Details/);
 assert.match(panelSource, /Not needed/);
 assert.match(panelSource, /Review restock/);
 assert.match(panelSource, /Save for later/);
@@ -38,6 +38,17 @@ assert.match(panelSource, /Inventory has not changed/);
 assert.match(panelSource, /Physical Inventory is unchanged/);
 assert.match(panelSource, /updateProduct/);
 assert.match(panelSource, /DialogContent/);
+
+assert.match(panelSource, /const RESTOCK_PAGE_SIZE = 8/);
+assert.match(panelSource, /const CATALOG_PAGE_SIZE = 10/);
+assert.match(panelSource, /const REVIEW_PAGE_SIZE = 12/);
+assert.match(panelSource, /pagedLines\.map/);
+assert.match(panelSource, /pagedSelectedLines\.map/);
+assert.match(panelSource, /PaginationControls/);
+assert.match(panelSource, /Search existing catalog products/);
+assert.match(panelSource, /max-h-\[50vh\]/);
+assert.match(panelSource, /Results stay paged so large catalogs do not stretch/);
+assert.doesNotMatch(panelSource, /searchResults\.slice\(0, 8\)/);
 
 assert.doesNotMatch(panelSource, /createProduct\s*\(/);
 assert.doesNotMatch(panelSource, /stockInInventory\s*\(/);
