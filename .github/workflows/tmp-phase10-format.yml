@@ -1,0 +1,41 @@
+name: Temporary Phase 10 Format
+
+on:
+  push:
+    branches:
+      - sprint/v0.10/sprint-10
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Format Phase 10 files
+        run: npx prettier --write backend/src/services/bulkDeliveryService.ts backend/src/validators/bulkDelivery.validators.ts frontend/src/components/inventory/InventoryImportDialog.tsx
+      - name: Commit formatting if needed
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/src/services/bulkDeliveryService.ts backend/src/validators/bulkDelivery.validators.ts frontend/src/components/inventory/InventoryImportDialog.tsx
+          git commit -m "style(phase10): format bulk delivery files"
+          git push origin HEAD:sprint/v0.10/sprint-10
