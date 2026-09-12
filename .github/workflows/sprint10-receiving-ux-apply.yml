@@ -1,0 +1,40 @@
+name: Sprint 10 Receiving UX Apply
+
+on:
+  push:
+    branches:
+      - "sprint/v0.10/sprint-10"
+    paths:
+      - ".github/workflows/sprint10-receiving-ux-apply.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/tmp-sprint10-receiving-refactor.mjs
+      - run: npx prettier --write frontend/src/pages/ReportsPage.tsx frontend/src/pages/ReceivingPage.tsx frontend/src/app/routes.ts frontend/src/components/reports/RestockPlanningPanel.tsx frontend/src/components/reports/RestockDraftsPanel.tsx frontend/src/components/receiving/ReturnReportDialog.tsx frontend/src/utils/restockReturnExport.ts frontend/src/utils/restockReturnPdf.ts scripts/restock-phase7-9-ui-contract-test.ts scripts/receiving-barcode-ui-contract-test.ts
+      - run: npm run typecheck --workspace frontend
+      - run: npm test --workspace frontend
+      - run: npm run build --workspace frontend
+      - name: Commit validated refactor
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/pages/ReportsPage.tsx frontend/src/pages/ReceivingPage.tsx frontend/src/app/routes.ts frontend/src/components/reports/RestockPlanningPanel.tsx frontend/src/components/reports/RestockDraftsPanel.tsx frontend/src/components/receiving/ReturnReportDialog.tsx frontend/src/utils/restockReturnExport.ts frontend/src/utils/restockReturnPdf.ts scripts/restock-phase7-9-ui-contract-test.ts scripts/receiving-barcode-ui-contract-test.ts
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          HUSKY=0 git commit -m "refactor(receiving): simplify ticket-based delivery UX"
+          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
