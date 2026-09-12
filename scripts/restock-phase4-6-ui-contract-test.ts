@@ -7,6 +7,10 @@ const panelSource = readFileSync(
   resolve(process.cwd(), "src/components/reports/RestockPlanningPanel.tsx"),
   "utf8"
 );
+const orderHistorySource = readFileSync(
+  resolve(process.cwd(), "src/components/reports/RestockOrderHistoryPanel.tsx"),
+  "utf8"
+);
 const apiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.ts"), "utf8");
 const reportDialogSource = readFileSync(
   resolve(process.cwd(), "src/components/reports/ReportDownloadDialog.tsx"),
@@ -27,6 +31,8 @@ const directPdfSource = readFileSync(
 
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.match(reportsSource, /<RestockPlanningPanel \/>/);
+assert.match(reportsSource, /RestockOrderHistoryPanel/);
+assert.match(reportsSource, /<RestockOrderHistoryPanel refreshVersion=\{refreshVersion\} \/>/);
 assert.match(reportsSource, /Download report/);
 assert.match(reportsSource, /ResponsiveContainer/);
 assert.match(reportsSource, /Recent receipts/);
@@ -35,8 +41,13 @@ assert.doesNotMatch(reportsSource, /Internal operational snapshot/);
 assert.match(reportsSource, /ReportDownloadDialog/);
 assert.ok(
   reportsSource.indexOf("<RestockPlanningPanel />") <
+    reportsSource.indexOf("<RestockOrderHistoryPanel refreshVersion={refreshVersion} />"),
+  "Restock planning should stay above persisted order history."
+);
+assert.ok(
+  reportsSource.indexOf("<RestockOrderHistoryPanel refreshVersion={refreshVersion} />") <
     reportsSource.indexOf("Recent receipt metrics"),
-  "Restock planner should stay above secondary report detail cards."
+  "Restock order history should stay above secondary report detail cards."
 );
 
 assert.match(panelSource, /<Badge variant="info">Recommended<\/Badge>/);
@@ -70,6 +81,19 @@ assert.match(panelSource, /Search existing catalog products/);
 assert.match(panelSource, /max-h-\[50vh\]/);
 assert.match(panelSource, /Results stay paged so large catalogs do not stretch/);
 assert.doesNotMatch(panelSource, /searchResults\.slice\(0, 8\)/);
+
+assert.match(orderHistorySource, /Restock orders/);
+assert.match(orderHistorySource, /Reopen saved and confirmed restock tickets after refresh or a later session\./);
+assert.match(orderHistorySource, /listRestockOrders\(\{ page, pageSize: ORDER_PAGE_SIZE \}\)/);
+assert.match(orderHistorySource, /Open order/);
+assert.match(orderHistorySource, /Persisted restock order/);
+assert.match(orderHistorySource, /Physical inventory remains unchanged/);
+assert.match(orderHistorySource, /Download PDF/);
+assert.match(orderHistorySource, /exportBusy === "print" \? "Preparing…" : "Print"/);
+assert.match(orderHistorySource, /Excel-compatible CSV/);
+assert.match(orderHistorySource, /await import\("@\/utils\/directPdfExport"\)/);
+assert.doesNotMatch(orderHistorySource, /stockInInventory\s*\(/);
+assert.doesNotMatch(orderHistorySource, /\/api\/inventory\/.*stock-in/);
 
 assert.doesNotMatch(panelSource, /createProduct\s*\(/);
 assert.doesNotMatch(panelSource, /stockInInventory\s*\(/);
