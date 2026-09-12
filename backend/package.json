@@ -27,7 +27,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/cors": "^4.17.21",
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^2.2.0",
