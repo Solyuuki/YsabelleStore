@@ -8,7 +8,17 @@ import {
   TriangleAlert
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import {
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis
+} from "recharts";
 
 import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
 import { RestockOrderHistoryPanel } from "@/components/reports/RestockOrderHistoryPanel";
@@ -21,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchDashboardSummary, type DashboardSummary } from "@/services/dashboardApi";
 import { listRecentSales } from "@/services/posService";
+import { listRestockOrders } from "@/services/restockApi";
 import type { PosSale } from "@/types/pos";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
@@ -28,6 +39,14 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   maximumFractionDigits: 2,
   minimumFractionDigits: 2,
   style: "currency"
+});
+
+const receiptTimeFormatter = new Intl.DateTimeFormat("en-PH", {
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  month: "short",
+  timeZone: "Asia/Manila"
 });
 
 const AVAILABILITY_COLORS = ["#4f46e5", "#e2e8f0"];
@@ -43,6 +62,9 @@ export function ReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
+  const [restockView, setRestockView] = useState<"plan" | "orders">("plan");
+  const [restockOrderCount, setRestockOrderCount] = useState<number | null>(null);
+  const [restockOrdersRefreshVersion, setRestockOrdersRefreshVersion] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -84,6 +106,22 @@ export function ReportsPage() {
     };
   }, [refreshVersion]);
 
+  useEffect(() => {
+    let active = true;
+
+    void listRestockOrders({ page: 1, pageSize: 1 })
+      .then((result) => {
+        if (active) setRestockOrderCount(result.meta.totalItems);
+      })
+      .catch(() => {
+        if (active) setRestockOrderCount(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [refreshVersion, restockOrdersRefreshVersion]);
+
   const completedSales = useMemo(
     () => sales.filter((sale) => sale.status === "COMPLETED"),
     [sales]
@@ -100,11 +138,13 @@ export function ReportsPage() {
   const recentReceiptChartData = useMemo(
     () =>
       completedSales
-        .slice(0, 8)
+        .slice(0, 10)
         .reverse()
-        .map((sale, index) => ({
+        .map((sale) => ({
           amount: Number(sale.totalAmount),
-          receipt: `Receipt ${index + 1}`
+          label: receiptTimeFormatter.format(new Date(sale.saleDate)),
+          receipt: sale.saleNumber,
+          units: sale.itemCount
         })),
     [completedSales]
   );
@@ -151,6 +191,10 @@ export function ReportsPage() {
         }
       ]
     : [];
+
+  function notifyRestockOrdersChanged() {
+    setRestockOrdersRefreshVersion((version) => version + 1);
+  }
 
   return (
     <div className="space-y-4">
@@ -205,8 +249,47 @@ export function ReportsPage() {
             ))}
           </section>
 
-          <RestockPlanningPanel />
-          <RestockOrderHistoryPanel refreshVersion={refreshVersion} />
+          <section className="space-y-3">
+            <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold text-slate-950">Restock</h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Plan a new restock or reopen persisted orders without mixing the two workflows.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  aria-pressed={restockView === "plan"}
+                  onClick={() => setRestockView("plan")}
+                  size="sm"
+                  type="button"
+                  variant={restockView === "plan" ? "default" : "secondary"}
+                >
+                  Plan restock
+                </Button>
+                <Button
+                  aria-pressed={restockView === "orders"}
+                  onClick={() => setRestockView("orders")}
+                  size="sm"
+                  type="button"
+                  variant={restockView === "orders" ? "default" : "secondary"}
+                >
+                  Orders{restockOrderCount === null ? "" : ` (${restockOrderCount.toLocaleString()})`}
+                </Button>
+              </div>
+            </div>
+
+            {restockView === "plan" ? (
+              <RestockPlanningPanel
+                onOpenOrders={() => setRestockView("orders")}
+                onOrdersChanged={notifyRestockOrdersChanged}
+              />
+            ) : (
+              <RestockOrderHistoryPanel
+                refreshVersion={refreshVersion + restockOrdersRefreshVersion}
+              />
+            )}
+          </section>
 
           <section className="grid items-start gap-4 xl:grid-cols-[0.9fr_1.1fr]">
             <Card>
@@ -221,7 +304,7 @@ export function ReportsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-end">
+                <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_260px] sm:items-end">
                   <div className="min-w-0">
                     <p className="text-xs text-slate-500">Gross sales</p>
                     <p className="mt-1 text-2xl font-semibold text-slate-950">
@@ -233,20 +316,28 @@ export function ReportsPage() {
                     </div>
                   </div>
 
-                  {recentReceiptChartData.length > 1 ? (
+                  {recentReceiptChartData.length >= 3 ? (
                     <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
-                      <p className="text-xs font-medium text-slate-600">Recent receipts</p>
-                      <p className="text-[11px] text-slate-400">Latest completed sale amounts</p>
-                      <div className="mt-2 h-16">
+                      <p className="text-xs font-medium text-slate-600">Recent sales trend</p>
+                      <p className="text-[11px] text-slate-400">Gross value of recent receipts</p>
+                      <div className="mt-2 h-28">
                         <ResponsiveContainer height="100%" width="100%">
-                          <BarChart data={recentReceiptChartData}>
-                            <Bar
-                              dataKey="amount"
-                              fill="#4f46e5"
-                              maxBarSize={16}
-                              radius={[3, 3, 0, 0]}
+                          <LineChart data={recentReceiptChartData} margin={{ bottom: 4, left: 4, right: 4, top: 4 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="label" hide />
+                            <Tooltip
+                              formatter={(value) => [currency(Number(value)), "Gross sales"]}
+                              labelFormatter={(label) => String(label)}
                             />
-                          </BarChart>
+                            <Line
+                              activeDot={{ r: 4 }}
+                              dataKey="amount"
+                              dot={{ r: 3 }}
+                              stroke="#4f46e5"
+                              strokeWidth={2}
+                              type="monotone"
+                            />
+                          </LineChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
@@ -254,7 +345,7 @@ export function ReportsPage() {
                     <div className="rounded-md border border-dashed border-slate-200 px-3 py-3 text-xs leading-5 text-slate-500">
                       {completedSales.length === 0
                         ? "No completed receipts yet."
-                        : "Another completed receipt will unlock the recent activity chart."}
+                        : `Complete ${3 - completedSales.length} more receipt${3 - completedSales.length === 1 ? "" : "s"} to unlock a useful sales trend.`}
                     </div>
                   )}
                 </div>
