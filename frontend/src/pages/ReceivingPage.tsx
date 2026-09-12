@@ -276,7 +276,9 @@ export function ReceivingPage() {
   function markEntireDeliveryDamaged() {
     if (!selectedOrder) return;
 
-    const remainingLines = selectedLines(selectedOrder).filter((line) => remainingQuantity(line) > 0);
+    const remainingLines = selectedLines(selectedOrder).filter(
+      (line) => remainingQuantity(line) > 0
+    );
     setExceptionLineIds(remainingLines.map((line) => line.id));
     setReceiptRows((current) => {
       const next = { ...current };
@@ -495,7 +497,9 @@ export function ReceivingPage() {
         </div>
 
         {loading && visibleOrders.length === 0 ? (
-          <div className="px-5 py-14 text-center text-sm text-slate-500">Loading restock tickets…</div>
+          <div className="px-5 py-14 text-center text-sm text-slate-500">
+            Loading restock tickets…
+          </div>
         ) : null}
 
         {!loading && visibleOrders.length === 0 ? (
@@ -518,7 +522,9 @@ export function ReceivingPage() {
 
         {visibleOrders.length > 0 ? (
           <Accordion.Root
-            onValueChange={(values) => setExpandedTicketId((values[0] as string | undefined) ?? null)}
+            onValueChange={(values) =>
+              setExpandedTicketId((values[0] as string | undefined) ?? null)
+            }
             value={expandedTicketId ? [expandedTicketId] : []}
           >
             {visibleOrders.map((order) => {
@@ -537,13 +543,20 @@ export function ReceivingPage() {
                           <span className="truncate text-sm font-semibold text-slate-950">
                             {order.orderNumber}
                           </span>
-                          <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+                          <Badge variant={statusVariant(order.status)}>
+                            {statusLabel(order.status)}
+                          </Badge>
                         </div>
                         <p className="mt-1 text-xs text-slate-500">
-                          {totals.products.toLocaleString()} product{totals.products === 1 ? "" : "s"} ·{" "}
-                          {totals.units.toLocaleString()} units ·{" "}
-                          {order.approvedAt ? `Approved ${dateFormatter.format(new Date(order.approvedAt))}` : "Approved"}
-                          {totals.remaining > 0 ? ` · ${totals.remaining.toLocaleString()} remaining` : ""}
+                          {totals.products.toLocaleString()} product
+                          {totals.products === 1 ? "" : "s"} · {totals.units.toLocaleString()} units
+                          ·{" "}
+                          {order.approvedAt
+                            ? `Approved ${dateFormatter.format(new Date(order.approvedAt))}`
+                            : "Approved"}
+                          {totals.remaining > 0
+                            ? ` · ${totals.remaining.toLocaleString()} remaining`
+                            : ""}
                         </p>
                       </div>
                       <ChevronDown
@@ -557,7 +570,9 @@ export function ReceivingPage() {
                       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                         <div>
                           <p className="text-sm font-semibold text-slate-900">Ticket products</p>
-                          <p className="text-xs text-slate-500">Approved quantities for this restock.</p>
+                          <p className="text-xs text-slate-500">
+                            Approved quantities for this restock.
+                          </p>
                         </div>
                         <Badge>{totals.products.toLocaleString()} items</Badge>
                       </div>
@@ -568,7 +583,9 @@ export function ReceivingPage() {
                             key={line.id}
                           >
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-medium text-slate-900">{line.product.name}</p>
+                              <p className="truncate text-sm font-medium text-slate-900">
+                                {line.product.name}
+                              </p>
                               <p className="mt-0.5 text-xs text-slate-500">{line.product.sku}</p>
                             </div>
                             <span className="shrink-0 text-sm font-semibold text-slate-800">
@@ -610,7 +627,8 @@ export function ReceivingPage() {
 
         {visibleTotal > visibleOrders.length ? (
           <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
-            Showing the latest {visibleOrders.length.toLocaleString()} of {visibleTotal.toLocaleString()} tickets.
+            Showing the latest {visibleOrders.length.toLocaleString()} of{" "}
+            {visibleTotal.toLocaleString()} tickets.
           </p>
         ) : null}
       </section>
@@ -627,10 +645,13 @@ export function ReceivingPage() {
               <DialogHeader className="relative border-b border-slate-200 px-6 py-5 pr-16">
                 <div className="flex flex-wrap items-center gap-2">
                   <DialogTitle>{selectedOrder.orderNumber}</DialogTitle>
-                  <Badge variant={statusVariant(selectedOrder.status)}>{statusLabel(selectedOrder.status)}</Badge>
+                  <Badge variant={statusVariant(selectedOrder.status)}>
+                    {statusLabel(selectedOrder.status)}
+                  </Badge>
                 </div>
                 <DialogDescription>
-                  {selectedTotals.products.toLocaleString()} products · {selectedTotals.units.toLocaleString()} expected ·{" "}
+                  {selectedTotals.products.toLocaleString()} products ·{" "}
+                  {selectedTotals.units.toLocaleString()} expected ·{" "}
                   {selectedTotals.accepted.toLocaleString()} accepted
                 </DialogDescription>
                 <Button
@@ -837,7 +858,9 @@ function ArrivalOptions({ onSelect }: { onSelect: (mode: ReceiptMode) => void })
     <section>
       <div className="mb-2">
         <h3 className="text-sm font-semibold text-slate-950">How did this delivery arrive?</h3>
-        <p className="mt-0.5 text-xs text-slate-500">Choose one. Extra fields appear only for exceptions.</p>
+        <p className="mt-0.5 text-xs text-slate-500">
+          Choose one. Extra fields appear only for exceptions.
+        </p>
       </div>
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
         {choices.map((choice, index) => {
@@ -868,7 +891,10 @@ function ArrivalOptions({ onSelect }: { onSelect: (mode: ReceiptMode) => void })
 }
 
 function CompleteDeliveryPanel({ order }: { order: RestockOrder }) {
-  const totalRemaining = selectedLines(order).reduce((sum, line) => sum + remainingQuantity(line), 0);
+  const totalRemaining = selectedLines(order).reduce(
+    (sum, line) => sum + remainingQuantity(line),
+    0
+  );
   return (
     <section className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
       <div className="flex items-start gap-3">
@@ -876,7 +902,8 @@ function CompleteDeliveryPanel({ order }: { order: RestockOrder }) {
         <div>
           <p className="text-sm font-semibold text-emerald-950">Complete delivery — no issues</p>
           <p className="mt-0.5 text-xs leading-5 text-emerald-800">
-            {totalRemaining.toLocaleString()} remaining units will be accepted. No quantity editing is needed.
+            {totalRemaining.toLocaleString()} remaining units will be accepted. No quantity editing
+            is needed.
           </p>
         </div>
       </div>
@@ -898,7 +925,9 @@ function CompletedDeliveryPanel({
         <CheckCircle2 aria-hidden="true" className="mt-0.5 h-5 w-5 text-emerald-600" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-emerald-950">Delivery completed</p>
-          <p className="mt-0.5 text-xs leading-5 text-emerald-800">Accepted units are already reflected in Inventory.</p>
+          <p className="mt-0.5 text-xs leading-5 text-emerald-800">
+            Accepted units are already reflected in Inventory.
+          </p>
         </div>
         {hasReturn ? (
           <Button onClick={onReturnReport} size="sm" type="button" variant="secondary">
@@ -939,7 +968,9 @@ function ReceiptEditor({
         <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-slate-950">
-              {mode === "issues" ? "Which products have an issue?" : "Which products did not fully arrive?"}
+              {mode === "issues"
+                ? "Which products have an issue?"
+                : "Which products did not fully arrive?"}
             </h3>
             <p className="mt-0.5 text-xs text-slate-500">
               Select only the exceptions. All unselected products are treated as fully delivered.
@@ -978,7 +1009,9 @@ function ReceiptEditor({
                   </Checkbox.Indicator>
                 </Checkbox.Root>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-slate-900">{line.product.name}</span>
+                  <span className="block truncate text-sm font-medium text-slate-900">
+                    {line.product.name}
+                  </span>
                   <span className="mt-0.5 block text-xs text-slate-500">
                     {line.product.sku} · {remainingQuantity(line).toLocaleString()} expected
                   </span>
@@ -1012,12 +1045,17 @@ function ReceiptEditor({
                         {line.product.sku} · {remaining.toLocaleString()} expected
                       </p>
                     </div>
-                    <div className={`grid gap-3 ${mode === "partial" ? "grid-cols-3" : "grid-cols-2"}`}>
+                    <div
+                      className={`grid gap-3 ${mode === "partial" ? "grid-cols-3" : "grid-cols-2"}`}
+                    >
                       {mode === "partial" ? (
                         <QuantityField
                           label="Delivered"
                           onChange={(value) =>
-                            onUpdateRow(line.id, (current) => ({ ...current, deliveredQuantity: value }))
+                            onUpdateRow(line.id, (current) => ({
+                              ...current,
+                              deliveredQuantity: value
+                            }))
                           }
                           value={row.deliveredQuantity}
                         />
@@ -1025,7 +1063,10 @@ function ReceiptEditor({
                       <QuantityField
                         label="Damaged"
                         onChange={(value) =>
-                          onUpdateRow(line.id, (current) => ({ ...current, damagedQuantity: value }))
+                          onUpdateRow(line.id, (current) => ({
+                            ...current,
+                            damagedQuantity: value
+                          }))
                         }
                         value={row.damagedQuantity}
                       />
@@ -1063,7 +1104,9 @@ function ReceiptEditor({
       <section className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-slate-800">Supplier lot / expiry details</p>
-          <p className="mt-0.5 text-xs text-slate-500">Optional unless the supplier printed a specific lot or expiry.</p>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Optional unless the supplier printed a specific lot or expiry.
+          </p>
         </div>
         <Button onClick={onOpenLotDetails} size="sm" type="button" variant="secondary">
           Add details
@@ -1122,7 +1165,9 @@ function LotExpiryDialog({
       <DialogContent className="max-w-[560px] gap-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Supplier lot / expiry details</DialogTitle>
-          <DialogDescription>Add these only when the supplier printed specific traceability details.</DialogDescription>
+          <DialogDescription>
+            Add these only when the supplier printed specific traceability details.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 px-6 py-5">
           {activeLine && row ? (
@@ -1149,7 +1194,10 @@ function LotExpiryDialog({
                   id="supplier-lot"
                   maxLength={80}
                   onChange={(event) =>
-                    onUpdateRow(activeLine.id, (current) => ({ ...current, batchCode: event.target.value }))
+                    onUpdateRow(activeLine.id, (current) => ({
+                      ...current,
+                      batchCode: event.target.value
+                    }))
                   }
                   value={row.batchCode}
                 />
@@ -1161,7 +1209,10 @@ function LotExpiryDialog({
                   disabled={row.noExpiration}
                   id="supplier-expiry"
                   onChange={(event) =>
-                    onUpdateRow(activeLine.id, (current) => ({ ...current, expiresAt: event.target.value }))
+                    onUpdateRow(activeLine.id, (current) => ({
+                      ...current,
+                      expiresAt: event.target.value
+                    }))
                   }
                   type="date"
                   value={row.expiresAt}
@@ -1191,7 +1242,9 @@ function LotExpiryDialog({
           )}
         </div>
         <DialogFooter>
-          <Button onClick={() => onOpenChange(false)} type="button">Done</Button>
+          <Button onClick={() => onOpenChange(false)} type="button">
+            Done
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
