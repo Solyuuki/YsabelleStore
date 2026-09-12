@@ -4,6 +4,7 @@ export type RestockReturnLine = {
   acceptedQuantity: number;
   barcode: string | null;
   damagedQuantity: number;
+  damageReason: string | null;
   deliveredQuantity: number;
   productName: string;
   rejectedQuantity: number;
@@ -11,10 +12,18 @@ export type RestockReturnLine = {
   sku: string;
 };
 
+export type RestockReturnDocumentInfo = {
+  deliveryReference?: string;
+  supplierName?: string;
+};
+
 export type RestockReturnSnapshot = {
+  deliveryReference: string;
   generatedAt: string;
   orderNumber: string;
   returnReference: string;
+  returnScope: "Damaged items only" | "Entire delivery";
+  supplierName: string;
   lines: RestockReturnLine[];
 };
 
@@ -25,7 +34,7 @@ const generatedAtFormatter = new Intl.DateTimeFormat("en-PH", {
 });
 
 const RECEIPT_EVENT_PATTERN =
-  /\[Receipt [^\]]+\]\s+delivered=(\d+)\s+damaged=(\d+)\s+accepted=(\d+)\s+other_rejected=(\d+)/g;
+  /\[Receipt [^\]]+\]\s+delivered=(\d+)\s+damaged=(\d+)\s+accepted=(\d+)\s+other_rejected=(\d+)(?:\s+damage_reason=([^\s]+))?/g;
 
 function safeCsvText(value: string) {
   const normalized = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
@@ -53,7 +62,8 @@ function aggregateReceiptNotes(notes: string | null) {
     acceptedQuantity: 0,
     damagedQuantity: 0,
     deliveredQuantity: 0,
-    rejectedQuantity: 0
+    rejectedQuantity: 0,
+    damageReason: null as string | null
   };
 
   if (!notes) return totals;
@@ -63,12 +73,25 @@ function aggregateReceiptNotes(notes: string | null) {
     totals.damagedQuantity += Number(match[2] ?? 0);
     totals.acceptedQuantity += Number(match[3] ?? 0);
     totals.rejectedQuantity += Number(match[4] ?? 0);
+    if (match[5]) {
+      try {
+        const decoded = decodeURIComponent(match[5]);
+        totals.damageReason = totals.damageReason
+          ? `${totals.damageReason}; ${decoded}`
+          : decoded;
+      } catch {
+        totals.damageReason = totals.damageReason ?? "Damage recorded during receiving";
+      }
+    }
   }
 
   return totals;
 }
 
-export function buildRestockReturnSnapshot(order: RestockOrder): RestockReturnSnapshot | null {
+export function buildRestockReturnSnapshot(
+  order: RestockOrder,
+  documentInfo: RestockReturnDocumentInfo = {}
+): RestockReturnSnapshot | null {
   const lines = order.lines
     .filter((line) => line.isSelected)
     .map((line) => {
@@ -87,11 +110,21 @@ export function buildRestockReturnSnapshot(order: RestockOrder): RestockReturnSn
 
   if (lines.length === 0) return null;
 
+  const selectedLineCount = order.lines.filter((line) => line.isSelected).length;
+  const returnScope =
+    lines.length === selectedLineCount &&
+    lines.every((line) => line.deliveredQuantity > 0 && line.returnQuantity === line.deliveredQuantity)
+      ? "Entire delivery"
+      : "Damaged items only";
+
   return {
+    deliveryReference: documentInfo.deliveryReference?.trim() ?? "",
     generatedAt: new Date().toISOString(),
     lines,
     orderNumber: order.orderNumber,
-    returnReference: `RETURN-${order.orderNumber.replace(/^RO-/, "")}`
+    returnReference: `RETURN-${order.orderNumber.replace(/^RO-/, "")}`,
+    returnScope,
+    supplierName: documentInfo.supplierName?.trim() ?? ""
   };
 }
 
@@ -105,6 +138,9 @@ export function downloadRestockReturnCsv(snapshot: RestockReturnSnapshot) {
     ["YSABELLE STORE", "RETURN REPORT - SUPPLIER COPY"],
     ["Return reference", snapshot.returnReference],
     ["Restock ticket", snapshot.orderNumber],
+    ["Supplier / Manufacturer", snapshot.supplierName],
+    ["Delivery / Invoice reference", snapshot.deliveryReference],
+    ["Return scope", snapshot.returnScope],
     ["Generated", generatedAtFormatter.format(new Date(snapshot.generatedAt))],
     [],
     [
@@ -127,11 +163,12 @@ export function downloadRestockReturnCsv(snapshot: RestockReturnSnapshot) {
       line.damagedQuantity,
       line.rejectedQuantity,
       line.returnQuantity,
-      line.damagedQuantity > 0 && line.rejectedQuantity > 0
-        ? "Damaged / rejected during receiving"
-        : line.damagedQuantity > 0
-          ? "Damaged on arrival"
-          : "Rejected during receiving"
+      line.damageReason ??
+        (line.damagedQuantity > 0 && line.rejectedQuantity > 0
+          ? "Damaged / rejected during receiving"
+          : line.damagedQuantity > 0
+            ? "Damaged on arrival"
+            : "Rejected during receiving")
     ]),
     [],
     ["Total products", snapshot.lines.length],
@@ -167,11 +204,12 @@ export function printRestockReturnCopy(snapshot: RestockReturnSnapshot) {
   const rows = snapshot.lines
     .map((line) => {
       const reason =
-        line.damagedQuantity > 0 && line.rejectedQuantity > 0
+        line.damageReason ??
+        (line.damagedQuantity > 0 && line.rejectedQuantity > 0
           ? "Damaged / rejected"
           : line.damagedQuantity > 0
             ? "Damaged on arrival"
-            : "Rejected during receiving";
+            : "Rejected during receiving");
       return `<tr>
         <td>${escapeHtml(line.sku)}</td>
         <td>${escapeHtml(line.productName)}</td>
@@ -220,9 +258,10 @@ export function printRestockReturnCopy(snapshot: RestockReturnSnapshot) {
       <span class="label">Return reference</span><strong>${escapeHtml(snapshot.returnReference)}</strong>
       <span class="label">Restock ticket</span><span>${escapeHtml(snapshot.orderNumber)}</span>
       <span class="label">Generated</span><span>${escapeHtml(generatedAtFormatter.format(new Date(snapshot.generatedAt)))}</span>
+      <span class="label">Return scope</span><span>${escapeHtml(snapshot.returnScope)}</span>
     </div>
   </div>
-  <div class="supplier"><strong>Supplier / Manufacturer:</strong> ________________________________________________</div>
+  <div class="supplier"><strong>Supplier / Manufacturer:</strong> ${escapeHtml(snapshot.supplierName || "Not provided")}<br/><span class="muted">Delivery / Invoice reference:</span> ${escapeHtml(snapshot.deliveryReference || "Not provided")}</div>
   <div class="summary">
     <div><span class="muted">Products to return</span><br/><strong>${snapshot.lines.length.toLocaleString()}</strong></div>
     <div><span class="muted">Return units</span><br/><strong>${totalReturnUnits.toLocaleString()}</strong></div>

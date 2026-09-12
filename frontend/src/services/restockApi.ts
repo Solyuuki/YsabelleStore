@@ -82,6 +82,7 @@ export type RestockReceiptLineInput = {
   lineId: string;
   deliveredQuantity: number;
   damagedQuantity: number;
+  damageReason?: string | null;
   acceptedQuantity: number;
   batchCode?: string | null;
   expiresAt?: string | null;

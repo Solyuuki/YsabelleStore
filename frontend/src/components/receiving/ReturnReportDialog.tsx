@@ -1,8 +1,10 @@
 import { FileDown, FileSpreadsheet, Printer, RotateCcw } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +32,22 @@ export function ReturnReportDialog({
 }) {
   const [busy, setBusy] = useState<ExportBusy>(null);
   const [error, setError] = useState<string | null>(null);
-  const snapshot = useMemo(() => (order ? buildRestockReturnSnapshot(order) : null), [order]);
+  const [supplierName, setSupplierName] = useState("");
+  const [deliveryReference, setDeliveryReference] = useState("");
+  const snapshot = useMemo(
+    () =>
+      order
+        ? buildRestockReturnSnapshot(order, { deliveryReference, supplierName })
+        : null,
+    [deliveryReference, order, supplierName]
+  );
+  const canExport = supplierName.trim().length >= 2;
+
+  useEffect(() => {
+    setSupplierName("");
+    setDeliveryReference("");
+    setError(null);
+  }, [order?.id]);
   const totalUnits = snapshot?.lines.reduce((sum, line) => sum + line.returnQuantity, 0) ?? 0;
 
   async function handlePdf() {
@@ -120,6 +137,31 @@ export function ReturnReportDialog({
                 </div>
               </div>
 
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="return-supplier">Supplier / manufacturer *</Label>
+                  <Input
+                    className="mt-1"
+                    id="return-supplier"
+                    maxLength={160}
+                    onChange={(event) => setSupplierName(event.target.value)}
+                    placeholder="Supplier or manufacturer name"
+                    value={supplierName}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="return-delivery-reference">Delivery / invoice reference</Label>
+                  <Input
+                    className="mt-1"
+                    id="return-delivery-reference"
+                    maxLength={120}
+                    onChange={(event) => setDeliveryReference(event.target.value)}
+                    placeholder="Optional DR / invoice number"
+                    value={deliveryReference}
+                  />
+                </div>
+              </div>
+
               <div>
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Export format
@@ -127,7 +169,7 @@ export function ReturnReportDialog({
                 <div className="grid gap-3 sm:grid-cols-3">
                   <Button
                     className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
-                    disabled={busy !== null}
+                    disabled={busy !== null || !canExport}
                     onClick={() => void handlePdf()}
                     type="button"
                   >
@@ -144,7 +186,7 @@ export function ReturnReportDialog({
 
                   <Button
                     className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
-                    disabled={busy !== null}
+                    disabled={busy !== null || !canExport}
                     onClick={handlePrint}
                     type="button"
                     variant="secondary"
@@ -162,7 +204,7 @@ export function ReturnReportDialog({
 
                   <Button
                     className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
-                    disabled={busy !== null}
+                    disabled={busy !== null || !canExport}
                     onClick={handleCsv}
                     type="button"
                     variant="secondary"

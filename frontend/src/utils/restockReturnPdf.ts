@@ -49,17 +49,24 @@ export function downloadRestockReturnPdf(snapshot: RestockReturnSnapshot) {
   doc.text("Return reference", metaX, 11);
   doc.text("Restock ticket", metaX, 16);
   doc.text("Generated", metaX, 21);
+  doc.text("Return scope", metaX, 26);
   doc.setTextColor(15, 23, 42);
   doc.text(snapshot.returnReference, 146, 11);
   doc.text(snapshot.orderNumber, 146, 16);
   doc.text(dateTimeFormatter.format(new Date(snapshot.generatedAt)), 146, 21);
+  doc.text(snapshot.returnScope, 146, 26);
 
   doc.setDrawColor(203, 213, 225);
   doc.roundedRect(margin, 33, pageWidth - margin * 2, 11, 2, 2);
   doc.setFont("helvetica", "bold");
   doc.text("Supplier / Manufacturer:", margin + 3, 40);
-  doc.setLineWidth(0.2);
-  doc.line(margin + 42, 40.5, pageWidth - margin - 3, 40.5);
+  doc.setFont("helvetica", "normal");
+  doc.text(snapshot.supplierName || "Not provided", margin + 42, 40);
+  if (snapshot.deliveryReference) {
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Delivery / Invoice reference: ${snapshot.deliveryReference}`, margin + 3, 43);
+  }
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
@@ -80,11 +87,12 @@ export function downloadRestockReturnPdf(snapshot: RestockReturnSnapshot) {
       line.damagedQuantity.toLocaleString(),
       line.rejectedQuantity.toLocaleString(),
       line.returnQuantity.toLocaleString(),
-      line.damagedQuantity > 0 && line.rejectedQuantity > 0
-        ? "Damaged / rejected"
-        : line.damagedQuantity > 0
-          ? "Damaged on arrival"
-          : "Rejected during receiving"
+      line.damageReason ??
+        (line.damagedQuantity > 0 && line.rejectedQuantity > 0
+          ? "Damaged / rejected"
+          : line.damagedQuantity > 0
+            ? "Damaged on arrival"
+            : "Rejected during receiving")
     ]),
     columnStyles: {
       0: { cellWidth: 24 },

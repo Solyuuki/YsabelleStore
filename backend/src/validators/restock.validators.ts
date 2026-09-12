@@ -136,6 +136,7 @@ const restockReceiptLineSchema = z
     lineId: z.string().trim().min(1).max(191),
     deliveredQuantity: z.coerce.number().int().min(0).max(1_000_000),
     damagedQuantity: z.coerce.number().int().min(0).max(1_000_000).default(0),
+    damageReason: optionalTextSchema(240),
     acceptedQuantity: z.coerce.number().int().min(0).max(1_000_000),
     batchCode: optionalTextSchema(80),
     expiresAt: z.coerce.date().nullable().optional(),
@@ -151,6 +152,14 @@ const restockReceiptLineSchema = z
         code: z.ZodIssueCode.custom,
         message: "Damaged quantity cannot exceed delivered quantity.",
         path: ["damagedQuantity"]
+      });
+    }
+
+    if (line.damagedQuantity > 0 && !line.damageReason) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Damaged units require a return reason.",
+        path: ["damageReason"]
       });
     }
 

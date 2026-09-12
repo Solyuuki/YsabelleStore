@@ -54,6 +54,7 @@ function cancellationAudit(actorId: string, reason: string) {
 function receiptSummary(input: {
   delivered: number;
   damaged: number;
+  damageReason?: string | null;
   accepted: number;
   rejected: number;
   batchCode?: string | null;
@@ -65,6 +66,7 @@ function receiptSummary(input: {
     `damaged=${input.damaged}`,
     `accepted=${input.accepted}`,
     `other_rejected=${input.rejected}`,
+    input.damageReason ? `damage_reason=${encodeURIComponent(input.damageReason)}` : null,
     input.batchCode ? `batch=${input.batchCode}` : null,
     input.noExpiration
       ? "expiry=NONE"
@@ -198,7 +200,16 @@ export async function receiveRestockOrder(
         lines: {
           include: {
             product: {
-              select: { id: true, status: true }
+              select: {
+                costPrice: true,
+                id: true,
+                inventoryBatches: {
+                  orderBy: { receivedAt: "desc" },
+                  select: { unitCost: true },
+                  take: 1
+                },
+                status: true
+              }
             }
           }
         }
@@ -307,7 +318,7 @@ export async function receiveRestockOrder(
           {
             unitCost:
               receiptLine.unitCost === undefined
-                ? undefined
+                ? (orderLine.product.costPrice ?? orderLine.product.inventoryBatches[0]?.unitCost)
                 : new Prisma.Decimal(receiptLine.unitCost)
           }
         );
@@ -321,6 +332,7 @@ export async function receiveRestockOrder(
         accepted: receiptLine.acceptedQuantity,
         batchCode: receiptLine.batchCode,
         damaged: receiptLine.damagedQuantity,
+        damageReason: receiptLine.damageReason,
         delivered: receiptLine.deliveredQuantity,
         expiresAt: receiptLine.expiresAt,
         noExpiration: receiptLine.noExpiration,

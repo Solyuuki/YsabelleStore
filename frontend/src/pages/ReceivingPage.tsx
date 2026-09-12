@@ -168,6 +168,7 @@ export function ReceivingPage() {
   const [receiptMode, setReceiptMode] = useState<ReceiptMode | null>(null);
   const [receiptRows, setReceiptRows] = useState<Record<string, ReceiptRowState>>({});
   const [exceptionLineIds, setExceptionLineIds] = useState<string[]>([]);
+  const [damageReason, setDamageReason] = useState("");
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [lotDialogOpen, setLotDialogOpen] = useState(false);
@@ -240,6 +241,7 @@ export function ReceivingPage() {
     setReceiptMode(null);
     setReceiptRows(initialReceiptRows(order));
     setExceptionLineIds([]);
+    setDamageReason("");
     setReceiptError(null);
     setLotDialogOpen(false);
     setLotLineId("");
@@ -251,6 +253,7 @@ export function ReceivingPage() {
     setReceiptMode(null);
     setReceiptRows({});
     setExceptionLineIds([]);
+    setDamageReason("");
     setReceiptError(null);
     setLotDialogOpen(false);
     setLotLineId("");
@@ -261,6 +264,7 @@ export function ReceivingPage() {
     setReceiptMode(mode);
     setReceiptRows(initialReceiptRows(selectedOrder));
     setExceptionLineIds([]);
+    setDamageReason("");
     setReceiptError(null);
   }
 
@@ -322,6 +326,10 @@ export function ReceivingPage() {
         throw new Error(`${line.product.name}: damaged units cannot exceed delivered units.`);
       }
 
+      if (damaged > 0 && !damageReason.trim()) {
+        throw new Error("Enter a damage / return reason before confirming this delivery.");
+      }
+
       if (receiptMode === "issues" && delivered !== remaining) {
         throw new Error(
           `${line.product.name}: use Partial delivery when the delivered quantity is short.`
@@ -353,6 +361,7 @@ export function ReceivingPage() {
         batchCode: accepted > 0 ? row.batchCode.trim() : null,
         confirmOverDelivery: row.confirmOverDelivery,
         damagedQuantity: damaged,
+        damageReason: damaged > 0 ? damageReason.trim() : null,
         deliveredQuantity: delivered,
         expiresAt: accepted > 0 && !row.noExpiration ? row.expiresAt : null,
         lineId: line.id,
@@ -399,10 +408,16 @@ export function ReceivingPage() {
       });
       const hasReturns = hasRestockReturnItems(updated);
 
-      setSelectedOrder(updated);
+      if (hasReturns) {
+        setSelectedOrder(null);
+        setReturnReportOrder(updated);
+      } else {
+        setSelectedOrder(updated);
+      }
       setReceiptMode(null);
       setReceiptRows(initialReceiptRows(updated));
       setExceptionLineIds([]);
+      setDamageReason("");
       setLotDialogOpen(false);
       setLotLineId("");
 
@@ -696,8 +711,10 @@ export function ReceivingPage() {
                     </>
                   ) : (
                     <ReceiptEditor
+                      damageReason={damageReason}
                       exceptionLineIds={exceptionLineIds}
                       mode={receiptMode}
+                      onDamageReasonChange={setDamageReason}
                       onExceptionChange={setExceptionLineIds}
                       onMarkAllDamaged={markEntireDeliveryDamaged}
                       onOpenLotDetails={openLotDetails}
@@ -717,6 +734,7 @@ export function ReceivingPage() {
                       setReceiptMode(null);
                       setReceiptRows(initialReceiptRows(selectedOrder));
                       setExceptionLineIds([]);
+                      setDamageReason("");
                       setReceiptError(null);
                     }}
                     type="button"
@@ -941,8 +959,10 @@ function CompletedDeliveryPanel({
 }
 
 function ReceiptEditor({
+  damageReason,
   exceptionLineIds,
   mode,
+  onDamageReasonChange,
   onExceptionChange,
   onMarkAllDamaged,
   onOpenLotDetails,
@@ -950,8 +970,10 @@ function ReceiptEditor({
   order,
   rows
 }: {
+  damageReason: string;
   exceptionLineIds: string[];
   mode: Exclude<ReceiptMode, "complete">;
+  onDamageReasonChange: (value: string) => void;
   onExceptionChange: (value: string[]) => void;
   onMarkAllDamaged: () => void;
   onOpenLotDetails: () => void;
@@ -961,6 +983,10 @@ function ReceiptEditor({
 }) {
   const remainingLines = selectedLines(order).filter((line) => remainingQuantity(line) > 0);
   const exceptionLines = remainingLines.filter((line) => exceptionLineIds.includes(line.id));
+  const hasDamage = exceptionLines.some((line) => {
+    const row = rows[line.id];
+    return row ? asWholeNumber(row.damagedQuantity) > 0 : false;
+  });
 
   return (
     <div className="space-y-5">
@@ -1098,6 +1124,24 @@ function ReceiptEditor({
               );
             })}
           </div>
+        </section>
+      ) : null}
+
+      {hasDamage ? (
+        <section className="rounded-lg border border-amber-200 bg-amber-50/70 p-4">
+          <Label htmlFor="damage-return-reason">Damage / return reason *</Label>
+          <Input
+            className="mt-1"
+            id="damage-return-reason"
+            maxLength={240}
+            onChange={(event) => onDamageReasonChange(event.target.value)}
+            placeholder="e.g. Dented cans during transport"
+            value={damageReason}
+          />
+          <p className="mt-1.5 text-xs text-amber-800">
+            This reason will appear on the supplier/manufacturer Return Report for every damaged
+            unit in this receiving event.
+          </p>
         </section>
       ) : null}
 
