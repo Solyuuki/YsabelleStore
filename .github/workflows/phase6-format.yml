@@ -3,7 +3,7 @@ name: Phase 6 Format
 on:
   push:
     branches:
-      - "sprint/v0.10/sprint-10"
+      - "m1/v0.9/feat/customer-social-auth"
     paths:
       - ".github/workflows/phase6-format.yml"
   workflow_dispatch:
@@ -17,122 +17,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: sprint/v0.10/sprint-10
+          ref: m1/v0.9/feat/customer-social-auth
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Restore classic report KPI cards
+      - name: Normalize repository formatting with CI formatter
+        run: npx prettier --write .
+      - name: Verify repository formatting
+        run: npx prettier --check .
+      - name: Commit formatting if needed
         shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path("frontend/src/pages/ReportsPage.tsx")
-          text = path.read_text()
-
-          old_react = 'import { useEffect, useMemo, useState, type ComponentType } from "react";'
-          new_react = 'import { useEffect, useMemo, useState } from "react";'
-          if old_react not in text:
-              raise SystemExit("React import marker not found")
-          text = text.replace(old_react, new_react, 1)
-
-          old_page_header = 'import { PageHeader } from "@/components/shared/PageHeader";'
-          new_page_header = old_page_header + '\nimport { StatCard } from "@/components/shared/StatCard";'
-          if 'import { StatCard } from "@/components/shared/StatCard";' not in text:
-              text = text.replace(old_page_header, new_page_header, 1)
-
-          compact_type = '''type CompactStat = {
-            detail: string;
-            icon: ComponentType<{ className?: string }>;
-            label: string;
-            value: string;
-            warning?: boolean;
-          };
-
-          '''
-          if compact_type not in text:
-              raise SystemExit("CompactStat marker not found")
-          text = text.replace(compact_type, "", 1)
-
-          start = text.index("  const compactStats: CompactStat[] = summary")
-          end = text.index("\n\n  async function prepareExportSnapshot", start)
-          stats_block = '''  const stats = summary
-            ? [
-                {
-                  title: "Today's sales",
-                  value: currency(summary.sales.todayAmount),
-                  detail: `${summary.sales.completedSales} completed receipt${summary.sales.completedSales === 1 ? "" : "s"}`,
-                  tone: "info" as const,
-                  icon: ReceiptText
-                },
-                {
-                  title: "Recent gross",
-                  value: currency(recentGrossSales),
-                  detail: `Across ${completedSales.length} completed receipt${completedSales.length === 1 ? "" : "s"} in the latest 50 records`,
-                  tone: "success" as const,
-                  icon: CalendarClock
-                },
-                {
-                  title: "Tracked inventory",
-                  value: summary.inventory.trackedItems.toLocaleString(),
-                  detail: `${summary.inventory.inStockItems} in stock • ${summary.inventory.outOfStockItems} out of stock`,
-                  tone: summary.inventory.outOfStockItems > 0 ? ("warning" as const) : ("success" as const),
-                  icon: Boxes
-                },
-                {
-                  title: "Low stock",
-                  value: summary.inventory.lowStockItems.toLocaleString(),
-                  detail:
-                    summary.inventory.lowStockItems > 0
-                      ? "Needs replenishment attention"
-                      : "No items flagged",
-                  tone: "warning" as const,
-                  icon: PackageOpen
-                },
-                {
-                  title: "Expiry attention",
-                  value: summary.expiry.nearExpiryBatches.toLocaleString(),
-                  detail: `${summary.expiry.expiredBatches} expired batch${summary.expiry.expiredBatches === 1 ? "" : "es"}`,
-                  tone: "warning" as const,
-                  icon: TriangleAlert
-                }
-              ]
-            : [];'''
-          text = text[:start] + stats_block + text[end:]
-
-          summary_marker = text.index("      {summary ? (")
-          card_start = text.index('          <Card>\n            <CardContent className="p-0">', summary_marker)
-          card_end = text.index("\n\n          <RestockPlanningPanel />", card_start)
-          classic_cards = '''          <section className="grid gap-4 lg:grid-cols-3 xl:grid-cols-5">
-            {stats.map((stat) => (
-              <StatCard key={stat.title} {...stat} />
-            ))}
-          </section>'''
-          text = text[:card_start] + classic_cards + text[card_end:]
-
-          compact_fn_start = text.index("\nfunction CompactSummaryStat(")
-          compact_fn_end = text.index("\nfunction MiniMetric(", compact_fn_start)
-          text = text[:compact_fn_start] + "\n" + text[compact_fn_end:]
-
-          path.write_text(text)
-          PY
-      - name: Format restored report cards
-        run: npx prettier --write frontend/src/pages/ReportsPage.tsx
-      - name: Verify formatting
-        run: npx prettier --check frontend/src/pages/ReportsPage.tsx
-      - name: Build frontend
-        run: npm run build --workspace frontend
-      - name: Commit KPI card restore if needed
-        shell: bash
-        run: |
-          if git diff --quiet -- frontend/src/pages/ReportsPage.tsx; then
-            echo "Reports KPI cards are already restored."
+          if git diff --quiet; then
+            echo "Repository is already formatted."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frontend/src/pages/ReportsPage.tsx
-          HUSKY=0 git commit -m "style(reports): restore classic KPI cards"
-          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
+          git add -u
+          git add .github/workflows/phase6-format.yml
+          HUSKY=0 git commit -m "style: normalize repository formatting for phase 6 gate"
+          HUSKY=0 git push origin HEAD:m1/v0.9/feat/customer-social-auth
