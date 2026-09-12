@@ -99,6 +99,11 @@ jobs:
           from pathlib import Path
           path = Path('scripts/restock-phase10-ui-contract-test.ts')
           text = path.read_text()
+          text = text.replace(
+            'assert.match(dialogSource, />PDF</);',
+            'assert.match(dialogSource, /resetMode\\("PDF"\\)/);',
+            1
+          )
           anchor = 'assert.match(dialogSource, /completeBulkDeliverySession/);\n'
           replacement = '''assert.match(dialogSource, /completeBulkDeliverySession/);\nassert.match(dialogSource, /sourceType: "SPREADSHEET"/);\nassert.doesNotMatch(dialogSource, /confirmInventoryStockImport/);\n'''
           if anchor not in text:
