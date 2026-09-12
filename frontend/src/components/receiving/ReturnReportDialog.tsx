@@ -35,10 +35,7 @@ export function ReturnReportDialog({
   const [supplierName, setSupplierName] = useState("");
   const [deliveryReference, setDeliveryReference] = useState("");
   const snapshot = useMemo(
-    () =>
-      order
-        ? buildRestockReturnSnapshot(order, { deliveryReference, supplierName })
-        : null,
+    () => (order ? buildRestockReturnSnapshot(order, { deliveryReference, supplierName }) : null),
     [deliveryReference, order, supplierName]
   );
   const canExport = supplierName.trim().length >= 2;

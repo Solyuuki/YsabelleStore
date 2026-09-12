@@ -76,9 +76,7 @@ function aggregateReceiptNotes(notes: string | null) {
     if (match[5]) {
       try {
         const decoded = decodeURIComponent(match[5]);
-        totals.damageReason = totals.damageReason
-          ? `${totals.damageReason}; ${decoded}`
-          : decoded;
+        totals.damageReason = totals.damageReason ? `${totals.damageReason}; ${decoded}` : decoded;
       } catch {
         totals.damageReason = totals.damageReason ?? "Damage recorded during receiving";
       }
@@ -113,7 +111,9 @@ export function buildRestockReturnSnapshot(
   const selectedLineCount = order.lines.filter((line) => line.isSelected).length;
   const returnScope =
     lines.length === selectedLineCount &&
-    lines.every((line) => line.deliveredQuantity > 0 && line.returnQuantity === line.deliveredQuantity)
+    lines.every(
+      (line) => line.deliveredQuantity > 0 && line.returnQuantity === line.deliveredQuantity
+    )
       ? "Entire delivery"
       : "Damaged items only";
 
