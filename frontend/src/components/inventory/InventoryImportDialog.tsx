@@ -11,8 +11,15 @@ import {
   Upload,
   X
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type DragEvent, type RefObject } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+  type ReactNode,
+  type RefObject
+} from "react";
 
 import { AppPagination } from "@/components/shared/AppPagination";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -176,7 +183,7 @@ function makeStandalonePreviewRows(preview: InventoryImportPreview): DeliveryRow
 
 function mergePreviewIntoRestock(order: RestockOrder, preview: InventoryImportPreview) {
   const baseRows = makeRestockRows(order);
-  const byProduct = new Map<string, NonNullable<InventoryImportPreview["rows"][number]>>();
+  const byProduct = new Map<string, InventoryImportPreview["rows"][number]>();
   const duplicateProductIds = new Set<string>();
 
   preview.rows.forEach((row) => {
@@ -220,7 +227,6 @@ export function InventoryImportDialog({
   onImported: () => Promise<void> | void;
   triggerRef?: RefObject<HTMLButtonElement | null>;
 }) {
-  const navigate = useNavigate();
   const { pushToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const requestRef = useRef(0);
@@ -385,7 +391,9 @@ export function InventoryImportDialog({
         : "Unsupported file type. Use a PDF delivery document.";
     }
     if (nextFile.size === 0) return "The selected file is empty.";
-    if (nextFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) return `File exceeds ${MAX_FILE_SIZE_MB} MB.`;
+    if (nextFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      return `File exceeds ${MAX_FILE_SIZE_MB} MB.`;
+    }
     return null;
   }
 
@@ -467,7 +475,9 @@ export function InventoryImportDialog({
       if (result.items.length === 0) setTicketError("No receivable Restock Order matched.");
     } catch (searchError) {
       setTicketResults([]);
-      setTicketError(searchError instanceof Error ? searchError.message : "Restock Order search failed.");
+      setTicketError(
+        searchError instanceof Error ? searchError.message : "Restock Order search failed."
+      );
     } finally {
       setSearchingTickets(false);
     }
@@ -512,7 +522,9 @@ export function InventoryImportDialog({
       ]);
       const options = new Map<string, ProductOption>();
       if (catalogResult.status === "fulfilled") {
-        catalogResult.value.items.forEach((product) => options.set(product.id, optionFromProduct(product)));
+        catalogResult.value.items.forEach((product) => {
+          options.set(product.id, optionFromProduct(product));
+        });
       }
       if (barcodeResult.status === "fulfilled") {
         const item = barcodeResult.value;
@@ -532,7 +544,9 @@ export function InventoryImportDialog({
       }
     } catch (lookupError) {
       setProductResults([]);
-      setProductError(lookupError instanceof Error ? lookupError.message : "Product lookup failed.");
+      setProductError(
+        lookupError instanceof Error ? lookupError.message : "Product lookup failed."
+      );
     } finally {
       setSearchingProducts(false);
     }
@@ -564,7 +578,9 @@ export function InventoryImportDialog({
   }
 
   function updateRow(rowId: string, patch: Partial<DeliveryRow>) {
-    setRows((current) => current.map((row) => (row.rowId === rowId ? { ...row, ...patch } : row)));
+    setRows((current) =>
+      current.map((row) => (row.rowId === rowId ? { ...row, ...patch } : row))
+    );
   }
 
   function removeStandaloneRow(rowId: string) {
@@ -593,7 +609,14 @@ export function InventoryImportDialog({
   }
 
   async function completeReceipt() {
-    if (!file || rows.length === 0 || review.blockingIssues > 0 || review.deliveredUnits === 0) return;
+    if (
+      !file ||
+      rows.length === 0 ||
+      review.blockingIssues > 0 ||
+      review.deliveredUnits === 0
+    ) {
+      return;
+    }
     const sessionId = ++requestRef.current;
     setPhase("importing");
     setError(null);
@@ -644,9 +667,12 @@ export function InventoryImportDialog({
 
   const accept = mode === "SPREADSHEET" ? ".csv,.xlsx" : ".pdf";
   const dropTitle =
-    mode === "SPREADSHEET" ? "Drop an Excel or CSV delivery file here" : "Drop a delivery PDF here";
+    mode === "SPREADSHEET"
+      ? "Drop an Excel or CSV delivery file here"
+      : "Drop a delivery PDF here";
   const formatLabel = mode === "SPREADSHEET" ? "CSV or XLSX" : "PDF";
-  const canPreviewSpreadsheet = mode === "SPREADSHEET" && phase === "file-ready" && Boolean(file);
+  const canPreviewSpreadsheet =
+    mode === "SPREADSHEET" && phase === "file-ready" && Boolean(file);
   const canComplete = Boolean(
     file &&
       rows.length > 0 &&
@@ -748,7 +774,9 @@ export function InventoryImportDialog({
               <div
                 className={[
                   "cursor-pointer rounded-2xl border border-dashed p-7 text-center transition-colors",
-                  isDragging ? "border-violet-600 bg-violet-100" : "border-violet-300 bg-violet-50/70",
+                  isDragging
+                    ? "border-violet-600 bg-violet-100"
+                    : "border-violet-300 bg-violet-50/70",
                   isBusy ? "cursor-not-allowed opacity-70" : ""
                 ].join(" ")}
                 onClick={openFilePicker}
@@ -966,7 +994,7 @@ export function InventoryImportDialog({
                     <Button
                       onClick={() => {
                         close();
-                        navigate("/products");
+                        window.location.assign("/products");
                       }}
                       size="sm"
                       type="button"
@@ -980,12 +1008,19 @@ export function InventoryImportDialog({
                 {productResults.length > 0 ? (
                   <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200">
                     {productResults.map((option) => (
-                      <div className="flex items-center justify-between gap-3 px-4 py-3" key={option.productId}>
+                      <div
+                        className="flex items-center justify-between gap-3 px-4 py-3"
+                        key={option.productId}
+                      >
                         <div>
                           <p className="text-sm font-semibold text-slate-950">{option.productName}</p>
                           <p className="mt-0.5 text-xs text-slate-500">{option.sku}</p>
                         </div>
-                        <Button onClick={() => addStandalonePdfRow(option)} size="sm" type="button">
+                        <Button
+                          onClick={() => addStandalonePdfRow(option)}
+                          size="sm"
+                          type="button"
+                        >
                           Add
                         </Button>
                       </div>
@@ -1020,10 +1055,15 @@ export function InventoryImportDialog({
                     const overDelivered =
                       row.remainingQuantity !== null && accepted > row.remainingQuantity;
                     return (
-                      <article className="rounded-2xl border border-slate-200 bg-white p-4" key={row.rowId}>
+                      <article
+                        className="rounded-2xl border border-slate-200 bg-white p-4"
+                        key={row.rowId}
+                      >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-slate-950">{row.productName}</p>
+                            <p className="truncate text-sm font-semibold text-slate-950">
+                              {row.productName}
+                            </p>
                             <p className="mt-0.5 text-xs text-slate-500">{row.sku}</p>
                           </div>
                           {!selectedOrder ? (
@@ -1052,7 +1092,9 @@ export function InventoryImportDialog({
                             <Input
                               id={`${row.rowId}-delivered`}
                               min={0}
-                              onChange={(event) => updateRow(row.rowId, { deliveredQuantity: event.target.value })}
+                              onChange={(event) =>
+                                updateRow(row.rowId, { deliveredQuantity: event.target.value })
+                              }
                               type="number"
                               value={row.deliveredQuantity}
                             />
@@ -1063,7 +1105,9 @@ export function InventoryImportDialog({
                                 id={`${row.rowId}-damaged`}
                                 max={delivered}
                                 min={0}
-                                onChange={(event) => updateRow(row.rowId, { damagedQuantity: event.target.value })}
+                                onChange={(event) =>
+                                  updateRow(row.rowId, { damagedQuantity: event.target.value })
+                                }
                                 type="number"
                                 value={row.damagedQuantity}
                               />
@@ -1075,10 +1119,14 @@ export function InventoryImportDialog({
 
                         {damaged > 0 && selectedOrder ? (
                           <div className="mt-3">
-                            <Label htmlFor={`${row.rowId}-damage-reason`}>Damage / return reason</Label>
+                            <Label htmlFor={`${row.rowId}-damage-reason`}>
+                              Damage / return reason
+                            </Label>
                             <Input
                               id={`${row.rowId}-damage-reason`}
-                              onChange={(event) => updateRow(row.rowId, { damageReason: event.target.value })}
+                              onChange={(event) =>
+                                updateRow(row.rowId, { damageReason: event.target.value })
+                              }
                               placeholder="Required for supplier return report"
                               value={row.damageReason}
                             />
@@ -1091,7 +1139,9 @@ export function InventoryImportDialog({
                               <Input
                                 id={`${row.rowId}-batch`}
                                 maxLength={80}
-                                onChange={(event) => updateRow(row.rowId, { batchCode: event.target.value })}
+                                onChange={(event) =>
+                                  updateRow(row.rowId, { batchCode: event.target.value })
+                                }
                                 placeholder="Supplier batch or lot code"
                                 value={row.batchCode}
                               />
@@ -1100,7 +1150,9 @@ export function InventoryImportDialog({
                               <Input
                                 disabled={row.noExpiration}
                                 id={`${row.rowId}-expiry`}
-                                onChange={(event) => updateRow(row.rowId, { expiresAt: event.target.value })}
+                                onChange={(event) =>
+                                  updateRow(row.rowId, { expiresAt: event.target.value })
+                                }
                                 type="date"
                                 value={row.expiresAt}
                               />
@@ -1125,7 +1177,11 @@ export function InventoryImportDialog({
                           <label className="mt-3 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
                             <input
                               checked={row.confirmOverDelivery}
-                              onChange={(event) => updateRow(row.rowId, { confirmOverDelivery: event.target.checked })}
+                              onChange={(event) =>
+                                updateRow(row.rowId, {
+                                  confirmOverDelivery: event.target.checked
+                                })
+                              }
                               type="checkbox"
                             />
                             Confirm over-delivery for this Restock Order line.
@@ -1164,7 +1220,8 @@ export function InventoryImportDialog({
                   </div>
                   {selectedOrder ? (
                     <p className="mt-3 text-xs text-slate-600">
-                      {review.acceptedUnits} accepted · {review.damagedUnits} damaged · {review.missingUnits} missing
+                      {review.acceptedUnits} accepted · {review.damagedUnits} damaged ·{" "}
+                      {review.missingUnits} missing
                     </p>
                   ) : null}
                 </div>
@@ -1182,7 +1239,10 @@ export function InventoryImportDialog({
             {phase === "success" && deliverySummary ? (
               <section className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-700" aria-hidden="true" />
+                  <CheckCircle2
+                    className="mt-0.5 h-5 w-5 text-emerald-700"
+                    aria-hidden="true"
+                  />
                   <div>
                     <p className="text-sm font-semibold text-emerald-950">Delivery received</p>
                     <p className="mt-1 text-sm text-emerald-800">
@@ -1193,7 +1253,8 @@ export function InventoryImportDialog({
                     </p>
                     {deliverySummary.requiresReturnReport ? (
                       <p className="mt-2 text-sm font-medium text-amber-800">
-                        Damaged or rejected units were recorded. The supplier return report is available from Receiving.
+                        Damaged or rejected units were recorded. The supplier return report is
+                        available from Receiving.
                       </p>
                     ) : null}
                   </div>
@@ -1205,7 +1266,9 @@ export function InventoryImportDialog({
 
         <DialogFooter className="border-t border-slate-200 bg-slate-50/80 px-6 py-4">
           {phase === "success" ? (
-            <Button onClick={close} type="button">Done</Button>
+            <Button onClick={close} type="button">
+              Done
+            </Button>
           ) : (
             <>
               <Button disabled={isBusy} onClick={close} type="button" variant="secondary">
@@ -1246,7 +1309,7 @@ function SummaryValue({ label, value }: { label: string; value: number }) {
   );
 }
 
-function Field({ label, id, children }: { label: string; id: string; children: React.ReactNode }) {
+function Field({ label, id, children }: { label: string; id: string; children: ReactNode }) {
   return (
     <div>
       <Label htmlFor={id}>{label}</Label>
