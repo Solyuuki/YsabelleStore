@@ -7,10 +7,8 @@ const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "
 test("About and Discover keep distinct storefront-story endings", () => {
   const source = read("frontend/src/app/CustomerApp.tsx");
 
-  assert.match(
-    source,
-    /import \{ AboutExperiencePage \} from "@\/pages\/customer\/AboutExperiencePage";/
-  );
+  assert.match(source, /const AboutExperiencePage = lazy\(\(\) =>/);
+  assert.match(source, /import\("@\/pages\/customer\/AboutExperiencePage"\)/);
   assert.match(
     source,
     /pathname === "\/about"\) page = <AboutExperiencePage navigate=\{navigate\} \/>/
