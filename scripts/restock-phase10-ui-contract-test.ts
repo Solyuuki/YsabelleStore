@@ -6,10 +6,7 @@ const dialogSource = readFileSync(
   resolve(process.cwd(), "src/components/inventory/InventoryImportDialog.tsx"),
   "utf8"
 );
-const apiSource = readFileSync(
-  resolve(process.cwd(), "src/services/bulkDeliveryApi.ts"),
-  "utf8"
-);
+const apiSource = readFileSync(resolve(process.cwd(), "src/services/bulkDeliveryApi.ts"), "utf8");
 
 assert.match(dialogSource, /Import inventory delivery/);
 assert.match(dialogSource, /Excel \/ CSV/);

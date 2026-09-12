@@ -79,7 +79,7 @@ function wholeNumber(value: string) {
 
 function fileExtension(name: string) {
   const parts = name.toLowerCase().split(".");
-  return parts.length > 1 ? parts.at(-1) ?? "" : "";
+  return parts.length > 1 ? (parts.at(-1) ?? "") : "";
 }
 
 function optionFromProduct(product: {
@@ -399,7 +399,9 @@ export function InventoryImportDialog({
     const objectUrl = URL.createObjectURL(file);
     const opened = window.open(objectUrl, "_blank", "noopener,noreferrer");
     if (!opened) {
-      setError("The browser blocked the PDF preview. Allow pop-ups for this local app and try again.");
+      setError(
+        "The browser blocked the PDF preview. Allow pop-ups for this local app and try again."
+      );
     }
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
   }
@@ -447,10 +449,10 @@ export function InventoryImportDialog({
   const canPreviewSpreadsheet = mode === "SPREADSHEET" && phase === "file-ready" && Boolean(file);
   const canCompleteSpreadsheet = Boolean(
     mode === "SPREADSHEET" &&
-      preview &&
-      phase === "preview-ready" &&
-      preview.invalidRows === 0 &&
-      preview.errors.length === 0
+    preview &&
+    phase === "preview-ready" &&
+    preview.invalidRows === 0 &&
+    preview.errors.length === 0
   );
   const canCompletePdf = Boolean(
     mode === "PDF" && file && pdfRows.length > 0 && pdfReview.blockingIssues === 0 && !isBusy
@@ -677,7 +679,8 @@ export function InventoryImportDialog({
                   <div className="min-w-0 space-y-1">
                     <p className="truncate text-sm font-semibold text-slate-950">{file.name}</p>
                     <p className="text-sm text-slate-600">
-                      {mode === "PDF" ? "PDF" : getImportFileType(file)} · {formatFileSize(file.size)}
+                      {mode === "PDF" ? "PDF" : getImportFileType(file)} ·{" "}
+                      {formatFileSize(file.size)}
                     </p>
                     <p className="text-sm font-medium text-violet-700">
                       {isPreviewing
@@ -699,7 +702,12 @@ export function InventoryImportDialog({
                         Preview PDF
                       </Button>
                     ) : null}
-                    <Button disabled={isBusy} onClick={openFilePicker} type="button" variant="ghost">
+                    <Button
+                      disabled={isBusy}
+                      onClick={openFilePicker}
+                      type="button"
+                      variant="ghost"
+                    >
                       Replace
                     </Button>
                   </div>
@@ -737,7 +745,10 @@ export function InventoryImportDialog({
                     <p className="text-sm font-semibold text-rose-900">Blocking issues</p>
                     <div className="mt-2 space-y-2">
                       {visibleIssues.map((issue, index) => (
-                        <p className="text-sm leading-5 text-rose-800" key={`${issue.code}-${index}`}>
+                        <p
+                          className="text-sm leading-5 text-rose-800"
+                          key={`${issue.code}-${index}`}
+                        >
                           {issue.rowNumber ? `Row ${issue.rowNumber}: ` : ""}
                           {issue.message}
                         </p>
@@ -764,8 +775,8 @@ export function InventoryImportDialog({
                   <div>
                     <p className="text-sm font-semibold text-slate-950">Build delivery session</p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      Find the physical product by name, SKU, barcode, or YSB internal label. Add one
-                      row for each supplier batch/lot on the PDF.
+                      Find the physical product by name, SKU, barcode, or YSB internal label. Add
+                      one row for each supplier batch/lot on the PDF.
                     </p>
                   </div>
 
@@ -836,7 +847,7 @@ export function InventoryImportDialog({
                           Record the physical quantity and supplier lot details exactly as received.
                         </p>
                       </div>
-                      <StatusBadge variant="info">{pdfRows.length} lines</StatusBadge>
+                      <StatusBadge variant="info">{`${pdfRows.length} lines`}</StatusBadge>
                     </div>
 
                     <div className="space-y-3">

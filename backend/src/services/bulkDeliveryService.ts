@@ -13,7 +13,9 @@ function assertNoDuplicateDeliveryLines(input: CompleteBulkDeliveryRequest) {
   const seen = new Set<string>();
 
   input.rows.forEach((row, index) => {
-    const key = [row.productId, row.batchCode.trim().toUpperCase(), expiryKey(row.expiresAt)].join("|");
+    const key = [row.productId, row.batchCode.trim().toUpperCase(), expiryKey(row.expiresAt)].join(
+      "|"
+    );
 
     if (seen.has(key)) {
       throw new HttpError(422, "Bulk delivery contains a duplicate product/batch/expiry line.", {
