@@ -109,6 +109,8 @@ assert.doesNotMatch(supplierExportSource, /Reorder level/);
 assert.match(reportDialogSource, /Download PDF/);
 assert.match(reportDialogSource, /Open a clean print view for paper printing\./);
 assert.match(reportDialogSource, /Excel-compatible CSV/);
+assert.match(reportDialogSource, /await import\("@\/utils\/directPdfExport"\)/);
+assert.doesNotMatch(reportDialogSource, /from "@\/utils\/directPdfExport"/);
 assert.match(directPdfSource, /downloadOperationalSummaryPdf/);
 assert.match(directPdfSource, /downloadInventoryReportPdf/);
 assert.match(directPdfSource, /downloadRestockSupplierPdf/);
