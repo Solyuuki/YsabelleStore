@@ -23,7 +23,6 @@ import {
 
 import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
 import { RestockDraftsPanel } from "@/components/reports/RestockDraftsPanel";
-import { RestockNewProductCard } from "@/components/reports/RestockNewProductCard";
 import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -185,7 +184,7 @@ export function ReportsPage() {
       <PageHeader
         eyebrow="Owner area"
         title="Reports"
-        description="Live store overview with restock planning and separate downloadable reports for management, inventory, and suppliers."
+        description="Live store overview with forecast-driven restocking and separate downloadable reports for management, inventory, and suppliers."
         actions={
           <>
             <Button
@@ -236,10 +235,10 @@ export function ReportsPage() {
           <section className="space-y-3">
             <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-base font-semibold text-slate-950">Restock</h2>
+                <h2 className="text-base font-semibold text-slate-950">Restock forecast</h2>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Build and confirm restock plans here. Confirmed tickets move to Receiving for the
-                  physical delivery.
+                  Review forecast-driven restock recommendations before projected stockouts. Approved
+                  tickets move to Receiving for the physical delivery.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -250,7 +249,7 @@ export function ReportsPage() {
                   type="button"
                   variant={restockView === "plan" ? "default" : "secondary"}
                 >
-                  Plan restock
+                  Review recommendations
                 </Button>
                 <Button
                   aria-pressed={restockView === "drafts"}
@@ -265,16 +264,10 @@ export function ReportsPage() {
             </div>
 
             {restockView === "plan" ? (
-              <div className="space-y-3">
-                <RestockNewProductCard
-                  onOpenOrders={() => setRestockView("drafts")}
-                  onOrderCreated={notifyRestockOrdersChanged}
-                />
-                <RestockPlanningPanel
-                  onOpenOrders={() => setRestockView("drafts")}
-                  onOrdersChanged={notifyRestockOrdersChanged}
-                />
-              </div>
+              <RestockPlanningPanel
+                onOpenOrders={() => setRestockView("drafts")}
+                onOrdersChanged={notifyRestockOrdersChanged}
+              />
             ) : (
               <RestockDraftsPanel
                 onDraftConfirmed={notifyRestockOrdersChanged}
