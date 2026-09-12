@@ -451,9 +451,7 @@ export function ReceivingPage() {
     }
 
     if (receiptMode === "partial" && !hasPartialDifference) {
-      throw new Error(
-        "Adjust a delivered or damaged quantity, or choose Complete — No issues instead."
-      );
+      throw new Error("Adjust a delivered quantity, or choose Complete — No issues instead.");
     }
 
     return lines;
@@ -1145,7 +1143,9 @@ function ReceiptEditor({
           <div className="mb-2">
             <h3 className="text-sm font-semibold text-slate-950">Exception details</h3>
             <p className="mt-0.5 text-xs text-slate-500">
-              Accepted quantity is calculated automatically. Edit only the selected exceptions.
+              {mode === "partial"
+                ? "Enter what arrived. Missing and accepted quantities are calculated automatically."
+                : "Accepted quantity is calculated automatically. Edit only the selected exceptions."}
             </p>
           </div>
           <div className="space-y-2">
@@ -1154,6 +1154,7 @@ function ReceiptEditor({
               if (!row) return null;
               const remaining = remainingQuantity(line);
               const accepted = acceptedQuantity(row);
+              const missing = Math.max(0, remaining - asWholeNumber(row.deliveredQuantity));
               return (
                 <div className="rounded-lg border border-slate-200 bg-white p-4" key={line.id}>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1178,16 +1179,25 @@ function ReceiptEditor({
                           value={row.deliveredQuantity}
                         />
                       ) : null}
-                      <QuantityField
-                        label="Damaged"
-                        onChange={(value) =>
-                          onUpdateRow(line.id, (current) => ({
-                            ...current,
-                            damagedQuantity: value
-                          }))
-                        }
-                        value={row.damagedQuantity}
-                      />
+                      {mode === "partial" ? (
+                        <div className="min-w-20">
+                          <p className="text-xs font-medium text-slate-500">Missing</p>
+                          <p className="mt-1.5 text-right text-sm font-semibold text-amber-700">
+                            {missing.toLocaleString()}
+                          </p>
+                        </div>
+                      ) : (
+                        <QuantityField
+                          label="Damaged"
+                          onChange={(value) =>
+                            onUpdateRow(line.id, (current) => ({
+                              ...current,
+                              damagedQuantity: value
+                            }))
+                          }
+                          value={row.damagedQuantity}
+                        />
+                      )}
                       <div className="min-w-20">
                         <p className="text-xs font-medium text-slate-500">Accepted</p>
                         <p className="mt-1.5 text-right text-sm font-semibold text-emerald-700">

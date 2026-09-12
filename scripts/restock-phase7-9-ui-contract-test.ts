@@ -36,6 +36,10 @@ assert.doesNotMatch(newProductSource, /stockInInventory\s*\(/);
 assert.match(receivingSource, /Complete — No issues/);
 assert.match(receivingSource, /Complete — With issues/);
 assert.match(receivingSource, /Partial delivery/);
+assert.match(
+  receivingSource,
+  /Enter what arrived\. Missing and accepted quantities are calculated automatically\./
+);
 assert.match(receivingSource, /Mark entire delivery damaged/);
 assert.match(receivingSource, /Accepted quantity is calculated automatically/);
 assert.match(receivingSource, /ReturnReportDialog/);
