@@ -1,27 +1,56 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
-import { CustomerApp } from "@/app/CustomerApp";
 import { LogoutConfirmationModal } from "@/components/shared/LogoutConfirmationModal";
 import { AppLayout } from "@/layouts/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
-import { DashboardPage } from "@/pages/DashboardPage";
-import { ProductsPage } from "@/pages/ProductsPage";
-import { InventoryPage } from "@/pages/InventoryPage";
-import { ReceivingPage } from "@/pages/ReceivingPage";
 import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
-import { PosPage } from "@/pages/PosPage";
-import { SalesPage } from "@/pages/SalesPage";
-import { ForecastPage } from "@/pages/ForecastPage";
-import { HistoricalSalesPage } from "@/pages/HistoricalSalesPage";
-import { ReportsPage } from "@/pages/ReportsPage";
-import { SettingsPage } from "@/pages/SettingsPage";
-import { UserManagementPage } from "@/pages/UserManagementPage";
 import { WelcomePage } from "@/pages/WelcomePage";
 import "@/styles/auth-brand.css";
 import { wait } from "@/utils/timing";
+
+const CustomerApp = lazy(() =>
+  import("@/app/CustomerApp").then(({ CustomerApp }) => ({ default: CustomerApp }))
+);
+const DashboardPage = lazy(() =>
+  import("@/pages/DashboardPage").then(({ DashboardPage }) => ({ default: DashboardPage }))
+);
+const ProductsPage = lazy(() =>
+  import("@/pages/ProductsPage").then(({ ProductsPage }) => ({ default: ProductsPage }))
+);
+const InventoryPage = lazy(() =>
+  import("@/pages/InventoryPage").then(({ InventoryPage }) => ({ default: InventoryPage }))
+);
+const ReceivingPage = lazy(() =>
+  import("@/pages/ReceivingPage").then(({ ReceivingPage }) => ({ default: ReceivingPage }))
+);
+const PosPage = lazy(() =>
+  import("@/pages/PosPage").then(({ PosPage }) => ({ default: PosPage }))
+);
+const SalesPage = lazy(() =>
+  import("@/pages/SalesPage").then(({ SalesPage }) => ({ default: SalesPage }))
+);
+const ForecastPage = lazy(() =>
+  import("@/pages/ForecastPage").then(({ ForecastPage }) => ({ default: ForecastPage }))
+);
+const HistoricalSalesPage = lazy(() =>
+  import("@/pages/HistoricalSalesPage").then(({ HistoricalSalesPage }) => ({
+    default: HistoricalSalesPage
+  }))
+);
+const ReportsPage = lazy(() =>
+  import("@/pages/ReportsPage").then(({ ReportsPage }) => ({ default: ReportsPage }))
+);
+const SettingsPage = lazy(() =>
+  import("@/pages/SettingsPage").then(({ SettingsPage }) => ({ default: SettingsPage }))
+);
+const UserManagementPage = lazy(() =>
+  import("@/pages/UserManagementPage").then(({ UserManagementPage }) => ({
+    default: UserManagementPage
+  }))
+);
 
 const LAUNCH_SPLASH_DELAY_MS = 250;
 const LOGOUT_CONFIRMATION_MINIMUM_MS = 700;
@@ -178,7 +207,11 @@ export function AppShell() {
   }
 
   if (isCustomerRoute) {
-    return <CustomerApp location={location} navigate={navigate} />;
+    return (
+      <Suspense fallback={<RouteLoadingFallback fullScreen label="Loading storefront..." />}>
+        <CustomerApp location={location} navigate={navigate} />
+      </Suspense>
+    );
   }
 
   if (shouldHoldForAuth) {
@@ -212,7 +245,9 @@ export function AppShell() {
         user={user}
       >
         <div className="auth-panel-enter" key={path}>
-          {renderRoute(path, routeForLayout, navigate, user, error, register)}
+          <Suspense fallback={<RouteLoadingFallback label="Loading module..." />}>
+            {renderRoute(path, routeForLayout, navigate, user, error, register)}
+          </Suspense>
         </div>
       </AppLayout>
       {logoutModalOpen ? (
@@ -243,6 +278,20 @@ function LaunchSplash() {
         </div>
       </div>
     </main>
+  );
+}
+
+function RouteLoadingFallback({ fullScreen = false, label }: { fullScreen?: boolean; label: string }) {
+  return (
+    <div
+      className={`flex items-center justify-center ${fullScreen ? "min-h-screen" : "min-h-[45vh]"}`}
+      role="status"
+    >
+      <div className="flex items-center gap-3 text-sm font-semibold text-slate-600">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+        {label}
+      </div>
+    </div>
   );
 }
 
