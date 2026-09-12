@@ -33,15 +33,21 @@ const directPdfSource = readFileSync(
   "utf8"
 );
 
-// Reports owns planning and unconfirmed drafts only. Confirmed tickets hand off to Receiving.
+// Reports owns forecast-driven recommendation review and unconfirmed drafts only.
+// Confirmed tickets hand off to Receiving.
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.match(reportsSource, /RestockDraftsPanel/);
 assert.doesNotMatch(reportsSource, /RestockOrderHistoryPanel/);
 assert.doesNotMatch(reportsSource, /RestockReceivingPanel/);
 assert.match(reportsSource, /restockView === "plan"/);
-assert.match(reportsSource, /Plan restock/);
+assert.match(reportsSource, /Restock forecast/);
+assert.match(reportsSource, /Review recommendations/);
+assert.match(reportsSource, /forecast-driven restock recommendations/);
+assert.match(reportsSource, /Approved\s+tickets move to Receiving/);
 assert.match(reportsSource, /Saved drafts/);
-assert.match(reportsSource, /Confirmed tickets move to Receiving/);
+assert.doesNotMatch(reportsSource, /RestockNewProductCard/);
+assert.doesNotMatch(reportsSource, /New product restock/);
+assert.doesNotMatch(reportsSource, /Add new product/);
 assert.match(reportsSource, /onOpenOrders=\{\(\) => setRestockView\("drafts"\)\}/);
 assert.match(reportsSource, /onOrdersChanged=\{notifyRestockOrdersChanged\}/);
 assert.match(reportsSource, /Download report/);
@@ -54,11 +60,14 @@ assert.doesNotMatch(reportsSource, /BarChart/);
 assert.match(reportsSource, /No inventory issues need attention right now/);
 assert.doesNotMatch(reportsSource, /Internal operational snapshot/);
 
-// Planner remains the editable planning surface and never performs physical stock mutation.
+// Planner remains the editable recommendation-review surface and never performs physical stock mutation.
+// Manual Add product is an existing-catalog fallback, not a product creation path.
 assert.match(panelSource, /<Badge variant="info">Recommended<\/Badge>/);
 assert.match(panelSource, /Review and prepare products for restocking\./);
 assert.match(panelSource, /Restock planner/);
 assert.match(panelSource, /Add product/);
+assert.match(panelSource, /Search existing catalog products/);
+assert.doesNotMatch(panelSource, /createProduct\s*\(/);
 assert.match(panelSource, /Order quantity/);
 assert.match(panelSource, /Why did you change the suggested quantity/);
 assert.match(panelSource, /Details/);
@@ -84,7 +93,6 @@ assert.match(panelSource, /const REVIEW_PAGE_SIZE = 12/);
 assert.match(panelSource, /pagedLines\.map/);
 assert.match(panelSource, /pagedSelectedLines\.map/);
 assert.match(panelSource, /PaginationControls/);
-assert.match(panelSource, /Search existing catalog products/);
 assert.match(panelSource, /max-h-\[50vh\]/);
 assert.match(panelSource, /Results stay paged so large catalogs do not stretch/);
 assert.doesNotMatch(panelSource, /searchResults\.slice\(0, 8\)/);
