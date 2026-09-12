@@ -41,6 +41,7 @@ assert.match(receivingSource, /Accepted quantity is calculated automatically/);
 assert.match(receivingSource, /ReturnReportDialog/);
 assert.match(receivingSource, /ReturnHistoryDialog/);
 assert.match(receivingSource, /<AppPagination/);
+assert.match(receivingSource, /useState\(20\)/);
 assert.match(receivingSource, /Return history/);
 assert.match(receivingSource, /Damage \/ return reason/);
 assert.match(receivingSource, /setReturnReportOrder\(updated\)/);
