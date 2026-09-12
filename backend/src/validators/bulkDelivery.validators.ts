@@ -145,10 +145,7 @@ export const completeBulkDeliverySchema = z
           });
         }
 
-        if (
-          row.acceptedQuantity !== undefined &&
-          row.acceptedQuantity !== row.receivedQuantity
-        ) {
+        if (row.acceptedQuantity !== undefined && row.acceptedQuantity !== row.receivedQuantity) {
           context.addIssue({
             code: z.ZodIssueCode.custom,
             message:

@@ -23,7 +23,7 @@ function assertNoDuplicateDeliveryLines(input: CompleteBulkDeliveryRequest) {
 
   input.rows.forEach((row, index) => {
     const key = input.restockOrderId
-      ? row.restockOrderLineId ?? `UNRESOLVED-${index}`
+      ? (row.restockOrderLineId ?? `UNRESOLVED-${index}`)
       : [row.productId, row.batchCode?.trim().toUpperCase() ?? "", expiryKey(row.expiresAt)].join(
           "|"
         );

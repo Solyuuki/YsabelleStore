@@ -272,7 +272,8 @@ export function InventoryImportDialog({
 
       if (delivered < 0 || damaged < 0 || damaged > Math.max(0, delivered)) invalidQuantity += 1;
       if (accepted > 0 && row.batchCode.trim().length === 0) missingBatch += 1;
-      if (accepted > 0 && !row.noExpiration && row.expiresAt.trim().length === 0) missingExpiry += 1;
+      if (accepted > 0 && !row.noExpiration && row.expiresAt.trim().length === 0)
+        missingExpiry += 1;
       if (damaged > 0 && row.damageReason.trim().length < 3) missingDamageReason += 1;
       if (
         row.remainingQuantity !== null &&
@@ -281,17 +282,19 @@ export function InventoryImportDialog({
       ) {
         overDelivery += 1;
       }
-      if (
-        row.remainingQuantity !== null &&
-        (delivered !== row.remainingQuantity || damaged > 0)
-      ) {
+      if (row.remainingQuantity !== null && (delivered !== row.remainingQuantity || damaged > 0)) {
         discrepancies += 1;
       }
     });
 
     const unresolved = (preview?.invalidRows ?? 0) + unmatchedRows;
     const blockingIssues =
-      invalidQuantity + missingBatch + missingExpiry + missingDamageReason + overDelivery + unresolved;
+      invalidQuantity +
+      missingBatch +
+      missingExpiry +
+      missingDamageReason +
+      overDelivery +
+      unresolved;
     const deliveredUnits = rows.reduce(
       (sum, row) => sum + Math.max(0, wholeNumber(row.deliveredQuantity)),
       0
@@ -578,9 +581,7 @@ export function InventoryImportDialog({
   }
 
   function updateRow(rowId: string, patch: Partial<DeliveryRow>) {
-    setRows((current) =>
-      current.map((row) => (row.rowId === rowId ? { ...row, ...patch } : row))
-    );
+    setRows((current) => current.map((row) => (row.rowId === rowId ? { ...row, ...patch } : row)));
   }
 
   function removeStandaloneRow(rowId: string) {
@@ -609,12 +610,7 @@ export function InventoryImportDialog({
   }
 
   async function completeReceipt() {
-    if (
-      !file ||
-      rows.length === 0 ||
-      review.blockingIssues > 0 ||
-      review.deliveredUnits === 0
-    ) {
+    if (!file || rows.length === 0 || review.blockingIssues > 0 || review.deliveredUnits === 0) {
       return;
     }
     const sessionId = ++requestRef.current;
@@ -667,19 +663,16 @@ export function InventoryImportDialog({
 
   const accept = mode === "SPREADSHEET" ? ".csv,.xlsx" : ".pdf";
   const dropTitle =
-    mode === "SPREADSHEET"
-      ? "Drop an Excel or CSV delivery file here"
-      : "Drop a delivery PDF here";
+    mode === "SPREADSHEET" ? "Drop an Excel or CSV delivery file here" : "Drop a delivery PDF here";
   const formatLabel = mode === "SPREADSHEET" ? "CSV or XLSX" : "PDF";
-  const canPreviewSpreadsheet =
-    mode === "SPREADSHEET" && phase === "file-ready" && Boolean(file);
+  const canPreviewSpreadsheet = mode === "SPREADSHEET" && phase === "file-ready" && Boolean(file);
   const canComplete = Boolean(
     file &&
-      rows.length > 0 &&
-      review.blockingIssues === 0 &&
-      review.deliveredUnits > 0 &&
-      !isBusy &&
-      (mode === "PDF" || phase === "preview-ready")
+    rows.length > 0 &&
+    review.blockingIssues === 0 &&
+    review.deliveredUnits > 0 &&
+    !isBusy &&
+    (mode === "PDF" || phase === "preview-ready")
   );
 
   return (
@@ -823,7 +816,8 @@ export function InventoryImportDialog({
                   <div>
                     <p className="text-sm font-semibold text-slate-950">{file.name}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {mode === "PDF" ? "PDF" : getImportFileType(file)} · {formatFileSize(file.size)}
+                      {mode === "PDF" ? "PDF" : getImportFileType(file)} ·{" "}
+                      {formatFileSize(file.size)}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -1013,14 +1007,12 @@ export function InventoryImportDialog({
                         key={option.productId}
                       >
                         <div>
-                          <p className="text-sm font-semibold text-slate-950">{option.productName}</p>
+                          <p className="text-sm font-semibold text-slate-950">
+                            {option.productName}
+                          </p>
                           <p className="mt-0.5 text-xs text-slate-500">{option.sku}</p>
                         </div>
-                        <Button
-                          onClick={() => addStandalonePdfRow(option)}
-                          size="sm"
-                          type="button"
-                        >
+                        <Button onClick={() => addStandalonePdfRow(option)} size="sm" type="button">
                           Add
                         </Button>
                       </div>
@@ -1239,10 +1231,7 @@ export function InventoryImportDialog({
             {phase === "success" && deliverySummary ? (
               <section className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
                 <div className="flex items-start gap-3">
-                  <CheckCircle2
-                    className="mt-0.5 h-5 w-5 text-emerald-700"
-                    aria-hidden="true"
-                  />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-700" aria-hidden="true" />
                   <div>
                     <p className="text-sm font-semibold text-emerald-950">Delivery received</p>
                     <p className="mt-1 text-sm text-emerald-800">
@@ -1279,7 +1268,11 @@ export function InventoryImportDialog({
                   Preview delivery
                 </Button>
               ) : (
-                <Button disabled={!canComplete} onClick={() => void completeReceipt()} type="button">
+                <Button
+                  disabled={!canComplete}
+                  onClick={() => void completeReceipt()}
+                  type="button"
+                >
                   Complete receipt
                 </Button>
               )}
