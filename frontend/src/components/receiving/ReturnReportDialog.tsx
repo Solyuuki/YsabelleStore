@@ -42,7 +42,9 @@ export function ReturnReportDialog({
       downloadRestockReturnPdf(snapshot);
       onOpenChange(false);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "The PDF could not be generated.");
+      setError(
+        requestError instanceof Error ? requestError.message : "The PDF could not be generated."
+      );
     } finally {
       setBusy(null);
     }

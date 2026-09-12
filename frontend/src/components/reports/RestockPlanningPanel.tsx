@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useToast } from "@/components/shared/ToastProvider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -162,6 +163,7 @@ type RestockPlanningPanelProps = {
 };
 
 export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockPlanningPanelProps) {
+  const { pushToast } = useToast();
   const [lines, setLines] = useState<PlanLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyAction, setBusyAction] = useState<string | null>(null);
@@ -496,11 +498,15 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
       if (!order || order.status !== "DRAFT") return;
 
       const approved = await approveRestockOrder(order.id, order.version);
-      setDraftOrder(approved);
-      setDraftDirty(false);
       setReviewOpen(false);
       setNotice(null);
       onOrdersChanged();
+      pushToast({
+        title: "Restock sent to Receiving",
+        message: `${approved.orderNumber} is ready in Receiving. Physical Inventory stays unchanged until the delivery is accepted.`,
+        variant: "success"
+      });
+      await loadRecommendations();
     } catch (requestError) {
       const message =
         requestError instanceof Error

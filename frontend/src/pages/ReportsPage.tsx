@@ -238,7 +238,8 @@ export function ReportsPage() {
               <div>
                 <h2 className="text-base font-semibold text-slate-950">Restock</h2>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Build and confirm restock plans here. Confirmed tickets move to Receiving for the physical delivery.
+                  Build and confirm restock plans here. Confirmed tickets move to Receiving for the
+                  physical delivery.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -346,7 +347,8 @@ export function ReportsPage() {
                 </div>
 
                 <p className="mt-3 text-xs text-slate-500">
-                  Based on recent completed receipts · Use Download report for printable or spreadsheet copies.
+                  Based on recent completed receipts · Use Download report for printable or
+                  spreadsheet copies.
                 </p>
               </CardContent>
             </Card>
@@ -446,7 +448,9 @@ function InventoryHealthCard({ summary }: { summary: DashboardSummary }) {
           </div>
         </div>
 
-        <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">{healthSummary}</p>
+        <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
+          {healthSummary}
+        </p>
       </CardContent>
     </Card>
   );

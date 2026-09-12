@@ -200,7 +200,11 @@ export function ReceivingPage() {
   const visibleOrders =
     view === "ready" ? queue.ready : view === "partial" ? queue.partial : queue.history;
   const visibleTotal =
-    view === "ready" ? queue.readyTotal : view === "partial" ? queue.partialTotal : queue.historyTotal;
+    view === "ready"
+      ? queue.readyTotal
+      : view === "partial"
+        ? queue.partialTotal
+        : queue.historyTotal;
 
   const selectedTotals = useMemo(
     () => (selectedOrder ? orderTotals(selectedOrder) : null),
@@ -268,19 +272,25 @@ export function ReceivingPage() {
         throw new Error(`${line.product.name}: damaged units cannot exceed delivered units.`);
       }
       if (receiptMode === "issues" && delivered !== remaining) {
-        throw new Error(`${line.product.name}: use Partial delivery when the delivered quantity is short.`);
+        throw new Error(
+          `${line.product.name}: use Partial delivery when the delivered quantity is short.`
+        );
       }
       if (delivered !== remaining || damaged > 0) hasPartialDifference = true;
       if (damaged > 0) hasDamage = true;
       if (delivered === 0) continue;
       if (accepted > 0 && !row.batchCode.trim()) {
-        throw new Error(`${line.product.name}: keep an internal batch reference or enter the supplier lot.`);
+        throw new Error(
+          `${line.product.name}: keep an internal batch reference or enter the supplier lot.`
+        );
       }
       if (accepted > 0 && !row.noExpiration && !row.expiresAt) {
         throw new Error(`${line.product.name}: choose an expiry date or mark no expiry printed.`);
       }
       if (accepted > remaining && !row.confirmOverDelivery) {
-        throw new Error(`${line.product.name}: confirm the over-delivery before accepting extra units.`);
+        throw new Error(
+          `${line.product.name}: confirm the over-delivery before accepting extra units.`
+        );
       }
 
       lines.push({
@@ -302,7 +312,9 @@ export function ReceivingPage() {
       throw new Error("Enter the damaged quantity, or choose Complete — No issues instead.");
     }
     if (receiptMode === "partial" && !hasPartialDifference) {
-      throw new Error("Adjust a delivered or damaged quantity, or choose Complete — No issues instead.");
+      throw new Error(
+        "Adjust a delivered or damaged quantity, or choose Complete — No issues instead."
+      );
     }
 
     return lines;
@@ -349,7 +361,13 @@ export function ReceivingPage() {
         title="Receiving"
         description="Open an approved restock ticket, compare it with the physical delivery, and record only the exceptions. Accepted units are the only units added to Inventory."
         actions={
-          <Button disabled={loading} onClick={() => void loadQueue()} size="sm" type="button" variant="secondary">
+          <Button
+            disabled={loading}
+            onClick={() => void loadQueue()}
+            size="sm"
+            type="button"
+            variant="secondary"
+          >
             <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
             Refresh
           </Button>
@@ -446,17 +464,26 @@ export function ReceivingPage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Truck aria-hidden="true" className="h-4 w-4 text-indigo-600" />
-                      <p className="truncate text-sm font-semibold text-slate-950">{order.orderNumber}</p>
-                      <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+                      <p className="truncate text-sm font-semibold text-slate-950">
+                        {order.orderNumber}
+                      </p>
+                      <Badge variant={statusVariant(order.status)}>
+                        {statusLabel(order.status)}
+                      </Badge>
                       {hasReturn ? <Badge variant="warning">Return items</Badge> : null}
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
                       {totals.products.toLocaleString()} product{totals.products === 1 ? "" : "s"} ·{" "}
-                      {totals.units.toLocaleString()} units expected · {totals.accepted.toLocaleString()} accepted
-                      {totals.remaining > 0 ? ` · ${totals.remaining.toLocaleString()} remaining` : ""}
+                      {totals.units.toLocaleString()} units expected ·{" "}
+                      {totals.accepted.toLocaleString()} accepted
+                      {totals.remaining > 0
+                        ? ` · ${totals.remaining.toLocaleString()} remaining`
+                        : ""}
                     </p>
                     <p className="mt-1 text-[11px] text-slate-400">
-                      {order.approvedAt ? `Approved ${dateFormatter.format(new Date(order.approvedAt))}` : "Approved ticket"}
+                      {order.approvedAt
+                        ? `Approved ${dateFormatter.format(new Date(order.approvedAt))}`
+                        : "Approved ticket"}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -482,7 +509,8 @@ export function ReceivingPage() {
 
           {visibleTotal > visibleOrders.length ? (
             <p className="mt-3 text-xs text-slate-500">
-              Showing the latest {visibleOrders.length.toLocaleString()} of {visibleTotal.toLocaleString()} tickets.
+              Showing the latest {visibleOrders.length.toLocaleString()} of{" "}
+              {visibleTotal.toLocaleString()} tickets.
             </p>
           ) : null}
         </CardContent>
@@ -511,7 +539,8 @@ export function ReceivingPage() {
                   </Badge>
                 </div>
                 <DialogDescription>
-                  {selectedTotals.products.toLocaleString()} products · {selectedTotals.units.toLocaleString()} expected units ·{" "}
+                  {selectedTotals.products.toLocaleString()} products ·{" "}
+                  {selectedTotals.units.toLocaleString()} expected units ·{" "}
                   {selectedTotals.accepted.toLocaleString()} already accepted
                 </DialogDescription>
               </DialogHeader>
@@ -538,7 +567,9 @@ export function ReceivingPage() {
                       >
                         <div className="min-w-0">
                           <p className="truncate font-medium text-slate-950">{line.product.name}</p>
-                          <p className="mt-0.5 truncate text-xs text-slate-500">{line.product.sku}</p>
+                          <p className="mt-0.5 truncate text-xs text-slate-500">
+                            {line.product.sku}
+                          </p>
                         </div>
                         <span className="text-right font-medium text-slate-700">
                           {line.requestedQuantity.toLocaleString()}
@@ -554,20 +585,27 @@ export function ReceivingPage() {
                 {selectedOrder.status === "RECEIVED" ? (
                   <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
                     <div className="flex items-start gap-3">
-                      <CheckCircle2 aria-hidden="true" className="mt-0.5 h-5 w-5 text-emerald-600" />
+                      <CheckCircle2
+                        aria-hidden="true"
+                        className="mt-0.5 h-5 w-5 text-emerald-600"
+                      />
                       <div>
                         <p className="font-semibold text-emerald-950">Delivery completed</p>
                         <p className="mt-1 text-sm leading-6 text-emerald-800">
-                          This ticket has no remaining ordered quantity. Accepted units are already reflected in Inventory.
+                          This ticket has no remaining ordered quantity. Accepted units are already
+                          reflected in Inventory.
                         </p>
                       </div>
                     </div>
                   </div>
                 ) : receiptMode === null ? (
                   <div>
-                    <p className="text-sm font-semibold text-slate-950">How did this delivery arrive?</p>
+                    <p className="text-sm font-semibold text-slate-950">
+                      How did this delivery arrive?
+                    </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Choose the normal case first. Detailed fields appear only when something is different.
+                      Choose the normal case first. Detailed fields appear only when something is
+                      different.
                     </p>
                     <div className="mt-3 grid gap-3 md:grid-cols-3">
                       <ArrivalChoice
@@ -605,9 +643,12 @@ export function ReceivingPage() {
                 {hasRestockReturnItems(selectedOrder) ? (
                   <div className="flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="font-semibold text-amber-950">Damaged or rejected units recorded</p>
+                      <p className="font-semibold text-amber-950">
+                        Damaged or rejected units recorded
+                      </p>
                       <p className="mt-1 text-xs leading-5 text-amber-800">
-                        Generate the supplier return document for only the affected units. The rest of the ticket stays intact.
+                        Generate the supplier return document for only the affected units. The rest
+                        of the ticket stays intact.
                       </p>
                     </div>
                     <Button
@@ -639,7 +680,11 @@ export function ReceivingPage() {
                       Back
                     </Button>
                     <Button disabled={saving} onClick={() => void confirmReceipt()} type="button">
-                      {saving ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Truck aria-hidden="true" className="h-4 w-4" />}
+                      {saving ? (
+                        <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Truck aria-hidden="true" className="h-4 w-4" />
+                      )}
                       {saving
                         ? "Recording…"
                         : receiptMode === "complete"
@@ -648,11 +693,7 @@ export function ReceivingPage() {
                     </Button>
                   </>
                 ) : (
-                  <Button
-                    onClick={() => setSelectedOrder(null)}
-                    type="button"
-                    variant="secondary"
-                  >
+                  <Button onClick={() => setSelectedOrder(null)} type="button" variant="secondary">
                     Close
                   </Button>
                 )}
@@ -777,7 +818,10 @@ function ReceiptEditor({
       {mode === "complete" ? (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
           <p className="font-semibold text-emerald-950">
-            {remainingLines.reduce((sum, line) => sum + remainingQuantity(line), 0).toLocaleString()} units will be accepted
+            {remainingLines
+              .reduce((sum, line) => sum + remainingQuantity(line), 0)
+              .toLocaleString()}{" "}
+            units will be accepted
           </p>
           <p className="mt-1 text-sm leading-6 text-emerald-800">
             All remaining quantities on this ticket will be received with zero damaged units.
@@ -794,7 +838,9 @@ function ReceiptEditor({
               <div className="rounded-lg border border-slate-200 bg-white p-4" key={line.id}>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-950">{line.product.name}</p>
+                    <p className="truncate text-sm font-semibold text-slate-950">
+                      {line.product.name}
+                    </p>
                     <p className="mt-0.5 text-xs text-slate-500">
                       {line.product.sku} · {remaining.toLocaleString()} remaining
                     </p>
@@ -804,7 +850,10 @@ function ReceiptEditor({
                       disabled={mode === "issues"}
                       label="Delivered"
                       onChange={(value) =>
-                        onUpdateRow(line.id, (current) => ({ ...current, deliveredQuantity: value }))
+                        onUpdateRow(line.id, (current) => ({
+                          ...current,
+                          deliveredQuantity: value
+                        }))
                       }
                       value={row.deliveredQuantity}
                     />
@@ -836,7 +885,8 @@ function ReceiptEditor({
                       }
                       type="checkbox"
                     />
-                    Confirm over-delivery: accept {accepted.toLocaleString()} although only {remaining.toLocaleString()} remain on the ticket.
+                    Confirm over-delivery: accept {accepted.toLocaleString()} although only{" "}
+                    {remaining.toLocaleString()} remain on the ticket.
                   </label>
                 ) : null}
               </div>
@@ -850,7 +900,8 @@ function ReceiptEditor({
           <div>
             <p className="text-sm font-medium text-slate-800">Supplier lot / expiry details</p>
             <p className="mt-0.5 text-xs text-slate-500">
-              Optional for the normal flow. Internal ticket references are used unless the supplier printed a specific lot or expiry.
+              Optional for the normal flow. Internal ticket references are used unless the supplier
+              printed a specific lot or expiry.
             </p>
           </div>
           <Button onClick={onToggleLotDetails} size="sm" type="button" variant="secondary">
@@ -864,7 +915,10 @@ function ReceiptEditor({
               const row = rows[line.id];
               if (!row || acceptedQuantity(row) === 0) return null;
               return (
-                <div className="grid gap-3 rounded-md bg-white p-3 md:grid-cols-[1fr_220px]" key={line.id}>
+                <div
+                  className="grid gap-3 rounded-md bg-white p-3 md:grid-cols-[1fr_220px]"
+                  key={line.id}
+                >
                   <div>
                     <p className="text-sm font-medium text-slate-900">{line.product.name}</p>
                     <Label className="mt-2 block text-xs">Batch / lot reference</Label>
@@ -872,7 +926,10 @@ function ReceiptEditor({
                       className="mt-1"
                       maxLength={80}
                       onChange={(event) =>
-                        onUpdateRow(line.id, (current) => ({ ...current, batchCode: event.target.value }))
+                        onUpdateRow(line.id, (current) => ({
+                          ...current,
+                          batchCode: event.target.value
+                        }))
                       }
                       value={row.batchCode}
                     />
@@ -883,7 +940,10 @@ function ReceiptEditor({
                       className="mt-1"
                       disabled={row.noExpiration}
                       onChange={(event) =>
-                        onUpdateRow(line.id, (current) => ({ ...current, expiresAt: event.target.value }))
+                        onUpdateRow(line.id, (current) => ({
+                          ...current,
+                          expiresAt: event.target.value
+                        }))
                       }
                       type="date"
                       value={row.expiresAt}

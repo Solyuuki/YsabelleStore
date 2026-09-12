@@ -53,7 +53,9 @@ export function RestockDraftsPanel({
       setTotal(result.meta.totalItems);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "Saved restock drafts could not be loaded."
+        requestError instanceof Error
+          ? requestError.message
+          : "Saved restock drafts could not be loaded."
       );
     } finally {
       setLoading(false);
@@ -81,7 +83,9 @@ export function RestockDraftsPanel({
       await loadDrafts();
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "The restock draft could not be confirmed."
+        requestError instanceof Error
+          ? requestError.message
+          : "The restock draft could not be confirmed."
       );
     } finally {
       setConfirming(false);
@@ -102,7 +106,13 @@ export function RestockDraftsPanel({
                 Drafts stay in Reports. Once confirmed, the restock ticket moves to Receiving.
               </p>
             </div>
-            <Button disabled={loading} onClick={() => void loadDrafts()} size="sm" type="button" variant="secondary">
+            <Button
+              disabled={loading}
+              onClick={() => void loadDrafts()}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
               <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
               Refresh
             </Button>
@@ -127,7 +137,8 @@ export function RestockDraftsPanel({
               <CheckCircle2 aria-hidden="true" className="mx-auto h-8 w-8 text-emerald-600" />
               <p className="mt-3 text-sm font-semibold text-slate-950">No saved drafts.</p>
               <p className="mt-1 text-sm text-slate-500">
-                Use Restock Planner and choose Save for later when you want to continue a plan another time.
+                Use Restock Planner and choose Save for later when you want to continue a plan
+                another time.
               </p>
             </div>
           ) : null}
@@ -142,12 +153,20 @@ export function RestockDraftsPanel({
                   key={draft.id}
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-950">{draft.orderNumber}</p>
+                    <p className="truncate text-sm font-semibold text-slate-950">
+                      {draft.orderNumber}
+                    </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {lines.length.toLocaleString()} product{lines.length === 1 ? "" : "s"} · {units.toLocaleString()} units
+                      {lines.length.toLocaleString()} product{lines.length === 1 ? "" : "s"} ·{" "}
+                      {units.toLocaleString()} units
                     </p>
                   </div>
-                  <Button onClick={() => setSelectedDraft(draft)} size="sm" type="button" variant="secondary">
+                  <Button
+                    onClick={() => setSelectedDraft(draft)}
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                  >
                     Review draft
                   </Button>
                 </article>
@@ -157,7 +176,8 @@ export function RestockDraftsPanel({
 
           {total > drafts.length ? (
             <p className="text-xs text-slate-500">
-              Showing the latest {drafts.length.toLocaleString()} of {total.toLocaleString()} saved drafts.
+              Showing the latest {drafts.length.toLocaleString()} of {total.toLocaleString()} saved
+              drafts.
             </p>
           ) : null}
         </CardContent>
@@ -175,7 +195,8 @@ export function RestockDraftsPanel({
               <DialogHeader>
                 <DialogTitle>{selectedDraft.orderNumber}</DialogTitle>
                 <DialogDescription>
-                  Confirming this draft creates the incoming restock ticket. Physical stock still does not change until Receiving.
+                  Confirming this draft creates the incoming restock ticket. Physical stock still
+                  does not change until Receiving.
                 </DialogDescription>
               </DialogHeader>
 
@@ -183,7 +204,9 @@ export function RestockDraftsPanel({
                 {selectedLines(selectedDraft).map((line) => (
                   <div className="flex items-center justify-between gap-4 py-3" key={line.id}>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-950">{line.product.name}</p>
+                      <p className="truncate text-sm font-medium text-slate-950">
+                        {line.product.name}
+                      </p>
                       <p className="mt-0.5 truncate text-xs text-slate-500">{line.product.sku}</p>
                     </div>
                     <span className="shrink-0 text-sm font-semibold text-slate-950">
@@ -194,11 +217,18 @@ export function RestockDraftsPanel({
               </div>
 
               <DialogFooter>
-                <Button disabled={confirming} onClick={() => setSelectedDraft(null)} type="button" variant="secondary">
+                <Button
+                  disabled={confirming}
+                  onClick={() => setSelectedDraft(null)}
+                  type="button"
+                  variant="secondary"
+                >
                   Keep draft
                 </Button>
                 <Button disabled={confirming} onClick={() => void confirmDraft()} type="button">
-                  {confirming ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
+                  {confirming ? (
+                    <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                  ) : null}
                   {confirming ? "Confirming…" : "Confirm & send to Receiving"}
                 </Button>
               </DialogFooter>
