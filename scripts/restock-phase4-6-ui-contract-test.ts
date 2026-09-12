@@ -16,6 +16,9 @@ assert.match(reportsSource, /Download report/);
 assert.match(reportsSource, /Print \/ Save PDF/);
 assert.match(reportsSource, /Excel-compatible CSV/);
 assert.match(reportsSource, /ResponsiveContainer/);
+assert.match(reportsSource, /Recent receipts/);
+assert.match(reportsSource, /No inventory issues need attention right now/);
+assert.doesNotMatch(reportsSource, /Operational snapshot only\. Download the report/);
 assert.match(reportsSource, /fetchAllInventory/);
 assert.match(reportsSource, /fetchAllRestockPlanning/);
 assert.ok(
@@ -24,7 +27,9 @@ assert.ok(
   "Restock planner should stay above secondary report detail cards."
 );
 
-assert.match(panelSource, /Recommended restock/);
+assert.match(panelSource, /<Badge variant="info">Recommended<\/Badge>/);
+assert.match(panelSource, /Review and prepare products for restocking\./);
+assert.doesNotMatch(panelSource, /Large restock lists stay paged/);
 assert.match(panelSource, /Restock planner/);
 assert.match(panelSource, /Add product/);
 assert.match(panelSource, /Order quantity/);

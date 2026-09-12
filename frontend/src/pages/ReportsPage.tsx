@@ -10,7 +10,7 @@ import {
   TriangleAlert
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -126,6 +126,17 @@ export function ReportsPage() {
     [completedSales]
   );
   const averageReceipt = completedSales.length > 0 ? recentGrossSales / completedSales.length : 0;
+  const recentReceiptChartData = useMemo(
+    () =>
+      completedSales
+        .slice(0, 8)
+        .reverse()
+        .map((sale, index) => ({
+          amount: Number(sale.totalAmount),
+          receipt: `Receipt ${index + 1}`
+        })),
+    [completedSales]
+  );
 
   const stats = summary
     ? [
@@ -301,18 +312,56 @@ export function ReportsPage() {
           <section className="grid items-start gap-4 xl:grid-cols-[0.9fr_1.1fr]">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Recent receipt metrics</CardTitle>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle>Recent receipt metrics</CardTitle>
+                  <StatusBadge variant={completedSales.length > 0 ? "success" : "info"}>
+                    {completedSales.length > 0
+                      ? `${completedSales.length.toLocaleString()} receipt${completedSales.length === 1 ? "" : "s"}`
+                      : "No sales yet"}
+                  </StatusBadge>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-2">
-                  <MiniMetric label="Receipts" value={completedSales.length.toLocaleString()} />
-                  <MiniMetric label="Units sold" value={recentUnits.toLocaleString()} />
-                  <MiniMetric label="Gross sales" value={currency(recentGrossSales)} />
-                  <MiniMetric label="Average receipt" value={currency(averageReceipt)} />
+                <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-end">
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-500">Gross sales</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-950">
+                      {currency(recentGrossSales)}
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+                      <MiniMetric label="Units sold" value={recentUnits.toLocaleString()} />
+                      <MiniMetric label="Average receipt" value={currency(averageReceipt)} />
+                    </div>
+                  </div>
+
+                  {recentReceiptChartData.length > 1 ? (
+                    <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                      <p className="text-xs font-medium text-slate-600">Recent receipts</p>
+                      <p className="text-[11px] text-slate-400">Latest completed sale amounts</p>
+                      <div className="mt-2 h-16">
+                        <ResponsiveContainer height="100%" width="100%">
+                          <BarChart data={recentReceiptChartData}>
+                            <Bar
+                              dataKey="amount"
+                              fill="#4f46e5"
+                              maxBarSize={16}
+                              radius={[3, 3, 0, 0]}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border border-dashed border-slate-200 px-3 py-3 text-xs leading-5 text-slate-500">
+                      {completedSales.length === 0
+                        ? "No completed receipts yet."
+                        : "Another completed receipt will unlock the recent activity chart."}
+                    </div>
+                  )}
                 </div>
-                <p className="mt-3 text-xs leading-5 text-slate-500">
-                  Operational snapshot only. Download the report for a clean printable or
-                  spreadsheet copy with detailed stock rows.
+
+                <p className="mt-3 text-xs text-slate-500">
+                  Based on recent completed receipts · Full details in the downloadable report.
                 </p>
               </CardContent>
             </Card>
@@ -383,9 +432,9 @@ export function ReportsPage() {
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5">
+    <div className="min-w-0">
       <p className="text-xs text-slate-500">{label}</p>
-      <p className="mt-1 text-base font-semibold text-slate-950">{value}</p>
+      <p className="mt-0.5 truncate text-sm font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
@@ -397,6 +446,13 @@ function InventoryHealthCard({ summary }: { summary: DashboardSummary }) {
     { name: "Inactive", value: inventory.unavailableItems }
   ];
   const healthy = inventory.lowStockItems === 0 && inventory.outOfStockItems === 0;
+  const healthSummary = healthy
+    ? "No inventory issues need attention right now."
+    : inventory.lowStockItems > 0 && inventory.outOfStockItems > 0
+      ? "Low-stock and out-of-stock products need attention."
+      : inventory.outOfStockItems > 0
+        ? "Out-of-stock products need attention."
+        : "Low-stock products need attention.";
 
   return (
     <Card>
@@ -454,23 +510,9 @@ function InventoryHealthCard({ summary }: { summary: DashboardSummary }) {
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-slate-100 pt-3 text-xs text-slate-500">
-          <span>
-            <span className="font-semibold text-slate-700">{inventory.availableItems}</span> active
-          </span>
-          <span>
-            <span className="font-semibold text-slate-700">{inventory.unavailableItems}</span>{" "}
-            inactive
-          </span>
-          <span>
-            <span className="font-semibold text-slate-700">{inventory.lowStockItems}</span> low
-            stock
-          </span>
-          <span>
-            <span className="font-semibold text-slate-700">{inventory.outOfStockItems}</span> out of
-            stock
-          </span>
-        </div>
+        <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
+          {healthSummary}
+        </p>
       </CardContent>
     </Card>
   );

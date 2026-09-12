@@ -522,21 +522,20 @@ export function RestockPlanningPanel() {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <Badge variant="info">Recommended restock</Badge>
+      <CardHeader className="pb-2">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <CardTitle>Restock planner</CardTitle>
+              <Badge variant="info">Recommended</Badge>
               {draftOrder ? (
                 <Badge variant={statusVariant(draftOrder.status)}>
                   {statusLabel(draftOrder.status)}
                 </Badge>
               ) : null}
             </div>
-            <CardTitle>Restock planner</CardTitle>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
-              Review what the store needs, adjust the order quantity, or add an existing product.
-              Large restock lists stay paged so this workspace remains easy to scan.
+            <p className="mt-1 text-xs text-slate-500">
+              Review and prepare products for restocking.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
