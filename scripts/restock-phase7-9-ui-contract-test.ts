@@ -51,6 +51,7 @@ assert.doesNotMatch(receivingSource, /QueueSummaryCard/);
 assert.doesNotMatch(receivingSource, /receiveInventoryStock/);
 assert.doesNotMatch(receivingSource, /stockInInventory\s*\(/);
 assert.match(apiSource, /\/receipts/);
+assert.match(apiSource, /damageReason/);
 
 assert.match(returnDialogSource, /Download return report/);
 assert.match(returnDialogSource, /Download PDF/);
@@ -58,7 +59,9 @@ assert.match(returnDialogSource, /Print/);
 assert.match(returnDialogSource, /Excel-compatible CSV/);
 assert.match(returnDialogSource, /Supplier \/ manufacturer/);
 assert.match(returnExportSource, /damagedQuantity/);
+assert.match(returnExportSource, /damageReason/);
 assert.match(returnExportSource, /returnQuantity/);
+assert.match(returnExportSource, /returnScope/);
 assert.match(returnExportSource, /safeCsvText/);
 assert.match(routesSource, /path: "\/receiving"[\s\S]*?icon: Truck/);
 
