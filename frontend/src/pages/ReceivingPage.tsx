@@ -1,13 +1,15 @@
+import { Accordion } from "@base-ui/react/accordion";
+import { Checkbox } from "@base-ui/react/checkbox";
+import { CheckboxGroup } from "@base-ui/react/checkbox-group";
 import {
-  ArrowDownToLine,
+  Check,
   CheckCircle2,
   ChevronDown,
-  ChevronRight,
   Clock3,
   Inbox,
   LoaderCircle,
-  RefreshCw,
   RotateCcw,
+  Truck,
   TriangleAlert,
   X
 } from "lucide-react";
@@ -15,28 +17,22 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ReturnReportDialog } from "@/components/receiving/ReturnReportDialog";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { StatCard } from "@/components/shared/StatCard";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle
-} from "@/components/ui/sheet";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
+import { Select } from "@/components/ui/select";
 import {
   listRestockOrders,
   receiveRestockOrder,
@@ -167,12 +163,15 @@ export function ReceivingPage() {
   const [view, setView] = useState<ReceivingView>("ready");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<RestockOrder | null>(null);
   const [receiptMode, setReceiptMode] = useState<ReceiptMode | null>(null);
   const [receiptRows, setReceiptRows] = useState<Record<string, ReceiptRowState>>({});
+  const [exceptionLineIds, setExceptionLineIds] = useState<string[]>([]);
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [showLotDetails, setShowLotDetails] = useState(false);
+  const [lotDialogOpen, setLotDialogOpen] = useState(false);
+  const [lotLineId, setLotLineId] = useState("");
   const [returnReportOrder, setReturnReportOrder] = useState<RestockOrder | null>(null);
 
   const loadQueue = useCallback(async () => {
@@ -223,12 +222,27 @@ export function ReceivingPage() {
     [selectedOrder]
   );
 
+  const acceptedLotLines = useMemo(() => {
+    if (!selectedOrder) return [];
+    return selectedLines(selectedOrder).filter((line) => {
+      const row = receiptRows[line.id];
+      return row && acceptedQuantity(row) > 0;
+    });
+  }, [receiptRows, selectedOrder]);
+
+  function changeView(next: ReceivingView) {
+    setView(next);
+    setExpandedTicketId(null);
+  }
+
   function openTicket(order: RestockOrder) {
     setSelectedOrder(order);
     setReceiptMode(null);
     setReceiptRows(initialReceiptRows(order));
+    setExceptionLineIds([]);
     setReceiptError(null);
-    setShowLotDetails(false);
+    setLotDialogOpen(false);
+    setLotLineId("");
   }
 
   function closeTicket() {
@@ -236,16 +250,18 @@ export function ReceivingPage() {
     setSelectedOrder(null);
     setReceiptMode(null);
     setReceiptRows({});
+    setExceptionLineIds([]);
     setReceiptError(null);
-    setShowLotDetails(false);
+    setLotDialogOpen(false);
+    setLotLineId("");
   }
 
   function startReceipt(mode: ReceiptMode) {
     if (!selectedOrder) return;
     setReceiptMode(mode);
     setReceiptRows(initialReceiptRows(selectedOrder));
+    setExceptionLineIds([]);
     setReceiptError(null);
-    setShowLotDetails(false);
   }
 
   function updateRow(lineId: string, update: (row: ReceiptRowState) => ReceiptRowState) {
@@ -260,13 +276,13 @@ export function ReceivingPage() {
   function markEntireDeliveryDamaged() {
     if (!selectedOrder) return;
 
+    const remainingLines = selectedLines(selectedOrder).filter((line) => remainingQuantity(line) > 0);
+    setExceptionLineIds(remainingLines.map((line) => line.id));
     setReceiptRows((current) => {
       const next = { ...current };
-
-      for (const line of selectedLines(selectedOrder)) {
+      for (const line of remainingLines) {
         const row = next[line.id];
         if (!row) continue;
-
         const remaining = remainingQuantity(line);
         next[line.id] = {
           ...row,
@@ -274,11 +290,16 @@ export function ReceivingPage() {
           deliveredQuantity: String(remaining)
         };
       }
-
       return next;
     });
-
     setReceiptError(null);
+  }
+
+  function openLotDetails() {
+    const firstLine = acceptedLotLines[0];
+    if (!firstLine) return;
+    setLotLineId((current) => current || firstLine.id);
+    setLotDialogOpen(true);
   }
 
   function buildReceiptPayload(order: RestockOrder) {
@@ -341,8 +362,16 @@ export function ReceivingPage() {
       throw new Error("Record at least one delivered unit before confirming this delivery.");
     }
 
+    if (receiptMode === "issues" && exceptionLineIds.length === 0) {
+      throw new Error("Select the product or products with damaged units.");
+    }
+
     if (receiptMode === "issues" && !hasDamage) {
       throw new Error("Enter the damaged quantity, or choose Complete — No issues instead.");
+    }
+
+    if (receiptMode === "partial" && exceptionLineIds.length === 0) {
+      throw new Error("Select the product or products that did not fully arrive.");
     }
 
     if (receiptMode === "partial" && !hasPartialDifference) {
@@ -371,7 +400,9 @@ export function ReceivingPage() {
       setSelectedOrder(updated);
       setReceiptMode(null);
       setReceiptRows(initialReceiptRows(updated));
-      setShowLotDetails(false);
+      setExceptionLineIds([]);
+      setLotDialogOpen(false);
+      setLotLineId("");
 
       pushToast({
         title: updated.status === "RECEIVED" ? "Delivery completed" : "Delivery recorded",
@@ -396,21 +427,7 @@ export function ReceivingPage() {
       <PageHeader
         eyebrow="Inventory"
         title="Receiving"
-        description="Approved restock tickets move here automatically. Open a ticket and record only what differs from the expected delivery."
-        actions={
-          <Button
-            aria-label="Refresh receiving"
-            className="h-9 w-9"
-            disabled={loading}
-            onClick={() => void loadQueue()}
-            size="icon"
-            title="Refresh receiving"
-            type="button"
-            variant="ghost"
-          >
-            <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-          </Button>
-        }
+        description="Approved restock tickets move here automatically. Review a ticket and record only the delivery exceptions."
       />
 
       {error ? (
@@ -420,59 +437,69 @@ export function ReceivingPage() {
         </Alert>
       ) : null}
 
+      <section className="grid gap-4 md:grid-cols-3">
+        <QueueStatButton active={view === "ready"} onClick={() => changeView("ready")}>
+          <StatCard
+            detail={`${queue.readyTotal.toLocaleString()} restock ticket${queue.readyTotal === 1 ? "" : "s"} waiting`}
+            icon={Truck}
+            title="Awaiting delivery"
+            tone="info"
+            value={queue.readyTotal.toLocaleString()}
+          />
+        </QueueStatButton>
+        <QueueStatButton active={view === "partial"} onClick={() => changeView("partial")}>
+          <StatCard
+            detail={
+              queue.partialTotal > 0
+                ? `${queue.partialTotal.toLocaleString()} ticket${queue.partialTotal === 1 ? "" : "s"} need follow-up`
+                : "No incomplete deliveries"
+            }
+            icon={Clock3}
+            title="Partial deliveries"
+            tone="warning"
+            value={queue.partialTotal.toLocaleString()}
+          />
+        </QueueStatButton>
+        <QueueStatButton active={view === "history"} onClick={() => changeView("history")}>
+          <StatCard
+            detail="Completed delivery tickets"
+            icon={CheckCircle2}
+            title="Received history"
+            tone="success"
+            value={queue.historyTotal.toLocaleString()}
+          />
+        </QueueStatButton>
+      </section>
+
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-slate-950">
+            <h2 className="text-base font-semibold text-slate-950">
               {view === "ready"
-                ? "Restock tickets ready for delivery"
+                ? "Incoming deliveries"
                 : view === "partial"
                   ? "Partial deliveries"
-                  : "Received history"}
+                  : "Received deliveries"}
             </h2>
             <p className="mt-0.5 text-xs text-slate-500">
               {view === "ready"
-                ? "Confirmed restocks appear here automatically."
+                ? "Open a restock ticket to preview its products before receiving."
                 : view === "partial"
-                  ? "Reopen the same ticket when the remaining items arrive."
-                  : "Completed tickets stay available for delivery and return history."}
+                  ? "Continue the same ticket when the remaining products arrive."
+                  : "Completed tickets remain available for delivery and return history."}
             </p>
           </div>
-
-          <div
-            aria-label="Receiving status"
-            className="inline-flex w-fit items-center rounded-lg border border-slate-200 bg-slate-50 p-1"
-            role="tablist"
-          >
-            <QueueTab
-              active={view === "ready"}
-              count={queue.readyTotal}
-              label="Awaiting"
-              onClick={() => setView("ready")}
-            />
-            <QueueTab
-              active={view === "partial"}
-              count={queue.partialTotal}
-              label="Partial"
-              onClick={() => setView("partial")}
-            />
-            <QueueTab
-              active={view === "history"}
-              count={queue.historyTotal}
-              label="Received"
-              onClick={() => setView("history")}
-            />
-          </div>
+          <Badge variant={view === "partial" ? "warning" : view === "history" ? "success" : "info"}>
+            {visibleTotal.toLocaleString()} ticket{visibleTotal === 1 ? "" : "s"}
+          </Badge>
         </div>
 
         {loading && visibleOrders.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-slate-500">
-            Loading restock tickets…
-          </div>
+          <div className="px-5 py-14 text-center text-sm text-slate-500">Loading restock tickets…</div>
         ) : null}
 
         {!loading && visibleOrders.length === 0 ? (
-          <div className="px-4 py-14 text-center">
+          <div className="px-5 py-14 text-center">
             <Inbox aria-hidden="true" className="mx-auto h-9 w-9 text-slate-300" />
             <p className="mt-3 text-sm font-semibold text-slate-900">
               {view === "ready"
@@ -483,148 +510,144 @@ export function ReceivingPage() {
             </p>
             <p className="mt-1 text-xs text-slate-500">
               {view === "ready"
-                ? "When a restock is confirmed in Reports, the ticket will appear here."
+                ? "Confirmed restocks from Reports will appear here automatically."
                 : "This list updates automatically as physical deliveries are recorded."}
             </p>
           </div>
         ) : null}
 
         {visibleOrders.length > 0 ? (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-slate-50/80">
-                <TableRow>
-                  <TableHead>Ticket</TableHead>
-                  <TableHead>Delivery</TableHead>
-                  <TableHead>Approved</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-14 text-right">
-                    <span className="sr-only">Open</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleOrders.map((order) => {
-                  const totals = orderTotals(order);
-                  const hasReturn = hasRestockReturnItems(order);
-
-                  return (
-                    <TableRow
-                      className="cursor-pointer hover:bg-slate-50"
-                      key={order.id}
-                      onClick={() => openTicket(order)}
-                    >
-                      <TableCell className="min-w-[260px]">
-                        <div className="flex items-center gap-2">
-                          <ArrowDownToLine
-                            aria-hidden="true"
-                            className="h-4 w-4 shrink-0 text-indigo-600"
-                          />
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-slate-950">
-                              {order.orderNumber}
-                            </p>
-                            {hasReturn ? (
-                              <button
-                                className="mt-0.5 text-xs font-medium text-amber-700 hover:text-amber-800 hover:underline"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  setReturnReportOrder(order);
-                                }}
-                                type="button"
-                              >
-                                Return report available
-                              </button>
-                            ) : null}
-                          </div>
+          <Accordion.Root
+            onValueChange={(values) => setExpandedTicketId((values[0] as string | undefined) ?? null)}
+            value={expandedTicketId ? [expandedTicketId] : []}
+          >
+            {visibleOrders.map((order) => {
+              const totals = orderTotals(order);
+              const hasReturn = hasRestockReturnItems(order);
+              return (
+                <Accordion.Item
+                  className="border-b border-slate-100 last:border-b-0"
+                  key={order.id}
+                  value={order.id}
+                >
+                  <Accordion.Header>
+                    <Accordion.Trigger className="group flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="truncate text-sm font-semibold text-slate-950">
+                            {order.orderNumber}
+                          </span>
+                          <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
                         </div>
-                      </TableCell>
-                      <TableCell className="min-w-[220px] text-slate-600">
-                        {totals.products.toLocaleString()} product
-                        {totals.products === 1 ? "" : "s"} · {totals.units.toLocaleString()} units
-                        {totals.remaining > 0
-                          ? ` · ${totals.remaining.toLocaleString()} remaining`
-                          : ""}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-slate-500">
-                        {order.approvedAt
-                          ? dateFormatter.format(new Date(order.approvedAt))
-                          : "Approved"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusVariant(order.status)}>
-                          {statusLabel(order.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          aria-label={`Open ${order.orderNumber}`}
-                          className="h-8 w-8"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            openTicket(order);
-                          }}
-                          size="icon"
-                          title="Open delivery"
-                          type="button"
-                          variant="ghost"
-                        >
-                          <ChevronRight aria-hidden="true" className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {totals.products.toLocaleString()} product{totals.products === 1 ? "" : "s"} ·{" "}
+                          {totals.units.toLocaleString()} units ·{" "}
+                          {order.approvedAt ? `Approved ${dateFormatter.format(new Date(order.approvedAt))}` : "Approved"}
+                          {totals.remaining > 0 ? ` · ${totals.remaining.toLocaleString()} remaining` : ""}
+                        </p>
+                      </div>
+                      <ChevronDown
+                        aria-hidden="true"
+                        className="h-5 w-5 shrink-0 text-slate-400 transition-transform group-data-[panel-open]:rotate-180"
+                      />
+                    </Accordion.Trigger>
+                  </Accordion.Header>
+                  <Accordion.Panel className="border-t border-slate-100 bg-slate-50/60 px-5 py-4">
+                    <div className="rounded-lg border border-slate-200 bg-white">
+                      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">Ticket products</p>
+                          <p className="text-xs text-slate-500">Approved quantities for this restock.</p>
+                        </div>
+                        <Badge>{totals.products.toLocaleString()} items</Badge>
+                      </div>
+                      <div className="max-h-56 overflow-y-auto">
+                        {selectedLines(order).map((line) => (
+                          <div
+                            className="flex items-center justify-between gap-4 border-b border-slate-100 px-4 py-2.5 last:border-b-0"
+                            key={line.id}
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium text-slate-900">{line.product.name}</p>
+                              <p className="mt-0.5 text-xs text-slate-500">{line.product.sku}</p>
+                            </div>
+                            <span className="shrink-0 text-sm font-semibold text-slate-800">
+                              {remainingQuantity(line).toLocaleString()} remaining
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        {hasReturn ? (
+                          <Button
+                            onClick={() => setReturnReportOrder(order)}
+                            size="sm"
+                            type="button"
+                            variant="secondary"
+                          >
+                            <RotateCcw aria-hidden="true" className="h-4 w-4" />
+                            Return report
+                          </Button>
+                        ) : null}
+                      </div>
+                      <Button onClick={() => openTicket(order)} size="sm" type="button">
+                        {order.status === "RECEIVED"
+                          ? "View delivery"
+                          : order.status === "PARTIALLY_RECEIVED"
+                            ? "Continue receiving"
+                            : "Receive delivery"}
+                      </Button>
+                    </div>
+                  </Accordion.Panel>
+                </Accordion.Item>
+              );
+            })}
+          </Accordion.Root>
         ) : null}
 
         {visibleTotal > visibleOrders.length ? (
-          <p className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
-            Showing the latest {visibleOrders.length.toLocaleString()} of{" "}
-            {visibleTotal.toLocaleString()} tickets.
+          <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
+            Showing the latest {visibleOrders.length.toLocaleString()} of {visibleTotal.toLocaleString()} tickets.
           </p>
         ) : null}
       </section>
 
-      <Sheet
-        open={Boolean(selectedOrder)}
+      <Dialog
         onOpenChange={(open) => {
           if (!open) closeTicket();
         }}
+        open={Boolean(selectedOrder)}
       >
-        <SheetContent className="max-w-[760px] p-0">
+        <DialogContent className="max-h-[85vh] max-w-[960px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0">
           {selectedOrder && selectedTotals ? (
             <>
-              <SheetHeader className="relative shrink-0 border-b border-slate-200 px-5 py-4 pr-14">
+              <DialogHeader className="relative border-b border-slate-200 px-6 py-5 pr-16">
                 <div className="flex flex-wrap items-center gap-2">
-                  <SheetTitle className="text-lg">{selectedOrder.orderNumber}</SheetTitle>
-                  <Badge variant={statusVariant(selectedOrder.status)}>
-                    {statusLabel(selectedOrder.status)}
-                  </Badge>
+                  <DialogTitle>{selectedOrder.orderNumber}</DialogTitle>
+                  <Badge variant={statusVariant(selectedOrder.status)}>{statusLabel(selectedOrder.status)}</Badge>
                 </div>
-                <SheetDescription>
-                  {selectedTotals.products.toLocaleString()} products ·{" "}
-                  {selectedTotals.units.toLocaleString()} expected ·{" "}
+                <DialogDescription>
+                  {selectedTotals.products.toLocaleString()} products · {selectedTotals.units.toLocaleString()} expected ·{" "}
                   {selectedTotals.accepted.toLocaleString()} accepted
-                </SheetDescription>
+                </DialogDescription>
                 <Button
                   aria-label="Close delivery"
-                  className="absolute right-4 top-4 h-8 w-8"
+                  className="absolute right-5 top-5 h-8 w-8"
                   disabled={saving}
                   onClick={closeTicket}
                   size="icon"
-                  title="Close"
                   type="button"
                   variant="ghost"
                 >
                   <X aria-hidden="true" className="h-4 w-4" />
                 </Button>
-              </SheetHeader>
+              </DialogHeader>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-                <div className="space-y-4">
+              <div className="min-h-0 overflow-y-auto px-6 py-5">
+                <div className="space-y-5">
                   {receiptError ? (
                     <Alert variant="destructive">
                       <AlertTitle>Delivery needs attention</AlertTitle>
@@ -632,38 +655,48 @@ export function ReceivingPage() {
                     </Alert>
                   ) : null}
 
-                  <TicketItemsTable order={selectedOrder} />
-
                   {selectedOrder.status === "RECEIVED" ? (
-                    <CompletedDeliveryPanel
-                      onReturnReport={() => setReturnReportOrder(selectedOrder)}
-                      order={selectedOrder}
-                    />
+                    <>
+                      <TicketItemsPreview order={selectedOrder} />
+                      <CompletedDeliveryPanel
+                        onReturnReport={() => setReturnReportOrder(selectedOrder)}
+                        order={selectedOrder}
+                      />
+                    </>
                   ) : receiptMode === null ? (
-                    <ArrivalOptions onSelect={startReceipt} />
+                    <>
+                      <TicketItemsPreview order={selectedOrder} />
+                      <ArrivalOptions onSelect={startReceipt} />
+                    </>
+                  ) : receiptMode === "complete" ? (
+                    <>
+                      <TicketItemsPreview order={selectedOrder} />
+                      <CompleteDeliveryPanel order={selectedOrder} />
+                    </>
                   ) : (
                     <ReceiptEditor
+                      exceptionLineIds={exceptionLineIds}
                       mode={receiptMode}
+                      onExceptionChange={setExceptionLineIds}
                       onMarkAllDamaged={markEntireDeliveryDamaged}
-                      onToggleLotDetails={() => setShowLotDetails((current) => !current)}
+                      onOpenLotDetails={openLotDetails}
                       onUpdateRow={updateRow}
                       order={selectedOrder}
                       rows={receiptRows}
-                      showLotDetails={showLotDetails}
                     />
                   )}
                 </div>
               </div>
 
               {selectedOrder.status !== "RECEIVED" && receiptMode ? (
-                <SheetFooter className="shrink-0 bg-white px-5 py-3">
+                <DialogFooter className="bg-white">
                   <Button
                     disabled={saving}
                     onClick={() => {
                       setReceiptMode(null);
                       setReceiptRows(initialReceiptRows(selectedOrder));
+                      setExceptionLineIds([]);
                       setReceiptError(null);
-                      setShowLotDetails(false);
                     }}
                     type="button"
                     variant="secondary"
@@ -682,12 +715,22 @@ export function ReceivingPage() {
                         ? "Confirm complete delivery"
                         : "Confirm delivery"}
                   </Button>
-                </SheetFooter>
+                </DialogFooter>
               ) : null}
             </>
           ) : null}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
+
+      <LotExpiryDialog
+        lineId={lotLineId}
+        lines={acceptedLotLines}
+        onLineChange={setLotLineId}
+        onOpenChange={setLotDialogOpen}
+        onUpdateRow={updateRow}
+        open={lotDialogOpen}
+        rows={receiptRows}
+      />
 
       <ReturnReportDialog
         onOpenChange={(open) => {
@@ -700,78 +743,64 @@ export function ReceivingPage() {
   );
 }
 
-function QueueTab({
+function QueueStatButton({
   active,
-  count,
-  label,
+  children,
   onClick
 }: {
   active: boolean;
-  count: number;
-  label: string;
+  children: React.ReactNode;
   onClick: () => void;
 }) {
   return (
     <button
-      aria-selected={active}
-      className={`inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-colors ${
-        active
-          ? "bg-white text-slate-950 shadow-sm"
-          : "text-slate-500 hover:bg-white/70 hover:text-slate-800"
+      aria-pressed={active}
+      className={`rounded-xl text-left outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+        active ? "ring-2 ring-indigo-500 ring-offset-2" : "hover:shadow-md"
       }`}
       onClick={onClick}
-      role="tab"
       type="button"
     >
-      {label}
-      <span
-        className={`min-w-5 rounded-full px-1.5 py-0.5 text-center text-[10px] ${
-          active ? "bg-indigo-50 text-indigo-700" : "bg-slate-200/70 text-slate-600"
-        }`}
-      >
-        {count.toLocaleString()}
-      </span>
+      {children}
     </button>
   );
 }
 
-function TicketItemsTable({ order }: { order: RestockOrder }) {
+function TicketItemsPreview({ order }: { order: RestockOrder }) {
   return (
     <section>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-950">Ticket items</h3>
           <p className="text-xs text-slate-500">Expected quantities from the approved restock.</p>
         </div>
         <Badge>{selectedLines(order).length.toLocaleString()} items</Badge>
       </div>
-
       <div className="overflow-hidden rounded-lg border border-slate-200">
-        <Table>
-          <TableHeader className="bg-slate-50">
-            <TableRow>
-              <TableHead>Product</TableHead>
-              <TableHead className="w-24 text-right">Expected</TableHead>
-              <TableHead className="w-24 text-right">Remaining</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {selectedLines(order).map((line) => (
-              <TableRow key={line.id}>
-                <TableCell className="py-2.5">
-                  <p className="font-medium text-slate-950">{line.product.name}</p>
-                  <p className="mt-0.5 text-xs text-slate-500">{line.product.sku}</p>
-                </TableCell>
-                <TableCell className="py-2.5 text-right font-medium text-slate-700">
-                  {line.requestedQuantity.toLocaleString()}
-                </TableCell>
-                <TableCell className="py-2.5 text-right font-semibold text-slate-950">
-                  {remainingQuantity(line).toLocaleString()}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="grid grid-cols-[minmax(0,1fr)_88px_88px] bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500">
+          <span>Product</span>
+          <span className="text-right">Expected</span>
+          <span className="text-right">Remaining</span>
+        </div>
+        <div className="max-h-64 overflow-y-auto">
+          {selectedLines(order).map((line) => (
+            <div
+              className="grid grid-cols-[minmax(0,1fr)_88px_88px] items-center border-t border-slate-100 px-4 py-2.5"
+              key={line.id}
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-slate-950">{line.product.name}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{line.product.sku}</p>
+              </div>
+              <span className="text-right text-sm font-medium text-slate-700">
+                {line.requestedQuantity.toLocaleString()}
+              </span>
+              <span className="text-right text-sm font-semibold text-slate-950">
+                {remainingQuantity(line).toLocaleString()}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -808,17 +837,14 @@ function ArrivalOptions({ onSelect }: { onSelect: (mode: ReceiptMode) => void })
     <section>
       <div className="mb-2">
         <h3 className="text-sm font-semibold text-slate-950">How did this delivery arrive?</h3>
-        <p className="mt-0.5 text-xs text-slate-500">
-          Choose one. Extra fields only appear when there is an exception.
-        </p>
+        <p className="mt-0.5 text-xs text-slate-500">Choose one. Extra fields appear only for exceptions.</p>
       </div>
-
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
         {choices.map((choice, index) => {
           const Icon = choice.icon;
           return (
             <button
-              className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 ${
+              className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
                 index > 0 ? "border-t border-slate-100" : ""
               }`}
               key={choice.mode}
@@ -832,10 +858,27 @@ function ArrivalOptions({ onSelect }: { onSelect: (mode: ReceiptMode) => void })
                 <p className="text-sm font-medium text-slate-950">{choice.title}</p>
                 <p className="mt-0.5 text-xs text-slate-500">{choice.description}</p>
               </div>
-              <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-400" />
+              <ChevronDown aria-hidden="true" className="h-4 w-4 -rotate-90 text-slate-400" />
             </button>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+function CompleteDeliveryPanel({ order }: { order: RestockOrder }) {
+  const totalRemaining = selectedLines(order).reduce((sum, line) => sum + remainingQuantity(line), 0);
+  return (
+    <section className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+      <div className="flex items-start gap-3">
+        <CheckCircle2 aria-hidden="true" className="mt-0.5 h-5 w-5 text-emerald-600" />
+        <div>
+          <p className="text-sm font-semibold text-emerald-950">Complete delivery — no issues</p>
+          <p className="mt-0.5 text-xs leading-5 text-emerald-800">
+            {totalRemaining.toLocaleString()} remaining units will be accepted. No quantity editing is needed.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -849,16 +892,13 @@ function CompletedDeliveryPanel({
   order: RestockOrder;
 }) {
   const hasReturn = hasRestockReturnItems(order);
-
   return (
     <section className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
       <div className="flex items-start gap-3">
         <CheckCircle2 aria-hidden="true" className="mt-0.5 h-5 w-5 text-emerald-600" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-emerald-950">Delivery completed</p>
-          <p className="mt-0.5 text-xs leading-5 text-emerald-800">
-            Accepted units are already reflected in Inventory.
-          </p>
+          <p className="mt-0.5 text-xs leading-5 text-emerald-800">Accepted units are already reflected in Inventory.</p>
         </div>
         {hasReturn ? (
           <Button onClick={onReturnReport} size="sm" type="button" variant="secondary">
@@ -872,55 +912,39 @@ function CompletedDeliveryPanel({
 }
 
 function ReceiptEditor({
+  exceptionLineIds,
   mode,
+  onExceptionChange,
   onMarkAllDamaged,
-  onToggleLotDetails,
+  onOpenLotDetails,
   onUpdateRow,
   order,
-  rows,
-  showLotDetails
+  rows
 }: {
-  mode: ReceiptMode;
+  exceptionLineIds: string[];
+  mode: Exclude<ReceiptMode, "complete">;
+  onExceptionChange: (value: string[]) => void;
   onMarkAllDamaged: () => void;
-  onToggleLotDetails: () => void;
+  onOpenLotDetails: () => void;
   onUpdateRow: (lineId: string, update: (row: ReceiptRowState) => ReceiptRowState) => void;
   order: RestockOrder;
   rows: Record<string, ReceiptRowState>;
-  showLotDetails: boolean;
 }) {
   const remainingLines = selectedLines(order).filter((line) => remainingQuantity(line) > 0);
-  const totalRemaining = remainingLines.reduce((sum, line) => sum + remainingQuantity(line), 0);
-
-  if (mode === "complete") {
-    return (
-      <section className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
-        <div className="flex items-start gap-3">
-          <CheckCircle2 aria-hidden="true" className="mt-0.5 h-5 w-5 text-emerald-600" />
-          <div>
-            <p className="text-sm font-semibold text-emerald-950">Complete delivery — no issues</p>
-            <p className="mt-0.5 text-xs leading-5 text-emerald-800">
-              {totalRemaining.toLocaleString()} remaining units will be accepted. No quantity
-              editing is needed.
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const exceptionLines = remainingLines.filter((line) => exceptionLineIds.includes(line.id));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <section>
-        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-slate-950">
-              {mode === "issues" ? "Record damaged units" : "Record what actually arrived"}
+              {mode === "issues" ? "Which products have an issue?" : "Which products did not fully arrive?"}
             </h3>
             <p className="mt-0.5 text-xs text-slate-500">
-              Accepted quantity is calculated automatically. Edit only the exceptions.
+              Select only the exceptions. All unselected products are treated as fully delivered.
             </p>
           </div>
-
           {mode === "issues" ? (
             <Button onClick={onMarkAllDamaged} size="sm" type="button" variant="ghost">
               Mark entire delivery damaged
@@ -928,189 +952,248 @@ function ReceiptEditor({
           ) : null}
         </div>
 
-        <div className="overflow-x-auto rounded-lg border border-slate-200">
-          <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow>
-                <TableHead className="min-w-[220px]">Product</TableHead>
-                <TableHead className="w-20 text-right">Expected</TableHead>
-                <TableHead className="w-24 text-right">Delivered</TableHead>
-                <TableHead className="w-24 text-right">Damaged</TableHead>
-                <TableHead className="w-20 text-right">Accepted</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {remainingLines.map((line) => {
-                const row = rows[line.id];
-                if (!row) return null;
+        <CheckboxGroup
+          aria-label={mode === "issues" ? "Products with issues" : "Products not fully delivered"}
+          className="grid max-h-56 gap-2 overflow-y-auto pr-1 sm:grid-cols-2"
+          onValueChange={onExceptionChange}
+          value={exceptionLineIds}
+        >
+          {remainingLines.map((line) => {
+            const checked = exceptionLineIds.includes(line.id);
+            return (
+              <label
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 transition-colors ${
+                  checked
+                    ? "border-indigo-300 bg-indigo-50/70"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+                key={line.id}
+              >
+                <Checkbox.Root
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-white data-[checked]:border-indigo-600 data-[checked]:bg-indigo-600"
+                  value={line.id}
+                >
+                  <Checkbox.Indicator>
+                    <Check aria-hidden="true" className="h-3.5 w-3.5" />
+                  </Checkbox.Indicator>
+                </Checkbox.Root>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-slate-900">{line.product.name}</span>
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    {line.product.sku} · {remainingQuantity(line).toLocaleString()} expected
+                  </span>
+                </span>
+              </label>
+            );
+          })}
+        </CheckboxGroup>
+      </section>
 
-                const remaining = remainingQuantity(line);
-                const accepted = acceptedQuantity(row);
-
-                return (
-                  <TableRow key={line.id}>
-                    <TableCell className="py-2.5">
-                      <p className="font-medium text-slate-950">{line.product.name}</p>
+      {exceptionLines.length > 0 ? (
+        <section>
+          <div className="mb-2">
+            <h3 className="text-sm font-semibold text-slate-950">Exception details</h3>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Accepted quantity is calculated automatically. Edit only the selected exceptions.
+            </p>
+          </div>
+          <div className="space-y-2">
+            {exceptionLines.map((line) => {
+              const row = rows[line.id];
+              if (!row) return null;
+              const remaining = remainingQuantity(line);
+              const accepted = acceptedQuantity(row);
+              return (
+                <div className="rounded-lg border border-slate-200 bg-white p-4" key={line.id}>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-950">{line.product.name}</p>
                       <p className="mt-0.5 text-xs text-slate-500">
-                        {line.product.sku} · {remaining.toLocaleString()} remaining
+                        {line.product.sku} · {remaining.toLocaleString()} expected
                       </p>
-                      {accepted > remaining ? (
-                        <label className="mt-2 flex items-start gap-2 text-xs leading-5 text-amber-800">
-                          <input
-                            checked={row.confirmOverDelivery}
-                            className="mt-0.5"
-                            onChange={(event) =>
-                              onUpdateRow(line.id, (current) => ({
-                                ...current,
-                                confirmOverDelivery: event.target.checked
-                              }))
-                            }
-                            type="checkbox"
-                          />
-                          Confirm over-delivery
-                        </label>
+                    </div>
+                    <div className={`grid gap-3 ${mode === "partial" ? "grid-cols-3" : "grid-cols-2"}`}>
+                      {mode === "partial" ? (
+                        <QuantityField
+                          label="Delivered"
+                          onChange={(value) =>
+                            onUpdateRow(line.id, (current) => ({ ...current, deliveredQuantity: value }))
+                          }
+                          value={row.deliveredQuantity}
+                        />
                       ) : null}
-                    </TableCell>
-                    <TableCell className="py-2.5 text-right font-medium text-slate-600">
-                      {remaining.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="py-2.5">
-                      <CompactQuantityInput
-                        disabled={mode === "issues"}
+                      <QuantityField
+                        label="Damaged"
                         onChange={(value) =>
-                          onUpdateRow(line.id, (current) => ({
-                            ...current,
-                            deliveredQuantity: value
-                          }))
-                        }
-                        value={row.deliveredQuantity}
-                      />
-                    </TableCell>
-                    <TableCell className="py-2.5">
-                      <CompactQuantityInput
-                        onChange={(value) =>
-                          onUpdateRow(line.id, (current) => ({
-                            ...current,
-                            damagedQuantity: value
-                          }))
+                          onUpdateRow(line.id, (current) => ({ ...current, damagedQuantity: value }))
                         }
                         value={row.damagedQuantity}
                       />
-                    </TableCell>
-                    <TableCell className="py-2.5 text-right font-semibold text-emerald-700">
-                      {accepted.toLocaleString()}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
-
-      <section className="overflow-hidden rounded-lg border border-slate-200">
-        <button
-          aria-expanded={showLotDetails}
-          className="flex w-full items-center gap-3 bg-slate-50 px-4 py-3 text-left transition-colors hover:bg-slate-100"
-          onClick={onToggleLotDetails}
-          type="button"
-        >
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-slate-800">Supplier lot / expiry details</p>
-            <p className="mt-0.5 text-xs text-slate-500">
-              Optional unless the supplier printed a specific lot or expiry.
-            </p>
-          </div>
-          <ChevronDown
-            aria-hidden="true"
-            className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${
-              showLotDetails ? "rotate-180" : ""
-            }`}
-          />
-        </button>
-
-        {showLotDetails ? (
-          <div className="space-y-3 border-t border-slate-200 bg-white p-4">
-            {remainingLines.map((line) => {
-              const row = rows[line.id];
-              if (!row || acceptedQuantity(row) === 0) return null;
-
-              return (
-                <div
-                  className="grid gap-3 border-b border-slate-100 pb-3 last:border-b-0 last:pb-0 md:grid-cols-[1fr_220px]"
-                  key={line.id}
-                >
-                  <div>
-                    <Label className="text-xs">{line.product.name} — Batch / lot</Label>
-                    <Input
-                      className="mt-1"
-                      maxLength={80}
-                      onChange={(event) =>
-                        onUpdateRow(line.id, (current) => ({
-                          ...current,
-                          batchCode: event.target.value
-                        }))
-                      }
-                      value={row.batchCode}
-                    />
+                      <div className="min-w-20">
+                        <p className="text-xs font-medium text-slate-500">Accepted</p>
+                        <p className="mt-1.5 text-right text-sm font-semibold text-emerald-700">
+                          {accepted.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-xs">Expiration date</Label>
-                    <Input
-                      className="mt-1"
-                      disabled={row.noExpiration}
-                      onChange={(event) =>
-                        onUpdateRow(line.id, (current) => ({
-                          ...current,
-                          expiresAt: event.target.value
-                        }))
-                      }
-                      type="date"
-                      value={row.expiresAt}
-                    />
-                    <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                  {accepted > remaining ? (
+                    <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-amber-800">
                       <input
-                        checked={row.noExpiration}
+                        checked={row.confirmOverDelivery}
+                        className="mt-0.5"
                         onChange={(event) =>
                           onUpdateRow(line.id, (current) => ({
                             ...current,
-                            expiresAt: event.target.checked ? "" : current.expiresAt,
-                            noExpiration: event.target.checked
+                            confirmOverDelivery: event.target.checked
                           }))
                         }
                         type="checkbox"
                       />
-                      No expiry printed / not applicable
+                      Confirm over-delivery
                     </label>
-                  </div>
+                  ) : null}
                 </div>
               );
             })}
           </div>
-        ) : null}
+        </section>
+      ) : null}
+
+      <section className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-slate-800">Supplier lot / expiry details</p>
+          <p className="mt-0.5 text-xs text-slate-500">Optional unless the supplier printed a specific lot or expiry.</p>
+        </div>
+        <Button onClick={onOpenLotDetails} size="sm" type="button" variant="secondary">
+          Add details
+        </Button>
       </section>
     </div>
   );
 }
 
-function CompactQuantityInput({
-  disabled = false,
+function QuantityField({
+  label,
   onChange,
   value
 }: {
-  disabled?: boolean;
+  label: string;
   onChange: (value: string) => void;
   value: string;
 }) {
   return (
-    <Input
-      className="ml-auto h-8 w-20 text-right"
-      disabled={disabled}
-      inputMode="numeric"
-      min="0"
-      onChange={(event) => onChange(event.target.value)}
-      type="number"
-      value={value}
-    />
+    <div className="min-w-20">
+      <Label className="text-xs">{label}</Label>
+      <Input
+        className="mt-1 h-8 w-20 text-right"
+        inputMode="numeric"
+        min="0"
+        onChange={(event) => onChange(event.target.value)}
+        type="number"
+        value={value}
+      />
+    </div>
+  );
+}
+
+function LotExpiryDialog({
+  lineId,
+  lines,
+  onLineChange,
+  onOpenChange,
+  onUpdateRow,
+  open,
+  rows
+}: {
+  lineId: string;
+  lines: RestockOrderLine[];
+  onLineChange: (lineId: string) => void;
+  onOpenChange: (open: boolean) => void;
+  onUpdateRow: (lineId: string, update: (row: ReceiptRowState) => ReceiptRowState) => void;
+  open: boolean;
+  rows: Record<string, ReceiptRowState>;
+}) {
+  const activeLine = lines.find((line) => line.id === lineId) ?? lines[0];
+  const row = activeLine ? rows[activeLine.id] : undefined;
+
+  return (
+    <Dialog onOpenChange={onOpenChange} open={open}>
+      <DialogContent className="max-w-[560px] gap-0">
+        <DialogHeader className="border-b border-slate-200 px-6 py-5">
+          <DialogTitle>Supplier lot / expiry details</DialogTitle>
+          <DialogDescription>Add these only when the supplier printed specific traceability details.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 px-6 py-5">
+          {activeLine && row ? (
+            <>
+              <div>
+                <Label htmlFor="lot-product">Product</Label>
+                <Select
+                  className="mt-1"
+                  id="lot-product"
+                  onChange={(event) => onLineChange(event.target.value)}
+                  value={activeLine.id}
+                >
+                  {lines.map((line) => (
+                    <option key={line.id} value={line.id}>
+                      {line.product.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="supplier-lot">Supplier lot / batch</Label>
+                <Input
+                  className="mt-1"
+                  id="supplier-lot"
+                  maxLength={80}
+                  onChange={(event) =>
+                    onUpdateRow(activeLine.id, (current) => ({ ...current, batchCode: event.target.value }))
+                  }
+                  value={row.batchCode}
+                />
+              </div>
+              <div>
+                <Label htmlFor="supplier-expiry">Expiration date</Label>
+                <Input
+                  className="mt-1"
+                  disabled={row.noExpiration}
+                  id="supplier-expiry"
+                  onChange={(event) =>
+                    onUpdateRow(activeLine.id, (current) => ({ ...current, expiresAt: event.target.value }))
+                  }
+                  type="date"
+                  value={row.expiresAt}
+                />
+              </div>
+              <label className="flex items-center gap-3 text-sm text-slate-700">
+                <Checkbox.Root
+                  checked={row.noExpiration}
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-white data-[checked]:border-indigo-600 data-[checked]:bg-indigo-600"
+                  onCheckedChange={(checked) =>
+                    onUpdateRow(activeLine.id, (current) => ({
+                      ...current,
+                      expiresAt: checked ? "" : current.expiresAt,
+                      noExpiration: checked
+                    }))
+                  }
+                >
+                  <Checkbox.Indicator>
+                    <Check aria-hidden="true" className="h-3.5 w-3.5" />
+                  </Checkbox.Indicator>
+                </Checkbox.Root>
+                No expiry printed / not applicable
+              </label>
+            </>
+          ) : (
+            <p className="text-sm text-slate-500">No accepted products need lot details.</p>
+          )}
+        </div>
+        <DialogFooter>
+          <Button onClick={() => onOpenChange(false)} type="button">Done</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
