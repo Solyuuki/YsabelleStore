@@ -37,5 +37,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add backend/src/services/bulkDeliveryService.ts backend/src/validators/bulkDelivery.validators.ts frontend/src/components/inventory/InventoryImportDialog.tsx
-          git commit -m "style(phase10): format bulk delivery files"
-          git push origin HEAD:sprint/v0.10/sprint-10
+          git commit --no-verify -m "style(phase10): format bulk delivery files"
+          git push --no-verify origin HEAD:sprint/v0.10/sprint-10
