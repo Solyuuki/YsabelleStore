@@ -3,7 +3,9 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  FileSpreadsheet,
   PackagePlus,
+  Printer,
   RefreshCw,
   Search,
   Settings2,
@@ -38,6 +40,11 @@ import {
   type RestockPlanningCandidate,
   type RestockRecommendationSource
 } from "@/services/restockApi";
+import {
+  downloadRestockSupplierCsv,
+  printRestockSupplierCopy,
+  type RestockSupplierSnapshot
+} from "@/utils/restockExport";
 
 const RESTOCK_PAGE_SIZE = 8;
 const CATALOG_PAGE_SIZE = 10;
@@ -176,6 +183,8 @@ export function RestockPlanningPanel() {
   const [restockPage, setRestockPage] = useState(1);
   const [reviewPage, setReviewPage] = useState(1);
   const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(() => new Set());
+  const [supplierExportOpen, setSupplierExportOpen] = useState(false);
+  const [supplierExportError, setSupplierExportError] = useState<string | null>(null);
 
   const loadRecommendations = useCallback(async () => {
     setLoading(true);
@@ -508,6 +517,63 @@ export function RestockPlanningPanel() {
     }
   }
 
+  function buildSupplierSnapshot(): RestockSupplierSnapshot | null {
+    if (!draftOrder || draftOrder.status === "DRAFT" || draftOrder.status === "CANCELLED") {
+      return null;
+    }
+
+    const exportLines = draftOrder.lines
+      .filter((line) => line.isSelected && line.requestedQuantity > 0)
+      .map((line) => ({
+        barcode: line.product.barcode,
+        notes: line.notes ?? null,
+        productName: line.product.name,
+        quantity: line.requestedQuantity,
+        sku: line.product.sku
+      }));
+
+    if (exportLines.length === 0) return null;
+
+    return {
+      generatedAt: new Date().toISOString(),
+      lines: exportLines,
+      notes: draftOrder.notes,
+      orderNumber: draftOrder.orderNumber,
+      preparedBy: draftOrder.approvedBy?.name ?? draftOrder.createdBy?.name ?? null,
+      statusLabel: statusLabel(draftOrder.status)
+    };
+  }
+
+  function handleSupplierPrint() {
+    setSupplierExportError(null);
+    const snapshot = buildSupplierSnapshot();
+    if (!snapshot) {
+      setSupplierExportError("Confirm the restock before creating a supplier copy.");
+      return;
+    }
+
+    if (!printRestockSupplierCopy(snapshot)) {
+      setSupplierExportError(
+        "Pop-up was blocked. Allow pop-ups for Ysabelle Store and try Print / Save PDF again."
+      );
+      return;
+    }
+
+    setSupplierExportOpen(false);
+  }
+
+  function handleSupplierCsv() {
+    setSupplierExportError(null);
+    const snapshot = buildSupplierSnapshot();
+    if (!snapshot) {
+      setSupplierExportError("Confirm the restock before creating a supplier copy.");
+      return;
+    }
+
+    downloadRestockSupplierCsv(snapshot);
+    setSupplierExportOpen(false);
+  }
+
   function openReview() {
     const validationError = validatePlan(lines);
     if (validationError) {
@@ -720,13 +786,16 @@ export function RestockPlanningPanel() {
                         <Input
                           aria-label={`Order quantity for ${line.candidate.product.name}`}
                           disabled={!editable || !line.isSelected}
-                          min={0}
+                          inputMode="numeric"
+                          min={1}
                           onChange={(event) =>
                             updateLine(productId, (current) => ({
                               ...current,
                               requestedQuantity: asNonNegativeInteger(event.target.value)
                             }))
                           }
+                          onFocus={(event) => event.currentTarget.select()}
+                          step={1}
                           type="number"
                           value={line.requestedQuantity}
                         />
@@ -932,7 +1001,19 @@ export function RestockPlanningPanel() {
                 />
               ) : null}
               {draftOrder?.status === "APPROVED" ? (
-                <Badge variant="success">Restock confirmed</Badge>
+                <>
+                  <Badge variant="success">Restock confirmed</Badge>
+                  <Button
+                    onClick={() => {
+                      setSupplierExportError(null);
+                      setSupplierExportOpen(true);
+                    }}
+                    type="button"
+                  >
+                    <Printer aria-hidden="true" className="h-4 w-4" />
+                    Export supplier copy
+                  </Button>
+                </>
               ) : (
                 <Button
                   disabled={!editable || selectedCount === 0 || busyAction !== null}
@@ -1163,6 +1244,82 @@ export function RestockPlanningPanel() {
             >
               {busyAction === "confirm" ? "Confirming…" : "Confirm restock"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        onOpenChange={(open) => {
+          setSupplierExportOpen(open);
+          if (!open) setSupplierExportError(null);
+        }}
+        open={supplierExportOpen}
+      >
+        <DialogContent className="max-w-[620px]">
+          <DialogHeader>
+            <DialogTitle>Export restock order</DialogTitle>
+            <DialogDescription>
+              Create a supplier-facing copy of the confirmed restock. It includes only the products,
+              identifiers, quantities, and ordering notes needed to fulfill the order.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 px-6 pb-2">
+            <Alert>
+              <AlertTitle>Supplier copy</AlertTitle>
+              <AlertDescription>
+                Internal stock levels, forecasts, reorder settings, and recommendation logic are not
+                included. Supplier / Manufacturer is left blank for manual entry until supplier
+                management is introduced in a later phase.
+              </AlertDescription>
+            </Alert>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Button
+                className="h-auto min-h-24 items-start justify-start whitespace-normal p-4 text-left"
+                onClick={handleSupplierPrint}
+                type="button"
+                variant="secondary"
+              >
+                <Printer className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>
+                  <span className="block font-semibold text-slate-950">Print / Save PDF</span>
+                  <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
+                    Clean A4 supplier copy with repeating table headers for long restock orders.
+                  </span>
+                </span>
+              </Button>
+
+              <Button
+                className="h-auto min-h-24 items-start justify-start whitespace-normal p-4 text-left"
+                onClick={handleSupplierCsv}
+                type="button"
+                variant="secondary"
+              >
+                <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>
+                  <span className="block font-semibold text-slate-950">Excel-compatible CSV</span>
+                  <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
+                    Spreadsheet-ready order lines for sending or further supplier processing.
+                  </span>
+                </span>
+              </Button>
+            </div>
+
+            {supplierExportError ? (
+              <Alert variant="destructive">
+                <AlertTitle>Export needs attention</AlertTitle>
+                <AlertDescription>{supplierExportError}</AlertDescription>
+              </Alert>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>

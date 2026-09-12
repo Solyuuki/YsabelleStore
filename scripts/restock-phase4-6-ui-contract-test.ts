@@ -8,11 +8,15 @@ const panelSource = readFileSync(
   "utf8"
 );
 const apiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.ts"), "utf8");
+const supplierExportSource = readFileSync(
+  resolve(process.cwd(), "src/utils/restockExport.ts"),
+  "utf8"
+);
 
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.match(reportsSource, /<RestockPlanningPanel \/>/);
 assert.match(reportsSource, /Restock actions are grouped separately below/);
-assert.match(reportsSource, /Download report/);
+assert.match(reportsSource, /Operational snapshot/);
 assert.match(reportsSource, /Print \/ Save PDF/);
 assert.match(reportsSource, /Excel-compatible CSV/);
 assert.match(reportsSource, /ResponsiveContainer/);
@@ -39,6 +43,10 @@ assert.match(panelSource, /Not needed/);
 assert.match(panelSource, /Review restock/);
 assert.match(panelSource, /Save for later/);
 assert.match(panelSource, /Confirm restock/);
+assert.match(panelSource, /Export supplier copy/);
+assert.match(panelSource, /Export restock order/);
+assert.match(panelSource, /currentTarget\.select\(\)/);
+assert.match(panelSource, /Confirm the restock before creating a supplier copy/);
 assert.match(panelSource, /Inventory has not changed/);
 assert.match(panelSource, /Physical Inventory is unchanged/);
 assert.match(panelSource, /updateProduct/);
@@ -67,5 +75,13 @@ assert.match(
 assert.match(apiSource, /"\/api\/restock-orders"/);
 assert.match(apiSource, /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/lines/);
 assert.match(apiSource, /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/approve/);
+
+assert.match(supplierExportSource, /RESTOCK ORDER - SUPPLIER COPY/);
+assert.match(supplierExportSource, /Supplier \/ Manufacturer/);
+assert.match(supplierExportSource, /Order quantity/);
+assert.match(supplierExportSource, /downloadRestockSupplierCsv/);
+assert.match(supplierExportSource, /printRestockSupplierCopy/);
+assert.doesNotMatch(supplierExportSource, /Forecast demand/);
+assert.doesNotMatch(supplierExportSource, /Reorder level/);
 
 console.log("Restock Phase 4-6 Reports QoL contract passed.");

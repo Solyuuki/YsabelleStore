@@ -279,7 +279,7 @@ export function ReportsPage() {
               type="button"
             >
               <Download className="h-4 w-4" />
-              Download report
+              Operational snapshot
             </Button>
           </>
         }
@@ -361,7 +361,8 @@ export function ReportsPage() {
                 </div>
 
                 <p className="mt-3 text-xs text-slate-500">
-                  Based on recent completed receipts · Full details in the downloadable report.
+                  Based on recent completed receipts · Internal details are available in Operational
+                  snapshot.
                 </p>
               </CardContent>
             </Card>
@@ -374,10 +375,10 @@ export function ReportsPage() {
       <Dialog onOpenChange={setExportOpen} open={exportOpen}>
         <DialogContent className="max-w-[620px]">
           <DialogHeader>
-            <DialogTitle>Download report</DialogTitle>
+            <DialogTitle>Internal operational snapshot</DialogTitle>
             <DialogDescription>
-              Export the current live snapshot. Both formats include detailed inventory and current
-              restock recommendations without changing any store data.
+              Export the store's internal live snapshot for management review. For a supplier-ready
+              restock document, confirm the Restock Planner and use Export supplier copy.
             </DialogDescription>
           </DialogHeader>
 
@@ -573,7 +574,7 @@ async function fetchEveryPage<T>(
 
 function downloadReportCsv(snapshot: ReportExportSnapshot) {
   const rows: Array<Array<string | number>> = [
-    ["YSABELLE STORE", "Operational Report"],
+    ["YSABELLE STORE", "Internal Operational Snapshot"],
     ["Generated", formatGeneratedAt(snapshot.summary.generatedAt)],
     [],
     ["REPORT SUMMARY"],
@@ -704,7 +705,7 @@ function buildPrintableReport(snapshot: ReportExportSnapshot) {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Ysabelle Store Operational Report</title>
+  <title>Ysabelle Store Internal Operational Snapshot</title>
   <style>
     @page { margin: 16mm; size: A4; }
     * { box-sizing: border-box; }
@@ -728,7 +729,7 @@ function buildPrintableReport(snapshot: ReportExportSnapshot) {
 </head>
 <body>
   <header>
-    <h1>YSABELLE STORE — Operational Report</h1>
+    <h1>YSABELLE STORE — Internal Operational Snapshot</h1>
     <div class="meta">Generated ${escapeHtml(formatGeneratedAt(summary.generatedAt))}</div>
   </header>
 
