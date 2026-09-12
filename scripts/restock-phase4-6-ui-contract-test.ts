@@ -42,6 +42,7 @@ assert.match(reportsSource, /ReportDownloadDialog/);
 assert.match(reportsSource, /Recent receipt metrics/);
 assert.match(reportsSource, /Recent sales trend/);
 assert.match(reportsSource, /LineChart/);
+assert.match(reportsSource, /<YAxis domain=\{\["auto", "auto"\]\} hide \/>/);
 assert.doesNotMatch(reportsSource, /BarChart/);
 assert.match(reportsSource, /No inventory issues need attention right now/);
 assert.doesNotMatch(reportsSource, /Internal operational snapshot/);
