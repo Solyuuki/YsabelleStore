@@ -17,7 +17,8 @@ import {
   PieChart,
   ResponsiveContainer,
   Tooltip,
-  XAxis
+  XAxis,
+  YAxis
 } from "recharts";
 
 import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
@@ -329,6 +330,7 @@ export function ReportsPage() {
                           >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="label" hide />
+                            <YAxis domain={["auto", "auto"]} hide />
                             <Tooltip
                               formatter={(value) => [currency(Number(value)), "Gross sales"]}
                               labelFormatter={(label) => String(label)}
