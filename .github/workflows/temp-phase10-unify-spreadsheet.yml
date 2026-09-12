@@ -44,6 +44,12 @@ jobs:
               raise SystemExit('validated row type anchor not found')
           text = text.replace(old, new, 1)
 
+          old = 'const counts = new Map<string, InventoryImportRowResult[]>();'
+          new = 'const counts = new Map<string, ValidatedInventoryRow[]>();'
+          if old not in text:
+              raise SystemExit('within-file duplicate map type anchor not found')
+          text = text.replace(old, new, 1)
+
           old = '''          valid: false,\n          errors: [],\n          warnings: []'''
           new = '''          valid: false,\n          deliveryData: null,\n          errors: [],\n          warnings: []'''
           if old not in text:
