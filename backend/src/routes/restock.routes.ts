@@ -11,6 +11,7 @@ import {
   markRestockOrderAwaitingDeliveryController,
   receiveRestockOrderController,
   replaceRestockOrderLinesController,
+  saveRestockReturnReportController,
   updateRestockOrderController
 } from "../controllers/restockController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
@@ -35,5 +36,6 @@ router.post("/:orderId/approve", approveRestockOrderController);
 router.post("/:orderId/await-delivery", markRestockOrderAwaitingDeliveryController);
 router.post("/:orderId/cancel", cancelRestockOrderController);
 router.post("/:orderId/receipts", receiveRestockOrderController);
+router.patch("/:orderId/return-report", saveRestockReturnReportController);
 
 export default router;

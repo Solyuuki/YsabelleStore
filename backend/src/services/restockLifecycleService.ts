@@ -5,7 +5,8 @@ import { HttpError } from "../utils/httpError.js";
 import type {
   AdvanceRestockOrderRequest,
   CancelRestockOrderRequest,
-  ReceiveRestockOrderRequest
+  ReceiveRestockOrderRequest,
+  SaveRestockReturnReportRequest
 } from "../validators/restock.validators.js";
 import { receiveStockInTransaction } from "./receivingStockService.js";
 import { getRestockOrder } from "./restockService.js";
@@ -28,6 +29,55 @@ function appendBoundedNote(existing: string | null, event: string, maxLength: nu
 
   const suffix = next.slice(-(maxLength - 3));
   return `...${suffix}`;
+}
+
+type ReturnReportMetadata = {
+  createdAt: string;
+  deliveryReference: string;
+  supplierName: string;
+};
+
+const RETURN_REPORT_MARKER_PATTERN = /\[ReturnReport ([^\]]+)\]/;
+const RETURN_REPORT_MARKER_PATTERN_GLOBAL = /\[ReturnReport [^\]]+\]/g;
+
+function readReturnReportMetadata(notes: string | null): ReturnReportMetadata | null {
+  if (!notes) return null;
+  const match = notes.match(RETURN_REPORT_MARKER_PATTERN);
+  if (!match?.[1]) return null;
+
+  try {
+    const parsed = JSON.parse(decodeURIComponent(match[1])) as Partial<ReturnReportMetadata>;
+    if (typeof parsed.createdAt !== "string") return null;
+    return {
+      createdAt: parsed.createdAt,
+      deliveryReference:
+        typeof parsed.deliveryReference === "string" ? parsed.deliveryReference : "",
+      supplierName: typeof parsed.supplierName === "string" ? parsed.supplierName : ""
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeReturnReportMetadata(existing: string | null, metadata: ReturnReportMetadata) {
+  const base = existing?.replace(RETURN_REPORT_MARKER_PATTERN_GLOBAL, "").trim() ?? "";
+  const marker = `[ReturnReport ${encodeURIComponent(JSON.stringify(metadata))}]`;
+  return appendBoundedNote(base || null, marker, 1000);
+}
+
+function ensureReturnReportMarker(existing: string | null) {
+  if (readReturnReportMetadata(existing)) return existing;
+  return writeReturnReportMetadata(existing, {
+    createdAt: new Date().toISOString(),
+    deliveryReference: "",
+    supplierName: ""
+  });
+}
+
+function hasRecordedReturn(notes: string | null) {
+  return Boolean(
+    notes && /(?:damaged|other_rejected)=(?!0(?:\s|$))\d+/.test(notes)
+  );
 }
 
 function assertVersion(
@@ -251,6 +301,7 @@ export async function receiveRestockOrder(
     }
 
     const lineById = new Map(order.lines.map((line) => [line.id, line]));
+    let hasReturnUnits = false;
 
     for (const receiptLine of input.lines) {
       const orderLine = lineById.get(receiptLine.lineId);
@@ -328,6 +379,9 @@ export async function receiveRestockOrder(
         0,
         receiptLine.deliveredQuantity - receiptLine.damagedQuantity - receiptLine.acceptedQuantity
       );
+      if (receiptLine.damagedQuantity > 0 || rejectedQuantity > 0) {
+        hasReturnUnits = true;
+      }
       const safeReceiptSummary = receiptSummary({
         accepted: receiptLine.acceptedQuantity,
         batchCode: receiptLine.batchCode,
@@ -368,9 +422,62 @@ export async function receiveRestockOrder(
         : RestockOrderStatus.AWAITING_DELIVERY;
 
     await tx.restockOrder.update({
-      data: { status: nextStatus },
+      data: {
+        ...(hasReturnUnits ? { notes: ensureReturnReportMarker(order.notes) } : {}),
+        status: nextStatus
+      },
       where: { id: orderId }
     });
+  });
+
+  return getRestockOrder(orderId);
+}
+
+export async function saveRestockReturnReportDocument(
+  orderId: string,
+  input: SaveRestockReturnReportRequest
+) {
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.restockOrder.findUnique({
+      select: {
+        id: true,
+        lines: { select: { notes: true } },
+        notes: true,
+        version: true
+      },
+      where: { id: orderId }
+    });
+
+    if (!existing) {
+      throw new HttpError(404, "Restock order was not found.", {
+        code: "RESTOCK_ORDER_NOT_FOUND"
+      });
+    }
+    assertVersion(existing, input.expectedVersion);
+
+    const stored = readReturnReportMetadata(existing.notes);
+    const returnExists = Boolean(stored) || existing.lines.some((line) => hasRecordedReturn(line.notes));
+    if (!returnExists) {
+      throw new HttpError(409, "This restock order has no damaged or rejected units to return.", {
+        code: "RESTOCK_RETURN_REPORT_NOT_AVAILABLE"
+      });
+    }
+
+    const notes = writeReturnReportMetadata(existing.notes, {
+      createdAt: stored?.createdAt ?? new Date().toISOString(),
+      deliveryReference: input.deliveryReference ?? "",
+      supplierName: input.supplierName
+    });
+    const updated = await tx.restockOrder.updateMany({
+      data: { notes, version: { increment: 1 } },
+      where: { id: orderId, version: input.expectedVersion }
+    });
+
+    if (updated.count !== 1) {
+      throw new HttpError(409, "The restock order changed elsewhere. Refresh and try again.", {
+        code: "RESTOCK_ORDER_VERSION_CONFLICT"
+      });
+    }
   });
 
   return getRestockOrder(orderId);

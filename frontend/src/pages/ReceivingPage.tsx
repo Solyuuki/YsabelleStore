@@ -15,7 +15,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { ReturnHistoryDialog } from "@/components/receiving/ReturnHistoryDialog";
 import { ReturnReportDialog } from "@/components/receiving/ReturnReportDialog";
+import { AppPagination } from "@/components/shared/AppPagination";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { useToast } from "@/components/shared/ToastProvider";
@@ -63,20 +65,32 @@ type ReceiptRowState = {
 type QueueState = {
   history: RestockOrder[];
   historyTotal: number;
+  historyTotalPages: number;
   partial: RestockOrder[];
   partialTotal: number;
+  partialTotalPages: number;
   ready: RestockOrder[];
   readyTotal: number;
+  readyTotalPages: number;
+  returnTotal: number;
 };
+
+type QueuePages = Record<ReceivingView, number>;
 
 const EMPTY_QUEUE: QueueState = {
   history: [],
   historyTotal: 0,
+  historyTotalPages: 0,
   partial: [],
   partialTotal: 0,
+  partialTotalPages: 0,
   ready: [],
-  readyTotal: 0
+  readyTotal: 0,
+  readyTotalPages: 0,
+  returnTotal: 0
 };
+
+const INITIAL_QUEUE_PAGES: QueuePages = { history: 1, partial: 1, ready: 1 };
 
 function selectedLines(order: RestockOrder) {
   return order.lines.filter((line) => line.isSelected && line.requestedQuantity > 0);
@@ -161,6 +175,8 @@ export function ReceivingPage() {
   const { pushToast } = useToast();
   const [queue, setQueue] = useState<QueueState>(EMPTY_QUEUE);
   const [view, setView] = useState<ReceivingView>("ready");
+  const [queuePages, setQueuePages] = useState<QueuePages>(INITIAL_QUEUE_PAGES);
+  const [queuePageSize, setQueuePageSize] = useState(20);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
@@ -174,36 +190,67 @@ export function ReceivingPage() {
   const [lotDialogOpen, setLotDialogOpen] = useState(false);
   const [lotLineId, setLotLineId] = useState("");
   const [returnReportOrder, setReturnReportOrder] = useState<RestockOrder | null>(null);
+  const [returnHistoryOpen, setReturnHistoryOpen] = useState(false);
 
   const loadQueue = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const [readyResult, partialResult, historyResult] = await Promise.all([
-        listRestockOrders({ page: 1, pageSize: 100, statuses: READY_STATUSES }),
-        listRestockOrders({ page: 1, pageSize: 100, status: "PARTIALLY_RECEIVED" }),
-        listRestockOrders({ page: 1, pageSize: 100, status: "RECEIVED" })
+      const [readyResult, partialResult, historyResult, returnResult] = await Promise.all([
+        listRestockOrders({
+page: queuePages.ready,
+pageSize: queuePageSize,
+statuses: READY_STATUSES
+        }),
+        listRestockOrders({
+page: queuePages.partial,
+pageSize: queuePageSize,
+status: "PARTIALLY_RECEIVED"
+        }),
+        listRestockOrders({
+page: queuePages.history,
+pageSize: queuePageSize,
+status: "RECEIVED"
+        }),
+        listRestockOrders({ hasReturns: true, page: 1, pageSize: 1 })
       ]);
 
       setQueue({
         history: historyResult.items,
         historyTotal: historyResult.meta.totalItems,
+        historyTotalPages: historyResult.meta.totalPages,
         partial: partialResult.items,
         partialTotal: partialResult.meta.totalItems,
+        partialTotalPages: partialResult.meta.totalPages,
         ready: readyResult.items,
-        readyTotal: readyResult.meta.totalItems
+        readyTotal: readyResult.meta.totalItems,
+        readyTotalPages: readyResult.meta.totalPages,
+        returnTotal: returnResult.meta.totalItems
+      });
+
+      setQueuePages((current) => {
+        const next = {
+history: Math.min(current.history, Math.max(1, historyResult.meta.totalPages)),
+partial: Math.min(current.partial, Math.max(1, partialResult.meta.totalPages)),
+ready: Math.min(current.ready, Math.max(1, readyResult.meta.totalPages))
+        };
+        return next.history === current.history &&
+next.partial === current.partial &&
+next.ready === current.ready
+? current
+: next;
       });
     } catch (requestError) {
       setError(
         requestError instanceof Error
-          ? requestError.message
-          : "Restock delivery tickets could not be loaded."
+? requestError.message
+: "Restock delivery tickets could not be loaded."
       );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [queuePageSize, queuePages.history, queuePages.partial, queuePages.ready]);
 
   useEffect(() => {
     void loadQueue();
@@ -217,6 +264,13 @@ export function ReceivingPage() {
       : view === "partial"
         ? queue.partialTotal
         : queue.historyTotal;
+  const visibleTotalPages =
+    view === "ready"
+      ? queue.readyTotalPages
+      : view === "partial"
+        ? queue.partialTotalPages
+        : queue.historyTotalPages;
+  const visiblePage = queuePages[view];
 
   const selectedTotals = useMemo(
     () => (selectedOrder ? orderTotals(selectedOrder) : null),
@@ -233,6 +287,17 @@ export function ReceivingPage() {
 
   function changeView(next: ReceivingView) {
     setView(next);
+    setExpandedTicketId(null);
+  }
+
+  function changeQueuePage(page: number) {
+    setQueuePages((current) => ({ ...current, [view]: page }));
+    setExpandedTicketId(null);
+  }
+
+  function changeQueuePageSize(pageSize: number) {
+    setQueuePageSize(pageSize);
+    setQueuePages(INITIAL_QUEUE_PAGES);
     setExpandedTicketId(null);
   }
 
@@ -442,6 +507,13 @@ export function ReceivingPage() {
   return (
     <div className="space-y-4">
       <PageHeader
+        actions={
+<Button onClick={() => setReturnHistoryOpen(true)} type="button" variant="secondary">
+  <RotateCcw aria-hidden="true" className="h-4 w-4" />
+  Return history
+  {queue.returnTotal > 0 ? <Badge variant="warning">{queue.returnTotal}</Badge> : null}
+</Button>
+        }
         eyebrow="Inventory"
         title="Receiving"
         description="Approved restock tickets move here automatically. Review a ticket and record only the delivery exceptions."
@@ -640,11 +712,18 @@ export function ReceivingPage() {
           </Accordion.Root>
         ) : null}
 
-        {visibleTotal > visibleOrders.length ? (
-          <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
-            Showing the latest {visibleOrders.length.toLocaleString()} of{" "}
-            {visibleTotal.toLocaleString()} tickets.
-          </p>
+        {visibleTotal > 0 ? (
+<AppPagination
+  className="m-4"
+  isLoading={loading}
+  itemLabel="tickets"
+  onPageChange={changeQueuePage}
+  onPageSizeChange={changeQueuePageSize}
+  page={visiblePage}
+  pageSize={queuePageSize}
+  totalItems={visibleTotal}
+  totalPages={visibleTotalPages}
+/>
         ) : null}
       </section>
 
@@ -771,9 +850,22 @@ export function ReceivingPage() {
         rows={receiptRows}
       />
 
+      <ReturnHistoryDialog
+        onOpenChange={setReturnHistoryOpen}
+        onView={(order) => {
+setReturnHistoryOpen(false);
+setReturnReportOrder(order);
+        }}
+        open={returnHistoryOpen}
+      />
+
       <ReturnReportDialog
         onOpenChange={(open) => {
-          if (!open) setReturnReportOrder(null);
+if (!open) setReturnReportOrder(null);
+        }}
+        onOrderSaved={(order) => {
+setReturnReportOrder(order);
+void loadQueue();
         }}
         open={Boolean(returnReportOrder)}
         order={returnReportOrder}

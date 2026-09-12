@@ -18,6 +18,12 @@ const optionalSearchSchema = z.preprocess((value) => {
   return value;
 }, z.string().max(160).optional());
 
+const optionalBooleanSchema = z.preprocess((value) => {
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return value;
+}, z.boolean().optional());
+
 export const restockOrderStatusSchema = z.enum([
   "DRAFT",
   "APPROVED",
@@ -131,6 +137,12 @@ export const cancelRestockOrderSchema = z.object({
   reason: z.string().trim().min(3).max(500)
 });
 
+export const saveRestockReturnReportSchema = z.object({
+  expectedVersion: z.coerce.number().int().min(0),
+  supplierName: z.string().trim().min(2).max(160),
+  deliveryReference: optionalTextSchema(120)
+});
+
 const restockReceiptLineSchema = z
   .object({
     lineId: z.string().trim().min(1).max(191),
@@ -223,6 +235,7 @@ export const restockOrderListQuerySchema = z.object({
   search: optionalSearchSchema,
   status: restockOrderStatusSchema.optional(),
   statuses: optionalRestockStatusesSchema,
+  hasReturns: optionalBooleanSchema,
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20)
 });
@@ -250,6 +263,7 @@ export type UpdateRestockOrderRequest = z.infer<typeof updateRestockOrderSchema>
 export type ApproveRestockOrderRequest = z.infer<typeof approveRestockOrderSchema>;
 export type AdvanceRestockOrderRequest = z.infer<typeof advanceRestockOrderSchema>;
 export type CancelRestockOrderRequest = z.infer<typeof cancelRestockOrderSchema>;
+export type SaveRestockReturnReportRequest = z.infer<typeof saveRestockReturnReportSchema>;
 export type ReceiveRestockOrderRequest = z.infer<typeof receiveRestockOrderSchema>;
 export type RestockOrderListQuery = z.infer<typeof restockOrderListQuerySchema>;
 export type RestockPlanningQuery = z.infer<typeof restockPlanningQuerySchema>;

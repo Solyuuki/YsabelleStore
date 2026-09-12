@@ -13,8 +13,15 @@ export type RestockReturnLine = {
 };
 
 export type RestockReturnDocumentInfo = {
+  createdAt?: string;
   deliveryReference?: string;
   supplierName?: string;
+};
+
+export type RestockReturnStoredInfo = {
+  createdAt: string;
+  deliveryReference: string;
+  supplierName: string;
 };
 
 export type RestockReturnSnapshot = {
@@ -32,6 +39,8 @@ const generatedAtFormatter = new Intl.DateTimeFormat("en-PH", {
   timeStyle: "short",
   timeZone: "Asia/Manila"
 });
+
+const RETURN_REPORT_MARKER_PATTERN = /\[ReturnReport ([^\]]+)\]/g;
 
 const RECEIPT_EVENT_PATTERN =
   /\[Receipt [^\]]+\]\s+delivered=(\d+)\s+damaged=(\d+)\s+accepted=(\d+)\s+other_rejected=(\d+)(?:\s+damage_reason=([^\s]+))?/g;
@@ -86,6 +95,33 @@ function aggregateReceiptNotes(notes: string | null) {
   return totals;
 }
 
+export function getRestockReturnDocumentInfo(order: RestockOrder): RestockReturnStoredInfo {
+  const matches = [...(order.notes ?? "").matchAll(RETURN_REPORT_MARKER_PATTERN)];
+  const encoded = matches.length > 0 ? matches[matches.length - 1]?.[1] : undefined;
+
+  if (encoded) {
+    try {
+      const parsed = JSON.parse(decodeURIComponent(encoded)) as Partial<RestockReturnStoredInfo>;
+      if (typeof parsed.createdAt === "string") {
+        return {
+createdAt: parsed.createdAt,
+deliveryReference:
+  typeof parsed.deliveryReference === "string" ? parsed.deliveryReference : "",
+supplierName: typeof parsed.supplierName === "string" ? parsed.supplierName : ""
+        };
+      }
+    } catch {
+      // Fall through to the delivery timestamp for legacy damaged tickets.
+    }
+  }
+
+  return {
+    createdAt: order.updatedAt ?? order.approvedAt ?? order.createdAt,
+    deliveryReference: "",
+    supplierName: ""
+  };
+}
+
 export function buildRestockReturnSnapshot(
   order: RestockOrder,
   documentInfo: RestockReturnDocumentInfo = {}
@@ -119,7 +155,7 @@ export function buildRestockReturnSnapshot(
 
   return {
     deliveryReference: documentInfo.deliveryReference?.trim() ?? "",
-    generatedAt: new Date().toISOString(),
+    generatedAt: documentInfo.createdAt ?? new Date().toISOString(),
     lines,
     orderNumber: order.orderNumber,
     returnReference: `RETURN-${order.orderNumber.replace(/^RO-/, "")}`,

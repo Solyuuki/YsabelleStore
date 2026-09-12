@@ -12,10 +12,11 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import type { RestockOrder } from "@/services/restockApi";
+import { saveRestockReturnReport, type RestockOrder } from "@/services/restockApi";
 import {
   buildRestockReturnSnapshot,
   downloadRestockReturnCsv,
+  getRestockReturnDocumentInfo,
   printRestockReturnCopy
 } from "@/utils/restockReturnExport";
 
@@ -24,9 +25,11 @@ type ExportBusy = "csv" | "pdf" | "print" | null;
 export function ReturnReportDialog({
   onOpenChange,
   open,
-  order
+  order,
+  onOrderSaved
 }: {
   onOpenChange: (open: boolean) => void;
+  onOrderSaved?: (order: RestockOrder) => void;
   open: boolean;
   order: RestockOrder | null;
 }) {
@@ -34,24 +37,55 @@ export function ReturnReportDialog({
   const [error, setError] = useState<string | null>(null);
   const [supplierName, setSupplierName] = useState("");
   const [deliveryReference, setDeliveryReference] = useState("");
+  const storedInfo = useMemo(
+    () => (order ? getRestockReturnDocumentInfo(order) : null),
+    [order]
+  );
   const snapshot = useMemo(
-    () => (order ? buildRestockReturnSnapshot(order, { deliveryReference, supplierName }) : null),
-    [deliveryReference, order, supplierName]
+    () =>
+      order
+        ? buildRestockReturnSnapshot(order, {
+  createdAt: storedInfo?.createdAt,
+  deliveryReference,
+  supplierName
+})
+        : null,
+    [deliveryReference, order, storedInfo?.createdAt, supplierName]
   );
   const canExport = supplierName.trim().length >= 2;
 
   useEffect(() => {
-    setSupplierName("");
-    setDeliveryReference("");
+    setSupplierName(storedInfo?.supplierName ?? "");
+    setDeliveryReference(storedInfo?.deliveryReference ?? "");
     setError(null);
-  }, [order?.id]);
+  }, [order?.id, storedInfo?.deliveryReference, storedInfo?.supplierName]);
   const totalUnits = snapshot?.lines.reduce((sum, line) => sum + line.returnQuantity, 0) ?? 0;
+
+  async function persistDocumentInfo() {
+    if (!order || !canExport) return;
+    const nextSupplier = supplierName.trim();
+    const nextReference = deliveryReference.trim();
+    if (
+      storedInfo?.supplierName === nextSupplier &&
+      storedInfo.deliveryReference === nextReference
+    ) {
+      return;
+    }
+
+    const saved = await saveRestockReturnReport(order.id, {
+      deliveryReference: nextReference || null,
+      expectedVersion: order.version,
+      supplierName: nextSupplier
+    });
+    onOrderSaved?.(saved);
+  }
 
   async function handlePdf() {
     if (!snapshot) return;
     setBusy("pdf");
     setError(null);
     try {
+      await persistDocumentInfo();
       const { downloadRestockReturnPdf } = await import("@/utils/restockReturnPdf");
       downloadRestockReturnPdf(snapshot);
       onOpenChange(false);
@@ -64,28 +98,38 @@ export function ReturnReportDialog({
     }
   }
 
-  function handlePrint() {
+  async function handlePrint() {
     if (!snapshot) return;
     setBusy("print");
     setError(null);
     try {
+      await persistDocumentInfo();
       if (!printRestockReturnCopy(snapshot)) {
         setError("Pop-up was blocked. Allow pop-ups for Ysabelle Store and try again.");
         return;
       }
       onOpenChange(false);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "The return report could not be saved."
+      );
     } finally {
       setBusy(null);
     }
   }
 
-  function handleCsv() {
+  async function handleCsv() {
     if (!snapshot) return;
     setBusy("csv");
     setError(null);
     try {
+      await persistDocumentInfo();
       downloadRestockReturnCsv(snapshot);
       onOpenChange(false);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "The return report could not be saved."
+      );
     } finally {
       setBusy(null);
     }
@@ -184,7 +228,7 @@ export function ReturnReportDialog({
                   <Button
                     className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                     disabled={busy !== null || !canExport}
-                    onClick={handlePrint}
+                    onClick={() => void handlePrint()}
                     type="button"
                     variant="secondary"
                   >
@@ -202,7 +246,7 @@ export function ReturnReportDialog({
                   <Button
                     className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                     disabled={busy !== null || !canExport}
-                    onClick={handleCsv}
+                    onClick={() => void handleCsv()}
                     type="button"
                     variant="secondary"
                   >

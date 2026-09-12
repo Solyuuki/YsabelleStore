@@ -12,6 +12,10 @@ const returnDialogSource = readFileSync(
   resolve(process.cwd(), "src/components/receiving/ReturnReportDialog.tsx"),
   "utf8"
 );
+const returnHistorySource = readFileSync(
+  resolve(process.cwd(), "src/components/receiving/ReturnHistoryDialog.tsx"),
+  "utf8"
+);
 const returnExportSource = readFileSync(
   resolve(process.cwd(), "src/utils/restockReturnExport.ts"),
   "utf8"
@@ -35,6 +39,9 @@ assert.match(receivingSource, /Partial delivery/);
 assert.match(receivingSource, /Mark entire delivery damaged/);
 assert.match(receivingSource, /Accepted quantity is calculated automatically/);
 assert.match(receivingSource, /ReturnReportDialog/);
+assert.match(receivingSource, /ReturnHistoryDialog/);
+assert.match(receivingSource, /<AppPagination/);
+assert.match(receivingSource, /Return history/);
 assert.match(receivingSource, /Damage \/ return reason/);
 assert.match(receivingSource, /setReturnReportOrder\(updated\)/);
 assert.match(receivingSource, /receiveRestockOrder/);
@@ -52,6 +59,8 @@ assert.doesNotMatch(receivingSource, /receiveInventoryStock/);
 assert.doesNotMatch(receivingSource, /stockInInventory\s*\(/);
 assert.match(apiSource, /\/receipts/);
 assert.match(apiSource, /damageReason/);
+assert.match(apiSource, /hasReturns/);
+assert.match(apiSource, /return-report/);
 
 assert.match(returnDialogSource, /Download return report/);
 assert.match(returnDialogSource, /Download PDF/);
@@ -59,6 +68,11 @@ assert.match(returnDialogSource, /Print/);
 assert.match(returnDialogSource, /Excel-compatible CSV/);
 assert.match(returnDialogSource, /Supplier \/ manufacturer/);
 assert.match(returnDialogSource, /deliveryReference/);
+assert.match(returnDialogSource, /saveRestockReturnReport/);
+assert.match(returnDialogSource, /getRestockReturnDocumentInfo/);
+assert.match(returnHistorySource, /<AppPagination/);
+assert.match(returnHistorySource, /hasReturns: true/);
+assert.match(returnHistorySource, /View report/);
 assert.match(returnExportSource, /damagedQuantity/);
 assert.match(returnExportSource, /damageReason/);
 assert.match(returnExportSource, /returnQuantity/);

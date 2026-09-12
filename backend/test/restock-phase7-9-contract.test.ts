@@ -4,7 +4,8 @@ import test from "node:test";
 
 import {
   cancelRestockOrderSchema,
-  receiveRestockOrderSchema
+  receiveRestockOrderSchema,
+  saveRestockReturnReportSchema
 } from "../src/validators/restock.validators.js";
 
 const restockRouteSource = readFileSync(
@@ -13,6 +14,10 @@ const restockRouteSource = readFileSync(
 );
 const lifecycleSource = readFileSync(
   new URL("../src/services/restockLifecycleService.ts", import.meta.url),
+  "utf8"
+);
+const restockServiceSource = readFileSync(
+  new URL("../src/services/restockService.ts", import.meta.url),
   "utf8"
 );
 const receivingSource = readFileSync(
@@ -136,6 +141,7 @@ test("Phase 8-9 routes expose staff requests and Owner-controlled lifecycle acti
   assert.match(restockRouteSource, /\/:orderId\/await-delivery/);
   assert.match(restockRouteSource, /\/:orderId\/cancel/);
   assert.match(restockRouteSource, /\/:orderId\/receipts/);
+  assert.match(restockRouteSource, /\/:orderId\/return-report/);
   assert.match(restockRouteSource, /router\.use\(requireAuth, requireRole\("OWNER"\)\)/);
 });
 
@@ -171,4 +177,27 @@ test("Supplier-facing order notes are not polluted by receiving actor audit meta
   assert.doesNotMatch(awaitingBlock, /actor=/);
   assert.doesNotMatch(receivingBlock, /actor=/);
   assert.match(receivingBlock, /safeReceiptSummary/);
+});
+
+
+test("Return report details are validated and return history has a server-side filter", () => {
+  assert.equal(
+    saveRestockReturnReportSchema.safeParse({
+      expectedVersion: 3,
+      supplierName: "Example Supplier",
+      deliveryReference: "DR-001"
+    }).success,
+    true
+  );
+  assert.equal(
+    saveRestockReturnReportSchema.safeParse({
+      expectedVersion: 3,
+      supplierName: ""
+    }).success,
+    false
+  );
+  assert.match(lifecycleSource, /ReturnReport/);
+  assert.match(lifecycleSource, /saveRestockReturnReportDocument/);
+  assert.match(restockServiceSource, /query\.hasReturns/);
+  assert.match(restockServiceSource, /damage_reason=/);
 });

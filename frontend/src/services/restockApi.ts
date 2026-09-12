@@ -72,6 +72,7 @@ export type RestockOrder = {
   version: number;
   notes: string | null;
   createdAt: string;
+  updatedAt: string;
   approvedAt: string | null;
   approvedBy?: { id: string; name: string } | null;
   createdBy?: { id: string; name: string } | null;
@@ -153,6 +154,7 @@ export async function listRestockOrders(
     search?: string;
     status?: RestockOrderStatus;
     statuses?: readonly RestockOrderStatus[];
+    hasReturns?: boolean;
     page?: number;
     pageSize?: number;
   } = {},
@@ -311,6 +313,25 @@ export async function receiveRestockOrder(
     `/api/restock-orders/${encodeURIComponent(orderId)}/receipts`,
     {
       method: "POST",
+      json: input
+    }
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function saveRestockReturnReport(
+  orderId: string,
+  input: { expectedVersion: number; supplierName: string; deliveryReference?: string | null }
+) {
+  const response = await apiClient.request<RestockOrder, { code?: string; details?: unknown }>(
+    `/api/restock-orders/${encodeURIComponent(orderId)}/return-report`,
+    {
+      method: "PATCH",
       json: input
     }
   );

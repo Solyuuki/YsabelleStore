@@ -11,6 +11,7 @@ import {
   dismissRestockRecommendationSchema,
   receiveRestockOrderSchema,
   replaceRestockOrderLinesSchema,
+  saveRestockReturnReportSchema,
   restockOrderIdParamSchema,
   restockOrderListQuerySchema,
   restockPlanningQuerySchema,
@@ -24,7 +25,8 @@ import {
 import {
   cancelRestockOrder,
   markRestockOrderAwaitingDelivery,
-  receiveRestockOrder
+  receiveRestockOrder,
+  saveRestockReturnReportDocument
 } from "../services/restockLifecycleService.js";
 import {
   approveRestockOrder,
@@ -260,6 +262,30 @@ export const receiveRestockOrderController: RequestHandler = async (request, res
     response
       .status(200)
       .json(createSuccessResponse("Restock delivery received successfully.", order));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const saveRestockReturnReportController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const params = parseOrThrow(restockOrderIdParamSchema, request.params, {
+      message: "Restock order id is invalid.",
+      code: "INVALID_RESTOCK_ORDER_ID"
+    });
+    const body = parseOrThrow(saveRestockReturnReportSchema, request.body, {
+      message: "Return report details are invalid.",
+      code: "INVALID_RESTOCK_RETURN_REPORT"
+    });
+    const order = await saveRestockReturnReportDocument(params.orderId, body);
+
+    response
+      .status(200)
+      .json(createSuccessResponse("Return report details saved successfully.", order));
   } catch (error) {
     next(error);
   }
