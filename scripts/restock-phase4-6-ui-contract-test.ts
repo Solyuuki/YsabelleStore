@@ -7,6 +7,10 @@ const panelSource = readFileSync(
   resolve(process.cwd(), "src/components/reports/RestockPlanningPanel.tsx"),
   "utf8"
 );
+const draftsSource = readFileSync(
+  resolve(process.cwd(), "src/components/reports/RestockDraftsPanel.tsx"),
+  "utf8"
+);
 const orderHistorySource = readFileSync(
   resolve(process.cwd(), "src/components/reports/RestockOrderHistoryPanel.tsx"),
   "utf8"
@@ -29,13 +33,16 @@ const directPdfSource = readFileSync(
   "utf8"
 );
 
-// Reports owns one clear Restock workspace with mutually exclusive Plan / Orders views.
+// Reports owns planning and unconfirmed drafts only. Confirmed tickets hand off to Receiving.
 assert.match(reportsSource, /RestockPlanningPanel/);
-assert.match(reportsSource, /RestockOrderHistoryPanel/);
+assert.match(reportsSource, /RestockDraftsPanel/);
+assert.doesNotMatch(reportsSource, /RestockOrderHistoryPanel/);
+assert.doesNotMatch(reportsSource, /RestockReceivingPanel/);
 assert.match(reportsSource, /restockView === "plan"/);
 assert.match(reportsSource, /Plan restock/);
-assert.match(reportsSource, /Orders/);
-assert.match(reportsSource, /onOpenOrders=\{\(\) => setRestockView\("orders"\)\}/);
+assert.match(reportsSource, /Saved drafts/);
+assert.match(reportsSource, /Confirmed tickets move to Receiving/);
+assert.match(reportsSource, /onOpenOrders=\{\(\) => setRestockView\("drafts"\)\}/);
 assert.match(reportsSource, /onOrdersChanged=\{notifyRestockOrdersChanged\}/);
 assert.match(reportsSource, /Download report/);
 assert.match(reportsSource, /ReportDownloadDialog/);
@@ -47,7 +54,7 @@ assert.doesNotMatch(reportsSource, /BarChart/);
 assert.match(reportsSource, /No inventory issues need attention right now/);
 assert.doesNotMatch(reportsSource, /Internal operational snapshot/);
 
-// Planner remains the editable planning surface only, with a compact confirmed success state.
+// Planner remains the editable planning surface and never performs physical stock mutation.
 assert.match(panelSource, /<Badge variant="info">Recommended<\/Badge>/);
 assert.match(panelSource, /Review and prepare products for restocking\./);
 assert.match(panelSource, /Restock planner/);
@@ -59,9 +66,6 @@ assert.match(panelSource, /Not needed/);
 assert.match(panelSource, /Review restock/);
 assert.match(panelSource, /Save for later/);
 assert.match(panelSource, /Confirm restock/);
-assert.match(panelSource, /Restock confirmed/);
-assert.match(panelSource, /View orders/);
-assert.match(panelSource, /Start new restock/);
 assert.match(panelSource, /confirmLockRef/);
 assert.match(panelSource, /currentTarget\.select\(\)/);
 assert.match(panelSource, /Inventory has not changed/);
@@ -85,24 +89,25 @@ assert.match(panelSource, /max-h-\[50vh\]/);
 assert.match(panelSource, /Results stay paged so large catalogs do not stretch/);
 assert.doesNotMatch(panelSource, /searchResults\.slice\(0, 8\)/);
 
-// Persisted orders are scalable, searchable, filterable, and reopen exact records.
+// Saved drafts remain recoverable in Reports; confirmation explicitly hands the ticket to Receiving.
+assert.match(draftsSource, /Saved restock drafts/);
+assert.match(draftsSource, /status: "DRAFT"/);
+assert.match(draftsSource, /Review draft/);
+assert.match(draftsSource, /Confirm & send to Receiving/);
+assert.match(draftsSource, /Restock sent to Receiving/);
+assert.match(draftsSource, /approveRestockOrder/);
+assert.match(draftsSource, /Physical stock still does not change until Receiving/);
+assert.doesNotMatch(draftsSource, /stockInInventory\s*\(/);
+assert.doesNotMatch(draftsSource, /\/api\/inventory\/.*stock-in/);
+
+// The historical order component remains export-safe even though it is no longer a Reports workspace tab.
 assert.match(orderHistorySource, /const ORDER_PAGE_SIZE = 10/);
 assert.match(orderHistorySource, /Restock orders/);
-assert.match(
-  orderHistorySource,
-  /Reopen saved and confirmed restock tickets after refresh or a later session\./
-);
 assert.match(orderHistorySource, /Search restock order reference/);
 assert.match(orderHistorySource, /Filter restock orders by status/);
-assert.match(orderHistorySource, /search: searchTerm \|\| undefined/);
-assert.match(orderHistorySource, /status: statusFilter === "ALL" \? undefined : statusFilter/);
 assert.match(orderHistorySource, /Open order/);
-assert.match(orderHistorySource, /Persisted restock order/);
-assert.match(orderHistorySource, /Physical inventory remains unchanged/);
 assert.match(orderHistorySource, /Download PDF/);
-assert.match(orderHistorySource, /exportBusy === "print" \? "Preparing…" : "Print"/);
 assert.match(orderHistorySource, /Excel-compatible CSV/);
-assert.match(orderHistorySource, /await import\("@\/utils\/directPdfExport"\)/);
 assert.doesNotMatch(orderHistorySource, /stockInInventory\s*\(/);
 assert.doesNotMatch(orderHistorySource, /\/api\/inventory\/.*stock-in/);
 
@@ -123,7 +128,7 @@ assert.match(apiSource, /export async function listRestockOrders/);
 assert.match(apiSource, /search\?: string/);
 assert.match(apiSource, /statuses\?: readonly RestockOrderStatus\[\]/);
 
-// Central report download selects an exact supplier-ready order; it never silently exports latest.
+// Central report download still creates the exact supplier-facing document selected by the Owner.
 assert.match(reportDialogSource, /Download report/);
 assert.match(reportDialogSource, /Operational Summary/);
 assert.match(reportDialogSource, /Inventory Report/);
