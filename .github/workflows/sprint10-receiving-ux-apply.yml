@@ -38,3 +38,5 @@ jobs:
           fi
           HUSKY=0 git commit -m "refactor(receiving): simplify ticket-based delivery UX"
           HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
+
+# Retry marker: helper quoting fixed; validate source before push.
