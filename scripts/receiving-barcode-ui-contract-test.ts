@@ -10,6 +10,7 @@ assert.equal(canRoleAccessRoute(receivingRoute, "OWNER"), true);
 assert.equal(canRoleAccessRoute(receivingRoute, "STAFF"), false);
 
 const appShellSource = readFileSync(resolve(process.cwd(), "src/app/AppShell.tsx"), "utf8");
+const routesSource = readFileSync(resolve(process.cwd(), "src/app/routes.ts"), "utf8");
 const sidebarSource = readFileSync(
   resolve(process.cwd(), "src/components/app/AppSidebar.tsx"),
   "utf8"
@@ -19,12 +20,19 @@ const restockApiSource = readFileSync(resolve(process.cwd(), "src/services/resto
 
 assert.match(appShellSource, /case "\/receiving":[\s\S]*?<ReceivingPage \/>/);
 assert.match(sidebarSource, /"\/receiving"/);
+assert.match(routesSource, /path: "\/receiving"[\s\S]*?icon: Truck/);
 assert.match(pageSource, /listRestockOrders/);
 assert.match(pageSource, /Restock tickets ready for delivery/);
 assert.match(pageSource, /Complete — No issues/);
 assert.match(pageSource, /Complete — With issues/);
 assert.match(pageSource, /Partial delivery/);
 assert.match(pageSource, /internalBatchReference/);
+assert.match(pageSource, /@base-ui\/react\/accordion/);
+assert.match(pageSource, /<StatCard/);
+assert.match(pageSource, /<Dialog/);
+assert.doesNotMatch(pageSource, /@\/components\/ui\/sheet/);
+assert.doesNotMatch(pageSource, /RefreshCw/);
+assert.doesNotMatch(pageSource, /<table\b/i);
 assert.doesNotMatch(pageSource, /Barcode on received item/);
 assert.doesNotMatch(pageSource, /Register barcode & receive/);
 assert.match(restockApiSource, /acceptedQuantity/);
