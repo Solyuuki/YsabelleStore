@@ -30,7 +30,15 @@ jobs:
           lines = []
           for line in block.splitlines():
               lines.append(line[10:] if line.startswith('          ') else line)
-          Path('/tmp/receiving-qol.py').write_text('\n'.join(lines) + '\n')
+          target = Path('/tmp/receiving-qol.py')
+          script = '\n'.join(lines) + '\n'
+          brittle = 'text = replace_once(text, old_load, new_load, "receiving loader")'
+          resilient = '''loader_start = text.index("  const loadQueue = useCallback(async () => {")
+          loader_end = text.index("\\n\\n  useEffect(() => {", loader_start)
+          text = text[:loader_start] + new_load.rstrip("\\n") + text[loader_end:]'''
+          if brittle not in script:
+              raise SystemExit('receiving loader replacement hook not found')
+          target.write_text(script.replace(brittle, resilient, 1))
           PY
           python3 /tmp/receiving-qol.py
 
