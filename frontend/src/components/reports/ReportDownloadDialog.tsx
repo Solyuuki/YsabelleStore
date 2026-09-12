@@ -1,13 +1,15 @@
 import {
   Boxes,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   FileDown,
   FileSpreadsheet,
   PackageOpen,
   Printer,
   ReceiptText
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,7 @@ import {
 
 const EXPORT_PAGE_SIZE = 100;
 const REPORT_TYPE_SESSION_KEY = "ysabelle.report-download.type";
+const SUPPLIER_ORDER_PAGE_SIZE = 6;
 const SUPPLIER_EXPORT_STATUSES: RestockOrderStatus[] = [
   "APPROVED",
   "AWAITING_DELIVERY",
@@ -49,6 +52,12 @@ const SUPPLIER_EXPORT_STATUSES: RestockOrderStatus[] = [
 
 type ReportType = "operational" | "inventory" | "restock";
 type ExportBusy = "csv" | "pdf" | "print" | null;
+type SupplierOrderMeta = {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+};
 
 type Props = {
   completedSales: PosSale[];
@@ -67,23 +76,41 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
   const [reportType, setReportType] = useState<ReportType>(initialReportType);
   const [exportBusy, setExportBusy] = useState<ExportBusy>(null);
   const [exportError, setExportError] = useState<string | null>(null);
-  const [supplierOrder, setSupplierOrder] = useState<RestockOrder | null>(null);
+  const [supplierOrders, setSupplierOrders] = useState<RestockOrder[]>([]);
+  const [supplierOrderId, setSupplierOrderId] = useState<string | null>(null);
+  const [supplierMeta, setSupplierMeta] = useState<SupplierOrderMeta | null>(null);
+  const [supplierPage, setSupplierPage] = useState(1);
   const [supplierOrderLoading, setSupplierOrderLoading] = useState(false);
   const [supplierOrderError, setSupplierOrderError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || reportType !== "restock") return;
     let active = true;
     setSupplierOrderLoading(true);
     setSupplierOrderError(null);
 
-    void fetchLatestSupplierOrder()
-      .then((order) => {
-        if (active) setSupplierOrder(order);
+    void listRestockOrders({
+      page: supplierPage,
+      pageSize: SUPPLIER_ORDER_PAGE_SIZE,
+      statuses: SUPPLIER_EXPORT_STATUSES
+    })
+      .then((result) => {
+        if (!active) return;
+        setSupplierOrders(result.items);
+        setSupplierMeta(result.meta);
+        setSupplierOrderId((current) => {
+          if (current && result.items.some((order) => order.id === current)) return current;
+          return result.items[0]?.id ?? null;
+        });
+        if (result.meta.totalPages > 0 && supplierPage > result.meta.totalPages) {
+          setSupplierPage(result.meta.totalPages);
+        }
       })
       .catch((error) => {
         if (!active) return;
-        setSupplierOrder(null);
+        setSupplierOrders([]);
+        setSupplierMeta(null);
+        setSupplierOrderId(null);
         setSupplierOrderError(
           error instanceof Error ? error.message : "Confirmed restock orders could not be loaded."
         );
@@ -95,11 +122,17 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
     return () => {
       active = false;
     };
-  }, [open]);
+  }, [open, reportType, supplierPage]);
+
+  const supplierOrder = useMemo(
+    () => supplierOrders.find((order) => order.id === supplierOrderId) ?? supplierOrders[0] ?? null,
+    [supplierOrderId, supplierOrders]
+  );
 
   function chooseReport(type: ReportType) {
     setReportType(type);
     setExportError(null);
+    if (type === "restock") setSupplierPage(1);
     window.sessionStorage.setItem(REPORT_TYPE_SESSION_KEY, type);
   }
 
@@ -122,7 +155,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
 
       if (reportType === "restock") {
         const snapshot = supplierOrder ? buildSupplierSnapshot(supplierOrder) : null;
-        if (!snapshot) throw new Error("Confirm a restock order before exporting a supplier copy.");
+        if (!snapshot) throw new Error("Select a confirmed restock order before exporting.");
         downloadRestockSupplierPdf(snapshot);
       } else {
         const snapshot = await prepareInternalSnapshot();
@@ -144,7 +177,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
     try {
       if (reportType === "restock") {
         const snapshot = supplierOrder ? buildSupplierSnapshot(supplierOrder) : null;
-        if (!snapshot) throw new Error("Confirm a restock order before exporting a supplier copy.");
+        if (!snapshot) throw new Error("Select a confirmed restock order before exporting.");
         downloadRestockSupplierCsv(snapshot);
       } else {
         const snapshot = await prepareInternalSnapshot();
@@ -163,16 +196,21 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
     setExportError(null);
 
     if (reportType === "restock") {
-      const snapshot = supplierOrder ? buildSupplierSnapshot(supplierOrder) : null;
-      if (!snapshot) {
-        setExportError("Confirm a restock order before exporting a supplier copy.");
-        return;
+      setExportBusy("print");
+      try {
+        const snapshot = supplierOrder ? buildSupplierSnapshot(supplierOrder) : null;
+        if (!snapshot) {
+          setExportError("Select a confirmed restock order before exporting.");
+          return;
+        }
+        if (!printRestockSupplierCopy(snapshot)) {
+          setExportError("Pop-up was blocked. Allow pop-ups for Ysabelle Store and try again.");
+          return;
+        }
+        onOpenChange(false);
+      } finally {
+        setExportBusy(null);
       }
-      if (!printRestockSupplierCopy(snapshot)) {
-        setExportError("Pop-up was blocked. Allow pop-ups for Ysabelle Store and try again.");
-        return;
-      }
-      onOpenChange(false);
       return;
     }
 
@@ -206,6 +244,8 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
   const restockDisabled =
     reportType === "restock" &&
     (supplierOrderLoading || supplierOrderError !== null || !supplierOrder);
+  const internalDisabled = reportType !== "restock" && !summary;
+  const exportDisabled = exportBusy !== null || restockDisabled || internalDisabled;
 
   return (
     <Dialog
@@ -257,30 +297,82 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
           {reportType === "restock" ? (
             supplierOrderLoading ? (
               <Alert>
-                <AlertTitle>Checking confirmed restock orders</AlertTitle>
-                <AlertDescription>
-                  Finding the latest supplier-ready restock order.
-                </AlertDescription>
+                <AlertTitle>Loading supplier-ready restock orders</AlertTitle>
+                <AlertDescription>Reading confirmed orders for this page.</AlertDescription>
               </Alert>
             ) : supplierOrderError ? (
               <Alert variant="destructive">
-                <AlertTitle>Restock order could not be loaded</AlertTitle>
+                <AlertTitle>Restock orders could not be loaded</AlertTitle>
                 <AlertDescription>{supplierOrderError}</AlertDescription>
               </Alert>
-            ) : supplierOrder ? (
-              <Alert>
-                <AlertTitle>Supplier copy ready</AlertTitle>
-                <AlertDescription>
-                  {supplierOrder.orderNumber} · {selectedLineCount(supplierOrder).toLocaleString()}{" "}
-                  products · {selectedUnitCount(supplierOrder).toLocaleString()} units
-                </AlertDescription>
-              </Alert>
+            ) : supplierOrders.length > 0 && supplierOrder ? (
+              <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div>
+                  <label
+                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                    htmlFor="supplier-order-select"
+                  >
+                    Supplier order
+                  </label>
+                  <select
+                    className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                    id="supplier-order-select"
+                    onChange={(event) => setSupplierOrderId(event.target.value)}
+                    value={supplierOrder.id}
+                  >
+                    {supplierOrders.map((order) => (
+                      <option key={order.id} value={order.id}>
+                        {order.orderNumber} · {statusLabel(order.status)} ·{" "}
+                        {selectedUnitCount(order).toLocaleString()} units
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+                  <span>
+                    Selected: {selectedLineCount(supplierOrder).toLocaleString()} products ·{" "}
+                    {selectedUnitCount(supplierOrder).toLocaleString()} units
+                  </span>
+                  {supplierMeta && supplierMeta.totalPages > 1 ? (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        aria-label="Previous supplier order page"
+                        disabled={supplierPage <= 1 || supplierOrderLoading}
+                        onClick={() => setSupplierPage((current) => Math.max(1, current - 1))}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+                      </Button>
+                      <span className="min-w-[86px] text-center tabular-nums">
+                        Page {supplierMeta.page} of {supplierMeta.totalPages}
+                      </span>
+                      <Button
+                        aria-label="Next supplier order page"
+                        disabled={supplierPage >= supplierMeta.totalPages || supplierOrderLoading}
+                        onClick={() => setSupplierPage((current) => current + 1)}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+
+                <p className="text-xs leading-5 text-slate-500">
+                  The exact order selected here will be used for PDF, Print, or CSV export.
+                </p>
+              </div>
             ) : (
               <Alert>
-                <AlertTitle>No confirmed restock order yet</AlertTitle>
+                <AlertTitle>No supplier-ready restock order yet</AlertTitle>
                 <AlertDescription>
-                  Confirm the Restock Planner first. Drafts are intentionally not exported as
-                  supplier orders.
+                  Confirm the Restock Planner first. Drafts and cancelled orders are intentionally not
+                  exported as supplier orders.
                 </AlertDescription>
               </Alert>
             )
@@ -293,7 +385,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
             <div className="grid gap-3 sm:grid-cols-3">
               <Button
                 className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
-                disabled={exportBusy !== null || restockDisabled || !summary}
+                disabled={exportDisabled}
                 onClick={() => void handlePdf()}
                 type="button"
               >
@@ -310,7 +402,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
 
               <Button
                 className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
-                disabled={exportBusy !== null || restockDisabled || !summary}
+                disabled={exportDisabled}
                 onClick={() => void handlePrint()}
                 type="button"
                 variant="secondary"
@@ -328,7 +420,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
 
               <Button
                 className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
-                disabled={exportBusy !== null || restockDisabled || !summary}
+                disabled={exportDisabled}
                 onClick={() => void handleCsv()}
                 type="button"
                 variant="secondary"
@@ -415,18 +507,6 @@ async function fetchEveryPage<T>(
   }
 }
 
-async function fetchLatestSupplierOrder() {
-  const results = await Promise.all(
-    SUPPLIER_EXPORT_STATUSES.map((status) => listRestockOrders({ page: 1, pageSize: 1, status }))
-  );
-
-  return (
-    results
-      .flatMap((result) => result.items)
-      .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))[0] ?? null
-  );
-}
-
 function selectedLineCount(order: RestockOrder) {
   return order.lines.filter((line) => line.isSelected && line.requestedQuantity > 0).length;
 }
@@ -438,10 +518,22 @@ function selectedUnitCount(order: RestockOrder) {
 }
 
 function statusLabel(status: RestockOrderStatus) {
-  return status
-    .split("_")
-    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-    .join(" ");
+  switch (status) {
+    case "APPROVED":
+      return "Confirmed";
+    case "AWAITING_DELIVERY":
+      return "Awaiting delivery";
+    case "PARTIALLY_RECEIVED":
+      return "Partially received";
+    case "RECEIVED":
+      return "Received";
+    case "CANCELLED":
+      return "Cancelled";
+    case "DRAFT":
+      return "Saved for later";
+    default:
+      return status;
+  }
 }
 
 function buildSupplierSnapshot(order: RestockOrder): RestockSupplierSnapshot | null {
