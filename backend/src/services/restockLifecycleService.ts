@@ -75,9 +75,7 @@ function ensureReturnReportMarker(existing: string | null) {
 }
 
 function hasRecordedReturn(notes: string | null) {
-  return Boolean(
-    notes && /(?:damaged|other_rejected)=(?!0(?:\s|$))\d+/.test(notes)
-  );
+  return Boolean(notes && /(?:damaged|other_rejected)=(?!0(?:\s|$))\d+/.test(notes));
 }
 
 function assertVersion(
@@ -456,7 +454,8 @@ export async function saveRestockReturnReportDocument(
     assertVersion(existing, input.expectedVersion);
 
     const stored = readReturnReportMetadata(existing.notes);
-    const returnExists = Boolean(stored) || existing.lines.some((line) => hasRecordedReturn(line.notes));
+    const returnExists =
+      Boolean(stored) || existing.lines.some((line) => hasRecordedReturn(line.notes));
     if (!returnExists) {
       throw new HttpError(409, "This restock order has no damaged or rejected units to return.", {
         code: "RESTOCK_RETURN_REPORT_NOT_AVAILABLE"

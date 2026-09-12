@@ -179,7 +179,6 @@ test("Supplier-facing order notes are not polluted by receiving actor audit meta
   assert.match(receivingBlock, /safeReceiptSummary/);
 });
 
-
 test("Return report details are validated and return history has a server-side filter", () => {
   assert.equal(
     saveRestockReturnReportSchema.safeParse({

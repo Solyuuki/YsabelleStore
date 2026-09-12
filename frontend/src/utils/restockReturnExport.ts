@@ -104,10 +104,10 @@ export function getRestockReturnDocumentInfo(order: RestockOrder): RestockReturn
       const parsed = JSON.parse(decodeURIComponent(encoded)) as Partial<RestockReturnStoredInfo>;
       if (typeof parsed.createdAt === "string") {
         return {
-createdAt: parsed.createdAt,
-deliveryReference:
-  typeof parsed.deliveryReference === "string" ? parsed.deliveryReference : "",
-supplierName: typeof parsed.supplierName === "string" ? parsed.supplierName : ""
+          createdAt: parsed.createdAt,
+          deliveryReference:
+            typeof parsed.deliveryReference === "string" ? parsed.deliveryReference : "",
+          supplierName: typeof parsed.supplierName === "string" ? parsed.supplierName : ""
         };
       }
     } catch {

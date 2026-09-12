@@ -37,18 +37,15 @@ export function ReturnReportDialog({
   const [error, setError] = useState<string | null>(null);
   const [supplierName, setSupplierName] = useState("");
   const [deliveryReference, setDeliveryReference] = useState("");
-  const storedInfo = useMemo(
-    () => (order ? getRestockReturnDocumentInfo(order) : null),
-    [order]
-  );
+  const storedInfo = useMemo(() => (order ? getRestockReturnDocumentInfo(order) : null), [order]);
   const snapshot = useMemo(
     () =>
       order
         ? buildRestockReturnSnapshot(order, {
-  createdAt: storedInfo?.createdAt,
-  deliveryReference,
-  supplierName
-})
+            createdAt: storedInfo?.createdAt,
+            deliveryReference,
+            supplierName
+          })
         : null,
     [deliveryReference, order, storedInfo?.createdAt, supplierName]
   );
@@ -111,7 +108,9 @@ export function ReturnReportDialog({
       onOpenChange(false);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "The return report could not be saved."
+        requestError instanceof Error
+          ? requestError.message
+          : "The return report could not be saved."
       );
     } finally {
       setBusy(null);
@@ -128,7 +127,9 @@ export function ReturnReportDialog({
       onOpenChange(false);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "The return report could not be saved."
+        requestError instanceof Error
+          ? requestError.message
+          : "The return report could not be saved."
       );
     } finally {
       setBusy(null);

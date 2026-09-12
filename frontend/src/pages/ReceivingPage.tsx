@@ -199,19 +199,19 @@ export function ReceivingPage() {
     try {
       const [readyResult, partialResult, historyResult, returnResult] = await Promise.all([
         listRestockOrders({
-page: queuePages.ready,
-pageSize: queuePageSize,
-statuses: READY_STATUSES
+          page: queuePages.ready,
+          pageSize: queuePageSize,
+          statuses: READY_STATUSES
         }),
         listRestockOrders({
-page: queuePages.partial,
-pageSize: queuePageSize,
-status: "PARTIALLY_RECEIVED"
+          page: queuePages.partial,
+          pageSize: queuePageSize,
+          status: "PARTIALLY_RECEIVED"
         }),
         listRestockOrders({
-page: queuePages.history,
-pageSize: queuePageSize,
-status: "RECEIVED"
+          page: queuePages.history,
+          pageSize: queuePageSize,
+          status: "RECEIVED"
         }),
         listRestockOrders({ hasReturns: true, page: 1, pageSize: 1 })
       ]);
@@ -231,21 +231,21 @@ status: "RECEIVED"
 
       setQueuePages((current) => {
         const next = {
-history: Math.min(current.history, Math.max(1, historyResult.meta.totalPages)),
-partial: Math.min(current.partial, Math.max(1, partialResult.meta.totalPages)),
-ready: Math.min(current.ready, Math.max(1, readyResult.meta.totalPages))
+          history: Math.min(current.history, Math.max(1, historyResult.meta.totalPages)),
+          partial: Math.min(current.partial, Math.max(1, partialResult.meta.totalPages)),
+          ready: Math.min(current.ready, Math.max(1, readyResult.meta.totalPages))
         };
         return next.history === current.history &&
-next.partial === current.partial &&
-next.ready === current.ready
-? current
-: next;
+          next.partial === current.partial &&
+          next.ready === current.ready
+          ? current
+          : next;
       });
     } catch (requestError) {
       setError(
         requestError instanceof Error
-? requestError.message
-: "Restock delivery tickets could not be loaded."
+          ? requestError.message
+          : "Restock delivery tickets could not be loaded."
       );
     } finally {
       setLoading(false);
@@ -508,11 +508,11 @@ next.ready === current.ready
     <div className="space-y-4">
       <PageHeader
         actions={
-<Button onClick={() => setReturnHistoryOpen(true)} type="button" variant="secondary">
-  <RotateCcw aria-hidden="true" className="h-4 w-4" />
-  Return history
-  {queue.returnTotal > 0 ? <Badge variant="warning">{queue.returnTotal}</Badge> : null}
-</Button>
+          <Button onClick={() => setReturnHistoryOpen(true)} type="button" variant="secondary">
+            <RotateCcw aria-hidden="true" className="h-4 w-4" />
+            Return history
+            {queue.returnTotal > 0 ? <Badge variant="warning">{queue.returnTotal}</Badge> : null}
+          </Button>
         }
         eyebrow="Inventory"
         title="Receiving"
@@ -713,17 +713,17 @@ next.ready === current.ready
         ) : null}
 
         {visibleTotal > 0 ? (
-<AppPagination
-  className="m-4"
-  isLoading={loading}
-  itemLabel="tickets"
-  onPageChange={changeQueuePage}
-  onPageSizeChange={changeQueuePageSize}
-  page={visiblePage}
-  pageSize={queuePageSize}
-  totalItems={visibleTotal}
-  totalPages={visibleTotalPages}
-/>
+          <AppPagination
+            className="m-4"
+            isLoading={loading}
+            itemLabel="tickets"
+            onPageChange={changeQueuePage}
+            onPageSizeChange={changeQueuePageSize}
+            page={visiblePage}
+            pageSize={queuePageSize}
+            totalItems={visibleTotal}
+            totalPages={visibleTotalPages}
+          />
         ) : null}
       </section>
 
@@ -853,19 +853,19 @@ next.ready === current.ready
       <ReturnHistoryDialog
         onOpenChange={setReturnHistoryOpen}
         onView={(order) => {
-setReturnHistoryOpen(false);
-setReturnReportOrder(order);
+          setReturnHistoryOpen(false);
+          setReturnReportOrder(order);
         }}
         open={returnHistoryOpen}
       />
 
       <ReturnReportDialog
         onOpenChange={(open) => {
-if (!open) setReturnReportOrder(null);
+          if (!open) setReturnReportOrder(null);
         }}
         onOrderSaved={(order) => {
-setReturnReportOrder(order);
-void loadQueue();
+          setReturnReportOrder(order);
+          void loadQueue();
         }}
         open={Boolean(returnReportOrder)}
         order={returnReportOrder}

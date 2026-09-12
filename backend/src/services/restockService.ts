@@ -250,10 +250,10 @@ export async function listRestockOrders(query: RestockOrderListQuery) {
     ...(query.search ? { orderNumber: { contains: query.search } } : {}),
     ...(query.hasReturns
       ? {
-OR: [
-  { notes: { contains: "[ReturnReport " } },
-  { lines: { some: { notes: { contains: "damage_reason=" } } } }
-]
+          OR: [
+            { notes: { contains: "[ReturnReport " } },
+            { lines: { some: { notes: { contains: "damage_reason=" } } } }
+          ]
         }
       : {})
   };
