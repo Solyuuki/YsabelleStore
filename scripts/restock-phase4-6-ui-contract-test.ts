@@ -96,7 +96,7 @@ assert.match(draftsSource, /Review draft/);
 assert.match(draftsSource, /Confirm & send to Receiving/);
 assert.match(draftsSource, /Restock sent to Receiving/);
 assert.match(draftsSource, /approveRestockOrder/);
-assert.match(draftsSource, /Physical stock still does not change until Receiving/);
+assert.match(draftsSource, /Physical stock still\s+does not change until Receiving/);
 assert.doesNotMatch(draftsSource, /stockInInventory\s*\(/);
 assert.doesNotMatch(draftsSource, /\/api\/inventory\/.*stock-in/);
 
