@@ -181,7 +181,13 @@ removeBetween(
   "  function buildSupplierSnapshot(): RestockSupplierSnapshot | null {",
   "  function openReview() {"
 );
-replaceExact(panelPath, "        {draftOrder ? (", '        {draftOrder?.status === "DRAFT" ? (');
+replaceExact(
+  panelPath,
+  `        {draftOrder ? (
+          <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">`,
+  `        {draftOrder?.status === "DRAFT" ? (
+          <div className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">`
+);
 replaceExact(
   panelPath,
   `        {editable ? (
