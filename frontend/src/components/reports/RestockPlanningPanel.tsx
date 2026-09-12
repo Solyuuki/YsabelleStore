@@ -223,10 +223,7 @@ export function RestockPlanningPanel() {
     [selectedLines]
   );
   const editable = !draftOrder || draftOrder.status === "DRAFT";
-  const lineIds = useMemo(
-    () => new Set(lines.map((line) => line.candidate.product.id)),
-    [lines]
-  );
+  const lineIds = useMemo(() => new Set(lines.map((line) => line.candidate.product.id)), [lines]);
 
   const restockPageCount = Math.max(1, Math.ceil(lines.length / RESTOCK_PAGE_SIZE));
   const normalizedRestockPage = clampPage(restockPage, lines.length, RESTOCK_PAGE_SIZE);
@@ -768,7 +765,8 @@ export function RestockPlanningPanel() {
                     {overrideRequired && line.isSelected ? (
                       <div className="border-t border-amber-100 bg-amber-50 px-3 py-3">
                         <label className="mb-1 block text-xs font-medium text-amber-900">
-                          Why did you change the suggested quantity? <span aria-hidden="true">*</span>
+                          Why did you change the suggested quantity?{" "}
+                          <span aria-hidden="true">*</span>
                         </label>
                         <Input
                           aria-label={`Reason for changing suggested quantity for ${line.candidate.product.name}`}
@@ -919,10 +917,7 @@ export function RestockPlanningPanel() {
               </p>
               <p className="mt-1 text-xs leading-5 text-slate-500">
                 Showing {((normalizedRestockPage - 1) * RESTOCK_PAGE_SIZE + 1).toLocaleString()}–
-                {Math.min(
-                  normalizedRestockPage * RESTOCK_PAGE_SIZE,
-                  lines.length
-                ).toLocaleString()}{" "}
+                {Math.min(normalizedRestockPage * RESTOCK_PAGE_SIZE, lines.length).toLocaleString()}{" "}
                 of {lines.length.toLocaleString()} products. Physical Inventory stays unchanged
                 until delivery is actually received.
               </p>
