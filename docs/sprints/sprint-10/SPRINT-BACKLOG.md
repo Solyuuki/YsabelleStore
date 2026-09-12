@@ -68,15 +68,46 @@
 - [x] Support partial and multiple deliveries with PARTIALLY_RECEIVED / RECEIVED progression.
 - [x] Add Phase 9 backend/frontend regression contracts.
 
-## Phase 10–15
+## Phase 10 — Bulk Restocking
 
-- [ ] Phase 10 — Bulk Delivery Workflow.
-- [ ] Phase 11 — Forecast-driven Restocking.
-- [ ] Phase 12 — Fast SARIMA Pipeline.
+- [ ] Replace the legacy Inventory bulk-stock presentation with the established Product Import dialog shell so import experiences remain visually consistent.
+- [ ] Support only local Excel/CSV and PDF delivery files; do not add ZIP/archive or Google Drive handling to Inventory.
+- [ ] Use Excel/CSV for structured bulk delivery rows and PDF as a supplier delivery-document source.
+- [ ] Create a Delivery Session review surface before any physical stock mutation.
+- [ ] Support product identification by existing Restock Order, SKU, Product search, barcode, and YSB internal label without requiring a scanner.
+- [ ] Show per-line expected quantity, received quantity, batch/lot, and expiry/no-expiry state.
+- [ ] Summarize total lines, discrepancies, missing expiry values, and unknown products before completion.
+- [ ] Route unknown/new products through the canonical Product Quick Add validation pipeline.
+- [ ] Preserve Phase 9 damaged/return-report handling when bulk delivery lines contain damaged accepted/rejected quantities.
+- [ ] Preserve partial-delivery semantics: physically missing units remain pending and are not treated as damaged returns.
+- [ ] Complete receipt only after blocking delivery-session issues are resolved.
+- [ ] Reuse canonical Product, Batch, Inventory Movement, and stock-domain authorities; no direct UI Inventory mutation shortcut.
+- [ ] Add Phase 10 backend/frontend regression contracts and scale coverage for large delivery sessions.
+- [ ] Complete exact-head automated certification and Owner browser QA for Phase 10.
+
+## Phase 11 — SARIMA-driven Restocking
+
+- [ ] Connect existing SARIMA forecast output and recommendation types into restock recommendation calculations.
+- [ ] Use forecasted demand, sellable stock, incoming approved stock, expiry losses, target stock, reorder level, and safety stock as recommendation inputs.
+- [ ] Produce projected stockout date, suggested quantity, risk level, reason, and recommended action date.
+- [ ] Preserve forecast recommendation and Owner-requested quantity as separate values.
+- [ ] Keep recommendations advisory until Owner approval.
+
+## Phase 12 — Fast SARIMA
+
+- [ ] Preserve real SARIMAX candidate fitting and mathematical behavior.
+- [ ] Mark only affected products DIRTY after relevant source changes.
+- [ ] Add background forecast queue processing for affected products only.
+- [ ] Reuse persisted forecast results through source-versioned cache semantics.
+- [ ] Add parallel worker processing, previous-best parameter reuse, stale-while-revalidate behavior, and fallback handling for SARIMA-ineligible series.
+- [ ] Keep Reports reading persisted READY results without waiting for synchronous global recomputation.
+
+## Phase 13–15
+
 - [ ] Phase 13 — Reports → Action.
 - [ ] Phase 14 — POS / FEFO Hardening.
 - [ ] Phase 15 — Audit + Doctor + Release Gates.
 
 ## Sprint Activity Log
 
-Phases 7–9 are implemented on `sprint/v0.10/sprint-10` and are under exact-head automated certification. Manual Owner browser QA remains an explicit gate for the combined Reports → Restock → Receiving experience before the implementation is treated as visually certified.
+Phases 7–9 are implemented and Owner-tested on `sprint/v0.10/sprint-10`. Phase 10 is the active implementation slice and evolves the legacy Inventory bulk-stock flow into a validated Delivery Session workflow while preserving the certified Receiving and stock-domain invariants.
