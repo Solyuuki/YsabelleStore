@@ -122,6 +122,94 @@ export const approveRestockOrderSchema = z.object({
   expectedVersion: z.coerce.number().int().min(0)
 });
 
+export const advanceRestockOrderSchema = z.object({
+  expectedVersion: z.coerce.number().int().min(0)
+});
+
+export const cancelRestockOrderSchema = z.object({
+  expectedVersion: z.coerce.number().int().min(0),
+  reason: z.string().trim().min(3).max(500)
+});
+
+const restockReceiptLineSchema = z
+  .object({
+    lineId: z.string().trim().min(1).max(191),
+    deliveredQuantity: z.coerce.number().int().min(0).max(1_000_000),
+    damagedQuantity: z.coerce.number().int().min(0).max(1_000_000).default(0),
+    acceptedQuantity: z.coerce.number().int().min(0).max(1_000_000),
+    batchCode: optionalTextSchema(80),
+    expiresAt: z.coerce.date().nullable().optional(),
+    noExpiration: z.boolean().default(false),
+    scannedBarcode: optionalTextSchema(80),
+    confirmNewBarcode: z.boolean().optional(),
+    confirmOverDelivery: z.boolean().optional(),
+    unitCost: z.coerce.number().positive().max(1_000_000_000).optional()
+  })
+  .superRefine((line, context) => {
+    if (line.damagedQuantity > line.deliveredQuantity) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Damaged quantity cannot exceed delivered quantity.",
+        path: ["damagedQuantity"]
+      });
+    }
+
+    if (line.acceptedQuantity > line.deliveredQuantity - line.damagedQuantity) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Accepted quantity cannot exceed delivered quantity after damaged units.",
+        path: ["acceptedQuantity"]
+      });
+    }
+
+    if (line.acceptedQuantity > 0 && !line.batchCode) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Accepted stock requires a batch code.",
+        path: ["batchCode"]
+      });
+    }
+
+    if (line.acceptedQuantity > 0 && !line.noExpiration && !line.expiresAt) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Choose an expiration date or explicitly mark the batch as having no expiration.",
+        path: ["expiresAt"]
+      });
+    }
+
+    if (line.noExpiration && line.expiresAt) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Do not provide an expiration date when No expiration is selected.",
+        path: ["expiresAt"]
+      });
+    }
+  });
+
+export const receiveRestockOrderSchema = z
+  .object({
+    expectedVersion: z.coerce.number().int().min(0),
+    lines: z.array(restockReceiptLineSchema).min(1).max(500)
+  })
+  .superRefine((input, context) => {
+    if (new Set(input.lines.map((line) => line.lineId)).size !== input.lines.length) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A restock line can appear only once in a receipt.",
+        path: ["lines"]
+      });
+    }
+
+    if (!input.lines.some((line) => line.deliveredQuantity > 0)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Record at least one delivered unit before completing a receipt.",
+        path: ["lines"]
+      });
+    }
+  });
+
 export const restockOrderListQuerySchema = z.object({
   search: optionalSearchSchema,
   status: restockOrderStatusSchema.optional(),
@@ -151,6 +239,9 @@ export type CreateRestockOrderRequest = z.infer<typeof createRestockOrderSchema>
 export type ReplaceRestockOrderLinesRequest = z.infer<typeof replaceRestockOrderLinesSchema>;
 export type UpdateRestockOrderRequest = z.infer<typeof updateRestockOrderSchema>;
 export type ApproveRestockOrderRequest = z.infer<typeof approveRestockOrderSchema>;
+export type AdvanceRestockOrderRequest = z.infer<typeof advanceRestockOrderSchema>;
+export type CancelRestockOrderRequest = z.infer<typeof cancelRestockOrderSchema>;
+export type ReceiveRestockOrderRequest = z.infer<typeof receiveRestockOrderSchema>;
 export type RestockOrderListQuery = z.infer<typeof restockOrderListQuerySchema>;
 export type RestockPlanningQuery = z.infer<typeof restockPlanningQuerySchema>;
 export type DismissRestockRecommendationRequest = z.infer<

@@ -4,9 +4,12 @@ import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import {
+  advanceRestockOrderSchema,
   approveRestockOrderSchema,
+  cancelRestockOrderSchema,
   createRestockOrderSchema,
   dismissRestockRecommendationSchema,
+  receiveRestockOrderSchema,
   replaceRestockOrderLinesSchema,
   restockOrderIdParamSchema,
   restockOrderListQuerySchema,
@@ -18,6 +21,11 @@ import {
   dismissRestockRecommendation,
   listRestockPlanningCandidates
 } from "../services/restockPlanningService.js";
+import {
+  cancelRestockOrder,
+  markRestockOrderAwaitingDelivery,
+  receiveRestockOrder
+} from "../services/restockLifecycleService.js";
 import {
   approveRestockOrder,
   createRestockOrder,
@@ -184,6 +192,70 @@ export const approveRestockOrderController: RequestHandler = async (request, res
     const order = await approveRestockOrder(params.orderId, body, requireActorId(request));
 
     response.status(200).json(createSuccessResponse("Restock order approved successfully.", order));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const markRestockOrderAwaitingDeliveryController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const params = parseOrThrow(restockOrderIdParamSchema, request.params, {
+      message: "Restock order id is invalid.",
+      code: "INVALID_RESTOCK_ORDER_ID"
+    });
+    const body = parseOrThrow(advanceRestockOrderSchema, request.body, {
+      message: "Restock delivery transition is invalid.",
+      code: "INVALID_RESTOCK_DELIVERY_TRANSITION"
+    });
+    const order = await markRestockOrderAwaitingDelivery(
+      params.orderId,
+      body,
+      requireActorId(request)
+    );
+
+    response
+      .status(200)
+      .json(createSuccessResponse("Restock order is now awaiting delivery.", order));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelRestockOrderController: RequestHandler = async (request, response, next) => {
+  try {
+    const params = parseOrThrow(restockOrderIdParamSchema, request.params, {
+      message: "Restock order id is invalid.",
+      code: "INVALID_RESTOCK_ORDER_ID"
+    });
+    const body = parseOrThrow(cancelRestockOrderSchema, request.body, {
+      message: "Restock cancellation request is invalid.",
+      code: "INVALID_RESTOCK_CANCELLATION_REQUEST"
+    });
+    const order = await cancelRestockOrder(params.orderId, body, requireActorId(request));
+
+    response.status(200).json(createSuccessResponse("Restock order cancelled successfully.", order));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const receiveRestockOrderController: RequestHandler = async (request, response, next) => {
+  try {
+    const params = parseOrThrow(restockOrderIdParamSchema, request.params, {
+      message: "Restock order id is invalid.",
+      code: "INVALID_RESTOCK_ORDER_ID"
+    });
+    const body = parseOrThrow(receiveRestockOrderSchema, request.body, {
+      message: "Restock receipt is invalid.",
+      code: "INVALID_RESTOCK_RECEIPT"
+    });
+    const order = await receiveRestockOrder(params.orderId, body, requireActorId(request));
+
+    response.status(200).json(createSuccessResponse("Restock delivery received successfully.", order));
   } catch (error) {
     next(error);
   }
