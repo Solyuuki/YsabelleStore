@@ -1,0 +1,46 @@
+name: Temporary Receiving QoL Bootstrap
+
+on:
+  push:
+    branches:
+      - sprint/v0.10/sprint-10
+    paths:
+      - .github/workflows/temp-receiving-qol-bootstrap.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+          fetch-depth: 0
+      - name: Extract and apply patch
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('.github/workflows/temp-receiving-qol.yml').read_text()
+          start = source.index("python3 <<'PY'\n") + len("python3 <<'PY'\n")
+          end = source.rindex("\n          PY")
+          block = source[start:end]
+          lines = []
+          for line in block.splitlines():
+              lines.append(line[10:] if line.startswith('          ') else line)
+          Path('/tmp/receiving-qol.py').write_text('\n'.join(lines) + '\n')
+          PY
+          python3 /tmp/receiving-qol.py
+
+          if git diff --quiet; then
+            echo "No changes required."
+            exit 0
+          fi
+
+          git config user.name "Armando R. Abarado Jr."
+          git config user.email "abaradoaj@gmail.com"
+          git add backend frontend scripts
+          git commit -m "feat(receiving): add return history and pagination"
+          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
