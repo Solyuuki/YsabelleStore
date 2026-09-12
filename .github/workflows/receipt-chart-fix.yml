@@ -1,0 +1,74 @@
+name: Receipt Chart Fix
+
+on:
+  push:
+    branches:
+      - tmp/receipt-chart-fix-6
+    paths:
+      - .github/workflows/receipt-chart-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix-receipt-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout temp branch
+        uses: actions/checkout@v4
+        with:
+          ref: tmp/receipt-chart-fix-6
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Apply chart axis fix and regression contract
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          function replaceExact(path, before, after) {
+            const source = fs.readFileSync(path, 'utf8');
+            const count = source.split(before).length - 1;
+            if (count !== 1) throw new Error(`${path}: expected exactly 1 match, found ${count}`);
+            fs.writeFileSync(path, source.replace(before, after));
+          }
+
+          replaceExact(
+            'frontend/src/pages/ReportsPage.tsx',
+            '  Tooltip,\n  XAxis\n} from "recharts";',
+            '  Tooltip,\n  XAxis,\n  YAxis\n} from "recharts";'
+          );
+
+          replaceExact(
+            'frontend/src/pages/ReportsPage.tsx',
+            '                            <XAxis dataKey="label" hide />\n                            <Tooltip',
+            '                            <XAxis dataKey="label" hide />\n                            <YAxis domain={["auto", "auto"]} hide />\n                            <Tooltip'
+          );
+
+          replaceExact(
+            'scripts/restock-phase4-6-ui-contract-test.ts',
+            'assert.match(reportsSource, /LineChart/);\nassert.doesNotMatch(reportsSource, /BarChart/);',
+            'assert.match(reportsSource, /LineChart/);\nassert.match(reportsSource, /<YAxis domain=\\{\\["auto", "auto"\\]\\} hide \\/>/);\nassert.doesNotMatch(reportsSource, /BarChart/);'
+          );
+          NODE
+      - name: Format touched files
+        run: npx prettier --write frontend/src/pages/ReportsPage.tsx scripts/restock-phase4-6-ui-contract-test.ts
+      - name: Typecheck frontend
+        run: npm run typecheck --workspace @ysabellestore/frontend
+      - name: Run frontend contracts
+        run: npm test --workspace @ysabellestore/frontend
+      - name: Build frontend
+        run: npm run build --workspace @ysabellestore/frontend
+      - name: Commit tested fix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/pages/ReportsPage.tsx scripts/restock-phase4-6-ui-contract-test.ts
+          HUSKY=0 git commit -m "fix(reports): render recent receipt trend"
+          HUSKY=0 git push origin HEAD:tmp/receipt-chart-fix-6
