@@ -1,0 +1,68 @@
+name: Sprint 10 Phase 7-9 Normalize
+
+on:
+  push:
+    branches:
+      - "sprint/v0.10/sprint-10"
+    paths:
+      - ".github/workflows/sprint10-phase7-9-normalize.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  normalize-phase7-9:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fix project-specific UI variant
+        run: |
+          sed -i 's/variant="destructive"/variant="danger"/' frontend/src/components/reports/RestockReceivingPanel.tsx
+      - name: Normalize Phase 7-9 files with repository formatter
+        run: |
+          npx prettier --write \
+            backend/src/controllers/restockController.ts \
+            backend/src/routes/restock.routes.ts \
+            backend/src/services/receivingStockService.ts \
+            backend/src/services/restockLifecycleService.ts \
+            backend/src/validators/restock.validators.ts \
+            backend/test/restock-phase7-9-contract.test.ts \
+            backend/package.json \
+            frontend/src/components/reports/RestockNewProductCard.tsx \
+            frontend/src/components/reports/RestockReceivingPanel.tsx \
+            frontend/src/pages/ReportsPage.tsx \
+            frontend/src/services/restockApi.ts \
+            frontend/package.json \
+            scripts/restock-phase7-9-ui-contract-test.ts
+      - name: Commit normalization if needed
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Phase 7-9 files are already normalized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/src/controllers/restockController.ts \
+            backend/src/routes/restock.routes.ts \
+            backend/src/services/receivingStockService.ts \
+            backend/src/services/restockLifecycleService.ts \
+            backend/src/validators/restock.validators.ts \
+            backend/test/restock-phase7-9-contract.test.ts \
+            backend/package.json \
+            frontend/src/components/reports/RestockNewProductCard.tsx \
+            frontend/src/components/reports/RestockReceivingPanel.tsx \
+            frontend/src/pages/ReportsPage.tsx \
+            frontend/src/services/restockApi.ts \
+            frontend/package.json \
+            scripts/restock-phase7-9-ui-contract-test.ts
+          HUSKY=0 git commit -m "style(restock): normalize Phase 7-9 implementation"
+          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
