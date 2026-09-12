@@ -94,6 +94,8 @@ export function printRestockSupplierCopy(snapshot: RestockSupplierSnapshot) {
   }
 
   printWindow.opener = null;
+  printWindow.addEventListener("load", () => printWindow.print(), { once: true });
+
   const totalUnits = snapshot.lines.reduce((sum, line) => sum + line.quantity, 0);
   const rows = snapshot.lines
     .map(
@@ -173,8 +175,6 @@ export function printRestockSupplierCopy(snapshot: RestockSupplierSnapshot) {
     <div class="signature">Prepared / Approved by</div>
     <div class="signature">Supplier acknowledgment</div>
   </div>
-
-  <script>window.addEventListener("load", () => window.print());<\/script>
 </body>
 </html>`);
   printWindow.document.close();
