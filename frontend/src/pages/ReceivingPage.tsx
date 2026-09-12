@@ -4,7 +4,6 @@ import {
   ChevronDown,
   ChevronRight,
   Clock3,
-  History,
   Inbox,
   LoaderCircle,
   RefreshCw,
@@ -898,9 +897,7 @@ function ReceiptEditor({
         <div className="flex items-start gap-3">
           <CheckCircle2 aria-hidden="true" className="mt-0.5 h-5 w-5 text-emerald-600" />
           <div>
-            <p className="text-sm font-semibold text-emerald-950">
-              Complete delivery — no issues
-            </p>
+            <p className="text-sm font-semibold text-emerald-950">Complete delivery — no issues</p>
             <p className="mt-0.5 text-xs leading-5 text-emerald-800">
               {totalRemaining.toLocaleString()} remaining units will be accepted. No quantity
               editing is needed.
