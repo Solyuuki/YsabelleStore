@@ -27,6 +27,24 @@ jobs:
         run: npm install jspdf jspdf-autotable --workspace frontend
       - name: Apply direct PDF export QoL pass
         run: python scripts/apply-direct-pdf-export-qol.py
+      - name: Normalize PDF export contract declarations
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("scripts/restock-phase4-6-ui-contract-test.ts")
+          text = path.read_text(encoding="utf-8")
+          block = '''const reportDialogSource = readFileSync(
+            resolve(process.cwd(), "src/components/reports/ReportDownloadDialog.tsx"),
+            "utf8"
+          );
+          '''
+          first = text.find(block)
+          second = text.find(block, first + len(block)) if first >= 0 else -1
+          if second >= 0:
+              text = text[:second] + text[second + len(block):]
+          path.write_text(text, encoding="utf-8")
+          PY
       - name: Format PDF export changes
         run: npx prettier --write frontend/src/components/reports/ReportDownloadDialog.tsx frontend/src/utils/directPdfExport.ts scripts/restock-phase4-6-ui-contract-test.ts frontend/package.json package-lock.json
       - name: Verify formatting
