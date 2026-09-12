@@ -20,6 +20,10 @@ const supplierExportSource = readFileSync(
   resolve(process.cwd(), "src/utils/restockExport.ts"),
   "utf8"
 );
+const directPdfSource = readFileSync(
+  resolve(process.cwd(), "src/utils/directPdfExport.ts"),
+  "utf8"
+);
 
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.match(reportsSource, /<RestockPlanningPanel \/>/);
@@ -102,5 +106,12 @@ assert.match(supplierExportSource, /downloadRestockSupplierCsv/);
 assert.match(supplierExportSource, /printRestockSupplierCopy/);
 assert.doesNotMatch(supplierExportSource, /Forecast demand/);
 assert.doesNotMatch(supplierExportSource, /Reorder level/);
+assert.match(reportDialogSource, /Download PDF/);
+assert.match(reportDialogSource, /Print \/ Save PDF/);
+assert.match(reportDialogSource, /Excel-compatible CSV/);
+assert.match(directPdfSource, /downloadOperationalSummaryPdf/);
+assert.match(directPdfSource, /downloadInventoryReportPdf/);
+assert.match(directPdfSource, /downloadRestockSupplierPdf/);
+assert.match(directPdfSource, /jspdf-autotable/);
 
 console.log("Restock Phase 4-6 Reports QoL contract passed.");

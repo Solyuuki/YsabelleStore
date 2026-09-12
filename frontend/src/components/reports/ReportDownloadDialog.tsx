@@ -1,6 +1,7 @@
 import {
   Boxes,
   CheckCircle2,
+  FileDown,
   FileSpreadsheet,
   PackageOpen,
   Printer,
@@ -26,6 +27,11 @@ import {
 } from "@/services/restockApi";
 import type { PosSale } from "@/types/pos";
 import {
+  downloadInventoryReportPdf,
+  downloadOperationalSummaryPdf,
+  downloadRestockSupplierPdf
+} from "@/utils/directPdfExport";
+import {
   downloadInventoryReportCsv,
   downloadOperationalSummaryCsv,
   printInventoryReport,
@@ -47,7 +53,7 @@ const SUPPLIER_EXPORT_STATUSES: RestockOrderStatus[] = [
 ];
 
 type ReportType = "operational" | "inventory" | "restock";
-type ExportBusy = "csv" | "print" | null;
+type ExportBusy = "csv" | "pdf" | "print" | null;
 
 type Props = {
   completedSales: PosSale[];
@@ -106,6 +112,28 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
     if (!summary) throw new Error("Report data is not ready yet.");
     const inventory = await fetchAllInventory();
     return { completedSales, inventory, summary };
+  }
+
+  async function handlePdf() {
+    setExportBusy("pdf");
+    setExportError(null);
+
+    try {
+      if (reportType === "restock") {
+        const snapshot = supplierOrder ? buildSupplierSnapshot(supplierOrder) : null;
+        if (!snapshot) throw new Error("Confirm a restock order before exporting a supplier copy.");
+        downloadRestockSupplierPdf(snapshot);
+      } else {
+        const snapshot = await prepareInternalSnapshot();
+        if (reportType === "inventory") downloadInventoryReportPdf(snapshot);
+        else downloadOperationalSummaryPdf(snapshot);
+      }
+      onOpenChange(false);
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : "The PDF could not be generated.");
+    } finally {
+      setExportBusy(null);
+    }
   }
 
   async function handleCsv() {
@@ -261,7 +289,24 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Export format
             </p>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Button
+                className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
+                disabled={exportBusy !== null || restockDisabled || !summary}
+                onClick={() => void handlePdf()}
+                type="button"
+              >
+                <FileDown className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>
+                  <span className="block font-semibold">
+                    {exportBusy === "pdf" ? "Preparing…" : "Download PDF"}
+                  </span>
+                  <span className="mt-1 block text-xs font-normal leading-5 text-indigo-100">
+                    Download a ready-to-send .pdf file directly.
+                  </span>
+                </span>
+              </Button>
+
               <Button
                 className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                 disabled={exportBusy !== null || restockDisabled || !summary}
