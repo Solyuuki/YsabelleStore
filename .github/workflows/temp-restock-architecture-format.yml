@@ -1,0 +1,38 @@
+name: Temporary Restock Architecture Format
+
+on:
+  push:
+    branches:
+      - sprint/v0.10/sprint-10
+    paths:
+      - .github/workflows/temp-restock-architecture-format.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write frontend/src/pages/ReportsPage.tsx frontend/src/components/catalog/ProductQuickAddDialog.tsx scripts/restock-phase7-9-ui-contract-test.ts
+      - name: Commit formatting
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/pages/ReportsPage.tsx frontend/src/components/catalog/ProductQuickAddDialog.tsx scripts/restock-phase7-9-ui-contract-test.ts
+          HUSKY=0 git commit -m "chore(restock): normalize architecture cleanup"
+          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
