@@ -81,8 +81,12 @@ function receiptSummary(input: {
 export async function markRestockOrderAwaitingDelivery(
   orderId: string,
   input: AdvanceRestockOrderRequest,
-  _actorId: string
+  actorId: string
 ) {
+  // Preserve the authenticated actor boundary even though this transition intentionally avoids
+  // mutating supplier-facing notes. The status/version transition remains the persisted audit fact.
+  void actorId;
+
   await prisma.$transaction(async (tx) => {
     const existing = await tx.restockOrder.findUnique({
       select: { id: true, status: true, version: true },
