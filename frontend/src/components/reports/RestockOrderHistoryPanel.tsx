@@ -5,7 +5,8 @@ import {
   FileSpreadsheet,
   PackageCheck,
   Printer,
-  RefreshCw
+  RefreshCw,
+  Search
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -22,8 +23,10 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   listRestockOrders,
+  type PaginationMeta,
   type RestockOrder,
   type RestockOrderStatus
 } from "@/services/restockApi";
@@ -33,20 +36,22 @@ import {
   type RestockSupplierSnapshot
 } from "@/utils/restockExport";
 
-const ORDER_PAGE_SIZE = 6;
+const ORDER_PAGE_SIZE = 10;
+const ORDER_STATUSES: Array<{ label: string; value: "ALL" | RestockOrderStatus }> = [
+  { label: "All statuses", value: "ALL" },
+  { label: "Saved for later", value: "DRAFT" },
+  { label: "Confirmed", value: "APPROVED" },
+  { label: "Awaiting delivery", value: "AWAITING_DELIVERY" },
+  { label: "Partially received", value: "PARTIALLY_RECEIVED" },
+  { label: "Received", value: "RECEIVED" },
+  { label: "Cancelled", value: "CANCELLED" }
+];
 
 const dateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
   dateStyle: "medium",
   timeStyle: "short",
   timeZone: "Asia/Manila"
 });
-
-type PaginationMeta = {
-  page: number;
-  pageSize: number;
-  totalItems: number;
-  totalPages: number;
-};
 
 type ExportBusy = "csv" | "pdf" | "print" | null;
 
@@ -125,6 +130,9 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | RestockOrderStatus>("ALL");
   const [selectedOrder, setSelectedOrder] = useState<RestockOrder | null>(null);
   const [exportBusy, setExportBusy] = useState<ExportBusy>(null);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -134,7 +142,12 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
     setError(null);
 
     try {
-      const result = await listRestockOrders({ page, pageSize: ORDER_PAGE_SIZE });
+      const result = await listRestockOrders({
+        page,
+        pageSize: ORDER_PAGE_SIZE,
+        search: searchTerm || undefined,
+        status: statusFilter === "ALL" ? undefined : statusFilter
+      });
       setOrders(result.items);
       setMeta(result.meta);
 
@@ -148,7 +161,7 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, searchTerm, statusFilter]);
 
   useEffect(() => {
     void refreshVersion;
@@ -163,6 +176,18 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
     () => (selectedOrder ? buildSupplierSnapshot(selectedOrder) : null),
     [selectedOrder]
   );
+
+  function applySearch() {
+    setPage(1);
+    setSearchTerm(searchInput.trim());
+  }
+
+  function clearFilters() {
+    setPage(1);
+    setSearchInput("");
+    setSearchTerm("");
+    setStatusFilter("ALL");
+  }
 
   async function handlePdf() {
     if (!supplierSnapshot) return;
@@ -207,6 +232,8 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
     }
   }
 
+  const filtersActive = Boolean(searchTerm) || statusFilter !== "ALL";
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -214,7 +241,11 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle>Restock orders</CardTitle>
-              {meta ? <Badge>{meta.totalItems.toLocaleString()} saved</Badge> : null}
+              {meta ? (
+                <Badge>
+                  {meta.totalItems.toLocaleString()} order{meta.totalItems === 1 ? "" : "s"}
+                </Badge>
+              ) : null}
             </div>
             <p className="mt-1 text-xs text-slate-500">
               Reopen saved and confirmed restock tickets after refresh or a later session.
@@ -245,6 +276,49 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
           </Alert>
         ) : null}
 
+        <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_220px_auto]">
+          <Input
+            aria-label="Search restock order reference"
+            onChange={(event) => setSearchInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") applySearch();
+            }}
+            placeholder="Search order reference"
+            value={searchInput}
+          />
+          <select
+            aria-label="Filter restock orders by status"
+            className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            onChange={(event) => {
+              setPage(1);
+              setStatusFilter(event.target.value as "ALL" | RestockOrderStatus);
+            }}
+            value={statusFilter}
+          >
+            {ORDER_STATUSES.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
+          <Button disabled={loading} onClick={applySearch} type="button" variant="secondary">
+            <Search aria-hidden="true" className="h-4 w-4" />
+            Search
+          </Button>
+        </div>
+
+        {filtersActive ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-500">
+            <span>
+              Showing filtered restock orders
+              {searchTerm ? ` matching “${searchTerm}”` : ""}.
+            </span>
+            <Button onClick={clearFilters} size="sm" type="button" variant="ghost">
+              Clear filters
+            </Button>
+          </div>
+        ) : null}
+
         {loading && orders.length === 0 ? (
           <div className="rounded-lg border border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
             Loading restock orders…
@@ -254,9 +328,13 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
         {!loading && !error && orders.length === 0 ? (
           <div className="rounded-lg border border-dashed border-slate-300 px-4 py-9 text-center">
             <PackageCheck aria-hidden="true" className="mx-auto h-8 w-8 text-slate-400" />
-            <p className="mt-3 text-sm font-semibold text-slate-950">No restock orders yet.</p>
+            <p className="mt-3 text-sm font-semibold text-slate-950">
+              {filtersActive ? "No matching restock orders." : "No restock orders yet."}
+            </p>
             <p className="mt-1 text-sm text-slate-500">
-              Confirmed or saved restocks will stay available here for reopening.
+              {filtersActive
+                ? "Adjust the reference search or status filter and try again."
+                : "Confirmed or saved restocks will stay available here for reopening."}
             </p>
           </div>
         ) : null}
@@ -329,30 +407,37 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
         ) : null}
 
         {meta && meta.totalPages > 1 ? (
-          <div className="flex items-center justify-end gap-2 text-xs text-slate-500">
-            <Button
-              aria-label="Previous restock order page"
-              disabled={loading || page <= 1}
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-              size="sm"
-              type="button"
-              variant="ghost"
-            >
-              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-            </Button>
-            <span className="min-w-[92px] text-center tabular-nums">
-              Page {meta.page.toLocaleString()} of {meta.totalPages.toLocaleString()}
+          <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+            <span>
+              Showing {((meta.page - 1) * meta.pageSize + 1).toLocaleString()}–
+              {Math.min(meta.page * meta.pageSize, meta.totalItems).toLocaleString()} of{" "}
+              {meta.totalItems.toLocaleString()}
             </span>
-            <Button
-              aria-label="Next restock order page"
-              disabled={loading || page >= meta.totalPages}
-              onClick={() => setPage((current) => current + 1)}
-              size="sm"
-              type="button"
-              variant="ghost"
-            >
-              <ChevronRight aria-hidden="true" className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                aria-label="Previous restock order page"
+                disabled={loading || page <= 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
+                <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+              </Button>
+              <span className="min-w-[92px] text-center tabular-nums">
+                Page {meta.page.toLocaleString()} of {meta.totalPages.toLocaleString()}
+              </span>
+              <Button
+                aria-label="Next restock order page"
+                disabled={loading || page >= meta.totalPages}
+                onClick={() => setPage((current) => current + 1)}
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
+                <ChevronRight aria-hidden="true" className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ) : null}
       </CardContent>
