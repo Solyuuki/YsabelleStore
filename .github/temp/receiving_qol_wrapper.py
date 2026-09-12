@@ -22,6 +22,11 @@ smart_func = '''def replace_once(text, old, new, label):
         start = text.index(start_marker)
         end = text.index(end_marker, start) + len(end_marker)
         return text[:start] + new.rstrip("\\n") + text[end:]
+    if label == "receiving history dialog":
+        start_marker = "      <ReturnReportDialog"
+        start = text.index(start_marker)
+        end = text.index("      />", start) + len("      />")
+        return text[:start] + new.rstrip("\\n") + text[end:]
     raise SystemExit(f"{label}: expected exactly one match, found {count}")'''
 if old_func not in script:
     raise SystemExit("replace_once helper hook not found")
