@@ -7,7 +7,7 @@ import {
   RefreshCw,
   TriangleAlert
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
   Cell,
@@ -62,8 +62,9 @@ export function ReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
-  const [restockView, setRestockView] = useState<"plan" | "drafts">("plan");
+  const [restockView, setRestockView] = useState<"plan" | "drafts" | null>(null);
   const [restockOrdersRefreshVersion, setRestockOrdersRefreshVersion] = useState(0);
+  const restockWorkspaceRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -179,6 +180,13 @@ export function ReportsPage() {
     setRestockOrdersRefreshVersion((version) => version + 1);
   }
 
+  function openRestockView(view: "plan" | "drafts") {
+    setRestockView(view);
+    window.requestAnimationFrame(() => {
+      restockWorkspaceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   return (
     <div className="space-y-4">
       <PageHeader
@@ -243,8 +251,9 @@ export function ReportsPage() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Button
+                  aria-controls="restock-workspace"
                   aria-pressed={restockView === "plan"}
-                  onClick={() => setRestockView("plan")}
+                  onClick={() => openRestockView("plan")}
                   size="sm"
                   type="button"
                   variant={restockView === "plan" ? "default" : "secondary"}
@@ -252,8 +261,9 @@ export function ReportsPage() {
                   Review recommendations
                 </Button>
                 <Button
+                  aria-controls="restock-workspace"
                   aria-pressed={restockView === "drafts"}
-                  onClick={() => setRestockView("drafts")}
+                  onClick={() => openRestockView("drafts")}
                   size="sm"
                   type="button"
                   variant={restockView === "drafts" ? "default" : "secondary"}
@@ -263,17 +273,21 @@ export function ReportsPage() {
               </div>
             </div>
 
-            {restockView === "plan" ? (
-              <RestockPlanningPanel
-                onOpenOrders={() => setRestockView("drafts")}
-                onOrdersChanged={notifyRestockOrdersChanged}
-              />
-            ) : (
-              <RestockDraftsPanel
-                onDraftConfirmed={notifyRestockOrdersChanged}
-                refreshVersion={refreshVersion + restockOrdersRefreshVersion}
-              />
-            )}
+            {restockView ? (
+              <div className="scroll-mt-4" id="restock-workspace" ref={restockWorkspaceRef}>
+                {restockView === "plan" ? (
+                  <RestockPlanningPanel
+                    onOpenOrders={() => openRestockView("drafts")}
+                    onOrdersChanged={notifyRestockOrdersChanged}
+                  />
+                ) : (
+                  <RestockDraftsPanel
+                    onDraftConfirmed={notifyRestockOrdersChanged}
+                    refreshVersion={refreshVersion + restockOrdersRefreshVersion}
+                  />
+                )}
+              </div>
+            ) : null}
           </section>
 
           <section className="grid items-start gap-4 xl:grid-cols-[0.9fr_1.1fr]">
