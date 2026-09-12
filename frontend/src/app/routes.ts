@@ -1,4 +1,5 @@
 import {
+  ArrowDownToLine,
   Boxes,
   ChartNoAxesCombined,
   FileBarChart,
@@ -9,7 +10,6 @@ import {
   ReceiptText,
   ScanBarcode,
   Settings,
-  Truck,
   UsersRound
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
@@ -73,7 +73,7 @@ export const appRoutes: readonly AppRoute[] = [
     path: "/receiving",
     label: "Receiving",
     description: "Approved restock tickets, physical delivery checks, and returns",
-    icon: Truck,
+    icon: ArrowDownToLine,
     allowedRoles: ["OWNER"]
   },
   {
