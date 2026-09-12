@@ -3,7 +3,7 @@ name: Phase 6 Format
 on:
   push:
     branches:
-      - "sprint/v0.10/sprint-10"
+      - "m1/v0.9/feat/customer-social-auth"
     paths:
       - ".github/workflows/phase6-format.yml"
   workflow_dispatch:
@@ -17,14 +17,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: sprint/v0.10/sprint-10
+          ref: m1/v0.9/feat/customer-social-auth
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Normalize restock QoL contract tests with CI formatter
-        run: npx prettier --write backend/test/restock-phase4-6-contract.test.ts scripts/restock-phase4-6-ui-contract-test.ts
+      - name: Normalize repository formatting with CI formatter
+        run: npx prettier --write .
       - name: Verify repository formatting
         run: npx prettier --check .
       - name: Commit formatting if needed
@@ -36,6 +36,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add backend/test/restock-phase4-6-contract.test.ts scripts/restock-phase4-6-ui-contract-test.ts
-          HUSKY=0 git commit -m "chore(format): normalize restock qol contracts"
-          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
+          git add -u
+          git add .github/workflows/phase6-format.yml
+          HUSKY=0 git commit -m "style: normalize repository formatting for phase 6 gate"
+          HUSKY=0 git push origin HEAD:m1/v0.9/feat/customer-social-auth
