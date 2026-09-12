@@ -1,21 +1,8 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 import { CartProvider } from "@/context/CartContext";
 import { CustomerAuthProvider, useCustomerAuth } from "@/context/CustomerAuthContext";
 import { CustomerLayout } from "@/layouts/CustomerLayout";
-import { AboutExperiencePage } from "@/pages/customer/AboutExperiencePage";
-import { CartPage } from "@/pages/customer/CartPage";
-import { CheckoutPage } from "@/pages/customer/CheckoutPage";
-import { CustomerAccountPage } from "@/pages/customer/CustomerAccountPage";
-import { CustomerAccountRecoveryPage } from "@/pages/customer/CustomerAccountRecoveryPage";
-import { CustomerHomePage } from "@/pages/customer/CustomerHomePage";
-import { CustomerLoginPage } from "@/pages/customer/CustomerLoginPage";
-import { CustomerNotFoundPage } from "@/pages/customer/CustomerNotFoundPage";
-import { CustomerRegisterPage } from "@/pages/customer/CustomerRegisterPage";
-import { DiscoverPage } from "@/pages/customer/DiscoverPage";
-import { OrderSuccessPage } from "@/pages/customer/OrderSuccessPage";
-import { ProductDetailPage } from "@/pages/customer/ProductDetailPage";
-import { ShopPage } from "@/pages/customer/ShopPage";
 import "driver.js/dist/driver.css";
 import "@/styles/customer.css";
 import "@/styles/customer-auth.css";
@@ -27,6 +14,64 @@ import "@/styles/customer-guide-route-transition.css";
 import "@/styles/brand.css";
 import "@/styles/shopping-guide.css";
 import { getCustomerAuthPageKind, resolveCustomerAuthRedirect } from "@/utils/customerRoutes";
+
+const CustomerHomePage = lazy(() =>
+  import("@/pages/customer/CustomerHomePage").then(({ CustomerHomePage }) => ({
+    default: CustomerHomePage
+  }))
+);
+const ShopPage = lazy(() =>
+  import("@/pages/customer/ShopPage").then(({ ShopPage }) => ({ default: ShopPage }))
+);
+const ProductDetailPage = lazy(() =>
+  import("@/pages/customer/ProductDetailPage").then(({ ProductDetailPage }) => ({
+    default: ProductDetailPage
+  }))
+);
+const CartPage = lazy(() =>
+  import("@/pages/customer/CartPage").then(({ CartPage }) => ({ default: CartPage }))
+);
+const CheckoutPage = lazy(() =>
+  import("@/pages/customer/CheckoutPage").then(({ CheckoutPage }) => ({ default: CheckoutPage }))
+);
+const OrderSuccessPage = lazy(() =>
+  import("@/pages/customer/OrderSuccessPage").then(({ OrderSuccessPage }) => ({
+    default: OrderSuccessPage
+  }))
+);
+const AboutExperiencePage = lazy(() =>
+  import("@/pages/customer/AboutExperiencePage").then(({ AboutExperiencePage }) => ({
+    default: AboutExperiencePage
+  }))
+);
+const DiscoverPage = lazy(() =>
+  import("@/pages/customer/DiscoverPage").then(({ DiscoverPage }) => ({ default: DiscoverPage }))
+);
+const CustomerLoginPage = lazy(() =>
+  import("@/pages/customer/CustomerLoginPage").then(({ CustomerLoginPage }) => ({
+    default: CustomerLoginPage
+  }))
+);
+const CustomerRegisterPage = lazy(() =>
+  import("@/pages/customer/CustomerRegisterPage").then(({ CustomerRegisterPage }) => ({
+    default: CustomerRegisterPage
+  }))
+);
+const CustomerAccountRecoveryPage = lazy(() =>
+  import("@/pages/customer/CustomerAccountRecoveryPage").then(({ CustomerAccountRecoveryPage }) => ({
+    default: CustomerAccountRecoveryPage
+  }))
+);
+const CustomerAccountPage = lazy(() =>
+  import("@/pages/customer/CustomerAccountPage").then(({ CustomerAccountPage }) => ({
+    default: CustomerAccountPage
+  }))
+);
+const CustomerNotFoundPage = lazy(() =>
+  import("@/pages/customer/CustomerNotFoundPage").then(({ CustomerNotFoundPage }) => ({
+    default: CustomerNotFoundPage
+  }))
+);
 
 export function CustomerApp({
   location,
@@ -110,7 +155,18 @@ function CustomerAppRoutes({
 
   return (
     <CustomerLayout location={location} navigate={navigate} pathname={pathname}>
-      {page}
+      <Suspense fallback={<CustomerRouteFallback />}>{page}</Suspense>
     </CustomerLayout>
+  );
+}
+
+function CustomerRouteFallback() {
+  return (
+    <div className="flex min-h-[45vh] items-center justify-center" role="status">
+      <div className="flex items-center gap-3 text-sm font-semibold text-slate-600">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+        Loading page...
+      </div>
+    </div>
   );
 }
