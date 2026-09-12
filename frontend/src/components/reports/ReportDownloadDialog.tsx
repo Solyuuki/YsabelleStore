@@ -317,10 +317,10 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                 <Printer className="mt-0.5 h-5 w-5 shrink-0" />
                 <span>
                   <span className="block font-semibold text-slate-950">
-                    {exportBusy === "print" ? "Preparing…" : "Print / Save PDF"}
+                    {exportBusy === "print" ? "Preparing…" : "Print"}
                   </span>
                   <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
-                    Clean print view for paper or Save as PDF.
+                    Open a clean print view for paper printing.
                   </span>
                 </span>
               </Button>
