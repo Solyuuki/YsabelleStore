@@ -27,11 +27,6 @@ import {
 } from "@/services/restockApi";
 import type { PosSale } from "@/types/pos";
 import {
-  downloadInventoryReportPdf,
-  downloadOperationalSummaryPdf,
-  downloadRestockSupplierPdf
-} from "@/utils/directPdfExport";
-import {
   downloadInventoryReportCsv,
   downloadOperationalSummaryCsv,
   printInventoryReport,
@@ -119,6 +114,12 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
     setExportError(null);
 
     try {
+      const {
+        downloadInventoryReportPdf,
+        downloadOperationalSummaryPdf,
+        downloadRestockSupplierPdf
+      } = await import("@/utils/directPdfExport");
+
       if (reportType === "restock") {
         const snapshot = supplierOrder ? buildSupplierSnapshot(supplierOrder) : null;
         if (!snapshot) throw new Error("Confirm a restock order before exporting a supplier copy.");
