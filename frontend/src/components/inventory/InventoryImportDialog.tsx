@@ -29,12 +29,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  confirmInventoryStockImport,
   fetchProducts,
   lookupInventoryByBarcode,
   previewInventoryStockImport,
-  type InventoryImportPreview,
-  type InventoryImportSummary
+  type InventoryImportPreview
 } from "@/services/catalogApi";
 import {
   completeBulkDeliverySession,
@@ -114,7 +112,6 @@ export function InventoryImportDialog({
   const [phase, setPhase] = useState<Phase>("idle");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<InventoryImportPreview | null>(null);
-  const [spreadsheetSummary, setSpreadsheetSummary] = useState<InventoryImportSummary | null>(null);
   const [deliverySummary, setDeliverySummary] = useState<BulkDeliverySessionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -158,7 +155,6 @@ export function InventoryImportDialog({
     setPhase("idle");
     setFile(null);
     setPreview(null);
-    setSpreadsheetSummary(null);
     setDeliverySummary(null);
     setError(null);
     setIsDragging(false);
@@ -177,7 +173,6 @@ export function InventoryImportDialog({
     setPhase("idle");
     setFile(null);
     setPreview(null);
-    setSpreadsheetSummary(null);
     setDeliverySummary(null);
     setError(null);
     setIsDragging(false);
@@ -217,7 +212,6 @@ export function InventoryImportDialog({
       setPhase("idle");
       setFile(null);
       setPreview(null);
-      setSpreadsheetSummary(null);
       setDeliverySummary(null);
       setError(null);
       setPdfRows([]);
@@ -229,7 +223,6 @@ export function InventoryImportDialog({
     requestRef.current += 1;
     setFile(validationError ? null : nextFile);
     setPreview(null);
-    setSpreadsheetSummary(null);
     setDeliverySummary(null);
     setError(validationError);
     setPhase(validationError ? "error" : "file-ready");
@@ -292,28 +285,46 @@ export function InventoryImportDialog({
       return;
     }
 
+    const rows = preview.rows.flatMap((row) => {
+      if (!row.valid || !row.productId || !row.deliveryData) return [];
+      return [
+        {
+          productId: row.productId,
+          receivedQuantity: row.deliveryData.quantity,
+          batchCode: row.deliveryData.batchCode,
+          expiresAt: row.deliveryData.expirationDate,
+          noExpiration: row.deliveryData.expirationDate === null,
+          reason: row.deliveryData.reason
+        }
+      ];
+    });
+
+    if (rows.length !== preview.validRows) {
+      setError("The validated spreadsheet rows could not be prepared as one delivery session.");
+      return;
+    }
+
     const sessionId = ++requestRef.current;
     setPhase("importing");
     setError(null);
 
     try {
-      const response = await waitForMinimumDuration(
-        confirmInventoryStockImport(file),
+      const result = await waitForMinimumDuration(
+        completeBulkDeliverySession({
+          sourceType: "SPREADSHEET",
+          sourceFileName: file.name,
+          rows
+        }),
         IMPORT_MINIMUM_MS
       );
       if (sessionId !== requestRef.current) return;
-      if (!response.success || !response.data) {
-        setPhase("preview-ready");
-        setError(response.message || "Receipt completion failed.");
-        return;
-      }
 
-      setSpreadsheetSummary(response.data);
+      setDeliverySummary(result);
       setPhase("success");
       await onImported();
       pushToast({
         title: "Bulk receipt completed",
-        message: `${response.data.importedRows} delivery lines were added to Inventory.`,
+        message: `${result.totalLines} delivery lines and ${result.totalUnitsReceived} units were received.`,
         variant: "success"
       });
     } catch (importError) {
@@ -970,11 +981,9 @@ export function InventoryImportDialog({
                   <div>
                     <p className="text-sm font-semibold text-emerald-950">Delivery received</p>
                     <p className="mt-1 text-sm leading-6 text-emerald-800">
-                      {mode === "SPREADSHEET" && spreadsheetSummary
-                        ? `${spreadsheetSummary.importedRows} lines and ${spreadsheetSummary.totalUnitsAdded} units were added to Inventory.`
-                        : deliverySummary
-                          ? `${deliverySummary.totalLines} lines and ${deliverySummary.totalUnitsReceived} units were added to Inventory.`
-                          : "The delivery receipt completed successfully."}
+                      {deliverySummary
+                        ? `${deliverySummary.totalLines} lines and ${deliverySummary.totalUnitsReceived} units were added to Inventory.`
+                        : "The delivery receipt completed successfully."}
                     </p>
                   </div>
                 </div>

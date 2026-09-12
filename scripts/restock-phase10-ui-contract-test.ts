@@ -10,7 +10,7 @@ const apiSource = readFileSync(resolve(process.cwd(), "src/services/bulkDelivery
 
 assert.match(dialogSource, /Import inventory delivery/);
 assert.match(dialogSource, /Excel \/ CSV/);
-assert.match(dialogSource, />PDF</);
+assert.match(dialogSource, /resetMode\("PDF"\)/);
 assert.match(dialogSource, /Bulk delivery guide/);
 assert.match(dialogSource, /Drop an Excel or CSV delivery file here/);
 assert.match(dialogSource, /Drop a delivery PDF here/);
@@ -19,6 +19,8 @@ assert.match(dialogSource, /Product name, SKU, barcode, or YSB label/);
 assert.match(dialogSource, /Preview PDF/);
 assert.match(dialogSource, /Complete receipt/);
 assert.match(dialogSource, /completeBulkDeliverySession/);
+assert.match(dialogSource, /sourceType: "SPREADSHEET"/);
+assert.doesNotMatch(dialogSource, /confirmInventoryStockImport/);
 assert.match(dialogSource, /lookupInventoryByBarcode/);
 assert.match(dialogSource, /fetchProducts/);
 assert.match(dialogSource, /max-w-\[760px\]/);
