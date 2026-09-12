@@ -24,24 +24,34 @@ jobs:
           cache: npm
       - name: Install lockfile dependencies without lifecycle scripts
         run: npm ci --ignore-scripts
-      - name: Capture npm audit report
+      - name: Show resolved vulnerable-package versions
         shell: bash
         run: |
-          npm audit --json > audit.json || true
+          npm ls @xmldom/xmldom baseline-browser-mapping body-parser browserslist express fast-uri qs --all || true
+      - name: Capture current npm audit report
+        shell: bash
+        run: |
+          npm audit --json > audit-before.json || true
           node - <<'NODE'
           const fs = require('node:fs');
-          const report = JSON.parse(fs.readFileSync('audit.json', 'utf8'));
-          console.log('AUDIT METADATA', JSON.stringify(report.metadata?.vulnerabilities ?? {}, null, 2));
+          const report = JSON.parse(fs.readFileSync('audit-before.json', 'utf8'));
+          console.log('BEFORE', JSON.stringify(report.metadata?.vulnerabilities ?? {}, null, 2));
+          NODE
+      - name: Dry safe audit remediation into lockfile
+        shell: bash
+        run: |
+          npm audit fix --package-lock-only --ignore-scripts || true
+          echo "--- package manifest / lock diff ---"
+          git diff -- package.json package-lock.json frontend/package.json backend/package.json electron/package.json || true
+      - name: Verify audit after lockfile remediation
+        shell: bash
+        run: |
+          npm audit --json > audit-after.json || true
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync('audit-after.json', 'utf8'));
+          console.log('AFTER', JSON.stringify(report.metadata?.vulnerabilities ?? {}, null, 2));
           for (const [name, v] of Object.entries(report.vulnerabilities ?? {})) {
-            console.log('\nPACKAGE:', name);
-            console.log('severity:', v.severity);
-            console.log('direct:', v.isDirect);
-            console.log('range:', v.range);
-            console.log('nodes:', (v.nodes ?? []).join(', '));
-            console.log('fixAvailable:', JSON.stringify(v.fixAvailable));
-            console.log('via:', JSON.stringify(v.via));
-            console.log('effects:', JSON.stringify(v.effects));
+            console.log(name, v.severity, v.range, JSON.stringify(v.fixAvailable));
           }
           NODE
-      - name: Project dependency reachability policy
-        run: npm run security:audit:production
