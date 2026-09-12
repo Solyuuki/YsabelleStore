@@ -83,7 +83,10 @@ assert.match(panelSource, /Results stay paged so large catalogs do not stretch/)
 assert.doesNotMatch(panelSource, /searchResults\.slice\(0, 8\)/);
 
 assert.match(orderHistorySource, /Restock orders/);
-assert.match(orderHistorySource, /Reopen saved and confirmed restock tickets after refresh or a later session\./);
+assert.match(
+  orderHistorySource,
+  /Reopen saved and confirmed restock tickets after refresh or a later session\./
+);
 assert.match(orderHistorySource, /listRestockOrders\(\{ page, pageSize: ORDER_PAGE_SIZE \}\)/);
 assert.match(orderHistorySource, /Open order/);
 assert.match(orderHistorySource, /Persisted restock order/);

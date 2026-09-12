@@ -143,9 +143,7 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
       }
     } catch (requestError) {
       setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Restock orders could not be loaded."
+        requestError instanceof Error ? requestError.message : "Restock orders could not be loaded."
       );
     } finally {
       setLoading(false);
@@ -230,7 +228,10 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
             type="button"
             variant="secondary"
           >
-            <RefreshCw aria-hidden="true" className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+            <RefreshCw
+              aria-hidden="true"
+              className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"}
+            />
             Refresh
           </Button>
         </div>
@@ -292,7 +293,9 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
                       <span className="mb-1 block text-xs font-medium text-slate-500 lg:hidden">
                         Status
                       </span>
-                      <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+                      <Badge variant={statusVariant(order.status)}>
+                        {statusLabel(order.status)}
+                      </Badge>
                     </div>
 
                     <div>
@@ -300,8 +303,8 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
                         Order size
                       </span>
                       <p className="text-sm font-medium text-slate-800">
-                        {totals.products.toLocaleString()} product{totals.products === 1 ? "" : "s"} ·{" "}
-                        {totals.units.toLocaleString()} units
+                        {totals.products.toLocaleString()} product{totals.products === 1 ? "" : "s"}{" "}
+                        · {totals.units.toLocaleString()} units
                       </p>
                     </div>
 
@@ -369,8 +372,8 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
               <DialogHeader>
                 <DialogTitle>{selectedOrder.orderNumber}</DialogTitle>
                 <DialogDescription>
-                  Persisted restock order. Reopening or exporting this record does not change physical
-                  inventory.
+                  Persisted restock order. Reopening or exporting this record does not change
+                  physical inventory.
                 </DialogDescription>
               </DialogHeader>
 
@@ -387,7 +390,9 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
                   <OrderMeta
                     label="Prepared by"
                     value={
-                      selectedOrder.approvedBy?.name ?? selectedOrder.createdBy?.name ?? "Not recorded"
+                      selectedOrder.approvedBy?.name ??
+                      selectedOrder.createdBy?.name ??
+                      "Not recorded"
                     }
                   />
                   <OrderMeta label="Version" value={selectedOrder.version.toLocaleString()} />
@@ -437,8 +442,8 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
                 <Alert>
                   <AlertTitle>Physical inventory remains unchanged</AlertTitle>
                   <AlertDescription>
-                    This is the saved order record only. Stock increases only when actual receiving is
-                    performed in the delivery workflow.
+                    This is the saved order record only. Stock increases only when actual receiving
+                    is performed in the delivery workflow.
                   </AlertDescription>
                 </Alert>
 
@@ -473,8 +478,8 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
                   </div>
                 ) : (
                   <p className="text-xs leading-5 text-slate-500">
-                    Supplier export becomes available after a restock is confirmed. Draft and cancelled
-                    orders remain reopenable here as records.
+                    Supplier export becomes available after a restock is confirmed. Draft and
+                    cancelled orders remain reopenable here as records.
                   </p>
                 )}
 
