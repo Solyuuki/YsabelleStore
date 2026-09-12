@@ -3,10 +3,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const reportsSource = readFileSync(resolve(process.cwd(), "src/pages/ReportsPage.tsx"), "utf8");
-const newProductSource = readFileSync(
-  resolve(process.cwd(), "src/components/reports/RestockNewProductCard.tsx"),
-  "utf8"
-);
 const receivingSource = readFileSync(resolve(process.cwd(), "src/pages/ReceivingPage.tsx"), "utf8");
 const returnDialogSource = readFileSync(
   resolve(process.cwd(), "src/components/receiving/ReturnReportDialog.tsx"),
@@ -23,15 +19,15 @@ const returnExportSource = readFileSync(
 const routesSource = readFileSync(resolve(process.cwd(), "src/app/routes.ts"), "utf8");
 const apiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.ts"), "utf8");
 
-assert.match(reportsSource, /RestockNewProductCard/);
+assert.doesNotMatch(reportsSource, /RestockNewProductCard/);
+assert.doesNotMatch(reportsSource, /New product restock/);
+assert.doesNotMatch(reportsSource, /Add new product/);
+assert.match(reportsSource, /Restock forecast/);
+assert.match(reportsSource, /Review recommendations/);
+assert.match(reportsSource, /forecast-driven restock recommendations/);
 assert.match(reportsSource, /RestockDraftsPanel/);
 assert.doesNotMatch(reportsSource, /RestockReceivingPanel/);
 assert.doesNotMatch(reportsSource, /"plan" \| "orders" \| "receiving"/);
-assert.match(newProductSource, /createProduct/);
-assert.match(newProductSource, /createRestockOrder/);
-assert.match(newProductSource, /dataQualityStatus: "NEEDS_REVIEW"/);
-assert.match(newProductSource, /isStorefrontVisible: false/);
-assert.doesNotMatch(newProductSource, /stockInInventory\s*\(/);
 
 assert.match(receivingSource, /Complete — No issues/);
 assert.match(receivingSource, /Complete — With issues/);
