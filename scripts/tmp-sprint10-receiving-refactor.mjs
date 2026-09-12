@@ -21,16 +21,18 @@ const oldApproval = `      const approved = await approveRestockOrder(order.id, 
       setReviewOpen(false);
       setNotice(null);
       onOrdersChanged();`;
-const newApproval = `      const approved = await approveRestockOrder(order.id, order.version);
-      setReviewOpen(false);
-      setNotice(null);
-      onOrdersChanged();
-      pushToast({
-        title: "Restock sent to Receiving",
-        message: \\`${"${approved.orderNumber}"} is ready in Receiving. Physical Inventory stays unchanged until the delivery is accepted.\\`,
-        variant: "success"
-      });
-      await loadRecommendations();`;
+const newApproval = [
+  "      const approved = await approveRestockOrder(order.id, order.version);",
+  "      setReviewOpen(false);",
+  "      setNotice(null);",
+  "      onOrdersChanged();",
+  "      pushToast({",
+  '        title: "Restock sent to Receiving",',
+  '        message: `${approved.orderNumber} is ready in Receiving. Physical Inventory stays unchanged until the delivery is accepted.`,',
+  '        variant: "success"',
+  "      });",
+  "      await loadRecommendations();"
+].join("\n");
 
 if (!planner.includes(oldApproval)) {
   throw new Error("Restock planner approval block did not match expected source.");
