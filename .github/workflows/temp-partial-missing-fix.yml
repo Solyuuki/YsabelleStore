@@ -1,0 +1,85 @@
+name: Temporary Partial Missing Fix
+
+on:
+  push:
+    branches:
+      - sprint/v0.10/sprint-10
+    paths:
+      - .github/workflows/temp-partial-missing-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply partial delivery quantity semantics
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('frontend/src/pages/ReceivingPage.tsx')
+          text = path.read_text()
+
+          old = '''              const remaining = remainingQuantity(line);\n              const accepted = acceptedQuantity(row);\n              return ('''
+          new = '''              const remaining = remainingQuantity(line);\n              const accepted = acceptedQuantity(row);\n              const missing = Math.max(\n                0,\n                remaining - asWholeNumber(row.deliveredQuantity)\n              );\n              return ('''
+          if old not in text:
+              raise SystemExit('receipt row calculation anchor not found')
+          text = text.replace(old, new, 1)
+
+          old = '''            <p className="mt-0.5 text-xs text-slate-500">\n              Accepted quantity is calculated automatically. Edit only the selected exceptions.\n            </p>'''
+          new = '''            <p className="mt-0.5 text-xs text-slate-500">\n              {mode === "partial"\n                ? "Enter what arrived. Missing and accepted quantities are calculated automatically."\n                : "Accepted quantity is calculated automatically. Edit only the selected exceptions."}\n            </p>'''
+          if old not in text:
+              raise SystemExit('exception subtitle anchor not found')
+          text = text.replace(old, new, 1)
+
+          old = '''                      <QuantityField\n                        label="Damaged"\n                        onChange={(value) =>\n                          onUpdateRow(line.id, (current) => ({\n                            ...current,\n                            damagedQuantity: value\n                          }))\n                        }\n                        value={row.damagedQuantity}\n                      />'''
+          new = '''                      {mode === "partial" ? (\n                        <div className="min-w-20">\n                          <p className="text-xs font-medium text-slate-500">Missing</p>\n                          <p className="mt-1.5 text-right text-sm font-semibold text-amber-700">\n                            {missing.toLocaleString()}\n                          </p>\n                        </div>\n                      ) : (\n                        <QuantityField\n                          label="Damaged"\n                          onChange={(value) =>\n                            onUpdateRow(line.id, (current) => ({\n                              ...current,\n                              damagedQuantity: value\n                            }))\n                          }\n                          value={row.damagedQuantity}\n                        />\n                      )}'''
+          if old not in text:
+              raise SystemExit('damaged field anchor not found')
+          text = text.replace(old, new, 1)
+
+          old = '''        "Adjust a delivered or damaged quantity, or choose Complete — No issues instead."'''
+          new = '''        "Adjust a delivered quantity, or choose Complete — No issues instead."'''
+          if old not in text:
+              raise SystemExit('partial validation copy anchor not found')
+          text = text.replace(old, new, 1)
+
+          path.write_text(text)
+
+          contract = Path('scripts/restock-phase7-9-ui-contract-test.ts')
+          contract_text = contract.read_text()
+          anchor = 'assert.match(receivingSource, /Partial delivery/);\n'
+          addition = '''assert.match(receivingSource, /Partial delivery/);\nassert.match(\n  receivingSource,\n  /Enter what arrived\\. Missing and accepted quantities are calculated automatically\\./\n);\n'''
+          if anchor not in contract_text:
+              raise SystemExit('contract anchor not found')
+          contract_text = contract_text.replace(anchor, addition, 1)
+          contract.write_text(contract_text)
+          PY
+      - name: Format changed files
+        run: npx prettier --write frontend/src/pages/ReceivingPage.tsx scripts/restock-phase7-9-ui-contract-test.ts
+      - name: Verify formatting
+        run: npx prettier --check frontend/src/pages/ReceivingPage.tsx scripts/restock-phase7-9-ui-contract-test.ts
+      - name: Commit fix
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/pages/ReceivingPage.tsx scripts/restock-phase7-9-ui-contract-test.ts
+          HUSKY=0 git commit -m "fix(receiving): show missing quantity for partial deliveries"
+          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
