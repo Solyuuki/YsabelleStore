@@ -42,3 +42,7 @@ Phase 7â€“15 remains pending and must not be treated as implemented by Phase 4â€
 - Physical stock changes only when goods actually arrive and are recorded through the stock domain.
 
 Supplier logistics, fleet tracking, ETA, routing, and automatic purchasing without Owner approval are outside Sprint 10 scope.
+
+## Dependency security hygiene
+
+The Sprint 10 dependency lockfile is kept aligned with the repository's safe transitive overrides. On September 12, 2026, stale lock resolutions were refreshed for affected transitive packages and the resulting dependency graph was verified with `npm audit` at zero reported vulnerabilities before final CI certification.
