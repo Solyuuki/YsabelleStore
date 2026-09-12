@@ -360,7 +360,7 @@ export function RestockReceivingPanel({
 
         <CardContent className="space-y-3">
           {error ? (
-            <Alert variant="danger">
+            <Alert variant="destructive">
               <AlertTitle>Receiving needs attention</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -498,7 +498,7 @@ export function RestockReceivingPanel({
 
               <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
                 {receiptError ? (
-                  <Alert variant="danger">
+                  <Alert variant="destructive">
                     <AlertTitle>Receipt not saved</AlertTitle>
                     <AlertDescription>{receiptError}</AlertDescription>
                   </Alert>
@@ -742,7 +742,7 @@ export function RestockReceivingPanel({
               </DialogHeader>
 
               <div className="space-y-4 px-6 pb-2">
-                <Alert variant="danger">
+                <Alert variant="destructive">
                   <ShieldAlert aria-hidden="true" className="h-4 w-4" />
                   <AlertTitle>Confirm cancellation</AlertTitle>
                   <AlertDescription>
