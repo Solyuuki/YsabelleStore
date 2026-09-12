@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
+import { RestockOrderHistoryPanel } from "@/components/reports/RestockOrderHistoryPanel";
 import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -205,6 +206,7 @@ export function ReportsPage() {
           </section>
 
           <RestockPlanningPanel />
+          <RestockOrderHistoryPanel refreshVersion={refreshVersion} />
 
           <section className="grid items-start gap-4 xl:grid-cols-[0.9fr_1.1fr]">
             <Card>
