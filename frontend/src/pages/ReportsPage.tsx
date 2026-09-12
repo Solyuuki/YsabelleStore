@@ -22,10 +22,9 @@ import {
 } from "recharts";
 
 import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
+import { RestockDraftsPanel } from "@/components/reports/RestockDraftsPanel";
 import { RestockNewProductCard } from "@/components/reports/RestockNewProductCard";
-import { RestockOrderHistoryPanel } from "@/components/reports/RestockOrderHistoryPanel";
 import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
-import { RestockReceivingPanel } from "@/components/reports/RestockReceivingPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
@@ -34,7 +33,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchDashboardSummary, type DashboardSummary } from "@/services/dashboardApi";
 import { listRecentSales } from "@/services/posService";
-import { listRestockOrders } from "@/services/restockApi";
 import type { PosSale } from "@/types/pos";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
@@ -65,8 +63,7 @@ export function ReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
-  const [restockView, setRestockView] = useState<"plan" | "orders" | "receiving">("plan");
-  const [restockOrderCount, setRestockOrderCount] = useState<number | null>(null);
+  const [restockView, setRestockView] = useState<"plan" | "drafts">("plan");
   const [restockOrdersRefreshVersion, setRestockOrdersRefreshVersion] = useState(0);
 
   useEffect(() => {
@@ -108,22 +105,6 @@ export function ReportsPage() {
       active = false;
     };
   }, [refreshVersion]);
-
-  useEffect(() => {
-    let active = true;
-
-    void listRestockOrders({ page: 1, pageSize: 1 })
-      .then((result) => {
-        if (active) setRestockOrderCount(result.meta.totalItems);
-      })
-      .catch(() => {
-        if (active) setRestockOrderCount(null);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [refreshVersion, restockOrdersRefreshVersion]);
 
   const completedSales = useMemo(
     () => sales.filter((sale) => sale.status === "COMPLETED"),
@@ -257,8 +238,7 @@ export function ReportsPage() {
               <div>
                 <h2 className="text-base font-semibold text-slate-950">Restock</h2>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Plan, track, and receive restocks as separate steps so physical inventory changes
-                  only when goods actually arrive.
+                  Build and confirm restock plans here. Confirmed tickets move to Receiving for the physical delivery.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -272,23 +252,13 @@ export function ReportsPage() {
                   Plan restock
                 </Button>
                 <Button
-                  aria-pressed={restockView === "orders"}
-                  onClick={() => setRestockView("orders")}
+                  aria-pressed={restockView === "drafts"}
+                  onClick={() => setRestockView("drafts")}
                   size="sm"
                   type="button"
-                  variant={restockView === "orders" ? "default" : "secondary"}
+                  variant={restockView === "drafts" ? "default" : "secondary"}
                 >
-                  Orders
-                  {restockOrderCount === null ? "" : ` (${restockOrderCount.toLocaleString()})`}
-                </Button>
-                <Button
-                  aria-pressed={restockView === "receiving"}
-                  onClick={() => setRestockView("receiving")}
-                  size="sm"
-                  type="button"
-                  variant={restockView === "receiving" ? "default" : "secondary"}
-                >
-                  Receiving
+                  Saved drafts
                 </Button>
               </div>
             </div>
@@ -296,21 +266,17 @@ export function ReportsPage() {
             {restockView === "plan" ? (
               <div className="space-y-3">
                 <RestockNewProductCard
-                  onOpenOrders={() => setRestockView("orders")}
+                  onOpenOrders={() => setRestockView("drafts")}
                   onOrderCreated={notifyRestockOrdersChanged}
                 />
                 <RestockPlanningPanel
-                  onOpenOrders={() => setRestockView("orders")}
+                  onOpenOrders={() => setRestockView("drafts")}
                   onOrdersChanged={notifyRestockOrdersChanged}
                 />
               </div>
-            ) : restockView === "orders" ? (
-              <RestockOrderHistoryPanel
-                refreshVersion={refreshVersion + restockOrdersRefreshVersion}
-              />
             ) : (
-              <RestockReceivingPanel
-                onOrdersChanged={notifyRestockOrdersChanged}
+              <RestockDraftsPanel
+                onDraftConfirmed={notifyRestockOrdersChanged}
                 refreshVersion={refreshVersion + restockOrdersRefreshVersion}
               />
             )}
@@ -380,8 +346,7 @@ export function ReportsPage() {
                 </div>
 
                 <p className="mt-3 text-xs text-slate-500">
-                  Based on recent completed receipts · Use Download report for printable or
-                  spreadsheet copies.
+                  Based on recent completed receipts · Use Download report for printable or spreadsheet copies.
                 </p>
               </CardContent>
             </Card>
@@ -481,9 +446,7 @@ function InventoryHealthCard({ summary }: { summary: DashboardSummary }) {
           </div>
         </div>
 
-        <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
-          {healthSummary}
-        </p>
+        <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">{healthSummary}</p>
       </CardContent>
     </Card>
   );
