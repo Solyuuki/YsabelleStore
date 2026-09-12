@@ -3,7 +3,7 @@ name: Phase 6 Format
 on:
   push:
     branches:
-      - "sprint/v0.10/sprint-10"
+      - "m1/v0.9/feat/customer-social-auth"
     paths:
       - ".github/workflows/phase6-format.yml"
   workflow_dispatch:
@@ -17,51 +17,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: sprint/v0.10/sprint-10
+          ref: m1/v0.9/feat/customer-social-auth
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Install PDF export dependencies
-        run: npm install jspdf jspdf-autotable --workspace frontend
-      - name: Apply direct PDF export QoL pass
-        run: python scripts/apply-direct-pdf-export-qol.py
-      - name: Normalize PDF export contract declarations
+      - name: Normalize repository formatting with CI formatter
+        run: npx prettier --write .
+      - name: Verify repository formatting
+        run: npx prettier --check .
+      - name: Commit formatting if needed
         shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          path = Path("scripts/restock-phase4-6-ui-contract-test.ts")
-          text = path.read_text(encoding="utf-8")
-          block = '''const reportDialogSource = readFileSync(
-            resolve(process.cwd(), "src/components/reports/ReportDownloadDialog.tsx"),
-            "utf8"
-          );
-          '''
-          first = text.find(block)
-          second = text.find(block, first + len(block)) if first >= 0 else -1
-          if second >= 0:
-              text = text[:second] + text[second + len(block):]
-          path.write_text(text, encoding="utf-8")
-          PY
-      - name: Format PDF export changes
-        run: npx prettier --write frontend/src/components/reports/ReportDownloadDialog.tsx frontend/src/utils/directPdfExport.ts scripts/restock-phase4-6-ui-contract-test.ts frontend/package.json package-lock.json
-      - name: Verify formatting
-        run: npx prettier --check frontend/src/components/reports/ReportDownloadDialog.tsx frontend/src/utils/directPdfExport.ts scripts/restock-phase4-6-ui-contract-test.ts frontend/package.json package-lock.json
-      - name: Run frontend contracts
-        run: npm run test --workspace frontend
-      - name: Build frontend
-        run: npm run build --workspace frontend
-      - name: Commit direct PDF export if needed
-        shell: bash
-        run: |
-          if git diff --quiet -- frontend/src/components/reports/ReportDownloadDialog.tsx frontend/src/utils/directPdfExport.ts scripts/restock-phase4-6-ui-contract-test.ts frontend/package.json package-lock.json; then
-            echo "Direct PDF export changes are already applied."
+          if git diff --quiet; then
+            echo "Repository is already formatted."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frontend/src/components/reports/ReportDownloadDialog.tsx frontend/src/utils/directPdfExport.ts scripts/restock-phase4-6-ui-contract-test.ts frontend/package.json package-lock.json
-          HUSKY=0 git commit -m "feat(reports): add direct PDF downloads"
-          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
+          git add -u
+          git add .github/workflows/phase6-format.yml
+          HUSKY=0 git commit -m "style: normalize repository formatting for phase 6 gate"
+          HUSKY=0 git push origin HEAD:m1/v0.9/feat/customer-social-auth
