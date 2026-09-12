@@ -26,9 +26,7 @@ const InventoryPage = lazy(() =>
 const ReceivingPage = lazy(() =>
   import("@/pages/ReceivingPage").then(({ ReceivingPage }) => ({ default: ReceivingPage }))
 );
-const PosPage = lazy(() =>
-  import("@/pages/PosPage").then(({ PosPage }) => ({ default: PosPage }))
-);
+const PosPage = lazy(() => import("@/pages/PosPage").then(({ PosPage }) => ({ default: PosPage })));
 const SalesPage = lazy(() =>
   import("@/pages/SalesPage").then(({ SalesPage }) => ({ default: SalesPage }))
 );
@@ -281,7 +279,13 @@ function LaunchSplash() {
   );
 }
 
-function RouteLoadingFallback({ fullScreen = false, label }: { fullScreen?: boolean; label: string }) {
+function RouteLoadingFallback({
+  fullScreen = false,
+  label
+}: {
+  fullScreen?: boolean;
+  label: string;
+}) {
   return (
     <div
       className={`flex items-center justify-center ${fullScreen ? "min-h-screen" : "min-h-[45vh]"}`}

@@ -58,9 +58,11 @@ const CustomerRegisterPage = lazy(() =>
   }))
 );
 const CustomerAccountRecoveryPage = lazy(() =>
-  import("@/pages/customer/CustomerAccountRecoveryPage").then(({ CustomerAccountRecoveryPage }) => ({
-    default: CustomerAccountRecoveryPage
-  }))
+  import("@/pages/customer/CustomerAccountRecoveryPage").then(
+    ({ CustomerAccountRecoveryPage }) => ({
+      default: CustomerAccountRecoveryPage
+    })
+  )
 );
 const CustomerAccountPage = lazy(() =>
   import("@/pages/customer/CustomerAccountPage").then(({ CustomerAccountPage }) => ({
