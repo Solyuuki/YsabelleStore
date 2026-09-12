@@ -127,6 +127,35 @@ export async function listRestockPlanning(
   };
 }
 
+export async function listRestockOrders(
+  query: {
+    status?: RestockOrderStatus;
+    page?: number;
+    pageSize?: number;
+  } = {},
+  options: Pick<RequestInit, "signal"> = {}
+): Promise<{ items: RestockOrder[]; meta: PaginationMeta }> {
+  const queryString = buildQueryString(query);
+  const response = await apiClient.request<RestockOrder[], { code?: string }, PaginationMeta>(
+    `/api/restock-orders${queryString ? `?${queryString}` : ""}`,
+    options
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return {
+    items: response.data,
+    meta: response.meta ?? {
+      page: query.page ?? 1,
+      pageSize: query.pageSize ?? 20,
+      totalItems: response.data.length,
+      totalPages: 1
+    }
+  };
+}
+
 export async function dismissRestockRecommendation(recommendationId: string, reason: string) {
   const response = await apiClient.request<
     { id: string; resolvedAt: string; status: "DISMISSED" },

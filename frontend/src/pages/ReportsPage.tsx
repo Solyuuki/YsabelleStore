@@ -2,9 +2,7 @@ import {
   Boxes,
   CalendarClock,
   Download,
-  FileSpreadsheet,
   PackageOpen,
-  Printer,
   ReceiptText,
   RefreshCw,
   TriangleAlert
@@ -12,6 +10,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
+import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
 import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -19,17 +18,8 @@ import { StatCard } from "@/components/shared/StatCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog";
-import { fetchInventory, type InventoryRecord, type PaginationMeta } from "@/services/catalogApi";
 import { fetchDashboardSummary, type DashboardSummary } from "@/services/dashboardApi";
 import { listRecentSales } from "@/services/posService";
-import { listRestockPlanning, type RestockPlanningCandidate } from "@/services/restockApi";
 import type { PosSale } from "@/types/pos";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
@@ -39,28 +29,10 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency"
 });
 
-const generatedAtFormatter = new Intl.DateTimeFormat("en-PH", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Asia/Manila"
-});
-
-const EXPORT_PAGE_SIZE = 100;
 const AVAILABILITY_COLORS = ["#4f46e5", "#e2e8f0"];
-
-type ReportExportSnapshot = {
-  completedSales: PosSale[];
-  inventory: InventoryRecord[];
-  restock: RestockPlanningCandidate[];
-  summary: DashboardSummary;
-};
 
 function currency(value: string | number) {
   return currencyFormatter.format(Number(value));
-}
-
-function formatGeneratedAt(value: string) {
-  return generatedAtFormatter.format(new Date(value));
 }
 
 export function ReportsPage() {
@@ -70,8 +42,6 @@ export function ReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
-  const [exportBusy, setExportBusy] = useState<"csv" | "print" | null>(null);
-  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -181,82 +151,12 @@ export function ReportsPage() {
       ]
     : [];
 
-  async function prepareExportSnapshot(): Promise<ReportExportSnapshot> {
-    if (!summary) {
-      throw new Error("Report data is not ready yet.");
-    }
-
-    const [inventory, restock] = await Promise.all([
-      fetchAllInventory(),
-      fetchAllRestockPlanning()
-    ]);
-
-    return {
-      completedSales,
-      inventory,
-      restock,
-      summary
-    };
-  }
-
-  async function handleExportCsv() {
-    setExportBusy("csv");
-    setExportError(null);
-
-    try {
-      const snapshot = await prepareExportSnapshot();
-      downloadReportCsv(snapshot);
-      setExportOpen(false);
-    } catch (exportRequestError) {
-      setExportError(
-        exportRequestError instanceof Error
-          ? exportRequestError.message
-          : "The spreadsheet report could not be prepared."
-      );
-    } finally {
-      setExportBusy(null);
-    }
-  }
-
-  async function handlePrintReport() {
-    setExportError(null);
-
-    const printWindow = window.open("", "_blank", "width=1100,height=800");
-    if (!printWindow) {
-      setExportError("Pop-up was blocked. Allow pop-ups for Ysabelle Store and try again.");
-      return;
-    }
-
-    printWindow.opener = null;
-    printWindow.document.open();
-    printWindow.document.write(
-      '<!doctype html><title>Preparing report…</title><p style="font:14px Arial;padding:24px">Preparing Ysabelle Store report…</p>'
-    );
-    printWindow.document.close();
-    setExportBusy("print");
-
-    try {
-      const snapshot = await prepareExportSnapshot();
-      renderPrintableReport(printWindow, snapshot);
-      setExportOpen(false);
-    } catch (exportRequestError) {
-      printWindow.close();
-      setExportError(
-        exportRequestError instanceof Error
-          ? exportRequestError.message
-          : "The printable report could not be prepared."
-      );
-    } finally {
-      setExportBusy(null);
-    }
-  }
-
   return (
     <div className="space-y-4">
       <PageHeader
         eyebrow="Owner area"
         title="Reports"
-        description="A live operational report for sales, stock, expiry, and restock. Restock actions are grouped separately below and kept near the top so the most important work stays visible."
+        description="Live store overview with restock planning and separate downloadable reports for management, inventory, and suppliers."
         actions={
           <>
             <Button
@@ -271,15 +171,12 @@ export function ReportsPage() {
             </Button>
             <Button
               disabled={!summary || loading}
-              onClick={() => {
-                setExportError(null);
-                setExportOpen(true);
-              }}
+              onClick={() => setExportOpen(true)}
               size="sm"
               type="button"
             >
               <Download className="h-4 w-4" />
-              Operational snapshot
+              Download report
             </Button>
           </>
         }
@@ -361,8 +258,8 @@ export function ReportsPage() {
                 </div>
 
                 <p className="mt-3 text-xs text-slate-500">
-                  Based on recent completed receipts · Internal details are available in Operational
-                  snapshot.
+                  Based on recent completed receipts · Use Download report for printable or
+                  spreadsheet copies.
                 </p>
               </CardContent>
             </Card>
@@ -372,61 +269,12 @@ export function ReportsPage() {
         </>
       ) : null}
 
-      <Dialog onOpenChange={setExportOpen} open={exportOpen}>
-        <DialogContent className="max-w-[620px]">
-          <DialogHeader>
-            <DialogTitle>Internal operational snapshot</DialogTitle>
-            <DialogDescription>
-              Export the store's internal live snapshot for management review. For a supplier-ready
-              restock document, confirm the Restock Planner and use Export supplier copy.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-3 px-6 pb-6 sm:grid-cols-2">
-            <Button
-              className="h-auto min-h-24 items-start justify-start whitespace-normal p-4 text-left"
-              disabled={exportBusy !== null}
-              onClick={() => void handlePrintReport()}
-              type="button"
-              variant="secondary"
-            >
-              <Printer className="mt-0.5 h-5 w-5 shrink-0" />
-              <span>
-                <span className="block font-semibold text-slate-950">
-                  {exportBusy === "print" ? "Preparing…" : "Print / Save PDF"}
-                </span>
-                <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
-                  Opens a clean print view. Choose Save as PDF or print directly.
-                </span>
-              </span>
-            </Button>
-
-            <Button
-              className="h-auto min-h-24 items-start justify-start whitespace-normal p-4 text-left"
-              disabled={exportBusy !== null}
-              onClick={() => void handleExportCsv()}
-              type="button"
-              variant="secondary"
-            >
-              <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0" />
-              <span>
-                <span className="block font-semibold text-slate-950">
-                  {exportBusy === "csv" ? "Preparing…" : "Excel-compatible CSV"}
-                </span>
-                <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
-                  Downloads a spreadsheet-ready file with inventory and restock detail.
-                </span>
-              </span>
-            </Button>
-          </div>
-
-          {exportError ? (
-            <div className="mx-6 mb-6 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {exportError}
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ReportDownloadDialog
+        completedSales={completedSales}
+        onOpenChange={setExportOpen}
+        open={exportOpen}
+        summary={summary}
+      />
     </div>
   );
 }
@@ -540,260 +388,4 @@ function HealthValue({
       </p>
     </div>
   );
-}
-
-async function fetchAllInventory() {
-  return fetchEveryPage<InventoryRecord>((page) =>
-    fetchInventory({ page, pageSize: EXPORT_PAGE_SIZE })
-  );
-}
-
-async function fetchAllRestockPlanning() {
-  return fetchEveryPage<RestockPlanningCandidate>((page) =>
-    listRestockPlanning({ page, pageSize: EXPORT_PAGE_SIZE })
-  );
-}
-
-async function fetchEveryPage<T>(
-  fetchPage: (page: number) => Promise<{ items: T[]; meta: PaginationMeta }>
-): Promise<T[]> {
-  const items: T[] = [];
-  let page = 1;
-
-  while (true) {
-    const result = await fetchPage(page);
-    items.push(...result.items);
-
-    if (page >= result.meta.totalPages) {
-      return items;
-    }
-
-    page += 1;
-  }
-}
-
-function downloadReportCsv(snapshot: ReportExportSnapshot) {
-  const rows: Array<Array<string | number>> = [
-    ["YSABELLE STORE", "Internal Operational Snapshot"],
-    ["Generated", formatGeneratedAt(snapshot.summary.generatedAt)],
-    [],
-    ["REPORT SUMMARY"],
-    ["Metric", "Value"],
-    ["Today's sales", Number(snapshot.summary.sales.todayAmount)],
-    ["Today's completed receipts", snapshot.summary.sales.completedSales],
-    ["Tracked inventory", snapshot.summary.inventory.trackedItems],
-    ["Low stock", snapshot.summary.inventory.lowStockItems],
-    ["Out of stock", snapshot.summary.inventory.outOfStockItems],
-    ["Near-expiry batches", snapshot.summary.expiry.nearExpiryBatches],
-    ["Expired batches", snapshot.summary.expiry.expiredBatches],
-    [],
-    ["RECENT SALES"],
-    ["Sale number", "Date", "Cashier", "Units", "Total", "Status"],
-    ...snapshot.completedSales.map((sale) => [
-      sale.saleNumber,
-      formatGeneratedAt(sale.saleDate),
-      sale.cashierName ?? "—",
-      sale.itemCount,
-      Number(sale.totalAmount),
-      sale.status
-    ]),
-    [],
-    ["INVENTORY DETAIL"],
-    [
-      "SKU",
-      "Product",
-      "Category",
-      "Status",
-      "Stock status",
-      "On hand",
-      "Available",
-      "Reorder level",
-      "Target stock",
-      "Nearest expiry"
-    ],
-    ...snapshot.inventory.map((item) => [
-      item.sku,
-      item.productName,
-      item.category.name,
-      item.status,
-      item.stockStatus,
-      item.currentQuantity,
-      item.availableQuantity,
-      item.reorderLevel,
-      item.targetStockLevel,
-      item.nearestExpiry ? formatGeneratedAt(item.nearestExpiry) : "—"
-    ]),
-    [],
-    ["RESTOCK RECOMMENDATIONS"],
-    [
-      "SKU",
-      "Product",
-      "Source",
-      "Sellable",
-      "Physical",
-      "Incoming",
-      "Suggested quantity",
-      "Rationale"
-    ],
-    ...snapshot.restock.map((item) => [
-      item.product.sku,
-      item.product.name,
-      item.recommendationSource,
-      item.sellableStock,
-      item.physicalOnHand,
-      item.incomingStock,
-      item.recommendedQuantity,
-      item.rationale
-    ])
-  ];
-
-  const csv = rows.map((row) => row.map(toCsvCell).join(",")).join("\r\n");
-  const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = `ysabelle-operational-report-${fileDate(snapshot.summary.generatedAt)}.csv`;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-}
-
-function renderPrintableReport(printWindow: Window, snapshot: ReportExportSnapshot) {
-  printWindow.document.open();
-  printWindow.document.write(buildPrintableReport(snapshot));
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.setTimeout(() => printWindow.print(), 250);
-}
-
-function buildPrintableReport(snapshot: ReportExportSnapshot) {
-  const summary = snapshot.summary;
-  const salesGross = snapshot.completedSales.reduce(
-    (total, sale) => total + Number(sale.totalAmount),
-    0
-  );
-  const salesUnits = snapshot.completedSales.reduce((total, sale) => total + sale.itemCount, 0);
-  const inventoryRows = snapshot.inventory
-    .map(
-      (item) => `
-        <tr>
-          <td>${escapeHtml(item.sku)}</td>
-          <td>${escapeHtml(item.productName)}</td>
-          <td>${escapeHtml(item.stockStatus.replaceAll("_", " "))}</td>
-          <td class="number">${item.currentQuantity.toLocaleString()}</td>
-          <td class="number">${item.reorderLevel.toLocaleString()}</td>
-          <td class="number">${item.targetStockLevel.toLocaleString()}</td>
-        </tr>`
-    )
-    .join("");
-  const restockRows = snapshot.restock
-    .map(
-      (item) => `
-        <tr>
-          <td>${escapeHtml(item.product.sku)}</td>
-          <td>${escapeHtml(item.product.name)}</td>
-          <td>${escapeHtml(item.recommendationSource)}</td>
-          <td class="number">${item.sellableStock.toLocaleString()}</td>
-          <td class="number">${item.incomingStock.toLocaleString()}</td>
-          <td class="number">${item.recommendedQuantity.toLocaleString()}</td>
-        </tr>`
-    )
-    .join("");
-
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Ysabelle Store Internal Operational Snapshot</title>
-  <style>
-    @page { margin: 16mm; size: A4; }
-    * { box-sizing: border-box; }
-    body { color: #0f172a; font: 12px/1.45 Arial, sans-serif; margin: 0; }
-    h1, h2 { margin: 0; }
-    h1 { font-size: 22px; }
-    h2 { font-size: 15px; margin-bottom: 8px; }
-    .meta { color: #64748b; margin-top: 4px; }
-    .summary { display: grid; gap: 8px; grid-template-columns: repeat(4, 1fr); margin: 18px 0; }
-    .metric { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
-    .metric span { color: #64748b; display: block; font-size: 10px; text-transform: uppercase; }
-    .metric strong { display: block; font-size: 16px; margin-top: 3px; }
-    section { break-inside: avoid; margin-top: 18px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border-bottom: 1px solid #e2e8f0; padding: 6px 5px; text-align: left; vertical-align: top; }
-    th { background: #f8fafc; color: #475569; font-size: 10px; text-transform: uppercase; }
-    .number { text-align: right; }
-    .note { color: #64748b; font-size: 10px; margin-top: 8px; }
-    @media print { .screen-only { display: none; } }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>YSABELLE STORE — Internal Operational Snapshot</h1>
-    <div class="meta">Generated ${escapeHtml(formatGeneratedAt(summary.generatedAt))}</div>
-  </header>
-
-  <div class="summary">
-    <div class="metric"><span>Today's sales</span><strong>${escapeHtml(currency(summary.sales.todayAmount))}</strong></div>
-    <div class="metric"><span>Recent gross</span><strong>${escapeHtml(currency(salesGross))}</strong></div>
-    <div class="metric"><span>Inventory records</span><strong>${summary.inventory.trackedItems.toLocaleString()}</strong></div>
-    <div class="metric"><span>Restock recommendations</span><strong>${snapshot.restock.length.toLocaleString()}</strong></div>
-    <div class="metric"><span>Units sold</span><strong>${salesUnits.toLocaleString()}</strong></div>
-    <div class="metric"><span>Low stock</span><strong>${summary.inventory.lowStockItems.toLocaleString()}</strong></div>
-    <div class="metric"><span>Out of stock</span><strong>${summary.inventory.outOfStockItems.toLocaleString()}</strong></div>
-    <div class="metric"><span>Expiry attention</span><strong>${summary.expiry.nearExpiryBatches.toLocaleString()}</strong></div>
-  </div>
-
-  <section>
-    <h2>Inventory detail</h2>
-    <table>
-      <thead><tr><th>SKU</th><th>Product</th><th>Stock status</th><th class="number">On hand</th><th class="number">Reorder</th><th class="number">Target</th></tr></thead>
-      <tbody>${inventoryRows || '<tr><td colspan="6">No inventory rows.</td></tr>'}</tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Restock recommendations</h2>
-    <table>
-      <thead><tr><th>SKU</th><th>Product</th><th>Source</th><th class="number">Sellable</th><th class="number">Incoming</th><th class="number">Suggested</th></tr></thead>
-      <tbody>${restockRows || '<tr><td colspan="6">No products currently require restocking.</td></tr>'}</tbody>
-    </table>
-    <p class="note">Restock quantities are planning recommendations only. Physical inventory changes only when goods are actually received.</p>
-  </section>
-
-  <p class="note">Recent sales metrics use up to the latest 50 persisted sale records. Inventory is a live snapshot as of report generation.</p>
-</body>
-</html>`;
-}
-
-function toCsvCell(value: string | number) {
-  let text = String(value ?? "");
-
-  if (/^[=+\-@]/.test(text)) {
-    text = `'${text}`;
-  }
-
-  return `"${text.replaceAll('"', '""')}"`;
-}
-
-function escapeHtml(value: string | number) {
-  return String(value).replace(/[&<>"']/g, (character) => {
-    const entities: Record<string, string> = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    };
-
-    return entities[character] ?? character;
-  });
-}
-
-function fileDate(value: string) {
-  const date = new Date(value);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }

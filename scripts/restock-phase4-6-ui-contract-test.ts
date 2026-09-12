@@ -8,6 +8,14 @@ const panelSource = readFileSync(
   "utf8"
 );
 const apiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.ts"), "utf8");
+const reportDialogSource = readFileSync(
+  resolve(process.cwd(), "src/components/reports/ReportDownloadDialog.tsx"),
+  "utf8"
+);
+const reportExportSource = readFileSync(
+  resolve(process.cwd(), "src/utils/reportExport.ts"),
+  "utf8"
+);
 const supplierExportSource = readFileSync(
   resolve(process.cwd(), "src/utils/restockExport.ts"),
   "utf8"
@@ -15,16 +23,12 @@ const supplierExportSource = readFileSync(
 
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.match(reportsSource, /<RestockPlanningPanel \/>/);
-assert.match(reportsSource, /Restock actions are grouped separately below/);
-assert.match(reportsSource, /Operational snapshot/);
-assert.match(reportsSource, /Print \/ Save PDF/);
-assert.match(reportsSource, /Excel-compatible CSV/);
+assert.match(reportsSource, /Download report/);
 assert.match(reportsSource, /ResponsiveContainer/);
 assert.match(reportsSource, /Recent receipts/);
 assert.match(reportsSource, /No inventory issues need attention right now/);
-assert.doesNotMatch(reportsSource, /Operational snapshot only\. Download the report/);
-assert.match(reportsSource, /fetchAllInventory/);
-assert.match(reportsSource, /fetchAllRestockPlanning/);
+assert.doesNotMatch(reportsSource, /Internal operational snapshot/);
+assert.match(reportsSource, /ReportDownloadDialog/);
 assert.ok(
   reportsSource.indexOf("<RestockPlanningPanel />") <
     reportsSource.indexOf("Recent receipt metrics"),
@@ -75,6 +79,21 @@ assert.match(
 assert.match(apiSource, /"\/api\/restock-orders"/);
 assert.match(apiSource, /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/lines/);
 assert.match(apiSource, /\/api\/restock-orders\/\$\{encodeURIComponent\(orderId\)\}\/approve/);
+assert.match(apiSource, /export async function listRestockOrders/);
+
+assert.match(reportDialogSource, /Download report/);
+assert.match(reportDialogSource, /Operational Summary/);
+assert.match(reportDialogSource, /Inventory Report/);
+assert.match(reportDialogSource, /Restock \/ Supplier Order/);
+assert.match(reportDialogSource, /Print \/ Save PDF/);
+assert.match(reportDialogSource, /Excel-compatible CSV/);
+assert.match(reportDialogSource, /No confirmed restock order yet/);
+assert.match(reportDialogSource, /REPORT_TYPE_SESSION_KEY/);
+
+assert.match(reportExportSource, /OPERATIONAL SUMMARY/);
+assert.match(reportExportSource, /INVENTORY REPORT/);
+assert.match(reportExportSource, /Total units on hand/);
+assert.doesNotMatch(reportExportSource, /RESTOCK RECOMMENDATIONS/);
 
 assert.match(supplierExportSource, /RESTOCK ORDER - SUPPLIER COPY/);
 assert.match(supplierExportSource, /Supplier \/ Manufacturer/);
