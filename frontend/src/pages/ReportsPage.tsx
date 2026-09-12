@@ -9,12 +9,13 @@ import {
   RefreshCw,
   TriangleAlert
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { StatCard } from "@/components/shared/StatCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,14 +53,6 @@ type ReportExportSnapshot = {
   inventory: InventoryRecord[];
   restock: RestockPlanningCandidate[];
   summary: DashboardSummary;
-};
-
-type CompactStat = {
-  detail: string;
-  icon: ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  warning?: boolean;
 };
 
 function currency(value: string | number) {
@@ -134,40 +127,45 @@ export function ReportsPage() {
   );
   const averageReceipt = completedSales.length > 0 ? recentGrossSales / completedSales.length : 0;
 
-  const compactStats: CompactStat[] = summary
+  const stats = summary
     ? [
         {
-          label: "Today's sales",
+          title: "Today's sales",
           value: currency(summary.sales.todayAmount),
-          detail: `${summary.sales.completedSales} receipt${summary.sales.completedSales === 1 ? "" : "s"}`,
+          detail: `${summary.sales.completedSales} completed receipt${summary.sales.completedSales === 1 ? "" : "s"}`,
+          tone: "info" as const,
           icon: ReceiptText
         },
         {
-          label: "Recent gross",
+          title: "Recent gross",
           value: currency(recentGrossSales),
-          detail: `${completedSales.length} recent receipt${completedSales.length === 1 ? "" : "s"}`,
+          detail: `Across ${completedSales.length} completed receipt${completedSales.length === 1 ? "" : "s"} in the latest 50 records`,
+          tone: "success" as const,
           icon: CalendarClock
         },
         {
-          label: "Inventory",
+          title: "Tracked inventory",
           value: summary.inventory.trackedItems.toLocaleString(),
-          detail: `${summary.inventory.inStockItems} healthy • ${summary.inventory.outOfStockItems} out`,
-          icon: Boxes,
-          warning: summary.inventory.outOfStockItems > 0
+          detail: `${summary.inventory.inStockItems} in stock • ${summary.inventory.outOfStockItems} out of stock`,
+          tone: summary.inventory.outOfStockItems > 0 ? ("warning" as const) : ("success" as const),
+          icon: Boxes
         },
         {
-          label: "Low stock",
+          title: "Low stock",
           value: summary.inventory.lowStockItems.toLocaleString(),
-          detail: summary.inventory.lowStockItems > 0 ? "Needs attention" : "No items flagged",
-          icon: PackageOpen,
-          warning: summary.inventory.lowStockItems > 0
+          detail:
+            summary.inventory.lowStockItems > 0
+              ? "Needs replenishment attention"
+              : "No items flagged",
+          tone: "warning" as const,
+          icon: PackageOpen
         },
         {
-          label: "Expiry",
+          title: "Expiry attention",
           value: summary.expiry.nearExpiryBatches.toLocaleString(),
-          detail: `${summary.expiry.expiredBatches} expired`,
-          icon: TriangleAlert,
-          warning: summary.expiry.nearExpiryBatches > 0 || summary.expiry.expiredBatches > 0
+          detail: `${summary.expiry.expiredBatches} expired batch${summary.expiry.expiredBatches === 1 ? "" : "es"}`,
+          tone: "warning" as const,
+          icon: TriangleAlert
         }
       ]
     : [];
@@ -292,19 +290,11 @@ export function ReportsPage() {
 
       {summary ? (
         <>
-          <Card>
-            <CardContent className="p-0">
-              <div className="grid grid-cols-2 divide-x divide-y divide-slate-100 sm:grid-cols-3 xl:grid-cols-5 xl:divide-y-0">
-                {compactStats.map((stat) => (
-                  <CompactSummaryStat key={stat.label} {...stat} />
-                ))}
-              </div>
-              <div className="border-t border-slate-100 px-4 py-2 text-xs text-slate-500">
-                Live snapshot generated {formatGeneratedAt(summary.generatedAt)}. Recent sales
-                metrics use up to the latest 50 persisted sale records.
-              </div>
-            </CardContent>
-          </Card>
+          <section className="grid gap-4 lg:grid-cols-3 xl:grid-cols-5">
+            {stats.map((stat) => (
+              <StatCard key={stat.title} {...stat} />
+            ))}
+          </section>
 
           <RestockPlanningPanel />
 
@@ -387,25 +377,6 @@ export function ReportsPage() {
           ) : null}
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-function CompactSummaryStat({ detail, icon: Icon, label, value, warning }: CompactStat) {
-  return (
-    <div className="min-w-0 p-3 sm:p-4">
-      <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-        <Icon className={warning ? "h-4 w-4 text-amber-500" : "h-4 w-4 text-indigo-500"} />
-        <span className="truncate">{label}</span>
-      </div>
-      <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{value}</p>
-      <p
-        className={
-          warning ? "mt-1 truncate text-xs text-amber-700" : "mt-1 truncate text-xs text-slate-500"
-        }
-      >
-        {detail}
-      </p>
     </div>
   );
 }
