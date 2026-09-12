@@ -26,9 +26,11 @@ Sprint 10 is executed phase-by-phase. Each active phase must pass automated veri
 
 ## Current active slice
 
-Phase 4–6 is the current implementation and QA scope on `sprint/v0.10/sprint-10`.
+Phase 4–9 is the current implemented Restock scope on `sprint/v0.10/sprint-10`.
 
-Phase 7–15 remains pending and must not be treated as implemented by Phase 4–6 QA.
+Phase 7–9 automated implementation verification is complete only when the final exact branch head passes CI, Pull Request Checks, and Repository Governance. Manual Owner browser QA remains a separate required gate before the slice is treated as QA-complete.
+
+Phase 10–15 remains pending and must not be treated as implemented by Phase 4–9 QA.
 
 ## Domain boundary
 
