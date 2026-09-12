@@ -5,6 +5,7 @@ import test from "node:test";
 import { getDomainChangeEffects } from "../src/services/domainChangeService.js";
 import {
   createRestockOrderSchema,
+  restockOrderListQuerySchema,
   restockOrderStatusSchema
 } from "../src/validators/restock.validators.js";
 
@@ -30,6 +31,22 @@ test("Phase 4 restock lifecycle exposes the six planned statuses", () => {
     "RECEIVED",
     "CANCELLED"
   ]);
+});
+
+test("Restock order history supports paged reference search and multi-status filters", () => {
+  const query = restockOrderListQuerySchema.parse({
+    page: "2",
+    pageSize: "10",
+    search: " RO-2026 ",
+    statuses: "APPROVED,AWAITING_DELIVERY,PARTIALLY_RECEIVED"
+  });
+
+  assert.equal(query.page, 2);
+  assert.equal(query.pageSize, 10);
+  assert.equal(query.search, "RO-2026");
+  assert.deepEqual(query.statuses, ["APPROVED", "AWAITING_DELIVERY", "PARTIALLY_RECEIVED"]);
+  assert.match(restockServiceSource, /orderNumber: \{ contains: query\.search \}/);
+  assert.match(restockServiceSource, /status: statuses\.length === 1 \? statuses\[0\] : \{ in: statuses \}/);
 });
 
 test("Phase 6 selected lines require positive requested quantity", () => {
