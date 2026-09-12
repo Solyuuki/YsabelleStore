@@ -1,0 +1,47 @@
+name: Security Audit Diagnostic
+
+on:
+  push:
+    branches:
+      - "sprint/v0.10/sprint-10"
+    paths:
+      - ".github/workflows/security-audit-diagnostic.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install lockfile dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Capture npm audit report
+        shell: bash
+        run: |
+          npm audit --json > audit.json || true
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync('audit.json', 'utf8'));
+          console.log('AUDIT METADATA', JSON.stringify(report.metadata?.vulnerabilities ?? {}, null, 2));
+          for (const [name, v] of Object.entries(report.vulnerabilities ?? {})) {
+            console.log('\nPACKAGE:', name);
+            console.log('severity:', v.severity);
+            console.log('direct:', v.isDirect);
+            console.log('range:', v.range);
+            console.log('nodes:', (v.nodes ?? []).join(', '));
+            console.log('fixAvailable:', JSON.stringify(v.fixAvailable));
+            console.log('via:', JSON.stringify(v.via));
+            console.log('effects:', JSON.stringify(v.effects));
+          }
+          NODE
+      - name: Project dependency reachability policy
+        run: npm run security:audit:production
