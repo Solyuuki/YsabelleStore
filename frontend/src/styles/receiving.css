@@ -1,9 +1,9 @@
 table[aria-label$="delivery tickets"] th:first-child,
 table[aria-label$="delivery tickets"] td:first-child {
-  padding-left: 2rem;
+  padding-left: 3rem;
 }
 
 table[aria-label$="delivery tickets"] th:last-child,
 table[aria-label$="delivery tickets"] td:last-child {
-  padding-right: 2rem;
+  padding-right: 3rem;
 }
