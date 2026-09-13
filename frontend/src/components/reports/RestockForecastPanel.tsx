@@ -40,8 +40,7 @@ const RISK_PRIORITY: Record<RestockForecastRisk, number> = {
 };
 
 const WATCHLIST_FETCH_PAGE_SIZE = 100;
-const DEFAULT_WATCHLIST_PAGE_SIZE = 20;
-const WATCHLIST_PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
+const WATCHLIST_PAGE_SIZE = 10;
 
 type CurrentStockStatus = "OUT_OF_STOCK" | "LOW_STOCK" | "NORMAL" | "OVERSTOCK";
 
@@ -206,7 +205,6 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const [error, setError] = useState<string | null>(null);
   const [localRefreshVersion, setLocalRefreshVersion] = useState(0);
   const [watchlistPage, setWatchlistPage] = useState(1);
-  const [watchlistPageSize, setWatchlistPageSize] = useState(DEFAULT_WATCHLIST_PAGE_SIZE);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -256,9 +254,9 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   }, [localRefreshVersion, refreshVersion]);
 
   useEffect(() => {
-    const totalPages = Math.max(1, Math.ceil(items.length / watchlistPageSize));
+    const totalPages = Math.max(1, Math.ceil(items.length / WATCHLIST_PAGE_SIZE));
     setWatchlistPage((current) => Math.min(current, totalPages));
-  }, [items.length, watchlistPageSize]);
+  }, [items.length]);
 
   const selected = useMemo(
     () => items.find((item) => item.product.id === selectedProductId) ?? null,
@@ -271,12 +269,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const demandChart = useMemo(() => buildDemandChart(selected), [selected]);
   const inventoryProjection = useMemo(() => buildInventoryProjection(selected), [selected]);
   const firstForecastPeriod = selected?.forecast?.points[0]?.period ?? null;
-  const watchlistTotalPages = Math.max(1, Math.ceil(items.length / watchlistPageSize));
+  const watchlistTotalPages = Math.max(1, Math.ceil(items.length / WATCHLIST_PAGE_SIZE));
   const normalizedWatchlistPage = Math.min(watchlistPage, watchlistTotalPages);
-  const watchlistStart = (normalizedWatchlistPage - 1) * watchlistPageSize;
+  const watchlistStart = (normalizedWatchlistPage - 1) * WATCHLIST_PAGE_SIZE;
   const visibleItems = useMemo(
-    () => items.slice(watchlistStart, watchlistStart + watchlistPageSize),
-    [items, watchlistPageSize, watchlistStart]
+    () => items.slice(watchlistStart, watchlistStart + WATCHLIST_PAGE_SIZE),
+    [items, watchlistStart]
   );
   const summary = useMemo(() => {
     const highRisk = actionableItems.filter((item) => {
@@ -303,20 +301,14 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     const page = Math.min(Math.max(nextPage, 1), watchlistTotalPages);
     setWatchlistPage(page);
 
-    const start = (page - 1) * watchlistPageSize;
-    const pageItems = items.slice(start, start + watchlistPageSize);
+    const start = (page - 1) * WATCHLIST_PAGE_SIZE;
+    const pageItems = items.slice(start, start + WATCHLIST_PAGE_SIZE);
     if (
       pageItems.length > 0 &&
       !pageItems.some((item) => item.product.id === selectedProductId)
     ) {
       setSelectedProductId(pageItems[0].product.id);
     }
-  }
-
-  function handleWatchlistPageSizeChange(nextPageSize: number) {
-    setWatchlistPageSize(nextPageSize);
-    setWatchlistPage(1);
-    if (items.length > 0) setSelectedProductId(items[0].product.id);
   }
 
   if (loading && items.length === 0) {
@@ -480,10 +472,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 isLoading={loading}
                 itemLabel="products"
                 onPageChange={handleWatchlistPageChange}
-                onPageSizeChange={handleWatchlistPageSizeChange}
                 page={normalizedWatchlistPage}
-                pageSize={watchlistPageSize}
-                pageSizeOptions={[]}
+                pageSize={WATCHLIST_PAGE_SIZE}
                 totalItems={items.length}
                 totalPages={watchlistTotalPages}
               />
