@@ -291,25 +291,25 @@ enum RestockRecommendationSource {
 }
 
 model User {
-  id                       String                       @id @default(cuid()) @db.VarChar(191)
-  name                     String                       @db.VarChar(120)
-  email                    String                       @unique(map: "uq_users_email") @db.VarChar(191)
-  passwordHash             String                       @map("password_hash") @db.VarChar(255)
-  role                     UserRole                     @default(STAFF)
-  status                   UserStatus                   @default(ACTIVE)
-  createdAt                DateTime                     @default(now()) @map("created_at")
-  updatedAt                DateTime                     @updatedAt @map("updated_at")
-  sales                    Sale[]
-  inventoryMovements       InventoryMovement[]
-  forecastRecords          ForecastRecord[]
-  recommendationNotes      RecommendationRecord[]
-  trustedDevices           TrustedDevice[]
+  id                        String                       @id @default(cuid()) @db.VarChar(191)
+  name                      String                       @db.VarChar(120)
+  email                     String                       @unique(map: "uq_users_email") @db.VarChar(191)
+  passwordHash              String                       @map("password_hash") @db.VarChar(255)
+  role                      UserRole                     @default(STAFF)
+  status                    UserStatus                   @default(ACTIVE)
+  createdAt                 DateTime                     @default(now()) @map("created_at")
+  updatedAt                 DateTime                     @updatedAt @map("updated_at")
+  sales                     Sale[]
+  inventoryMovements        InventoryMovement[]
+  forecastRecords           ForecastRecord[]
+  recommendationNotes       RecommendationRecord[]
+  trustedDevices            TrustedDevice[]
   registeredProductBarcodes ProductBarcode[]             @relation("ProductBarcodeRegisteredBy")
-  historicalSalesImports   HistoricalSalesImportBatch[] @relation("HistoricalSalesImportedBy")
-  historicalSalesRollbacks HistoricalSalesImportBatch[] @relation("HistoricalSalesRolledBackBy")
-  invalidatedMonthlySales  HistoricalMonthlySales[]     @relation("HistoricalSalesInvalidatedBy")
-  createdRestockOrders     RestockOrder[]               @relation("RestockOrderCreatedBy")
-  approvedRestockOrders    RestockOrder[]               @relation("RestockOrderApprovedBy")
+  historicalSalesImports    HistoricalSalesImportBatch[] @relation("HistoricalSalesImportedBy")
+  historicalSalesRollbacks  HistoricalSalesImportBatch[] @relation("HistoricalSalesRolledBackBy")
+  invalidatedMonthlySales   HistoricalMonthlySales[]     @relation("HistoricalSalesInvalidatedBy")
+  createdRestockOrders      RestockOrder[]               @relation("RestockOrderCreatedBy")
+  approvedRestockOrders     RestockOrder[]               @relation("RestockOrderApprovedBy")
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
@@ -335,25 +335,25 @@ model TrustedDevice {
 }
 
 model CustomerAccount {
-  id              String                @id @default(cuid()) @db.VarChar(191)
-  name            String                @db.VarChar(120)
-  username        String?               @unique(map: "uq_customer_accounts_username") @db.VarChar(30)
-  email           String                @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
-  phone           String?               @db.VarChar(40)
-  phoneNormalized String?               @unique(map: "uq_customer_accounts_phone_normalized") @map("phone_normalized") @db.VarChar(16)
-  emailVerifiedAt DateTime?             @map("email_verified_at")
-  phoneVerifiedAt DateTime?             @map("phone_verified_at")
-  passwordHash    String?               @map("password_hash") @db.VarChar(255)
-  status          CustomerAccountStatus @default(ACTIVE)
-  createdAt       DateTime              @default(now()) @map("created_at")
-  updatedAt       DateTime              @updatedAt @map("updated_at")
+  id                  String                       @id @default(cuid()) @db.VarChar(191)
+  name                String                       @db.VarChar(120)
+  username            String?                      @unique(map: "uq_customer_accounts_username") @db.VarChar(30)
+  email               String                       @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
+  phone               String?                      @db.VarChar(40)
+  phoneNormalized     String?                      @unique(map: "uq_customer_accounts_phone_normalized") @map("phone_normalized") @db.VarChar(16)
+  emailVerifiedAt     DateTime?                    @map("email_verified_at")
+  phoneVerifiedAt     DateTime?                    @map("phone_verified_at")
+  passwordHash        String?                      @map("password_hash") @db.VarChar(255)
+  status              CustomerAccountStatus        @default(ACTIVE)
+  createdAt           DateTime                     @default(now()) @map("created_at")
+  updatedAt           DateTime                     @updatedAt @map("updated_at")
   sessions            CustomerSession[]
   passwordResetTokens CustomerPasswordResetToken[]
   socialIdentities    CustomerSocialIdentity[]
   socialLinkIntents   CustomerSocialLinkIntent[]
   oauthHandoffs       CustomerOAuthHandoff[]
   orders              CustomerOrder[]
-  rememberedAuth       CustomerRememberedAuth[]
+  rememberedAuth      CustomerRememberedAuth[]
 
   @@index([status], map: "idx_customer_accounts_status")
   @@map("customer_accounts")
@@ -746,25 +746,25 @@ model ProductDuplicateCandidate {
 }
 
 model SarimaSourceProductMapping {
-  id                     String                         @id @default(cuid()) @db.VarChar(191)
-  sourceKey              String                         @unique(map: "uq_sarima_source_mapping_key") @map("source_key") @db.VarChar(80)
-  sourceProductId        String                         @unique(map: "uq_sarima_source_mapping_product") @map("source_product_id") @db.VarChar(40)
-  canonicalProductId     String                         @unique(map: "uq_sarima_source_mapping_canonical") @map("canonical_product_id") @db.VarChar(191)
-  sourceDataset          String                         @map("source_dataset") @db.VarChar(160)
-  sourceProductName      String                         @map("source_product_name") @db.VarChar(160)
-  sourceCategory         String                         @map("source_category") @db.VarChar(160)
-  sourceSellingPrice     Decimal                        @map("source_selling_price") @db.Decimal(10, 2)
-  historicalMonthCount   Int                            @map("historical_month_count") @db.UnsignedInt
-  historicalStartPeriod  String                         @map("historical_start_period") @db.VarChar(7)
-  historicalEndPeriod    String                         @map("historical_end_period") @db.VarChar(7)
-  totalHistoricalUnits   Int                            @map("total_historical_units") @db.UnsignedInt
-  confidence             SarimaSourceIdentityConfidence
-  evidence               Json
-  approvedBy             String?                        @map("approved_by") @db.VarChar(191)
-  approvedAt             DateTime                       @default(now()) @map("approved_at")
-  createdAt              DateTime                       @default(now()) @map("created_at")
-  updatedAt              DateTime                       @updatedAt @map("updated_at")
-  canonicalProduct       Product                        @relation(fields: [canonicalProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  id                    String                         @id @default(cuid()) @db.VarChar(191)
+  sourceKey             String                         @unique(map: "uq_sarima_source_mapping_key") @map("source_key") @db.VarChar(80)
+  sourceProductId       String                         @unique(map: "uq_sarima_source_mapping_product") @map("source_product_id") @db.VarChar(40)
+  canonicalProductId    String                         @unique(map: "uq_sarima_source_mapping_canonical") @map("canonical_product_id") @db.VarChar(191)
+  sourceDataset         String                         @map("source_dataset") @db.VarChar(160)
+  sourceProductName     String                         @map("source_product_name") @db.VarChar(160)
+  sourceCategory        String                         @map("source_category") @db.VarChar(160)
+  sourceSellingPrice    Decimal                        @map("source_selling_price") @db.Decimal(10, 2)
+  historicalMonthCount  Int                            @map("historical_month_count") @db.UnsignedInt
+  historicalStartPeriod String                         @map("historical_start_period") @db.VarChar(7)
+  historicalEndPeriod   String                         @map("historical_end_period") @db.VarChar(7)
+  totalHistoricalUnits  Int                            @map("total_historical_units") @db.UnsignedInt
+  confidence            SarimaSourceIdentityConfidence
+  evidence              Json
+  approvedBy            String?                        @map("approved_by") @db.VarChar(191)
+  approvedAt            DateTime                       @default(now()) @map("approved_at")
+  createdAt             DateTime                       @default(now()) @map("created_at")
+  updatedAt             DateTime                       @updatedAt @map("updated_at")
+  canonicalProduct      Product                        @relation(fields: [canonicalProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([confidence, approvedAt], map: "idx_sarima_source_mapping_confidence")
   @@index([sourceDataset, sourceProductId], map: "idx_sarima_source_mapping_dataset_product")
@@ -811,7 +811,7 @@ model InventoryBatch {
   batchCode          String               @map("batch_code") @db.VarChar(80)
   quantityReceived   Int                  @map("quantity_received") @db.UnsignedInt
   quantityRemaining  Int                  @map("quantity_remaining") @db.UnsignedInt
-  unitCost           Decimal              @map("unit_cost") @db.Decimal(10, 2)
+  unitCost           Decimal?             @map("unit_cost") @db.Decimal(10, 2)
   receivedAt         DateTime             @default(now()) @map("received_at")
   expiresAt          DateTime?            @map("expires_at") @db.Date
   status             InventoryBatchStatus @default(AVAILABLE)
@@ -1139,7 +1139,7 @@ model RecommendationRecord {
   reason              String                 @db.Text
   status              RecommendationStatus   @default(OPEN)
   generatedAt         DateTime               @default(now()) @map("generated_at")
-  resolvedAt          DateTime?               @map("resolved_at")
+  resolvedAt          DateTime?              @map("resolved_at")
   createdAt           DateTime               @default(now()) @map("created_at")
   product             Product                @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   forecastRecord      ForecastRecord?        @relation(fields: [forecastRecordId], references: [id], onDelete: SetNull, onUpdate: Cascade)
@@ -1191,7 +1191,7 @@ model RestockOrderLine {
   updatedAt            DateTime                    @updatedAt @map("updated_at")
   order                RestockOrder                @relation(fields: [restockOrderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   product              Product                     @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  recommendation       RecommendationRecord?        @relation(fields: [recommendationId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  recommendation       RecommendationRecord?       @relation(fields: [recommendationId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@unique([restockOrderId, productId], map: "uq_restock_order_lines_order_product")
   @@index([productId], map: "idx_restock_order_lines_product")

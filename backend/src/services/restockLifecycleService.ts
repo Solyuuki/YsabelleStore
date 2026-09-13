@@ -367,7 +367,9 @@ export async function receiveRestockOrder(
           {
             unitCost:
               receiptLine.unitCost === undefined
-                ? (orderLine.product.costPrice ?? orderLine.product.inventoryBatches[0]?.unitCost)
+                ? (orderLine.product.costPrice ??
+                  orderLine.product.inventoryBatches[0]?.unitCost ??
+                  undefined)
                 : new Prisma.Decimal(receiptLine.unitCost)
           }
         );

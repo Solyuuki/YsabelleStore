@@ -23,7 +23,7 @@ type BatchStockOptions = {
 type BatchAllocation = {
   batchId: string;
   quantity: number;
-  unitCost: Prisma.Decimal;
+  unitCost: Prisma.Decimal | null;
 };
 
 const movementInclude = {
@@ -40,17 +40,31 @@ function toDateKey(value: Date | null | undefined) {
   return value ? value.toISOString().slice(0, 10) : null;
 }
 
-function requireProductCostPrice(product: { costPrice: Prisma.Decimal | null; id: string }) {
+function resolveKnownUnitCost(product: {
+  costPrice: Prisma.Decimal | null;
+  inventoryBatches: Array<{
+    createdAt: Date;
+    id: string;
+    receivedAt: Date;
+    unitCost: Prisma.Decimal | null;
+  }>;
+}) {
   if (product.costPrice) return product.costPrice;
 
-  throw new HttpError(
-    422,
-    "A verified procurement cost is required before stock can be recorded.",
-    {
-      code: "PRODUCT_COST_PRICE_REQUIRED",
-      details: { productId: product.id }
-    }
-  );
+  const latestKnownBatch = [...product.inventoryBatches]
+    .filter((batch) => batch.unitCost !== null)
+    .sort((left, right) => {
+      const receivedComparison = right.receivedAt.getTime() - left.receivedAt.getTime();
+      if (receivedComparison !== 0) return receivedComparison;
+
+      const createdComparison = right.createdAt.getTime() - left.createdAt.getTime();
+      if (createdComparison !== 0) return createdComparison;
+
+      return right.id.localeCompare(left.id);
+    })
+    .at(0);
+
+  return latestKnownBatch?.unitCost ?? null;
 }
 
 async function getProductContext(tx: TransactionClient, productId: string) {
@@ -371,7 +385,7 @@ export async function stockInBatch(
   }
 
   const product = await getProductContext(tx, input.productId);
-  const unitCost = input.unitCost ?? requireProductCostPrice(product);
+  const unitCost = input.unitCost ?? resolveKnownUnitCost(product);
   const inventory = await getOrCreateInventory(tx, input.productId);
   const batchCode =
     input.batchCode?.trim() || `STOCKIN-${product.sku}-${randomUUID().slice(0, 8).toUpperCase()}`;
@@ -457,7 +471,7 @@ export async function applyStockAdjustment(
   const product = await getProductContext(tx, input.productId);
 
   if (input.direction === "IN") {
-    const adjustmentUnitCost = requireProductCostPrice(product);
+    const adjustmentUnitCost = resolveKnownUnitCost(product);
     const inventory = await getOrCreateInventory(tx, input.productId);
     const batchCode = `ADJIN-${product.sku}-${randomUUID().slice(0, 8).toUpperCase()}`;
     const batch = await tx.inventoryBatch.create({
@@ -749,7 +763,7 @@ export async function reconcileLegacyStockMismatch(
     );
   }
 
-  const reconciliationUnitCost = existingBatch ? undefined : requireProductCostPrice(product);
+  const reconciliationUnitCost = existingBatch ? undefined : resolveKnownUnitCost(product);
   const inventory = await getOrCreateInventory(tx, input.productId);
 
   let batch = existingBatch;
@@ -765,7 +779,7 @@ export async function reconcileLegacyStockMismatch(
         quantityRemaining: input.quantity,
         receivedAt: input.repairDate ?? new Date(),
         status: InventoryBatchStatus.AVAILABLE,
-        unitCost: reconciliationUnitCost ?? requireProductCostPrice(product)
+        unitCost: reconciliationUnitCost ?? null
       }
     });
     createdBatch = true;
