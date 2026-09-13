@@ -9,13 +9,42 @@ export type RestockOrderStatus =
   | "CANCELLED";
 
 export type RestockRecommendationSource = "SARIMA" | "LOW_STOCK" | "TARGET_STOCK" | "MANUAL";
+export type RestockForecastRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export type RestockForecastPoint = {
+  period: string;
+  predictedQuantity: number;
+  lowerConfidence: number | null;
+  upperConfidence: number | null;
+};
+
+export type RestockHistoricalPoint = {
+  period: string;
+  quantitySold: number;
+};
+
+export type RestockForecastDecision = {
+  currentMonthDemand: number;
+  confidenceAdjustedDemand: number;
+  projectedEndingStock: number;
+  projectedStockoutDate: string | null;
+  suggestedQuantity: number;
+  riskLevel: RestockForecastRisk;
+  recommendedActionDate: string | null;
+  reason: string;
+};
 
 export type RestockPlanningCandidate = {
+  expiryRiskQuantity: number;
   forecast: {
     batchId: string | null;
     currentMonthDemand: number | null;
+    generatedAt: string | null;
+    historical: RestockHistoricalPoint[];
     modelName: string | null;
+    points: RestockForecastPoint[];
   } | null;
+  forecastDecision: RestockForecastDecision | null;
   incomingStock: number;
   physicalOnHand: number;
   product: {
