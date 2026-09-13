@@ -10,9 +10,7 @@ function readRepoFile(relativePath) {
 }
 
 test("stock receipts allow unknown procurement cost", () => {
-  const stockDomain = readRepoFile(
-    "backend/src/services/stockDomainService.ts"
-  );
+  const stockDomain = readRepoFile("backend/src/services/stockDomainService.ts");
   const schema = readRepoFile("database/prisma/schema.prisma");
 
   assert.ok(!stockDomain.includes("PRODUCT_COST_PRICE_REQUIRED"));
@@ -23,9 +21,7 @@ test("stock receipts allow unknown procurement cost", () => {
 });
 
 test("product import still validates costPrice", () => {
-  const productImport = readRepoFile(
-    "backend/src/services/productImportService.ts"
-  );
+  const productImport = readRepoFile("backend/src/services/productImportService.ts");
 
   assert.ok(productImport.includes('"costPrice"'));
   assert.ok(productImport.includes("const costPrice = parseMoney("));
