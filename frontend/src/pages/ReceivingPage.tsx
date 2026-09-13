@@ -1,7 +1,6 @@
 import { Checkbox } from "@base-ui/react/checkbox";
 import { CheckboxGroup } from "@base-ui/react/checkbox-group";
 import {
-  ArrowRight,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -35,6 +34,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
 import {
   listRestockOrders,
   receiveRestockOrder,
@@ -602,10 +609,26 @@ export function ReceivingPage() {
         ) : null}
 
         {visibleOrders.length > 0 ? (
-          <div className="divide-y divide-slate-100">
-            {visibleOrders.map((order) => (
-              <ReceivingQueueRow key={order.id} onOpen={openTicket} order={order} />
-            ))}
+          <div className="overflow-x-auto">
+            <Table aria-label={`${view} delivery tickets`} className="min-w-[900px]">
+              <TableHeader className="bg-slate-50/80">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="min-w-[280px] px-5">Ticket</TableHead>
+                  <TableHead className="min-w-[160px]">Status</TableHead>
+                  <TableHead className="w-[110px] text-right">Products</TableHead>
+                  <TableHead className="w-[110px] text-right">Expected</TableHead>
+                  <TableHead className="min-w-[150px]">Approved</TableHead>
+                  <TableHead className="min-w-[170px] pr-5 text-right">
+                    {view === "history" ? "Accepted" : "Remaining"}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleOrders.map((order) => (
+                  <ReceivingQueueRow key={order.id} onOpen={openTicket} order={order} />
+                ))}
+              </TableBody>
+            </Table>
           </div>
         ) : null}
 
@@ -787,10 +810,9 @@ function ReceivingQueueRow({
   const totals = orderTotals(order);
   const isPartial = order.status === "PARTIALLY_RECEIVED";
   const isReceived = order.status === "RECEIVED";
-  const progress = totals.units > 0 ? Math.min(100, (totals.accepted / totals.units) * 100) : 0;
-  const approvedLabel = order.approvedAt
-    ? `Approved ${dateFormatter.format(new Date(order.approvedAt))}`
-    : "Approved";
+  const approvedDate = order.approvedAt
+    ? dateFormatter.format(new Date(order.approvedAt))
+    : "—";
   const actionLabel = queueActionLabel(order.status);
   const quantityLabel = isReceived
     ? `${totals.accepted.toLocaleString()} accepted`
@@ -799,69 +821,45 @@ function ReceivingQueueRow({
     ? "Receipt complete"
     : isPartial
       ? `${totals.accepted.toLocaleString()} of ${totals.units.toLocaleString()} accepted`
-      : "Physical delivery pending";
+      : null;
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLTableRowElement>) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    onOpen(order);
+  }
 
   return (
-    <button
+    <TableRow
       aria-label={`${actionLabel}: ${order.orderNumber}`}
-      className="group grid w-full gap-3 px-5 py-3.5 text-left transition-colors hover:bg-slate-50/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 md:grid-cols-[minmax(250px,1.05fr)_minmax(330px,1fr)_auto] md:items-center"
+      className="group cursor-pointer border-slate-100 hover:bg-indigo-50/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
       onClick={() => onOpen(order)}
-      type="button"
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
     >
-      <div className="min-w-0">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="truncate text-sm font-semibold text-slate-950">{order.orderNumber}</span>
-          <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
-        </div>
-        <p className="mt-1 text-xs text-slate-500 md:hidden">{approvedLabel}</p>
-      </div>
-
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
-          <span className="font-medium text-slate-700">
-            {totals.products.toLocaleString()} product{totals.products === 1 ? "" : "s"}
-          </span>
-          <span aria-hidden="true" className="text-slate-300">
-            •
-          </span>
-          <span>{totals.units.toLocaleString()} expected units</span>
-          <span aria-hidden="true" className="hidden text-slate-300 lg:inline">
-            •
-          </span>
-          <span className="hidden lg:inline">{approvedLabel}</span>
-        </div>
-        {isPartial ? (
-          <div
-            aria-label={`${Math.round(progress)} percent received`}
-            className="mt-2 flex items-center gap-2"
-          >
-            <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-amber-500 transition-[width]"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <span className="shrink-0 text-[11px] font-medium tabular-nums text-amber-700">
-              {Math.round(progress)}%
-            </span>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="flex items-center justify-between gap-4 md:min-w-[250px] md:justify-end">
-        <div className="min-w-[92px] md:text-right">
-          <p className="text-sm font-semibold tabular-nums text-slate-950">{quantityLabel}</p>
-          <p className="mt-0.5 text-[11px] text-slate-500">{quantityDetail}</p>
-        </div>
-        <span className="inline-flex min-w-[132px] items-center justify-end gap-1.5 text-sm font-semibold text-indigo-600 transition-colors group-hover:text-indigo-700">
-          {actionLabel}
-          <ArrowRight
-            aria-hidden="true"
-            className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-          />
+      <TableCell className="min-w-[280px] px-5 py-3.5">
+        <span className="block truncate text-sm font-semibold text-slate-950">
+          {order.orderNumber}
         </span>
-      </div>
-    </button>
+      </TableCell>
+      <TableCell className="min-w-[160px] py-3.5">
+        <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+      </TableCell>
+      <TableCell className="w-[110px] py-3.5 text-right font-medium tabular-nums text-slate-700">
+        {totals.products.toLocaleString()}
+      </TableCell>
+      <TableCell className="w-[110px] py-3.5 text-right tabular-nums text-slate-600">
+        {totals.units.toLocaleString()}
+      </TableCell>
+      <TableCell className="min-w-[150px] py-3.5 text-slate-600">{approvedDate}</TableCell>
+      <TableCell className="min-w-[170px] py-3.5 pr-5 text-right">
+        <p className="text-sm font-semibold tabular-nums text-slate-950">{quantityLabel}</p>
+        {quantityDetail ? (
+          <p className="mt-0.5 text-[11px] text-slate-500">{quantityDetail}</p>
+        ) : null}
+      </TableCell>
+    </TableRow>
   );
 }
 
