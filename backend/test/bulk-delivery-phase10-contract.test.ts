@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 
+import { extractDeliveryRowsFromTextItems } from "../src/services/pdfDeliveryImportService.js";
 import { completeBulkDeliverySchema } from "../src/validators/bulkDelivery.validators.js";
 
 const serviceSource = readFileSync(
@@ -124,5 +125,41 @@ test("Phase 10 bulk delivery endpoint stays Owner controlled", () => {
   assert.match(
     routeSource,
     /"\/delivery-sessions\/complete"[\s\S]*?requireRole\("OWNER"\)[\s\S]*?completeBulkDeliveryController/
+  );
+});
+
+test("Phase 10 PDF delivery parser extracts structured supplier rows without manual rebuilding", () => {
+  const rows = extractDeliveryRowsFromTextItems([
+    { page: 1, x: 10, y: 100, text: "Product" },
+    { page: 1, x: 90, y: 100, text: "SKU" },
+    { page: 1, x: 140, y: 100, text: "Barcode" },
+    { page: 1, x: 210, y: 100, text: "Qty" },
+    { page: 1, x: 250, y: 100, text: "Batch / Lot" },
+    { page: 1, x: 330, y: 100, text: "Expiry" },
+    { page: 1, x: 10, y: 80, text: "555 Tuna Mechado" },
+    { page: 1, x: 90, y: 80, text: "SARIMA-P010" },
+    { page: 1, x: 140, y: 80, text: "748485700045" },
+    { page: 1, x: 210, y: 80, text: "5" },
+    { page: 1, x: 250, y: 80, text: "BULKQA-MECHADO-001" },
+    { page: 1, x: 330, y: 80, text: "2029-03-31" }
+  ]);
+
+  assert.deepEqual(rows, [
+    {
+      productName: "555 Tuna Mechado",
+      sku: "SARIMA-P010",
+      barcode: "748485700045",
+      quantity: "5",
+      batchCode: "BULKQA-MECHADO-001",
+      expirationDate: "2029-03-31"
+    }
+  ]);
+});
+
+test("Phase 10 PDF preview endpoint is Owner controlled", () => {
+  assert.match(routeSource, /"\/delivery-sessions\/pdf\/preview"/);
+  assert.match(
+    routeSource,
+    /"\/delivery-sessions\/pdf\/preview"[\s\S]*?requireRole\("OWNER"\)[\s\S]*?previewBulkDeliveryPdfController/
   );
 });

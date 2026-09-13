@@ -1,4 +1,5 @@
 import { apiClient } from "@/services/apiClient";
+import type { InventoryImportPreview } from "@/services/catalogApi";
 import type { RestockOrderStatus } from "@/services/restockApi";
 
 export type BulkDeliverySourceType = "SPREADSHEET" | "PDF" | "MANUAL";
@@ -67,4 +68,16 @@ export async function completeBulkDeliverySession(input: {
   }
 
   return response.data;
+}
+
+export async function previewBulkDeliveryPdf(file: File) {
+  const formData = new FormData();
+  formData.set("file", file);
+  return apiClient.request<InventoryImportPreview, { code?: string; details?: unknown }>(
+    "/api/inventory/delivery-sessions/pdf/preview",
+    {
+      method: "POST",
+      formData
+    }
+  );
 }

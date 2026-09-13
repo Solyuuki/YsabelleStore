@@ -188,6 +188,7 @@ export type InventoryImportRowResult = {
     quantity: number;
     batchCode: string;
     expirationDate: string | null;
+    noExpiration?: boolean;
     reason: string;
   } | null;
   errors: InventoryImportError[];
@@ -196,7 +197,7 @@ export type InventoryImportRowResult = {
 
 export type InventoryImportPreview = {
   fileName: string;
-  fileType: "csv" | "xlsx";
+  fileType: "csv" | "xlsx" | "pdf";
   totalRows: number;
   validRows: number;
   invalidRows: number;

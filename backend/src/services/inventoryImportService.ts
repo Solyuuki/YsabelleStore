@@ -71,6 +71,7 @@ export type InventoryImportRowResult = {
     quantity: number;
     batchCode: string;
     expirationDate: string | null;
+    noExpiration?: boolean;
     reason: string;
   } | null;
   errors: InventoryImportError[];
@@ -79,7 +80,7 @@ export type InventoryImportRowResult = {
 
 export type InventoryImportPreview = {
   fileName: string;
-  fileType: "csv" | "xlsx";
+  fileType: "csv" | "xlsx" | "pdf";
   totalRows: number;
   validRows: number;
   invalidRows: number;
@@ -91,7 +92,7 @@ export type InventoryImportPreview = {
 export type InventoryImportSummary = {
   importId: string;
   fileName: string;
-  fileType: "csv" | "xlsx";
+  fileType: "csv" | "xlsx" | "pdf";
   totalRows: number;
   importedRows: number;
   failedRows: number;
@@ -890,6 +891,7 @@ async function validateInventoryImport(file: UploadFile): Promise<{
           quantity: row.normalizedData.quantity,
           batchCode: row.normalizedData.batchCode,
           expirationDate: row.normalizedData.expirationDate?.toISOString() ?? null,
+          noExpiration: row.normalizedData.expirationDate === null,
           reason: row.normalizedData.reason
         }
       : null,

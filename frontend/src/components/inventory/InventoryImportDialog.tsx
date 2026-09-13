@@ -5,8 +5,6 @@ import {
   FileText,
   Link2,
   LoaderCircle,
-  PackageSearch,
-  Search,
   Trash2,
   Upload,
   X
@@ -38,14 +36,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  fetchProducts,
-  lookupInventoryByBarcode,
-  previewInventoryStockImport,
-  type InventoryImportPreview
-} from "@/services/catalogApi";
+import { previewInventoryStockImport, type InventoryImportPreview } from "@/services/catalogApi";
 import {
   completeBulkDeliverySession,
+  previewBulkDeliveryPdf,
   type BulkDeliverySessionResult
 } from "@/services/bulkDeliveryApi";
 import { listRestockOrders, type RestockOrder } from "@/services/restockApi";
@@ -99,20 +93,6 @@ function wholeNumber(value: string) {
 function fileExtension(name: string) {
   const parts = name.toLowerCase().split(".");
   return parts.length > 1 ? (parts.at(-1) ?? "") : "";
-}
-
-function optionFromProduct(product: {
-  id: string;
-  name: string;
-  sku: string;
-  barcode: string | null;
-}): ProductOption {
-  return {
-    productId: product.id,
-    productName: product.name,
-    sku: product.sku,
-    barcode: product.barcode
-  };
 }
 
 function acceptedForRow(row: DeliveryRow) {
@@ -173,7 +153,7 @@ function makeStandalonePreviewRows(preview: InventoryImportPreview): DeliveryRow
         damageReason: "",
         batchCode: row.deliveryData.batchCode,
         expiresAt: row.deliveryData.expirationDate ?? "",
-        noExpiration: row.deliveryData.expirationDate === null,
+        noExpiration: row.deliveryData.noExpiration ?? row.deliveryData.expirationDate === null,
         confirmOverDelivery: false,
         reason: row.deliveryData.reason
       }
@@ -208,7 +188,7 @@ function mergePreviewIntoRestock(order: RestockOrder, preview: InventoryImportPr
       deliveredQuantity: String(source.deliveryData.quantity),
       batchCode: source.deliveryData.batchCode,
       expiresAt: source.deliveryData.expirationDate ?? "",
-      noExpiration: source.deliveryData.expirationDate === null,
+      noExpiration: source.deliveryData.noExpiration ?? source.deliveryData.expirationDate === null,
       reason: source.deliveryData.reason
     };
   });
@@ -233,6 +213,8 @@ export function InventoryImportDialog({
   const [mode, setMode] = useState<ImportMode>("SPREADSHEET");
   const [phase, setPhase] = useState<Phase>("idle");
   const [file, setFile] = useState<File | null>(null);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [preview, setPreview] = useState<InventoryImportPreview | null>(null);
   const [deliverySummary, setDeliverySummary] = useState<BulkDeliverySessionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -243,10 +225,6 @@ export function InventoryImportDialog({
   const [ticketResults, setTicketResults] = useState<RestockOrder[]>([]);
   const [searchingTickets, setSearchingTickets] = useState(false);
   const [ticketError, setTicketError] = useState<string | null>(null);
-  const [productSearch, setProductSearch] = useState("");
-  const [productResults, setProductResults] = useState<ProductOption[]>([]);
-  const [searchingProducts, setSearchingProducts] = useState(false);
-  const [productError, setProductError] = useState<string | null>(null);
   const [rows, setRows] = useState<DeliveryRow[]>([]);
   const [unmatchedRows, setUnmatchedRows] = useState(0);
   const [page, setPage] = useState(1);
@@ -254,7 +232,7 @@ export function InventoryImportDialog({
   const isPreviewing = phase === "previewing";
   const isImporting = phase === "importing";
   const isBusy = isPreviewing || isImporting;
-  const hasSpreadsheetPreview = mode === "SPREADSHEET" && phase === "preview-ready" && preview;
+  const hasImportPreview = phase === "preview-ready" && preview;
   const visibleIssues = useMemo(() => preview?.errors.slice(0, 6) ?? [], [preview]);
 
   const review = useMemo(() => {
@@ -330,6 +308,17 @@ export function InventoryImportDialog({
   }, [open]);
 
   useEffect(() => {
+    if (mode !== "PDF" || !file) {
+      setPdfPreviewUrl(null);
+      setShowPdfPreview(false);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file);
+    setPdfPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file, mode]);
+
+  useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(rows.length / DELIVERY_PAGE_SIZE));
     if (page > totalPages) setPage(totalPages);
   }, [page, rows.length]);
@@ -348,9 +337,6 @@ export function InventoryImportDialog({
     setTicketSearch("");
     setTicketResults([]);
     setTicketError(null);
-    setProductSearch("");
-    setProductResults([]);
-    setProductError(null);
     setRows([]);
     setUnmatchedRows(0);
     setPage(1);
@@ -371,9 +357,6 @@ export function InventoryImportDialog({
     setTicketSearch("");
     setTicketResults([]);
     setTicketError(null);
-    setProductSearch("");
-    setProductResults([]);
-    setProductError(null);
     setRows([]);
     setUnmatchedRows(0);
     setPage(1);
@@ -409,10 +392,14 @@ export function InventoryImportDialog({
     setDeliverySummary(null);
     setError(validationError);
     setPhase(validationError ? "error" : "file-ready");
+    setShowPdfPreview(false);
     setUnmatchedRows(0);
     setPage(1);
     if (mode === "SPREADSHEET") {
       setRows(selectedOrder ? makeRestockRows(selectedOrder) : []);
+    } else if (!validationError) {
+      setRows(selectedOrder ? makeRestockRows(selectedOrder) : []);
+      void previewPdfDelivery(nextFile);
     }
     if (validationError && fileInputRef.current) fileInputRef.current.value = "";
   }
@@ -463,6 +450,41 @@ export function InventoryImportDialog({
     }
   }
 
+  async function previewPdfDelivery(sourceFile: File) {
+    const sessionId = ++requestRef.current;
+    setPhase("previewing");
+    setError(null);
+    try {
+      const response = await waitForMinimumDuration(
+        previewBulkDeliveryPdf(sourceFile),
+        PREVIEW_MINIMUM_MS
+      );
+      if (sessionId !== requestRef.current) return;
+      if (!response.success || !response.data) {
+        setPhase("file-ready");
+        setError(response.message || "PDF delivery extraction failed.");
+        return;
+      }
+      setPreview(response.data);
+      if (selectedOrder) {
+        const merged = mergePreviewIntoRestock(selectedOrder, response.data);
+        setRows(merged.rows);
+        setUnmatchedRows(merged.unmatchedRows);
+      } else {
+        setRows(makeStandalonePreviewRows(response.data));
+        setUnmatchedRows(0);
+      }
+      setPage(1);
+      setPhase("preview-ready");
+    } catch (previewError) {
+      if (sessionId !== requestRef.current) return;
+      setPhase("file-ready");
+      setError(
+        previewError instanceof Error ? previewError.message : "PDF delivery extraction failed."
+      );
+    }
+  }
+
   async function searchRestockTickets() {
     if (searchingTickets) return;
     setSearchingTickets(true);
@@ -491,7 +513,7 @@ export function InventoryImportDialog({
     setTicketResults([]);
     setTicketSearch(order.orderNumber);
     setTicketError(null);
-    if (preview && mode === "SPREADSHEET") {
+    if (preview) {
       const merged = mergePreviewIntoRestock(order, preview);
       setRows(merged.rows);
       setUnmatchedRows(merged.unmatchedRows);
@@ -507,77 +529,10 @@ export function InventoryImportDialog({
     setTicketSearch("");
     setTicketResults([]);
     setTicketError(null);
-    if (preview && mode === "SPREADSHEET") setRows(makeStandalonePreviewRows(preview));
+    if (preview) setRows(makeStandalonePreviewRows(preview));
     else setRows([]);
     setUnmatchedRows(0);
     setPage(1);
-  }
-
-  async function searchProducts() {
-    const query = productSearch.trim();
-    if (!query || searchingProducts || selectedOrder) return;
-    setSearchingProducts(true);
-    setProductError(null);
-    try {
-      const [catalogResult, barcodeResult] = await Promise.allSettled([
-        fetchProducts({ page: 1, pageSize: 8, search: query }),
-        lookupInventoryByBarcode(query)
-      ]);
-      const options = new Map<string, ProductOption>();
-      if (catalogResult.status === "fulfilled") {
-        catalogResult.value.items.forEach((product) => {
-          options.set(product.id, optionFromProduct(product));
-        });
-      }
-      if (barcodeResult.status === "fulfilled") {
-        const item = barcodeResult.value;
-        options.set(item.productId, {
-          productId: item.productId,
-          productName: item.productName,
-          sku: item.sku,
-          barcode: item.barcode
-        });
-      }
-      const results = [...options.values()];
-      setProductResults(results);
-      if (results.length === 0) {
-        setProductError(
-          "No canonical Product matched that name, SKU, barcode, or YSB label. Create the Product in Products first, then return and search again."
-        );
-      }
-    } catch (lookupError) {
-      setProductResults([]);
-      setProductError(
-        lookupError instanceof Error ? lookupError.message : "Product lookup failed."
-      );
-    } finally {
-      setSearchingProducts(false);
-    }
-  }
-
-  function addStandalonePdfRow(option: ProductOption) {
-    setRows((current) => [
-      ...current,
-      {
-        ...option,
-        rowId: crypto.randomUUID(),
-        restockOrderLineId: null,
-        expectedQuantity: null,
-        previouslyReceived: 0,
-        remainingQuantity: null,
-        deliveredQuantity: "1",
-        damagedQuantity: "0",
-        damageReason: "",
-        batchCode: "",
-        expiresAt: "",
-        noExpiration: false,
-        confirmOverDelivery: false,
-        reason: "Bulk delivery receipt from supplier PDF"
-      }
-    ]);
-    setProductResults([]);
-    setProductSearch("");
-    setProductError(null);
   }
 
   function updateRow(rowId: string, patch: Partial<DeliveryRow>) {
@@ -603,10 +558,7 @@ export function InventoryImportDialog({
 
   function previewPdfDocument() {
     if (!file || mode !== "PDF") return;
-    const objectUrl = URL.createObjectURL(file);
-    const opened = window.open(objectUrl, "_blank", "noopener,noreferrer");
-    if (!opened) setError("The browser blocked the PDF preview. Allow pop-ups and try again.");
-    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    setShowPdfPreview((current) => !current);
   }
 
   async function completeReceipt() {
@@ -656,7 +608,7 @@ export function InventoryImportDialog({
       });
     } catch (receiptError) {
       if (sessionId !== requestRef.current) return;
-      setPhase(mode === "SPREADSHEET" && preview ? "preview-ready" : "file-ready");
+      setPhase(preview ? "preview-ready" : "file-ready");
       setError(receiptError instanceof Error ? receiptError.message : "Receipt completion failed.");
     }
   }
@@ -672,7 +624,7 @@ export function InventoryImportDialog({
     review.blockingIssues === 0 &&
     review.deliveredUnits > 0 &&
     !isBusy &&
-    (mode === "PDF" || phase === "preview-ready")
+    phase === "preview-ready"
   );
 
   return (
@@ -824,7 +776,7 @@ export function InventoryImportDialog({
                     {mode === "PDF" ? (
                       <Button onClick={previewPdfDocument} type="button" variant="secondary">
                         <Eye className="h-4 w-4" aria-hidden="true" />
-                        Preview PDF
+                        {showPdfPreview ? "Hide PDF" : "Preview PDF"}
                       </Button>
                     ) : null}
                     <Button onClick={openFilePicker} type="button" variant="ghost">
@@ -832,6 +784,16 @@ export function InventoryImportDialog({
                     </Button>
                   </div>
                 </div>
+              </section>
+            ) : null}
+
+            {mode === "PDF" && file && pdfPreviewUrl && showPdfPreview && phase !== "success" ? (
+              <section className="rounded-2xl border border-slate-200 bg-white p-3">
+                <iframe
+                  className="h-[520px] w-full rounded-xl border border-slate-200"
+                  src={pdfPreviewUrl}
+                  title={`Preview ${file.name}`}
+                />
               </section>
             ) : null}
 
@@ -925,14 +887,18 @@ export function InventoryImportDialog({
             {isPreviewing ? (
               <LoadingState
                 badge="Delivery"
-                helper="This may take a moment for larger spreadsheets."
+                helper={
+                  mode === "PDF"
+                    ? "Extracting the supplier table and matching existing Products."
+                    : "This may take a moment for larger spreadsheets."
+                }
                 label="Validating delivery rows..."
               />
             ) : null}
 
-            {hasSpreadsheetPreview && preview && visibleIssues.length > 0 ? (
+            {hasImportPreview && preview && visibleIssues.length > 0 ? (
               <section className="rounded-2xl border border-rose-200 bg-rose-50/70 p-4">
-                <p className="text-sm font-semibold text-rose-900">Unresolved spreadsheet rows</p>
+                <p className="text-sm font-semibold text-rose-900">Unresolved delivery rows</p>
                 <div className="mt-2 space-y-1">
                   {visibleIssues.map((issue, index) => (
                     <p className="text-sm text-rose-800" key={`${issue.code}-${index}`}>
@@ -942,83 +908,10 @@ export function InventoryImportDialog({
                   ))}
                 </div>
                 <p className="mt-3 text-xs text-rose-800">
-                  Unknown products must be created in Products or corrected in the file before this
-                  receipt can complete.
+                  Unknown products must be corrected or created in Products before this receipt can
+                  complete. PDF lines are extracted automatically; manual bulk re-entry is not
+                  required.
                 </p>
-              </section>
-            ) : null}
-
-            {mode === "PDF" && file && !selectedOrder && phase !== "success" ? (
-              <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5">
-                <div>
-                  <p className="text-sm font-semibold text-slate-950">Build delivery session</p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Product name, SKU, barcode, or YSB label can identify an existing Product. No
-                    scanner is required.
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    onChange={(event) => {
-                      setProductSearch(event.target.value);
-                      setProductError(null);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        void searchProducts();
-                      }
-                    }}
-                    placeholder="Product name, SKU, barcode, or YSB label"
-                    value={productSearch}
-                  />
-                  <Button
-                    disabled={searchingProducts || productSearch.trim().length === 0}
-                    onClick={() => void searchProducts()}
-                    type="button"
-                    variant="secondary"
-                  >
-                    <Search className="h-4 w-4" aria-hidden="true" />
-                    Find
-                  </Button>
-                </div>
-                {productError ? (
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
-                    <p className="text-sm text-amber-800">{productError}</p>
-                    <Button
-                      onClick={() => {
-                        close();
-                        window.location.assign("/products");
-                      }}
-                      size="sm"
-                      type="button"
-                      variant="secondary"
-                    >
-                      <PackageSearch className="h-4 w-4" aria-hidden="true" />
-                      Open Products
-                    </Button>
-                  </div>
-                ) : null}
-                {productResults.length > 0 ? (
-                  <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200">
-                    {productResults.map((option) => (
-                      <div
-                        className="flex items-center justify-between gap-3 px-4 py-3"
-                        key={option.productId}
-                      >
-                        <div>
-                          <p className="text-sm font-semibold text-slate-950">
-                            {option.productName}
-                          </p>
-                          <p className="mt-0.5 text-xs text-slate-500">{option.sku}</p>
-                        </div>
-                        <Button onClick={() => addStandalonePdfRow(option)} size="sm" type="button">
-                          Add
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
               </section>
             ) : null}
 
