@@ -9,7 +9,7 @@ function readRepoFile(relativePath) {
   return fs.readFileSync(path.join(REPO_ROOT, relativePath), "utf8");
 }
 
-test("stock receipts never block on missing cost", () => {
+test("stock receipts allow unknown procurement cost", () => {
   const stockDomain = readRepoFile("backend/src/services/stockDomainService.ts");
   const schema = readRepoFile("database/prisma/schema.prisma");
 
