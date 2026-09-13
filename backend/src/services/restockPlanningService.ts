@@ -162,7 +162,7 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
           ? null
           : Number(forecastProduct.currentMonthForecastQuantity),
       forecast,
-      generatedAt: detail.generatedAt ?? activeForecast.generatedAt?.toISOString() ?? null,
+      generatedAt: detail.generatedAt ?? activeForecast?.generatedAt?.toISOString() ?? null,
       modelName: forecastProduct.modelName
     });
   }
