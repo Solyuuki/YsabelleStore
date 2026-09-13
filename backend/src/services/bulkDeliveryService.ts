@@ -10,6 +10,36 @@ function expiryKey(value: Date | null | undefined) {
   return value ? value.toISOString().slice(0, 10) : "NO-EXPIRY";
 }
 
+/**
+ * Spreadsheet delivery preview parses YYYY-MM-DD as local midnight before serializing it.
+ * PDF delivery preview sends the same calendar value as YYYY-MM-DD, which z.coerce.date()
+ * interprets as UTC midnight. Rebuild PDF expiry values at local midnight so both import
+ * adapters reach the shared receiving domain with identical Date semantics.
+ */
+export function normalizePdfDeliveryExpiryForReceiving(value: Date | null | undefined) {
+  if (!value) return value ?? null;
+
+  const dateKey = value.toISOString().slice(0, 10);
+  return new Date(`${dateKey}T00:00:00`);
+}
+
+function normalizePdfDeliveryExpiries(
+  input: CompleteBulkDeliveryRequest
+): CompleteBulkDeliveryRequest {
+  if (input.sourceType !== "PDF") return input;
+
+  return {
+    ...input,
+    rows: input.rows.map((row) => ({
+      ...row,
+      expiresAt:
+        row.noExpiration || !row.expiresAt
+          ? null
+          : normalizePdfDeliveryExpiryForReceiving(row.expiresAt)
+    }))
+  };
+}
+
 function acceptedQuantity(row: CompleteBulkDeliveryRequest["rows"][number]) {
   return row.acceptedQuantity ?? Math.max(0, row.receivedQuantity - row.damagedQuantity);
 }
@@ -124,16 +154,17 @@ export async function completeBulkDeliverySession(
   input: CompleteBulkDeliveryRequest,
   performedById?: string
 ) {
-  assertNoDuplicateDeliveryLines(input);
+  const normalizedInput = normalizePdfDeliveryExpiries(input);
+  assertNoDuplicateDeliveryLines(normalizedInput);
 
-  if (input.restockOrderId) {
+  if (normalizedInput.restockOrderId) {
     if (!performedById) {
       throw new HttpError(401, "Authenticated actor is required for linked Restock receiving.", {
         code: "BULK_DELIVERY_ACTOR_REQUIRED"
       });
     }
 
-    return completeLinkedRestockDelivery(input, performedById);
+    return completeLinkedRestockDelivery(normalizedInput, performedById);
   }
 
   const sessionId = `DELIVERY-${randomUUID()}`;
@@ -150,7 +181,7 @@ export async function completeBulkDeliverySession(
       movementId: string;
     }>;
 
-    for (const row of input.rows) {
+    for (const row of normalizedInput.rows) {
       const accepted = acceptedQuantity(row);
       const result = await receiveStockInTransaction(
         tx,
@@ -185,8 +216,8 @@ export async function completeBulkDeliverySession(
 
   return {
     sessionId,
-    sourceType: input.sourceType,
-    sourceFileName: input.sourceFileName ?? null,
+    sourceType: normalizedInput.sourceType,
+    sourceFileName: normalizedInput.sourceFileName ?? null,
     restockOrderId: null,
     restockOrderNumber: null,
     restockOrderStatus: null,
