@@ -66,4 +66,4 @@ jobs:
             backend/src/services/stockHealthService.ts \
             frontend/src/components/reports/RestockForecastPanel.tsx
           git commit -m "fix(restock): stabilize automatic stock health"
-          git push origin HEAD:${{ github.ref_name }}
+          HUSKY=0 git push origin HEAD:${{ github.ref_name }}
