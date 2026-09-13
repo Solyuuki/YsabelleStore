@@ -1,0 +1,229 @@
+name: Temporary Receiving Queue QoL
+
+on:
+  push:
+    branches:
+      - sprint/v0.10/sprint-10
+    paths:
+      - .github/workflows/temp-receiving-queue-qol.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-receiving-queue-qol
+  cancel-in-progress: true
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sprint branch
+        uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Refactor Receiving queue
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("frontend/src/pages/ReceivingPage.tsx")
+          source = path.read_text(encoding="utf-8")
+
+          source = source.replace('import { Accordion } from "@base-ui/react/accordion";\n', '')
+          source = source.replace(
+              'import {\n  Check,\n',
+              'import {\n  ArrowRight,\n  Check,\n',
+              1,
+          )
+          source = source.replace(
+              '  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);\n',
+              '',
+              1,
+          )
+
+          source = source.replace(
+              '''  function changeView(next: ReceivingView) {
+    setView(next);
+    setExpandedTicketId(null);
+  }
+
+  function changeQueuePage(page: number) {
+    setQueuePages((current) => ({ ...current, [view]: page }));
+    setExpandedTicketId(null);
+  }
+
+  function changeQueuePageSize(pageSize: number) {
+    setQueuePageSize(pageSize);
+    setQueuePages(INITIAL_QUEUE_PAGES);
+    setExpandedTicketId(null);
+  }
+''',
+              '''  function changeView(next: ReceivingView) {
+    setView(next);
+  }
+
+  function changeQueuePage(page: number) {
+    setQueuePages((current) => ({ ...current, [view]: page }));
+  }
+
+  function changeQueuePageSize(pageSize: number) {
+    setQueuePageSize(pageSize);
+    setQueuePages(INITIAL_QUEUE_PAGES);
+  }
+''',
+              1,
+          )
+
+          source = source.replace(
+              '                ? "Open a restock ticket to preview its products before receiving."\n',
+              '                ? "Select a restock ticket to review its products and record the delivery."\n',
+              1,
+          )
+
+          queue_start = source.index('        {visibleOrders.length > 0 ? (\n          <Accordion.Root')
+          pagination_start = source.index('        {visibleTotal > 0 ? (', queue_start)
+          queue_block = '''        {visibleOrders.length > 0 ? (
+          <div className="divide-y divide-slate-100">
+            {visibleOrders.map((order) => (
+              <ReceivingQueueRow key={order.id} onOpen={openTicket} order={order} />
+            ))}
+          </div>
+        ) : null}
+
+'''
+          source = source[:queue_start] + queue_block + source[pagination_start:]
+
+          helper_marker = 'function QueueStatButton({\n'
+          helper_index = source.index(helper_marker)
+          helper = '''function queueActionLabel(status: RestockOrderStatus) {
+  if (status === "RECEIVED") return "View delivery";
+  if (status === "PARTIALLY_RECEIVED") return "Continue receiving";
+  return "Review delivery";
+}
+
+function ReceivingQueueRow({
+  onOpen,
+  order
+}: {
+  onOpen: (order: RestockOrder) => void;
+  order: RestockOrder;
+}) {
+  const totals = orderTotals(order);
+  const isPartial = order.status === "PARTIALLY_RECEIVED";
+  const isReceived = order.status === "RECEIVED";
+  const progress = totals.units > 0 ? Math.min(100, (totals.accepted / totals.units) * 100) : 0;
+  const approvedLabel = order.approvedAt
+    ? `Approved ${dateFormatter.format(new Date(order.approvedAt))}`
+    : "Approved";
+  const actionLabel = queueActionLabel(order.status);
+  const quantityLabel = isReceived
+    ? `${totals.accepted.toLocaleString()} accepted`
+    : `${totals.remaining.toLocaleString()} remaining`;
+  const quantityDetail = isReceived
+    ? "Receipt complete"
+    : isPartial
+      ? `${totals.accepted.toLocaleString()} of ${totals.units.toLocaleString()} accepted`
+      : "Physical delivery pending";
+
+  return (
+    <button
+      aria-label={`${actionLabel}: ${order.orderNumber}`}
+      className="group grid w-full gap-3 px-5 py-3.5 text-left transition-colors hover:bg-slate-50/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 md:grid-cols-[minmax(250px,1.05fr)_minmax(330px,1fr)_auto] md:items-center"
+      onClick={() => onOpen(order)}
+      type="button"
+    >
+      <div className="min-w-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="truncate text-sm font-semibold text-slate-950">
+            {order.orderNumber}
+          </span>
+          <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+        </div>
+        <p className="mt-1 text-xs text-slate-500 md:hidden">{approvedLabel}</p>
+      </div>
+
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+          <span className="font-medium text-slate-700">
+            {totals.products.toLocaleString()} product{totals.products === 1 ? "" : "s"}
+          </span>
+          <span aria-hidden="true" className="text-slate-300">
+            •
+          </span>
+          <span>{totals.units.toLocaleString()} expected units</span>
+          <span aria-hidden="true" className="hidden text-slate-300 lg:inline">
+            •
+          </span>
+          <span className="hidden lg:inline">{approvedLabel}</span>
+        </div>
+        {isPartial ? (
+          <div className="mt-2 flex items-center gap-2" aria-label={`${Math.round(progress)} percent received`}>
+            <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-amber-500 transition-[width]"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <span className="shrink-0 text-[11px] font-medium tabular-nums text-amber-700">
+              {Math.round(progress)}%
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex items-center justify-between gap-4 md:min-w-[250px] md:justify-end">
+        <div className="min-w-[92px] md:text-right">
+          <p className="text-sm font-semibold tabular-nums text-slate-950">{quantityLabel}</p>
+          <p className="mt-0.5 text-[11px] text-slate-500">{quantityDetail}</p>
+        </div>
+        <span className="inline-flex min-w-[132px] items-center justify-end gap-1.5 text-sm font-semibold text-indigo-600 transition-colors group-hover:text-indigo-700">
+          {actionLabel}
+          <ArrowRight
+            aria-hidden="true"
+            className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+          />
+        </span>
+      </div>
+    </button>
+  );
+}
+
+'''
+          source = source[:helper_index] + helper + source[helper_index:]
+
+          if "Accordion.Root" in source or "expandedTicketId" in source:
+              raise SystemExit("Accordion queue code still exists after patch")
+          if "ReceivingQueueRow" not in source or "Review delivery" not in source:
+              raise SystemExit("Receiving queue replacement was not applied")
+
+          path.write_text(source, encoding="utf-8")
+
+      - name: Format Receiving page
+        run: npx prettier --write frontend/src/pages/ReceivingPage.tsx
+
+      - name: Build frontend
+        run: npm run build --workspace frontend
+
+      - name: Commit Receiving queue refactor
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/pages/ReceivingPage.tsx
+          if git diff --cached --quiet; then
+            echo "Receiving queue QoL refactor is already applied."
+            exit 0
+          fi
+          git commit --no-verify -m "refactor(receiving): streamline delivery queue"
+          git push --no-verify origin HEAD:sprint/v0.10/sprint-10
