@@ -1,7 +1,7 @@
-import { Accordion } from "@base-ui/react/accordion";
 import { Checkbox } from "@base-ui/react/checkbox";
 import { CheckboxGroup } from "@base-ui/react/checkbox-group";
 import {
+  ArrowRight,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -179,7 +179,6 @@ export function ReceivingPage() {
   const [queuePageSize, setQueuePageSize] = useState(20);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<RestockOrder | null>(null);
   const [receiptMode, setReceiptMode] = useState<ReceiptMode | null>(null);
   const [receiptRows, setReceiptRows] = useState<Record<string, ReceiptRowState>>({});
@@ -287,18 +286,15 @@ export function ReceivingPage() {
 
   function changeView(next: ReceivingView) {
     setView(next);
-    setExpandedTicketId(null);
   }
 
   function changeQueuePage(page: number) {
     setQueuePages((current) => ({ ...current, [view]: page }));
-    setExpandedTicketId(null);
   }
 
   function changeQueuePageSize(pageSize: number) {
     setQueuePageSize(pageSize);
     setQueuePages(INITIAL_QUEUE_PAGES);
-    setExpandedTicketId(null);
   }
 
   function openTicket(order: RestockOrder) {
@@ -570,7 +566,7 @@ export function ReceivingPage() {
             </h2>
             <p className="mt-0.5 text-xs text-slate-500">
               {view === "ready"
-                ? "Open a restock ticket to preview its products before receiving."
+                ? "Select a restock ticket to review its products and record the delivery."
                 : view === "partial"
                   ? "Continue the same ticket when the remaining products arrive."
                   : "Completed tickets remain available for delivery and return history."}
@@ -606,108 +602,11 @@ export function ReceivingPage() {
         ) : null}
 
         {visibleOrders.length > 0 ? (
-          <Accordion.Root
-            onValueChange={(values) =>
-              setExpandedTicketId((values[0] as string | undefined) ?? null)
-            }
-            value={expandedTicketId ? [expandedTicketId] : []}
-          >
-            {visibleOrders.map((order) => {
-              const totals = orderTotals(order);
-              const hasReturn = hasRestockReturnItems(order);
-              return (
-                <Accordion.Item
-                  className="border-b border-slate-100 last:border-b-0"
-                  key={order.id}
-                  value={order.id}
-                >
-                  <Accordion.Header>
-                    <Accordion.Trigger className="group flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="truncate text-sm font-semibold text-slate-950">
-                            {order.orderNumber}
-                          </span>
-                          <Badge variant={statusVariant(order.status)}>
-                            {statusLabel(order.status)}
-                          </Badge>
-                        </div>
-                        <p className="mt-1 text-xs text-slate-500">
-                          {totals.products.toLocaleString()} product
-                          {totals.products === 1 ? "" : "s"} · {totals.units.toLocaleString()} units
-                          ·{" "}
-                          {order.approvedAt
-                            ? `Approved ${dateFormatter.format(new Date(order.approvedAt))}`
-                            : "Approved"}
-                          {totals.remaining > 0
-                            ? ` · ${totals.remaining.toLocaleString()} remaining`
-                            : ""}
-                        </p>
-                      </div>
-                      <ChevronDown
-                        aria-hidden="true"
-                        className="h-5 w-5 shrink-0 text-slate-400 transition-transform group-data-[panel-open]:rotate-180"
-                      />
-                    </Accordion.Trigger>
-                  </Accordion.Header>
-                  <Accordion.Panel className="border-t border-slate-100 bg-slate-50/60 px-5 py-4">
-                    <div className="rounded-lg border border-slate-200 bg-white">
-                      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900">Ticket products</p>
-                          <p className="text-xs text-slate-500">
-                            Approved quantities for this restock.
-                          </p>
-                        </div>
-                        <Badge>{totals.products.toLocaleString()} items</Badge>
-                      </div>
-                      <div className="max-h-56 overflow-y-auto">
-                        {selectedLines(order).map((line) => (
-                          <div
-                            className="flex items-center justify-between gap-4 border-b border-slate-100 px-4 py-2.5 last:border-b-0"
-                            key={line.id}
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-medium text-slate-900">
-                                {line.product.name}
-                              </p>
-                              <p className="mt-0.5 text-xs text-slate-500">{line.product.sku}</p>
-                            </div>
-                            <span className="shrink-0 text-sm font-semibold text-slate-800">
-                              {remainingQuantity(line).toLocaleString()} remaining
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        {hasReturn ? (
-                          <Button
-                            onClick={() => setReturnReportOrder(order)}
-                            size="sm"
-                            type="button"
-                            variant="secondary"
-                          >
-                            <RotateCcw aria-hidden="true" className="h-4 w-4" />
-                            Return report
-                          </Button>
-                        ) : null}
-                      </div>
-                      <Button onClick={() => openTicket(order)} size="sm" type="button">
-                        {order.status === "RECEIVED"
-                          ? "View delivery"
-                          : order.status === "PARTIALLY_RECEIVED"
-                            ? "Continue receiving"
-                            : "Receive delivery"}
-                      </Button>
-                    </div>
-                  </Accordion.Panel>
-                </Accordion.Item>
-              );
-            })}
-          </Accordion.Root>
+          <div className="divide-y divide-slate-100">
+            {visibleOrders.map((order) => (
+              <ReceivingQueueRow key={order.id} onOpen={openTicket} order={order} />
+            ))}
+          </div>
         ) : null}
 
         {visibleTotal > 0 ? (
@@ -869,6 +768,100 @@ export function ReceivingPage() {
         order={returnReportOrder}
       />
     </div>
+  );
+}
+
+function queueActionLabel(status: RestockOrderStatus) {
+  if (status === "RECEIVED") return "View delivery";
+  if (status === "PARTIALLY_RECEIVED") return "Continue receiving";
+  return "Review delivery";
+}
+
+function ReceivingQueueRow({
+  onOpen,
+  order
+}: {
+  onOpen: (order: RestockOrder) => void;
+  order: RestockOrder;
+}) {
+  const totals = orderTotals(order);
+  const isPartial = order.status === "PARTIALLY_RECEIVED";
+  const isReceived = order.status === "RECEIVED";
+  const progress = totals.units > 0 ? Math.min(100, (totals.accepted / totals.units) * 100) : 0;
+  const approvedLabel = order.approvedAt
+    ? `Approved ${dateFormatter.format(new Date(order.approvedAt))}`
+    : "Approved";
+  const actionLabel = queueActionLabel(order.status);
+  const quantityLabel = isReceived
+    ? `${totals.accepted.toLocaleString()} accepted`
+    : `${totals.remaining.toLocaleString()} remaining`;
+  const quantityDetail = isReceived
+    ? "Receipt complete"
+    : isPartial
+      ? `${totals.accepted.toLocaleString()} of ${totals.units.toLocaleString()} accepted`
+      : "Physical delivery pending";
+
+  return (
+    <button
+      aria-label={`${actionLabel}: ${order.orderNumber}`}
+      className="group grid w-full gap-3 px-5 py-3.5 text-left transition-colors hover:bg-slate-50/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 md:grid-cols-[minmax(250px,1.05fr)_minmax(330px,1fr)_auto] md:items-center"
+      onClick={() => onOpen(order)}
+      type="button"
+    >
+      <div className="min-w-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="truncate text-sm font-semibold text-slate-950">{order.orderNumber}</span>
+          <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+        </div>
+        <p className="mt-1 text-xs text-slate-500 md:hidden">{approvedLabel}</p>
+      </div>
+
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+          <span className="font-medium text-slate-700">
+            {totals.products.toLocaleString()} product{totals.products === 1 ? "" : "s"}
+          </span>
+          <span aria-hidden="true" className="text-slate-300">
+            •
+          </span>
+          <span>{totals.units.toLocaleString()} expected units</span>
+          <span aria-hidden="true" className="hidden text-slate-300 lg:inline">
+            •
+          </span>
+          <span className="hidden lg:inline">{approvedLabel}</span>
+        </div>
+        {isPartial ? (
+          <div
+            aria-label={`${Math.round(progress)} percent received`}
+            className="mt-2 flex items-center gap-2"
+          >
+            <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-amber-500 transition-[width]"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <span className="shrink-0 text-[11px] font-medium tabular-nums text-amber-700">
+              {Math.round(progress)}%
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex items-center justify-between gap-4 md:min-w-[250px] md:justify-end">
+        <div className="min-w-[92px] md:text-right">
+          <p className="text-sm font-semibold tabular-nums text-slate-950">{quantityLabel}</p>
+          <p className="mt-0.5 text-[11px] text-slate-500">{quantityDetail}</p>
+        </div>
+        <span className="inline-flex min-w-[132px] items-center justify-end gap-1.5 text-sm font-semibold text-indigo-600 transition-colors group-hover:text-indigo-700">
+          {actionLabel}
+          <ArrowRight
+            aria-hidden="true"
+            className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+          />
+        </span>
+      </div>
+    </button>
   );
 }
 
