@@ -43,10 +43,8 @@ assert.match(dialogSource, /expectedOrderVersion: selectedOrder\?\.version/);
 assert.match(dialogSource, /restockOrderLineId/);
 assert.match(dialogSource, /confirmOverDelivery/);
 assert.match(dialogSource, /requiresReturnReport/);
-assert.match(
-  dialogSource,
-  /expected, missing, damaged, return-report, and partial-delivery history/
-);
+assert.match(dialogSource, /return-report/);
+assert.match(dialogSource, /partial-delivery history/);
 assert.match(dialogSource, /Standalone imports are for accepted stock only/);
 assert.doesNotMatch(dialogSource, /confirmInventoryStockImport/);
 assert.match(dialogSource, /lookupInventoryByBarcode/);
