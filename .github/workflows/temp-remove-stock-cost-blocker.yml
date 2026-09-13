@@ -1,4 +1,4 @@
-name: Temporary remove stock cost blocker
+name: Temporary Stock Cost Blocker Fix
 
 on:
   push:
@@ -11,97 +11,30 @@ permissions:
   contents: write
 
 jobs:
-  remove-blocker:
+  patch:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Sprint 10 branch
         uses: actions/checkout@v4
         with:
           ref: sprint/v0.10/sprint-10
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Apply central stock costing fix
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
+      - name: Apply stock cost blocker fix
+        run: node scripts/temp-remove-stock-cost-blocker.mjs
 
-          schema = Path("database/prisma/schema.prisma")
-          schema_text = schema.read_text()
-          old_schema = '  unitCost           Decimal              @map("unit_cost") @db.Decimal(10, 2)'
-          new_schema = '  unitCost           Decimal?             @map("unit_cost") @db.Decimal(10, 2)'
-          if old_schema not in schema_text:
-              raise SystemExit("InventoryBatch.unitCost schema contract not found")
-          schema.write_text(schema_text.replace(old_schema, new_schema, 1))
-
-          service = Path("backend/src/services/stockDomainService.ts")
-          text = service.read_text()
-
-          old_type = "  unitCost: Prisma.Decimal;\n};"
-          new_type = "  unitCost: Prisma.Decimal | null;\n};"
-          if old_type not in text:
-              raise SystemExit("BatchAllocation unitCost type contract not found")
-          text = text.replace(old_type, new_type, 1)
-
-          pattern = re.compile(
-              r'function requireProductCostPrice\(product: \{ costPrice: Prisma\.Decimal \| null; id: string \}\) \{.*?\n\}\n\n',
-              re.S,
-          )
-          text, removed = pattern.subn("", text, count=1)
-          if removed != 1:
-              raise SystemExit("PRODUCT_COST_PRICE_REQUIRED blocker function not found")
-
-          replacements = {
-              "const unitCost = input.unitCost ?? requireProductCostPrice(product);":
-                  "const unitCost = input.unitCost ?? product.costPrice ?? null;",
-              "const adjustmentUnitCost = requireProductCostPrice(product);":
-                  "const adjustmentUnitCost = product.costPrice ?? null;",
-              "const reconciliationUnitCost = existingBatch ? undefined : requireProductCostPrice(product);":
-                  "const reconciliationUnitCost = existingBatch ? undefined : (product.costPrice ?? null);",
-              "unitCost: reconciliationUnitCost ?? requireProductCostPrice(product)":
-                  "unitCost: reconciliationUnitCost ?? product.costPrice ?? null",
-          }
-          for old, new in replacements.items():
-              if old not in text:
-                  raise SystemExit(f"Expected stock-domain contract not found: {old}")
-              text = text.replace(old, new, 1)
-
-          audit_anchor = '''      ...(batches.some(
-        (batch) => batch.status === InventoryBatchStatus.REMOVED && batch.quantityRemaining > 0
-      )
-        ? ["REMOVED_BATCH_HAS_QUANTITY"]
-        : []),
-'''
-          audit_replacement = audit_anchor + '''      ...(batches.some((batch) => batch.unitCost === null) ? ["UNKNOWN_BATCH_COST"] : []),
-'''
-          if audit_anchor not in text:
-              raise SystemExit("Stock audit anchor not found")
-          text = text.replace(audit_anchor, audit_replacement, 1)
-
-          if "PRODUCT_COST_PRICE_REQUIRED" in text or "requireProductCostPrice" in text:
-              raise SystemExit("Hard procurement-cost blocker still exists in stockDomainService")
-          service.write_text(text)
-
-          migration = Path("database/prisma/migrations/20260913133000_allow_unknown_inventory_batch_cost")
-          migration.mkdir(parents=True, exist_ok=True)
-          (migration / "migration.sql").write_text(
-              "-- Physical stock truth must not be blocked by missing procurement metadata.\n"
-              "-- NULL means the batch cost is not yet verified; never substitute a fake zero cost.\n"
-              "ALTER TABLE `inventory_batches` MODIFY `unit_cost` DECIMAL(10, 2) NULL;\n"
-          )
-          PY
-
-      - name: Format touched source
-        run: npx prettier --write database/prisma/schema.prisma backend/src/services/stockDomainService.ts database/prisma/migrations/20260913133000_allow_unknown_inventory_batch_cost/migration.sql
+      - name: Format touched production files
+        run: npx prettier --write backend/src/services/stockDomainService.ts database/prisma/schema.prisma database/prisma/migrations/20260913133000_allow_unknown_inventory_batch_cost/migration.sql
 
       - name: Generate Prisma client
         run: npm run prisma:generate
@@ -109,26 +42,20 @@ jobs:
       - name: Validate Prisma schema
         run: npm run prisma:validate
 
-      - name: Typecheck
+      - name: Typecheck repository
         run: npm run typecheck
 
-      - name: Build
+      - name: Build repository
         run: npm run build
 
-      - name: Verify blocker removal
+      - name: Commit production fix
+        shell: bash
         run: |
-          ! grep -R "PRODUCT_COST_PRICE_REQUIRED\|A verified procurement cost is required before stock can be recorded" backend/src/services/stockDomainService.ts
-          grep -F 'unitCost           Decimal?' database/prisma/schema.prisma
-          grep -F 'UNKNOWN_BATCH_COST' backend/src/services/stockDomainService.ts
-          grep -F '"costPrice"' backend/src/services/productImportService.ts
-
-      - name: Commit production changes
-        run: |
-          git config user.name "ysabelle-ci"
-          git config user.email "actions@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add backend/src/services/stockDomainService.ts database/prisma/schema.prisma database/prisma/migrations/20260913133000_allow_unknown_inventory_batch_cost/migration.sql
           if git diff --cached --quiet; then
-            echo "No production changes to commit"
+            echo "Production fix already applied."
             exit 0
           fi
           git commit --no-verify -m "fix(inventory): allow stock receipt without procurement cost"
