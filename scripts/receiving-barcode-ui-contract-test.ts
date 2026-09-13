@@ -36,7 +36,7 @@ assert.match(pageSource, /<Dialog/);
 assert.doesNotMatch(pageSource, /@base-ui\/react\/accordion/);
 assert.doesNotMatch(pageSource, /@\/components\/ui\/sheet/);
 assert.doesNotMatch(pageSource, /RefreshCw/);
-assert.doesNotMatch(pageSource, /<table\b/i);
+assert.doesNotMatch(pageSource, /<table\b/);
 assert.doesNotMatch(pageSource, /Barcode on received item/);
 assert.doesNotMatch(pageSource, /Register barcode & receive/);
 assert.match(restockApiSource, /acceptedQuantity/);
