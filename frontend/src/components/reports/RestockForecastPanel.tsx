@@ -42,8 +42,6 @@ const RISK_PRIORITY: Record<RestockForecastRisk, number> = {
 const WATCHLIST_FETCH_PAGE_SIZE = 100;
 const WATCHLIST_PAGE_SIZE = 10;
 
-type CurrentStockStatus = "OUT_OF_STOCK" | "LOW_STOCK" | "NORMAL" | "OVERSTOCK";
-
 function formatNumber(value: number | null | undefined, digits = 0) {
   if (value === null || value === undefined || !Number.isFinite(value)) return "-";
   return new Intl.NumberFormat("en-US", {
@@ -73,19 +71,8 @@ function formatMonth(value: string) {
   }).format(date);
 }
 
-function currentStockStatus(candidate: RestockPlanningCandidate): CurrentStockStatus {
-  const sellable = Math.max(0, candidate.sellableStock);
-  const reorderLevel = Math.max(0, candidate.product.reorderLevel);
-  const targetStockLevel = Math.max(0, candidate.product.targetStockLevel);
-
-  if (sellable <= 0) return "OUT_OF_STOCK";
-  if (reorderLevel > 0 && sellable <= reorderLevel) return "LOW_STOCK";
-  if (targetStockLevel > 0 && sellable > targetStockLevel) return "OVERSTOCK";
-  return "NORMAL";
-}
-
 function stockStatusVariant(candidate: RestockPlanningCandidate) {
-  switch (currentStockStatus(candidate)) {
+  switch (candidate.stockHealth.status) {
     case "OUT_OF_STOCK":
       return "danger" as const;
     case "LOW_STOCK":
@@ -99,7 +86,7 @@ function stockStatusVariant(candidate: RestockPlanningCandidate) {
 }
 
 function stockStatusLabel(candidate: RestockPlanningCandidate) {
-  switch (currentStockStatus(candidate)) {
+  switch (candidate.stockHealth.status) {
     case "OUT_OF_STOCK":
       return "Out of Stock";
     case "LOW_STOCK":
@@ -364,8 +351,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               </Badge>
             </div>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Current stock health is classified automatically from sellable stock, reorder level,
-              and target level. SARIMAX-driven suggested restock remains separate for future demand.
+              Current stock health is classified automatically from sellable stock and demand
+              coverage. SARIMAX-driven suggested restock remains separate for future demand.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -444,7 +431,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                             </button>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={stockStatusVariant(item)}>{stockStatusLabel(item)}</Badge>
+                            <Badge
+                              title={item.stockHealth.reason}
+                              variant={stockStatusVariant(item)}
+                            >
+                              {stockStatusLabel(item)}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             {formatNumber(item.sellableStock)}
@@ -493,7 +485,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 </p>
               </div>
               {selected ? (
-                <Badge variant={stockStatusVariant(selected)}>{stockStatusLabel(selected)}</Badge>
+                <Badge
+                  title={selected.stockHealth.reason}
+                  variant={stockStatusVariant(selected)}
+                >
+                  {stockStatusLabel(selected)}
+                </Badge>
               ) : null}
             </div>
 
