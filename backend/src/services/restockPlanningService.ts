@@ -21,9 +21,15 @@ type PersistedForecastPoint = {
   upperConfidence: number | null;
 };
 
+type PersistedHistoricalPoint = {
+  period: string;
+  quantitySold: number;
+};
+
 type PersistedForecastDetail = {
   generatedAt?: string;
   forecast?: PersistedForecastPoint[];
+  historical?: PersistedHistoricalPoint[];
 };
 
 function latestByProduct<T extends { productId: string }>(rows: T[]) {
@@ -135,6 +141,7 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
       currentMonthForecastQuantity: number | null;
       forecast: PersistedForecastPoint[];
       generatedAt: string | null;
+      historical: PersistedHistoricalPoint[];
       modelName: string | null;
     }
   >();
@@ -155,6 +162,12 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
             Number.isFinite(point.predictedQuantity)
         )
       : [];
+    const historical = Array.isArray(detail.historical)
+      ? detail.historical.filter(
+          (point): point is PersistedHistoricalPoint =>
+            Boolean(point) && typeof point.period === "string" && Number.isFinite(point.quantitySold)
+        )
+      : [];
 
     forecastByCanonicalProduct.set(canonicalProductId, {
       currentMonthForecastQuantity:
@@ -163,6 +176,7 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
           : Number(forecastProduct.currentMonthForecastQuantity),
       forecast,
       generatedAt: detail.generatedAt ?? activeForecast?.generatedAt?.toISOString() ?? null,
+      historical,
       modelName: forecastProduct.modelName
     });
   }
@@ -241,6 +255,7 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
             batchId: activeForecast?.id ?? null,
             currentMonthDemand: forecast.currentMonthForecastQuantity,
             generatedAt: forecast.generatedAt,
+            historical: forecast.historical,
             modelName: forecast.modelName,
             points: forecast.forecast
           }
