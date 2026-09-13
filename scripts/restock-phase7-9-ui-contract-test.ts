@@ -7,6 +7,10 @@ const planningSource = readFileSync(
   resolve(process.cwd(), "src/components/reports/RestockPlanningPanel.tsx"),
   "utf8"
 );
+const forecastSource = readFileSync(
+  resolve(process.cwd(), "src/components/reports/RestockForecastPanel.tsx"),
+  "utf8"
+);
 const receivingSource = readFileSync(resolve(process.cwd(), "src/pages/ReceivingPage.tsx"), "utf8");
 const returnDialogSource = readFileSync(
   resolve(process.cwd(), "src/components/receiving/ReturnReportDialog.tsx"),
@@ -26,10 +30,13 @@ const apiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.t
 assert.doesNotMatch(reportsSource, /RestockNewProductCard/);
 assert.doesNotMatch(reportsSource, /New product restock/);
 assert.doesNotMatch(reportsSource, /Add new product/);
-assert.match(reportsSource, /Restock forecast/);
+assert.match(forecastSource, /Restock forecast/);
 assert.doesNotMatch(reportsSource, /Review recommendations/);
-assert.match(reportsSource, /Automatic SARIMAX-driven recommendations/);
+assert.match(forecastSource, /Automatic SARIMAX-driven demand intelligence/);
 assert.match(reportsSource, /RestockForecastPanel/);
+assert.match(forecastSource, /Forecast watchlist/);
+assert.match(forecastSource, /includeZero: true/);
+assert.match(forecastSource, /Forecast chart ready/);
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.doesNotMatch(reportsSource, />Saved drafts</);
 assert.match(reportsSource, /RestockDraftsPanel/);

@@ -251,14 +251,6 @@ export function ReportsPage() {
           </section>
 
           <section className="space-y-3">
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-              <h2 className="text-base font-semibold text-slate-950">Restock forecast</h2>
-              <p className="mt-0.5 text-xs text-slate-500">
-                Automatic SARIMAX-driven recommendations are shown below before projected stockouts.
-                Manual custom restocking stays in the separate Restock planner.
-              </p>
-            </div>
-
             <RestockForecastPanel refreshVersion={refreshVersion + restockOrdersRefreshVersion} />
 
             <RestockPlanningPanel

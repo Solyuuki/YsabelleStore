@@ -97,8 +97,7 @@ function buildDemandChart(candidate: RestockPlanningCandidate | null) {
     return {
       actual: null,
       confidenceBase: lower,
-      confidenceRange:
-        lower !== null && upper !== null ? Math.max(0, upper - lower) : null,
+      confidenceRange: lower !== null && upper !== null ? Math.max(0, upper - lower) : null,
       forecast: point.predictedQuantity,
       label: formatMonth(point.period),
       period: point.period
@@ -151,7 +150,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       setError(null);
       try {
         const result = await listRestockPlanning(
-          { includeZero: false, page: 1, pageSize: 100 },
+          { includeZero: true, page: 1, pageSize: 100 },
           { signal: controller.signal }
         );
         if (!active) return;
@@ -196,16 +195,20 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     () => items.find((item) => item.product.id === selectedProductId) ?? null,
     [items, selectedProductId]
   );
+  const actionableItems = useMemo(
+    () => items.filter((item) => item.recommendedQuantity > 0),
+    [items]
+  );
   const demandChart = useMemo(() => buildDemandChart(selected), [selected]);
   const inventoryProjection = useMemo(() => buildInventoryProjection(selected), [selected]);
   const firstForecastPeriod = selected?.forecast?.points[0]?.period ?? null;
   const summary = useMemo(() => {
-    const highRisk = items.filter((item) => {
+    const highRisk = actionableItems.filter((item) => {
       const risk = item.forecastDecision?.riskLevel;
       return risk === "HIGH" || risk === "CRITICAL";
     }).length;
     const nextSevenDays = Date.now() + 7 * 86_400_000;
-    const sevenDayStockouts = items.filter((item) => {
+    const sevenDayStockouts = actionableItems.filter((item) => {
       const stockout = item.forecastDecision?.projectedStockoutDate;
       if (!stockout) return false;
       const timestamp = new Date(stockout).getTime();
@@ -213,12 +216,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     }).length;
 
     return {
-      actionCount: items.length,
+      actionCount: actionableItems.length,
       highRisk,
       sevenDayStockouts,
-      units: items.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0)
+      units: actionableItems.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0)
     };
-  }, [items]);
+  }, [actionableItems]);
 
   if (loading && items.length === 0) {
     return (
@@ -259,15 +262,23 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     );
   }
 
-  if (items.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-between gap-4 py-5">
-          <div>
-            <p className="text-sm font-semibold text-slate-950">No forecast-driven restock action</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Current sellable and incoming stock cover the active recommendations. Manual custom
-              restocking remains available in the Restock planner.
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <CardTitle>Restock forecast</CardTitle>
+              <Badge variant={summary.actionCount > 0 ? "warning" : "success"}>
+                {summary.actionCount > 0
+                  ? `${summary.actionCount.toLocaleString()} need action`
+                  : "Stock covered"}
+              </Badge>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Automatic SARIMAX-driven demand intelligence stays visible even when current stock
+              does not require a restock. Manual custom restocking stays in the separate Restock
+              planner.
             </p>
           </div>
           <Button
@@ -280,104 +291,105 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
             Refresh
           </Button>
-        </CardContent>
-      </Card>
-    );
-  }
+        </div>
+      </CardHeader>
 
-  return (
-    <div className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <ForecastMetric label="Needs action" value={summary.actionCount} />
-        <ForecastMetric label="High risk" value={summary.highRisk} />
-        <ForecastMetric label="Stockout within 7d" value={summary.sevenDayStockouts} />
-        <ForecastMetric label="Suggested units" value={summary.units} />
-      </div>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <ForecastMetric label="Needs action" value={summary.actionCount} />
+          <ForecastMetric label="High risk" value={summary.highRisk} />
+          <ForecastMetric label="Stockout within 7d" value={summary.sevenDayStockouts} />
+          <ForecastMetric label="Suggested units" value={summary.units} />
+        </div>
 
-      <div className="grid gap-3 xl:grid-cols-[0.9fr_1.1fr]">
-        <Card className="min-w-0">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between gap-3">
+        {summary.actionCount === 0 ? (
+          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <p className="text-sm font-semibold text-emerald-950">No restock action required</p>
+            <p className="mt-1 text-xs leading-5 text-emerald-800">
+              Current sellable and incoming stock cover the active forecast demand. Forecast charts
+              remain available below for monitoring.
+            </p>
+          </div>
+        ) : null}
+
+        <div className="grid gap-3 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="min-w-0 rounded-lg border border-slate-200 bg-white">
+            <div className="border-b border-slate-200 px-4 py-3">
+              <p className="text-sm font-semibold text-slate-950">Forecast watchlist</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Forecast-ready products stay visible here even when suggested restock is zero.
+              </p>
+            </div>
+            <div className="overflow-hidden">
+              {items.length > 0 ? (
+                <Table aria-label="Forecast product watchlist">
+                  <TableHeader className="bg-slate-50">
+                    <TableRow>
+                      <TableHead>Product</TableHead>
+                      <TableHead>Risk</TableHead>
+                      <TableHead className="text-right">Sellable</TableHead>
+                      <TableHead className="text-right">Suggested</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {items.slice(0, 12).map((item) => {
+                      const selectedRow = item.product.id === selectedProductId;
+                      return (
+                        <TableRow
+                          className={selectedRow ? "bg-indigo-50/70" : "hover:bg-slate-50"}
+                          key={item.product.id}
+                        >
+                          <TableCell className="max-w-[16rem]">
+                            <button
+                              className="w-full text-left"
+                              onClick={() => setSelectedProductId(item.product.id)}
+                              type="button"
+                            >
+                              <span className="block truncate font-medium text-slate-950">
+                                {item.product.name}
+                              </span>
+                              <span className="mt-0.5 block text-xs text-slate-500">
+                                {sourceLabel(item)} · {item.product.sku}
+                              </span>
+                            </button>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={riskVariant(item.forecastDecision?.riskLevel)}>
+                              {item.forecastDecision?.riskLevel ?? "MONITOR"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {formatNumber(item.sellableStock)}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold tabular-nums text-slate-950">
+                            {formatNumber(item.recommendedQuantity)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="px-4 py-10 text-center">
+                  <p className="text-sm font-semibold text-slate-950">No forecast products yet</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    The chart workspace remains ready while forecast history is being built.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="min-w-0 rounded-lg border border-slate-200 bg-white">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
               <div>
-                <CardTitle>Forecast recommendations</CardTitle>
-                <p className="mt-1 text-xs text-slate-500">
-                  Select a product to inspect demand confidence and projected stock position.
+                <p className="text-sm font-semibold text-slate-950">
+                  {selected?.product.name ?? "Demand forecast"}
                 </p>
-              </div>
-              <Button
-                disabled={loading}
-                onClick={() => setLocalRefreshVersion((version) => version + 1)}
-                size="sm"
-                type="button"
-                variant="secondary"
-              >
-                <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-                Refresh
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="overflow-hidden rounded-md border border-slate-200">
-              <Table aria-label="Forecast-driven restock recommendations">
-                <TableHeader className="bg-slate-50">
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Risk</TableHead>
-                    <TableHead className="text-right">Sellable</TableHead>
-                    <TableHead className="text-right">Suggested</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.slice(0, 12).map((item) => {
-                    const selectedRow = item.product.id === selectedProductId;
-                    return (
-                      <TableRow
-                        className={selectedRow ? "bg-indigo-50/70" : "hover:bg-slate-50"}
-                        key={item.product.id}
-                      >
-                        <TableCell className="max-w-[16rem]">
-                          <button
-                            className="w-full text-left"
-                            onClick={() => setSelectedProductId(item.product.id)}
-                            type="button"
-                          >
-                            <span className="block truncate font-medium text-slate-950">
-                              {item.product.name}
-                            </span>
-                            <span className="mt-0.5 block text-xs text-slate-500">
-                              {sourceLabel(item)} · {item.product.sku}
-                            </span>
-                          </button>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={riskVariant(item.forecastDecision?.riskLevel)}>
-                            {item.forecastDecision?.riskLevel ?? "POLICY"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {formatNumber(item.sellableStock)}
-                        </TableCell>
-                        <TableCell className="text-right font-semibold tabular-nums text-slate-950">
-                          {formatNumber(item.recommendedQuantity)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0">
-          <CardHeader className="pb-2">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle>{selected?.product.name ?? "Forecast detail"}</CardTitle>
                 <p className="mt-1 text-xs text-slate-500">
                   {selected?.forecast
                     ? `${selected.forecast.modelName ?? "SARIMA"} demand forecast · Generated ${formatDate(selected.forecast.generatedAt)}`
-                    : "Stock-policy recommendation without a forecast series."}
+                    : "Historical demand, forecast trajectory, and confidence interval."}
                 </p>
               </div>
               {selected ? (
@@ -386,144 +398,162 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 </Badge>
               ) : null}
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-0">
-            {selected ? (
-              <>
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                  <ForecastMetric
-                    compact
-                    label="30d demand"
-                    value={Math.ceil(selected.forecastDecision?.currentMonthDemand ?? selected.forecast?.currentMonthDemand ?? 0)}
-                  />
-                  <ForecastMetric compact label="Incoming" value={selected.incomingStock} />
-                  <ForecastMetric
-                    compact
-                    label="Stockout"
-                    value={formatDate(selected.forecastDecision?.projectedStockoutDate)}
-                  />
-                  <ForecastMetric
-                    compact
-                    label="Action date"
-                    value={formatDate(selected.forecastDecision?.recommendedActionDate)}
-                  />
-                </div>
 
-                {demandChart.length > 0 ? (
-                  <div>
-                    <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+            <div className="space-y-4 p-4">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <ForecastMetric
+                  compact
+                  label="30d demand"
+                  value={Math.ceil(
+                    selected?.forecastDecision?.currentMonthDemand ??
+                      selected?.forecast?.currentMonthDemand ??
+                      0
+                  )}
+                />
+                <ForecastMetric compact label="Incoming" value={selected?.incomingStock ?? 0} />
+                <ForecastMetric
+                  compact
+                  label="Stockout"
+                  value={formatDate(selected?.forecastDecision?.projectedStockoutDate)}
+                />
+                <ForecastMetric
+                  compact
+                  label="Action date"
+                  value={formatDate(selected?.forecastDecision?.recommendedActionDate)}
+                />
+              </div>
+
+              <div>
+                <div className="mb-2">
+                  <p className="text-sm font-semibold text-slate-950">Demand forecast</p>
+                  <p className="text-xs text-slate-500">
+                    Historical demand, SARIMAX forecast, and confidence interval.
+                  </p>
+                </div>
+                <div className="relative h-64 rounded-md border border-slate-200 bg-white p-2">
+                  {demandChart.length > 0 ? (
+                    <ResponsiveContainer height="100%" width="100%">
+                      <ComposedChart
+                        data={demandChart}
+                        margin={{ bottom: 4, left: 0, right: 8, top: 8 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="label" minTickGap={18} tick={{ fontSize: 11 }} />
+                        <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
+                        <Tooltip
+                          formatter={(value, name) => [
+                            formatNumber(Number(value), 1),
+                            String(name)
+                          ]}
+                        />
+                        <Area
+                          dataKey="confidenceBase"
+                          fill="transparent"
+                          name="Confidence lower"
+                          stackId="confidence"
+                          stroke="none"
+                        />
+                        <Area
+                          dataKey="confidenceRange"
+                          fill="#818cf8"
+                          fillOpacity={0.18}
+                          name="Confidence interval"
+                          stackId="confidence"
+                          stroke="none"
+                        />
+                        <Line
+                          connectNulls={false}
+                          dataKey="actual"
+                          dot={false}
+                          name="Historical demand"
+                          stroke="#475569"
+                          strokeWidth={2}
+                          type="monotone"
+                        />
+                        <Line
+                          connectNulls={false}
+                          dataKey="forecast"
+                          dot={{ r: 2.5 }}
+                          name="Forecast demand"
+                          stroke="#4f46e5"
+                          strokeWidth={2.5}
+                          type="monotone"
+                        />
+                        {firstForecastPeriod ? (
+                          <ReferenceLine
+                            label={{ fill: "#64748b", fontSize: 10, value: "Forecast" }}
+                            stroke="#94a3b8"
+                            strokeDasharray="4 4"
+                            x={formatMonth(firstForecastPeriod)}
+                          />
+                        ) : null}
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-6 text-center">
                       <div>
-                        <p className="text-sm font-semibold text-slate-950">Demand forecast</p>
-                        <p className="text-xs text-slate-500">
-                          Historical demand, SARIMA forecast, and confidence interval.
+                        <p className="text-sm font-semibold text-slate-950">Forecast chart ready</p>
+                        <p className="mt-1 max-w-md text-xs leading-5 text-slate-500">
+                          No SARIMAX series is available yet. This chart area remains visible and
+                          will populate automatically when forecast history is generated.
                         </p>
                       </div>
                     </div>
-                    <div className="h-64 rounded-md border border-slate-200 bg-white p-2">
-                      <ResponsiveContainer height="100%" width="100%">
-                        <ComposedChart data={demandChart} margin={{ bottom: 4, left: 0, right: 8, top: 8 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                          <XAxis dataKey="label" minTickGap={18} tick={{ fontSize: 11 }} />
-                          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
-                          <Tooltip
-                            formatter={(value, name) => [formatNumber(Number(value), 1), String(name)]}
-                          />
-                          <Area
-                            dataKey="confidenceBase"
-                            fill="transparent"
-                            name="Confidence lower"
-                            stackId="confidence"
-                            stroke="none"
-                          />
-                          <Area
-                            dataKey="confidenceRange"
-                            fill="#818cf8"
-                            fillOpacity={0.18}
-                            name="Confidence interval"
-                            stackId="confidence"
-                            stroke="none"
-                          />
-                          <Line
-                            connectNulls={false}
-                            dataKey="actual"
-                            dot={false}
-                            name="Historical demand"
-                            stroke="#475569"
-                            strokeWidth={2}
-                            type="monotone"
-                          />
-                          <Line
-                            connectNulls={false}
-                            dataKey="forecast"
-                            dot={{ r: 2.5 }}
-                            name="Forecast demand"
-                            stroke="#4f46e5"
-                            strokeWidth={2.5}
-                            type="monotone"
-                          />
-                          {firstForecastPeriod ? (
-                            <ReferenceLine
-                              label={{ fill: "#64748b", fontSize: 10, value: "Forecast" }}
-                              stroke="#94a3b8"
-                              strokeDasharray="4 4"
-                              x={formatMonth(firstForecastPeriod)}
-                            />
-                          ) : null}
-                        </ComposedChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-md border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-                    Forecast series is not available for this stock-policy recommendation.
-                  </div>
-                )}
+                  )}
+                </div>
+              </div>
 
-                {inventoryProjection.length > 1 ? (
-                  <div>
-                    <div className="mb-2">
-                      <p className="text-sm font-semibold text-slate-950">Projected inventory</p>
-                      <p className="text-xs text-slate-500">
-                        Sellable + incoming stock, less expiry exposure and forecast demand.
-                      </p>
-                    </div>
-                    <div className="h-44 rounded-md border border-slate-200 bg-slate-50/40 p-2">
-                      <ResponsiveContainer height="100%" width="100%">
-                        <LineChart data={inventoryProjection} margin={{ bottom: 4, left: 0, right: 8, top: 8 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                          <XAxis dataKey="label" minTickGap={18} tick={{ fontSize: 11 }} />
-                          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
-                          <Tooltip formatter={(value) => [formatNumber(Number(value), 1), "Projected stock"]} />
-                          <ReferenceLine
-                            label={{ fill: "#64748b", fontSize: 10, value: "Target" }}
-                            stroke="#94a3b8"
-                            strokeDasharray="4 4"
-                            y={selected.product.targetStockLevel}
-                          />
-                          <ReferenceLine
-                            label={{ fill: "#b45309", fontSize: 10, value: "Reorder" }}
-                            stroke="#d97706"
-                            strokeDasharray="4 4"
-                            y={selected.product.reorderLevel}
-                          />
-                          <ReferenceLine stroke="#dc2626" y={0} />
-                          <Line
-                            dataKey="projectedStock"
-                            dot={{ r: 2.5 }}
-                            name="Projected stock"
-                            stroke="#0f766e"
-                            strokeWidth={2.5}
-                            type="monotone"
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
+              {inventoryProjection.length > 1 && selected ? (
+                <div>
+                  <div className="mb-2">
+                    <p className="text-sm font-semibold text-slate-950">Projected inventory</p>
+                    <p className="text-xs text-slate-500">
+                      Sellable + incoming stock, less expiry exposure and forecast demand.
+                    </p>
                   </div>
-                ) : null}
+                  <div className="h-44 rounded-md border border-slate-200 bg-slate-50/40 p-2">
+                    <ResponsiveContainer height="100%" width="100%">
+                      <LineChart
+                        data={inventoryProjection}
+                        margin={{ bottom: 4, left: 0, right: 8, top: 8 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="label" minTickGap={18} tick={{ fontSize: 11 }} />
+                        <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
+                        <Tooltip
+                          formatter={(value) => [formatNumber(Number(value), 1), "Projected stock"]}
+                        />
+                        <ReferenceLine
+                          label={{ fill: "#64748b", fontSize: 10, value: "Target" }}
+                          stroke="#94a3b8"
+                          strokeDasharray="4 4"
+                          y={selected.product.targetStockLevel}
+                        />
+                        <ReferenceLine
+                          label={{ fill: "#b45309", fontSize: 10, value: "Reorder" }}
+                          stroke="#d97706"
+                          strokeDasharray="4 4"
+                          y={selected.product.reorderLevel}
+                        />
+                        <ReferenceLine stroke="#dc2626" y={0} />
+                        <Line
+                          dataKey="projectedStock"
+                          dot={{ r: 2.5 }}
+                          name="Projected stock"
+                          stroke="#0f766e"
+                          strokeWidth={2.5}
+                          type="monotone"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              ) : null}
 
+              {selected ? (
                 <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Why this is recommended
+                    Forecast interpretation
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-700">{selected.rationale}</p>
                   <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500">
@@ -534,12 +564,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     <span>Reorder {formatNumber(selected.product.reorderLevel)}</span>
                   </div>
                 </div>
-              </>
-            ) : null}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -553,9 +583,21 @@ function ForecastMetric({
   value: number | string;
 }) {
   return (
-    <div className={compact ? "rounded-md border border-slate-200 bg-slate-50 px-3 py-2" : "rounded-lg border border-slate-200 bg-white px-4 py-3"}>
+    <div
+      className={
+        compact
+          ? "rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
+          : "rounded-lg border border-slate-200 bg-white px-4 py-3"
+      }
+    >
       <p className="text-xs text-slate-500">{label}</p>
-      <p className={compact ? "mt-1 text-sm font-semibold text-slate-950" : "mt-1 text-xl font-semibold text-slate-950"}>
+      <p
+        className={
+          compact
+            ? "mt-1 text-sm font-semibold text-slate-950"
+            : "mt-1 text-xl font-semibold text-slate-950"
+        }
+      >
         {typeof value === "number" ? value.toLocaleString() : value}
       </p>
     </div>
