@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 
+import { normalizePdfDeliveryExpiryForReceiving } from "../src/services/bulkDeliveryService.js";
 import { extractDeliveryRowsFromTextItems } from "../src/services/pdfDeliveryImportService.js";
 import { completeBulkDeliverySchema } from "../src/validators/bulkDelivery.validators.js";
 
@@ -118,6 +119,16 @@ test("Phase 10 standalone bulk delivery remains an atomic canonical receiving op
   assert.match(serviceSource, /referenceType: "BULK_DELIVERY"/);
   assert.doesNotMatch(serviceSource, /inventory\.update\s*\(/);
   assert.doesNotMatch(serviceSource, /inventoryBatch\.(?:create|update)\s*\(/);
+});
+
+test("Phase 10 PDF expiry reaches receiving with spreadsheet-compatible date semantics", () => {
+  const pdfExpiry = new Date("2029-03-31T00:00:00Z");
+  const normalizedPdfExpiry = normalizePdfDeliveryExpiryForReceiving(pdfExpiry);
+  const spreadsheetExpiry = new Date("2029-03-31T00:00:00");
+
+  assert.ok(normalizedPdfExpiry);
+  assert.equal(normalizedPdfExpiry.getTime(), spreadsheetExpiry.getTime());
+  assert.match(serviceSource, /const normalizedInput = normalizePdfDeliveryExpiries\(input\)/);
 });
 
 test("Phase 10 bulk delivery endpoint stays Owner controlled", () => {
