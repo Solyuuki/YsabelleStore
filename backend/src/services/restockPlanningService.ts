@@ -216,8 +216,6 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
       : null;
     const stockHealth = classifyStockHealth({
       asOf: now,
-      forecastMonthlyDemand:
-        forecast?.currentMonthForecastQuantity ?? forecastDecision?.currentMonthDemand ?? null,
       historicalSeries: (effectiveSalesByProduct.get(product.id) ?? []).map((point) => ({
         period: point.period,
         quantitySold: point.quantitySold
