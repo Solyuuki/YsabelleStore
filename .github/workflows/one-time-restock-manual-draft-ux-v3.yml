@@ -50,3 +50,5 @@ jobs:
           fi
           git commit -m "fix(reports): separate manual restock drafts from forecast"
           git push origin HEAD:sprint/v0.10/sprint-10
+
+# one-time retry after contract adjustment
