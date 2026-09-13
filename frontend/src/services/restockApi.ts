@@ -11,7 +11,7 @@ export type RestockOrderStatus =
 export type RestockRecommendationSource = "SARIMA" | "LOW_STOCK" | "TARGET_STOCK" | "MANUAL";
 export type RestockForecastRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 export type StockHealthStatus = "OUT_OF_STOCK" | "LOW_STOCK" | "NORMAL" | "OVERSTOCK";
-export type StockHealthDemandSource = "SARIMA" | "RECENT_SALES" | "INSUFFICIENT_HISTORY";
+export type StockHealthDemandSource = "RECENT_SALES" | "INSUFFICIENT_HISTORY";
 export type StockHealthConfidence = "HIGH" | "MEDIUM" | "LOW";
 
 export type AutomaticStockHealth = {
