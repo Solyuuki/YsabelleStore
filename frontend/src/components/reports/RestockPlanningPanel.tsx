@@ -4,7 +4,6 @@ import {
   ChevronLeft,
   ChevronRight,
   PackagePlus,
-  RefreshCw,
   Search,
   Settings2,
   Trash2
@@ -165,7 +164,7 @@ type RestockPlanningPanelProps = {
 export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockPlanningPanelProps) {
   const { pushToast } = useToast();
   const [lines, setLines] = useState<PlanLine[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -185,40 +184,28 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
   const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(() => new Set());
   const confirmLockRef = useRef(false);
 
-  const loadRecommendations = useCallback(async () => {
-    setLoading(true);
+  const resetPlanner = useCallback(() => {
+    setLines([]);
+    setDraftOrder(null);
+    setDraftDirty(false);
+    setDraftNotes("");
+    setSearchTerm("");
+    setSearchResults([]);
+    setCatalogMeta(null);
+    setCatalogError(null);
+    setCatalogOpen(false);
+    setReviewOpen(false);
+    setRestockPage(1);
+    setReviewPage(1);
+    setExpandedProductIds(new Set());
     setError(null);
     setNotice(null);
-
-    try {
-      const result = await listRestockPlanning({ page: 1, pageSize: 100 });
-      setLines(result.items.map((candidate) => makePlanLine(candidate)));
-      setDraftOrder(null);
-      setDraftDirty(false);
-      setDraftNotes("");
-      setSearchTerm("");
-      setSearchResults([]);
-      setCatalogMeta(null);
-      setCatalogError(null);
-      setCatalogOpen(false);
-      setReviewOpen(false);
-      setRestockPage(1);
-      setReviewPage(1);
-      setExpandedProductIds(new Set());
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Restock recommendations could not be loaded."
-      );
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   }, []);
 
   useEffect(() => {
-    void loadRecommendations();
-  }, [loadRecommendations]);
+    resetPlanner();
+  }, [resetPlanner]);
 
   const selectedLines = useMemo(() => lines.filter((line) => line.isSelected), [lines]);
   const selectedCount = selectedLines.length;
@@ -318,8 +305,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
   function addExistingProduct(candidate: RestockPlanningCandidate) {
     if (lineIds.has(candidate.product.id)) return;
 
-    const manual = candidate.recommendedQuantity === 0;
-    setLines((current) => [...current, makePlanLine(candidate, manual)]);
+    setLines((current) => [...current, makePlanLine(candidate, true)]);
     if (draftOrder?.status === "DRAFT") setDraftDirty(true);
     setNotice(`${candidate.product.name} added to the restock list.`);
     setCatalogError(null);
@@ -506,7 +492,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
         message: `${approved.orderNumber} is ready in Receiving. Physical Inventory stays unchanged until the delivery is accepted.`,
         variant: "success"
       });
-      await loadRecommendations();
+      await resetPlanner();
     } catch (requestError) {
       const message =
         requestError instanceof Error
@@ -542,7 +528,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle>Restock planner</CardTitle>
-              <Badge variant="info">Recommended</Badge>
+              <Badge>Manual</Badge>
               {draftOrder ? (
                 <Badge variant={statusVariant(draftOrder.status)}>
                   {statusLabel(draftOrder.status)}
@@ -550,22 +536,20 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
               ) : null}
             </div>
             <p className="mt-1 text-xs text-slate-500">
-              Review and prepare products for restocking.
+              Create a custom restock by adding products and setting order quantities.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge>{selectedCount.toLocaleString()} products</Badge>
             <Badge>{requestedUnits.toLocaleString()} units</Badge>
             <Button
-              aria-label="Refresh restock recommendations"
-              disabled={loading || Boolean(draftOrder) || busyAction !== null}
-              onClick={() => void loadRecommendations()}
+              aria-controls="restock-drafts"
+              onClick={onOpenOrders}
               size="sm"
               type="button"
               variant="secondary"
             >
-              <RefreshCw aria-hidden="true" className="h-4 w-4" />
-              Refresh
+              Saved drafts
             </Button>
           </div>
         </div>
@@ -625,7 +609,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
               <div className="flex flex-wrap gap-2">
                 <Button
                   disabled={busyAction !== null}
-                  onClick={() => void loadRecommendations()}
+                  onClick={() => void resetPlanner()}
                   type="button"
                   variant="secondary"
                 >
@@ -680,10 +664,10 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
           <div className="rounded-lg border border-dashed border-slate-300 px-4 py-10 text-center">
             <CheckCircle2 aria-hidden="true" className="mx-auto h-8 w-8 text-emerald-600" />
             <p className="mt-3 text-sm font-semibold text-slate-950">
-              No products need restocking right now.
+              No products in this custom restock yet.
             </p>
             <p className="mt-1 text-sm text-slate-500">
-              Add a product manually if the Owner wants to place a custom restock.
+              Add a product manually to start a custom restock.
             </p>
           </div>
         ) : null}
@@ -975,6 +959,25 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                 />
               ) : null}
               <Button
+                disabled={
+                  !editable ||
+                  selectedCount === 0 ||
+                  busyAction !== null ||
+                  Boolean(draftOrder?.status === "DRAFT" && !draftDirty)
+                }
+                onClick={() => void saveForLater()}
+                type="button"
+                variant="secondary"
+              >
+                {busyAction === "save-for-later"
+                  ? "Saving…"
+                  : draftOrder?.status === "DRAFT"
+                    ? draftDirty
+                      ? "Save changes"
+                      : "Saved for later"
+                    : "Save for later"}
+              </Button>
+              <Button
                 disabled={!editable || selectedCount === 0 || busyAction !== null}
                 onClick={openReview}
                 type="button"
@@ -1187,14 +1190,6 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                 Back
               </Button>
             </DialogClose>
-            <Button
-              disabled={busyAction !== null}
-              onClick={() => void saveForLater()}
-              type="button"
-              variant="secondary"
-            >
-              {busyAction === "save-for-later" ? "Saving…" : "Save for later"}
-            </Button>
             <Button
               disabled={busyAction !== null}
               onClick={() => void confirmRestock()}

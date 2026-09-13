@@ -251,27 +251,20 @@ export function ReportsPage() {
           </section>
 
           <section className="space-y-3">
-            <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-base font-semibold text-slate-950">Restock forecast</h2>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  Automatic SARIMAX-driven recommendations are shown below before projected
-                  stockouts. Manual custom restocking stays in the separate Restock planner.
-                </p>
-              </div>
-              <Button
-                aria-controls="restock-drafts"
-                aria-pressed={draftsOpen}
-                onClick={toggleRestockDrafts}
-                size="sm"
-                type="button"
-                variant={draftsOpen ? "default" : "secondary"}
-              >
-                Saved drafts
-              </Button>
+            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+              <h2 className="text-base font-semibold text-slate-950">Restock forecast</h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Automatic SARIMAX-driven recommendations are shown below before projected stockouts.
+                Manual custom restocking stays in the separate Restock planner.
+              </p>
             </div>
 
             <RestockForecastPanel refreshVersion={refreshVersion + restockOrdersRefreshVersion} />
+
+            <RestockPlanningPanel
+              onOpenOrders={toggleRestockDrafts}
+              onOrdersChanged={notifyRestockOrdersChanged}
+            />
 
             {draftsOpen ? (
               <div className="scroll-mt-4" id="restock-drafts" ref={restockDraftsRef}>
@@ -281,11 +274,6 @@ export function ReportsPage() {
                 />
               </div>
             ) : null}
-
-            <RestockPlanningPanel
-              onOpenOrders={openRestockDrafts}
-              onOrdersChanged={notifyRestockOrdersChanged}
-            />
           </section>
 
           <section className="grid items-start gap-4 xl:grid-cols-[0.9fr_1.1fr]">

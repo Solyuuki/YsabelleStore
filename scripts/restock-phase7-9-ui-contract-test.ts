@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const reportsSource = readFileSync(resolve(process.cwd(), "src/pages/ReportsPage.tsx"), "utf8");
+const planningSource = readFileSync(
+  resolve(process.cwd(), "src/components/reports/RestockPlanningPanel.tsx"),
+  "utf8"
+);
 const receivingSource = readFileSync(resolve(process.cwd(), "src/pages/ReceivingPage.tsx"), "utf8");
 const returnDialogSource = readFileSync(
   resolve(process.cwd(), "src/components/receiving/ReturnReportDialog.tsx"),
@@ -27,8 +31,13 @@ assert.doesNotMatch(reportsSource, /Review recommendations/);
 assert.match(reportsSource, /Automatic SARIMAX-driven recommendations/);
 assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(reportsSource, /RestockPlanningPanel/);
-assert.match(reportsSource, /Saved drafts/);
+assert.doesNotMatch(reportsSource, />Saved drafts</);
 assert.match(reportsSource, /RestockDraftsPanel/);
+assert.match(planningSource, /<Badge>Manual<\/Badge>/);
+assert.match(planningSource, /Save for later/);
+assert.match(planningSource, /Saved drafts/);
+assert.match(planningSource, /makePlanLine\(candidate, true\)/);
+assert.doesNotMatch(planningSource, /<Badge variant="info">Recommended<\/Badge>/);
 assert.doesNotMatch(reportsSource, /restockView === "plan"/);
 assert.doesNotMatch(reportsSource, /RestockReceivingPanel/);
 assert.doesNotMatch(reportsSource, /"plan" \| "orders" \| "receiving"/);
