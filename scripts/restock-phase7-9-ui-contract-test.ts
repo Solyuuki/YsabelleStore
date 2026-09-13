@@ -23,9 +23,13 @@ assert.doesNotMatch(reportsSource, /RestockNewProductCard/);
 assert.doesNotMatch(reportsSource, /New product restock/);
 assert.doesNotMatch(reportsSource, /Add new product/);
 assert.match(reportsSource, /Restock forecast/);
-assert.match(reportsSource, /Review recommendations/);
-assert.match(reportsSource, /forecast-driven restock recommendations/);
+assert.doesNotMatch(reportsSource, /Review recommendations/);
+assert.match(reportsSource, /Automatic SARIMAX-driven recommendations/);
+assert.match(reportsSource, /RestockForecastPanel/);
+assert.match(reportsSource, /RestockPlanningPanel/);
+assert.match(reportsSource, /Saved drafts/);
 assert.match(reportsSource, /RestockDraftsPanel/);
+assert.doesNotMatch(reportsSource, /restockView === "plan"/);
 assert.doesNotMatch(reportsSource, /RestockReceivingPanel/);
 assert.doesNotMatch(reportsSource, /"plan" \| "orders" \| "receiving"/);
 
