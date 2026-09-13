@@ -132,7 +132,9 @@ export function buildRestockForecastDecision(
     : null;
   const suggestedQuantity = Math.max(
     0,
-    Math.ceil(targetStockLevel + currentMonthDemand + expiryRiskQuantity - sellableStock - incomingStock)
+    Math.ceil(
+      targetStockLevel + currentMonthDemand + expiryRiskQuantity - sellableStock - incomingStock
+    )
   );
   const riskLevel = riskFor(
     daysUntilStockout,
@@ -140,12 +142,7 @@ export function buildRestockForecastDecision(
     reorderLevel,
     suggestedQuantity
   );
-  const recommendedActionDate = actionDateFor(
-    riskLevel,
-    stockoutDate,
-    suggestedQuantity,
-    now
-  );
+  const recommendedActionDate = actionDateFor(riskLevel, stockoutDate, suggestedQuantity, now);
 
   return {
     confidenceAdjustedDemand,

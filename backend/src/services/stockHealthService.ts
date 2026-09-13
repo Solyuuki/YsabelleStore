@@ -86,13 +86,11 @@ function resolveDemandSignal(input: ClassifyStockHealthInput): DemandSignal {
 }
 
 function roundedCoverageDays(sellableStock: number, monthlyDemand: number) {
-  return Math.round(((sellableStock / monthlyDemand) * DAYS_PER_MONTH) * 10) / 10;
+  return Math.round((sellableStock / monthlyDemand) * DAYS_PER_MONTH * 10) / 10;
 }
 
 export function classifyStockHealth(input: ClassifyStockHealthInput): AutomaticStockHealth {
-  const sellableStock = Number.isFinite(input.sellableStock)
-    ? Math.max(0, input.sellableStock)
-    : 0;
+  const sellableStock = Number.isFinite(input.sellableStock) ? Math.max(0, input.sellableStock) : 0;
   const signal = resolveDemandSignal(input);
 
   if (sellableStock <= 0) {

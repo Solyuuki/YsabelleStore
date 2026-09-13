@@ -173,7 +173,9 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
     const historical = Array.isArray(detail.historical)
       ? detail.historical.filter(
           (point): point is PersistedHistoricalPoint =>
-            Boolean(point) && typeof point.period === "string" && Number.isFinite(point.quantitySold)
+            Boolean(point) &&
+            typeof point.period === "string" &&
+            Number.isFinite(point.quantitySold)
         )
       : [];
 

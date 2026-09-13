@@ -290,11 +290,9 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
     const start = (page - 1) * WATCHLIST_PAGE_SIZE;
     const pageItems = items.slice(start, start + WATCHLIST_PAGE_SIZE);
-    if (
-      pageItems.length > 0 &&
-      !pageItems.some((item) => item.product.id === selectedProductId)
-    ) {
-      setSelectedProductId(pageItems[0].product.id);
+    const firstPageItem = pageItems[0];
+    if (firstPageItem && !pageItems.some((item) => item.product.id === selectedProductId)) {
+      setSelectedProductId(firstPageItem.product.id);
     }
   }
 
@@ -485,10 +483,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 </p>
               </div>
               {selected ? (
-                <Badge
-                  title={selected.stockHealth.reason}
-                  variant={stockStatusVariant(selected)}
-                >
+                <Badge title={selected.stockHealth.reason} variant={stockStatusVariant(selected)}>
                   {stockStatusLabel(selected)}
                 </Badge>
               ) : null}
