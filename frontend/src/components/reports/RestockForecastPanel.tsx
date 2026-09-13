@@ -13,6 +13,10 @@ import {
   YAxis
 } from "recharts";
 
+import {
+  createRestockForecastDemo,
+  RESTOCK_FORECAST_DEMO_PRODUCT_ID
+} from "@/components/reports/restockForecastDemo";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -154,6 +158,7 @@ function buildInventoryProjection(candidate: RestockPlanningCandidate | null) {
 export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: number }) {
   const [items, setItems] = useState<RestockPlanningCandidate[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [demoMode, setDemoMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [localRefreshVersion, setLocalRefreshVersion] = useState(0);
@@ -208,13 +213,17 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     };
   }, [localRefreshVersion, refreshVersion]);
 
+  const displayItems = useMemo(
+    () => (demoMode ? [createRestockForecastDemo()] : items),
+    [demoMode, items]
+  );
   const selected = useMemo(
-    () => items.find((item) => item.product.id === selectedProductId) ?? null,
-    [items, selectedProductId]
+    () => displayItems.find((item) => item.product.id === selectedProductId) ?? null,
+    [displayItems, selectedProductId]
   );
   const actionableItems = useMemo(
-    () => items.filter((item) => item.recommendedQuantity > 0),
-    [items]
+    () => displayItems.filter((item) => item.recommendedQuantity > 0),
+    [displayItems]
   );
   const demandChart = useMemo(() => buildDemandChart(selected), [selected]);
   const inventoryProjection = useMemo(() => buildInventoryProjection(selected), [selected]);
@@ -239,6 +248,18 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       units: actionableItems.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0)
     };
   }, [actionableItems]);
+
+  const toggleDemoMode = () => {
+    const next = !demoMode;
+    setDemoMode(next);
+    setSelectedProductId(
+      next
+        ? RESTOCK_FORECAST_DEMO_PRODUCT_ID
+        : (items.find((item) => item.forecast?.points.length)?.product.id ??
+            items[0]?.product.id ??
+            null)
+    );
+  };
 
   if (loading && items.length === 0) {
     return (
@@ -298,16 +319,23 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               planner.
             </p>
           </div>
-          <Button
-            disabled={loading}
-            onClick={() => setLocalRefreshVersion((version) => version + 1)}
-            size="sm"
-            type="button"
-            variant="secondary"
-          >
-            <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-            Refresh
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {import.meta.env.DEV ? (
+              <Button onClick={toggleDemoMode} size="sm" type="button" variant="secondary">
+                {demoMode ? "Exit test forecast" : "Show test forecast"}
+              </Button>
+            ) : null}
+            <Button
+              disabled={loading}
+              onClick={() => setLocalRefreshVersion((version) => version + 1)}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+              Refresh
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -318,6 +346,16 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
           <ForecastMetric label="Stockout within 7d" value={summary.sevenDayStockouts} />
           <ForecastMetric label="Suggested units" value={summary.units} />
         </div>
+
+        {demoMode ? (
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3">
+            <p className="text-sm font-semibold text-amber-950">Temporary test forecast</p>
+            <p className="mt-1 text-xs leading-5 text-amber-800">
+              Demo data only. Nothing is written to sales, inventory, forecast batches, or restock
+              drafts. Exit test forecast to return to live data.
+            </p>
+          </div>
+        ) : null}
 
         {summary.actionCount === 0 ? (
           <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3">
@@ -338,7 +376,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               </p>
             </div>
             <div className="overflow-hidden">
-              {items.length > 0 ? (
+              {displayItems.length > 0 ? (
                 <Table aria-label="Forecast product watchlist">
                   <TableHeader className="bg-slate-50">
                     <TableRow>
@@ -349,7 +387,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.slice(0, 12).map((item) => {
+                    {displayItems.slice(0, 12).map((item) => {
                       const selectedRow = item.product.id === selectedProductId;
                       return (
                         <TableRow
