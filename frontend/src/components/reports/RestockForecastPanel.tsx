@@ -13,6 +13,7 @@ import {
   YAxis
 } from "recharts";
 
+import { AppPagination } from "@/components/shared/AppPagination";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,10 @@ const RISK_PRIORITY: Record<RestockForecastRisk, number> = {
   MEDIUM: 2,
   LOW: 1
 };
+
+const WATCHLIST_FETCH_PAGE_SIZE = 100;
+const DEFAULT_WATCHLIST_PAGE_SIZE = 20;
+const WATCHLIST_PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
 
 type CurrentStockStatus = "OUT_OF_STOCK" | "LOW_STOCK" | "NORMAL" | "OVERSTOCK";
 
@@ -109,7 +114,9 @@ function stockStatusLabel(candidate: RestockPlanningCandidate) {
 }
 
 function sourceLabel(candidate: RestockPlanningCandidate) {
-  if (candidate.recommendationSource === "SARIMA") return candidate.forecast?.modelName ?? "SARIMA";
+  if (candidate.recommendationSource === "SARIMA") {
+    return candidate.forecast?.modelName ?? "SARIMA";
+  }
   if (candidate.recommendationSource === "LOW_STOCK") return "Low stock";
   return "Stock policy";
 }
@@ -168,12 +175,38 @@ function buildInventoryProjection(candidate: RestockPlanningCandidate | null) {
   return points;
 }
 
+async function loadAllRestockPlanningCandidates(signal: AbortSignal) {
+  const firstPage = await listRestockPlanning(
+    { includeZero: true, page: 1, pageSize: WATCHLIST_FETCH_PAGE_SIZE },
+    { signal }
+  );
+
+  if (firstPage.meta.totalPages <= 1) return firstPage.items;
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: firstPage.meta.totalPages - 1 }, (_, index) =>
+      listRestockPlanning(
+        {
+          includeZero: true,
+          page: index + 2,
+          pageSize: WATCHLIST_FETCH_PAGE_SIZE
+        },
+        { signal }
+      )
+    )
+  );
+
+  return [firstPage.items, ...remainingPages.map((page) => page.items)].flat();
+}
+
 export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: number }) {
   const [items, setItems] = useState<RestockPlanningCandidate[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [localRefreshVersion, setLocalRefreshVersion] = useState(0);
+  const [watchlistPage, setWatchlistPage] = useState(1);
+  const [watchlistPageSize, setWatchlistPageSize] = useState(DEFAULT_WATCHLIST_PAGE_SIZE);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -183,13 +216,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       setLoading(true);
       setError(null);
       try {
-        const result = await listRestockPlanning(
-          { includeZero: true, page: 1, pageSize: 100 },
-          { signal: controller.signal }
-        );
+        const planningItems = await loadAllRestockPlanningCandidates(controller.signal);
         if (!active) return;
 
-        const sorted = [...result.items].sort((left, right) => {
+        const sorted = [...planningItems].sort((left, right) => {
           const leftRisk = left.forecastDecision?.riskLevel ?? "LOW";
           const rightRisk = right.forecastDecision?.riskLevel ?? "LOW";
           const riskDifference = RISK_PRIORITY[rightRisk] - RISK_PRIORITY[leftRisk];
@@ -225,6 +255,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     };
   }, [localRefreshVersion, refreshVersion]);
 
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(items.length / watchlistPageSize));
+    setWatchlistPage((current) => Math.min(current, totalPages));
+  }, [items.length, watchlistPageSize]);
+
   const selected = useMemo(
     () => items.find((item) => item.product.id === selectedProductId) ?? null,
     [items, selectedProductId]
@@ -236,6 +271,13 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const demandChart = useMemo(() => buildDemandChart(selected), [selected]);
   const inventoryProjection = useMemo(() => buildInventoryProjection(selected), [selected]);
   const firstForecastPeriod = selected?.forecast?.points[0]?.period ?? null;
+  const watchlistTotalPages = Math.max(1, Math.ceil(items.length / watchlistPageSize));
+  const normalizedWatchlistPage = Math.min(watchlistPage, watchlistTotalPages);
+  const watchlistStart = (normalizedWatchlistPage - 1) * watchlistPageSize;
+  const visibleItems = useMemo(
+    () => items.slice(watchlistStart, watchlistStart + watchlistPageSize),
+    [items, watchlistPageSize, watchlistStart]
+  );
   const summary = useMemo(() => {
     const highRisk = actionableItems.filter((item) => {
       const risk = item.forecastDecision?.riskLevel;
@@ -256,6 +298,26 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       units: actionableItems.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0)
     };
   }, [actionableItems]);
+
+  function handleWatchlistPageChange(nextPage: number) {
+    const page = Math.min(Math.max(nextPage, 1), watchlistTotalPages);
+    setWatchlistPage(page);
+
+    const start = (page - 1) * watchlistPageSize;
+    const pageItems = items.slice(start, start + watchlistPageSize);
+    if (
+      pageItems.length > 0 &&
+      !pageItems.some((item) => item.product.id === selectedProductId)
+    ) {
+      setSelectedProductId(pageItems[0].product.id);
+    }
+  }
+
+  function handleWatchlistPageSizeChange(nextPageSize: number) {
+    setWatchlistPageSize(nextPageSize);
+    setWatchlistPage(1);
+    if (items.length > 0) setSelectedProductId(items[0].product.id);
+  }
 
   if (loading && items.length === 0) {
     return (
@@ -368,7 +430,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.slice(0, 12).map((item) => {
+                    {visibleItems.map((item) => {
                       const selectedRow = item.product.id === selectedProductId;
                       return (
                         <TableRow
@@ -412,6 +474,20 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 </div>
               )}
             </div>
+            {items.length > 0 ? (
+              <AppPagination
+                className="rounded-none border-x-0 border-b-0"
+                isLoading={loading}
+                itemLabel="products"
+                onPageChange={handleWatchlistPageChange}
+                onPageSizeChange={handleWatchlistPageSizeChange}
+                page={normalizedWatchlistPage}
+                pageSize={watchlistPageSize}
+                pageSizeOptions={WATCHLIST_PAGE_SIZE_OPTIONS}
+                totalItems={items.length}
+                totalPages={watchlistTotalPages}
+              />
+            ) : null}
           </div>
 
           <div className="min-w-0 rounded-lg border border-slate-200 bg-white">
