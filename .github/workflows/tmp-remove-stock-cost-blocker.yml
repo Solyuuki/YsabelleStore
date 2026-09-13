@@ -12,6 +12,8 @@ jobs:
   apply:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/ysabelle_test
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
