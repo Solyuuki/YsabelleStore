@@ -4,7 +4,7 @@ const OVERSTOCK_COVERAGE_DAYS = 90;
 const RECENT_COMPLETED_MONTHS = 3;
 
 export type StockHealthStatus = "OUT_OF_STOCK" | "LOW_STOCK" | "NORMAL" | "OVERSTOCK";
-export type StockHealthDemandSource = "SARIMA" | "RECENT_SALES" | "INSUFFICIENT_HISTORY";
+export type StockHealthDemandSource = "RECENT_SALES" | "INSUFFICIENT_HISTORY";
 export type StockHealthConfidence = "HIGH" | "MEDIUM" | "LOW";
 
 export type StockHealthHistoryPoint = {
@@ -23,7 +23,6 @@ export type AutomaticStockHealth = {
 
 type ClassifyStockHealthInput = {
   sellableStock: number;
-  forecastMonthlyDemand?: number | null;
   historicalSeries?: StockHealthHistoryPoint[];
   asOf?: Date;
 };
@@ -53,16 +52,6 @@ function recentCompletedMonthKeys(asOf: Date) {
 }
 
 function resolveDemandSignal(input: ClassifyStockHealthInput): DemandSignal {
-  const forecastMonthlyDemand = Number(input.forecastMonthlyDemand);
-  if (Number.isFinite(forecastMonthlyDemand) && forecastMonthlyDemand > 0) {
-    return {
-      confidence: "HIGH",
-      demandSource: "SARIMA",
-      monthlyDemand: forecastMonthlyDemand,
-      observedRecentMonths: 0
-    };
-  }
-
   const recentKeys = recentCompletedMonthKeys(input.asOf ?? new Date());
   const recentSet = new Set(recentKeys);
   const monthlySales = new Map<string, number>();
@@ -89,7 +78,7 @@ function resolveDemandSignal(input: ClassifyStockHealthInput): DemandSignal {
     RECENT_COMPLETED_MONTHS;
 
   return {
-    confidence: "MEDIUM",
+    confidence: monthlySales.size === RECENT_COMPLETED_MONTHS ? "MEDIUM" : "LOW",
     demandSource: "RECENT_SALES",
     monthlyDemand,
     observedRecentMonths: monthlySales.size
@@ -98,10 +87,6 @@ function resolveDemandSignal(input: ClassifyStockHealthInput): DemandSignal {
 
 function roundedCoverageDays(sellableStock: number, monthlyDemand: number) {
   return Math.round(((sellableStock / monthlyDemand) * DAYS_PER_MONTH) * 10) / 10;
-}
-
-function demandSourceLabel(source: StockHealthDemandSource) {
-  return source === "SARIMA" ? "SARIMA demand" : "recent sales";
 }
 
 export function classifyStockHealth(input: ClassifyStockHealthInput): AutomaticStockHealth {
@@ -127,7 +112,8 @@ export function classifyStockHealth(input: ClassifyStockHealthInput): AutomaticS
       coverageDays: null,
       demandSource: "INSUFFICIENT_HISTORY",
       monthlyDemand: null,
-      reason: "Insufficient completed demand history; holding Normal until a demand signal is available.",
+      reason:
+        "Insufficient completed sales history; holding Normal until current stock health has enough actual demand history.",
       status: "NORMAL"
     };
   }
@@ -138,13 +124,12 @@ export function classifyStockHealth(input: ClassifyStockHealthInput): AutomaticS
       coverageDays: null,
       demandSource: signal.demandSource,
       monthlyDemand: 0,
-      reason: `No demand was recorded across the last ${RECENT_COMPLETED_MONTHS} completed months.`,
+      reason: `No actual demand was recorded across the last ${RECENT_COMPLETED_MONTHS} completed months.`,
       status: "OVERSTOCK"
     };
   }
 
   const coverageDays = roundedCoverageDays(sellableStock, signal.monthlyDemand);
-  const sourceLabel = demandSourceLabel(signal.demandSource);
 
   if (coverageDays < LOW_STOCK_COVERAGE_DAYS) {
     return {
@@ -152,7 +137,7 @@ export function classifyStockHealth(input: ClassifyStockHealthInput): AutomaticS
       coverageDays,
       demandSource: signal.demandSource,
       monthlyDemand: signal.monthlyDemand,
-      reason: `${coverageDays} days of stock cover based on ${sourceLabel}.`,
+      reason: `${coverageDays} days of sellable stock cover based on recent completed sales.`,
       status: "LOW_STOCK"
     };
   }
@@ -163,7 +148,7 @@ export function classifyStockHealth(input: ClassifyStockHealthInput): AutomaticS
       coverageDays,
       demandSource: signal.demandSource,
       monthlyDemand: signal.monthlyDemand,
-      reason: `${coverageDays} days of stock cover based on ${sourceLabel}.`,
+      reason: `${coverageDays} days of sellable stock cover based on recent completed sales.`,
       status: "OVERSTOCK"
     };
   }
@@ -173,7 +158,7 @@ export function classifyStockHealth(input: ClassifyStockHealthInput): AutomaticS
     coverageDays,
     demandSource: signal.demandSource,
     monthlyDemand: signal.monthlyDemand,
-    reason: `${coverageDays} days of stock cover based on ${sourceLabel}.`,
+    reason: `${coverageDays} days of sellable stock cover based on recent completed sales.`,
     status: "NORMAL"
   };
 }
