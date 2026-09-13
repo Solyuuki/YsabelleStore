@@ -111,6 +111,16 @@ jobs:
           assert 'requireProductCostPrice' not in source
           service_path.write_text(source)
 
+          lifecycle_path = Path('backend/src/services/restockLifecycleService.ts')
+          lifecycle = lifecycle_path.read_text()
+          old_restock_cost = '''? (orderLine.product.costPrice ?? orderLine.product.inventoryBatches[0]?.unitCost)'''
+          new_restock_cost = '''? (orderLine.product.costPrice ??
+                    orderLine.product.inventoryBatches[0]?.unitCost ??
+                    undefined)'''
+          assert old_restock_cost in lifecycle, 'Restock receipt cost fallback not found'
+          lifecycle = lifecycle.replace(old_restock_cost, new_restock_cost, 1)
+          lifecycle_path.write_text(lifecycle)
+
           schema_path = Path('database/prisma/schema.prisma')
           schema = schema_path.read_text()
           old_field = '  unitCost           Decimal              @map("unit_cost") @db.Decimal(10, 2)'
@@ -126,7 +136,7 @@ jobs:
 
       - name: Format changed production files
         run: |
-          npx prettier --write backend/src/services/stockDomainService.ts
+          npx prettier --write backend/src/services/stockDomainService.ts backend/src/services/restockLifecycleService.ts
           npx prisma format --schema database/prisma/schema.prisma
 
       - name: Validate schema and backend
@@ -140,7 +150,7 @@ jobs:
         shell: bash
         run: |
           git rm .github/workflows/tmp-remove-stock-cost-blocker.yml
-          git add backend/src/services/stockDomainService.ts database/prisma/schema.prisma database/prisma/migrations/20260913030000_allow_unknown_inventory_batch_cost/migration.sql
+          git add backend/src/services/stockDomainService.ts backend/src/services/restockLifecycleService.ts database/prisma/schema.prisma database/prisma/migrations/20260913030000_allow_unknown_inventory_batch_cost/migration.sql
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit --no-verify -m "fix(inventory): stop missing cost from blocking stock receipts"
