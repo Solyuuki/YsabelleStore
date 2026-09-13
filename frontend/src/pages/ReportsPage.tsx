@@ -23,6 +23,7 @@ import {
 
 import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
 import { RestockDraftsPanel } from "@/components/reports/RestockDraftsPanel";
+import { RestockForecastPanel } from "@/components/reports/RestockForecastPanel";
 import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -272,6 +273,8 @@ export function ReportsPage() {
                 </Button>
               </div>
             </div>
+
+            <RestockForecastPanel refreshVersion={refreshVersion + restockOrdersRefreshVersion} />
 
             {restockView ? (
               <div className="scroll-mt-4" id="restock-workspace" ref={restockWorkspaceRef}>
