@@ -102,56 +102,57 @@ test("Phase 11 returns no action when stock already covers forecast demand and t
   assert.match(decision.reason, /covered by sellable and incoming stock/);
 });
 
-test("automatic stock health marks zero sellable stock as out of stock", () => {
+test("automatic stock health marks zero sellable stock as out of stock from actual stock truth", () => {
   const health = classifyStockHealth({
     asOf: STOCK_HEALTH_NOW,
-    forecastMonthlyDemand: 30,
+    historicalSeries: recentSales(30, 30, 30),
     sellableStock: 0
   });
 
   assert.equal(health.status, "OUT_OF_STOCK");
   assert.equal(health.coverageDays, 0);
-  assert.equal(health.demandSource, "SARIMA");
+  assert.equal(health.demandSource, "RECENT_SALES");
 });
 
-test("automatic stock health marks less than 30 days of cover as low stock", () => {
+test("automatic stock health marks less than 30 days of actual demand cover as low stock", () => {
   const health = classifyStockHealth({
     asOf: STOCK_HEALTH_NOW,
-    forecastMonthlyDemand: 30,
+    historicalSeries: recentSales(30, 30, 30),
     sellableStock: 20
   });
 
   assert.equal(health.status, "LOW_STOCK");
   assert.equal(health.coverageDays, 20);
-  assert.equal(health.demandSource, "SARIMA");
+  assert.equal(health.demandSource, "RECENT_SALES");
 });
 
-test("automatic stock health marks 30 to 90 days of cover as normal", () => {
+test("automatic stock health marks 30 to 90 days of actual demand cover as normal", () => {
   const health = classifyStockHealth({
     asOf: STOCK_HEALTH_NOW,
-    forecastMonthlyDemand: 30,
+    historicalSeries: recentSales(30, 30, 30),
     sellableStock: 60
   });
 
   assert.equal(health.status, "NORMAL");
   assert.equal(health.coverageDays, 60);
+  assert.equal(health.demandSource, "RECENT_SALES");
 });
 
-test("automatic stock health marks more than 90 days of cover as overstock", () => {
+test("automatic stock health marks more than 90 days of actual demand cover as overstock", () => {
   const health = classifyStockHealth({
     asOf: STOCK_HEALTH_NOW,
-    forecastMonthlyDemand: 30,
+    historicalSeries: recentSales(30, 30, 30),
     sellableStock: 100
   });
 
   assert.equal(health.status, "OVERSTOCK");
   assert.equal(health.coverageDays, 100);
+  assert.equal(health.demandSource, "RECENT_SALES");
 });
 
-test("automatic stock health falls back to recent completed sales when forecast is unavailable", () => {
+test("automatic stock health uses the last three completed actual-sales months", () => {
   const health = classifyStockHealth({
     asOf: STOCK_HEALTH_NOW,
-    forecastMonthlyDemand: 0,
     historicalSeries: recentSales(20, 30, 40),
     sellableStock: 45
   });
@@ -163,10 +164,20 @@ test("automatic stock health falls back to recent completed sales when forecast 
   assert.equal(health.confidence, "MEDIUM");
 });
 
+test("automatic stock health lowers confidence when only part of recent sales history exists", () => {
+  const health = classifyStockHealth({
+    asOf: STOCK_HEALTH_NOW,
+    historicalSeries: [{ period: "2026-08", quantitySold: 30 }],
+    sellableStock: 20
+  });
+
+  assert.equal(health.demandSource, "RECENT_SALES");
+  assert.equal(health.confidence, "LOW");
+});
+
 test("automatic stock health holds normal with low confidence when completed demand history is missing", () => {
   const health = classifyStockHealth({
     asOf: STOCK_HEALTH_NOW,
-    forecastMonthlyDemand: null,
     historicalSeries: [{ period: "2026-09", quantitySold: 12 }],
     sellableStock: 25
   });
@@ -177,7 +188,7 @@ test("automatic stock health holds normal with low confidence when completed dem
   assert.equal(health.confidence, "LOW");
 });
 
-test("automatic stock health marks positive stock with zero recent demand as overstock", () => {
+test("automatic stock health marks positive stock with zero recent actual demand as overstock", () => {
   const health = classifyStockHealth({
     asOf: STOCK_HEALTH_NOW,
     historicalSeries: recentSales(0, 0, 0),
