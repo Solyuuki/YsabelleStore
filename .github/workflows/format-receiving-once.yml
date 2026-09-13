@@ -1,0 +1,47 @@
+name: Format Receiving Once
+
+on:
+  push:
+    branches:
+      - sprint/v0.10/sprint-10
+    paths:
+      - .github/workflows/format-receiving-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format-receiving:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Sprint 10
+        uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Format Receiving page
+        run: npx prettier --write frontend/src/pages/ReceivingPage.tsx
+
+      - name: Commit formatting only
+        shell: bash
+        run: |
+          if git diff --quiet -- frontend/src/pages/ReceivingPage.tsx; then
+            echo "ReceivingPage.tsx is already formatted."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/pages/ReceivingPage.tsx
+          git commit -m "style(receiving): apply prettier formatting"
+          git push origin HEAD:sprint/v0.10/sprint-10
