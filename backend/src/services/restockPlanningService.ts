@@ -5,8 +5,26 @@ import type {
   DismissRestockRecommendationRequest,
   RestockPlanningQuery
 } from "../validators/restock.validators.js";
+import { buildRestockForecastDecision } from "./restockForecastDecisionService.js";
 import { getIncomingRestockStock } from "./restockService.js";
-import { calculateStockTruth } from "./stockTruth.js";
+import {
+  calculateStockTruth,
+  getDaysUntilExpiry,
+  isBatchSellable,
+  NEAR_EXPIRY_WINDOW_DAYS
+} from "./stockTruth.js";
+
+type PersistedForecastPoint = {
+  period: string;
+  predictedQuantity: number;
+  lowerConfidence: number | null;
+  upperConfidence: number | null;
+};
+
+type PersistedForecastDetail = {
+  generatedAt?: string;
+  forecast?: PersistedForecastPoint[];
+};
 
 function latestByProduct<T extends { productId: string }>(rows: T[]) {
   const byProduct = new Map<string, T>();
@@ -77,11 +95,13 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
   const activeForecast = await prisma.forecastBatchCache.findFirst({
     orderBy: { generatedAt: "desc" },
     select: {
+      generatedAt: true,
       id: true,
       source: true,
       products: {
         select: {
           currentMonthForecastQuantity: true,
+          detailPayload: true,
           modelName: true,
           sourceProductId: true
         }
@@ -111,7 +131,12 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
   );
   const forecastByCanonicalProduct = new Map<
     string,
-    { currentMonthForecastQuantity: number | null; modelName: string | null }
+    {
+      currentMonthForecastQuantity: number | null;
+      forecast: PersistedForecastPoint[];
+      generatedAt: string | null;
+      modelName: string | null;
+    }
   >();
 
   for (const forecastProduct of activeForecast?.products ?? []) {
@@ -121,20 +146,52 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
         : workbookCanonicalBySource.get(forecastProduct.sourceProductId);
     if (!canonicalProductId) continue;
 
+    const detail = forecastProduct.detailPayload as unknown as PersistedForecastDetail;
+    const forecast = Array.isArray(detail.forecast)
+      ? detail.forecast.filter(
+          (point): point is PersistedForecastPoint =>
+            Boolean(point) &&
+            typeof point.period === "string" &&
+            Number.isFinite(point.predictedQuantity)
+        )
+      : [];
+
     forecastByCanonicalProduct.set(canonicalProductId, {
       currentMonthForecastQuantity:
         forecastProduct.currentMonthForecastQuantity === null
           ? null
           : Number(forecastProduct.currentMonthForecastQuantity),
+      forecast,
+      generatedAt: detail.generatedAt ?? activeForecast.generatedAt?.toISOString() ?? null,
       modelName: forecastProduct.modelName
     });
   }
 
+  const now = new Date();
   const candidates = products.map((product) => {
-    const stockTruth = calculateStockTruth(product.inventoryBatches);
+    const stockTruth = calculateStockTruth(product.inventoryBatches, now);
     const incomingStock = incomingByProduct.get(product.id) ?? 0;
     const recommendation = latestRecommendation.get(product.id);
     const forecast = forecastByCanonicalProduct.get(product.id) ?? null;
+    const expiryRiskQuantity = product.inventoryBatches.reduce((sum, batch) => {
+      const daysUntilExpiry = getDaysUntilExpiry(batch.expiresAt, now);
+      const exposed =
+        isBatchSellable(batch, now) &&
+        daysUntilExpiry !== null &&
+        daysUntilExpiry <= NEAR_EXPIRY_WINDOW_DAYS;
+      return exposed ? sum + Math.max(0, batch.quantityRemaining) : sum;
+    }, 0);
+    const forecastDecision = forecast
+      ? buildRestockForecastDecision({
+          expiryRiskQuantity,
+          forecast: forecast.forecast,
+          incomingStock,
+          now,
+          reorderLevel: product.reorderLevel,
+          sellableStock: stockTruth.sellableStock,
+          targetStockLevel: product.targetStockLevel
+        })
+      : null;
     let recommendationId: string | null = null;
     let recommendationSource: "SARIMA" | "LOW_STOCK" | "TARGET_STOCK" = "TARGET_STOCK";
     let recommendedQuantity = 0;
@@ -152,6 +209,10 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
           : "TARGET_STOCK";
       recommendedQuantity = Math.max(0, recommendation.recommendedQuantity - incomingStock);
       rationale = recommendation.reason;
+    } else if (forecastDecision && forecastDecision.suggestedQuantity > 0) {
+      recommendationSource = "SARIMA";
+      recommendedQuantity = forecastDecision.suggestedQuantity;
+      rationale = forecastDecision.reason;
     } else {
       const targetGap = Math.max(
         0,
@@ -174,13 +235,17 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
     }
 
     return {
+      expiryRiskQuantity,
       forecast: forecast
         ? {
             batchId: activeForecast?.id ?? null,
             currentMonthDemand: forecast.currentMonthForecastQuantity,
-            modelName: forecast.modelName
+            generatedAt: forecast.generatedAt,
+            modelName: forecast.modelName,
+            points: forecast.forecast
           }
         : null,
+      forecastDecision,
       incomingStock,
       physicalOnHand: stockTruth.physicalOnHand,
       product: {
