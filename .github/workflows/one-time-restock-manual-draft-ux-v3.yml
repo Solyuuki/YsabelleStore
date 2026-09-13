@@ -36,7 +36,7 @@ jobs:
         run: npx prettier --write frontend/src/pages/ReportsPage.tsx frontend/src/components/reports/RestockPlanningPanel.tsx scripts/restock-phase7-9-ui-contract-test.ts
 
       - name: Run targeted UI contract
-        run: node scripts/restock-phase7-9-ui-contract-test.ts
+        run: cd frontend && node ../scripts/restock-phase7-9-ui-contract-test.ts
 
       - name: Commit patch
         shell: bash
