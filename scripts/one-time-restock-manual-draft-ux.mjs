@@ -233,7 +233,7 @@ test = test.replace(
 const marker = "assert.match(reportsSource, /RestockDraftsPanel/);";
 const additions = `assert.match(planningSource, /<Badge>Manual<\\/Badge>/);
 assert.match(planningSource, /Save for later/);
-assert.match(planningSource, />Saved drafts</);
+assert.match(planningSource, /Saved drafts/);
 assert.match(planningSource, /makePlanLine\\(candidate, true\\)/);
 assert.doesNotMatch(planningSource, /<Badge variant="info">Recommended<\\/Badge>/);`;
 if (!test.includes(additions)) test = test.replace(marker, `${marker}\n${additions}`);
