@@ -1,4 +1,5 @@
 import { prisma } from "../database/prismaClient.js";
+import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
 import type {
@@ -7,6 +8,7 @@ import type {
 } from "../validators/restock.validators.js";
 import { buildRestockForecastDecision } from "./restockForecastDecisionService.js";
 import { getIncomingRestockStock } from "./restockService.js";
+import { classifyStockHealth } from "./stockHealthService.js";
 import {
   calculateStockTruth,
   getDaysUntilExpiry,
@@ -75,7 +77,13 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
     }
   });
   const productIds = products.map((product) => product.id);
-  const incomingByProduct = await getIncomingRestockStock(productIds);
+  const [incomingByProduct, effectiveSales] = await Promise.all([
+    getIncomingRestockStock(productIds),
+    productIds.length ? getEffectiveMonthlySeries(productIds) : Promise.resolve([])
+  ]);
+  const effectiveSalesByProduct = new Map(
+    effectiveSales.map((series) => [series.productId, series.points])
+  );
 
   const recommendations = productIds.length
     ? await prisma.recommendationRecord.findMany({
@@ -206,6 +214,16 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
           targetStockLevel: product.targetStockLevel
         })
       : null;
+    const stockHealth = classifyStockHealth({
+      asOf: now,
+      forecastMonthlyDemand:
+        forecast?.currentMonthForecastQuantity ?? forecastDecision?.currentMonthDemand ?? null,
+      historicalSeries: (effectiveSalesByProduct.get(product.id) ?? []).map((point) => ({
+        period: point.period,
+        quantitySold: point.quantitySold
+      })),
+      sellableStock: stockTruth.sellableStock
+    });
     let recommendationId: string | null = null;
     let recommendationSource: "SARIMA" | "LOW_STOCK" | "TARGET_STOCK" = "TARGET_STOCK";
     let recommendedQuantity = 0;
@@ -276,7 +294,8 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
       recommendationId,
       recommendationSource,
       recommendedQuantity,
-      sellableStock: stockTruth.sellableStock
+      sellableStock: stockTruth.sellableStock,
+      stockHealth
     };
   });
   const filtered = query.includeZero
