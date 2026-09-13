@@ -63,9 +63,9 @@ export function ReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
-  const [restockView, setRestockView] = useState<"plan" | "drafts" | null>(null);
+  const [draftsOpen, setDraftsOpen] = useState(false);
   const [restockOrdersRefreshVersion, setRestockOrdersRefreshVersion] = useState(0);
-  const restockWorkspaceRef = useRef<HTMLDivElement | null>(null);
+  const restockDraftsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -181,11 +181,20 @@ export function ReportsPage() {
     setRestockOrdersRefreshVersion((version) => version + 1);
   }
 
-  function openRestockView(view: "plan" | "drafts") {
-    setRestockView(view);
+  function openRestockDrafts() {
+    setDraftsOpen(true);
     window.requestAnimationFrame(() => {
-      restockWorkspaceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      restockDraftsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  }
+
+  function toggleRestockDrafts() {
+    if (draftsOpen) {
+      setDraftsOpen(false);
+      return;
+    }
+
+    openRestockDrafts();
   }
 
   return (
@@ -246,51 +255,37 @@ export function ReportsPage() {
               <div>
                 <h2 className="text-base font-semibold text-slate-950">Restock forecast</h2>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Review forecast-driven restock recommendations before projected stockouts.
-                  Approved tickets move to Receiving for the physical delivery.
+                  Automatic SARIMAX-driven recommendations are shown below before projected
+                  stockouts. Manual custom restocking stays in the separate Restock planner.
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  aria-controls="restock-workspace"
-                  aria-pressed={restockView === "plan"}
-                  onClick={() => openRestockView("plan")}
-                  size="sm"
-                  type="button"
-                  variant={restockView === "plan" ? "default" : "secondary"}
-                >
-                  Review recommendations
-                </Button>
-                <Button
-                  aria-controls="restock-workspace"
-                  aria-pressed={restockView === "drafts"}
-                  onClick={() => openRestockView("drafts")}
-                  size="sm"
-                  type="button"
-                  variant={restockView === "drafts" ? "default" : "secondary"}
-                >
-                  Saved drafts
-                </Button>
-              </div>
+              <Button
+                aria-controls="restock-drafts"
+                aria-pressed={draftsOpen}
+                onClick={toggleRestockDrafts}
+                size="sm"
+                type="button"
+                variant={draftsOpen ? "default" : "secondary"}
+              >
+                Saved drafts
+              </Button>
             </div>
 
             <RestockForecastPanel refreshVersion={refreshVersion + restockOrdersRefreshVersion} />
 
-            {restockView ? (
-              <div className="scroll-mt-4" id="restock-workspace" ref={restockWorkspaceRef}>
-                {restockView === "plan" ? (
-                  <RestockPlanningPanel
-                    onOpenOrders={() => openRestockView("drafts")}
-                    onOrdersChanged={notifyRestockOrdersChanged}
-                  />
-                ) : (
-                  <RestockDraftsPanel
-                    onDraftConfirmed={notifyRestockOrdersChanged}
-                    refreshVersion={refreshVersion + restockOrdersRefreshVersion}
-                  />
-                )}
+            {draftsOpen ? (
+              <div className="scroll-mt-4" id="restock-drafts" ref={restockDraftsRef}>
+                <RestockDraftsPanel
+                  onDraftConfirmed={notifyRestockOrdersChanged}
+                  refreshVersion={refreshVersion + restockOrdersRefreshVersion}
+                />
               </div>
             ) : null}
+
+            <RestockPlanningPanel
+              onOpenOrders={openRestockDrafts}
+              onOrdersChanged={notifyRestockOrdersChanged}
+            />
           </section>
 
           <section className="grid items-start gap-4 xl:grid-cols-[0.9fr_1.1fr]">
