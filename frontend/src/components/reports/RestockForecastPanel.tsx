@@ -38,6 +38,8 @@ const RISK_PRIORITY: Record<RestockForecastRisk, number> = {
   LOW: 1
 };
 
+type CurrentStockStatus = "OUT_OF_STOCK" | "LOW_STOCK" | "NORMAL" | "OVERSTOCK";
+
 function formatNumber(value: number | null | undefined, digits = 0) {
   if (value === null || value === undefined || !Number.isFinite(value)) return "-";
   return new Intl.NumberFormat("en-US", {
@@ -67,27 +69,42 @@ function formatMonth(value: string) {
   }).format(date);
 }
 
-function riskVariant(risk: RestockForecastRisk | null | undefined) {
-  if (risk === "CRITICAL" || risk === "HIGH") return "danger" as const;
-  if (risk === "MEDIUM") return "warning" as const;
-  if (risk === "LOW") return "success" as const;
-  return "default" as const;
+function currentStockStatus(candidate: RestockPlanningCandidate): CurrentStockStatus {
+  const sellable = Math.max(0, candidate.sellableStock);
+  const reorderLevel = Math.max(0, candidate.product.reorderLevel);
+  const targetStockLevel = Math.max(0, candidate.product.targetStockLevel);
+
+  if (sellable <= 0) return "OUT_OF_STOCK";
+  if (reorderLevel > 0 && sellable <= reorderLevel) return "LOW_STOCK";
+  if (targetStockLevel > 0 && sellable > targetStockLevel) return "OVERSTOCK";
+  return "NORMAL";
+}
+
+function stockStatusVariant(candidate: RestockPlanningCandidate) {
+  switch (currentStockStatus(candidate)) {
+    case "OUT_OF_STOCK":
+      return "danger" as const;
+    case "LOW_STOCK":
+      return "warning" as const;
+    case "OVERSTOCK":
+      return "info" as const;
+    case "NORMAL":
+    default:
+      return "success" as const;
+  }
 }
 
 function stockStatusLabel(candidate: RestockPlanningCandidate) {
-  if (candidate.recommendedQuantity <= 0) return "Stock OK";
-
-  switch (candidate.forecastDecision?.riskLevel) {
-    case "CRITICAL":
-      return "Urgent";
-    case "HIGH":
-      return "High";
-    case "MEDIUM":
-      return "Medium";
-    case "LOW":
-      return "Low";
+  switch (currentStockStatus(candidate)) {
+    case "OUT_OF_STOCK":
+      return "Out of Stock";
+    case "LOW_STOCK":
+      return "Low Stock";
+    case "OVERSTOCK":
+      return "Overstock";
+    case "NORMAL":
     default:
-      return "Needs review";
+      return "Normal";
   }
 }
 
@@ -293,9 +310,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               </Badge>
             </div>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Automatic SARIMAX-driven demand intelligence stays visible even when current stock
-              does not require a restock. Manual custom restocking stays in the separate Restock
-              planner.
+              Current stock health is classified automatically from sellable stock, reorder level,
+              and target level. SARIMAX-driven suggested restock remains separate for future demand.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -336,7 +352,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             <div className="border-b border-slate-200 px-4 py-3">
               <p className="text-sm font-semibold text-slate-950">Forecast watchlist</p>
               <p className="mt-1 text-xs text-slate-500">
-                Forecast-ready products stay visible here even when suggested restock is zero.
+                Status shows current stock health; forecast-ready products stay visible even when
+                suggested restock is zero.
               </p>
             </div>
             <div className="overflow-hidden">
@@ -373,9 +390,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                             </button>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={riskVariant(item.forecastDecision?.riskLevel)}>
-                              {stockStatusLabel(item)}
-                            </Badge>
+                            <Badge variant={stockStatusVariant(item)}>{stockStatusLabel(item)}</Badge>
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             {formatNumber(item.sellableStock)}
@@ -412,9 +427,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 </p>
               </div>
               {selected ? (
-                <Badge variant={riskVariant(selected.forecastDecision?.riskLevel)}>
-                  {stockStatusLabel(selected)}
-                </Badge>
+                <Badge variant={stockStatusVariant(selected)}>{stockStatusLabel(selected)}</Badge>
               ) : null}
             </div>
 
