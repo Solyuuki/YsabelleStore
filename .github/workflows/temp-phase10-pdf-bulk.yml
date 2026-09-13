@@ -6,6 +6,7 @@ on:
       - sprint/v0.10/sprint-10
     paths:
       - scripts/temp-phase10-pdf-bulk.mjs
+      - scripts/temp-phase10-pdf-bulk-compile-fix.mjs
       - .github/workflows/temp-phase10-pdf-bulk.yml
 
 permissions:
@@ -39,6 +40,9 @@ jobs:
 
       - name: Apply automatic PDF bulk extraction patch
         run: node scripts/temp-phase10-pdf-bulk.mjs
+
+      - name: Apply compiler compatibility patch
+        run: node scripts/temp-phase10-pdf-bulk-compile-fix.mjs
 
       - name: Format touched production files
         run: >-
