@@ -20,10 +20,7 @@ test("physical stock receipts do not require a verified procurement cost", () =>
   assert.doesNotMatch(stockDomain, /requireProductCostPrice/);
   assert.match(stockDomain, /function resolveKnownUnitCost\(/);
   assert.match(stockDomain, /return latestKnownBatch\?\.unitCost \?\? null;/);
-  assert.match(
-    schema,
-    /unitCost\s+Decimal\?\s+@map\("unit_cost"\)\s+@db\.Decimal\(10, 2\)/
-  );
+  assert.match(schema, /unitCost\s+Decimal\?\s+@map\("unit_cost"\)\s+@db\.Decimal\(10, 2\)/);
   assert.match(migration, /MODIFY `unit_cost` DECIMAL\(10, 2\) NULL;/);
 });
 
