@@ -483,7 +483,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 onPageSizeChange={handleWatchlistPageSizeChange}
                 page={normalizedWatchlistPage}
                 pageSize={watchlistPageSize}
-                pageSizeOptions={WATCHLIST_PAGE_SIZE_OPTIONS}
+                pageSizeOptions={[]}
                 totalItems={items.length}
                 totalPages={watchlistTotalPages}
               />
