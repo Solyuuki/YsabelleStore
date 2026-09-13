@@ -74,6 +74,23 @@ function riskVariant(risk: RestockForecastRisk | null | undefined) {
   return "default" as const;
 }
 
+function stockStatusLabel(candidate: RestockPlanningCandidate) {
+  if (candidate.recommendedQuantity <= 0) return "Stock OK";
+
+  switch (candidate.forecastDecision?.riskLevel) {
+    case "CRITICAL":
+      return "Urgent";
+    case "HIGH":
+      return "High";
+    case "MEDIUM":
+      return "Medium";
+    case "LOW":
+      return "Low";
+    default:
+      return "Needs review";
+  }
+}
+
 function sourceLabel(candidate: RestockPlanningCandidate) {
   if (candidate.recommendationSource === "SARIMA") return candidate.forecast?.modelName ?? "SARIMA";
   if (candidate.recommendationSource === "LOW_STOCK") return "Low stock";
@@ -326,7 +343,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                   <TableHeader className="bg-slate-50">
                     <TableRow>
                       <TableHead>Product</TableHead>
-                      <TableHead>Risk</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead className="text-right">Sellable</TableHead>
                       <TableHead className="text-right">Suggested</TableHead>
                     </TableRow>
@@ -355,7 +372,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                           </TableCell>
                           <TableCell>
                             <Badge variant={riskVariant(item.forecastDecision?.riskLevel)}>
-                              {item.forecastDecision?.riskLevel ?? "MONITOR"}
+                              {stockStatusLabel(item)}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
@@ -394,7 +411,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               </div>
               {selected ? (
                 <Badge variant={riskVariant(selected.forecastDecision?.riskLevel)}>
-                  {selected.forecastDecision?.riskLevel ?? sourceLabel(selected)}
+                  {stockStatusLabel(selected)}
                 </Badge>
               ) : null}
             </div>
