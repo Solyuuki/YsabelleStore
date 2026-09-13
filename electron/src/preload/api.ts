@@ -1,11 +1,22 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { isAllowedIpcChannel, receiptPrintRequestChannel } from "../ipc/channels.js";
-import type { ReceiptPrintPayload } from "../types/receipt.js";
+import {
+  isAllowedIpcChannel,
+  receiptPrinterSelectChannel,
+  receiptPrinterStatusChannel,
+  receiptPrintRequestChannel
+} from "../ipc/channels.js";
+import type {
+  ReceiptPrintPayload,
+  ReceiptPrintResult,
+  ReceiptPrinterStatus
+} from "../types/receipt.js";
 
 export interface DesktopApi {
   isElectron: true;
   receipt: {
-    print(receipt: ReceiptPrintPayload): Promise<unknown>;
+    getPrinterStatus(): Promise<ReceiptPrinterStatus>;
+    print(receipt: ReceiptPrintPayload): Promise<ReceiptPrintResult>;
+    selectPrinter(printerName: string): Promise<ReceiptPrinterStatus>;
   };
   invoke(channel: string, ...args: unknown[]): Promise<unknown>;
   platform: NodeJS.Platform;
@@ -15,8 +26,14 @@ export function createDesktopApi(): DesktopApi {
   return Object.freeze({
     isElectron: true as const,
     receipt: {
-      print(receipt: ReceiptPrintPayload): Promise<unknown> {
+      getPrinterStatus(): Promise<ReceiptPrinterStatus> {
+        return ipcRenderer.invoke(receiptPrinterStatusChannel);
+      },
+      print(receipt: ReceiptPrintPayload): Promise<ReceiptPrintResult> {
         return ipcRenderer.invoke(receiptPrintRequestChannel, receipt);
+      },
+      selectPrinter(printerName: string): Promise<ReceiptPrinterStatus> {
+        return ipcRenderer.invoke(receiptPrinterSelectChannel, printerName);
       }
     },
     invoke(channel: string, ...args: unknown[]): Promise<unknown> {

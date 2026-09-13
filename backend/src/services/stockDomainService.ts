@@ -10,6 +10,7 @@ import {
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { serializeInventory, type InventorySummaryRow } from "./catalogSerializers.js";
+import { calculateStockTruth, getDaysUntilExpiry, isBatchSellable } from "./stockTruth.js";
 
 type TransactionClient = Prisma.TransactionClient | PrismaClient;
 
@@ -22,7 +23,7 @@ type BatchStockOptions = {
 type BatchAllocation = {
   batchId: string;
   quantity: number;
-  unitCost: Prisma.Decimal;
+  unitCost: Prisma.Decimal | null;
 };
 
 const movementInclude = {
@@ -39,17 +40,31 @@ function toDateKey(value: Date | null | undefined) {
   return value ? value.toISOString().slice(0, 10) : null;
 }
 
-function requireProductCostPrice(product: { costPrice: Prisma.Decimal | null; id: string }) {
+function resolveKnownUnitCost(product: {
+  costPrice: Prisma.Decimal | null;
+  inventoryBatches: Array<{
+    createdAt: Date;
+    id: string;
+    receivedAt: Date;
+    unitCost: Prisma.Decimal | null;
+  }>;
+}) {
   if (product.costPrice) return product.costPrice;
 
-  throw new HttpError(
-    422,
-    "A verified procurement cost is required before stock can be recorded.",
-    {
-      code: "PRODUCT_COST_PRICE_REQUIRED",
-      details: { productId: product.id }
-    }
-  );
+  const latestKnownBatch = [...product.inventoryBatches]
+    .filter((batch) => batch.unitCost !== null)
+    .sort((left, right) => {
+      const receivedComparison = right.receivedAt.getTime() - left.receivedAt.getTime();
+      if (receivedComparison !== 0) return receivedComparison;
+
+      const createdComparison = right.createdAt.getTime() - left.createdAt.getTime();
+      if (createdComparison !== 0) return createdComparison;
+
+      return right.id.localeCompare(left.id);
+    })
+    .at(0);
+
+  return latestKnownBatch?.unitCost ?? null;
 }
 
 async function getProductContext(tx: TransactionClient, productId: string) {
@@ -78,7 +93,8 @@ async function getOrCreateInventory(tx: TransactionClient, productId: string) {
     include: {
       product: {
         include: {
-          category: true
+          category: true,
+          inventoryBatches: true
         }
       }
     },
@@ -100,19 +116,12 @@ async function getOrCreateInventory(tx: TransactionClient, productId: string) {
     include: {
       product: {
         include: {
-          category: true
+          category: true,
+          inventoryBatches: true
         }
       }
     }
   });
-}
-
-function isSellableBatchStatus(status: InventoryBatchStatus) {
-  return status === InventoryBatchStatus.AVAILABLE || status === InventoryBatchStatus.LOW_STOCK;
-}
-
-function isExpired(batch: { expiresAt: Date | null }) {
-  return batch.expiresAt !== null && batch.expiresAt.getTime() < Date.now();
 }
 
 export function getSellableStockQuantity(
@@ -122,33 +131,33 @@ export function getSellableStockQuantity(
     status: InventoryBatchStatus;
   }>
 ) {
-  return batches.reduce((total, batch) => {
-    if (batch.quantityRemaining <= 0 || !isSellableBatchStatus(batch.status) || isExpired(batch)) {
-      return total;
-    }
-
-    return total + batch.quantityRemaining;
-  }, 0);
+  return calculateStockTruth(batches).sellableStock;
 }
 
 function getPhysicalBatchTotal(
   batches: Array<{
+    expiresAt?: Date | null;
     quantityRemaining: number;
     status: InventoryBatchStatus;
   }>,
   options: BatchStockOptions = {}
 ) {
-  return batches.reduce((total, batch) => {
-    if (batch.quantityRemaining <= 0) {
-      return total;
-    }
+  if (options.sellableOnly) {
+    return batches.reduce(
+      (total, batch) =>
+        total +
+        (isBatchSellable({
+          expiresAt: batch.expiresAt ?? null,
+          quantityRemaining: batch.quantityRemaining,
+          status: batch.status
+        })
+          ? batch.quantityRemaining
+          : 0),
+      0
+    );
+  }
 
-    if (options.sellableOnly && !isSellableBatchStatus(batch.status)) {
-      return total;
-    }
-
-    return total + batch.quantityRemaining;
-  }, 0);
+  return batches.reduce((total, batch) => total + Math.max(0, batch.quantityRemaining), 0);
 }
 
 function asInventorySummary(inventory: InventoryWithRelations): InventorySummaryRow {
@@ -196,7 +205,8 @@ async function syncInventoryAggregate(tx: TransactionClient, productId: string) 
     include: {
       product: {
         include: {
-          category: true
+          category: true,
+          inventoryBatches: true
         }
       }
     },
@@ -224,9 +234,7 @@ export async function calculateBatchStock(
 export async function calculateSellableStock(tx: TransactionClient, productId: string) {
   const product = await getProductContext(tx, productId);
 
-  return getPhysicalBatchTotal(product.inventoryBatches, {
-    sellableOnly: true
-  });
+  return calculateStockTruth(product.inventoryBatches).sellableStock;
 }
 
 export async function synchronizeInventoryAggregate(tx: TransactionClient, productId: string) {
@@ -273,7 +281,8 @@ export async function reconcileProductStock(tx: TransactionClient, productId: st
     include: {
       product: {
         include: {
-          category: true
+          category: true,
+          inventoryBatches: true
         }
       }
     },
@@ -369,8 +378,14 @@ export async function stockInBatch(
     });
   }
 
+  if (input.expiresAt && getDaysUntilExpiry(input.expiresAt) < 0) {
+    throw new HttpError(422, "Expired stock cannot be received as sellable inventory.", {
+      code: "PAST_EXPIRATION_DATE"
+    });
+  }
+
   const product = await getProductContext(tx, input.productId);
-  const unitCost = input.unitCost ?? requireProductCostPrice(product);
+  const unitCost = input.unitCost ?? resolveKnownUnitCost(product);
   const inventory = await getOrCreateInventory(tx, input.productId);
   const batchCode =
     input.batchCode?.trim() || `STOCKIN-${product.sku}-${randomUUID().slice(0, 8).toUpperCase()}`;
@@ -456,7 +471,7 @@ export async function applyStockAdjustment(
   const product = await getProductContext(tx, input.productId);
 
   if (input.direction === "IN") {
-    const adjustmentUnitCost = requireProductCostPrice(product);
+    const adjustmentUnitCost = resolveKnownUnitCost(product);
     const inventory = await getOrCreateInventory(tx, input.productId);
     const batchCode = `ADJIN-${product.sku}-${randomUUID().slice(0, 8).toUpperCase()}`;
     const batch = await tx.inventoryBatch.create({
@@ -542,10 +557,7 @@ export async function allocateStockForSale(
 ) {
   const product = await getProductContext(tx, input.productId);
   const batches = product.inventoryBatches
-    .filter((batch) => batch.quantityRemaining > 0)
-    .filter((batch) => batch.status !== InventoryBatchStatus.REMOVED)
-    .filter((batch) => batch.status !== InventoryBatchStatus.EXPIRED)
-    .filter((batch) => !isExpired(batch))
+    .filter((batch) => isBatchSellable(batch))
     .sort((left, right) => {
       const leftExpiry = left.expiresAt?.getTime() ?? Number.POSITIVE_INFINITY;
       const rightExpiry = right.expiresAt?.getTime() ?? Number.POSITIVE_INFINITY;
@@ -751,7 +763,7 @@ export async function reconcileLegacyStockMismatch(
     );
   }
 
-  const reconciliationUnitCost = existingBatch ? undefined : requireProductCostPrice(product);
+  const reconciliationUnitCost = existingBatch ? undefined : resolveKnownUnitCost(product);
   const inventory = await getOrCreateInventory(tx, input.productId);
 
   let batch = existingBatch;
@@ -767,7 +779,7 @@ export async function reconcileLegacyStockMismatch(
         quantityRemaining: input.quantity,
         receivedAt: input.repairDate ?? new Date(),
         status: InventoryBatchStatus.AVAILABLE,
-        unitCost: reconciliationUnitCost ?? requireProductCostPrice(product)
+        unitCost: reconciliationUnitCost ?? null
       }
     });
     createdBatch = true;
@@ -824,6 +836,10 @@ export type StockAuditRow = {
   sku: string;
   batchTotal: number;
   quantityOnHand: number;
+  sellableStock: number;
+  expiredStock: number;
+  quarantinedStock: number;
+  anomalyCodes: string[];
 };
 
 export async function auditStock(tx: TransactionClient = prisma): Promise<StockAuditRow[]> {
@@ -843,11 +859,20 @@ export async function auditStock(tx: TransactionClient = prisma): Promise<StockA
   });
 
   return inventoryRows.map((inventory) => {
-    const batchTotal = inventory.product.inventoryBatches.reduce(
-      (total, batch) => total + batch.quantityRemaining,
-      0
-    );
+    const batches = inventory.product.inventoryBatches;
+    const truth = calculateStockTruth(batches);
+    const batchTotal = truth.physicalOnHand;
     const difference = inventory.quantityOnHand - batchTotal;
+    const anomalyCodes = [
+      ...(difference !== 0 ? ["AGGREGATE_BATCH_MISMATCH"] : []),
+      ...(truth.expiredStock > 0 ? ["EXPIRED_STOCK_QUARANTINED"] : []),
+      ...(batches.some(
+        (batch) => batch.status === InventoryBatchStatus.REMOVED && batch.quantityRemaining > 0
+      )
+        ? ["REMOVED_BATCH_HAS_QUANTITY"]
+        : []),
+      ...(batches.some((batch) => batch.quantityRemaining < 0) ? ["NEGATIVE_BATCH_QUANTITY"] : [])
+    ];
 
     return {
       batchTotal,
@@ -855,6 +880,10 @@ export async function auditStock(tx: TransactionClient = prisma): Promise<StockA
       invariantStatus: difference === 0 ? "OK" : "MISMATCH",
       productId: inventory.productId,
       quantityOnHand: inventory.quantityOnHand,
+      sellableStock: truth.sellableStock,
+      expiredStock: truth.expiredStock,
+      quarantinedStock: truth.quarantinedStock,
+      anomalyCodes,
       sku: inventory.product.sku
     };
   });

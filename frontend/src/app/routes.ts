@@ -2,14 +2,14 @@ import {
   Boxes,
   ChartNoAxesCombined,
   FileBarChart,
+  History,
   LayoutDashboard,
   LineChart,
   Package,
-  PackageCheck,
   ReceiptText,
-  History,
   ScanBarcode,
   Settings,
+  Truck,
   UsersRound
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
@@ -72,8 +72,8 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/receiving",
     label: "Receiving",
-    description: "Barcode-aware incoming stock and batch receiving",
-    icon: PackageCheck,
+    description: "Approved restock tickets, physical delivery checks, and returns",
+    icon: Truck,
     allowedRoles: ["OWNER"]
   },
   {

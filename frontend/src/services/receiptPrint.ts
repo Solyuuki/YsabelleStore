@@ -4,9 +4,32 @@ export const receiptPrintRequestChannel = "ysabellestore:request:receipt-print";
 export const receiptPrintDataChannel = "ysabellestore:request:receipt-print-data";
 export const receiptPrintReadyChannel = "ysabellestore:request:receipt-print-ready";
 
+export type ReceiptPrinterInfo = {
+  description: string;
+  displayName: string;
+  name: string;
+};
+
+export type ReceiptPrinterStatus = {
+  activePrinterName: string | null;
+  availablePrinters: ReceiptPrinterInfo[];
+  isAvailable: boolean;
+  selectedPrinterName: string | null;
+  source: "auto" | "none" | "saved";
+};
+
+type ReceiptPrintResult = {
+  printed: boolean;
+  printerName: string | null;
+  reason: string | null;
+  requestId: string;
+};
+
 type PrintBridge = {
   receipt?: {
-    print(receipt: RetailReceiptData): Promise<unknown>;
+    getPrinterStatus?(): Promise<ReceiptPrinterStatus>;
+    print(receipt: RetailReceiptData): Promise<ReceiptPrintResult>;
+    selectPrinter?(printerName: string): Promise<ReceiptPrinterStatus>;
   };
 };
 
@@ -16,6 +39,30 @@ function getBridge(): PrintBridge | undefined {
   }
 
   return (window.electron ?? window.ysabelleStore) as PrintBridge | undefined;
+}
+
+export function hasNativeReceiptPrinter() {
+  return Boolean(getBridge()?.receipt?.print);
+}
+
+export async function getReceiptPrinterStatus(): Promise<ReceiptPrinterStatus | null> {
+  const bridge = getBridge();
+
+  if (!bridge?.receipt?.getPrinterStatus) {
+    return null;
+  }
+
+  return bridge.receipt.getPrinterStatus();
+}
+
+export async function selectReceiptPrinter(printerName: string): Promise<ReceiptPrinterStatus> {
+  const bridge = getBridge();
+
+  if (!bridge?.receipt?.selectPrinter) {
+    throw new Error("Receipt printer selection is only available in the desktop app.");
+  }
+
+  return bridge.receipt.selectPrinter(printerName);
 }
 
 export function encodeReceiptPayload(receipt: RetailReceiptData) {
@@ -58,11 +105,32 @@ export function getReceiptPreviewUrl(receipt: RetailReceiptData) {
   return url.toString();
 }
 
+/**
+ * Automatically print only through the desktop/native receipt bridge. Browser QA must stay
+ * nonblocking after checkout; manual reprint can still open the browser print preview.
+ */
+export async function requestAutomaticReceiptPrint(receipt: RetailReceiptData) {
+  const bridge = getBridge();
+
+  if (!bridge?.receipt?.print) {
+    return false;
+  }
+
+  const result = await bridge.receipt.print(receipt);
+  return result.printed === true;
+}
+
 export async function requestReceiptPrint(receipt: RetailReceiptData) {
   const bridge = getBridge();
 
   if (bridge?.receipt?.print) {
-    return bridge.receipt.print(receipt);
+    const result = await bridge.receipt.print(receipt);
+
+    if (!result.printed) {
+      throw new Error(result.reason ?? "The receipt printer did not complete the print request.");
+    }
+
+    return result;
   }
 
   const printUrl = getReceiptPreviewUrl(receipt);

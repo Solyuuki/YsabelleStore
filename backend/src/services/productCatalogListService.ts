@@ -13,6 +13,7 @@ type ProductListResult = {
 const productInclude = {
   category: true,
   inventory: true,
+  inventoryBatches: true,
   duplicateCandidatesLeft: { select: { status: true } },
   duplicateCandidatesRight: { select: { status: true } }
 } as const;

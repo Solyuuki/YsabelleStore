@@ -10,23 +10,33 @@ assert.equal(canRoleAccessRoute(receivingRoute, "OWNER"), true);
 assert.equal(canRoleAccessRoute(receivingRoute, "STAFF"), false);
 
 const appShellSource = readFileSync(resolve(process.cwd(), "src/app/AppShell.tsx"), "utf8");
+const routesSource = readFileSync(resolve(process.cwd(), "src/app/routes.ts"), "utf8");
 const sidebarSource = readFileSync(
   resolve(process.cwd(), "src/components/app/AppSidebar.tsx"),
   "utf8"
 );
 const pageSource = readFileSync(resolve(process.cwd(), "src/pages/ReceivingPage.tsx"), "utf8");
-const apiSource = readFileSync(resolve(process.cwd(), "src/services/receivingApi.ts"), "utf8");
+const restockApiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.ts"), "utf8");
 
 assert.match(appShellSource, /case "\/receiving":[\s\S]*?<ReceivingPage \/>/);
 assert.match(sidebarSource, /"\/receiving"/);
-assert.match(pageSource, /Barcode on received item/);
-assert.match(pageSource, /PRODUCT_BARCODE_CONFIRMATION_REQUIRED/);
-assert.match(pageSource, /New barcode detected/);
-assert.match(pageSource, /Register barcode & receive/);
-assert.match(pageSource, /PRODUCT_BARCODE_CONFLICT/);
-assert.match(pageSource, /PRODUCT_INTERNAL_BARCODE_RESERVED/);
-assert.match(apiSource, /scannedBarcode\?: string/);
-assert.match(apiSource, /confirmNewBarcode\?: boolean/);
-assert.match(apiSource, /\/api\/inventory\/\$\{encodeURIComponent\(productId\)\}\/stock-in/);
+assert.match(routesSource, /path: "\/receiving"[\s\S]*?icon: Truck/);
+assert.match(pageSource, /listRestockOrders/);
+assert.match(pageSource, /Approved restock tickets move here automatically/);
+assert.match(pageSource, /Incoming deliveries/);
+assert.match(pageSource, /Complete — No issues/);
+assert.match(pageSource, /Complete — With issues/);
+assert.match(pageSource, /Partial delivery/);
+assert.match(pageSource, /internalBatchReference/);
+assert.match(pageSource, /@base-ui\/react\/accordion/);
+assert.match(pageSource, /<StatCard/);
+assert.match(pageSource, /<Dialog/);
+assert.doesNotMatch(pageSource, /@\/components\/ui\/sheet/);
+assert.doesNotMatch(pageSource, /RefreshCw/);
+assert.doesNotMatch(pageSource, /<table\b/i);
+assert.doesNotMatch(pageSource, /Barcode on received item/);
+assert.doesNotMatch(pageSource, /Register barcode & receive/);
+assert.match(restockApiSource, /acceptedQuantity/);
+assert.match(restockApiSource, /\/receipts/);
 
-console.log("Receiving barcode UI contract passed.");
+console.log("Receiving ticket UI contract passed.");

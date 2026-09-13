@@ -169,6 +169,7 @@ export async function searchPosProducts(
 }
 
 export async function checkoutPosSale(input: {
+  cashReceived?: string;
   cashierId: string;
   cashierName: string;
   notes?: string | null;
@@ -236,6 +237,20 @@ export async function checkoutPosSale(input: {
     );
     const discountAmount = new Prisma.Decimal(0);
     const totalAmount = subtotalAmount.sub(discountAmount);
+    const cashReceived =
+      input.cashReceived === undefined ? totalAmount : toDecimal(input.cashReceived);
+
+    if (cashReceived.lessThan(totalAmount)) {
+      throw new HttpError(422, "Cash received is less than the sale total.", {
+        code: "INSUFFICIENT_CASH_RECEIVED",
+        details: {
+          cashReceived: cashReceived.toFixed(2),
+          totalAmount: totalAmount.toFixed(2)
+        }
+      });
+    }
+
+    const change = cashReceived.sub(totalAmount);
 
     const sale = await tx.sale.create({
       data: {
@@ -316,9 +331,9 @@ export async function checkoutPosSale(input: {
     return {
       sale: {
         cashierName: input.cashierName,
-        cashReceived: totalAmount.toString(),
+        cashReceived: cashReceived.toString(),
         discountAmount: sale.discountAmount.toString(),
-        change: new Prisma.Decimal(0).toString(),
+        change: change.toString(),
         id: sale.id,
         itemCount: saleItems.reduce((sum, item) => sum + item.quantity, 0),
         items: saleItems,

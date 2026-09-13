@@ -2,3 +2,31 @@
 .products-page-no-actions table tbody td:last-child {
   display: none;
 }
+
+.products-page-no-actions > section > .w-full > :first-child {
+  display: none;
+}
+
+.products-page-no-actions > section > .w-full > :nth-child(2) {
+  padding-top: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .products-page-no-actions table tbody td:not(:first-child):not(:last-child) {
+    vertical-align: middle;
+  }
+
+  .products-page-no-actions table thead th:nth-child(4),
+  .products-page-no-actions table tbody td:nth-child(4) {
+    padding-right: 1rem;
+  }
+
+  .products-page-no-actions table thead th:nth-child(5),
+  .products-page-no-actions table tbody td:nth-child(5) {
+    padding-left: 1rem;
+  }
+
+  .products-page-no-actions table tbody td:nth-child(5) {
+    white-space: nowrap;
+  }
+}

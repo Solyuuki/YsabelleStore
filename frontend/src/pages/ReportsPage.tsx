@@ -1,10 +1,34 @@
-import { Boxes, CalendarClock, PackageOpen, ReceiptText, TriangleAlert } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Boxes,
+  CalendarClock,
+  Download,
+  PackageOpen,
+  ReceiptText,
+  RefreshCw,
+  TriangleAlert
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 
+import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
+import { RestockDraftsPanel } from "@/components/reports/RestockDraftsPanel";
+import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchDashboardSummary, type DashboardSummary } from "@/services/dashboardApi";
 import { listRecentSales } from "@/services/posService";
@@ -17,6 +41,16 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency"
 });
 
+const receiptTimeFormatter = new Intl.DateTimeFormat("en-PH", {
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  month: "short",
+  timeZone: "Asia/Manila"
+});
+
+const AVAILABILITY_COLORS = ["#4f46e5", "#e2e8f0"];
+
 function currency(value: string | number) {
   return currencyFormatter.format(Number(value));
 }
@@ -26,6 +60,11 @@ export function ReportsPage() {
   const [sales, setSales] = useState<PosSale[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [restockView, setRestockView] = useState<"plan" | "drafts" | null>(null);
+  const [restockOrdersRefreshVersion, setRestockOrdersRefreshVersion] = useState(0);
+  const restockWorkspaceRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -65,7 +104,7 @@ export function ReportsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [refreshVersion]);
 
   const completedSales = useMemo(
     () => sales.filter((sale) => sale.status === "COMPLETED"),
@@ -80,6 +119,19 @@ export function ReportsPage() {
     [completedSales]
   );
   const averageReceipt = completedSales.length > 0 ? recentGrossSales / completedSales.length : 0;
+  const recentReceiptChartData = useMemo(
+    () =>
+      completedSales
+        .slice(0, 10)
+        .reverse()
+        .map((sale) => ({
+          amount: Number(sale.totalAmount),
+          label: receiptTimeFormatter.format(new Date(sale.saleDate)),
+          receipt: sale.saleNumber,
+          units: sale.itemCount
+        })),
+    [completedSales]
+  );
 
   const stats = summary
     ? [
@@ -124,12 +176,46 @@ export function ReportsPage() {
       ]
     : [];
 
+  function notifyRestockOrdersChanged() {
+    setRestockOrdersRefreshVersion((version) => version + 1);
+  }
+
+  function openRestockView(view: "plan" | "drafts") {
+    setRestockView(view);
+    window.requestAnimationFrame(() => {
+      restockWorkspaceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader
         eyebrow="Owner area"
         title="Reports"
-        description="Live operational reporting for sales, stock health, and expiry attention from the current database."
+        description="Live store overview with forecast-driven restocking and separate downloadable reports for management, inventory, and suppliers."
+        actions={
+          <>
+            <Button
+              disabled={loading}
+              onClick={() => setRefreshVersion((version) => version + 1)}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+              Refresh
+            </Button>
+            <Button
+              disabled={!summary || loading}
+              onClick={() => setExportOpen(true)}
+              size="sm"
+              type="button"
+            >
+              <Download className="h-4 w-4" />
+              Download report
+            </Button>
+          </>
+        }
       />
 
       {loading && !summary ? (
@@ -148,80 +234,254 @@ export function ReportsPage() {
 
       {summary ? (
         <>
-          <section className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3">
+          <section className="grid gap-4 lg:grid-cols-3 xl:grid-cols-5">
             {stats.map((stat) => (
               <StatCard key={stat.title} {...stat} />
             ))}
           </section>
 
-          <section className="grid gap-4 xl:grid-cols-[0.7fr_1.3fr]">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent receipt metrics</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <MetricRow
-                  label="Completed receipts analyzed"
-                  value={completedSales.length.toLocaleString()}
-                />
-                <MetricRow label="Units sold" value={recentUnits.toLocaleString()} />
-                <MetricRow label="Gross sales" value={currency(recentGrossSales)} />
-                <MetricRow label="Average receipt" value={currency(averageReceipt)} />
-                <p className="pt-2 text-xs leading-5 text-slate-500">
-                  Metrics include completed sales only and use up to the latest 50 persisted sale
-                  records. This is an operational view, not a full accounting-period statement.
+          <section className="space-y-3">
+            <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold text-slate-950">Restock forecast</h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Review forecast-driven restock recommendations before projected stockouts.
+                  Approved tickets move to Receiving for the physical delivery.
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  aria-controls="restock-workspace"
+                  aria-pressed={restockView === "plan"}
+                  onClick={() => openRestockView("plan")}
+                  size="sm"
+                  type="button"
+                  variant={restockView === "plan" ? "default" : "secondary"}
+                >
+                  Review recommendations
+                </Button>
+                <Button
+                  aria-controls="restock-workspace"
+                  aria-pressed={restockView === "drafts"}
+                  onClick={() => openRestockView("drafts")}
+                  size="sm"
+                  type="button"
+                  variant={restockView === "drafts" ? "default" : "secondary"}
+                >
+                  Saved drafts
+                </Button>
+              </div>
+            </div>
 
+            {restockView ? (
+              <div className="scroll-mt-4" id="restock-workspace" ref={restockWorkspaceRef}>
+                {restockView === "plan" ? (
+                  <RestockPlanningPanel
+                    onOpenOrders={() => openRestockView("drafts")}
+                    onOrdersChanged={notifyRestockOrdersChanged}
+                  />
+                ) : (
+                  <RestockDraftsPanel
+                    onDraftConfirmed={notifyRestockOrdersChanged}
+                    refreshVersion={refreshVersion + restockOrdersRefreshVersion}
+                  />
+                )}
+              </div>
+            ) : null}
+          </section>
+
+          <section className="grid items-start gap-4 xl:grid-cols-[0.9fr_1.1fr]">
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between gap-4">
-                  <CardTitle>Inventory health</CardTitle>
-                  <StatusBadge
-                    variant={summary.inventory.unlinkedCatalogItems === 0 ? "success" : "warning"}
-                  >
-                    {summary.inventory.unlinkedCatalogItems === 0
-                      ? "Catalog linked"
-                      : `${summary.inventory.unlinkedCatalogItems} unlinked`}
+              <CardHeader className="pb-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle>Recent receipt metrics</CardTitle>
+                  <StatusBadge variant={completedSales.length > 0 ? "success" : "info"}>
+                    {completedSales.length > 0
+                      ? `${completedSales.length.toLocaleString()} receipt${completedSales.length === 1 ? "" : "s"}`
+                      : "No sales yet"}
                   </StatusBadge>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <HealthTile label="Catalog products" value={summary.inventory.catalogItems} />
-                  <HealthTile label="Inventory records" value={summary.inventory.trackedItems} />
-                  <HealthTile label="Available products" value={summary.inventory.availableItems} />
-                  <HealthTile
-                    label="Unavailable products"
-                    value={summary.inventory.unavailableItems}
-                  />
-                  <HealthTile label="In stock" value={summary.inventory.inStockItems} />
-                  <HealthTile label="Out of stock" value={summary.inventory.outOfStockItems} />
+                <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_260px] sm:items-end">
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-500">Gross sales</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-950">
+                      {currency(recentGrossSales)}
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+                      <MiniMetric label="Units sold" value={recentUnits.toLocaleString()} />
+                      <MiniMetric label="Average receipt" value={currency(averageReceipt)} />
+                    </div>
+                  </div>
+
+                  {recentReceiptChartData.length >= 3 ? (
+                    <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                      <p className="text-xs font-medium text-slate-600">Recent sales trend</p>
+                      <p className="text-[11px] text-slate-400">Gross value of recent receipts</p>
+                      <div className="mt-2 h-28">
+                        <ResponsiveContainer height="100%" width="100%">
+                          <LineChart
+                            data={recentReceiptChartData}
+                            margin={{ bottom: 4, left: 4, right: 4, top: 4 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="label" hide />
+                            <YAxis domain={["auto", "auto"]} hide />
+                            <Tooltip
+                              formatter={(value) => [currency(Number(value)), "Gross sales"]}
+                              labelFormatter={(label) => String(label)}
+                            />
+                            <Line
+                              activeDot={{ r: 4 }}
+                              dataKey="amount"
+                              dot={{ r: 3 }}
+                              stroke="#4f46e5"
+                              strokeWidth={2}
+                              type="monotone"
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border border-dashed border-slate-200 px-3 py-3 text-xs leading-5 text-slate-500">
+                      {completedSales.length === 0
+                        ? "No completed receipts yet."
+                        : `Complete ${3 - completedSales.length} more receipt${3 - completedSales.length === 1 ? "" : "s"} to unlock a useful sales trend.`}
+                    </div>
+                  )}
                 </div>
+
+                <p className="mt-3 text-xs text-slate-500">
+                  Based on recent completed receipts · Use Download report for printable or
+                  spreadsheet copies.
+                </p>
               </CardContent>
             </Card>
+
+            <InventoryHealthCard summary={summary} />
           </section>
         </>
       ) : null}
+
+      <ReportDownloadDialog
+        completedSales={completedSales}
+        onOpenChange={setExportOpen}
+        open={exportOpen}
+        summary={summary}
+      />
     </div>
   );
 }
 
-function MetricRow({ label, value }: { label: string; value: string }) {
+function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-b-0">
-      <span className="text-slate-500">{label}</span>
-      <span className="font-semibold text-slate-950">{value}</span>
+    <div className="min-w-0">
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className="mt-0.5 truncate text-sm font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
 
-function HealthTile({ label, value }: { label: string; value: number }) {
+function InventoryHealthCard({ summary }: { summary: DashboardSummary }) {
+  const inventory = summary.inventory;
+  const availabilityData = [
+    { name: "Active", value: inventory.availableItems },
+    { name: "Inactive", value: inventory.unavailableItems }
+  ];
+  const healthy = inventory.lowStockItems === 0 && inventory.outOfStockItems === 0;
+  const healthSummary = healthy
+    ? "No inventory issues need attention right now."
+    : inventory.lowStockItems > 0 && inventory.outOfStockItems > 0
+      ? "Low-stock and out-of-stock products need attention."
+      : inventory.outOfStockItems > 0
+        ? "Out-of-stock products need attention."
+        : "Low-stock products need attention.";
+
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
-      <p className="text-xs uppercase tracking-[0.14em] text-slate-400">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-slate-950">{value.toLocaleString()}</p>
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle>Inventory health</CardTitle>
+          <StatusBadge variant={healthy ? "success" : "warning"}>
+            {healthy ? "Stock healthy" : "Needs attention"}
+          </StatusBadge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid items-center gap-4 sm:grid-cols-[120px_1fr]">
+          <div className="mx-auto h-24 w-24">
+            {inventory.catalogItems > 0 ? (
+              <ResponsiveContainer height="100%" width="100%">
+                <PieChart>
+                  <Pie
+                    cx="50%"
+                    cy="50%"
+                    data={availabilityData}
+                    dataKey="value"
+                    innerRadius={28}
+                    outerRadius={43}
+                    paddingAngle={2}
+                    stroke="none"
+                  >
+                    {availabilityData.map((entry, index) => (
+                      <Cell
+                        fill={AVAILABILITY_COLORS[index]}
+                        key={`${entry.name}-${entry.value}`}
+                      />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-full border border-dashed border-slate-200 text-xs text-slate-400">
+                No data
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
+            <HealthValue label="Catalog" value={inventory.catalogItems} />
+            <HealthValue label="Inventory records" value={inventory.trackedItems} />
+            <HealthValue label="Active products" value={inventory.availableItems} />
+            <HealthValue label="Inactive / stopped" value={inventory.unavailableItems} />
+            <HealthValue label="Healthy stock" value={inventory.inStockItems} />
+            <HealthValue
+              label="Low / out"
+              value={inventory.lowStockItems + inventory.outOfStockItems}
+              warning={!healthy}
+            />
+          </div>
+        </div>
+
+        <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
+          {healthSummary}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function HealthValue({
+  label,
+  value,
+  warning = false
+}: {
+  label: string;
+  value: number;
+  warning?: boolean;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="truncate text-xs text-slate-500">{label}</p>
+      <p
+        className={
+          warning ? "text-lg font-semibold text-amber-700" : "text-lg font-semibold text-slate-950"
+        }
+      >
+        {value.toLocaleString()}
+      </p>
     </div>
   );
 }

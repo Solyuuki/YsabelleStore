@@ -74,7 +74,7 @@ export function AppPagination({
           ? `Showing 0 ${itemLabel}`
           : `Showing ${startItem}-${endItem} of ${totalItems} ${itemLabel}`}
         {isLoading ? (
-          <span className="ml-3 inline-flex items-center gap-1 font-medium text-emerald-700">
+          <span className="ml-3 inline-flex items-center gap-1 font-medium text-indigo-700">
             <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
             Updating...
           </span>
@@ -87,8 +87,9 @@ export function AppPagination({
             <span className="whitespace-nowrap font-medium">Rows per page</span>
             <select
               aria-label="Rows per page"
-              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none transition-colors hover:border-slate-300 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none transition-colors hover:border-slate-300 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isLoading}
+              style={{ colorScheme: "light" }}
               value={pageSize}
               onChange={(event) => {
                 onPageSizeChange?.(Number(event.target.value));

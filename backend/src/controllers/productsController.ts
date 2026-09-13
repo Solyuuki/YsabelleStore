@@ -1,7 +1,7 @@
 import type { RequestHandler } from "express";
 
 import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
-import { searchPosProducts } from "../services/posService.js";
+import { searchPosProducts } from "../services/posProductSearchService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 import { posProductSearchQuerySchema } from "../validators/pos.validators.js";
