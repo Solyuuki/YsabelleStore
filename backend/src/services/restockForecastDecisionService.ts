@@ -57,11 +57,16 @@ function projectedStockoutDate(
   return isoDate(addDays(now, availablePosition / dailyDemand));
 }
 
-function riskFor(daysUntilStockout: number | null, projectedEndingStock: number, reorderLevel: number) {
+function riskFor(
+  daysUntilStockout: number | null,
+  projectedEndingStock: number,
+  reorderLevel: number,
+  suggestedQuantity: number
+) {
   if (daysUntilStockout !== null && daysUntilStockout <= 7) return "CRITICAL" as const;
   if (daysUntilStockout !== null && daysUntilStockout <= 14) return "HIGH" as const;
   if (daysUntilStockout !== null && daysUntilStockout <= 30) return "MEDIUM" as const;
-  if (projectedEndingStock <= reorderLevel) return "MEDIUM" as const;
+  if (projectedEndingStock <= reorderLevel || suggestedQuantity > 0) return "MEDIUM" as const;
   return "LOW" as const;
 }
 
@@ -129,7 +134,12 @@ export function buildRestockForecastDecision(
     0,
     Math.ceil(targetStockLevel + currentMonthDemand + expiryRiskQuantity - sellableStock - incomingStock)
   );
-  const riskLevel = riskFor(daysUntilStockout, projectedEndingStock, reorderLevel);
+  const riskLevel = riskFor(
+    daysUntilStockout,
+    projectedEndingStock,
+    reorderLevel,
+    suggestedQuantity
+  );
   const recommendedActionDate = actionDateFor(
     riskLevel,
     stockoutDate,
