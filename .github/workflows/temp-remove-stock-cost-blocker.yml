@@ -30,9 +30,10 @@ jobs:
         run: npm ci
 
       - name: Apply central stock costing fix
-        shell: python
         run: |
+          python - <<'PY'
           from pathlib import Path
+          import re
 
           schema = Path("database/prisma/schema.prisma")
           schema_text = schema.read_text()
@@ -45,31 +46,19 @@ jobs:
           service = Path("backend/src/services/stockDomainService.ts")
           text = service.read_text()
 
-          text = text.replace(
-              "  unitCost: Prisma.Decimal;\n};",
-              "  unitCost: Prisma.Decimal | null;\n};",
-              1,
+          old_type = "  unitCost: Prisma.Decimal;\n};"
+          new_type = "  unitCost: Prisma.Decimal | null;\n};"
+          if old_type not in text:
+              raise SystemExit("BatchAllocation unitCost type contract not found")
+          text = text.replace(old_type, new_type, 1)
+
+          pattern = re.compile(
+              r'function requireProductCostPrice\(product: \{ costPrice: Prisma\.Decimal \| null; id: string \}\) \{.*?\n\}\n\n',
+              re.S,
           )
-
-          blocker = '''function requireProductCostPrice(product: { costPrice: Prisma.Decimal | null; id: string }) {
-            if (product.costPrice) return product.costPrice;
-
-            throw new HttpError(
-              422,
-              "A verified procurement cost is required before stock can be recorded.",
-              {
-                code: "PRODUCT_COST_PRICE_REQUIRED",
-                details: { productId: product.id }
-              }
-            );
-          }
-
-          '''
-          # Preserve formatting exactly as committed, but remove the hard blocker as a whole.
-          blocker = blocker.replace("          ", "")
-          if blocker not in text:
+          text, removed = pattern.subn("", text, count=1)
+          if removed != 1:
               raise SystemExit("PRODUCT_COST_PRICE_REQUIRED blocker function not found")
-          text = text.replace(blocker, "", 1)
 
           replacements = {
               "const unitCost = input.unitCost ?? requireProductCostPrice(product);":
@@ -109,6 +98,7 @@ jobs:
               "-- NULL means the batch cost is not yet verified; never substitute a fake zero cost.\n"
               "ALTER TABLE `inventory_batches` MODIFY `unit_cost` DECIMAL(10, 2) NULL;\n"
           )
+          PY
 
       - name: Format touched source
         run: npx prettier --write database/prisma/schema.prisma backend/src/services/stockDomainService.ts database/prisma/migrations/20260913133000_allow_unknown_inventory_batch_cost/migration.sql
