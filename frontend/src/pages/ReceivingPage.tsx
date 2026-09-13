@@ -810,9 +810,7 @@ function ReceivingQueueRow({
   const totals = orderTotals(order);
   const isPartial = order.status === "PARTIALLY_RECEIVED";
   const isReceived = order.status === "RECEIVED";
-  const approvedDate = order.approvedAt
-    ? dateFormatter.format(new Date(order.approvedAt))
-    : "—";
+  const approvedDate = order.approvedAt ? dateFormatter.format(new Date(order.approvedAt)) : "—";
   const actionLabel = queueActionLabel(order.status);
   const quantityLabel = isReceived
     ? `${totals.accepted.toLocaleString()} accepted`
