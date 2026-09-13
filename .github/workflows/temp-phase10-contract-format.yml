@@ -1,0 +1,47 @@
+name: Temporary Phase 10 Contract Format
+
+on:
+  push:
+    branches:
+      - sprint/v0.10/sprint-10
+    paths:
+      - .github/workflows/temp-phase10-contract-format.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Sprint 10 branch
+        uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.10/sprint-10
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format Phase 10 UI contract
+        run: npx prettier --write scripts/restock-phase10-ui-contract-test.ts
+
+      - name: Commit formatted contract
+        shell: bash
+        run: |
+          if git diff --quiet -- scripts/restock-phase10-ui-contract-test.ts; then
+            echo "Contract already formatted."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/restock-phase10-ui-contract-test.ts
+          git commit -m "style(restock): normalize phase 10 UI contract"
+          git push --no-verify origin HEAD:sprint/v0.10/sprint-10
