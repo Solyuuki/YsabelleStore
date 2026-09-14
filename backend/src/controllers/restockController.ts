@@ -1,6 +1,25 @@
 import type { Request, RequestHandler } from "express";
 
 import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
+import { ensureActiveForecastRestockTicket } from "../services/forecastRestockAutomationService.js";
+import {
+  cancelRestockOrder,
+  markRestockOrderAwaitingDelivery,
+  receiveRestockOrder,
+  saveRestockReturnReportDocument
+} from "../services/restockLifecycleService.js";
+import {
+  dismissRestockRecommendation,
+  listRestockPlanningCandidates
+} from "../services/restockPlanningService.js";
+import {
+  approveRestockOrder,
+  createRestockOrder,
+  getRestockOrder,
+  listRestockOrders,
+  replaceRestockOrderLines,
+  updateRestockOrder
+} from "../services/restockService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import {
@@ -11,31 +30,13 @@ import {
   dismissRestockRecommendationSchema,
   receiveRestockOrderSchema,
   replaceRestockOrderLinesSchema,
-  saveRestockReturnReportSchema,
   restockOrderIdParamSchema,
   restockOrderListQuerySchema,
   restockPlanningQuerySchema,
   restockRecommendationIdParamSchema,
+  saveRestockReturnReportSchema,
   updateRestockOrderSchema
 } from "../validators/restock.validators.js";
-import {
-  dismissRestockRecommendation,
-  listRestockPlanningCandidates
-} from "../services/restockPlanningService.js";
-import {
-  cancelRestockOrder,
-  markRestockOrderAwaitingDelivery,
-  receiveRestockOrder,
-  saveRestockReturnReportDocument
-} from "../services/restockLifecycleService.js";
-import {
-  approveRestockOrder,
-  createRestockOrder,
-  getRestockOrder,
-  listRestockOrders,
-  replaceRestockOrderLines,
-  updateRestockOrder
-} from "../services/restockService.js";
 
 function requireActorId(request: Request) {
   const actorId = getAuthenticatedUser(request)?.id;
@@ -101,6 +102,18 @@ export const listRestockOrdersController: RequestHandler = async (request, respo
       message: "Restock order query is invalid.",
       code: "INVALID_RESTOCK_ORDER_QUERY"
     });
+
+    try {
+      const reconciliation = await ensureActiveForecastRestockTicket();
+      if (reconciliation.status === "CREATED" && reconciliation.orderNumber) {
+        console.info(
+          `[restock] Reconciled missing forecast ticket ${reconciliation.orderNumber} before listing orders.`
+        );
+      }
+    } catch (automationError) {
+      console.error("[restock] Unable to reconcile the active forecast ticket.", automationError);
+    }
+
     const result = await listRestockOrders(query);
 
     response
