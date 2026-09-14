@@ -145,14 +145,6 @@ export type PaginationMeta = {
 
 type QueryValue = string | number | boolean | readonly string[] | undefined;
 
-const LOCAL_RESTOCK_QA_COVERAGE_DAYS: Record<string, number> = {
-  "SARIMA-P266": 24,
-  "SARIMA-P121": 20,
-  "SARIMA-P013": 16,
-  "SARIMA-P087": 12,
-  "SARIMA-P085": 28
-};
-
 function buildQueryString(params: Record<string, QueryValue>) {
   const query = new URLSearchParams();
 
@@ -166,104 +158,6 @@ function buildQueryString(params: Record<string, QueryValue>) {
   });
 
   return query.toString();
-}
-
-function isLocalRestockQaEnabled() {
-  if (typeof window === "undefined") return false;
-  return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-}
-
-function monthPeriod(date: Date, monthOffset: number) {
-  return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + monthOffset, 1)
-  ).toISOString();
-}
-
-function dateAfterDays(date: Date, days: number) {
-  return new Date(date.getTime() + days * 86_400_000).toISOString();
-}
-
-function buildLocalQaCandidate(
-  candidate: RestockPlanningCandidate,
-  coverageDays: number
-): RestockPlanningCandidate {
-  const now = new Date();
-  const effectiveStock = Math.max(
-    0,
-    candidate.sellableStock + candidate.incomingStock - candidate.expiryRiskQuantity
-  );
-  const monthlyDemand = Math.max(1, Math.ceil((Math.max(1, effectiveStock) / coverageDays) * 30));
-  const confidenceAdjustedDemand = Math.ceil(monthlyDemand * 1.15);
-  const suggestedQuantity = Math.max(1, Math.ceil(monthlyDemand * 1.5 - effectiveStock));
-  const riskLevel: RestockForecastRisk =
-    coverageDays <= 7
-      ? "CRITICAL"
-      : coverageDays <= 14
-        ? "HIGH"
-        : coverageDays <= 30
-          ? "MEDIUM"
-          : "LOW";
-  const actionLeadDays =
-    riskLevel === "HIGH" || riskLevel === "CRITICAL" ? 0 : Math.max(0, coverageDays - 14);
-  const historicalFactors = [0.78, 0.84, 0.9, 0.95, 1, 1.05];
-  const forecastFactors = [1, 1.04, 0.98, 1.08, 1.12, 1.15];
-  const historical = historicalFactors.map((factor, index) => ({
-    period: monthPeriod(now, index - historicalFactors.length),
-    quantitySold: Math.max(1, Math.round(monthlyDemand * factor))
-  }));
-  const points = forecastFactors.map((factor, index) => {
-    const predictedQuantity = Math.max(1, Math.round(monthlyDemand * factor));
-    return {
-      period: monthPeriod(now, index),
-      predictedQuantity,
-      lowerConfidence: Math.max(0, Math.round(predictedQuantity * 0.85 * 10) / 10),
-      upperConfidence: Math.round(predictedQuantity * 1.15 * 10) / 10
-    };
-  });
-  const reason = `Temporary local QA scenario: ${coverageDays} days of stock cover at about ${monthlyDemand} units/month; restore toward 45 days of healthy coverage.`;
-
-  return {
-    ...candidate,
-    forecast: {
-      batchId: null,
-      currentMonthDemand: monthlyDemand,
-      generatedAt: now.toISOString(),
-      historical,
-      modelName: "SARIMAX QA",
-      points
-    },
-    forecastDecision: {
-      currentMonthDemand: monthlyDemand,
-      confidenceAdjustedDemand,
-      projectedEndingStock: effectiveStock - confidenceAdjustedDemand,
-      projectedStockoutDate: dateAfterDays(now, coverageDays),
-      suggestedQuantity,
-      riskLevel,
-      recommendedActionDate: dateAfterDays(now, actionLeadDays),
-      reason
-    },
-    rationale: reason,
-    recommendationId: null,
-    recommendationSource: "SARIMA",
-    recommendedQuantity: suggestedQuantity,
-    stockHealth: {
-      status: effectiveStock <= 0 ? "OUT_OF_STOCK" : "LOW_STOCK",
-      coverageDays: effectiveStock <= 0 ? 0 : coverageDays,
-      monthlyDemand,
-      demandSource: "RECENT_SALES",
-      confidence: "MEDIUM",
-      reason
-    }
-  };
-}
-
-function applyLocalRestockQaScenario(items: RestockPlanningCandidate[]) {
-  if (!isLocalRestockQaEnabled()) return items;
-
-  return items.map((candidate) => {
-    const coverageDays = LOCAL_RESTOCK_QA_COVERAGE_DAYS[candidate.product.sku];
-    return coverageDays ? buildLocalQaCandidate(candidate, coverageDays) : candidate;
-  });
 }
 
 export async function listRestockPlanning(
@@ -287,7 +181,7 @@ export async function listRestockPlanning(
   }
 
   return {
-    items: applyLocalRestockQaScenario(response.data),
+    items: response.data,
     meta: response.meta ?? {
       page: query.page ?? 1,
       pageSize: query.pageSize ?? 20,
