@@ -157,11 +157,7 @@ async function runForecastRestockAutomation(
   }
 
   if (live?.status === RestockOrderStatus.DRAFT) {
-    const approved = await approveRestockOrder(
-      live.id,
-      { expectedVersion: live.version },
-      actorId
-    );
+    const approved = await approveRestockOrder(live.id, { expectedVersion: live.version }, actorId);
     console.info(
       `[restock] Forecast batch ${batchId} recovered draft ${approved.orderNumber} and auto-approved it for Receiving.`
     );
