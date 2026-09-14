@@ -85,6 +85,16 @@ function resolveDemandSignal(input: ClassifyStockHealthInput): DemandSignal {
   };
 }
 
+function resolveCurrentMonthSales(input: ClassifyStockHealthInput) {
+  const asOf = input.asOf ?? new Date();
+  const currentKey = monthKey(asOf);
+
+  return (input.historicalSeries ?? []).reduce((sum, point) => {
+    if (point.period !== currentKey || !Number.isFinite(point.quantitySold)) return sum;
+    return sum + Math.max(0, point.quantitySold);
+  }, 0);
+}
+
 function roundedCoverageDays(sellableStock: number, monthlyDemand: number) {
   return Math.round((sellableStock / monthlyDemand) * DAYS_PER_MONTH * 10) / 10;
 }
@@ -105,6 +115,25 @@ export function classifyStockHealth(input: ClassifyStockHealthInput): AutomaticS
   }
 
   if (signal.monthlyDemand === null) {
+    const currentMonthSales = resolveCurrentMonthSales(input);
+
+    // A product with no completed-month history can still become obviously low stock after real
+    // POS activity in the current month. Use current-month actual sales only as a conservative
+    // low-stock trigger; do not infer Normal/Overstock from an incomplete month.
+    if (currentMonthSales > 0) {
+      const coverageDays = roundedCoverageDays(sellableStock, currentMonthSales);
+      if (coverageDays < LOW_STOCK_COVERAGE_DAYS) {
+        return {
+          confidence: "LOW",
+          coverageDays,
+          demandSource: "RECENT_SALES",
+          monthlyDemand: currentMonthSales,
+          reason: `${coverageDays} days of sellable stock cover based on current-month actual sales while completed history is still building.`,
+          status: "LOW_STOCK"
+        };
+      }
+    }
+
     return {
       confidence: "LOW",
       coverageDays: null,
