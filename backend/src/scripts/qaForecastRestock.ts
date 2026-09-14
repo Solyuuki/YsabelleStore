@@ -333,12 +333,17 @@ function snapshotProduct(
   };
 }
 
-async function assertQaPlanningState(batchId: string, selected: QaProductSnapshot[]) {
+async function assertQaPlanningState(
+  batchId: string,
+  selected: QaProductSnapshot[],
+  options: { requireActionable?: boolean } = {}
+) {
   const planning = await loadAllPlanningCandidates();
   const selectedIds = new Set(selected.map((product) => product.id));
   const candidates = planning.filter((candidate) => selectedIds.has(candidate.product.id));
   const byId = new Map(candidates.map((candidate) => [candidate.product.id, candidate]));
   const failures: string[] = [];
+  const requireActionable = options.requireActionable ?? true;
 
   for (const product of selected) {
     const candidate = byId.get(product.id);
@@ -359,7 +364,7 @@ async function assertQaPlanningState(batchId: string, selected: QaProductSnapsho
         `${product.sku}: inventory status=${inventoryStatus}, sellable=${candidate.sellableStock}, reorder=${candidate.product.reorderLevel}`
       );
     }
-    if (candidate.recommendedQuantity <= 0) {
+    if (requireActionable && candidate.recommendedQuantity <= 0) {
       failures.push(`${product.sku}: recommendedQuantity=${candidate.recommendedQuantity}`);
     }
   }
@@ -430,7 +435,17 @@ async function seed() {
       );
     }
 
-    await assertQaPlanningState(snapshot.baselineForecastBatchId, snapshot.products);
+    const preTicketCandidates = await assertQaPlanningState(
+      snapshot.baselineForecastBatchId,
+      snapshot.products
+    );
+    const preTicketUnits = preTicketCandidates.reduce(
+      (sum, candidate) => sum + Math.max(0, candidate.recommendedQuantity),
+      0
+    );
+    console.log(
+      `[qa:forecast-restock] Planning sees ${snapshot.products.length} Low Stock product(s) and ${preTicketUnits} unit(s) to replenish before ticket creation.`
+    );
 
     // Inventory does not alter forecast demand. Force a fresh batch from the store's existing
     // demand source so the READY-batch activation hook sees the QA Low Stock state and creates
@@ -444,7 +459,11 @@ async function seed() {
       await writeSnapshot(snapshot);
     }
 
-    const actionable = await assertQaPlanningState(refreshed.id, snapshot.products);
+    // READY activation can auto-create the order immediately. Once approved, that order becomes
+    // incoming stock, so a subsequent planning read may correctly show zero remaining need.
+    const postTicketCandidates = await assertQaPlanningState(refreshed.id, snapshot.products, {
+      requireActionable: false
+    });
     const ticket = await ensureForecastRestockTicket(refreshed.id);
     if (
       !ticket.orderId ||
@@ -484,16 +503,16 @@ async function seed() {
     await writeSnapshot(snapshot);
 
     const selectedIds = new Set(snapshot.products.map((product) => product.id));
-    const selectedUnits = actionable
-      .filter((candidate) => selectedIds.has(candidate.product.id))
-      .reduce((sum, candidate) => sum + Math.max(0, candidate.recommendedQuantity), 0);
-    const coverageLowStockCount = actionable.filter(
+    const selectedUnits = order.lines
+      .filter((line) => selectedIds.has(line.productId))
+      .reduce((sum, line) => sum + Math.max(0, line.requestedQuantity), 0);
+    const coverageLowStockCount = postTicketCandidates.filter(
       (candidate) =>
         selectedIds.has(candidate.product.id) && candidate.stockHealth.status === "LOW_STOCK"
     ).length;
 
     console.log(
-      `[qa:forecast-restock] READY batch ${refreshed.id}: ${snapshot.products.length} inventory Low Stock product(s), ${selectedUnits} recommended unit(s).`
+      `[qa:forecast-restock] READY batch ${refreshed.id}: ${snapshot.products.length} inventory Low Stock product(s), ${selectedUnits} unit(s) on the automated ticket.`
     );
     if (coverageLowStockCount < snapshot.products.length) {
       console.log(
