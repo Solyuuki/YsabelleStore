@@ -6,14 +6,28 @@ import { approveRestockOrder, createRestockOrder } from "./restockService.js";
 
 const AUTOMATION_PAGE_SIZE = 100;
 const DEFAULT_RECONCILE_INTERVAL_MS = 30_000;
+const LIVE_TICKET_STATUSES = new Set<RestockOrderStatus>([
+  RestockOrderStatus.DRAFT,
+  RestockOrderStatus.APPROVED,
+  RestockOrderStatus.AWAITING_DELIVERY,
+  RestockOrderStatus.PARTIALLY_RECEIVED
+]);
 const inFlightByBatch = new Map<string, Promise<ForecastRestockAutomationResult>>();
 let workerTimer: NodeJS.Timeout | null = null;
 let workerReconciliation: Promise<void> | null = null;
 
+type ForecastRestockAutomationStatus =
+  | "CREATED"
+  | "EXISTING"
+  | "NO_ACTION"
+  | "NO_ACTOR"
+  | "CANCELLED";
+
 type ForecastRestockAutomationResult = {
+  batchId: string | null;
   orderId: string | null;
   orderNumber: string | null;
-  status: "CREATED" | "EXISTING" | "NO_ACTION" | "NO_ACTOR";
+  status: ForecastRestockAutomationStatus;
 };
 
 type ForecastRestockActionLine = {
@@ -21,6 +35,13 @@ type ForecastRestockActionLine = {
   quantity: number;
   recommendationId: string | null;
   recommendationSource: "SARIMA";
+};
+
+type ForecastTicketIdentity = {
+  id: string;
+  orderNumber: string;
+  status: RestockOrderStatus;
+  version: number;
 };
 
 function batchMarker(batchId: string) {
@@ -56,11 +77,6 @@ async function loadForecastActionLines(batchId: string) {
 
     for (const candidate of result.items) {
       const recommendedQuantity = Math.max(0, candidate.recommendedQuantity);
-
-      // The active forecast batch is the source of truth for automated forecast tickets.
-      // A product may have a LOW_STOCK/TARGET_STOCK recommendation that takes precedence in
-      // planning labels while still belonging to this forecast batch. Do not drop that product
-      // from the automated ticket merely because its display recommendation source is not SARIMA.
       if (candidate.forecast?.batchId !== batchId || recommendedQuantity <= 0) continue;
 
       lines.push({
@@ -77,37 +93,55 @@ async function loadForecastActionLines(batchId: string) {
   }
 }
 
-async function runForecastRestockAutomation(
-  batchId: string
-): Promise<ForecastRestockAutomationResult> {
-  const marker = batchMarker(batchId);
-  const existing = await prisma.restockOrder.findFirst({
-    orderBy: { createdAt: "desc" },
+async function loadExistingForecastTickets(batchId: string): Promise<ForecastTicketIdentity[]> {
+  return await prisma.restockOrder.findMany({
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     select: {
       id: true,
       orderNumber: true,
       status: true,
       version: true
     },
-    where: { notes: { contains: marker } }
+    where: { notes: { contains: batchMarker(batchId) } }
   });
+}
 
-  if (existing && existing.status !== RestockOrderStatus.DRAFT) {
+function liveForecastTicket(orders: ForecastTicketIdentity[]) {
+  return orders.find((order) => LIVE_TICKET_STATUSES.has(order.status)) ?? null;
+}
+
+function cancelledForecastTicket(orders: ForecastTicketIdentity[]) {
+  return orders.find((order) => order.status === RestockOrderStatus.CANCELLED) ?? null;
+}
+
+async function runForecastRestockAutomation(
+  batchId: string
+): Promise<ForecastRestockAutomationResult> {
+  const existingOrders = await loadExistingForecastTickets(batchId);
+  const live = liveForecastTicket(existingOrders);
+
+  if (live && live.status !== RestockOrderStatus.DRAFT) {
+    console.info(
+      `[restock] Forecast batch ${batchId} already has active ticket ${live.orderNumber} (${live.status}).`
+    );
     return {
-      orderId: existing.id,
-      orderNumber: existing.orderNumber,
+      batchId,
+      orderId: live.id,
+      orderNumber: live.orderNumber,
       status: "EXISTING"
     };
   }
 
   const actionLines = await loadForecastActionLines(batchId);
+  const totalUnits = actionLines.reduce((sum, line) => sum + line.quantity, 0);
+
   if (actionLines.length === 0) {
     console.info(`[restock] Forecast batch ${batchId} has no actionable forecast lines.`);
-    return { orderId: null, orderNumber: null, status: "NO_ACTION" };
+    return { batchId, orderId: null, orderNumber: null, status: "NO_ACTION" };
   }
 
   console.info(
-    `[restock] Forecast batch ${batchId} has ${actionLines.length} actionable product(s) for automated ticket generation.`
+    `[restock] Forecast batch ${batchId} has ${actionLines.length} actionable product(s), ${totalUnits} unit(s) total.`
   );
 
   const actorId = await findAutomationActorId();
@@ -115,22 +149,47 @@ async function runForecastRestockAutomation(
     console.warn(
       `[restock] Forecast batch ${batchId} has no active user to own its automated ticket.`
     );
-    return { orderId: null, orderNumber: null, status: "NO_ACTOR" };
+    return { batchId, orderId: null, orderNumber: null, status: "NO_ACTOR" };
   }
 
-  if (existing) {
+  if (live?.status === RestockOrderStatus.DRAFT) {
     const approved = await approveRestockOrder(
-      existing.id,
-      { expectedVersion: existing.version },
+      live.id,
+      { expectedVersion: live.version },
       actorId
     );
+    console.info(
+      `[restock] Forecast batch ${batchId} recovered draft ${approved.orderNumber} and auto-approved it for Receiving.`
+    );
     return {
+      batchId,
       orderId: approved.id,
       orderNumber: approved.orderNumber,
       status: "CREATED"
     };
   }
 
+  // Cancellation is an explicit owner decision. Do not recreate the same forecast batch every
+  // reconciliation interval after an owner cancels its automated ticket. A newly generated
+  // forecast batch gets a new batch id and can create a new automated ticket normally.
+  const cancelled = cancelledForecastTicket(existingOrders);
+  if (cancelled) {
+    console.info(
+      `[restock] Forecast batch ${batchId} remains suppressed by cancelled ticket ${cancelled.orderNumber}.`
+    );
+    return {
+      batchId,
+      orderId: cancelled.id,
+      orderNumber: cancelled.orderNumber,
+      status: "CANCELLED"
+    };
+  }
+
+  // RECEIVED tickets are intentionally not treated as live blockers. Planning is recalculated
+  // from current stock truth; if the same active demand batch still has a genuine replenishment
+  // gap after receipt, another ticket may be created. Once created, its incoming quantity makes
+  // it the live blocker and prevents duplicate retries.
+  const marker = batchMarker(batchId);
   const order = await createRestockOrder(
     {
       notes: `${marker} Automatically generated from the active demand forecast.`,
@@ -150,10 +209,11 @@ async function runForecastRestockAutomation(
 
   const approved = await approveRestockOrder(order.id, { expectedVersion: order.version }, actorId);
   console.info(
-    `[restock] Forecast batch ${batchId} generated ${approved.orderNumber} with ${actionLines.length} product(s).`
+    `[restock] Forecast batch ${batchId} generated and auto-approved ${approved.orderNumber} with ${actionLines.length} product(s), ${totalUnits} unit(s).`
   );
 
   return {
+    batchId,
     orderId: approved.id,
     orderNumber: approved.orderNumber,
     status: "CREATED"
@@ -185,7 +245,12 @@ export async function ensureActiveForecastRestockTicket() {
 
   if (!active) {
     console.info("[restock] No active READY forecast batch is available for automation.");
-    return { orderId: null, orderNumber: null, status: "NO_ACTION" } as const;
+    return {
+      batchId: null,
+      orderId: null,
+      orderNumber: null,
+      status: "NO_ACTION"
+    } as const;
   }
 
   return await ensureForecastRestockTicket(active.id);
