@@ -13,6 +13,13 @@ type ForecastRestockAutomationResult = {
   status: "CREATED" | "EXISTING" | "NO_ACTION" | "NO_ACTOR";
 };
 
+type ForecastRestockActionLine = {
+  productId: string;
+  quantity: number;
+  recommendationId: string | null;
+  recommendationSource: "SARIMA";
+};
+
 function batchMarker(batchId: string) {
   return `[ForecastBatch:${batchId}]`;
 }
@@ -34,10 +41,7 @@ async function findAutomationActorId() {
 }
 
 async function loadForecastActionLines(batchId: string) {
-  const lines: Array<{
-    productId: string;
-    quantity: number;
-  }> = [];
+  const lines: ForecastRestockActionLine[] = [];
   let page = 1;
 
   while (true) {
@@ -48,12 +52,20 @@ async function loadForecastActionLines(batchId: string) {
     });
 
     for (const candidate of result.items) {
-      const suggestedQuantity = candidate.forecastDecision?.suggestedQuantity ?? 0;
-      if (candidate.forecast?.batchId !== batchId || suggestedQuantity <= 0) continue;
+      const recommendedQuantity = Math.max(0, candidate.recommendedQuantity);
+      if (
+        candidate.forecast?.batchId !== batchId ||
+        candidate.recommendationSource !== "SARIMA" ||
+        recommendedQuantity <= 0
+      ) {
+        continue;
+      }
 
       lines.push({
         productId: candidate.product.id,
-        quantity: suggestedQuantity
+        quantity: recommendedQuantity,
+        recommendationId: candidate.recommendationId,
+        recommendationSource: "SARIMA"
       });
     }
 
@@ -85,6 +97,12 @@ async function runForecastRestockAutomation(
     };
   }
 
+  const actionLines = await loadForecastActionLines(batchId);
+  if (actionLines.length === 0) {
+    console.info(`[restock] Forecast batch ${batchId} has no actionable forecast lines.`);
+    return { orderId: null, orderNumber: null, status: "NO_ACTION" };
+  }
+
   const actorId = await findAutomationActorId();
   if (!actorId) {
     console.warn(
@@ -106,11 +124,6 @@ async function runForecastRestockAutomation(
     };
   }
 
-  const actionLines = await loadForecastActionLines(batchId);
-  if (actionLines.length === 0) {
-    return { orderId: null, orderNumber: null, status: "NO_ACTION" };
-  }
-
   const order = await createRestockOrder(
     {
       notes: `${marker} Automatically generated from the active demand forecast.`,
@@ -119,8 +132,8 @@ async function runForecastRestockAutomation(
         notes: `Forecast-generated restock from batch ${batchId}.`,
         ownerOverrideReason: null,
         productId: line.productId,
-        recommendationId: null,
-        recommendationSource: "SARIMA" as const,
+        recommendationId: line.recommendationId,
+        recommendationSource: line.recommendationSource,
         recommendedQuantity: line.quantity,
         requestedQuantity: line.quantity
       }))
