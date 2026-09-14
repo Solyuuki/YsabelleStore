@@ -86,8 +86,6 @@
     "forecast:smoke": "tsx backend/src/scripts/forecastSmoke.ts",
     "forecast:test": "python -m pytest forecasting-service/tests",
     "forecast:ui-test": "tsx --tsconfig frontend/tsconfig.app.json scripts/forecast-ui-test.ts",
-    "qa:forecast-restock:seed": "node --env-file=.env --import tsx backend/src/scripts/qaForecastRestock.ts seed",
-    "qa:forecast-restock:reset": "node --env-file=.env --import tsx backend/src/scripts/qaForecastRestock.ts reset",
     "catalog:sarima:validate": "tsx backend/src/scripts/mapSarimaCatalogProducts.ts",
     "catalog:sarima:apply": "tsx backend/src/scripts/mapSarimaCatalogProducts.ts --apply",
     "catalog:sarima:verify": "tsx backend/src/scripts/validateSarimaCatalogProducts.ts",
