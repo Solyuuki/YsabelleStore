@@ -174,7 +174,9 @@ function isLocalRestockQaEnabled() {
 }
 
 function monthPeriod(date: Date, monthOffset: number) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + monthOffset, 1)).toISOString();
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + monthOffset, 1)
+  ).toISOString();
 }
 
 function dateAfterDays(date: Date, days: number) {
@@ -201,7 +203,8 @@ function buildLocalQaCandidate(
         : coverageDays <= 30
           ? "MEDIUM"
           : "LOW";
-  const actionLeadDays = riskLevel === "HIGH" || riskLevel === "CRITICAL" ? 0 : Math.max(0, coverageDays - 14);
+  const actionLeadDays =
+    riskLevel === "HIGH" || riskLevel === "CRITICAL" ? 0 : Math.max(0, coverageDays - 14);
   const historicalFactors = [0.78, 0.84, 0.9, 0.95, 1, 1.05];
   const forecastFactors = [1, 1.04, 0.98, 1.08, 1.12, 1.15];
   const historical = historicalFactors.map((factor, index) => ({

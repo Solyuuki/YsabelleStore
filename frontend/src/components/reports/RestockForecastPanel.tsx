@@ -268,10 +268,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       actionCount: actionableItems.length,
       highRisk,
       sevenDayStockouts,
-      units: actionableItems.reduce(
-        (sum, item) => sum + Math.max(0, item.recommendedQuantity),
-        0
-      )
+      units: actionableItems.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0)
     };
   }, [actionableItems]);
 
