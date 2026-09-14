@@ -28,7 +28,10 @@ import {
 } from "../controllers/productImportController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
-import { productImageUpload, productImportUpload } from "../middleware/uploadMiddleware.js";
+import {
+  productImageUpload,
+  productPackageImportUpload
+} from "../middleware/uploadMiddleware.js";
 
 export const productRouter = Router();
 
@@ -37,13 +40,13 @@ productRouter.use(requireAuth);
 productRouter.post(
   "/import/preview",
   requireRole("OWNER"),
-  productImportUpload.single("file"),
+  productPackageImportUpload.single("file"),
   previewProductImportController
 );
 productRouter.post(
   "/import",
   requireRole("OWNER"),
-  productImportUpload.single("file"),
+  productPackageImportUpload.single("file"),
   importProductsController
 );
 productRouter.post(
