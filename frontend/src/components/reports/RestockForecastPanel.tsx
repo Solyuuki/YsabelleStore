@@ -1,12 +1,9 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Area,
   CartesianGrid,
-  ComposedChart,
   Line,
   LineChart,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -100,65 +97,58 @@ function stockStatusLabel(candidate: RestockPlanningCandidate) {
 }
 
 function sourceLabel(candidate: RestockPlanningCandidate) {
-  if (candidate.recommendationSource === "SARIMA") {
-    return candidate.forecast?.modelName ?? "SARIMA";
-  }
-  if (candidate.recommendationSource === "LOW_STOCK") return "Low stock";
+  if (candidate.recommendationSource === "SARIMA") return "Forecast";
+  if (candidate.recommendationSource === "LOW_STOCK") return "Stock level";
   return "Stock policy";
+}
+
+function riskLabel(risk: RestockForecastRisk | null | undefined) {
+  switch (risk) {
+    case "CRITICAL":
+      return "Urgent";
+    case "HIGH":
+      return "High priority";
+    case "MEDIUM":
+      return "Plan soon";
+    case "LOW":
+    default:
+      return "Monitor";
+  }
 }
 
 function buildDemandChart(candidate: RestockPlanningCandidate | null) {
   if (!candidate?.forecast) return [];
 
-  const historical = candidate.forecast.historical.slice(-12).map((point) => ({
+  const historical = candidate.forecast.historical.slice(-6).map((point) => ({
     actual: point.quantitySold,
-    confidenceBase: null,
-    confidenceRange: null,
     forecast: null,
     label: formatMonth(point.period),
     period: point.period
   }));
-  const forecast = candidate.forecast.points.map((point) => {
-    const lower = point.lowerConfidence;
-    const upper = point.upperConfidence;
-    return {
-      actual: null,
-      confidenceBase: lower,
-      confidenceRange: lower !== null && upper !== null ? Math.max(0, upper - lower) : null,
-      forecast: point.predictedQuantity,
-      label: formatMonth(point.period),
-      period: point.period
-    };
-  });
+  const forecast = candidate.forecast.points.slice(0, 6).map((point) => ({
+    actual: null,
+    forecast: point.predictedQuantity,
+    label: formatMonth(point.period),
+    period: point.period
+  }));
 
   return [...historical, ...forecast];
 }
 
-function buildInventoryProjection(candidate: RestockPlanningCandidate | null) {
-  if (!candidate?.forecast) return [];
-
-  let projected = Math.max(
+function usableStock(candidate: RestockPlanningCandidate | null) {
+  if (!candidate) return 0;
+  return Math.max(
     0,
     candidate.sellableStock + candidate.incomingStock - candidate.expiryRiskQuantity
   );
-  const points = [
-    {
-      label: "Now",
-      period: "now",
-      projectedStock: projected
-    }
-  ];
+}
 
-  for (const point of candidate.forecast.points) {
-    projected -= Math.max(0, point.predictedQuantity);
-    points.push({
-      label: formatMonth(point.period),
-      period: point.period,
-      projectedStock: projected
-    });
+function coverageLabel(candidate: RestockPlanningCandidate | null) {
+  const coverageDays = candidate?.stockHealth.coverageDays;
+  if (coverageDays === null || coverageDays === undefined || !Number.isFinite(coverageDays)) {
+    return "-";
   }
-
-  return points;
+  return `${Math.max(0, Math.round(coverageDays))} days`;
 }
 
 async function loadAllRestockPlanningCandidates(signal: AbortSignal) {
@@ -254,8 +244,6 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     [items]
   );
   const demandChart = useMemo(() => buildDemandChart(selected), [selected]);
-  const inventoryProjection = useMemo(() => buildInventoryProjection(selected), [selected]);
-  const firstForecastPeriod = selected?.forecast?.points[0]?.period ?? null;
   const watchlistTotalPages = Math.max(1, Math.ceil(items.length / WATCHLIST_PAGE_SIZE));
   const normalizedWatchlistPage = Math.min(watchlistPage, watchlistTotalPages);
   const watchlistStart = (normalizedWatchlistPage - 1) * WATCHLIST_PAGE_SIZE;
@@ -280,9 +268,19 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       actionCount: actionableItems.length,
       highRisk,
       sevenDayStockouts,
-      units: actionableItems.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0)
+      units: actionableItems.reduce(
+        (sum, item) => sum + Math.max(0, item.recommendedQuantity),
+        0
+      )
     };
   }, [actionableItems]);
+
+  const selectedDemand = Math.ceil(
+    selected?.forecastDecision?.currentMonthDemand ?? selected?.forecast?.currentMonthDemand ?? 0
+  );
+  const selectedCoverageDays = selected?.stockHealth.coverageDays ?? null;
+  const selectedRisk = selected?.forecastDecision?.riskLevel ?? null;
+  const selectedNeedsOrder = Boolean(selected && selected.recommendedQuantity > 0);
 
   function handleWatchlistPageChange(nextPage: number) {
     const page = Math.min(Math.max(nextPage, 1), watchlistTotalPages);
@@ -302,8 +300,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
         <CardContent className="pt-6">
           <LoadingState
             badge="Forecast"
-            helper="Reading persisted demand forecasts and current stock position."
-            label="Preparing restock intelligence"
+            helper="Reading recent demand and current stock."
+            label="Preparing restock guidance"
           />
         </CardContent>
       </Card>
@@ -349,8 +347,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               </Badge>
             </div>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Current stock health is classified automatically from sellable stock and demand
-              coverage. SARIMAX-driven suggested restock remains separate for future demand.
+              See which products need restocking, when to order, and how many units to buy.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -370,18 +367,17 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
       <CardContent className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <ForecastMetric label="Needs action" value={summary.actionCount} />
-          <ForecastMetric label="High risk" value={summary.highRisk} />
-          <ForecastMetric label="Stockout within 7d" value={summary.sevenDayStockouts} />
-          <ForecastMetric label="Suggested units" value={summary.units} />
+          <ForecastMetric label="Needs restock" value={summary.actionCount} />
+          <ForecastMetric label="Urgent" value={summary.highRisk} />
+          <ForecastMetric label="Running out within 7d" value={summary.sevenDayStockouts} />
+          <ForecastMetric label="Units to order" value={summary.units} />
         </div>
 
         {summary.actionCount === 0 ? (
           <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3">
             <p className="text-sm font-semibold text-emerald-950">No restock action required</p>
             <p className="mt-1 text-xs leading-5 text-emerald-800">
-              Current sellable and incoming stock cover the active forecast demand. Forecast charts
-              remain available below for monitoring.
+              Current stock is expected to cover demand. Keep monitoring the watchlist below.
             </p>
           </div>
         ) : null}
@@ -391,8 +387,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             <div className="border-b border-slate-200 px-4 py-3">
               <p className="text-sm font-semibold text-slate-950">Forecast watchlist</p>
               <p className="mt-1 text-xs text-slate-500">
-                Status shows current stock health; forecast-ready products stay visible even when
-                suggested restock is zero.
+                Select a product to see expected demand and the recommended next step.
               </p>
             </div>
             <div className="overflow-hidden">
@@ -403,7 +398,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                       <TableHead>Product</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Sellable</TableHead>
-                      <TableHead className="text-right">Suggested</TableHead>
+                      <TableHead className="text-right">Order</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -451,7 +446,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 <div className="px-4 py-10 text-center">
                   <p className="text-sm font-semibold text-slate-950">No forecast products yet</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    The chart workspace remains ready while forecast history is being built.
+                    Demand guidance will appear here when enough sales history is available.
                   </p>
                 </div>
               )}
@@ -474,12 +469,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
               <div>
                 <p className="text-sm font-semibold text-slate-950">
-                  {selected?.product.name ?? "Demand forecast"}
+                  {selected?.product.name ?? "Restock details"}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
                   {selected?.forecast
-                    ? `${selected.forecast.modelName ?? "SARIMA"} demand forecast · Generated ${formatDate(selected.forecast.generatedAt)}`
-                    : "Historical demand, forecast trajectory, and confidence interval."}
+                    ? `Expected demand · Updated ${formatDate(selected.forecast.generatedAt)}`
+                    : "Select a product to review its stock outlook."}
                 </p>
               </div>
               {selected ? (
@@ -491,39 +486,87 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
             <div className="space-y-4 p-4">
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <ForecastMetric compact label="Usable stock" value={usableStock(selected)} />
+                <ForecastMetric compact label="Expected 30d" value={selectedDemand} />
+                <ForecastMetric compact label="Stock cover" value={coverageLabel(selected)} />
                 <ForecastMetric
                   compact
-                  label="30d demand"
-                  value={Math.ceil(
-                    selected?.forecastDecision?.currentMonthDemand ??
-                      selected?.forecast?.currentMonthDemand ??
-                      0
-                  )}
-                />
-                <ForecastMetric compact label="Incoming" value={selected?.incomingStock ?? 0} />
-                <ForecastMetric
-                  compact
-                  label="Stockout"
+                  label="May run out"
                   value={formatDate(selected?.forecastDecision?.projectedStockoutDate)}
-                />
-                <ForecastMetric
-                  compact
-                  label="Action date"
-                  value={formatDate(selected?.forecastDecision?.recommendedActionDate)}
                 />
               </div>
 
+              {selected ? (
+                <div
+                  className={
+                    selectedNeedsOrder
+                      ? "rounded-md border border-amber-200 bg-amber-50 px-4 py-3"
+                      : "rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3"
+                  }
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p
+                        className={
+                          selectedNeedsOrder
+                            ? "text-xs font-semibold uppercase tracking-wide text-amber-700"
+                            : "text-xs font-semibold uppercase tracking-wide text-emerald-700"
+                        }
+                      >
+                        Recommended next step
+                      </p>
+                      <p
+                        className={
+                          selectedNeedsOrder
+                            ? "mt-1 text-lg font-semibold text-amber-950"
+                            : "mt-1 text-lg font-semibold text-emerald-950"
+                        }
+                      >
+                        {selectedNeedsOrder
+                          ? `Order ${formatNumber(selected.recommendedQuantity)} units`
+                          : "No order needed right now"}
+                      </p>
+                      <p
+                        className={
+                          selectedNeedsOrder
+                            ? "mt-1 text-sm leading-6 text-amber-900"
+                            : "mt-1 text-sm leading-6 text-emerald-900"
+                        }
+                      >
+                        {selectedNeedsOrder
+                          ? `Place the order by ${formatDate(selected.forecastDecision?.recommendedActionDate)}. Current usable stock covers about ${coverageLabel(selected)} at roughly ${formatNumber(selectedDemand)} units per month.`
+                          : "Current usable stock is expected to cover demand. Keep monitoring this product for changes."}
+                      </p>
+                    </div>
+                    <Badge variant={selectedNeedsOrder ? "warning" : "success"}>
+                      {riskLabel(selectedRisk)}
+                    </Badge>
+                  </div>
+                  <div
+                    className={
+                      selectedNeedsOrder
+                        ? "mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-amber-800"
+                        : "mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-emerald-800"
+                    }
+                  >
+                    <span>Sellable {formatNumber(selected.sellableStock)}</span>
+                    <span>Incoming {formatNumber(selected.incomingStock)}</span>
+                    <span>Expiry risk {formatNumber(selected.expiryRiskQuantity)}</span>
+                  </div>
+                </div>
+              ) : null}
+
               <div>
                 <div className="mb-2">
-                  <p className="text-sm font-semibold text-slate-950">Demand forecast</p>
+                  <p className="text-sm font-semibold text-slate-950">Expected monthly demand</p>
                   <p className="text-xs text-slate-500">
-                    Historical demand, SARIMAX forecast, and confidence interval.
+                    Gray shows recent sales. Blue shows expected demand for the next months.
                   </p>
                 </div>
-                <div className="relative h-64 rounded-md border border-slate-200 bg-white p-2">
+                <div className="relative h-56 rounded-md border border-slate-200 bg-white p-2">
                   {demandChart.length > 0 ? (
                     <ResponsiveContainer height="100%" width="100%">
-                      <ComposedChart
+                      <LineChart
                         data={demandChart}
                         margin={{ bottom: 4, left: 0, right: 8, top: 8 }}
                       >
@@ -536,26 +579,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                             String(name)
                           ]}
                         />
-                        <Area
-                          dataKey="confidenceBase"
-                          fill="transparent"
-                          name="Confidence lower"
-                          stackId="confidence"
-                          stroke="none"
-                        />
-                        <Area
-                          dataKey="confidenceRange"
-                          fill="#818cf8"
-                          fillOpacity={0.18}
-                          name="Confidence interval"
-                          stackId="confidence"
-                          stroke="none"
-                        />
                         <Line
                           connectNulls={false}
                           dataKey="actual"
                           dot={false}
-                          name="Historical demand"
+                          name="Recent sales"
                           stroke="#475569"
                           strokeWidth={2}
                           type="monotone"
@@ -564,28 +592,19 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                           connectNulls={false}
                           dataKey="forecast"
                           dot={{ r: 2.5 }}
-                          name="Forecast demand"
+                          name="Expected demand"
                           stroke="#4f46e5"
                           strokeWidth={2.5}
                           type="monotone"
                         />
-                        {firstForecastPeriod ? (
-                          <ReferenceLine
-                            label={{ fill: "#64748b", fontSize: 10, value: "Forecast" }}
-                            stroke="#94a3b8"
-                            strokeDasharray="4 4"
-                            x={formatMonth(firstForecastPeriod)}
-                          />
-                        ) : null}
-                      </ComposedChart>
+                      </LineChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex h-full items-center justify-center px-6 text-center">
                       <div>
                         <p className="text-sm font-semibold text-slate-950">Forecast chart ready</p>
                         <p className="mt-1 max-w-md text-xs leading-5 text-slate-500">
-                          No SARIMAX series is available yet. This chart area remains visible and
-                          will populate automatically when forecast history is generated.
+                          Demand trend will appear here when enough sales history is available.
                         </p>
                       </div>
                     </div>
@@ -593,67 +612,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 </div>
               </div>
 
-              {inventoryProjection.length > 1 && selected ? (
-                <div>
-                  <div className="mb-2">
-                    <p className="text-sm font-semibold text-slate-950">Projected inventory</p>
-                    <p className="text-xs text-slate-500">
-                      Sellable + incoming stock, less expiry exposure and forecast demand.
-                    </p>
-                  </div>
-                  <div className="h-44 rounded-md border border-slate-200 bg-slate-50/40 p-2">
-                    <ResponsiveContainer height="100%" width="100%">
-                      <LineChart
-                        data={inventoryProjection}
-                        margin={{ bottom: 4, left: 0, right: 8, top: 8 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="label" minTickGap={18} tick={{ fontSize: 11 }} />
-                        <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
-                        <Tooltip
-                          formatter={(value) => [formatNumber(Number(value), 1), "Projected stock"]}
-                        />
-                        <ReferenceLine
-                          label={{ fill: "#64748b", fontSize: 10, value: "Target" }}
-                          stroke="#94a3b8"
-                          strokeDasharray="4 4"
-                          y={selected.product.targetStockLevel}
-                        />
-                        <ReferenceLine
-                          label={{ fill: "#b45309", fontSize: 10, value: "Reorder" }}
-                          stroke="#d97706"
-                          strokeDasharray="4 4"
-                          y={selected.product.reorderLevel}
-                        />
-                        <ReferenceLine stroke="#dc2626" y={0} />
-                        <Line
-                          dataKey="projectedStock"
-                          dot={{ r: 2.5 }}
-                          name="Projected stock"
-                          stroke="#0f766e"
-                          strokeWidth={2.5}
-                          type="monotone"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              ) : null}
-
-              {selected ? (
-                <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Forecast interpretation
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-700">{selected.rationale}</p>
-                  <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500">
-                    <span>Sellable {formatNumber(selected.sellableStock)}</span>
-                    <span>Incoming {formatNumber(selected.incomingStock)}</span>
-                    <span>Expiry exposure {formatNumber(selected.expiryRiskQuantity)}</span>
-                    <span>Target {formatNumber(selected.product.targetStockLevel)}</span>
-                    <span>Reorder {formatNumber(selected.product.reorderLevel)}</span>
-                  </div>
-                </div>
+              {selected && selectedCoverageDays !== null ? (
+                <p className="text-xs leading-5 text-slate-500">
+                  Forecasts are estimates. Use this as ordering guidance together with supplier lead
+                  time and current store conditions.
+                </p>
               ) : null}
             </div>
           </div>
