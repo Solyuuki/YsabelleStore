@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { AppPagination } from "@/components/shared/AppPagination";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +47,7 @@ import {
 const EXPORT_PAGE_SIZE = 100;
 const REPORT_TYPE_SESSION_KEY = "ysabelle.report-download.type";
 const SUPPLIER_ORDER_PAGE_SIZE = 6;
+const SUPPLIER_PREVIEW_PAGE_SIZE = 5;
 const SUPPLIER_EXPORT_STATUSES: RestockOrderStatus[] = [
   "APPROVED",
   "AWAITING_DELIVERY",
@@ -89,6 +91,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
   const [supplierOrderLoading, setSupplierOrderLoading] = useState(false);
   const [supplierOrderError, setSupplierOrderError] = useState<string | null>(null);
   const [supplierPreviewOpen, setSupplierPreviewOpen] = useState(false);
+  const [supplierPreviewPage, setSupplierPreviewPage] = useState(1);
 
   useEffect(() => {
     if (!open || reportType !== "restock") return;
@@ -105,6 +108,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
         if (!active) return;
         setSupplierOrders(result.items);
         setSupplierMeta(result.meta);
+        setSupplierPreviewPage(1);
         setSupplierOrderId((current) => {
           if (current && result.items.some((order) => order.id === current)) return current;
           return result.items[0]?.id ?? null;
@@ -119,6 +123,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
         setSupplierMeta(null);
         setSupplierOrderId(null);
         setSupplierPreviewOpen(false);
+        setSupplierPreviewPage(1);
         setSupplierOrderError(
           error instanceof Error ? error.message : "Confirmed restock orders could not be loaded."
         );
@@ -144,11 +149,30 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
     () => (supplierOrder ? getSupplierOrderSource(supplierOrder) : null),
     [supplierOrder]
   );
+  const supplierPreviewTotalPages = Math.max(
+    1,
+    Math.ceil(supplierOrderLines.length / SUPPLIER_PREVIEW_PAGE_SIZE)
+  );
+  const normalizedSupplierPreviewPage = Math.min(
+    Math.max(1, supplierPreviewPage),
+    supplierPreviewTotalPages
+  );
+  const supplierPreviewLines = useMemo(() => {
+    const start = (normalizedSupplierPreviewPage - 1) * SUPPLIER_PREVIEW_PAGE_SIZE;
+    return supplierOrderLines.slice(start, start + SUPPLIER_PREVIEW_PAGE_SIZE);
+  }, [normalizedSupplierPreviewPage, supplierOrderLines]);
+
+  useEffect(() => {
+    if (supplierPreviewPage !== normalizedSupplierPreviewPage) {
+      setSupplierPreviewPage(normalizedSupplierPreviewPage);
+    }
+  }, [normalizedSupplierPreviewPage, supplierPreviewPage]);
 
   function chooseReport(type: ReportType) {
     setReportType(type);
     setExportError(null);
     setSupplierPreviewOpen(false);
+    setSupplierPreviewPage(1);
     if (type === "restock") setSupplierPage(1);
     window.sessionStorage.setItem(REPORT_TYPE_SESSION_KEY, type);
   }
@@ -271,6 +295,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
         if (!nextOpen) {
           setExportError(null);
           setSupplierPreviewOpen(false);
+          setSupplierPreviewPage(1);
         }
       }}
       open={open}
@@ -337,7 +362,10 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                   <select
                     className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                     id="supplier-order-select"
-                    onChange={(event) => setSupplierOrderId(event.target.value)}
+                    onChange={(event) => {
+                      setSupplierOrderId(event.target.value);
+                      setSupplierPreviewPage(1);
+                    }}
                     value={supplierOrder.id}
                   >
                     {supplierOrders.map((order) => (
@@ -395,7 +423,12 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                     <Button
                       aria-controls="supplier-order-preview"
                       aria-expanded={supplierPreviewOpen}
-                      onClick={() => setSupplierPreviewOpen((current) => !current)}
+                      onClick={() => {
+                        setSupplierPreviewOpen((current) => {
+                          if (!current) setSupplierPreviewPage(1);
+                          return !current;
+                        });
+                      }}
                       size="sm"
                       type="button"
                       variant="secondary"
@@ -421,16 +454,16 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                         {supplierOrderSource.detailLabel}
                       </span>
                     </div>
-                    <div className="max-h-60 overflow-y-auto">
+                    <div className="overflow-hidden">
                       <table className="w-full border-collapse text-left text-sm">
-                        <thead className="sticky top-0 z-10 bg-slate-50 text-xs font-semibold text-slate-500">
+                        <thead className="bg-slate-50 text-xs font-semibold text-slate-500">
                           <tr>
                             <th className="px-3 py-2">Product</th>
                             <th className="w-28 px-3 py-2 text-right">Ordered Qty</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                          {supplierOrderLines.map((line) => (
+                          {supplierPreviewLines.map((line) => (
                             <tr key={line.id}>
                               <td className="px-3 py-2">
                                 <p className="font-medium text-slate-900">{line.product.name}</p>
@@ -451,6 +484,18 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                       {supplierOrderLines.length.toLocaleString()} products ·{" "}
                       {selectedUnitCount(supplierOrder).toLocaleString()} units total
                     </div>
+                    {supplierOrderLines.length > SUPPLIER_PREVIEW_PAGE_SIZE ? (
+                      <AppPagination
+                        className="rounded-none border-x-0 border-b-0 px-3 py-2"
+                        itemLabel="products"
+                        onPageChange={setSupplierPreviewPage}
+                        page={normalizedSupplierPreviewPage}
+                        pageSize={SUPPLIER_PREVIEW_PAGE_SIZE}
+                        siblingCount={1}
+                        totalItems={supplierOrderLines.length}
+                        totalPages={supplierPreviewTotalPages}
+                      />
+                    ) : null}
                   </div>
                 ) : null}
 
