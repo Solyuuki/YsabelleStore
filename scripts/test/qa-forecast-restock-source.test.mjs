@@ -36,8 +36,8 @@ test("forecast restock QA uses the real forecast and automation pipeline", () =>
 });
 
 test("forecast restock QA reset restores stock and refuses unsafe history rewrites", () => {
-  assert.equal(qaSource.includes('order.status === RestockOrderStatus.RECEIVED'), true);
-  assert.equal(qaSource.includes('order.status === RestockOrderStatus.PARTIALLY_RECEIVED'), true);
+  assert.equal(qaSource.includes("order.status === RestockOrderStatus.RECEIVED"), true);
+  assert.equal(qaSource.includes("order.status === RestockOrderStatus.PARTIALLY_RECEIVED"), true);
   assert.equal(qaSource.includes("line.receivedQuantity > 0"), true);
   assert.equal(qaSource.includes("unexpectedMovements.length > 0"), true);
   assert.equal(qaSource.includes("quantityRemaining: batch.quantityRemaining"), true);
