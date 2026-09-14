@@ -188,6 +188,21 @@ test("automatic stock health holds normal with low confidence when completed dem
   assert.equal(health.confidence, "LOW");
 });
 
+test("automatic stock health reacts to current-month POS demand when stock is clearly low", () => {
+  const health = classifyStockHealth({
+    asOf: STOCK_HEALTH_NOW,
+    historicalSeries: [{ period: "2026-09", quantitySold: 25 }],
+    sellableStock: 1
+  });
+
+  assert.equal(health.status, "LOW_STOCK");
+  assert.equal(health.coverageDays, 1.2);
+  assert.equal(health.monthlyDemand, 25);
+  assert.equal(health.demandSource, "RECENT_SALES");
+  assert.equal(health.confidence, "LOW");
+  assert.match(health.reason, /current-month actual sales/);
+});
+
 test("automatic stock health marks positive stock with zero recent actual demand as overstock", () => {
   const health = classifyStockHealth({
     asOf: STOCK_HEALTH_NOW,
