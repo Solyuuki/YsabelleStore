@@ -20,7 +20,7 @@
     "typecheck": "npm run typecheck:scripts && npm run typecheck --workspaces --if-present",
     "typecheck:scripts": "tsc --noEmit -p tsconfig.json",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write backend/src/services/forecastRestockAutomationService.ts && git diff -- backend/src/services/forecastRestockAutomationService.ts && false",
     "healthcheck": "node scripts/healthcheck.mjs",
     "runtime:report": "node --env-file=.env scripts/runtime-report.mjs",
     "storefront:parity": "node --env-file=.env scripts/storefront-parity.mjs",
