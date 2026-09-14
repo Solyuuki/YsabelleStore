@@ -17,17 +17,35 @@ test("forecast restock QA commands are explicit opt-in scripts", () => {
   );
 });
 
-test("forecast restock QA seeds backend demand and uses the real automation pipeline", () => {
-  assert.equal(qaSource.includes('source: "IMPORTED_HISTORICAL"'), true);
-  assert.equal(qaSource.includes("requestForecastRefresh"), true);
-  assert.equal(qaSource.includes("waitForForecastRefresh"), true);
-  assert.equal(qaSource.includes("listRestockPlanningCandidates"), true);
-  assert.equal(qaSource.includes("ensureForecastRestockTicket"), true);
-  assert.equal(qaSource.includes('candidate.stockHealth.status === "LOW_STOCK"'), true);
+test("forecast restock QA lowers real stock instead of fabricating historical demand", () => {
+  assert.equal(qaSource.includes('source: "IMPORTED_HISTORICAL"'), false);
+  assert.equal(qaSource.includes("HISTORY_MONTHS"), false);
+  assert.equal(qaSource.includes("applyStockAdjustment"), true);
+  assert.equal(qaSource.includes('direction: "OUT"'), true);
+  assert.equal(qaSource.includes("computeStockStatus"), true);
+  assert.equal(qaSource.includes('inventoryStatus !== "LOW_STOCK"'), true);
 });
 
-test("forecast restock QA reset refuses to erase received inventory history", () => {
-  assert.equal(qaSource.includes('order.status === "RECEIVED"'), true);
-  assert.equal(qaSource.includes('order.status === "PARTIALLY_RECEIVED"'), true);
+test("forecast restock QA uses the real forecast and automation pipeline", () => {
+  assert.equal(qaSource.includes("waitForForecastRefresh"), true);
+  assert.equal(qaSource.includes("force: true"), true);
+  assert.equal(qaSource.includes("listRestockPlanningCandidates"), true);
+  assert.equal(qaSource.includes("ensureForecastRestockTicket"), true);
+  assert.equal(qaSource.includes("candidate.incomingStock > 0"), true);
+  assert.equal(qaSource.includes("candidate.forecast?.batchId === baselineBatchId"), true);
+});
+
+test("forecast restock QA reset restores stock and refuses unsafe history rewrites", () => {
+  assert.equal(qaSource.includes('order.status === RestockOrderStatus.RECEIVED'), true);
+  assert.equal(qaSource.includes('order.status === RestockOrderStatus.PARTIALLY_RECEIVED'), true);
   assert.equal(qaSource.includes("line.receivedQuantity > 0"), true);
+  assert.equal(qaSource.includes("unexpectedMovements.length > 0"), true);
+  assert.equal(qaSource.includes("quantityRemaining: batch.quantityRemaining"), true);
+  assert.equal(qaSource.includes("quantityOnHand: product.inventory.quantityOnHand"), true);
+});
+
+test("forecast restock QA can clean snapshots produced by the old demand-seeding fixture", () => {
+  assert.equal(qaSource.includes("resetLegacySnapshot"), true);
+  assert.equal(qaSource.includes("LEGACY_QA_PREFIX"), true);
+  assert.equal(qaSource.includes("historicalMonthlySales.deleteMany"), true);
 });
