@@ -3,6 +3,8 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  EyeOff,
   FileDown,
   FileSpreadsheet,
   PackageOpen,
@@ -58,6 +60,10 @@ type SupplierOrderMeta = {
   totalItems: number;
   totalPages: number;
 };
+type SupplierOrderSource = {
+  detailLabel: string;
+  shortLabel: string;
+};
 
 type Props = {
   completedSales: PosSale[];
@@ -82,6 +88,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
   const [supplierPage, setSupplierPage] = useState(1);
   const [supplierOrderLoading, setSupplierOrderLoading] = useState(false);
   const [supplierOrderError, setSupplierOrderError] = useState<string | null>(null);
+  const [supplierPreviewOpen, setSupplierPreviewOpen] = useState(false);
 
   useEffect(() => {
     if (!open || reportType !== "restock") return;
@@ -111,6 +118,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
         setSupplierOrders([]);
         setSupplierMeta(null);
         setSupplierOrderId(null);
+        setSupplierPreviewOpen(false);
         setSupplierOrderError(
           error instanceof Error ? error.message : "Confirmed restock orders could not be loaded."
         );
@@ -128,10 +136,19 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
     () => supplierOrders.find((order) => order.id === supplierOrderId) ?? supplierOrders[0] ?? null,
     [supplierOrderId, supplierOrders]
   );
+  const supplierOrderLines = useMemo(
+    () => (supplierOrder ? selectedOrderLines(supplierOrder) : []),
+    [supplierOrder]
+  );
+  const supplierOrderSource = useMemo(
+    () => (supplierOrder ? getSupplierOrderSource(supplierOrder) : null),
+    [supplierOrder]
+  );
 
   function chooseReport(type: ReportType) {
     setReportType(type);
     setExportError(null);
+    setSupplierPreviewOpen(false);
     if (type === "restock") setSupplierPage(1);
     window.sessionStorage.setItem(REPORT_TYPE_SESSION_KEY, type);
   }
@@ -251,7 +268,10 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
     <Dialog
       onOpenChange={(nextOpen) => {
         onOpenChange(nextOpen);
-        if (!nextOpen) setExportError(null);
+        if (!nextOpen) {
+          setExportError(null);
+          setSupplierPreviewOpen(false);
+        }
       }}
       open={open}
     >
@@ -305,7 +325,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                 <AlertTitle>Restock orders could not be loaded</AlertTitle>
                 <AlertDescription>{supplierOrderError}</AlertDescription>
               </Alert>
-            ) : supplierOrders.length > 0 && supplierOrder ? (
+            ) : supplierOrders.length > 0 && supplierOrder && supplierOrderSource ? (
               <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
                 <div>
                   <label
@@ -323,45 +343,116 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                     {supplierOrders.map((order) => (
                       <option key={order.id} value={order.id}>
                         {order.orderNumber} · {statusLabel(order.status)} ·{" "}
-                        {selectedUnitCount(order).toLocaleString()} units
+                        {selectedUnitCount(order).toLocaleString()} units ·{" "}
+                        {getSupplierOrderSource(order).shortLabel}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-                  <span>
-                    Selected: {selectedLineCount(supplierOrder).toLocaleString()} products ·{" "}
-                    {selectedUnitCount(supplierOrder).toLocaleString()} units
-                  </span>
-                  {supplierMeta && supplierMeta.totalPages > 1 ? (
-                    <div className="flex items-center gap-1">
-                      <Button
-                        aria-label="Previous supplier order page"
-                        disabled={supplierPage <= 1 || supplierOrderLoading}
-                        onClick={() => setSupplierPage((current) => Math.max(1, current - 1))}
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-                      </Button>
-                      <span className="min-w-[86px] text-center tabular-nums">
-                        Page {supplierMeta.page} of {supplierMeta.totalPages}
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="space-y-1 text-xs text-slate-500">
+                    <p>
+                      Selected: {selectedLineCount(supplierOrder).toLocaleString()} products ·{" "}
+                      {selectedUnitCount(supplierOrder).toLocaleString()} units
+                    </p>
+                    <p>
+                      Source:{" "}
+                      <span className="font-medium text-slate-700">
+                        {supplierOrderSource.detailLabel}
                       </span>
-                      <Button
-                        aria-label="Next supplier order page"
-                        disabled={supplierPage >= supplierMeta.totalPages || supplierOrderLoading}
-                        onClick={() => setSupplierPage((current) => current + 1)}
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        <ChevronRight aria-hidden="true" className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : null}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-end gap-1">
+                    {supplierMeta && supplierMeta.totalPages > 1 ? (
+                      <div className="flex items-center gap-1">
+                        <Button
+                          aria-label="Previous supplier order page"
+                          disabled={supplierPage <= 1 || supplierOrderLoading}
+                          onClick={() => setSupplierPage((current) => Math.max(1, current - 1))}
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                        >
+                          <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+                        </Button>
+                        <span className="min-w-[86px] text-center text-xs tabular-nums text-slate-500">
+                          Page {supplierMeta.page} of {supplierMeta.totalPages}
+                        </span>
+                        <Button
+                          aria-label="Next supplier order page"
+                          disabled={supplierPage >= supplierMeta.totalPages || supplierOrderLoading}
+                          onClick={() => setSupplierPage((current) => current + 1)}
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                        >
+                          <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : null}
+                    <Button
+                      aria-controls="supplier-order-preview"
+                      aria-expanded={supplierPreviewOpen}
+                      onClick={() => setSupplierPreviewOpen((current) => !current)}
+                      size="sm"
+                      type="button"
+                      variant="secondary"
+                    >
+                      {supplierPreviewOpen ? (
+                        <EyeOff aria-hidden="true" className="h-4 w-4" />
+                      ) : (
+                        <Eye aria-hidden="true" className="h-4 w-4" />
+                      )}
+                      {supplierPreviewOpen ? "Hide preview" : "Preview order"}
+                    </Button>
+                  </div>
                 </div>
+
+                {supplierPreviewOpen ? (
+                  <div
+                    className="overflow-hidden rounded-md border border-slate-200 bg-white"
+                    id="supplier-order-preview"
+                  >
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2">
+                      <p className="text-sm font-semibold text-slate-900">Order preview</p>
+                      <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700">
+                        {supplierOrderSource.detailLabel}
+                      </span>
+                    </div>
+                    <div className="max-h-60 overflow-y-auto">
+                      <table className="w-full border-collapse text-left text-sm">
+                        <thead className="sticky top-0 z-10 bg-slate-50 text-xs font-semibold text-slate-500">
+                          <tr>
+                            <th className="px-3 py-2">Product</th>
+                            <th className="w-28 px-3 py-2 text-right">Ordered Qty</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {supplierOrderLines.map((line) => (
+                            <tr key={line.id}>
+                              <td className="px-3 py-2">
+                                <p className="font-medium text-slate-900">{line.product.name}</p>
+                                <p className="mt-0.5 text-xs text-slate-500">
+                                  {line.product.sku}
+                                  {line.product.barcode ? ` · ${line.product.barcode}` : ""}
+                                </p>
+                              </td>
+                              <td className="px-3 py-2 text-right font-medium tabular-nums text-slate-900">
+                                {line.requestedQuantity.toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="border-t border-slate-200 px-3 py-2 text-xs font-medium text-slate-600">
+                      {supplierOrderLines.length.toLocaleString()} products ·{" "}
+                      {selectedUnitCount(supplierOrder).toLocaleString()} units total
+                    </div>
+                  </div>
+                ) : null}
 
                 <p className="text-xs leading-5 text-slate-500">
                   The exact order selected here will be used for PDF, Print, or CSV export.
@@ -507,14 +598,38 @@ async function fetchEveryPage<T>(
   }
 }
 
+function selectedOrderLines(order: RestockOrder) {
+  return order.lines.filter((line) => line.isSelected && line.requestedQuantity > 0);
+}
+
 function selectedLineCount(order: RestockOrder) {
-  return order.lines.filter((line) => line.isSelected && line.requestedQuantity > 0).length;
+  return selectedOrderLines(order).length;
 }
 
 function selectedUnitCount(order: RestockOrder) {
-  return order.lines
-    .filter((line) => line.isSelected && line.requestedQuantity > 0)
-    .reduce((sum, line) => sum + line.requestedQuantity, 0);
+  return selectedOrderLines(order).reduce((sum, line) => sum + line.requestedQuantity, 0);
+}
+
+function getSupplierOrderSource(order: RestockOrder): SupplierOrderSource {
+  const sources = new Set(selectedOrderLines(order).map((line) => line.recommendationSource));
+  const hasManual = sources.has("MANUAL");
+  const hasSarima = sources.has("SARIMA");
+  const hasRuleBased = sources.has("LOW_STOCK") || sources.has("TARGET_STOCK");
+
+  if (hasManual && (hasSarima || hasRuleBased)) {
+    return { detailLabel: "Mixed restock", shortLabel: "Mixed" };
+  }
+  if (hasManual) {
+    return { detailLabel: "Custom restock", shortLabel: "Custom" };
+  }
+  if (hasSarima && !hasRuleBased) {
+    return { detailLabel: "Forecast-generated", shortLabel: "Forecast" };
+  }
+  if (hasRuleBased) {
+    return { detailLabel: "Automatically generated", shortLabel: "Automated" };
+  }
+
+  return { detailLabel: "Restock order", shortLabel: "Order" };
 }
 
 function statusLabel(status: RestockOrderStatus) {
@@ -537,15 +652,13 @@ function statusLabel(status: RestockOrderStatus) {
 }
 
 function buildSupplierSnapshot(order: RestockOrder): RestockSupplierSnapshot | null {
-  const lines = order.lines
-    .filter((line) => line.isSelected && line.requestedQuantity > 0)
-    .map((line) => ({
-      barcode: line.product.barcode,
-      notes: line.notes ?? null,
-      productName: line.product.name,
-      quantity: line.requestedQuantity,
-      sku: line.product.sku
-    }));
+  const lines = selectedOrderLines(order).map((line) => ({
+    barcode: line.product.barcode,
+    notes: line.notes ?? null,
+    productName: line.product.name,
+    quantity: line.requestedQuantity,
+    sku: line.product.sku
+  }));
 
   if (lines.length === 0) return null;
 
