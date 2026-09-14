@@ -56,18 +56,18 @@ async function loadForecastActionLines(batchId: string) {
 
     for (const candidate of result.items) {
       const recommendedQuantity = Math.max(0, candidate.recommendedQuantity);
-      if (
-        candidate.forecast?.batchId !== batchId ||
-        candidate.recommendationSource !== "SARIMA" ||
-        recommendedQuantity <= 0
-      ) {
-        continue;
-      }
+
+      // The active forecast batch is the source of truth for automated forecast tickets.
+      // A product may have a LOW_STOCK/TARGET_STOCK recommendation that takes precedence in
+      // planning labels while still belonging to this forecast batch. Do not drop that product
+      // from the automated ticket merely because its display recommendation source is not SARIMA.
+      if (candidate.forecast?.batchId !== batchId || recommendedQuantity <= 0) continue;
 
       lines.push({
         productId: candidate.product.id,
         quantity: recommendedQuantity,
-        recommendationId: candidate.recommendationId,
+        recommendationId:
+          candidate.recommendationSource === "SARIMA" ? candidate.recommendationId : null,
         recommendationSource: "SARIMA"
       });
     }
@@ -105,6 +105,10 @@ async function runForecastRestockAutomation(
     console.info(`[restock] Forecast batch ${batchId} has no actionable forecast lines.`);
     return { orderId: null, orderNumber: null, status: "NO_ACTION" };
   }
+
+  console.info(
+    `[restock] Forecast batch ${batchId} has ${actionLines.length} actionable product(s) for automated ticket generation.`
+  );
 
   const actorId = await findAutomationActorId();
   if (!actorId) {
@@ -180,6 +184,7 @@ export async function ensureActiveForecastRestockTicket() {
   });
 
   if (!active) {
+    console.info("[restock] No active READY forecast batch is available for automation.");
     return { orderId: null, orderNumber: null, status: "NO_ACTION" } as const;
   }
 
