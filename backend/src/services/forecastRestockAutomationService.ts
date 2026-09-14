@@ -87,7 +87,9 @@ async function runForecastRestockAutomation(
 
   const actorId = await findAutomationActorId();
   if (!actorId) {
-    console.warn(`[restock] Forecast batch ${batchId} has no active user to own its automated ticket.`);
+    console.warn(
+      `[restock] Forecast batch ${batchId} has no active user to own its automated ticket.`
+    );
     return { orderId: null, orderNumber: null, status: "NO_ACTOR" };
   }
 
@@ -126,7 +128,11 @@ async function runForecastRestockAutomation(
     actorId
   );
 
-  const approved = await approveRestockOrder(order.id, { expectedVersion: order.version }, actorId);
+  const approved = await approveRestockOrder(
+    order.id,
+    { expectedVersion: order.version },
+    actorId
+  );
   console.info(
     `[restock] Forecast batch ${batchId} generated ${approved.orderNumber} with ${actionLines.length} product(s).`
   );
