@@ -283,9 +283,7 @@ async function reconcileStandaloneForecastTicket() {
   }
 }
 
-export function startForecastRestockAutomationWorker(
-  intervalMs = DEFAULT_RECONCILE_INTERVAL_MS
-) {
+export function startForecastRestockAutomationWorker(intervalMs = DEFAULT_RECONCILE_INTERVAL_MS) {
   if (workerTimer) return;
 
   const safeIntervalMs = Math.max(5_000, Math.trunc(intervalMs));
