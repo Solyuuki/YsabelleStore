@@ -5,7 +5,10 @@ import { listRestockPlanningCandidates } from "./restockPlanningService.js";
 import { approveRestockOrder, createRestockOrder } from "./restockService.js";
 
 const AUTOMATION_PAGE_SIZE = 100;
+const DEFAULT_RECONCILE_INTERVAL_MS = 30_000;
 const inFlightByBatch = new Map<string, Promise<ForecastRestockAutomationResult>>();
+let workerTimer: NodeJS.Timeout | null = null;
+let workerReconciliation: Promise<void> | null = null;
 
 type ForecastRestockAutomationResult = {
   orderId: string | null;
@@ -181,4 +184,51 @@ export async function ensureActiveForecastRestockTicket() {
   }
 
   return await ensureForecastRestockTicket(active.id);
+}
+
+async function reconcileStandaloneForecastTicket() {
+  if (workerReconciliation) return await workerReconciliation;
+
+  workerReconciliation = (async () => {
+    try {
+      const result = await ensureActiveForecastRestockTicket();
+      if (result.status === "CREATED" && result.orderNumber) {
+        console.info(
+          `[restock] Standalone forecast automation created ${result.orderNumber} for Receiving.`
+        );
+      }
+    } catch (error) {
+      console.error("[restock] Standalone forecast ticket reconciliation failed.", error);
+    }
+  })();
+
+  try {
+    await workerReconciliation;
+  } finally {
+    workerReconciliation = null;
+  }
+}
+
+export function startForecastRestockAutomationWorker(
+  intervalMs = DEFAULT_RECONCILE_INTERVAL_MS
+) {
+  if (workerTimer) return;
+
+  const safeIntervalMs = Math.max(5_000, Math.trunc(intervalMs));
+  void reconcileStandaloneForecastTicket();
+
+  workerTimer = setInterval(() => {
+    void reconcileStandaloneForecastTicket();
+  }, safeIntervalMs);
+  workerTimer.unref();
+
+  console.info(
+    `[restock] Standalone forecast ticket automation started (interval=${safeIntervalMs}ms).`
+  );
+}
+
+export function stopForecastRestockAutomationWorker() {
+  if (!workerTimer) return;
+  clearInterval(workerTimer);
+  workerTimer = null;
 }
