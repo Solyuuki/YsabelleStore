@@ -229,7 +229,22 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
     let recommendedQuantity = 0;
     let rationale = "No replenishment is currently required by the stock policy.";
 
-    if (
+    const persistedRecommendationQuantity =
+      recommendation?.recommendedQuantity !== null &&
+      recommendation?.recommendedQuantity !== undefined
+        ? Math.max(0, recommendation.recommendedQuantity - incomingStock)
+        : 0;
+    const activeForecastQuantity = Math.max(0, forecastDecision?.suggestedQuantity ?? 0);
+
+    // The active forecast is newer operational evidence than a previously persisted OPEN
+    // recommendation. A stale recommendation with a zero/smaller net quantity must not mask a
+    // genuine replenishment gap from the currently active forecast batch.
+    if (forecastDecision && activeForecastQuantity > persistedRecommendationQuantity) {
+      recommendationId = recommendation?.forecastRecordId ? recommendation.id : null;
+      recommendationSource = "SARIMA";
+      recommendedQuantity = activeForecastQuantity;
+      rationale = forecastDecision.reason;
+    } else if (
       recommendation?.recommendedQuantity !== null &&
       recommendation?.recommendedQuantity !== undefined
     ) {
@@ -239,11 +254,11 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
         : recommendation.type === "LOW_STOCK"
           ? "LOW_STOCK"
           : "TARGET_STOCK";
-      recommendedQuantity = Math.max(0, recommendation.recommendedQuantity - incomingStock);
+      recommendedQuantity = persistedRecommendationQuantity;
       rationale = recommendation.reason;
-    } else if (forecastDecision && forecastDecision.suggestedQuantity > 0) {
+    } else if (forecastDecision && activeForecastQuantity > 0) {
       recommendationSource = "SARIMA";
-      recommendedQuantity = forecastDecision.suggestedQuantity;
+      recommendedQuantity = activeForecastQuantity;
       rationale = forecastDecision.reason;
     } else {
       const targetGap = Math.max(
