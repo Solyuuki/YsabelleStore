@@ -4,6 +4,7 @@ import { createApp } from "./app.js";
 import { corsOrigins, databaseTarget, env } from "./config/env.js";
 import { ensureInternalCatalogBarcodes } from "./services/catalogInternalBarcodeBootstrapService.js";
 import { ensureKnownCatalogBarcodes } from "./services/catalogKnownBarcodeBootstrapService.js";
+import { ensureActiveForecastRestockTicket } from "./services/forecastRestockAutomationService.js";
 import { ensureCatalogInventoryShells } from "./services/inventoryBootstrapService.js";
 import { synchronizeLegacyPrimaryBarcodes } from "./services/productBarcodeService.js";
 
@@ -19,10 +20,17 @@ const server = app.listen(env.PORT, () => {
   console.info(`Allowed renderer origins: ${corsOrigins.join(", ")}`);
 
   void ensureCatalogInventoryShells()
-    .then((result) => {
+    .then(async (result) => {
       if (result.created > 0) {
         console.info(
           `[inventory-bootstrap] Created ${result.created} missing zero-stock inventory record(s).`
+        );
+      }
+
+      const forecastRestock = await ensureActiveForecastRestockTicket();
+      if (forecastRestock.status === "CREATED" && forecastRestock.orderNumber) {
+        console.info(
+          `[restock] Reconciled active forecast into ${forecastRestock.orderNumber} for Receiving.`
         );
       }
     })
