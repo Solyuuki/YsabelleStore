@@ -486,7 +486,8 @@ async function seed() {
     });
     if (
       !order ||
-      ![RestockOrderStatus.APPROVED, RestockOrderStatus.AWAITING_DELIVERY].includes(order.status)
+      (order.status !== RestockOrderStatus.APPROVED &&
+        order.status !== RestockOrderStatus.AWAITING_DELIVERY)
     ) {
       throw new Error(`QA ticket ${ticket.orderNumber} is not ready for Receiving.`);
     }
@@ -535,10 +536,7 @@ async function findQaOrders(batchIds: string[], explicitOrderId?: string | null)
   const markerFilters = batchIds.map((batchId) => ({
     notes: { contains: `[ForecastBatch:${batchId}]` }
   }));
-  const orFilters = [
-    ...(explicitOrderId ? [{ id: explicitOrderId }] : []),
-    ...markerFilters
-  ];
+  const orFilters = [...(explicitOrderId ? [{ id: explicitOrderId }] : []), ...markerFilters];
   if (orFilters.length === 0) return [];
 
   return await prisma.restockOrder.findMany({
