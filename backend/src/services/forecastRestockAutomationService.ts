@@ -153,3 +153,17 @@ export async function ensureForecastRestockTicket(batchId: string) {
     }
   }
 }
+
+export async function ensureActiveForecastRestockTicket() {
+  const active = await prisma.forecastBatchCache.findFirst({
+    orderBy: { generatedAt: "desc" },
+    select: { id: true },
+    where: { isActive: true, status: "READY" }
+  });
+
+  if (!active) {
+    return { orderId: null, orderNumber: null, status: "NO_ACTION" } as const;
+  }
+
+  return await ensureForecastRestockTicket(active.id);
+}
