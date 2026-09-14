@@ -32,11 +32,19 @@ assert.doesNotMatch(reportsSource, /New product restock/);
 assert.doesNotMatch(reportsSource, /Add new product/);
 assert.match(forecastSource, /Restock forecast/);
 assert.doesNotMatch(reportsSource, /Review recommendations/);
-assert.match(forecastSource, /Automatic SARIMAX-driven demand intelligence/);
+assert.match(
+  forecastSource,
+  /See which products need restocking, when to order, and how many units to buy\./
+);
 assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(forecastSource, /Forecast watchlist/);
 assert.match(forecastSource, /includeZero: true/);
+assert.match(forecastSource, /Recommended next step/);
+assert.match(forecastSource, /Expected monthly demand/);
+assert.match(forecastSource, /Gray shows recent sales\. Blue shows expected demand/);
 assert.match(forecastSource, /Forecast chart ready/);
+assert.doesNotMatch(forecastSource, /confidence interval/i);
+assert.doesNotMatch(forecastSource, /Projected inventory/);
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.doesNotMatch(reportsSource, />Saved drafts</);
 assert.match(reportsSource, /RestockDraftsPanel/);
