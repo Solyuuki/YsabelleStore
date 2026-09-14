@@ -15,17 +15,9 @@ const LEGACY_QA_PREFIX = "qa-forecast-restock:";
 const QA_MOVEMENT_REFERENCE_TYPE = "QA_FORECAST_RESTOCK";
 const SNAPSHOT_PATH = path.resolve(process.cwd(), ".data/qa-forecast-restock-snapshot.json");
 const DESIRED_QA_PRODUCT_COUNT = 5;
-const PREFERRED_SKUS = [
-  "SARIMA-P087",
-  "SARIMA-P013",
-  "SARIMA-P121",
-  "SARIMA-P085",
-  "SARIMA-P266"
-];
+const PREFERRED_SKUS = ["SARIMA-P087", "SARIMA-P013", "SARIMA-P121", "SARIMA-P085", "SARIMA-P266"];
 
-type PlanningCandidate = Awaited<
-  ReturnType<typeof listRestockPlanningCandidates>
->["items"][number];
+type PlanningCandidate = Awaited<ReturnType<typeof listRestockPlanningCandidates>>["items"][number];
 
 type ActiveForecastSnapshot = {
   id: string;
@@ -264,7 +256,8 @@ async function loadEligibleQaProducts(baselineBatchId: string) {
       }
 
       const preferredDifference =
-        preferredSkuRank(left.candidate.product.sku) - preferredSkuRank(right.candidate.product.sku);
+        preferredSkuRank(left.candidate.product.sku) -
+        preferredSkuRank(right.candidate.product.sku);
       if (preferredDifference !== 0) return preferredDifference;
 
       const demandDifference =
@@ -493,7 +486,9 @@ async function seed() {
     }
 
     const orderProductIds = new Set(order.lines.map((line) => line.productId));
-    const missingOrderLines = snapshot.products.filter((product) => !orderProductIds.has(product.id));
+    const missingOrderLines = snapshot.products.filter(
+      (product) => !orderProductIds.has(product.id)
+    );
     if (missingOrderLines.length > 0) {
       throw new Error(
         `QA ticket ${order.orderNumber} is missing Low Stock product(s): ${missingOrderLines.map((product) => product.sku).join(", ")}.`
@@ -596,7 +591,9 @@ async function resetLegacySnapshot(snapshot: LegacyQaSnapshot) {
 
   await prisma.$transaction(async (tx) => {
     if (qaOrders.length > 0) {
-      await tx.restockOrder.deleteMany({ where: { id: { in: qaOrders.map((order) => order.id) } } });
+      await tx.restockOrder.deleteMany({
+        where: { id: { in: qaOrders.map((order) => order.id) } }
+      });
     }
     if (batchId) {
       await tx.forecastProductResult.deleteMany({ where: { batchId } });
@@ -654,7 +651,9 @@ async function resetV2Snapshot(snapshot: QaSnapshotV2) {
 
   await prisma.$transaction(async (tx) => {
     if (qaOrders.length > 0) {
-      await tx.restockOrder.deleteMany({ where: { id: { in: qaOrders.map((order) => order.id) } } });
+      await tx.restockOrder.deleteMany({
+        where: { id: { in: qaOrders.map((order) => order.id) } }
+      });
     }
     if (qaMovementIds.length > 0) {
       await tx.inventoryMovement.deleteMany({ where: { id: { in: qaMovementIds } } });
