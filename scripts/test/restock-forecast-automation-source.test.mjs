@@ -7,6 +7,11 @@ const automationSource = readFileSync(
   "backend/src/services/forecastRestockAutomationService.ts",
   "utf8"
 );
+const forecastPersistenceSource = readFileSync(
+  "backend/src/modules/forecasting/forecast-persistence.service.ts",
+  "utf8"
+);
+const serverSource = readFileSync("backend/src/server.ts", "utf8");
 
 test("restock forecast UI uses backend planning data without implicit localhost QA overrides", () => {
   assert.equal(restockApiSource.includes("SARIMAX QA"), false);
@@ -20,6 +25,11 @@ test("standalone forecast ticket automation binds action lines to the active for
   assert.equal(automationSource.includes("candidate.forecast?.batchId !== batchId"), true);
   assert.equal(automationSource.includes('recommendationSource: "SARIMA"'), true);
   assert.equal(automationSource.includes("startForecastRestockAutomationWorker"), true);
+});
+
+test("forecast ticket automation is event-driven first with a standalone retry worker", () => {
+  assert.equal(forecastPersistenceSource.includes("ensureForecastRestockTicket(activated.id)"), true);
+  assert.equal(serverSource.includes("startForecastRestockAutomationWorker();"), true);
 });
 
 test("forecast ticket reconciliation blocks live duplicates but handles terminal lifecycle explicitly", () => {
