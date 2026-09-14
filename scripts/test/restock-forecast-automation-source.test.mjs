@@ -13,7 +13,7 @@ const forecastPersistenceSource = readFileSync(
 );
 const serverSource = readFileSync("backend/src/server.ts", "utf8");
 
-test("restock forecast UI uses backend planning data without implicit localhost QA overrides", () => {
+test("restock UI uses backend forecast data without localhost QA", () => {
   assert.equal(restockApiSource.includes("SARIMAX QA"), false);
   assert.equal(restockApiSource.includes("Temporary local QA scenario"), false);
   assert.equal(restockApiSource.includes("LOCAL_RESTOCK_QA_COVERAGE_DAYS"), false);
@@ -21,19 +21,19 @@ test("restock forecast UI uses backend planning data without implicit localhost 
   assert.equal(restockApiSource.includes("items: response.data"), true);
 });
 
-test("standalone forecast ticket automation binds action lines to the active forecast batch", () => {
+test("automation binds lines to the active forecast batch", () => {
   assert.equal(automationSource.includes("candidate.forecast?.batchId !== batchId"), true);
   assert.equal(automationSource.includes('recommendationSource: "SARIMA"'), true);
   assert.equal(automationSource.includes("startForecastRestockAutomationWorker"), true);
 });
 
-test("forecast ticket automation is event-driven first with a standalone retry worker", () => {
-  assert.equal(forecastPersistenceSource.includes("ensureForecastRestockTicket(activated.id)"), true);
-  assert.equal(serverSource.includes("startForecastRestockAutomationWorker();"), true);
+test("automation uses an event trigger plus a retry worker", () => {
+  assert.match(forecastPersistenceSource, /ensureForecastRestockTicket\(activated\.id\)/);
+  assert.match(serverSource, /startForecastRestockAutomationWorker\(\);/);
 });
 
-test("forecast ticket reconciliation blocks live duplicates but handles terminal lifecycle explicitly", () => {
+test("reconciliation handles live and terminal ticket states", () => {
   assert.equal(automationSource.includes("LIVE_TICKET_STATUSES"), true);
   assert.equal(automationSource.includes("RestockOrderStatus.CANCELLED"), true);
-  assert.equal(automationSource.includes("RECEIVED tickets are intentionally not treated as live blockers"), true);
+  assert.match(automationSource, /RECEIVED tickets are intentionally not treated as live blockers/);
 });
