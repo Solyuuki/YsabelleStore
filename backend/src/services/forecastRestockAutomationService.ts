@@ -128,11 +128,7 @@ async function runForecastRestockAutomation(
     actorId
   );
 
-  const approved = await approveRestockOrder(
-    order.id,
-    { expectedVersion: order.version },
-    actorId
-  );
+  const approved = await approveRestockOrder(order.id, { expectedVersion: order.version }, actorId);
   console.info(
     `[restock] Forecast batch ${batchId} generated ${approved.orderNumber} with ${actionLines.length} product(s).`
   );
