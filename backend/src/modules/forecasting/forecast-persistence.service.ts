@@ -1,6 +1,7 @@
 import type { ForecastBatchCache, ForecastBatchSource, Prisma } from "@prisma/client";
 
 import { prisma } from "../../database/prismaClient.js";
+import { ensureForecastRestockTicket } from "../../services/forecastRestockAutomationService.js";
 import type {
   ForecastBatch,
   ForecastFilters,
@@ -173,6 +174,13 @@ export async function persistAndActivateForecastBatch(jobId: string, batch: Fore
   activeBatchCache = activated;
 
   clearForecastReadCaches();
+  if (!process.env.NODE_TEST_CONTEXT && activated.status === "READY") {
+    try {
+      await ensureForecastRestockTicket(activated.id);
+    } catch (error) {
+      console.error("[restock] Forecast restock ticket automation failed.", error);
+    }
+  }
   void cleanupSupersededForecastData(activated.id).catch((error) => {
     console.error("[forecast] Forecast retention cleanup failed.", error);
   });
