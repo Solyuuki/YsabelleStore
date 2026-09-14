@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { InventoryBatchStatus, RestockOrderStatus } from "@prisma/client";
+import { InventoryBatchStatus, Prisma, RestockOrderStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { waitForForecastRefresh } from "../modules/forecasting/forecast.service.js";
@@ -446,7 +446,11 @@ async function seed() {
 
     const actionable = await assertQaPlanningState(refreshed.id, snapshot.products);
     const ticket = await ensureForecastRestockTicket(refreshed.id);
-    if (!ticket.orderId || !ticket.orderNumber || ["NO_ACTION", "NO_ACTOR", "CANCELLED"].includes(ticket.status)) {
+    if (
+      !ticket.orderId ||
+      !ticket.orderNumber ||
+      ["NO_ACTION", "NO_ACTOR", "CANCELLED"].includes(ticket.status)
+    ) {
       throw new Error(
         `Automated forecast ticket was not available for QA batch ${refreshed.id} (status=${ticket.status}).`
       );
@@ -461,7 +465,10 @@ async function seed() {
       },
       where: { id: ticket.orderId }
     });
-    if (!order || ![RestockOrderStatus.APPROVED, RestockOrderStatus.AWAITING_DELIVERY].includes(order.status)) {
+    if (
+      !order ||
+      ![RestockOrderStatus.APPROVED, RestockOrderStatus.AWAITING_DELIVERY].includes(order.status)
+    ) {
       throw new Error(`QA ticket ${ticket.orderNumber} is not ready for Receiving.`);
     }
 
@@ -526,9 +533,7 @@ async function findQaOrders(batchIds: string[], explicitOrderId?: string | null)
   });
 }
 
-function assertOrdersSafeToReset(
-  orders: Awaited<ReturnType<typeof findQaOrders>>
-) {
+function assertOrdersSafeToReset(orders: Awaited<ReturnType<typeof findQaOrders>>) {
   const unsafeOrders = orders.filter(
     (order) =>
       order.status === RestockOrderStatus.RECEIVED ||
@@ -543,7 +548,7 @@ function assertOrdersSafeToReset(
 }
 
 async function restorePreviousActiveBatch(
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  tx: Prisma.TransactionClient,
   previousActiveBatch: ActiveForecastSnapshot | null | undefined
 ) {
   if (!previousActiveBatch) return;
@@ -612,7 +617,8 @@ async function resetV2Snapshot(snapshot: QaSnapshotV2) {
   });
   const unexpectedMovements = movementsSinceSeed.filter(
     (movement) =>
-      movement.referenceType !== QA_MOVEMENT_REFERENCE_TYPE || movement.referenceId !== snapshot.scenarioId
+      movement.referenceType !== QA_MOVEMENT_REFERENCE_TYPE ||
+      movement.referenceId !== snapshot.scenarioId
   );
   if (unexpectedMovements.length > 0) {
     throw new Error(
