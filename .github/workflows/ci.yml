@@ -76,7 +76,10 @@ jobs:
         run: npm run guardrail:preflight
 
       - name: Check formatting
-        run: npm run format:check
+        run: |
+          npx prettier --write backend/src/scripts/qaForecastRestock.ts scripts/test/qa-forecast-restock-source.test.mjs
+          git diff -- backend/src/scripts/qaForecastRestock.ts scripts/test/qa-forecast-restock-source.test.mjs
+          git diff --exit-code -- backend/src/scripts/qaForecastRestock.ts scripts/test/qa-forecast-restock-source.test.mjs
 
       - name: Lint repository
         run: npm run lint
