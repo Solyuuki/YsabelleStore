@@ -12,6 +12,10 @@ const LIVE_TICKET_STATUSES = new Set<RestockOrderStatus>([
   RestockOrderStatus.AWAITING_DELIVERY,
   RestockOrderStatus.PARTIALLY_RECEIVED
 ]);
+const TERMINAL_TICKET_STATUSES = new Set<RestockOrderStatus>([
+  RestockOrderStatus.RECEIVED,
+  RestockOrderStatus.CANCELLED
+]);
 const inFlightByBatch = new Map<string, Promise<ForecastRestockAutomationResult>>();
 let workerTimer: NodeJS.Timeout | null = null;
 let workerReconciliation: Promise<void> | null = null;
@@ -110,8 +114,8 @@ function liveForecastTicket(orders: ForecastTicketIdentity[]) {
   return orders.find((order) => LIVE_TICKET_STATUSES.has(order.status)) ?? null;
 }
 
-function cancelledForecastTicket(orders: ForecastTicketIdentity[]) {
-  return orders.find((order) => order.status === RestockOrderStatus.CANCELLED) ?? null;
+function latestTerminalForecastTicket(orders: ForecastTicketIdentity[]) {
+  return orders.find((order) => TERMINAL_TICKET_STATUSES.has(order.status)) ?? null;
 }
 
 async function runForecastRestockAutomation(
@@ -169,18 +173,18 @@ async function runForecastRestockAutomation(
     };
   }
 
-  // Cancellation is an explicit owner decision. Do not recreate the same forecast batch every
-  // reconciliation interval after an owner cancels its automated ticket. A newly generated
-  // forecast batch gets a new batch id and can create a new automated ticket normally.
-  const cancelled = cancelledForecastTicket(existingOrders);
-  if (cancelled) {
+  // Cancellation is an explicit owner decision. Suppress retries only when the most recent
+  // terminal ticket for this forecast batch is CANCELLED. If a later ticket was RECEIVED,
+  // that older cancellation must not block valid replenishment forever.
+  const latestTerminal = latestTerminalForecastTicket(existingOrders);
+  if (latestTerminal?.status === RestockOrderStatus.CANCELLED) {
     console.info(
-      `[restock] Forecast batch ${batchId} remains suppressed by cancelled ticket ${cancelled.orderNumber}.`
+      `[restock] Forecast batch ${batchId} remains suppressed by cancelled ticket ${latestTerminal.orderNumber}.`
     );
     return {
       batchId,
-      orderId: cancelled.id,
-      orderNumber: cancelled.orderNumber,
+      orderId: latestTerminal.id,
+      orderNumber: latestTerminal.orderNumber,
       status: "CANCELLED"
     };
   }
