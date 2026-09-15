@@ -11,6 +11,10 @@ const forecastSource = readFileSync(
   resolve(process.cwd(), "src/components/reports/RestockForecastPanel.tsx"),
   "utf8"
 );
+const forecastViewModelSource = readFileSync(
+  resolve(process.cwd(), "src/components/reports/restockForecastViewModel.ts"),
+  "utf8"
+);
 const receivingSource = readFileSync(resolve(process.cwd(), "src/pages/ReceivingPage.tsx"), "utf8");
 const returnDialogSource = readFileSync(
   resolve(process.cwd(), "src/components/receiving/ReturnReportDialog.tsx"),
@@ -38,7 +42,11 @@ assert.match(
 );
 assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(forecastSource, /Forecast watchlist/);
-assert.match(forecastSource, /includeZero: true/);
+assert.match(
+  forecastSource,
+  /loadAllRestockPlanningCandidates\(controller\.signal\)/
+);
+assert.match(forecastViewModelSource, /includeZero:\s*true/);
 assert.match(forecastSource, /Recommended next step/);
 assert.match(forecastSource, /Expected monthly demand/);
 assert.match(forecastSource, /Gray shows recent sales\. Blue shows expected demand/);
@@ -87,7 +95,7 @@ assert.doesNotMatch(receivingSource, /RefreshCw/);
 assert.doesNotMatch(receivingSource, /role="tablist"/);
 assert.doesNotMatch(receivingSource, /QueueSummaryCard/);
 assert.doesNotMatch(receivingSource, /receiveInventoryStock/);
-assert.doesNotMatch(receivingSource, /stockInInventory\s*\(/);
+assert.doesNotMatch(receivingSource, /stockInInventoryStock\s*\(/);
 assert.match(apiSource, /\/receipts/);
 assert.match(apiSource, /damageReason/);
 assert.match(apiSource, /hasReturns/);
