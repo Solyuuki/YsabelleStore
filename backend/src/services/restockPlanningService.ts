@@ -147,7 +147,8 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
       recommendationSource = demandDrivenLowStock ? "LOW_STOCK" : "TARGET_STOCK";
       if (
         persistedOperationalRecommendation &&
-        ((recommendationSource === "LOW_STOCK" && persistedOperationalRecommendation.type === "LOW_STOCK") ||
+        ((recommendationSource === "LOW_STOCK" &&
+          persistedOperationalRecommendation.type === "LOW_STOCK") ||
           (recommendationSource === "TARGET_STOCK" &&
             persistedOperationalRecommendation.type === "RESTOCK"))
       ) {
