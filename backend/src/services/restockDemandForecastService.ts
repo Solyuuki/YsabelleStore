@@ -6,10 +6,7 @@ const HISTORY_MONTHS = 6;
 const PLANNING_LEAD_DAYS = 14;
 const MILLISECONDS_PER_DAY = 86_400_000;
 
-export type RestockDemandSource =
-  | "CURRENT_MONTH_POS"
-  | "RECENT_POS_SALES"
-  | "NO_POS_HISTORY";
+export type RestockDemandSource = "CURRENT_MONTH_POS" | "RECENT_POS_SALES" | "NO_POS_HISTORY";
 export type RestockDemandConfidence = "HIGH" | "MEDIUM" | "LOW";
 export type RestockDemandRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
@@ -108,7 +105,9 @@ function resolveExpectedDemand(series: RestockSalesPoint[], now: Date) {
   if (completedValues.length > 0) {
     return {
       confidence:
-        completedValues.length >= RECENT_COMPLETED_MONTHS ? ("HIGH" as const) : ("MEDIUM" as const),
+        completedValues.length >= RECENT_COMPLETED_MONTHS
+          ? ("HIGH" as const)
+          : ("MEDIUM" as const),
       demandSource: "RECENT_POS_SALES" as const,
       expected30d
     };
@@ -125,7 +124,9 @@ function projectedStockoutDate(availablePosition: number, expected30d: number, n
   if (availablePosition <= 0) return now.toISOString();
   if (expected30d <= 0) return null;
   const dailyDemand = expected30d / DAYS_PER_MONTH;
-  return new Date(now.getTime() + (availablePosition / dailyDemand) * MILLISECONDS_PER_DAY).toISOString();
+  return new Date(
+    now.getTime() + (availablePosition / dailyDemand) * MILLISECONDS_PER_DAY
+  ).toISOString();
 }
 
 function riskFor(stockoutDate: string | null, suggestedQuantity: number, now: Date) {
@@ -188,12 +189,7 @@ export function buildOperationalRestockForecast(
       : 0;
   const suggestedQuantity = Math.max(demandAndTargetGap, reorderGap);
   const riskLevel = riskFor(projectedStockout, suggestedQuantity, now);
-  const recommendedActionDate = actionDateFor(
-    riskLevel,
-    projectedStockout,
-    suggestedQuantity,
-    now
-  );
+  const recommendedActionDate = actionDateFor(riskLevel, projectedStockout, suggestedQuantity, now);
   const reason =
     suggestedQuantity <= 0
       ? demand.expected30d > 0
