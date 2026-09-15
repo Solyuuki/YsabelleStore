@@ -14,10 +14,8 @@ from app.main import forecast_product  # noqa: E402
 from app.preprocessing import add_months, visible_forecast_periods  # noqa: E402
 
 
-def _product(values: list[int]) -> dict:
-    periods = [f"2024-{month:02d}" for month in range(1, 13)] + [
-        f"2025-{month:02d}" for month in range(1, 13)
-    ]
+def _product_from_start(values: list[int], start_period: str = "2024-01") -> dict:
+    periods = [add_months(start_period, index) for index in range(len(values))]
 
     return {
         "productId": "P001",
@@ -36,6 +34,10 @@ def _product(values: list[int]) -> dict:
             for period, value in zip(periods, values)
         ],
     }
+
+
+def _product(values: list[int]) -> dict:
+    return _product_from_start(values)
 
 
 def test_seasonal_naive_maps_2026_to_2025_months() -> None:
@@ -90,7 +92,9 @@ def test_add_months_preserves_chronological_year_boundary() -> None:
 
 
 def test_forecast_product_returns_twelve_chronological_points() -> None:
-    result = forecast_product(_product([10 + (index % 12) for index in range(24)]), 12, 12, "2026-07")
+    result = forecast_product(
+        _product([10 + (index % 12) for index in range(24)]), 12, 12, "2026-07"
+    )
 
     assert result["forecast"][0]["period"] == "2026-07-01"
     assert result["forecast"][-1]["period"] == "2027-06-01"
@@ -99,9 +103,40 @@ def test_forecast_product_returns_twelve_chronological_points() -> None:
     assert all(point["recommendedQuantity"] >= 0 for point in result["forecast"])
 
 
-def test_forecast_variance_uses_same_month_latest_history() -> None:
-    result = forecast_product(_product([10 for _ in range(12)] + [20 for _ in range(12)]), 12, 12, "2026-07")
+def test_forecast_variance_uses_exact_previous_year_month() -> None:
+    values = [10 + (index % 7) for index in range(32)]
+    result = forecast_product(_product_from_start(values, "2024-01"), 12, 12, "2026-09")
     first_point = result["forecast"][0]
 
-    assert first_point["comparisonSalesQuantity"] == 20
+    assert first_point["comparisonSalesQuantity"] == values[20]
     assert first_point["forecastVariancePercentage"] is not None
+
+
+def test_dynamic_history_ending_august_forecasts_september_without_fixed_2026_anchor() -> None:
+    values = [12 + (index % 12) for index in range(32)]
+    result = forecast_product(_product_from_start(values, "2024-01"), 12, 12, "2026-09")
+
+    assert result["historical"][-1]["period"] == "2026-08"
+    assert result["forecast"][0]["period"] == "2026-09-01"
+    assert result["forecast"][-1]["period"] == "2027-08-01"
+
+
+def test_short_clean_database_history_uses_fallback_instead_of_failing() -> None:
+    values = [5, 7, 6, 9, 8, 10]
+    result = forecast_product(_product_from_start(values, "2026-01"), 12, 12, "2026-07")
+
+    assert result["status"] == "WARNING"
+    assert result["model"] == "MOVING_AVERAGE"
+    assert result["forecast"][0]["period"] == "2026-07-01"
+    assert len(result["forecast"]) == 12
+
+
+def test_accuracy_feedback_tracks_latest_completed_observation() -> None:
+    values = [10 + (index % 12) for index in range(24)]
+    result = forecast_product(_product(values), 12, 12, "2026-01")
+    feedback = result["accuracyFeedback"]
+
+    assert feedback is not None
+    assert feedback["evaluatedPeriod"] == "2025-12-01"
+    assert feedback["actualQuantity"] == values[-1]
+    assert feedback["absoluteError"] >= 0
