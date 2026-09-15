@@ -42,10 +42,7 @@ assert.match(
 );
 assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(forecastSource, /Forecast watchlist/);
-assert.match(
-  forecastSource,
-  /loadAllRestockPlanningCandidates\(controller\.signal\)/
-);
+assert.match(forecastSource, /loadAllRestockPlanningCandidates\(controller\.signal\)/);
 assert.match(forecastViewModelSource, /includeZero:\s*true/);
 assert.match(forecastSource, /Recommended next step/);
 assert.match(forecastSource, /Expected monthly demand/);
@@ -95,7 +92,7 @@ assert.doesNotMatch(receivingSource, /RefreshCw/);
 assert.doesNotMatch(receivingSource, /role="tablist"/);
 assert.doesNotMatch(receivingSource, /QueueSummaryCard/);
 assert.doesNotMatch(receivingSource, /receiveInventoryStock/);
-assert.doesNotMatch(receivingSource, /stockInInventoryStock\s*\(/);
+assert.doesNotMatch(receivingSource, /stockInInventory\s*\(/);
 assert.match(apiSource, /\/receipts/);
 assert.match(apiSource, /damageReason/);
 assert.match(apiSource, /hasReturns/);
