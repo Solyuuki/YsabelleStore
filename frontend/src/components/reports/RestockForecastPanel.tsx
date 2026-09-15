@@ -133,7 +133,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     [items, selectedProductId]
   );
   const selectedActiveRestock = selected
-    ? activeRestockByProduct.get(selected.product.id) ?? null
+    ? (activeRestockByProduct.get(selected.product.id) ?? null)
     : null;
   const actionableItems = useMemo(
     () => items.filter((item) => item.recommendedQuantity > 0),
@@ -177,10 +177,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       actionCount: actionableItems.length,
       highRisk,
       sevenDayStockouts,
-      units: actionableItems.reduce(
-        (sum, item) => sum + Math.max(0, item.recommendedQuantity),
-        0
-      )
+      units: actionableItems.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0)
     };
   }, [actionableItems]);
 
@@ -687,9 +684,7 @@ function DemandChart({ data }: { data: ReturnType<typeof buildDemandChart> }) {
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="label" minTickGap={18} tick={{ fontSize: 11 }} />
         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
-        <Tooltip
-          formatter={(value, name) => [formatNumber(Number(value), 1), String(name)]}
-        />
+        <Tooltip formatter={(value, name) => [formatNumber(Number(value), 1), String(name)]} />
         <Line
           connectNulls={false}
           dataKey="actual"
@@ -721,12 +716,7 @@ function RestockPreviewChart({ data }: { data: ReturnType<typeof buildRestockPre
         <XAxis dataKey="label" tick={{ fontSize: 11 }} />
         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
         <Tooltip formatter={(value) => [formatNumber(Number(value)), "Restock units"]} />
-        <Bar
-          dataKey="restock"
-          fill="#4f46e5"
-          name="Restock units"
-          radius={[4, 4, 0, 0]}
-        />
+        <Bar dataKey="restock" fill="#4f46e5" name="Restock units" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
