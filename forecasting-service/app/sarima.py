@@ -39,13 +39,18 @@ def _clean_interval(values: np.ndarray) -> list[float | None]:
     return cleaned
 
 
-def fit_sarima(values: list[float], horizon: int, seasonal_period: int) -> SarimaResult:
+def fit_sarima(
+    values: list[float],
+    horizon: int,
+    seasonal_period: int,
+    start_period: str = "2024-01",
+) -> SarimaResult:
     if len(values) < 24:
-        raise ValueError("SARIMA requires 24 observations for this Sprint 3 foundation.")
+        raise ValueError("SARIMA requires at least 24 completed monthly observations.")
 
     series = pd.Series(
         values,
-        index=pd.period_range(start="2024-01", periods=len(values), freq="M").to_timestamp(),
+        index=pd.period_range(start=start_period, periods=len(values), freq="M").to_timestamp(),
         dtype="float64",
     )
     best: SarimaResult | None = None
