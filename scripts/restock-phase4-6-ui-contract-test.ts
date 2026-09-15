@@ -33,27 +33,27 @@ const directPdfSource = readFileSync(
   "utf8"
 );
 
-// Reports owns forecast-driven recommendation review and unconfirmed drafts only.
-// Confirmed tickets hand off to Receiving.
+// Reports continuously shows the operational forecast and editable planner.
+// Saved drafts stay opt-in, while confirmed tickets hand off to Receiving.
+assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.match(reportsSource, /RestockDraftsPanel/);
 assert.doesNotMatch(reportsSource, /RestockOrderHistoryPanel/);
 assert.doesNotMatch(reportsSource, /RestockReceivingPanel/);
-assert.match(reportsSource, /restockView === "plan"/);
-assert.match(reportsSource, /useState<"plan" \| "drafts" \| null>\(null\)/);
-assert.match(reportsSource, /Restock forecast/);
-assert.match(reportsSource, /Review recommendations/);
-assert.match(reportsSource, /forecast-driven restock recommendations/);
-assert.match(reportsSource, /Approved\s+tickets move to Receiving/);
-assert.match(reportsSource, /Saved drafts/);
-assert.match(reportsSource, /openRestockView/);
+assert.match(reportsSource, /const \[draftsOpen, setDraftsOpen\] = useState\(false\)/);
+assert.match(reportsSource, /function openRestockDrafts\(\)/);
+assert.match(reportsSource, /function toggleRestockDrafts\(\)/);
+assert.match(reportsSource, /forecast-driven restocking/);
+assert.match(reportsSource, /<RestockForecastPanel refreshVersion=/);
+assert.match(reportsSource, /<RestockPlanningPanel/);
+assert.match(reportsSource, /onOpenOrders=\{toggleRestockDrafts\}/);
+assert.match(reportsSource, /onOrdersChanged=\{notifyRestockOrdersChanged\}/);
+assert.match(reportsSource, /draftsOpen \? \(/);
+assert.match(reportsSource, /id="restock-drafts"/);
 assert.match(reportsSource, /scrollIntoView/);
-assert.match(reportsSource, /aria-controls="restock-workspace"/);
 assert.doesNotMatch(reportsSource, /RestockNewProductCard/);
 assert.doesNotMatch(reportsSource, /New product restock/);
 assert.doesNotMatch(reportsSource, /Add new product/);
-assert.match(reportsSource, /onOpenOrders=\{\(\) => openRestockView\("drafts"\)\}/);
-assert.match(reportsSource, /onOrdersChanged=\{notifyRestockOrdersChanged\}/);
 assert.match(reportsSource, /Download report/);
 assert.match(reportsSource, /ReportDownloadDialog/);
 assert.match(reportsSource, /Recent receipt metrics/);
