@@ -18,7 +18,6 @@ import {
   RISK_PRIORITY,
   WATCHLIST_PAGE_SIZE,
   buildActiveRestockByProduct,
-  buildAllProductsDemandChart,
   buildAllProductsRestockPreview,
   buildDemandChart,
   buildNextMonthRestockPreview,
@@ -53,8 +52,7 @@ import type {
   RestockPlanningCandidate
 } from "@/services/restockApi";
 
-type ChartMode = "DEMAND" | "RESTOCK";
-type ChartScope = "PRODUCT" | "ALL";
+type ChartView = "DEMAND" | "RESTOCK" | "ALL";
 
 export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: number }) {
   const [items, setItems] = useState<RestockPlanningCandidate[]>([]);
@@ -64,8 +62,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const [error, setError] = useState<string | null>(null);
   const [localRefreshVersion, setLocalRefreshVersion] = useState(0);
   const [watchlistPage, setWatchlistPage] = useState(1);
-  const [chartMode, setChartMode] = useState<ChartMode>("DEMAND");
-  const [chartScope, setChartScope] = useState<ChartScope>("PRODUCT");
+  const [chartView, setChartView] = useState<ChartView>("DEMAND");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -124,7 +121,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   }, [items.length]);
 
   useEffect(() => {
-    setChartMode("DEMAND");
+    setChartView("DEMAND");
   }, [selectedProductId]);
 
   const activeRestockByProduct = useMemo(
@@ -143,7 +140,6 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     [items]
   );
   const productDemandChart = useMemo(() => buildDemandChart(selected), [selected]);
-  const allProductsDemandChart = useMemo(() => buildAllProductsDemandChart(items), [items]);
   const nextMonthPreview = useMemo(
     () => buildNextMonthRestockPreview(selected, selectedActiveRestock),
     [selected, selectedActiveRestock]
@@ -152,8 +148,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     () => buildAllProductsRestockPreview(items, activeRestockByProduct),
     [activeRestockByProduct, items]
   );
-  const demandChart = chartScope === "ALL" ? allProductsDemandChart : productDemandChart;
-  const displayedPreview = chartScope === "ALL" ? allProductsPreview : nextMonthPreview;
+  const displayedPreview = chartView === "ALL" ? allProductsPreview : nextMonthPreview;
   const restockPreviewChart = useMemo(
     () => buildRestockPreviewChart(displayedPreview),
     [displayedPreview]
@@ -328,10 +323,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                           <TableCell className="max-w-[16rem]">
                             <button
                               className="w-full text-left"
-                              onClick={() => {
-                                setSelectedProductId(item.product.id);
-                                setChartScope("PRODUCT");
-                              }}
+                              onClick={() => setSelectedProductId(item.product.id)}
                               type="button"
                             >
                               <span className="block truncate font-medium text-slate-950">
@@ -448,40 +440,29 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 <div className="mb-2 flex flex-col gap-2 xl:flex-row xl:items-end xl:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-950">
-                      {chartMode === "DEMAND"
-                        ? chartScope === "ALL"
-                          ? "All products demand"
-                          : "Expected monthly demand"
-                        : chartScope === "ALL"
-                          ? "All products restock preview"
-                          : "Restock quantity preview"}
+                      {chartView === "DEMAND"
+                        ? "Expected monthly demand"
+                        : chartView === "RESTOCK"
+                          ? "Restock plan"
+                          : "All products restock plan"}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {chartMode === "DEMAND"
-                        ? chartScope === "ALL"
-                          ? "Aggregated recent POS sales and expected demand across all operational products."
-                          : "Gray shows recent sales. Blue shows expected demand for the selected product."
-                        : chartScope === "ALL"
-                          ? "Compare total active incoming stock with the estimated next monthly batch across all products."
-                          : "Compare this product's active incoming quantity with its estimated next monthly restock."}
+                      {chartView === "DEMAND"
+                        ? "Gray shows recent sales. Blue shows expected demand for the selected product."
+                        : chartView === "RESTOCK"
+                          ? "Compare this product's active incoming quantity with its estimated next monthly restock."
+                          : "Compare total active incoming stock with the estimated next monthly batch across all products."}
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <ScopeSwitch scope={chartScope} onChange={setChartScope} />
-                    <ChartSwitch mode={chartMode} onChange={setChartMode} />
-                  </div>
+                  <ChartViewSwitch view={chartView} onChange={setChartView} />
                 </div>
                 <div className="relative h-56 rounded-md border border-slate-200 bg-white p-2">
-                  {chartMode === "DEMAND" ? (
-                    demandChart.length > 0 ? (
-                      <DemandChart data={demandChart} />
+                  {chartView === "DEMAND" ? (
+                    productDemandChart.length > 0 ? (
+                      <DemandChart data={productDemandChart} />
                     ) : (
                       <ChartEmptyState
-                        detail={
-                          chartScope === "ALL"
-                            ? "Demand will appear when operational products have POS sales activity."
-                            : "Demand trend will appear when this product has POS sales activity."
-                        }
+                        detail="Demand trend will appear when this product has POS sales activity."
                         title="Forecast chart ready"
                       />
                     )
@@ -490,11 +471,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                   ) : (
                     <ChartEmptyState
                       detail={
-                        chartScope === "ALL"
+                        chartView === "ALL"
                           ? "Restock totals will appear when products have incoming or projected replenishment."
-                          : "Select a product to view its restock preview."
+                          : "Select a product to view its restock plan."
                       }
-                      title="Restock preview ready"
+                      title="Restock plan ready"
                     />
                   )}
                 </div>
@@ -505,13 +486,13 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
-                        {chartScope === "ALL"
+                        {chartView === "ALL"
                           ? "All products next month preview"
                           : "Next month restock preview"}
                       </p>
                       <p className="mt-1 text-lg font-semibold text-indigo-950">
                         {displayedPreview.monthLabel}
-                        {chartScope === "ALL" && allProductsPreview
+                        {chartView === "ALL" && allProductsPreview
                           ? ` · ${allProductsPreview.productsToRestock.toLocaleString()} products projected`
                           : ""}
                       </p>
@@ -526,9 +507,9 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     />
                     <ForecastMetric
                       compact
-                      label={chartScope === "ALL" ? "Current incoming" : "Projected stock"}
+                      label={chartView === "ALL" ? "Current incoming" : "Projected stock"}
                       value={
-                        chartScope === "ALL"
+                        chartView === "ALL"
                           ? displayedPreview.currentCycleQuantity
                           : displayedPreview.projectedOpeningStock
                       }
@@ -545,7 +526,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     />
                   </div>
                   <p className="mt-3 text-xs leading-5 text-indigo-800">
-                    {chartScope === "ALL"
+                    {chartView === "ALL"
                       ? "This store-wide preview aggregates operational POS demand, sellable stock, active incoming quantities, expiry risk, and stock policy for all products. It is not counted as new incoming stock and does not create the next monthly ticket yet."
                       : "This is an estimate based on current POS demand, sellable and incoming stock, expiry risk, and stock policy. It is not counted as incoming stock and does not create the next monthly ticket yet. The quantity will be recalculated when the next batch cycle starts."}
                   </p>
@@ -661,58 +642,38 @@ function RecommendationCard({
   );
 }
 
-function ScopeSwitch({
+function ChartViewSwitch({
   onChange,
-  scope
+  view
 }: {
-  onChange: (scope: ChartScope) => void;
-  scope: ChartScope;
+  onChange: (view: ChartView) => void;
+  view: ChartView;
 }) {
-  return (
-    <div
-      aria-label="Forecast product scope"
-      className="inline-flex w-fit rounded-md border border-slate-200 bg-slate-50 p-1"
-      role="group"
-    >
-      {(["PRODUCT", "ALL"] as const).map((option) => (
-        <button
-          aria-pressed={scope === option}
-          className={
-            scope === option
-              ? "rounded bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm ring-1 ring-indigo-200"
-              : "rounded px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-950"
-          }
-          key={option}
-          onClick={() => onChange(option)}
-          type="button"
-        >
-          {option === "PRODUCT" ? "Selected product" : "All products"}
-        </button>
-      ))}
-    </div>
-  );
-}
+  const options: Array<{ label: string; value: ChartView }> = [
+    { label: "Demand", value: "DEMAND" },
+    { label: "Restock plan", value: "RESTOCK" },
+    { label: "All products", value: "ALL" }
+  ];
 
-function ChartSwitch({ mode, onChange }: { mode: ChartMode; onChange: (mode: ChartMode) => void }) {
   return (
     <div
       aria-label="Forecast chart view"
       className="inline-flex w-fit rounded-md border border-slate-200 bg-slate-50 p-1"
       role="group"
     >
-      {(["DEMAND", "RESTOCK"] as const).map((option) => (
+      {options.map((option) => (
         <button
-          aria-pressed={mode === option}
+          aria-pressed={view === option.value}
           className={
-            mode === option
+            view === option.value
               ? "rounded bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm ring-1 ring-indigo-200"
               : "rounded px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-950"
           }
-          key={option}
-          onClick={() => onChange(option)}
+          key={option.value}
+          onClick={() => onChange(option.value)}
           type="button"
         >
-          {option === "DEMAND" ? "Demand" : "Restock preview"}
+          {option.label}
         </button>
       ))}
     </div>
