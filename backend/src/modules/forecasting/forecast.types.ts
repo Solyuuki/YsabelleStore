@@ -98,7 +98,7 @@ export type ProductForecastDetail = {
   historical: HistoricalSalesPoint[];
   forecast: ForecastPoint[];
   metrics: ForecastMetrics;
-  accuracyFeedback: ForecastAccuracyFeedback | null;
+  accuracyFeedback?: ForecastAccuracyFeedback | null;
   modelDetails: ForecastModelDetails;
   warnings: string[];
   error: string | null;
