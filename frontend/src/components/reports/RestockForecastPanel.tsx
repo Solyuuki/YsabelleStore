@@ -18,6 +18,8 @@ import {
   RISK_PRIORITY,
   WATCHLIST_PAGE_SIZE,
   buildActiveRestockByProduct,
+  buildAllProductsDemandChart,
+  buildAllProductsRestockPreview,
   buildDemandChart,
   buildNextMonthRestockPreview,
   buildRestockPreviewChart,
@@ -52,6 +54,7 @@ import type {
 } from "@/services/restockApi";
 
 type ChartMode = "DEMAND" | "RESTOCK";
+type ChartScope = "PRODUCT" | "ALL";
 
 export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: number }) {
   const [items, setItems] = useState<RestockPlanningCandidate[]>([]);
@@ -62,6 +65,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const [localRefreshVersion, setLocalRefreshVersion] = useState(0);
   const [watchlistPage, setWatchlistPage] = useState(1);
   const [chartMode, setChartMode] = useState<ChartMode>("DEMAND");
+  const [chartScope, setChartScope] = useState<ChartScope>("PRODUCT");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -138,14 +142,21 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     () => items.filter((item) => item.recommendedQuantity > 0),
     [items]
   );
-  const demandChart = useMemo(() => buildDemandChart(selected), [selected]);
+  const productDemandChart = useMemo(() => buildDemandChart(selected), [selected]);
+  const allProductsDemandChart = useMemo(() => buildAllProductsDemandChart(items), [items]);
   const nextMonthPreview = useMemo(
     () => buildNextMonthRestockPreview(selected, selectedActiveRestock),
     [selected, selectedActiveRestock]
   );
+  const allProductsPreview = useMemo(
+    () => buildAllProductsRestockPreview(items, activeRestockByProduct),
+    [activeRestockByProduct, items]
+  );
+  const demandChart = chartScope === "ALL" ? allProductsDemandChart : productDemandChart;
+  const displayedPreview = chartScope === "ALL" ? allProductsPreview : nextMonthPreview;
   const restockPreviewChart = useMemo(
-    () => buildRestockPreviewChart(nextMonthPreview),
-    [nextMonthPreview]
+    () => buildRestockPreviewChart(displayedPreview),
+    [displayedPreview]
   );
   const watchlistTotalPages = Math.max(1, Math.ceil(items.length / WATCHLIST_PAGE_SIZE));
   const normalizedWatchlistPage = Math.min(watchlistPage, watchlistTotalPages);
@@ -317,7 +328,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                           <TableCell className="max-w-[16rem]">
                             <button
                               className="w-full text-left"
-                              onClick={() => setSelectedProductId(item.product.id)}
+                              onClick={() => {
+                                setSelectedProductId(item.product.id);
+                                setChartScope("PRODUCT");
+                              }}
                               type="button"
                             >
                               <span className="block truncate font-medium text-slate-950">
@@ -431,20 +445,31 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               ) : null}
 
               <div>
-                <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div className="mb-2 flex flex-col gap-2 xl:flex-row xl:items-end xl:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-950">
                       {chartMode === "DEMAND"
-                        ? "Expected monthly demand"
-                        : "Restock quantity preview"}
+                        ? chartScope === "ALL"
+                          ? "All products demand"
+                          : "Expected monthly demand"
+                        : chartScope === "ALL"
+                          ? "All products restock preview"
+                          : "Restock quantity preview"}
                     </p>
                     <p className="text-xs text-slate-500">
                       {chartMode === "DEMAND"
-                        ? "Gray shows recent sales. Blue shows expected demand for the next months."
-                        : "Compare the current replenishment cycle with the estimated next monthly batch."}
+                        ? chartScope === "ALL"
+                          ? "Aggregated recent POS sales and expected demand across all operational products."
+                          : "Gray shows recent sales. Blue shows expected demand for the selected product."
+                        : chartScope === "ALL"
+                          ? "Compare total active incoming stock with the estimated next monthly batch across all products."
+                          : "Compare this product's active incoming quantity with its estimated next monthly restock."}
                     </p>
                   </div>
-                  <ChartSwitch mode={chartMode} onChange={setChartMode} />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ScopeSwitch scope={chartScope} onChange={setChartScope} />
+                    <ChartSwitch mode={chartMode} onChange={setChartMode} />
+                  </div>
                 </div>
                 <div className="relative h-56 rounded-md border border-slate-200 bg-white p-2">
                   {chartMode === "DEMAND" ? (
@@ -452,7 +477,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                       <DemandChart data={demandChart} />
                     ) : (
                       <ChartEmptyState
-                        detail="Demand trend will appear here when enough sales history is available."
+                        detail={
+                          chartScope === "ALL"
+                            ? "Demand will appear when operational products have POS sales activity."
+                            : "Demand trend will appear when this product has POS sales activity."
+                        }
                         title="Forecast chart ready"
                       />
                     )
@@ -460,22 +489,31 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     <RestockPreviewChart data={restockPreviewChart} />
                   ) : (
                     <ChartEmptyState
-                      detail="Select a product to view its restock preview."
+                      detail={
+                        chartScope === "ALL"
+                          ? "Restock totals will appear when products have incoming or projected replenishment."
+                          : "Select a product to view its restock preview."
+                      }
                       title="Restock preview ready"
                     />
                   )}
                 </div>
               </div>
 
-              {selected && nextMonthPreview ? (
+              {displayedPreview ? (
                 <div className="rounded-lg border border-indigo-200 bg-indigo-50/60 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
-                        Next month restock preview
+                        {chartScope === "ALL"
+                          ? "All products next month preview"
+                          : "Next month restock preview"}
                       </p>
                       <p className="mt-1 text-lg font-semibold text-indigo-950">
-                        {nextMonthPreview.monthLabel}
+                        {displayedPreview.monthLabel}
+                        {chartScope === "ALL" && allProductsPreview
+                          ? ` · ${allProductsPreview.productsToRestock.toLocaleString()} products projected`
+                          : ""}
                       </p>
                     </div>
                     <Badge variant="info">Preview only</Badge>
@@ -484,29 +522,32 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     <ForecastMetric
                       compact
                       label="Expected demand"
-                      value={nextMonthPreview.expectedDemand}
+                      value={displayedPreview.expectedDemand}
                     />
                     <ForecastMetric
                       compact
-                      label="Projected stock"
-                      value={nextMonthPreview.projectedOpeningStock}
+                      label={chartScope === "ALL" ? "Current incoming" : "Projected stock"}
+                      value={
+                        chartScope === "ALL"
+                          ? displayedPreview.currentCycleQuantity
+                          : displayedPreview.projectedOpeningStock
+                      }
                     />
                     <ForecastMetric
                       compact
                       label="Estimated restock"
-                      value={nextMonthPreview.estimatedRestock}
+                      value={displayedPreview.estimatedRestock}
                     />
                     <ForecastMetric
                       compact
                       label="Planned batch"
-                      value={nextMonthPreview.batchNumber}
+                      value={displayedPreview.batchNumber}
                     />
                   </div>
                   <p className="mt-3 text-xs leading-5 text-indigo-800">
-                    This is an estimate based on current POS demand, sellable and incoming stock,
-                    expiry risk, and stock policy. It is not counted as incoming stock and does not
-                    create the next monthly ticket yet. The quantity will be recalculated when the
-                    next batch cycle starts.
+                    {chartScope === "ALL"
+                      ? "This store-wide preview aggregates operational POS demand, sellable stock, active incoming quantities, expiry risk, and stock policy for all products. It is not counted as new incoming stock and does not create the next monthly ticket yet."
+                      : "This is an estimate based on current POS demand, sellable and incoming stock, expiry risk, and stock policy. It is not counted as incoming stock and does not create the next monthly ticket yet. The quantity will be recalculated when the next batch cycle starts."}
                   </p>
                 </div>
               ) : null}
@@ -616,6 +657,38 @@ function RecommendationCard({
           </>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function ScopeSwitch({
+  onChange,
+  scope
+}: {
+  onChange: (scope: ChartScope) => void;
+  scope: ChartScope;
+}) {
+  return (
+    <div
+      aria-label="Forecast product scope"
+      className="inline-flex w-fit rounded-md border border-slate-200 bg-slate-50 p-1"
+      role="group"
+    >
+      {(["PRODUCT", "ALL"] as const).map((option) => (
+        <button
+          aria-pressed={scope === option}
+          className={
+            scope === option
+              ? "rounded bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm ring-1 ring-indigo-200"
+              : "rounded px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-950"
+          }
+          key={option}
+          onClick={() => onChange(option)}
+          type="button"
+        >
+          {option === "PRODUCT" ? "Selected product" : "All products"}
+        </button>
+      ))}
     </div>
   );
 }
