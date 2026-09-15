@@ -66,7 +66,7 @@ assert.doesNotMatch(reportsSource, /Internal operational snapshot/);
 
 // Planner remains the editable recommendation-review surface and never performs physical stock mutation.
 // Manual Add product is an existing-catalog fallback, not a product creation path.
-assert.match(panelSource, /<Badge variant="info">Recommended<\/Badge>/);
+assert.match(panelSource, /<Badge variant="info">Suggested<\/Badge>/);
 assert.match(panelSource, /Review and prepare products for restocking\./);
 assert.match(panelSource, /Restock planner/);
 assert.match(panelSource, /Add product/);
