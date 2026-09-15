@@ -291,8 +291,7 @@ export async function loadEligibleEffectiveSales(productIds?: string[]) {
     // Database history is the primary source whenever it is usable. SARIMA eligibility only
     // decides which model runs; short clean histories stay in DATABASE and use a fallback model.
     .filter(
-      (product) =>
-        product.points.length > 0 && product.eligibility.status !== "DATA_QUALITY_ISSUE"
+      (product) => product.points.length > 0 && product.eligibility.status !== "DATA_QUALITY_ISSUE"
     )
     .map((product) => ({
       category: product.category,
