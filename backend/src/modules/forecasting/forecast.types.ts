@@ -69,6 +69,16 @@ export type ForecastMetrics = {
   validationStrategy: string;
 };
 
+export type ForecastAccuracyFeedback = {
+  evaluatedPeriod: string;
+  actualQuantity: number;
+  predictedQuantity: number;
+  signedError: number;
+  absoluteError: number;
+  absolutePercentageError: number | null;
+  strategy: string;
+};
+
 export type ForecastModelDetails = {
   model: ForecastModel;
   order: [number, number, number] | null;
@@ -88,6 +98,7 @@ export type ProductForecastDetail = {
   historical: HistoricalSalesPoint[];
   forecast: ForecastPoint[];
   metrics: ForecastMetrics;
+  accuracyFeedback: ForecastAccuracyFeedback | null;
   modelDetails: ForecastModelDetails;
   warnings: string[];
   error: string | null;
