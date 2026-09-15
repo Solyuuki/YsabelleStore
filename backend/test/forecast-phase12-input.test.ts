@@ -6,6 +6,7 @@ import {
   combineEffectiveMonthlyPoints,
   completedEffectiveSalesPoints
 } from "../src/modules/forecasting/effective-sales.service.js";
+import { completedHistoryCutoff } from "../src/modules/forecasting/forecast-source-version.service.js";
 import { getDomainChangeEffects } from "../src/services/domainChangeService.js";
 
 test("current partial month is excluded from monthly SARIMA training history", () => {
@@ -19,6 +20,10 @@ test("current partial month is excluded from monthly SARIMA training history", (
     completedEffectiveSalesPoints(points, "2026-09").map((point) => point.period),
     ["2026-07", "2026-08"]
   );
+});
+
+test("forecast source version uses the active month boundary as completed-history cutoff", () => {
+  assert.equal(completedHistoryCutoff("2026-09").toISOString(), "2026-09-01T00:00:00.000Z");
 });
 
 test("completed POS actuals replace imported values for the same product month", () => {
