@@ -244,13 +244,15 @@ export function buildNextMonthRestockPreview(
       : 0;
   const monthIndex = previewDate.getUTCMonth();
   const year = previewDate.getUTCFullYear();
+  const activeIncoming = Math.max(
+    0,
+    Math.ceil(candidate.incomingStock),
+    Math.ceil(activeRestock?.totalRemaining ?? 0)
+  );
 
   return {
     batchNumber: `RO-${MONTH_ABBREVIATIONS[monthIndex]}-${year}`,
-    currentCycleQuantity: Math.max(
-      0,
-      Math.ceil(activeRestock?.totalRemaining ?? candidate.recommendedQuantity)
-    ),
+    currentCycleQuantity: activeIncoming,
     estimatedRestock: Math.max(demandGap, reorderGap),
     expectedDemand,
     monthLabel: new Intl.DateTimeFormat("en-PH", {
