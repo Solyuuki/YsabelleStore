@@ -10,7 +10,7 @@ if str(ROOT) not in sys.path:
 
 from app.evaluation import calculate_metrics  # noqa: E402
 from app.fallback import moving_average, seasonal_naive  # noqa: E402
-from app.main import forecast_product  # noqa: E402
+from app.main import _sarima_hint, _worker_count, forecast_product  # noqa: E402
 from app.preprocessing import add_months, visible_forecast_periods  # noqa: E402
 
 
@@ -140,3 +140,21 @@ def test_accuracy_feedback_tracks_latest_completed_observation() -> None:
     assert feedback["evaluatedPeriod"] == "2025-12-01"
     assert feedback["actualQuantity"] == values[-1]
     assert feedback["absoluteError"] >= 0
+
+
+def test_previous_model_hint_is_validated_before_reuse() -> None:
+    product = _product([10 + (index % 12) for index in range(24)])
+    product["modelHint"] = {
+        "order": [0, 1, 1],
+        "seasonalOrder": [0, 1, 1, 12],
+    }
+
+    assert _sarima_hint(product, 12) == ((0, 1, 1), (0, 1, 1, 12))
+    assert _sarima_hint(product, 6) == (None, None)
+
+
+def test_parallel_worker_count_is_conservative(monkeypatch) -> None:
+    monkeypatch.setenv("FORECAST_WORKERS", "99")
+
+    assert _worker_count(1) == 1
+    assert 1 <= _worker_count(472) <= 4
