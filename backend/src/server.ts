@@ -6,6 +6,7 @@ import { ensureInternalCatalogBarcodes } from "./services/catalogInternalBarcode
 import { ensureKnownCatalogBarcodes } from "./services/catalogKnownBarcodeBootstrapService.js";
 import { ensureCatalogInventoryShells } from "./services/inventoryBootstrapService.js";
 import { synchronizeLegacyPrimaryBarcodes } from "./services/productBarcodeService.js";
+import { startRestockAutomationWorker } from "./services/restockAutomationService.js";
 
 const app = createApp();
 
@@ -17,6 +18,8 @@ const server = app.listen(env.PORT, () => {
   console.info(`YsabelleStore backend listening at http://localhost:${env.PORT}`);
   console.info(`Database target: ${database}`);
   console.info(`Allowed renderer origins: ${corsOrigins.join(", ")}`);
+
+  startRestockAutomationWorker();
 
   void ensureCatalogInventoryShells()
     .then((result) => {
@@ -112,7 +115,7 @@ async function findExistingYsabelleBackend(port: number): Promise<string | null>
   return null;
 }
 
-function isYsabelleBackendHealth(payload: unknown): boolean {
+function isYsabelleBackendHealth(payload: unknown) {
   if (!payload || typeof payload !== "object" || !("data" in payload)) return false;
 
   const data = payload.data;

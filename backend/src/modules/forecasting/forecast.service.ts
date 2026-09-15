@@ -161,7 +161,9 @@ function buildGenerationSummary(
   durationMs: number,
   generatedAt: string,
   forecastStartMonth: string,
-  validation: ForecastBatch["validation"]
+  validation: ForecastBatch["validation"],
+  recomputedProducts = products.length,
+  reusedProducts = 0
 ): ForecastGenerationSummary {
   const problemCounts = countProblemValues(products);
   const forecastPeriods = products.flatMap((product) =>
@@ -178,6 +180,8 @@ function buildGenerationSummary(
     generatedAt,
     lastForecastMonth: sortedForecastPeriods.at(-1) ?? null,
     movingAverageProducts: countByModel(products, "MOVING_AVERAGE"),
+    recomputedProducts,
+    reusedProducts,
     sarimaProducts: countByModel(products, "SARIMA"),
     seasonalNaiveProducts: countByModel(products, "SEASONAL_NAIVE"),
     totalProductsProcessed: products.length,
@@ -219,6 +223,80 @@ function selectProducts(products: ProductHistoricalSeries[], productIds?: string
 
   const selected = new Set(productIds);
   return products.filter((product) => selected.has(product.productId));
+}
+
+function reusableModelHint(product: ProductForecastDetail): ProductHistoricalSeries["modelHint"] {
+  if (
+    product.model !== "SARIMA" ||
+    product.modelDetails.converged !== true ||
+    !product.modelDetails.order ||
+    !product.modelDetails.seasonalOrder
+  ) {
+    return undefined;
+  }
+
+  return {
+    order: product.modelDetails.order,
+    seasonalOrder: product.modelDetails.seasonalOrder
+  };
+}
+
+function withReusableModelHints(
+  products: ProductHistoricalSeries[],
+  previousProducts: ProductForecastDetail[]
+) {
+  if (previousProducts.length === 0) return products;
+  const previousById = new Map(previousProducts.map((product) => [product.productId, product]));
+
+  return products.map((product) => {
+    const previous = previousById.get(product.productId);
+    const modelHint = previous ? reusableModelHint(previous) : undefined;
+    return modelHint ? { ...product, modelHint } : product;
+  });
+}
+
+export function sameForecastInput(
+  input: ProductHistoricalSeries,
+  previous: ProductForecastDetail
+): boolean {
+  if (
+    input.productId !== previous.productId ||
+    input.productName !== previous.productName ||
+    input.category !== previous.category ||
+    input.sellingPrice !== previous.sellingPrice ||
+    input.historical.length !== previous.historical.length
+  ) {
+    return false;
+  }
+
+  return input.historical.every((point, index) => {
+    const oldPoint = previous.historical[index];
+    return (
+      oldPoint?.period === point.period &&
+      oldPoint.quantitySold === point.quantitySold &&
+      oldPoint.productId === point.productId
+    );
+  });
+}
+
+function planSameMonthReuse(
+  inputProducts: ProductHistoricalSeries[],
+  previousProducts: ProductForecastDetail[]
+) {
+  const inputById = new Map(inputProducts.map((product) => [product.productId, product]));
+  const previousById = new Map(previousProducts.map((product) => [product.productId, product]));
+  const changedProducts = inputProducts.filter((product) => {
+    const previous = previousById.get(product.productId);
+    return !previous || !sameForecastInput(product, previous);
+  });
+  const removedIds = previousProducts
+    .filter((product) => !inputById.has(product.productId))
+    .map((product) => product.productId);
+
+  return {
+    changedProducts,
+    replacedProductIds: [...changedProducts.map((product) => product.productId), ...removedIds]
+  };
 }
 
 function emptyValidation(skippedProducts: number, warnings: HistoricalImportIssue[] = []) {
@@ -361,11 +439,13 @@ async function generateBatchFromInput(
   dependencies: ForecastRuntimeDependencies,
   startedAt: number,
   existingProducts: ProductForecastDetail[] = [],
-  replacedProductIds: string[] = []
+  replacedProductIds: string[] = [],
+  hintProducts: ProductForecastDetail[] = existingProducts
 ) {
   const generatedAt = new Date().toISOString();
-  const generatedProducts = inputProducts.length
-    ? (await dependencies.runForecast(inputProducts)).products
+  const hintedInputProducts = withReusableModelHints(inputProducts, hintProducts);
+  const generatedProducts = hintedInputProducts.length
+    ? (await dependencies.runForecast(hintedInputProducts)).products
     : [];
 
   if (generatedProducts.length !== inputProducts.length) {
@@ -390,7 +470,9 @@ async function generateBatchFromInput(
     Date.now() - startedAt,
     generatedAt,
     activeForecastMonth,
-    forecastInput.validation
+    forecastInput.validation,
+    generatedProducts.length,
+    Math.max(0, products.length - generatedProducts.length)
   );
 
   return {
@@ -434,6 +516,7 @@ export async function generateForecastBatch(
   generationVersion = startedVersion;
   const activePromise = (async () => {
     const startedAt = Date.now();
+    const previousProducts = forecastCache?.products ?? [];
     const forecastInput = await loadForecastInput(options.productIds, dependencies);
     const canMergeTargetedRefresh =
       targeted &&
@@ -449,7 +532,8 @@ export async function generateForecastBatch(
       dependencies,
       startedAt,
       canMergeTargetedRefresh && forecastCache ? forecastCache.products : [],
-      canMergeTargetedRefresh ? (options.productIds ?? []) : []
+      canMergeTargetedRefresh ? (options.productIds ?? []) : [],
+      previousProducts
     );
 
     // An import or rollback may invalidate the cache while Python is still running.
@@ -534,7 +618,10 @@ async function runPersistedForecastRefresh(options: { force: boolean; productIds
   const input = await loadForecastInput(incrementalRequested ? requestedIds : undefined);
   const sourceVersion = sourceVersionFor(input.source, snapshotBefore);
 
-  if (!options.force && requestedIds.length === 0 && active?.sourceVersion === sourceVersion) {
+  // A current-month POS event can request a targeted refresh even though monthly SARIMA only
+  // trains on completed months. If the completed-history source version is unchanged, avoid
+  // starting Python at all.
+  if (!options.force && active?.sourceVersion === sourceVersion) {
     return;
   }
 
@@ -542,30 +629,45 @@ async function runPersistedForecastRefresh(options: { force: boolean; productIds
   deliveryJobId = job.id;
 
   try {
+    const previousBatch = active ? await loadPersistedForecastBatch(active.id) : null;
     let existingProducts: ProductForecastDetail[] = [];
     let inputProducts = input.allProducts;
     let replacedProductIds: string[] = [];
 
-    if (incrementalRequested && input.source === "DATABASE" && active) {
-      const previousBatch = await loadPersistedForecastBatch(active.id);
-      if (previousBatch?.source === "DATABASE") {
-        const selectedEligibleIds = new Set(input.products.map((product) => product.productId));
-        const expectedIds = new Set(input.allProducts.map((product) => product.productId));
-        const mergedIds = new Set([
-          ...previousBatch.products
-            .filter((product) => !requestedIds.includes(product.productId))
-            .map((product) => product.productId),
-          ...selectedEligibleIds
-        ]);
-        const mergeIsComplete =
-          expectedIds.size === mergedIds.size && [...expectedIds].every((id) => mergedIds.has(id));
+    if (
+      incrementalRequested &&
+      input.source === "DATABASE" &&
+      previousBatch?.source === "DATABASE"
+    ) {
+      const selectedEligibleIds = new Set(input.products.map((product) => product.productId));
+      const expectedIds = new Set(input.allProducts.map((product) => product.productId));
+      const mergedIds = new Set([
+        ...previousBatch.products
+          .filter((product) => !requestedIds.includes(product.productId))
+          .map((product) => product.productId),
+        ...selectedEligibleIds
+      ]);
+      const mergeIsComplete =
+        expectedIds.size === mergedIds.size && [...expectedIds].every((id) => mergedIds.has(id));
 
-        if (mergeIsComplete) {
-          existingProducts = previousBatch.products;
-          inputProducts = input.products;
-          replacedProductIds = requestedIds;
-        }
+      if (mergeIsComplete) {
+        existingProducts = previousBatch.products;
+        inputProducts = input.products;
+        replacedProductIds = requestedIds;
       }
+    } else if (
+      !options.force &&
+      sameMonth &&
+      previousBatch?.source === input.source &&
+      input.source !== "EMPTY"
+    ) {
+      // Even when the caller cannot identify the affected product (or the active batch is still
+      // workbook-backed), compare persisted per-product history and only refit products whose
+      // actual forecasting input changed.
+      const reusePlan = planSameMonthReuse(input.allProducts, previousBatch.products);
+      existingProducts = previousBatch.products;
+      inputProducts = reusePlan.changedProducts;
+      replacedProductIds = reusePlan.replacedProductIds;
     }
 
     const batch = await generateBatchFromInput(
@@ -574,7 +676,8 @@ async function runPersistedForecastRefresh(options: { force: boolean; productIds
       defaultDependencies,
       startedAt,
       existingProducts,
-      replacedProductIds
+      replacedProductIds,
+      previousBatch?.products ?? []
     );
     const snapshotAfter = await getForecastSourceSnapshot();
     if (sourceVersionFor(input.source, snapshotAfter) !== sourceVersion) {

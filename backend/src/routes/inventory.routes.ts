@@ -1,6 +1,10 @@
 import { Router } from "express";
 
 import {
+  completeBulkDeliveryController,
+  previewBulkDeliveryPdfController
+} from "../controllers/bulkDeliveryController.js";
+import {
   adjustStockController,
   deductStockController,
   getInventoryByProductController,
@@ -40,6 +44,17 @@ inventoryRouter.post(
   requireRole("OWNER"),
   productImportUpload.single("file"),
   confirmInventoryStockImportController
+);
+inventoryRouter.post(
+  "/delivery-sessions/pdf/preview",
+  requireRole("OWNER"),
+  productImportUpload.single("file"),
+  previewBulkDeliveryPdfController
+);
+inventoryRouter.post(
+  "/delivery-sessions/complete",
+  requireRole("OWNER"),
+  completeBulkDeliveryController
 );
 inventoryRouter.get(
   "/product/:productId",

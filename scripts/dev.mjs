@@ -4,7 +4,7 @@ import net from "node:net";
 import { displayUrl, isLoopback, resolveDevelopmentRuntime } from "./lib/runtime-config.mjs";
 
 const ELECTRON_READY_MARKER = "YsabelleStore Electron renderer ready.";
-const HTTP_READY_TIMEOUT_MS = 45_000;
+const HTTP_READY_TIMEOUT_MS = 120_000;
 const ELECTRON_READY_TIMEOUT_MS = 60_000;
 const PORT_RELEASE_TIMEOUT_MS = 10_000;
 const POLL_INTERVAL_MS = 200;
@@ -227,7 +227,11 @@ async function waitForHttp(url, child, label, isReady) {
     await delay(POLL_INTERVAL_MS);
   }
 
-  throw new Error(`The ${label} did not become ready at ${url} within 45 seconds.`);
+  throw new Error(
+    `The ${label} did not become ready at ${url} within ${Math.round(
+      HTTP_READY_TIMEOUT_MS / 1000
+    )} seconds.`
+  );
 }
 
 async function inspectExistingWebStack() {

@@ -55,7 +55,7 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        "relative flex min-h-screen shrink-0 flex-col overflow-visible border-r border-violet-200/55 text-slate-700 shadow-[0_20px_48px_rgba(37,31,86,0.08)] transition-[width,background-color,border-color,box-shadow] duration-300 ease-out",
+        "relative flex h-full min-h-0 shrink-0 flex-col overflow-visible border-r border-violet-200/55 text-slate-700 shadow-[0_20px_48px_rgba(37,31,86,0.08)] transition-[width,background-color,border-color,box-shadow] duration-300 ease-out",
         "bg-[rgba(248,247,255,0.92)]",
         collapsed ? "w-20" : "w-64"
       )}
@@ -78,7 +78,7 @@ export function AppSidebar({
         />
       </Button>
 
-      <div className="flex h-16 items-center gap-3 border-b border-violet-200/45 px-4">
+      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-violet-200/45 px-4">
         <YsabelleBrandMark className="shrink-0" eager variant="mini" />
         <div
           className={cn(
@@ -91,7 +91,10 @@ export function AppSidebar({
         </div>
       </div>
 
-      <nav className="flex-1 space-y-5 p-3" aria-label="Application modules">
+      <nav
+        className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3"
+        aria-label="Application modules"
+      >
         <SidebarSection
           activePath={activePath}
           collapsed={collapsed}
@@ -110,7 +113,7 @@ export function AppSidebar({
         ) : null}
       </nav>
 
-      <div className="border-t border-violet-200/45 p-3">
+      <div className="shrink-0 border-t border-violet-200/45 p-3">
         <div className="space-y-3">
           <SectionLabel collapsed={collapsed} title="SYSTEM" />
           {collapsed ? null : <FullCounterModeCard user={user} />}

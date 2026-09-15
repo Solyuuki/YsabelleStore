@@ -2,10 +2,12 @@ import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import type { ProductAvailabilityStatusRequest } from "../validators/product.validators.js";
 import { serializeProduct, type ProductSummary } from "./catalogSerializers.js";
+import { getSellableStockQuantity } from "./stockDomainService.js";
 
 const productInclude = {
   category: true,
   inventory: true,
+  inventoryBatches: true,
   duplicateCandidatesLeft: { select: { status: true } },
   duplicateCandidatesRight: { select: { status: true } }
 } as const;
@@ -54,10 +56,15 @@ export async function changeProductAvailability(
       });
     }
 
-    if ((existingProduct.inventory?.quantityOnHand ?? 0) <= 0) {
-      throw new HttpError(422, "Add stock before setting this product to Available.", {
+    const sellableStock = getSellableStockQuantity(existingProduct.inventoryBatches);
+    if (sellableStock <= 0) {
+      throw new HttpError(422, "Add sellable stock before setting this product to Available.", {
         code: "PRODUCT_STOCK_REQUIRED",
-        details: { productId: existingProduct.id }
+        details: {
+          productId: existingProduct.id,
+          physicalStock: existingProduct.inventory?.quantityOnHand ?? 0,
+          sellableStock
+        }
       });
     }
   }

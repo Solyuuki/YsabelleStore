@@ -139,7 +139,7 @@ test(
   "dashboard summary reflects live sales, stock, and near-expiry state",
   { concurrency: false },
   async () => {
-    const now = new Date("2026-09-08T08:00:00.000Z");
+    const now = new Date();
     const before = await getDashboardSummary("STAFF", now);
     const category = await createCategory({ name: uniqueLabel("Dashboard Category") });
     const product = await createProduct({
@@ -164,7 +164,7 @@ test(
 
     await prisma.sale.create({
       data: {
-        saleDate: new Date("2026-09-08T04:15:00.000Z"),
+        saleDate: now,
         saleNumber: uniqueLabel("DASH-SALE"),
         status: "COMPLETED",
         subtotalAmount: new Prisma.Decimal("25.00"),

@@ -1,6 +1,7 @@
 import { prisma } from "../../database/prismaClient.js";
 import { operationalProductWhere } from "../../services/catalogQualityPolicy.js";
 import type { ProductHistoricalSeries } from "./forecast.types.js";
+import { getActiveForecastMonth } from "./forecast-window.js";
 
 export const SARIMA_MINIMUM_OBSERVATIONS = 24;
 export const SARIMA_SEASONAL_PERIOD = 12;
@@ -87,6 +88,13 @@ function missingPeriods(points: EffectiveSalesPoint[]) {
   }
 
   return missing;
+}
+
+export function completedEffectiveSalesPoints(
+  points: EffectiveSalesPoint[],
+  activeForecastMonth = getActiveForecastMonth()
+) {
+  return points.filter((point) => point.period < activeForecastMonth);
 }
 
 export function assessSarimaEligibility(
@@ -256,10 +264,14 @@ export async function getEffectiveMonthlySeries(productIds?: string[]) {
       quantity: item.quantity
     }))
   );
+  const activeForecastMonth = getActiveForecastMonth();
 
   return products.map((product): EffectiveProductSeries => {
-    const points = [...(pointsByProduct.get(product.id)?.values() ?? [])].sort((left, right) =>
-      left.period.localeCompare(right.period)
+    const points = completedEffectiveSalesPoints(
+      [...(pointsByProduct.get(product.id)?.values() ?? [])].sort((left, right) =>
+        left.period.localeCompare(right.period)
+      ),
+      activeForecastMonth
     );
 
     return {
@@ -276,7 +288,11 @@ export async function getEffectiveMonthlySeries(productIds?: string[]) {
 export async function loadEligibleEffectiveSales(productIds?: string[]) {
   const series = await getEffectiveMonthlySeries(productIds);
   const products: ProductHistoricalSeries[] = series
-    .filter((product) => product.eligibility.status === "ELIGIBLE")
+    // Database history is the primary source whenever it is usable. SARIMA eligibility only
+    // decides which model runs; short clean histories stay in DATABASE and use a fallback model.
+    .filter(
+      (product) => product.points.length > 0 && product.eligibility.status !== "DATA_QUALITY_ISSUE"
+    )
     .map((product) => ({
       category: product.category,
       historical: product.points.map((point) => ({

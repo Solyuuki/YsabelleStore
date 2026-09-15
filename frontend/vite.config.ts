@@ -2,6 +2,20 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { defineConfig, loadEnv } from "vite";
 
+function getManualChunk(id: string) {
+  const normalizedId = id.replace(/\\/g, "/");
+
+  if (
+    normalizedId.includes("/node_modules/react/") ||
+    normalizedId.includes("/node_modules/react-dom/") ||
+    normalizedId.includes("/node_modules/scheduler/")
+  ) {
+    return "vendor-react";
+  }
+
+  return undefined;
+}
+
 export default defineConfig(({ mode }) => {
   const envDirectory = path.resolve(__dirname, "..");
   const loadedEnvironment = loadEnv(mode, envDirectory, "");
@@ -20,6 +34,13 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src")
+      }
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: getManualChunk
+        }
       }
     },
     server: {
