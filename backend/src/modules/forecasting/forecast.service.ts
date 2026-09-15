@@ -634,7 +634,11 @@ async function runPersistedForecastRefresh(options: { force: boolean; productIds
     let inputProducts = input.allProducts;
     let replacedProductIds: string[] = [];
 
-    if (incrementalRequested && input.source === "DATABASE" && previousBatch?.source === "DATABASE") {
+    if (
+      incrementalRequested &&
+      input.source === "DATABASE" &&
+      previousBatch?.source === "DATABASE"
+    ) {
       const selectedEligibleIds = new Set(input.products.map((product) => product.productId));
       const expectedIds = new Set(input.allProducts.map((product) => product.productId));
       const mergedIds = new Set([
