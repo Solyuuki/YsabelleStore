@@ -368,13 +368,17 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                     }}
                     value={supplierOrder.id}
                   >
-                    {supplierOrders.map((order) => (
-                      <option key={order.id} value={order.id}>
-                        {order.orderNumber} · {statusLabel(order.status)} ·{" "}
-                        {selectedUnitCount(order).toLocaleString()} units ·{" "}
-                        {getSupplierOrderSource(order).shortLabel}
-                      </option>
-                    ))}
+                    {supplierOrders.map((order) => {
+                      const productCount = selectedLineCount(order);
+                      return (
+                        <option key={order.id} value={order.id}>
+                          {order.orderNumber} · {productCount.toLocaleString()}{" "}
+                          {productCount === 1 ? "product" : "products"} ·{" "}
+                          {selectedUnitCount(order).toLocaleString()} units ·{" "}
+                          {getSupplierOrderSource(order).shortLabel}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
