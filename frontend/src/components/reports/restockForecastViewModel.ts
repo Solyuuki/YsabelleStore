@@ -224,7 +224,9 @@ export function buildAllProductsDemandChart(
     }
   }
 
-  const sorted = [...byPeriod.values()].sort((left, right) => left.period.localeCompare(right.period));
+  const sorted = [...byPeriod.values()].sort((left, right) =>
+    left.period.localeCompare(right.period)
+  );
   const historical = sorted.filter((point) => point.actual !== null).slice(-6);
   const forecast = sorted.filter((point) => point.forecast !== null).slice(0, 6);
   const periods = new Map<string, DemandChartPoint>();
@@ -341,19 +343,13 @@ export function buildAllProductsRestockPreview(
 
   return {
     batchNumber: first.batchNumber,
-    currentCycleQuantity: previews.reduce(
-      (sum, preview) => sum + preview.currentCycleQuantity,
-      0
-    ),
+    currentCycleQuantity: previews.reduce((sum, preview) => sum + preview.currentCycleQuantity, 0),
     estimatedRestock: previews.reduce((sum, preview) => sum + preview.estimatedRestock, 0),
     expectedDemand: previews.reduce((sum, preview) => sum + preview.expectedDemand, 0),
     monthLabel: first.monthLabel,
     monthShortLabel: first.monthShortLabel,
     productsToRestock: previews.filter((preview) => preview.estimatedRestock > 0).length,
-    projectedOpeningStock: previews.reduce(
-      (sum, preview) => sum + preview.projectedOpeningStock,
-      0
-    )
+    projectedOpeningStock: previews.reduce((sum, preview) => sum + preview.projectedOpeningStock, 0)
   };
 }
 
