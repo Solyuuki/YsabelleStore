@@ -49,9 +49,11 @@ const WATCHLIST_PAGE_SIZE = 10;
 
 type ActiveProductRestock = {
   automated: boolean;
+  latestCreatedAt: string;
   latestOrderNumber: string;
   latestStatus: RestockOrderStatus;
   latestUpdatedAt: string;
+  monthly: boolean;
   ticketCount: number;
   totalRemaining: number;
 };
@@ -82,6 +84,16 @@ function formatMonth(value: string) {
     month: "short",
     year: "2-digit",
     timeZone: "UTC"
+  }).format(date);
+}
+
+function formatBatchMonth(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "current month";
+  return new Intl.DateTimeFormat("en-PH", {
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Manila"
   }).format(date);
 }
 
@@ -237,7 +249,8 @@ function buildActiveRestockByProduct(orders: RestockOrder[]) {
   const byProduct = new Map<string, ActiveProductRestock>();
 
   for (const order of orders) {
-    const automated = order.notes?.includes("[AutomatedRestock:") ?? false;
+    const monthly = order.notes?.includes("[AutomatedRestockMonth:") ?? false;
+    const automated = monthly || (order.notes?.includes("[AutomatedRestock:") ?? false);
 
     for (const line of order.lines) {
       const remaining = Math.max(0, line.requestedQuantity - line.receivedQuantity);
@@ -250,9 +263,11 @@ function buildActiveRestockByProduct(orders: RestockOrder[]) {
 
       byProduct.set(line.product.id, {
         automated: (current?.automated ?? false) || automated,
+        latestCreatedAt: isLatest ? order.createdAt : current.latestCreatedAt,
         latestOrderNumber: isLatest ? order.orderNumber : current.latestOrderNumber,
         latestStatus: isLatest ? order.status : current.latestStatus,
         latestUpdatedAt: isLatest ? order.updatedAt : current.latestUpdatedAt,
+        monthly: isLatest ? monthly : current.monthly,
         ticketCount: (current?.ticketCount ?? 0) + 1,
         totalRemaining: (current?.totalRemaining ?? 0) + remaining
       });
@@ -474,7 +489,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
           <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3">
             <p className="text-sm font-semibold text-emerald-950">No new restock action required</p>
             <p className="mt-1 text-xs leading-5 text-emerald-800">
-              Current stock and already processed incoming tickets cover the active restock plan.
+              Current stock and active restock batches cover the current replenishment plan.
             </p>
           </div>
         ) : null}
@@ -543,14 +558,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                                 </span>
                               </div>
                             ) : activeRestock && activeRestock.totalRemaining > 0 ? (
-                              <div>
-                                <span className="font-semibold text-indigo-700">
-                                  {formatNumber(activeRestock.totalRemaining)}
-                                </span>
-                                <span className="block text-[11px] font-medium text-indigo-600">
-                                  ordered
-                                </span>
-                              </div>
+                              <span
+                                className="font-semibold text-indigo-700"
+                                title={`Included in ${activeRestock.latestOrderNumber}`}
+                              >
+                                {formatNumber(activeRestock.totalRemaining)}
+                              </span>
                             ) : (
                               <span className="font-semibold text-slate-950">0</span>
                             )}
@@ -635,7 +648,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                               : "text-xs font-semibold uppercase tracking-wide text-emerald-700"
                         }
                       >
-                        {selectedHasProcessedOrder ? "Restock processed" : "Recommended next step"}
+                        {selectedHasProcessedOrder ? "Restock batch" : "Recommended next step"}
                       </p>
                       <p
                         className={
@@ -649,7 +662,9 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                         {selectedNeedsOrder
                           ? `Order ${formatNumber(selected.recommendedQuantity)} units`
                           : selectedHasProcessedOrder && selectedActiveRestock
-                            ? `${formatNumber(selectedActiveRestock.totalRemaining)} units already ordered`
+                            ? selectedActiveRestock.monthly
+                              ? `Included in ${formatBatchMonth(selectedActiveRestock.latestCreatedAt)} restock batch`
+                              : "Included in active restock ticket"
                             : "No order needed right now"}
                       </p>
                       <p
@@ -664,7 +679,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                         {selectedNeedsOrder
                           ? `Place the order by ${formatDate(selected.forecastDecision?.recommendedActionDate)}. Current usable stock covers about ${coverageLabel(selected)} at roughly ${formatNumber(selectedDemand)} units per month.`
                           : selectedHasProcessedOrder && selectedActiveRestock
-                            ? `Ticket ${selectedActiveRestock.latestOrderNumber} has already been processed and is ${orderStatusLabel(selectedActiveRestock.latestStatus).toLowerCase()}. Incoming stock is already included in the plan, so no additional order is required.`
+                            ? `${formatNumber(selectedActiveRestock.totalRemaining)} units are included in ${selectedActiveRestock.latestOrderNumber}, which is ${orderStatusLabel(selectedActiveRestock.latestStatus).toLowerCase()}. Incoming stock is already included in the plan, so no additional restock quantity is required.`
                             : "Current usable stock is expected to cover demand. Keep monitoring this product for changes."}
                       </p>
                     </div>
@@ -688,13 +703,17 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     <span>Expiry risk {formatNumber(selected.expiryRiskQuantity)}</span>
                     {selectedHasProcessedOrder && selectedActiveRestock ? (
                       <>
-                        <span>Ticket {selectedActiveRestock.latestOrderNumber}</span>
                         <span>
-                          {selectedActiveRestock.automated ? "Automated ticket" : "Restock ticket"}
+                          {selectedActiveRestock.monthly ? "Batch" : "Ticket"}{" "}
+                          {selectedActiveRestock.latestOrderNumber}
                         </span>
-                        {selectedActiveRestock.ticketCount > 1 ? (
-                          <span>{selectedActiveRestock.ticketCount} active tickets</span>
-                        ) : null}
+                        <span>
+                          {selectedActiveRestock.automated
+                            ? selectedActiveRestock.monthly
+                              ? "Automated monthly batch"
+                              : "Automated restock"
+                            : "Restock ticket"}
+                        </span>
                       </>
                     ) : null}
                   </div>
