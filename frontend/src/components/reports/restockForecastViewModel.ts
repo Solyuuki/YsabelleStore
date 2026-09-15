@@ -49,6 +49,13 @@ export type ActiveProductRestock = {
   totalRemaining: number;
 };
 
+export type DemandChartPoint = {
+  actual: number | null;
+  forecast: number | null;
+  label: string;
+  period: string;
+};
+
 export type NextMonthRestockPreview = {
   batchNumber: string;
   currentCycleQuantity: number;
@@ -57,6 +64,10 @@ export type NextMonthRestockPreview = {
   monthLabel: string;
   monthShortLabel: string;
   projectedOpeningStock: number;
+};
+
+export type AllProductsRestockPreview = NextMonthRestockPreview & {
+  productsToRestock: number;
 };
 
 export function formatNumber(value: number | null | undefined, digits = 0) {
@@ -163,7 +174,7 @@ export function orderStatusLabel(status: RestockOrderStatus) {
   }
 }
 
-export function buildDemandChart(candidate: RestockPlanningCandidate | null) {
+export function buildDemandChart(candidate: RestockPlanningCandidate | null): DemandChartPoint[] {
   if (!candidate?.forecast) return [];
 
   const historical = candidate.forecast.historical.slice(-6).map((point) => ({
@@ -180,6 +191,49 @@ export function buildDemandChart(candidate: RestockPlanningCandidate | null) {
   }));
 
   return [...historical, ...forecast];
+}
+
+export function buildAllProductsDemandChart(
+  candidates: RestockPlanningCandidate[]
+): DemandChartPoint[] {
+  const byPeriod = new Map<string, DemandChartPoint>();
+
+  for (const candidate of candidates) {
+    if (!candidate.forecast) continue;
+
+    for (const point of candidate.forecast.historical) {
+      const current = byPeriod.get(point.period) ?? {
+        actual: null,
+        forecast: null,
+        label: formatMonth(point.period),
+        period: point.period
+      };
+      current.actual = (current.actual ?? 0) + Math.max(0, point.quantitySold);
+      byPeriod.set(point.period, current);
+    }
+
+    for (const point of candidate.forecast.points) {
+      const current = byPeriod.get(point.period) ?? {
+        actual: null,
+        forecast: null,
+        label: formatMonth(point.period),
+        period: point.period
+      };
+      current.forecast = (current.forecast ?? 0) + Math.max(0, point.predictedQuantity);
+      byPeriod.set(point.period, current);
+    }
+  }
+
+  const sorted = [...byPeriod.values()].sort((left, right) => left.period.localeCompare(right.period));
+  const historical = sorted.filter((point) => point.actual !== null).slice(-6);
+  const forecast = sorted.filter((point) => point.forecast !== null).slice(0, 6);
+  const periods = new Map<string, DemandChartPoint>();
+
+  for (const point of [...historical, ...forecast]) {
+    periods.set(point.period, point);
+  }
+
+  return [...periods.values()].sort((left, right) => left.period.localeCompare(right.period));
 }
 
 export function usableStock(candidate: RestockPlanningCandidate | null) {
@@ -269,7 +323,43 @@ export function buildNextMonthRestockPreview(
   };
 }
 
-export function buildRestockPreviewChart(preview: NextMonthRestockPreview | null) {
+export function buildAllProductsRestockPreview(
+  candidates: RestockPlanningCandidate[],
+  activeRestockByProduct: Map<string, ActiveProductRestock>
+): AllProductsRestockPreview | null {
+  const previews = candidates
+    .map((candidate) =>
+      buildNextMonthRestockPreview(
+        candidate,
+        activeRestockByProduct.get(candidate.product.id) ?? null
+      )
+    )
+    .filter((preview): preview is NextMonthRestockPreview => preview !== null);
+
+  const first = previews[0];
+  if (!first) return null;
+
+  return {
+    batchNumber: first.batchNumber,
+    currentCycleQuantity: previews.reduce(
+      (sum, preview) => sum + preview.currentCycleQuantity,
+      0
+    ),
+    estimatedRestock: previews.reduce((sum, preview) => sum + preview.estimatedRestock, 0),
+    expectedDemand: previews.reduce((sum, preview) => sum + preview.expectedDemand, 0),
+    monthLabel: first.monthLabel,
+    monthShortLabel: first.monthShortLabel,
+    productsToRestock: previews.filter((preview) => preview.estimatedRestock > 0).length,
+    projectedOpeningStock: previews.reduce(
+      (sum, preview) => sum + preview.projectedOpeningStock,
+      0
+    )
+  };
+}
+
+export function buildRestockPreviewChart(
+  preview: NextMonthRestockPreview | AllProductsRestockPreview | null
+) {
   if (!preview) return [];
   const currentLabel = new Intl.DateTimeFormat("en-PH", {
     month: "short",
