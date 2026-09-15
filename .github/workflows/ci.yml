@@ -75,6 +75,24 @@ jobs:
       - name: Validate guardrail preconditions
         run: npm run guardrail:preflight
 
+      - name: Prepare formatted restock files
+        run: >-
+          npx prettier --write
+          backend/src/services/restockAutomationService.ts
+          backend/src/services/restockDemandForecastService.ts
+          frontend/src/components/reports/RestockForecastPanel.tsx
+          frontend/src/components/reports/restockForecastViewModel.ts
+
+      - name: Upload formatted restock files
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatted-restock-files
+          path: |
+            backend/src/services/restockAutomationService.ts
+            backend/src/services/restockDemandForecastService.ts
+            frontend/src/components/reports/RestockForecastPanel.tsx
+            frontend/src/components/reports/restockForecastViewModel.ts
+
       - name: Check formatting
         run: npm run format:check
 
