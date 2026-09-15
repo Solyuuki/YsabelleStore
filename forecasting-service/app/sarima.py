@@ -39,11 +39,53 @@ def _clean_interval(values: np.ndarray) -> list[float | None]:
     return cleaned
 
 
+def _fit_candidate(
+    series: pd.Series,
+    horizon: int,
+    order: tuple[int, int, int],
+    seasonal_order: tuple[int, int, int, int],
+) -> SarimaResult:
+    with warnings.catch_warnings(record=True) as captured:
+        warnings.simplefilter("always")
+        model = SARIMAX(
+            series,
+            order=order,
+            seasonal_order=seasonal_order,
+            enforce_stationarity=False,
+            enforce_invertibility=False,
+        )
+        fitted = model.fit(disp=False, maxiter=40)
+        predicted = fitted.get_forecast(steps=horizon)
+        mean_values = [float(value) for value in predicted.predicted_mean.to_numpy()]
+
+        if not all(isfinite(value) for value in mean_values):
+            raise ValueError("SARIMA produced a non-finite forecast.")
+
+        interval = predicted.conf_int(alpha=0.2).to_numpy()
+        return SarimaResult(
+            forecast=[round(max(0.0, value), 4) for value in mean_values],
+            lower=_clean_interval(interval[:, 0]),
+            upper=_clean_interval(interval[:, 1]),
+            fitted=[float(value) for value in fitted.fittedvalues.to_numpy()],
+            order=order,
+            seasonal_order=seasonal_order,
+            aic=round(float(fitted.aic), 4),
+            converged=bool(fitted.mle_retvals.get("converged", False)),
+            warnings=[
+                str(item.message)
+                for item in captured
+                if "Too few observations" not in str(item.message)
+            ],
+        )
+
+
 def fit_sarima(
     values: list[float],
     horizon: int,
     seasonal_period: int,
     start_period: str = "2024-01",
+    preferred_order: tuple[int, int, int] | None = None,
+    preferred_seasonal_order: tuple[int, int, int, int] | None = None,
 ) -> SarimaResult:
     if len(values) < 24:
         raise ValueError("SARIMA requires at least 24 completed monthly observations.")
@@ -55,46 +97,37 @@ def fit_sarima(
     )
     best: SarimaResult | None = None
     failures: list[str] = []
+    attempted_preferred: tuple[tuple[int, int, int], tuple[int, int, int, int]] | None = None
+
+    if (
+        preferred_order is not None
+        and preferred_seasonal_order is not None
+        and preferred_seasonal_order[3] == seasonal_period
+    ):
+        attempted_preferred = (preferred_order, preferred_seasonal_order)
+        try:
+            preferred = _fit_candidate(
+                series,
+                horizon,
+                preferred_order,
+                preferred_seasonal_order,
+            )
+            if preferred.converged:
+                return preferred
+            best = preferred
+        except Exception as exc:  # noqa: BLE001 - fall through to candidate search.
+            failures.append(f"{preferred_order}{preferred_seasonal_order}: {exc}")
 
     for order, seasonal in CANDIDATES:
         seasonal_order = (seasonal[0], seasonal[1], seasonal[2], seasonal_period)
 
+        if attempted_preferred == (order, seasonal_order):
+            continue
+
         try:
-            with warnings.catch_warnings(record=True) as captured:
-                warnings.simplefilter("always")
-                model = SARIMAX(
-                    series,
-                    order=order,
-                    seasonal_order=seasonal_order,
-                    enforce_stationarity=False,
-                    enforce_invertibility=False,
-                )
-                fitted = model.fit(disp=False, maxiter=40)
-                predicted = fitted.get_forecast(steps=horizon)
-                mean_values = [float(value) for value in predicted.predicted_mean.to_numpy()]
-
-                if not all(isfinite(value) for value in mean_values):
-                    raise ValueError("SARIMA produced a non-finite forecast.")
-
-                interval = predicted.conf_int(alpha=0.2).to_numpy()
-                candidate = SarimaResult(
-                    forecast=[round(max(0.0, value), 4) for value in mean_values],
-                    lower=_clean_interval(interval[:, 0]),
-                    upper=_clean_interval(interval[:, 1]),
-                    fitted=[float(value) for value in fitted.fittedvalues.to_numpy()],
-                    order=order,
-                    seasonal_order=seasonal_order,
-                    aic=round(float(fitted.aic), 4),
-                    converged=bool(fitted.mle_retvals.get("converged", False)),
-                    warnings=[
-                        str(item.message)
-                        for item in captured
-                        if "Too few observations" not in str(item.message)
-                    ],
-                )
-
-                if best is None or candidate.aic < best.aic:
-                    best = candidate
+            candidate = _fit_candidate(series, horizon, order, seasonal_order)
+            if best is None or candidate.aic < best.aic:
+                best = candidate
         except Exception as exc:  # noqa: BLE001 - translated to deterministic fallback by caller.
             failures.append(f"{order}{seasonal_order}: {exc}")
 
