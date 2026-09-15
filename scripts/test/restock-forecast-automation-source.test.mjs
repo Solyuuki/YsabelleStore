@@ -24,8 +24,14 @@ test("automation consumes actionable operational restock planning instead of for
   assert.equal(automationSource.includes("candidate.forecast?.batchId"), false);
   assert.equal(automationSource.includes("forecastBatchCache"), false);
   assert.equal(automationSource.includes('recommendationSource: "SARIMA"'), false);
-  assert.match(automationSource, /candidate\.recommendationSource !== "LOW_STOCK"/);
-  assert.match(automationSource, /candidate\.recommendationSource !== "TARGET_STOCK"/);
+  assert.match(
+    automationSource,
+    /candidate\.recommendationSource !== RestockRecommendationSource\.LOW_STOCK/
+  );
+  assert.match(
+    automationSource,
+    /candidate\.recommendationSource !== RestockRecommendationSource\.TARGET_STOCK/
+  );
 });
 
 test("owner demand forecast persistence does not trigger restock ticket generation", () => {
@@ -38,9 +44,11 @@ test("server starts the independent operational restock retry worker", () => {
   assert.match(serverSource, /restockAutomationService\.js/);
 });
 
-test("operational automation preserves duplicate and lifecycle safeguards", () => {
-  assert.equal(automationSource.includes("LIVE_TICKET_STATUSES"), true);
+test("operational automation preserves monthly duplicate and lifecycle safeguards", () => {
+  assert.equal(automationSource.includes("EXTENDABLE_BATCH_STATUSES"), true);
   assert.equal(automationSource.includes("RestockOrderStatus.CANCELLED"), true);
+  assert.equal(automationSource.includes("RestockOrderStatus.PARTIALLY_RECEIVED"), true);
   assert.equal(automationSource.includes("RestockOrderStatus.RECEIVED"), true);
+  assert.match(automationSource, /AutomatedRestockMonth:/);
   assert.match(automationSource, /AutomatedRestock:/);
 });
