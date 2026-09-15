@@ -105,9 +105,7 @@ function resolveExpectedDemand(series: RestockSalesPoint[], now: Date) {
   if (completedValues.length > 0) {
     return {
       confidence:
-        completedValues.length >= RECENT_COMPLETED_MONTHS
-          ? ("HIGH" as const)
-          : ("MEDIUM" as const),
+        completedValues.length >= RECENT_COMPLETED_MONTHS ? ("HIGH" as const) : ("MEDIUM" as const),
       demandSource: "RECENT_POS_SALES" as const,
       expected30d
     };
@@ -176,11 +174,7 @@ export function buildOperationalRestockForecast(
   const demandAndTargetGap = Math.max(
     0,
     Math.ceil(
-      targetStockLevel +
-        demand.expected30d +
-        expiryRiskQuantity -
-        sellableStock -
-        incomingStock
+      targetStockLevel + demand.expected30d + expiryRiskQuantity - sellableStock - incomingStock
     )
   );
   const reorderGap =
