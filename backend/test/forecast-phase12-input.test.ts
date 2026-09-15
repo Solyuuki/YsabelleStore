@@ -6,7 +6,12 @@ import {
   combineEffectiveMonthlyPoints,
   completedEffectiveSalesPoints
 } from "../src/modules/forecasting/effective-sales.service.js";
+import { sameForecastInput } from "../src/modules/forecasting/forecast.service.js";
 import { completedHistoryCutoff } from "../src/modules/forecasting/forecast-source-version.service.js";
+import type {
+  ProductForecastDetail,
+  ProductHistoricalSeries
+} from "../src/modules/forecasting/forecast.types.js";
 import { getDomainChangeEffects } from "../src/services/domainChangeService.js";
 
 test("current partial month is excluded from monthly SARIMA training history", () => {
@@ -63,6 +68,75 @@ test("clean short history remains usable through a fallback model", () => {
 
   assert.equal(eligibility.status, "INSUFFICIENT_HISTORY");
   assert.equal(eligibility.observationCount, 8);
+});
+
+test("unchanged per-product history is reusable without another SARIMA fit", () => {
+  const historical = [
+    {
+      category: "Beverages",
+      period: "2026-07",
+      productId: "P1",
+      productName: "Product 1",
+      quantitySold: 10,
+      sellingPrice: 20
+    },
+    {
+      category: "Beverages",
+      period: "2026-08",
+      productId: "P1",
+      productName: "Product 1",
+      quantitySold: 12,
+      sellingPrice: 20
+    }
+  ];
+  const input: ProductHistoricalSeries = {
+    category: "Beverages",
+    historical,
+    productId: "P1",
+    productName: "Product 1",
+    sellingPrice: 20
+  };
+  const previous: ProductForecastDetail = {
+    category: "Beverages",
+    error: null,
+    forecast: [],
+    generatedAt: "2026-09-01T00:00:00.000Z",
+    historical,
+    metrics: {
+      mae: null,
+      mape: null,
+      rmse: null,
+      validationStrategy: "test",
+      wape: null
+    },
+    model: "SARIMA",
+    modelDetails: {
+      aic: 1,
+      converged: true,
+      model: "SARIMA",
+      order: [0, 1, 1],
+      seasonalOrder: [0, 1, 1, 12]
+    },
+    productId: "P1",
+    productName: "Product 1",
+    sellingPrice: 20,
+    status: "READY",
+    warnings: []
+  };
+
+  assert.equal(sameForecastInput(input, previous), true);
+  assert.equal(
+    sameForecastInput(
+      {
+        ...input,
+        historical: input.historical.map((point, index) =>
+          index === 1 ? { ...point, quantitySold: point.quantitySold + 1 } : point
+        )
+      },
+      previous
+    ),
+    false
+  );
 });
 
 test("stock sold changes remain product-targeted while non-demand changes do not refit SARIMA", () => {
