@@ -344,7 +344,11 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
       monthlyOrder.status === RestockOrderStatus.DRAFT ? await findAutomationActorId() : null;
     if (monthlyOrder.status === RestockOrderStatus.DRAFT && !actorId) {
       console.warn("[restock] No active user is available to approve the monthly restock batch.");
-      return { orderId: monthlyOrder.id, orderNumber: monthlyOrder.orderNumber, status: "NO_ACTOR" };
+      return {
+        orderId: monthlyOrder.id,
+        orderNumber: monthlyOrder.orderNumber,
+        status: "NO_ACTOR"
+      };
     }
 
     const merged = await appendActionLinesToMonthlyBatch(monthlyOrder, actionLines);
@@ -375,14 +379,15 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
     return {
       orderId: latestLegacy.id,
       orderNumber: latestLegacy.orderNumber,
-      status:
-        latestLegacy.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
+      status: latestLegacy.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
     };
   }
 
   const actorId = await findAutomationActorId();
   if (!actorId) {
-    console.warn("[restock] No active user is available to own the automated monthly restock batch.");
+    console.warn(
+      "[restock] No active user is available to own the automated monthly restock batch."
+    );
     return { orderId: null, orderNumber: null, status: "NO_ACTOR" };
   }
 
