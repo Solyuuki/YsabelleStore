@@ -111,9 +111,7 @@ async function loadOperationalActionLines() {
   }
 }
 
-async function loadExistingAutomatedTickets(
-  fingerprint: string
-): Promise<RestockTicketIdentity[]> {
+async function loadExistingAutomatedTickets(fingerprint: string): Promise<RestockTicketIdentity[]> {
   return await prisma.restockOrder.findMany({
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     select: {
