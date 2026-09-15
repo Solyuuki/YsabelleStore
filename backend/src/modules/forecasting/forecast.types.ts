@@ -40,12 +40,18 @@ export type HistoricalSalesPoint = {
   quantitySold: number;
 };
 
+export type ForecastModelHint = {
+  order: [number, number, number];
+  seasonalOrder: [number, number, number, number];
+};
+
 export type ProductHistoricalSeries = {
   productId: string;
   productName: string;
   category: string;
   sellingPrice: number;
   historical: HistoricalSalesPoint[];
+  modelHint?: ForecastModelHint;
 };
 
 export type ForecastPoint = {
@@ -192,6 +198,8 @@ export type ForecastGenerationSummary = {
   forecastStartMonth: string | null;
   durationMs: number;
   totalProductsProcessed: number;
+  recomputedProducts?: number;
+  reusedProducts?: number;
   sarimaProducts: number;
   seasonalNaiveProducts: number;
   movingAverageProducts: number;
