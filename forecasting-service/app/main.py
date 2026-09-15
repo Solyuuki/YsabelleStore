@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from math import ceil, isfinite
 from pathlib import Path
 from typing import Any
@@ -216,6 +219,32 @@ def _fallback_product(
     }
 
 
+def _sarima_hint(
+    product: ProductSeries,
+    seasonal_period: int,
+) -> tuple[tuple[int, int, int] | None, tuple[int, int, int, int] | None]:
+    hint = product.get("modelHint")
+    if not isinstance(hint, dict):
+        return None, None
+
+    order = hint.get("order")
+    seasonal_order = hint.get("seasonalOrder")
+    if (
+        not isinstance(order, list)
+        or not isinstance(seasonal_order, list)
+        or len(order) != 3
+        or len(seasonal_order) != 4
+        or not all(isinstance(value, int) for value in [*order, *seasonal_order])
+        or seasonal_order[3] != seasonal_period
+    ):
+        return None, None
+
+    return (
+        (order[0], order[1], order[2]),
+        (seasonal_order[0], seasonal_order[1], seasonal_order[2], seasonal_order[3]),
+    )
+
+
 def forecast_product(
     product: ProductSeries,
     horizon: int,
@@ -262,11 +291,14 @@ def forecast_product(
         total_horizon, visible_offset = _required_generation_window(
             last_historical_period, effective_forecast_start, horizon
         )
+        preferred_order, preferred_seasonal_order = _sarima_hint(product, seasonal_period)
         result = fit_sarima(
             values,
             total_horizon,
             seasonal_period,
             start_period=first_historical_period,
+            preferred_order=preferred_order,
+            preferred_seasonal_order=preferred_seasonal_order,
         )
         status = "WARNING" if result.warnings or not result.converged else "READY"
         forecast_values = _visible_slice(result.forecast, visible_offset, horizon)
@@ -328,6 +360,20 @@ def forecast_product(
         )
 
 
+def _worker_count(product_count: int) -> int:
+    if product_count <= 1:
+        return 1
+
+    raw = os.getenv("FORECAST_WORKERS", "4")
+    try:
+        requested = int(raw)
+    except ValueError:
+        requested = 4
+
+    cpu_count = os.cpu_count() or 1
+    return max(1, min(product_count, requested, cpu_count, 4))
+
+
 def main() -> int:
     try:
         request: ForecastRequest = json.loads(sys.stdin.read())
@@ -335,13 +381,21 @@ def main() -> int:
         seasonal_period = int(request.get("seasonalPeriod", 12))
         forecast_start_period = str(request.get("forecastStartPeriod") or "")
         products = request.get("products", [])
+        forecast_one = partial(
+            forecast_product,
+            horizon=horizon,
+            seasonal_period=seasonal_period,
+            forecast_start_period=forecast_start_period,
+        )
+        workers = _worker_count(len(products))
 
-        response = {
-            "products": [
-                forecast_product(product, horizon, seasonal_period, forecast_start_period)
-                for product in products
-            ]
-        }
+        if workers > 1:
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                product_results = list(executor.map(forecast_one, products))
+        else:
+            product_results = [forecast_one(product) for product in products]
+
+        response = {"products": product_results}
         sys.stdout.write(json.dumps(response, separators=(",", ":")))
         return 0
     except Exception as exc:  # noqa: BLE001 - stderr is for backend diagnostics only.
