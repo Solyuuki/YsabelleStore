@@ -339,7 +339,7 @@ export function ForecastPage() {
   const listLoading = (initialLoading && !hasForecastData) || generationPending;
   const listControlsDisabled =
     listLoading || blockingCollectionError || forecastData?.status === "EMPTY";
-  const refreshInProgress = refreshing || forecastData?.isRefreshing;
+  const refreshInProgress = forecastData?.isRefreshing === true;
 
   return (
     <>
