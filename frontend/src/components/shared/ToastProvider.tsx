@@ -150,7 +150,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           return [nextToast, ...currentToasts];
         }
 
-        const oldestVisibleToasts = visibleProductAddedToasts.slice(-numberToSuppress);
+        const oldestVisibleToasts = visibleProductAddedToasts.slice(
+          -numberToSuppress
+        );
         const toastIdsToSuppress = new Set(
           oldestVisibleToasts.map((currentToast) => currentToast.id)
         );
