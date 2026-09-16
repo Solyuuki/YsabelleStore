@@ -33,9 +33,21 @@ def _historical_by_period(product: ProductSeries) -> dict[str, float]:
     }
 
 
-def _same_month_previous_year(product: ProductSeries, period: str) -> float | None:
+def _comparison_history_by_period(product: ProductSeries) -> dict[str, float]:
+    return {
+        str(point["period"]): float(point["quantitySold"])
+        for point in product.get("comparisonHistorical", [])
+    }
+
+
+def _same_month_previous_year(product: ProductSeries, period: str) -> tuple[float | None, bool]:
     comparison_period = add_months(period, -12)
-    return _historical_by_period(product).get(comparison_period)
+    verified = _historical_by_period(product).get(comparison_period)
+    if verified is not None:
+        return verified, False
+
+    reconstructed = _comparison_history_by_period(product).get(comparison_period)
+    return reconstructed, reconstructed is not None
 
 
 def _percentage_change(current: float, previous: float | None) -> float | None:
@@ -81,7 +93,7 @@ def _forecast_points(
         prediction = forecast_values[index]
         safe_prediction = round(max(0.0, prediction), 4) if isfinite(prediction) else 0.0
         recommended = max(0, ceil(safe_prediction))
-        previous = _same_month_previous_year(product, period)
+        previous, comparison_estimated = _same_month_previous_year(product, period)
         variance = _percentage_change(safe_prediction, previous)
 
         points.append(
@@ -93,8 +105,10 @@ def _forecast_points(
                 "upperConfidence": upper[index] if index < len(upper) else None,
                 "sameMonthLastYear": previous,
                 "comparisonSalesQuantity": previous,
+                "comparisonSalesEstimated": comparison_estimated,
                 # Legacy response keys are retained for frontend compatibility. The comparison
-                # now means the exact same month one year earlier, not a hard-coded 2025 row.
+                # now means the exact same month one year earlier, with a clearly marked
+                # reconstructed baseline only when verified records are unavailable.
                 "differenceVersus2025": round(safe_prediction - previous, 4)
                 if previous is not None
                 else None,
