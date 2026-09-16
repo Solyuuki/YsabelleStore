@@ -69,6 +69,7 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                       category={product.category.name}
                       imageUrl={product.imageUrl}
                       name={product.name}
+                      showCategory={false}
                     />
                     <div className="customer-cart-item__info">
                       <p className="customer-eyebrow">{product.category.name}</p>
