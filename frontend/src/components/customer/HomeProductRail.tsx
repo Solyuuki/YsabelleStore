@@ -37,15 +37,15 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
     const railItems = Array.from(
       viewport.querySelectorAll<HTMLElement>("[data-home-product-rail-item]")
     );
+    const firstItem = railItems[0];
 
-    if (!railItems.length) {
+    if (!firstItem) {
       setState(initialRailState);
       return;
     }
 
     const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
     const scrollLeft = Math.max(0, viewport.scrollLeft);
-    const firstItem = railItems[0];
     const secondItem = railItems[1];
     const itemStep = secondItem
       ? Math.max(1, secondItem.offsetLeft - firstItem.offsetLeft)
