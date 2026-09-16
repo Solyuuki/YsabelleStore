@@ -11,6 +11,7 @@ import {
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
+import { HomeProductRail } from "@/components/customer/HomeProductRail";
 import { ProductCard } from "@/components/customer/ProductCard";
 import { ProductImage } from "@/components/customer/ProductImage";
 import { useRevealOnView } from "@/hooks/useRevealOnView";
@@ -301,7 +302,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
             />
           ) : null}
           {products.status === "success" && everydayProducts.length ? (
-            <div className="customer-product-grid home-product-grid">
+            <HomeProductRail label="Everyday Essentials products">
               {everydayProducts.map((product, index) => (
                 <HomeProductCard
                   key={product.id}
@@ -312,7 +313,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
                   revealIndex={index}
                 />
               ))}
-            </div>
+            </HomeProductRail>
           ) : null}
           {products.status === "success" && !everydayProducts.length ? (
             <CompactSectionState
@@ -532,7 +533,7 @@ function MerchandisingShelf({
           {children}
         </SectionHeading>
         {entries.length ? (
-          <div className="customer-product-grid home-product-grid">
+          <HomeProductRail label={`${title} products`}>
             {entries.map((entry) => (
               <HomeProductCard
                 badge={getStorefrontProductBadge(entry.product, placement, entry.rank)}
@@ -543,7 +544,7 @@ function MerchandisingShelf({
                 revealIndex={entry.rank - 1}
               />
             ))}
-          </div>
+          </HomeProductRail>
         ) : (
           <MerchandisingShelfState placement={placement} {...emptyState} />
         )}
