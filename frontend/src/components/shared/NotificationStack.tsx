@@ -5,7 +5,13 @@ import { isInternalAppRoutePath } from "@/utils/internalAuthRoutes";
 export function NotificationStack() {
   const { dismissToast, toasts } = useToast();
   const isInternalRoute = isInternalAppRoutePath(window.location.pathname);
-  const visibleToasts = isInternalRoute ? toasts : toasts.filter((toast) => toast.scope !== "auth");
+  const eligibleToasts = isInternalRoute
+    ? toasts
+    : toasts.filter((toast) => toast.scope !== "auth");
+  const visibleToasts = eligibleToasts.filter((toast) => !toast.suppressed);
+  const suppressedToastCount = eligibleToasts.filter(
+    (toast) => toast.suppressed && !toast.closing
+  ).length;
 
   if (visibleToasts.length === 0) {
     return null;
@@ -20,6 +26,14 @@ export function NotificationStack() {
       {visibleToasts.map((toast) => (
         <Toast key={toast.id} onDismiss={dismissToast} toast={toast} />
       ))}
+      {suppressedToastCount > 0 ? (
+        <span
+          aria-label={`${suppressedToastCount} more recent confirmations`}
+          className="self-end rounded-full border border-emerald-200 bg-emerald-50/95 px-2.5 py-1 text-xs font-semibold text-emerald-700 shadow-sm backdrop-blur-sm"
+        >
+          {suppressedToastCount > 99 ? "99+" : `+${suppressedToastCount}`}
+        </span>
+      ) : null}
     </div>
   );
 }

@@ -14,4 +14,5 @@ export type ToastItem = {
   createdAt: number;
   durationMs: number;
   id: string;
+  suppressed: boolean;
 } & ToastInput;

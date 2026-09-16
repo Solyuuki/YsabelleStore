@@ -23,12 +23,17 @@ const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 const DEFAULT_TOAST_DURATION_MS = 3800;
 const TOAST_EXIT_DURATION_MS = 220;
+const MAX_VISIBLE_PRODUCT_ADDED_TOASTS = 3;
 
 let toastSequence = 0;
 
 function createToastId() {
   toastSequence += 1;
   return `toast-${toastSequence}`;
+}
+
+function isProductAddedToast(toast: Pick<ToastInput, "title" | "variant">) {
+  return toast.variant === "success" && toast.title === "Product added";
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -92,6 +97,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     (toast: ToastInput) => {
       const matchingToast = toasts.find(
         (currentToast) =>
+          !currentToast.closing &&
+          !currentToast.suppressed &&
           currentToast.title === toast.title &&
           currentToast.message === toast.message &&
           currentToast.variant === toast.variant &&
@@ -107,6 +114,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         message: toast.message,
         persistent: toast.persistent,
         scope: toast.scope,
+        suppressed: false,
         title: toast.title,
         variant: toast.variant
       };
@@ -126,7 +134,36 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         return matchingToast.id;
       }
 
-      setToasts((currentToasts) => [nextToast, ...currentToasts]);
+      setToasts((currentToasts) => {
+        if (!isProductAddedToast(nextToast)) {
+          return [nextToast, ...currentToasts];
+        }
+
+        const visibleProductAddedToasts = currentToasts
+          .filter((currentToast) => !currentToast.suppressed && isProductAddedToast(currentToast))
+          .sort((left, right) => left.createdAt - right.createdAt);
+        const numberToSuppress = Math.max(
+          0,
+          visibleProductAddedToasts.length - MAX_VISIBLE_PRODUCT_ADDED_TOASTS + 1
+        );
+
+        if (numberToSuppress === 0) {
+          return [nextToast, ...currentToasts];
+        }
+
+        const toastIdsToSuppress = new Set(
+          visibleProductAddedToasts.slice(0, numberToSuppress).map((currentToast) => currentToast.id)
+        );
+
+        return [
+          nextToast,
+          ...currentToasts.map((currentToast) =>
+            toastIdsToSuppress.has(currentToast.id)
+              ? { ...currentToast, suppressed: true }
+              : currentToast
+          )
+        ];
+      });
       restartToastTimer(nextToast);
 
       return id;
