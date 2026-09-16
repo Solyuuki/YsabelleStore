@@ -79,7 +79,7 @@ function buildChartData(forecast: ForecastPoint[]) {
   return forecast.map((point) => ({
     forecastedDemand: point.predictedQuantity,
     month: formatMonthLabel(point.period),
-    salesLastYear: point.comparisonSalesQuantity
+    priorYearComparison: point.comparisonSalesQuantity
   }));
 }
 
@@ -690,6 +690,7 @@ function MonthlyForecastCard({
       : hasForecastData
         ? "Select a product to view its 12-month forecast."
         : "The selected product forecast will appear when data is ready.";
+  const hasEstimatedComparison = forecastRows.some((point) => point.comparisonSalesEstimated);
 
   return (
     <Card className="flex h-full min-h-0 flex-col">
@@ -813,8 +814,8 @@ function MonthlyForecastCard({
                   />
                   <Line
                     connectNulls={false}
-                    dataKey="salesLastYear"
-                    name="Sales Last Year"
+                    dataKey="priorYearComparison"
+                    name="Prior-Year Comparison"
                     stroke="#047857"
                     strokeWidth={2}
                   />
@@ -822,13 +823,21 @@ function MonthlyForecastCard({
               </ResponsiveContainer>
             </div>
 
+            {hasEstimatedComparison ? (
+              <p className="text-xs text-slate-500">
+                * Some prior-year values are reconstructed estimates because verified 2026 records
+                are unavailable. They are shown for comparison only and are not used as SARIMA
+                training history.
+              </p>
+            ) : null}
+
             <div className="rounded-md border border-slate-200">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
                     <th className="px-3 py-2 text-left">Month</th>
                     <th className="px-3 py-2 text-right">Forecasted Demand</th>
-                    <th className="px-3 py-2 text-right">Sales Last Year</th>
+                    <th className="px-3 py-2 text-right">Prior-Year Comparison</th>
                     <th className="px-3 py-2 text-right">Expected Change</th>
                   </tr>
                 </thead>
@@ -841,6 +850,9 @@ function MonthlyForecastCard({
                       </td>
                       <td className="px-3 py-2 text-right">
                         {formatNumber(point.comparisonSalesQuantity)}
+                        {point.comparisonSalesEstimated ? (
+                          <span className="ml-1 text-xs text-slate-500">(est.)</span>
+                        ) : null}
                       </td>
                       <td
                         className={`px-3 py-2 text-right font-medium ${expectedChangeClassName(point.forecastVariancePercentage)}`}
