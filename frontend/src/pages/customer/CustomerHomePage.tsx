@@ -168,7 +168,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
           imageUrl: item.imageUrl,
           slug: item.slug
         }));
-  const everydayProducts = selectEverydayProducts(products.data, categories.data, 3);
+  const everydayProducts = selectEverydayProducts(products.data, categories.data, 12);
   const catalogProductCount = categories.data.reduce(
     (total, category) => total + category.productCount,
     0
