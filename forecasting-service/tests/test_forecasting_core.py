@@ -12,6 +12,7 @@ from app.evaluation import calculate_metrics  # noqa: E402
 from app.fallback import moving_average, seasonal_naive  # noqa: E402
 from app.main import _sarima_hint, _worker_count, forecast_product  # noqa: E402
 from app.preprocessing import add_months, visible_forecast_periods  # noqa: E402
+from app.sarima import _deadline_callback, _fit_timeout_seconds  # noqa: E402
 
 
 def _product_from_start(values: list[int], start_period: str = "2024-01") -> dict:
@@ -184,3 +185,22 @@ def test_parallel_worker_count_is_conservative(monkeypatch) -> None:
 
     assert _worker_count(1) == 1
     assert 1 <= _worker_count(472) <= 4
+
+
+def test_sarima_fit_timeout_is_bounded(monkeypatch) -> None:
+    monkeypatch.setenv("SARIMA_FIT_TIMEOUT_SECONDS", "999")
+    assert _fit_timeout_seconds() == 60.0
+
+    monkeypatch.setenv("SARIMA_FIT_TIMEOUT_SECONDS", "0")
+    assert _fit_timeout_seconds() == 0.5
+
+
+def test_sarima_deadline_callback_aborts_expired_fit() -> None:
+    callback = _deadline_callback(0.0)
+
+    try:
+        callback([])
+    except TimeoutError:
+        pass
+    else:
+        raise AssertionError("Expired SARIMA fit should raise TimeoutError.")
