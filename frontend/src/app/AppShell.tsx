@@ -317,7 +317,7 @@ function renderRoute(
 
   switch (route.path) {
     case "/dashboard":
-      return <DashboardPage />;
+      return <DashboardPage onNavigate={navigate} />;
     case "/pos":
       return <PosPage />;
     case "/products":
