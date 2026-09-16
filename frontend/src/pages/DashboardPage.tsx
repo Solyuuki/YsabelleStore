@@ -446,7 +446,8 @@ function SalesActivityCard({ summary }: { summary: DashboardSummary }) {
                 }}
                 cursor={{ stroke: "#c4b5fd", strokeDasharray: "4 4" }}
                 formatter={(value) => [formatCurrency(Number(value)), "Sales"]}
-                labelStyle={{ color: "#ede9fe", marginBottom: "4px" }}
+                itemStyle={{ color: "#ffffff" }}
+                labelStyle={{ color: "#ffffff", fontWeight: 600, marginBottom: "4px" }}
               />
               <Area
                 dataKey="amount"
