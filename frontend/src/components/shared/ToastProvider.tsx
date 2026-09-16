@@ -139,20 +139,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           return [nextToast, ...currentToasts];
         }
 
-        const visibleProductAddedToasts = currentToasts
-          .filter((currentToast) => !currentToast.suppressed && isProductAddedToast(currentToast))
-          .sort((left, right) => left.createdAt - right.createdAt);
-        const numberToSuppress = Math.max(
-          0,
-          visibleProductAddedToasts.length - MAX_VISIBLE_PRODUCT_ADDED_TOASTS + 1
+        const visibleProductAddedToasts = currentToasts.filter(
+          (currentToast) =>
+            !currentToast.suppressed && isProductAddedToast(currentToast)
         );
+        visibleProductAddedToasts.sort((left, right) => left.createdAt - right.createdAt);
 
-        if (numberToSuppress === 0) {
+        const numberToSuppress =
+          visibleProductAddedToasts.length - MAX_VISIBLE_PRODUCT_ADDED_TOASTS + 1;
+
+        if (numberToSuppress <= 0) {
           return [nextToast, ...currentToasts];
         }
 
+        const oldestVisibleToasts = visibleProductAddedToasts.slice(0, numberToSuppress);
         const toastIdsToSuppress = new Set(
-          visibleProductAddedToasts.slice(0, numberToSuppress).map((currentToast) => currentToast.id)
+          oldestVisibleToasts.map((currentToast) => currentToast.id)
         );
 
         return [
