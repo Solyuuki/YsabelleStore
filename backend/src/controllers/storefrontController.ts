@@ -136,9 +136,11 @@ export const createStorefrontOrderController: RequestHandler = async (request, r
       customer ? { customerAccountId: customer.id } : {}
     );
 
-    await saveCustomerOrderAddressSnapshot(order.id, body.customerAddress);
-    if (customer && body.saveAddressToAccount) {
-      await saveCustomerAddress(customer.id, body.customerAddress);
+    if (body.customerAddress) {
+      await saveCustomerOrderAddressSnapshot(order.id, body.customerAddress);
+      if (customer && body.saveAddressToAccount) {
+        await saveCustomerAddress(customer.id, body.customerAddress);
+      }
     }
 
     response.status(201).json(createSuccessResponse("Pickup order placed successfully.", order));
