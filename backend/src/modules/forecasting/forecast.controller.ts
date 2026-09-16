@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 
 import { createSuccessResponse } from "../../utils/apiResponse.js";
 import { HttpError } from "../../utils/httpError.js";
+import { withReconstructedComparisonOverlay } from "./forecast-comparison-overlay.service.js";
 import {
   forecastDetailQuerySchema,
   forecastGenerateBodySchema,
@@ -84,7 +85,8 @@ export const getForecastProduct: RequestHandler = async (request, response, next
       });
     }
 
-    const result = await getForecastProductDetail(productId, parsedQuery.data.batchId);
+    const persistedDetail = await getForecastProductDetail(productId, parsedQuery.data.batchId);
+    const result = await withReconstructedComparisonOverlay(persistedDetail);
 
     response.status(200).json(createSuccessResponse("Forecast product loaded.", result));
   } catch (error) {
