@@ -1,9 +1,6 @@
 import { prisma } from "../../database/prismaClient.js";
 import { operationalProductWhere } from "../../services/catalogQualityPolicy.js";
-import type {
-  HistoricalSalesPoint,
-  ProductHistoricalSeries
-} from "./forecast.types.js";
+import type { HistoricalSalesPoint, ProductHistoricalSeries } from "./forecast.types.js";
 import { getActiveForecastMonth } from "./forecast-window.js";
 import {
   loadHistoricalSalesFallbackData,
