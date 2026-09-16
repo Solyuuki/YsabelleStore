@@ -1,7 +1,7 @@
 import type { RequestHandler } from "express";
 
 import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
-import { getDashboardSummary } from "../services/dashboardService.js";
+import { getDashboardOperations, getDashboardSummary } from "../services/dashboardService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 
@@ -20,6 +20,18 @@ export const getDashboardSummaryController: RequestHandler = async (request, res
     response
       .status(200)
       .json(createSuccessResponse("Dashboard summary loaded successfully.", summary));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getDashboardOperationsController: RequestHandler = async (_request, response, next) => {
+  try {
+    const operations = await getDashboardOperations();
+
+    response
+      .status(200)
+      .json(createSuccessResponse("Dashboard operations loaded successfully.", operations));
   } catch (error) {
     next(error);
   }
