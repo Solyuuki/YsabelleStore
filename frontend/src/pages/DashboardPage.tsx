@@ -23,6 +23,7 @@ import {
   fetchDashboardOperations,
   fetchDashboardSummary,
   type DashboardOperations,
+  type DashboardRestockAction,
   type DashboardRestockOrderStatus,
   type DashboardRestockRecommendationSource,
   type DashboardRestockRisk,
@@ -338,197 +339,12 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
           </section>
 
           {isOwner ? (
-            <section className="grid items-start gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-              <Card>
-                <CardHeader>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <CardTitle>Needs attention</CardTitle>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Existing restock decisions ranked for quick owner review.
-                      </p>
-                    </div>
-                    {operations ? (
-                      <StatusBadge
-                        variant={operations.restock.actionableProducts > 0 ? "warning" : "success"}
-                      >
-                        {operations.restock.actionableProducts > 0
-                          ? `${operations.restock.actionableProducts} actionable`
-                          : "No action needed"}
-                      </StatusBadge>
-                    ) : null}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {operationsLoading && !operations ? (
-                    <div className="rounded-md border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-                      Loading replenishment actions...
-                    </div>
-                  ) : operationsError && !operations ? (
-                    <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                      {operationsError}
-                    </div>
-                  ) : operations && operations.restock.actions.length > 0 ? (
-                    <div className="space-y-3">
-                      {operations.restock.actions.map((action) => (
-                        <div
-                          className="rounded-lg border border-slate-200 bg-slate-50/70 p-4"
-                          key={action.product.id}
-                        >
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <p className="font-semibold text-slate-950">{action.product.name}</p>
-                                <StatusBadge variant={riskVariant(action.riskLevel)}>
-                                  {action.riskLevel}
-                                </StatusBadge>
-                              </div>
-                              <p className="mt-1 text-xs text-slate-500">
-                                {action.product.sku} • {sourceLabel(action.recommendationSource)}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                                Suggested
-                              </p>
-                              <p className="text-lg font-semibold text-slate-950">
-                                {action.recommendedQuantity.toLocaleString()} units
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
-                            <span>{action.sellableStock.toLocaleString()} sellable</span>
-                            <span>{action.incomingStock.toLocaleString()} incoming</span>
-                            {action.expiryRiskQuantity > 0 ? (
-                              <span className="text-amber-700">
-                                {action.expiryRiskQuantity.toLocaleString()} expiry-risk
-                              </span>
-                            ) : null}
-                          </div>
-                          <p className="mt-2 text-xs leading-5 text-slate-600">{action.rationale}</p>
-                        </div>
-                      ))}
-
-                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                        <p className="text-xs text-slate-500">
-                          {operations.restock.suggestedUnits.toLocaleString()} total suggested units across all current actions.
-                        </p>
-                        <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
-                          <ClipboardList className="h-4 w-4" />
-                          Open restock planner
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-5 text-sm text-emerald-800">
-                      Current sellable and incoming stock cover the active replenishment policy.
-                    </div>
-                  )}
-
-                  {operationsError && operations ? (
-                    <p className="mt-3 text-xs text-amber-700">
-                      Latest refresh warning: {operationsError}
-                    </p>
-                  ) : null}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <CardTitle>Restock pipeline</CardTitle>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Order state only; inventory changes after receiving.
-                      </p>
-                    </div>
-                    <Truck className="h-5 w-5 text-slate-400" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {operations ? (
-                    <div className="space-y-3">
-                      <PipelineRow
-                        label="Ready to receive"
-                        value={operations.restock.queue.readyToReceive}
-                        warning={operations.restock.queue.readyToReceive > 0}
-                      />
-                      <PipelineRow
-                        label="Partially received"
-                        value={operations.restock.queue.partiallyReceived}
-                        warning={operations.restock.queue.partiallyReceived > 0}
-                      />
-                      <PipelineRow
-                        label="Draft orders"
-                        value={operations.restock.queue.draft}
-                      />
-                      <PipelineRow
-                        label="Open pipeline"
-                        value={operations.restock.queue.totalOpen}
-                      />
-
-                      {operations.restock.latestOpenOrder ? (
-                        <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div>
-                              <p className="text-xs text-slate-500">Latest open order</p>
-                              <p className="mt-0.5 font-semibold text-slate-950">
-                                {operations.restock.latestOpenOrder.orderNumber}
-                              </p>
-                            </div>
-                            <StatusBadge
-                              variant={orderStatusVariant(operations.restock.latestOpenOrder.status)}
-                            >
-                              {orderStatusLabel(operations.restock.latestOpenOrder.status)}
-                            </StatusBadge>
-                          </div>
-                          <p className="mt-2 text-xs leading-5 text-slate-600">
-                            {operations.restock.latestOpenOrder.productLines.toLocaleString()} product lines • {operations.restock.latestOpenOrder.remainingUnits.toLocaleString()} units remaining of {operations.restock.latestOpenOrder.requestedUnits.toLocaleString()}
-                          </p>
-                          <p className="mt-1 text-[11px] text-slate-500">
-                            {operations.restock.latestOpenOrder.automated
-                              ? "Automated monthly restock batch"
-                              : "Owner-created restock order"}
-                            {" • "}
-                            updated {dateTimeFormatter.format(new Date(operations.restock.latestOpenOrder.updatedAt))}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="rounded-md border border-dashed border-slate-200 px-3 py-4 text-xs text-slate-500">
-                          No open restock orders.
-                        </div>
-                      )}
-
-                      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                        <Button onClick={() => onNavigate("/receiving")} size="sm" type="button">
-                          <Truck className="h-4 w-4" />
-                          Open receiving
-                        </Button>
-                        <Button
-                          onClick={() => onNavigate("/reports")}
-                          size="sm"
-                          type="button"
-                          variant="secondary"
-                        >
-                          <ClipboardList className="h-4 w-4" />
-                          Review restock
-                        </Button>
-                      </div>
-                    </div>
-                  ) : operationsLoading ? (
-                    <div className="rounded-md border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-                      Loading restock pipeline...
-                    </div>
-                  ) : (
-                    <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                      Restock pipeline is temporarily unavailable.
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </section>
+            <OwnerOperations
+              error={operationsError}
+              loading={operationsLoading}
+              onNavigate={onNavigate}
+              operations={operations}
+            />
           ) : null}
 
           <section className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">
@@ -592,6 +408,228 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
   );
 }
 
+type OwnerOperationsProps = {
+  error: string | null;
+  loading: boolean;
+  onNavigate: (path: AppRoutePath) => void;
+  operations: DashboardOperations | null;
+};
+
+function OwnerOperations({ error, loading, onNavigate, operations }: OwnerOperationsProps) {
+  return (
+    <section className="grid items-start gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+      <RestockActionsCard
+        error={error}
+        loading={loading}
+        onNavigate={onNavigate}
+        operations={operations}
+      />
+      <RestockPipelineCard
+        loading={loading}
+        onNavigate={onNavigate}
+        operations={operations}
+      />
+    </section>
+  );
+}
+
+function RestockActionsCard({
+  error,
+  loading,
+  onNavigate,
+  operations
+}: OwnerOperationsProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <CardTitle>Needs attention</CardTitle>
+            <p className="mt-1 text-xs text-slate-500">
+              Existing restock decisions ranked for quick owner review.
+            </p>
+          </div>
+          {operations ? (
+            <StatusBadge
+              variant={operations.restock.actionableProducts > 0 ? "warning" : "success"}
+            >
+              {operations.restock.actionableProducts > 0
+                ? `${operations.restock.actionableProducts} actionable`
+                : "No action needed"}
+            </StatusBadge>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading && !operations ? (
+          <DashboardPanelLoading label="Loading replenishment actions..." />
+        ) : error && !operations ? (
+          <DashboardPanelError message={error} />
+        ) : operations && operations.restock.actions.length > 0 ? (
+          <div className="space-y-3">
+            {operations.restock.actions.map((action) => (
+              <RestockActionCard action={action} key={action.product.id} />
+            ))}
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+              <p className="text-xs text-slate-500">
+                {operations.restock.suggestedUnits.toLocaleString()} total suggested units across all
+                current actions.
+              </p>
+              <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
+                <ClipboardList className="h-4 w-4" />
+                Open restock planner
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-5 text-sm text-emerald-800">
+            Current sellable and incoming stock cover the active replenishment policy.
+          </div>
+        )}
+
+        {error && operations ? (
+          <p className="mt-3 text-xs text-amber-700">Latest refresh warning: {error}</p>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function RestockActionCard({ action }: { action: DashboardRestockAction }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-semibold text-slate-950">{action.product.name}</p>
+            <StatusBadge variant={riskVariant(action.riskLevel)}>{action.riskLevel}</StatusBadge>
+          </div>
+          <p className="mt-1 text-xs text-slate-500">
+            {action.product.sku} • {sourceLabel(action.recommendationSource)}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Suggested</p>
+          <p className="text-lg font-semibold text-slate-950">
+            {action.recommendedQuantity.toLocaleString()} units
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
+        <span>{action.sellableStock.toLocaleString()} sellable</span>
+        <span>{action.incomingStock.toLocaleString()} incoming</span>
+        {action.expiryRiskQuantity > 0 ? (
+          <span className="text-amber-700">
+            {action.expiryRiskQuantity.toLocaleString()} expiry-risk
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-2 text-xs leading-5 text-slate-600">{action.rationale}</p>
+    </div>
+  );
+}
+
+function RestockPipelineCard({
+  loading,
+  onNavigate,
+  operations
+}: Omit<OwnerOperationsProps, "error">) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <CardTitle>Restock pipeline</CardTitle>
+            <p className="mt-1 text-xs text-slate-500">
+              Order state only; inventory changes after receiving.
+            </p>
+          </div>
+          <Truck className="h-5 w-5 text-slate-400" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        {operations ? (
+          <div className="space-y-3">
+            <PipelineRow
+              label="Ready to receive"
+              value={operations.restock.queue.readyToReceive}
+              warning={operations.restock.queue.readyToReceive > 0}
+            />
+            <PipelineRow
+              label="Partially received"
+              value={operations.restock.queue.partiallyReceived}
+              warning={operations.restock.queue.partiallyReceived > 0}
+            />
+            <PipelineRow label="Draft orders" value={operations.restock.queue.draft} />
+            <PipelineRow label="Open pipeline" value={operations.restock.queue.totalOpen} />
+
+            {operations.restock.latestOpenOrder ? (
+              <LatestRestockOrder order={operations.restock.latestOpenOrder} />
+            ) : (
+              <div className="rounded-md border border-dashed border-slate-200 px-3 py-4 text-xs text-slate-500">
+                No open restock orders.
+              </div>
+            )}
+
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              <Button onClick={() => onNavigate("/receiving")} size="sm" type="button">
+                <Truck className="h-4 w-4" />
+                Open receiving
+              </Button>
+              <Button
+                onClick={() => onNavigate("/reports")}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                <ClipboardList className="h-4 w-4" />
+                Review restock
+              </Button>
+            </div>
+          </div>
+        ) : loading ? (
+          <DashboardPanelLoading label="Loading restock pipeline..." />
+        ) : (
+          <DashboardPanelError message="Restock pipeline is temporarily unavailable." />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+type LatestRestockOrderProps = {
+  order: NonNullable<DashboardOperations["restock"]["latestOpenOrder"]>;
+};
+
+function LatestRestockOrder({ order }: LatestRestockOrderProps) {
+  return (
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="text-xs text-slate-500">Latest open order</p>
+          <p className="mt-0.5 font-semibold text-slate-950">{order.orderNumber}</p>
+        </div>
+        <StatusBadge variant={orderStatusVariant(order.status)}>
+          {orderStatusLabel(order.status)}
+        </StatusBadge>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-slate-600">
+        {order.productLines.toLocaleString()} product lines • {order.remainingUnits.toLocaleString()}
+        {" units remaining of "}
+        {order.requestedUnits.toLocaleString()}
+      </p>
+      <p className="mt-1 text-[11px] text-slate-500">
+        {order.automated ? "Automated monthly restock batch" : "Owner-created restock order"}
+        {" • updated "}
+        {dateTimeFormatter.format(new Date(order.updatedAt))}
+      </p>
+    </div>
+  );
+}
+
 function PipelineRow({
   label,
   value,
@@ -611,6 +649,22 @@ function PipelineRow({
       >
         {value.toLocaleString()}
       </span>
+    </div>
+  );
+}
+
+function DashboardPanelLoading({ label }: { label: string }) {
+  return (
+    <div className="rounded-md border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+      {label}
+    </div>
+  );
+}
+
+function DashboardPanelError({ message }: { message: string }) {
+  return (
+    <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      {message}
     </div>
   );
 }
