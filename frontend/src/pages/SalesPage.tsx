@@ -7,17 +7,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { listRecentSales } from "@/services/posService";
 import { requestReceiptPrint } from "@/services/receiptPrint";
 import type { PosSale } from "@/types/pos";
@@ -32,13 +23,6 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
 });
 
 const SALES_PAGE_SIZE = 10;
-
-function formatSaleDate(value: string, style: "short" | "full" = "short") {
-  return new Intl.DateTimeFormat("en-PH", {
-    dateStyle: style === "full" ? "full" : "medium",
-    timeStyle: "short"
-  }).format(new Date(value));
-}
 
 export function SalesPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -128,12 +112,6 @@ export function SalesPage() {
     }
   }, [paginatedSales, sales.length, selectedSaleId]);
 
-  function openReceiptDialog(sale: PosSale) {
-    setReceiptSale(sale);
-    setReceiptPrintError(null);
-    setIsReceiptDialogOpen(true);
-  }
-
   async function handlePrintReceipt() {
     if (!receiptSale || isPrintingReceipt) {
       return;
@@ -162,7 +140,7 @@ export function SalesPage() {
         description="Recent persisted sales and receipt totals from the live database."
       />
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_440px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_460px]">
+      <section className="grid gap-4 xl:grid-cols-[1fr_420px] xl:items-start">
         <Card className="border-slate-200/80 bg-white/95 shadow-sm">
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -181,7 +159,6 @@ export function SalesPage() {
               </StatusBadge>
             </div>
           </CardHeader>
-
           <CardContent>
             {isLoading ? (
               <LoadingState
@@ -200,58 +177,50 @@ export function SalesPage() {
                 title="No sales recorded yet"
               />
             ) : (
-              <div className="space-y-4">
-                <div className="overflow-x-auto rounded-md border border-slate-200">
-                  <Table className="min-w-[640px]">
-                    <TableHeader className="bg-slate-50">
-                      <TableRow>
-                        <TableHead>Receipt</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="w-20 text-center">Items</TableHead>
-                        <TableHead className="w-32 text-right">Total</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+              <div className="space-y-3">
+                <div className="overflow-hidden rounded-md border border-slate-200">
+                  <table className="w-full table-fixed border-collapse text-left text-sm">
+                    <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
+                      <tr>
+                        <th className="px-4 py-3 font-medium">Receipt</th>
+                        <th className="px-4 py-3 font-medium">Date</th>
+                        <th className="px-4 py-3 font-medium">Items</th>
+                        <th className="px-4 py-3 font-medium">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                       {paginatedSales.map((sale) => {
                         const isSelected = sale.id === selectedSale?.id;
 
                         return (
-                          <TableRow
-                            aria-selected={isSelected}
-                            className={`cursor-pointer ${
-                              isSelected ? "bg-indigo-50/80" : "hover:bg-slate-50"
+                          <tr
+                            className={`cursor-pointer border-t border-slate-200 transition-colors ${
+                              isSelected ? "bg-emerald-50" : "hover:bg-slate-50"
                             }`}
                             key={sale.id}
                             onClick={() => setSelectedSaleId(sale.id)}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                setSelectedSaleId(sale.id);
-                              }
-                            }}
-                            role="button"
-                            tabIndex={0}
                           >
-                            <TableCell>
+                            <td className="px-4 py-3">
                               <p className="font-medium text-slate-950">{sale.saleNumber}</p>
-                              <p className="mt-1 text-xs text-slate-500">
+                              <p className="text-xs text-slate-500">
                                 {sale.cashierName ?? "Unassigned cashier"}
                               </p>
-                            </TableCell>
-                            <TableCell className="text-slate-600">
-                              {formatSaleDate(sale.saleDate)}
-                            </TableCell>
-                            <TableCell className="text-center text-slate-600">
-                              {sale.itemCount}
-                            </TableCell>
-                            <TableCell className="text-right font-semibold text-slate-950">
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">
+                              {new Intl.DateTimeFormat("en-PH", {
+                                dateStyle: "medium",
+                                timeStyle: "short"
+                              }).format(new Date(sale.saleDate))}
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">{sale.itemCount}</td>
+                            <td className="px-4 py-3 font-semibold text-slate-950">
                               {currencyFormatter.format(Number(sale.totalAmount))}
-                            </TableCell>
-                          </TableRow>
+                            </td>
+                          </tr>
                         );
                       })}
-                    </TableBody>
-                  </Table>
+                    </tbody>
+                  </table>
                 </div>
 
                 <AppPagination
@@ -276,103 +245,93 @@ export function SalesPage() {
                 type="button"
                 variant="secondary"
                 onClick={() => {
-                  if (selectedSale) {
-                    openReceiptDialog(selectedSale);
+                  if (!selectedSale) {
+                    return;
                   }
+
+                  setReceiptSale(selectedSale);
+                  setReceiptPrintError(null);
+                  setIsReceiptDialogOpen(true);
                 }}
               >
                 Print receipt
               </Button>
             </div>
           </CardHeader>
-
-          <CardContent className="xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:px-0 xl:pb-5">
+          <CardContent className="xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
             {selectedSale ? (
               <div className="space-y-4 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:space-y-0">
-                <div className="px-5 xl:shrink-0">
-                  <Card className="border-slate-200 bg-slate-50/80 shadow-none">
-                    <CardContent className="p-4">
-                      <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Receipt</p>
-                      <h3 className="mt-1 break-words text-base font-semibold text-slate-950">
-                        {selectedSale.saleNumber}
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {formatSaleDate(selectedSale.saleDate, "full")}
-                      </p>
-                      <p className="mt-2 text-sm text-slate-600">
-                        Cashier:{" "}
-                        <span className="font-medium text-slate-950">
-                          {selectedSale.cashierName ?? "Unknown"}
-                        </span>
-                      </p>
-                    </CardContent>
-                  </Card>
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-4 xl:shrink-0">
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Receipt</p>
+                  <h3 className="mt-1 text-lg font-semibold text-slate-950">
+                    {selectedSale.saleNumber}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {new Intl.DateTimeFormat("en-PH", {
+                      dateStyle: "full",
+                      timeStyle: "short"
+                    }).format(new Date(selectedSale.saleDate))}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Cashier:{" "}
+                    <span className="font-medium text-slate-950">
+                      {selectedSale.cashierName ?? "Unknown"}
+                    </span>
+                  </p>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pb-6 pr-5 [scrollbar-gutter:stable]">
-                  <div className="space-y-3 pb-2">
-                    {selectedSale.items.map((item) => (
-                      <Card className="border-slate-200 bg-white shadow-none" key={item.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium leading-5 text-slate-950">
-                                {item.productName}
-                              </p>
-                              <p className="mt-1 break-all text-xs text-slate-500">
-                                {item.barcode ?? item.sku}
-                              </p>
-                            </div>
-                            <p className="shrink-0 text-sm font-semibold text-slate-950">
-                              {currencyFormatter.format(Number(item.totalAmount))}
-                            </p>
-                          </div>
+                <div className="space-y-2 xl:my-4 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:overscroll-contain xl:pr-1">
+                  {selectedSale.items.map((item) => (
+                    <div
+                      className="rounded-md border border-slate-200 bg-white p-3 shadow-sm"
+                      key={item.id}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium text-slate-950">{item.productName}</p>
+                          <p className="mt-1 break-all text-xs text-slate-500">
+                            {item.barcode ?? item.sku}
+                          </p>
+                        </div>
+                        <p className="shrink-0 text-sm font-semibold text-slate-950">
+                          {currencyFormatter.format(Number(item.totalAmount))}
+                        </p>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-slate-600">
+                        <span>
+                          Qty {item.quantity} x {currencyFormatter.format(Number(item.unitPrice))}
+                        </span>
+                        <span>{item.batchId ? "Batch linked" : "No batch link"}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-                          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
-                            <span>
-                              Qty {item.quantity} × {currencyFormatter.format(Number(item.unitPrice))}
-                            </span>
-                            <Badge variant={item.batchId ? "success" : "warning"}>
-                              {item.batchId ? "Batch linked" : "No batch link"}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50 p-4 xl:shrink-0">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Subtotal</span>
+                    <span className="font-medium text-slate-950">
+                      {currencyFormatter.format(Number(selectedSale.subtotalAmount))}
+                    </span>
                   </div>
-                </div>
-
-                <div className="relative z-10 bg-white px-5 pt-3 xl:shrink-0">
-                  <Card className="border-slate-200 bg-slate-50 shadow-none">
-                    <CardContent className="space-y-2 p-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">Subtotal</span>
-                        <span className="font-medium text-slate-950">
-                          {currencyFormatter.format(Number(selectedSale.subtotalAmount))}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">Discount</span>
-                        <span className="font-medium text-slate-950">
-                          {currencyFormatter.format(Number(selectedSale.discountAmount))}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between border-t border-slate-200 pt-3 text-base font-semibold text-slate-950">
-                        <span>Total</span>
-                        <span>{currencyFormatter.format(Number(selectedSale.totalAmount))}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Discount</span>
+                    <span className="font-medium text-slate-950">
+                      {currencyFormatter.format(Number(selectedSale.discountAmount))}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-semibold">
+                    <span>Total</span>
+                    <span>{currencyFormatter.format(Number(selectedSale.totalAmount))}</span>
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="px-5">
-                <EmptyState
-                  description="Select a receipt from the list to review its persisted sale items and totals."
-                  icon={ReceiptText}
-                  title="No receipt selected"
-                />
-              </div>
+              <EmptyState
+                description="Select a receipt from the list to review its persisted sale items and totals."
+                icon={ReceiptText}
+                title="No receipt selected"
+              />
             )}
           </CardContent>
         </Card>
