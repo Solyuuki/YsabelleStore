@@ -3,6 +3,10 @@ import type { RequestHandler } from "express";
 import { getAuthenticatedCustomer } from "../middleware/customerAuthMiddleware.js";
 import { resolveProductDetailImageUrl } from "../modules/catalog-image/catalogImageUrls.js";
 import {
+  saveCustomerAddress,
+  saveCustomerOrderAddressSnapshot
+} from "../services/customerAddressService.js";
+import {
   createStorefrontOrder,
   getStorefrontProduct,
   listStorefrontProductReviews,
@@ -131,6 +135,12 @@ export const createStorefrontOrderController: RequestHandler = async (request, r
       body,
       customer ? { customerAccountId: customer.id } : {}
     );
+
+    await saveCustomerOrderAddressSnapshot(order.id, body.customerAddress);
+    if (customer && body.saveAddressToAccount) {
+      await saveCustomerAddress(customer.id, body.customerAddress);
+    }
+
     response.status(201).json(createSuccessResponse("Pickup order placed successfully.", order));
   } catch (error) {
     next(error);
