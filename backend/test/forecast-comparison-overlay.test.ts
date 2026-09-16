@@ -87,10 +87,7 @@ function reconstructedPoint(period: string, quantitySold: number): HistoricalSal
 test("reconstructed comparison fills only missing prior-year values", () => {
   const source = detail();
   const reconstructed = new Map([
-    [
-      "P266",
-      [reconstructedPoint("2026-01", 15), reconstructedPoint("2026-02", 99)]
-    ]
+    ["P266", [reconstructedPoint("2026-01", 15), reconstructedPoint("2026-02", 99)]]
   ]);
 
   const result = applyReconstructedComparisonOverlay(source, reconstructed);
