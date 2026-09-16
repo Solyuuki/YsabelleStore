@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { applyReconstructedComparisonOverlay } from "../src/modules/forecasting/forecast-comparison-overlay.service.js";
-import type { HistoricalSalesPoint, ProductForecastDetail } from "../src/modules/forecasting/forecast.types.js";
+import {
+  applyReconstructedComparisonOverlay
+} from "../src/modules/forecasting/forecast-comparison-overlay.service.js";
+import type {
+  HistoricalSalesPoint,
+  ProductForecastDetail
+} from "../src/modules/forecasting/forecast.types.js";
 
 function detail(): ProductForecastDetail {
   return {
