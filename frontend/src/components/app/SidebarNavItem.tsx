@@ -1,4 +1,3 @@
-import { Lock } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,7 @@ export function SidebarNavItem({
   collapsed,
   icon: Icon,
   label,
-  onClick,
-  protectedItem = false
+  onClick
 }: SidebarNavItemProps) {
   return (
     <div className="group/nav relative">
@@ -29,8 +27,7 @@ export function SidebarNavItem({
           "h-11 w-full justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-[background-color,color,box-shadow,transform] duration-200 ease-out hover:bg-indigo-50/90 hover:text-slate-950 hover:shadow-sm",
           collapsed && "justify-center px-0",
           active &&
-            "bg-indigo-500 text-white shadow-sm shadow-indigo-950/10 hover:bg-indigo-500 hover:text-white hover:shadow-sm",
-          protectedItem && !active && "hover:bg-violet-50/90"
+            "bg-indigo-500 text-white shadow-sm shadow-indigo-950/10 hover:bg-indigo-500 hover:text-white hover:shadow-sm"
         )}
         onClick={onClick}
         type="button"
@@ -45,9 +42,6 @@ export function SidebarNavItem({
         >
           {label}
         </span>
-        {!collapsed && protectedItem ? (
-          <Lock className="ml-auto h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        ) : null}
       </Button>
 
       {collapsed ? <SidebarTooltip label={label} /> : null}
