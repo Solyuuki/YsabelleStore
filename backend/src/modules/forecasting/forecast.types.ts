@@ -51,6 +51,7 @@ export type ProductHistoricalSeries = {
   category: string;
   sellingPrice: number;
   historical: HistoricalSalesPoint[];
+  comparisonHistorical?: HistoricalSalesPoint[];
   modelHint?: ForecastModelHint;
 };
 
@@ -64,6 +65,7 @@ export type ForecastPoint = {
   differenceVersus2025: number | null;
   percentageChangeVersus2025: number | null;
   comparisonSalesQuantity: number | null;
+  comparisonSalesEstimated?: boolean;
   forecastVariancePercentage: number | null;
 };
 
