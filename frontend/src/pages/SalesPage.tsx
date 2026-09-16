@@ -162,7 +162,7 @@ export function SalesPage() {
         description="Recent persisted sales and receipt totals from the live database."
       />
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_500px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_540px]">
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_440px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_460px]">
         <Card className="border-slate-200/80 bg-white/95 shadow-sm">
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -267,14 +267,9 @@ export function SalesPage() {
         </Card>
 
         <Card className="border-slate-200/80 bg-white/95 shadow-sm xl:sticky xl:top-4 xl:flex xl:max-h-[calc(100vh-2rem)] xl:flex-col">
-          <CardHeader className="border-b border-slate-100 xl:shrink-0">
+          <CardHeader className="xl:shrink-0">
             <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <CardTitle>Receipt details</CardTitle>
-                {selectedSale ? (
-                  <p className="mt-1 truncate text-sm text-slate-500">{selectedSale.saleNumber}</p>
-                ) : null}
-              </div>
+              <CardTitle>Receipt details</CardTitle>
               <Button
                 disabled={!selectedSale}
                 size="sm"
@@ -291,95 +286,87 @@ export function SalesPage() {
             </div>
           </CardHeader>
 
-          <CardContent className="xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:p-0">
+          <CardContent className="xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:px-0 xl:pb-5">
             {selectedSale ? (
               <div className="space-y-4 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:space-y-0">
-                <div className="border-b border-slate-100 bg-slate-50/70 px-6 py-4 xl:shrink-0">
-                  <dl className="grid gap-3 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                      <dt className="text-xs uppercase tracking-[0.16em] text-slate-400">Date</dt>
-                      <dd className="mt-1 text-sm font-medium text-slate-800">
+                <div className="px-5 xl:shrink-0">
+                  <Card className="border-slate-200 bg-slate-50/80 shadow-none">
+                    <CardContent className="p-4">
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Receipt</p>
+                      <h3 className="mt-1 break-words text-base font-semibold text-slate-950">
+                        {selectedSale.saleNumber}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-600">
                         {formatSaleDate(selectedSale.saleDate, "full")}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs uppercase tracking-[0.16em] text-slate-400">Cashier</dt>
-                      <dd className="mt-1 text-sm font-medium text-slate-950">
-                        {selectedSale.cashierName ?? "Unknown"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs uppercase tracking-[0.16em] text-slate-400">Items</dt>
-                      <dd className="mt-1 text-sm font-medium text-slate-950">
-                        {selectedSale.itemCount}
-                      </dd>
-                    </div>
-                  </dl>
+                      </p>
+                      <p className="mt-2 text-sm text-slate-600">
+                        Cashier:{" "}
+                        <span className="font-medium text-slate-950">
+                          {selectedSale.cashierName ?? "Unknown"}
+                        </span>
+                      </p>
+                    </CardContent>
+                  </Card>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
-                  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-                    <Table>
-                      <TableHeader className="sticky top-0 z-10 bg-slate-50">
-                        <TableRow>
-                          <TableHead>Product</TableHead>
-                          <TableHead className="w-20 text-center">Qty</TableHead>
-                          <TableHead className="w-24 text-right">Total</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedSale.items.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell className="align-top">
-                              <p className="font-medium leading-5 text-slate-950">{item.productName}</p>
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pr-4 [scrollbar-gutter:stable]">
+                  <div className="space-y-3">
+                    {selectedSale.items.map((item) => (
+                      <Card className="border-slate-200 bg-white shadow-none" key={item.id}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium leading-5 text-slate-950">
+                                {item.productName}
+                              </p>
                               <p className="mt-1 break-all text-xs text-slate-500">
                                 {item.barcode ?? item.sku}
                               </p>
-                              <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <span className="text-xs text-slate-500">
-                                  {currencyFormatter.format(Number(item.unitPrice))} each
-                                </span>
-                                <Badge variant={item.batchId ? "success" : "warning"}>
-                                  {item.batchId ? "Batch linked" : "No batch link"}
-                                </Badge>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-center align-top font-medium text-slate-700">
-                              {item.quantity}
-                            </TableCell>
-                            <TableCell className="text-right align-top font-semibold text-slate-950">
+                            </div>
+                            <p className="shrink-0 text-sm font-semibold text-slate-950">
                               {currencyFormatter.format(Number(item.totalAmount))}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                            </p>
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                            <span>
+                              Qty {item.quantity} × {currencyFormatter.format(Number(item.unitPrice))}
+                            </span>
+                            <Badge variant={item.batchId ? "success" : "warning"}>
+                              {item.batchId ? "Batch linked" : "No batch link"}
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 </div>
 
-                <div className="border-t border-slate-200 bg-slate-50 px-6 py-4 xl:shrink-0">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">Subtotal</span>
-                      <span className="font-medium text-slate-950">
-                        {currencyFormatter.format(Number(selectedSale.subtotalAmount))}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">Discount</span>
-                      <span className="font-medium text-slate-950">
-                        {currencyFormatter.format(Number(selectedSale.discountAmount))}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between border-t border-slate-200 pt-3 text-base font-semibold text-slate-950">
-                      <span>Total</span>
-                      <span>{currencyFormatter.format(Number(selectedSale.totalAmount))}</span>
-                    </div>
-                  </div>
+                <div className="px-5 xl:shrink-0">
+                  <Card className="border-slate-200 bg-slate-50 shadow-none">
+                    <CardContent className="space-y-2 p-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Subtotal</span>
+                        <span className="font-medium text-slate-950">
+                          {currencyFormatter.format(Number(selectedSale.subtotalAmount))}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Discount</span>
+                        <span className="font-medium text-slate-950">
+                          {currencyFormatter.format(Number(selectedSale.discountAmount))}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-slate-200 pt-3 text-base font-semibold text-slate-950">
+                        <span>Total</span>
+                        <span>{currencyFormatter.format(Number(selectedSale.totalAmount))}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             ) : (
-              <div className="p-6">
+              <div className="px-5">
                 <EmptyState
                   description="Select a receipt from the list to review its persisted sale items and totals."
                   icon={ReceiptText}
