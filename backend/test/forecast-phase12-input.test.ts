@@ -8,6 +8,10 @@ import {
 } from "../src/modules/forecasting/effective-sales.service.js";
 import { sameForecastInput } from "../src/modules/forecasting/forecast.service.js";
 import { completedHistoryCutoff } from "../src/modules/forecasting/forecast-source-version.service.js";
+import {
+  loadHistoricalSalesData,
+  loadReconstructedComparisonSales
+} from "../src/modules/forecasting/historical-sales.service.js";
 import type {
   ProductForecastDetail,
   ProductHistoricalSeries
@@ -68,6 +72,30 @@ test("clean short history remains usable through a fallback model", () => {
 
   assert.equal(eligibility.status, "INSUFFICIENT_HISTORY");
   assert.equal(eligibility.observationCount, 8);
+});
+
+test("reconstructed 2026 workbook is comparison-only and mirrors the 2025 seasonal baseline", async () => {
+  const [verified, reconstructed] = await Promise.all([
+    loadHistoricalSalesData(),
+    loadReconstructedComparisonSales()
+  ]);
+  const reference = verified.products[0];
+
+  assert.ok(reference);
+  assert.equal(reconstructed.available, true);
+
+  const comparison = reconstructed.products.get(reference.productId);
+  const verified2025 = reference.historical.filter((point) => point.period.startsWith("2025-"));
+
+  assert.ok(comparison);
+  assert.equal(comparison.length, 8);
+  assert.deepEqual(
+    comparison.map((point) => point.quantitySold),
+    verified2025.slice(0, 8).map((point) => point.quantitySold)
+  );
+  assert.equal(comparison[0]?.period, "2026-01");
+  assert.equal(comparison.at(-1)?.period, "2026-08");
+  assert.equal(reference.historical.at(-1)?.period, "2025-12");
 });
 
 test("unchanged per-product history is reusable without another SARIMA fit", () => {
