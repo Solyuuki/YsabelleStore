@@ -280,7 +280,7 @@ export function SalesPage() {
                   </p>
                 </div>
 
-                <div className="space-y-2 xl:my-4 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:overscroll-contain xl:pr-1">
+                <div className="space-y-2 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:overscroll-contain xl:py-4 xl:pr-1">
                   {selectedSale.items.map((item) => (
                     <div
                       className="rounded-md border border-slate-200 bg-white p-3 shadow-sm"
