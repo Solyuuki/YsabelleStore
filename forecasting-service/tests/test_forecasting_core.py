@@ -109,7 +109,33 @@ def test_forecast_variance_uses_exact_previous_year_month() -> None:
     first_point = result["forecast"][0]
 
     assert first_point["comparisonSalesQuantity"] == values[20]
+    assert first_point["comparisonSalesEstimated"] is False
     assert first_point["forecastVariancePercentage"] is not None
+
+
+def test_reconstructed_comparison_fills_gap_without_entering_training_history() -> None:
+    values = [10 + (index % 12) for index in range(24)]
+    product = _product(values)
+    product["comparisonHistorical"] = [
+        {
+            "productId": "P001",
+            "productName": "Sample",
+            "category": "Sample",
+            "sellingPrice": 10,
+            "period": f"2026-{month:02d}",
+            "quantitySold": 20 + month,
+        }
+        for month in range(1, 9)
+    ]
+    result = forecast_product(product, 12, 12, "2026-09")
+    january_2027 = result["forecast"][4]
+
+    assert result["historical"][-1]["period"] == "2025-12"
+    assert len(result["historical"]) == 24
+    assert january_2027["period"] == "2027-01-01"
+    assert january_2027["comparisonSalesQuantity"] == 21
+    assert january_2027["comparisonSalesEstimated"] is True
+    assert january_2027["forecastVariancePercentage"] is not None
 
 
 def test_dynamic_history_ending_august_forecasts_september_without_fixed_2026_anchor() -> None:
