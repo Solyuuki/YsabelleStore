@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 
 type SidebarNavItemProps = {
   active?: boolean;
+  badgeCount?: number;
+  badgeTone?: "brand" | "warning";
   collapsed: boolean;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   label: string;
@@ -14,17 +16,22 @@ type SidebarNavItemProps = {
 
 export function SidebarNavItem({
   active = false,
+  badgeCount,
+  badgeTone = "brand",
   collapsed,
   icon: Icon,
   label,
   onClick
 }: SidebarNavItemProps) {
+  const hasBadge = typeof badgeCount === "number" && badgeCount > 0;
+  const badgeLabel = hasBadge ? (badgeCount > 99 ? "99+" : badgeCount.toString()) : null;
+
   return (
     <div className="group/nav relative">
       <Button
-        aria-label={label}
+        aria-label={hasBadge ? `${label}, ${badgeCount} items need attention` : label}
         className={cn(
-          "h-11 w-full justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-[background-color,color,box-shadow,transform] duration-200 ease-out hover:bg-indigo-50/90 hover:text-slate-950 hover:shadow-sm",
+          "relative h-11 w-full justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-[background-color,color,box-shadow,transform] duration-200 ease-out hover:bg-indigo-50/90 hover:text-slate-950 hover:shadow-sm",
           collapsed && "justify-center px-0",
           active &&
             "bg-indigo-500 text-white shadow-sm shadow-indigo-950/10 hover:bg-indigo-500 hover:text-white hover:shadow-sm"
@@ -42,6 +49,24 @@ export function SidebarNavItem({
         >
           {label}
         </span>
+        {hasBadge ? (
+          <span
+            className={cn(
+              "inline-flex shrink-0 items-center justify-center rounded-full font-semibold tabular-nums ring-1 transition-[background-color,color,box-shadow] duration-200",
+              collapsed
+                ? "absolute right-1.5 top-1 h-4 min-w-4 px-1 text-[9px] leading-none"
+                : "ml-auto h-5 min-w-5 px-1.5 text-[10px] leading-none",
+              active
+                ? "bg-white/20 text-white ring-white/25"
+                : badgeTone === "warning"
+                  ? "bg-amber-50 text-amber-700 ring-amber-200"
+                  : "bg-violet-50 text-[#625bff] ring-violet-200"
+            )}
+            aria-hidden="true"
+          >
+            {badgeLabel}
+          </span>
+        ) : null}
       </Button>
 
       {collapsed ? <SidebarTooltip label={label} /> : null}
