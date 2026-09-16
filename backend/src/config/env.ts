@@ -50,6 +50,7 @@ const envSchema = z.object({
   FORECAST_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
   FORECAST_DEFAULT_HORIZON: z.coerce.number().int().positive().default(12),
   FORECAST_SEASONAL_PERIOD: z.coerce.number().int().positive().default(12),
+  FORECAST_WORKERS: z.coerce.number().int().min(1).max(4).default(4),
   SARIMA_FIT_TIMEOUT_SECONDS: z.coerce.number().positive().max(60).default(8),
   FORECAST_CURRENT_MONTH: z
     .string()
