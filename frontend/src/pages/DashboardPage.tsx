@@ -7,7 +7,6 @@ import {
   Clock3,
   Database,
   LineChart,
-  PackageOpen,
   ReceiptText,
   Sparkles,
   Truck,
@@ -55,6 +54,9 @@ const dateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
   timeStyle: "short",
   timeZone: "Asia/Manila"
 });
+
+const brandCardClass =
+  "relative overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(98,91,255,0.4)] backdrop-blur";
 
 function formatCurrency(value: string | number) {
   return currencyFormatter.format(Number(value));
@@ -190,9 +192,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
 
     return () => {
       active = false;
-      if (intervalId !== null) {
-        window.clearInterval(intervalId);
-      }
+      if (intervalId !== null) window.clearInterval(intervalId);
       if (preferences.refreshDashboardOnFocus) {
         window.removeEventListener("focus", handleFocus);
       }
@@ -206,14 +206,8 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
           detail: `${summary.forecast.totalProductsForecasted} products forecasted`
         }
       : summary.forecast.access === "RESTRICTED"
-        ? {
-            value: "Protected",
-            detail: "Owner verification required"
-          }
-        : {
-            value: "Unavailable",
-            detail: "Forecast is not ready"
-          }
+        ? { value: "Protected", detail: "Owner verification required" }
+        : { value: "Unavailable", detail: "Forecast is not ready" }
     : null;
 
   return (
@@ -221,10 +215,10 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
       <PageHeader
         actions={
           summary ? (
-            <div className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 px-3 py-2 shadow-sm backdrop-blur">
+            <div className="flex items-center gap-2 rounded-full border border-[#625bff]/15 bg-white/85 px-3 py-2 shadow-sm backdrop-blur">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#625bff] opacity-35" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#625bff]" />
               </span>
               <span className="text-xs font-semibold text-slate-700">Live</span>
               <span className="hidden text-xs text-slate-400 md:inline">•</span>
@@ -258,7 +252,6 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               detail={formatCount(summary.sales.completedSales, "completed sale")}
-              featured
               icon={ReceiptText}
               label="Today's sales"
               value={formatCurrency(summary.sales.todayAmount)}
@@ -310,42 +303,33 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
 
 type MetricCardProps = {
   detail: string;
-  featured?: boolean;
   icon: LucideIcon;
   label: string;
   value: string;
 };
 
-function MetricCard({ detail, featured = false, icon: Icon, label, value }: MetricCardProps) {
-  if (featured) {
-    return (
-      <Card className="relative overflow-hidden border-slate-900 bg-slate-950 text-white shadow-[0_20px_45px_-28px_rgba(15,23,42,0.95)]">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-indigo-500/25 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 left-8 h-36 w-36 rounded-full bg-fuchsia-500/15 blur-3xl" />
-        <CardContent className="relative flex min-h-40 flex-col justify-between p-5">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-slate-300">{label}</p>
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-white shadow-inner">
-              <Icon className="h-4 w-4" aria-hidden="true" />
-            </span>
-          </div>
-          <div className="mt-7">
-            <p className="text-3xl font-semibold tracking-tight text-white">{value}</p>
-            <p className="mt-2 text-xs font-medium text-slate-400">{detail}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+function BrandAccent() {
   return (
-    <Card className="border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] backdrop-blur">
-      <CardContent className="flex min-h-40 flex-col justify-between p-5">
+    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#008cff] via-[#625bff] to-[#f43f8c]" />
+  );
+}
+
+function BrandIcon({ icon: Icon }: { icon: LucideIcon }) {
+  return (
+    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#008cff] via-[#625bff] to-[#f43f8c] text-white shadow-sm shadow-[#625bff]/20">
+      <Icon className="h-4 w-4" aria-hidden="true" />
+    </span>
+  );
+}
+
+function MetricCard({ detail, icon, label, value }: MetricCardProps) {
+  return (
+    <Card className={brandCardClass}>
+      <BrandAccent />
+      <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-slate-700">{label}</p>
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-indigo-600">
-            <Icon className="h-4 w-4" aria-hidden="true" />
-          </span>
+          <BrandIcon icon={icon} />
         </div>
         <div className="mt-7">
           <p className="text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
@@ -364,23 +348,18 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
     summary.expiry.expiredBatches;
 
   return (
-    <Card className="border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] backdrop-blur">
-      <CardContent className="flex min-h-40 flex-col justify-between p-5">
+    <Card className={brandCardClass}>
+      <BrandAccent />
+      <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-slate-700">Stock alerts</p>
-          <span
-            className={`flex h-9 w-9 items-center justify-center rounded-xl border ${
-              alertCount > 0
-                ? "border-amber-200 bg-amber-50 text-amber-700"
-                : "border-emerald-200 bg-emerald-50 text-emerald-700"
-            }`}
-          >
-            {alertCount > 0 ? (
+          {alertCount > 0 ? (
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-700">
               <TriangleAlert className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-            )}
-          </span>
+            </span>
+          ) : (
+            <BrandIcon icon={CheckCircle2} />
+          )}
         </div>
         <div className="mt-5 grid grid-cols-2 divide-x divide-slate-100">
           <div className="pr-4">
@@ -414,15 +393,18 @@ function SalesActivityCard({ summary }: { summary: DashboardSummary }) {
   }));
 
   return (
-    <Card className="overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] backdrop-blur">
-      <CardHeader className="border-b border-slate-100 pb-4">
+    <Card className={brandCardClass}>
+      <BrandAccent />
+      <CardHeader className="border-b border-slate-100 pb-4 pt-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#625bff]">
               Sales pulse
             </p>
             <CardTitle className="mt-1">Retail activity</CardTitle>
-            <p className="mt-1 text-xs text-slate-500">Revenue movement across today's 2-hour windows.</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Revenue movement across today's 2-hour windows.
+            </p>
           </div>
           <div className="text-right">
             <p className="text-2xl font-semibold tracking-tight text-slate-950">
@@ -440,8 +422,9 @@ function SalesActivityCard({ summary }: { summary: DashboardSummary }) {
             <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
               <defs>
                 <linearGradient id="dashboardSalesArea" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#6366f1" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
+                  <stop offset="65%" stopColor="#008cff" stopOpacity={0.1} />
+                  <stop offset="100%" stopColor="#f43f8c" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
@@ -454,22 +437,22 @@ function SalesActivityCard({ summary }: { summary: DashboardSummary }) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#0f172a",
-                  border: "none",
+                  backgroundColor: "#514bcf",
+                  border: "1px solid rgba(255,255,255,0.16)",
                   borderRadius: "10px",
-                  boxShadow: "0 18px 40px -18px rgba(15,23,42,0.75)",
+                  boxShadow: "0 18px 40px -18px rgba(98,91,255,0.65)",
                   color: "#fff",
                   fontSize: "12px"
                 }}
-                cursor={{ stroke: "#cbd5e1", strokeDasharray: "4 4" }}
+                cursor={{ stroke: "#c4b5fd", strokeDasharray: "4 4" }}
                 formatter={(value) => [formatCurrency(Number(value)), "Sales"]}
-                labelStyle={{ color: "#cbd5e1", marginBottom: "4px" }}
+                labelStyle={{ color: "#ede9fe", marginBottom: "4px" }}
               />
               <Area
                 dataKey="amount"
                 fill="url(#dashboardSalesArea)"
                 fillOpacity={1}
-                stroke="#4f46e5"
+                stroke="#625bff"
                 strokeWidth={2.5}
                 type="monotone"
               />
@@ -478,7 +461,7 @@ function SalesActivityCard({ summary }: { summary: DashboardSummary }) {
         </div>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
           <span className="flex items-center gap-1.5">
-            <Activity className="h-3.5 w-3.5 text-indigo-500" aria-hidden="true" />
+            <Activity className="h-3.5 w-3.5 text-[#625bff]" aria-hidden="true" />
             Live completed-sale activity
           </span>
           <span>Manila business day</span>
@@ -502,11 +485,12 @@ function RestockActionsCard({
   operations
 }: OwnerOperationsProps) {
   return (
-    <Card className="border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] backdrop-blur">
-      <CardHeader className="border-b border-slate-100 pb-4">
+    <Card className={brandCardClass}>
+      <BrandAccent />
+      <CardHeader className="border-b border-slate-100 pb-4 pt-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#625bff]">
               Action center
             </p>
             <CardTitle className="mt-1">Needs attention</CardTitle>
@@ -519,7 +503,7 @@ function RestockActionsCard({
               className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                 operations.restock.actionableProducts > 0
                   ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                  : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                  : "bg-violet-50 text-[#625bff] ring-1 ring-violet-200"
               }`}
             >
               {operations.restock.actionableProducts > 0
@@ -539,7 +523,6 @@ function RestockActionsCard({
             {operations.restock.actions.map((action) => (
               <RestockActionCard action={action} key={action.product.id} />
             ))}
-
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
               <p className="text-xs text-slate-500">
                 {operations.restock.suggestedUnits.toLocaleString()} total suggested units across the
@@ -553,11 +536,9 @@ function RestockActionsCard({
             </div>
           </div>
         ) : (
-          <div className="flex min-h-36 flex-col justify-between gap-5 rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/70 to-white p-5 sm:flex-row sm:items-center">
+          <div className="flex min-h-36 flex-col justify-between gap-5 rounded-xl border border-dashed border-violet-200 bg-gradient-to-br from-[#008cff]/[0.06] via-[#625bff]/[0.06] to-[#f43f8c]/[0.05] p-5 sm:flex-row sm:items-center">
             <div className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-                <Sparkles className="h-5 w-5" aria-hidden="true" />
-              </span>
+              <BrandIcon icon={Sparkles} />
               <div>
                 <p className="font-semibold text-slate-950">Inventory coverage looks healthy</p>
                 <p className="mt-1 max-w-xl text-sm leading-6 text-slate-600">
@@ -577,7 +558,6 @@ function RestockActionsCard({
             </Button>
           </div>
         )}
-
         {error && operations ? (
           <p className="mt-3 text-xs text-amber-700">Latest refresh warning: {error}</p>
         ) : null}
@@ -588,7 +568,7 @@ function RestockActionsCard({
 
 function RestockActionCard({ action }: { action: DashboardRestockAction }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 transition-colors hover:bg-slate-50">
+    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 transition-colors hover:border-violet-200 hover:bg-violet-50/30">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -599,8 +579,8 @@ function RestockActionCard({ action }: { action: DashboardRestockAction }) {
             {action.product.sku} • {sourceLabel(action.recommendationSource)}
           </p>
         </div>
-        <div className="rounded-lg bg-white px-3 py-2 text-right ring-1 ring-slate-200">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+        <div className="rounded-lg bg-white px-3 py-2 text-right ring-1 ring-violet-100">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
             Suggested
           </p>
           <p className="mt-0.5 text-lg font-semibold text-slate-950">
@@ -608,7 +588,6 @@ function RestockActionCard({ action }: { action: DashboardRestockAction }) {
           </p>
         </div>
       </div>
-
       <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
         <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-slate-200">
           {action.sellableStock.toLocaleString()} sellable
@@ -633,19 +612,18 @@ function RestockPipelineCard({
   operations
 }: Omit<OwnerOperationsProps, "error">) {
   return (
-    <Card className="overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] backdrop-blur">
-      <CardHeader className="border-b border-slate-100 pb-4">
+    <Card className={brandCardClass}>
+      <BrandAccent />
+      <CardHeader className="border-b border-slate-100 pb-4 pt-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#625bff]">
               Procurement
             </p>
             <CardTitle className="mt-1">Restock pipeline</CardTitle>
             <p className="mt-1 text-xs text-slate-500">Inventory changes only after receiving.</p>
           </div>
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-indigo-600">
-            <Truck className="h-5 w-5" aria-hidden="true" />
-          </span>
+          <BrandIcon icon={Truck} />
         </div>
       </CardHeader>
       <CardContent className="pt-5">
@@ -665,7 +643,6 @@ function RestockPipelineCard({
               <PipelineStat label="Drafts" value={operations.restock.queue.draft} />
               <PipelineStat label="Open" value={operations.restock.queue.totalOpen} />
             </div>
-
             {operations.restock.latestOpenOrder ? (
               <LatestRestockOrder order={operations.restock.latestOpenOrder} />
             ) : (
@@ -673,7 +650,6 @@ function RestockPipelineCard({
                 No open restock orders.
               </div>
             )}
-
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
               <Button onClick={() => onNavigate("/receiving")} size="sm" type="button">
                 <Truck className="h-4 w-4" />
@@ -711,10 +687,10 @@ function LatestRestockOrder({ order }: LatestRestockOrderProps) {
       : 0;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+    <div className="rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/60 to-white p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
             Latest open order
           </p>
           <p className="mt-1 truncate font-semibold text-slate-950">{order.orderNumber}</p>
@@ -723,10 +699,9 @@ function LatestRestockOrder({ order }: LatestRestockOrderProps) {
           {orderStatusLabel(order.status)}
         </StatusBadge>
       </div>
-
-      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-200">
+      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-violet-100">
         <div
-          className="h-full rounded-full bg-indigo-500 transition-[width]"
+          className="h-full rounded-full bg-gradient-to-r from-[#008cff] via-[#625bff] to-[#f43f8c] transition-[width]"
           style={{ width: `${completion}%` }}
         />
       </div>
@@ -734,8 +709,7 @@ function LatestRestockOrder({ order }: LatestRestockOrderProps) {
         <span>{completion}% received</span>
         <span>{order.remainingUnits.toLocaleString()} units remaining</span>
       </div>
-
-      <div className="mt-4 border-t border-slate-200 pt-3 text-[11px] leading-5 text-slate-500">
+      <div className="mt-4 border-t border-violet-100 pt-3 text-[11px] leading-5 text-slate-500">
         <p>
           {order.productLines.toLocaleString()} product lines • {order.requestedUnits.toLocaleString()}
           {" requested units"}
@@ -759,18 +733,18 @@ function PipelineStat({
   tone?: "neutral" | "warning";
   value: number;
 }) {
+  const warning = tone === "warning" && value > 0;
+
   return (
     <div
       className={`rounded-xl border px-3 py-3 ${
-        tone === "warning" && value > 0
-          ? "border-amber-200 bg-amber-50/70"
-          : "border-slate-200 bg-slate-50/70"
+        warning ? "border-amber-200 bg-amber-50/70" : "border-violet-100 bg-violet-50/40"
       }`}
     >
       <p className="text-[11px] font-medium text-slate-500">{label}</p>
       <p
         className={`mt-1 text-xl font-semibold tracking-tight ${
-          tone === "warning" && value > 0 ? "text-amber-700" : "text-slate-950"
+          warning ? "text-amber-700" : "text-slate-950"
         }`}
       >
         {value.toLocaleString()}
@@ -783,49 +757,43 @@ function SystemSyncCard({ summary }: { summary: DashboardSummary }) {
   const synced = summary.inventory.unlinkedCatalogItems === 0;
 
   return (
-    <Card className="border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] backdrop-blur">
-      <CardHeader className="border-b border-slate-100 pb-4">
+    <Card className={brandCardClass}>
+      <BrandAccent />
+      <CardHeader className="border-b border-slate-100 pb-4 pt-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#625bff]">
               Data integrity
             </p>
             <CardTitle className="mt-1">System sync</CardTitle>
           </div>
-          <span
-            className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
-              synced
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                : "border-amber-200 bg-amber-50 text-amber-700"
-            }`}
-          >
-            {synced ? (
-              <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
-            ) : (
-              <TriangleAlert className="h-5 w-5" aria-hidden="true" />
-            )}
-          </span>
+          {synced ? (
+            <BrandIcon icon={CheckCircle2} />
+          ) : (
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-700">
+              <TriangleAlert className="h-4 w-4" aria-hidden="true" />
+            </span>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-3 pt-5">
         <div
           className={`flex items-center justify-between rounded-xl border px-3.5 py-3 ${
             synced
-              ? "border-emerald-200 bg-emerald-50/60"
+              ? "border-violet-100 bg-violet-50/40"
               : "border-amber-200 bg-amber-50/60"
           }`}
         >
           <div className="flex items-center gap-2.5">
-            <Database className="h-4 w-4 text-slate-500" aria-hidden="true" />
+            <Database className="h-4 w-4 text-[#625bff]" aria-hidden="true" />
             <span className="text-sm font-medium text-slate-700">Catalog → inventory</span>
           </div>
           <span
-            className={`text-xs font-semibold ${synced ? "text-emerald-700" : "text-amber-700"}`}
+            className={`text-xs font-semibold ${synced ? "text-[#625bff]" : "text-amber-700"}`}
           >
             {synced ? "Synced" : `${summary.inventory.unlinkedCatalogItems} missing`}
           </span>
         </div>
-
         <div className="grid grid-cols-2 gap-2.5">
           <SyncMetric label="Catalog" value={summary.inventory.catalogItems} />
           <SyncMetric label="Inventory" value={summary.inventory.trackedItems} />
@@ -839,7 +807,7 @@ function SystemSyncCard({ summary }: { summary: DashboardSummary }) {
 
 function SyncMetric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-3">
+    <div className="rounded-xl border border-violet-100 bg-violet-50/35 px-3 py-3">
       <p className="text-[11px] font-medium text-slate-500">{label}</p>
       <p className="mt-1 text-lg font-semibold tracking-tight text-slate-950">
         {value.toLocaleString()}
@@ -850,9 +818,9 @@ function SyncMetric({ label, value }: { label: string; value: number }) {
 
 function DashboardPanelLoading({ label }: { label: string }) {
   return (
-    <div className="flex min-h-36 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-8 text-center text-sm text-slate-500">
+    <div className="flex min-h-36 items-center justify-center rounded-xl border border-dashed border-violet-200 bg-violet-50/35 px-4 py-8 text-center text-sm text-slate-500">
       <span className="flex items-center gap-2">
-        <Clock3 className="h-4 w-4 animate-pulse text-slate-400" aria-hidden="true" />
+        <Clock3 className="h-4 w-4 animate-pulse text-[#625bff]" aria-hidden="true" />
         {label}
       </span>
     </div>
