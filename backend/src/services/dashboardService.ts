@@ -1,4 +1,9 @@
-import { Prisma, RestockOrderStatus, type RestockRecommendationSource, type UserRole } from "@prisma/client";
+import {
+  Prisma,
+  RestockOrderStatus,
+  type RestockRecommendationSource,
+  type UserRole
+} from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { getForecastSummary } from "../modules/forecasting/forecast.service.js";
@@ -270,7 +275,9 @@ export async function getDashboardSummary(
   };
 }
 
-export async function getDashboardOperations(now = new Date()): Promise<DashboardOperations> {
+export async function getDashboardOperations(
+  now = new Date()
+): Promise<DashboardOperations> {
   const [
     planning,
     draftCount,
@@ -366,7 +373,8 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     return left.product.name.localeCompare(right.product.name);
   });
 
-  const selectedLatestLines = latestOpenOrder?.lines.filter((line) => line.isSelected) ?? [];
+  const selectedLatestLines =
+    latestOpenOrder?.lines.filter((line) => line.isSelected) ?? [];
   const requestedUnits = selectedLatestLines.reduce(
     (sum, line) => sum + Math.max(0, line.requestedQuantity),
     0
@@ -375,7 +383,8 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     (sum, line) => sum + Math.max(0, line.receivedQuantity),
     0
   );
-  const totalOpen = draftCount + approvedCount + awaitingDeliveryCount + partiallyReceivedCount;
+  const totalOpen =
+    draftCount + approvedCount + awaitingDeliveryCount + partiallyReceivedCount;
 
   return {
     generatedAt: now.toISOString(),
