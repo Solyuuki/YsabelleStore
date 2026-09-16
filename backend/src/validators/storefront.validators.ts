@@ -28,7 +28,7 @@ export const storefrontOrderSchema = z.object({
   customerName: z.string().trim().min(2).max(120),
   customerEmail: z.string().trim().email().max(191).optional().or(z.literal("")),
   customerPhone: z.string().trim().min(7).max(40),
-  customerAddress: customerAddressSchema,
+  customerAddress: customerAddressSchema.optional(),
   saveAddressToAccount: z.boolean().optional().default(false),
   notes: z.string().trim().max(255).optional(),
   fulfillmentMethod: z.literal("STORE_PICKUP"),
