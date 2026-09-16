@@ -3,6 +3,7 @@ import fs from "node:fs";
 import type {
   HistoricalImportIssue,
   HistoricalImportValidation,
+  HistoricalSalesPoint,
   ProductHistoricalSeries
 } from "./forecast.types.js";
 import { resolveRepositoryPath } from "./repository-paths.js";
@@ -13,6 +14,8 @@ import {
 
 const HISTORICAL_2024_PATH = "data/forecasting/historical-sales-2024.xlsx";
 const HISTORICAL_2025_PATH = "data/forecasting/historical-sales-2025.xlsx";
+const RECONSTRUCTED_2026_PATH = "data/forecasting/historical-sales-2026.xlsx";
+const RECONSTRUCTED_2026_COMPARISON_END_PERIOD = "2026-08";
 
 export type HistoricalSalesFallbackResult =
   | { available: true; data: HistoricalSalesImport }
@@ -25,6 +28,12 @@ export type HistoricalSalesImport = {
     products2024: number;
     products2025: number;
   };
+};
+
+export type ReconstructedComparisonSales = {
+  available: boolean;
+  products: Map<string, HistoricalSalesPoint[]>;
+  warnings: HistoricalImportIssue[];
 };
 
 function makeIssue(
@@ -161,6 +170,76 @@ export async function loadHistoricalSalesData(): Promise<HistoricalSalesImport> 
       products2024: workbook2024.products.size,
       products2025: workbook2025.products.size
     }
+  };
+}
+
+export async function loadReconstructedComparisonSales(): Promise<ReconstructedComparisonSales> {
+  const reconstructedPath = resolveRepositoryPath(RECONSTRUCTED_2026_PATH);
+
+  if (!fs.existsSync(reconstructedPath)) {
+    return { available: false, products: new Map(), warnings: [] };
+  }
+
+  const [reference2025, reconstructed2026] = await Promise.all([
+    parseHistoricalWorkbook(resolveRepositoryPath(HISTORICAL_2025_PATH), 2025),
+    parseHistoricalWorkbook(reconstructedPath, 2026)
+  ]);
+  const parseErrors = reconstructed2026.issues.filter((issue) => issue.severity === "error");
+
+  if (parseErrors.length > 0) {
+    console.warn(
+      `[forecast] Reconstructed 2026 comparison workbook is invalid; comparison fallback disabled (${parseErrors.length} error(s)).`
+    );
+    return {
+      available: false,
+      products: new Map(),
+      warnings: reconstructed2026.issues
+    };
+  }
+
+  const warnings = [...reconstructed2026.issues.filter((issue) => issue.severity === "warning")];
+  const products = new Map<string, HistoricalSalesPoint[]>();
+
+  for (const [productId, reconstructedProduct] of reconstructed2026.products) {
+    const referenceProduct = reference2025.products.get(productId);
+
+    if (!referenceProduct) {
+      warnings.push(
+        makeIssue(
+          "RECONSTRUCTED_PRODUCT_NOT_IN_REFERENCE",
+          "warning",
+          productId,
+          `Reconstructed product ${productId} is not present in the verified 2025 reference workbook and was ignored.`
+        )
+      );
+      continue;
+    }
+
+    const identity = sameProductIdentity(referenceProduct, reconstructedProduct);
+    if (!identity.nameMatches || !identity.categoryMatches) {
+      warnings.push(
+        makeIssue(
+          "RECONSTRUCTED_PRODUCT_IDENTITY_CONFLICT",
+          "warning",
+          productId,
+          `Reconstructed product ${productId} does not match the verified 2025 product identity and was ignored.`
+        )
+      );
+      continue;
+    }
+
+    products.set(
+      productId,
+      reconstructedProduct.points.filter(
+        (point) => point.period <= RECONSTRUCTED_2026_COMPARISON_END_PERIOD
+      )
+    );
+  }
+
+  return {
+    available: products.size > 0,
+    products,
+    warnings
   };
 }
 
