@@ -6,10 +6,11 @@ import type { ForecastInputSource } from "./forecast.types.js";
 import { getActiveForecastMonth, monthStartIso } from "./forecast-window.js";
 import { resolveRepositoryPath } from "./repository-paths.js";
 
-const FORECAST_INPUT_CONTRACT_VERSION = "forecast-input-v3";
+const FORECAST_INPUT_CONTRACT_VERSION = "forecast-input-v4";
 const WORKBOOK_PATHS = [
   "data/forecasting/historical-sales-2024.xlsx",
-  "data/forecasting/historical-sales-2025.xlsx"
+  "data/forecasting/historical-sales-2025.xlsx",
+  "data/forecasting/historical-sales-2026.xlsx"
 ] as const;
 
 type WorkbookHashCacheEntry = {
