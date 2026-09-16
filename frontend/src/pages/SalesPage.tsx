@@ -309,8 +309,8 @@ export function SalesPage() {
                   </Card>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pr-4 [scrollbar-gutter:stable]">
-                  <div className="space-y-3">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pb-6 pr-5 [scrollbar-gutter:stable]">
+                  <div className="space-y-3 pb-2">
                     {selectedSale.items.map((item) => (
                       <Card className="border-slate-200 bg-white shadow-none" key={item.id}>
                         <CardContent className="p-4">
@@ -342,7 +342,7 @@ export function SalesPage() {
                   </div>
                 </div>
 
-                <div className="px-5 xl:shrink-0">
+                <div className="relative z-10 bg-white px-5 pt-3 xl:shrink-0">
                   <Card className="border-slate-200 bg-slate-50 shadow-none">
                     <CardContent className="space-y-2 p-4">
                       <div className="flex items-center justify-between text-sm">
