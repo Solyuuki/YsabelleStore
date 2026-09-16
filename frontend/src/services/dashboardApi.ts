@@ -110,6 +110,14 @@ export type DashboardOperations = {
   };
 };
 
+export type NavigationBadgeSummary = {
+  dashboard: number;
+  generatedAt: string;
+  inventory: number;
+  receiving: number;
+  reports: number;
+};
+
 export async function fetchDashboardSummary() {
   const response = await apiClient.request<DashboardSummary, never>("/api/dashboard/summary");
 
@@ -122,6 +130,18 @@ export async function fetchDashboardSummary() {
 
 export async function fetchDashboardOperations() {
   const response = await apiClient.request<DashboardOperations, never>("/api/dashboard/operations");
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function fetchNavigationBadges() {
+  const response = await apiClient.request<NavigationBadgeSummary, never>(
+    "/api/dashboard/navigation-badges"
+  );
 
   if (!response.success || !response.data) {
     throw new Error(response.message);
