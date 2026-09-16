@@ -45,7 +45,7 @@ export type EffectiveProductSeries = {
   sellingPrice: number;
   points: EffectiveSalesPoint[];
   eligibility: ProductEligibility;
-  sourceProductIds: string[];
+  sourceProductIds?: string[];
 };
 
 type ImportedPointInput = {
@@ -235,7 +235,7 @@ function fallbackCandidateFor(
   workbookById: Map<string, ProductHistoricalSeries>,
   workbookByIdentity: Map<string, ProductHistoricalSeries>
 ) {
-  for (const sourceProductId of [...target.sourceProductIds, target.productId]) {
+  for (const sourceProductId of [...(target.sourceProductIds ?? []), target.productId]) {
     const direct = workbookById.get(sourceProductId);
     if (direct) return direct;
   }
