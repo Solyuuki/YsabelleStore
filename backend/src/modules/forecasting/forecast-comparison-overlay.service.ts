@@ -84,7 +84,10 @@ export async function withReconstructedComparisonOverlay(
 
     return applyReconstructedComparisonOverlay(detail, reconstructed.products);
   } catch (error) {
-    console.warn("[forecast] Reconstructed comparison overlay unavailable; serving forecast without it.", error);
+    console.warn(
+      "[forecast] Reconstructed comparison overlay unavailable; serving forecast without it.",
+      error
+    );
     return detail;
   }
 }
