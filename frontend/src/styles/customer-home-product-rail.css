@@ -1,5 +1,6 @@
 .home-product-rail {
   --home-product-rail-gap: clamp(0.9rem, 1.25vw, 1.15rem);
+  --home-product-rail-control-offset: clamp(3rem, 3.4vw, 3.5rem);
 
   position: relative;
   width: 100%;
@@ -56,10 +57,12 @@
   height: 44px;
   place-items: center;
   padding: 0;
-  border: 1px solid rgb(98 91 255 / 20%);
+  border: 1px solid rgb(98 91 255 / 24%);
   border-radius: 999px;
-  background: rgb(255 255 255 / 96%);
-  box-shadow: 0 12px 30px rgb(16 20 38 / 14%);
+  background: rgb(255 255 255 / 97%);
+  box-shadow:
+    0 10px 26px rgb(98 91 255 / 12%),
+    0 2px 8px rgb(16 20 38 / 8%);
   color: var(--customer-primary-strong);
   cursor: pointer;
   transform: translateY(-50%);
@@ -80,18 +83,18 @@
 }
 
 .home-product-rail__control--previous {
-  left: -1.35rem;
+  left: calc(var(--home-product-rail-control-offset) * -1);
 }
 
 .home-product-rail__control--next {
-  right: -1.35rem;
+  right: calc(var(--home-product-rail-control-offset) * -1);
 }
 
 .home-product-rail__control:not(:disabled):hover,
 .home-product-rail__control:not(:disabled):focus-visible {
   border-color: transparent;
   background: linear-gradient(135deg, var(--customer-info), var(--customer-primary));
-  box-shadow: 0 15px 34px rgb(98 91 255 / 24%);
+  box-shadow: 0 14px 32px rgb(98 91 255 / 22%);
   color: #fff;
   transform: translateY(-50%) scale(1.05);
 }
@@ -102,9 +105,11 @@
 }
 
 .home-product-rail__control:disabled {
-  box-shadow: 0 6px 16px rgb(16 20 38 / 7%);
+  border-color: rgb(98 91 255 / 10%);
+  background: rgb(255 255 255 / 86%);
+  box-shadow: 0 4px 12px rgb(16 20 38 / 5%);
   cursor: default;
-  opacity: 0.32;
+  opacity: 0.38;
 }
 
 .home-product-rail__status {
@@ -127,12 +132,17 @@
 }
 
 @media (max-width: 1320px) {
+  .home-product-rail {
+    padding-inline: 3.25rem;
+    box-sizing: border-box;
+  }
+
   .home-product-rail__control--previous {
-    left: 0.4rem;
+    left: 0.35rem;
   }
 
   .home-product-rail__control--next {
-    right: 0.4rem;
+    right: 0.35rem;
   }
 }
 
@@ -143,6 +153,10 @@
 }
 
 @media (max-width: 920px) {
+  .home-product-rail {
+    padding-inline: 3rem;
+  }
+
   .home-product-rail__item {
     flex-basis: calc((100% - var(--home-product-rail-gap)) / 2);
   }
@@ -152,6 +166,7 @@
   .home-product-rail {
     margin-inline: -0.35rem;
     width: calc(100% + 0.7rem);
+    padding-inline: 0;
   }
 
   .home-product-rail__viewport {
