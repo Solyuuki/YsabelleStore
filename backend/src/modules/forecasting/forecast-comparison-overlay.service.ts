@@ -78,8 +78,13 @@ export async function withReconstructedComparisonOverlay(
 ): Promise<ProductForecastDetail | null> {
   if (!detail || !sourceWorkbookProductId(detail.productId)) return detail;
 
-  const reconstructed = await reconstructedComparisons();
-  if (!reconstructed.available) return detail;
+  try {
+    const reconstructed = await reconstructedComparisons();
+    if (!reconstructed.available) return detail;
 
-  return applyReconstructedComparisonOverlay(detail, reconstructed.products);
+    return applyReconstructedComparisonOverlay(detail, reconstructed.products);
+  } catch (error) {
+    console.warn("[forecast] Reconstructed comparison overlay unavailable; serving forecast without it.", error);
+    return detail;
+  }
 }
