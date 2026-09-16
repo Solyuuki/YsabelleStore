@@ -1,7 +1,4 @@
-import type {
-  HistoricalSalesPoint,
-  ProductForecastDetail
-} from "./forecast.types.js";
+import type { HistoricalSalesPoint, ProductForecastDetail } from "./forecast.types.js";
 import { addMonths } from "./forecast-window.js";
 import {
   loadReconstructedComparisonSales,
