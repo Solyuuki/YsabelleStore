@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import os
 import warnings
 from dataclasses import dataclass
 from math import isfinite
+from time import monotonic
+from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -27,6 +30,27 @@ CANDIDATES: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...] = (
     ((1, 1, 0), (0, 1, 1)),
     ((1, 0, 0), (1, 0, 0)),
 )
+DEFAULT_FIT_TIMEOUT_SECONDS = 8.0
+MIN_FIT_TIMEOUT_SECONDS = 0.5
+MAX_FIT_TIMEOUT_SECONDS = 60.0
+
+
+def _fit_timeout_seconds() -> float:
+    raw = os.getenv("SARIMA_FIT_TIMEOUT_SECONDS", str(DEFAULT_FIT_TIMEOUT_SECONDS))
+    try:
+        timeout = float(raw)
+    except ValueError:
+        timeout = DEFAULT_FIT_TIMEOUT_SECONDS
+
+    return max(MIN_FIT_TIMEOUT_SECONDS, min(timeout, MAX_FIT_TIMEOUT_SECONDS))
+
+
+def _deadline_callback(deadline: float) -> Callable[[np.ndarray], None]:
+    def callback(_parameters: np.ndarray) -> None:
+        if monotonic() >= deadline:
+            raise TimeoutError("SARIMA fitting exceeded the per-product time budget.")
+
+    return callback
 
 
 def _clean_interval(values: np.ndarray) -> list[float | None]:
@@ -44,7 +68,11 @@ def _fit_candidate(
     horizon: int,
     order: tuple[int, int, int],
     seasonal_order: tuple[int, int, int, int],
+    deadline: float,
 ) -> SarimaResult:
+    if monotonic() >= deadline:
+        raise TimeoutError("SARIMA fitting exceeded the per-product time budget.")
+
     with warnings.catch_warnings(record=True) as captured:
         warnings.simplefilter("always")
         model = SARIMAX(
@@ -54,7 +82,15 @@ def _fit_candidate(
             enforce_stationarity=False,
             enforce_invertibility=False,
         )
-        fitted = model.fit(disp=False, maxiter=40)
+        fitted = model.fit(
+            disp=False,
+            maxiter=40,
+            callback=_deadline_callback(deadline),
+        )
+
+        if monotonic() >= deadline:
+            raise TimeoutError("SARIMA fitting exceeded the per-product time budget.")
+
         predicted = fitted.get_forecast(steps=horizon)
         mean_values = [float(value) for value in predicted.predicted_mean.to_numpy()]
 
@@ -98,6 +134,7 @@ def fit_sarima(
     best: SarimaResult | None = None
     failures: list[str] = []
     attempted_preferred: tuple[tuple[int, int, int], tuple[int, int, int, int]] | None = None
+    deadline = monotonic() + _fit_timeout_seconds()
 
     if (
         preferred_order is not None
@@ -111,6 +148,7 @@ def fit_sarima(
                 horizon,
                 preferred_order,
                 preferred_seasonal_order,
+                deadline,
             )
             if preferred.converged:
                 return preferred
@@ -125,7 +163,7 @@ def fit_sarima(
             continue
 
         try:
-            candidate = _fit_candidate(series, horizon, order, seasonal_order)
+            candidate = _fit_candidate(series, horizon, order, seasonal_order, deadline)
             if best is None or candidate.aic < best.aic:
                 best = candidate
         except Exception as exc:  # noqa: BLE001 - translated to deterministic fallback by caller.
