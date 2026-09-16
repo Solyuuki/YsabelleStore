@@ -50,6 +50,7 @@ const envSchema = z.object({
   FORECAST_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
   FORECAST_DEFAULT_HORIZON: z.coerce.number().int().positive().default(12),
   FORECAST_SEASONAL_PERIOD: z.coerce.number().int().positive().default(12),
+  SARIMA_FIT_TIMEOUT_SECONDS: z.coerce.number().positive().max(60).default(8),
   FORECAST_CURRENT_MONTH: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
