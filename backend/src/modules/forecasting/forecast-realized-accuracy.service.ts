@@ -77,9 +77,7 @@ async function previousDetail(productId: string, batchId?: string) {
     }
   });
 
-  return row?.detailPayload
-    ? (row.detailPayload as unknown as ProductForecastDetail)
-    : null;
+  return row?.detailPayload ? (row.detailPayload as unknown as ProductForecastDetail) : null;
 }
 
 export async function withRealizedAccuracyFeedback(
