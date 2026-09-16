@@ -4,7 +4,9 @@ import test from "node:test";
 import {
   assessSarimaEligibility,
   combineEffectiveMonthlyPoints,
-  completedEffectiveSalesPoints
+  completedEffectiveSalesPoints,
+  mergeDatabaseProductsWithWorkbookFallback,
+  type EffectiveProductSeries
 } from "../src/modules/forecasting/effective-sales.service.js";
 import { sameForecastInput } from "../src/modules/forecasting/forecast.service.js";
 import { completedHistoryCutoff } from "../src/modules/forecasting/forecast-source-version.service.js";
@@ -13,10 +15,31 @@ import {
   loadReconstructedComparisonSales
 } from "../src/modules/forecasting/historical-sales.service.js";
 import type {
+  HistoricalSalesPoint,
   ProductForecastDetail,
   ProductHistoricalSeries
 } from "../src/modules/forecasting/forecast.types.js";
 import { getDomainChangeEffects } from "../src/services/domainChangeService.js";
+
+function workbookProduct(productId: string, productName: string): ProductHistoricalSeries {
+  return {
+    category: "Beverages",
+    historical: Array.from({ length: 24 }, (_, index) => {
+      const date = new Date(Date.UTC(2024, index, 1));
+      return {
+        category: "Beverages",
+        period: `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`,
+        productId,
+        productName,
+        quantitySold: 10 + (index % 12),
+        sellingPrice: 20
+      };
+    }),
+    productId,
+    productName,
+    sellingPrice: 20
+  };
+}
 
 test("current partial month is excluded from monthly SARIMA training history", () => {
   const points = [
@@ -72,6 +95,75 @@ test("clean short history remains usable through a fallback model", () => {
 
   assert.equal(eligibility.status, "INSUFFICIENT_HISTORY");
   assert.equal(eligibility.observationCount, 8);
+});
+
+test("database-primary batches fill missing products per product without losing canonical ids", () => {
+  const databaseProduct = workbookProduct("canonical-1", "Database Product");
+  databaseProduct.historical = databaseProduct.historical.slice(-8);
+  const series: EffectiveProductSeries[] = [
+    {
+      category: "Beverages",
+      eligibility: assessSarimaEligibility(
+        "canonical-1",
+        "Database Product",
+        databaseProduct.historical.map((point) => ({
+          period: point.period,
+          quantitySold: point.quantitySold,
+          source: "POS_ACTUAL" as const
+        }))
+      ),
+      points: databaseProduct.historical.map((point) => ({
+        period: point.period,
+        quantitySold: point.quantitySold,
+        source: "POS_ACTUAL" as const
+      })),
+      productId: "canonical-1",
+      productName: "Database Product",
+      sellingPrice: 20,
+      sourceProductIds: ["P001"]
+    },
+    {
+      category: "Beverages",
+      eligibility: assessSarimaEligibility("canonical-2", "Fallback Product", []),
+      points: [],
+      productId: "canonical-2",
+      productName: "Fallback Product",
+      sellingPrice: 30,
+      sourceProductIds: ["P002"]
+    }
+  ];
+  const fallback = workbookProduct("P002", "Fallback Product");
+  const reconstructed = new Map<string, HistoricalSalesPoint[]>([
+    [
+      "P002",
+      [
+        {
+          category: "Beverages",
+          period: "2026-01",
+          productId: "P002",
+          productName: "Fallback Product",
+          quantitySold: 15,
+          sellingPrice: 30
+        }
+      ]
+    ]
+  ]);
+
+  const merged = mergeDatabaseProductsWithWorkbookFallback(
+    series,
+    [databaseProduct],
+    [fallback],
+    reconstructed
+  );
+
+  assert.deepEqual(
+    merged.map((product) => product.productId),
+    ["canonical-1", "canonical-2"]
+  );
+  assert.equal(merged[1]?.historical.length, 24);
+  assert.ok(merged[1]?.historical.every((point) => point.productId === "canonical-2"));
+  assert.equal(merged[1]?.comparisonHistorical?.[0]?.productId, "canonical-2");
+  assert.equal(merged[1]?.comparisonHistorical?.[0]?.quantitySold, 15);
 });
 
 test("reconstructed 2026 workbook is comparison-only and mirrors the 2025 seasonal baseline", async () => {
