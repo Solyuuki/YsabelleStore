@@ -1,6 +1,10 @@
 import { Router } from "express";
 
 import {
+  getCustomerAddressController,
+  updateCustomerAddressController
+} from "../controllers/customerAddressController.js";
+import {
   changeCustomerPasswordController,
   claimCustomerUsernameController,
   listCustomerOrdersController,
@@ -65,6 +69,13 @@ const sensitiveMutationMiddleware = [
 
 customerAccountRouter.use(disableSensitiveResponseCaching);
 customerAccountRouter.get("/orders", requireCustomerAuth, listCustomerOrdersController);
+customerAccountRouter.get("/address", requireCustomerAuth, getCustomerAddressController);
+customerAccountRouter.put(
+  "/address",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  updateCustomerAddressController
+);
 customerAccountRouter.patch(
   "/profile",
   requireAllowedCustomerAuthOrigin,
