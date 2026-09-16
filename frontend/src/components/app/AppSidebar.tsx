@@ -1,4 +1,5 @@
 import { ChevronLeft, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { appRoutes, type AppRoutePath } from "@/app/routes";
 import { SidebarNavItem } from "@/components/app/SidebarNavItem";
@@ -6,6 +7,10 @@ import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
 import { Button } from "@/components/ui/button";
 import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { cn } from "@/lib/utils";
+import {
+  fetchNavigationBadges,
+  type NavigationBadgeSummary
+} from "@/services/dashboardApi";
 import type { AuthUser } from "@/types/auth";
 
 type AppSidebarProps = {
@@ -16,6 +21,8 @@ type AppSidebarProps = {
   onNavigate: (path: AppRoutePath) => void;
   user: AuthUser | null;
 };
+
+const BADGE_REFRESH_MS = 30_000;
 
 const mainRoutes: readonly AppRoutePath[] = [
   "/dashboard",
@@ -42,6 +49,7 @@ export function AppSidebar({
   user
 }: AppSidebarProps) {
   const isOwner = user?.role === "OWNER";
+  const [badges, setBadges] = useState<NavigationBadgeSummary | null>(null);
   const mainItems = appRoutes.filter((item) => mainRoutes.includes(item.path));
   const visibleMainItems = mainItems.filter((item) =>
     item.allowedRoles.includes(user?.role ?? "STAFF")
@@ -51,6 +59,35 @@ export function AppSidebar({
         (item) => ownerRoutesWithUsers.includes(item.path) && item.allowedRoles.includes("OWNER")
       )
     : [];
+
+  useEffect(() => {
+    if (!user) {
+      setBadges(null);
+      return;
+    }
+
+    let active = true;
+
+    async function loadBadges() {
+      try {
+        const nextBadges = await fetchNavigationBadges();
+        if (active) setBadges(nextBadges);
+      } catch {
+        // Keep the last successful counts. Badges are supplemental navigation status.
+      }
+    }
+
+    void loadBadges();
+    const intervalId = window.setInterval(() => void loadBadges(), BADGE_REFRESH_MS);
+    const handleFocus = () => void loadBadges();
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [activePath, user]);
 
   return (
     <aside
@@ -97,6 +134,7 @@ export function AppSidebar({
       >
         <SidebarSection
           activePath={activePath}
+          badges={badges}
           collapsed={collapsed}
           items={visibleMainItems}
           title="MAIN"
@@ -105,6 +143,7 @@ export function AppSidebar({
         {isOwner && ownerItems.length > 0 ? (
           <SidebarSection
             activePath={activePath}
+            badges={badges}
             collapsed={collapsed}
             items={ownerItems}
             title="OWNER AREA"
@@ -127,13 +166,21 @@ export function AppSidebar({
 
 type SidebarSectionProps = {
   activePath: string;
+  badges: NavigationBadgeSummary | null;
   collapsed: boolean;
   items: readonly (typeof appRoutes)[number][];
   title: string;
   onNavigate: (path: AppRoutePath) => void;
 };
 
-function SidebarSection({ activePath, collapsed, items, onNavigate, title }: SidebarSectionProps) {
+function SidebarSection({
+  activePath,
+  badges,
+  collapsed,
+  items,
+  onNavigate,
+  title
+}: SidebarSectionProps) {
   return (
     <div className="space-y-2">
       <SectionLabel collapsed={collapsed} title={title} />
@@ -141,10 +188,13 @@ function SidebarSection({ activePath, collapsed, items, onNavigate, title }: Sid
       <div className="space-y-1">
         {items.map((item) => {
           const active = activePath === item.path;
+          const badgeCount = getBadgeCount(item.path, badges);
 
           return (
             <SidebarNavItem
               active={active}
+              badgeCount={badgeCount}
+              badgeTone={item.path === "/inventory" ? "warning" : "brand"}
               collapsed={collapsed}
               icon={item.icon}
               key={item.path}
@@ -157,6 +207,23 @@ function SidebarSection({ activePath, collapsed, items, onNavigate, title }: Sid
       </div>
     </div>
   );
+}
+
+function getBadgeCount(path: AppRoutePath, badges: NavigationBadgeSummary | null) {
+  if (!badges) return undefined;
+
+  switch (path) {
+    case "/dashboard":
+      return badges.dashboard;
+    case "/inventory":
+      return badges.inventory;
+    case "/receiving":
+      return badges.receiving;
+    case "/reports":
+      return badges.reports;
+    default:
+      return undefined;
+  }
 }
 
 type SectionLabelProps = {
