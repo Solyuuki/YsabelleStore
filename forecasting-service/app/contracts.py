@@ -23,6 +23,7 @@ class ProductSeries(TypedDict):
     category: str
     sellingPrice: float
     historical: list[HistoricalSalesPoint]
+    comparisonHistorical: NotRequired[list[HistoricalSalesPoint]]
     modelHint: NotRequired[ForecastModelHint]
 
 
