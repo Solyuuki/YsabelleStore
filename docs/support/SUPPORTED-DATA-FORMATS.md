@@ -4,16 +4,16 @@
 
 ## Data Exchange and Import Formats
 
-| Format / Representation | Support | Primary Use / Boundary |
-| --- | --- | --- |
-| JSON | Supported | Frontend/backend HTTP payloads; normalized backend-to-Python forecast process contract |
-| CSV | Supported where importer/validator exists | Historical/inventory-oriented data workflows |
-| XLSX | Supported where importer/validator exists | Historical/inventory-oriented spreadsheet imports; backend uses `read-excel-file` |
-| Multipart form data | Supported where upload routes exist | File/image upload through Multer-backed backend boundaries |
-| Product image files | Supported subject to upload/quality policy | Catalog imagery pipeline and governed product image assets |
-| PDF | Processing dependency available | `pdfjs-dist` is present; user-facing support must follow actual source implementation |
-| Generated PDF | Capability dependency available | `jspdf`/`jspdf-autotable` are present on frontend; specific export claims require corresponding UI/source evidence |
-| OCR input | Processing dependency available | `tesseract.js` is present; dependency presence alone is not treated as proof of a complete user-facing OCR workflow |
+| Format / Representation | Support                                    | Primary Use / Boundary                                                                                              |
+| ----------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| JSON                    | Supported                                  | Frontend/backend HTTP payloads; normalized backend-to-Python forecast process contract                              |
+| CSV                     | Supported where importer/validator exists  | Historical/inventory-oriented data workflows                                                                        |
+| XLSX                    | Supported where importer/validator exists  | Historical/inventory-oriented spreadsheet imports; backend uses `read-excel-file`                                   |
+| Multipart form data     | Supported where upload routes exist        | File/image upload through Multer-backed backend boundaries                                                          |
+| Product image files     | Supported subject to upload/quality policy | Catalog imagery pipeline and governed product image assets                                                          |
+| PDF                     | Processing dependency available            | `pdfjs-dist` is present; user-facing support must follow actual source implementation                               |
+| Generated PDF           | Capability dependency available            | `jspdf`/`jspdf-autotable` are present on frontend; specific export claims require corresponding UI/source evidence  |
+| OCR input               | Processing dependency available            | `tesseract.js` is present; dependency presence alone is not treated as proof of a complete user-facing OCR workflow |
 
 ## Historical-Sales Data Requirements
 

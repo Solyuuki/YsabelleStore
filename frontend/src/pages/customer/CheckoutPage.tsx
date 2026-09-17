@@ -7,10 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { fetchCustomerAddress } from "@/services/customerAddressService";
 import { placeStorefrontOrder } from "@/services/storefrontService";
-import {
-  EMPTY_CUSTOMER_ADDRESS,
-  type CustomerAddress
-} from "@/types/customerAddress";
+import { EMPTY_CUSTOMER_ADDRESS, type CustomerAddress } from "@/types/customerAddress";
 import { getCustomerCheckoutDefaults } from "@/utils/customerAccountState";
 
 const LAST_ORDER_KEY = "ysabelle:last-customer-order";
@@ -216,7 +213,10 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <span>2</span>
                 <div>
                   <h2>Contact address</h2>
-                  <p>This identifies your customer record. Your order is still collected at the store.</p>
+                  <p>
+                    This identifies your customer record. Your order is still collected at the
+                    store.
+                  </p>
                 </div>
               </div>
 
@@ -342,7 +342,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   />
                   <span>
                     <strong>Save this address to My Account</strong>
-                    <small>Use it automatically on your next checkout. You can change it anytime.</small>
+                    <small>
+                      Use it automatically on your next checkout. You can change it anytime.
+                    </small>
                   </span>
                 </label>
               ) : null}

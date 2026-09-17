@@ -101,30 +101,30 @@ This checklist is the operational release gate for YsabelleStore. A checked item
 
 ## 10. Release Decision Matrix
 
-| Gate | Pass Means | Fail Means |
-| --- | --- | --- |
-| CI/static | Repository quality checks pass | Release blocked until corrected/accepted |
-| Tests | Critical behavior/security contracts pass | Release blocked for release-critical failure |
-| Schema/database | Prisma/schema/runtime DB state is valid | Release blocked |
-| Security audit | No unresolved production-reachable high/critical risk | Remediate or formally reject release |
-| Packaging | Expected Windows artifact is generated | No distributable candidate |
-| Full-stack runtime | UI, backend, DB and required forecasting boundary work together | Installer/package is not an accepted full application release |
-| Data recovery | Backup/rollback responsibilities are established | Production deployment blocked |
-| Documentation/compliance | Support/license/runtime claims match release artifact | Correct records before release |
-| Manual acceptance | Critical user workflows pass on target machine | Release blocked |
+| Gate                     | Pass Means                                                      | Fail Means                                                    |
+| ------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------- |
+| CI/static                | Repository quality checks pass                                  | Release blocked until corrected/accepted                      |
+| Tests                    | Critical behavior/security contracts pass                       | Release blocked for release-critical failure                  |
+| Schema/database          | Prisma/schema/runtime DB state is valid                         | Release blocked                                               |
+| Security audit           | No unresolved production-reachable high/critical risk           | Remediate or formally reject release                          |
+| Packaging                | Expected Windows artifact is generated                          | No distributable candidate                                    |
+| Full-stack runtime       | UI, backend, DB and required forecasting boundary work together | Installer/package is not an accepted full application release |
+| Data recovery            | Backup/rollback responsibilities are established                | Production deployment blocked                                 |
+| Documentation/compliance | Support/license/runtime claims match release artifact           | Correct records before release                                |
+| Manual acceptance        | Critical user workflows pass on target machine                  | Release blocked                                               |
 
 ## 11. Final Approval Record
 
-| Field | Value |
-| --- | --- |
-| Release commit SHA | _Record at release time_ |
-| Version | _Record at release time_ |
-| Artifact/installer | _Record at release time_ |
-| Target Windows environment | _Record at release time_ |
-| CI evidence | _Link/ID at release time_ |
-| Database backup evidence | _Record at release time_ |
-| Known accepted risks | _Record at release time_ |
-| Approved by | _Record at release time_ |
-| Approval date | _Record at release time_ |
+| Field                      | Value                     |
+| -------------------------- | ------------------------- |
+| Release commit SHA         | _Record at release time_  |
+| Version                    | _Record at release time_  |
+| Artifact/installer         | _Record at release time_  |
+| Target Windows environment | _Record at release time_  |
+| CI evidence                | _Link/ID at release time_ |
+| Database backup evidence   | _Record at release time_  |
+| Known accepted risks       | _Record at release time_  |
+| Approved by                | _Record at release time_  |
+| Approval date              | _Record at release time_  |
 
 For detailed gate definitions, see [`RELEASE-VERIFICATION-MATRIX.md`](RELEASE-VERIFICATION-MATRIX.md) and [`OPERATIONS-RUNBOOK.md`](OPERATIONS-RUNBOOK.md).

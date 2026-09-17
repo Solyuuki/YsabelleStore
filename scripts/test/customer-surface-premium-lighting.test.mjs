@@ -12,7 +12,7 @@ test("storefront home and shop use scoped premium ambient lighting", () => {
   assert.match(main, /@\/styles\/customer-surface-lighting\.css/);
   assert.match(lighting, /\.customer-home/);
   assert.match(lighting, /\.customer-shop-page/);
-  assert.match(lighting, /#fcfdff/i);
+  assert.match(lighting, /#f4f6fb/i);
   assert.match(lighting, /radial-gradient/);
   assert.match(lighting, /@keyframes customer-surface-ambient-drift/);
   assert.match(lighting, /prefers-reduced-motion: reduce/);

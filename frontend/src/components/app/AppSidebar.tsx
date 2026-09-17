@@ -7,10 +7,7 @@ import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
 import { Button } from "@/components/ui/button";
 import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { cn } from "@/lib/utils";
-import {
-  fetchNavigationBadges,
-  type NavigationBadgeSummary
-} from "@/services/dashboardApi";
+import { fetchNavigationBadges, type NavigationBadgeSummary } from "@/services/dashboardApi";
 import type { AuthUser } from "@/types/auth";
 
 type AppSidebarProps = {

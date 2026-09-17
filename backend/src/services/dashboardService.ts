@@ -275,9 +275,7 @@ export async function getDashboardSummary(
   };
 }
 
-export async function getDashboardOperations(
-  now = new Date()
-): Promise<DashboardOperations> {
+export async function getDashboardOperations(now = new Date()): Promise<DashboardOperations> {
   const [
     planning,
     draftCount,
@@ -373,8 +371,7 @@ export async function getDashboardOperations(
     return left.product.name.localeCompare(right.product.name);
   });
 
-  const selectedLatestLines =
-    latestOpenOrder?.lines.filter((line) => line.isSelected) ?? [];
+  const selectedLatestLines = latestOpenOrder?.lines.filter((line) => line.isSelected) ?? [];
   const requestedUnits = selectedLatestLines.reduce(
     (sum, line) => sum + Math.max(0, line.requestedQuantity),
     0
@@ -383,8 +380,7 @@ export async function getDashboardOperations(
     (sum, line) => sum + Math.max(0, line.receivedQuantity),
     0
   );
-  const totalOpen =
-    draftCount + approvedCount + awaitingDeliveryCount + partiallyReceivedCount;
+  const totalOpen = draftCount + approvedCount + awaitingDeliveryCount + partiallyReceivedCount;
 
   return {
     generatedAt: now.toISOString(),

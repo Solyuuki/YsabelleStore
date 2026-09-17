@@ -8,36 +8,36 @@ This document defines how YsabelleStore evaluates behavioral test coverage. The 
 
 ## Coverage Priorities
 
-| Module Group | Priority | Required Coverage Focus |
-| --- | --- | --- |
-| Authentication / security | Critical | Login/session boundaries, authorization, recovery, OAuth/OTP, rate limits, safe errors |
-| Inventory / stock truth | Critical | Stock-in/out, movements, batches, receiving, reconciliation, oversell/consistency boundaries |
-| POS / sales | Critical | Product lookup, checkout, inventory effects, transaction persistence |
-| Data imports | Critical | File validation, preview/confirm, duplicates/overlaps, rollback/recovery behavior |
-| Forecasting | Critical | Input preparation, SARIMA/fallback output, failure behavior, metrics and delivery contracts |
-| Restock / recommendations | High | Lifecycle transitions, role controls, recommendation decision boundaries, receiving effects |
-| Storefront / customer account | High | Catalog delivery, order creation, auth/account/session behavior |
-| Catalog / image quality | High | Identity, barcode mapping, quality states, image processing/approval/delivery |
-| Reliability / observability | High | Health, liveness/readiness, HTTP status contract, request ID and safe logging |
-| Utility / helper code | Medium | Meaningful edge cases for reusable logic where regression risk justifies tests |
-| Build/repository guardrails | High | Version/status/format/lint/type/build and repository governance constraints |
+| Module Group                  | Priority | Required Coverage Focus                                                                      |
+| ----------------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| Authentication / security     | Critical | Login/session boundaries, authorization, recovery, OAuth/OTP, rate limits, safe errors       |
+| Inventory / stock truth       | Critical | Stock-in/out, movements, batches, receiving, reconciliation, oversell/consistency boundaries |
+| POS / sales                   | Critical | Product lookup, checkout, inventory effects, transaction persistence                         |
+| Data imports                  | Critical | File validation, preview/confirm, duplicates/overlaps, rollback/recovery behavior            |
+| Forecasting                   | Critical | Input preparation, SARIMA/fallback output, failure behavior, metrics and delivery contracts  |
+| Restock / recommendations     | High     | Lifecycle transitions, role controls, recommendation decision boundaries, receiving effects  |
+| Storefront / customer account | High     | Catalog delivery, order creation, auth/account/session behavior                              |
+| Catalog / image quality       | High     | Identity, barcode mapping, quality states, image processing/approval/delivery                |
+| Reliability / observability   | High     | Health, liveness/readiness, HTTP status contract, request ID and safe logging                |
+| Utility / helper code         | Medium   | Meaningful edge cases for reusable logic where regression risk justifies tests               |
+| Build/repository guardrails   | High     | Version/status/format/lint/type/build and repository governance constraints                  |
 
 ## Evidence Model
 
 Coverage is evaluated using multiple evidence types rather than one metric:
 
-| Evidence | Current Mechanism |
-| --- | --- |
-| Backend behavior/security | `backend/package.json` Node/TS test suite |
-| Frontend contracts | `frontend/package.json` TypeScript contract scripts |
-| Forecasting | `python -m pytest forecasting-service/tests` |
-| Repository guardrails | `npm run test:guardrails` plus preflight/status/version scripts |
-| Static quality | Prettier, ESLint, TypeScript |
-| Schema/data boundary | Prisma validation and disposable CI MySQL database |
-| Buildability | Root and per-workspace builds |
-| Security dependency reachability | `npm run security:audit:production` |
-| Manual acceptance | Target-machine/runtime workflow verification |
-| Accessibility/HCI | Separate manual/tool-assisted evidence; not currently a CI coverage percentage |
+| Evidence                         | Current Mechanism                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| Backend behavior/security        | `backend/package.json` Node/TS test suite                                      |
+| Frontend contracts               | `frontend/package.json` TypeScript contract scripts                            |
+| Forecasting                      | `python -m pytest forecasting-service/tests`                                   |
+| Repository guardrails            | `npm run test:guardrails` plus preflight/status/version scripts                |
+| Static quality                   | Prettier, ESLint, TypeScript                                                   |
+| Schema/data boundary             | Prisma validation and disposable CI MySQL database                             |
+| Buildability                     | Root and per-workspace builds                                                  |
+| Security dependency reachability | `npm run security:audit:production`                                            |
+| Manual acceptance                | Target-machine/runtime workflow verification                                   |
+| Accessibility/HCI                | Separate manual/tool-assisted evidence; not currently a CI coverage percentage |
 
 ## Numeric Coverage Policy
 

@@ -13,11 +13,14 @@ export async function fetchCustomerAddress(signal?: AbortSignal) {
 }
 
 export async function updateCustomerAddress(address: CustomerAddress) {
-  const response = await apiClient.request<AddressResponse, unknown>("/api/customer-account/address", {
-    method: "PUT",
-    credentials: "include",
-    json: address
-  });
+  const response = await apiClient.request<AddressResponse, unknown>(
+    "/api/customer-account/address",
+    {
+      method: "PUT",
+      credentials: "include",
+      json: address
+    }
+  );
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data.address;
 }

@@ -6,17 +6,17 @@ YsabelleStore is built with open-source frameworks and libraries while retaining
 
 ## Primary UI Library
 
-| Field | Declaration |
-| --- | --- |
-| Library | Tailwind CSS |
-| Declared version | `^3.4.17` in `frontend/package.json` |
-| Resolved version | **3.4.19** in `package-lock.json` |
-| License | MIT License |
-| Copyright | Tailwind Labs, Inc. |
-| Official repository | `https://github.com/tailwindlabs/tailwindcss` |
-| Versioned license source | `https://github.com/tailwindlabs/tailwindcss/blob/v3.4.19/LICENSE` |
-| Local evidence | `docs/licenses/TAILWIND-CSS-LICENSE.md` |
-| Project use | Primary utility styling framework for the React/Vite interface |
+| Field                       | Declaration                                                                                                                                                                   |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Library                     | Tailwind CSS                                                                                                                                                                  |
+| Declared version            | `^3.4.17` in `frontend/package.json`                                                                                                                                          |
+| Resolved version            | **3.4.19** in `package-lock.json`                                                                                                                                             |
+| License                     | MIT License                                                                                                                                                                   |
+| Copyright                   | Tailwind Labs, Inc.                                                                                                                                                           |
+| Official repository         | `https://github.com/tailwindlabs/tailwindcss`                                                                                                                                 |
+| Versioned license source    | `https://github.com/tailwindlabs/tailwindcss/blob/v3.4.19/LICENSE`                                                                                                            |
+| Local evidence              | `docs/licenses/TAILWIND-CSS-LICENSE.md`                                                                                                                                       |
+| Project use                 | Primary utility styling framework for the React/Vite interface                                                                                                                |
 | Library-source modification | No claim is made that YsabelleStore modifies or redistributes Tailwind's source as project-owned code; application configuration/components/styles are YsabelleStore-specific |
 
 ### MIT Obligation Summary

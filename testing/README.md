@@ -8,29 +8,29 @@ This directory documents the repository-wide testing architecture for YsabelleSt
 
 ## Testing Philosophy
 
-| Principle | Description |
-| --- | --- |
-| Test the boundary | Verify behavior at the layer where failure would be meaningful and diagnosable. |
-| Protect contracts | Prioritize API, data, security, inventory and forecasting contracts that span modules. |
-| Keep tests focused | A test should state a clear behavior/regression boundary. |
-| Separate concerns | Unit/contract/integration/statistical/release checks should remain distinguishable. |
-| Validate early | Run fast static/contract checks before promotion; run broader CI gates before release. |
-| Make failures traceable | A failure should identify the affected subsystem or contract. |
+| Principle                 | Description                                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| Test the boundary         | Verify behavior at the layer where failure would be meaningful and diagnosable.                    |
+| Protect contracts         | Prioritize API, data, security, inventory and forecasting contracts that span modules.             |
+| Keep tests focused        | A test should state a clear behavior/regression boundary.                                          |
+| Separate concerns         | Unit/contract/integration/statistical/release checks should remain distinguishable.                |
+| Validate early            | Run fast static/contract checks before promotion; run broader CI gates before release.             |
+| Make failures traceable   | A failure should identify the affected subsystem or contract.                                      |
 | Keep production data safe | CI uses disposable/test data and dedicated test configuration rather than production secrets/data. |
 
 ## Implemented Test Layers
 
-| Layer | Current Coverage / Mechanism |
-| --- | --- |
-| Repository guardrails | Node test suite under `scripts/test/`, preflight/status/version checks |
-| Frontend contract tests | Customer auth/account, internal auth/role navigation, owner modules, receiving barcode, POS feedback, restock phases and system-health reliability scripts |
-| Backend tests | Authentication/security, customer account/recovery/social auth, orders, CORS, catalog/barcodes/images, stock truth, POS search, storefront, forecasts, historical sales, inventory import, restock, HTTP status, health/readiness, error security and request traceability |
-| Forecast tests | Python `pytest` suite under `forecasting-service/tests` |
-| Database validation | Prisma client generation, schema validation and disposable CI database build |
-| Static quality | Prettier, ESLint, TypeScript typecheck |
-| Build verification | Full repository build plus individual frontend/backend/electron workspace builds |
-| Security verification | `security:audit:production` plus focused backend security regression tests |
-| Domain audits | Inventory audit/reconciliation, catalog/SARIMA mapping checks, image/storefront audits where invoked |
+| Layer                   | Current Coverage / Mechanism                                                                                                                                                                                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repository guardrails   | Node test suite under `scripts/test/`, preflight/status/version checks                                                                                                                                                                                                     |
+| Frontend contract tests | Customer auth/account, internal auth/role navigation, owner modules, receiving barcode, POS feedback, restock phases and system-health reliability scripts                                                                                                                 |
+| Backend tests           | Authentication/security, customer account/recovery/social auth, orders, CORS, catalog/barcodes/images, stock truth, POS search, storefront, forecasts, historical sales, inventory import, restock, HTTP status, health/readiness, error security and request traceability |
+| Forecast tests          | Python `pytest` suite under `forecasting-service/tests`                                                                                                                                                                                                                    |
+| Database validation     | Prisma client generation, schema validation and disposable CI database build                                                                                                                                                                                               |
+| Static quality          | Prettier, ESLint, TypeScript typecheck                                                                                                                                                                                                                                     |
+| Build verification      | Full repository build plus individual frontend/backend/electron workspace builds                                                                                                                                                                                           |
+| Security verification   | `security:audit:production` plus focused backend security regression tests                                                                                                                                                                                                 |
+| Domain audits           | Inventory audit/reconciliation, catalog/SARIMA mapping checks, image/storefront audits where invoked                                                                                                                                                                       |
 
 ## Backend Test Entry Point
 

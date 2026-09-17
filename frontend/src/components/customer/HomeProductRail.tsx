@@ -1,12 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  Children,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode
-} from "react";
+import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import "@/styles/customer-home-product-rail.css";
 
@@ -162,7 +155,9 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
       </button>
 
       <span aria-live="polite" className="home-product-rail__status">
-        {items.length ? `Showing products ${visibleStart} to ${visibleEnd} of ${items.length}.` : ""}
+        {items.length
+          ? `Showing products ${visibleStart} to ${visibleEnd} of ${items.length}.`
+          : ""}
       </span>
     </div>
   );

@@ -6,15 +6,15 @@ This document prevents capability overstatement by recording known boundaries of
 
 ## Forecasting Limitations
 
-| Limitation | Current Boundary |
-| --- | --- |
-| Historical depth | Forecasting service documentation states 24 monthly observations per product in the documented dataset context. |
-| Seasonal cycles | Two annual seasonal cycles are represented by that 24-month context. |
-| Low-volume products | SARIMA estimates may be unstable. |
-| Confidence intervals | May be wide or unavailable for fallback forecasts. |
-| Exogenous factors | Current forecast does not inherently model promotions, price changes, stockouts, supplier disruptions, lost demand or economic shocks. |
-| Expiration | SARIMA does not forecast expiration dates. Expiry risk uses batch/inventory state, time and expected demand. |
-| Model family | The approved thesis forecast remains SARIMA/SARIMAX-family unless research scope is formally changed. |
+| Limitation           | Current Boundary                                                                                                                       |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Historical depth     | Forecasting service documentation states 24 monthly observations per product in the documented dataset context.                        |
+| Seasonal cycles      | Two annual seasonal cycles are represented by that 24-month context.                                                                   |
+| Low-volume products  | SARIMA estimates may be unstable.                                                                                                      |
+| Confidence intervals | May be wide or unavailable for fallback forecasts.                                                                                     |
+| Exogenous factors    | Current forecast does not inherently model promotions, price changes, stockouts, supplier disruptions, lost demand or economic shocks. |
+| Expiration           | SARIMA does not forecast expiration dates. Expiry risk uses batch/inventory state, time and expected demand.                           |
+| Model family         | The approved thesis forecast remains SARIMA/SARIMAX-family unless research scope is formally changed.                                  |
 
 ## Deployment Limitations
 
