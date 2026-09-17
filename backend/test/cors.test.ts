@@ -4,7 +4,7 @@ import { test } from "node:test";
 
 import { createApp } from "../src/app.js";
 
-test("CORS permits browser and Electron renderer origins without using a wildcard", async () => {
+test("CORS permits browser preview and Electron renderer origins without using a wildcard", async () => {
   const app = createApp();
   const server = app.listen(0, "127.0.0.1");
 
@@ -17,7 +17,13 @@ test("CORS permits browser and Electron renderer origins without using a wildcar
     const address = server.address() as AddressInfo;
     const endpoint = `http://127.0.0.1:${address.port}/api/storefront/categories`;
 
-    for (const origin of ["http://localhost:5173", "http://127.0.0.1:5173", "null"]) {
+    for (const origin of [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "http://localhost:4173",
+      "http://127.0.0.1:4173",
+      "null"
+    ]) {
       const response = await fetch(endpoint, {
         headers: {
           Origin: origin,
@@ -27,6 +33,7 @@ test("CORS permits browser and Electron renderer origins without using a wildcar
       });
 
       assert.equal(response.headers.get("access-control-allow-origin"), origin);
+      assert.notEqual(response.headers.get("access-control-allow-origin"), "*");
     }
 
     const rejected = await fetch(endpoint, {
