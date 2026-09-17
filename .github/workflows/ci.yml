@@ -31,6 +31,7 @@ jobs:
           MYSQL_USER: ci
           MYSQL_PASSWORD: ci
           MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_HOST: "%"
         ports:
           - 3306:3306
         options: >-
@@ -78,6 +79,9 @@ jobs:
 
       - name: Validate Prisma schema
         run: npm run prisma:validate
+
+      - name: Grant CI database isolation privileges
+        run: mysql -h 127.0.0.1 -u root -proot -e "GRANT ALL PRIVILEGES ON *.* TO 'ci'@'%'; FLUSH PRIVILEGES;"
 
       - name: Build disposable CI database
         run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
