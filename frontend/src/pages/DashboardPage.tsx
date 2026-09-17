@@ -14,14 +14,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis
-} from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 import type { AppRoutePath } from "@/app/routes";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -479,12 +472,7 @@ type OwnerOperationsProps = {
   operations: DashboardOperations | null;
 };
 
-function RestockActionsCard({
-  error,
-  loading,
-  onNavigate,
-  operations
-}: OwnerOperationsProps) {
+function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOperationsProps) {
   return (
     <Card className={brandCardClass}>
       <BrandAccent />
@@ -526,8 +514,8 @@ function RestockActionsCard({
             ))}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
               <p className="text-xs text-slate-500">
-                {operations.restock.suggestedUnits.toLocaleString()} total suggested units across the
-                active queue.
+                {operations.restock.suggestedUnits.toLocaleString()} total suggested units across
+                the active queue.
               </p>
               <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
                 <ClipboardList className="h-4 w-4" />
@@ -543,8 +531,8 @@ function RestockActionsCard({
               <div>
                 <p className="font-semibold text-slate-950">Inventory coverage looks healthy</p>
                 <p className="mt-1 max-w-xl text-sm leading-6 text-slate-600">
-                  Current sellable and incoming stock cover the active replenishment policy. No owner
-                  intervention is required right now.
+                  Current sellable and incoming stock cover the active replenishment policy. No
+                  owner intervention is required right now.
                 </p>
               </div>
             </div>
@@ -712,7 +700,8 @@ function LatestRestockOrder({ order }: LatestRestockOrderProps) {
       </div>
       <div className="mt-4 border-t border-violet-100 pt-3 text-[11px] leading-5 text-slate-500">
         <p>
-          {order.productLines.toLocaleString()} product lines • {order.requestedUnits.toLocaleString()}
+          {order.productLines.toLocaleString()} product lines •{" "}
+          {order.requestedUnits.toLocaleString()}
           {" requested units"}
         </p>
         <p>
@@ -780,18 +769,14 @@ function SystemSyncCard({ summary }: { summary: DashboardSummary }) {
       <CardContent className="space-y-3 pt-5">
         <div
           className={`flex items-center justify-between rounded-xl border px-3.5 py-3 ${
-            synced
-              ? "border-violet-100 bg-violet-50/40"
-              : "border-amber-200 bg-amber-50/60"
+            synced ? "border-violet-100 bg-violet-50/40" : "border-amber-200 bg-amber-50/60"
           }`}
         >
           <div className="flex items-center gap-2.5">
             <Database className="h-4 w-4 text-[#625bff]" aria-hidden="true" />
             <span className="text-sm font-medium text-slate-700">Catalog → inventory</span>
           </div>
-          <span
-            className={`text-xs font-semibold ${synced ? "text-[#625bff]" : "text-amber-700"}`}
-          >
+          <span className={`text-xs font-semibold ${synced ? "text-[#625bff]" : "text-amber-700"}`}>
             {synced ? "Synced" : `${summary.inventory.unlinkedCatalogItems} missing`}
           </span>
         </div>

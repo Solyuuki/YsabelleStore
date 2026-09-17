@@ -111,7 +111,10 @@ test("comparison overlay never adds reconstructed values to SARIMA training hist
   const result = applyReconstructedComparisonOverlay(source, reconstructed);
 
   assert.deepEqual(result.historical, originalHistorical);
-  assert.equal(result.historical.some((point) => point.period.startsWith("2026-")), false);
+  assert.equal(
+    result.historical.some((point) => point.period.startsWith("2026-")),
+    false
+  );
 });
 
 test("database product identities are not overlaid from workbook reconstruction", () => {

@@ -1,19 +1,12 @@
 import type { RequestHandler } from "express";
 
 import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
-import {
-  getDashboardOperations,
-  getDashboardSummary
-} from "../services/dashboardService.js";
+import { getDashboardOperations, getDashboardSummary } from "../services/dashboardService.js";
 import { getNavigationBadges } from "../services/navigationBadgeService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 
-export const getDashboardSummaryController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const getDashboardSummaryController: RequestHandler = async (request, response, next) => {
   try {
     const user = getAuthenticatedUser(request);
 
@@ -49,11 +42,7 @@ export const getDashboardOperationsController: RequestHandler = async (
   }
 };
 
-export const getNavigationBadgesController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const getNavigationBadgesController: RequestHandler = async (request, response, next) => {
   try {
     const user = getAuthenticatedUser(request);
 

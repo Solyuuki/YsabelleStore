@@ -29,11 +29,7 @@ export const getCustomerAddressController: RequestHandler = async (request, resp
   }
 };
 
-export const updateCustomerAddressController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const updateCustomerAddressController: RequestHandler = async (request, response, next) => {
   try {
     const customer = requireCustomer(request);
     const parsed = customerAddressSchema.safeParse(request.body);

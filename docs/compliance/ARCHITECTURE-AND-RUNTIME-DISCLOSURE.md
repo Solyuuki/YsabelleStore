@@ -41,13 +41,13 @@ Repository responsibilities are separated across `frontend/`, `backend/`, `elect
 
 ## 4. Core Runtime Services
 
-| Runtime | Responsibility | Current Technology |
-| --- | --- | --- |
-| Frontend | Storefront, internal dashboards, POS/inventory/forecast UI | React 19, TypeScript, Vite, Tailwind |
-| Backend | Authentication, API, domain orchestration, validation, persistence boundary | Node.js, TypeScript, Express |
-| Database | Persistent system source of truth | MySQL through Prisma |
-| Forecasting | Product-level monthly demand forecasts | Python, pandas, NumPy, statsmodels SARIMA |
-| Desktop | Local Windows desktop shell | Electron |
+| Runtime     | Responsibility                                                              | Current Technology                        |
+| ----------- | --------------------------------------------------------------------------- | ----------------------------------------- |
+| Frontend    | Storefront, internal dashboards, POS/inventory/forecast UI                  | React 19, TypeScript, Vite, Tailwind      |
+| Backend     | Authentication, API, domain orchestration, validation, persistence boundary | Node.js, TypeScript, Express              |
+| Database    | Persistent system source of truth                                           | MySQL through Prisma                      |
+| Forecasting | Product-level monthly demand forecasts                                      | Python, pandas, NumPy, statsmodels SARIMA |
+| Desktop     | Local Windows desktop shell                                                 | Electron                                  |
 
 ## 5. API Architecture
 
@@ -57,10 +57,10 @@ The route registry explicitly marks some generic route groups as `implemented` a
 
 ## 6. Health and Reliability Contract
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/health` | Aggregated health summary |
-| `GET /api/health/live` | Process liveness |
+| Endpoint                | Purpose                              |
+| ----------------------- | ------------------------------------ |
+| `GET /api/health`       | Aggregated health summary            |
+| `GET /api/health/live`  | Process liveness                     |
 | `GET /api/health/ready` | Readiness/critical dependency checks |
 
 Current reliability work also includes canonical HTTP status behavior, sanitized server errors, request correlation IDs, structured safe logging and frontend degraded/offline/timeout states.

@@ -6,40 +6,40 @@ This document is a feature-support register, not a roadmap. Current executable s
 
 ## Thesis-Core and Operational Features
 
-| Feature Area | Supported Behavior |
-| --- | --- |
-| Product/catalog management | Product/category records, identifiers, pricing, operational states, barcode/alias/canonical identity controls |
-| POS | Product lookup/selection, sales flow, persistence and stock effects |
-| Inventory | Aggregate stock, batch-aware quantities, stock movements, adjustments and integrity checks |
-| Expiration | Expiration dates, batch status and near-expiry/expiry-risk context |
-| Historical sales | Validated historical-sales preparation/import, row-level diagnostics, overlap handling and audit-oriented persistence |
-| Forecasting | Product-level monthly SARIMA demand forecasts with bounded candidates and fallback logic |
-| Forecast evaluation | MAE, RMSE, MAPE and WAPE metrics |
-| Inventory recommendations | Restock, low-stock, overstock, near-expiry and expiry-risk decision support |
-| Restock workflow | Restock-order records/workflow where implemented; recommendations remain decision support |
-| Operational dashboard | Internal operational summaries and status presentation |
-| Customer storefront | Product discovery, search/detail, cart/checkout/pickup-order flows represented by current source |
-| Customer accounts | Authentication, sessions, account/order-history related behavior |
-| Internal access control | OWNER/STAFF protected operational boundary |
-| Social authentication | Google and Facebook/Meta provider integration when configured |
-| Email/OTP delivery | Resend production configuration; Gmail SMTP development QA |
-| Product imagery | Governed image assets, processing/quality/approval states and storefront delivery |
-| Desktop application | Electron Windows desktop shell and packaging boundary |
-| Health monitoring | Summary, liveness and readiness endpoints |
-| Reliability UX | Healthy/degraded/database-unavailable/backend-unavailable/timeout/offline state handling documented in current system |
+| Feature Area               | Supported Behavior                                                                                                    |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Product/catalog management | Product/category records, identifiers, pricing, operational states, barcode/alias/canonical identity controls         |
+| POS                        | Product lookup/selection, sales flow, persistence and stock effects                                                   |
+| Inventory                  | Aggregate stock, batch-aware quantities, stock movements, adjustments and integrity checks                            |
+| Expiration                 | Expiration dates, batch status and near-expiry/expiry-risk context                                                    |
+| Historical sales           | Validated historical-sales preparation/import, row-level diagnostics, overlap handling and audit-oriented persistence |
+| Forecasting                | Product-level monthly SARIMA demand forecasts with bounded candidates and fallback logic                              |
+| Forecast evaluation        | MAE, RMSE, MAPE and WAPE metrics                                                                                      |
+| Inventory recommendations  | Restock, low-stock, overstock, near-expiry and expiry-risk decision support                                           |
+| Restock workflow           | Restock-order records/workflow where implemented; recommendations remain decision support                             |
+| Operational dashboard      | Internal operational summaries and status presentation                                                                |
+| Customer storefront        | Product discovery, search/detail, cart/checkout/pickup-order flows represented by current source                      |
+| Customer accounts          | Authentication, sessions, account/order-history related behavior                                                      |
+| Internal access control    | OWNER/STAFF protected operational boundary                                                                            |
+| Social authentication      | Google and Facebook/Meta provider integration when configured                                                         |
+| Email/OTP delivery         | Resend production configuration; Gmail SMTP development QA                                                            |
+| Product imagery            | Governed image assets, processing/quality/approval states and storefront delivery                                     |
+| Desktop application        | Electron Windows desktop shell and packaging boundary                                                                 |
+| Health monitoring          | Summary, liveness and readiness endpoints                                                                             |
+| Reliability UX             | Healthy/degraded/database-unavailable/backend-unavailable/timeout/offline state handling documented in current system |
 
 ## Forecast Support Detail
 
-| Item | Support |
-| --- | --- |
-| Frequency | Monthly seasonal demand |
-| Candidate 1 | `SARIMA(0,1,1)(0,1,1,12)` |
-| Candidate 2 | `SARIMA(1,1,0)(0,1,1,12)` |
-| Candidate 3 | `SARIMA(1,0,0)(1,0,0,12)` |
-| Selection | Lowest finite AIC among successful candidates |
-| Fallback | Seasonal naive, then moving average |
-| Confidence intervals | When available from fitted model |
-| Expiry prediction | **Not supported as a SARIMA output**; expiry risk is derived from inventory/batch state, time and expected demand |
+| Item                 | Support                                                                                                           |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Frequency            | Monthly seasonal demand                                                                                           |
+| Candidate 1          | `SARIMA(0,1,1)(0,1,1,12)`                                                                                         |
+| Candidate 2          | `SARIMA(1,1,0)(0,1,1,12)`                                                                                         |
+| Candidate 3          | `SARIMA(1,0,0)(1,0,0,12)`                                                                                         |
+| Selection            | Lowest finite AIC among successful candidates                                                                     |
+| Fallback             | Seasonal naive, then moving average                                                                               |
+| Confidence intervals | When available from fitted model                                                                                  |
+| Expiry prediction    | **Not supported as a SARIMA output**; expiry risk is derived from inventory/batch state, time and expected demand |
 
 ## API Feature Status
 

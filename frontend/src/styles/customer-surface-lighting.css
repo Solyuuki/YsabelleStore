@@ -3,8 +3,7 @@
   position: relative;
   isolation: isolate;
   overflow: clip;
-  background:
-    linear-gradient(145deg, #f4f6fb 0%, #f1f0f8 50%, #f7f2f6 100%);
+  background: linear-gradient(145deg, #f4f6fb 0%, #f1f0f8 50%, #f7f2f6 100%);
 }
 
 .customer-home::before,

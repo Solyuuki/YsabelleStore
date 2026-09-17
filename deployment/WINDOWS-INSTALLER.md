@@ -8,34 +8,34 @@ This document describes the **currently configured** Windows installer boundary 
 
 ## Current Packaging Configuration
 
-| Item | Current Configuration | Verification State |
-| --- | --- | --- |
-| Desktop shell | Electron | Configured |
-| Packager | `electron-builder` | Configured |
-| App ID | `com.ysabellestore.desktop` | Configured |
-| Product name | `YsabelleStore` | Configured |
-| Windows target | NSIS | Configured |
-| One-click installer | `false` | Configured |
-| Per-machine installation | `false` | Configured as user-scoped |
-| Installation directory | User can change directory | Configured |
-| Application icon | `electron/build/icon.ico` prepared by workspace script | Configured; target-machine visual QA required |
-| Package output | `electron/release` | Configured |
-| Bundled renderer | `frontend/dist` copied into packaged resources | Configured |
-| Auto-update | Not configured | Not supported |
-| macOS/Linux installer | No active package target | Not claimed |
+| Item                     | Current Configuration                                  | Verification State                            |
+| ------------------------ | ------------------------------------------------------ | --------------------------------------------- |
+| Desktop shell            | Electron                                               | Configured                                    |
+| Packager                 | `electron-builder`                                     | Configured                                    |
+| App ID                   | `com.ysabellestore.desktop`                            | Configured                                    |
+| Product name             | `YsabelleStore`                                        | Configured                                    |
+| Windows target           | NSIS                                                   | Configured                                    |
+| One-click installer      | `false`                                                | Configured                                    |
+| Per-machine installation | `false`                                                | Configured as user-scoped                     |
+| Installation directory   | User can change directory                              | Configured                                    |
+| Application icon         | `electron/build/icon.ico` prepared by workspace script | Configured; target-machine visual QA required |
+| Package output           | `electron/release`                                     | Configured                                    |
+| Bundled renderer         | `frontend/dist` copied into packaged resources         | Configured                                    |
+| Auto-update              | Not configured                                         | Not supported                                 |
+| macOS/Linux installer    | No active package target                               | Not claimed                                   |
 
 ## Important Full-Stack Boundary
 
 The current Electron Builder configuration packages the Electron output and built frontend renderer. It does **not** by itself establish that all of the following are embedded or automatically provisioned by the installer:
 
-| Runtime Dependency | Current Installer Evidence |
-| --- | --- |
-| Node/Express backend service | Not shown as an `electron-builder` packaged resource/service |
-| MySQL Server/database provisioning | Not shown as installer-managed provisioning |
-| Python runtime | Not shown as embedded |
-| Forecasting-service Python dependencies | Not shown as embedded |
-| Catalog-image Python runtime/dependencies | Not shown as embedded |
-| Production secrets/configuration | Must be supplied outside committed source; not installer-bundled by evidence reviewed |
+| Runtime Dependency                        | Current Installer Evidence                                                            |
+| ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| Node/Express backend service              | Not shown as an `electron-builder` packaged resource/service                          |
+| MySQL Server/database provisioning        | Not shown as installer-managed provisioning                                           |
+| Python runtime                            | Not shown as embedded                                                                 |
+| Forecasting-service Python dependencies   | Not shown as embedded                                                                 |
+| Catalog-image Python runtime/dependencies | Not shown as embedded                                                                 |
+| Production secrets/configuration          | Must be supplied outside committed source; not installer-bundled by evidence reviewed |
 
 Therefore, **do not describe the current NSIS artifact as a self-contained one-click full-stack installer** until target-machine packaging/startup evidence proves that claim.
 

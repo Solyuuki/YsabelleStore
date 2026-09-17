@@ -8,36 +8,36 @@ This directory documents how the current YsabelleStore application is built, val
 
 ## Current Deployment Model
 
-| Area | Current State |
-| --- | --- |
-| Primary deployment | Local/offline-first Windows desktop application |
-| Frontend | React/Vite build bundled into the desktop application |
-| Backend | Local Node.js/Express service boundary |
-| Database | Local MySQL through Prisma |
-| Forecasting | Local Python forecasting process/service boundary |
-| Desktop shell | Electron |
-| Packaging | electron-builder |
-| Installer target | Windows NSIS |
-| Cloud hosting | Not part of the current production deployment envelope |
-| Auto-update | Not implemented in the current foundation |
+| Area                      | Current State                                                             |
+| ------------------------- | ------------------------------------------------------------------------- |
+| Primary deployment        | Local/offline-first Windows desktop application                           |
+| Frontend                  | React/Vite build bundled into the desktop application                     |
+| Backend                   | Local Node.js/Express service boundary                                    |
+| Database                  | Local MySQL through Prisma                                                |
+| Forecasting               | Local Python forecasting process/service boundary                         |
+| Desktop shell             | Electron                                                                  |
+| Packaging                 | electron-builder                                                          |
+| Installer target          | Windows NSIS                                                              |
+| Cloud hosting             | Not part of the current production deployment envelope                    |
+| Auto-update               | Not implemented in the current foundation                                 |
 | Public release publishing | Requires explicit release process; not implied by packaging configuration |
 
 ## Electron Packaging Configuration
 
 The active Electron Builder configuration currently declares:
 
-| Setting | Value |
-| --- | --- |
-| App ID | `com.ysabellestore.desktop` |
-| Product name | `YsabelleStore` |
-| Electron version in builder config | `42.8.1` |
-| Build resources | `electron/build` |
-| Output | `electron/release` |
-| Windows target | `nsis` |
-| One-click install | `false` |
-| Per-machine install | `false` |
-| Custom install directory | Allowed |
-| Bundled frontend | `frontend/dist` copied as an extra resource |
+| Setting                            | Value                                       |
+| ---------------------------------- | ------------------------------------------- |
+| App ID                             | `com.ysabellestore.desktop`                 |
+| Product name                       | `YsabelleStore`                             |
+| Electron version in builder config | `42.8.1`                                    |
+| Build resources                    | `electron/build`                            |
+| Output                             | `electron/release`                          |
+| Windows target                     | `nsis`                                      |
+| One-click install                  | `false`                                     |
+| Per-machine install                | `false`                                     |
+| Custom install directory           | Allowed                                     |
+| Bundled frontend                   | `frontend/dist` copied as an extra resource |
 
 The Electron workspace manifest declares `electron: ^42.5.0` while the builder configuration pins `42.8.1`. Release engineering should normalize or intentionally document the selected runtime before a formal release.
 

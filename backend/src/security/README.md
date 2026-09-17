@@ -6,32 +6,32 @@ This directory contains central security configuration used by the YsabelleStore
 
 ## Directory Scope
 
-| File | Purpose | Current Scope |
-| --- | --- | --- |
+| File                    | Purpose                                                                                       | Current Scope        |
+| ----------------------- | --------------------------------------------------------------------------------------------- | -------------------- |
 | `security.constants.ts` | Central security headers, auth rate-limit policies, import/image limits and related constants | Active configuration |
-| `securityConfig.ts` | Exposes grouped security settings to middleware/application code | Active configuration |
+| `securityConfig.ts`     | Exposes grouped security settings to middleware/application code                              | Active configuration |
 
 Security behavior also spans `backend/src/middleware/`, `backend/src/services/`, `backend/src/utils/`, route modules, and the Prisma schema. This directory alone is not the entire security implementation.
 
 ## Implemented Security Boundaries
 
-| Area | Current Implementation |
-| --- | --- |
-| Internal authentication | Bearer JWT authentication for OWNER/STAFF users |
-| Internal authorization | `requireAuth` plus route-level `requireRole(...)` enforcement |
-| Password storage | Node `crypto.scrypt` with random salts and supported work-factor profiles |
-| Trusted devices | Random trusted-device tokens stored server-side as SHA-256 hashes with expiry/revocation state |
-| Customer authentication | Server-side customer sessions with HTTP-only cookie transport |
-| Customer sensitive mutations | Allowed-origin validation plus authentication and targeted rate limits |
-| OTP / recovery | Hashed verification challenges/tokens with expiry, consumption and failed-attempt state |
-| Social authentication | Google/Facebook OAuth transaction and handoff boundaries with persisted state |
-| CORS | Explicit configured origin allow-list with credential support |
-| Sensitive response caching | `Cache-Control: no-store` and `Pragma: no-cache` on sensitive customer auth/account routes |
-| Security headers | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Resource-Policy` |
-| Error safety | Unexpected failures return generic server-error envelopes; raw exception details are not exposed |
-| Request traceability | Server-generated UUID exposed through `x-request-id` |
-| Request audit logging | Method, path, status, duration and request ID are logged without normal request-body/token dumping |
-| Upload controls | Separate import and product-image size/type constraints |
+| Area                         | Current Implementation                                                                                               |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Internal authentication      | Bearer JWT authentication for OWNER/STAFF users                                                                      |
+| Internal authorization       | `requireAuth` plus route-level `requireRole(...)` enforcement                                                        |
+| Password storage             | Node `crypto.scrypt` with random salts and supported work-factor profiles                                            |
+| Trusted devices              | Random trusted-device tokens stored server-side as SHA-256 hashes with expiry/revocation state                       |
+| Customer authentication      | Server-side customer sessions with HTTP-only cookie transport                                                        |
+| Customer sensitive mutations | Allowed-origin validation plus authentication and targeted rate limits                                               |
+| OTP / recovery               | Hashed verification challenges/tokens with expiry, consumption and failed-attempt state                              |
+| Social authentication        | Google/Facebook OAuth transaction and handoff boundaries with persisted state                                        |
+| CORS                         | Explicit configured origin allow-list with credential support                                                        |
+| Sensitive response caching   | `Cache-Control: no-store` and `Pragma: no-cache` on sensitive customer auth/account routes                           |
+| Security headers             | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Resource-Policy` |
+| Error safety                 | Unexpected failures return generic server-error envelopes; raw exception details are not exposed                     |
+| Request traceability         | Server-generated UUID exposed through `x-request-id`                                                                 |
+| Request audit logging        | Method, path, status, duration and request ID are logged without normal request-body/token dumping                   |
+| Upload controls              | Separate import and product-image size/type constraints                                                              |
 
 ## Rate-Limit Model
 
@@ -41,13 +41,13 @@ This implementation is appropriate for the current local/single-process architec
 
 ## Known Hardening / Documentation Items
 
-| Item | Current State |
-| --- | --- |
-| Generic import upload limit | Runtime middleware currently allows 100 MiB |
+| Item                                  | Current State                                                                            |
+| ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Generic import upload limit           | Runtime middleware currently allows 100 MiB                                              |
 | Legacy/planning import limit constant | A separate 10 MB planning constant still exists and must not be treated as runtime truth |
-| Generic upload-size error detail | Error-handler text currently reports `5MB`, which does not match all upload routes |
-| Branch protection | Sprint branch protection is not established by current branch metadata |
-| Distributed rate limiting | Not implemented; current limiter is process-local |
+| Generic upload-size error detail      | Error-handler text currently reports `5MB`, which does not match all upload routes       |
+| Branch protection                     | Sprint branch protection is not established by current branch metadata                   |
+| Distributed rate limiting             | Not implemented; current limiter is process-local                                        |
 
 These are tracked as release-hardening items rather than hidden by documentation.
 

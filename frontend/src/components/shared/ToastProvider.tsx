@@ -140,8 +140,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         }
 
         const visibleProductAddedToasts = currentToasts.filter(
-          (currentToast) =>
-            !currentToast.suppressed && isProductAddedToast(currentToast)
+          (currentToast) => !currentToast.suppressed && isProductAddedToast(currentToast)
         );
         const numberToSuppress =
           visibleProductAddedToasts.length - MAX_VISIBLE_PRODUCT_ADDED_TOASTS + 1;
@@ -150,9 +149,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           return [nextToast, ...currentToasts];
         }
 
-        const oldestVisibleToasts = visibleProductAddedToasts.slice(
-          -numberToSuppress
-        );
+        const oldestVisibleToasts = visibleProductAddedToasts.slice(-numberToSuppress);
         const toastIdsToSuppress = new Set(
           oldestVisibleToasts.map((currentToast) => currentToast.id)
         );
