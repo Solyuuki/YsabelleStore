@@ -65,13 +65,22 @@ export type InventoryImportRowResult = {
   productId: string | null;
   productName: string | null;
   valid: boolean;
+  deliveryData: {
+    sku: string | null;
+    barcode: string | null;
+    quantity: number;
+    batchCode: string;
+    expirationDate: string | null;
+    noExpiration?: boolean;
+    reason: string;
+  } | null;
   errors: InventoryImportError[];
   warnings: InventoryImportError[];
 };
 
 export type InventoryImportPreview = {
   fileName: string;
-  fileType: "csv" | "xlsx";
+  fileType: "csv" | "xlsx" | "pdf";
   totalRows: number;
   validRows: number;
   invalidRows: number;
@@ -83,7 +92,7 @@ export type InventoryImportPreview = {
 export type InventoryImportSummary = {
   importId: string;
   fileName: string;
-  fileType: "csv" | "xlsx";
+  fileType: "csv" | "xlsx" | "pdf";
   totalRows: number;
   importedRows: number;
   failedRows: number;
@@ -109,7 +118,7 @@ type NormalizedInventoryRow = {
   productName: string;
 };
 
-type ValidatedInventoryRow = InventoryImportRowResult & {
+type ValidatedInventoryRow = Omit<InventoryImportRowResult, "deliveryData"> & {
   normalizedData: NormalizedInventoryRow | null;
 };
 
@@ -715,7 +724,7 @@ function normalizeImportRow(
 }
 
 function addWithinFileDuplicates(rows: ValidatedInventoryRow[]) {
-  const counts = new Map<string, InventoryImportRowResult[]>();
+  const counts = new Map<string, ValidatedInventoryRow[]>();
 
   rows.forEach((row) => {
     if (!row.valid || !row.productId) {
@@ -802,6 +811,7 @@ async function validateInventoryImport(file: UploadFile): Promise<{
           productId: null,
           productName: null,
           valid: false,
+          deliveryData: null,
           errors: [],
           warnings: []
         })),
@@ -869,11 +879,22 @@ async function validateInventoryImport(file: UploadFile): Promise<{
 
   addWithinFileDuplicates(normalizedRows);
 
-  const rowsResult = normalizedRows.map((row) => ({
+  const rowsResult: InventoryImportRowResult[] = normalizedRows.map((row) => ({
     rowNumber: row.rowNumber,
     productId: row.productId,
     productName: row.productName,
     valid: row.valid,
+    deliveryData: row.normalizedData
+      ? {
+          sku: row.normalizedData.sku,
+          barcode: row.normalizedData.barcode,
+          quantity: row.normalizedData.quantity,
+          batchCode: row.normalizedData.batchCode,
+          expirationDate: row.normalizedData.expirationDate?.toISOString() ?? null,
+          noExpiration: row.normalizedData.expirationDate === null,
+          reason: row.normalizedData.reason
+        }
+      : null,
     errors: row.errors,
     warnings: row.warnings
   }));

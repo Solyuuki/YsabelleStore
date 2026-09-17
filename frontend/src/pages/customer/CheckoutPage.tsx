@@ -5,16 +5,37 @@ import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { fetchCustomerAddress } from "@/services/customerAddressService";
 import { placeStorefrontOrder } from "@/services/storefrontService";
+import { EMPTY_CUSTOMER_ADDRESS, type CustomerAddress } from "@/types/customerAddress";
 import { getCustomerCheckoutDefaults } from "@/utils/customerAccountState";
 
 const LAST_ORDER_KEY = "ysabelle:last-customer-order";
+
+function addressSummary(address: CustomerAddress) {
+  return [
+    address.addressLine1,
+    address.addressLine2,
+    address.barangay,
+    address.cityMunicipality,
+    address.provinceRegion,
+    address.postalCode
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
 
 export function CheckoutPage({ navigate }: { navigate: (path: string) => void }) {
   const { items, itemCount, subtotal, clearCart } = useCart();
   const { customer } = useCustomerAuth();
   const [contact, setContact] = useState(() => getCustomerCheckoutDefaults(customer));
   const [contactEdited, setContactEdited] = useState(false);
+  const [address, setAddress] = useState<CustomerAddress>(EMPTY_CUSTOMER_ADDRESS);
+  const [savedAddress, setSavedAddress] = useState<CustomerAddress | null>(null);
+  const [editingAddress, setEditingAddress] = useState(true);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [addressLoadError, setAddressLoadError] = useState("");
+  const [saveAddressToAccount, setSaveAddressToAccount] = useState(Boolean(customer));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,10 +45,53 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
     }
   }, [contactEdited, customer]);
 
+  useEffect(() => {
+    setSaveAddressToAccount(Boolean(customer));
+    if (!customer) {
+      setSavedAddress(null);
+      setAddress(EMPTY_CUSTOMER_ADDRESS);
+      setEditingAddress(true);
+      setAddressLoadError("");
+      return;
+    }
+
+    const controller = new AbortController();
+    setAddressLoading(true);
+    setAddressLoadError("");
+
+    void fetchCustomerAddress(controller.signal)
+      .then((loadedAddress) => {
+        if (!loadedAddress) {
+          setSavedAddress(null);
+          setAddress(EMPTY_CUSTOMER_ADDRESS);
+          setEditingAddress(true);
+          return;
+        }
+        setSavedAddress(loadedAddress);
+        setAddress(loadedAddress);
+        setEditingAddress(false);
+      })
+      .catch((reason) => {
+        if (reason instanceof DOMException && reason.name === "AbortError") return;
+        setSavedAddress(null);
+        setAddress(EMPTY_CUSTOMER_ADDRESS);
+        setEditingAddress(true);
+        setAddressLoadError("Your saved address could not be loaded. You can enter it below.");
+      })
+      .finally(() => setAddressLoading(false));
+
+    return () => controller.abort();
+  }, [customer]);
+
   function updateContact(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof typeof contact;
     setContact((current) => ({ ...current, [field]: event.currentTarget.value }));
     setContactEdited(true);
+  }
+
+  function updateAddress(event: ChangeEvent<HTMLInputElement>) {
+    const field = event.currentTarget.name as keyof CustomerAddress;
+    setAddress((current) => ({ ...current, [field]: event.currentTarget.value }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -41,6 +105,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         customerName: String(form.get("customerName") ?? ""),
         customerEmail: String(form.get("customerEmail") ?? ""),
         customerPhone: String(form.get("customerPhone") ?? ""),
+        customerAddress: address,
+        saveAddressToAccount: Boolean(customer && saveAddressToAccount),
         notes: String(form.get("notes") ?? ""),
         fulfillmentMethod: "STORE_PICKUP",
         paymentMethod: "CASH_ON_PICKUP",
@@ -141,9 +207,152 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 </label>
               </div>
             </section>
+
             <section>
               <div className="customer-checkout-section-title">
                 <span>2</span>
+                <div>
+                  <h2>Contact address</h2>
+                  <p>
+                    This identifies your customer record. Your order is still collected at the
+                    store.
+                  </p>
+                </div>
+              </div>
+
+              {addressLoading ? (
+                <div className="customer-choice-card" role="status">
+                  <MapPin aria-hidden="true" />
+                  <div>
+                    <strong>Loading saved address...</strong>
+                    <span>Checking your account details.</span>
+                  </div>
+                </div>
+              ) : savedAddress && !editingAddress ? (
+                <div className="customer-choice-card is-selected">
+                  <MapPin aria-hidden="true" />
+                  <div>
+                    <strong>Saved address</strong>
+                    <span>{addressSummary(savedAddress)}</span>
+                    <button
+                      className="customer-address-change"
+                      onClick={() => setEditingAddress(true)}
+                      type="button"
+                    >
+                      Change address
+                    </button>
+                  </div>
+                  <CheckCircle2 aria-hidden="true" />
+                </div>
+              ) : (
+                <div className="customer-form-grid customer-address-form-grid">
+                  <label className="customer-form-grid__full">
+                    <span>Address line 1</span>
+                    <input
+                      autoComplete="address-line1"
+                      maxLength={180}
+                      minLength={3}
+                      name="addressLine1"
+                      onChange={updateAddress}
+                      placeholder="House / unit number and street"
+                      required
+                      value={address.addressLine1}
+                    />
+                  </label>
+                  <label className="customer-form-grid__full">
+                    <span>
+                      Address line 2 <small>(optional)</small>
+                    </span>
+                    <input
+                      autoComplete="address-line2"
+                      maxLength={180}
+                      name="addressLine2"
+                      onChange={updateAddress}
+                      placeholder="Building, subdivision, landmark"
+                      value={address.addressLine2}
+                    />
+                  </label>
+                  <label>
+                    <span>Barangay</span>
+                    <input
+                      maxLength={120}
+                      minLength={2}
+                      name="barangay"
+                      onChange={updateAddress}
+                      required
+                      value={address.barangay}
+                    />
+                  </label>
+                  <label>
+                    <span>City / Municipality</span>
+                    <input
+                      autoComplete="address-level2"
+                      maxLength={120}
+                      minLength={2}
+                      name="cityMunicipality"
+                      onChange={updateAddress}
+                      required
+                      value={address.cityMunicipality}
+                    />
+                  </label>
+                  <label>
+                    <span>Province / Region</span>
+                    <input
+                      autoComplete="address-level1"
+                      maxLength={120}
+                      minLength={2}
+                      name="provinceRegion"
+                      onChange={updateAddress}
+                      required
+                      value={address.provinceRegion}
+                    />
+                  </label>
+                  <label>
+                    <span>Postal code</span>
+                    <input
+                      autoComplete="postal-code"
+                      inputMode="numeric"
+                      maxLength={20}
+                      minLength={3}
+                      name="postalCode"
+                      onChange={updateAddress}
+                      required
+                      value={address.postalCode}
+                    />
+                  </label>
+                  <label className="customer-form-grid__full">
+                    <span>Country</span>
+                    <input readOnly value="Philippines" />
+                  </label>
+                </div>
+              )}
+
+              {addressLoadError ? (
+                <div className="customer-form-error" role="status">
+                  {addressLoadError}
+                </div>
+              ) : null}
+
+              {customer ? (
+                <label className="customer-address-save-option">
+                  <input
+                    checked={saveAddressToAccount}
+                    onChange={(event) => setSaveAddressToAccount(event.target.checked)}
+                    type="checkbox"
+                  />
+                  <span>
+                    <strong>Save this address to My Account</strong>
+                    <small>
+                      Use it automatically on your next checkout. You can change it anytime.
+                    </small>
+                  </span>
+                </label>
+              ) : null}
+            </section>
+
+            <section>
+              <div className="customer-checkout-section-title">
+                <span>3</span>
                 <div>
                   <h2>Fulfillment</h2>
                   <p>Pickup is the currently supported option.</p>
@@ -163,7 +372,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
             </section>
             <section>
               <div className="customer-checkout-section-title">
-                <span>3</span>
+                <span>4</span>
                 <div>
                   <h2>Payment</h2>
                   <p>No card or e-wallet integration is presented.</p>
@@ -226,7 +435,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
             ) : null}
             <button
               className="customer-button customer-button--full"
-              disabled={submitting}
+              disabled={submitting || addressLoading}
               type="submit"
             >
               {submitting ? "Checking stock..." : "Place pickup order"}

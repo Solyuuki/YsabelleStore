@@ -1,9 +1,11 @@
 import { spawn } from "node:child_process";
+import os from "node:os";
 
 import { env } from "../../config/env.js";
 import { HttpError } from "../../utils/httpError.js";
 import type { ProductForecastDetail, ProductHistoricalSeries } from "./forecast.types.js";
 import { getActiveForecastMonth } from "./forecast-window.js";
+import { loadReconstructedComparisonSales } from "./historical-sales.service.js";
 import { resolveRepositoryPath } from "./repository-paths.js";
 
 type PythonForecastResponse = {
@@ -11,6 +13,8 @@ type PythonForecastResponse = {
 };
 
 const FORECASTING_SCRIPT = resolveRepositoryPath("forecasting-service/app/main.py");
+const WORKBOOK_PRODUCT_ID_PREFIX = "workbook:";
+const FORECAST_PROCESS_STARTUP_GRACE_MS = 30_000;
 
 function parsePythonJson(stdout: string): PythonForecastResponse {
   try {
@@ -30,13 +34,50 @@ function parsePythonJson(stdout: string): PythonForecastResponse {
   }
 }
 
+async function withReconstructedComparisons(products: ProductHistoricalSeries[]) {
+  if (!products.some((product) => product.productId.startsWith(WORKBOOK_PRODUCT_ID_PREFIX))) {
+    return products;
+  }
+
+  const reconstructed = await loadReconstructedComparisonSales();
+  if (!reconstructed.available) {
+    return products;
+  }
+
+  return products.map((product) => {
+    if (!product.productId.startsWith(WORKBOOK_PRODUCT_ID_PREFIX)) {
+      return product;
+    }
+
+    const sourceProductId = product.productId.slice(WORKBOOK_PRODUCT_ID_PREFIX.length);
+    const comparisonHistorical = reconstructed.products.get(sourceProductId);
+
+    return comparisonHistorical?.length ? { ...product, comparisonHistorical } : product;
+  });
+}
+
+export function forecastProcessTimeoutMs(productCount: number) {
+  if (productCount <= 0) return env.FORECAST_PROCESS_TIMEOUT_MS;
+
+  const workerCount = Math.max(
+    1,
+    Math.min(productCount, env.FORECAST_WORKERS, os.cpus().length || 1, 4)
+  );
+  const worstCaseFitWaves = Math.ceil(productCount / workerCount);
+  const computedBudget =
+    worstCaseFitWaves * env.SARIMA_FIT_TIMEOUT_SECONDS * 1000 + FORECAST_PROCESS_STARTUP_GRACE_MS;
+
+  return Math.max(env.FORECAST_PROCESS_TIMEOUT_MS, computedBudget);
+}
+
 export async function runPythonForecast(products: ProductHistoricalSeries[]) {
-  const timeoutMs = env.FORECAST_PROCESS_TIMEOUT_MS;
+  const timeoutMs = forecastProcessTimeoutMs(products.length);
   const pythonExecutable = env.PYTHON_EXECUTABLE;
+  const forecastProducts = await withReconstructedComparisons(products);
   const requestBody = JSON.stringify({
     forecastStartPeriod: getActiveForecastMonth(),
     horizon: env.FORECAST_DEFAULT_HORIZON,
-    products,
+    products: forecastProducts,
     seasonalPeriod: env.FORECAST_SEASONAL_PERIOD
   });
 

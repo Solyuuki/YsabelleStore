@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 
 class HistoricalSalesPoint(TypedDict):
@@ -12,12 +12,19 @@ class HistoricalSalesPoint(TypedDict):
     quantitySold: int
 
 
+class ForecastModelHint(TypedDict):
+    order: list[int]
+    seasonalOrder: list[int]
+
+
 class ProductSeries(TypedDict):
     productId: str
     productName: str
     category: str
     sellingPrice: float
     historical: list[HistoricalSalesPoint]
+    comparisonHistorical: NotRequired[list[HistoricalSalesPoint]]
+    modelHint: NotRequired[ForecastModelHint]
 
 
 class ForecastRequest(TypedDict):

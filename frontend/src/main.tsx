@@ -8,6 +8,7 @@ import "@/styles/retailer-brand.css";
 import "@/styles/customer-surface-lighting.css";
 import "@/styles/customer-about-premium.css";
 import "@/styles/product-import.css";
+import "@/styles/receiving.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

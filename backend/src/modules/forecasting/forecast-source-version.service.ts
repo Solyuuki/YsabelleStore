@@ -6,8 +6,8 @@ import type { ForecastInputSource } from "./forecast.types.js";
 import { getActiveForecastMonth, monthStartIso } from "./forecast-window.js";
 import { resolveRepositoryPath } from "./repository-paths.js";
 
-const FORECAST_INPUT_CONTRACT_VERSION = "forecast-input-v2";
-const WORKBOOK_PATHS = [
+const FORECAST_INPUT_CONTRACT_VERSION = "forecast-input-v5";
+const TRAINING_WORKBOOK_PATHS = [
   "data/forecasting/historical-sales-2024.xlsx",
   "data/forecasting/historical-sales-2025.xlsx"
 ] as const;
@@ -50,6 +50,10 @@ function dateValue(value: Date | null | undefined) {
   return value?.toISOString() ?? null;
 }
 
+export function completedHistoryCutoff(activeForecastMonth = getActiveForecastMonth()) {
+  return new Date(`${monthStartIso(activeForecastMonth)}T00:00:00.000Z`);
+}
+
 export type ForecastSourceSnapshot = {
   activeForecastMonth: string;
   databaseRevision: string;
@@ -57,26 +61,33 @@ export type ForecastSourceSnapshot = {
 };
 
 async function loadForecastSourceSnapshot(): Promise<ForecastSourceSnapshot> {
-  const [historical, sales, saleItems, products, imports, canonicalMappings] = await Promise.all([
+  const activeForecastMonth = getActiveForecastMonth();
+  const completedBefore = completedHistoryCutoff(activeForecastMonth);
+  const [historical, sales, saleItems, imports, canonicalMappings] = await Promise.all([
     prisma.historicalMonthlySales.aggregate({
       _count: { _all: true },
       _max: { updatedAt: true },
       _sum: { quantitySold: true },
-      where: { isActive: true, source: "IMPORTED_HISTORICAL" }
+      where: {
+        isActive: true,
+        period: { lt: completedBefore },
+        source: "IMPORTED_HISTORICAL"
+      }
     }),
     prisma.sale.aggregate({
       _count: { _all: true },
       _max: { saleDate: true, updatedAt: true },
-      where: { status: "COMPLETED" }
+      where: { saleDate: { lt: completedBefore }, status: "COMPLETED" }
     }),
     prisma.saleItem.aggregate({
       _count: { _all: true },
       _sum: { quantity: true },
-      where: { sale: { status: "COMPLETED" } }
-    }),
-    prisma.product.aggregate({
-      _count: { _all: true },
-      _max: { updatedAt: true }
+      where: {
+        sale: {
+          saleDate: { lt: completedBefore },
+          status: "COMPLETED"
+        }
+      }
     }),
     prisma.historicalSalesImportBatch.aggregate({
       _count: { _all: true },
@@ -92,6 +103,7 @@ async function loadForecastSourceSnapshot(): Promise<ForecastSourceSnapshot> {
   const databaseRevision = sha256(
     JSON.stringify({
       contract: FORECAST_INPUT_CONTRACT_VERSION,
+      completedBefore: completedBefore.toISOString(),
       historical: {
         count: historical._count._all,
         quantity: historical._sum.quantitySold ?? 0,
@@ -105,10 +117,6 @@ async function loadForecastSourceSnapshot(): Promise<ForecastSourceSnapshot> {
       canonicalMappings: {
         count: canonicalMappings._count._all,
         updatedAt: dateValue(canonicalMappings._max.updatedAt)
-      },
-      products: {
-        count: products._count._all,
-        updatedAt: dateValue(products._max.updatedAt)
       },
       saleItems: {
         count: saleItems._count._all,
@@ -124,12 +132,12 @@ async function loadForecastSourceSnapshot(): Promise<ForecastSourceSnapshot> {
   const workbookRevision = sha256(
     JSON.stringify({
       contract: FORECAST_INPUT_CONTRACT_VERSION,
-      workbooks: WORKBOOK_PATHS.map((path) => workbookHash(path))
+      workbooks: TRAINING_WORKBOOK_PATHS.map((path) => workbookHash(path))
     })
   );
 
   return {
-    activeForecastMonth: monthStartIso(getActiveForecastMonth()),
+    activeForecastMonth: monthStartIso(activeForecastMonth),
     databaseRevision,
     workbookRevision
   };
@@ -166,7 +174,9 @@ export function sourceVersionFor(source: ForecastInputSource, snapshot: Forecast
       contract: FORECAST_INPUT_CONTRACT_VERSION,
       databaseRevision: snapshot.databaseRevision,
       source,
-      workbookRevision: source === "WORKBOOK_FALLBACK" ? snapshot.workbookRevision : null
+      // DATABASE is database-primary but may contain canonical per-product workbook fallback.
+      // The comparison-only reconstructed 2026 workbook is intentionally excluded above.
+      workbookRevision: source === "EMPTY" ? null : snapshot.workbookRevision
     })
   );
 }

@@ -182,13 +182,22 @@ export type InventoryImportRowResult = {
   productId: string | null;
   productName: string | null;
   valid: boolean;
+  deliveryData: {
+    sku: string | null;
+    barcode: string | null;
+    quantity: number;
+    batchCode: string;
+    expirationDate: string | null;
+    noExpiration?: boolean;
+    reason: string;
+  } | null;
   errors: InventoryImportError[];
   warnings: InventoryImportError[];
 };
 
 export type InventoryImportPreview = {
   fileName: string;
-  fileType: "csv" | "xlsx";
+  fileType: "csv" | "xlsx" | "pdf";
   totalRows: number;
   validRows: number;
   invalidRows: number;

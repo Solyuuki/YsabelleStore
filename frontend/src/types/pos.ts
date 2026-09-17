@@ -28,6 +28,7 @@ export type PosCheckoutItemInput = {
 };
 
 export type PosCheckoutRequest = {
+  cashReceived: string;
   items: PosCheckoutItemInput[];
   notes?: string;
   paymentMethod: "CASH";

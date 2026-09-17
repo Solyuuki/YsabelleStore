@@ -26,6 +26,7 @@ export const checkoutSale: RequestHandler = async (request, response, next) => {
     }
 
     const data = await checkoutPosSale({
+      cashReceived: parsedBody.data.cashReceived,
       cashierId: currentUser.id,
       cashierName: currentUser.name,
       items: parsedBody.data.items,

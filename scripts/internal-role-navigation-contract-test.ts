@@ -31,6 +31,8 @@ const sidebarSource = readFileSync(
   resolve(process.cwd(), "src/components/app/AppSidebar.tsx"),
   "utf8"
 );
+const appShellSource = readFileSync(resolve(process.cwd(), "src/app/AppShell.tsx"), "utf8");
+const customerAppSource = readFileSync(resolve(process.cwd(), "src/app/CustomerApp.tsx"), "utf8");
 
 assert.match(sidebarSource, /const isOwner = user\?\.role === "OWNER"/);
 assert.match(sidebarSource, /\{isOwner && ownerItems\.length > 0 \? \(/);
@@ -40,4 +42,46 @@ assert.doesNotMatch(
   "OWNER AREA must not render unconditionally"
 );
 
-console.log("Internal role navigation contract passed.");
+assert.match(appShellSource, /const CustomerApp = lazy\(\(\) =>/);
+for (const pageName of [
+  "DashboardPage",
+  "ProductsPage",
+  "InventoryPage",
+  "ReceivingPage",
+  "PosPage",
+  "SalesPage",
+  "ForecastPage",
+  "HistoricalSalesPage",
+  "ReportsPage",
+  "SettingsPage",
+  "UserManagementPage"
+]) {
+  assert.match(appShellSource, new RegExp(`const ${pageName} = lazy\\(\\(\\) =>`));
+}
+assert.doesNotMatch(appShellSource, /import \{ ReportsPage \} from "@\/pages\/ReportsPage"/);
+assert.match(appShellSource, /<Suspense fallback=\{<RouteLoadingFallback/);
+
+for (const pageName of [
+  "CustomerHomePage",
+  "ShopPage",
+  "ProductDetailPage",
+  "CartPage",
+  "CheckoutPage",
+  "OrderSuccessPage",
+  "AboutExperiencePage",
+  "DiscoverPage",
+  "CustomerLoginPage",
+  "CustomerRegisterPage",
+  "CustomerAccountRecoveryPage",
+  "CustomerAccountPage",
+  "CustomerNotFoundPage"
+]) {
+  assert.match(customerAppSource, new RegExp(`const ${pageName} = lazy\\(\\(\\) =>`));
+}
+assert.doesNotMatch(
+  customerAppSource,
+  /import \{ AboutExperiencePage \} from "@\/pages\/customer\/AboutExperiencePage"/
+);
+assert.match(customerAppSource, /<Suspense fallback=\{<CustomerRouteFallback \/>\}>/);
+
+console.log("Internal role navigation and route loading contract passed.");

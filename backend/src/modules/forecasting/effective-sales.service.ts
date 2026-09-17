@@ -1,6 +1,11 @@
 import { prisma } from "../../database/prismaClient.js";
 import { operationalProductWhere } from "../../services/catalogQualityPolicy.js";
-import type { ProductHistoricalSeries } from "./forecast.types.js";
+import type { HistoricalSalesPoint, ProductHistoricalSeries } from "./forecast.types.js";
+import { getActiveForecastMonth } from "./forecast-window.js";
+import {
+  loadHistoricalSalesFallbackData,
+  loadReconstructedComparisonSales
+} from "./historical-sales.service.js";
 
 export const SARIMA_MINIMUM_OBSERVATIONS = 24;
 export const SARIMA_SEASONAL_PERIOD = 12;
@@ -37,6 +42,7 @@ export type EffectiveProductSeries = {
   sellingPrice: number;
   points: EffectiveSalesPoint[];
   eligibility: ProductEligibility;
+  sourceProductIds?: string[];
 };
 
 type ImportedPointInput = {
@@ -87,6 +93,13 @@ function missingPeriods(points: EffectiveSalesPoint[]) {
   }
 
   return missing;
+}
+
+export function completedEffectiveSalesPoints(
+  points: EffectiveSalesPoint[],
+  activeForecastMonth = getActiveForecastMonth()
+) {
+  return points.filter((point) => point.period < activeForecastMonth);
 }
 
 export function assessSarimaEligibility(
@@ -193,6 +206,89 @@ export function combineEffectiveMonthlyPoints(
   return pointsByProduct;
 }
 
+function usableDatabaseSeries(product: EffectiveProductSeries) {
+  return product.points.length > 0 && product.eligibility.status !== "DATA_QUALITY_ISSUE";
+}
+
+function identityKey(productName: string, category: string) {
+  return `${productName.trim().toLowerCase()}\u0000${category.trim().toLowerCase()}`;
+}
+
+function remapHistoricalPoints(
+  points: HistoricalSalesPoint[],
+  target: EffectiveProductSeries
+): HistoricalSalesPoint[] {
+  return points.map((point) => ({
+    ...point,
+    category: target.category,
+    productId: target.productId,
+    productName: target.productName,
+    sellingPrice: target.sellingPrice
+  }));
+}
+
+function fallbackCandidateFor(
+  target: EffectiveProductSeries,
+  workbookById: Map<string, ProductHistoricalSeries>,
+  workbookByIdentity: Map<string, ProductHistoricalSeries>
+) {
+  for (const sourceProductId of [...(target.sourceProductIds ?? []), target.productId]) {
+    const direct = workbookById.get(sourceProductId);
+    if (direct) return direct;
+  }
+
+  return workbookByIdentity.get(identityKey(target.productName, target.category));
+}
+
+export function mergeDatabaseProductsWithWorkbookFallback(
+  series: EffectiveProductSeries[],
+  databaseProducts: ProductHistoricalSeries[],
+  workbookProducts: ProductHistoricalSeries[],
+  reconstructedComparison = new Map<string, HistoricalSalesPoint[]>()
+) {
+  if (databaseProducts.length === 0) return databaseProducts;
+
+  const usableIds = new Set(databaseProducts.map((product) => product.productId));
+  const workbookById = new Map(workbookProducts.map((product) => [product.productId, product]));
+  const workbookByIdentity = new Map(
+    workbookProducts.map((product) => [identityKey(product.productName, product.category), product])
+  );
+  const merged = [...databaseProducts];
+
+  for (const target of series) {
+    if (usableIds.has(target.productId)) continue;
+
+    const fallback = fallbackCandidateFor(target, workbookById, workbookByIdentity);
+    if (!fallback) continue;
+
+    const fallbackEligibility = assessSarimaEligibility(
+      fallback.productId,
+      fallback.productName,
+      fallback.historical.map((point) => ({
+        period: point.period,
+        quantitySold: point.quantitySold,
+        source: "IMPORTED_HISTORICAL" as const
+      }))
+    );
+    if (fallbackEligibility.status !== "ELIGIBLE") continue;
+
+    const comparison = reconstructedComparison.get(fallback.productId);
+    merged.push({
+      category: target.category,
+      comparisonHistorical: comparison?.length
+        ? remapHistoricalPoints(comparison, target)
+        : undefined,
+      historical: remapHistoricalPoints(fallback.historical, target),
+      productId: target.productId,
+      productName: target.productName,
+      sellingPrice: target.sellingPrice
+    });
+    usableIds.add(target.productId);
+  }
+
+  return merged;
+}
+
 export async function getEffectiveMonthlySeries(productIds?: string[]) {
   const productWhere = operationalProductWhere(
     productIds?.length ? { id: { in: productIds } } : {}
@@ -220,6 +316,12 @@ export async function getEffectiveMonthlySeries(productIds?: string[]) {
   const sourceToCanonical = new Map(
     mappings.map((mapping) => [mapping.sourceProductId, mapping.canonicalProductId])
   );
+  const sourceIdsByCanonical = new Map<string, string[]>();
+  for (const mapping of mappings) {
+    const sourceIds = sourceIdsByCanonical.get(mapping.canonicalProductId) ?? [];
+    sourceIds.push(mapping.sourceProductId);
+    sourceIdsByCanonical.set(mapping.canonicalProductId, sourceIds);
+  }
   const sourceIds = mappings.map((mapping) => mapping.sourceProductId);
   const historicalProductIds = [...new Set([...ids, ...sourceIds])];
   const [imported, actualItems] = await Promise.all([
@@ -256,10 +358,14 @@ export async function getEffectiveMonthlySeries(productIds?: string[]) {
       quantity: item.quantity
     }))
   );
+  const activeForecastMonth = getActiveForecastMonth();
 
   return products.map((product): EffectiveProductSeries => {
-    const points = [...(pointsByProduct.get(product.id)?.values() ?? [])].sort((left, right) =>
-      left.period.localeCompare(right.period)
+    const points = completedEffectiveSalesPoints(
+      [...(pointsByProduct.get(product.id)?.values() ?? [])].sort((left, right) =>
+        left.period.localeCompare(right.period)
+      ),
+      activeForecastMonth
     );
 
     return {
@@ -268,15 +374,18 @@ export async function getEffectiveMonthlySeries(productIds?: string[]) {
       points,
       productId: product.id,
       productName: product.name,
-      sellingPrice: Number(product.sellingPrice)
+      sellingPrice: Number(product.sellingPrice),
+      sourceProductIds: sourceIdsByCanonical.get(product.id) ?? []
     };
   });
 }
 
 export async function loadEligibleEffectiveSales(productIds?: string[]) {
   const series = await getEffectiveMonthlySeries(productIds);
-  const products: ProductHistoricalSeries[] = series
-    .filter((product) => product.eligibility.status === "ELIGIBLE")
+  const databaseProducts: ProductHistoricalSeries[] = series
+    // Database history is primary whenever it is usable. SARIMA eligibility only decides which
+    // model runs; short clean histories stay in DATABASE and use a fallback model.
+    .filter(usableDatabaseSeries)
     .map((product) => ({
       category: product.category,
       historical: product.points.map((point) => ({
@@ -291,6 +400,28 @@ export async function loadEligibleEffectiveSales(productIds?: string[]) {
       productName: product.productName,
       sellingPrice: product.sellingPrice
     }));
+
+  if (databaseProducts.length === 0 || databaseProducts.length === series.length) {
+    return { products: databaseProducts, series };
+  }
+
+  // Once at least one canonical database product is forecastable, preserve canonical identities
+  // for the whole batch. Products that still lack usable database history may borrow the approved
+  // workbook series per product instead of forcing the entire batch into WORKBOOK_FALLBACK.
+  const [workbookFallback, reconstructed] = await Promise.all([
+    loadHistoricalSalesFallbackData(),
+    loadReconstructedComparisonSales()
+  ]);
+  if (!workbookFallback.available || !workbookFallback.data.validation.valid) {
+    return { products: databaseProducts, series };
+  }
+
+  const products = mergeDatabaseProductsWithWorkbookFallback(
+    series,
+    databaseProducts,
+    workbookFallback.data.products,
+    reconstructed.available ? reconstructed.products : new Map()
+  );
 
   return { products, series };
 }

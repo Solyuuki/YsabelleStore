@@ -40,12 +40,19 @@ export type HistoricalSalesPoint = {
   quantitySold: number;
 };
 
+export type ForecastModelHint = {
+  order: [number, number, number];
+  seasonalOrder: [number, number, number, number];
+};
+
 export type ProductHistoricalSeries = {
   productId: string;
   productName: string;
   category: string;
   sellingPrice: number;
   historical: HistoricalSalesPoint[];
+  comparisonHistorical?: HistoricalSalesPoint[];
+  modelHint?: ForecastModelHint;
 };
 
 export type ForecastPoint = {
@@ -58,6 +65,7 @@ export type ForecastPoint = {
   differenceVersus2025: number | null;
   percentageChangeVersus2025: number | null;
   comparisonSalesQuantity: number | null;
+  comparisonSalesEstimated?: boolean;
   forecastVariancePercentage: number | null;
 };
 
@@ -67,6 +75,16 @@ export type ForecastMetrics = {
   mape: number | null;
   wape: number | null;
   validationStrategy: string;
+};
+
+export type ForecastAccuracyFeedback = {
+  evaluatedPeriod: string;
+  actualQuantity: number;
+  predictedQuantity: number;
+  signedError: number;
+  absoluteError: number;
+  absolutePercentageError: number | null;
+  strategy: string;
 };
 
 export type ForecastModelDetails = {
@@ -88,6 +106,7 @@ export type ProductForecastDetail = {
   historical: HistoricalSalesPoint[];
   forecast: ForecastPoint[];
   metrics: ForecastMetrics;
+  accuracyFeedback?: ForecastAccuracyFeedback | null;
   modelDetails: ForecastModelDetails;
   warnings: string[];
   error: string | null;
@@ -181,6 +200,8 @@ export type ForecastGenerationSummary = {
   forecastStartMonth: string | null;
   durationMs: number;
   totalProductsProcessed: number;
+  recomputedProducts?: number;
+  reusedProducts?: number;
   sarimaProducts: number;
   seasonalNaiveProducts: number;
   movingAverageProducts: number;

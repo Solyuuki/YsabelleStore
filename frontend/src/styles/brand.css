@@ -81,6 +81,10 @@
   box-shadow: none;
 }
 
+.customer-brand--footer small {
+  color: #c9c7ff;
+}
+
 @media (max-width: 480px) {
   .story-welcome__mark--branded,
   .ysabelle-brand-mark--display {
