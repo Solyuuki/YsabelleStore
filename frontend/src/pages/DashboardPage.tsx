@@ -256,12 +256,14 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
               value={formatCount(summary.inventory.trackedItems, "item")}
             />
             <AlertMetricCard summary={summary} />
-            <MetricCard
-              detail={forecastStat?.detail ?? "Forecast is not ready"}
-              icon={LineChart}
-              label="Forecast"
-              value={forecastStat?.value ?? "Unavailable"}
-            />
+            {preferences.showForecastSummary ? (
+              <MetricCard
+                detail={forecastStat?.detail ?? "Forecast is not ready"}
+                icon={LineChart}
+                label="Forecast"
+                value={forecastStat?.value ?? "Unavailable"}
+              />
+            ) : null}
           </section>
 
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
