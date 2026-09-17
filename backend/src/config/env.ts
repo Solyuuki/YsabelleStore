@@ -81,18 +81,26 @@ const catalogImageStoragePaths = resolveCatalogImageStoragePaths(
 export const catalogImageStorageRoot = catalogImageStoragePaths.root;
 export const catalogImageStorageFallbackRoots = catalogImageStoragePaths.fallbackRoots;
 
-const defaultCorsOrigins = [
-  env.FRONTEND_URL,
+const localCorsOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173",
   "null"
 ];
 const configuredCorsOrigins = env.CORS_ORIGINS ?? env.CORS_ORIGIN;
+const configuredCorsOriginList = configuredCorsOrigins
+  ? configuredCorsOrigins.split(",")
+  : [env.FRONTEND_URL, "null"];
+const corsOriginCandidates =
+  env.NODE_ENV === "production"
+    ? configuredCorsOriginList
+    : [...configuredCorsOriginList, ...localCorsOrigins];
 
 export const corsOrigins = Object.freeze(
   Array.from(
     new Set(
-      (configuredCorsOrigins ? configuredCorsOrigins.split(",") : defaultCorsOrigins)
+      corsOriginCandidates
         .map((origin) => origin.trim().replace(/\/$/, ""))
         .filter(Boolean)
         .map(validateCorsOrigin)
