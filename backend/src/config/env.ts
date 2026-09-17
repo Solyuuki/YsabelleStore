@@ -50,6 +50,8 @@ const envSchema = z.object({
   FORECAST_PROCESS_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
   FORECAST_DEFAULT_HORIZON: z.coerce.number().int().positive().default(12),
   FORECAST_SEASONAL_PERIOD: z.coerce.number().int().positive().default(12),
+  FORECAST_WORKERS: z.coerce.number().int().min(1).max(4).default(4),
+  SARIMA_FIT_TIMEOUT_SECONDS: z.coerce.number().positive().max(60).default(8),
   FORECAST_CURRENT_MONTH: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
@@ -79,18 +81,26 @@ const catalogImageStoragePaths = resolveCatalogImageStoragePaths(
 export const catalogImageStorageRoot = catalogImageStoragePaths.root;
 export const catalogImageStorageFallbackRoots = catalogImageStoragePaths.fallbackRoots;
 
-const defaultCorsOrigins = [
-  env.FRONTEND_URL,
+const localCorsOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173",
   "null"
 ];
 const configuredCorsOrigins = env.CORS_ORIGINS ?? env.CORS_ORIGIN;
+const configuredCorsOriginList = configuredCorsOrigins
+  ? configuredCorsOrigins.split(",")
+  : [env.FRONTEND_URL, "null"];
+const corsOriginCandidates =
+  env.NODE_ENV === "production"
+    ? configuredCorsOriginList
+    : [...configuredCorsOriginList, ...localCorsOrigins];
 
 export const corsOrigins = Object.freeze(
   Array.from(
     new Set(
-      (configuredCorsOrigins ? configuredCorsOrigins.split(",") : defaultCorsOrigins)
+      corsOriginCandidates
         .map((origin) => origin.trim().replace(/\/$/, ""))
         .filter(Boolean)
         .map(validateCorsOrigin)

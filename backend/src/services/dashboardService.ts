@@ -1,7 +1,13 @@
-import { Prisma, type UserRole } from "@prisma/client";
+import {
+  Prisma,
+  RestockOrderStatus,
+  type RestockRecommendationSource,
+  type UserRole
+} from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { getForecastSummary } from "../modules/forecasting/forecast.service.js";
+import { listRestockPlanningCandidates } from "./restockPlanningService.js";
 
 const MANILA_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -9,6 +15,14 @@ const SALES_BUCKET_HOURS = 2;
 const SALES_BUCKET_MS = SALES_BUCKET_HOURS * 60 * 60 * 1000;
 const SALES_BUCKET_COUNT = 24 / SALES_BUCKET_HOURS;
 const NEAR_EXPIRY_WINDOW_DAYS = 30;
+const DASHBOARD_ACTION_LIMIT = 5;
+const DASHBOARD_PLANNING_PAGE_SIZE = 1_000;
+const OPEN_RESTOCK_STATUSES = [
+  RestockOrderStatus.DRAFT,
+  RestockOrderStatus.APPROVED,
+  RestockOrderStatus.AWAITING_DELIVERY,
+  RestockOrderStatus.PARTIALLY_RECEIVED
+] as const;
 
 export type DashboardActivityBucket = {
   label: string;
@@ -57,6 +71,55 @@ export type DashboardSummary = {
     windowDays: number;
   };
   forecast: DashboardForecastSummary;
+};
+
+export type DashboardRestockRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export type DashboardRestockAction = {
+  expiryRiskQuantity: number;
+  incomingStock: number;
+  product: {
+    id: string;
+    name: string;
+    sku: string;
+  };
+  projectedStockoutDate: string | null;
+  rationale: string;
+  recommendationSource: RestockRecommendationSource;
+  recommendedActionDate: string | null;
+  recommendedQuantity: number;
+  riskLevel: DashboardRestockRisk;
+  sellableStock: number;
+  stockHealth: "OUT_OF_STOCK" | "LOW_STOCK" | "NORMAL" | "OVERSTOCK";
+};
+
+export type DashboardOperations = {
+  generatedAt: string;
+  restock: {
+    actionableProducts: number;
+    actions: DashboardRestockAction[];
+    latestOpenOrder: {
+      automated: boolean;
+      id: string;
+      orderNumber: string;
+      productLines: number;
+      receivedUnits: number;
+      remainingUnits: number;
+      requestedUnits: number;
+      status: RestockOrderStatus;
+      updatedAt: string;
+    } | null;
+    queue: {
+      approved: number;
+      awaitingDelivery: number;
+      draft: number;
+      partiallyReceived: number;
+      readyToReceive: number;
+      totalOpen: number;
+    };
+    risk: Record<DashboardRestockRisk, number>;
+    suggestedUnits: number;
+  };
 };
 
 export async function getDashboardSummary(
@@ -209,6 +272,150 @@ export async function getDashboardSummary(
       windowDays: NEAR_EXPIRY_WINDOW_DAYS
     },
     forecast
+  };
+}
+
+export async function getDashboardOperations(now = new Date()): Promise<DashboardOperations> {
+  const [
+    planning,
+    draftCount,
+    approvedCount,
+    awaitingDeliveryCount,
+    partiallyReceivedCount,
+    latestOpenOrder
+  ] = await Promise.all([
+    listRestockPlanningCandidates({
+      includeZero: false,
+      page: 1,
+      pageSize: DASHBOARD_PLANNING_PAGE_SIZE
+    }),
+    prisma.restockOrder.count({ where: { status: RestockOrderStatus.DRAFT } }),
+    prisma.restockOrder.count({ where: { status: RestockOrderStatus.APPROVED } }),
+    prisma.restockOrder.count({ where: { status: RestockOrderStatus.AWAITING_DELIVERY } }),
+    prisma.restockOrder.count({ where: { status: RestockOrderStatus.PARTIALLY_RECEIVED } }),
+    prisma.restockOrder.findFirst({
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      select: {
+        id: true,
+        lines: {
+          select: {
+            isSelected: true,
+            receivedQuantity: true,
+            requestedQuantity: true
+          }
+        },
+        notes: true,
+        orderNumber: true,
+        status: true,
+        updatedAt: true
+      },
+      where: {
+        status: { in: [...OPEN_RESTOCK_STATUSES] }
+      }
+    })
+  ]);
+
+  const riskCounts: Record<DashboardRestockRisk, number> = {
+    CRITICAL: 0,
+    HIGH: 0,
+    LOW: 0,
+    MEDIUM: 0
+  };
+  const riskPriority: Record<DashboardRestockRisk, number> = {
+    CRITICAL: 0,
+    HIGH: 1,
+    MEDIUM: 2,
+    LOW: 3
+  };
+  const stockHealthPriority: Record<DashboardRestockAction["stockHealth"], number> = {
+    OUT_OF_STOCK: 0,
+    LOW_STOCK: 1,
+    NORMAL: 2,
+    OVERSTOCK: 3
+  };
+
+  const actions = planning.items.map((candidate): DashboardRestockAction => {
+    const riskLevel = candidate.forecastDecision?.riskLevel ?? "LOW";
+    riskCounts[riskLevel] += 1;
+
+    return {
+      expiryRiskQuantity: candidate.expiryRiskQuantity,
+      incomingStock: candidate.incomingStock,
+      product: {
+        id: candidate.product.id,
+        name: candidate.product.name,
+        sku: candidate.product.sku
+      },
+      projectedStockoutDate: candidate.forecastDecision?.projectedStockoutDate ?? null,
+      rationale: candidate.rationale,
+      recommendationSource: candidate.recommendationSource,
+      recommendedActionDate: candidate.forecastDecision?.recommendedActionDate ?? null,
+      recommendedQuantity: candidate.recommendedQuantity,
+      riskLevel,
+      sellableStock: candidate.sellableStock,
+      stockHealth: candidate.stockHealth.status
+    };
+  });
+
+  actions.sort((left, right) => {
+    const riskDifference = riskPriority[left.riskLevel] - riskPriority[right.riskLevel];
+    if (riskDifference !== 0) return riskDifference;
+
+    const healthDifference =
+      stockHealthPriority[left.stockHealth] - stockHealthPriority[right.stockHealth];
+    if (healthDifference !== 0) return healthDifference;
+
+    const quantityDifference = right.recommendedQuantity - left.recommendedQuantity;
+    if (quantityDifference !== 0) return quantityDifference;
+
+    return left.product.name.localeCompare(right.product.name);
+  });
+
+  const selectedLatestLines = latestOpenOrder?.lines.filter((line) => line.isSelected) ?? [];
+  const requestedUnits = selectedLatestLines.reduce(
+    (sum, line) => sum + Math.max(0, line.requestedQuantity),
+    0
+  );
+  const receivedUnits = selectedLatestLines.reduce(
+    (sum, line) => sum + Math.max(0, line.receivedQuantity),
+    0
+  );
+  const totalOpen = draftCount + approvedCount + awaitingDeliveryCount + partiallyReceivedCount;
+
+  return {
+    generatedAt: now.toISOString(),
+    restock: {
+      actionableProducts: planning.meta.totalItems,
+      actions: actions.slice(0, DASHBOARD_ACTION_LIMIT),
+      latestOpenOrder: latestOpenOrder
+        ? {
+            automated:
+              latestOpenOrder.notes?.includes("[AutomatedRestockMonth:") === true ||
+              latestOpenOrder.notes?.includes("[AutomatedRestock:") === true,
+            id: latestOpenOrder.id,
+            orderNumber: latestOpenOrder.orderNumber,
+            productLines: selectedLatestLines.length,
+            receivedUnits,
+            remainingUnits: Math.max(0, requestedUnits - receivedUnits),
+            requestedUnits,
+            status: latestOpenOrder.status,
+            updatedAt: latestOpenOrder.updatedAt.toISOString()
+          }
+        : null,
+      queue: {
+        approved: approvedCount,
+        awaitingDelivery: awaitingDeliveryCount,
+        draft: draftCount,
+        partiallyReceived: partiallyReceivedCount,
+        readyToReceive: approvedCount + awaitingDeliveryCount,
+        totalOpen
+      },
+      risk: riskCounts,
+      suggestedUnits: planning.items.reduce(
+        (sum, candidate) => sum + Math.max(0, candidate.recommendedQuantity),
+        0
+      )
+    }
   };
 }
 

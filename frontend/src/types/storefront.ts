@@ -1,3 +1,5 @@
+import type { CustomerAddress } from "@/types/customerAddress";
+
 export type StorefrontCategory = {
   id: string;
   name: string;
@@ -96,6 +98,8 @@ export type StorefrontOrderInput = {
   customerName: string;
   customerEmail?: string;
   customerPhone: string;
+  customerAddress: CustomerAddress;
+  saveAddressToAccount?: boolean;
   notes?: string;
   fulfillmentMethod: "STORE_PICKUP";
   paymentMethod: "CASH_ON_PICKUP";

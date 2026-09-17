@@ -2,6 +2,8 @@ import type { RequestHandler } from "express";
 
 import { createSuccessResponse } from "../../utils/apiResponse.js";
 import { HttpError } from "../../utils/httpError.js";
+import { withReconstructedComparisonOverlay } from "./forecast-comparison-overlay.service.js";
+import { withRealizedAccuracyFeedback } from "./forecast-realized-accuracy.service.js";
 import {
   forecastDetailQuerySchema,
   forecastGenerateBodySchema,
@@ -84,7 +86,9 @@ export const getForecastProduct: RequestHandler = async (request, response, next
       });
     }
 
-    const result = await getForecastProductDetail(productId, parsedQuery.data.batchId);
+    const persistedDetail = await getForecastProductDetail(productId, parsedQuery.data.batchId);
+    const comparisonDetail = await withReconstructedComparisonOverlay(persistedDetail);
+    const result = await withRealizedAccuracyFeedback(comparisonDetail, parsedQuery.data.batchId);
 
     response.status(200).json(createSuccessResponse("Forecast product loaded.", result));
   } catch (error) {

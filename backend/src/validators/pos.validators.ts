@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const cashAmountSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Cash received must be a valid amount with up to 2 decimals.");
+
 export const posProductSearchQuerySchema = z.object({
   q: z.string().trim().max(120).optional(),
   page: z.coerce.number().int().min(1).default(1),
@@ -12,6 +17,7 @@ export const posCheckoutItemSchema = z.object({
 });
 
 export const posCheckoutRequestSchema = z.object({
+  cashReceived: cashAmountSchema,
   items: z.array(posCheckoutItemSchema).min(1),
   notes: z.string().trim().max(255).optional(),
   paymentMethod: z.literal("CASH").default("CASH")

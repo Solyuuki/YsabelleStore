@@ -9,7 +9,7 @@ type PageHeaderProps = {
 
 export function PageHeader({ actions, description, eyebrow, title }: PageHeaderProps) {
   return (
-    <header className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:gap-6">
+    <header className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:gap-6 [&+*]:mt-6">
       <div className="min-w-0">
         {eyebrow ? <p className="type-label mb-2 text-emerald-700">{eyebrow}</p> : null}
         <h1 className="type-h1 text-slate-950">{title}</h1>

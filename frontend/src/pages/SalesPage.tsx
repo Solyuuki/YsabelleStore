@@ -140,7 +140,7 @@ export function SalesPage() {
         description="Recent persisted sales and receipt totals from the live database."
       />
 
-      <section className="grid gap-4 xl:grid-cols-[1fr_420px]">
+      <section className="grid gap-4 xl:grid-cols-[1fr_420px] xl:items-start">
         <Card className="border-slate-200/80 bg-white/95 shadow-sm">
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -235,8 +235,8 @@ export function SalesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/80 bg-white/95 shadow-sm">
-          <CardHeader>
+        <Card className="border-slate-200/80 bg-white/95 shadow-sm xl:sticky xl:top-4 xl:flex xl:max-h-[calc(100vh-2rem)] xl:flex-col">
+          <CardHeader className="xl:shrink-0">
             <div className="flex items-center justify-between gap-4">
               <CardTitle>Receipt details</CardTitle>
               <Button
@@ -258,10 +258,10 @@ export function SalesPage() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
             {selectedSale ? (
-              <div className="space-y-4">
-                <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+              <div className="space-y-4 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:space-y-0">
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-4 xl:shrink-0">
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Receipt</p>
                   <h3 className="mt-1 text-lg font-semibold text-slate-950">
                     {selectedSale.saleNumber}
@@ -280,22 +280,24 @@ export function SalesPage() {
                   </p>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:overscroll-contain xl:py-4 xl:pr-1">
                   {selectedSale.items.map((item) => (
                     <div
-                      className="rounded-md border border-slate-200 bg-white p-4 shadow-sm"
+                      className="rounded-md border border-slate-200 bg-white p-3 shadow-sm"
                       key={item.id}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
+                        <div className="min-w-0">
                           <p className="font-medium text-slate-950">{item.productName}</p>
-                          <p className="mt-1 text-xs text-slate-500">{item.barcode ?? item.sku}</p>
+                          <p className="mt-1 break-all text-xs text-slate-500">
+                            {item.barcode ?? item.sku}
+                          </p>
                         </div>
-                        <p className="text-sm font-semibold text-slate-950">
+                        <p className="shrink-0 text-sm font-semibold text-slate-950">
                           {currencyFormatter.format(Number(item.totalAmount))}
                         </p>
                       </div>
-                      <div className="mt-3 flex justify-between text-sm text-slate-600">
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-slate-600">
                         <span>
                           Qty {item.quantity} x {currencyFormatter.format(Number(item.unitPrice))}
                         </span>
@@ -305,7 +307,7 @@ export function SalesPage() {
                   ))}
                 </div>
 
-                <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50 p-4">
+                <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50 p-4 xl:shrink-0">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Subtotal</span>
                     <span className="font-medium text-slate-950">

@@ -60,8 +60,18 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: forecasting-service/requirements.txt
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Install forecasting dependencies
+        run: python -m pip install -r forecasting-service/requirements.txt
 
       - name: Generate Prisma client
         run: npm run prisma:generate
@@ -89,6 +99,9 @@ jobs:
 
       - name: Run workspace tests
         run: npm test --workspaces --if-present
+
+      - name: Run forecasting tests
+        run: npm run forecast:test
 
       - name: Build repository
         run: npm run build

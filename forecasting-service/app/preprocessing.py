@@ -16,12 +16,13 @@ def expected_periods(start_year: int = 2024, years: int = 2) -> list[str]:
 def forecast_periods(year: int = 2026, horizon: int = 12) -> list[str]:
     return [f"{year}-{month:02d}" for month in range(1, horizon + 1)]
 
+
 def parse_month_key(month_key: str) -> tuple[int, int]:
     try:
         year_text, month_text = month_key.split("-")
         year = int(year_text)
         month = int(month_text)
-    except ValueError as exc:
+    except (AttributeError, ValueError) as exc:
         raise ValueError(f"Invalid month key: {month_key}") from exc
 
     if month < 1 or month > 12:
@@ -58,10 +59,19 @@ def visible_forecast_periods(start_month: str, horizon: int = 12) -> list[str]:
 def validate_product_series(product: ProductSeries) -> tuple[list[float], list[str]]:
     warnings: list[str] = []
     points = product.get("historical", [])
-    periods = [point.get("period") for point in points]
 
-    if periods != expected_periods():
-        raise ValueError("Historical series must be continuous from 2024-01 through 2025-12.")
+    if not points:
+        raise ValueError("Historical series requires at least one completed monthly observation.")
+
+    periods = [point.get("period") for point in points]
+    for period in periods:
+        if not isinstance(period, str):
+            raise ValueError("Historical period must use YYYY-MM format.")
+        parse_month_key(period)
+
+    expected = [add_months(periods[0], index) for index in range(len(periods))]
+    if periods != expected:
+        raise ValueError("Historical series must be chronological, unique, and continuous by month.")
 
     values: list[float] = []
     for point in points:
@@ -72,11 +82,16 @@ def validate_product_series(product: ProductSeries) -> tuple[list[float], list[s
 
         values.append(float(value))
 
-    if len(values) != 24:
-        raise ValueError("Exactly 24 monthly observations are required.")
-
-    warnings.append("Only 24 monthly observations are available; forecasts use a limited-data model.")
-    warnings.append("Only two seasonal cycles are represented.")
+    if len(values) < 12:
+        warnings.append(
+            f"Only {len(values)} completed monthly observation(s) are available; a moving-average fallback is required."
+        )
+    elif len(values) < 24:
+        warnings.append(
+            f"Only {len(values)} completed monthly observations are available; a seasonal fallback is required until 24 are available."
+        )
+    elif len(values) == 24:
+        warnings.append("Only two seasonal cycles are represented; SARIMA confidence is limited.")
 
     return values, warnings
 

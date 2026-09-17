@@ -1,0 +1,11 @@
+{
+  "year": 2026,
+  "status": "RECONSTRUCTED_ESTIMATE",
+  "verifiedActual": false,
+  "method": "SEASONAL_NAIVE_2025_CARRY_FORWARD",
+  "sourceWorkbook": "historical-sales-2025.xlsx",
+  "comparisonOnly": true,
+  "sarimaTraining": false,
+  "usableComparisonThrough": "2026-08",
+  "note": "Verified 2026 historical records are unavailable. This workbook is a reconstructed prior-year comparison baseline only and must not be treated as POS actuals or SARIMA training history."
+}

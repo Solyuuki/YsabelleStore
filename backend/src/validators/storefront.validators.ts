@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { customerAddressSchema } from "./customerAddress.validators.js";
+
 export const storefrontProductQuerySchema = z.object({
   search: z.string().trim().max(120).optional(),
   category: z.string().trim().max(140).optional(),
@@ -26,6 +28,8 @@ export const storefrontOrderSchema = z.object({
   customerName: z.string().trim().min(2).max(120),
   customerEmail: z.string().trim().email().max(191).optional().or(z.literal("")),
   customerPhone: z.string().trim().min(7).max(40),
+  customerAddress: customerAddressSchema.optional(),
+  saveAddressToAccount: z.boolean().optional(),
   notes: z.string().trim().max(255).optional(),
   fulfillmentMethod: z.literal("STORE_PICKUP"),
   paymentMethod: z.literal("CASH_ON_PICKUP"),

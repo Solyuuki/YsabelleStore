@@ -16,8 +16,55 @@ export type ReceivingStockResult = {
   movement: MovementSummary;
 };
 
+export type ReceivingStockOptions = {
+  unitCost?: Prisma.Decimal;
+};
+
 function isKnownPrismaError(error: unknown): error is Prisma.PrismaClientKnownRequestError {
   return error instanceof Prisma.PrismaClientKnownRequestError;
+}
+
+/**
+ * Shared receiving engine for any transaction that needs barcode-aware stock creation.
+ * Callers that already own a Prisma transaction (for example Restock Arrived) use this
+ * function directly so barcode enrollment, batch creation, movement history and inventory
+ * aggregate synchronization remain one atomic operation.
+ */
+export async function receiveStockInTransaction(
+  tx: Prisma.TransactionClient,
+  productId: string,
+  input: StockInRequest,
+  performedById?: string,
+  options: ReceivingStockOptions = {}
+): Promise<ReceivingStockResult> {
+  if (input.scannedBarcode) {
+    await enrollReceivingBarcodeInTransaction(tx, {
+      productId,
+      barcode: input.scannedBarcode,
+      confirmed: input.confirmNewBarcode ?? false,
+      registeredById: performedById,
+      sourceReference: input.referenceId
+        ? `inventory-stock-in:${input.referenceId}`
+        : `inventory-stock-in:${input.batchCode}`
+    });
+  }
+
+  const batchResult = await stockInBatch(tx, {
+    batchCode: input.batchCode,
+    expiresAt: input.expiresAt ?? null,
+    performedById,
+    productId,
+    quantity: input.quantity,
+    reason: input.reason ?? "Stock in",
+    referenceId: input.referenceId ?? null,
+    referenceType: input.referenceType ?? "MANUAL_STOCK_IN",
+    unitCost: options.unitCost
+  });
+
+  return {
+    inventory: batchResult.inventory,
+    movement: serializeMovement(batchResult.movement)
+  };
 }
 
 /**
@@ -32,33 +79,9 @@ export async function receiveStock(
   performedById?: string
 ): Promise<ReceivingStockResult> {
   try {
-    return await prisma.$transaction(async (tx) => {
-      if (input.scannedBarcode) {
-        await enrollReceivingBarcodeInTransaction(tx, {
-          productId,
-          barcode: input.scannedBarcode,
-          confirmed: input.confirmNewBarcode ?? false,
-          registeredById: performedById,
-          sourceReference: `inventory-stock-in:${input.batchCode}`
-        });
-      }
-
-      const batchResult = await stockInBatch(tx, {
-        batchCode: input.batchCode,
-        expiresAt: input.expiresAt ?? null,
-        performedById,
-        productId,
-        quantity: input.quantity,
-        reason: input.reason ?? "Stock in",
-        referenceId: input.referenceId ?? null,
-        referenceType: input.referenceType ?? "MANUAL_STOCK_IN"
-      });
-
-      return {
-        inventory: batchResult.inventory,
-        movement: serializeMovement(batchResult.movement)
-      };
-    });
+    return await prisma.$transaction(async (tx) =>
+      receiveStockInTransaction(tx, productId, input, performedById)
+    );
   } catch (error) {
     if (isKnownPrismaError(error) && error.code === "P2002") {
       throw new HttpError(409, "Stock update conflicted with an existing record.", {
