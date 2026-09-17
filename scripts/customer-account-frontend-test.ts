@@ -192,6 +192,15 @@ async function main() {
       customerName: "Maria Customer",
       customerEmail: "maria@example.com",
       customerPhone: "09171234567",
+      customerAddress: {
+        addressLine1: "123 Sample Street",
+        addressLine2: "",
+        barangay: "Sample Barangay",
+        cityMunicipality: "Pasig City",
+        provinceRegion: "Metro Manila",
+        postalCode: "1600",
+        country: "Philippines"
+      },
       fulfillmentMethod: "STORE_PICKUP",
       paymentMethod: "CASH_ON_PICKUP",
       items: [{ productId: "product-1", quantity: 2 }]
