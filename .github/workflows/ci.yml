@@ -80,6 +80,7 @@ jobs:
       - name: Validate Prisma schema
         run: npm run prisma:validate
 
+      # Backend tests create isolated ysabelle_test_* databases during CI.
       - name: Grant CI database isolation privileges
         run: mysql -h 127.0.0.1 -u root -proot -e "GRANT ALL PRIVILEGES ON *.* TO 'ci'@'%'; FLUSH PRIVILEGES;"
 
