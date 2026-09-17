@@ -14,6 +14,9 @@ jobs:
   repair:
     if: github.ref == 'refs/heads/sprint/v0.10/sprint-10'
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/ysabelle_ci
+      NODE_ENV: test
     steps:
       - name: Checkout Sprint 10
         uses: actions/checkout@v4
