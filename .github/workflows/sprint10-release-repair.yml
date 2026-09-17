@@ -88,4 +88,4 @@ jobs:
             exit 0
           fi
           git commit -m "chore(release): repair Sprint 10 validation gates"
-          git push origin HEAD:sprint/v0.10/sprint-10
+          HUSKY=0 git push origin HEAD:sprint/v0.10/sprint-10
