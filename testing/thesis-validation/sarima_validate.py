@@ -39,6 +39,30 @@ REQUIRED_COLUMNS = {
     "quantity_sold",
 }
 
+# Thesis-only tuning family. The final five-month hold-out is never used to
+# choose among these models; selection is performed only inside the 19-month
+# training window.
+VALIDATION_CANDIDATES: tuple[
+    tuple[tuple[int, int, int], tuple[int, int, int]], ...
+] = (
+    ((0, 0, 0), (0, 1, 0)),
+    ((1, 0, 0), (0, 1, 0)),
+    ((0, 0, 1), (0, 1, 0)),
+    ((1, 0, 1), (0, 1, 0)),
+    ((0, 1, 0), (0, 1, 0)),
+    ((0, 1, 1), (0, 1, 0)),
+    ((1, 1, 0), (0, 1, 0)),
+    ((1, 1, 1), (0, 1, 0)),
+    ((0, 1, 1), (0, 1, 1)),
+    ((1, 1, 0), (0, 1, 1)),
+    ((1, 0, 0), (1, 0, 0)),
+    ((1, 0, 1), (1, 0, 0)),
+    ((0, 1, 1), (1, 0, 0)),
+    ((1, 1, 0), (1, 0, 0)),
+    ((0, 1, 1), (0, 0, 0)),
+    ((1, 1, 0), (0, 0, 0)),
+)
+
 
 @dataclass
 class ProductResult:
@@ -61,6 +85,9 @@ class ProductResult:
     rmse: float
     mape_valid_observations: int
     zero_actual_observations: int
+    selection_mode: str
+    transform: str
+    inner_mape: float | None
 
 
 def parse_args() -> argparse.Namespace:
@@ -109,6 +136,30 @@ def parse_args() -> argparse.Namespace:
             "(100 - MAPE). Default: 90.0. This does not replace MAE/MAPE/RMSE."
         ),
     )
+    parser.add_argument(
+        "--selection-mode",
+        choices=("aic", "inner-mape"),
+        default="aic",
+        help=(
+            "Model-selection rule. 'aic' reproduces the baseline protocol. "
+            "'inner-mape' chooses a SARIMA variant using only an inner hold-out "
+            "inside the training window; the final five months remain untouched."
+        ),
+    )
+    parser.add_argument(
+        "--inner-holdout",
+        type=int,
+        default=4,
+        help="Training-only validation months used by --selection-mode inner-mape. Default: 4.",
+    )
+    parser.add_argument(
+        "--use-log1p",
+        action="store_true",
+        help=(
+            "Also evaluate log1p-transformed SARIMA variants during training-only "
+            "model selection. Forecasts are inverse-transformed before scoring."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -120,53 +171,243 @@ def ensure_continuous_months(periods: pd.Series) -> bool:
     return parsed.is_unique and list(parsed) == list(expected)
 
 
+def _validation_timeout_seconds() -> float:
+    raw = os.getenv("SARIMA_VALIDATION_TIMEOUT_SECONDS", "20")
+    try:
+        value = float(raw)
+    except ValueError:
+        value = 20.0
+    return max(2.0, min(value, 90.0))
+
+
+def _inverse_optional(value: float | None, transform: str) -> float | None:
+    if value is None:
+        return None
+    if transform == "log1p":
+        return max(0.0, float(np.expm1(value)))
+    return max(0.0, float(value))
+
+
+def _fit_variant(
+    series: pd.Series,
+    horizon: int,
+    order: tuple[int, int, int],
+    seasonal_order: tuple[int, int, int, int],
+    deadline: float,
+    transform: str,
+) -> SarimaResult:
+    fit_series = (
+        pd.Series(
+            np.log1p(series.to_numpy(dtype=float)),
+            index=series.index,
+            dtype="float64",
+        )
+        if transform == "log1p"
+        else series
+    )
+    result = _fit_candidate(
+        fit_series,
+        horizon,
+        order,
+        seasonal_order,
+        deadline,
+    )
+    if transform != "log1p":
+        return result
+
+    return SarimaResult(
+        forecast=[
+            round(max(0.0, float(np.expm1(value))), 4)
+            for value in result.forecast
+        ],
+        lower=[
+            None if value is None else round(_inverse_optional(value, transform) or 0.0, 4)
+            for value in result.lower
+        ],
+        upper=[
+            None if value is None else round(_inverse_optional(value, transform) or 0.0, 4)
+            for value in result.upper
+        ],
+        fitted=[float(np.expm1(value)) for value in result.fitted],
+        order=result.order,
+        seasonal_order=result.seasonal_order,
+        aic=result.aic,
+        converged=result.converged,
+        warnings=result.warnings,
+    )
+
+
+@dataclass
+class ValidationFit:
+    result: SarimaResult
+    selection_mode: str
+    transform: str
+    inner_mape: float | None
+
+
 def fit_validation_sarima(
     values: list[float],
     horizon: int,
     seasonal_period: int,
     start_period: str,
-) -> SarimaResult:
-    """Thesis-only SARIMA fit using the production candidate family.
+    selection_mode: str = "aic",
+    inner_holdout: int = 4,
+    use_log1p: bool = False,
+) -> ValidationFit:
+    """Fit SARIMA without using the final thesis hold-out for model selection.
 
-    The deployed application requires 24 completed monthly observations before
-    standard SARIMA execution. This retrospective validator deliberately bypasses
-    only that operational eligibility gate so that 24 verified months can be
-    partitioned into 19 training + 5 held-out testing months. Candidate models,
-    statsmodels fitting behavior, AIC selection, forecast clipping, and fit timeout
-    are inherited from the production forecasting module.
+    Baseline mode reproduces AIC selection. Tuned mode creates an additional
+    chronological split inside the training set and ranks candidates by that
+    training-only MAPE (MAE is the fallback/tiebreaker). The final five-month
+    hold-out is not inspected until after the selected model is refit.
     """
     if len(values) < 19:
-        raise ValueError("Thesis retrospective SARIMA validation requires at least 19 training observations.")
+        raise ValueError(
+            "Thesis retrospective SARIMA validation requires at least 19 training observations."
+        )
 
     series = pd.Series(
         values,
-        index=pd.period_range(start=start_period, periods=len(values), freq="M").to_timestamp(),
+        index=pd.period_range(
+            start=start_period,
+            periods=len(values),
+            freq="M",
+        ).to_timestamp(),
         dtype="float64",
     )
-    deadline = monotonic() + _fit_timeout_seconds()
-    best: SarimaResult | None = None
-    failures: list[str] = []
 
-    for order, seasonal in CANDIDATES:
-        seasonal_order = (seasonal[0], seasonal[1], seasonal[2], seasonal_period)
+    if selection_mode == "aic":
+        deadline = monotonic() + _validation_timeout_seconds()
+        best: SarimaResult | None = None
+        failures: list[str] = []
+        for order, seasonal in CANDIDATES:
+            seasonal_order = (
+                seasonal[0],
+                seasonal[1],
+                seasonal[2],
+                seasonal_period,
+            )
+            try:
+                candidate = _fit_variant(
+                    series,
+                    horizon,
+                    order,
+                    seasonal_order,
+                    deadline,
+                    "raw",
+                )
+                if best is None or candidate.aic < best.aic:
+                    best = candidate
+            except Exception as exc:  # noqa: BLE001
+                failures.append(f"{order}{seasonal_order}: {exc}")
+
+        if best is None:
+            raise ValueError(
+                "; ".join(failures[-3:])
+                or "No SARIMA validation candidate produced a usable forecast."
+            )
+        return ValidationFit(
+            result=best,
+            selection_mode="aic",
+            transform="raw",
+            inner_mape=None,
+        )
+
+    if inner_holdout <= 0 or inner_holdout >= len(values):
+        raise ValueError("inner hold-out must be positive and smaller than the training set")
+
+    inner_train = series.iloc[:-inner_holdout]
+    inner_actual = series.iloc[-inner_holdout:].to_numpy(dtype=float)
+    if len(inner_train) < seasonal_period + 2:
+        raise ValueError(
+            "inner training window is too short for annual-seasonal SARIMA selection"
+        )
+
+    transforms = ("raw", "log1p") if use_log1p else ("raw",)
+    ranked: list[
+        tuple[
+            float,
+            float,
+            float,
+            tuple[int, int, int],
+            tuple[int, int, int, int],
+            str,
+        ]
+    ] = []
+    failures: list[str] = []
+    deadline = monotonic() + _validation_timeout_seconds()
+
+    for order, seasonal in VALIDATION_CANDIDATES:
+        seasonal_order = (
+            seasonal[0],
+            seasonal[1],
+            seasonal[2],
+            seasonal_period,
+        )
+        for transform in transforms:
+            try:
+                candidate = _fit_variant(
+                    inner_train,
+                    inner_holdout,
+                    order,
+                    seasonal_order,
+                    deadline,
+                    transform,
+                )
+                inner_forecast = np.asarray(candidate.forecast, dtype=float)
+                inner_metrics = metric_bundle(inner_actual, inner_forecast)
+                inner_mape = inner_metrics["mape"]
+                score = (
+                    float(inner_mape)
+                    if inner_mape is not None
+                    else float(inner_metrics["mae"]) * 1000.0
+                )
+                ranked.append(
+                    (
+                        score,
+                        float(inner_metrics["mae"]),
+                        float(candidate.aic),
+                        order,
+                        seasonal_order,
+                        transform,
+                    )
+                )
+            except Exception as exc:  # noqa: BLE001
+                failures.append(f"{order}{seasonal_order}/{transform}: {exc}")
+
+    if not ranked:
+        raise ValueError(
+            "; ".join(failures[-3:])
+            or "No SARIMA candidate completed training-only model selection."
+        )
+
+    ranked.sort(key=lambda row: (row[0], row[1], row[2], row[3], row[4], row[5]))
+
+    refit_failures: list[str] = []
+    refit_deadline = monotonic() + _validation_timeout_seconds()
+    for score, _mae, _aic, order, seasonal_order, transform in ranked:
         try:
-            candidate = _fit_candidate(
+            result = _fit_variant(
                 series,
                 horizon,
                 order,
                 seasonal_order,
-                deadline,
+                refit_deadline,
+                transform,
             )
-            if best is None or candidate.aic < best.aic:
-                best = candidate
-        except Exception as exc:  # noqa: BLE001 - every failed candidate is retained in the product exclusion reason.
-            failures.append(f"{order}{seasonal_order}: {exc}")
+            return ValidationFit(
+                result=result,
+                selection_mode="inner-mape",
+                transform=transform,
+                inner_mape=score,
+            )
+        except Exception as exc:  # noqa: BLE001
+            refit_failures.append(f"{order}{seasonal_order}/{transform}: {exc}")
 
-    if best is None:
-        raise ValueError("; ".join(failures[-3:]) or "No SARIMA validation candidate produced a usable forecast.")
-
-    return best
-
+    raise ValueError(
+        "; ".join(refit_failures[-3:])
+        or "No training-selected SARIMA candidate could be refit."
+    )
 
 def metric_bundle(actual: np.ndarray, forecast: np.ndarray) -> dict[str, Any]:
     actual = np.asarray(actual, dtype=float)
@@ -271,6 +512,9 @@ def validate_product(
     holdout: int,
     min_train: int,
     seasonal_period: int,
+    selection_mode: str,
+    inner_holdout: int,
+    use_log1p: bool,
 ) -> tuple[ProductResult, list[dict[str, Any]]]:
     group = group.sort_values("_period").reset_index(drop=True)
     product_id = str(group.iloc[0]["product_id"])
@@ -295,12 +539,16 @@ def validate_product(
     train_values = train["quantity_sold"].to_numpy(dtype=float)
     actual = test["quantity_sold"].to_numpy(dtype=float)
 
-    result = fit_validation_sarima(
+    fitted = fit_validation_sarima(
         train_values.tolist(),
         horizon=holdout,
         seasonal_period=seasonal_period,
         start_period=str(train.iloc[0]["period"]),
+        selection_mode=selection_mode,
+        inner_holdout=inner_holdout,
+        use_log1p=use_log1p,
     )
+    result = fitted.result
     forecast = np.asarray(result.forecast, dtype=float)
 
     metrics = metric_bundle(actual, forecast)
@@ -330,6 +578,9 @@ def validate_product(
                 "seasonal_order": str(tuple(result.seasonal_order)),
                 "aic": result.aic,
                 "converged": result.converged,
+                "selection_mode": fitted.selection_mode,
+                "transform": fitted.transform,
+                "inner_mape": fitted.inner_mape,
             }
         )
 
@@ -353,6 +604,9 @@ def validate_product(
         rmse=float(metrics["rmse"]),
         mape_valid_observations=int(metrics["mape_valid_observations"]),
         zero_actual_observations=int(metrics["zero_actual_observations"]),
+        selection_mode=fitted.selection_mode,
+        transform=fitted.transform,
+        inner_mape=(float(fitted.inner_mape) if fitted.inner_mape is not None else None),
     )
     return product_result, detailed_rows
 
@@ -489,6 +743,8 @@ def main() -> int:
         raise ValueError("--min-train must be at least 19 for the frozen thesis retrospective protocol.")
     if args.seasonal_period <= 1:
         raise ValueError("--seasonal-period must be greater than one.")
+    if args.inner_holdout <= 0:
+        raise ValueError("--inner-holdout must be greater than zero.")
     if not 0.0 < args.target_accuracy <= 100.0:
         raise ValueError("--target-accuracy must be greater than 0 and at most 100.")
     if not input_path.exists():
@@ -513,6 +769,9 @@ def main() -> int:
                 holdout=args.holdout,
                 min_train=args.min_train,
                 seasonal_period=args.seasonal_period,
+                selection_mode=args.selection_mode,
+                inner_holdout=args.inner_holdout,
+                use_log1p=args.use_log1p,
             )
             product_results.append(result)
             detailed_rows.extend(rows)
@@ -597,13 +856,24 @@ def main() -> int:
         "holdout_months": args.holdout,
         "minimum_training_observations": args.min_train,
         "seasonal_period": args.seasonal_period,
-        "candidate_count": len(CANDIDATES),
+        "selection_mode": args.selection_mode,
+        "inner_holdout_months": args.inner_holdout if args.selection_mode == "inner-mape" else None,
+        "log1p_variants_enabled": bool(args.use_log1p and args.selection_mode == "inner-mape"),
+        "candidate_count": (
+            len(VALIDATION_CANDIDATES)
+            if args.selection_mode == "inner-mape"
+            else len(CANDIDATES)
+        ),
         "candidate_family": [
             {
                 "order": list(order),
                 "seasonal_order": [seasonal[0], seasonal[1], seasonal[2], args.seasonal_period],
             }
-            for order, seasonal in CANDIDATES
+            for order, seasonal in (
+                VALIDATION_CANDIDATES
+                if args.selection_mode == "inner-mape"
+                else CANDIDATES
+            )
         ],
         "target_accuracy_pct": round(float(args.target_accuracy), 4),
         "study_accuracy_proxy_definition": "100 - MAPE; study-specific target-tracking proxy, not a replacement for standard forecast error metrics.",
@@ -643,6 +913,16 @@ def main() -> int:
         f"Validated products: {summary['validated_products']}",
         f"Excluded products: {len(exclusions)}",
         f"Validated product-month observations: {summary['validated_product_month_observations']}",
+        "",
+        "MODEL SELECTION",
+        f"Selection mode: {args.selection_mode}",
+        f"Candidate configurations: {len(VALIDATION_CANDIDATES) if args.selection_mode == 'inner-mape' else len(CANDIDATES)}",
+        f"Log1p variants: {'ENABLED' if args.use_log1p and args.selection_mode == 'inner-mape' else 'DISABLED'}",
+        (
+            f"Inner hold-out: {args.inner_holdout} month(s) inside training only"
+            if args.selection_mode == "inner-mape"
+            else "Inner hold-out: not used"
+        ),
         "",
         "OVERALL HOLD-OUT METRICS",
         f"MAE  : {summary['mae']:.4f} units",
