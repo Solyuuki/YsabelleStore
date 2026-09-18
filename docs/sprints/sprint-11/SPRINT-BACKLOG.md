@@ -24,7 +24,7 @@
 
 ## Workstream 3 — Bug and Error Audit
 
-- [ ] Audit open runtime errors, TODO/FIXME markers, stale UI states, and inconsistent error handling.
+- [ ] Audit open runtime errors, unfinished-code markers, stale UI states, and inconsistent error handling.
 - [ ] Prioritize defects by transaction/data-integrity risk and user impact.
 - [ ] Add regression coverage before closing each material defect.
 
