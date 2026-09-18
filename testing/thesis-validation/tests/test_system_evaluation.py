@@ -122,3 +122,22 @@ def test_interpretation_bands_can_share_boundaries():
     assert MODULE.interpret(3.4, bands) == "Agree"
     assert MODULE.interpret(4.2, bands) == "Strongly Agree"
     assert MODULE.interpret(5.0, bands) == "Strongly Agree"
+
+
+def test_table5_summary_uses_evaluation_source_label():
+    criterion = pd.DataFrame(
+        [{"criterion": "A", "mean": 4.0, "acceptance_status": "PASS"}]
+    )
+    overall = pd.DataFrame(
+        [{"mean": 4.0, "interpretation": "Agree / Acceptable", "acceptance_status": "PASS"}]
+    )
+
+    table5 = MODULE.build_table5_summary(
+        criterion,
+        overall,
+        3.4,
+        "AI-assisted evidence review",
+    )
+
+    assert table5.iloc[0]["Basis"] == "AI-assisted evidence review"
+    assert table5.iloc[1]["Basis"] == "Mean of criterion means from the same evaluation source"
