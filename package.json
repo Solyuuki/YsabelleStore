@@ -107,7 +107,9 @@
     "thesis:sarima:export": "tsx backend/src/scripts/thesisSarimaExport.ts",
     "thesis:sarima:validate": "python testing/thesis-validation/sarima_validate.py --input testing/thesis-validation/data/effective_monthly_sales.csv --output testing/thesis-validation/evidence/sarima --holdout 8",
     "thesis:sarima:test": "python -m pytest testing/thesis-validation/tests",
-    "thesis:sarima:run": "npm run thesis:sarima:export && npm run thesis:sarima:validate"
+    "thesis:sarima:run": "npm run thesis:sarima:export && npm run thesis:sarima:validate",
+    "thesis:sarima:install": "python -m pip install -r testing/thesis-validation/requirements.txt",
+    "thesis:qa:run": "node testing/thesis-validation/run_automated_tests.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"
