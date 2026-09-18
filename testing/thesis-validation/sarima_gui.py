@@ -202,13 +202,6 @@ class SarimaDashboard:
         if accuracy is None and mape is not None:
             accuracy = max(0.0, 100.0 - mape)
 
-        target = summary.get("target_accuracy_pct", self.evidence.metadata.get("target_accuracy_pct", 90.0))
-        try:
-            target_value = float(target)
-        except (TypeError, ValueError):
-            target_value = 90.0
-        target_met = bool(accuracy is not None and accuracy >= target_value)
-
         values = [
             ("MAE", f"{float(summary['mae']):.4f}", "units of monthly quantity sold"),
             (
@@ -220,7 +213,7 @@ class SarimaDashboard:
             (
                 "Study Accuracy",
                 "N/A" if accuracy is None else f"{accuracy:.4f}%",
-                f"Target {target_value:.2f}% — {'PASS' if target_met else 'BELOW TARGET'}",
+                "Derived as 100 - MAPE",
             ),
         ]
 
@@ -249,7 +242,7 @@ class SarimaDashboard:
 
         accuracy_banner = ttk.LabelFrame(
             self.summary_tab,
-            text="Study Accuracy Target",
+            text="Study Accuracy",
             padding=10,
         )
         accuracy_banner.pack(fill="x", pady=(0, 10))
@@ -263,30 +256,19 @@ class SarimaDashboard:
         if accuracy is None and mape is not None:
             accuracy = max(0.0, 100.0 - mape)
 
-        target = summary.get("target_accuracy_pct", self.evidence.metadata.get("target_accuracy_pct", 90.0))
-        try:
-            target_value = float(target)
-        except (TypeError, ValueError):
-            target_value = 90.0
-
         accuracy_text = (
             "N/A"
             if accuracy is None
             else f"{accuracy:.4f}%"
         )
-        target_status = (
-            "N/A"
-            if accuracy is None
-            else ("PASS" if accuracy >= target_value else "BELOW TARGET")
-        )
         ttk.Label(
             accuracy_banner,
-            text=f"Derived study accuracy (100 - MAPE): {accuracy_text}   |   Target: {target_value:.2f}%   |   Status: {target_status}",
+            text=f"Derived study accuracy (100 - MAPE): {accuracy_text}",
             style="Section.TLabel",
         ).pack(anchor="w")
         ttk.Label(
             accuracy_banner,
-            text="MAE, MAPE, and RMSE remain the primary forecasting-error metrics; this accuracy value is the study's target-tracking convention.",
+            text="MAE, MAPE, and RMSE remain the primary forecasting-error metrics; the displayed accuracy is derived as 100 - MAPE.",
             style="Subtitle.TLabel",
             wraplength=1160,
         ).pack(anchor="w", pady=(3, 0))
@@ -487,13 +469,6 @@ class SarimaDashboard:
 
         accuracy = self.evidence.summary.get("study_accuracy_proxy_pct")
         accuracy_display = "N/A" if pd.isna(accuracy) else f"{float(accuracy):.4f}%"
-        target_met = self.evidence.summary.get("target_met")
-        target_status = (
-            "N/A"
-            if pd.isna(target_met)
-            else ("PASS" if bool(target_met) else "BELOW TARGET")
-        )
-
         cards = [
             ("Validated products", self.evidence.metadata.get("successful_products", "N/A")),
             ("Excluded products", self.evidence.metadata.get("excluded_products", "N/A")),
@@ -501,7 +476,7 @@ class SarimaDashboard:
                 "Held-out observations",
                 self.evidence.summary.get("validated_product_month_observations", "N/A"),
             ),
-            ("Study accuracy", f"{accuracy_display} ({target_status})"),
+            ("Study accuracy", accuracy_display),
             (
                 "Forecast input",
                 self.evidence.export_metadata.get("forecastInputSource", "N/A"),
