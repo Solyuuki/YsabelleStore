@@ -42,14 +42,16 @@ $Seed = Join-Path $RepoRoot "database\seed\canonical-catalog-v1.sql"
 $Prisma = Join-Path $RepoRoot "node_modules\.bin\prisma.cmd"
 
 $MySqlCandidates = @(
-    "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe",
-    (Get-Command mysql.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue)
-) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+    @(
+        "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe",
+        (Get-Command mysql.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue)
+    ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+)
 
 if (-not (Test-Path $Schema)) { throw "STOP: Prisma schema not found: $Schema" }
 if (-not (Test-Path $Seed)) { throw "STOP: canonical catalog snapshot not found: $Seed" }
 if (-not (Test-Path $Prisma)) { throw "STOP: local Prisma CLI not found. Run npm install first." }
-if (-not $MySqlCandidates -or $MySqlCandidates.Count -eq 0) { throw "STOP: mysql.exe not found." }
+if (@($MySqlCandidates).Count -eq 0) { throw "STOP: mysql.exe not found." }
 
 $MySql = $MySqlCandidates[0]
 $ActualSeedSha256 = (Get-FileHash $Seed -Algorithm SHA256).Hash
