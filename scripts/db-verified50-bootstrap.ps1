@@ -52,31 +52,35 @@ Write-Host "YSABELLESTORE VERIFIED-50 LOCAL BOOTSTRAP"
 Write-Host "Target database: $DatabaseName"
 Write-Host "LOCAL/QA ONLY - non-survivor products will be removed after verification."
 
-Invoke-Step "[1/7] Sync Prisma schema" {
+Invoke-Step "[1/8] Sync Prisma schema" {
     npm run prisma:sync:dev
 }
 
-Invoke-Step "[2/7] Sync canonical catalog into target database" {
+Invoke-Step "[2/8] Sync canonical catalog into target database" {
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/db-catalog-sync.ps1 -DatabaseName $DatabaseName -Apply
 }
 
-Invoke-Step "[3/7] Ensure zero-stock inventory rows for exact 50 targets" {
+Invoke-Step "[3/8] Ensure zero-stock inventory rows for exact 50 targets" {
     node --env-file=.env --import tsx backend/src/scripts/ensureVerified50Inventory.ts --apply
 }
 
-Invoke-Step "[4/7] Apply reviewed production-catalog-50 approval" {
+Invoke-Step "[4/8] Prepare exact-50 internal barcode state" {
+    node --env-file=.env --import tsx backend/src/scripts/prepareVerified50Barcodes.ts
+}
+
+Invoke-Step "[5/8] Apply reviewed production-catalog-50 approval" {
     node --env-file=.env --import tsx backend/src/scripts/executeProductionCatalog50.ts --apply-production-catalog-50
 }
 
-Invoke-Step "[5/7] Keep only the exact approved SARIMA 50 cohort" {
+Invoke-Step "[6/8] Keep only the exact approved SARIMA 50 cohort" {
     node --env-file=.env scripts/qa-keep-non-ysb-50-products.mjs --apply
 }
 
-Invoke-Step "[6/7] Seed verified-50 QA inventory batches and stock" {
+Invoke-Step "[7/8] Seed verified-50 QA inventory batches and stock" {
     node --env-file=.env --import tsx backend/src/scripts/seedVerified50QaStock.ts --apply
 }
 
-Invoke-Step "[7/7] Final exact-50 verification" {
+Invoke-Step "[8/8] Final exact-50 verification" {
     node --env-file=.env scripts/qa-keep-non-ysb-50-products.mjs
 }
 
