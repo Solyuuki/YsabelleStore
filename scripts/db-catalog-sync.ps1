@@ -8,6 +8,21 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+function Get-NormalizedTextSha256([string]$Path) {
+    $text = [System.IO.File]::ReadAllText($Path)
+    $normalized = $text.Replace("`r`n", "`n").Replace("`r", "`n")
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    $bytes = $utf8.GetBytes($normalized)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return ([System.BitConverter]::ToString($sha256.ComputeHash($bytes))).Replace("-", "")
+    }
+    finally {
+        $sha256.Dispose()
+    }
+}
+
+
 $ExpectedSeedSha256 = "641B59285F17C4A01CF930EBB2FF43FA2DD52F8E9FF5CDC2284362C90220D1C6"
 $CatalogTables = @(
     "categories",
@@ -54,7 +69,7 @@ if (-not (Test-Path $Prisma)) { throw "STOP: local Prisma CLI not found. Run npm
 if (@($MySqlCandidates).Count -eq 0) { throw "STOP: mysql.exe not found." }
 
 $MySql = $MySqlCandidates[0]
-$ActualSeedSha256 = (Get-FileHash $Seed -Algorithm SHA256).Hash
+$ActualSeedSha256 = Get-NormalizedTextSha256 $Seed
 if ($ActualSeedSha256 -ne $ExpectedSeedSha256) {
     throw "STOP: canonical catalog snapshot hash mismatch. Expected $ExpectedSeedSha256 but found $ActualSeedSha256"
 }
