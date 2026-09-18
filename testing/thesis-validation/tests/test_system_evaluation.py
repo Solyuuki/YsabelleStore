@@ -25,7 +25,7 @@ def test_compute_results_uses_actual_ratings_and_threshold():
         MODULE.Band(3.0, 5.0, "Acceptable"),
     ]
 
-    criterion, overall, respondent = MODULE.compute_results(df, bands, 3.0)
+    criterion, overall, respondent = MODULE.compute_results(\n        df, bands, 3.0, \"mean_of_criterion_means\"\n    )
 
     assert float(overall.iloc[0]["mean"]) == pytest.approx(4.0)
     assert overall.iloc[0]["interpretation"] == "Acceptable"
@@ -56,3 +56,26 @@ def test_load_responses_rejects_duplicate_item_response(tmp_path):
 
     with pytest.raises(ValueError, match="Duplicate"):
         MODULE.load_responses(source, 1.0, 5.0)
+
+
+def test_table5_summary_reports_criterion_and_overall_status():
+    criterion = pd.DataFrame(
+        [
+            {"criterion": "A", "mean": 4.5, "acceptance_status": "PASS"},
+            {"criterion": "B", "mean": 4.0, "acceptance_status": "PASS"},
+        ]
+    )
+    overall = pd.DataFrame(
+        [
+            {
+                "mean": 4.25,
+                "interpretation": "Acceptable",
+                "acceptance_status": "PASS",
+            }
+        ]
+    )
+
+    table5 = MODULE.build_table5_summary(criterion, overall, 3.0)
+
+    assert table5.iloc[0]["Result"] == "PASS (2/2 criteria met threshold)"
+    assert table5.iloc[1]["Result"] == "4.2500 - Acceptable - PASS"
