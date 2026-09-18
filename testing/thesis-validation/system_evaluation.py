@@ -343,10 +343,23 @@ def save_report(
     output: Path,
 ) -> None:
     threshold = config.get("acceptance_threshold")
+    evaluation_source = config.get("evaluation_source")
+    reviewer_id = config.get("reviewer_id")
+    independence_status = config.get("independence_status")
     lines = [
         "YSABELLE STORE - SYSTEM EVALUATION",
         "===================================",
         "",
+    ]
+    if evaluation_source:
+        lines.append(f"Evaluation source: {evaluation_source}")
+    if reviewer_id:
+        lines.append(f"Reviewer ID: {reviewer_id}")
+    if independence_status:
+        lines.append(f"Independence status: {independence_status}")
+    if evaluation_source or reviewer_id or independence_status:
+        lines.append("")
+    lines += [
         f"Respondents: {int(overall.iloc[0]['respondents'])}",
         f"Evaluation criteria: {int(overall.iloc[0]['criteria'])}",
         f"Evaluation items: {int(overall.iloc[0]['items'])}",
@@ -425,6 +438,9 @@ def run_evaluation(args: argparse.Namespace) -> int:
         "scale_max": scale_max,
         "acceptance_threshold": threshold,
         "overall_method": overall_method,
+        "evaluation_source": config.get("evaluation_source"),
+        "reviewer_id": config.get("reviewer_id"),
+        "independence_status": config.get("independence_status"),
         "respondents": int(overall.iloc[0]["respondents"]),
         "criteria": int(overall.iloc[0]["criteria"]),
         "items": int(overall.iloc[0]["items"]),
@@ -440,6 +456,12 @@ def run_evaluation(args: argparse.Namespace) -> int:
     print("YSABELLE STORE - SYSTEM EVALUATION")
     print("===================================")
     print("Status: COMPLETE")
+    if metadata.get("evaluation_source"):
+        print(f"Evaluation source: {metadata['evaluation_source']}")
+    if metadata.get("reviewer_id"):
+        print(f"Reviewer ID: {metadata['reviewer_id']}")
+    if metadata.get("independence_status"):
+        print(f"Independence status: {metadata['independence_status']}")
     print(f"Respondents: {metadata['respondents']}")
     print(f"Criteria: {metadata['criteria']}")
     print(f"Items: {metadata['items']}")
