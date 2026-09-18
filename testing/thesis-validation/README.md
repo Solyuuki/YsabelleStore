@@ -122,4 +122,4 @@ The Python validator produces:
 
 MAE, MAPE, and RMSE are computed with scikit-learn and independently cross-checked with NumPy formulas. MAPE excludes only zero-actual observations; those observations remain included in MAE and RMSE.
 
-The default hold-out is eight completed months so a 32-month series can use 24 observations for training and eight for testing. Products that do not satisfy the predefined training/testing requirement are not silently dropped: they are written to `excluded_products.csv` with a reason.
+For the currently available verified 24-month workbook history, the thesis retrospective protocol is frozen at 19 training months and 5 held-out testing months. The deployed forecasting service is unchanged and still requires 24 completed monthly observations before standard SARIMA execution. Products that fail the thesis backtest are not silently dropped: they are written to `excluded_products.csv` with a reason.
