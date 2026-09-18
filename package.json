@@ -111,7 +111,7 @@
     "thesis:sarima:install": "python -m pip install -r testing/thesis-validation/requirements.txt",
     "thesis:qa:run": "node testing/thesis-validation/run_automated_tests.mjs",
     "thesis:sarima:validate:headless": "python testing/thesis-validation/sarima_validate.py --input testing/thesis-validation/data/effective_monthly_sales.csv --output testing/thesis-validation/evidence/sarima --min-train 19 --holdout 5",
-    "thesis:sarima:validate:target90": "python testing/thesis-validation/sarima_validate.py --input testing/thesis-validation/data/effective_monthly_sales.csv --output testing/thesis-validation/evidence/sarima-target90 --min-train 19 --holdout 5 --target-accuracy 90",
+    "thesis:sarima:validate:target90": "python testing/thesis-validation/sarima_validate.py --input testing/thesis-validation/data/effective_monthly_sales.csv --output testing/thesis-validation/evidence/sarima-target90 --min-train 19 --holdout 5 --target-accuracy 90 --selection-mode inner-mape --inner-holdout 4 --use-log1p",
     "thesis:sarima:gui": "python testing/thesis-validation/sarima_gui.py --evidence testing/thesis-validation/evidence/sarima",
     "thesis:sarima:gui:target90": "python testing/thesis-validation/sarima_gui.py --evidence testing/thesis-validation/evidence/sarima-target90",
     "thesis:evaluation:test": "python -m py_compile testing/thesis-validation/system_evaluation.py && python -m pytest testing/thesis-validation/tests/test_system_evaluation.py",
