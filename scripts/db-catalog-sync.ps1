@@ -115,7 +115,7 @@ function Get-DiffSummary([string]$SourceDb, [string]$TargetDb) {
 
     foreach ($table in $CatalogTables) {
         $columns = Get-Columns $SourceDb $table
-        if ($columns.Count -eq 0) { throw "STOP: no columns found for '$table'." }
+        if (@($columns).Count -eq 0) { throw "STOP: no columns found for '$table'." }
         $diffTerms = @($columns | ForEach-Object { "NOT (s.``$_`` <=> t.``$_``)" })
         $diffExpr = $diffTerms -join " OR "
 
@@ -416,7 +416,7 @@ SELECT
     if ($BrokenRefs -ne 0) {
         throw "STOP: post-sync broken catalog references detected: $BrokenRefs"
     }
-    if ($ProtectedChanged.Count -gt 0) {
+    if (@($ProtectedChanged).Count -gt 0) {
         throw "STOP: protected table row counts changed unexpectedly: $($ProtectedChanged -join ', ')"
     }
 
