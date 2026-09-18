@@ -78,10 +78,22 @@ Export the same canonical completed monthly sales used by the forecasting pipeli
 npm run thesis:sarima:export
 ```
 
-Run chronological SARIMA hold-out validation with visual evidence:
+Run chronological SARIMA hold-out validation and automatically open the Python desktop dashboard:
 
 ```bash
 npm run thesis:sarima:validate
+```
+
+Run the computation without opening the desktop window:
+
+```bash
+npm run thesis:sarima:validate:headless
+```
+
+Re-open the latest Python dashboard without recomputing the metrics:
+
+```bash
+npm run thesis:sarima:gui
 ```
 
 Run export and validation together:
@@ -104,6 +116,8 @@ npm run thesis:qa:run
 
 ## SARIMA Visual Evidence
 
+The primary visual presentation is a **Tkinter desktop GUI with embedded Matplotlib charts**. The browser HTML report has been removed. The GUI contains Summary, Actual vs Forecast, Residual Analysis, Product Results, and Validation Info tabs.
+
 The Python validator produces:
 
 - `summary_metrics.csv`
@@ -112,7 +126,6 @@ The Python validator produces:
 - `excluded_products.csv`
 - `validation_metadata.json`
 - `validation_report.txt`
-- `validation_report.html`
 - `mae_rmse_units.png`
 - `mape_percentage.png`
 - `actual_vs_forecast_overall.png`
