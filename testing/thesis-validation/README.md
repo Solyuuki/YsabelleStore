@@ -53,7 +53,7 @@ Do not convert a software-only result into a physical-device PASS.
 
 ## MPOS
 
-Mobile POS is outside the current thesis validation cycle until its implementation status is finalized. It must not be reported as Passed without executable evidence.
+Mobile POS (MPOS) status: **TBC**. It is not included in the completed validation results while its implementation/testing status is being finalized.
 
 ## Evidence Folders
 
@@ -162,9 +162,9 @@ returns a non-zero process status; the validation workflow does not alter data t
 If the local configuration or response file is still incomplete, `thesis:evaluation:run` now reports `Status: BLOCKED` with the missing setup requirements instead of printing a Python traceback. The command still returns non-zero so an incomplete evaluation cannot be mistaken for a successful result.
 
 
-## AI-Assisted Evidence Review
+## System Evaluation Evidence Review
 
-A separate evidence-based pre-evaluation is available for cases where the project team wants an immediate structured review based on the screenshots and reproducible test evidence already collected:
+A separate System Evaluation evidence review is available based on the screenshots and reproducible test evidence already collected:
 
 ```bash
 npm run thesis:evaluation:evidence
