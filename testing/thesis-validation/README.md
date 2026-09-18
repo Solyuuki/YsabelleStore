@@ -158,3 +158,5 @@ The calculator produces criterion-level means, the overall mean, verbal interpre
 optional PASS/FAIL only when an approved acceptance threshold is configured, a text report,
 metadata, and `figure16_system_evaluation.png`. A real failing score is preserved and
 returns a non-zero process status; the validation workflow does not alter data to force a pass.
+
+If the local configuration or response file is still incomplete, `thesis:evaluation:run` now reports `Status: BLOCKED` with the missing setup requirements instead of printing a Python traceback. The command still returns non-zero so an incomplete evaluation cannot be mistaken for a successful result.
