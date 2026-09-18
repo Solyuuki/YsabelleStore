@@ -110,6 +110,7 @@ export class ApiClient {
         { cause: error }
       );
     }
+
     const payload = await this.parseResponse<TData, TError>(response);
 
     let interceptedPayload: ApiResponse = payload;
@@ -133,7 +134,17 @@ export class ApiClient {
     const contentType = response.headers.get("content-type") ?? "";
 
     if (contentType.includes("application/json")) {
-      return (await response.json()) as ApiResponse<TData, TError>;
+      const payload = (await response.json()) as ApiResponse<TData, TError>;
+
+      if (!payload.success) {
+        return {
+          ...payload,
+          httpStatus: response.status,
+          retryAfterSeconds: parseRetryAfterSeconds(response.headers.get("retry-after"))
+        };
+      }
+
+      return payload;
     }
 
     return {
@@ -142,7 +153,9 @@ export class ApiClient {
       error: {
         status: response.status,
         statusText: response.statusText
-      } as TError
+      } as TError,
+      httpStatus: response.status,
+      retryAfterSeconds: parseRetryAfterSeconds(response.headers.get("retry-after"))
     };
   }
 }
@@ -157,6 +170,24 @@ function resolveUrl(path: string, baseUrl: string): URL {
   }
 
   return new URL(path, `${baseUrl.replace(/\/+$/, "")}/`);
+}
+
+function parseRetryAfterSeconds(value: string | null): number | undefined {
+  if (!value) return undefined;
+
+  const seconds = Number(value);
+
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return Math.ceil(seconds);
+  }
+
+  const retryAt = Date.parse(value);
+
+  if (Number.isNaN(retryAt)) {
+    return undefined;
+  }
+
+  return Math.max(0, Math.ceil((retryAt - Date.now()) / 1000));
 }
 
 function reconcileProductStatusMutationResponse(input: {
@@ -186,7 +217,6 @@ function reconcileProductStatusMutationResponse(input: {
 
   if (returnedStatus !== requestedStatus) {
     return {
-      ...input.response,
       success: false,
       message: "The server did not confirm the requested product availability state.",
       error: {
