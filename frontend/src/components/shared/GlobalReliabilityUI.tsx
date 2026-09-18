@@ -13,6 +13,25 @@ export function GlobalReliabilityUI() {
   const { healthState, lastHealthyAt, mode, recentlyRestored, retryNow } =
     useSystemReliability();
 
+  useEffect(() => {
+    const content = document.querySelector<HTMLElement>("[data-reliability-content]");
+
+    if (!content) return;
+
+    if (mode === "unavailable") {
+      content.setAttribute("inert", "");
+      content.setAttribute("aria-hidden", "true");
+    } else {
+      content.removeAttribute("inert");
+      content.removeAttribute("aria-hidden");
+    }
+
+    return () => {
+      content.removeAttribute("inert");
+      content.removeAttribute("aria-hidden");
+    };
+  }, [mode]);
+
   if (recentlyRestored) {
     return (
       <div
@@ -88,7 +107,7 @@ export function GlobalReliabilityUI() {
           <span className="reliability-ring reliability-ring--outer" />
           <span className="reliability-ring reliability-ring--inner" />
           <span className="reliability-status-visual__icon">
-            <presentation.Icon className="h-8 w-8" />
+            <StatusIcon className="h-8 w-8" />
           </span>
         </div>
 
