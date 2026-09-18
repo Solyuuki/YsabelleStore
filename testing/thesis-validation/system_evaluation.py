@@ -290,16 +290,8 @@ def build_table5_summary(
             else f"FAIL ({passed}/{total} criteria met threshold)"
         )
 
-    criteria_basis = (
-        evaluation_source
-        if evaluation_source
-        else "System Evaluation Tool criteria"
-    )
-    overall_basis = (
-        "Mean of criterion means from the same evaluation source"
-        if evaluation_source
-        else "Combined criterion-level evaluation"
-    )
+    criteria_basis = "System Evaluation Tool criteria"
+    overall_basis = "Combined criterion-level evaluation"
 
     overall_row = overall.iloc[0]
     overall_result = (
