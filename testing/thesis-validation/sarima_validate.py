@@ -586,6 +586,8 @@ def main() -> int:
         json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
     )
 
+    mape_report_text = "N/A" if summary["mape"] is None else f'{summary["mape"]:.4f}%'
+
     report_lines = [
         "YSABELLE STORE - SARIMA THESIS VALIDATION",
         "==========================================",
@@ -596,7 +598,7 @@ def main() -> int:
         "",
         "OVERALL HOLD-OUT METRICS",
         f"MAE  : {summary['mae']:.4f} units",
-        f"MAPE : {'N/A' if summary['mape'] is None else f'{summary['mape']:.4f}%'}",
+        f"MAPE : {mape_report_text}",
         f"RMSE : {summary['rmse']:.4f} units",
         "",
         f"MAPE-valid observations: {summary['mape_valid_observations']}",
