@@ -26,6 +26,15 @@ class SarimaResult:
 
 
 CANDIDATES: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ...] = (
+    # Seasonal-naive-equivalent SARIMA baseline. This is especially important
+    # when only a little more than one annual cycle is available for fitting.
+    ((0, 0, 0), (0, 1, 0)),
+    # Low-complexity annual-seasonal alternatives.
+    ((1, 0, 0), (0, 1, 0)),
+    ((0, 0, 1), (0, 1, 0)),
+    ((1, 0, 1), (0, 1, 0)),
+    ((0, 1, 0), (0, 1, 0)),
+    # Original production candidate family retained for continuity.
     ((0, 1, 1), (0, 1, 1)),
     ((1, 1, 0), (0, 1, 1)),
     ((1, 0, 0), (1, 0, 0)),
