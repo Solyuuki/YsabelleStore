@@ -32,7 +32,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -366,8 +365,7 @@ def save_report(
     )
 
 
-def main() -> int:
-    args = parse_args()
+def run_evaluation(args: argparse.Namespace) -> int:
     input_path = Path(args.input).resolve()
     config_path = Path(args.config).resolve()
     output = Path(args.output).resolve()
@@ -430,11 +428,46 @@ def main() -> int:
     print(f"Evidence directory: {output}")
 
     if threshold is not None and metadata["overall_acceptance_status"] == "FAIL":
-        # A real failing evaluation must remain visible in the evidence. The script
-        # exits non-zero so it cannot be silently reported as a passing requirement.
+        # Preserve genuine failures. A failing evaluation must never be converted
+        # into a passing result by the validation tooling.
         return 2
 
     return 0
+
+
+def print_blocked(message: str, args: argparse.Namespace) -> None:
+    print("YSABELLE STORE - SYSTEM EVALUATION")
+    print("===================================")
+    print("Status: BLOCKED - evaluation data/configuration incomplete")
+    print("")
+    print(message)
+    print("")
+    print("Required before an actual evaluation can be computed:")
+    print("1. Copy the exact approved rating scale and interpretation bands into:")
+    print(f"   {Path(args.config)}")
+    print("2. Set configured=true only after those rules are complete.")
+    print("3. Replace the placeholder row with the actual evaluator responses in:")
+    print(f"   {Path(args.input)}")
+    print("")
+    print("No evaluation score was generated and no PASS/FAIL result was invented.")
+
+
+def main() -> int:
+    args = parse_args()
+    try:
+        return run_evaluation(args)
+    except (
+        FileNotFoundError,
+        ValueError,
+        json.JSONDecodeError,
+        pd.errors.EmptyDataError,
+        pd.errors.ParserError,
+    ) as exc:
+        # Configuration/data problems are expected setup states, not Python crashes.
+        # Keep the command explicit and readable while returning non-zero so CI or
+        # thesis evidence cannot mistake an incomplete evaluation for a pass.
+        print_blocked(str(exc), args)
+        return 2
 
 
 if __name__ == "__main__":
