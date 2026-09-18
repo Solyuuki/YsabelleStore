@@ -277,6 +277,7 @@ def build_table5_summary(
     criterion: pd.DataFrame,
     overall: pd.DataFrame,
     threshold: float | None,
+    evaluation_source: str | None = None,
 ) -> pd.DataFrame:
     if threshold is None:
         criteria_result = "NOT EVALUATED - no approved acceptance threshold configured"
@@ -289,6 +290,17 @@ def build_table5_summary(
             else f"FAIL ({passed}/{total} criteria met threshold)"
         )
 
+    criteria_basis = (
+        evaluation_source
+        if evaluation_source
+        else "System Evaluation Tool criteria"
+    )
+    overall_basis = (
+        "Mean of criterion means from the same evaluation source"
+        if evaluation_source
+        else "Combined criterion-level evaluation"
+    )
+
     overall_row = overall.iloc[0]
     overall_result = (
         f"{float(overall_row['mean']):.4f} - "
@@ -300,12 +312,12 @@ def build_table5_summary(
         [
             {
                 "Evaluation Item": "Evaluation criteria",
-                "Basis": "System Evaluation Tool criteria",
+                "Basis": criteria_basis,
                 "Result": criteria_result,
             },
             {
                 "Evaluation Item": "Overall system evaluation",
-                "Basis": "Combined criterion-level evaluation",
+                "Basis": overall_basis,
                 "Result": overall_result,
             },
         ]
@@ -392,7 +404,7 @@ def save_report(
     else:
         lines += [
             f"Configured acceptance threshold: {float(threshold):.4f}",
-            "PASS/FAIL is based only on the threshold supplied from the approved evaluation tool.",
+            "PASS/FAIL is based only on the configured acceptance threshold for this evaluation source.",
         ]
 
     (output / "system_evaluation_report.txt").write_text(
@@ -420,7 +432,12 @@ def run_evaluation(args: argparse.Namespace) -> int:
     criterion, overall, respondent = compute_results(
         responses, bands, threshold, overall_method
     )
-    table5 = build_table5_summary(criterion, overall, threshold)
+    table5 = build_table5_summary(
+        criterion,
+        overall,
+        threshold,
+        config.get("evaluation_source"),
+    )
 
     criterion.to_csv(output / "criterion_results.csv", index=False, float_format="%.4f")
     overall.to_csv(output / "overall_result.csv", index=False, float_format="%.4f")
