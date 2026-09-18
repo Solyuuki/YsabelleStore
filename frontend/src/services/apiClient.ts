@@ -114,7 +114,7 @@ export class ApiClient {
         throw error;
       }
 
-      dispatchApiUnreachable();
+      if (!context.url.pathname.startsWith("/api/health")) {\n        dispatchApiUnreachable();\n      }
 
       throw new Error(
         `The store service at ${frontendRuntimeConfig.apiBaseUrl} could not be reached. Please retry when the connection is available.`,
