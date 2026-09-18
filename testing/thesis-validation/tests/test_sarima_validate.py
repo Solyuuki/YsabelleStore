@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from sarima_validate import metric_bundle  # noqa: E402
+from sarima_validate import metric_bundle, study_accuracy_proxy  # noqa: E402
 
 
 def test_metric_bundle_matches_known_values() -> None:
@@ -36,3 +36,13 @@ def test_mape_excludes_zero_actual_without_removing_it_from_mae_rmse() -> None:
     assert metrics["mae"] == 3.5
     assert round(metrics["rmse"], 4) == 3.8079
     assert all(metrics["verification"].values())
+
+
+def test_study_accuracy_proxy_tracks_100_minus_mape() -> None:
+    assert round(study_accuracy_proxy(15.2828), 4) == 84.7172
+    assert study_accuracy_proxy(8.4) == 91.6
+    assert study_accuracy_proxy(None) is None
+
+
+def test_study_accuracy_proxy_does_not_go_negative() -> None:
+    assert study_accuracy_proxy(170.0) == 0.0
