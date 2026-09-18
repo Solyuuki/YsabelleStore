@@ -1,7 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { assessSarimaEligibility } from "../modules/forecasting/effective-sales.service.js";\nimport { loadForecastInput } from "../modules/forecasting/forecast.service.js";
+import { assessSarimaEligibility } from "../modules/forecasting/effective-sales.service.js";
+import { loadForecastInput } from "../modules/forecasting/forecast.service.js";
 
 const outputDirectory = path.resolve("testing/thesis-validation/data");
 const csvPath = path.join(outputDirectory, "effective_monthly_sales.csv");
@@ -12,7 +13,20 @@ function csvCell(value: string | number) {
   return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-const input = await loadForecastInput();\nconst series = input.allProducts.map((product) => ({\n  product,\n  eligibility: assessSarimaEligibility(\n    product.productId,\n    product.productName,\n    product.historical.map((point) => ({ period: point.period, quantitySold: point.quantitySold, source: "IMPORTED_HISTORICAL" as const }))\n  )\n}));
+const input = await loadForecastInput();
+const series = input.allProducts.map((product) => ({
+  product,
+  eligibility: assessSarimaEligibility(
+    product.productId,
+    product.productName,
+    product.historical.map((point) => ({
+      period: point.period,
+      quantitySold: point.quantitySold,
+      source: "IMPORTED_HISTORICAL" as const
+    }))
+  )
+}));
+
 await fs.mkdir(outputDirectory, { recursive: true });
 
 const headers = [
@@ -28,18 +42,18 @@ const headers = [
   "zero_months"
 ];
 
-const rows = series.flatMap((product) =>
-  product.points.map((point) => [
+const rows = series.flatMap(({ product, eligibility }) =>
+  product.historical.map((point) => [
     product.productId,
     product.productName,
     product.category,
     point.period,
     point.quantitySold,
-    point.source,
-    product.eligibility.status,
-    product.eligibility.reason,
-    product.eligibility.observationCount,
-    product.eligibility.zeroMonths
+    input.source,
+    eligibility.status,
+    eligibility.reason,
+    eligibility.observationCount,
+    eligibility.zeroMonths
   ])
 );
 
@@ -52,7 +66,8 @@ await fs.writeFile(csvPath, `${csv}\n`, "utf8");
 
 const metadata = {
   generatedAt: new Date().toISOString(),
-  forecastInputSource: input.source,\n  productCount: series.length,
+  forecastInputSource: input.source,
+  productCount: series.length,
   rowCount: rows.length,
   productsByEligibility: Object.fromEntries(
     ["ELIGIBLE", "LIMITED_HISTORY", "INSUFFICIENT_HISTORY", "DATA_QUALITY_ISSUE"].map(
@@ -62,15 +77,14 @@ const metadata = {
       ]
     )
   ),
-  sourceRule:
-    `Forecast source selected by the application: ${input.source}.`,
+  sourceRule: `Forecast source selected by the application: ${input.source}.`,
+  validation: input.validation,
   output: path.relative(process.cwd(), csvPath)
 };
 
 await fs.writeFile(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`, "utf8");
-
 console.log(JSON.stringify(metadata, null, 2));
 
 if (rows.length === 0) {
-  throw new Error("No completed effective monthly sales were available for thesis validation.");
+  throw new Error("Production forecast input contained no historical observations for thesis validation.");
 }
