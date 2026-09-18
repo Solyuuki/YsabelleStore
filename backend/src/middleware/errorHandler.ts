@@ -20,7 +20,8 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
   const isFileSizeError = error instanceof MulterError && error.code === "LIMIT_FILE_SIZE";
   const isHttpError = error instanceof HttpError;
   const isCanonicalHttpError = isHttpError && isCanonicalHttpStatusCode(error.statusCode);
-  const isSafeHttpError = isCanonicalHttpError && error.expose;
+  const isSafeHttpError =
+    isCanonicalHttpError && error.expose && error.statusCode < HTTP_STATUS.INTERNAL_SERVER_ERROR;
   const requestId = getRequestId(response);
 
   const statusCode = isFileSizeError
