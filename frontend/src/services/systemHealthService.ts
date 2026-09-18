@@ -33,7 +33,7 @@ export async function checkSystemHealth(
   const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await apiClient.request<HealthCheckData>("/api/health", {
+    const response = await apiClient.request<HealthCheckData>("/api/health/ready", {
       method: "GET",
       signal: controller.signal
     });
