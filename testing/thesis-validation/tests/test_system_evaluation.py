@@ -23,7 +23,7 @@ def test_compute_results_uses_actual_ratings_and_threshold():
         ]
     )
     bands = [
-        MODULE.Band(1.0, 2.99, "Low"),
+        MODULE.Band(1.0, 3.0, "Low"),
         MODULE.Band(3.0, 5.0, "Acceptable"),
     ]
 
@@ -104,3 +104,21 @@ def test_table5_summary_reports_criterion_and_overall_status():
 
     assert table5.iloc[0]["Result"] == "PASS (2/2 criteria met threshold)"
     assert table5.iloc[1]["Result"] == "4.2500 - Acceptable - PASS"
+
+
+def test_interpretation_bands_can_share_boundaries():
+    bands = [
+        MODULE.Band(1.0, 1.8, "Strongly Disagree"),
+        MODULE.Band(1.8, 2.6, "Disagree"),
+        MODULE.Band(2.6, 3.4, "Neutral"),
+        MODULE.Band(3.4, 4.2, "Agree"),
+        MODULE.Band(4.2, 5.0, "Strongly Agree"),
+    ]
+
+    MODULE.validate_band_coverage(1.0, 5.0, bands)
+
+    assert MODULE.interpret(1.79, bands) == "Strongly Disagree"
+    assert MODULE.interpret(1.8, bands) == "Disagree"
+    assert MODULE.interpret(3.4, bands) == "Agree"
+    assert MODULE.interpret(4.2, bands) == "Strongly Agree"
+    assert MODULE.interpret(5.0, bands) == "Strongly Agree"
