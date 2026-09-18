@@ -160,3 +160,16 @@ metadata, and `figure16_system_evaluation.png`. A real failing score is preserve
 returns a non-zero process status; the validation workflow does not alter data to force a pass.
 
 If the local configuration or response file is still incomplete, `thesis:evaluation:run` now reports `Status: BLOCKED` with the missing setup requirements instead of printing a Python traceback. The command still returns non-zero so an incomplete evaluation cannot be mistaken for a successful result.
+
+
+## AI-Assisted Evidence Review
+
+A separate evidence-based pre-evaluation is available for cases where the project team wants an immediate structured review based on the screenshots and reproducible test evidence already collected:
+
+```bash
+npm run thesis:evaluation:evidence
+```
+
+This command uses the committed files in `testing/thesis-validation/proposed/` and writes results to `evidence/system-evaluation-evidence-review/`.
+
+The reviewer is explicitly labeled `AI_EVIDENCE_REVIEW_001`. This is **not an independent human evaluator** and must not be reported as external respondent data. It is intended as a researcher/AI-assisted evidence review or readiness assessment. If the adviser/school requires human evaluators, those responses still need to be collected separately with `thesis:evaluation:run`.
