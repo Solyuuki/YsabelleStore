@@ -1,4 +1,5 @@
 import importlib.util
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -6,8 +7,9 @@ import pytest
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "system_evaluation.py"
 SPEC = importlib.util.spec_from_file_location("system_evaluation", MODULE_PATH)
-MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
+MODULE = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 
@@ -25,13 +27,36 @@ def test_compute_results_uses_actual_ratings_and_threshold():
         MODULE.Band(3.0, 5.0, "Acceptable"),
     ]
 
-    criterion, overall, respondent = MODULE.compute_results(\n        df, bands, 3.0, \"mean_of_criterion_means\"\n    )
+    criterion, overall, respondent = MODULE.compute_results(
+        df, bands, 3.0, "mean_of_criterion_means"
+    )
 
     assert float(overall.iloc[0]["mean"]) == pytest.approx(4.0)
     assert overall.iloc[0]["interpretation"] == "Acceptable"
     assert overall.iloc[0]["acceptance_status"] == "PASS"
     assert set(criterion["acceptance_status"]) == {"PASS"}
     assert len(respondent) == 2
+
+
+def test_compute_results_supports_all_response_weighting():
+    df = pd.DataFrame(
+        [
+            {"respondent_id": "R1", "criterion": "A", "item": "A1", "rating": 5},
+            {"respondent_id": "R1", "criterion": "A", "item": "A2", "rating": 5},
+            {"respondent_id": "R1", "criterion": "B", "item": "B1", "rating": 3},
+        ]
+    )
+    bands = [MODULE.Band(1.0, 5.0, "Valid")]
+
+    _, criterion_weighted, _ = MODULE.compute_results(
+        df, bands, None, "mean_of_criterion_means"
+    )
+    _, response_weighted, _ = MODULE.compute_results(
+        df, bands, None, "mean_of_all_responses"
+    )
+
+    assert float(criterion_weighted.iloc[0]["mean"]) == pytest.approx(4.0)
+    assert float(response_weighted.iloc[0]["mean"]) == pytest.approx(13.0 / 3.0)
 
 
 def test_load_responses_rejects_out_of_range_rating(tmp_path):
