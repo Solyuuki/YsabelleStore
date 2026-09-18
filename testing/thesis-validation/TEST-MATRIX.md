@@ -81,4 +81,4 @@ The test must verify that inventory increases by 5, not by 8.
 
 ## Deferred
 
-- Mobile POS: do not report as Passed until implementation and executable evidence are available.
+- Mobile POS (MPOS): **TBC** — implementation/testing status will be finalized separately and is not included in the completed validation results.
