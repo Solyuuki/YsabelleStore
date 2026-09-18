@@ -3,5 +3,6 @@
   "scale_min": null,
   "scale_max": null,
   "acceptance_threshold": null,
+  "overall_method": null,
   "interpretation_bands": []
 }
