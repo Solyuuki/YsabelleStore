@@ -9,6 +9,7 @@ import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import median
+from time import monotonic
 from typing import Any
 
 import matplotlib
@@ -29,7 +30,7 @@ FORECAST_ROOT = REPO_ROOT / "forecasting-service"
 if str(FORECAST_ROOT) not in sys.path:
     sys.path.insert(0, str(FORECAST_ROOT))
 
-from app.sarima import fit_sarima  # noqa: E402
+from app.sarima import CANDIDATES, SarimaResult, _fit_candidate, _fit_timeout_seconds  # noqa: E402
 
 REQUIRED_COLUMNS = {
     "product_id",
@@ -80,14 +81,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--holdout",
         type=int,
-        default=8,
-        help="Most recent completed months reserved for testing. Default: 8.",
+        default=5,
+        help="Most recent completed months reserved for testing. Thesis protocol default: 5.",
     )
     parser.add_argument(
         "--min-train",
         type=int,
-        default=24,
-        help="Minimum training observations required for standard SARIMA. Default: 24.",
+        default=19,
+        help="Minimum training observations for the thesis-only retrospective backtest. Default: 19.",
     )
     parser.add_argument(
         "--seasonal-period",
@@ -109,6 +110,54 @@ def ensure_continuous_months(periods: pd.Series) -> bool:
     parsed = pd.PeriodIndex(periods.astype(str), freq="M")
     expected = pd.period_range(parsed.min(), parsed.max(), freq="M")
     return parsed.is_unique and list(parsed) == list(expected)
+
+
+def fit_validation_sarima(
+    values: list[float],
+    horizon: int,
+    seasonal_period: int,
+    start_period: str,
+) -> SarimaResult:
+    """Thesis-only SARIMA fit using the production candidate family.
+
+    The deployed application requires 24 completed monthly observations before
+    standard SARIMA execution. This retrospective validator deliberately bypasses
+    only that operational eligibility gate so that 24 verified months can be
+    partitioned into 19 training + 5 held-out testing months. Candidate models,
+    statsmodels fitting behavior, AIC selection, forecast clipping, and fit timeout
+    are inherited from the production forecasting module.
+    """
+    if len(values) < 19:
+        raise ValueError("Thesis retrospective SARIMA validation requires at least 19 training observations.")
+
+    series = pd.Series(
+        values,
+        index=pd.period_range(start=start_period, periods=len(values), freq="M").to_timestamp(),
+        dtype="float64",
+    )
+    deadline = monotonic() + _fit_timeout_seconds()
+    best: SarimaResult | None = None
+    failures: list[str] = []
+
+    for order, seasonal in CANDIDATES:
+        seasonal_order = (seasonal[0], seasonal[1], seasonal[2], seasonal_period)
+        try:
+            candidate = _fit_candidate(
+                series,
+                horizon,
+                order,
+                seasonal_order,
+                deadline,
+            )
+            if best is None or candidate.aic < best.aic:
+                best = candidate
+        except Exception as exc:  # noqa: BLE001 - every failed candidate is retained in the product exclusion reason.
+            failures.append(f"{order}{seasonal_order}: {exc}")
+
+    if best is None:
+        raise ValueError("; ".join(failures[-3:]) or "No SARIMA validation candidate produced a usable forecast.")
+
+    return best
 
 
 def metric_bundle(actual: np.ndarray, forecast: np.ndarray) -> dict[str, Any]:
@@ -227,7 +276,7 @@ def validate_product(
     train_values = train["quantity_sold"].to_numpy(dtype=float)
     actual = test["quantity_sold"].to_numpy(dtype=float)
 
-    result = fit_sarima(
+    result = fit_validation_sarima(
         train_values.tolist(),
         horizon=holdout,
         seasonal_period=seasonal_period,
@@ -471,8 +520,8 @@ def main() -> int:
 
     if args.holdout <= 0:
         raise ValueError("--holdout must be greater than zero.")
-    if args.min_train < 24:
-        raise ValueError("--min-train must be at least 24 for the current SARIMA implementation.")
+    if args.min_train < 19:
+        raise ValueError("--min-train must be at least 19 for the frozen thesis retrospective protocol.")
     if args.seasonal_period <= 1:
         raise ValueError("--seasonal-period must be greater than one.")
     if not input_path.exists():
@@ -567,6 +616,8 @@ def main() -> int:
         "holdout_months": args.holdout,
         "minimum_training_observations": args.min_train,
         "seasonal_period": args.seasonal_period,
+        "validation_protocol": "Retrospective chronological hold-out: first 19 verified months train, final 5 verified months test when using defaults.",
+        "production_eligibility_rule_unchanged": "Deployed forecasting still requires 24 completed monthly observations for standard SARIMA.",
         "metric_library": "scikit-learn",
         "metric_cross_check": "NumPy formula cross-check; all summary checks passed.",
         "mape_policy": "Actual=0 observations are retained for MAE/RMSE and excluded only from MAPE.",
