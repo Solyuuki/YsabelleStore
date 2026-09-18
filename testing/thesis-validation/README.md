@@ -63,3 +63,63 @@ Mobile POS is outside the current thesis validation cycle until its implementati
 - `results/` — consolidated test-result tables for Chapter 3
 
 See `TEST-MATRIX.md` and `EVIDENCE-STANDARD.md` before executing tests.
+
+## Implemented Commands
+
+Install thesis-only Python validation dependencies:
+
+```bash
+npm run thesis:sarima:install
+```
+
+Export the same canonical completed monthly sales used by the forecasting pipeline:
+
+```bash
+npm run thesis:sarima:export
+```
+
+Run chronological SARIMA hold-out validation with visual evidence:
+
+```bash
+npm run thesis:sarima:validate
+```
+
+Run export and validation together:
+
+```bash
+npm run thesis:sarima:run
+```
+
+Run thesis validator unit tests:
+
+```bash
+npm run thesis:sarima:test
+```
+
+Run the existing npm/backend/frontend/forecast regression suites and preserve terminal evidence:
+
+```bash
+npm run thesis:qa:run
+```
+
+## SARIMA Visual Evidence
+
+The Python validator produces:
+
+- `summary_metrics.csv`
+- `product_metrics.csv`
+- `detailed_calculations.csv`
+- `excluded_products.csv`
+- `validation_metadata.json`
+- `validation_report.txt`
+- `validation_report.html`
+- `mae_rmse_units.png`
+- `mape_percentage.png`
+- `actual_vs_forecast_overall.png`
+- `actual_vs_forecast_representative.png`
+- `residual_plot_representative.png`
+- `residual_distribution.png`
+
+MAE, MAPE, and RMSE are computed with scikit-learn and independently cross-checked with NumPy formulas. MAPE excludes only zero-actual observations; those observations remain included in MAE and RMSE.
+
+The default hold-out is eight completed months so a 32-month series can use 24 observations for training and eight for testing. Products that do not satisfy the predefined training/testing requirement are not silently dropped: they are written to `excluded_products.csv` with a reason.
