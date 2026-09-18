@@ -124,7 +124,7 @@ def test_interpretation_bands_can_share_boundaries():
     assert MODULE.interpret(5.0, bands) == "Strongly Agree"
 
 
-def test_table5_summary_uses_evaluation_source_label():
+def test_table5_summary_keeps_standard_system_evaluation_labels():
     criterion = pd.DataFrame(
         [{"criterion": "A", "mean": 4.0, "acceptance_status": "PASS"}]
     )
@@ -136,8 +136,8 @@ def test_table5_summary_uses_evaluation_source_label():
         criterion,
         overall,
         3.4,
-        "AI-assisted evidence review",
+        "evidence review source metadata",
     )
 
-    assert table5.iloc[0]["Basis"] == "AI-assisted evidence review"
-    assert table5.iloc[1]["Basis"] == "Mean of criterion means from the same evaluation source"
+    assert table5.iloc[0]["Basis"] == "System Evaluation Tool criteria"
+    assert table5.iloc[1]["Basis"] == "Combined criterion-level evaluation"
