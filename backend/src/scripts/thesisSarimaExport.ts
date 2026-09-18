@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
+import { assessSarimaEligibility } from "../modules/forecasting/effective-sales.service.js";\nimport { loadForecastInput } from "../modules/forecasting/forecast.service.js";
 
 const outputDirectory = path.resolve("testing/thesis-validation/data");
 const csvPath = path.join(outputDirectory, "effective_monthly_sales.csv");
@@ -12,7 +12,7 @@ function csvCell(value: string | number) {
   return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-const series = await getEffectiveMonthlySeries();
+const input = await loadForecastInput();\nconst series = input.allProducts.map((product) => ({\n  product,\n  eligibility: assessSarimaEligibility(\n    product.productId,\n    product.productName,\n    product.historical.map((point) => ({ period: point.period, quantitySold: point.quantitySold, source: "IMPORTED_HISTORICAL" as const }))\n  )\n}));
 await fs.mkdir(outputDirectory, { recursive: true });
 
 const headers = [
@@ -52,18 +52,18 @@ await fs.writeFile(csvPath, `${csv}\n`, "utf8");
 
 const metadata = {
   generatedAt: new Date().toISOString(),
-  productCount: series.length,
+  forecastInputSource: input.source,\n  productCount: series.length,
   rowCount: rows.length,
   productsByEligibility: Object.fromEntries(
     ["ELIGIBLE", "LIMITED_HISTORY", "INSUFFICIENT_HISTORY", "DATA_QUALITY_ISSUE"].map(
       (status) => [
         status,
-        series.filter((product) => product.eligibility.status === status).length
+        series.filter(({ eligibility }) => eligibility.status === status).length
       ]
     )
   ),
   sourceRule:
-    "Completed effective monthly sales: imported historical baseline with completed POS actuals authoritative by product-month.",
+    `Forecast source selected by the application: ${input.source}.`,
   output: path.relative(process.cwd(), csvPath)
 };
 
