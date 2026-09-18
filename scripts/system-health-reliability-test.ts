@@ -4,6 +4,13 @@ import {
   classifyHealthFailure,
   classifyHealthResponse
 } from "../frontend/src/services/systemHealthService";
+import {
+  assertSystemMutationAllowed,
+  getSystemMutationGate,
+  isMutationMethod,
+  setSystemMutationGate,
+  SystemMutationBlockedError
+} from "../frontend/src/services/systemReliabilityGate";
 
 assert.equal(
   classifyHealthResponse({
@@ -38,4 +45,22 @@ assert.equal(classifyHealthFailure(abortError, true), "timeout");
 assert.equal(classifyHealthFailure(new TypeError("fetch failed"), false), "offline");
 assert.equal(classifyHealthFailure(new TypeError("fetch failed"), true), "backend-unavailable");
 
-console.log("Sprint 8 frontend reliability-state contract passed.");
+assert.equal(isMutationMethod("POST"), true);
+assert.equal(isMutationMethod("PATCH"), true);
+assert.equal(isMutationMethod("DELETE"), true);
+assert.equal(isMutationMethod("GET"), false);
+
+setSystemMutationGate(true, "unavailable");
+assert.equal(getSystemMutationGate().blocked, true);
+assert.throws(
+  () => assertSystemMutationAllowed("POST"),
+  (error: unknown) =>
+    error instanceof SystemMutationBlockedError && error.code === "SYSTEM_MUTATION_BLOCKED"
+);
+assert.doesNotThrow(() => assertSystemMutationAllowed("GET"));
+
+setSystemMutationGate(false, null);
+assert.equal(getSystemMutationGate().blocked, false);
+assert.doesNotThrow(() => assertSystemMutationAllowed("POST"));
+
+console.log("Sprint 11 frontend reliability-state contract passed.");
