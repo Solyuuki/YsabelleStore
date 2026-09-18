@@ -1,5 +1,5 @@
 import { frontendRuntimeConfig, resolveApiUrl } from "@/config/runtime";
-import type { ApiResponse } from "@/types/api";
+import { assertSystemMutationAllowed } from "@/services/systemReliabilityGate";\nimport type { ApiResponse } from "@/types/api";
 import { shouldAttachInternalBearer } from "@/utils/internalAuthRoutes";
 
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
