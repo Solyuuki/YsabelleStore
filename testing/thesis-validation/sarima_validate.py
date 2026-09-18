@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import html
 import json
 import os
 import subprocess
@@ -76,7 +75,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         default="testing/thesis-validation/evidence/sarima",
-        help="Directory for CSV, JSON, HTML, and PNG evidence.",
+        help="Directory for CSV, JSON, TXT, and PNG evidence.",
     )
     parser.add_argument(
         "--holdout",
@@ -459,60 +458,6 @@ def save_forecast_figures(
     return representative_name
 
 
-def save_html_report(
-    output: Path,
-    summary: dict[str, Any],
-    metadata: dict[str, Any],
-    representative_name: str,
-    exclusions: pd.DataFrame,
-) -> None:
-    mape_text = "N/A" if summary["mape"] is None else f'{summary["mape"]:.4f}%'
-    excluded_preview = exclusions.head(30).to_html(index=False, escape=True) if not exclusions.empty else "<p>None.</p>"
-    report = f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>YsabelleStore SARIMA Thesis Validation</title>
-<style>
-body {{ font-family: Arial, sans-serif; margin: 32px; line-height: 1.45; color: #202124; }}
-h1, h2 {{ margin-top: 1.4em; }}
-.cards {{ display: grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap: 16px; }}
-.card {{ border: 1px solid #d0d7de; border-radius: 10px; padding: 18px; }}
-.value {{ font-size: 1.7rem; font-weight: 700; }}
-img {{ max-width: 100%; border: 1px solid #e5e7eb; margin: 10px 0 24px; }}
-table {{ border-collapse: collapse; width: 100%; font-size: 0.9rem; }}
-th, td {{ border: 1px solid #d0d7de; padding: 7px; text-align: left; }}
-.note {{ background: #f6f8fa; padding: 12px; border-radius: 8px; }}
-</style>
-</head>
-<body>
-<h1>YsabelleStore SARIMA Thesis Validation</h1>
-<p class="note">Chronological hold-out validation. Testing observations are excluded from model fitting. MAPE excludes only observations whose actual demand is zero; those observations remain in MAE and RMSE.</p>
-<div class="cards">
-  <div class="card"><div>MAE</div><div class="value">{summary["mae"]:.4f}</div><div>units</div></div>
-  <div class="card"><div>MAPE</div><div class="value">{mape_text}</div><div>{summary["mape_valid_observations"]} valid observations</div></div>
-  <div class="card"><div>RMSE</div><div class="value">{summary["rmse"]:.4f}</div><div>units</div></div>
-</div>
-<h2>Metric Visuals</h2>
-<img src="mae_rmse_units.png" alt="MAE and RMSE">
-<img src="mape_percentage.png" alt="MAPE">
-<h2>Actual vs Forecast</h2>
-<img src="actual_vs_forecast_overall.png" alt="Actual versus forecast overall">
-<p>Representative product is selected deterministically as the successfully validated product whose MAPE is closest to the median product MAPE, unless a product ID is explicitly supplied. Selected product: <strong>{html.escape(representative_name)}</strong>.</p>
-<img src="actual_vs_forecast_representative.png" alt="Actual versus forecast representative product">
-<h2>Residual Evidence</h2>
-<img src="residual_plot_representative.png" alt="Residual behavior">
-<img src="residual_distribution.png" alt="Residual distribution">
-<h2>Validation Metadata</h2>
-<pre>{html.escape(json.dumps(metadata, indent=2))}</pre>
-<h2>Excluded / Failed Products (first 30)</h2>
-{excluded_preview}
-</body>
-</html>
-"""
-    (output / "validation_report.html").write_text(report, encoding="utf-8")
-
-
 def main() -> int:
     args = parse_args()
     input_path = (REPO_ROOT / args.input).resolve() if not Path(args.input).is_absolute() else Path(args.input)
@@ -530,6 +475,9 @@ def main() -> int:
         )
 
     output.mkdir(parents=True, exist_ok=True)
+    legacy_html = output / "validation_report.html"
+    if legacy_html.exists():
+        legacy_html.unlink()
     frame = load_input(input_path)
 
     product_results: list[ProductResult] = []
@@ -664,7 +612,6 @@ def main() -> int:
         f"Evidence directory: {output}",
     ]
     (output / "validation_report.txt").write_text("\n".join(report_lines) + "\n", encoding="utf-8")
-    save_html_report(output, summary, metadata, representative_name, exclusions_frame)
 
     print("\n".join(report_lines))
     return 0
