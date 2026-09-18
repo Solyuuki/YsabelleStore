@@ -50,7 +50,7 @@ if ($DatabaseName -notmatch '^[A-Za-z0-9_]+$') {
 Write-Host ""
 Write-Host "YSABELLESTORE VERIFIED-50 LOCAL BOOTSTRAP"
 Write-Host "Target database: $DatabaseName"
-Write-Host "LOCAL/QA ONLY — non-survivor products will be removed after verification."
+Write-Host "LOCAL/QA ONLY - non-survivor products will be removed after verification."
 
 Invoke-Step "[1/7] Sync Prisma schema" {
     npm run prisma:sync:dev
