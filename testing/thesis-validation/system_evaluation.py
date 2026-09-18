@@ -13,6 +13,7 @@ Config JSON fields:
     scale_min: number
     scale_max: number
     acceptance_threshold: number | null
+    overall_method: "mean_of_criterion_means" | "mean_of_all_responses"
     interpretation_bands: [
         {"min": number, "max": number, "label": string}
     ]
@@ -21,6 +22,7 @@ Outputs:
     criterion_results.csv
     overall_result.csv
     respondent_summary.csv
+    table5_summary.csv
     validation_metadata.json
     system_evaluation_report.txt
     figure16_system_evaluation.png
@@ -80,6 +82,13 @@ def load_config(path: Path) -> dict[str, Any]:
         raise ValueError("scale_min and scale_max must be numeric.")
     if scale_min >= scale_max:
         raise ValueError("scale_min must be less than scale_max.")
+
+    overall_method = config.get("overall_method")
+    if overall_method not in {"mean_of_criterion_means", "mean_of_all_responses"}:
+        raise ValueError(
+            "overall_method must be 'mean_of_criterion_means' or "
+            "'mean_of_all_responses', matching the approved evaluation method."
+        )
 
     threshold = config.get("acceptance_threshold")
     if threshold is not None:
@@ -189,6 +198,7 @@ def compute_results(
     df: pd.DataFrame,
     bands: list[Band],
     threshold: float | None,
+    overall_method: str,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     criterion = (
         df.groupby("criterion", sort=False)["rating"]
@@ -204,7 +214,13 @@ def compute_results(
             lambda x: "PASS" if float(x) >= threshold else "FAIL"
         )
 
-    overall_mean = float(df["rating"].mean())
+    if overall_method == "mean_of_criterion_means":
+        overall_mean = float(criterion["mean"].mean())
+    elif overall_method == "mean_of_all_responses":
+        overall_mean = float(df["rating"].mean())
+    else:
+        raise ValueError(f"Unsupported overall_method: {overall_method}")
+
     overall = pd.DataFrame(
         [
             {
@@ -212,6 +228,7 @@ def compute_results(
                 "criteria": int(df["criterion"].nunique()),
                 "items": int(df[["criterion", "item"]].drop_duplicates().shape[0]),
                 "responses": int(len(df)),
+                "overall_method": overall_method,
                 "mean": overall_mean,
                 "interpretation": interpret(overall_mean, bands),
                 "acceptance_status": (
@@ -233,6 +250,45 @@ def compute_results(
     )
 
     return criterion, overall, respondent
+
+
+def build_table5_summary(
+    criterion: pd.DataFrame,
+    overall: pd.DataFrame,
+    threshold: float | None,
+) -> pd.DataFrame:
+    if threshold is None:
+        criteria_result = "NOT EVALUATED - no approved acceptance threshold configured"
+    else:
+        passed = int((criterion["acceptance_status"] == "PASS").sum())
+        total = int(len(criterion))
+        criteria_result = (
+            f"PASS ({passed}/{total} criteria met threshold)"
+            if passed == total
+            else f"FAIL ({passed}/{total} criteria met threshold)"
+        )
+
+    overall_row = overall.iloc[0]
+    overall_result = (
+        f"{float(overall_row['mean']):.4f} - "
+        f"{overall_row['interpretation']} - "
+        f"{overall_row['acceptance_status']}"
+    )
+
+    return pd.DataFrame(
+        [
+            {
+                "Evaluation Item": "Evaluation criteria",
+                "Basis": "System Evaluation Tool criteria",
+                "Result": criteria_result,
+            },
+            {
+                "Evaluation Item": "Overall system evaluation",
+                "Basis": "Combined criterion-level evaluation",
+                "Result": overall_result,
+            },
+        ]
+    )
 
 
 def save_figure(criterion: pd.DataFrame, overall: pd.DataFrame, output: Path) -> None:
@@ -327,11 +383,16 @@ def main() -> int:
     threshold = config.get("acceptance_threshold")
     threshold = float(threshold) if threshold is not None else None
 
-    criterion, overall, respondent = compute_results(responses, bands, threshold)
+    overall_method = str(config["overall_method"])
+    criterion, overall, respondent = compute_results(
+        responses, bands, threshold, overall_method
+    )
+    table5 = build_table5_summary(criterion, overall, threshold)
 
     criterion.to_csv(output / "criterion_results.csv", index=False, float_format="%.4f")
     overall.to_csv(output / "overall_result.csv", index=False, float_format="%.4f")
     respondent.to_csv(output / "respondent_summary.csv", index=False, float_format="%.4f")
+    table5.to_csv(output / "table5_summary.csv", index=False)
     save_figure(criterion, overall, output)
     save_report(criterion, overall, config, output)
 
@@ -343,6 +404,7 @@ def main() -> int:
         "scale_min": scale_min,
         "scale_max": scale_max,
         "acceptance_threshold": threshold,
+        "overall_method": overall_method,
         "respondents": int(overall.iloc[0]["respondents"]),
         "criteria": int(overall.iloc[0]["criteria"]),
         "items": int(overall.iloc[0]["items"]),
