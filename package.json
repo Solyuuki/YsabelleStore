@@ -103,7 +103,8 @@
     "storefront:shop-filter:test": "node --env-file=.env scripts/storefront-shop-filter-test.mjs",
     "db:catalog:bootstrap": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/db-catalog-bootstrap.ps1",
     "db:catalog:sync": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/db-catalog-sync.ps1",
-    "qa:import-five:reset": "node --env-file=.env scripts/qa-remove-five-import-products.mjs --apply"
+    "qa:import-five:reset": "node --env-file=.env scripts/qa-remove-five-import-products.mjs --apply",
+    "db:verified50:bootstrap": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/db-verified50-bootstrap.ps1"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"
