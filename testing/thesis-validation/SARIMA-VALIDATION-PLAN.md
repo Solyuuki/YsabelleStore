@@ -103,3 +103,21 @@ Record at minimum:
 - Git commit SHA.
 
 No thesis metric should be manually hard-coded.
+
+## Frozen Retrospective Split for the Available Verified Dataset
+
+The current approved historical source contains 24 verified monthly observations per eligible workbook product (2024-01 through 2025-12).
+
+Before computing thesis accuracy results, the retrospective validation split is fixed as:
+
+```
+Training:  first 19 verified months
+Testing:   final 5 verified months
+Seasonal period: 12
+```
+
+The deployed forecasting service remains unchanged and still requires 24 completed monthly observations before standard SARIMA execution. The 19-month fit is a thesis-validation-only retrospective procedure used to obtain out-of-sample error metrics from the available 24 verified months.
+
+The reconstructed 2026 comparison workbook is not permitted as SARIMA training or testing actuals.
+
+The validation script reuses the production SARIMA candidate family and AIC selection logic while bypassing only the operational 24-observation eligibility gate inside the thesis-validation branch.
