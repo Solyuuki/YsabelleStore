@@ -1,0 +1,17 @@
+{
+  "configured": true,
+  "scale_min": 1,
+  "scale_max": 5,
+  "acceptance_threshold": 3.4,
+  "overall_method": "mean_of_criterion_means",
+  "evaluation_source": "AI-assisted evidence review based on supplied screenshots, repository tests, and thesis validation outputs",
+  "reviewer_id": "AI_EVIDENCE_REVIEW_001",
+  "independence_status": "Not an independent human evaluator; evidence-based pre-evaluation only",
+  "interpretation_bands": [
+    {"min": 1.0, "max": 1.8, "label": "Strongly Disagree / Not Acceptable"},
+    {"min": 1.8, "max": 2.6, "label": "Disagree / Not Acceptable"},
+    {"min": 2.6, "max": 3.4, "label": "Neither Agree nor Disagree / Needs Review"},
+    {"min": 3.4, "max": 4.2, "label": "Agree / Acceptable"},
+    {"min": 4.2, "max": 5.0, "label": "Strongly Agree / Highly Acceptable"}
+  ]
+}
