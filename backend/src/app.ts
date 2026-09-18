@@ -3,6 +3,7 @@ import express from "express";
 
 import { corsOrigins } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { methodNotAllowedHandler } from "./middleware/methodNotAllowedHandler.js";
 import { notFoundHandler } from "./middleware/notFoundHandler.js";
 import { requestAuditLogger } from "./middleware/requestAuditLogger.js";
 import { requestTrace } from "./middleware/requestTrace.js";
@@ -26,6 +27,7 @@ export function createApp() {
   app.use(securityHeaders);
   app.use(express.json({ limit: securityConfig.limits.jsonBodyLimit }));
   app.use("/api", router);
+  app.use(methodNotAllowedHandler);
   app.use(notFoundHandler);
   app.use(errorHandler);
 
