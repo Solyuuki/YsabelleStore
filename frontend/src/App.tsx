@@ -1,5 +1,6 @@
 import { AppShell } from "@/app/AppShell";
-import { GlobalHttpStatusNotifier } from "@/components/shared/GlobalHttpStatusNotifier";\nimport { GlobalReliabilityUI } from "@/components/shared/GlobalReliabilityUI";
+import { GlobalHttpStatusNotifier } from "@/components/shared/GlobalHttpStatusNotifier";
+import { GlobalReliabilityUI } from "@/components/shared/GlobalReliabilityUI";
 import { NotificationStack } from "@/components/shared/NotificationStack";
 import { ToastProvider } from "@/components/shared/ToastProvider";
 import { AuthProvider } from "@/context/AuthContext";
@@ -14,7 +15,8 @@ export function App() {
             <AppShell />
             <NotificationStack />
           </div>
-          <GlobalHttpStatusNotifier />\n          <GlobalReliabilityUI />
+          <GlobalHttpStatusNotifier />
+          <GlobalReliabilityUI />
         </AuthProvider>
       </ToastProvider>
     </SystemReliabilityProvider>
