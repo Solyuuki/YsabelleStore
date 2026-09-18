@@ -38,7 +38,7 @@ For each test, record:
 | Controlled UI validation | Demonstrate actual user workflows and state changes | before/action/after screenshots |
 | Integration validation | Prove connected modules produce consistent data | screenshots + IDs + numeric state changes |
 | Hardware-software validation | Validate barcode/print software pathways where physical hardware is unavailable | terminal/UI output; physical device claim excluded |
-| SARIMA validation | Quantitatively validate forecast performance | MAE, MAPE, RMSE, residuals, CSV, plots |
+| SARIMA validation | Quantitatively validate forecast performance | MAE, MAPE, RMSE, residuals, CSV, plots |\n| System evaluation | Compute criterion-level and overall evaluator results from the approved instrument | response CSV, criterion results, overall result, report, Figure 16 |
 
 ## Hardware Limitation Rule
 
@@ -136,3 +136,25 @@ The Python validator produces:
 MAE, MAPE, and RMSE are computed with scikit-learn and independently cross-checked with NumPy formulas. MAPE excludes only zero-actual observations; those observations remain included in MAE and RMSE.
 
 For the currently available verified 24-month workbook history, the thesis retrospective protocol is frozen at 19 training months and 5 held-out testing months. The deployed forecasting service is unchanged and still requires 24 completed monthly observations before standard SARIMA execution. Products that fail the thesis backtest are not silently dropped: they are written to `excluded_products.csv` with a reason.
+
+
+## System Evaluation Commands
+
+Validate the System Evaluation calculator itself:
+
+```bash
+npm run thesis:evaluation:test
+```
+
+After copying the exact approved rating scale and interpretation rules into
+`data/system_evaluation_config.json`, and placing the actual evaluator responses in
+`data/system_evaluation_responses.csv`, run:
+
+```bash
+npm run thesis:evaluation:run
+```
+
+The calculator produces criterion-level means, the overall mean, verbal interpretations,
+optional PASS/FAIL only when an approved acceptance threshold is configured, a text report,
+metadata, and `figure16_system_evaluation.png`. A real failing score is preserved and
+returns a non-zero process status; the validation workflow does not alter data to force a pass.
