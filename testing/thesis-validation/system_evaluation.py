@@ -167,29 +167,51 @@ def parse_bands(config: dict[str, Any]) -> list[Band]:
 
 
 def interpret(value: float, bands: list[Band]) -> str:
-    matches = [band.label for band in bands if band.minimum <= value <= band.maximum]
-    if len(matches) != 1:
-        raise ValueError(
-            f"Score {value:.6f} matched {len(matches)} interpretation bands. "
-            "Check for gaps or overlapping ranges in the approved configuration."
-        )
-    return matches[0]
+    ordered = sorted(bands, key=lambda b: (b.minimum, b.maximum))
+    for index, band in enumerate(ordered):
+        is_last = index == len(ordered) - 1
+        if is_last:
+            matches = band.minimum <= value <= band.maximum
+        else:
+            # Adjacent interpretation bands share a boundary. The lower band uses an
+            # exclusive upper bound and the next band owns the shared boundary.
+            matches = band.minimum <= value < band.maximum
+        if matches:
+            return band.label
+
+    raise ValueError(
+        f"Score {value:.6f} did not match any interpretation band. "
+        "Check the approved configuration for gaps or an out-of-range value."
+    )
 
 
 def validate_band_coverage(scale_min: float, scale_max: float, bands: list[Band]) -> None:
     ordered = sorted(bands, key=lambda b: (b.minimum, b.maximum))
-    if ordered[0].minimum > scale_min or ordered[-1].maximum < scale_max:
-        raise ValueError("Interpretation bands do not cover the full configured rating scale.")
+    if not ordered:
+        raise ValueError("At least one interpretation band is required.")
 
-    # Guard against overlap. Exact adjacent boundaries are allowed because a computed
-    # mean exactly on a shared boundary would otherwise be ambiguous, so they must not
-    # share the same numeric endpoint.
+    tolerance = 1e-9
+    if abs(ordered[0].minimum - scale_min) > tolerance:
+        raise ValueError("The first interpretation band must start at scale_min.")
+    if abs(ordered[-1].maximum - scale_max) > tolerance:
+        raise ValueError("The last interpretation band must end at scale_max.")
+
+    for band in ordered:
+        if band.minimum < scale_min - tolerance or band.maximum > scale_max + tolerance:
+            raise ValueError("Interpretation bands must stay inside the configured rating scale.")
+
     for previous, current in zip(ordered, ordered[1:]):
-        if current.minimum <= previous.maximum:
+        if current.minimum > previous.maximum + tolerance:
             raise ValueError(
-                "Interpretation bands overlap or share an ambiguous boundary: "
-                f"{previous.label} [{previous.minimum}, {previous.maximum}] and "
-                f"{current.label} [{current.minimum}, {current.maximum}]"
+                "Interpretation bands contain a gap: "
+                f"{previous.label} ends at {previous.maximum} but "
+                f"{current.label} starts at {current.minimum}."
+            )
+        if current.minimum < previous.maximum - tolerance:
+            raise ValueError(
+                "Interpretation bands overlap: "
+                f"{previous.label} [{previous.minimum}, {previous.maximum}) and "
+                f"{current.label} [{current.minimum}, {current.maximum})."
             )
 
 
