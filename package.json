@@ -105,11 +105,13 @@
     "db:catalog:sync": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/db-catalog-sync.ps1",
     "qa:import-five:reset": "node --env-file=.env scripts/qa-remove-five-import-products.mjs --apply",
     "thesis:sarima:export": "tsx backend/src/scripts/thesisSarimaExport.ts",
-    "thesis:sarima:validate": "python testing/thesis-validation/sarima_validate.py --input testing/thesis-validation/data/effective_monthly_sales.csv --output testing/thesis-validation/evidence/sarima --min-train 19 --holdout 5",
+    "thesis:sarima:validate": "python testing/thesis-validation/sarima_validate.py --input testing/thesis-validation/data/effective_monthly_sales.csv --output testing/thesis-validation/evidence/sarima --min-train 19 --holdout 5 && npm run thesis:sarima:gui",
     "thesis:sarima:test": "python -m pytest testing/thesis-validation/tests",
     "thesis:sarima:run": "npm run thesis:sarima:export && npm run thesis:sarima:validate",
     "thesis:sarima:install": "python -m pip install -r testing/thesis-validation/requirements.txt",
-    "thesis:qa:run": "node testing/thesis-validation/run_automated_tests.mjs"
+    "thesis:qa:run": "node testing/thesis-validation/run_automated_tests.mjs",
+    "thesis:sarima:validate:headless": "python testing/thesis-validation/sarima_validate.py --input testing/thesis-validation/data/effective_monthly_sales.csv --output testing/thesis-validation/evidence/sarima --min-train 19 --holdout 5",
+    "thesis:sarima:gui": "python testing/thesis-validation/sarima_gui.py --evidence testing/thesis-validation/evidence/sarima"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"
