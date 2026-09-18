@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { readSheet } from "read-excel-file/node";
 
+import { HTTP_STATUS } from "../constants/httpStatusContract.js";
 import { prisma } from "../database/prismaClient.js";
 import { normalizeCode, normalizeWhitespace } from "../utils/normalizers.js";
 import { HttpError } from "../utils/httpError.js";
@@ -305,7 +306,7 @@ function detectFileType(file: UploadFile): "csv" | "xlsx" {
   const extension = file.originalname.split(".").pop()?.toLowerCase();
 
   if (!extension || !SUPPORTED_EXTENSIONS.has(`.${extension}`)) {
-    throw new HttpError(400, "Unsupported inventory import file type.", {
+    throw new HttpError(HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE, "Unsupported inventory import file type.", {
       code: "UNSUPPORTED_IMPORT_FILE_TYPE",
       details: {
         extension
@@ -314,7 +315,7 @@ function detectFileType(file: UploadFile): "csv" | "xlsx" {
   }
 
   if (file.mimetype && !SUPPORTED_MIME_TYPES.has(file.mimetype)) {
-    throw new HttpError(400, "Unsupported inventory import MIME type.", {
+    throw new HttpError(HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE, "Unsupported inventory import MIME type.", {
       code: "UNSUPPORTED_IMPORT_FILE_MIME",
       details: {
         mimetype: file.mimetype
