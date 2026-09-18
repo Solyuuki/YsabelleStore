@@ -106,7 +106,7 @@
     "qa:import-five:reset": "node --env-file=.env scripts/qa-remove-five-import-products.mjs --apply",
     "thesis:sarima:export": "tsx backend/src/scripts/thesisSarimaExport.ts",
     "thesis:sarima:validate": "python testing/thesis-validation/sarima_validate.py --input testing/thesis-validation/data/effective_monthly_sales.csv --output testing/thesis-validation/evidence/sarima --min-train 19 --holdout 5 && npm run thesis:sarima:gui",
-    "thesis:sarima:test": "python -m pytest testing/thesis-validation/tests",
+    "thesis:sarima:test": "python -m py_compile testing/thesis-validation/sarima_validate.py testing/thesis-validation/sarima_gui.py && python -m pytest testing/thesis-validation/tests",
     "thesis:sarima:run": "npm run thesis:sarima:export && npm run thesis:sarima:validate",
     "thesis:sarima:install": "python -m pip install -r testing/thesis-validation/requirements.txt",
     "thesis:qa:run": "node testing/thesis-validation/run_automated_tests.mjs",
