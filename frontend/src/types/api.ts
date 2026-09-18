@@ -13,4 +13,6 @@ export type ApiErrorResponse<TError = unknown> = {
   success: false;
   message: string;
   error?: TError;
+  httpStatus?: number;
+  retryAfterSeconds?: number;
 };
