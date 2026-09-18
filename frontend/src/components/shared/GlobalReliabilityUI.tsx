@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import {
   CheckCircle2,
   DatabaseZap,
@@ -45,6 +47,23 @@ export function GlobalReliabilityUI() {
     );
   }
 
+  if (mode === "checking") {
+    return (
+      <div
+        aria-live="polite"
+        className="reliability-banner reliability-banner--reconnecting"
+        role="status"
+      >
+        <span className="reliability-signal" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+        <span>Checking Ysabelle Store system readiness&hellip;</span>
+      </div>
+    );
+  }
+
   if (mode === "reconnecting") {
     return (
       <div
@@ -57,9 +76,7 @@ export function GlobalReliabilityUI() {
           <span />
           <span />
         </span>
-        <span>
-          Connection interrupted. Reconnecting to Ysabelle Store&hellip;
-        </span>
+        <span>Connection interrupted. Reconnecting to Ysabelle Store&hellip;</span>
       </div>
     );
   }
@@ -75,7 +92,11 @@ export function GlobalReliabilityUI() {
         <span>
           System readiness is degraded. Changes are temporarily paused while we verify services.
         </span>
-        <button className="reliability-banner__action" onClick={() => void retryNow()} type="button">
+        <button
+          className="reliability-banner__action"
+          onClick={() => void retryNow()}
+          type="button"
+        >
           Check again
         </button>
       </div>
@@ -87,12 +108,14 @@ export function GlobalReliabilityUI() {
   }
 
   const presentation = getUnavailablePresentation(healthState);
+  const StatusIcon = presentation.Icon;
 
   return (
     <div
       aria-describedby="system-unavailable-description"
       aria-labelledby="system-unavailable-title"
       aria-live="assertive"
+      aria-modal="true"
       className="reliability-overlay"
       role="alertdialog"
     >
@@ -157,7 +180,9 @@ export function GlobalReliabilityUI() {
   );
 }
 
-function getUnavailablePresentation(healthState: ReturnType<typeof useSystemReliability>["healthState"]) {
+function getUnavailablePresentation(
+  healthState: ReturnType<typeof useSystemReliability>["healthState"]
+) {
   if (healthState === "offline") {
     return {
       Icon: WifiOff,
