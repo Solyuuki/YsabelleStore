@@ -97,3 +97,62 @@ test("expected client HttpError responses preserve their safe status, code, mess
     assert.deepEqual(body.error?.details, { field: "productName" });
   });
 });
+
+test("canonical upstream failures preserve 502/503/504 while sanitizing diagnostics", async () => {
+  for (const scenario of [
+    { status: 502, expectedCode: "BAD_GATEWAY" },
+    { status: 503, expectedCode: "SERVICE_UNAVAILABLE" },
+    { status: 504, expectedCode: "GATEWAY_TIMEOUT" }
+  ]) {
+    const secret = `upstream-secret-${scenario.status}`;
+    const error = new HttpError(scenario.status, `internal dependency failure ${secret}`, {
+      code: `PRIVATE_${scenario.status}`,
+      details: { secret }
+    });
+
+    await withErrorServer(error, async (baseUrl) => {
+      const response = await fetch(`${baseUrl}/failure`);
+      const body = await json(response);
+      const serialized = JSON.stringify(body);
+
+      assert.equal(response.status, scenario.status);
+      assert.equal(body.success, false);
+      assert.equal(body.error?.code, scenario.expectedCode);
+      assert.doesNotMatch(serialized, new RegExp(secret));
+      assert.doesNotMatch(serialized, new RegExp(`PRIVATE_${scenario.status}`));
+    });
+  }
+});
+
+test("server errors stay sanitized even when a caller requests exposure", async () => {
+  const error = new HttpError(503, "private service diagnostic", {
+    code: "PRIVATE_SERVICE_DIAGNOSTIC",
+    details: { secret: "must-not-leak" },
+    expose: true
+  });
+
+  await withErrorServer(error, async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/failure`);
+    const body = await json(response);
+    const serialized = JSON.stringify(body);
+
+    assert.equal(response.status, 503);
+    assert.equal(body.error?.code, "SERVICE_UNAVAILABLE");
+    assert.doesNotMatch(serialized, /private service diagnostic|PRIVATE_SERVICE_DIAGNOSTIC|must-not-leak/);
+  });
+});
+
+test("non-canonical HttpError status codes collapse to the sanitized 500 contract", async () => {
+  const error = new HttpError(418, "teapot details must not become an API contract", {
+    code: "TEAPOT"
+  });
+
+  await withErrorServer(error, async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/failure`);
+    const body = await json(response);
+
+    assert.equal(response.status, 500);
+    assert.equal(body.error?.code, "INTERNAL_SERVER_ERROR");
+    assert.equal(body.message, "An unexpected error occurred.");
+  });
+});

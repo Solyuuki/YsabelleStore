@@ -62,3 +62,9 @@ A task is complete only when implementation evidence and the matching artifact u
 | YSB-M1-ABARADO-20260901 | Maintain current implementation and documentation evidence     | Completed          | m1/v0.9/feat/customer-mobile-otp        | Review generated artifact updates before commit.      |
 | YSB-M1-ABARADO-20260906 | Maintain current implementation and documentation evidence     | Needs Review       | unknown                                 | Review generated artifact updates before commit.      |
 | YSB-M1-ABARADO-20260910 | Maintain current implementation and documentation evidence     | Needs Review       | m1/v0.9/feat/catalog-data-readiness     | Review generated artifact updates before commit.      |
+
+## Sprint 11 HTTP Reliability
+
+| Task ID | Date | Scope | Status | Evidence | Next Action |
+| --- | --- | --- | --- | --- | --- |
+| YSB-M1-QOL-HTTP-001 | 2026-09-18 | Complete and standardize HTTP status/transport handling | In Review | `m1/v0.11/fix/http-status-contract`; PR #41 | Complete exact-head automated validation before integration. |

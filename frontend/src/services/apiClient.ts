@@ -131,12 +131,30 @@ export class ApiClient {
     response: Response
   ): Promise<ApiResponse<TData, TError, unknown>> {
     const contentType = response.headers.get("content-type") ?? "";
+    const retryAfterSeconds = parseRetryAfterSeconds(response.headers.get("retry-after"));
+    const transport = {
+      status: response.status,
+      ...(retryAfterSeconds === undefined ? {} : { retryAfterSeconds })
+    };
+
+    if (response.status === 204) {
+      return {
+        ...transport,
+        success: true,
+        message: "Request completed successfully."
+      };
+    }
 
     if (contentType.includes("application/json")) {
-      return (await response.json()) as ApiResponse<TData, TError>;
+      const payload = (await response.json()) as ApiResponse<TData, TError>;
+      return {
+        ...payload,
+        ...transport
+      };
     }
 
     return {
+      ...transport,
       success: false,
       message: "API response was not valid JSON.",
       error: {
@@ -210,4 +228,18 @@ function reconcileProductStatusMutationResponse(input: {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseRetryAfterSeconds(value: string | null): number | undefined {
+  if (!value) return undefined;
+
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return Math.ceil(seconds);
+  }
+
+  const retryAt = Date.parse(value);
+  if (Number.isNaN(retryAt)) return undefined;
+
+  return Math.max(0, Math.ceil((retryAt - Date.now()) / 1000));
 }
