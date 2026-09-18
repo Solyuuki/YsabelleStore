@@ -100,6 +100,15 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional product ID for product-level figures. Otherwise median-MAPE product is selected deterministically.",
     )
+    parser.add_argument(
+        "--target-accuracy",
+        type=float,
+        default=90.0,
+        help=(
+            "Study target expressed using the project's derived accuracy proxy "
+            "(100 - MAPE). Default: 90.0. This does not replace MAE/MAPE/RMSE."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -210,6 +219,17 @@ def metric_bundle(actual: np.ndarray, forecast: np.ndarray) -> dict[str, Any]:
         "zero_actual_observations": int((~nonzero_mask).sum()),
         "verification": verification,
     }
+
+
+def study_accuracy_proxy(mape: float | None) -> float | None:
+    """Return the project's derived 100-MAPE score for target tracking.
+
+    This is intentionally labelled a study-specific proxy rather than a standard
+    forecasting metric. MAE, MAPE, and RMSE remain the primary validation metrics.
+    """
+    if mape is None:
+        return None
+    return max(0.0, 100.0 - float(mape))
 
 
 def git_sha() -> str | None:
@@ -469,6 +489,8 @@ def main() -> int:
         raise ValueError("--min-train must be at least 19 for the frozen thesis retrospective protocol.")
     if args.seasonal_period <= 1:
         raise ValueError("--seasonal-period must be greater than one.")
+    if not 0.0 < args.target_accuracy <= 100.0:
+        raise ValueError("--target-accuracy must be greater than 0 and at most 100.")
     if not input_path.exists():
         raise FileNotFoundError(
             f"Validation input not found: {input_path}. Run npm run thesis:sarima:export first."
@@ -538,10 +560,21 @@ def main() -> int:
     if not all(overall["verification"].values()):
         raise RuntimeError("Overall metric cross-check failed.")
 
+    rounded_mape = round(float(overall["mape"]), 4) if overall["mape"] is not None else None
+    accuracy_proxy = study_accuracy_proxy(rounded_mape)
     summary = {
         "mae": round(float(overall["mae"]), 4),
-        "mape": round(float(overall["mape"]), 4) if overall["mape"] is not None else None,
+        "mape": rounded_mape,
         "rmse": round(float(overall["rmse"]), 4),
+        "study_accuracy_proxy_pct": (
+            round(float(accuracy_proxy), 4) if accuracy_proxy is not None else None
+        ),
+        "target_accuracy_pct": round(float(args.target_accuracy), 4),
+        "target_met": (
+            bool(accuracy_proxy >= args.target_accuracy)
+            if accuracy_proxy is not None
+            else False
+        ),
         "mape_valid_observations": int(overall["mape_valid_observations"]),
         "zero_actual_observations_excluded_from_mape": int(overall["zero_actual_observations"]),
         "validated_product_month_observations": len(detailed),
@@ -564,6 +597,17 @@ def main() -> int:
         "holdout_months": args.holdout,
         "minimum_training_observations": args.min_train,
         "seasonal_period": args.seasonal_period,
+        "candidate_count": len(CANDIDATES),
+        "candidate_family": [
+            {
+                "order": list(order),
+                "seasonal_order": [seasonal[0], seasonal[1], seasonal[2], args.seasonal_period],
+            }
+            for order, seasonal in CANDIDATES
+        ],
+        "target_accuracy_pct": round(float(args.target_accuracy), 4),
+        "study_accuracy_proxy_definition": "100 - MAPE; study-specific target-tracking proxy, not a replacement for standard forecast error metrics.",
+        "target_met": summary["target_met"],
         "validation_protocol": "Retrospective chronological hold-out: first 19 verified months train, final 5 verified months test when using defaults.",
         "production_eligibility_rule_unchanged": "Deployed forecasting still requires 24 completed monthly observations for standard SARIMA.",
         "metric_library": "scikit-learn",
@@ -586,6 +630,11 @@ def main() -> int:
     )
 
     mape_report_text = "N/A" if summary["mape"] is None else f'{summary["mape"]:.4f}%'
+    accuracy_report_text = (
+        "N/A"
+        if summary["study_accuracy_proxy_pct"] is None
+        else f'{summary["study_accuracy_proxy_pct"]:.4f}%'
+    )
 
     report_lines = [
         "YSABELLE STORE - SARIMA THESIS VALIDATION",
@@ -599,6 +648,12 @@ def main() -> int:
         f"MAE  : {summary['mae']:.4f} units",
         f"MAPE : {mape_report_text}",
         f"RMSE : {summary['rmse']:.4f} units",
+        "",
+        "STUDY TARGET TRACKING",
+        f"Derived accuracy proxy (100 - MAPE): {accuracy_report_text}",
+        f"Target accuracy: {summary['target_accuracy_pct']:.4f}%",
+        f"Target status: {'PASS' if summary['target_met'] else 'BELOW TARGET'}",
+        "Note: the derived accuracy proxy is a project reporting convention; MAE, MAPE, and RMSE remain the primary forecast metrics.",
         "",
         f"MAPE-valid observations: {summary['mape_valid_observations']}",
         f"Zero-actual observations excluded from MAPE only: {summary['zero_actual_observations_excluded_from_mape']}",
