@@ -1,0 +1,379 @@
+#!/usr/bin/env python3
+"""Compute thesis System Evaluation results from evaluator responses.
+
+This script intentionally does not invent criteria, rating scales, interpretation
+bands, or pass thresholds. Those values must come from the approved System
+Evaluation Tool and its scoring guide.
+
+Input CSV columns:
+    respondent_id, criterion, item, rating
+
+Config JSON fields:
+    configured: true
+    scale_min: number
+    scale_max: number
+    acceptance_threshold: number | null
+    interpretation_bands: [
+        {"min": number, "max": number, "label": string}
+    ]
+
+Outputs:
+    criterion_results.csv
+    overall_result.csv
+    respondent_summary.csv
+    validation_metadata.json
+    system_evaluation_report.txt
+    figure16_system_evaluation.png
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+REQUIRED_COLUMNS = ["respondent_id", "criterion", "item", "rating"]
+
+
+@dataclass(frozen=True)
+class Band:
+    minimum: float
+    maximum: float
+    label: str
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Compute criterion-level and overall System Evaluation results."
+    )
+    parser.add_argument("--input", required=True, help="Evaluator response CSV")
+    parser.add_argument("--config", required=True, help="Approved scoring configuration JSON")
+    parser.add_argument("--output", required=True, help="Output evidence directory")
+    return parser.parse_args()
+
+
+def load_config(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Configuration file not found: {path}\n"
+            "Create it from system_evaluation_config.template.json and copy the exact "
+            "rating scale / interpretation guide from the approved evaluation instrument."
+        )
+
+    config = json.loads(path.read_text(encoding="utf-8"))
+    if config.get("configured") is not True:
+        raise ValueError(
+            "System evaluation configuration is not finalized. Set configured=true only "
+            "after copying the exact approved scale and interpretation rules."
+        )
+
+    scale_min = config.get("scale_min")
+    scale_max = config.get("scale_max")
+    if not isinstance(scale_min, (int, float)) or not isinstance(scale_max, (int, float)):
+        raise ValueError("scale_min and scale_max must be numeric.")
+    if scale_min >= scale_max:
+        raise ValueError("scale_min must be less than scale_max.")
+
+    threshold = config.get("acceptance_threshold")
+    if threshold is not None:
+        if not isinstance(threshold, (int, float)):
+            raise ValueError("acceptance_threshold must be numeric or null.")
+        if not scale_min <= threshold <= scale_max:
+            raise ValueError("acceptance_threshold must fall inside the configured scale.")
+
+    bands_raw = config.get("interpretation_bands", [])
+    if not isinstance(bands_raw, list) or not bands_raw:
+        raise ValueError(
+            "interpretation_bands must contain the approved verbal-interpretation ranges."
+        )
+
+    for row in bands_raw:
+        if not all(k in row for k in ("min", "max", "label")):
+            raise ValueError("Each interpretation band requires min, max, and label.")
+        if not isinstance(row["min"], (int, float)) or not isinstance(row["max"], (int, float)):
+            raise ValueError("Interpretation band min/max values must be numeric.")
+        if row["min"] > row["max"]:
+            raise ValueError("Interpretation band min cannot exceed max.")
+        if not str(row["label"]).strip():
+            raise ValueError("Interpretation band label cannot be blank.")
+
+    return config
+
+
+def load_responses(path: Path, scale_min: float, scale_max: float) -> pd.DataFrame:
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Response file not found: {path}\n"
+            "Create it from system_evaluation_responses.template.csv."
+        )
+
+    df = pd.read_csv(path)
+    missing = [col for col in REQUIRED_COLUMNS if col not in df.columns]
+    if missing:
+        raise ValueError(f"Missing required CSV columns: {', '.join(missing)}")
+
+    df = df[REQUIRED_COLUMNS].copy()
+    for col in ("respondent_id", "criterion", "item"):
+        df[col] = df[col].astype(str).str.strip()
+        if (df[col] == "").any():
+            raise ValueError(f"Blank values found in required column: {col}")
+
+    df["rating"] = pd.to_numeric(df["rating"], errors="coerce")
+    if df["rating"].isna().any():
+        bad_rows = (df.index[df["rating"].isna()] + 2).tolist()
+        raise ValueError(f"Non-numeric or missing rating at CSV row(s): {bad_rows}")
+
+    invalid = df[(df["rating"] < scale_min) | (df["rating"] > scale_max)]
+    if not invalid.empty:
+        rows = (invalid.index + 2).tolist()
+        raise ValueError(
+            f"Rating outside configured scale [{scale_min}, {scale_max}] "
+            f"at CSV row(s): {rows}"
+        )
+
+    duplicate_mask = df.duplicated(
+        subset=["respondent_id", "criterion", "item"], keep=False
+    )
+    if duplicate_mask.any():
+        rows = (df.index[duplicate_mask] + 2).tolist()
+        raise ValueError(
+            "Duplicate respondent/criterion/item response detected at CSV row(s): "
+            f"{rows}"
+        )
+
+    return df
+
+
+def parse_bands(config: dict[str, Any]) -> list[Band]:
+    return [
+        Band(float(row["min"]), float(row["max"]), str(row["label"]).strip())
+        for row in config["interpretation_bands"]
+    ]
+
+
+def interpret(value: float, bands: list[Band]) -> str:
+    matches = [band.label for band in bands if band.minimum <= value <= band.maximum]
+    if len(matches) != 1:
+        raise ValueError(
+            f"Score {value:.6f} matched {len(matches)} interpretation bands. "
+            "Check for gaps or overlapping ranges in the approved configuration."
+        )
+    return matches[0]
+
+
+def validate_band_coverage(scale_min: float, scale_max: float, bands: list[Band]) -> None:
+    ordered = sorted(bands, key=lambda b: (b.minimum, b.maximum))
+    if ordered[0].minimum > scale_min or ordered[-1].maximum < scale_max:
+        raise ValueError("Interpretation bands do not cover the full configured rating scale.")
+
+    # Guard against overlap. Exact adjacent boundaries are allowed because a computed
+    # mean exactly on a shared boundary would otherwise be ambiguous, so they must not
+    # share the same numeric endpoint.
+    for previous, current in zip(ordered, ordered[1:]):
+        if current.minimum <= previous.maximum:
+            raise ValueError(
+                "Interpretation bands overlap or share an ambiguous boundary: "
+                f"{previous.label} [{previous.minimum}, {previous.maximum}] and "
+                f"{current.label} [{current.minimum}, {current.maximum}]"
+            )
+
+
+def compute_results(
+    df: pd.DataFrame,
+    bands: list[Band],
+    threshold: float | None,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    criterion = (
+        df.groupby("criterion", sort=False)["rating"]
+        .agg(response_count="count", mean="mean", std_dev="std")
+        .reset_index()
+    )
+    criterion["std_dev"] = criterion["std_dev"].fillna(0.0)
+    criterion["interpretation"] = criterion["mean"].map(lambda x: interpret(float(x), bands))
+    if threshold is None:
+        criterion["acceptance_status"] = "NOT EVALUATED"
+    else:
+        criterion["acceptance_status"] = criterion["mean"].map(
+            lambda x: "PASS" if float(x) >= threshold else "FAIL"
+        )
+
+    overall_mean = float(df["rating"].mean())
+    overall = pd.DataFrame(
+        [
+            {
+                "respondents": int(df["respondent_id"].nunique()),
+                "criteria": int(df["criterion"].nunique()),
+                "items": int(df[["criterion", "item"]].drop_duplicates().shape[0]),
+                "responses": int(len(df)),
+                "mean": overall_mean,
+                "interpretation": interpret(overall_mean, bands),
+                "acceptance_status": (
+                    "NOT EVALUATED"
+                    if threshold is None
+                    else ("PASS" if overall_mean >= threshold else "FAIL")
+                ),
+            }
+        ]
+    )
+
+    respondent = (
+        df.groupby("respondent_id", sort=False)["rating"]
+        .agg(response_count="count", mean="mean")
+        .reset_index()
+    )
+    respondent["interpretation"] = respondent["mean"].map(
+        lambda x: interpret(float(x), bands)
+    )
+
+    return criterion, overall, respondent
+
+
+def save_figure(criterion: pd.DataFrame, overall: pd.DataFrame, output: Path) -> None:
+    labels = criterion["criterion"].tolist() + ["Overall"]
+    values = criterion["mean"].tolist() + [float(overall.iloc[0]["mean"])]
+
+    fig, ax = plt.subplots(figsize=(max(8.0, len(labels) * 1.45), 5.2))
+    bars = ax.bar(labels, values)
+    ax.set_title("Summary of System Evaluation Results")
+    ax.set_ylabel("Mean rating")
+    ax.tick_params(axis="x", rotation=25)
+
+    for bar, value in zip(bars, values):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height(),
+            f"{value:.4f}",
+            ha="center",
+            va="bottom",
+        )
+
+    fig.tight_layout()
+    fig.savefig(output / "figure16_system_evaluation.png", dpi=180)
+    plt.close(fig)
+
+
+def save_report(
+    criterion: pd.DataFrame,
+    overall: pd.DataFrame,
+    config: dict[str, Any],
+    output: Path,
+) -> None:
+    threshold = config.get("acceptance_threshold")
+    lines = [
+        "YSABELLE STORE - SYSTEM EVALUATION",
+        "===================================",
+        "",
+        f"Respondents: {int(overall.iloc[0]['respondents'])}",
+        f"Evaluation criteria: {int(overall.iloc[0]['criteria'])}",
+        f"Evaluation items: {int(overall.iloc[0]['items'])}",
+        f"Recorded responses: {int(overall.iloc[0]['responses'])}",
+        "",
+        "CRITERION-LEVEL RESULTS",
+    ]
+
+    for row in criterion.itertuples(index=False):
+        lines.append(
+            f"- {row.criterion}: mean={row.mean:.4f}; "
+            f"interpretation={row.interpretation}; "
+            f"status={row.acceptance_status}"
+        )
+
+    lines += [
+        "",
+        "OVERALL SYSTEM EVALUATION",
+        f"Mean: {float(overall.iloc[0]['mean']):.4f}",
+        f"Interpretation: {overall.iloc[0]['interpretation']}",
+        f"Acceptance status: {overall.iloc[0]['acceptance_status']}",
+        "",
+    ]
+
+    if threshold is None:
+        lines += [
+            "NOTE:",
+            "No acceptance threshold was configured. PASS/FAIL was intentionally not inferred.",
+        ]
+    else:
+        lines += [
+            f"Configured acceptance threshold: {float(threshold):.4f}",
+            "PASS/FAIL is based only on the threshold supplied from the approved evaluation tool.",
+        ]
+
+    (output / "system_evaluation_report.txt").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
+
+
+def main() -> int:
+    args = parse_args()
+    input_path = Path(args.input).resolve()
+    config_path = Path(args.config).resolve()
+    output = Path(args.output).resolve()
+    output.mkdir(parents=True, exist_ok=True)
+
+    config = load_config(config_path)
+    scale_min = float(config["scale_min"])
+    scale_max = float(config["scale_max"])
+    bands = parse_bands(config)
+    validate_band_coverage(scale_min, scale_max, bands)
+
+    responses = load_responses(input_path, scale_min, scale_max)
+    threshold = config.get("acceptance_threshold")
+    threshold = float(threshold) if threshold is not None else None
+
+    criterion, overall, respondent = compute_results(responses, bands, threshold)
+
+    criterion.to_csv(output / "criterion_results.csv", index=False, float_format="%.4f")
+    overall.to_csv(output / "overall_result.csv", index=False, float_format="%.4f")
+    respondent.to_csv(output / "respondent_summary.csv", index=False, float_format="%.4f")
+    save_figure(criterion, overall, output)
+    save_report(criterion, overall, config, output)
+
+    metadata = {
+        "status": "COMPLETE",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "input": str(input_path),
+        "config": str(config_path),
+        "scale_min": scale_min,
+        "scale_max": scale_max,
+        "acceptance_threshold": threshold,
+        "respondents": int(overall.iloc[0]["respondents"]),
+        "criteria": int(overall.iloc[0]["criteria"]),
+        "items": int(overall.iloc[0]["items"]),
+        "responses": int(overall.iloc[0]["responses"]),
+        "overall_mean": round(float(overall.iloc[0]["mean"]), 4),
+        "overall_interpretation": str(overall.iloc[0]["interpretation"]),
+        "overall_acceptance_status": str(overall.iloc[0]["acceptance_status"]),
+    }
+    (output / "validation_metadata.json").write_text(
+        json.dumps(metadata, indent=2), encoding="utf-8"
+    )
+
+    print("YSABELLE STORE - SYSTEM EVALUATION")
+    print("===================================")
+    print("Status: COMPLETE")
+    print(f"Respondents: {metadata['respondents']}")
+    print(f"Criteria: {metadata['criteria']}")
+    print(f"Items: {metadata['items']}")
+    print(f"Responses: {metadata['responses']}")
+    print(f"Overall mean: {metadata['overall_mean']:.4f}")
+    print(f"Interpretation: {metadata['overall_interpretation']}")
+    print(f"Acceptance status: {metadata['overall_acceptance_status']}")
+    print(f"Evidence directory: {output}")
+
+    if threshold is not None and metadata["overall_acceptance_status"] == "FAIL":
+        # A real failing evaluation must remain visible in the evidence. The script
+        # exits non-zero so it cannot be silently reported as a passing requirement.
+        return 2
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
