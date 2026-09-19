@@ -1,9 +1,5 @@
 import { Router } from "express";
-import {
-  getPaymongoCheckoutStatusController,
-  paymongoWebhookController,
-  startPaymongoCheckoutController
-} from "../controllers/paymongoController.js";
+
 import { publicProductImageController } from "../controllers/productImageController.js";
 import {
   createStorefrontOrderController,
@@ -26,6 +22,3 @@ storefrontRouter.get("/products/:id/reviews", listStorefrontProductReviewsContro
 storefrontRouter.get("/products/:id/related", listStorefrontRelatedProductsController);
 storefrontRouter.get("/products/:id", getStorefrontProductController);
 storefrontRouter.post("/orders", optionalCustomerAuth, createStorefrontOrderController);
-storefrontRouter.post("/paymongo/checkout", optionalCustomerAuth, startPaymongoCheckoutController);
-storefrontRouter.get("/paymongo/orders/:orderId/status", getPaymongoCheckoutStatusController);
-storefrontRouter.post("/paymongo/webhook", paymongoWebhookController);

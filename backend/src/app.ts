@@ -10,8 +10,6 @@ import { securityHeaders } from "./middleware/securityHeaders.js";
 import { router } from "./routes/index.js";
 import { securityConfig } from "./security/securityConfig.js";
 
-type RequestWithPaymongoRawBody = express.Request & { paymongoRawBody?: Buffer };
-
 export function createApp() {
   const app = express();
 
@@ -26,15 +24,7 @@ export function createApp() {
     })
   );
   app.use(securityHeaders);
-  app.use(express.json({
-    limit: securityConfig.limits.jsonBodyLimit,
-    verify(request, _response, rawBody) {
-      // Preserve original bytes: re-serializing JSON invalidates PayMongo's HMAC.
-      if (request.originalUrl.split("?")[0] === "/api/storefront/paymongo/webhook") {
-        (request as RequestWithPaymongoRawBody).paymongoRawBody = Buffer.from(rawBody);
-      }
-    }
-  }));
+  app.use(express.json({ limit: securityConfig.limits.jsonBodyLimit }));
   app.use("/api", router);
   app.use(notFoundHandler);
   app.use(errorHandler);

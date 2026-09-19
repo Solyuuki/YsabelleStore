@@ -79,10 +79,9 @@ export type StorefrontMerchandising = {
 export type StorefrontOrder = {
   id: string;
   orderNumber: string;
-  status: "PENDING" | "CONFIRMED" | "READY_FOR_PICKUP" | "COMPLETED" | "CANCELLED";
+  status: "PENDING";
   fulfillmentMethod: "STORE_PICKUP";
-  paymentMethod: "CASH_ON_PICKUP" | "PAYMONGO_TEST";
-  paymentStatus?: "CREATING" | "AWAITING_PAYMENT" | "PAID" | "FAILED";
+  paymentMethod: "CASH_ON_PICKUP";
   totalAmount: string;
   createdAt: string;
   itemCount: number;
