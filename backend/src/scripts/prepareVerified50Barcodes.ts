@@ -21,7 +21,9 @@ function assertLocalDatabase() {
   }
 
   if (!["localhost", "127.0.0.1"].includes(parsed.hostname)) {
-    fail(`refusing local QA barcode preparation against non-local database host ${parsed.hostname}.`);
+    fail(
+      `refusing local QA barcode preparation against non-local database host ${parsed.hostname}.`
+    );
   }
 
   if (process.env.NODE_ENV === "production") {
@@ -33,10 +35,7 @@ assertLocalDatabase();
 
 try {
   const targetBySku = new Map(
-    PRODUCTION_CATALOG_50_TARGETS.map((target) => [
-      `SARIMA-${target.sourceProductId}`,
-      target
-    ])
+    PRODUCTION_CATALOG_50_TARGETS.map((target) => [`SARIMA-${target.sourceProductId}`, target])
   );
 
   if (targetBySku.size !== PRODUCTION_CATALOG_50_EXPECTED_COUNT) {
@@ -115,9 +114,7 @@ try {
         });
 
         if (collision) {
-          fail(
-            `${row.internalBarcode} collides with ${collision.sku} (${collision.id}).`
-          );
+          fail(`${row.internalBarcode} collides with ${collision.sku} (${collision.id}).`);
         }
 
         const updated = await tx.product.updateMany({
@@ -166,7 +163,9 @@ try {
   });
 
   if (remainingInvalid !== 0) {
-    fail(`post-preparation verification found ${remainingInvalid} target product(s) with NULL barcode.`);
+    fail(
+      `post-preparation verification found ${remainingInvalid} target product(s) with NULL barcode.`
+    );
   }
 
   console.log(

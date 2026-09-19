@@ -69,9 +69,7 @@ try {
   });
 
   if (mismatched.length > 0) {
-    fail(
-      `SARIMA mapping mismatch for: ${mismatched.map((product) => product.sku).join(", ")}`
-    );
+    fail(`SARIMA mapping mismatch for: ${mismatched.map((product) => product.sku).join(", ")}`);
   }
 
   const dirty = products.filter(
