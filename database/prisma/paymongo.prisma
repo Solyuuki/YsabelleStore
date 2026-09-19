@@ -1,0 +1,29 @@
+// A separate checkout ledger allows test payments to be tracked independently of
+// pickup fulfillment. The legacy customer_orders.payment_method field remains
+// CASH_ON_PICKUP until its enum can be migrated for first-class online payments.
+// The orderId is validated against CustomerOrder by the checkout service.
+
+enum PaymongoCheckoutStatus {
+  CREATING
+  AWAITING_PAYMENT
+  PAID
+  FAILED
+}
+
+model CustomerPaymongoCheckout {
+  id              String                @id @default(cuid()) @db.VarChar(191)
+  orderId         String                @unique(map: "uq_customer_paymongo_order") @map("order_id") @db.VarChar(191)
+  orderNumber     String                @unique(map: "uq_customer_paymongo_order_number") @map("order_number") @db.VarChar(80)
+  accessTokenHash String                @map("access_token_hash") @db.VarChar(64)
+  sessionId       String?               @unique(map: "uq_customer_paymongo_session") @map("session_id") @db.VarChar(191)
+  checkoutUrl     String?               @map("checkout_url") @db.Text
+  paymentId       String?               @unique(map: "uq_customer_paymongo_payment") @map("payment_id") @db.VarChar(191)
+  status          PaymongoCheckoutStatus @default(CREATING)
+  amountCentavos  BigInt                @map("amount_centavos") @db.UnsignedBigInt
+  paidAt          DateTime?             @map("paid_at")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+
+  @@index([status, createdAt], map: "idx_customer_paymongo_status_created")
+  @@map("customer_paymongo_checkouts")
+}
