@@ -85,13 +85,15 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
 
   function updateContact(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof typeof contact;
-    setContact((current) => ({ ...current, [field]: event.currentTarget.value }));
+    const value = event.currentTarget.value;
+    setContact((current) => ({ ...current, [field]: value }));
     setContactEdited(true);
   }
 
   function updateAddress(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof CustomerAddress;
-    setAddress((current) => ({ ...current, [field]: event.currentTarget.value }));
+    const value = event.currentTarget.value;
+    setAddress((current) => ({ ...current, [field]: value }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
