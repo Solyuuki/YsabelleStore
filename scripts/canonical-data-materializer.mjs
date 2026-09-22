@@ -3,17 +3,21 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+
 const ROOT = resolve("."),
   STATE = "database/prisma/state/canonical-state.json",
   RECON = "database/canonical/product-images/candidate-reconciliation.json";
-const TABLES = [
+
+export const CANONICAL_TABLES = [
   "categories",
   "products",
   "product_image_assets",
   "product_aliases",
   "sarima_source_product_mappings"
 ];
+
 const hash = (v) => createHash("sha256").update(v).digest("hex");
+
 export function extractInsertStatement(sql, table) {
   const start = sql.indexOf("INSERT INTO `" + table + "`");
   if (start < 0) throw new Error("Missing INSERT for " + table);
@@ -33,6 +37,7 @@ export function extractInsertStatement(sql, table) {
   }
   throw new Error("Unterminated INSERT for " + table);
 }
+
 function split(text) {
   const out = [];
   let start = 0,
@@ -64,6 +69,7 @@ function split(text) {
   out.push(text.slice(start).trim());
   return out;
 }
+
 export function parseInsertStatement(st) {
   const marker = ") VALUES ",
     mi = st.indexOf(marker);
@@ -108,17 +114,26 @@ export function parseInsertStatement(st) {
   }
   return { table: m[1], columns, tuples };
 }
-function decode(v) {
+
+export function decodeSqlValue(v) {
   v = v.trim();
   if (/^NULL$/i.test(v)) return null;
   if (!v.startsWith("'")) return v;
   return v.slice(1, -1).replace(/''/g, "'").replace(/\\'/g, "'").replace(/\\\\/g, "\\");
 }
+
 function value(p, t, c) {
   const i = p.columns.indexOf(c);
   if (i < 0) throw new Error(p.table + " missing " + c);
-  return decode(t.values[i]);
+  return decodeSqlValue(t.values[i]);
 }
+
+function rowObject(parsed, tuple) {
+  return Object.fromEntries(
+    parsed.columns.map((column, index) => [column, decodeSqlValue(tuple.values[index])])
+  );
+}
+
 function upsert(p, rows) {
   if (!rows.length) return null;
   const cols = p.columns.map((c) => "`" + c + "`").join(", "),
@@ -137,14 +152,16 @@ function upsert(p, rows) {
     updates
   );
 }
+
 export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
   const p = Object.fromEntries(
-      TABLES.map((t) => [t, parseInsertStatement(extractInsertStatement(catalogSql, t))])
+      CANONICAL_TABLES.map((t) => [t, parseInsertStatement(extractInsertStatement(catalogSql, t))])
     ),
     productIds = new Set((release.products || []).map((x) => x.productId)),
     candidateIds = new Set((reconciliation.items || []).map((x) => x.candidateId));
-  if (productIds.size !== 50 || candidateIds.size !== 50)
+  if (productIds.size !== 50 || candidateIds.size !== 50) {
     throw new Error("Production subset must contain 50 products/candidates");
+  }
   const products = p.products.tuples.filter((t) => productIds.has(value(p.products, t, "id")));
   if (products.length !== 50) throw new Error("Selected product rows=" + products.length + "/50");
   const categoryIds = new Set(
@@ -167,17 +184,28 @@ export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
     selected.categories.length !== categoryIds.size ||
     selected.product_image_assets.length !== 50 ||
     selected.sarima_source_product_mappings.length !== 50
-  )
+  ) {
     throw new Error("Canonical subset incomplete");
+  }
   const ids = Object.fromEntries(
     Object.entries(selected).map(([t, rows]) => [t, rows.map((r) => value(p[t], r, "id"))])
   );
+  const rows = Object.fromEntries(
+    Object.entries(selected).map(([table, tuples]) => [
+      table,
+      tuples
+        .map((tuple) => rowObject(p[table], tuple))
+        .sort((left, right) => String(left.id).localeCompare(String(right.id)))
+    ])
+  );
   return {
-    statements: TABLES.map((t) => upsert(p[t], selected[t])).filter(Boolean),
+    statements: CANONICAL_TABLES.map((t) => upsert(p[t], selected[t])).filter(Boolean),
     ids,
+    rows,
     counts: Object.fromEntries(Object.entries(selected).map(([t, r]) => [t, r.length]))
   };
 }
+
 async function count(prisma, table, ids) {
   if (!ids.length) return 0;
   const rows = await prisma.$queryRawUnsafe(
@@ -190,15 +218,84 @@ async function count(prisma, table, ids) {
   );
   return Number(rows[0]?.count || 0);
 }
+
 export async function verifyCanonicalSubset(prisma, subset) {
   const f = [];
-  for (const t of TABLES) {
+  for (const t of CANONICAL_TABLES) {
     const a = await count(prisma, t, subset.ids[t]),
       e = subset.ids[t].length;
     if (a !== e) f.push(t + ": " + a + "/" + e);
   }
   return f;
 }
+
+export async function inspectCanonicalDbDrift(prisma, subset) {
+  const findings = [];
+  for (const table of CANONICAL_TABLES) {
+    const expectedRows = subset.rows?.[table] ?? [];
+    if (!expectedRows.length) continue;
+    const columns = Object.keys(expectedRows[0]);
+    const select = columns
+      .map(
+        (column) =>
+          "IF(`" +
+          column +
+          "` IS NULL,NULL,CAST(`" +
+          column +
+          "` AS CHAR)) AS `" +
+          column +
+          "`"
+      )
+      .join(",");
+    const ids = expectedRows.map((row) => row.id);
+    const actualRows = await prisma.$queryRawUnsafe(
+      "SELECT " +
+        select +
+        " FROM `" +
+        table +
+        "` WHERE id IN (" +
+        ids.map(() => "?").join(",") +
+        ") ORDER BY id",
+      ...ids
+    );
+    const actualById = new Map(actualRows.map((row) => [String(row.id), row]));
+    for (const expected of expectedRows) {
+      const actual = actualById.get(String(expected.id));
+      if (!actual) {
+        findings.push(table + "/" + expected.id + ": missing row");
+        continue;
+      }
+      for (const column of columns) {
+        const expectedValue = expected[column] === null ? null : String(expected[column]);
+        const actualValue = actual[column] === null ? null : String(actual[column]);
+        if (expectedValue !== actualValue) {
+          findings.push(
+            table +
+              "/" +
+              expected.id +
+              "/" +
+              column +
+              ": repo=" +
+              JSON.stringify(expectedValue) +
+              " db=" +
+              JSON.stringify(actualValue)
+          );
+        }
+      }
+    }
+    if (actualRows.length !== expectedRows.length) {
+      findings.push(
+        table +
+          ": canonical row count mismatch repo=" +
+          expectedRows.length +
+          " db=" +
+          actualRows.length
+      );
+    }
+  }
+  return findings;
+}
+
 export async function applyCanonicalSubset(prisma, subset) {
   await prisma.$transaction(
     async (tx) => {
@@ -214,18 +311,21 @@ export async function applyCanonicalSubset(prisma, subset) {
   const f = await verifyCanonicalSubset(prisma, subset);
   if (f.length) throw new Error("Canonical data verification failed: " + f.join(", "));
 }
+
 export function loadCanonicalSubset(root = ROOT) {
   const state = JSON.parse(readFileSync(join(root, STATE))),
     release = JSON.parse(readFileSync(join(root, state.canonicalReleasePath))),
     reconciliation = JSON.parse(readFileSync(join(root, RECON))),
     bytes = readFileSync(join(root, state.canonicalCatalogPath));
-  if (hash(bytes) !== state.canonicalCatalogSha256)
+  if (hash(bytes) !== state.canonicalCatalogSha256) {
     throw new Error("Canonical catalog checksum mismatch");
+  }
   return {
     state,
     subset: buildCanonicalSubset({ catalogSql: bytes.toString("utf8"), release, reconciliation })
   };
 }
+
 async function main() {
   const { PrismaClient } = await import("@prisma/client"),
     prisma = new PrismaClient();
@@ -248,9 +348,11 @@ async function main() {
     await prisma.$disconnect();
   }
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href)
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   main().catch((e) => {
     console.error("CANONICAL_DATA_MATERIALIZE=ERROR");
     console.error(e instanceof Error ? e.message : e);
     process.exitCode = 1;
   });
+}
