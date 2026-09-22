@@ -89,6 +89,9 @@ jobs:
       - name: Validate canonical production release
         run: npm run release:security
 
+      - name: Validate canonical candidate reconciliation
+        run: npm run candidate-reconciliation:security
+
       - name: Rehearse baseline-to-latest migration upgrade
         env:
           MIGRATION_REHEARSAL_ALLOW: "1"
