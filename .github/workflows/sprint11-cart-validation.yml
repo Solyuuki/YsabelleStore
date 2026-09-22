@@ -6,10 +6,11 @@ on:
       - sprint/v0.11/sprint-11
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   cart-operational-validation:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -71,6 +72,35 @@ jobs:
 
       - name: Build disposable database
         run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+
+      - name: Format cart implementation
+        run: |
+          npx prettier --write \
+            backend/src/services/customerCartService.ts \
+            frontend/src/context/CartContext.tsx \
+            frontend/src/pages/customer/CustomerLoginPage.tsx \
+            frontend/src/pages/customer/CustomerRegisterPage.tsx \
+            frontend/src/utils/customerCart.ts \
+            frontend/src/utils/customerRoutes.ts \
+            scripts/customer-cart-auth-flow-test.ts
+
+      - name: Commit formatting
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            backend/src/services/customerCartService.ts \
+            frontend/src/context/CartContext.tsx \
+            frontend/src/pages/customer/CustomerLoginPage.tsx \
+            frontend/src/pages/customer/CustomerRegisterPage.tsx \
+            frontend/src/utils/customerCart.ts \
+            frontend/src/utils/customerRoutes.ts \
+            scripts/customer-cart-auth-flow-test.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "style: format authenticated cart flow"
+            git push --no-verify origin HEAD:sprint/v0.11/sprint-11
+          fi
 
       - name: Run aggregate code verification
         run: npm run verify:code
