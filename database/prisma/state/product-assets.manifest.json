@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "assetVersion": 1,
+  "assetVersion": 2,
   "root": "frontend/public/images/products",
   "trackedAssets": [
     {
@@ -28,5 +28,5 @@
       "gitBlobOid": "e5235011462e7fa48aca7166328ff314a76ccffb"
     }
   ],
-  "note": "Initial Generation 2 manifest covers product image files tracked by Git; external/local catalog-image storage must be promoted through reviewed asset changesets before becoming canonical."
+  "note": "Generation 2 asset version 2: frontend tracked product images remain pinned here; the production-50 source corpus is pinned separately by the canonical release manifest."
 }
