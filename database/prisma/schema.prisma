@@ -354,6 +354,7 @@ model CustomerAccount {
   oauthHandoffs       CustomerOAuthHandoff[]
   orders              CustomerOrder[]
   cartItems           CustomerCartItem[]
+  savedAddress        CustomerSavedAddress?
   rememberedAuth      CustomerRememberedAuth[]
 
   @@index([status], map: "idx_customer_accounts_status")
@@ -914,6 +915,22 @@ model CustomerCartItem {
   @@map("customer_cart_items")
 }
 
+model CustomerSavedAddress {
+  customerAccountId String          @id @map("customer_account_id") @db.VarChar(191)
+  addressLine1      String          @map("address_line_1") @db.VarChar(180)
+  addressLine2      String?         @map("address_line_2") @db.VarChar(180)
+  barangay          String          @db.VarChar(120)
+  cityMunicipality  String          @map("city_municipality") @db.VarChar(120)
+  provinceRegion    String          @map("province_region") @db.VarChar(120)
+  postalCode        String          @map("postal_code") @db.VarChar(20)
+  country           String          @default("Philippines") @db.VarChar(80)
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @default(now()) @updatedAt @map("updated_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("customer_saved_addresses")
+}
+
 model CustomerOrder {
   id                String                    @id @default(cuid()) @db.VarChar(191)
   customerAccountId String?                   @map("customer_account_id") @db.VarChar(191)
@@ -930,6 +947,7 @@ model CustomerOrder {
   createdAt         DateTime                  @default(now()) @map("created_at")
   updatedAt         DateTime                  @updatedAt @map("updated_at")
   items             CustomerOrderItem[]
+  addressSnapshot   CustomerOrderAddressSnapshot?
   customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")
@@ -952,6 +970,21 @@ model CustomerOrderItem {
   @@index([orderId], map: "idx_customer_order_items_order")
   @@index([productId], map: "idx_customer_order_items_product")
   @@map("customer_order_items")
+}
+
+model CustomerOrderAddressSnapshot {
+  orderId            String        @id @map("order_id") @db.VarChar(191)
+  addressLine1       String        @map("address_line_1") @db.VarChar(180)
+  addressLine2       String?       @map("address_line_2") @db.VarChar(180)
+  barangay           String        @db.VarChar(120)
+  cityMunicipality   String        @map("city_municipality") @db.VarChar(120)
+  provinceRegion     String        @map("province_region") @db.VarChar(120)
+  postalCode         String        @map("postal_code") @db.VarChar(20)
+  country            String        @default("Philippines") @db.VarChar(80)
+  createdAt          DateTime      @default(now()) @map("created_at")
+  order              CustomerOrder @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("customer_order_address_snapshots")
 }
 
 model ForecastRecord {
