@@ -115,7 +115,11 @@
     "state:pull:sync": "node --env-file=.env scripts/canonical-pull-sync.mjs",
     "candidate-reconciliation:security": "node scripts/canonical-candidate-reconciliation-security.mjs",
     "asset-distribution:security": "node scripts/canonical-asset-distribution-security.mjs",
-    "asset-distribution:materialize": "node scripts/canonical-asset-materializer.mjs"
+    "asset-distribution:materialize": "node scripts/canonical-asset-materializer.mjs",
+    "canonical-data:materialize": "node scripts/canonical-data-materializer.mjs",
+    "canonical-data:verify": "node scripts/canonical-data-materializer.mjs --verify-only",
+    "asset-distribution:verify": "node scripts/canonical-asset-materializer.mjs --verify-only",
+    "phase4:rehearsal": "node scripts/phase4-convergence-rehearsal.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"

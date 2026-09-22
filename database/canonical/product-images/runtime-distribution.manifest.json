@@ -25,6 +25,16 @@
   "processedPayloadPinned": true,
   "distributionPayloadReady": false,
   "distributionBlockers": [
-    "Exact runtime file identities are pinned, but the physical 200-file payload is not yet committed or otherwise published for pull-side materialization."
-  ]
+    "Exact-byte reconstruction is implemented from Git-pinned sources; Phase 4 end-to-end compatible/legacy/empty convergence rehearsal must pass before activation."
+  ],
+  "payloadMode": "GIT_RECONSTRUCTED_EXACT_BYTES",
+  "reconstruction": {
+    "engineBatchPath": "catalog-image-engine/app/batch.py",
+    "pythonRequirementsPath": "catalog-image-engine/requirements.txt",
+    "pillowVersion": "12.3.0",
+    "sourceRoot": "database/canonical/product-images/sources",
+    "processedCardAliasPolicy": "MANIFEST_IDENTICAL_IDENTITY",
+    "processedCardAliasCount": 16,
+    "exactByteRehearsalPassed": false
+  }
 }
