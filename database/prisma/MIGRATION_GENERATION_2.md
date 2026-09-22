@@ -15,7 +15,7 @@ This is the authoritative active Prisma lineage.
 npm run migration:security
 ```
 
-The guard is read-only and blocks duplicate creators, missing model coverage, legacy migrations re-entering the active lineage, frozen checksum drift, missing raw-SQL contracts, and state mismatch.
+The migration guard is read-only and blocks duplicate creators, missing model coverage, legacy migrations re-entering the active lineage, frozen checksum drift, and missing raw-SQL contracts. `npm run state:security` separately verifies the canonical schema/catalog hashes and every tracked product-image asset against the state manifest.
 
 CI uses `prisma migrate deploy` on a disposable MySQL database. A green build therefore proves the active lineage replays; `db push` is no longer accepted as migration-history proof.
 

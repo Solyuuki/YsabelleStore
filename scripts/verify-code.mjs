@@ -10,6 +10,11 @@ const steps = [
     label: "migration security"
   },
   {
+    args: ["run", "state:security"],
+    command: "npm",
+    label: "canonical state security"
+  },
+  {
     args: ["run", "prisma:generate"],
     command: "npm",
     label: "Prisma client generation"
