@@ -6,22 +6,15 @@ import { expectedImageAssetId } from "./canonical-release-security.mjs";
 
 const ROOT = resolve(".");
 const STATE_PATH = "database/prisma/state/canonical-state.json";
-const RECONCILIATION_PATH =
-  "database/canonical/product-images/candidate-reconciliation.json";
+const RECONCILIATION_PATH = "database/canonical/product-images/candidate-reconciliation.json";
 const CATALOG_SQL_PATH = "database/seed/canonical-catalog-v1.sql";
-const EXPECTED_ARCHIVE_SHA256 =
-  "32340edb5e8442e8aa467b10df8377fba800b6e9cf27a4ed74aae4b8a50e6862";
+const EXPECTED_ARCHIVE_SHA256 = "32340edb5e8442e8aa467b10df8377fba800b6e9cf27a4ed74aae4b8a50e6862";
 
 function readJson(root, path) {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
 }
 
-export function inspectCandidateReconciliation({
-  state,
-  release,
-  reconciliation,
-  catalogSql
-}) {
+export function inspectCandidateReconciliation({ state, release, reconciliation, catalogSql }) {
   const findings = [];
 
   if (reconciliation.formatVersion !== 1) {
@@ -55,9 +48,7 @@ export function inspectCandidateReconciliation({
     findings.push("BLOCK: candidate reconciliation must cover exactly 50 products.");
   }
   if (reconciliation.activeApprovedMatches !== 43) {
-    findings.push(
-      "BLOCK: candidate reconciliation must contain 43 active approved matches."
-    );
+    findings.push("BLOCK: candidate reconciliation must contain 43 active approved matches.");
   }
   if (reconciliation.unselectedNeedsReviewMatches !== 7) {
     findings.push(
@@ -102,10 +93,7 @@ export function inspectCandidateReconciliation({
     }
     seenCandidates.add(item.candidateId);
 
-    const expectedId = expectedImageAssetId(
-      item.sourceProductId,
-      product.sourceImage.driveFileId
-    );
+    const expectedId = expectedImageAssetId(item.sourceProductId, product.sourceImage.driveFileId);
     if (item.candidateId !== expectedId) {
       findings.push(
         `BLOCK: ${item.sourceProductId} candidate id differs from pinned Drive identity.`
@@ -156,9 +144,7 @@ export function inspectCandidateReconciliation({
         );
       }
       if (!product.catalogImage?.legacyImageUrl) {
-        findings.push(
-          `BLOCK: ${item.sourceProductId} has no active image and no legacy fallback.`
-        );
+        findings.push(`BLOCK: ${item.sourceProductId} has no active image and no legacy fallback.`);
       }
       const sqlNeedle = `('${item.candidateId}','${product.productId}','NEEDS_REVIEW','READY'`;
       if (!catalogSql.includes(sqlNeedle)) {
@@ -170,19 +156,13 @@ export function inspectCandidateReconciliation({
   }
 
   if (seenCodes.size !== release.products?.length) {
-    findings.push(
-      "BLOCK: candidate reconciliation does not cover the full canonical release."
-    );
+    findings.push("BLOCK: candidate reconciliation does not cover the full canonical release.");
   }
   if (activeCount !== reconciliation.activeApprovedMatches) {
-    findings.push(
-      "BLOCK: active approved reconciliation count does not match manifest metadata."
-    );
+    findings.push("BLOCK: active approved reconciliation count does not match manifest metadata.");
   }
   if (reviewCount !== reconciliation.unselectedNeedsReviewMatches) {
-    findings.push(
-      "BLOCK: needs-review reconciliation count does not match manifest metadata."
-    );
+    findings.push("BLOCK: needs-review reconciliation count does not match manifest metadata.");
   }
 
   return findings;
@@ -201,21 +181,14 @@ export function inspectRepository(root = ROOT) {
   });
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
-) {
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const findings = inspectRepository();
   if (findings.length > 0) {
     for (const finding of findings) console.error(finding);
-    console.error(
-      `CANDIDATE_RECONCILIATION_SECURITY=BLOCKED (${findings.length} findings)`
-    );
+    console.error(`CANDIDATE_RECONCILIATION_SECURITY=BLOCKED (${findings.length} findings)`);
     process.exitCode = 1;
   } else {
-    const reconciliation = JSON.parse(
-      readFileSync(RECONCILIATION_PATH ,"utf8")
-    );
+    const reconciliation = JSON.parse(readFileSync(RECONCILIATION_PATH, "utf8"));
     console.log(
       `CANDIDATE_RECONCILIATION_SECURITY=PASS matched=${reconciliation.matchedProducts} active=${reconciliation.activeApprovedMatches} review=${reconciliation.unselectedNeedsReviewMatches}`
     );
