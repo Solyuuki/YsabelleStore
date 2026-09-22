@@ -20,10 +20,7 @@ import {
 } from "@/services/customerSocialAuthService";
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerLoginForm } from "@/utils/customerAuthForms";
-import {
-  buildCustomerAuthPath,
-  getCustomerReturnPath
-} from "@/utils/customerRoutes";
+import { buildCustomerAuthPath, getCustomerReturnPath } from "@/utils/customerRoutes";
 
 type QuickSignPanel = "email-loading" | "email-saved" | "email-entry" | null;
 

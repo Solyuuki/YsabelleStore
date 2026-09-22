@@ -47,7 +47,10 @@ export async function mergeCustomerCart(
 ): Promise<CustomerCartEntry[]> {
   const quantities = new Map<string, number>();
   for (const item of inputItems) {
-    quantities.set(item.productId, Math.min((quantities.get(item.productId) ?? 0) + item.quantity, 999));
+    quantities.set(
+      item.productId,
+      Math.min((quantities.get(item.productId) ?? 0) + item.quantity, 999)
+    );
   }
 
   const validated = await Promise.all(

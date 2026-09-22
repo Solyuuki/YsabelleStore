@@ -75,10 +75,7 @@ assert.equal(merged.find((item) => item.product.id === "red")?.quantity, 4);
 assert.equal(merged.find((item) => item.product.id === "green")?.quantity, 1);
 
 const storage = new MemoryStorage();
-storage.setItem(
-  LEGACY_CART_STORAGE_KEY,
-  JSON.stringify([{ product: green, quantity: 2 }])
-);
+storage.setItem(LEGACY_CART_STORAGE_KEY, JSON.stringify([{ product: green, quantity: 2 }]));
 const migrated = readGuestCart(storage);
 assert.equal(migrated[0]?.product.id, "green");
 assert.equal(migrated[0]?.quantity, 2);

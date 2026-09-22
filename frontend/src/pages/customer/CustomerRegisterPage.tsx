@@ -15,10 +15,7 @@ import {
 } from "@/services/customerSocialAuthService";
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerRegisterForm } from "@/utils/customerAuthForms";
-import {
-  buildCustomerAuthPath,
-  getCustomerReturnPath
-} from "@/utils/customerRoutes";
+import { buildCustomerAuthPath, getCustomerReturnPath } from "@/utils/customerRoutes";
 
 type RegistrationVerificationPanel = "registration-email" | "quick-email" | null;
 

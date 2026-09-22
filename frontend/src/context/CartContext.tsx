@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode
-} from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import {
@@ -148,17 +141,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (product.availableStock <= 0) return;
 
     const existing = items.find((item) => item.product.id === product.id);
-    const nextQuantity = Math.min(
-      (existing?.quantity ?? 0) + quantity,
-      product.availableStock
-    );
+    const nextQuantity = Math.min((existing?.quantity ?? 0) + quantity, product.availableStock);
 
     setItems((current) =>
       existing
         ? current.map((item) =>
-            item.product.id === product.id
-              ? { ...item, product, quantity: nextQuantity }
-              : item
+            item.product.id === product.id ? { ...item, product, quantity: nextQuantity } : item
           )
         : [...current, { product, quantity: nextQuantity }]
     );
@@ -174,15 +162,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const target = items.find((item) => item.product.id === productId);
     if (!target) return;
 
-    const nextQuantity = Math.min(
-      Math.max(Math.round(quantity), 0),
-      target.product.availableStock
-    );
+    const nextQuantity = Math.min(Math.max(Math.round(quantity), 0), target.product.availableStock);
     setItems((current) =>
       current
-        .map((item) =>
-          item.product.id === productId ? { ...item, quantity: nextQuantity } : item
-        )
+        .map((item) => (item.product.id === productId ? { ...item, quantity: nextQuantity } : item))
         .filter((item) => item.quantity > 0)
     );
 

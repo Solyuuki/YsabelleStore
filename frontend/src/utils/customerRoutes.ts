@@ -38,10 +38,7 @@ export function getCustomerReturnPath(search: string): string | null {
   }
 }
 
-export function buildCustomerAuthPath(
-  pathname: "/login" | "/register",
-  returnTo?: string | null
-) {
+export function buildCustomerAuthPath(pathname: "/login" | "/register", returnTo?: string | null) {
   if (!returnTo) return pathname;
   return `${pathname}?returnTo=${encodeURIComponent(returnTo)}`;
 }

@@ -32,17 +32,16 @@ export function mergeCartItems(
   for (const item of [...accountItems, ...guestItems]) {
     const existing = merged.get(item.product.id);
     const product = item.product;
-    const quantity = Math.min(
-      (existing?.quantity ?? 0) + item.quantity,
-      product.availableStock
-    );
+    const quantity = Math.min((existing?.quantity ?? 0) + item.quantity, product.availableStock);
     if (quantity > 0) merged.set(product.id, { product, quantity });
   }
 
   return [...merged.values()];
 }
 
-export function readGuestCart(storage: Pick<Storage, "getItem" | "setItem" | "removeItem">): PersistedCartItem[] {
+export function readGuestCart(
+  storage: Pick<Storage, "getItem" | "setItem" | "removeItem">
+): PersistedCartItem[] {
   try {
     const guestRaw = storage.getItem(GUEST_CART_STORAGE_KEY);
     const legacyRaw = storage.getItem(LEGACY_CART_STORAGE_KEY);
