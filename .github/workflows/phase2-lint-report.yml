@@ -1,0 +1,40 @@
+name: Phase 2 Lint Report
+
+on:
+  push:
+    branches:
+      - "sprint/**"
+    paths:
+      - ".github/workflows/phase2-lint-report.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  lint-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Capture lint report
+        run: |
+          npx eslint \
+            scripts/migration-security.mjs \
+            scripts/test/migration-security.test.mjs \
+            scripts/migration-upgrade-rehearsal.mjs \
+            scripts/canonical-push-guard.mjs \
+            scripts/test/canonical-push-guard.test.mjs \
+            --format json > phase2-lint-report.json || true
+      - name: Publish lint report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add phase2-lint-report.json
+          HUSKY=0 git commit -m "chore(db): publish phase 2 lint report"
+          HUSKY=0 git push origin HEAD:${{ github.ref_name }}
