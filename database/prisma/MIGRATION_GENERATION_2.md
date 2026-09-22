@@ -34,3 +34,7 @@ Canonical data and product-image changes are versioned separately from schema mi
 ## Push freshness contract
 
 `npm run state:push:guard` is wired into Husky pre-push. It refreshes the Sprint canonical ref and blocks stale branch bases, uncommitted canonical state, Generation 1 archive edits, frozen migration checksum rewrites, and schema/catalog/asset changes without the corresponding version bump. GitHub CI independently replays the migration lineage and verifies canonical state/assets.
+
+## Commit preparation contract
+
+Husky pre-commit runs `npm run state:prepare`. For staged canonical changes it refreshes the schema/catalog hashes, appends checksums only for new migrations, rebuilds the tracked product-image manifest from the Git index, bumps the affected canonical version once, and stages those generated metadata files. It refuses partially staged canonical files and refuses edits to already-frozen migrations.

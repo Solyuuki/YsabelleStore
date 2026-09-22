@@ -1,3 +1,8 @@
 #!/usr/bin/env sh
+set -eu
+
+# Canonical state metadata is generated from staged schema/catalog/asset changes
+# before lint/format validation. Frozen migration checksums can only be appended.
+npm run state:prepare
 npm run lint
 npm run format:check

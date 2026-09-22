@@ -108,7 +108,8 @@
     "migration:security": "node scripts/migration-security.mjs",
     "migration:checksums:add": "node scripts/migration-checksums.mjs --add-new",
     "state:security": "node scripts/canonical-state-security.mjs",
-    "state:push:guard": "node scripts/canonical-push-guard.mjs"
+    "state:push:guard": "node scripts/canonical-push-guard.mjs",
+    "state:prepare": "node scripts/canonical-state-prepare.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"
