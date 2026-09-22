@@ -1,0 +1,125 @@
+name: M1 Validation Evidence
+
+on:
+  push:
+    branches:
+      - m1/v0.11/fix/http-status-contract
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-record:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ysabellestore_ci
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
+      JWT_SECRET: ci-only-secret
+      CUSTOMER_OAUTH_TRANSACTION_KEY: ci-only-oauth-transaction-key-32-bytes-minimum
+      FRONTEND_URL: http://localhost:5173
+      YSABELLE_BRANCH: m1/v0.11/fix/http-status-contract
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            forecasting-service/requirements.txt
+            catalog-image-engine/requirements.txt
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -r forecasting-service/requirements.txt
+          python -m pip install -r catalog-image-engine/requirements.txt
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Build disposable CI database
+        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+
+      - name: Run aggregate code verification
+        run: npm run verify:code
+
+      - name: Record verified M1 evidence
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { today, upsertTableRow } from "./scripts/lib/markdown-utils.mjs";
+
+          const date = today();
+          const branch = "m1/v0.11/fix/http-status-contract";
+          const notes = "The aggregate read-only code verification completed successfully.";
+
+          upsertTableRow(
+            "docs/implementation-artifacts/m1-abarado/VALIDATION-SUMMARY.md",
+            "Validation Results",
+            ["Date", "Branch", "Command"],
+            {
+              Date: date,
+              Branch: branch,
+              Command: "npm run verify:code",
+              Result: "Passed",
+              Notes: notes
+            }
+          );
+
+          upsertTableRow(
+            "docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md",
+            "Historical Validation Detail",
+            ["Date", "Command"],
+            {
+              Date: date,
+              Command: "`npm run verify:code`",
+              Result: "Passed",
+              Notes: notes
+            }
+          );
+          NODE
+
+          npx prettier --write             docs/implementation-artifacts/m1-abarado/VALIDATION-SUMMARY.md             docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md
+
+      - name: Commit validation evidence
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             docs/implementation-artifacts/m1-abarado/VALIDATION-SUMMARY.md             docs/implementation-artifacts/m1-abarado/TESTING-REPORTS.md
+          if git diff --cached --quiet; then
+            echo "Validation evidence is already current."
+            exit 0
+          fi
+          git commit -m "docs: record current M1 validation evidence"
+          git push --no-verify origin HEAD:m1/v0.11/fix/http-status-contract
