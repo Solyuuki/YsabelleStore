@@ -43,6 +43,9 @@ jobs:
             --script \
             --output migration-generation2/migration.sql
           sha256sum migration-generation2/migration.sql | tee migration-generation2/SHA256SUMS.txt
+          echo "-----BEGIN GENERATION2 BASELINE-----"
+          cat migration-generation2/migration.sql
+          echo "-----END GENERATION2 BASELINE-----"
 
       - name: Upload baseline candidate
         uses: actions/upload-artifact@v4
