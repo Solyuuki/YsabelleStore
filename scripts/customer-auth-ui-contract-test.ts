@@ -143,7 +143,7 @@ assert.match(registerSource, /verificationPanel === "quick-email"/);
 assert.match(registerSource, /onVerified=\{handleQuickSignVerified\}/);
 assert.match(
   registerSource,
-  /async function handleQuickSignVerified\(\)[\s\S]*?await refreshSession\(\);[\s\S]*?navigate\("\/"\);/
+  /async function handleQuickSignVerified\(\)[\s\S]*?await refreshSession\(\);[\s\S]*?navigate\(returnTo\);/
 );
 assert.doesNotMatch(registerSource, /This verified email can be used for Email Quick Sign\./);
 assert.doesNotMatch(registerSource, /mobileLabel=/);
