@@ -161,7 +161,7 @@ export function inspectCandidateReconciliation({
         );
       }
       const sqlNeedle = `('${item.candidateId}','${product.productId}','NEEDS_REVIEW','READY'`;
-      if (!catalogSql.includes(sqlNedle)) {
+      if (!catalogSql.includes(sqlNeedle)) {
         findings.push(
           `BLOCK: ${item.sourceProductId} candidate is missing NEEDS_REVIEW/READY seed evidence.`
         );
