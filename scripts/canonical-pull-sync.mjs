@@ -56,6 +56,11 @@ const git = (args, options) => run("git", args, { ...options, capture: true });
 export function isRelevantCanonicalPath(path) {
   return PREFIXES.some((p) => path.startsWith(p));
 }
+export function requiresPrismaRegeneration(paths, state) {
+  return paths.some(
+    (path) => path === state.schemaPath || path.startsWith("database/prisma/migrations/")
+  );
+}
 export function classifyDatabaseState({
   applicationTableCount,
   hasGeneration2Baseline,
@@ -208,6 +213,9 @@ async function main() {
     "asset-distribution:security"
   ])
     npm(["run", task]);
+  if (requiresPrismaRegeneration(relevant, state)) {
+    npm(["run", "prisma:clean"]);
+  }
   const { PrismaClient } = await import("@prisma/client");
   let observed = await withPrisma(PrismaClient, (p) => inspectDatabase(p)),
     kind = classifyDatabaseState({ ...observed, target: state });

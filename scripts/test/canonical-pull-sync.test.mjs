@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { classifyDatabaseState, isRelevantCanonicalPath } from "../canonical-pull-sync.mjs";
+import {
+  classifyDatabaseState,
+  isRelevantCanonicalPath,
+  requiresPrismaRegeneration
+} from "../canonical-pull-sync.mjs";
 
 const target = {
   migrationEpoch: 2,
@@ -14,6 +18,22 @@ test("canonical pull path detection ignores ordinary source changes", () => {
   assert.equal(isRelevantCanonicalPath("frontend/src/App.tsx"), false);
   assert.equal(isRelevantCanonicalPath("database/prisma/schema.prisma"), true);
   assert.equal(isRelevantCanonicalPath("frontend/public/images/products/example.webp"), true);
+});
+
+test("Prisma regeneration is required only when schema lineage changes", () => {
+  const state = { schemaPath: "database/prisma/schema.prisma" };
+  assert.equal(requiresPrismaRegeneration(["database/prisma/schema.prisma"], state), true);
+  assert.equal(
+    requiresPrismaRegeneration(
+      ["database/prisma/migrations/0002_example/migration.sql"],
+      state
+    ),
+    true
+  );
+  assert.equal(
+    requiresPrismaRegeneration(["database/canonical/releases/g2-s2-c2-a2.json"], state),
+    false
+  );
 });
 
 test("empty database is classified separately", () => {
