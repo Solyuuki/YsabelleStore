@@ -90,7 +90,7 @@ test("asset materializer verifies, replaces, backs up, and becomes idempotent", 
   assert.equal(applied.candidateCount, 1);
   assert.equal(applied.fileCount, 4);
   assert.ok(applied.backupRoot);
-  assert.equal(
+  assert.deepEqual(
     readFileSync(join(fx.runtimeRoot, "candidates", fx.candidateId, "processed", "card.webp")),
     fx.files.card
   );
