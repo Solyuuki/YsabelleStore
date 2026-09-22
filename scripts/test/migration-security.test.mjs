@@ -28,7 +28,7 @@ const baseline = `CREATE TABLE \`examples\` (\`id\` INTEGER NOT NULL, PRIMARY KE
 CREATE TABLE \`product_reviews\` (\`id\` INTEGER NOT NULL, \`rating\` TINYINT UNSIGNED NOT NULL, CONSTRAINT \`chk_product_reviews_rating\` CHECK (\`rating\` BETWEEN 1 AND 5), PRIMARY KEY (\`id\`));
 CREATE TABLE \`customer_saved_addresses\` (\`id\` INTEGER NOT NULL, \`updated_at\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3), PRIMARY KEY (\`id\`));`;
 
-const legacySql = "CREATE TABLE \`legacy_only\` (\`id\` INTEGER NOT NULL);";
+const legacySql = "CREATE TABLE `legacy_only` (`id` INTEGER NOT NULL);";
 
 function baseOptions(sql = baseline, checksum = sha256(baseline)) {
   return {
@@ -78,7 +78,7 @@ test("legacy migration cannot re-enter active lineage", () => {
 
 test("raw SQL contracts are enforced", () => {
   const broken = baseline
-    .replace("CONSTRAINT \`chk_product_reviews_rating\` CHECK (\`rating\` BETWEEN 1 AND 5),", "")
+    .replace("CONSTRAINT `chk_product_reviews_rating` CHECK (`rating` BETWEEN 1 AND 5),", "")
     .replace(" ON UPDATE CURRENT_TIMESTAMP(3)", "");
   const findings = run(broken, sha256(broken));
   assert.ok(findings.some((x) => x.includes("rating CHECK")));
@@ -101,7 +101,7 @@ test("migration lock must stay on MySQL", () => {
 
 test("destructive forward migration is blocked", () => {
   const options = baseOptions();
-  const destructive = "ALTER TABLE \`examples\` DROP COLUMN \`legacy_value\`;";
+  const destructive = "ALTER TABLE `examples` DROP COLUMN `legacy_value`;";
   options.active.set("0001_drop_legacy_value", destructive);
   options.checksums.migrations["0001_drop_legacy_value"] = sha256(destructive);
   const findings = inspectGeneration2(options);
