@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "algorithm": "git-blob-sha1",
+  "sourceCommit": "e4d2597af3616f506fc7aea71e3f6a1f880c9d6c",
+  "migrations": [
+    {"name":"0001_sprint_1_database_foundation","gitBlobOid":"fc3d60eba590eba026e38b0686d586d2b8111dbe","size":10711},
+    {"name":"0002_products_inventory_foundation","gitBlobOid":"b565edfd55914b2c044a3582f0705f71cca39667","size":3193},
+    {"name":"0003_sarima_source_catalog_mapping","gitBlobOid":"1e8e816035dff638ce223d972fd7196776677cf0","size":1868},
+    {"name":"20260707055138_sync_trusted_device_sessions","gitBlobOid":"854f1b2c097125a3101d68ae5bb3aa88db2d9423","size":11472},
+    {"name":"20260707061833_trusted_device_non_expiring","gitBlobOid":"6e8f449130059ddb39501b44842deddf28c08831","size":82},
+    {"name":"20260715120000_historical_sales_import_foundation","gitBlobOid":"d228581ed37c940df28a01dd5cad9c5f80625354","size":6329},
+    {"name":"20260715190000_scalable_forecast_delivery","gitBlobOid":"b4abe7f2e4368850f4cdaf06e51b24dc9a64e537","size":3423},
+    {"name":"20260808090000_add_customer_storefront_orders","gitBlobOid":"126c224b4fd83d765d2c68a67bf97b16d42599dd","size":1813},
+    {"name":"20260809120000_add_product_catalog_image","gitBlobOid":"ade341079d050254529410ef6a0c0328d0be4ee8","size":88},
+    {"name":"20260810160000_canonical_catalog_quality","gitBlobOid":"f5d151c6d7f56a5da32ae78588c131adc03da3e1","size":6029},
+    {"name":"20260818170000_add_product_reviews","gitBlobOid":"146b238f894c2dd3e83175c7e93319d1c4ea7757","size":787},
+    {"name":"20260822_customer_accounts","gitBlobOid":"ed6ec82c4ca780164bb2c95171d7ffbabb2a8e0b","size":1753},
+    {"name":"20260822200000_catalog_image_engine_foundation","gitBlobOid":"79a03c00bcaffe076329d50d1e7339f05867db9d","size":1710},
+    {"name":"20260825230000_customer_identifier_login","gitBlobOid":"29161f7edf78b917f7773107b03dcc7715cf050b","size":322},
+    {"name":"20260827040000_customer_password_recovery","gitBlobOid":"6b0f098cf39fb33de6fbb011afcb7d0ba54bc764","size":897},
+    {"name":"20260829071000_customer_social_auth","gitBlobOid":"fae7861f0637bef0dd48a80cd71657ff00aaef69","size":3541},
+    {"name":"20260831170000_customer_verified_identity_quick_sign","gitBlobOid":"cce5adb928b6f63c49599ba1904f6929aaaad11f","size":1615},
+    {"name":"20260831190000_customer_remembered_quick_sign","gitBlobOid":"7d9d328c69b8d443565ebfff2273c598cc2f951f","size":1018},
+    {"name":"20260910170000_product_barcode_identity","gitBlobOid":"d905f91d7514bfa4965c9760b7f625f7d35ef2fb","size":2215},
+    {"name":"20260912120000_restock_order_foundation","gitBlobOid":"efa73c2b4722bad6a3764371fbc1b4ffc7ec130a","size":3145},
+    {"name":"20260913030000_allow_unknown_inventory_batch_cost","gitBlobOid":"f2a780cadc9106f164bcb76d75ff2daf19f857ab","size":168},
+    {"name":"20260916230000_customer_saved_contact_address","gitBlobOid":"cc1d56cbae2e86c9600210c2e4d778c7e86b62d7","size":1518},
+    {"name":"20260922132000_add_customer_account_cart","gitBlobOid":"8f7767539f3a855142670fb93a43793c1817f928","size":988}
+  ]
+}

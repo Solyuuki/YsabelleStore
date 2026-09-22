@@ -105,8 +105,15 @@ export function evaluatePushPolicy({
     );
   }
 
-  if (hasAny(changed, (path) => path.startsWith("database/prisma/migration-history-archive/"))) {
-    findings.push("BLOCK: Generation 1 migration archive is read-only.");
+  if (
+    hasAny(
+      changed,
+      (path) =>
+        path.startsWith("database/prisma/migration-history-archive/") ||
+        path === "database/prisma/state/legacy-migration-blobs.json"
+    )
+  ) {
+    findings.push("BLOCK: Generation 1 migration archive and fingerprint registry are read-only.");
   }
 
   for (const [name, checksum] of Object.entries(remoteChecksums.migrations ?? {})) {

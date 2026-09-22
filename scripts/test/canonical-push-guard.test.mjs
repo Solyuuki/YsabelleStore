@@ -73,3 +73,14 @@ test("legacy archive is immutable", () => {
   });
   assert.ok(findings.some((item) => item.includes("read-only")));
 });
+
+test("legacy archive fingerprint registry is immutable", () => {
+  const findings = evaluatePushPolicy({
+    changed: ["database/prisma/state/legacy-migration-blobs.json"],
+    localState: baseState,
+    remoteState: baseState,
+    localChecksums: checksums,
+    remoteChecksums: checksums
+  });
+  assert.ok(findings.some((item) => item.includes("fingerprint registry")));
+});
