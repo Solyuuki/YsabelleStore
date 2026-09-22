@@ -27,3 +27,7 @@ The first active Sprint 11 slice standardizes the HTTP status/transport contract
 ## Integration rule
 
 Task branches target `sprint/v0.11/sprint-11`. Accepted Sprint 11 work is promoted through the established staging and main release path only after relevant automated gates and manual QA pass.
+
+## Migration/canonical-state hardening checkpoint
+
+Phase 4 has reconciled the production-50 image candidates and now pins the exact runtime asset identities for the 50 selected candidate folders (original, processed, card, and PDP variants). Automatic distribution remains fail-closed until the physical runtime payload is published and pull materialization/recovery rehearsals pass; `distributionReady` remains `false`.
