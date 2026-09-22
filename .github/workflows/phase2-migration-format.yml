@@ -52,5 +52,5 @@ jobs:
             package.json \
             .github/workflows/ci.yml \
             database/prisma/MIGRATION_GENERATION_2.md
-          git commit -m "style(db): format phase 2 migration security"
-          git push origin HEAD:${{ github.ref_name }}
+          HUSKY=0 git commit -m "style(db): format phase 2 migration security"
+          HUSKY=0 git push origin HEAD:${{ github.ref_name }}
