@@ -1,282 +1,67 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  statSync
-} from "node:fs";
-import { dirname, extname, join, resolve } from "node:path";
+import { spawnSync } from "node:child_process";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
 
-const STATE_PATH = "database/prisma/state/canonical-state.json";
-const RECONCILIATION_PATH = "database/canonical/product-images/candidate-reconciliation.json";
-const DISTRIBUTION_PATH = "database/canonical/product-images/runtime-distribution.manifest.json";
-const DEFAULT_PAYLOAD_ROOT = "database/canonical/product-images/runtime-payload";
-const REQUIRED_ROLES = ["original", "processed", "card", "pdp"];
-
-export function sha256(buffer) {
-  return createHash("sha256").update(buffer).digest("hex");
+const ROOT=resolve(".");
+const STATE="database/prisma/state/canonical-state.json";
+const RECON="database/canonical/product-images/candidate-reconciliation.json";
+const DIST="database/canonical/product-images/runtime-distribution.manifest.json";
+const ROLES=["original","processed","card","pdp"];
+export const sha256=(v)=>createHash("sha256").update(v).digest("hex");
+export function gitBlobOid(v){const b=Buffer.isBuffer(v)?v:Buffer.from(v);return createHash("sha1").update(Buffer.from("blob "+b.length+"\0")).update(b).digest("hex");}
+export function parseDistributionRecords(text){
+  const lines=text.replace(/\r\n/g,"\n").trimEnd().split("\n");
+  if(lines.shift()!=="candidateId\trole\tsizeBytes\tsha256\tgitBlobOid")throw new Error("Runtime distribution records header is invalid.");
+  return lines.filter(Boolean).map(line=>{const [candidateId,role,sizeBytes,fileSha256,blob]=line.split("\t");if(!candidateId||!ROLES.includes(role))throw new Error("Invalid runtime record: "+line);return {candidateId,role,sizeBytes:Number(sizeBytes),sha256:fileSha256,gitBlobOid:blob};});
 }
-
-export function gitBlobOid(buffer) {
-  const bytes = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
-  const header = Buffer.from(`blob ${bytes.length}\0`, "utf8");
-  return createHash("sha1").update(header).update(bytes).digest("hex");
+function relativePath(item,role){
+  if(!/^[a-z0-9-]+$/.test(item.candidateId))throw new Error("Unsafe candidate id: "+item.candidateId);
+  if(role==="original"){const ext=String(item.originalExtension||"").toLowerCase();if(!/^[a-z0-9]+$/.test(ext))throw new Error("Unsafe extension: "+item.candidateId);return join("candidates",item.candidateId,"original."+ext);}
+  return join("candidates",item.candidateId,"processed",role==="processed"?"processed.webp":role+".webp");
 }
-
-export function parseDistributionRecords(text) {
-  const lines = text.replace(/\r\n/g, "\n").trimEnd().split("\n");
-  const header = lines.shift();
-  if (header !== "candidateId\trole\tsizeBytes\tsha256\tgitBlobOid") {
-    throw new Error("Runtime distribution records header is invalid.");
-  }
-
-  return lines.filter(Boolean).map((line) => {
-    const [candidateId, role, sizeBytes, fileSha256, blobOid] = line.split("\t");
-    if (!candidateId || !REQUIRED_ROLES.includes(role)) {
-      throw new Error(`Runtime distribution record is invalid: ${line}`);
-    }
-    return {
-      candidateId,
-      role,
-      sizeBytes: Number(sizeBytes),
-      sha256: fileSha256,
-      gitBlobOid: blobOid
-    };
-  });
+export function buildAssetMaterializationPlan({release,reconciliation,recordsText,runtimeRoot,root=ROOT}){
+  const products=new Map((release.products||[]).map(p=>[p.sourceProductId,p]));
+  const items=new Map((reconciliation.items||[]).map(i=>[i.candidateId,i]));
+  return parseDistributionRecords(recordsText).map(record=>{const item=items.get(record.candidateId),product=item&&products.get(item.sourceProductId);if(!item||!product||!product.sourceImage||!product.sourceImage.path)throw new Error("Missing canonical source: "+record.candidateId);const rel=relativePath(item,record.role);return {...record,sourcePath:join(root,product.sourceImage.path),relativePath:rel,targetPath:join(runtimeRoot,rel)};});
 }
-
-export function runtimeRelativePath(item, role) {
-  if (!/^[a-z0-9-]+$/.test(item.candidateId)) {
-    throw new Error(`Unsafe candidate id: ${item.candidateId}`);
-  }
-
-  if (role === "original") {
-    const extension = String(item.originalExtension ?? "").toLowerCase();
-    if (!/^[a-z0-9]+$/.test(extension)) {
-      throw new Error(`Unsafe original extension for ${item.candidateId}.`);
-    }
-    return join("candidates", item.candidateId, `original.${extension}`);
-  }
-  if (role === "processed") {
-    return join("candidates", item.candidateId, "processed", "processed.webp");
-  }
-  if (role === "card") {
-    return join("candidates", item.candidateId, "processed", "card.webp");
-  }
-  if (role === "pdp") {
-    return join("candidates", item.candidateId, "processed", "pdp.webp");
-  }
-  throw new Error(`Unsupported runtime asset role: ${role}`);
+function verify(path,r){if(!existsSync(path))return "missing: "+path;const st=statSync(path);if(!st.isFile())return "not-file: "+path;if(st.size!==r.sizeBytes)return "size: "+path;const b=readFileSync(path);if(sha256(b)!==r.sha256)return "sha256: "+path;if(gitBlobOid(b)!==r.gitBlobOid)return "git-blob: "+path;return null;}
+export function verifyMaterializedAssets(plan,rootOverride=null){return plan.map(r=>verify(rootOverride?join(rootOverride,r.relativePath):r.targetPath,r)).filter(Boolean);}
+function group(plan){const m=new Map();for(const r of plan){const x=m.get(r.candidateId)||new Map();x.set(r.role,r);m.set(r.candidateId,x);}return m;}
+export function processedCardAliases(plan){const s=new Set();for(const [id,r] of group(plan)){const p=r.get("processed"),c=r.get("card");if(p&&c&&p.sizeBytes===c.sizeBytes&&p.sha256===c.sha256&&p.gitBlobOid===c.gitBlobOid)s.add(id);}return s;}
+function run(cmd,args,capture=false){const r=spawnSync(cmd,args,{cwd:ROOT,env:process.env,encoding:"utf8",stdio:capture?["ignore","pipe","pipe"]:"inherit",windowsHide:true});if(r.error)throw r.error;if(r.status!==0)throw new Error(cmd+" failed ("+(r.status===null?"unknown":r.status)+")"+(capture?": "+(r.stderr||r.stdout||"").trim():""));return r;}
+function ensurePillow(distribution){
+  const expected=distribution.reconstruction&&distribution.reconstruction.pillowVersion;
+  const req=distribution.reconstruction&&distribution.reconstruction.pythonRequirementsPath;
+  if(!expected||!req)throw new Error("Missing pinned image reconstruction contract.");
+  const python=process.env.PYTHON_EXECUTABLE?.trim()||(process.platform==="win32"?"python":"python3");
+  const inspect=()=>spawnSync(python,["-c","import PIL; print(PIL.__version__)"],{cwd:ROOT,encoding:"utf8",stdio:["ignore","pipe","pipe"],windowsHide:true});
+  let r=inspect();if(r.status!==0||r.stdout.trim()!==expected){run(python,["-m","pip","install","--disable-pip-version-check","-r",req]);r=inspect();}
+  if(r.status!==0||r.stdout.trim()!==expected)throw new Error("Pillow "+expected+" required for exact reconstruction.");
+  return python;
 }
-
-export function buildAssetMaterializationPlan({
-  reconciliation,
-  recordsText,
-  payloadRoot,
-  runtimeRoot
-}) {
-  const byCandidate = new Map(
-    (reconciliation.items ?? []).map((item) => [item.candidateId, item])
-  );
-  const records = parseDistributionRecords(recordsText);
-  return records.map((record) => {
-    const item = byCandidate.get(record.candidateId);
-    if (!item) {
-      throw new Error(`Distribution references unknown candidate: ${record.candidateId}`);
-    }
-    const relativePath = runtimeRelativePath(item, record.role);
-    return {
-      ...record,
-      relativePath,
-      sourcePath: join(payloadRoot, relativePath),
-      targetPath: join(runtimeRoot, relativePath)
-    };
-  });
+function reconstruct(distribution,plan,stage){
+  const python=ensurePillow(distribution),candidateRoot=join(stage,"candidates"),tmp=mkdtempSync(join(tmpdir(),"ysabelle-assets-")),jobsPath=join(tmp,"jobs.json"),summary=join(tmp,"summary.json");
+  try{const jobs=[];for(const [id,records] of group(plan)){const o=records.get("original");if(!o||verify(o.sourcePath,o))throw new Error("Pinned original mismatch: "+id);const dest=join(stage,o.relativePath);mkdirSync(dirname(dest),{recursive:true});copyFileSync(o.sourcePath,dest);jobs.push({productCode:id,fileId:id,sourcePath:o.sourcePath,reconciliationStatus:"EXACT_MATCH"});}
+    writeFileSync(jobsPath,JSON.stringify(jobs,null,2)+"\n");
+    run(python,[join(ROOT,distribution.reconstruction.engineBatchPath),jobsPath,candidateRoot,summary]);
+    const aliases=processedCardAliases(plan);for(const id of aliases){const d=join(candidateRoot,id,"processed");copyFileSync(join(d,"card.webp"),join(d,"processed.webp"));}
+    const errors=verifyMaterializedAssets(plan,stage);if(errors.length)throw new Error("Exact reconstruction failed:\n"+errors.join("\n"));return aliases.size;
+  }finally{rmSync(tmp,{recursive:true,force:true});}
 }
-
-function verifyFile(path, record) {
-  if (!existsSync(path)) return `missing: ${path}`;
-  const stats = statSync(path);
-  if (!stats.isFile()) return `not a file: ${path}`;
-  if (stats.size !== record.sizeBytes) return `size mismatch: ${path}`;
-
-  const bytes = readFileSync(path);
-  if (sha256(bytes) !== record.sha256) return `SHA-256 mismatch: ${path}`;
-  if (gitBlobOid(bytes) !== record.gitBlobOid) return `Git blob mismatch: ${path}`;
-  return null;
+function candidateIds(plan){return [...new Set(plan.map(r=>r.candidateId))].sort();}
+export function materializeAssetPayload({state,distribution,plan,runtimeRoot}){
+  if(verifyMaterializedAssets(plan).length===0)return {status:"NOOP",candidateCount:candidateIds(plan).length,fileCount:plan.length,aliasCount:processedCardAliases(plan).size,backupRoot:null};
+  mkdirSync(runtimeRoot,{recursive:true});const tag=String(state.releaseId||"unknown").replace(/[^a-zA-Z0-9._-]/g,"_"),stage=join(runtimeRoot,".canonical-stage-"+tag+"-"+process.pid),backup=join(runtimeRoot,".canonical-backups",tag+"-"+Date.now()),swapped=[];rmSync(stage,{recursive:true,force:true});mkdirSync(stage,{recursive:true});
+  try{const aliasCount=reconstruct(distribution,plan,stage);for(const id of candidateIds(plan)){const src=join(stage,"candidates",id),dst=join(runtimeRoot,"candidates",id),bak=join(backup,id);mkdirSync(dirname(dst),{recursive:true});let backedUp=false;if(existsSync(dst)){mkdirSync(dirname(bak),{recursive:true});renameSync(dst,bak);backedUp=true;}renameSync(src,dst);swapped.push({dst,bak,backedUp});}
+    const errors=verifyMaterializedAssets(plan);if(errors.length)throw new Error(errors.join("\n"));rmSync(stage,{recursive:true,force:true});const keep=swapped.some(x=>x.backedUp);if(!keep)rmSync(backup,{recursive:true,force:true});return {status:"APPLIED",candidateCount:candidateIds(plan).length,fileCount:plan.length,aliasCount,backupRoot:keep?backup:null};
+  }catch(e){for(const x of [...swapped].reverse()){rmSync(x.dst,{recursive:true,force:true});if(x.backedUp&&existsSync(x.bak)){mkdirSync(dirname(x.dst),{recursive:true});renameSync(x.bak,x.dst);}}rmSync(stage,{recursive:true,force:true});throw e;}
 }
-
-export function verifyMaterializationSide(plan, side) {
-  const findings = [];
-  for (const record of plan) {
-    const path = side === "source" ? record.sourcePath : record.targetPath;
-    const finding = verifyFile(path, record);
-    if (finding) findings.push(finding);
-  }
-  return findings;
-}
-
-function uniqueCandidateIds(plan) {
-  return [...new Set(plan.map((item) => item.candidateId))].sort();
-}
-
-export function materializeAssetPayload({
-  reconciliation,
-  recordsText,
-  payloadRoot,
-  runtimeRoot,
-  releaseId
-}) {
-  const plan = buildAssetMaterializationPlan({
-    reconciliation,
-    recordsText,
-    payloadRoot,
-    runtimeRoot
-  });
-
-  const sourceFindings = verifyMaterializationSide(plan, "source");
-  if (sourceFindings.length) {
-    throw new Error(
-      `Published runtime payload failed verification before materialization:\n${sourceFindings.join("\n")}`
-    );
-  }
-
-  if (verifyMaterializationSide(plan, "target").length === 0) {
-    return {
-      status: "NOOP",
-      candidateCount: uniqueCandidateIds(plan).length,
-      fileCount: plan.length,
-      backupRoot: null
-    };
-  }
-
-  mkdirSync(runtimeRoot, { recursive: true });
-  const safeRelease = String(releaseId ?? "unknown").replace(/[^a-zA-Z0-9._-]/g, "_");
-  const stageRoot = join(runtimeRoot, `.canonical-stage-${safeRelease}-${process.pid}`);
-  const backupRoot = join(runtimeRoot, ".canonical-backups", `${safeRelease}-${Date.now()}`);
-  const swapped = [];
-
-  rmSync(stageRoot, { recursive: true, force: true });
-
-  try {
-    for (const record of plan) {
-      const stagedPath = join(stageRoot, record.relativePath);
-      mkdirSync(dirname(stagedPath), { recursive: true });
-      copyFileSync(record.sourcePath, stagedPath);
-    }
-
-    const stagePlan = plan.map((record) => ({
-      ...record,
-      targetPath: join(stageRoot, record.relativePath)
-    }));
-    const stageFindings = verifyMaterializationSide(stagePlan, "target");
-    if (stageFindings.length) {
-      throw new Error(`Staged runtime payload failed verification:\n${stageFindings.join("\n")}`);
-    }
-
-    for (const candidateId of uniqueCandidateIds(plan)) {
-      const stagedCandidate = join(stageRoot, "candidates", candidateId);
-      const targetCandidate = join(runtimeRoot, "candidates", candidateId);
-      const backupCandidate = join(backupRoot, candidateId);
-
-      mkdirSync(dirname(targetCandidate), { recursive: true });
-      let backedUp = false;
-      if (existsSync(targetCandidate)) {
-        mkdirSync(dirname(backupCandidate), { recursive: true });
-        renameSync(targetCandidate, backupCandidate);
-        backedUp = true;
-      }
-
-      renameSync(stagedCandidate, targetCandidate);
-      swapped.push({ targetCandidate, backupCandidate, backedUp });
-    }
-
-    const targetFindings = verifyMaterializationSide(plan, "target");
-    if (targetFindings.length) {
-      throw new Error(
-        `Runtime payload failed verification after materialization:\n${targetFindings.join("\n")}`
-      );
-    }
-
-    rmSync(stageRoot, { recursive: true, force: true });
-    const keptBackup = swapped.some((item) => item.backedUp);
-    if (!keptBackup) rmSync(backupRoot, { recursive: true, force: true });
-
-    return {
-      status: "APPLIED",
-      candidateCount: uniqueCandidateIds(plan).length,
-      fileCount: plan.length,
-      backupRoot: keptBackup ? backupRoot : null
-    };
-  } catch (error) {
-    for (const item of [...swapped].reverse()) {
-      rmSync(item.targetCandidate, { recursive: true, force: true });
-      if (item.backedUp && existsSync(item.backupCandidate)) {
-        mkdirSync(dirname(item.targetCandidate), { recursive: true });
-        renameSync(item.backupCandidate, item.targetCandidate);
-      }
-    }
-    rmSync(stageRoot, { recursive: true, force: true });
-    throw error;
-  }
-}
-
-function resolveRuntimeRoot() {
-  if (process.env.YSABELLE_CATALOG_IMAGE_ROOT) {
-    return resolve(process.env.YSABELLE_CATALOG_IMAGE_ROOT);
-  }
-  if (process.platform === "win32" && process.env.LOCALAPPDATA) {
-    return join(process.env.LOCALAPPDATA, "YsabelleStore", "catalog-images");
-  }
-  throw new Error(
-    "YSABELLE_CATALOG_IMAGE_ROOT is required outside Windows for canonical asset materialization."
-  );
-}
-
-function main() {
-  const state = JSON.parse(readFileSync(STATE_PATH, "utf8"));
-  const reconciliation = JSON.parse(readFileSync(RECONCILIATION_PATH, "utf8"));
-  const distribution = JSON.parse(readFileSync(DISTRIBUTION_PATH, "utf8"));
-
-  if (!distribution.distributionPayloadReady) {
-    console.warn("CANONICAL_ASSET_MATERIALIZE=DEFERRED: physical payload is not published.");
-    for (const blocker of distribution.distributionBlockers ?? []) {
-      console.warn(`  - ${blocker}`);
-    }
-    return;
-  }
-
-  const recordsCompressed = readFileSync(distribution.recordsPath);
-  const recordsText = gunzipSync(recordsCompressed).toString("utf8");
-  const payloadRoot = resolve(distribution.payloadRoot ?? DEFAULT_PAYLOAD_ROOT);
-  const runtimeRoot = resolveRuntimeRoot();
-
-  const result = materializeAssetPayload({
-    reconciliation,
-    recordsText,
-    payloadRoot,
-    runtimeRoot,
-    releaseId: state.releaseId
-  });
-
-  console.log(
-    `CANONICAL_ASSET_MATERIALIZE=${result.status} candidates=${result.candidateCount} files=${result.fileCount}`
-  );
-  if (result.backupRoot) console.log(`CANONICAL_ASSET_BACKUP=${result.backupRoot}`);
-}
-
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  try {
-    main();
-  } catch (error) {
-    console.error("CANONICAL_ASSET_MATERIALIZE=ERROR");
-    console.error(error instanceof Error ? error.message : error);
-    process.exitCode = 1;
-  }
-}
+export function resolveRuntimeRoot(env=process.env){if(env.YSABELLE_CATALOG_IMAGE_ROOT?.trim())return resolve(env.YSABELLE_CATALOG_IMAGE_ROOT.trim());if(process.platform==="win32"){const b=env.LOCALAPPDATA?.trim()||env.APPDATA?.trim();if(b)return join(b,"YsabelleStore","catalog-images");}if(process.platform==="darwin")return join(homedir(),"Library","Application Support","YsabelleStore","catalog-images");return join(env.XDG_DATA_HOME?.trim()||join(homedir(),".local","share"),"YsabelleStore","catalog-images");}
+export function loadAssetDistribution(root=ROOT,runtimeRoot=resolveRuntimeRoot()){const state=JSON.parse(readFileSync(join(root,STATE))),release=JSON.parse(readFileSync(join(root,state.canonicalReleasePath))),reconciliation=JSON.parse(readFileSync(join(root,RECON))),distribution=JSON.parse(readFileSync(join(root,DIST))),recordsText=gunzipSync(readFileSync(join(root,distribution.recordsPath))).toString("utf8");return {state,distribution,plan:buildAssetMaterializationPlan({release,reconciliation,recordsText,runtimeRoot,root}),runtimeRoot};}
+async function main(){const x=loadAssetDistribution(),allow=process.argv.includes("--allow-unready-rehearsal")||process.env.YSABELLE_PHASE4_ALLOW_UNREADY_REHEARSAL==="1";if(!x.distribution.distributionPayloadReady&&!allow){console.warn("CANONICAL_ASSET_MATERIALIZE=DEFERRED");return;}if(process.argv.includes("--verify-only")){const e=verifyMaterializedAssets(x.plan);if(e.length)throw new Error(e.join("\n"));console.log("CANONICAL_ASSET_VERIFY=PASS files="+x.plan.length);return;}const r=materializeAssetPayload({state:x.state,distribution:x.distribution,plan:x.plan,runtimeRoot:x.runtimeRoot});console.log("CANONICAL_ASSET_MATERIALIZE="+r.status+" candidates="+r.candidateCount+" files="+r.fileCount+" aliases="+r.aliasCount);if(r.backupRoot)console.log("CANONICAL_ASSET_BACKUP="+r.backupRoot);}
+if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href)main().catch(e=>{console.error("CANONICAL_ASSET_MATERIALIZE=ERROR");console.error(e instanceof Error?e.message:e);process.exitCode=1;});
