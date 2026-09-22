@@ -106,6 +106,7 @@
     "qa:import-five:reset": "node --env-file=.env scripts/qa-remove-five-import-products.mjs --apply",
     "db:verified50:bootstrap": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/db-verified50-bootstrap.ps1",
     "migration:security": "node scripts/migration-security.mjs",
+    "migration:upgrade:rehearsal": "node scripts/migration-upgrade-rehearsal.mjs",
     "migration:checksums:add": "node scripts/migration-checksums.mjs --add-new",
     "state:security": "node scripts/canonical-state-security.mjs",
     "state:push:guard": "node scripts/canonical-push-guard.mjs",
