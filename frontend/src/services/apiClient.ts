@@ -103,7 +103,9 @@ export class ApiClient {
       };
     }
 
-    assertSystemMutationAllowed(context.init.method);
+    if (typeof window !== "undefined") {
+      assertSystemMutationAllowed(context.init.method);
+    }
 
     let response: Response;
 
