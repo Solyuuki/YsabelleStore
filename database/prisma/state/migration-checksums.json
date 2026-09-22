@@ -1,0 +1,8 @@
+{
+  "formatVersion": 1,
+  "algorithm": "sha256",
+  "migrationEpoch": 2,
+  "migrations": {
+    "0000_generation2_baseline": "cb901c955361e5b3ff1a85bfc48e6a040c48394b0800a377d214e95495f26d56"
+  }
+}

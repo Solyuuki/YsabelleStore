@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "assetVersion": 1,
+  "root": "frontend/public/images/products",
+  "trackedAssets": [
+    {
+      "path": "frontend/public/images/products/gardenia-enriched-white-bread-600g.webp",
+      "gitBlobOid": "19ee9c93b0254777bb84a25800711e031dcf4c5f"
+    },
+    {
+      "path": "frontend/public/images/products/ligo-sardines-tomato-sauce-chili-added-155g.webp",
+      "gitBlobOid": "2d0adbb17546975da049a4bdf1d002ecb4f4deb2"
+    },
+    {
+      "path": "frontend/public/images/products/originals/gardenia-enriched-white-bread-600g.webp",
+      "gitBlobOid": "2951029e0018a7e854d534dc494a5a54db863651"
+    },
+    {
+      "path": "frontend/public/images/products/originals/ligo-sardines-tomato-sauce-chili-added-155g.webp",
+      "gitBlobOid": "71e4ba3e8c5fb70bb183911079e13456daa2a3e5"
+    },
+    {
+      "path": "frontend/public/images/products/originals/sunsilk-anti-dandruff-silky-shampoo-sachet-13-5ml.webp",
+      "gitBlobOid": "3333f7f4c27ef53f2e0235a5803b89d80999cb95"
+    },
+    {
+      "path": "frontend/public/images/products/sunsilk-anti-dandruff-silky-shampoo-sachet-13-5ml.webp",
+      "gitBlobOid": "e5235011462e7fa48aca7166328ff314a76ccffb"
+    }
+  ],
+  "note": "Initial Generation 2 manifest covers product image files tracked by Git; external/local catalog-image storage must be promoted through reviewed asset changesets before becoming canonical."
+}

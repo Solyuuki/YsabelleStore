@@ -80,8 +80,11 @@ jobs:
       - name: Validate Prisma schema
         run: npm run prisma:validate
 
-      - name: Build disposable CI database
-        run: npx prisma db push --schema=database/prisma/schema.prisma --skip-generate
+      - name: Validate Migration Generation 2 security
+        run: npm run migration:security
+
+      - name: Replay active Prisma migration lineage
+        run: npx prisma migrate deploy --schema=database/prisma/schema.prisma
 
       - name: Validate guardrail preconditions
         run: npm run guardrail:preflight

@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "migrationEpoch": 2,
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "assetVersion": 1,
+  "baselineMigration": "0000_generation2_baseline",
+  "schemaPath": "database/prisma/schema.prisma",
+  "schemaSha256": "a430e43ecdda38f8bddced795ec7490ece323a297a0c16ce207a67b81c22d8f4",
+  "canonicalCatalogPath": "database/seed/canonical-catalog-v1.sql",
+  "canonicalCatalogSha256": "641b59285f17c4a01cf930ebb2ff43fa2dd52f8e9ff5cdc2284362c90220d1c6",
+  "productAssetManifestPath": "database/prisma/state/product-assets.manifest.json",
+  "legacyArchivePath": "database/prisma/migration-history-archive/generation-1",
+  "cutoverSourceCommit": "265fb7e9b5f6ac162f0b49ea75794ce6659f0e8f",
+  "status": "active"
+}
