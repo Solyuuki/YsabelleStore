@@ -24,10 +24,7 @@ test("Prisma regeneration is required only when schema lineage changes", () => {
   const state = { schemaPath: "database/prisma/schema.prisma" };
   assert.equal(requiresPrismaRegeneration(["database/prisma/schema.prisma"], state), true);
   assert.equal(
-    requiresPrismaRegeneration(
-      ["database/prisma/migrations/0002_example/migration.sql"],
-      state
-    ),
+    requiresPrismaRegeneration(["database/prisma/migrations/0002_example/migration.sql"], state),
     true
   );
   assert.equal(
