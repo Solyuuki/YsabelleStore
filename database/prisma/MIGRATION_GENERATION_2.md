@@ -44,3 +44,9 @@ Husky pre-commit runs `npm run state:prepare`. For staged canonical changes it r
 Migration `0001_system_canonical_state` adds a singleton database marker used by the pull-sync layer to distinguish a valid Generation 2 database from a legacy or drifted database. Schema, catalog, and asset versions are tracked independently.
 
 Legacy database replacement remains fail-closed while `distributionReady` is false. The current blocker is the incomplete canonical product-image corpus; a populated legacy database must not be replaced with a state that would lose its working image assets.
+
+## Pull convergence contract
+
+Husky `post-merge` runs `npm run state:pull:sync` after a pull/merge that changes canonical database or product-image sources. It validates migration/state security, regenerates Prisma safely when schema files changed, classifies the local database, and automatically runs additive Generation 2 migrations for compatible databases.
+
+Legacy and empty database replacement is intentionally fail-closed while `distributionReady` is false. This prevents an automatic pull from replacing a working database before the complete approved catalog-image corpus and canonical data distribution package are available.

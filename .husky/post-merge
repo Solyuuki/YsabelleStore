@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -eu
+
+# A successful pull/merge checks whether canonical database or product-image
+# state changed. Compatible Generation 2 databases receive additive migrations
+# automatically; legacy replacement remains fail-closed until the complete
+# canonical data/image package is distribution-ready.
+npm run state:pull:sync
