@@ -101,7 +101,9 @@ export function inspectCanonicalState(root = ROOT) {
     }
     const actual = gitBlobOid(readFileSync(absolute));
     if (actual !== asset.gitBlobOid) {
-      findings.push(`BLOCK: canonical product asset content changed without manifest update: ${asset.path}.`);
+      findings.push(
+        `BLOCK: canonical product asset content changed without manifest update: ${asset.path}.`
+      );
     }
   }
 
@@ -117,7 +119,10 @@ export function inspectCanonicalState(root = ROOT) {
   return findings;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+) {
   const findings = inspectCanonicalState();
   if (findings.length > 0) {
     for (const finding of findings) console.error(finding);
