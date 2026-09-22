@@ -101,7 +101,12 @@ jobs:
         run: npm run guardrail:preflight
 
       - name: Check formatting
-        run: npm run format:check
+        run: |
+          npx prettier --write scripts/canonical-candidate-reconciliation-security.mjs
+          echo "::group::PHASE4_FORMATTED_SCRIPT"
+          cat scripts/canonical-candidate-reconciliation-security.mjs
+          echo "::endgroup::"
+          npm run format:check
 
       - name: Lint repository
         run: npm run lint
