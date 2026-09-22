@@ -58,4 +58,7 @@ async function main() {
   console.log("Frontend HTTP transport status contract passed.");
 }
 
-await main();
+void main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
