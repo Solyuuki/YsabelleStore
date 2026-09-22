@@ -3,6 +3,7 @@
   "algorithm": "sha256",
   "migrationEpoch": 2,
   "migrations": {
-    "0000_generation2_baseline": "cb901c955361e5b3ff1a85bfc48e6a040c48394b0800a377d214e95495f26d56"
+    "0000_generation2_baseline": "cb901c955361e5b3ff1a85bfc48e6a040c48394b0800a377d214e95495f26d56",
+    "0001_system_canonical_state": "f105339ddb9cc975c5392e66dfa493a739cbffbcf425347279e1cc2c52fe491b"
   }
 }

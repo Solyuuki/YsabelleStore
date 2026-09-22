@@ -1250,3 +1250,15 @@ model RestockOrderLine {
   @@index([restockOrderId, isSelected], map: "idx_restock_order_lines_order_selected")
   @@map("restock_order_lines")
 }
+
+model SystemCanonicalState {
+  id             Int      @id @db.UnsignedInt
+  migrationEpoch Int      @map("migration_epoch") @db.UnsignedInt
+  schemaVersion  Int      @map("schema_version") @db.UnsignedInt
+  catalogVersion Int      @map("catalog_version") @db.UnsignedInt
+  assetVersion   Int      @map("asset_version") @db.UnsignedInt
+  releaseId      String   @map("release_id") @db.VarChar(80)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("system_canonical_state")
+}

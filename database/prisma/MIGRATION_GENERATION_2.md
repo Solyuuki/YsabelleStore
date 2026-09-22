@@ -38,3 +38,9 @@ Canonical data and product-image changes are versioned separately from schema mi
 ## Commit preparation contract
 
 Husky pre-commit runs `npm run state:prepare`. For staged canonical changes it refreshes the schema/catalog hashes, appends checksums only for new migrations, rebuilds the tracked product-image manifest from the Git index, bumps the affected canonical version once, and stages those generated metadata files. It refuses partially staged canonical files and refuses edits to already-frozen migrations.
+
+## Local state marker
+
+Migration `0001_system_canonical_state` adds a singleton database marker used by the pull-sync layer to distinguish a valid Generation 2 database from a legacy or drifted database. Schema, catalog, and asset versions are tracked independently.
+
+Legacy database replacement remains fail-closed while `distributionReady` is false. The current blocker is the incomplete canonical product-image corpus; a populated legacy database must not be replaced with a state that would lose its working image assets.
