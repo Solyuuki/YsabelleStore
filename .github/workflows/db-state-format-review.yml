@@ -23,8 +23,22 @@ jobs:
       - run: npm ci
       - name: Format DB state sources
         run: |
-          npx prettier --write             database/prisma/MIGRATION_GENERATION_2.md             scripts/canonical-state-security.mjs             scripts/canonical-push-guard.mjs             scripts/test/canonical-push-guard.test.mjs             scripts/canonical-state-prepare.mjs
-          for file in             database/prisma/MIGRATION_GENERATION_2.md             scripts/canonical-state-security.mjs             scripts/canonical-push-guard.mjs             scripts/test/canonical-push-guard.test.mjs             scripts/canonical-state-prepare.mjs
+          npx prettier --write \
+            database/prisma/MIGRATION_GENERATION_2.md \
+            scripts/canonical-state-security.mjs \
+            scripts/canonical-push-guard.mjs \
+            scripts/test/canonical-push-guard.test.mjs \
+            scripts/canonical-state-prepare.mjs \
+            scripts/canonical-pull-sync.mjs \
+            scripts/test/canonical-pull-sync.test.mjs
+          for file in \
+            database/prisma/MIGRATION_GENERATION_2.md \
+            scripts/canonical-state-security.mjs \
+            scripts/canonical-push-guard.mjs \
+            scripts/test/canonical-push-guard.test.mjs \
+            scripts/canonical-state-prepare.mjs \
+            scripts/canonical-pull-sync.mjs \
+            scripts/test/canonical-pull-sync.test.mjs
           do
             echo "-----BEGIN FILE:$file-----"
             cat "$file"
