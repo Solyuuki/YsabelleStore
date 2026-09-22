@@ -60,10 +60,8 @@ export function inspectCandidateReconciliation({ state, release, reconciliation,
       "BLOCK: processed payload must be pinned once the runtime distribution manifest exists."
     );
   }
-  if (reconciliation.distributionPayloadReady !== false) {
-    findings.push(
-      "BLOCK: distribution payload must remain not-ready during reconciliation checkpoint."
-    );
+  if (reconciliation.distributionPayloadReady !== state.distributionReady) {
+    findings.push("BLOCK: candidate reconciliation readiness differs from canonical state.");
   }
 
   const releaseByCode = new Map(

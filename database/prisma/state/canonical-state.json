@@ -16,7 +16,7 @@
   "releaseId": "g2-s2-c2-a2",
   "distributionReady": false,
   "distributionBlockers": [
-    "The exact 50-candidate runtime file identities are integrity-pinned; Phase 4 must still publish the physical 200-file payload and pass pull materialization/recovery rehearsals before automatic replacement is enabled."
+    "Exact-byte runtime reconstruction, canonical data materialization, and guarded recovery are implemented; Phase 4 end-to-end rehearsal must pass before automatic distribution is activated."
   ],
   "canonicalReleasePath": "database/canonical/releases/g2-s2-c2-a2.json",
   "canonicalReleaseGitBlobOid": "86bdc703921aa4827e4f792138a4eff069bca3c3",

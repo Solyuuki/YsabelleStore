@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -139,14 +139,45 @@ export function inspectAssetDistribution({
   if (reconciliation.processedPayloadPinned !== true) {
     findings.push("BLOCK: candidate reconciliation does not acknowledge the pinned payload.");
   }
-  if (distribution.distributionPayloadReady !== false) {
-    findings.push("BLOCK: physical runtime payload is not yet published; ready must remain false.");
+  if (distribution.distributionPayloadReady !== state.distributionReady) {
+    findings.push("BLOCK: runtime distribution readiness differs from canonical state.");
   }
-  if (
-    !Array.isArray(distribution.distributionBlockers) ||
-    !distribution.distributionBlockers.length
-  ) {
-    findings.push("BLOCK: runtime distribution must document its remaining publication blocker.");
+  if (state.distributionReady) {
+    if (distribution.reconstruction?.exactByteRehearsalPassed !== true) {
+      findings.push("BLOCK: ready distribution requires a recorded exact-byte rehearsal pass.");
+    }
+    if ((distribution.distributionBlockers ?? []).length !== 0) {
+      findings.push("BLOCK: ready distribution cannot retain distribution blockers.");
+    }
+  } else if ((distribution.distributionBlockers ?? []).length === 0) {
+    findings.push("BLOCK: unready distribution must document its remaining blocker.");
+  }
+
+  const reconstruction = distribution.reconstruction ?? {};
+  if (distribution.payloadMode !== "GIT_RECONSTRUCTED_EXACT_BYTES") {
+    findings.push("BLOCK: runtime payload mode must use exact-byte Git reconstruction.");
+  }
+  if (reconstruction.engineBatchPath !== "catalog-image-engine/app/batch.py") {
+    findings.push("BLOCK: runtime reconstruction engine path is invalid.");
+  }
+  if (reconstruction.pythonRequirementsPath !== "catalog-image-engine/requirements.txt") {
+    findings.push("BLOCK: runtime reconstruction requirements path is invalid.");
+  }
+  if (reconstruction.pillowVersion !== "12.3.0") {
+    findings.push("BLOCK: runtime reconstruction Pillow version must be pinned to 12.3.0.");
+  }
+  if (reconstruction.sourceRoot !== state.canonicalProductImageRoot) {
+    findings.push("BLOCK: runtime reconstruction source root differs from canonical state.");
+  }
+  if (reconstruction.processedCardAliasPolicy !== "MANIFEST_IDENTICAL_IDENTITY") {
+    findings.push("BLOCK: processed/card alias policy is invalid.");
+  }
+  if (!existsSync(join(root, reconstruction.engineBatchPath ?? ""))) {
+    findings.push("BLOCK: runtime reconstruction engine is missing.");
+  }
+  const requirementsPath = join(root, reconstruction.pythonRequirementsPath ?? "");
+  if (!existsSync(requirementsPath) || readFileSync(requirementsPath, "utf8").trim() !== "Pillow==12.3.0") {
+    findings.push("BLOCK: Pillow must be exactly pinned for byte-stable runtime reconstruction.");
   }
 
   const reconciliationByCandidate = new Map(
@@ -237,6 +268,25 @@ export function inspectAssetDistribution({
   }
   if (payloadDigest(parsed.records, reconciliationByCandidate) !== distribution.payloadSha256) {
     findings.push("BLOCK: runtime distribution aggregate payload digest is invalid.");
+  }
+
+  const recordMap = new Map(parsed.records.map((record) => [record.candidateId + ":" + record.role, record]));
+  let aliasCount = 0;
+  for (const item of reconciliation.items ?? []) {
+    const processed = recordMap.get(item.candidateId + ":processed");
+    const card = recordMap.get(item.candidateId + ":card");
+    if (
+      processed &&
+      card &&
+      processed.sizeBytes === card.sizeBytes &&
+      processed.sha256 === card.sha256 &&
+      processed.gitBlobOid === card.gitBlobOid
+    ) {
+      aliasCount += 1;
+    }
+  }
+  if (aliasCount !== 16 || reconstruction.processedCardAliasCount !== 16) {
+    findings.push("BLOCK: runtime reconstruction must account for exactly 16 processed/card aliases.");
   }
 
   return findings;
