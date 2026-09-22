@@ -1,0 +1,32 @@
+name: DB State Format Review
+
+on:
+  push:
+    branches:
+      - "sprint/**"
+    paths:
+      - ".github/workflows/db-state-format-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  format-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format DB state sources
+        run: |
+          npx prettier --write             database/prisma/MIGRATION_GENERATION_2.md             scripts/canonical-state-security.mjs             scripts/canonical-push-guard.mjs             scripts/test/canonical-push-guard.test.mjs             scripts/canonical-state-prepare.mjs
+          for file in             database/prisma/MIGRATION_GENERATION_2.md             scripts/canonical-state-security.mjs             scripts/canonical-push-guard.mjs             scripts/test/canonical-push-guard.test.mjs             scripts/canonical-state-prepare.mjs
+          do
+            echo "-----BEGIN FILE:$file-----"
+            cat "$file"
+            echo "-----END FILE:$file-----"
+          done
