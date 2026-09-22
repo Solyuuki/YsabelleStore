@@ -4,8 +4,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const canonicalBranch =
-  process.env.YSABELLE_CANONICAL_BRANCH ?? "sprint/v0.11/sprint-11";
+const canonicalBranch = process.env.YSABELLE_CANONICAL_BRANCH ?? "sprint/v0.11/sprint-11";
 const remoteRef = `origin/${canonicalBranch}`;
 
 function git(args, { allowFailure = false } = {}) {
@@ -57,9 +56,7 @@ export function evaluatePushPolicy({
 
   for (const key of ["schemaVersion", "catalogVersion", "assetVersion"]) {
     if (localState[key] < remoteState[key]) {
-      findings.push(
-        `BLOCK: ${key} moved backwards (${remoteState[key]} -> ${localState[key]}).`
-      );
+      findings.push(`BLOCK: ${key} moved backwards (${remoteState[key]} -> ${localState[key]}).`);
     }
   }
 
@@ -67,8 +64,7 @@ export function evaluatePushPolicy({
     hasAny(
       changed,
       (path) =>
-        path === "database/prisma/schema.prisma" ||
-        path.startsWith("database/prisma/migrations/")
+        path === "database/prisma/schema.prisma" || path.startsWith("database/prisma/migrations/")
     )
   ) {
     requireVersionIncrease(
@@ -82,9 +78,7 @@ export function evaluatePushPolicy({
   if (
     hasAny(
       changed,
-      (path) =>
-        path === localState.canonicalCatalogPath ||
-        path.startsWith("database/canonical/")
+      (path) => path === localState.canonicalCatalogPath || path.startsWith("database/canonical/")
     )
   ) {
     requireVersionIncrease(
@@ -111,21 +105,13 @@ export function evaluatePushPolicy({
     );
   }
 
-  if (
-    hasAny(changed, (path) =>
-      path.startsWith("database/prisma/migration-history-archive/")
-    )
-  ) {
+  if (hasAny(changed, (path) => path.startsWith("database/prisma/migration-history-archive/"))) {
     findings.push("BLOCK: Generation 1 migration archive is read-only.");
   }
 
-  for (const [name, checksum] of Object.entries(
-    remoteChecksums.migrations ?? {}
-  )) {
+  for (const [name, checksum] of Object.entries(remoteChecksums.migrations ?? {})) {
     if (localChecksums.migrations?.[name] !== checksum) {
-      findings.push(
-        `BLOCK: frozen remote migration checksum changed or disappeared: ${name}.`
-      );
+      findings.push(`BLOCK: frozen remote migration checksum changed or disappeared: ${name}.`);
     }
   }
 
@@ -139,9 +125,7 @@ function main() {
     allowFailure: true
   });
   if (fetchResult.status !== 0) {
-    findings.push(
-      `BLOCK: unable to refresh ${remoteRef}; canonical freshness cannot be proven.`
-    );
+    findings.push(`BLOCK: unable to refresh ${remoteRef}; canonical freshness cannot be proven.`);
   }
 
   if (findings.length === 0) {
@@ -170,27 +154,18 @@ function main() {
     );
   }
 
-  const localState = JSON.parse(
-    readFileSync("database/prisma/state/canonical-state.json", "utf8")
-  );
+  const localState = JSON.parse(readFileSync("database/prisma/state/canonical-state.json", "utf8"));
   const localChecksums = JSON.parse(
     readFileSync("database/prisma/state/migration-checksums.json", "utf8")
   );
-  const remoteState = loadJsonFromGit(
-    remoteRef,
-    "database/prisma/state/canonical-state.json"
-  );
+  const remoteState = loadJsonFromGit(remoteRef, "database/prisma/state/canonical-state.json");
   const remoteChecksums = loadJsonFromGit(
     remoteRef,
     "database/prisma/state/migration-checksums.json"
   );
 
   if (remoteState && remoteChecksums) {
-    const changedOutput = git([
-      "diff",
-      "--name-only",
-      `${remoteRef}...HEAD`
-    ]).stdout;
+    const changedOutput = git(["diff", "--name-only", `${remoteRef}...HEAD`]).stdout;
     const changed = changedOutput ? changedOutput.split(/\r?\n/) : [];
     findings.push(
       ...evaluatePushPolicy({
@@ -215,9 +190,6 @@ function main() {
   );
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
-) {
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   main();
 }

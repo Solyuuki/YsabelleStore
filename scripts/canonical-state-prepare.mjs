@@ -1,11 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import {
-  existsSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync
-} from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -137,9 +132,7 @@ function main() {
     }
   }
   checksums.migrations = Object.fromEntries(
-    Object.entries(checksums.migrations).sort(([a], [b]) =>
-      a.localeCompare(b)
-    )
+    Object.entries(checksums.migrations).sort(([a], [b]) => a.localeCompare(b))
   );
 
   const indexedAssets = readIndexedAssets();
@@ -159,13 +152,7 @@ function main() {
   writeJson(CHECKSUM_PATH, checksums);
   writeJson(ASSET_MANIFEST_PATH, assetManifest);
 
-  git([
-    "add",
-    "--",
-    STATE_PATH,
-    CHECKSUM_PATH,
-    ASSET_MANIFEST_PATH
-  ]);
+  git(["add", "--", STATE_PATH, CHECKSUM_PATH, ASSET_MANIFEST_PATH]);
 
   console.log(
     `CANONICAL_STATE_PREPARE=PASS schemaChanged=${schemaChanged} catalogChanged=${catalogChanged} assetsChanged=${assetsChanged}`
