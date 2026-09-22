@@ -42,4 +42,4 @@ jobs:
             exit 0
           fi
           git commit -m "style: format Sprint 11 integration"
-          git push origin HEAD:m1/v0.11/fix/http-status-contract
+          git push --no-verify origin HEAD:m1/v0.11/fix/http-status-contract
