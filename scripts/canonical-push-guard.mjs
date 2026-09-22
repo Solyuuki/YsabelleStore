@@ -78,7 +78,11 @@ export function evaluatePushPolicy({
   if (
     hasAny(
       changed,
-      (path) => path === localState.canonicalCatalogPath || path.startsWith("database/canonical/")
+      (path) =>
+        path === localState.canonicalCatalogPath ||
+        path.startsWith("database/canonical/releases/") ||
+        (path.startsWith("database/canonical/") &&
+          !path.startsWith("database/canonical/product-images/"))
     )
   ) {
     requireVersionIncrease(
@@ -94,6 +98,7 @@ export function evaluatePushPolicy({
       changed,
       (path) =>
         path === localState.productAssetManifestPath ||
+        path.startsWith("database/canonical/product-images/") ||
         path.startsWith("frontend/public/images/products/")
     )
   ) {

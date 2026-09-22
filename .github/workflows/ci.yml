@@ -86,6 +86,9 @@ jobs:
       - name: Validate canonical state and product assets
         run: npm run state:security
 
+      - name: Validate canonical production release
+        run: npm run release:security
+
       - name: Rehearse baseline-to-latest migration upgrade
         env:
           MIGRATION_REHEARSAL_ALLOW: "1"

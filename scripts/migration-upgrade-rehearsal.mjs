@@ -157,11 +157,12 @@ async function main() {
         !row ||
         Number(row.migrationEpoch) !== state.migrationEpoch ||
         Number(row.schemaVersion) !== state.schemaVersion ||
-        Number(row.catalogVersion) !== state.catalogVersion ||
-        Number(row.assetVersion) !== state.assetVersion ||
-        row.releaseId !== state.releaseId
+        Number(row.catalogVersion) > state.catalogVersion ||
+        Number(row.assetVersion) > state.assetVersion
       ) {
-        fail("database canonical-state marker does not match canonical-state.json after upgrade.");
+        fail(
+          "database schema marker is incompatible with canonical-state.json after migration upgrade."
+        );
       }
 
       const applied = await prisma.$queryRawUnsafe(

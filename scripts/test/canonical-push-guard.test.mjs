@@ -84,3 +84,14 @@ test("legacy archive fingerprint registry is immutable", () => {
   });
   assert.ok(findings.some((item) => item.includes("fingerprint registry")));
 });
+
+test("canonical product image changes require an asset version increase", () => {
+  const findings = evaluatePushPolicy({
+    changed: ["database/canonical/product-images/sources/P001.jpg"],
+    localState: baseState,
+    remoteState: baseState,
+    localChecksums: checksums,
+    remoteChecksums: checksums
+  });
+  assert.ok(findings.some((item) => item.includes("product asset state")));
+});

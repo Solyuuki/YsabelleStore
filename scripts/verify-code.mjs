@@ -15,6 +15,11 @@ const steps = [
     label: "canonical state security"
   },
   {
+    args: ["run", "release:security"],
+    command: "npm",
+    label: "canonical release security"
+  },
+  {
     args: ["run", "prisma:generate"],
     command: "npm",
     label: "Prisma client generation"
