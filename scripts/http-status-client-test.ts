@@ -10,7 +10,7 @@ try {
 
   const noContent = await client.request("/resource", { method: "DELETE" });
   assert.equal(noContent.success, true);
-  assert.equal(noContent.status, 204);
+  assert.equal(noContent.httpStatus, 204);
   assert.equal(noContent.message, "Request completed successfully.");
 
   globalThis.fetch = async () =>
@@ -31,7 +31,7 @@ try {
 
   const rateLimited = await client.request("/login", { method: "POST" });
   assert.equal(rateLimited.success, false);
-  assert.equal(rateLimited.status, 429);
+  assert.equal(rateLimited.httpStatus, 429);
   assert.equal(rateLimited.retryAfterSeconds, 7);
 
   globalThis.fetch = async () =>
@@ -49,7 +49,7 @@ try {
 
   const upstreamFailure = await client.request("/forecast");
   assert.equal(upstreamFailure.success, false);
-  assert.equal(upstreamFailure.status, 502);
+  assert.equal(upstreamFailure.httpStatus, 502);
 } finally {
   globalThis.fetch = originalFetch;
 }

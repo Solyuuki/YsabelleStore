@@ -7,7 +7,7 @@ const canonicalStatusCodes = [
   200, 201, 202, 204, 400, 401, 403, 404, 405, 409, 413, 415, 422, 429, 500, 502, 503, 504
 ] as const;
 
-test("the backend exposes one canonical HTTP status contract for supported outcomes", () => {
+test("Sprint 11 exposes one canonical HTTP status contract for supported server outcomes", () => {
   assert.deepEqual(
     Object.values(HTTP_STATUS).sort((left, right) => left - right),
     [...canonicalStatusCodes]
@@ -18,8 +18,9 @@ test("the backend exposes one canonical HTTP status contract for supported outco
   }
 });
 
-test("unmodeled protocol status codes stay outside the application contract", () => {
+test("unrelated protocol statuses stay outside the application contract", () => {
   assert.equal(isCanonicalHttpStatusCode(101), false);
+  assert.equal(isCanonicalHttpStatusCode(206), false);
   assert.equal(isCanonicalHttpStatusCode(418), false);
 });
 

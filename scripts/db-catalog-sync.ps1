@@ -8,6 +8,21 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+function Get-NormalizedTextSha256([string]$Path) {
+    $text = [System.IO.File]::ReadAllText($Path)
+    $normalized = $text.Replace("`r`n", "`n").Replace("`r", "`n")
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    $bytes = $utf8.GetBytes($normalized)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return ([System.BitConverter]::ToString($sha256.ComputeHash($bytes))).Replace("-", "")
+    }
+    finally {
+        $sha256.Dispose()
+    }
+}
+
+
 $ExpectedSeedSha256 = "641B59285F17C4A01CF930EBB2FF43FA2DD52F8E9FF5CDC2284362C90220D1C6"
 $CatalogTables = @(
     "categories",
@@ -42,17 +57,19 @@ $Seed = Join-Path $RepoRoot "database\seed\canonical-catalog-v1.sql"
 $Prisma = Join-Path $RepoRoot "node_modules\.bin\prisma.cmd"
 
 $MySqlCandidates = @(
-    "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe",
-    (Get-Command mysql.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue)
-) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+    @(
+        "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe",
+        (Get-Command mysql.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue)
+    ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+)
 
 if (-not (Test-Path $Schema)) { throw "STOP: Prisma schema not found: $Schema" }
 if (-not (Test-Path $Seed)) { throw "STOP: canonical catalog snapshot not found: $Seed" }
 if (-not (Test-Path $Prisma)) { throw "STOP: local Prisma CLI not found. Run npm install first." }
-if (-not $MySqlCandidates -or $MySqlCandidates.Count -eq 0) { throw "STOP: mysql.exe not found." }
+if (@($MySqlCandidates).Count -eq 0) { throw "STOP: mysql.exe not found." }
 
 $MySql = $MySqlCandidates[0]
-$ActualSeedSha256 = (Get-FileHash $Seed -Algorithm SHA256).Hash
+$ActualSeedSha256 = Get-NormalizedTextSha256 $Seed
 if ($ActualSeedSha256 -ne $ExpectedSeedSha256) {
     throw "STOP: canonical catalog snapshot hash mismatch. Expected $ExpectedSeedSha256 but found $ActualSeedSha256"
 }
@@ -113,7 +130,7 @@ function Get-DiffSummary([string]$SourceDb, [string]$TargetDb) {
 
     foreach ($table in $CatalogTables) {
         $columns = Get-Columns $SourceDb $table
-        if ($columns.Count -eq 0) { throw "STOP: no columns found for '$table'." }
+        if (@($columns).Count -eq 0) { throw "STOP: no columns found for '$table'." }
         $diffTerms = @($columns | ForEach-Object { "NOT (s.``$_`` <=> t.``$_``)" })
         $diffExpr = $diffTerms -join " OR "
 
@@ -414,7 +431,7 @@ SELECT
     if ($BrokenRefs -ne 0) {
         throw "STOP: post-sync broken catalog references detected: $BrokenRefs"
     }
-    if ($ProtectedChanged.Count -gt 0) {
+    if (@($ProtectedChanged).Count -gt 0) {
         throw "STOP: protected table row counts changed unexpectedly: $($ProtectedChanged -join ', ')"
     }
 

@@ -3,7 +3,7 @@ export type ApiResponse<TData = unknown, TError = unknown, TMeta = unknown> =
   | ApiErrorResponse<TError>;
 
 export type ApiResponseTransport = {
-  status?: number;
+  httpStatus?: number;
   retryAfterSeconds?: number;
 };
 

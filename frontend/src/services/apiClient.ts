@@ -1,4 +1,5 @@
 import { frontendRuntimeConfig, resolveApiUrl } from "@/config/runtime";
+import { assertSystemMutationAllowed } from "@/services/systemReliabilityGate";
 import type { ApiResponse } from "@/types/api";
 import { shouldAttachInternalBearer } from "@/utils/internalAuthRoutes";
 
@@ -20,6 +21,12 @@ export type ApiResponseInterceptor = (response: ApiResponse) => ApiResponse | Pr
 
 type ApiClientConfig = {
   baseUrl: string;
+};
+
+export type HttpErrorEventDetail = {
+  message: string;
+  retryAfterSeconds?: number;
+  status?: number;
 };
 
 export class ApiClient {
@@ -96,6 +103,8 @@ export class ApiClient {
       };
     }
 
+    assertSystemMutationAllowed(context.init.method);
+
     let response: Response;
 
     try {
@@ -105,17 +114,30 @@ export class ApiClient {
         throw error;
       }
 
+      if (!context.url.pathname.startsWith("/api/health")) {
+        dispatchApiUnreachable();
+      }
+
       throw new Error(
         `The store service at ${frontendRuntimeConfig.apiBaseUrl} could not be reached. Please retry when the connection is available.`,
         { cause: error }
       );
     }
+
     const payload = await this.parseResponse<TData, TError>(response);
 
     let interceptedPayload: ApiResponse = payload;
 
     for (const interceptor of this.responseInterceptors) {
       interceptedPayload = await interceptor(interceptedPayload);
+    }
+
+    if (!interceptedPayload.success) {
+      dispatchHttpError({
+        message: interceptedPayload.message,
+        retryAfterSeconds: interceptedPayload.retryAfterSeconds,
+        status: interceptedPayload.httpStatus
+      });
     }
 
     interceptedPayload = reconcileProductStatusMutationResponse({
@@ -133,7 +155,7 @@ export class ApiClient {
     const contentType = response.headers.get("content-type") ?? "";
     const retryAfterSeconds = parseRetryAfterSeconds(response.headers.get("retry-after"));
     const transport = {
-      status: response.status,
+      httpStatus: response.status,
       ...(retryAfterSeconds === undefined ? {} : { retryAfterSeconds })
     };
 
@@ -175,6 +197,40 @@ function resolveUrl(path: string, baseUrl: string): URL {
   }
 
   return new URL(path, `${baseUrl.replace(/\/+$/, "")}/`);
+}
+
+function parseRetryAfterSeconds(value: string | null): number | undefined {
+  if (!value) return undefined;
+
+  const seconds = Number(value);
+
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return Math.ceil(seconds);
+  }
+
+  const retryAt = Date.parse(value);
+
+  if (Number.isNaN(retryAt)) {
+    return undefined;
+  }
+
+  return Math.max(0, Math.ceil((retryAt - Date.now()) / 1000));
+}
+
+function dispatchApiUnreachable() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("ysabelle:api-unreachable"));
+  }
+}
+
+function dispatchHttpError(detail: HttpErrorEventDetail) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent<HttpErrorEventDetail>("ysabelle:http-error", {
+        detail
+      })
+    );
+  }
 }
 
 function reconcileProductStatusMutationResponse(input: {
@@ -228,18 +284,4 @@ function reconcileProductStatusMutationResponse(input: {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function parseRetryAfterSeconds(value: string | null): number | undefined {
-  if (!value) return undefined;
-
-  const seconds = Number(value);
-  if (Number.isFinite(seconds) && seconds >= 0) {
-    return Math.ceil(seconds);
-  }
-
-  const retryAt = Date.parse(value);
-  if (Number.isNaN(retryAt)) return undefined;
-
-  return Math.max(0, Math.ceil((retryAt - Date.now()) / 1000));
 }
