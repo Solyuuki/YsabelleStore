@@ -45,7 +45,8 @@ function listFiles(directory) {
 export function inspectReleaseContract({ state, release, root = ROOT }) {
   const findings = [];
 
-  if (release.formatVersion !== 1) findings.push("BLOCK: canonical release formatVersion must be 1.");
+  if (release.formatVersion !== 1)
+    findings.push("BLOCK: canonical release formatVersion must be 1.");
   if (release.releaseId !== state.releaseId)
     findings.push("BLOCK: canonical releaseId differs from canonical state.");
   for (const key of ["migrationEpoch", "catalogVersion", "assetVersion"]) {
@@ -132,7 +133,9 @@ export function inspectReleaseContract({ state, release, root = ROOT }) {
     if (activeId) {
       const expectedId = expectedImageAssetId(code, source.driveFileId);
       if (activeId !== expectedId)
-        findings.push(`BLOCK: ${code} active image asset does not match its pinned Drive identity.`);
+        findings.push(
+          `BLOCK: ${code} active image asset does not match its pinned Drive identity.`
+        );
       if (
         product.catalogImage.qualityStatus !== "APPROVED" ||
         product.catalogImage.processingStatus !== "READY"
@@ -148,7 +151,9 @@ export function inspectReleaseContract({ state, release, root = ROOT }) {
     if (![".jpg", ".jpeg", ".png", ".webp", ".avif"].includes(extension)) continue;
     const normalized = normalize(file);
     if (!expectedFiles.has(normalized))
-      findings.push(`BLOCK: unmanifested canonical product image source: ${normalize(relative(root, file))}.`);
+      findings.push(
+        `BLOCK: unmanifested canonical product image source: ${normalize(relative(root, file))}.`
+      );
   }
 
   if (expectedFiles.size !== 50)
