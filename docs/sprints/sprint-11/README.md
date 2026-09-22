@@ -30,4 +30,4 @@ Task branches target `sprint/v0.11/sprint-11`. Accepted Sprint 11 work is promot
 
 ## Migration/canonical-state hardening checkpoint
 
-Phase 4 has reconciled the production-50 image candidates and now pins the exact runtime asset identities for the 50 selected candidate folders (original, processed, card, and PDP variants). Automatic distribution remains fail-closed until the physical runtime payload is published and pull materialization/recovery rehearsals pass; `distributionReady` remains `false`.
+Phase 4 is activated for the Generation 2 canonical release. The production-50 candidate corpus is reconciled, all 200 runtime image identities are integrity-pinned, exact-byte reconstruction from the Git-pinned sources is verified, approved canonical data materialization is wired into pull convergence, and guarded EMPTY/LEGACY recovery requires a database backup plus explicit confirmation. CI rehearsal covers EMPTY, LEGACY, compatible Generation 2, idempotent CURRENT, AHEAD refusal, DRIFTED refusal, runtime/private sentinel preservation, and exact 200-file asset convergence; `distributionReady` is `true`.

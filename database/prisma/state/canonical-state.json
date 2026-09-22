@@ -14,10 +14,8 @@
   "cutoverSourceCommit": "265fb7e9b5f6ac162f0b49ea75794ce6659f0e8f",
   "status": "active",
   "releaseId": "g2-s2-c2-a2",
-  "distributionReady": false,
-  "distributionBlockers": [
-    "Exact-byte runtime reconstruction, canonical data materialization, and guarded recovery are implemented; Phase 4 end-to-end rehearsal must pass before automatic distribution is activated."
-  ],
+  "distributionReady": true,
+  "distributionBlockers": [],
   "canonicalReleasePath": "database/canonical/releases/g2-s2-c2-a2.json",
   "canonicalReleaseGitBlobOid": "86bdc703921aa4827e4f792138a4eff069bca3c3",
   "canonicalProductImageRoot": "database/canonical/product-images/sources"

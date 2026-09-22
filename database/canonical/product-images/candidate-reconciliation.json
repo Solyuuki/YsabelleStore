@@ -12,7 +12,7 @@
   "activeApprovedMatches": 43,
   "unselectedNeedsReviewMatches": 7,
   "processedPayloadPinned": true,
-  "distributionPayloadReady": false,
+  "distributionPayloadReady": true,
   "items": [
     {
       "sourceProductId": "P299",

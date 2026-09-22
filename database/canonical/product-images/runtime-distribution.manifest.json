@@ -23,10 +23,8 @@
   "payloadByteCount": 9744486,
   "payloadSha256": "0f69439f190be7c270b54e842acbcf7b0b46e13bdc2120d10e00f175224c0951",
   "processedPayloadPinned": true,
-  "distributionPayloadReady": false,
-  "distributionBlockers": [
-    "Exact-byte reconstruction is implemented from Git-pinned sources; Phase 4 end-to-end compatible/legacy/empty convergence rehearsal must pass before activation."
-  ],
+  "distributionPayloadReady": true,
+  "distributionBlockers": [],
   "payloadMode": "GIT_RECONSTRUCTED_EXACT_BYTES",
   "reconstruction": {
     "engineBatchPath": "catalog-image-engine/app/batch.py",
@@ -35,6 +33,6 @@
     "sourceRoot": "database/canonical/product-images/sources",
     "processedCardAliasPolicy": "MANIFEST_IDENTICAL_IDENTITY",
     "processedCardAliasCount": 16,
-    "exactByteRehearsalPassed": false
+    "exactByteRehearsalPassed": true
   }
 }
