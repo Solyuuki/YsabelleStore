@@ -95,7 +95,9 @@ async function main() {
     )
   );
   if (countValue(existingTables) !== 0) {
-    fail("target database is not empty; rehearsal never resets or overwrites an existing database.");
+    fail(
+      "target database is not empty; rehearsal never resets or overwrites an existing database."
+    );
   }
 
   const tempRoot = mkdtempSync(join(tmpdir(), "ysabelle-migration-rehearsal-"));
@@ -109,7 +111,9 @@ async function main() {
     copyFileSync(join(ACTIVE, "migration_lock.toml"), join(tempMigrations, "migration_lock.toml"));
     copyMigration(state.baselineMigration, tempMigrations);
 
-    console.log(`[migration-rehearsal] applying previous canonical base: ${state.baselineMigration}`);
+    console.log(
+      `[migration-rehearsal] applying previous canonical base: ${state.baselineMigration}`
+    );
     runDeploy(tempSchema);
 
     await withPrisma(async (prisma) => {

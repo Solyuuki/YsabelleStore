@@ -34,18 +34,17 @@ export function findDestructiveStatements(migration, sql) {
 
   for (const statement of statements) {
     const normalized = statement.replace(/\s+/g, " ").toUpperCase();
-    const reason =
-      /\bDROP\s+DATABASE\b/.test(normalized)
-        ? "DROP DATABASE"
-        : /\bDROP\s+TABLE\b/.test(normalized)
-          ? "DROP TABLE"
-          : /\bTRUNCATE\s+(?:TABLE\s+)?/.test(normalized)
-            ? "TRUNCATE"
-            : /\bRENAME\s+TABLE\b/.test(normalized)
-              ? "RENAME TABLE"
-              : /\bALTER\s+TABLE\b/.test(normalized) && /\bDROP\s+COLUMN\b/.test(normalized)
-                ? "DROP COLUMN"
-                : null;
+    const reason = /\bDROP\s+DATABASE\b/.test(normalized)
+      ? "DROP DATABASE"
+      : /\bDROP\s+TABLE\b/.test(normalized)
+        ? "DROP TABLE"
+        : /\bTRUNCATE\s+(?:TABLE\s+)?/.test(normalized)
+          ? "TRUNCATE"
+          : /\bRENAME\s+TABLE\b/.test(normalized)
+            ? "RENAME TABLE"
+            : /\bALTER\s+TABLE\b/.test(normalized) && /\bDROP\s+COLUMN\b/.test(normalized)
+              ? "DROP COLUMN"
+              : null;
 
     if (reason) {
       findings.push(
@@ -111,8 +110,7 @@ export function inspectGeneration2({
   }
 
   const creators = new Map();
-  const createTable =
-    /\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"]?([a-z_][a-z\d_]*)[`"]?/gi;
+  const createTable = /\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"]?([a-z_][a-z\d_]*)[`"]?/gi;
   for (const [migration, raw] of active) {
     for (const m of stripSqlComments(raw).matchAll(createTable)) {
       const table = m[1].toLowerCase();
@@ -195,22 +193,10 @@ export function inspectRepository(root = ROOT) {
   const schema = join(root, "database", "prisma", "schema.prisma");
   const activeDir = join(root, "database", "prisma", "migrations");
   const migrationLockPath = join(activeDir, "migration_lock.toml");
-  const archiveDir = join(
-    root,
-    "database",
-    "prisma",
-    "migration-history-archive",
-    "generation-1"
-  );
+  const archiveDir = join(root, "database", "prisma", "migration-history-archive", "generation-1");
   const statePath = join(root, "database", "prisma", "state", "canonical-state.json");
   const checksumsPath = join(root, "database", "prisma", "state", "migration-checksums.json");
-  const legacyBlobsPath = join(
-    root,
-    "database",
-    "prisma",
-    "state",
-    "legacy-migration-blobs.json"
-  );
+  const legacyBlobsPath = join(root, "database", "prisma", "state", "legacy-migration-blobs.json");
 
   for (const path of [
     schema,
