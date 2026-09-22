@@ -92,6 +92,9 @@ jobs:
       - name: Validate canonical candidate reconciliation
         run: npm run candidate-reconciliation:security
 
+      - name: Validate canonical runtime asset distribution
+        run: npm run asset-distribution:security
+
       - name: Rehearse baseline-to-latest migration upgrade
         env:
           MIGRATION_REHEARSAL_ALLOW: "1"

@@ -95,3 +95,18 @@ test("canonical product image changes require an asset version increase", () => 
   });
   assert.ok(findings.some((item) => item.includes("product asset state")));
 });
+
+test("phase 4 asset control manifests do not require an asset version increase", () => {
+  const findings = evaluatePushPolicy({
+    changed: [
+      "database/canonical/product-images/candidate-reconciliation.json",
+      "database/canonical/product-images/runtime-distribution.manifest.json",
+      "database/canonical/product-images/runtime-distribution.files.tsv.gz"
+    ],
+    localState: baseState,
+    remoteState: baseState,
+    localChecksums: checksums,
+    remoteChecksums: checksums
+  });
+  assert.deepEqual(findings, []);
+});

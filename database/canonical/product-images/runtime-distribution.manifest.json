@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "releaseId": "g2-s2-c2-a2",
+  "assetVersion": 2,
+  "sourceCorpus": {
+    "archiveName": "candidates.zip",
+    "archiveSha256": "32340edb5e8442e8aa467b10df8377fba800b6e9cf27a4ed74aae4b8a50e6862",
+    "zipEntriesObserved": 2569,
+    "candidateDirectoriesObserved": 428,
+    "completeCandidateDirectoriesObserved": 428
+  },
+  "recordsPath": "database/canonical/product-images/runtime-distribution.files.tsv.gz",
+  "recordsEncoding": "gzip",
+  "recordsSha256": "6ec8f0b972e14a9da0214e340e50fe4481f1e64aa6c11039ed24c542e3e9c628",
+  "recordsCompressedSha256": "7f831d95a66582a1fa8ccf46c6cdd4896e6700bfc2434500bfe823651d2acb47",
+  "target": {
+    "runtimeRoot": "%LOCALAPPDATA%\\YsabelleStore\\catalog-images",
+    "candidateRoot": "candidates"
+  },
+  "candidateCount": 50,
+  "filesPerCandidate": 4,
+  "payloadFileCount": 200,
+  "payloadByteCount": 9744486,
+  "payloadSha256": "0f69439f190be7c270b54e842acbcf7b0b46e13bdc2120d10e00f175224c0951",
+  "processedPayloadPinned": true,
+  "distributionPayloadReady": false,
+  "distributionBlockers": [
+    "Exact runtime file identities are pinned, but the physical 200-file payload is not yet committed or otherwise published for pull-side materialization."
+  ]
+}

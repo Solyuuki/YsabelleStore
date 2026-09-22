@@ -11,7 +11,7 @@
   "matchedProducts": 50,
   "activeApprovedMatches": 43,
   "unselectedNeedsReviewMatches": 7,
-  "processedPayloadPinned": false,
+  "processedPayloadPinned": true,
   "distributionPayloadReady": false,
   "items": [
     {

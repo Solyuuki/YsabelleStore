@@ -113,7 +113,8 @@
     "state:push:guard": "node scripts/canonical-push-guard.mjs",
     "state:prepare": "node scripts/canonical-state-prepare.mjs",
     "state:pull:sync": "node --env-file=.env scripts/canonical-pull-sync.mjs",
-    "candidate-reconciliation:security": "node scripts/canonical-candidate-reconciliation-security.mjs"
+    "candidate-reconciliation:security": "node scripts/canonical-candidate-reconciliation-security.mjs",
+    "asset-distribution:security": "node scripts/canonical-asset-distribution-security.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"

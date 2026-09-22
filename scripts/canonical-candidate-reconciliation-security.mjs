@@ -55,9 +55,9 @@ export function inspectCandidateReconciliation({ state, release, reconciliation,
       "BLOCK: candidate reconciliation must contain 7 unselected needs-review matches."
     );
   }
-  if (reconciliation.processedPayloadPinned !== false) {
+  if (reconciliation.processedPayloadPinned !== true) {
     findings.push(
-      "BLOCK: processed payload must remain unpinned until the runtime distribution manifest exists."
+      "BLOCK: processed payload must be pinned once the runtime distribution manifest exists."
     );
   }
   if (reconciliation.distributionPayloadReady !== false) {

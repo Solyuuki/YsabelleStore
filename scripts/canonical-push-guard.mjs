@@ -6,6 +6,11 @@ import { pathToFileURL } from "node:url";
 
 const canonicalBranch = process.env.YSABELLE_CANONICAL_BRANCH ?? "sprint/v0.11/sprint-11";
 const remoteRef = `origin/${canonicalBranch}`;
+const NON_VERSIONED_ASSET_CONTROL_PATHS = new Set([
+  "database/canonical/product-images/candidate-reconciliation.json",
+  "database/canonical/product-images/runtime-distribution.manifest.json",
+  "database/canonical/product-images/runtime-distribution.files.tsv.gz"
+]);
 
 function git(args, { allowFailure = false } = {}) {
   const result = spawnSync("git", args, {
@@ -98,7 +103,8 @@ export function evaluatePushPolicy({
       changed,
       (path) =>
         path === localState.productAssetManifestPath ||
-        path.startsWith("database/canonical/product-images/") ||
+        (path.startsWith("database/canonical/product-images/") &&
+          !NON_VERSIONED_ASSET_CONTROL_PATHS.has(path)) ||
         path.startsWith("frontend/public/images/products/")
     )
   ) {
