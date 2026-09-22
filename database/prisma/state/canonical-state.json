@@ -2,8 +2,8 @@
   "formatVersion": 1,
   "migrationEpoch": 2,
   "schemaVersion": 2,
-  "catalogVersion": 1,
-  "assetVersion": 1,
+  "catalogVersion": 2,
+  "assetVersion": 2,
   "baselineMigration": "0000_generation2_baseline",
   "schemaPath": "database/prisma/schema.prisma",
   "schemaSha256": "75969b5e3256dd2f62aec2dfa85966ebc1f0ccd298ae979b627f3e999a520cbf",
@@ -13,9 +13,12 @@
   "legacyArchivePath": "database/prisma/migration-history-archive/generation-1",
   "cutoverSourceCommit": "265fb7e9b5f6ac162f0b49ea75794ce6659f0e8f",
   "status": "active",
-  "releaseId": "g2-s2-c1-a1",
+  "releaseId": "g2-s2-c2-a2",
   "distributionReady": false,
   "distributionBlockers": [
-    "Canonical product-image distribution still covers only the Git-tracked subset; do not replace a populated legacy DB until the complete approved image corpus is promoted."
-  ]
+    "Canonical production-50 data and all 50 source images are packaged and integrity-pinned; Phase 4 must activate guarded pull materialization/recovery before automatic legacy replacement is allowed."
+  ],
+  "canonicalReleasePath": "database/canonical/releases/g2-s2-c2-a2.json",
+  "canonicalReleaseGitBlobOid": "86bdc703921aa4827e4f792138a4eff069bca3c3",
+  "canonicalProductImageRoot": "database/canonical/product-images/sources"
 }
