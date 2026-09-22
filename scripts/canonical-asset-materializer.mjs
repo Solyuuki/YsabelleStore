@@ -193,6 +193,19 @@ function reconstruct(distribution, plan, stage) {
       candidateRoot,
       summary
     ]);
+    for (const id of group(plan).keys()) {
+      const candidate = join(candidateRoot, id);
+      const processed = join(candidate, "processed");
+      mkdirSync(processed, { recursive: true });
+      for (const fileName of ["processed.webp", "card.webp", "pdp.webp"]) {
+        const generated = join(candidate, fileName);
+        const target = join(processed, fileName);
+        if (!existsSync(generated)) {
+          throw new Error("Image engine did not generate " + id + "/" + fileName);
+        }
+        renameSync(generated, target);
+      }
+    }
     const aliases = processedCardAliases(plan);
     for (const id of aliases) {
       const d = join(candidateRoot, id, "processed");
