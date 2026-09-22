@@ -16,6 +16,8 @@ jobs:
   generate-baseline:
     name: Generate canonical baseline candidate
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mysql://baseline:baseline@127.0.0.1:3306/ysabellestore_baseline
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
