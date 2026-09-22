@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const canonicalBranch =
   process.env.YSABELLE_CANONICAL_BRANCH ?? "sprint/v0.11/sprint-11";
@@ -13,10 +15,12 @@ function git(args, { allowFailure = false } = {}) {
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true
   });
+
   if (!allowFailure && result.status !== 0) {
     const detail = (result.stderr || result.stdout || "").trim();
     throw new Error(`git ${args.join(" ")} failed: ${detail}`);
   }
+
   return {
     status: result.status ?? 1,
     stdout: (result.stdout ?? "").trim(),
@@ -115,9 +119,13 @@ export function evaluatePushPolicy({
     findings.push("BLOCK: Generation 1 migration archive is read-only.");
   }
 
-  for (const [name, checksum] of Object.entries(remoteChecksums.migrations ?? {})) {
+  for (const [name, checksum] of Object.entries(
+    remoteChecksums.migrations ?? {}
+  )) {
     if (localChecksums.migrations?.[name] !== checksum) {
-      findings.push(`BLOCK: frozen remote migration checksum changed or disappeared: ${name}.`);
+      findings.push(
+        `BLOCK: frozen remote migration checksum changed or disappeared: ${name}.`
+      );
     }
   }
 
@@ -207,6 +215,9 @@ function main() {
   );
 }
 
-if (!process.env.CI || process.argv.includes("--run-in-ci")) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+) {
   main();
 }
