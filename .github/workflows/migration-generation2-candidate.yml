@@ -1,0 +1,50 @@
+name: Migration Generation 2 Candidate
+
+on:
+  push:
+    branches:
+      - "sprint/**"
+    paths:
+      - "database/prisma/schema.prisma"
+      - ".github/workflows/migration-generation2-candidate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-baseline:
+    name: Generate canonical baseline candidate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
+      - name: Generate baseline candidate from current datamodel
+        run: |
+          mkdir -p migration-generation2
+          npx prisma migrate diff \
+            --from-empty \
+            --to-schema-datamodel database/prisma/schema.prisma \
+            --script \
+            --output migration-generation2/migration.sql
+          sha256sum migration-generation2/migration.sql | tee migration-generation2/SHA256SUMS.txt
+
+      - name: Upload baseline candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-generation2-baseline
+          path: migration-generation2/
+          if-no-files-found: error
