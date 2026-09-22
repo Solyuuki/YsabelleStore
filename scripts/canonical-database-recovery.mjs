@@ -123,16 +123,7 @@ export function resetDatabaseToGeneration2({ environment = process.env } = {}) {
   if (!existsSync(PRISMA)) throw new Error("Local Prisma CLI missing");
   const result = spawnSync(
     process.execPath,
-    [
-      PRISMA,
-      "migrate",
-      "reset",
-      "--force",
-      "--skip-seed",
-      "--skip-generate",
-      "--schema",
-      SCHEMA
-    ],
+    [PRISMA, "migrate", "reset", "--force", "--skip-seed", "--skip-generate", "--schema", SCHEMA],
     {
       cwd: ROOT,
       env: environment,

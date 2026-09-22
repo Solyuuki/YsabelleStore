@@ -176,7 +176,10 @@ export function inspectAssetDistribution({
     findings.push("BLOCK: runtime reconstruction engine is missing.");
   }
   const requirementsPath = join(ROOT, reconstruction.pythonRequirementsPath ?? "");
-  if (!existsSync(requirementsPath) || readFileSync(requirementsPath, "utf8").trim() !== "Pillow==12.3.0") {
+  if (
+    !existsSync(requirementsPath) ||
+    readFileSync(requirementsPath, "utf8").trim() !== "Pillow==12.3.0"
+  ) {
     findings.push("BLOCK: Pillow must be exactly pinned for byte-stable runtime reconstruction.");
   }
 
@@ -270,7 +273,9 @@ export function inspectAssetDistribution({
     findings.push("BLOCK: runtime distribution aggregate payload digest is invalid.");
   }
 
-  const recordMap = new Map(parsed.records.map((record) => [record.candidateId + ":" + record.role, record]));
+  const recordMap = new Map(
+    parsed.records.map((record) => [record.candidateId + ":" + record.role, record])
+  );
   let aliasCount = 0;
   for (const item of reconciliation.items ?? []) {
     const processed = recordMap.get(item.candidateId + ":processed");
@@ -286,7 +291,9 @@ export function inspectAssetDistribution({
     }
   }
   if (aliasCount !== 16 || reconstruction.processedCardAliasCount !== 16) {
-    findings.push("BLOCK: runtime reconstruction must account for exactly 16 processed/card aliases.");
+    findings.push(
+      "BLOCK: runtime reconstruction must account for exactly 16 processed/card aliases."
+    );
   }
 
   return findings;
