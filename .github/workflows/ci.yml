@@ -83,6 +83,9 @@ jobs:
       - name: Validate Migration Generation 2 security
         run: npm run migration:security
 
+      - name: Validate canonical state and product assets
+        run: npm run state:security
+
       - name: Replay active Prisma migration lineage
         run: npx prisma migrate deploy --schema=database/prisma/schema.prisma
 

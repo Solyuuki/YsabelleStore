@@ -30,3 +30,7 @@ npm run migration:checksums:add
 The checksum command refuses to rewrite an already-frozen migration.
 
 Canonical data and product-image changes are versioned separately from schema migrations and converge through the state-sync layer.
+
+## Push freshness contract
+
+`npm run state:push:guard` is wired into Husky pre-push. It refreshes the Sprint canonical ref and blocks stale branch bases, uncommitted canonical state, Generation 1 archive edits, frozen migration checksum rewrites, and schema/catalog/asset changes without the corresponding version bump. GitHub CI independently replays the migration lineage and verifies canonical state/assets.
