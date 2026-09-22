@@ -119,7 +119,7 @@ assert.match(
 );
 const passwordLoginIndex = loginSource.indexOf("await login(");
 const socialLinkIndex = loginSource.indexOf("await completeCustomerSocialLink(");
-const accountNavigationIndex = loginSource.indexOf('navigate("/account")');
+const accountNavigationIndex = loginSource.indexOf("navigate(passwordReturnTo)");
 assert.ok(
   passwordLoginIndex >= 0,
   "Password login should still be used to prove account ownership."
@@ -130,7 +130,7 @@ assert.ok(
 );
 assert.ok(
   accountNavigationIndex > socialLinkIndex,
-  "Successful social linking should continue to the customer account page."
+  "Successful social linking should continue to the validated return path."
 );
 
 console.log("Customer social auth quick-sign UI contract passed.");
