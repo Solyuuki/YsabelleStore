@@ -1,0 +1,418 @@
+{
+  "formatVersion": 1,
+  "releaseId": "g2-s2-c2-a2",
+  "sourceCorpus": {
+    "archiveName": "candidates.zip",
+    "archiveSha256": "32340edb5e8442e8aa467b10df8377fba800b6e9cf27a4ed74aae4b8a50e6862",
+    "zipEntriesObserved": 2569,
+    "candidateDirectoriesObserved": 428,
+    "completeCandidateDirectoriesObserved": 428
+  },
+  "matchedProducts": 50,
+  "activeApprovedMatches": 43,
+  "unselectedNeedsReviewMatches": 7,
+  "processedPayloadPinned": false,
+  "distributionPayloadReady": false,
+  "items": [
+    {
+      "sourceProductId": "P299",
+      "candidateId": "sarima-p299-c772c526a70f",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 43614,
+      "originalGitBlobOid": "4f137dc2e966ebe0f2bbd17a88d4b754cc17704d"
+    },
+    {
+      "sourceProductId": "P352",
+      "candidateId": "sarima-p352-da046e87dbb9",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "png",
+      "originalSizeBytes": 63482,
+      "originalGitBlobOid": "76e011e40922db4bcb3ef54df3171e572045ba6a"
+    },
+    {
+      "sourceProductId": "P361",
+      "candidateId": "sarima-p361-73b507c5471e",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 86286,
+      "originalGitBlobOid": "39fe83040cfafabb858739932a028c9df621e106"
+    },
+    {
+      "sourceProductId": "P023",
+      "candidateId": "sarima-p023-d6b7641067cb",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 38666,
+      "originalGitBlobOid": "6020e6db5b475c80e3c99ebe59d9e7fff06db449"
+    },
+    {
+      "sourceProductId": "P024",
+      "candidateId": "sarima-p024-7b9b3a341a99",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 23535,
+      "originalGitBlobOid": "830823f1d8f0cbb70f7abf0d3fc05cb7c1657380"
+    },
+    {
+      "sourceProductId": "P027",
+      "candidateId": "sarima-p027-c2cf703e5229",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 25081,
+      "originalGitBlobOid": "7bcef329d815ecc00bde75bf4e4db38eafbe660b"
+    },
+    {
+      "sourceProductId": "P030",
+      "candidateId": "sarima-p030-0c432701cf48",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "png",
+      "originalSizeBytes": 144543,
+      "originalGitBlobOid": "243f8be1d7787a7ea641e88a766d45cb76accf91"
+    },
+    {
+      "sourceProductId": "P031",
+      "candidateId": "sarima-p031-f10d92a98e8b",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 35044,
+      "originalGitBlobOid": "b4127f938f044913a736f117e022a224a95af51d"
+    },
+    {
+      "sourceProductId": "P201",
+      "candidateId": "sarima-p201-8f53d74e2b35",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 37243,
+      "originalGitBlobOid": "42f1799aa5db3a2008d2d6d125567896e069e778"
+    },
+    {
+      "sourceProductId": "P202",
+      "candidateId": "sarima-p202-bf893e9ddbe2",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 57682,
+      "originalGitBlobOid": "7de6fab3f30b2044c683a2cbd37a648087e13519"
+    },
+    {
+      "sourceProductId": "P204",
+      "candidateId": "sarima-p204-aab52de3833e",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 123654,
+      "originalGitBlobOid": "cc74a6fb2d2a2ede79a930a719ccb992c25fe4fa"
+    },
+    {
+      "sourceProductId": "P219",
+      "candidateId": "sarima-p219-b7553e591e41",
+      "catalogBinding": "UNSELECTED_NEEDS_REVIEW",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 11973,
+      "originalGitBlobOid": "512df3f8209084c79fed14394ff389272d2b6a99"
+    },
+    {
+      "sourceProductId": "P238",
+      "candidateId": "sarima-p238-b021064db04e",
+      "catalogBinding": "UNSELECTED_NEEDS_REVIEW",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 4197,
+      "originalGitBlobOid": "9c9fa654271f0da09f33cd284fa00bd9a80e8689"
+    },
+    {
+      "sourceProductId": "P022",
+      "candidateId": "sarima-p022-7f4c66cf8e54",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 115578,
+      "originalGitBlobOid": "b63fe502ccfd3eed4db1d29bb773ab811040c757"
+    },
+    {
+      "sourceProductId": "P074",
+      "candidateId": "sarima-p074-5a49e8292dd6",
+      "catalogBinding": "UNSELECTED_NEEDS_REVIEW",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 19983,
+      "originalGitBlobOid": "9aa5e1e8615eb76942af50da6acc62dabd7d535d"
+    },
+    {
+      "sourceProductId": "P075",
+      "candidateId": "sarima-p075-3a83afda0834",
+      "catalogBinding": "UNSELECTED_NEEDS_REVIEW",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 20862,
+      "originalGitBlobOid": "9dc05f305fce991f24441b4c9b5d214156771b71"
+    },
+    {
+      "sourceProductId": "P089",
+      "candidateId": "sarima-p089-f4222dfafd5e",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 54852,
+      "originalGitBlobOid": "1488e63c2f12c8ee69bb7541c11162062cb79537"
+    },
+    {
+      "sourceProductId": "P103",
+      "candidateId": "sarima-p103-83f0fdaa057a",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 38140,
+      "originalGitBlobOid": "38e50c9158f1e2de9894bc44bec3acacdf7669d3"
+    },
+    {
+      "sourceProductId": "P122",
+      "candidateId": "sarima-p122-9e410c30aa5c",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 40437,
+      "originalGitBlobOid": "72db95d1aaf5452a3c08674b2dff4916736f527f"
+    },
+    {
+      "sourceProductId": "P141",
+      "candidateId": "sarima-p141-0fa7e0005d80",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 118492,
+      "originalGitBlobOid": "37189be893ca544193cb55a328fb2158e397783b"
+    },
+    {
+      "sourceProductId": "P317",
+      "candidateId": "sarima-p317-53087e7fad87",
+      "catalogBinding": "UNSELECTED_NEEDS_REVIEW",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 14154,
+      "originalGitBlobOid": "7ec47c66c7494373bcd1e725e804bfae5b0fff0c"
+    },
+    {
+      "sourceProductId": "P318",
+      "candidateId": "sarima-p318-8b3bea0fe98b",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 13378,
+      "originalGitBlobOid": "e8111a86347cf21696ac02aa01411f0327ba15bd"
+    },
+    {
+      "sourceProductId": "P397",
+      "candidateId": "sarima-p397-f5c75e03a013",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 120915,
+      "originalGitBlobOid": "335890ca6d67aa9c76fcc82b3c7465505438ddf0"
+    },
+    {
+      "sourceProductId": "P268",
+      "candidateId": "sarima-p268-69a219628328",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 47770,
+      "originalGitBlobOid": "93d8f196eea9bed684649d122fe3aef143867519"
+    },
+    {
+      "sourceProductId": "P115",
+      "candidateId": "sarima-p115-05d6c04f4c90",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 103624,
+      "originalGitBlobOid": "841b02808ce1fcbcd452c566b8726c46d64bf48f"
+    },
+    {
+      "sourceProductId": "P048",
+      "candidateId": "sarima-p048-2933697c7efd",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 23755,
+      "originalGitBlobOid": "be59f680a4e7455f0e503c5afb059937d01fbfea"
+    },
+    {
+      "sourceProductId": "P342",
+      "candidateId": "sarima-p342-835dc5906f86",
+      "catalogBinding": "UNSELECTED_NEEDS_REVIEW",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 5947,
+      "originalGitBlobOid": "fd653e5946e6cd0f8ba13f8f2a4058127b1b161a"
+    },
+    {
+      "sourceProductId": "P386",
+      "candidateId": "sarima-p386-1e10df5aacf2",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 35299,
+      "originalGitBlobOid": "a3634e47f6bb864af9e8c9de9dfdd6d9121a8c09"
+    },
+    {
+      "sourceProductId": "P085",
+      "candidateId": "sarima-p085-5747c8827274",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "png",
+      "originalSizeBytes": 45081,
+      "originalGitBlobOid": "d0f10c4d93a83d948c6cb71c5c1894cb96809fa0"
+    },
+    {
+      "sourceProductId": "P114",
+      "candidateId": "sarima-p114-87d48bbcfe8f",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "png",
+      "originalSizeBytes": 43627,
+      "originalGitBlobOid": "820901bf123cab2d6f6a316b4dbc79a11b7a7a39"
+    },
+    {
+      "sourceProductId": "P011",
+      "candidateId": "sarima-p011-1b899c79b001",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "png",
+      "originalSizeBytes": 43078,
+      "originalGitBlobOid": "96d02a5b64b09e5e9c5156679201a319beba6be3"
+    },
+    {
+      "sourceProductId": "P009",
+      "candidateId": "sarima-p009-862ec9661af6",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 27038,
+      "originalGitBlobOid": "f3bb26a1cca13fb8bd7c8ba2780eef7fac9c6e90"
+    },
+    {
+      "sourceProductId": "P010",
+      "candidateId": "sarima-p010-0f92548adc7d",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 72348,
+      "originalGitBlobOid": "2c189344e39d89ba7f1c8ab4dba78662c8145df8"
+    },
+    {
+      "sourceProductId": "P012",
+      "candidateId": "sarima-p012-1095b44428ee",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 61992,
+      "originalGitBlobOid": "577b28f0e5b537709d51935b1e89dbdbc7dd38f3"
+    },
+    {
+      "sourceProductId": "P013",
+      "candidateId": "sarima-p013-cc05b9d5aaae",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 41458,
+      "originalGitBlobOid": "1c52628d12a170895ab21e97d521ffbe0afff107"
+    },
+    {
+      "sourceProductId": "P121",
+      "candidateId": "sarima-p121-78a3fda9106f",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 68786,
+      "originalGitBlobOid": "dbe803bd0cca855c49040addb6e7a9b051262983"
+    },
+    {
+      "sourceProductId": "P087",
+      "candidateId": "sarima-p087-d7df82dff346",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 29855,
+      "originalGitBlobOid": "f37b6254041f6b51201ba729bc8eb10e6c81832c"
+    },
+    {
+      "sourceProductId": "P086",
+      "candidateId": "sarima-p086-b63e8c316d2a",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "png",
+      "originalSizeBytes": 47572,
+      "originalGitBlobOid": "5b0f69b298d47fedf197da610f522cb2e49759a5"
+    },
+    {
+      "sourceProductId": "P054",
+      "candidateId": "sarima-p054-5384965489f6",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 24072,
+      "originalGitBlobOid": "1d5fa116a7b8972a776861f2304289b0699883d0"
+    },
+    {
+      "sourceProductId": "P123",
+      "candidateId": "sarima-p123-f302fb9c50f6",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 30604,
+      "originalGitBlobOid": "d84d10509d44500e000e829faca8472bea212a23"
+    },
+    {
+      "sourceProductId": "P038",
+      "candidateId": "sarima-p038-d51991641c21",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 51638,
+      "originalGitBlobOid": "63a645c78003edb1c9adc780ce1b2663d1d6944b"
+    },
+    {
+      "sourceProductId": "P199",
+      "candidateId": "sarima-p199-7f74a5bd78c8",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 37543,
+      "originalGitBlobOid": "234e0d90ceac388ccba6f1589182ecd8fdc8d0ff"
+    },
+    {
+      "sourceProductId": "P343",
+      "candidateId": "sarima-p343-f1255fb74930",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "webp",
+      "originalSizeBytes": 61054,
+      "originalGitBlobOid": "3a6ac22062c609e05a50e97209b4d3051a690b9b"
+    },
+    {
+      "sourceProductId": "P061",
+      "candidateId": "sarima-p061-fce23d8079bb",
+      "catalogBinding": "UNSELECTED_NEEDS_REVIEW",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 15598,
+      "originalGitBlobOid": "f150abf55c2e4c66b1da1efb16cd67d67a165485"
+    },
+    {
+      "sourceProductId": "P008",
+      "candidateId": "sarima-p008-d12565e3add5",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 131929,
+      "originalGitBlobOid": "91d5ffa356c4939858e976001a0bf24ba0fabc29"
+    },
+    {
+      "sourceProductId": "P107",
+      "candidateId": "sarima-p107-a4b67407fa42",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 175613,
+      "originalGitBlobOid": "16fe7974507cab5550118823f070c43896429fee"
+    },
+    {
+      "sourceProductId": "P177",
+      "candidateId": "sarima-p177-c37566aa116b",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "png",
+      "originalSizeBytes": 286277,
+      "originalGitBlobOid": "d8e2cb7cd9eefee5cd6f55f03b1c1bf5359d4d11"
+    },
+    {
+      "sourceProductId": "P394",
+      "candidateId": "sarima-p394-a6c063eb5455",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 28638,
+      "originalGitBlobOid": "bf0c8a47cbb41b8d59a7ef4ded5a78e115a143d0"
+    },
+    {
+      "sourceProductId": "P266",
+      "candidateId": "sarima-p266-362ef54814b3",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 71658,
+      "originalGitBlobOid": "41fcf649a5648b99decbb845832de4ee3a586254"
+    },
+    {
+      "sourceProductId": "P257",
+      "candidateId": "sarima-p257-245d86f4e1a5",
+      "catalogBinding": "ACTIVE_APPROVED",
+      "originalExtension": "jpg",
+      "originalSizeBytes": 19949,
+      "originalGitBlobOid": "405ffb32cd8aeab4832a127b3e3ed17df85197e0"
+    }
+  ]
+}
