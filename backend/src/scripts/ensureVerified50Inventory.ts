@@ -69,9 +69,7 @@ try {
   });
 
   if (mismatched.length > 0) {
-    fail(
-      `SARIMA mapping mismatch for: ${mismatched.map((product) => product.sku).join(", ")}`
-    );
+    fail(`SARIMA mapping mismatch for: ${mismatched.map((product) => product.sku).join(", ")}`);
   }
 
   const dirty = products.filter(
@@ -95,9 +93,7 @@ try {
 
   if (!APPLY) {
     console.log("\nDry run passed. No inventory rows were changed.");
-    console.log(
-      "Run with --apply after the canonical catalog sync passes."
-    );
+    console.log("Run with --apply after the canonical catalog sync passes.");
   } else {
     await prisma.$transaction(
       async (tx) => {

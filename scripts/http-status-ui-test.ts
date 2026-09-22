@@ -5,6 +5,7 @@ import { resolveHttpStatusUi } from "../frontend/src/services/httpStatusUi";
 const expectedCategories = new Map<number, string>([
   [200, "success"],
   [201, "success"],
+  [202, "success"],
   [204, "success"],
   [400, "request-error"],
   [401, "authentication"],

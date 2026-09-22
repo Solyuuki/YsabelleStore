@@ -1,9 +1,4 @@
-export type MutationBlockReason =
-  | "checking"
-  | "degraded"
-  | "reconnecting"
-  | "unavailable"
-  | null;
+export type MutationBlockReason = "checking" | "degraded" | "reconnecting" | "unavailable" | null;
 
 type MutationGateState = {
   blocked: boolean;

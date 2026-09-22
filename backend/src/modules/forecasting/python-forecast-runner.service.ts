@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import os from "node:os";
 
 import { env } from "../../config/env.js";
+import { HTTP_STATUS } from "../../constants/httpStatusContract.js";
 import { HttpError } from "../../utils/httpError.js";
 import type { ProductForecastDetail, ProductHistoricalSeries } from "./forecast.types.js";
 import { getActiveForecastMonth } from "./forecast-window.js";
@@ -28,7 +29,7 @@ function parsePythonJson(stdout: string): PythonForecastResponse {
       products: parsed.products
     };
   } catch {
-    throw new HttpError(502, "Forecast service returned invalid JSON.", {
+    throw new HttpError(HTTP_STATUS.BAD_GATEWAY, "Forecast service returned invalid JSON.", {
       code: "FORECAST_INVALID_JSON"
     });
   }
@@ -93,7 +94,7 @@ export async function runPythonForecast(products: ProductHistoricalSeries[]) {
       settled = true;
       child.kill("SIGTERM");
       reject(
-        new HttpError(504, "Forecast service timed out.", {
+        new HttpError(HTTP_STATUS.GATEWAY_TIMEOUT, "Forecast service timed out.", {
           code: "FORECAST_PROCESS_TIMEOUT"
         })
       );
@@ -115,7 +116,7 @@ export async function runPythonForecast(products: ProductHistoricalSeries[]) {
       if (!settled) {
         settled = true;
         reject(
-          new HttpError(503, "Forecast service could not be started.", {
+          new HttpError(HTTP_STATUS.SERVICE_UNAVAILABLE, "Forecast service could not be started.", {
             code: "FORECAST_PROCESS_UNAVAILABLE"
           })
         );
@@ -139,7 +140,7 @@ export async function runPythonForecast(products: ProductHistoricalSeries[]) {
         }
 
         reject(
-          new HttpError(502, "Forecast service failed to generate forecasts.", {
+          new HttpError(HTTP_STATUS.BAD_GATEWAY, "Forecast service failed to generate forecasts.", {
             code: "FORECAST_PROCESS_FAILED"
           })
         );

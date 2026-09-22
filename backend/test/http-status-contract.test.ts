@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { HTTP_STATUS, isCanonicalHttpStatusCode } from "../src/constants/httpStatusContract.js";
 
 const canonicalStatusCodes = [
-  200, 201, 204, 400, 401, 403, 404, 405, 409, 413, 415, 422, 429, 500, 502, 503, 504
+  200, 201, 202, 204, 400, 401, 403, 404, 405, 409, 413, 415, 422, 429, 500, 502, 503, 504
 ] as const;
 
 test("Sprint 11 exposes one canonical HTTP status contract for supported server outcomes", () => {
@@ -27,6 +27,7 @@ test("unrelated protocol statuses stay outside the application contract", () => 
 test("canonical symbolic names keep HTTP meanings explicit instead of scattering magic numbers", () => {
   assert.equal(HTTP_STATUS.OK, 200);
   assert.equal(HTTP_STATUS.CREATED, 201);
+  assert.equal(HTTP_STATUS.ACCEPTED, 202);
   assert.equal(HTTP_STATUS.NO_CONTENT, 204);
   assert.equal(HTTP_STATUS.BAD_REQUEST, 400);
   assert.equal(HTTP_STATUS.UNAUTHORIZED, 401);

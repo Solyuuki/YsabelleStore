@@ -633,7 +633,6 @@ body {
   }
 }
 
-
 /* Sprint 11 reliability surfaces: animated, brand-aligned, and reduced-motion safe. */
 .reliability-banner {
   position: fixed;
@@ -861,8 +860,7 @@ body {
   place-items: center;
   border: 1px solid rgb(98 91 255 / 20%);
   border-radius: 1.5rem;
-  background:
-    linear-gradient(145deg, rgb(255 255 255 / 96%), rgb(244 243 255 / 88%));
+  background: linear-gradient(145deg, rgb(255 255 255 / 96%), rgb(244 243 255 / 88%));
   color: #625bff;
   box-shadow:
     0 22px 48px -24px rgb(98 91 255 / 46%),

@@ -103,7 +103,9 @@ export class ApiClient {
       };
     }
 
-    assertSystemMutationAllowed(context.init.method);
+    if (typeof window !== "undefined") {
+      assertSystemMutationAllowed(context.init.method);
+    }
 
     let response: Response;
 
@@ -153,30 +155,36 @@ export class ApiClient {
     response: Response
   ): Promise<ApiResponse<TData, TError, unknown>> {
     const contentType = response.headers.get("content-type") ?? "";
+    const retryAfterSeconds = parseRetryAfterSeconds(response.headers.get("retry-after"));
+    const transport = {
+      httpStatus: response.status,
+      ...(retryAfterSeconds === undefined ? {} : { retryAfterSeconds })
+    };
+
+    if (response.status === 204) {
+      return {
+        ...transport,
+        success: true,
+        message: "Request completed successfully."
+      };
+    }
 
     if (contentType.includes("application/json")) {
       const payload = (await response.json()) as ApiResponse<TData, TError>;
-
-      if (!payload.success) {
-        return {
-          ...payload,
-          httpStatus: response.status,
-          retryAfterSeconds: parseRetryAfterSeconds(response.headers.get("retry-after"))
-        };
-      }
-
-      return payload;
+      return {
+        ...payload,
+        ...transport
+      };
     }
 
     return {
+      ...transport,
       success: false,
       message: "API response was not valid JSON.",
       error: {
         status: response.status,
         statusText: response.statusText
-      } as TError,
-      httpStatus: response.status,
-      retryAfterSeconds: parseRetryAfterSeconds(response.headers.get("retry-after"))
+      } as TError
     };
   }
 }
@@ -254,6 +262,7 @@ function reconcileProductStatusMutationResponse(input: {
 
   if (returnedStatus !== requestedStatus) {
     return {
+      ...input.response,
       success: false,
       message: "The server did not confirm the requested product availability state.",
       error: {
