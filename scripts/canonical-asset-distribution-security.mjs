@@ -172,10 +172,10 @@ export function inspectAssetDistribution({
   if (reconstruction.processedCardAliasPolicy !== "MANIFEST_IDENTICAL_IDENTITY") {
     findings.push("BLOCK: processed/card alias policy is invalid.");
   }
-  if (!existsSync(join(root, reconstruction.engineBatchPath ?? ""))) {
+  if (!existsSync(join(ROOT, reconstruction.engineBatchPath ?? ""))) {
     findings.push("BLOCK: runtime reconstruction engine is missing.");
   }
-  const requirementsPath = join(root, reconstruction.pythonRequirementsPath ?? "");
+  const requirementsPath = join(ROOT, reconstruction.pythonRequirementsPath ?? "");
   if (!existsSync(requirementsPath) || readFileSync(requirementsPath, "utf8").trim() !== "Pillow==12.3.0") {
     findings.push("BLOCK: Pillow must be exactly pinned for byte-stable runtime reconstruction.");
   }
