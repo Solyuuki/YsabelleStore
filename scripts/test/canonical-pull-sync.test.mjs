@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-  classifyDatabaseState,
-  isRelevantCanonicalPath
-} from "../canonical-pull-sync.mjs";
+import { classifyDatabaseState, isRelevantCanonicalPath } from "../canonical-pull-sync.mjs";
 
 const target = {
   migrationEpoch: 2,
@@ -16,10 +13,7 @@ const target = {
 test("canonical pull path detection ignores ordinary source changes", () => {
   assert.equal(isRelevantCanonicalPath("frontend/src/App.tsx"), false);
   assert.equal(isRelevantCanonicalPath("database/prisma/schema.prisma"), true);
-  assert.equal(
-    isRelevantCanonicalPath("frontend/public/images/products/example.webp"),
-    true
-  );
+  assert.equal(isRelevantCanonicalPath("frontend/public/images/products/example.webp"), true);
 });
 
 test("empty database is classified separately", () => {

@@ -23,9 +23,7 @@ function run(command, args, options = {}) {
 
   if (result.error) throw result.error;
   if (result.status !== 0 && !options.allowFailure) {
-    const detail = options.capture
-      ? (result.stderr || result.stdout || "").trim()
-      : "";
+    const detail = options.capture ? (result.stderr || result.stdout || "").trim() : "";
     throw new Error(
       `${command} ${args.join(" ")} failed with exit ${result.status ?? "unknown"}${detail ? `: ${detail}` : ""}`
     );
@@ -134,9 +132,7 @@ async function main() {
   npm(["run", "state:security"]);
 
   const schemaTouched = relevant.some(
-    (path) =>
-      path === state.schemaPath ||
-      path.startsWith("database/prisma/migrations/")
+    (path) => path === state.schemaPath || path.startsWith("database/prisma/migrations/")
   );
   if (schemaTouched) {
     npm(["run", "prisma:clean"]);
@@ -183,14 +179,7 @@ async function main() {
     await prisma.$disconnect();
     prisma = null;
 
-    npm([
-      "exec",
-      "--",
-      "prisma",
-      "migrate",
-      "deploy",
-      "--schema=database/prisma/schema.prisma"
-    ]);
+    npm(["exec", "--", "prisma", "migrate", "deploy", "--schema=database/prisma/schema.prisma"]);
 
     prisma = new PrismaClient();
     const marker = await prisma.systemCanonicalState.findUnique({ where: { id: 1 } });
@@ -232,10 +221,7 @@ async function main() {
   }
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
-) {
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   main().catch((error) => {
     console.error("CANONICAL_PULL_SYNC=ERROR");
     console.error(error instanceof Error ? error.message : error);
