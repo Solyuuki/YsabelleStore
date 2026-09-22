@@ -516,6 +516,12 @@ export async function createStorefrontOrder(
       include: storefrontOrderInclude
     });
 
+    if (context.customerAccountId) {
+      await tx.customerCartItem.deleteMany({
+        where: { customerAccountId: context.customerAccountId }
+      });
+    }
+
     return serializeStorefrontOrder(order);
   });
 }

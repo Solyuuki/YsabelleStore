@@ -31,20 +31,13 @@ const premiumAccountCss = fs.existsSync(premiumAccountCssPath)
   ? fs.readFileSync(premiumAccountCssPath, "utf8")
   : "";
 
-test("successful customer sign-in returns shoppers to the storefront", () => {
-  assert.match(
-    loginPage,
-    /await login\([^;]+;[\s\S]*?if \(socialLinkRequired\) \{[\s\S]*?await completeCustomerSocialLink\(\);[\s\S]*?navigate\("\/account"\);[\s\S]*?return;[\s\S]*?\}[\s\S]*?navigate\("\/"\);/
-  );
-  assert.doesNotMatch(
-    loginPage,
-    /await login\([^;]+;\s*navigate\("\/account"\);/,
-    "ordinary password sign-in must not redirect directly to the account page"
-  );
-  assert.match(
-    customerRoutes,
-    /\(pathname === "\/login" \|\| pathname === "\/register"\)[\s\S]*?return "\/";/
-  );
+test("customer sign-in preserves a safe checkout return path", () => {
+  assert.match(loginPage, /const requestedReturnTo = getCustomerReturnPath\(search\);/);
+  assert.match(loginPage, /navigate\(passwordReturnTo\);/);
+  assert.match(loginPage, /startCustomerSocialAuth\(provider, quickSignReturnTo, "login"\)/);
+  assert.match(customerRoutes, /pathname === "\/account" \|\| pathname === "\/checkout"/);
+  assert.match(customerRoutes, /buildCustomerAuthPath\("\/login", `\$\{pathname\}\$\{search\}`\)/);
+  assert.match(customerRoutes, /return getCustomerReturnPath\(search\) \?\? "\/";/);
 });
 
 test("customer account loads Orders first and keeps Profile and Security secondary", () => {

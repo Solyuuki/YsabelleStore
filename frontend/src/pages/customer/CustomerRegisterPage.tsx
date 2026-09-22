@@ -15,11 +15,17 @@ import {
 } from "@/services/customerSocialAuthService";
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerRegisterForm } from "@/utils/customerAuthForms";
+import {
+  buildCustomerAuthPath,
+  getCustomerReturnPath
+} from "@/utils/customerRoutes";
 
 type RegistrationVerificationPanel = "registration-email" | "quick-email" | null;
 
 export function CustomerRegisterPage({ navigate }: { navigate: (path: string) => void }) {
   const { refreshSession, register } = useCustomerAuth();
+  const requestedReturnTo = getCustomerReturnPath(globalThis.location?.search ?? "");
+  const returnTo = requestedReturnTo ?? "/account";
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -99,7 +105,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
         phone: phone.trim() || undefined,
         username: username.trim()
       });
-      navigate("/account");
+      navigate(returnTo);
     } catch (error) {
       setServerError(
         error instanceof Error ? error.message : "Unable to create your account. Please try again."
@@ -113,7 +119,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
     setServerError(null);
     setBusySocialProvider(provider);
     try {
-      startCustomerSocialAuth(provider, "/account", "register");
+      startCustomerSocialAuth(provider, returnTo, "register");
     } catch (error) {
       setBusySocialProvider(null);
       setServerError(
@@ -124,7 +130,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
   async function handleQuickSignVerified() {
     await refreshSession();
-    navigate("/");
+    navigate(returnTo);
   }
 
   return (
@@ -358,7 +364,10 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
         <p className="customer-auth-switch">
           Already have an account?{" "}
-          <CustomerLink href="/login" navigate={navigate}>
+          <CustomerLink
+            href={buildCustomerAuthPath("/login", requestedReturnTo)}
+            navigate={navigate}
+          >
             Sign In
           </CustomerLink>
         </p>

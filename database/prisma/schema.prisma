@@ -353,6 +353,7 @@ model CustomerAccount {
   socialLinkIntents   CustomerSocialLinkIntent[]
   oauthHandoffs       CustomerOAuthHandoff[]
   orders              CustomerOrder[]
+  cartItems           CustomerCartItem[]
   rememberedAuth      CustomerRememberedAuth[]
 
   @@index([status], map: "idx_customer_accounts_status")
@@ -603,6 +604,7 @@ model Product {
   historicalMonthlySales    HistoricalMonthlySales[]
   historicalSalesImportRows HistoricalSalesImportRow[]
   customerOrderItems        CustomerOrderItem[]
+  customerCartItems         CustomerCartItem[]
   reviews                   ProductReview[]
   aliases                   ProductAlias[]
   sourceMapping             ProductCanonicalMapping?    @relation("SourceProductMapping")
@@ -894,6 +896,22 @@ model SaleItem {
   @@index([productId], map: "idx_sale_items_product")
   @@index([batchId], map: "idx_sale_items_batch")
   @@map("sale_items")
+}
+
+model CustomerCartItem {
+  id                String          @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String          @map("customer_account_id") @db.VarChar(191)
+  productId         String          @map("product_id") @db.VarChar(191)
+  quantity          Int             @db.UnsignedInt
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product           Product         @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([customerAccountId, productId], map: "uq_customer_cart_items_customer_product")
+  @@index([customerAccountId, updatedAt], map: "idx_customer_cart_items_customer_updated")
+  @@index([productId], map: "idx_customer_cart_items_product")
+  @@map("customer_cart_items")
 }
 
 model CustomerOrder {

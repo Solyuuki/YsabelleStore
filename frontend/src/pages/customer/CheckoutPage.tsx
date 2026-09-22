@@ -26,8 +26,8 @@ function addressSummary(address: CustomerAddress) {
 }
 
 export function CheckoutPage({ navigate }: { navigate: (path: string) => void }) {
-  const { items, itemCount, subtotal, clearCart } = useCart();
-  const { customer } = useCustomerAuth();
+  const { items, itemCount, subtotal, clearCart, isReady } = useCart();
+  const { customer, status } = useCustomerAuth();
   const [contact, setContact] = useState(() => getCustomerCheckoutDefaults(customer));
   const [contactEdited, setContactEdited] = useState(false);
   const [address, setAddress] = useState<CustomerAddress>(EMPTY_CUSTOMER_ADDRESS);
@@ -124,6 +124,35 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (status === "authenticated" && !isReady) {
+    return (
+      <div className="customer-page customer-container">
+        <div className="customer-empty-state" role="status">
+          <h1>Syncing Your Cart</h1>
+          <p>We are moving your guest items into your account before checkout.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status !== "authenticated" || !customer) {
+    return (
+      <div className="customer-page customer-container">
+        <div className="customer-empty-state">
+          <h1>Sign In Required</h1>
+          <p>Your cart is safe. Sign in to continue with checkout.</p>
+          <CustomerLink
+            className="customer-button"
+            href="/login?returnTo=%2Fcheckout"
+            navigate={navigate}
+          >
+            Sign in to checkout
+          </CustomerLink>
+        </div>
+      </div>
+    );
   }
 
   if (!items.length) {

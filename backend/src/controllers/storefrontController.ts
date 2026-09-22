@@ -16,6 +16,7 @@ import {
   listStorefrontProducts
 } from "../services/storefrontService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
+import { HttpError } from "../utils/httpError.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import {
   storefrontOrderSchema,
@@ -131,10 +132,12 @@ export const createStorefrontOrderController: RequestHandler = async (request, r
       code: "INVALID_STOREFRONT_ORDER"
     });
     const customer = getAuthenticatedCustomer(request);
-    const order = await createStorefrontOrder(
-      body,
-      customer ? { customerAccountId: customer.id } : {}
-    );
+    if (!customer) {
+      throw new HttpError(401, "Customer session is required.", {
+        code: "CUSTOMER_SESSION_REQUIRED"
+      });
+    }
+    const order = await createStorefrontOrder(body, { customerAccountId: customer.id });
 
     if (body.customerAddress) {
       await saveCustomerOrderAddressSnapshot(order.id, body.customerAddress);

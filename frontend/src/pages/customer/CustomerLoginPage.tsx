@@ -20,12 +20,20 @@ import {
 } from "@/services/customerSocialAuthService";
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerLoginForm } from "@/utils/customerAuthForms";
+import {
+  buildCustomerAuthPath,
+  getCustomerReturnPath
+} from "@/utils/customerRoutes";
 
 type QuickSignPanel = "email-loading" | "email-saved" | "email-entry" | null;
 
 export function CustomerLoginPage({ navigate }: { navigate: (path: string) => void }) {
   const { login, refreshSession } = useCustomerAuth();
-  const socialLinkRequired = isCustomerSocialLinkRequired(globalThis.location?.search ?? "");
+  const search = globalThis.location?.search ?? "";
+  const socialLinkRequired = isCustomerSocialLinkRequired(search);
+  const requestedReturnTo = getCustomerReturnPath(search);
+  const passwordReturnTo = requestedReturnTo ?? (socialLinkRequired ? "/account" : "/");
+  const quickSignReturnTo = requestedReturnTo ?? "/account";
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -62,10 +70,10 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
       await login({ identifier: identifier.trim(), password });
       if (socialLinkRequired) {
         await completeCustomerSocialLink();
-        navigate("/account");
+        navigate(passwordReturnTo);
         return;
       }
-      navigate("/");
+      navigate(passwordReturnTo);
     } catch (error) {
       setServerError(
         error instanceof Error ? error.message : "Unable to sign in. Please try again."
@@ -79,7 +87,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     setServerError(null);
     setBusySocialProvider(provider);
     try {
-      startCustomerSocialAuth(provider, "/account", "login");
+      startCustomerSocialAuth(provider, quickSignReturnTo, "login");
     } catch (error) {
       setBusySocialProvider(null);
       setServerError(
@@ -105,7 +113,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
 
   async function handleOtpVerified() {
     await refreshSession();
-    navigate("/account");
+    navigate(quickSignReturnTo);
   }
 
   return (
@@ -252,7 +260,10 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
 
         <p className="customer-auth-switch">
           New to Ysabelle Store?{" "}
-          <CustomerLink href="/register" navigate={navigate}>
+          <CustomerLink
+            href={buildCustomerAuthPath("/register", requestedReturnTo)}
+            navigate={navigate}
+          >
             Create Account
           </CustomerLink>
         </p>

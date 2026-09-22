@@ -13,7 +13,11 @@ import "@/styles/customer-header-actions.css";
 import "@/styles/customer-guide-route-transition.css";
 import "@/styles/brand.css";
 import "@/styles/shopping-guide.css";
-import { getCustomerAuthPageKind, resolveCustomerAuthRedirect } from "@/utils/customerRoutes";
+import {
+  getCustomerAuthPageKind,
+  isCustomerProtectedRoute,
+  resolveCustomerAuthRedirect
+} from "@/utils/customerRoutes";
 
 const CustomerHomePage = lazy(() =>
   import("@/pages/customer/CustomerHomePage").then(({ CustomerHomePage }) => ({
@@ -98,18 +102,20 @@ function CustomerAppRoutes({
   location: string;
   navigate: (path: string) => void;
 }) {
-  const rawPathname = new URL(location, window.location.origin).pathname.replace(/\/$/, "") || "/";
+  const locationUrl = new URL(location, window.location.origin);
+  const rawPathname = locationUrl.pathname.replace(/\/$/, "") || "/";
   const pathname =
     window.location.protocol === "file:" && rawPathname.endsWith("/index.html") ? "/" : rawPathname;
   const { status } = useCustomerAuth();
-  const redirect = resolveCustomerAuthRedirect(pathname, status);
+  const redirect = resolveCustomerAuthRedirect(pathname, status, locationUrl.search);
   const authPageKind = getCustomerAuthPageKind(pathname);
+  const protectedRoute = isCustomerProtectedRoute(pathname);
 
   useEffect(() => {
     if (redirect) navigate(redirect);
   }, [navigate, redirect]);
 
-  if (redirect || (authPageKind && status === "loading")) {
+  if (redirect || ((authPageKind || protectedRoute) && status === "loading")) {
     return (
       <CustomerLayout location={location} navigate={navigate} pathname={pathname}>
         <section className="customer-auth-page">

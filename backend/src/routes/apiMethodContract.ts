@@ -37,6 +37,9 @@ const API_ROUTE_METHODS: readonly ApiRouteMethodContract[] = [
   { pattern: "/api/customer-auth/logout", methods: ["POST"] },
 
   { pattern: "/api/customer-account/orders", methods: ["GET"] },
+  { pattern: "/api/customer-account/cart", methods: ["DELETE", "GET"] },
+  { pattern: "/api/customer-account/cart/merge", methods: ["POST"] },
+  { pattern: "/api/customer-account/cart/items/:productId", methods: ["DELETE", "PUT"] },
   { pattern: "/api/customer-account/address", methods: ["GET", "PUT"] },
   { pattern: "/api/customer-account/profile", methods: ["PATCH"] },
   { pattern: "/api/customer-account/username/claim", methods: ["POST"] },

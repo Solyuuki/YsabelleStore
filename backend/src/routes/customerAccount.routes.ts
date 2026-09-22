@@ -12,6 +12,13 @@ import {
   revokeOtherCustomerSessionsController,
   updateCustomerProfileController
 } from "../controllers/customerAccountController.js";
+import {
+  clearCustomerCartController,
+  getCustomerCartController,
+  mergeCustomerCartController,
+  removeCustomerCartItemController,
+  setCustomerCartItemController
+} from "../controllers/customerCartController.js";
 import { createAuthRateLimit, derivePrivateRateLimitKey } from "../middleware/authRateLimit.js";
 import {
   getAuthenticatedCustomer,
@@ -69,6 +76,31 @@ const sensitiveMutationMiddleware = [
 
 customerAccountRouter.use(disableSensitiveResponseCaching);
 customerAccountRouter.get("/orders", requireCustomerAuth, listCustomerOrdersController);
+customerAccountRouter.get("/cart", requireCustomerAuth, getCustomerCartController);
+customerAccountRouter.post(
+  "/cart/merge",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  mergeCustomerCartController
+);
+customerAccountRouter.put(
+  "/cart/items/:productId",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  setCustomerCartItemController
+);
+customerAccountRouter.delete(
+  "/cart/items/:productId",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  removeCustomerCartItemController
+);
+customerAccountRouter.delete(
+  "/cart",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  clearCustomerCartController
+);
 customerAccountRouter.get("/address", requireCustomerAuth, getCustomerAddressController);
 customerAccountRouter.put(
   "/address",

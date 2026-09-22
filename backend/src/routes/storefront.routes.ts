@@ -10,7 +10,7 @@ import {
   listStorefrontProductsController,
   listStorefrontRelatedProductsController
 } from "../controllers/storefrontController.js";
-import { optionalCustomerAuth } from "../middleware/customerAuthMiddleware.js";
+import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
 
 export const storefrontRouter = Router();
 
@@ -21,4 +21,4 @@ storefrontRouter.get("/products", listStorefrontProductsController);
 storefrontRouter.get("/products/:id/reviews", listStorefrontProductReviewsController);
 storefrontRouter.get("/products/:id/related", listStorefrontRelatedProductsController);
 storefrontRouter.get("/products/:id", getStorefrontProductController);
-storefrontRouter.post("/orders", optionalCustomerAuth, createStorefrontOrderController);
+storefrontRouter.post("/orders", requireCustomerAuth, createStorefrontOrderController);
