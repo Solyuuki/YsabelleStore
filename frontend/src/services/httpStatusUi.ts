@@ -41,9 +41,14 @@ export function resolveHttpStatusUi(
     case 201:
     case 202:
     case 204:
-      return descriptor("success", "Success", serverMessage ?? "The request completed successfully.", {
-        severity: "success"
-      });
+      return descriptor(
+        "success",
+        "Success",
+        serverMessage ?? "The request completed successfully.",
+        {
+          severity: "success"
+        }
+      );
     case 400:
       return descriptor(
         "request-error",
@@ -110,7 +115,9 @@ export function resolveHttpStatusUi(
       return descriptor(
         "rate-limited",
         "Too many attempts",
-        serverMessage ? `${serverMessage}${retrySuffix}` : `Too many requests were made.${retrySuffix}`,
+        serverMessage
+          ? `${serverMessage}${retrySuffix}`
+          : `Too many requests were made.${retrySuffix}`,
         { retryable: true, severity: "warning" }
       );
     }

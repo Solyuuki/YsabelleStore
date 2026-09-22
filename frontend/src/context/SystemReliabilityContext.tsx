@@ -9,10 +9,7 @@ import {
   type ReactNode
 } from "react";
 
-import {
-  checkSystemHealth,
-  type SystemHealthState
-} from "@/services/systemHealthService";
+import { checkSystemHealth, type SystemHealthState } from "@/services/systemHealthService";
 import { setSystemMutationGate } from "@/services/systemReliabilityGate";
 
 export type SystemReliabilityMode =
@@ -30,7 +27,9 @@ type SystemReliabilityContextValue = {
   retryNow: () => Promise<void>;
 };
 
-const SystemReliabilityContext = createContext<SystemReliabilityContextValue | undefined>(undefined);
+const SystemReliabilityContext = createContext<SystemReliabilityContextValue | undefined>(
+  undefined
+);
 
 const HEALTH_POLL_INTERVAL_MS = 4_000;
 const RESTORED_NOTICE_MS = 3_000;
@@ -97,9 +96,7 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
 
       if (nextState === "backend-unavailable" || nextState === "timeout") {
         consecutiveTransportFailuresRef.current += 1;
-        applyMode(
-          consecutiveTransportFailuresRef.current >= 2 ? "unavailable" : "reconnecting"
-        );
+        applyMode(consecutiveTransportFailuresRef.current >= 2 ? "unavailable" : "reconnecting");
         return;
       }
 
@@ -177,9 +174,7 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
   );
 
   return (
-    <SystemReliabilityContext.Provider value={value}>
-      {children}
-    </SystemReliabilityContext.Provider>
+    <SystemReliabilityContext.Provider value={value}>{children}</SystemReliabilityContext.Provider>
   );
 }
 

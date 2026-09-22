@@ -63,6 +63,6 @@ M1 Sprint 2 auth behavior remains intact. Sprint 3 planning now shifts M1 into i
 
 ## Sprint 11 Progress
 
-| Date | Progress | Evidence |
-| --- | --- | --- |
+| Date       | Progress                                                                                                                                                                                                                           | Evidence                                                                       |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | 2026-09-18 | Bootstrapped Sprint 11 guardrails and implemented the first QoL reliability slice covering canonical HTTP statuses, 405 routing semantics, safe dependency failures, frontend transport metadata, and focused regression coverage. | `m1/v0.11/fix/http-status-contract`; PR #41; automated validation in progress. |

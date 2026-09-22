@@ -65,6 +65,6 @@ A task is complete only when implementation evidence and the matching artifact u
 
 ## Sprint 11 HTTP Reliability
 
-| Task ID | Date | Scope | Status | Evidence | Next Action |
-| --- | --- | --- | --- | --- | --- |
+| Task ID             | Date       | Scope                                                   | Status    | Evidence                                    | Next Action                                                  |
+| ------------------- | ---------- | ------------------------------------------------------- | --------- | ------------------------------------------- | ------------------------------------------------------------ |
 | YSB-M1-QOL-HTTP-001 | 2026-09-18 | Complete and standardize HTTP status/transport handling | In Review | `m1/v0.11/fix/http-status-contract`; PR #41 | Complete exact-head automated validation before integration. |

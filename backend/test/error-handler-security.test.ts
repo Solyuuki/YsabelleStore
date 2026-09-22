@@ -138,7 +138,10 @@ test("server errors stay sanitized even when a caller requests exposure", async 
 
     assert.equal(response.status, 503);
     assert.equal(body.error?.code, "SERVICE_UNAVAILABLE");
-    assert.doesNotMatch(serialized, /private service diagnostic|PRIVATE_SERVICE_DIAGNOSTIC|must-not-leak/);
+    assert.doesNotMatch(
+      serialized,
+      /private service diagnostic|PRIVATE_SERVICE_DIAGNOSTIC|must-not-leak/
+    );
   });
 });
 

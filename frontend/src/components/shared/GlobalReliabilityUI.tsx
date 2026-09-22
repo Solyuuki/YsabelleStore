@@ -1,19 +1,12 @@
 import { useEffect } from "react";
 
-import {
-  CheckCircle2,
-  DatabaseZap,
-  RefreshCw,
-  ServerOff,
-  WifiOff
-} from "lucide-react";
+import { CheckCircle2, DatabaseZap, RefreshCw, ServerOff, WifiOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useSystemReliability } from "@/context/SystemReliabilityContext";
 
 export function GlobalReliabilityUI() {
-  const { healthState, lastHealthyAt, mode, recentlyRestored, retryNow } =
-    useSystemReliability();
+  const { healthState, lastHealthyAt, mode, recentlyRestored, retryNow } = useSystemReliability();
 
   useEffect(() => {
     const content = document.querySelector<HTMLElement>("[data-reliability-content]");

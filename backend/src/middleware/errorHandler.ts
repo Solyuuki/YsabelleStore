@@ -36,11 +36,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
       ? "The uploaded file is too large."
       : safeServerFailure.message;
   const payload: ErrorPayload = {
-    code: isSafeHttpError
-      ? error.code
-      : isFileSizeError
-        ? "FILE_TOO_LARGE"
-        : safeServerFailure.code
+    code: isSafeHttpError ? error.code : isFileSizeError ? "FILE_TOO_LARGE" : safeServerFailure.code
   };
 
   if (isSafeHttpError && error.details !== undefined) {

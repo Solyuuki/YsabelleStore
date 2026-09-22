@@ -84,7 +84,10 @@ const API_ROUTE_METHODS: readonly ApiRouteMethodContract[] = [
   { pattern: "/api/catalog/products/:productId/barcodes/:barcodeId/primary", methods: ["PATCH"] },
   { pattern: "/api/catalog/products/:id/images", methods: ["POST"] },
   { pattern: "/api/catalog/products/:productId/images/latest", methods: ["GET"] },
-  { pattern: "/api/catalog/products/:productId/images/:imageId/preview/:variant", methods: ["GET"] },
+  {
+    pattern: "/api/catalog/products/:productId/images/:imageId/preview/:variant",
+    methods: ["GET"]
+  },
   { pattern: "/api/catalog/products/:productId/images/:imageId/approve", methods: ["POST"] },
   { pattern: "/api/catalog/products/:productId/images/:imageId/reject", methods: ["POST"] },
   { pattern: "/api/catalog/products/:id", methods: ["GET", "PATCH"] },
