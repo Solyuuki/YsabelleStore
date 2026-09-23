@@ -3,14 +3,15 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  canonicalTextBytes,
+  gitBlobOidCanonicalText,
+  sha256CanonicalText
+} from "./lib/canonical-text.mjs";
 
 const ROOT = resolve(".");
-export const sha256 = (text) => createHash("sha256").update(text, "utf8").digest("hex");
-export const gitBlobOid = (value) => {
-  const buffer = Buffer.isBuffer(value) ? value : Buffer.from(value, "utf8");
-  const header = Buffer.from(`blob ${buffer.length}\0`, "utf8");
-  return createHash("sha1").update(header).update(buffer).digest("hex");
-};
+export const sha256 = (text) => sha256CanonicalText(text);
+export const gitBlobOid = (value) => gitBlobOidCanonicalText(value);
 export const stripSqlComments = (sql) =>
   sql.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*--[^\n]*/gm, "");
 
@@ -161,7 +162,7 @@ export function inspectGeneration2({
         findings.push(`BLOCK: unregistered migration exists in Generation 1 archive: ${name}.`);
         continue;
       }
-      const bytes = Buffer.byteLength(sql, "utf8");
+      const bytes = canonicalTextBytes(sql).length;
       if (bytes !== entry.size || gitBlobOid(sql) !== entry.gitBlobOid) {
         findings.push(`BLOCK: Generation 1 archived migration changed: ${name}.`);
       }
