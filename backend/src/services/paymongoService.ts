@@ -393,11 +393,16 @@ async function reconcilePaidCheckoutSession(
     });
   }
 
-  const payments = Array.isArray(session.attributes.payments)
+  const paymentIntent = asRecord(session.attributes.payment_intent);
+  const paymentIntentAttributes = asRecord(paymentIntent?.attributes);
+  const rawPayments = Array.isArray(session.attributes.payments)
     ? session.attributes.payments
-        .map((payment) => asRecord(payment))
-        .filter((payment): payment is JsonRecord => payment !== null)
-    : [];
+    : Array.isArray(paymentIntentAttributes?.payments)
+      ? paymentIntentAttributes.payments
+      : [];
+  const payments = rawPayments
+    .map((payment) => asRecord(payment))
+    .filter((payment): payment is JsonRecord => payment !== null);
 
   const paidPayment = payments.find((payment) => {
     const attributes = asRecord(payment.attributes);
@@ -422,7 +427,6 @@ async function reconcilePaidCheckoutSession(
   }
 
   const paymentId = stringValue(paidPayment.id);
-  const paymentIntent = asRecord(session.attributes.payment_intent);
   const paymentIntentId = stringValue(paymentIntent?.id);
   const paidAtSeconds = numberValue(paymentAttributes?.paid_at);
 
