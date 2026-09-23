@@ -168,11 +168,8 @@ candidateSecurity = replaceRequired(
 writeFileSync(CANDIDATE_SECURITY_PATH, candidateSecurity, "utf8");
 
 let releaseSecurity = readFileSync(RELEASE_SECURITY_PATH, "utf8");
-const releaseSecurityBefore = [
-  "    } else if (!product.catalogImage?.legacyImageUrl) {",
-  "      findings.push(\`BLOCK: \${code} has neither an active image asset nor a legacy image URL.\`);",
-  "    }"
-].join("\\n");
+const releaseSecurityPattern =
+  /    \\} else if \\(!product\\.catalogImage\\?\\.legacyImageUrl\\) \\{\\n      findings\\.push\\(`BLOCK: \\$\\{code\\} has neither an active image asset nor a legacy image URL\\.`\\);\\n    \\}/;
 const releaseSecurityAfter = [
   "    } else if (state.distributionReady) {",
   "      findings.push(",
@@ -182,12 +179,10 @@ const releaseSecurityAfter = [
   "      findings.push(\`BLOCK: \${code} has neither an active image asset nor a legacy image URL.\`);",
   "    }"
 ].join("\\n");
-releaseSecurity = replaceRequired(
-  releaseSecurity,
-  releaseSecurityBefore,
-  releaseSecurityAfter,
-  "release active image requirement"
-);
+if (!releaseSecurityPattern.test(releaseSecurity)) {
+  throw new Error("Missing expected release active image requirement pattern.");
+}
+releaseSecurity = releaseSecurity.replace(releaseSecurityPattern, releaseSecurityAfter);
 writeFileSync(RELEASE_SECURITY_PATH, releaseSecurity, "utf8");
 
 let phase6 = readFileSync(PHASE6_PATH, "utf8");
