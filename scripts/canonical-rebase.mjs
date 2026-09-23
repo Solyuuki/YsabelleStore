@@ -16,7 +16,9 @@ function git(args, { allowFailure = false, inherit = false } = {}) {
     windowsHide: true
   });
   if (!allowFailure && result.status !== 0) {
-    throw new Error(`git ${args.join(" ")} failed: ${(result.stderr || result.stdout || "").trim()}`);
+    throw new Error(
+      `git ${args.join(" ")} failed: ${(result.stderr || result.stdout || "").trim()}`
+    );
   }
   return { status: result.status ?? 1, stdout: (result.stdout ?? "").trim() };
 }
@@ -51,7 +53,9 @@ async function main() {
     throw new Error("Working tree must be clean before canonical rebase.");
   }
   git(["fetch", "--quiet", "origin", canonicalBranch]);
-  if (git(["merge-base", "--is-ancestor", remoteRef, "HEAD"], { allowFailure: true }).status === 0) {
+  if (
+    git(["merge-base", "--is-ancestor", remoteRef, "HEAD"], { allowFailure: true }).status === 0
+  ) {
     console.log("CANONICAL_REBASE=NOOP already-current");
     return;
   }

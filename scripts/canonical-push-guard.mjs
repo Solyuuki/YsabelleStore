@@ -208,15 +208,11 @@ function changesetPathsBetween(from, to) {
     ],
     { allowFailure: true }
   );
-  return result.status === 0 && result.stdout
-    ? result.stdout.split(/\r?\n/).filter(Boolean)
-    : [];
+  return result.status === 0 && result.stdout ? result.stdout.split(/\r?\n/).filter(Boolean) : [];
 }
 
 function loadChangesets(ref, paths) {
-  return paths
-    .map((path) => loadJsonFromGit(ref, path))
-    .filter(Boolean);
+  return paths.map((path) => loadJsonFromGit(ref, path)).filter(Boolean);
 }
 
 function inspectPublicationConflicts(localChangesets) {
@@ -297,7 +293,10 @@ function main() {
   const localState = loadLocalJson(STATE_PATH);
   const localChecksums = loadLocalJson("database/prisma/state/migration-checksums.json");
   const remoteState = loadJsonFromGit(remoteRef, STATE_PATH);
-  const remoteChecksums = loadJsonFromGit(remoteRef, "database/prisma/state/migration-checksums.json");
+  const remoteChecksums = loadJsonFromGit(
+    remoteRef,
+    "database/prisma/state/migration-checksums.json"
+  );
 
   let changed = [];
   if (remoteState && remoteChecksums) {

@@ -111,7 +111,6 @@ test("phase 4 asset control manifests do not require an asset version increase",
   assert.deepEqual(findings, []);
 });
 
-
 test("catalog source changes require a deterministic canonical changeset", () => {
   const findings = evaluatePushPolicy({
     changed: ["database/seed/canonical-catalog-v1.sql"],

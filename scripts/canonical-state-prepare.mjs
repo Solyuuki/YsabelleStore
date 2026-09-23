@@ -1,17 +1,9 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import {
-  existsSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync
-} from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
-import {
-  buildCanonicalSnapshot,
-  createChangeset
-} from "./canonical-changeset.mjs";
+import { buildCanonicalSnapshot, createChangeset } from "./canonical-changeset.mjs";
 
 const STATE_PATH = "database/prisma/state/canonical-state.json";
 const CHECKSUM_PATH = "database/prisma/state/migration-checksums.json";
@@ -230,11 +222,7 @@ function main() {
   }
 
   if (
-    staged.some(
-      (path) =>
-        path.startsWith("database/canonical/releases/") ||
-        path === RECON_PATH
-    )
+    staged.some((path) => path.startsWith("database/canonical/releases/") || path === RECON_PATH)
   ) {
     catalogChanged = true;
   }
@@ -244,7 +232,9 @@ function main() {
     const digest = sha256File(migration.path);
     const frozen = checksums.migrations[migration.name];
     if (frozen && frozen !== digest) {
-      console.error(`BLOCK: frozen migration ${migration.name} was edited. Create a new migration instead.`);
+      console.error(
+        `BLOCK: frozen migration ${migration.name} was edited. Create a new migration instead.`
+      );
       process.exit(1);
     }
     if (!frozen) {
@@ -264,8 +254,7 @@ function main() {
   if (
     staged.some(
       (path) =>
-        path.startsWith(`${state.canonicalProductImageRoot}/`) ||
-        path.startsWith(`${ASSET_ROOT}/`)
+        path.startsWith(`${state.canonicalProductImageRoot}/`) || path.startsWith(`${ASSET_ROOT}/`)
     )
   ) {
     assetsChanged = true;

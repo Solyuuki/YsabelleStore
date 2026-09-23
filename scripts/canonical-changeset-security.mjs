@@ -17,7 +17,9 @@ export function inspectChangesetDirectory(root = ROOT) {
   const directory = join(root, "database/canonical/changesets");
   if (!existsSync(directory)) return findings;
 
-  for (const name of readdirSync(directory).filter((item) => item.endsWith(".json")).sort()) {
+  for (const name of readdirSync(directory)
+    .filter((item) => item.endsWith(".json"))
+    .sort()) {
     const path = join(directory, name);
     let changeset;
     try {
@@ -33,7 +35,9 @@ export function inspectChangesetDirectory(root = ROOT) {
       findings.push(name + ": " + finding);
     }
     if (name !== changeset.changesetId + ".json") {
-      findings.push("BLOCK: changeset filename must equal deterministic changesetId: " + name + ".");
+      findings.push(
+        "BLOCK: changeset filename must equal deterministic changesetId: " + name + "."
+      );
     }
   }
   return findings;
@@ -48,10 +52,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   } else {
     const state = JSON.parse(readFileSync(STATE_PATH, "utf8"));
     console.log(
-      "CANONICAL_CHANGESET_SECURITY=PASS release=" +
-        state.releaseId +
-        " root=" +
-        CHANGESET_ROOT
+      "CANONICAL_CHANGESET_SECURITY=PASS release=" + state.releaseId + " root=" + CHANGESET_ROOT
     );
   }
 }

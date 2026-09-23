@@ -45,8 +45,17 @@ assert.deepEqual(
   })
 );
 
-assert.equal(mergeNonOverlappingChanges([change("name", "left")], [change("description", "right")]).length, 2);
-assert.equal(publicationConflicts([{ changes: [change("name", "left")] }], [{ changes: [change("name", "right")] }]).length, 1);
+assert.equal(
+  mergeNonOverlappingChanges([change("name", "left")], [change("description", "right")]).length,
+  2
+);
+assert.equal(
+  publicationConflicts(
+    [{ changes: [change("name", "left")] }],
+    [{ changes: [change("name", "right")] }]
+  ).length,
+  1
+);
 
 const privateChangeset = structuredClone(changeset);
 privateChangeset.changes[0].table = "users";

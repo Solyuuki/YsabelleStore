@@ -77,7 +77,10 @@ export function diffSnapshots(base, target) {
       for (const field of [...fields].sort()) {
         const before = valueAt(beforeRow, field);
         const after = valueAt(afterRow, field);
-        if (before.present === after.present && stableJson(before.value) === stableJson(after.value)) {
+        if (
+          before.present === after.present &&
+          stableJson(before.value) === stableJson(after.value)
+        ) {
           continue;
         }
         changes.push({

@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import {
-  inspectCanonicalDbDrift,
-  loadCanonicalSubset
-} from "./canonical-data-materializer.mjs";
+import { inspectCanonicalDbDrift, loadCanonicalSubset } from "./canonical-data-materializer.mjs";
 
 export async function checkCanonicalDbDrift(prisma) {
   const { subset } = loadCanonicalSubset();

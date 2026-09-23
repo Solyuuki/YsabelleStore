@@ -238,13 +238,7 @@ export async function inspectCanonicalDbDrift(prisma, subset) {
     const select = columns
       .map(
         (column) =>
-          "IF(`" +
-          column +
-          "` IS NULL,NULL,CAST(`" +
-          column +
-          "` AS CHAR)) AS `" +
-          column +
-          "`"
+          "IF(`" + column + "` IS NULL,NULL,CAST(`" + column + "` AS CHAR)) AS `" + column + "`"
       )
       .join(",");
     const ids = expectedRows.map((row) => row.id);
