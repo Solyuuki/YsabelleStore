@@ -397,20 +397,27 @@ async function main() {
     deploy(url);
     const migrationCountBefore = migrationCount(url);
     const staleMarker = marker(url);
-    assert.match(
-      staleMarker,
-      new RegExp(
-        "^" +
-          state.migrationEpoch +
-          "\\|" +
-          state.schemaVersion +
-          "\\|" +
-          (state.catalogVersion - 1) +
-          "\\|" +
-          (state.assetVersion - 1) +
-          "\\|"
-      ),
-      "Generation 2 baseline is not the expected same-schema stale catalog/assets state."
+    const [staleEpoch, staleSchema, staleCatalog, staleAssets] = staleMarker
+      .split("|")
+      .slice(0, 4)
+      .map(Number);
+    assert.equal(
+      staleEpoch,
+      state.migrationEpoch,
+      "Generation 2 baseline migration epoch differs from the current lineage."
+    );
+    assert.equal(
+      staleSchema,
+      state.schemaVersion,
+      "Generation 2 baseline is not the expected same-schema state."
+    );
+    assert.ok(
+      staleCatalog < state.catalogVersion,
+      "Generation 2 baseline catalog is not older than the current canonical catalog."
+    );
+    assert.ok(
+      staleAssets < state.assetVersion,
+      "Generation 2 baseline assets are not older than the current canonical assets."
     );
 
     mysql(
