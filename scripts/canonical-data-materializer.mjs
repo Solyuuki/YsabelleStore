@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { normalizeCanonicalText, sha256CanonicalText } from "./lib/canonical-text.mjs";
 
 const ROOT = resolve("."),
   STATE = "database/prisma/state/canonical-state.json",
@@ -16,7 +17,7 @@ export const CANONICAL_TABLES = [
   "sarima_source_product_mappings"
 ];
 
-const hash = (v) => createHash("sha256").update(v).digest("hex");
+const hash = (v) => sha256CanonicalText(v);
 
 export function extractInsertStatement(sql, table) {
   const start = sql.indexOf("INSERT INTO `" + table + "`");
@@ -310,13 +311,14 @@ export function loadCanonicalSubset(root = ROOT) {
   const state = JSON.parse(readFileSync(join(root, STATE))),
     release = JSON.parse(readFileSync(join(root, state.canonicalReleasePath))),
     reconciliation = JSON.parse(readFileSync(join(root, RECON))),
-    bytes = readFileSync(join(root, state.canonicalCatalogPath));
-  if (hash(bytes) !== state.canonicalCatalogSha256) {
+    bytes = readFileSync(join(root, state.canonicalCatalogPath)),
+    catalogSql = normalizeCanonicalText(bytes);
+  if (hash(catalogSql) !== state.canonicalCatalogSha256) {
     throw new Error("Canonical catalog checksum mismatch");
   }
   return {
     state,
-    subset: buildCanonicalSubset({ catalogSql: bytes.toString("utf8"), release, reconciliation })
+    subset: buildCanonicalSubset({ catalogSql, release, reconciliation })
   };
 }
 
