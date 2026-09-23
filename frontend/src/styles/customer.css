@@ -2614,6 +2614,110 @@
   color: var(--customer-muted);
   font-size: 0.72rem;
 }
+.customer-payment-options {
+  display: grid;
+  gap: 0.75rem;
+}
+.customer-payment-option {
+  position: relative;
+  display: grid;
+  min-height: 78px;
+  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid var(--customer-line);
+  border-radius: 0.9rem;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+.customer-payment-option:hover {
+  border-color: #b9b5ff;
+  background: #fbfaff;
+}
+.customer-payment-option.is-selected {
+  border-color: #9c96ff;
+  background: #f2f1ff;
+  box-shadow: 0 0 0 1px rgb(98 91 255 / 7%);
+}
+.customer-payment-option:has(input:focus-visible) {
+  box-shadow: 0 0 0 3px var(--customer-focus);
+}
+.customer-payment-option:has(input:disabled) {
+  cursor: not-allowed;
+}
+.customer-payment-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.customer-payment-option > svg {
+  color: var(--customer-primary);
+}
+.customer-payment-option > span {
+  display: grid;
+  gap: 0.25rem;
+}
+.customer-payment-option strong {
+  color: var(--customer-dark);
+  font-size: 0.82rem;
+}
+.customer-payment-option small {
+  color: var(--customer-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+.customer-payment-resume,
+.customer-payment-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #c9c7ff;
+  border-radius: 0.8rem;
+  background: #f7f6ff;
+  color: var(--customer-muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+.customer-payment-resume > svg,
+.customer-payment-status > svg {
+  flex: none;
+  color: var(--customer-primary);
+}
+.customer-payment-status {
+  margin: 1rem 0 0;
+  text-align: left;
+}
+.customer-payment-status div {
+  display: grid;
+  gap: 0.2rem;
+}
+.customer-payment-status strong {
+  color: var(--customer-dark);
+}
+.customer-payment-status--paid {
+  border-color: #b9dfc8;
+  background: #f1fbf5;
+}
+.customer-payment-status--paid > svg {
+  color: var(--customer-success);
+}
+.customer-payment-spinner {
+  animation: customer-payment-spin 900ms linear infinite;
+}
+@keyframes customer-payment-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 .customer-notes-field {
   margin-top: 1rem;
 }
