@@ -87,7 +87,9 @@ function serializeStorefrontOrder(order: StorefrontOrderRecord) {
     status: order.status,
     fulfillmentMethod: order.fulfillmentMethod,
     paymentMethod: order.paymentMethod,
+    paymentStatus: order.paymentStatus,
     totalAmount: order.totalAmount.toString(),
+    paidAt: order.paidAt,
     createdAt: order.createdAt,
     itemCount: order.items.reduce((total, item) => total + item.quantity, 0),
     items: order.items.map((item) => ({
@@ -516,7 +518,7 @@ export async function createStorefrontOrder(
       include: storefrontOrderInclude
     });
 
-    if (context.customerAccountId) {
+    if (context.customerAccountId && input.paymentMethod !== "PAYMONGO") {
       await tx.customerCartItem.deleteMany({
         where: { customerAccountId: context.customerAccountId }
       });
