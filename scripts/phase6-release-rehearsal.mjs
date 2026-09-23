@@ -320,6 +320,32 @@ async function webStartupSmoke(url, runtimeRoot, release) {
     assert.equal(frontendResponse.ok, true, "Frontend did not return HTTP success.");
     assert.match(await frontendResponse.text(), /id="root"/);
 
+    const loginResponse = await fetch(new URL("/api/auth/login", runtime.apiBaseUrl + "/"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "staff@ysabellestore.local",
+        password: "StaffPass#2026"
+      }),
+      signal: AbortSignal.timeout(10_000)
+    });
+    assert.equal(loginResponse.status, 200, "Development staff account could not sign in.");
+    const loginPayload = await loginResponse.json();
+    assert.equal(
+      loginPayload?.data?.user?.email,
+      "staff@ysabellestore.local",
+      "Development staff login returned the wrong user."
+    );
+
+    const storefrontResponse = await fetch(
+      new URL("/api/storefront/products?page=1&pageSize=50&availability=in-stock", runtime.apiBaseUrl + "/"),
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    assert.equal(storefrontResponse.ok, true, "Storefront stock parity endpoint failed.");
+    const storefrontPayload = await storefrontResponse.json();
+    assert.equal(storefrontPayload?.meta?.totalItems, 50, "Expected 50 in-stock team products.");
+    assert.equal(storefrontPayload?.data?.length, 50, "Expected 50 in-stock storefront rows.");
+
     for (const product of release.products) {
       const imageId = product.catalogImage?.activeImageAssetId;
       assert.ok(imageId, product.productId + " has no active image asset.");
@@ -503,9 +529,9 @@ async function main() {
 
     console.log(
       "PHASE6_RELEASE_REHEARSAL=PASS phase4=pass phase5=pass staleCatalogAssets=converged " +
-        "private=preserved imageRefs=50x4 productImageBindings=50 reachableImages=50 " +
-        "corruptImage=blockedAndRepaired restart=idempotent frozenMigration=blocked " +
-        "prismaGenerate=pass appStartup=pass"
+        "private=preserved teamAuth=pass teamStock=50 imageRefs=50x4 productImageBindings=50 " +
+        "reachableImages=50 corruptImage=blockedAndRepaired restart=idempotent " +
+        "frozenMigration=blocked prismaGenerate=pass appStartup=pass"
     );
   } finally {
     recreate(url);

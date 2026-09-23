@@ -124,7 +124,9 @@
     "canonical-db:drift": "node scripts/canonical-db-drift.mjs",
     "state:rebase": "node scripts/canonical-rebase.mjs",
     "phase5:rehearsal": "node scripts/phase5-publication-rehearsal.mjs",
-    "phase6:rehearsal": "node scripts/phase6-release-rehearsal.mjs"
+    "phase6:rehearsal": "node scripts/phase6-release-rehearsal.mjs",
+    "team-state:sync": "node --env-file=.env scripts/canonical-team-development-state.mjs",
+    "team-state:verify": "node --env-file=.env scripts/canonical-team-development-state.mjs --verify-only"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"

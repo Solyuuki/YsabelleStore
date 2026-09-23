@@ -17,6 +17,11 @@ import {
   verifyCanonicalSubset
 } from "./canonical-data-materializer.mjs";
 import { backupDatabase, resetDatabaseToGeneration2 } from "./canonical-database-recovery.mjs";
+import {
+  shouldSyncDevelopmentTeamState,
+  syncDevelopmentTeamState,
+  verifyDevelopmentTeamState
+} from "./canonical-team-development-state.mjs";
 
 const STATE_PATH = "database/prisma/state/canonical-state.json",
   BASELINE = "0000_generation2_baseline";
@@ -166,6 +171,10 @@ async function verifyReady(prisma, state, subset, plan) {
   if (df.length) throw new Error("Canonical data verification failed: " + df.join(", "));
   const af = verifyMaterializedAssets(plan);
   if (af.length) throw new Error("Canonical asset verification failed: " + af.join("\n"));
+  if (shouldSyncDevelopmentTeamState()) {
+    const tf = await verifyDevelopmentTeamState(prisma);
+    if (tf.length) throw new Error("Development team state verification failed: " + tf.join(", "));
+  }
 }
 async function materialize({ PrismaClient, state, allowUnready }) {
   const data = loadCanonicalSubset(),
@@ -180,11 +189,16 @@ async function materialize({ PrismaClient, state, allowUnready }) {
     plan: assets.plan,
     runtimeRoot: assets.runtimeRoot
   });
+  let teamStateStatus = "SKIPPED";
+  if (shouldSyncDevelopmentTeamState()) {
+    const teamState = await withPrisma(PrismaClient, (p) => syncDevelopmentTeamState(p));
+    teamStateStatus = teamState.status;
+  }
   await withPrisma(PrismaClient, async (p) => {
     await updateMarker(p, state);
     await verifyReady(p, state, data.subset, assets.plan);
   });
-  return assetResult;
+  return { ...assetResult, teamStateStatus };
 }
 async function recover({ PrismaClient, state, classification, allowUnready }) {
   await confirmRecovery(classification);
@@ -242,7 +256,12 @@ async function main() {
       return;
     }
     const r = await recover({ PrismaClient, state, classification: kind, allowUnready });
-    console.log("CANONICAL_PULL_SYNC=PASS assetsResult=" + r.status);
+    console.log(
+      "CANONICAL_PULL_SYNC=PASS assetsResult=" +
+        r.status +
+        " teamState=" +
+        r.teamStateStatus
+    );
     return;
   }
   npm(["exec", "--", "prisma", "migrate", "deploy", "--schema=database/prisma/schema.prisma"]);
@@ -269,7 +288,9 @@ async function main() {
       " assets=" +
       state.assetVersion +
       " assetsResult=" +
-      r.status
+      r.status +
+      " teamState=" +
+      r.teamStateStatus
   );
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href)
