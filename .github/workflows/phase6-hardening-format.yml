@@ -1,0 +1,39 @@
+name: Phase 6 Hardening Format
+
+on:
+  push:
+    branches:
+      - "sprint/v0.11/sprint-11"
+    paths:
+      - "scripts/phase6-release-rehearsal.mjs"
+      - ".github/workflows/phase6-hardening-format.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Format Phase 6 hardening source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Format Phase 6 source
+        run: npx prettier --write scripts/phase6-release-rehearsal.mjs
+
+      - name: Upload formatted Phase 6 source
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase6-hardening-formatted
+          path: scripts/phase6-release-rehearsal.mjs
+          if-no-files-found: error
