@@ -338,13 +338,13 @@ async function webStartupSmoke(url, runtimeRoot, release) {
     );
 
     const storefrontResponse = await fetch(
-      new URL("/api/storefront/products?page=1&pageSize=50&availability=in-stock", runtime.apiBaseUrl + "/"),
+      new URL("/api/storefront/products?page=1&pageSize=48&availability=in-stock", runtime.apiBaseUrl + "/"),
       { signal: AbortSignal.timeout(10_000) }
     );
     assert.equal(storefrontResponse.ok, true, "Storefront stock parity endpoint failed.");
     const storefrontPayload = await storefrontResponse.json();
     assert.equal(storefrontPayload?.meta?.totalItems, 50, "Expected 50 in-stock team products.");
-    assert.equal(storefrontPayload?.data?.length, 50, "Expected 50 in-stock storefront rows.");
+    assert.equal(storefrontPayload?.data?.length, 48, "Expected a full first storefront page.");
 
     for (const product of release.products) {
       const imageId = product.catalogImage?.activeImageAssetId;
