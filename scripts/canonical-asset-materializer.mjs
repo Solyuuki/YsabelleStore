@@ -143,30 +143,85 @@ function run(cmd, args, capture = false) {
     );
   return r;
 }
-function ensurePillow(distribution) {
+export function pythonInvocationCandidates({
+  environment = process.env,
+  platform = process.platform
+} = {}) {
+  const explicit = environment.PYTHON_EXECUTABLE?.trim();
+  if (explicit) return [{ command: explicit, prefix: [] }];
+  if (platform === "win32") {
+    return [
+      { command: "py", prefix: ["-3"] },
+      { command: "python", prefix: [] },
+      { command: "python3", prefix: [] }
+    ];
+  }
+  return [
+    { command: "python3", prefix: [] },
+    { command: "python", prefix: [] }
+  ];
+}
+function pythonSpawn(invocation, args) {
+  return spawnSync(invocation.command, [...invocation.prefix, ...args], {
+    cwd: ROOT,
+    env: process.env,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true
+  });
+}
+function runPython(invocation, args) {
+  return run(invocation.command, [...invocation.prefix, ...args]);
+}
+function resolvePython(distribution) {
   const expected = distribution.reconstruction && distribution.reconstruction.pillowVersion;
   const req = distribution.reconstruction && distribution.reconstruction.pythonRequirementsPath;
   if (!expected || !req) throw new Error("Missing pinned image reconstruction contract.");
-  const python =
-    process.env.PYTHON_EXECUTABLE?.trim() || (process.platform === "win32" ? "python" : "python3");
-  const inspect = () =>
-    spawnSync(python, ["-c", "import PIL; print(PIL.__version__)"], {
-      cwd: ROOT,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-      windowsHide: true
-    });
-  let r = inspect();
-  if (r.status !== 0 || r.stdout.trim() !== expected) {
-    run(python, ["-m", "pip", "install", "--disable-pip-version-check", "-r", req]);
-    r = inspect();
+
+  const attempts = [];
+  for (const invocation of pythonInvocationCandidates()) {
+    const label = [invocation.command, ...invocation.prefix].join(" ");
+    const version = pythonSpawn(invocation, ["--version"]);
+    if (version.error || version.status !== 0) {
+      attempts.push(label + ": unavailable");
+      continue;
+    }
+
+    const inspect = () => pythonSpawn(invocation, ["-c", "import PIL; print(PIL.__version__)"]);
+    let pillow = inspect();
+    if (pillow.status === 0 && pillow.stdout.trim() === expected) return invocation;
+
+    try {
+      runPython(invocation, [
+        "-m",
+        "pip",
+        "install",
+        "--disable-pip-version-check",
+        "-r",
+        req
+      ]);
+    } catch (error) {
+      attempts.push(label + ": pip/Pillow setup failed");
+      continue;
+    }
+
+    pillow = inspect();
+    if (pillow.status === 0 && pillow.stdout.trim() === expected) return invocation;
+    attempts.push(label + ": Pillow " + expected + " unavailable");
   }
-  if (r.status !== 0 || r.stdout.trim() !== expected)
-    throw new Error("Pillow " + expected + " required for exact reconstruction.");
-  return python;
+
+  throw new Error(
+    "Python 3 with pip is required for canonical image reconstruction. Tried: " +
+      attempts.join("; ") +
+      ". Install Python 3 and ensure the Windows 'py' launcher or python executable is available."
+  );
+}
+export function ensureAssetReconstructionRuntime({ distribution, plan }) {
+  if (verifyMaterializedAssets(plan).length === 0) return null;
+  return resolvePython(distribution);
 }
 function reconstruct(distribution, plan, stage) {
-  const python = ensurePillow(distribution),
+  const python = resolvePython(distribution),
     candidateRoot = join(stage, "candidates"),
     tmp = mkdtempSync(join(tmpdir(), "ysabelle-assets-")),
     jobsPath = join(tmp, "jobs.json"),
@@ -187,7 +242,7 @@ function reconstruct(distribution, plan, stage) {
       });
     }
     writeFileSync(jobsPath, JSON.stringify(jobs, null, 2) + "\n");
-    run(python, [
+    runPython(python, [
       join(ROOT, distribution.reconstruction.engineBatchPath),
       jobsPath,
       candidateRoot,

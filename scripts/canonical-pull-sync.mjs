@@ -6,6 +6,7 @@ import { createInterface } from "node:readline/promises";
 import { pathToFileURL } from "node:url";
 import { resolveNpmInvocation } from "./lib/npm-invocation.mjs";
 import {
+  ensureAssetReconstructionRuntime,
   loadAssetDistribution,
   materializeAssetPayload,
   verifyMaterializedAssets
@@ -171,6 +172,7 @@ async function materialize({ PrismaClient, state, allowUnready }) {
     assets = loadAssetDistribution();
   if ((!state.distributionReady || !assets.distribution.distributionPayloadReady) && !allowUnready)
     throw new Error("Canonical distribution is not activated.");
+  ensureAssetReconstructionRuntime(assets);
   await withPrisma(PrismaClient, (p) => applyCanonicalSubset(p, data.subset));
   const assetResult = materializeAssetPayload({
     state,
@@ -188,6 +190,7 @@ async function recover({ PrismaClient, state, classification, allowUnready }) {
   await confirmRecovery(classification);
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error("DATABASE_URL required for recovery.");
+  ensureAssetReconstructionRuntime(loadAssetDistribution());
   const backup = backupDatabase({ databaseUrl, classification, releaseId: state.releaseId });
   console.log("CANONICAL_RECOVERY_BACKUP=" + backup);
   resetDatabaseToGeneration2();
