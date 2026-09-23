@@ -2774,6 +2774,9 @@
   background: var(--customer-success);
   color: #fff;
 }
+.customer-success-card__icon.is-pending {
+  background: var(--customer-primary);
+}
 .customer-success-card h1 {
   margin: 0;
   font-family: var(--customer-font-display);
