@@ -1,14 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import {
-  existsSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  writeFileSync
-} from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import {
@@ -413,11 +406,9 @@ async function main() {
 
     frozenMigrationGuard(state);
 
-    run(
-      process.platform === "win32" ? "npm.cmd" : "npm",
-      ["run", "prisma:generate"],
-      { env: { ...process.env, DATABASE_URL: url } }
-    );
+    run(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "prisma:generate"], {
+      env: { ...process.env, DATABASE_URL: url }
+    });
     await webStartupSmoke(url);
 
     assert.equal(
