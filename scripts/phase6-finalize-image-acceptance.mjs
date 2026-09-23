@@ -168,18 +168,24 @@ candidateSecurity = replaceRequired(
 writeFileSync(CANDIDATE_SECURITY_PATH, candidateSecurity, "utf8");
 
 let releaseSecurity = readFileSync(RELEASE_SECURITY_PATH, "utf8");
+const releaseSecurityBefore = [
+  "    } else if (!product.catalogImage?.legacyImageUrl) {",
+  "      findings.push(\`BLOCK: \${code} has neither an active image asset nor a legacy image URL.\`);",
+  "    }"
+].join("\\n");
+const releaseSecurityAfter = [
+  "    } else if (state.distributionReady) {",
+  "      findings.push(",
+  "        \`BLOCK: \${code} has no active canonical image asset while distributionReady=true.\`",
+  "      );",
+  "    } else if (!product.catalogImage?.legacyImageUrl) {",
+  "      findings.push(\`BLOCK: \${code} has neither an active image asset nor a legacy image URL.\`);",
+  "    }"
+].join("\\n");
 releaseSecurity = replaceRequired(
   releaseSecurity,
-  `    } else if (!product.catalogImage?.legacyImageUrl) {
-      findings.push(`BLOCK: ${code} has neither an active image asset nor a legacy image URL.`);
-    }`,
-  `    } else if (state.distributionReady) {
-      findings.push(
-        `BLOCK: ${code} has no active canonical image asset while distributionReady=true.`
-      );
-    } else if (!product.catalogImage?.legacyImageUrl) {
-      findings.push(`BLOCK: ${code} has neither an active image asset nor a legacy image URL.`);
-    }`,
+  releaseSecurityBefore,
+  releaseSecurityAfter,
   "release active image requirement"
 );
 writeFileSync(RELEASE_SECURITY_PATH, releaseSecurity, "utf8");
