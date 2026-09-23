@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle2, MapPin, ShieldCheck, Store } from "lucide-react";
+import { ArrowLeft, Banknote, CheckCircle2, CreditCard, MapPin, ShieldCheck, Store } from "lucide-react";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
@@ -6,8 +6,9 @@ import { formatCurrency } from "@/components/customer/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { fetchCustomerAddress } from "@/services/customerAddressService";
-import { placeStorefrontOrder } from "@/services/storefrontService";
+import { placeStorefrontOrder, startPaymongoCheckout } from "@/services/storefrontService";
 import { EMPTY_CUSTOMER_ADDRESS, type CustomerAddress } from "@/types/customerAddress";
+import type { StorefrontOrder, StorefrontPaymentMethod } from "@/types/storefront";
 import { getCustomerCheckoutDefaults } from "@/utils/customerAccountState";
 
 const LAST_ORDER_KEY = "ysabelle:last-customer-order";
@@ -36,6 +37,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
   const [addressLoading, setAddressLoading] = useState(false);
   const [addressLoadError, setAddressLoadError] = useState("");
   const [saveAddressToAccount, setSaveAddressToAccount] = useState(Boolean(customer));
+  const [paymentMethod, setPaymentMethod] = useState<StorefrontPaymentMethod>("PAYMONGO");
+  const [pendingPaymongoOrder, setPendingPaymongoOrder] = useState<StorefrontOrder | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -98,30 +101,51 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!items.length || submitting) return;
+    if ((!items.length && !pendingPaymongoOrder) || submitting) return;
+
     setSubmitting(true);
     setError("");
-    const form = new FormData(event.currentTarget);
+
     try {
-      const order = await placeStorefrontOrder({
-        customerName: String(form.get("customerName") ?? ""),
-        customerEmail: String(form.get("customerEmail") ?? ""),
-        customerPhone: String(form.get("customerPhone") ?? ""),
-        customerAddress: address,
-        saveAddressToAccount: Boolean(customer && saveAddressToAccount),
-        notes: String(form.get("notes") ?? ""),
-        fulfillmentMethod: "STORE_PICKUP",
-        paymentMethod: "CASH_ON_PICKUP",
-        items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity }))
-      });
-      sessionStorage.setItem(LAST_ORDER_KEY, JSON.stringify(order));
+      let order = pendingPaymongoOrder;
+
+      if (!order) {
+        const form = new FormData(event.currentTarget);
+        order = await placeStorefrontOrder({
+          customerName: String(form.get("customerName") ?? ""),
+          customerEmail: String(form.get("customerEmail") ?? ""),
+          customerPhone: String(form.get("customerPhone") ?? ""),
+          customerAddress: address,
+          saveAddressToAccount: Boolean(customer && saveAddressToAccount),
+          notes: String(form.get("notes") ?? ""),
+          fulfillmentMethod: "STORE_PICKUP",
+          paymentMethod,
+          items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity }))
+        });
+        sessionStorage.setItem(LAST_ORDER_KEY, JSON.stringify(order));
+      }
+
+      if (order.paymentMethod === "PAYMONGO") {
+        try {
+          const checkout = await startPaymongoCheckout(order.orderNumber);
+          clearCart();
+          window.location.assign(checkout.checkoutUrl);
+          return;
+        } catch (reason) {
+          setPendingPaymongoOrder(order);
+          throw reason;
+        }
+      }
+
       clearCart();
       navigate(`/order-success?order=${encodeURIComponent(order.orderNumber)}`);
     } catch (reason) {
       setError(
-        reason instanceof Error
-          ? reason.message
-          : "Your order could not be placed. Please try again."
+        pendingPaymongoOrder
+          ? `Order ${pendingPaymongoOrder.orderNumber} is saved. PayMongo checkout could not be opened; retry payment without creating another order.`
+          : reason instanceof Error
+            ? reason.message
+            : "Your order could not be placed. Please try again."
       );
     } finally {
       setSubmitting(false);
@@ -406,17 +430,62 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <span>4</span>
                 <div>
                   <h2>Payment</h2>
-                  <p>No card or e-wallet integration is presented.</p>
+                  <p>Choose PayMongo test checkout or pay at the store when you collect the order.</p>
                 </div>
               </div>
-              <div className="customer-choice-card is-selected">
-                <ShieldCheck aria-hidden="true" />
-                <div>
-                  <strong>Cash on pickup</strong>
-                  <span>Pay at the store when your order is collected.</span>
-                </div>
-                <CheckCircle2 aria-hidden="true" />
+              <div
+                aria-label="Payment method"
+                className="customer-payment-options"
+                role="radiogroup"
+              >
+                <label
+                  className={`customer-payment-option${paymentMethod === "PAYMONGO" ? " is-selected" : ""}`}
+                >
+                  <input
+                    checked={paymentMethod === "PAYMONGO"}
+                    disabled={Boolean(pendingPaymongoOrder)}
+                    name="paymentMethod"
+                    onChange={() => setPaymentMethod("PAYMONGO")}
+                    type="radio"
+                    value="PAYMONGO"
+                  />
+                  <CreditCard aria-hidden="true" />
+                  <span>
+                    <strong>PayMongo online payment</strong>
+                    <small>
+                      Secure hosted checkout in test mode. No real money will be charged.
+                    </small>
+                  </span>
+                  {paymentMethod === "PAYMONGO" ? <CheckCircle2 aria-hidden="true" /> : null}
+                </label>
+                <label
+                  className={`customer-payment-option${paymentMethod === "CASH_ON_PICKUP" ? " is-selected" : ""}`}
+                >
+                  <input
+                    checked={paymentMethod === "CASH_ON_PICKUP"}
+                    disabled={Boolean(pendingPaymongoOrder)}
+                    name="paymentMethod"
+                    onChange={() => setPaymentMethod("CASH_ON_PICKUP")}
+                    type="radio"
+                    value="CASH_ON_PICKUP"
+                  />
+                  <Banknote aria-hidden="true" />
+                  <span>
+                    <strong>Cash on pickup</strong>
+                    <small>Pay at the store when your order is collected.</small>
+                  </span>
+                  {paymentMethod === "CASH_ON_PICKUP" ? <CheckCircle2 aria-hidden="true" /> : null}
+                </label>
               </div>
+              {pendingPaymongoOrder ? (
+                <div className="customer-payment-resume" role="status">
+                  <ShieldCheck aria-hidden="true" size={18} />
+                  <span>
+                    Order <strong>{pendingPaymongoOrder.orderNumber}</strong> is already saved.
+                    Retrying will reopen payment for this same order.
+                  </span>
+                </div>
+              ) : null}
               <label className="customer-notes-field">
                 <span>
                   Order notes <small>(optional)</small>
@@ -469,7 +538,15 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
               disabled={submitting || addressLoading}
               type="submit"
             >
-              {submitting ? "Checking stock..." : "Place pickup order"}
+              {submitting
+                ? paymentMethod === "PAYMONGO"
+                  ? "Starting secure checkout..."
+                  : "Checking stock..."
+                : pendingPaymongoOrder
+                  ? "Retry PayMongo checkout"
+                  : paymentMethod === "PAYMONGO"
+                    ? "Continue to PayMongo"
+                    : "Place pickup order"}
             </button>
           </aside>
         </form>
