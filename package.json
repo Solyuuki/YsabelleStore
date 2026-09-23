@@ -123,7 +123,8 @@
     "changeset:security": "node scripts/canonical-changeset-security.mjs",
     "canonical-db:drift": "node scripts/canonical-db-drift.mjs",
     "state:rebase": "node scripts/canonical-rebase.mjs",
-    "phase5:rehearsal": "node scripts/phase5-publication-rehearsal.mjs"
+    "phase5:rehearsal": "node scripts/phase5-publication-rehearsal.mjs",
+    "phase6:rehearsal": "node scripts/phase6-release-rehearsal.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"

@@ -146,14 +146,11 @@ jobs:
       - name: Verify committed sprint and artifact status
         run: npm run verify:status
 
-      - name: Rehearse Phase 4 canonical convergence
+      - name: Rehearse Phase 6 full canonical release hardening
         env:
-          PHASE4_REHEARSAL_ALLOW: "1"
+          PHASE6_REHEARSAL_ALLOW: "1"
           DATABASE_URL: mysql://root:root@127.0.0.1:3306/ysabellestore_ci
-        run: npm run phase4:rehearsal
-
-      - name: Rehearse Phase 5 canonical publication
-        run: npm run phase5:rehearsal
+        run: npm run phase6:rehearsal
 
   workspace-validation:
     name: Workspace validation
