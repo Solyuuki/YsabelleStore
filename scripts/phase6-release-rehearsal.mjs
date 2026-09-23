@@ -256,6 +256,7 @@ async function webStartupSmoke(url, runtimeRoot, release) {
       ...process.env,
       NODE_ENV: "development",
       DATABASE_URL: url,
+      CATALOG_IMAGE_STORAGE_ROOT: runtimeRoot,
       YSABELLE_CATALOG_IMAGE_ROOT: runtimeRoot,
       YSABELLE_DEV_SMOKE: "1"
     },
