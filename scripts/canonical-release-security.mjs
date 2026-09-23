@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { extname, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
+import { canonicalTextBytes } from "./lib/canonical-text.mjs";
 
 const ROOT = resolve(".");
 const REQUIRED_RUNTIME_EXCLUSIONS = new Set([
@@ -175,7 +176,7 @@ export function inspectRepository(root = ROOT) {
   const releasePath = join(root, state.canonicalReleasePath ?? "");
   if (!existsSync(releasePath)) return ["BLOCK: canonical release manifest is missing."];
 
-  const releaseBytes = readFileSync(releasePath);
+  const releaseBytes = canonicalTextBytes(readFileSync(releasePath));
   if (gitBlobOid(releaseBytes) !== state.canonicalReleaseGitBlobOid)
     return ["BLOCK: canonical release manifest bytes differ from canonical-state.json."];
 
