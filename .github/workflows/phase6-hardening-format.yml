@@ -9,7 +9,7 @@ on:
       - ".github/workflows/phase6-hardening-format.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   format:
@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -31,9 +33,15 @@ jobs:
       - name: Format Phase 6 source
         run: npx prettier --write scripts/phase6-release-rehearsal.mjs
 
-      - name: Upload formatted Phase 6 source
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase6-hardening-formatted
-          path: scripts/phase6-release-rehearsal.mjs
-          if-no-files-found: error
+      - name: Commit formatted Phase 6 source
+        shell: bash
+        run: |
+          if git diff --quiet -- scripts/phase6-release-rehearsal.mjs; then
+            echo "Phase 6 source is already formatted."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/phase6-release-rehearsal.mjs
+          HUSKY=0 git commit -m "style(db): format phase 6 release rehearsal"
+          HUSKY=0 git push origin HEAD:sprint/v0.11/sprint-11
