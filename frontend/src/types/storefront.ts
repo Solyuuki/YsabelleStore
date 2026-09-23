@@ -76,13 +76,18 @@ export type StorefrontMerchandising = {
   trendingWindowDays: number;
 };
 
+export type StorefrontPaymentMethod = "CASH_ON_PICKUP" | "PAYMONGO";
+export type StorefrontPaymentStatus = "PENDING" | "PAID" | "FAILED" | "CANCELLED";
+
 export type StorefrontOrder = {
   id: string;
   orderNumber: string;
-  status: "PENDING";
+  status: "PENDING" | "CONFIRMED" | "READY_FOR_PICKUP" | "COMPLETED" | "CANCELLED";
   fulfillmentMethod: "STORE_PICKUP";
-  paymentMethod: "CASH_ON_PICKUP";
+  paymentMethod: StorefrontPaymentMethod;
+  paymentStatus: StorefrontPaymentStatus;
   totalAmount: string;
+  paidAt: string | null;
   createdAt: string;
   itemCount: number;
   items: Array<{
@@ -102,6 +107,22 @@ export type StorefrontOrderInput = {
   saveAddressToAccount?: boolean;
   notes?: string;
   fulfillmentMethod: "STORE_PICKUP";
-  paymentMethod: "CASH_ON_PICKUP";
+  paymentMethod: StorefrontPaymentMethod;
   items: Array<{ productId: string; quantity: number }>;
+};
+
+export type PaymongoCheckoutSession = {
+  checkoutSessionId: string;
+  checkoutUrl: string;
+  livemode: false;
+};
+
+export type StorefrontPaymentStatusResult = {
+  orderNumber: string;
+  paymentMethod: StorefrontPaymentMethod;
+  paymentStatus: StorefrontPaymentStatus;
+  totalAmount: string;
+  itemCount: number;
+  paidAt: string | null;
+  canResumePayment: boolean;
 };
