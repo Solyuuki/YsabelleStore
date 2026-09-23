@@ -187,7 +187,8 @@ function resolvePython(distribution) {
       continue;
     }
 
-    const inspect = () => pythonSpawn(invocation, ["-c", "import PIL; print(PIL.__version__)"]);
+    const inspect = () =>
+      pythonSpawn(invocation, ["-c", "import PIL; print(PIL.__version__)"]);
     let pillow = inspect();
     if (pillow.status === 0 && pillow.stdout.trim() === expected) return invocation;
 
