@@ -344,12 +344,14 @@ let sprintDoc = readFileSync(SPRINT_DOC_PATH, "utf8");
 if (!sprintDoc.includes("## Phase 6 image-link acceptance closure")) {
   sprintDoc =
     sprintDoc.trimEnd() +
-    `
-
-## Phase 6 image-link acceptance closure
-
-The seven previously review-only production image candidates (P061, P074, P075, P219, P238, P317, and P342) were visually verified against their product identities and promoted into the canonical release as active APPROVED/READY assets. The production-50 contract now requires 50/50 active image bindings whenever `distributionReady=true`. Release security and candidate-reconciliation security fail closed if that invariant regresses, and the Phase 6 rehearsal verifies both database binding parity and HTTP reachability of all 50 canonical card-image endpoints against the exact materialized runtime payload.
-`;
+    [
+      "",
+      "",
+      "## Phase 6 image-link acceptance closure",
+      "",
+      "The seven previously review-only production image candidates (P061, P074, P075, P219, P238, P317, and P342) were visually verified against their product identities and promoted into the canonical release as active APPROVED/READY assets. The production-50 contract now requires 50/50 active image bindings whenever \`distributionReady=true\`. Release security and candidate-reconciliation security fail closed if that invariant regresses, and the Phase 6 rehearsal verifies both database binding parity and HTTP reachability of all 50 canonical card-image endpoints against the exact materialized runtime payload.",
+      ""
+    ].join("\\n");
 }
 writeFileSync(SPRINT_DOC_PATH, sprintDoc, "utf8");
 
