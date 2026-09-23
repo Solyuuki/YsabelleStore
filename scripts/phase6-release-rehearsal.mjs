@@ -182,6 +182,46 @@ function verifyDbImageReferences(url, runtimeRoot, plan, reconciliation) {
   }
 }
 
+function verifyCanonicalImageBindings(url, release) {
+  const productIds = release.products.map((product) => product.productId);
+  const rows = mysql(
+    url,
+    "SELECT p.id,p.active_image_asset_id,p.image_url,a.quality_status,a.processing_status,a.card_storage_key " +
+      "FROM products p LEFT JOIN product_image_assets a ON a.id=p.active_image_asset_id " +
+      "WHERE p.id IN (" +
+      productIds.map(sqlString).join(",") +
+      ") ORDER BY p.id;"
+  )
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => line.split("\t"));
+
+  assert.equal(rows.length, 50, "Expected 50 canonical product image bindings.");
+  const releaseByProductId = new Map(
+    release.products.map((product) => [product.productId, product])
+  );
+
+  for (const [productId, assetId, imageUrl, quality, processing, cardStorageKey] of rows) {
+    const expected = releaseByProductId.get(productId);
+    assert.ok(expected, productId + " is not present in the canonical release.");
+    const expectedAssetId = expected.catalogImage?.activeImageAssetId;
+    assert.ok(expectedAssetId, productId + " has no active image asset in the canonical release.");
+    assert.equal(assetId, expectedAssetId, productId + " DB active image differs from release.");
+    assert.equal(
+      imageUrl,
+      "/api/storefront/product-images/" + expectedAssetId + "/card",
+      productId + " image URL is not canonical."
+    );
+    assert.equal(quality, "APPROVED", productId + " active image is not APPROVED.");
+    assert.equal(processing, "READY", productId + " active image is not READY.");
+    assert.equal(
+      cardStorageKey,
+      expected.catalogImage.cardStorageKey,
+      productId + " card storage key differs from release."
+    );
+  }
+}
+
 function frozenMigrationGuard(state) {
   const checksums = JSON.parse(readFileSync(CHECKSUM_PATH, "utf8"));
   const first = Object.keys(checksums.migrations || {}).sort()[0];
@@ -208,7 +248,7 @@ function withTimeout(promise, milliseconds, message) {
   ]);
 }
 
-async function webStartupSmoke(url) {
+async function webStartupSmoke(url, runtimeRoot, release) {
   const runtime = resolveDevelopmentRuntime();
   const child = spawn(process.execPath, ["scripts/dev.mjs", "--web-only"], {
     cwd: ROOT,
@@ -216,6 +256,7 @@ async function webStartupSmoke(url) {
       ...process.env,
       NODE_ENV: "development",
       DATABASE_URL: url,
+      YSABELLE_CATALOG_IMAGE_ROOT: runtimeRoot,
       YSABELLE_DEV_SMOKE: "1"
     },
     stdio: ["ignore", "pipe", "pipe", "ipc"],
@@ -271,6 +312,32 @@ async function webStartupSmoke(url) {
     });
     assert.equal(frontendResponse.ok, true, "Frontend did not return HTTP success.");
     assert.match(await frontendResponse.text(), /id="root"/);
+
+    for (const product of release.products) {
+      const imageId = product.catalogImage?.activeImageAssetId;
+      assert.ok(imageId, product.productId + " has no active image asset.");
+      const imageResponse = await fetch(
+        new URL(
+          "/api/storefront/product-images/" + encodeURIComponent(imageId) + "/card",
+          runtime.apiBaseUrl + "/"
+        ),
+        { signal: AbortSignal.timeout(10_000) }
+      );
+      assert.equal(
+        imageResponse.ok,
+        true,
+        product.productId + " canonical image endpoint did not return HTTP success."
+      );
+      assert.match(
+        imageResponse.headers.get("content-type") ?? "",
+        /^image\/webp/i,
+        product.productId + " canonical image endpoint returned the wrong content type."
+      );
+      assert.ok(
+        (await imageResponse.arrayBuffer()).byteLength > 0,
+        product.productId + " canonical image endpoint returned empty bytes."
+      );
+    }
 
     if (child.connected) child.send({ type: "shutdown" });
     const result = await withTimeout(exit, 20_000, "web startup smoke did not stop cleanly.");
@@ -378,6 +445,7 @@ async function main() {
     const distribution = loadAssetDistribution(ROOT, assets);
     assert.deepEqual(verifyMaterializedAssets(distribution.plan), []);
     verifyDbImageReferences(url, assets, distribution.plan, reconciliation);
+    verifyCanonicalImageBindings(url, release);
 
     const card = distribution.plan.find((record) => record.role === "card");
     assert.ok(card, "No card asset record available for corruption rehearsal.");
@@ -409,7 +477,7 @@ async function main() {
     run(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "prisma:generate"], {
       env: { ...process.env, DATABASE_URL: url }
     });
-    await webStartupSmoke(url);
+    await webStartupSmoke(url, assets, release);
 
     assert.equal(
       existsSync(join(ROOT, ".github", "workflows", "phase5-workbench.yml")),
@@ -419,8 +487,9 @@ async function main() {
 
     console.log(
       "PHASE6_RELEASE_REHEARSAL=PASS phase4=pass phase5=pass staleCatalogAssets=converged " +
-        "private=preserved imageRefs=50x4 corruptImage=blockedAndRepaired restart=idempotent " +
-        "frozenMigration=blocked prismaGenerate=pass appStartup=pass"
+        "private=preserved imageRefs=50x4 productImageBindings=50 reachableImages=50 " +
+        "corruptImage=blockedAndRepaired restart=idempotent frozenMigration=blocked " +
+        "prismaGenerate=pass appStartup=pass"
     );
   } finally {
     recreate(url);

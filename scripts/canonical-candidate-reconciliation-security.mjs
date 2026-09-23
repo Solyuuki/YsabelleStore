@@ -47,12 +47,17 @@ export function inspectCandidateReconciliation({ state, release, reconciliation,
   if (reconciliation.matchedProducts !== 50 || reconciliation.items?.length !== 50) {
     findings.push("BLOCK: candidate reconciliation must cover exactly 50 products.");
   }
-  if (reconciliation.activeApprovedMatches !== 43) {
-    findings.push("BLOCK: candidate reconciliation must contain 43 active approved matches.");
+  if (reconciliation.activeApprovedMatches + reconciliation.unselectedNeedsReviewMatches !== 50) {
+    findings.push("BLOCK: candidate reconciliation active/review counts must total 50.");
   }
-  if (reconciliation.unselectedNeedsReviewMatches !== 7) {
+  if (state.distributionReady && reconciliation.activeApprovedMatches !== 50) {
     findings.push(
-      "BLOCK: candidate reconciliation must contain 7 unselected needs-review matches."
+      "BLOCK: distributionReady=true requires all 50 canonical products to have active approved images."
+    );
+  }
+  if (state.distributionReady && reconciliation.unselectedNeedsReviewMatches !== 0) {
+    findings.push(
+      "BLOCK: distributionReady=true cannot retain unselected needs-review image matches."
     );
   }
   if (reconciliation.processedPayloadPinned !== true) {
