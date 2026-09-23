@@ -106,6 +106,7 @@ These services are integrations, not redistributed open-source dependencies:
 | Gmail SMTP                          | Development-only registration/login OTP QA                    | Google account + App Password; development-only |
 | Google OAuth                        | Customer social authentication                                | OAuth client credentials; Google terms apply    |
 | Facebook / Meta OAuth and Graph API | Customer social authentication                                | App credentials; Meta platform terms apply      |
+| PayMongo                           | Test-mode hosted checkout and payment-status verification      | Secret/API keys; PayMongo provider terms apply  |
 
 ## 8. Internally Authored Components
 
