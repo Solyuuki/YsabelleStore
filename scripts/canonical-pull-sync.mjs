@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { pathToFileURL } from "node:url";
+import { resolveNpmInvocation } from "./lib/npm-invocation.mjs";
 import {
   loadAssetDistribution,
   materializeAssetPayload,
@@ -26,13 +27,18 @@ const PREFIXES = [
   "scripts/canonical-",
   "frontend/public/images/products/"
 ];
-function run(cmd, args, { capture = false, allowFailure = false, env = process.env } = {}) {
+function run(
+  cmd,
+  args,
+  { capture = false, allowFailure = false, env = process.env, shell = false } = {}
+) {
   const r = spawnSync(cmd, args, {
     cwd: process.cwd(),
     env,
     encoding: "utf8",
     stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
-    windowsHide: true
+    windowsHide: true,
+    shell
   });
   if (r.error) throw r.error;
   if (r.status !== 0 && !allowFailure)
@@ -51,7 +57,10 @@ function run(cmd, args, { capture = false, allowFailure = false, env = process.e
     stderr: (r.stderr || "").trim()
   };
 }
-const npm = (args, options) => run(process.platform === "win32" ? "npm.cmd" : "npm", args, options);
+const npm = (args, options = {}) => {
+  const invocation = resolveNpmInvocation(args);
+  return run(invocation.command, invocation.args, { ...options, shell: invocation.shell });
+};
 const git = (args, options) => run("git", args, { ...options, capture: true });
 export function isRelevantCanonicalPath(path) {
   return PREFIXES.some((p) => path.startsWith(p));

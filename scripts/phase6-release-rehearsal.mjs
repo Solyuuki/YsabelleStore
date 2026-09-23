@@ -11,6 +11,7 @@ import {
 import { parseMysqlDatabaseUrl } from "./canonical-database-recovery.mjs";
 import { evaluatePushPolicy } from "./canonical-push-guard.mjs";
 import { resolveDevelopmentRuntime } from "./lib/runtime-config.mjs";
+import { resolveNpmInvocation } from "./lib/npm-invocation.mjs";
 
 const ROOT = resolve(".");
 const PHASE4 = join(ROOT, "scripts", "phase4-convergence-rehearsal.mjs");
@@ -34,14 +35,19 @@ function fail(message) {
   throw new Error("PHASE6_RELEASE_REHEARSAL_BLOCKED: " + message);
 }
 
-function run(command, args, { capture = false, allowFailure = false, env = process.env } = {}) {
+function run(
+  command,
+  args,
+  { capture = false, allowFailure = false, env = process.env, shell = false } = {}
+) {
   const result = spawnSync(command, args, {
     cwd: ROOT,
     env,
     encoding: "utf8",
     stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
     maxBuffer: 32 * 1024 * 1024,
-    windowsHide: true
+    windowsHide: true,
+    shell
   });
   if (result.error) throw result.error;
   if (!allowFailure && result.status !== 0) {
@@ -482,8 +488,10 @@ async function main() {
 
     frozenMigrationGuard(state);
 
-    run(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "prisma:generate"], {
-      env: { ...process.env, DATABASE_URL: url }
+    const prismaGenerate = resolveNpmInvocation(["run", "prisma:generate"]);
+    run(prismaGenerate.command, prismaGenerate.args, {
+      env: { ...process.env, DATABASE_URL: url },
+      shell: prismaGenerate.shell
     });
     await webStartupSmoke(url, assets, release);
 
