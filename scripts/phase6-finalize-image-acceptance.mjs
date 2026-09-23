@@ -13,7 +13,6 @@ const STATE_PATH = "database/prisma/state/canonical-state.json";
 const RECON_PATH = "database/canonical/product-images/candidate-reconciliation.json";
 const CATALOG_PATH = "database/seed/canonical-catalog-v1.sql";
 const CANDIDATE_SECURITY_PATH = "scripts/canonical-candidate-reconciliation-security.mjs";
-const RELEASE_SECURITY_PATH = "scripts/canonical-release-security.mjs";
 const PHASE6_PATH = "scripts/phase6-release-rehearsal.mjs";
 const MIGRATION_DOC_PATH = "database/prisma/MIGRATION_GENERATION_2.md";
 const SPRINT_DOC_PATH = "docs/sprints/sprint-11/README.md";
@@ -167,23 +166,6 @@ candidateSecurity = replaceRequired(
 );
 writeFileSync(CANDIDATE_SECURITY_PATH, candidateSecurity, "utf8");
 
-let releaseSecurity = readFileSync(RELEASE_SECURITY_PATH, "utf8");
-const releaseSecurityPattern =
-  /    \\} else if \\(!product\\.catalogImage\\?\\.legacyImageUrl\\) \\{\\n      findings\\.push\\(`BLOCK: \\$\\{code\\} has neither an active image asset nor a legacy image URL\\.`\\);\\n    \\}/;
-const releaseSecurityAfter = [
-  "    } else if (state.distributionReady) {",
-  "      findings.push(",
-  "        \`BLOCK: \${code} has no active canonical image asset while distributionReady=true.\`",
-  "      );",
-  "    } else if (!product.catalogImage?.legacyImageUrl) {",
-  "      findings.push(\`BLOCK: \${code} has neither an active image asset nor a legacy image URL.\`);",
-  "    }"
-].join("\\n");
-if (!releaseSecurityPattern.test(releaseSecurity)) {
-  throw new Error("Missing expected release active image requirement pattern.");
-}
-releaseSecurity = releaseSecurity.replace(releaseSecurityPattern, releaseSecurityAfter);
-writeFileSync(RELEASE_SECURITY_PATH, releaseSecurity, "utf8");
 
 let phase6 = readFileSync(PHASE6_PATH, "utf8");
 const imageBindingFunction = `
