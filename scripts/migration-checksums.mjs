@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { sha256CanonicalText } from "./lib/canonical-text.mjs";
 const root = resolve("."),
   dir = join(root, "database", "prisma", "migrations"),
   file = join(root, "database", "prisma", "state", "migration-checksums.json");
@@ -16,7 +16,7 @@ for (const e of readdirSync(dir, { withFileTypes: true })) {
   if (!e.isDirectory()) continue;
   const f = join(dir, e.name, "migration.sql");
   if (!existsSync(f)) continue;
-  const digest = createHash("sha256").update(readFileSync(f, "utf8"), "utf8").digest("hex");
+  const digest = sha256CanonicalText(readFileSync(f, "utf8"));
   if (m.migrations[e.name]) {
     if (m.migrations[e.name] !== digest) {
       console.error(
