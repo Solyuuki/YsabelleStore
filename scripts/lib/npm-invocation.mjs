@@ -1,10 +1,6 @@
 export function resolveNpmInvocation(
   args,
-  {
-    env = process.env,
-    platform = process.platform,
-    execPath = process.execPath
-  } = {}
+  { env = process.env, platform = process.platform, execPath = process.execPath } = {}
 ) {
   const npmExecPath = env.npm_execpath?.trim();
   if (npmExecPath) {
