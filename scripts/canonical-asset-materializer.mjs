@@ -193,7 +193,7 @@ function resolvePython(distribution) {
 
     try {
       runPython(invocation, ["-m", "pip", "install", "--disable-pip-version-check", "-r", req]);
-    } catch (error) {
+    } catch {
       attempts.push(label + ": pip/Pillow setup failed");
       continue;
     }
