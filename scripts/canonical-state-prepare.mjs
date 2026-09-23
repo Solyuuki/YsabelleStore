@@ -4,6 +4,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { buildCanonicalSnapshot, createChangeset } from "./canonical-changeset.mjs";
+import { canonicalTextBytes, sha256CanonicalText } from "./lib/canonical-text.mjs";
 
 const STATE_PATH = "database/prisma/state/canonical-state.json";
 const CHECKSUM_PATH = "database/prisma/state/migration-checksums.json";
@@ -33,7 +34,7 @@ function git(args, { allowFailure = false } = {}) {
 }
 
 function sha256File(path) {
-  return createHash("sha256").update(readFileSync(path)).digest("hex");
+  return sha256CanonicalText(readFileSync(path));
 }
 
 function gitBlobOid(bytes) {
@@ -271,7 +272,7 @@ function main() {
     rolloverRelease({ state, release, reconciliation, distribution });
     release = readJson(state.canonicalReleasePath);
   } else {
-    const releaseBytes = readFileSync(state.canonicalReleasePath);
+    const releaseBytes = canonicalTextBytes(readFileSync(state.canonicalReleasePath));
     state.canonicalReleaseGitBlobOid = gitBlobOid(releaseBytes);
   }
 
