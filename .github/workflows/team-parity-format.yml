@@ -1,0 +1,49 @@
+name: Team Parity Format Finalizer
+
+on:
+  push:
+    branches:
+      - "sprint/v0.11/sprint-11"
+    paths:
+      - ".github/workflows/team-parity-format.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Sprint 11
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format team parity sources
+        run: |
+          npx prettier --write \
+            database/canonical/README.md \
+            docs/sprints/sprint-11/README.md \
+            scripts/canonical-asset-materializer.mjs \
+            scripts/canonical-pull-sync.mjs \
+            scripts/phase6-release-rehearsal.mjs
+
+      - name: Remove temporary finalizer
+        run: git rm .github/workflows/team-parity-format.yml
+
+      - name: Commit formatted sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add database/canonical/README.md docs/sprints/sprint-11/README.md scripts/canonical-asset-materializer.mjs scripts/canonical-pull-sync.mjs scripts/phase6-release-rehearsal.mjs
+          HUSKY=0 git commit -m "style(db): format team parity convergence"
+          HUSKY=0 git push origin HEAD:sprint/v0.11/sprint-11
