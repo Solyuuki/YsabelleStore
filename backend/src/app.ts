@@ -25,7 +25,16 @@ export function createApp() {
     })
   );
   app.use(securityHeaders);
-  app.use(express.json({ limit: securityConfig.limits.jsonBodyLimit }));
+  app.use(
+    express.json({
+      limit: securityConfig.limits.jsonBodyLimit,
+      verify(request, _response, buffer) {
+        if (request.url.includes("/storefront/payments/paymongo/webhook")) {
+          (request as typeof request & { rawBody?: Buffer }).rawBody = Buffer.from(buffer);
+        }
+      }
+    })
+  );
   app.use("/api", router);
   app.use(methodNotAllowedHandler);
   app.use(notFoundHandler);
