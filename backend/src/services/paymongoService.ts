@@ -192,8 +192,7 @@ export async function createOrReusePaymongoCheckout(
         attributes: {
           billing: {
             name: order.customerName,
-            ...(order.customerEmail ? { email: order.customerEmail } : {}),
-            phone: order.customerPhone
+            ...(order.customerEmail ? { email: order.customerEmail } : {})
           },
           line_items: order.items.map((item) => ({
             name: item.product.name,
@@ -301,7 +300,12 @@ export async function getStorefrontPaymentStatus(
         where: { id: order.id }
       });
     } catch (error) {
-      if (!(error instanceof HttpError) || error.code === "PAYMONGO_NOT_CONFIGURED") {
+      if (
+        !(error instanceof HttpError) ||
+        error.statusCode < 500 ||
+        error.code === "PAYMONGO_NOT_CONFIGURED" ||
+        error.code === "PAYMONGO_TEST_KEY_REQUIRED"
+      ) {
         throw error;
       }
     }
