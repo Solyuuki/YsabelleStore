@@ -141,6 +141,10 @@ export function inspectReleaseContract({ state, release, root = ROOT }) {
         product.catalogImage.processingStatus !== "READY"
       )
         findings.push(`BLOCK: ${code} active image asset is not APPROVED/READY.`);
+    } else if (state.distributionReady) {
+      findings.push(
+        `BLOCK: ${code} has no active canonical image asset while distributionReady=true.`
+      );
     } else if (!product.catalogImage?.legacyImageUrl) {
       findings.push(`BLOCK: ${code} has neither an active image asset nor a legacy image URL.`);
     }

@@ -87,3 +87,18 @@ test("canonical release requires exactly 50 products", () => {
   const findings = inspectReleaseContract({ state, release: candidate, root: "." });
   assert.ok(findings.some((item) => item.includes("exactly 50")));
 });
+
+test("distribution-ready release requires active canonical images for all 50 products", () => {
+  const candidate = release();
+  const distributionState = { ...state, distributionReady: true };
+  const findings = inspectReleaseContract({
+    state: distributionState,
+    release: candidate,
+    root: "."
+  });
+  assert.ok(
+    findings.some((item) =>
+      item.includes("has no active canonical image asset while distributionReady=true")
+    )
+  );
+});
