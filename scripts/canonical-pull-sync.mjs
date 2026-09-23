@@ -257,10 +257,7 @@ async function main() {
     }
     const r = await recover({ PrismaClient, state, classification: kind, allowUnready });
     console.log(
-      "CANONICAL_PULL_SYNC=PASS assetsResult=" +
-        r.status +
-        " teamState=" +
-        r.teamStateStatus
+      "CANONICAL_PULL_SYNC=PASS assetsResult=" + r.status + " teamState=" + r.teamStateStatus
     );
     return;
   }

@@ -192,14 +192,7 @@ function resolvePython(distribution) {
     if (pillow.status === 0 && pillow.stdout.trim() === expected) return invocation;
 
     try {
-      runPython(invocation, [
-        "-m",
-        "pip",
-        "install",
-        "--disable-pip-version-check",
-        "-r",
-        req
-      ]);
+      runPython(invocation, ["-m", "pip", "install", "--disable-pip-version-check", "-r", req]);
     } catch (error) {
       attempts.push(label + ": pip/Pillow setup failed");
       continue;

@@ -32,7 +32,6 @@ The guard verifies the 50-product identity set, runtime-data exclusions, unique 
 
 Automatic destructive legacy replacement remains disabled until Phase 4 activates the guarded pull materializer and recovery path.
 
-
 ## Development team parity
 
 On a local development database, `npm run state:pull:sync` now converges the synthetic team test state after schema/catalog/image convergence. The expected internal logins are `owner@ysabellestore.local` / `OwnerPass#2026` and `staff@ysabellestore.local` / `StaffPass#2026`. All 50 canonical products receive the same deterministic QA stock quantities and one active team batch, while older local batches are left as history but neutralized to zero remaining stock. Run `npm run team-state:verify` to verify the local parity contract.
