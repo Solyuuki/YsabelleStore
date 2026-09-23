@@ -16,6 +16,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Package repository source snapshot
+        run: git archive --format=tar.gz --output=phase5-repo.tar.gz HEAD
+
+      - name: Upload repository source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase5-repo
+          path: phase5-repo.tar.gz
+          if-no-files-found: error
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
