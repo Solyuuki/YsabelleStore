@@ -32,7 +32,7 @@ export const storefrontOrderSchema = z.object({
   saveAddressToAccount: z.boolean().optional(),
   notes: z.string().trim().max(255).optional(),
   fulfillmentMethod: z.literal("STORE_PICKUP"),
-  paymentMethod: z.literal("CASH_ON_PICKUP"),
+  paymentMethod: z.enum(["CASH_ON_PICKUP", "PAYMONGO"]),
   items: z
     .array(
       z.object({
@@ -42,6 +42,10 @@ export const storefrontOrderSchema = z.object({
     )
     .min(1)
     .max(100)
+});
+
+export const storefrontOrderPaymentParamsSchema = z.object({
+  orderNumber: z.string().trim().min(1).max(80)
 });
 
 export type StorefrontProductQuery = z.infer<typeof storefrontProductQuerySchema>;
