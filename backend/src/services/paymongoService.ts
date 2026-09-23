@@ -18,20 +18,6 @@ type PaymongoResource = {
   attributes: JsonRecord;
 };
 
-type PaymongoOrderRecord = Prisma.CustomerOrderGetPayload<{
-  include: {
-    items: {
-      include: {
-        product: {
-          select: {
-            name: true;
-          };
-        };
-      };
-    };
-  };
-}>;
-
 export type PaymongoCheckoutResult = {
   checkoutSessionId: string;
   checkoutUrl: string;
