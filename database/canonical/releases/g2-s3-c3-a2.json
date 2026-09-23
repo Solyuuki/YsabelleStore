@@ -1,0 +1,1234 @@
+{
+  "formatVersion": 1,
+  "releaseId": "g2-s3-c3-a2",
+  "migrationEpoch": 2,
+  "catalogVersion": 3,
+  "assetVersion": 2,
+  "canonicalScope": "PRODUCTION_VERIFIED_50",
+  "expectedProducts": 50,
+  "canonicalTables": [
+    "categories",
+    "products",
+    "product_image_assets",
+    "product_aliases",
+    "sarima_source_product_mappings"
+  ],
+  "excludedRuntimeTables": [
+    "users",
+    "trusted_devices",
+    "customer_accounts",
+    "customer_sessions",
+    "customer_cart_items",
+    "customer_orders",
+    "customer_order_items",
+    "sales",
+    "sale_items",
+    "inventory",
+    "inventory_batches",
+    "inventory_movements"
+  ],
+  "inventoryPolicy": "PRESERVE_RUNTIME_STATE",
+  "productImagePolicy": "GIT_PINNED_SOURCE_BYTES",
+  "products": [
+    {
+      "sourceProductId": "P299",
+      "productId": "cmtk4sfqw00utib1givs20mwk",
+      "sku": "SARIMA-P299",
+      "name": "Jack ‘n Jill Piattos Supersized Cheese",
+      "manufacturerBarcode": "4800016635724",
+      "description": "Cheese-flavored Jack ‘n Jill Piattos potato crisps in a supersized pack, made for a crunchy savory snack.",
+      "sourceImage": {
+        "driveFileId": "1HVxRWrBbByzqc5j7G9_SvDF26L8Kw-P7",
+        "path": "database/canonical/product-images/sources/P299.jpg",
+        "gitBlobOid": "4f137dc2e966ebe0f2bbd17a88d4b754cc17704d",
+        "sizeBytes": 43614
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p299-c772c526a70f",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p299-c772c526a70f/original.jpg",
+        "processedStorageKey": "candidates/sarima-p299-c772c526a70f/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p299-c772c526a70f/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p299-c772c526a70f/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p299-c772c526a70f/card"
+      }
+    },
+    {
+      "sourceProductId": "P352",
+      "productId": "cmtk4sg34010pib1grc379g43",
+      "sku": "SARIMA-P352",
+      "name": "Presto Creams Peanut Butter Sandwich Cookies",
+      "manufacturerBarcode": "4800010076073",
+      "description": "Peanut butter cream-filled sandwich cookies with crisp biscuit layers and a sweet, nutty filling.",
+      "sourceImage": {
+        "driveFileId": "13GTlfgAj4Ki2qVRUNVQxlFqrdZylY-Gj",
+        "path": "database/canonical/product-images/sources/P352.png",
+        "gitBlobOid": "76e011e40922db4bcb3ef54df3171e572045ba6a",
+        "sizeBytes": 63482
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p352-da046e87dbb9",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p352-da046e87dbb9/original.png",
+        "processedStorageKey": "candidates/sarima-p352-da046e87dbb9/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p352-da046e87dbb9/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p352-da046e87dbb9/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p352-da046e87dbb9/card"
+      }
+    },
+    {
+      "sourceProductId": "P361",
+      "productId": "cmtk4sg5n011pib1gyrtmog78",
+      "sku": "SARIMA-P361",
+      "name": "Rebisco Magic Flakes Cheese",
+      "manufacturerBarcode": "4800016082641",
+      "description": "Crisp Magic Flakes crackers with a savory cheese flavor, suitable for snacks or baon.",
+      "sourceImage": {
+        "driveFileId": "1T1kDGVisOPwm8d5nXnTUswtMz9AUSipF",
+        "path": "database/canonical/product-images/sources/P361.webp",
+        "gitBlobOid": "39fe83040cfafabb858739932a028c9df621e106",
+        "sizeBytes": 86286
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p361-73b507c5471e",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p361-73b507c5471e/original.webp",
+        "processedStorageKey": "candidates/sarima-p361-73b507c5471e/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p361-73b507c5471e/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p361-73b507c5471e/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p361-73b507c5471e/card"
+      }
+    },
+    {
+      "sourceProductId": "P023",
+      "productId": "cmtk4sci10029ib1ggerp7k5p",
+      "sku": "SARIMA-P023",
+      "name": "Gardenia California Raisin Loaf 400g",
+      "manufacturerBarcode": "4806502721445",
+      "description": "Gardenia California Raisin Loaf made with raisins in a soft 400g loaf for breakfast, snacks, or sandwiches.",
+      "sourceImage": {
+        "driveFileId": "1CBQPdYxfUna6Z7RYe7nn3cmkoalBu80a",
+        "path": "database/canonical/product-images/sources/P023.jpg",
+        "gitBlobOid": "6020e6db5b475c80e3c99ebe59d9e7fff06db449",
+        "sizeBytes": 38666
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p023-d6b7641067cb",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p023-d6b7641067cb/original.jpg",
+        "processedStorageKey": "candidates/sarima-p023-d6b7641067cb/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p023-d6b7641067cb/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p023-d6b7641067cb/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p023-d6b7641067cb/card"
+      }
+    },
+    {
+      "sourceProductId": "P024",
+      "productId": "cmtk4scia002dib1ghawtsxbd",
+      "sku": "SARIMA-P024",
+      "name": "Gardenia High Fiber Whole Wheat Bread 400g",
+      "manufacturerBarcode": "4806502721452",
+      "description": "Gardenia High Fiber Whole Wheat Bread in a 400g loaf, made for everyday sandwiches, toast, and breakfast meals.",
+      "sourceImage": {
+        "driveFileId": "1AcnhrSyls3f06peuWYLkwzBE090ezOy4",
+        "path": "database/canonical/product-images/sources/P024.jpg",
+        "gitBlobOid": "830823f1d8f0cbb70f7abf0d3fc05cb7c1657380",
+        "sizeBytes": 23535
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p024-7b9b3a341a99",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p024-7b9b3a341a99/original.jpg",
+        "processedStorageKey": "candidates/sarima-p024-7b9b3a341a99/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p024-7b9b3a341a99/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p024-7b9b3a341a99/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p024-7b9b3a341a99/card"
+      }
+    },
+    {
+      "sourceProductId": "P027",
+      "productId": "cmtk4scj2002pib1gq2hussan",
+      "sku": "SARIMA-P027",
+      "name": "Marby Cheese Bites Healthy Kids Pack",
+      "manufacturerBarcode": "4800148535992",
+      "description": "Marby Cheese Bites in a kid-friendly pack, featuring soft bite-sized bread pieces with a savory cheese flavor.",
+      "sourceImage": {
+        "driveFileId": "1KPYbYRN0IZasNBFkjVUsnNYglmdpJpXl",
+        "path": "database/canonical/product-images/sources/P027.jpg",
+        "gitBlobOid": "7bcef329d815ecc00bde75bf4e4db38eafbe660b",
+        "sizeBytes": 25081
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p027-c2cf703e5229",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p027-c2cf703e5229/original.jpg",
+        "processedStorageKey": "candidates/sarima-p027-c2cf703e5229/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p027-c2cf703e5229/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p027-c2cf703e5229/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p027-c2cf703e5229/card"
+      }
+    },
+    {
+      "sourceProductId": "P030",
+      "productId": "cmtk4scjq0031ib1giurdrvya",
+      "sku": "SARIMA-P030",
+      "name": "Marby Mini Mamon 70g",
+      "manufacturerBarcode": "4800148536791",
+      "description": "Marby Mini Mamon is a soft, lightly sweet Filipino sponge cake in a convenient 70g snack pack.",
+      "sourceImage": {
+        "driveFileId": "1pcXvgDFssrWFCwR4Syg8gPqMY0s93WJp",
+        "path": "database/canonical/product-images/sources/P030.png",
+        "gitBlobOid": "243f8be1d7787a7ea641e88a766d45cb76accf91",
+        "sizeBytes": 144543
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p030-0c432701cf48",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p030-0c432701cf48/original.png",
+        "processedStorageKey": "candidates/sarima-p030-0c432701cf48/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p030-0c432701cf48/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p030-0c432701cf48/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p030-0c432701cf48/card"
+      }
+    },
+    {
+      "sourceProductId": "P031",
+      "productId": "cmtk4scjx0035ib1g6t5r5v5f",
+      "sku": "SARIMA-P031",
+      "name": "Marby Hopia Roll Mongo 220g",
+      "manufacturerBarcode": "4800148532267",
+      "description": "Marby Hopia Roll Mongo is a 220g pastry pack filled with sweet mung bean filling and rolled in a soft, flaky crust.",
+      "sourceImage": {
+        "driveFileId": "13_Tcbdtog4ChzrzlcwFY7wNE59MF09Ls",
+        "path": "database/canonical/product-images/sources/P031.webp",
+        "gitBlobOid": "b4127f938f044913a736f117e022a224a95af51d",
+        "sizeBytes": 35044
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p031-f10d92a98e8b",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p031-f10d92a98e8b/original.webp",
+        "processedStorageKey": "candidates/sarima-p031-f10d92a98e8b/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p031-f10d92a98e8b/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p031-f10d92a98e8b/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p031-f10d92a98e8b/card"
+      }
+    },
+    {
+      "sourceProductId": "P201",
+      "productId": "cmtk4sf1o00khib1g7fl8t8dt",
+      "sku": "SARIMA-P201",
+      "name": "Barrio Fiesta Ginisang Bagoong Spicy 250g",
+      "manufacturerBarcode": "737552870453",
+      "description": "Barrio Fiesta Ginisang Bagoong Spicy is sautéed shrimp paste with a spicy savory-sweet flavor in a 250g jar.",
+      "sourceImage": {
+        "driveFileId": "1filSLf8Corui5WYO5jguVcg7kAegk8eX",
+        "path": "database/canonical/product-images/sources/P201.jpg",
+        "gitBlobOid": "42f1799aa5db3a2008d2d6d125567896e069e778",
+        "sizeBytes": 37243
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p201-8f53d74e2b35",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p201-8f53d74e2b35/original.jpg",
+        "processedStorageKey": "candidates/sarima-p201-8f53d74e2b35/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p201-8f53d74e2b35/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p201-8f53d74e2b35/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p201-8f53d74e2b35/card"
+      }
+    },
+    {
+      "sourceProductId": "P202",
+      "productId": "cmtk4sf1w00klib1glktf3vae",
+      "sku": "SARIMA-P202",
+      "name": "Barrio Fiesta Ginisang Bagoong Regular 250g",
+      "manufacturerBarcode": "737552870439",
+      "description": "Barrio Fiesta Ginisang Bagoong Regular is sautéed shrimp paste with a savory-sweet flavor in a 250g jar.",
+      "sourceImage": {
+        "driveFileId": "1JXDR05RDOIpm-6UmkUvvut58D35FApKQ",
+        "path": "database/canonical/product-images/sources/P202.webp",
+        "gitBlobOid": "7de6fab3f30b2044c683a2cbd37a648087e13519",
+        "sizeBytes": 57682
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p202-bf893e9ddbe2",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p202-bf893e9ddbe2/original.webp",
+        "processedStorageKey": "candidates/sarima-p202-bf893e9ddbe2/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p202-bf893e9ddbe2/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p202-bf893e9ddbe2/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p202-bf893e9ddbe2/card"
+      }
+    },
+    {
+      "sourceProductId": "P204",
+      "productId": "cmtk4sf2i00ktib1g7ol0mvpm",
+      "sku": "SARIMA-P204",
+      "name": "Alaska Sweetened Filled Milk 377g",
+      "manufacturerBarcode": "4800575120303",
+      "description": "Alaska Classic Sweetened Condensed Filled Milk is a rich and sweet 377g milk product for desserts, drinks, and recipes.",
+      "sourceImage": {
+        "driveFileId": "1tcYJeT9qMvvrZmexFWB9VyfbkhE_L7Zs",
+        "path": "database/canonical/product-images/sources/P204.jpg",
+        "gitBlobOid": "cc74a6fb2d2a2ede79a930a719ccb992c25fe4fa",
+        "sizeBytes": 123654
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p204-aab52de3833e",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p204-aab52de3833e/original.jpg",
+        "processedStorageKey": "candidates/sarima-p204-aab52de3833e/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p204-aab52de3833e/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p204-aab52de3833e/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p204-aab52de3833e/card"
+      }
+    },
+    {
+      "sourceProductId": "P219",
+      "productId": "cmtk4sf5m00m9ib1g50dzc76m",
+      "sku": "SARIMA-P219",
+      "name": "Nature’s Spring Purified Drinking Water 500ml",
+      "manufacturerBarcode": "4800049720114",
+      "description": "Nature’s Spring Purified Drinking Water is purified bottled water in a convenient 500mL size for everyday hydration.",
+      "sourceImage": {
+        "driveFileId": "1_jtyGU08q_ETTWMr7E2sNKSjN9muHq4d",
+        "path": "database/canonical/product-images/sources/P219.jpg",
+        "gitBlobOid": "512df3f8209084c79fed14394ff389272d2b6a99",
+        "sizeBytes": 11973
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p219-b7553e591e41",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p219-b7553e591e41/original.jpg",
+        "processedStorageKey": "candidates/sarima-p219-b7553e591e41/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p219-b7553e591e41/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p219-b7553e591e41/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p219-b7553e591e41/card"
+      }
+    },
+    {
+      "sourceProductId": "P238",
+      "productId": "cmtk4sf9q00o9ib1ga719u9g9",
+      "sku": "SARIMA-P238",
+      "name": "Pocari Sweat 900ml",
+      "manufacturerBarcode": "4800350108878",
+      "description": "Pocari Sweat is an ion-supply hydration drink in a 900mL bottle formulated to help replenish water and electrolytes.",
+      "sourceImage": {
+        "driveFileId": "1-gvtjHvtyn69X4l52Cdw1naP9X4ttFFR",
+        "path": "database/canonical/product-images/sources/P238.jpg",
+        "gitBlobOid": "9c9fa654271f0da09f33cd284fa00bd9a80e8689",
+        "sizeBytes": 4197
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p238-b021064db04e",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p238-b021064db04e/original.jpg",
+        "processedStorageKey": "candidates/sarima-p238-b021064db04e/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p238-b021064db04e/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p238-b021064db04e/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p238-b021064db04e/card"
+      }
+    },
+    {
+      "sourceProductId": "P022",
+      "productId": "prd_sarima_p022_gardenia_white_bread_600g",
+      "sku": "SARIMA-P022",
+      "name": "Gardenia Enriched White Bread 600g",
+      "manufacturerBarcode": "4806502720615",
+      "description": "Gardenia Enriched White Bread is a soft 600g loaf for everyday sandwiches, toast, breakfast, and snacks.",
+      "sourceImage": {
+        "driveFileId": "1DMy0nYN4yVwT_Wb6fJixJ0gCcz_PgIIL",
+        "path": "database/canonical/product-images/sources/P022.jpg",
+        "gitBlobOid": "b63fe502ccfd3eed4db1d29bb773ab811040c757",
+        "sizeBytes": 115578
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p022-7f4c66cf8e54",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p022-7f4c66cf8e54/original.jpg",
+        "processedStorageKey": "candidates/sarima-p022-7f4c66cf8e54/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p022-7f4c66cf8e54/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p022-7f4c66cf8e54/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p022-7f4c66cf8e54/card"
+      }
+    },
+    {
+      "sourceProductId": "P074",
+      "productId": "cmtk4se9t007lib1gunsvwhxr",
+      "sku": "SARIMA-P074",
+      "name": "Those Days Regular Pads 8 Pads, Red Pack",
+      "manufacturerBarcode": "4801288850082",
+      "description": "Those Days Regular With Wings contains 8 sanitary pads designed for regular daytime menstrual protection.",
+      "sourceImage": {
+        "driveFileId": "1LGTr4leHISiR-KO_cHqFFMq8wVZ7LtVx",
+        "path": "database/canonical/product-images/sources/P074.jpg",
+        "gitBlobOid": "9aa5e1e8615eb76942af50da6acc62dabd7d535d",
+        "sizeBytes": 19983
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p074-5a49e8292dd6",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p074-5a49e8292dd6/original.jpg",
+        "processedStorageKey": "candidates/sarima-p074-5a49e8292dd6/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p074-5a49e8292dd6/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p074-5a49e8292dd6/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p074-5a49e8292dd6/card"
+      }
+    },
+    {
+      "sourceProductId": "P075",
+      "productId": "cmtk4sea1007pib1gbxjuxh8l",
+      "sku": "SARIMA-P075",
+      "name": "Those Days All Night Pads 8 Pads, Purple Pack",
+      "manufacturerBarcode": "4801288870080",
+      "description": "Those Days All Night With Wings contains 8 sanitary pads designed for extended overnight menstrual protection.",
+      "sourceImage": {
+        "driveFileId": "1-htxOf-hsa-nc3s0G6Fmwf2gHalqeh6M",
+        "path": "database/canonical/product-images/sources/P075.jpg",
+        "gitBlobOid": "9dc05f305fce991f24441b4c9b5d214156771b71",
+        "sizeBytes": 20862
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p075-3a83afda0834",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p075-3a83afda0834/original.jpg",
+        "processedStorageKey": "candidates/sarima-p075-3a83afda0834/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p075-3a83afda0834/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p075-3a83afda0834/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p075-3a83afda0834/card"
+      }
+    },
+    {
+      "sourceProductId": "P089",
+      "productId": "cmtk4sect008xib1gjtvt85e4",
+      "sku": "SARIMA-P089",
+      "name": "Fresca Tuna Hot & Spicy 175g",
+      "manufacturerBarcode": "748485900087",
+      "description": "Fresca Tuna Hot & Spicy is a 175g canned tuna product with a savory hot-and-spicy flavor, ready to pair with rice or meals.",
+      "sourceImage": {
+        "driveFileId": "1HeFyePcaoocEshmq96jOvR-lsTkP5Ogk",
+        "path": "database/canonical/product-images/sources/P089.webp",
+        "gitBlobOid": "1488e63c2f12c8ee69bb7541c11162062cb79537",
+        "sizeBytes": 54852
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p089-f4222dfafd5e",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p089-f4222dfafd5e/original.webp",
+        "processedStorageKey": "candidates/sarima-p089-f4222dfafd5e/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p089-f4222dfafd5e/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p089-f4222dfafd5e/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p089-f4222dfafd5e/card"
+      }
+    },
+    {
+      "sourceProductId": "P103",
+      "productId": "cmtk4sefj00a5ib1gnmrwxogu",
+      "sku": "SARIMA-P103",
+      "name": "Lady’s Choice Chicken Spread 27mL",
+      "manufacturerBarcode": "4800888607119",
+      "description": "Lady’s Choice Chicken Spread is a creamy chicken-flavored sandwich spread in a convenient 27mL single-use pack.",
+      "sourceImage": {
+        "driveFileId": "1trxLSvT-ttwkF-7trNqWiGG1fq99uKst",
+        "path": "database/canonical/product-images/sources/P103.webp",
+        "gitBlobOid": "38e50c9158f1e2de9894bc44bec3acacdf7669d3",
+        "sizeBytes": 38140
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p103-83f0fdaa057a",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p103-83f0fdaa057a/original.webp",
+        "processedStorageKey": "candidates/sarima-p103-83f0fdaa057a/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p103-83f0fdaa057a/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p103-83f0fdaa057a/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p103-83f0fdaa057a/card"
+      }
+    },
+    {
+      "sourceProductId": "P122",
+      "productId": "cmtk4sejz00c9ib1gskrgscp7",
+      "sku": "SARIMA-P122",
+      "name": "Hokkaido Mackerel in Oil 425g",
+      "manufacturerBarcode": "4800158987019",
+      "description": "Hokkaido Mackerel in Oil is a 425g canned mackerel product packed in oil for ready-to-serve meals and cooking.",
+      "sourceImage": {
+        "driveFileId": "16FwwSYSXNAz6NOCXCwwY8mV3EKTbgM3-",
+        "path": "database/canonical/product-images/sources/P122.jpg",
+        "gitBlobOid": "72db95d1aaf5452a3c08674b2dff4916736f527f",
+        "sizeBytes": 40437
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p122-9e410c30aa5c",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p122-9e410c30aa5c/original.jpg",
+        "processedStorageKey": "candidates/sarima-p122-9e410c30aa5c/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p122-9e410c30aa5c/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p122-9e410c30aa5c/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p122-9e410c30aa5c/card"
+      }
+    },
+    {
+      "sourceProductId": "P141",
+      "productId": "cmtk4seo700e5ib1gsvgdoypz",
+      "sku": "SARIMA-P141",
+      "name": "Magnolia Cheezee 160g",
+      "manufacturerBarcode": "4805358317031",
+      "description": "Magnolia Cheezee is a 160g processed cheese product with a creamy, savory cheese taste for sandwiches, snacks, and cooking.",
+      "sourceImage": {
+        "driveFileId": "1yHtjsAoQW1H2WTjM66O-A2Dzil02nlj-",
+        "path": "database/canonical/product-images/sources/P141.webp",
+        "gitBlobOid": "37189be893ca544193cb55a328fb2158e397783b",
+        "sizeBytes": 118492
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p141-0fa7e0005d80",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p141-0fa7e0005d80/original.webp",
+        "processedStorageKey": "candidates/sarima-p141-0fa7e0005d80/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p141-0fa7e0005d80/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p141-0fa7e0005d80/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p141-0fa7e0005d80/card"
+      }
+    },
+    {
+      "sourceProductId": "P317",
+      "productId": "cmtk4sfus00wtib1g6dzghbwy",
+      "sku": "SARIMA-P317",
+      "name": "Nature’s Spring Distilled Drinking Water 10L",
+      "manufacturerBarcode": "4800049720244",
+      "description": "Nature’s Spring Distilled Drinking Water is distilled water in a large 10-liter container for household drinking-water needs.",
+      "sourceImage": {
+        "driveFileId": "13AMADFdMEe89EhqJNd8Quxfde9zGt8G4",
+        "path": "database/canonical/product-images/sources/P317.jpg",
+        "gitBlobOid": "7ec47c66c7494373bcd1e725e804bfae5b0fff0c",
+        "sizeBytes": 14154
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p317-53087e7fad87",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p317-53087e7fad87/original.jpg",
+        "processedStorageKey": "candidates/sarima-p317-53087e7fad87/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p317-53087e7fad87/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p317-53087e7fad87/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p317-53087e7fad87/card"
+      }
+    },
+    {
+      "sourceProductId": "P318",
+      "productId": "cmtk4sfv400wxib1g4ien5yh1",
+      "sku": "SARIMA-P318",
+      "name": "Wilkins Distilled Drinking Water 7L",
+      "manufacturerBarcode": "4801981164714",
+      "description": "Wilkins Distilled Drinking Water is distilled water in a 7-liter container for convenient household hydration.",
+      "sourceImage": {
+        "driveFileId": "1IIwsuaHVb1JiAllkbb0VUMctezWgfhad",
+        "path": "database/canonical/product-images/sources/P318.jpg",
+        "gitBlobOid": "e8111a86347cf21696ac02aa01411f0327ba15bd",
+        "sizeBytes": 13378
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p318-8b3bea0fe98b",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p318-8b3bea0fe98b/original.jpg",
+        "processedStorageKey": "candidates/sarima-p318-8b3bea0fe98b/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p318-8b3bea0fe98b/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p318-8b3bea0fe98b/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p318-8b3bea0fe98b/card"
+      }
+    },
+    {
+      "sourceProductId": "P397",
+      "productId": "cmtk4sgdp015dib1ggq0l8xb8",
+      "sku": "SARIMA-P397",
+      "name": "Alaska Fortified Powdered Milk Drink 300g",
+      "manufacturerBarcode": "4800575144590",
+      "description": "Alaska Fortified Powdered Milk Drink is a 300g powdered milk drink formulated for everyday family nutrition.",
+      "sourceImage": {
+        "driveFileId": "1LD3ratIEu6wdht_vGBuCFWp1WRc3UYbd",
+        "path": "database/canonical/product-images/sources/P397.jpg",
+        "gitBlobOid": "335890ca6d67aa9c76fcc82b3c7465505438ddf0",
+        "sizeBytes": 120915
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p397-f5c75e03a013",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p397-f5c75e03a013/original.jpg",
+        "processedStorageKey": "candidates/sarima-p397-f5c75e03a013/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p397-f5c75e03a013/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p397-f5c75e03a013/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p397-f5c75e03a013/card"
+      }
+    },
+    {
+      "sourceProductId": "P268",
+      "productId": "cmtk4sfhp00rdib1gf6kmdn3x",
+      "sku": "SARIMA-P268",
+      "name": "Absolute Pure Distilled Drinking Water 500ml",
+      "manufacturerBarcode": "4800014144082",
+      "description": "Pure distilled drinking water in a 500mL bottle.",
+      "sourceImage": {
+        "driveFileId": "1Nex4XW2dk_pAbjpG-eazwEnH1jvTpOHq",
+        "path": "database/canonical/product-images/sources/P268.webp",
+        "gitBlobOid": "93d8f196eea9bed684649d122fe3aef143867519",
+        "sizeBytes": 47770
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p268-69a219628328",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p268-69a219628328/original.webp",
+        "processedStorageKey": "candidates/sarima-p268-69a219628328/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p268-69a219628328/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p268-69a219628328/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p268-69a219628328/card"
+      }
+    },
+    {
+      "sourceProductId": "P115",
+      "productId": "cmtk4seik00bhib1g2zfn7xzv",
+      "sku": "SARIMA-P115",
+      "name": "Eden Original Cheese 160g Box",
+      "manufacturerBarcode": "4808647020094",
+      "description": "Original filled cheese in a 160g box.",
+      "sourceImage": {
+        "driveFileId": "1mnJjrLJZHXW3NFnMQZG5oTLUjILS9l7v",
+        "path": "database/canonical/product-images/sources/P115.jpg",
+        "gitBlobOid": "841b02808ce1fcbcd452c566b8726c46d64bf48f",
+        "sizeBytes": 103624
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p115-05d6c04f4c90",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p115-05d6c04f4c90/original.jpg",
+        "processedStorageKey": "candidates/sarima-p115-05d6c04f4c90/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p115-05d6c04f4c90/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p115-05d6c04f4c90/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p115-05d6c04f4c90/card"
+      }
+    },
+    {
+      "sourceProductId": "P048",
+      "productId": "cmtk4scoh004xib1gioe0pcxe",
+      "sku": "SARIMA-P048",
+      "name": "Happy Absorbent Cotton 10g",
+      "manufacturerBarcode": "4801288820153",
+      "description": "Absorbent cotton roll, 10g pack.",
+      "sourceImage": {
+        "driveFileId": "1BQsHjYHuWXrhmWtGeMVKLoiBMEO-7OA1",
+        "path": "database/canonical/product-images/sources/P048.jpg",
+        "gitBlobOid": "be59f680a4e7455f0e503c5afb059937d01fbfea",
+        "sizeBytes": 23755
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p048-2933697c7efd",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p048-2933697c7efd/original.jpg",
+        "processedStorageKey": "candidates/sarima-p048-2933697c7efd/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p048-2933697c7efd/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p048-2933697c7efd/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p048-2933697c7efd/card"
+      }
+    },
+    {
+      "sourceProductId": "P342",
+      "productId": "cmtk4sg0y00zlib1gefat8q3s",
+      "sku": "SARIMA-P342",
+      "name": "Jack ‘n Jill Cloud 9 Classic 12 Bars",
+      "manufacturerBarcode": "4800010781076",
+      "description": "Cloud 9 Classic chocolate bars, inner box of 12 x 28g bars.",
+      "sourceImage": {
+        "driveFileId": "1EUOk_MGIdG6k3gVz_BQH7_sPN50h7nWN",
+        "path": "database/canonical/product-images/sources/P342.jpg",
+        "gitBlobOid": "fd653e5946e6cd0f8ba13f8f2a4058127b1b161a",
+        "sizeBytes": 5947
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p342-835dc5906f86",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p342-835dc5906f86/original.jpg",
+        "processedStorageKey": "candidates/sarima-p342-835dc5906f86/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p342-835dc5906f86/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p342-835dc5906f86/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p342-835dc5906f86/card"
+      }
+    },
+    {
+      "sourceProductId": "P386",
+      "productId": "cmtk4sgau0145ib1g7v73blt9",
+      "sku": "SARIMA-P386",
+      "name": "Nescafé Classic 48 Sticks",
+      "manufacturerBarcode": "4800361388252",
+      "description": "Nescafé Classic instant coffee, 48 sticks x 2g.",
+      "sourceImage": {
+        "driveFileId": "1jjYUB3dplpKksVwsLEx-e6g9RiFUThER",
+        "path": "database/canonical/product-images/sources/P386.jpg",
+        "gitBlobOid": "a3634e47f6bb864af9e8c9de9dfdd6d9121a8c09",
+        "sizeBytes": 35299
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p386-1e10df5aacf2",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p386-1e10df5aacf2/original.jpg",
+        "processedStorageKey": "candidates/sarima-p386-1e10df5aacf2/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p386-1e10df5aacf2/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p386-1e10df5aacf2/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p386-1e10df5aacf2/card"
+      }
+    },
+    {
+      "sourceProductId": "P085",
+      "productId": "cmtk4sec2008lib1gfwalixjn",
+      "sku": "SARIMA-P085",
+      "name": "555 Tuna Adobo",
+      "manufacturerBarcode": "748485700014",
+      "description": "555 Tuna Adobo, ready-to-eat tuna flakes in adobo-style sauce, 155g.",
+      "sourceImage": {
+        "driveFileId": "1PUlMUApH6KXnPniszHY9XYq_C3iRvshj",
+        "path": "database/canonical/product-images/sources/P085.png",
+        "gitBlobOid": "d0f10c4d93a83d948c6cb71c5c1894cb96809fa0",
+        "sizeBytes": 45081
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p085-5747c8827274",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p085-5747c8827274/original.png",
+        "processedStorageKey": "candidates/sarima-p085-5747c8827274/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p085-5747c8827274/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p085-5747c8827274/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p085-5747c8827274/card"
+      }
+    },
+    {
+      "sourceProductId": "P114",
+      "productId": "cmtk4sei500bdib1gwna3d0r1",
+      "sku": "SARIMA-P114",
+      "name": "555 Tuna Afritada",
+      "manufacturerBarcode": "748485700021",
+      "description": "555 Tuna Afritada, ready-to-eat tuna flakes in afritada-style sauce, 155g.",
+      "sourceImage": {
+        "driveFileId": "1i0_3xCiGO2phdqMjixtPmAWdfglQaIM8",
+        "path": "database/canonical/product-images/sources/P114.png",
+        "gitBlobOid": "820901bf123cab2d6f6a316b4dbc79a11b7a7a39",
+        "sizeBytes": 43627
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p114-87d48bbcfe8f",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p114-87d48bbcfe8f/original.png",
+        "processedStorageKey": "candidates/sarima-p114-87d48bbcfe8f/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p114-87d48bbcfe8f/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p114-87d48bbcfe8f/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p114-87d48bbcfe8f/card"
+      }
+    },
+    {
+      "sourceProductId": "P011",
+      "productId": "cmtk4scf70015ib1gf27xkvrk",
+      "sku": "SARIMA-P011",
+      "name": "555 Tuna Caldereta",
+      "manufacturerBarcode": "748485700038",
+      "description": "555 Tuna Caldereta, ready-to-eat tuna flakes in caldereta-style sauce, 155g.",
+      "sourceImage": {
+        "driveFileId": "1snnCueAmBQlos5tTv1BY6AT1ojIHKepZ",
+        "path": "database/canonical/product-images/sources/P011.png",
+        "gitBlobOid": "96d02a5b64b09e5e9c5156679201a319beba6be3",
+        "sizeBytes": 43078
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p011-1b899c79b001",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p011-1b899c79b001/original.png",
+        "processedStorageKey": "candidates/sarima-p011-1b899c79b001/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p011-1b899c79b001/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p011-1b899c79b001/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p011-1b899c79b001/card"
+      }
+    },
+    {
+      "sourceProductId": "P009",
+      "productId": "cmtk4sces000xib1g923ipxb4",
+      "sku": "SARIMA-P009",
+      "name": "555 Tuna Flakes in Oil",
+      "manufacturerBarcode": "748485700083",
+      "description": "555 Tuna Flakes in Oil, 155g can.",
+      "sourceImage": {
+        "driveFileId": "1_mOjcBpMTYZtRZmSgsaYh5Wvjt-qH482",
+        "path": "database/canonical/product-images/sources/P009.webp",
+        "gitBlobOid": "f3bb26a1cca13fb8bd7c8ba2780eef7fac9c6e90",
+        "sizeBytes": 27038
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p009-862ec9661af6",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p009-862ec9661af6/original.webp",
+        "processedStorageKey": "candidates/sarima-p009-862ec9661af6/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p009-862ec9661af6/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p009-862ec9661af6/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p009-862ec9661af6/card"
+      }
+    },
+    {
+      "sourceProductId": "P010",
+      "productId": "cmtk4scez0011ib1g0t6vl515",
+      "sku": "SARIMA-P010",
+      "name": "555 Tuna Mechado",
+      "manufacturerBarcode": "748485700045",
+      "description": "555 Tuna Mechado, ready-to-eat tuna flakes in mechado-style sauce, 155g.",
+      "sourceImage": {
+        "driveFileId": "1pzjtEzYIjXVfB1b1Het49GSaUdE--j_K",
+        "path": "database/canonical/product-images/sources/P010.webp",
+        "gitBlobOid": "2c189344e39d89ba7f1c8ab4dba78662c8145df8",
+        "sizeBytes": 72348
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p010-0f92548adc7d",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p010-0f92548adc7d/original.webp",
+        "processedStorageKey": "candidates/sarima-p010-0f92548adc7d/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p010-0f92548adc7d/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p010-0f92548adc7d/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p010-0f92548adc7d/card"
+      }
+    },
+    {
+      "sourceProductId": "P012",
+      "productId": "cmtk4scff0019ib1ghf25vq2y",
+      "sku": "SARIMA-P012",
+      "name": "555 Tuna Spicy Paksiw",
+      "manufacturerBarcode": "748485701387",
+      "description": "555 Tuna Spicy Paksiw, ready-to-eat tuna in spicy paksiw-style sauce, 155g.",
+      "sourceImage": {
+        "driveFileId": "1FbyH16ACIDGbgjVW-u_TFxB0iivCuBMZ",
+        "path": "database/canonical/product-images/sources/P012.webp",
+        "gitBlobOid": "577b28f0e5b537709d51935b1e89dbdbc7dd38f3",
+        "sizeBytes": 61992
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p012-1095b44428ee",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p012-1095b44428ee/original.webp",
+        "processedStorageKey": "candidates/sarima-p012-1095b44428ee/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p012-1095b44428ee/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p012-1095b44428ee/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p012-1095b44428ee/card"
+      }
+    },
+    {
+      "sourceProductId": "P013",
+      "productId": "cmtk4scfm001dib1gan55o4g5",
+      "sku": "SARIMA-P013",
+      "name": "555 Sardines in Tomato Sauce",
+      "manufacturerBarcode": "748485200019",
+      "description": "555 Sardines in Tomato Sauce, 155g can.",
+      "sourceImage": {
+        "driveFileId": "1U_102uZK7fuJljKZy0YTj1AogP_SteVL",
+        "path": "database/canonical/product-images/sources/P013.webp",
+        "gitBlobOid": "1c52628d12a170895ab21e97d521ffbe0afff107",
+        "sizeBytes": 41458
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p013-cc05b9d5aaae",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p013-cc05b9d5aaae/original.webp",
+        "processedStorageKey": "candidates/sarima-p013-cc05b9d5aaae/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p013-cc05b9d5aaae/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p013-cc05b9d5aaae/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p013-cc05b9d5aaae/card"
+      }
+    },
+    {
+      "sourceProductId": "P121",
+      "productId": "cmtk4sejq00c5ib1gcgpwrdue",
+      "sku": "SARIMA-P121",
+      "name": "555 Hot Sardines in Tomato Sauce",
+      "manufacturerBarcode": "748485200026",
+      "description": "555 Sardines in Tomato Sauce with Chili, 155g can.",
+      "sourceImage": {
+        "driveFileId": "1hzSJjSSqsg0S04TsE9AK4j_X_6PWJDgH",
+        "path": "database/canonical/product-images/sources/P121.webp",
+        "gitBlobOid": "dbe803bd0cca855c49040addb6e7a9b051262983",
+        "sizeBytes": 68786
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p121-78a3fda9106f",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p121-78a3fda9106f/original.webp",
+        "processedStorageKey": "candidates/sarima-p121-78a3fda9106f/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p121-78a3fda9106f/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p121-78a3fda9106f/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p121-78a3fda9106f/card"
+      }
+    },
+    {
+      "sourceProductId": "P087",
+      "productId": "cmtk4secl008tib1ghrluie38",
+      "sku": "SARIMA-P087",
+      "name": "555 Spanish Style Sardines",
+      "manufacturerBarcode": "748485200040",
+      "description": "555 Spanish Style Sardines, 155g can.",
+      "sourceImage": {
+        "driveFileId": "1DLb4aZlDcpGA8-cxTl6YyHgQfflBEppH",
+        "path": "database/canonical/product-images/sources/P087.jpg",
+        "gitBlobOid": "f37b6254041f6b51201ba729bc8eb10e6c81832c",
+        "sizeBytes": 29855
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p087-d7df82dff346",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p087-d7df82dff346/original.jpg",
+        "processedStorageKey": "candidates/sarima-p087-d7df82dff346/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p087-d7df82dff346/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p087-d7df82dff346/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p087-d7df82dff346/card"
+      }
+    },
+    {
+      "sourceProductId": "P086",
+      "productId": "cmtk4secc008pib1g6qmsigf4",
+      "sku": "SARIMA-P086",
+      "name": "555 Tuna Sisig",
+      "manufacturerBarcode": "748485701448",
+      "description": "555 Tuna Sizzling Sisig, 155g can.",
+      "sourceImage": {
+        "driveFileId": "1Z0EDJBBz2Ts_SOGK2H1mJP8Jzzxh4lSH",
+        "path": "database/canonical/product-images/sources/P086.png",
+        "gitBlobOid": "5b0f69b298d47fedf197da610f522cb2e49759a5",
+        "sizeBytes": 47572
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p086-b63e8c316d2a",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p086-b63e8c316d2a/original.png",
+        "processedStorageKey": "candidates/sarima-p086-b63e8c316d2a/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p086-b63e8c316d2a/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p086-b63e8c316d2a/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p086-b63e8c316d2a/card"
+      }
+    },
+    {
+      "sourceProductId": "P054",
+      "productId": "prd_sarima_p054_sunsilk_anti_dandruff_135ml",
+      "sku": "SARIMA-P054",
+      "name": "Sunsilk Anti-Dandruff & Silky Shampoo Sachet 13.5ml",
+      "manufacturerBarcode": "4800888282965",
+      "description": "Sunsilk Anti-Dandruff Healthy & Strong shampoo sachet, 13.5mL.",
+      "sourceImage": {
+        "driveFileId": "1MNeWZdnK9J5Ausws69fmZ3NfcSJl8nQf",
+        "path": "database/canonical/product-images/sources/P054.webp",
+        "gitBlobOid": "1d5fa116a7b8972a776861f2304289b0699883d0",
+        "sizeBytes": 24072
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p054-5384965489f6",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p054-5384965489f6/original.webp",
+        "processedStorageKey": "candidates/sarima-p054-5384965489f6/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p054-5384965489f6/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p054-5384965489f6/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p054-5384965489f6/card"
+      }
+    },
+    {
+      "sourceProductId": "P123",
+      "productId": "cmtk4sekd00cdib1gbqewt1b2",
+      "sku": "SARIMA-P123",
+      "name": "SABA Mackerel in Natural Oil 155g",
+      "manufacturerBarcode": "096785013298",
+      "description": "SABA Mackerel in Natural Oil with salt added, 155g can.",
+      "sourceImage": {
+        "driveFileId": "1yOMlaoT7MAvuCkIPdPnqUtVCGsGqwPcg",
+        "path": "database/canonical/product-images/sources/P123.webp",
+        "gitBlobOid": "d84d10509d44500e000e829faca8472bea212a23",
+        "sizeBytes": 30604
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p123-f302fb9c50f6",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p123-f302fb9c50f6/original.webp",
+        "processedStorageKey": "candidates/sarima-p123-f302fb9c50f6/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p123-f302fb9c50f6/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p123-f302fb9c50f6/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p123-f302fb9c50f6/card"
+      }
+    },
+    {
+      "sourceProductId": "P038",
+      "productId": "prd_sarima_p038_purefoods_tocino_450g",
+      "sku": "SARIMA-P038",
+      "name": "Purefoods Classic Tocino 450g",
+      "manufacturerBarcode": "4808887970531",
+      "description": "Purefoods Classic Tocino, 450g frozen pack.",
+      "sourceImage": {
+        "driveFileId": "1_OW13X7SGiV6RmwrHtlx9ZQHp257jUtX",
+        "path": "database/canonical/product-images/sources/P038.jpg",
+        "gitBlobOid": "63a645c78003edb1c9adc780ce1b2663d1d6944b",
+        "sizeBytes": 51638
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p038-d51991641c21",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p038-d51991641c21/original.jpg",
+        "processedStorageKey": "candidates/sarima-p038-d51991641c21/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p038-d51991641c21/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p038-d51991641c21/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p038-d51991641c21/card"
+      }
+    },
+    {
+      "sourceProductId": "P199",
+      "productId": "cmtk4sf1800k9ib1gx2asls2n",
+      "sku": "SARIMA-P199",
+      "name": "Jersey Melon Condensed Creamer 390g",
+      "manufacturerBarcode": "4806516760430",
+      "description": "Jersey Melon flavored sweetened condensed creamer, 390g.",
+      "sourceImage": {
+        "driveFileId": "1BFWWsB67L8GcFj-VsxKn3q480DnpaeWa",
+        "path": "database/canonical/product-images/sources/P199.jpg",
+        "gitBlobOid": "234e0d90ceac388ccba6f1589182ecd8fdc8d0ff",
+        "sizeBytes": 37543
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p199-7f74a5bd78c8",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p199-7f74a5bd78c8/original.jpg",
+        "processedStorageKey": "candidates/sarima-p199-7f74a5bd78c8/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p199-7f74a5bd78c8/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p199-7f74a5bd78c8/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p199-7f74a5bd78c8/card"
+      }
+    },
+    {
+      "sourceProductId": "P343",
+      "productId": "cmtk4sg1400zpib1gefrxzec7",
+      "sku": "SARIMA-P343",
+      "name": "Jack ‘n Jill Cloud 9 Overload 12 Bars",
+      "manufacturerBarcode": "4800016963827",
+      "description": "Cloud 9 Overload chocolate bars, 12-bar pack.",
+      "sourceImage": {
+        "driveFileId": "1agrzQcJ8Nu_yakL3h9kbIyipfzN8yOZY",
+        "path": "database/canonical/product-images/sources/P343.webp",
+        "gitBlobOid": "3a6ac22062c609e05a50e97209b4d3051a690b9b",
+        "sizeBytes": 61054
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p343-f1255fb74930",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p343-f1255fb74930/original.webp",
+        "processedStorageKey": "candidates/sarima-p343-f1255fb74930/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p343-f1255fb74930/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p343-f1255fb74930/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p343-f1255fb74930/card"
+      }
+    },
+    {
+      "sourceProductId": "P061",
+      "productId": "cmtk4se700069ib1gkthu04j5",
+      "sku": "SARIMA-P061",
+      "name": "Irish Spring Original Soap 113g",
+      "manufacturerBarcode": "035000141088",
+      "description": "Irish Spring Original deodorant bar soap, 113g.",
+      "sourceImage": {
+        "driveFileId": "1olDeDcFsKSsDz3ROCrv_a4G7CgedjDJO",
+        "path": "database/canonical/product-images/sources/P061.jpg",
+        "gitBlobOid": "f150abf55c2e4c66b1da1efb16cd67d67a165485",
+        "sizeBytes": 15598
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p061-fce23d8079bb",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p061-fce23d8079bb/original.jpg",
+        "processedStorageKey": "candidates/sarima-p061-fce23d8079bb/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p061-fce23d8079bb/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p061-fce23d8079bb/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p061-fce23d8079bb/card"
+      }
+    },
+    {
+      "sourceProductId": "P008",
+      "productId": "cmtk4scej000tib1gqyt07zv1",
+      "sku": "SARIMA-P008",
+      "name": "Century Tuna Flakes in Oil",
+      "manufacturerBarcode": "748485100081",
+      "description": "Tuna flakes packed in vegetable oil in a 180g can, ready to serve with rice or use in sandwiches, pasta, and other meals.",
+      "sourceImage": {
+        "driveFileId": "1ZwO5xN6SNeJT5VSFz3RkeySsWUiTB2HJ",
+        "path": "database/canonical/product-images/sources/P008.jpg",
+        "gitBlobOid": "91d5ffa356c4939858e976001a0bf24ba0fabc29",
+        "sizeBytes": 131929
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p008-d12565e3add5",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p008-d12565e3add5/original.jpg",
+        "processedStorageKey": "candidates/sarima-p008-d12565e3add5/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p008-d12565e3add5/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p008-d12565e3add5/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p008-d12565e3add5/card"
+      }
+    },
+    {
+      "sourceProductId": "P107",
+      "productId": "cmtk4segi00alib1gwa698gt4",
+      "sku": "SARIMA-P107",
+      "name": "Argentina Corned Beef",
+      "manufacturerBarcode": "748485800011",
+      "description": "Ready-to-cook corned beef in a 175g can, fortified with zinc and iron and suitable for everyday rice meals and breakfast dishes.",
+      "sourceImage": {
+        "driveFileId": "16dyiOS1PvhmqS71SUQCXh2CB0VGj20-k",
+        "path": "database/canonical/product-images/sources/P107.jpg",
+        "gitBlobOid": "16fe7974507cab5550118823f070c43896429fee",
+        "sizeBytes": 175613
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p107-a4b67407fa42",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p107-a4b67407fa42/original.jpg",
+        "processedStorageKey": "candidates/sarima-p107-a4b67407fa42/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p107-a4b67407fa42/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p107-a4b67407fa42/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p107-a4b67407fa42/card"
+      }
+    },
+    {
+      "sourceProductId": "P177",
+      "productId": "cmtk4sew400htib1gqq2dlm6e",
+      "sku": "SARIMA-P177",
+      "name": "Datu Puti Soy Sauce Pouch",
+      "manufacturerBarcode": "4801668500224",
+      "description": "Filipino-style soy sauce in a 1-liter bottle, used for marinades, dipping sauces, and everyday savory cooking.",
+      "sourceImage": {
+        "driveFileId": "1kEzufirC8ZAPnNbU_6KRAwj4bHbnQKTU",
+        "path": "database/canonical/product-images/sources/P177.png",
+        "gitBlobOid": "d8e2cb7cd9eefee5cd6f55f03b1c1bf5359d4d11",
+        "sizeBytes": 286277
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p177-c37566aa116b",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p177-c37566aa116b/original.png",
+        "processedStorageKey": "candidates/sarima-p177-c37566aa116b/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p177-c37566aa116b/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p177-c37566aa116b/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p177-c37566aa116b/card"
+      }
+    },
+    {
+      "sourceProductId": "P394",
+      "productId": "cmtk4sgd30151ib1ga9liamem",
+      "sku": "SARIMA-P394",
+      "name": "Bear Brand Fortified Powdered Milk Drink",
+      "manufacturerBarcode": "4800361388047",
+      "description": "Fortified powdered milk drink with essential nutrients for everyday family nutrition, packed in a 900g format.",
+      "sourceImage": {
+        "driveFileId": "1iyAsTO8sVJlDF-UBRiVT4Q8zlM1JGEYe",
+        "path": "database/canonical/product-images/sources/P394.jpg",
+        "gitBlobOid": "bf0c8a47cbb41b8d59a7ef4ded5a78e115a143d0",
+        "sizeBytes": 28638
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p394-a6c063eb5455",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p394-a6c063eb5455/original.jpg",
+        "processedStorageKey": "candidates/sarima-p394-a6c063eb5455/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p394-a6c063eb5455/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p394-a6c063eb5455/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p394-a6c063eb5455/card"
+      }
+    },
+    {
+      "sourceProductId": "P266",
+      "productId": "cmtk4sfh400r5ib1gig7ft1jc",
+      "sku": "SARIMA-P266",
+      "name": "100 Plus Active Bottle",
+      "manufacturerBarcode": "4801981111831",
+      "description": "Carbonated isotonic drink formulated for hydration and refreshment, supplied in a convenient 500mL bottle.",
+      "sourceImage": {
+        "driveFileId": "1ynuYrVjNhSVDkWo426_IHnJE4nyf5GYk",
+        "path": "database/canonical/product-images/sources/P266.jpg",
+        "gitBlobOid": "41fcf649a5648b99decbb845832de4ee3a586254",
+        "sizeBytes": 71658
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p266-362ef54814b3",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p266-362ef54814b3/original.jpg",
+        "processedStorageKey": "candidates/sarima-p266-362ef54814b3/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p266-362ef54814b3/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p266-362ef54814b3/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p266-362ef54814b3/card"
+      }
+    },
+    {
+      "sourceProductId": "P257",
+      "productId": "cmtk4sfeq00q9ib1gooiodt15",
+      "sku": "SARIMA-P257",
+      "name": "C2 Apple Green Tea Bottle",
+      "manufacturerBarcode": "9556001216786",
+      "description": "Ready-to-drink apple-flavored green tea with a light, refreshing taste in a 500mL bottle.",
+      "sourceImage": {
+        "driveFileId": "1xDzwTb9vt-rszydqaDEF-WGKQjTOev0d",
+        "path": "database/canonical/product-images/sources/P257.jpg",
+        "gitBlobOid": "405ffb32cd8aeab4832a127b3e3ed17df85197e0",
+        "sizeBytes": 19949
+      },
+      "catalogImage": {
+        "activeImageAssetId": "sarima-p257-245d86f4e1a5",
+        "qualityStatus": "APPROVED",
+        "processingStatus": "READY",
+        "originalStorageKey": "candidates/sarima-p257-245d86f4e1a5/original.jpg",
+        "processedStorageKey": "candidates/sarima-p257-245d86f4e1a5/processed/processed.webp",
+        "cardStorageKey": "candidates/sarima-p257-245d86f4e1a5/processed/card.webp",
+        "pdpStorageKey": "candidates/sarima-p257-245d86f4e1a5/processed/pdp.webp",
+        "legacyImageUrl": "/api/storefront/product-images/sarima-p257-245d86f4e1a5/card"
+      }
+    }
+  ]
+}
