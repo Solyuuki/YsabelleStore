@@ -68,6 +68,12 @@ test("frozen mutation is blocked", () =>
     run(baseline + "\n-- changed", sha256(baseline)).some((x) => x.includes("checksum changed"))
   ));
 
+test("Windows CRLF checkout preserves frozen migration identities", () => {
+  const options = baseOptions(baseline.replaceAll("\n", "\r\n"), sha256(baseline));
+  options.archive.set("0001_legacy", legacySql.replaceAll("\n", "\r\n"));
+  assert.deepEqual(inspectGeneration2(options), []);
+});
+
 test("legacy migration cannot re-enter active lineage", () => {
   const options = baseOptions();
   options.active = new Map([["0001_legacy", baseline]]);
