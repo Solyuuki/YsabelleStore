@@ -112,6 +112,13 @@ export function inspectReleaseContract({ state, release, root = ROOT }) {
 
     const source = product.sourceImage;
     if (!source?.path) continue;
+    const activeId = product.catalogImage?.activeImageAssetId;
+    if (state.distributionReady && !activeId) {
+      findings.push(
+        `BLOCK: ${code} has no active canonical image asset while distributionReady=true.`
+      );
+    }
+
     const absolute = join(root, source.path);
     const withinRoot = normalize(relative(sourceRoot, absolute));
     if (withinRoot === ".." || withinRoot.startsWith("../")) {
@@ -129,7 +136,6 @@ export function inspectReleaseContract({ state, release, root = ROOT }) {
     if (gitBlobOid(bytes) !== source.gitBlobOid)
       findings.push(`BLOCK: canonical source image bytes changed for ${code}.`);
 
-    const activeId = product.catalogImage?.activeImageAssetId;
     if (activeId) {
       const expectedId = expectedImageAssetId(code, source.driveFileId);
       if (activeId !== expectedId)
@@ -141,11 +147,7 @@ export function inspectReleaseContract({ state, release, root = ROOT }) {
         product.catalogImage.processingStatus !== "READY"
       )
         findings.push(`BLOCK: ${code} active image asset is not APPROVED/READY.`);
-    } else if (state.distributionReady) {
-      findings.push(
-        `BLOCK: ${code} has no active canonical image asset while distributionReady=true.`
-      );
-    } else if (!product.catalogImage?.legacyImageUrl) {
+    } else if (!state.distributionReady && !product.catalogImage?.legacyImageUrl) {
       findings.push(`BLOCK: ${code} has neither an active image asset nor a legacy image URL.`);
     }
   }
