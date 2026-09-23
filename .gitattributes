@@ -1,0 +1,17 @@
+# Canonical database text must have platform-independent repository identity.
+database/prisma/schema.prisma text eol=lf
+database/prisma/migrations/**/*.sql text eol=lf
+database/prisma/migrations/migration_lock.toml text eol=lf
+database/prisma/migration-history-archive/**/*.sql text eol=lf
+database/prisma/state/*.json text eol=lf
+database/seed/*.sql text eol=lf
+database/canonical/**/*.json text eol=lf
+database/canonical/**/*.md text eol=lf
+
+# Binary canonical payloads must never be line-ending converted.
+database/canonical/product-images/**/*.jpg binary
+database/canonical/product-images/**/*.jpeg binary
+database/canonical/product-images/**/*.png binary
+database/canonical/product-images/**/*.webp binary
+database/canonical/product-images/**/*.avif binary
+database/canonical/product-images/**/*.gz binary
