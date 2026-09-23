@@ -152,6 +152,7 @@ The Electron package manifest declares Electron `^42.5.0`; the Electron Builder 
 | Gmail SMTP                        | Development-only OTP delivery QA                              |
 | Google OAuth                      | Customer social authentication                                |
 | Facebook / Meta OAuth + Graph API | Customer social authentication                                |
+| PayMongo                          | Test-mode hosted card checkout and server-side payment confirmation |
 
 Credentials are deployment secrets and must never be committed.
 
