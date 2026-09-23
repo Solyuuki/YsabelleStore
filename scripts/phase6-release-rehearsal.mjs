@@ -337,17 +337,22 @@ async function webStartupSmoke(url, runtimeRoot, release) {
       "Development staff login returned the wrong user."
     );
 
-    const storefrontResponse = await fetch(
-      new URL(
-        "/api/storefront/products?page=1&pageSize=48&availability=in-stock",
-        runtime.apiBaseUrl + "/"
-      ),
-      { signal: AbortSignal.timeout(10_000) }
+    const inventoryResponse = await fetch(
+      new URL("/api/inventory?page=1&pageSize=100&stockStatus=ALL", runtime.apiBaseUrl + "/"),
+      {
+        headers: { Authorization: "Bearer " + loginPayload.data.token },
+        signal: AbortSignal.timeout(10_000)
+      }
     );
-    assert.equal(storefrontResponse.ok, true, "Storefront stock parity endpoint failed.");
-    const storefrontPayload = await storefrontResponse.json();
-    assert.equal(storefrontPayload?.meta?.totalItems, 50, "Expected 50 in-stock team products.");
-    assert.equal(storefrontPayload?.data?.length, 48, "Expected a full first storefront page.");
+    assert.equal(inventoryResponse.ok, true, "Team inventory parity endpoint failed.");
+    const inventoryPayload = await inventoryResponse.json();
+    assert.equal(inventoryPayload?.meta?.totalItems, 50, "Expected 50 team inventory rows.");
+    assert.equal(inventoryPayload?.data?.length, 50, "Expected 50 team inventory records.");
+    assert.equal(
+      inventoryPayload.data.every((item) => Number(item.currentQuantity) > 0),
+      true,
+      "Expected every team inventory product to have positive stock."
+    );
 
     for (const product of release.products) {
       const imageId = product.catalogImage?.activeImageAssetId;
