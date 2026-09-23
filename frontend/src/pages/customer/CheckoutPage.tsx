@@ -105,6 +105,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
 
     setSubmitting(true);
     setError("");
+    let retryOrder = pendingPaymongoOrder;
 
     try {
       let order = pendingPaymongoOrder;
@@ -132,6 +133,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
           window.location.assign(checkout.checkoutUrl);
           return;
         } catch (reason) {
+          retryOrder = order;
           setPendingPaymongoOrder(order);
           throw reason;
         }
@@ -141,8 +143,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
       navigate(`/order-success?order=${encodeURIComponent(order.orderNumber)}`);
     } catch (reason) {
       setError(
-        pendingPaymongoOrder
-          ? `Order ${pendingPaymongoOrder.orderNumber} is saved. PayMongo checkout could not be opened; retry payment without creating another order.`
+        retryOrder
+          ? `Order ${retryOrder.orderNumber} is saved. PayMongo checkout could not be opened; retry payment without creating another order.`
           : reason instanceof Error
             ? reason.message
             : "Your order could not be placed. Please try again."
@@ -204,7 +206,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         <div className="customer-page-heading">
           <p className="customer-kicker">Pickup order</p>
           <h1>Checkout</h1>
-          <p>Tell us who will collect this order. No online payment is required.</p>
+          <p>Tell us who will collect this order, then choose test online payment or cash on pickup.</p>
         </div>
         <form className="customer-checkout-layout" onSubmit={submit}>
           <div className="customer-checkout-form">
