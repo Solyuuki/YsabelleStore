@@ -4,6 +4,8 @@ import type {
   StorefrontMerchandising,
   StorefrontOrder,
   StorefrontOrderInput,
+  PaymongoCheckoutSession,
+  StorefrontPaymentStatusResult,
   StorefrontPagination,
   StorefrontProduct,
   StorefrontProductReviews,
@@ -113,6 +115,33 @@ export async function placeStorefrontOrder(input: StorefrontOrderInput) {
     credentials: "include",
     json: input
   });
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function startPaymongoCheckout(orderNumber: string) {
+  const response = await apiClient.request<PaymongoCheckoutSession, unknown>(
+    `/api/storefront/orders/${encodeURIComponent(orderNumber)}/paymongo-checkout`,
+    {
+      method: "POST",
+      credentials: "include"
+    }
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function fetchStorefrontPaymentStatus(
+  orderNumber: string,
+  signal?: AbortSignal
+) {
+  const response = await apiClient.request<StorefrontPaymentStatusResult>(
+    `/api/storefront/orders/${encodeURIComponent(orderNumber)}/payment-status`,
+    {
+      credentials: "include",
+      signal
+    }
+  );
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
 }
