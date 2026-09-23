@@ -3,11 +3,12 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
+import { sha256CanonicalText } from "./lib/canonical-text.mjs";
 
 const ROOT = resolve(".");
 const STATE_PATH = join(ROOT, "database", "prisma", "state", "canonical-state.json");
 
-export const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+export const sha256 = (value) => sha256CanonicalText(value);
 
 export function gitBlobOid(buffer) {
   const header = Buffer.from(`blob ${buffer.length}\0`, "utf8");
