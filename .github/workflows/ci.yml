@@ -105,6 +105,9 @@ jobs:
       - name: Validate canonical runtime asset distribution
         run: npm run asset-distribution:security
 
+      - name: Validate canonical publication changesets
+        run: npm run changeset:security
+
       - name: Rehearse baseline-to-latest migration upgrade
         env:
           MIGRATION_REHEARSAL_ALLOW: "1"
@@ -148,6 +151,9 @@ jobs:
           PHASE4_REHEARSAL_ALLOW: "1"
           DATABASE_URL: mysql://root:root@127.0.0.1:3306/ysabellestore_ci
         run: npm run phase4:rehearsal
+
+      - name: Rehearse Phase 5 canonical publication
+        run: npm run phase5:rehearsal
 
   workspace-validation:
     name: Workspace validation

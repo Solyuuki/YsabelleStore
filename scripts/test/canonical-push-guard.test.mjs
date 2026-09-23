@@ -110,3 +110,33 @@ test("phase 4 asset control manifests do not require an asset version increase",
   });
   assert.deepEqual(findings, []);
 });
+
+
+test("catalog source changes require a deterministic canonical changeset", () => {
+  const findings = evaluatePushPolicy({
+    changed: ["database/seed/canonical-catalog-v1.sql"],
+    localState: { ...baseState, catalogVersion: 6 },
+    remoteState: baseState,
+    localChecksums: checksums,
+    remoteChecksums: checksums
+  });
+  assert.ok(findings.some((item) => item.includes("deterministic committed changeset")));
+});
+
+test("source image publication requires the complete canonical image bundle", () => {
+  const localState = {
+    ...baseState,
+    assetVersion: 8,
+    catalogVersion: 6,
+    canonicalProductImageRoot: "database/canonical/product-images/sources",
+    canonicalReleasePath: "database/canonical/releases/g2-s3-c6-a8.json"
+  };
+  const findings = evaluatePushPolicy({
+    changed: ["database/canonical/product-images/sources/P001.jpg"],
+    localState,
+    remoteState: baseState,
+    localChecksums: checksums,
+    remoteChecksums: checksums
+  });
+  assert.ok(findings.some((item) => item.includes("image publication bundle")));
+});
