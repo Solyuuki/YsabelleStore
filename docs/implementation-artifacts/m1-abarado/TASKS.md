@@ -71,6 +71,6 @@ A task is complete only when implementation evidence and the matching artifact u
 
 ## Sprint 11 Full-Screen Status UX
 
-| Task ID             | Date       | Scope                                                        | Status                  | Evidence                                  | Next Action                              |
-| ------------------- | ---------- | ------------------------------------------------------------ | ----------------------- | ----------------------------------------- | ---------------------------------------- |
-| YSB-M1-QOL-UI-002   | 2026-09-26 | Standardize full-screen HTTP and reliability status surfaces | Ready for manual QA     | `m1/v0.11/feat/status-screen-system`; PR #43                  | QA 401/403/404/503 and reliability UI.  |
+| Task ID           | Date       | Scope                                                        | Status              | Evidence                                     | Next Action                            |
+| ----------------- | ---------- | ------------------------------------------------------------ | ------------------- | -------------------------------------------- | -------------------------------------- |
+| YSB-M1-QOL-UI-002 | 2026-09-26 | Standardize full-screen HTTP and reliability status surfaces | Ready for manual QA | `m1/v0.11/feat/status-screen-system`; PR #43 | QA 401/403/404/503 and reliability UI. |
