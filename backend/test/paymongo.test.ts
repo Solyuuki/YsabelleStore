@@ -53,8 +53,9 @@ test("PayMongo checkout keeps only supported enabled methods in customer-friendl
       "gcash",
       "paymaya",
       "grab_pay",
+      "shopee_pay",
       "unsupported_method"
     ]),
-    ["gcash", "paymaya", "grab_pay", "qrph", "card"]
+    ["gcash", "paymaya", "grab_pay", "shopee_pay", "qrph", "card"]
   );
 });
