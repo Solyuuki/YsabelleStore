@@ -22,6 +22,7 @@ export type SystemReliabilityMode =
 
 type SystemReliabilityContextValue = {
   healthState: SystemHealthState;
+  httpStatus: number | null;
   lastHealthyAt: Date | null;
   mode: SystemReliabilityMode;
   recentlyRestored: boolean;
@@ -37,6 +38,7 @@ const RESTORED_NOTICE_MS = 3_000;
 
 export function SystemReliabilityProvider({ children }: { children: ReactNode }) {
   const [healthState, setHealthState] = useState<SystemHealthState>("checking");
+  const [httpStatus, setHttpStatus] = useState<number | null>(null);
   const [mode, setMode] = useState<SystemReliabilityMode>("checking");
   const [lastHealthyAt, setLastHealthyAt] = useState<Date | null>(null);
   const [recentlyRestored, setRecentlyRestored] = useState(false);
@@ -55,6 +57,7 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
     (nextState: SystemHealthState) => {
       const previousMode = modeRef.current;
       setHealthState(nextState);
+      setHttpStatus(null);
 
       if (nextState === "healthy") {
         consecutiveTransportFailuresRef.current = 0;
@@ -109,6 +112,7 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
   const applyServiceUnavailable = useCallback(() => {
     setRecentlyRestored(false);
     setHealthState("backend-unavailable");
+    setHttpStatus(503);
     consecutiveTransportFailuresRef.current = 2;
     applyMode("unavailable");
   }, [applyMode]);
@@ -182,12 +186,13 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
   const value = useMemo<SystemReliabilityContextValue>(
     () => ({
       healthState,
+      httpStatus,
       lastHealthyAt,
       mode,
       recentlyRestored,
       retryNow
     }),
-    [healthState, lastHealthyAt, mode, recentlyRestored, retryNow]
+    [healthState, httpStatus, lastHealthyAt, mode, recentlyRestored, retryNow]
   );
 
   return (
