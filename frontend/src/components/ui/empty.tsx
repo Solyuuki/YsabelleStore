@@ -47,11 +47,7 @@ export function EmptyMedia({
 
 export function EmptyTitle({ className, ...props }: ComponentProps<"h1">) {
   return (
-    <h1
-      className={cn("type-h1 text-slate-950", className)}
-      data-slot="empty-title"
-      {...props}
-    />
+    <h1 className={cn("type-h1 text-slate-950", className)} data-slot="empty-title" {...props} />
   );
 }
 
