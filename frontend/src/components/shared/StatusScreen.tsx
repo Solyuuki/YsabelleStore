@@ -133,8 +133,8 @@ export function StatusScreen({
             {eyebrow}
           </div>
 
-          <Empty className="items-start gap-0 text-left">
-            <EmptyHeader className="items-start text-left">
+          <Empty className="status-screen-empty items-start gap-0 text-left">
+            <EmptyHeader className="status-screen-empty__header items-start text-left">
               <EmptyTitle id={titleId}>{title}</EmptyTitle>
               <EmptyDescription id={descriptionId}>{description}</EmptyDescription>
             </EmptyHeader>
