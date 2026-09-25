@@ -9,22 +9,18 @@ import { HttpError } from "../utils/httpError.js";
 const PAYMONGO_API_ORIGIN = "https://api.paymongo.com";
 const PAYMONGO_CREATE_CHECKOUT_PATH = "/v2/checkout_sessions";
 const PAYMONGO_RETRIEVE_CHECKOUT_PATH = "/v1/checkout_sessions";
-const PAYMONGO_PAYMENT_METHOD_CAPABILITIES_PATH =
-  "/v1/merchants/capabilities/payment_methods";
 const PAYMONGO_CURRENCY = "PHP";
 
-const PAYMONGO_CHECKOUT_METHOD_PRIORITY = [
+const PAYMONGO_TEST_CHECKOUT_METHODS = [
+  "card",
   "gcash",
   "paymaya",
   "grab_pay",
-  "qrph",
-  "card"
+  "qrph"
 ] as const;
 
 type PaymongoCheckoutPaymentMethod =
-  | (typeof PAYMONGO_CHECKOUT_METHOD_PRIORITY)[number]
-  | "shopeepay"
-  | "shopee_pay";
+  (typeof PAYMONGO_TEST_CHECKOUT_METHODS)[number];
 
 type JsonRecord = Record<string, unknown>;
 
@@ -124,62 +120,17 @@ function parsePaymongoResource(payload: unknown, expectedType = "checkout_sessio
   return { id, attributes };
 }
 
-export function selectPaymongoCheckoutPaymentMethods(
-  configuredMethods: readonly string[]
-): PaymongoCheckoutPaymentMethod[] {
-  const normalized = new Set(configuredMethods.map((method) => method.trim().toLowerCase()));
-  const methods: PaymongoCheckoutPaymentMethod[] = PAYMONGO_CHECKOUT_METHOD_PRIORITY.filter(
-    (method) => normalized.has(method)
-  );
-
-  const shopeePayMethod = normalized.has("shopeepay")
-    ? "shopeepay"
-    : normalized.has("shopee_pay")
-      ? "shopee_pay"
-      : null;
-
-  if (shopeePayMethod) {
-    const insertBefore = methods.findIndex((method) => method === "qrph" || method === "card");
-    methods.splice(insertBefore >= 0 ? insertBefore : methods.length, 0, shopeePayMethod);
-  }
-
-  return methods;
+export function getPaymongoTestCheckoutPaymentMethods(): PaymongoCheckoutPaymentMethod[] {
+  return [...PAYMONGO_TEST_CHECKOUT_METHODS];
 }
 
 async function getPaymongoCheckoutPaymentMethods(): Promise<PaymongoCheckoutPaymentMethod[]> {
-  try {
-    const payload = await paymongoRequest(PAYMONGO_PAYMENT_METHOD_CAPABILITIES_PATH);
-    const root = asRecord(payload);
-    const configured = Array.isArray(payload)
-      ? payload
-      : Array.isArray(root?.data)
-        ? root.data
-        : Array.isArray(root?.payment_methods)
-          ? root.payment_methods
-          : [];
-
-    const methods = selectPaymongoCheckoutPaymentMethods(
-      configured.filter((method): method is string => typeof method === "string")
-    );
-
-    if (methods.length > 0) {
-      return methods;
-    }
-  } catch (error) {
-    if (
-      error instanceof HttpError &&
-      (error.code === "PAYMONGO_NOT_CONFIGURED" ||
-        error.code === "PAYMONGO_TEST_KEY_REQUIRED")
-    ) {
-      throw error;
-    }
-  }
-
-  // QR Ph is PayMongo's default activated method for an activated account,
-  // while card is retained because this branch has already verified it end to end.
-  return ["qrph", "card"];
+  // This branch intentionally accepts only sk_test_ credentials. Keep the sandbox
+  // checkout deterministic instead of filtering against live activation capabilities:
+  // QR Ph may be the only active live capability even while PayMongo test flows for
+  // cards and e-wallets are available.
+  return getPaymongoTestCheckoutPaymentMethods();
 }
-
 function storefrontReturnUrl(orderNumber: string, payment: string) {
   const url = new URL("/order-success", env.FRONTEND_URL);
   url.searchParams.set("order", orderNumber);
