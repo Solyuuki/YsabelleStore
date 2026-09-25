@@ -6,7 +6,8 @@ import { SystemStatusScreen } from "@/components/shared/SystemStatusScreen";
 import { useSystemReliability } from "@/context/SystemReliabilityContext";
 
 export function GlobalReliabilityUI() {
-  const { healthState, httpStatus, lastHealthyAt, mode, recentlyRestored, retryNow } = useSystemReliability();
+  const { healthState, httpStatus, lastHealthyAt, mode, recentlyRestored, retryNow } =
+    useSystemReliability();
 
   useEffect(() => {
     const content = document.querySelector<HTMLElement>("[data-reliability-content]");
