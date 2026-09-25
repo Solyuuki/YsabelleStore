@@ -147,6 +147,6 @@
 
 ## Sprint 11 Status Screen Validation
 
-| Date       | Branch                                  | Command               | Result | Notes                                                                                         |
-| ---------- | --------------------------------------- | --------------------- | ------ | --------------------------------------------------------------------------------------------- |
+| Date       | Branch                             | Command               | Result | Notes                                                                                         |
+| ---------- | ---------------------------------- | --------------------- | ------ | --------------------------------------------------------------------------------------------- |
 | 2026-09-26 | m1/v0.11/feat/status-screen-system | `npm run verify:code` | Passed | Exact-head CI runs the aggregate read-only verifier before artifact verification; QA follows. |
