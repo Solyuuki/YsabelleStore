@@ -1,11 +1,7 @@
-import { useEffect, useRef } from "react";
-import { ShieldAlert } from "lucide-react";
+import { LayoutDashboard, ShieldAlert } from "lucide-react";
 
 import type { AppRoutePath } from "@/app/routes";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { useToast } from "@/components/shared/ToastProvider";
-import { Button } from "@/components/ui/button";
+import { StatusScreen } from "@/components/shared/StatusScreen";
 
 type AccessDeniedPageProps = {
   moduleName: string;
@@ -13,39 +9,20 @@ type AccessDeniedPageProps = {
 };
 
 export function AccessDeniedPage({ moduleName, onNavigate }: AccessDeniedPageProps) {
-  const { pushToast } = useToast();
-  const hasAnnouncedRef = useRef(false);
-
-  useEffect(() => {
-    if (hasAnnouncedRef.current) {
-      return;
-    }
-
-    hasAnnouncedRef.current = true;
-    pushToast({
-      message: "You do not have permission to access this area.",
-      title: "Access denied",
-      variant: "warning"
-    });
-  }, [pushToast, moduleName]);
-
   return (
-    <>
-      <PageHeader
-        eyebrow="Access denied"
-        title="Owner access required"
-        description={`${moduleName} is restricted by the current role-based access policy.`}
-        actions={
-          <Button onClick={() => onNavigate("/dashboard")} type="button" variant="secondary">
-            Back to dashboard
-          </Button>
-        }
-      />
-      <EmptyState
-        description="Staff accounts can use sales processing and inventory monitoring. Owner accounts can open administrative, reports, forecasting, product management, and settings modules."
-        icon={ShieldAlert}
-        title="This account cannot open the selected module"
-      />
-    </>
+    <StatusScreen
+      description={moduleName + " is restricted by the current role-based access policy."}
+      eyebrow="Authorization boundary"
+      icon={ShieldAlert}
+      noteDescription="Staff accounts can use role-approved operational modules. Owner-only administration, reporting, forecasting, product management, and settings remain protected."
+      noteTitle="Your signed-in account is safe"
+      primaryAction={{
+        icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" />,
+        label: "Back to dashboard",
+        onClick: () => onNavigate("/dashboard")
+      }}
+      statusLabel="HTTP 403"
+      title="Access denied"
+    />
   );
 }
