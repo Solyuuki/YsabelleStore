@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 
 import {
   paymongoCentavos,
+  selectPaymongoCheckoutPaymentMethods,
   verifyPaymongoWebhookSignature
 } from "../src/services/paymongoService.js";
 
@@ -41,5 +42,19 @@ test("PayMongo test webhook signature validates the raw body", () => {
       false
     ),
     false
+  );
+});
+
+test("PayMongo checkout keeps only supported enabled methods in customer-friendly order", () => {
+  assert.deepEqual(
+    selectPaymongoCheckoutPaymentMethods([
+      "card",
+      "qrph",
+      "gcash",
+      "paymaya",
+      "grab_pay",
+      "unsupported_method"
+    ]),
+    ["gcash", "paymaya", "grab_pay", "qrph", "card"]
   );
 });
