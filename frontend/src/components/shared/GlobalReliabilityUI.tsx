@@ -4,14 +4,8 @@ import { StatusScreen } from "@/components/shared/StatusScreen";
 import { useSystemReliability } from "@/context/SystemReliabilityContext";
 
 export function GlobalReliabilityUI() {
-  const {
-    healthState,
-    lastHealthyAt,
-    lastHttpStatus,
-    mode,
-    recentlyRestored,
-    retryNow
-  } = useSystemReliability();
+  const { healthState, lastHealthyAt, lastHttpStatus, mode, recentlyRestored, retryNow } =
+    useSystemReliability();
 
   if (recentlyRestored) {
     return (
