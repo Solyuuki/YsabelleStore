@@ -27,22 +27,23 @@ Ysabelle Store and uses the repository's existing React, Tailwind, Button, Lucid
 motion, and accessibility conventions. No new runtime dependency is introduced.
 
 Reference:
+
 - https://ui.shadcn.com/docs/components/base/empty
 - https://ui.shadcn.com/docs
 
 ## Full-screen status matrix
 
-| Condition | Status label | Presentation |
-| --- | --- | --- |
-| Protected session expired | HTTP 401 | Session expired / sign in again |
-| Route authorization denied | HTTP 403 | Access denied |
-| Missing internal route | HTTP 404 | Page not found |
-| Missing storefront route | HTTP 404 | Page not found |
-| Service unavailable | HTTP 503 | Service unavailable / retry |
-| Backend unreachable | SERVICE | Store service unavailable / retry |
-| Database unavailable | DATABASE | Database safety mode / retry |
-| Device offline | OFFLINE | Offline state / automatic recovery |
-| Repeated/system timeout | TIMEOUT | Service timeout / retry |
+| Condition                  | Status label | Presentation                       |
+| -------------------------- | ------------ | ---------------------------------- |
+| Protected session expired  | HTTP 401     | Session expired / sign in again    |
+| Route authorization denied | HTTP 403     | Access denied                      |
+| Missing internal route     | HTTP 404     | Page not found                     |
+| Missing storefront route   | HTTP 404     | Page not found                     |
+| Service unavailable        | HTTP 503     | Service unavailable / retry        |
+| Backend unreachable        | SERVICE      | Store service unavailable / retry  |
+| Database unavailable       | DATABASE     | Database safety mode / retry       |
+| Device offline             | OFFLINE      | Offline state / automatic recovery |
+| Repeated/system timeout    | TIMEOUT      | Service timeout / retry            |
 
 ## Approved notification statuses
 

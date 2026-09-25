@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  type ComponentType,
-  type ReactNode,
-  type SVGProps
-} from "react";
+import { useEffect, useId, useRef, type ComponentType, type ReactNode, type SVGProps } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -144,9 +137,7 @@ export function StatusScreen({
                 <div className="reliability-safety-note">
                   <span className="reliability-safety-note__indicator" aria-hidden="true" />
                   <div>
-                    {noteTitle ? (
-                      <p className="font-semibold text-slate-900">{noteTitle}</p>
-                    ) : null}
+                    {noteTitle ? <p className="font-semibold text-slate-900">{noteTitle}</p> : null}
                     {noteDescription ? (
                       <p className="mt-1 text-sm leading-6 text-slate-600">{noteDescription}</p>
                     ) : null}
