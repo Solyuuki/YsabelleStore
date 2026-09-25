@@ -92,7 +92,9 @@ export function SystemStatusScreen({
 
           {(primaryAction || secondaryAction || statusMeta) && (
             <div className="reliability-card__actions">
-              {primaryAction ? <StatusActionButton action={primaryAction} autoFocus={modal} /> : null}
+              {primaryAction ? (
+                <StatusActionButton action={primaryAction} autoFocus={modal} />
+              ) : null}
               {secondaryAction ? <StatusActionButton action={secondaryAction} /> : null}
               {statusMeta ? <span className="text-xs text-slate-500">{statusMeta}</span> : null}
             </div>
@@ -129,7 +131,13 @@ export function SystemStatusScreen({
   );
 }
 
-function StatusActionButton({ action, autoFocus = false }: { action: SystemStatusAction; autoFocus?: boolean }) {
+function StatusActionButton({
+  action,
+  autoFocus = false
+}: {
+  action: SystemStatusAction;
+  autoFocus?: boolean;
+}) {
   const ActionIcon = action.icon;
 
   return (
