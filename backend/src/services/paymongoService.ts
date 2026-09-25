@@ -22,7 +22,9 @@ const PAYMONGO_CHECKOUT_METHOD_PRIORITY = [
 ] as const;
 
 type PaymongoCheckoutPaymentMethod =
-  (typeof PAYMONGO_CHECKOUT_METHOD_PRIORITY)[number];
+  | (typeof PAYMONGO_CHECKOUT_METHOD_PRIORITY)[number]
+  | "shopeepay"
+  | "shopee_pay";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -126,8 +128,22 @@ export function selectPaymongoCheckoutPaymentMethods(
   configuredMethods: readonly string[]
 ): PaymongoCheckoutPaymentMethod[] {
   const normalized = new Set(configuredMethods.map((method) => method.trim().toLowerCase()));
+  const methods: PaymongoCheckoutPaymentMethod[] = PAYMONGO_CHECKOUT_METHOD_PRIORITY.filter(
+    (method) => normalized.has(method)
+  );
 
-  return PAYMONGO_CHECKOUT_METHOD_PRIORITY.filter((method) => normalized.has(method));
+  const shopeePayMethod = normalized.has("shopeepay")
+    ? "shopeepay"
+    : normalized.has("shopee_pay")
+      ? "shopee_pay"
+      : null;
+
+  if (shopeePayMethod) {
+    const insertBefore = methods.findIndex((method) => method === "qrph" || method === "card");
+    methods.splice(insertBefore >= 0 ? insertBefore : methods.length, 0, shopeePayMethod);
+  }
+
+  return methods;
 }
 
 async function getPaymongoCheckoutPaymentMethods(): Promise<PaymongoCheckoutPaymentMethod[]> {
