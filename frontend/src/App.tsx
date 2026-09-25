@@ -1,4 +1,5 @@
 import { AppShell } from "@/app/AppShell";
+import { GlobalAuthenticationStatusScreen } from "@/components/shared/GlobalAuthenticationStatusScreen";
 import { GlobalHttpStatusNotifier } from "@/components/shared/GlobalHttpStatusNotifier";
 import { GlobalReliabilityUI } from "@/components/shared/GlobalReliabilityUI";
 import { NotificationStack } from "@/components/shared/NotificationStack";
@@ -16,6 +17,7 @@ export function App() {
             <NotificationStack />
           </div>
           <GlobalHttpStatusNotifier />
+          <GlobalAuthenticationStatusScreen />
           <GlobalReliabilityUI />
         </AuthProvider>
       </ToastProvider>

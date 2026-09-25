@@ -1,8 +1,7 @@
-import { ArrowRight, SearchX } from "lucide-react";
+import { LayoutDashboard, SearchX } from "lucide-react";
 
 import type { AppRoutePath } from "@/app/routes";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { Button } from "@/components/ui/button";
+import { StatusScreen } from "@/components/shared/StatusScreen";
 
 type NotFoundPageProps = {
   onNavigate: (path: AppRoutePath) => void;
@@ -10,16 +9,19 @@ type NotFoundPageProps = {
 
 export function NotFoundPage({ onNavigate }: NotFoundPageProps) {
   return (
-    <div className="space-y-4">
-      <EmptyState
-        description="The requested screen is not part of the Sprint 1 frontend shell route list."
-        icon={SearchX}
-        title="Screen not found"
-      />
-      <Button onClick={() => onNavigate("/dashboard")} type="button">
-        Go to dashboard
-        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-      </Button>
-    </div>
+    <StatusScreen
+      description="The requested Ysabelle Store screen does not exist or is no longer available at this address."
+      eyebrow="Navigation status"
+      icon={SearchX}
+      noteDescription="No store data was changed. Use the dashboard to return to a known application route."
+      noteTitle="Nothing was submitted"
+      primaryAction={{
+        icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" />,
+        label: "Go to dashboard",
+        onClick: () => onNavigate("/dashboard")
+      }}
+      statusLabel="HTTP 404"
+      title="Page not found"
+    />
   );
 }

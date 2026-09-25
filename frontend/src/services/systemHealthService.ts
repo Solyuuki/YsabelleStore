@@ -39,7 +39,7 @@ export async function checkSystemHealth(
     });
 
     if (!response.success || !response.data) {
-      return "degraded";
+      return response.httpStatus === 503 ? "backend-unavailable" : "degraded";
     }
 
     return classifyHealthResponse(response.data);

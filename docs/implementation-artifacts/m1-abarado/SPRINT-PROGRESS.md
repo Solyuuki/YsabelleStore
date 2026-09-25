@@ -66,3 +66,9 @@ M1 Sprint 2 auth behavior remains intact. Sprint 3 planning now shifts M1 into i
 | Date       | Progress                                                                                                                                                                                                                           | Evidence                                                                       |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | 2026-09-18 | Bootstrapped Sprint 11 guardrails and implemented the first QoL reliability slice covering canonical HTTP statuses, 405 routing semantics, safe dependency failures, frontend transport metadata, and focused regression coverage. | `m1/v0.11/fix/http-status-contract`; PR #41; automated validation in progress. |
+
+## Sprint 11 Full-Screen Status UX
+
+| Date       | Progress                                                                                                                         | Evidence                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 2026-09-26 | Unified 401, 403, 404, 503, backend-unreachable, database-unavailable, offline, and timeout states on one Ysabelle status shell. | `m1/v0.11/feat/status-screen-system`; PR #43; manual visual QA remains next. |

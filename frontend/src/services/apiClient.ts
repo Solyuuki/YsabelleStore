@@ -24,7 +24,10 @@ type ApiClientConfig = {
 };
 
 export type HttpErrorEventDetail = {
+  hadAuthorization?: boolean;
   message: string;
+  method?: string;
+  path?: string;
   retryAfterSeconds?: number;
   status?: number;
 };
@@ -107,6 +110,12 @@ export class ApiClient {
       assertSystemMutationAllowed(context.init.method);
     }
 
+    const eventContext = {
+      hadAuthorization: new Headers(context.init.headers).has("Authorization"),
+      method: (context.init.method ?? "GET").toUpperCase(),
+      path: context.url.pathname
+    };
+
     let response: Response;
 
     try {
@@ -136,6 +145,7 @@ export class ApiClient {
 
     if (!interceptedPayload.success) {
       dispatchHttpError({
+        ...eventContext,
         message: interceptedPayload.message,
         retryAfterSeconds: interceptedPayload.retryAfterSeconds,
         status: interceptedPayload.httpStatus

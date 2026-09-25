@@ -144,3 +144,9 @@
 | 2026-09-06 | unknown                                 | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-09-10 | m1/v0.9/feat/catalog-data-readiness     | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-09-22 | m1/v0.11/fix/http-status-contract       | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
+
+## Sprint 11 Status Screen Validation
+
+| Date       | Branch                             | Command               | Result | Notes                                                                                         |
+| ---------- | ---------------------------------- | --------------------- | ------ | --------------------------------------------------------------------------------------------- |
+| 2026-09-26 | m1/v0.11/feat/status-screen-system | `npm run verify:code` | Passed | Exact-head CI runs the aggregate read-only verifier before artifact verification; QA follows. |
