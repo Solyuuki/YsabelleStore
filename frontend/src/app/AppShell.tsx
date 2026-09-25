@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+import { SessionRequiredPage } from "@/pages/SessionRequiredPage";
 import { WelcomePage } from "@/pages/WelcomePage";
 import "@/styles/auth-brand.css";
 import { wait } from "@/utils/timing";
@@ -135,7 +136,6 @@ export function AppShell() {
   }, []);
 
   const route = useMemo(() => getRouteByPath(path), [path]);
-  const routeForLayout = route ?? getRouteByPath("/not-found");
 
   const handleLogout = useCallback(() => {
     setLogoutModalOpen(true);
@@ -173,10 +173,6 @@ export function AppShell() {
 
     if (status === "authenticated" && path === "/staff-login") {
       navigate("/dashboard");
-    }
-
-    if (status === "unauthenticated" && internalRoutePaths.has(path) && path !== "/staff-login") {
-      navigate("/staff-login");
     }
   }, [isAuthReady, navigate, path, status]);
 
@@ -216,6 +212,10 @@ export function AppShell() {
     return showLaunchSplash ? <LaunchSplash /> : null;
   }
 
+  if (status === "unauthenticated" && path !== "/staff-login") {
+    return <SessionRequiredPage onSignIn={() => navigate("/staff-login")} />;
+  }
+
   if (status !== "authenticated" || path === "/staff-login") {
     return (
       <WelcomePage
@@ -232,10 +232,18 @@ export function AppShell() {
     );
   }
 
+  if (!route || path === "/not-found") {
+    return <NotFoundPage onNavigate={navigate} />;
+  }
+
+  if (!canRoleAccessRoute(route, user?.role)) {
+    return <AccessDeniedPage moduleName={route.label} onNavigate={navigate} />;
+  }
+
   return (
     <>
       <AppLayout
-        activePath={validRoutePaths.has(path) ? path : "/not-found"}
+        activePath={route.path}
         collapsed={sidebarCollapsed}
         onNavigate={navigate}
         onLogout={handleLogout}
@@ -244,7 +252,7 @@ export function AppShell() {
       >
         <div className="auth-panel-enter" key={path}>
           <Suspense fallback={<RouteLoadingFallback label="Loading module..." />}>
-            {renderRoute(path, routeForLayout, navigate, user, error, register)}
+            {renderRoute(route, navigate, user, error, register)}
           </Suspense>
         </div>
       </AppLayout>
@@ -300,21 +308,12 @@ function RouteLoadingFallback({
 }
 
 function renderRoute(
-  path: string,
-  route: AppRoute | undefined,
+  route: AppRoute,
   navigate: (path: AppRoutePath) => void,
   user: ReturnType<typeof useAuth>["user"],
   error: ReturnType<typeof useAuth>["error"],
   register: ReturnType<typeof useAuth>["register"]
 ) {
-  if (!route || path === "/not-found") {
-    return <NotFoundPage onNavigate={navigate} />;
-  }
-
-  if (!canRoleAccessRoute(route, user?.role)) {
-    return <AccessDeniedPage moduleName={route.label} onNavigate={navigate} />;
-  }
-
   switch (route.path) {
     case "/dashboard":
       return <DashboardPage onNavigate={navigate} />;

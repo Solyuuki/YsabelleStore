@@ -2,11 +2,12 @@ import { useEffect } from "react";
 
 import { CheckCircle2, DatabaseZap, RefreshCw, ServerOff, WifiOff } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { SystemStatusScreen } from "@/components/shared/SystemStatusScreen";
 import { useSystemReliability } from "@/context/SystemReliabilityContext";
 
 export function GlobalReliabilityUI() {
-  const { healthState, lastHealthyAt, mode, recentlyRestored, retryNow } = useSystemReliability();
+  const { healthState, httpStatus, lastHealthyAt, mode, recentlyRestored, retryNow } =
+    useSystemReliability();
 
   useEffect(() => {
     const content = document.querySelector<HTMLElement>("[data-reliability-content]");
@@ -101,75 +102,28 @@ export function GlobalReliabilityUI() {
   }
 
   const presentation = getUnavailablePresentation(healthState);
-  const StatusIcon = presentation.Icon;
 
   return (
-    <div
-      aria-describedby="system-unavailable-description"
-      aria-labelledby="system-unavailable-title"
-      aria-live="assertive"
-      aria-modal="true"
-      className="reliability-overlay"
-      role="alertdialog"
-    >
-      <div className="reliability-grid" aria-hidden="true" />
-      <div className="reliability-orb reliability-orb--one" aria-hidden="true" />
-      <div className="reliability-orb reliability-orb--two" aria-hidden="true" />
-
-      <section className="reliability-card">
-        <div className="reliability-card__beam" aria-hidden="true" />
-
-        <div className="reliability-status-visual" aria-hidden="true">
-          <span className="reliability-ring reliability-ring--outer" />
-          <span className="reliability-ring reliability-ring--inner" />
-          <span className="reliability-status-visual__icon">
-            <StatusIcon className="h-8 w-8" />
-          </span>
-        </div>
-
-        <div className="reliability-card__content">
-          <div className="reliability-eyebrow">
-            <span className="reliability-eyebrow__dot" aria-hidden="true" />
-            System safety mode
-          </div>
-
-          <h1 className="type-h1 text-slate-950" id="system-unavailable-title">
-            {presentation.title}
-          </h1>
-
-          <p
-            className="type-body-lg type-readable text-slate-600"
-            id="system-unavailable-description"
-          >
-            {presentation.message}
-          </p>
-
-          <div className="reliability-safety-note">
-            <span className="reliability-safety-note__indicator" aria-hidden="true" />
-            <div>
-              <p className="font-semibold text-slate-900">Transaction protection is active</p>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                Checkout, POS, inventory changes, receiving, and other write actions are paused
-                until the system is healthy again. Existing data on this screen has not been
-                submitted.
-              </p>
-            </div>
-          </div>
-
-          <div className="reliability-card__actions">
-            <Button onClick={() => void retryNow()} type="button">
-              <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              Try connection again
-            </Button>
-            <span className="text-xs text-slate-500">
-              {lastHealthyAt
-                ? `Last healthy connection ${formatLastHealthy(lastHealthyAt)}`
-                : "Waiting for the first healthy connection"}
-            </span>
-          </div>
-        </div>
-      </section>
-    </div>
+    <SystemStatusScreen
+      code={httpStatus === 503 ? "503" : undefined}
+      eyebrow={presentation.eyebrow}
+      icon={presentation.Icon}
+      message={presentation.message}
+      modal
+      noteMessage="Checkout, POS, inventory changes, receiving, and other write actions are paused until the system is healthy again. Existing data on this screen has not been submitted."
+      noteTitle="Transaction protection is active"
+      primaryAction={{
+        icon: RefreshCw,
+        label: "Try connection again",
+        onClick: () => void retryNow()
+      }}
+      statusMeta={
+        lastHealthyAt
+          ? `Last healthy connection ${formatLastHealthy(lastHealthyAt)}`
+          : "Waiting for the first healthy connection"
+      }
+      title={presentation.title}
+    />
   );
 }
 
@@ -179,6 +133,7 @@ function getUnavailablePresentation(
   if (healthState === "offline") {
     return {
       Icon: WifiOff,
+      eyebrow: "Network status",
       message:
         "This device appears to be offline. Reconnect to the network and Ysabelle Store will verify the backend automatically.",
       title: "You are offline"
@@ -188,6 +143,7 @@ function getUnavailablePresentation(
   if (healthState === "database-unavailable") {
     return {
       Icon: DatabaseZap,
+      eyebrow: "System safety mode",
       message:
         "The application is running, but the database is not ready. Store-changing actions are paused to protect inventory and transaction integrity.",
       title: "Database temporarily unavailable"
@@ -197,6 +153,7 @@ function getUnavailablePresentation(
   if (healthState === "timeout") {
     return {
       Icon: ServerOff,
+      eyebrow: "Connection timeout",
       message:
         "The backend did not respond within the expected time. Ysabelle Store will keep checking and recover automatically when service returns.",
       title: "Store service is taking too long"
@@ -205,6 +162,7 @@ function getUnavailablePresentation(
 
   return {
     Icon: ServerOff,
+    eyebrow: "Service availability",
     message:
       "We cannot reach the Ysabelle Store backend right now. The application is preserving your current screen while it safely reconnects.",
     title: "Store service temporarily unavailable"
