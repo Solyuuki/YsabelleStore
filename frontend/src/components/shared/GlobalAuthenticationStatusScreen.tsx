@@ -35,8 +35,7 @@ export function GlobalAuthenticationStatusScreen() {
     return null;
   }
 
-  const currentLocation =
-    window.location.pathname + window.location.search + window.location.hash;
+  const currentLocation = window.location.pathname + window.location.search + window.location.hash;
   const internalRoute = isInternalAppRoutePath(window.location.pathname);
   const signInPath = internalRoute
     ? "/staff-login"
