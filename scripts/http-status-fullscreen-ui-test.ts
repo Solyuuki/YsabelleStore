@@ -1,3 +1,4 @@
+// Sprint 11 canonical full-screen status UI regression contract.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
