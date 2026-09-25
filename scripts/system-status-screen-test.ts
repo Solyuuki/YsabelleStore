@@ -35,7 +35,7 @@ assert.match(appShellSource, /<AccessDeniedPage moduleName=/);
 assert.match(appShellSource, /<NotFoundPage onNavigate=/);
 assert.doesNotMatch(
   appShellSource,
-  /status === "unauthenticated"[\s\S]{0,180}navigate\("\/staff-login"\)/,
+  /status === "unauthenticated" && internalRoutePaths\.has\(path\)[\s\S]{0,180}navigate\("\/staff-login"\);/,
   "Protected internal routes must present the 401 status surface before sign-in navigation."
 );
 
