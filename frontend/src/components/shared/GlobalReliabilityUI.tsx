@@ -6,7 +6,7 @@ import { SystemStatusScreen } from "@/components/shared/SystemStatusScreen";
 import { useSystemReliability } from "@/context/SystemReliabilityContext";
 
 export function GlobalReliabilityUI() {
-  const { healthState, lastHealthyAt, mode, recentlyRestored, retryNow } = useSystemReliability();
+  const { healthState, httpStatus, lastHealthyAt, mode, recentlyRestored, retryNow } = useSystemReliability();
 
   useEffect(() => {
     const content = document.querySelector<HTMLElement>("[data-reliability-content]");
@@ -104,6 +104,7 @@ export function GlobalReliabilityUI() {
 
   return (
     <SystemStatusScreen
+      code={httpStatus === 503 ? "503" : undefined}
       eyebrow={presentation.eyebrow}
       icon={presentation.Icon}
       message={presentation.message}
