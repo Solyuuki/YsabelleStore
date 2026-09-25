@@ -1057,6 +1057,18 @@ body {
   }
 }
 
+@media (max-width: 720px) {
+  .status-screen-empty,
+  .status-screen-empty__header {
+    align-items: center;
+    text-align: center;
+  }
+
+  .status-screen-empty .type-readable {
+    margin-inline: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reliability-banner,
   .reliability-signal > span,
