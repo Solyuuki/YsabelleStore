@@ -164,11 +164,7 @@ export function StatusScreen({
               </Button>
             ) : null}
             {secondaryAction ? (
-              <Button
-                onClick={secondaryAction.onClick}
-                type="button"
-                variant="secondary"
-              >
+              <Button onClick={secondaryAction.onClick} type="button" variant="secondary">
                 {secondaryAction.icon}
                 {secondaryAction.label}
               </Button>
