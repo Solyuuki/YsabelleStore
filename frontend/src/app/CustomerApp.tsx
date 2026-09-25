@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { CartProvider } from "@/context/CartContext";
 import { CustomerAuthProvider, useCustomerAuth } from "@/context/CustomerAuthContext";
 import { CustomerLayout } from "@/layouts/CustomerLayout";
+import { SessionRequiredPage } from "@/pages/SessionRequiredPage";
 import "driver.js/dist/driver.css";
 import "@/styles/customer.css";
 import "@/styles/customer-auth.css";
@@ -14,6 +15,7 @@ import "@/styles/customer-guide-route-transition.css";
 import "@/styles/brand.css";
 import "@/styles/shopping-guide.css";
 import {
+  buildCustomerAuthPath,
   getCustomerAuthPageKind,
   isCustomerProtectedRoute,
   resolveCustomerAuthRedirect
@@ -107,13 +109,28 @@ function CustomerAppRoutes({
   const pathname =
     window.location.protocol === "file:" && rawPathname.endsWith("/index.html") ? "/" : rawPathname;
   const { status } = useCustomerAuth();
-  const redirect = resolveCustomerAuthRedirect(pathname, status, locationUrl.search);
   const authPageKind = getCustomerAuthPageKind(pathname);
   const protectedRoute = isCustomerProtectedRoute(pathname);
+  const sessionRequired = protectedRoute && status === "unauthenticated";
+  const redirect = sessionRequired
+    ? null
+    : resolveCustomerAuthRedirect(pathname, status, locationUrl.search);
 
   useEffect(() => {
     if (redirect) navigate(redirect);
   }, [navigate, redirect]);
+
+  if (sessionRequired) {
+    const returnTo = `${pathname}${locationUrl.search}`;
+
+    return (
+      <SessionRequiredPage
+        audience="customer"
+        onBack={() => navigate("/")}
+        onSignIn={() => navigate(buildCustomerAuthPath("/login", returnTo))}
+      />
+    );
+  }
 
   if (redirect || ((authPageKind || protectedRoute) && status === "loading")) {
     return (
@@ -159,7 +176,13 @@ function CustomerAppRoutes({
   else if (pathname === "/account-recovery")
     page = <CustomerAccountRecoveryPage location={location} navigate={navigate} />;
   else if (pathname === "/account") page = <CustomerAccountPage navigate={navigate} />;
-  else page = <CustomerNotFoundPage navigate={navigate} />;
+  else {
+    return (
+      <Suspense fallback={<CustomerRouteFallback fullScreen />}>
+        <CustomerNotFoundPage navigate={navigate} />
+      </Suspense>
+    );
+  }
 
   return (
     <CustomerLayout location={location} navigate={navigate} pathname={pathname}>
@@ -168,9 +191,12 @@ function CustomerAppRoutes({
   );
 }
 
-function CustomerRouteFallback() {
+function CustomerRouteFallback({ fullScreen = false }: { fullScreen?: boolean }) {
   return (
-    <div className="flex min-h-[45vh] items-center justify-center" role="status">
+    <div
+      className={`flex items-center justify-center ${fullScreen ? "min-h-screen" : "min-h-[45vh]"}`}
+      role="status"
+    >
       <div className="flex items-center gap-3 text-sm font-semibold text-slate-600">
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
         Loading page...
