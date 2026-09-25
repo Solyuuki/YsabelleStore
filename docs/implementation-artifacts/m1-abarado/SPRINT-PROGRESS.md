@@ -69,6 +69,6 @@ M1 Sprint 2 auth behavior remains intact. Sprint 3 planning now shifts M1 into i
 
 ## Sprint 11 Full-Screen Status UX
 
-| Date       | Progress                                                                                                                       | Evidence                                                  |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| Date       | Progress                                                                                                                         | Evidence                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | 2026-09-26 | Unified 401, 403, 404, 503, backend-unreachable, database-unavailable, offline, and timeout states on one Ysabelle status shell. | `m1/v0.11/feat/status-screen-system`; PR #43; manual visual QA remains next. |
