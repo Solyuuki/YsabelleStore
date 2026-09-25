@@ -9,6 +9,7 @@ import {
   type ReactNode
 } from "react";
 
+import type { HttpErrorEventDetail } from "@/services/apiClient";
 import { checkSystemHealth, type SystemHealthState } from "@/services/systemHealthService";
 import { setSystemMutationGate } from "@/services/systemReliabilityGate";
 
@@ -105,6 +106,13 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
     [applyMode]
   );
 
+  const applyServiceUnavailable = useCallback(() => {
+    setRecentlyRestored(false);
+    setHealthState("backend-unavailable");
+    consecutiveTransportFailuresRef.current = 2;
+    applyMode("unavailable");
+  }, [applyMode]);
+
   const retryNow = useCallback(async () => {
     if (checkInFlightRef.current) {
       return checkInFlightRef.current;
@@ -143,11 +151,19 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
       }
       void retryNow();
     };
+    const handleHttpError = (event: Event) => {
+      const detail = (event as CustomEvent<HttpErrorEventDetail>).detail;
+
+      if (detail?.status === 503) {
+        applyServiceUnavailable();
+      }
+    };
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     window.addEventListener("focus", handleFocus);
     window.addEventListener("ysabelle:api-unreachable", handleApiUnreachable);
+    window.addEventListener("ysabelle:http-error", handleHttpError);
 
     return () => {
       window.clearInterval(intervalId);
@@ -155,12 +171,13 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("ysabelle:api-unreachable", handleApiUnreachable);
+      window.removeEventListener("ysabelle:http-error", handleHttpError);
 
       if (restoredTimerRef.current !== null) {
         window.clearTimeout(restoredTimerRef.current);
       }
     };
-  }, [applyHealthState, retryNow]);
+  }, [applyHealthState, applyServiceUnavailable, retryNow]);
 
   const value = useMemo<SystemReliabilityContextValue>(
     () => ({
