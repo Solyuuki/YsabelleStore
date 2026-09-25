@@ -193,3 +193,9 @@ The one-time cleanup script normalized these live products from `DISCONTINUED` t
 - `prd_hand_sanitizer` - Pocket Hand Sanitizer - `TOI-SANI-001`
 - `cmrgb64pg007tibtw4uar02vb` - DATA FLOW TEST PRODUCT e78d9047 - `TEST-9B3A7C4E-0F4`
 - `cmrgb8s9r007tibr4g6j4hezb` - DATA FLOW TEST PRODUCT 4955628f - `TEST-4C43F0A5-0E5`
+
+## Sprint 11 Status Screen Validation
+
+| Date       | Command               | Result | Notes                                                                                         |
+| ---------- | --------------------- | ------ | --------------------------------------------------------------------------------------------- |
+| 2026-09-26 | `npm run verify:code` | Passed | Exact-head CI runs the aggregate read-only verifier before artifact verification; QA follows. |
