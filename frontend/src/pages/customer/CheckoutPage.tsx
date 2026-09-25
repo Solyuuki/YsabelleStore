@@ -455,7 +455,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   <span>
                     <strong>PayMongo online payment</strong>
                     <small>
-                      Secure hosted checkout in test mode. No real money will be charged.
+                      Secure hosted checkout in test mode. Choose GCash, Maya, GrabPay, QR Ph, or card when available. No real money will be charged.
                     </small>
                   </span>
                   {paymentMethod === "PAYMONGO" ? <CheckCircle2 aria-hidden="true" /> : null}
