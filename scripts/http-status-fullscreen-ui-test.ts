@@ -30,14 +30,14 @@ assert.match(statusScreenSource, /variant === "system"/);
 assert.doesNotMatch(statusScreenSource, /reliability-ring/);
 assert.doesNotMatch(statusScreenSource, /reliability-eyebrow__dot/);
 
-assert.match(illustrationSource, /401-login\\.svg/);
-assert.match(illustrationSource, /403-security\\.svg/);
-assert.match(illustrationSource, /404-lost\\.svg/);
-assert.match(illustrationSource, /503-maintenance\\.svg/);
-assert.match(illustrationSource, /service-unavailable\\.svg/);
-assert.match(illustrationSource, /database-unavailable\\.svg/);
-assert.match(illustrationSource, /offline\\.svg/);
-assert.match(illustrationSource, /timeout\\.svg/);
+assert.match(illustrationSource, /401-login\.svg/);
+assert.match(illustrationSource, /403-security\.svg/);
+assert.match(illustrationSource, /404-lost\.svg/);
+assert.match(illustrationSource, /503-maintenance\.svg/);
+assert.match(illustrationSource, /service-unavailable\.svg/);
+assert.match(illustrationSource, /database-unavailable\.svg/);
+assert.match(illustrationSource, /offline\.svg/);
+assert.match(illustrationSource, /timeout\.svg/);
 assert.match(illustrationSource, /data-status-illustration/);
 
 assert.match(authScreenSource, /statusLabel="401"/);
