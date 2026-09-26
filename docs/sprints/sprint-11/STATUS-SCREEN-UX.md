@@ -48,17 +48,17 @@ animated Ysabelle aurora and faint grid. Status illustrations use slow float/hal
 
 ## Full-screen status matrix
 
-| Condition                  | Status label | Page family         | Illustration |
-| -------------------------- | ------------ | ------------------- | ------------ |
-| Protected session expired  | 401          | Auth / permission   | Login/session |
-| Route authorization denied | 403          | Auth / permission   | Security/access |
-| Missing internal route     | 404          | Navigation          | Lost/navigation |
-| Missing storefront route   | 404          | Navigation          | Lost/navigation |
-| Service unavailable        | 503          | System/reliability  | Maintenance |
-| Backend unreachable        | SERVICE      | System/reliability  | Server status |
-| Database unavailable       | DATABASE     | System/reliability  | No data |
-| Device offline             | OFFLINE      | System/reliability  | Connectivity |
-| Repeated/system timeout    | TIMEOUT      | System/reliability  | Time management |
+| Condition                  | Status label | Page family        | Illustration    |
+| -------------------------- | ------------ | ------------------ | --------------- |
+| Protected session expired  | 401          | Auth / permission  | Login/session   |
+| Route authorization denied | 403          | Auth / permission  | Security/access |
+| Missing internal route     | 404          | Navigation         | Lost/navigation |
+| Missing storefront route   | 404          | Navigation         | Lost/navigation |
+| Service unavailable        | 503          | System/reliability | Maintenance     |
+| Backend unreachable        | SERVICE      | System/reliability | Server status   |
+| Database unavailable       | DATABASE     | System/reliability | No data         |
+| Device offline             | OFFLINE      | System/reliability | Connectivity    |
+| Repeated/system timeout    | TIMEOUT      | System/reliability | Time management |
 
 ## Approved notification statuses
 
