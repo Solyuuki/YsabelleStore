@@ -1,4 +1,4 @@
-import { CheckCircle2, DatabaseZap, RefreshCw, ServerOff, WifiOff } from "lucide-react";
+import { CheckCircle2, DatabaseZap, RefreshCw } from "lucide-react";
 
 import { StatusScreen } from "@/components/shared/StatusScreen";
 import { useSystemReliability } from "@/context/SystemReliabilityContext";
@@ -92,7 +92,6 @@ export function GlobalReliabilityUI() {
           ? "Last healthy connection " + formatLastHealthy(lastHealthyAt)
           : "Waiting for the first healthy connection"
       }
-      icon={presentation.Icon}
       noteDescription="Checkout, POS, inventory, receiving, and other store-changing actions remain paused until system readiness is restored."
       noteTitle="Writes are temporarily paused"
       primaryAction={{
@@ -113,7 +112,6 @@ function getUnavailablePresentation(
 ) {
   if (healthState === "offline") {
     return {
-      Icon: WifiOff,
       eyebrow: "Connectivity status",
       message:
         "This device appears to be offline. Reconnect to the network and Ysabelle Store will verify services automatically.",
@@ -124,7 +122,6 @@ function getUnavailablePresentation(
 
   if (healthState === "database-unavailable") {
     return {
-      Icon: DatabaseZap,
       eyebrow: "Data service status",
       message:
         "The application is available, but the database is not ready. Store-changing actions will resume after readiness is verified.",
@@ -135,7 +132,6 @@ function getUnavailablePresentation(
 
   if (healthState === "timeout") {
     return {
-      Icon: ServerOff,
       eyebrow: "Service response status",
       message:
         "The backend did not respond within the expected time. Ysabelle Store will continue checking for recovery.",
@@ -145,7 +141,6 @@ function getUnavailablePresentation(
   }
 
   return {
-    Icon: ServerOff,
     eyebrow: lastHttpStatus === 503 ? "Service availability" : "Connectivity status",
     message:
       lastHttpStatus === 503
