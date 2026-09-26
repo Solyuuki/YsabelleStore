@@ -44,18 +44,17 @@ export function GlobalAuthenticationStatusScreen() {
   return (
     <StatusScreen
       critical
-      description="Your sign-in is no longer valid for this protected request. Sign in again to continue safely."
+      description="Your session ended before this protected request could continue. Sign in again to return to Ysabelle Store."
       eyebrow="Authentication required"
       icon={KeyRound}
-      noteDescription="The failed request was not treated as successful. Re-authentication is required before protected actions can continue."
-      noteTitle="Session protection is active"
       primaryAction={{
         icon: <LogIn className="h-4 w-4" aria-hidden="true" />,
         label: "Sign in again",
         onClick: () => window.location.assign(signInPath)
       }}
-      statusLabel="HTTP 401"
+      statusLabel="401"
       title="Your session has expired"
+      variant="auth"
     />
   );
 }

@@ -86,22 +86,23 @@ export function GlobalReliabilityUI() {
     <StatusScreen
       critical
       description={presentation.message}
-      eyebrow="System safety mode"
+      eyebrow={presentation.eyebrow}
       footer={
         lastHealthyAt
           ? "Last healthy connection " + formatLastHealthy(lastHealthyAt)
           : "Waiting for the first healthy connection"
       }
       icon={presentation.Icon}
-      noteDescription="Checkout, POS, inventory changes, receiving, and other write actions are paused until the system is healthy again. Existing data on this screen has not been submitted."
-      noteTitle="Transaction protection is active"
+      noteDescription="Checkout, POS, inventory, receiving, and other store-changing actions remain paused until system readiness is restored."
+      noteTitle="Writes are temporarily paused"
       primaryAction={{
         icon: <RefreshCw className="h-4 w-4" aria-hidden="true" />,
-        label: "Try connection again",
+        label: "Check connection",
         onClick: () => void retryNow()
       }}
       statusLabel={presentation.statusLabel}
       title={presentation.title}
+      variant="system"
     />
   );
 }
@@ -113,18 +114,20 @@ function getUnavailablePresentation(
   if (healthState === "offline") {
     return {
       Icon: WifiOff,
+      eyebrow: "Connectivity status",
       message:
-        "This device appears to be offline. Reconnect to the network and Ysabelle Store will verify the backend automatically.",
+        "This device appears to be offline. Reconnect to the network and Ysabelle Store will verify services automatically.",
       statusLabel: "OFFLINE",
-      title: "You are offline"
+      title: "You’re offline"
     };
   }
 
   if (healthState === "database-unavailable") {
     return {
       Icon: DatabaseZap,
+      eyebrow: "Data service status",
       message:
-        "The application is running, but the database is not ready. Store-changing actions are paused to protect inventory and transaction integrity.",
+        "The application is available, but the database is not ready. Store-changing actions will resume after readiness is verified.",
       statusLabel: "DATABASE",
       title: "Database temporarily unavailable"
     };
@@ -133,20 +136,22 @@ function getUnavailablePresentation(
   if (healthState === "timeout") {
     return {
       Icon: ServerOff,
+      eyebrow: "Service response status",
       message:
-        "The backend did not respond within the expected time. Ysabelle Store will keep checking and recover automatically when service returns.",
+        "The backend did not respond within the expected time. Ysabelle Store will continue checking for recovery.",
       statusLabel: "TIMEOUT",
-      title: "Store service is taking too long"
+      title: "The service is taking too long"
     };
   }
 
   return {
     Icon: ServerOff,
+    eyebrow: lastHttpStatus === 503 ? "Service availability" : "Connectivity status",
     message:
       lastHttpStatus === 503
-        ? "The Ysabelle Store service is temporarily unable to handle requests. Your current screen is preserved while readiness is rechecked."
-        : "We cannot reach the Ysabelle Store backend right now. The application is preserving your current screen while it safely reconnects.",
-    statusLabel: lastHttpStatus === 503 ? "HTTP 503" : "SERVICE",
+        ? "Ysabelle Store is temporarily unable to handle requests. Please try again after the readiness check completes."
+        : "The frontend is running, but the Ysabelle Store backend cannot be reached right now.",
+    statusLabel: lastHttpStatus === 503 ? "503" : "SERVICE",
     title:
       lastHttpStatus === 503
         ? "Service temporarily unavailable"

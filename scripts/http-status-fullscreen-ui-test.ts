@@ -19,26 +19,40 @@ const internalRoutesSource = source("src/utils/internalAuthRoutes.ts");
 
 assert.match(statusScreenSource, /createPortal/);
 assert.match(statusScreenSource, /data-status-overlay-lock-count/);
-assert.match(statusScreenSource, /reliability-overlay/);
-assert.match(statusScreenSource, /EmptyTitle/);
-assert.match(statusScreenSource, /EmptyDescription/);
+assert.match(statusScreenSource, /data-status-variant/);
+assert.match(statusScreenSource, /BrandLogo/);
+assert.match(statusScreenSource, /variant === "auth"/);
+assert.match(statusScreenSource, /variant === "navigation"/);
+assert.match(statusScreenSource, /variant === "system"/);
+assert.doesNotMatch(statusScreenSource, /reliability-ring/);
+assert.doesNotMatch(statusScreenSource, /reliability-eyebrow__dot/);
 
-assert.match(authScreenSource, /HTTP 401/);
+assert.match(authScreenSource, /statusLabel="401"/);
+assert.match(authScreenSource, /variant="auth"/);
 assert.match(authScreenSource, /hadAuthorization/);
 assert.match(authScreenSource, /isCustomerProtectedRoute/);
 assert.match(authScreenSource, /Your session has expired/);
+assert.doesNotMatch(authScreenSource, /noteDescription=/);
 
-assert.match(accessDeniedSource, /HTTP 403/);
-assert.match(accessDeniedSource, /StatusScreen/);
-assert.match(notFoundSource, /HTTP 404/);
-assert.match(customerNotFoundSource, /HTTP 404/);
+assert.match(accessDeniedSource, /statusLabel="403"/);
+assert.match(accessDeniedSource, /variant="auth"/);
+assert.doesNotMatch(accessDeniedSource, /noteDescription=/);
+
+assert.match(notFoundSource, /statusLabel="404"/);
+assert.match(notFoundSource, /variant="navigation"/);
+assert.doesNotMatch(notFoundSource, /noteDescription=/);
+
+assert.match(customerNotFoundSource, /statusLabel="404"/);
+assert.match(customerNotFoundSource, /variant="navigation"/);
+assert.doesNotMatch(customerNotFoundSource, /noteDescription=/);
 
 assert.match(reliabilityContextSource, /detail\?\.status !== 503/);
 assert.match(reliabilityContextSource, /setLastHttpStatus\(503\)/);
-assert.match(reliabilitySource, /HTTP 503/);
-assert.match(reliabilitySource, /OFFLINE/);
-assert.match(reliabilitySource, /DATABASE/);
-assert.match(reliabilitySource, /TIMEOUT/);
+assert.match(reliabilitySource, /statusLabel: "503"/);
+assert.match(reliabilitySource, /statusLabel: "OFFLINE"/);
+assert.match(reliabilitySource, /statusLabel: "DATABASE"/);
+assert.match(reliabilitySource, /statusLabel: "TIMEOUT"/);
+assert.match(reliabilitySource, /variant="system"/);
 
 assert.match(apiClientSource, /hadAuthorization/);
 assert.match(apiClientSource, /path: context\.url\.pathname/);

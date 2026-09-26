@@ -5,11 +5,9 @@ import { StatusScreen } from "@/components/shared/StatusScreen";
 export function CustomerNotFoundPage({ navigate }: { navigate: (path: string) => void }) {
   return (
     <StatusScreen
-      description="This aisle does not exist. The page may have moved, or the address may be incorrect."
-      eyebrow="Storefront navigation"
+      description="We couldn’t find this storefront page. It may have moved, or the address may be incorrect."
+      eyebrow="Page not found"
       icon={SearchX}
-      noteDescription="Your cart and customer session remain unchanged. Choose a known storefront route to continue shopping."
-      noteTitle="Your shopping state is preserved"
       primaryAction={{
         icon: <ShoppingBag className="h-4 w-4" aria-hidden="true" />,
         label: "Go to the shop",
@@ -20,8 +18,9 @@ export function CustomerNotFoundPage({ navigate }: { navigate: (path: string) =>
         label: "Storefront home",
         onClick: () => navigate("/")
       }}
-      statusLabel="HTTP 404"
-      title="Page not found"
+      statusLabel="404"
+      title="This page isn’t here"
+      variant="navigation"
     />
   );
 }
