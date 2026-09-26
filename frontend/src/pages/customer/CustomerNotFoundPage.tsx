@@ -1,4 +1,4 @@
-import { Home, SearchX, ShoppingBag } from "lucide-react";
+import { Home, ShoppingBag } from "lucide-react";
 
 import { StatusScreen } from "@/components/shared/StatusScreen";
 
@@ -7,7 +7,6 @@ export function CustomerNotFoundPage({ navigate }: { navigate: (path: string) =>
     <StatusScreen
       description="We couldn’t find this storefront page. It may have moved, or the address may be incorrect."
       eyebrow="Page not found"
-      icon={SearchX}
       primaryAction={{
         icon: <ShoppingBag className="h-4 w-4" aria-hidden="true" />,
         label: "Go to the shop",
