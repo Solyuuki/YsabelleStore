@@ -1140,42 +1140,18 @@ body {
 .status-screen-aurora--one {
   opacity: 0.62;
   background:
-    radial-gradient(
-      ellipse 38% 30% at 24% 28%,
-      rgb(var(--status-tone-a) / 24%),
-      transparent 72%
-    ),
-    radial-gradient(
-      ellipse 42% 34% at 68% 24%,
-      rgb(var(--status-tone-b) / 21%),
-      transparent 74%
-    ),
-    radial-gradient(
-      ellipse 34% 28% at 56% 72%,
-      rgb(var(--status-tone-c) / 14%),
-      transparent 76%
-    );
+    radial-gradient(ellipse 38% 30% at 24% 28%, rgb(var(--status-tone-a) / 24%), transparent 72%),
+    radial-gradient(ellipse 42% 34% at 68% 24%, rgb(var(--status-tone-b) / 21%), transparent 74%),
+    radial-gradient(ellipse 34% 28% at 56% 72%, rgb(var(--status-tone-c) / 14%), transparent 76%);
   animation: status-screen-aurora-one 17s ease-in-out infinite alternate;
 }
 
 .status-screen-aurora--two {
   opacity: 0.44;
   background:
-    radial-gradient(
-      ellipse 40% 32% at 76% 64%,
-      rgb(var(--status-tone-c) / 17%),
-      transparent 74%
-    ),
-    radial-gradient(
-      ellipse 36% 30% at 30% 72%,
-      rgb(var(--status-tone-b) / 15%),
-      transparent 76%
-    ),
-    radial-gradient(
-      ellipse 30% 26% at 52% 40%,
-      rgb(var(--status-tone-a) / 13%),
-      transparent 74%
-    );
+    radial-gradient(ellipse 40% 32% at 76% 64%, rgb(var(--status-tone-c) / 17%), transparent 74%),
+    radial-gradient(ellipse 36% 30% at 30% 72%, rgb(var(--status-tone-b) / 15%), transparent 76%),
+    radial-gradient(ellipse 30% 26% at 52% 40%, rgb(var(--status-tone-a) / 13%), transparent 74%);
   animation: status-screen-aurora-two 21s ease-in-out infinite alternate;
 }
 
