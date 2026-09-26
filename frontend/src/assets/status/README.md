@@ -3,6 +3,7 @@
 These SVG illustrations are locally vendored for Ysabelle Store full-screen status states.
 
 Source collection:
+
 - unDraw illustrations by Katerina Limpitsouni
 - vendored from the MIT-licensed mirror: https://github.com/cuuupid/undraw-illustrations
 - official unDraw license: https://undraw.co/license
@@ -12,6 +13,7 @@ The files remain local to the frontend bundle so offline and service-unavailable
 on a third-party network request.
 
 Mapping:
+
 - 401-login.svg -> authenticated session / sign-in state
 - 403-security.svg -> permission denied
 - 404-lost.svg -> missing route
