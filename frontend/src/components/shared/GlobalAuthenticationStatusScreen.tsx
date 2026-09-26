@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { KeyRound, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
 
 import { StatusScreen } from "@/components/shared/StatusScreen";
 import type { HttpErrorEventDetail } from "@/services/apiClient";
@@ -46,7 +46,6 @@ export function GlobalAuthenticationStatusScreen() {
       critical
       description="Your session ended before this protected request could continue. Sign in again to return to Ysabelle Store."
       eyebrow="Authentication required"
-      icon={KeyRound}
       primaryAction={{
         icon: <LogIn className="h-4 w-4" aria-hidden="true" />,
         label: "Sign in again",
