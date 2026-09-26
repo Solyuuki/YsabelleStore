@@ -48,7 +48,7 @@ assert.doesNotMatch(customerNotFoundSource, /noteDescription=/);
 
 assert.match(reliabilityContextSource, /detail\?\.status !== 503/);
 assert.match(reliabilityContextSource, /setLastHttpStatus\(503\)/);
-assert.match(reliabilitySource, /statusLabel: "503"/);
+assert.match(reliabilitySource, /lastHttpStatus === 503 \? "503" : "SERVICE"/);
 assert.match(reliabilitySource, /statusLabel: "OFFLINE"/);
 assert.match(reliabilitySource, /statusLabel: "DATABASE"/);
 assert.match(reliabilitySource, /statusLabel: "TIMEOUT"/);
