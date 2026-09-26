@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShieldAlert } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 
 import type { AppRoutePath } from "@/app/routes";
 import { StatusScreen } from "@/components/shared/StatusScreen";
@@ -13,7 +13,6 @@ export function AccessDeniedPage({ moduleName, onNavigate }: AccessDeniedPagePro
     <StatusScreen
       description={"You’re signed in, but " + moduleName + " isn’t available to your current role."}
       eyebrow="Permission required"
-      icon={ShieldAlert}
       primaryAction={{
         icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" />,
         label: "Back to dashboard",
