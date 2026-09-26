@@ -1,10 +1,10 @@
-import { useEffect, useId, useRef, type ComponentType, type ReactNode, type SVGProps } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { StatusIllustration } from "@/components/shared/StatusIllustration";
 import { Button } from "@/components/ui/button";
 
-type StatusIcon = ComponentType<SVGProps<SVGSVGElement>>;
 type StatusScreenVariant = "auth" | "navigation" | "system";
 
 type StatusScreenAction = {
@@ -18,7 +18,6 @@ type StatusScreenProps = {
   description: string;
   eyebrow: string;
   footer?: string;
-  icon: StatusIcon;
   noteDescription?: string;
   noteTitle?: string;
   primaryAction?: StatusScreenAction;
@@ -43,7 +42,6 @@ export function StatusScreen({
   description,
   eyebrow,
   footer,
-  icon: Icon,
   noteDescription,
   noteTitle,
   primaryAction,
@@ -95,7 +93,7 @@ export function StatusScreen({
   }, []);
 
   const actions = (
-    <div className="auth-footer-enter mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+    <div className="auth-footer-enter mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
       {primaryAction ? (
         <Button className="h-11 min-w-36 px-5" onClick={primaryAction.onClick} type="button">
           {primaryAction.icon}
@@ -113,12 +111,6 @@ export function StatusScreen({
           {secondaryAction.label}
         </Button>
       ) : null}
-    </div>
-  );
-
-  const iconTile = (
-    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/80 bg-white/90 text-indigo-600 shadow-[0_18px_44px_-22px_rgba(98,91,255,0.55),0_4px_12px_-7px_rgba(15,23,42,0.2),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl motion-safe:[animation:reliability-icon-float_4.8s_ease-in-out_infinite] motion-reduce:animate-none">
-      <Icon className="h-8 w-8" aria-hidden="true" />
     </div>
   );
 
@@ -157,7 +149,7 @@ export function StatusScreen({
             maskImage: "radial-gradient(ellipse 72% 62% at 50% 42%, black 4%, transparent 78%)"
           }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.2),rgba(247,249,255,0.34))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(247,249,255,0.3))]" />
       </div>
 
       <header className="auth-footer-enter relative z-10 flex items-center px-6 py-5 sm:px-10 sm:py-7">
@@ -168,16 +160,16 @@ export function StatusScreen({
       </header>
 
       {variant === "navigation" ? (
-        <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
+        <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
           <div className="auth-hero-enter w-full max-w-2xl text-center">
-            {iconTile}
+            <StatusIllustration statusLabel={statusLabel} variant={variant} />
             <p
               aria-hidden="true"
-              className="mt-6 select-none bg-gradient-to-b from-[#101426] via-[#625BFF] to-slate-300 bg-clip-text text-[clamp(7rem,20vw,11rem)] font-bold leading-[0.82] tracking-[-0.075em] text-transparent drop-shadow-[0_18px_32px_rgba(98,91,255,0.09)]"
+              className="mt-2 select-none bg-gradient-to-b from-[#101426] via-[#625BFF] to-slate-300 bg-clip-text text-[clamp(5.8rem,15vw,8.5rem)] font-bold leading-[0.85] tracking-[-0.07em] text-transparent drop-shadow-[0_18px_32px_rgba(98,91,255,0.09)]"
             >
               {statusLabel}
             </p>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">
               {eyebrow}
             </p>
             <h1
@@ -199,13 +191,13 @@ export function StatusScreen({
       ) : null}
 
       {variant === "auth" ? (
-        <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
+        <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
           <div className="auth-hero-enter w-full max-w-xl text-center">
-            {iconTile}
-            <div className="mt-7 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
+            <StatusIllustration statusLabel={statusLabel} variant={variant} />
+            <div className="mt-4 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
             </div>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               {eyebrow}
             </p>
             <h1
@@ -215,7 +207,7 @@ export function StatusScreen({
               {title}
             </h1>
             <p
-              className="mx-auto mt-5 max-w-lg text-base leading-7 text-slate-600"
+              className="mx-auto mt-4 max-w-lg text-base leading-7 text-slate-600"
               id={descriptionId}
             >
               {description}
@@ -227,13 +219,13 @@ export function StatusScreen({
       ) : null}
 
       {variant === "system" ? (
-        <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
+        <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
           <div className="auth-hero-enter w-full max-w-xl text-center">
-            {iconTile}
-            <div className="mt-7 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
+            <StatusIllustration statusLabel={statusLabel} variant={variant} />
+            <div className="mt-4 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
             </div>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               {eyebrow}
             </p>
             <h1
@@ -250,7 +242,7 @@ export function StatusScreen({
             </p>
 
             {(noteTitle || noteDescription) && (
-              <div className="mx-auto mt-7 max-w-lg rounded-2xl border border-white/80 bg-white/70 p-4 text-left shadow-[0_22px_54px_-40px_rgba(98,91,255,0.32),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl">
+              <div className="mx-auto mt-6 max-w-lg rounded-2xl border border-white/80 bg-white/70 p-4 text-left shadow-[0_22px_54px_-40px_rgba(98,91,255,0.32),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl">
                 {noteTitle ? (
                   <p className="text-sm font-semibold text-slate-900">{noteTitle}</p>
                 ) : null}
