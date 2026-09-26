@@ -1,4 +1,4 @@
-import { LayoutDashboard, SearchX } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 
 import type { AppRoutePath } from "@/app/routes";
 import { StatusScreen } from "@/components/shared/StatusScreen";
@@ -12,7 +12,6 @@ export function NotFoundPage({ onNavigate }: NotFoundPageProps) {
     <StatusScreen
       description="We couldn’t find this Ysabelle Store page. It may have moved, or the address may be incorrect."
       eyebrow="Page not found"
-      icon={SearchX}
       primaryAction={{
         icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" />,
         label: "Go to dashboard",
