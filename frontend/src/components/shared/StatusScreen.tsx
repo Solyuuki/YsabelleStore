@@ -30,6 +30,15 @@ type StatusScreenProps = {
 
 const LOCK_ATTRIBUTE = "data-status-overlay-lock-count";
 
+const STATUS_AMBIENT: Record<StatusScreenVariant, string> = {
+  auth:
+    "radial-gradient(ellipse at 18% 20%, rgb(0 140 255 / 20%), transparent 34%), radial-gradient(ellipse at 76% 18%, rgb(98 91 255 / 20%), transparent 36%), radial-gradient(ellipse at 56% 82%, rgb(168 60 240 / 13%), transparent 38%)",
+  navigation:
+    "radial-gradient(ellipse at 22% 18%, rgb(98 91 255 / 20%), transparent 35%), radial-gradient(ellipse at 78% 24%, rgb(168 60 240 / 17%), transparent 36%), radial-gradient(ellipse at 48% 82%, rgb(0 140 255 / 13%), transparent 40%)",
+  system:
+    "radial-gradient(ellipse at 20% 18%, rgb(0 140 255 / 19%), transparent 34%), radial-gradient(ellipse at 78% 20%, rgb(98 91 255 / 19%), transparent 36%), radial-gradient(ellipse at 62% 84%, rgb(244 63 140 / 11%), transparent 39%)"
+};
+
 export function StatusScreen({
   critical = false,
   description,
@@ -87,7 +96,7 @@ export function StatusScreen({
   }, []);
 
   const actions = (
-    <div className="status-screen-actions mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+    <div className="auth-footer-enter mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
       {primaryAction ? (
         <Button className="h-11 min-w-36 px-5" onClick={primaryAction.onClick} type="button">
           {primaryAction.icon}
@@ -109,7 +118,7 @@ export function StatusScreen({
   );
 
   const iconTile = (
-    <div className="status-screen-icon-tile mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/80 bg-white/90 text-indigo-600">
+    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/80 bg-white/90 text-indigo-600 shadow-[0_18px_44px_-22px_rgba(98,91,255,0.55),0_4px_12px_-7px_rgba(15,23,42,0.2),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl motion-safe:[animation:reliability-icon-float_4.8s_ease-in-out_infinite] motion-reduce:animate-none">
       <Icon className="h-8 w-8" aria-hidden="true" />
     </div>
   );
@@ -120,33 +129,52 @@ export function StatusScreen({
       aria-labelledby={titleId}
       aria-live={critical ? "assertive" : "polite"}
       aria-modal={critical ? true : undefined}
-      className="status-screen-shell fixed inset-0 z-[110] flex min-h-dvh flex-col overflow-y-auto text-[#101426]"
+      className="auth-page-enter fixed inset-0 z-[110] flex min-h-dvh flex-col overflow-y-auto bg-[#F7F9FF] text-[#101426]"
       data-status-screen
       data-status-variant={variant}
       ref={containerRef}
       role={critical ? "alertdialog" : "main"}
       tabIndex={-1}
     >
-      <div className="status-screen-ambient" aria-hidden="true">
-        <span className="status-screen-aurora status-screen-aurora--one" />
-        <span className="status-screen-aurora status-screen-aurora--two" />
-        <span className="status-screen-grid" />
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <div
+          className="absolute inset-[-16%] opacity-90 blur-3xl motion-safe:[animation:reliability-orb-drift_18s_ease-in-out_infinite] motion-reduce:animate-none"
+          style={{ background: STATUS_AMBIENT[variant] }}
+        />
+        <div
+          className="absolute inset-[-18%] opacity-55 blur-3xl motion-safe:[animation:reliability-orb-drift_24s_ease-in-out_infinite] motion-reduce:animate-none"
+          style={{
+            animationDelay: "-7s",
+            background:
+              "radial-gradient(ellipse at 76% 68%, rgb(168 60 240 / 12%), transparent 34%), radial-gradient(ellipse at 26% 72%, rgb(0 140 255 / 11%), transparent 36%)"
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgb(98 91 255 / 0.05) 1px, transparent 1px), linear-gradient(90deg, rgb(98 91 255 / 0.05) 1px, transparent 1px)",
+            backgroundSize: "58px 58px",
+            maskImage: "radial-gradient(ellipse 72% 62% at 50% 42%, black 4%, transparent 78%)"
+          }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.2),rgba(247,249,255,0.34))]" />
       </div>
 
-      <header className="status-screen-brand relative z-10 flex items-center px-6 py-5 sm:px-10 sm:py-7">
+      <header className="auth-footer-enter relative z-10 flex items-center px-6 py-5 sm:px-10 sm:py-7">
         <BrandLogo
-          className="status-screen-brand__logo h-auto w-[10.75rem] max-w-[48vw] object-contain object-left"
+          className="h-auto w-[10.75rem] max-w-[48vw] object-contain object-left drop-shadow-[0_8px_18px_rgba(49,46,129,0.1)]"
           variant="full"
         />
       </header>
 
       {variant === "navigation" ? (
         <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
-          <div className="status-screen-content w-full max-w-2xl text-center">
+          <div className="auth-hero-enter w-full max-w-2xl text-center">
             {iconTile}
             <p
               aria-hidden="true"
-              className="status-screen-code mt-6 select-none bg-gradient-to-b from-[#101426] via-[#625BFF] to-slate-300 bg-clip-text text-[clamp(7rem,20vw,11rem)] font-bold leading-[0.82] tracking-[-0.075em] text-transparent"
+              className="mt-6 select-none bg-gradient-to-b from-[#101426] via-[#625BFF] to-slate-300 bg-clip-text text-[clamp(7rem,20vw,11rem)] font-bold leading-[0.82] tracking-[-0.075em] text-transparent drop-shadow-[0_18px_32px_rgba(98,91,255,0.09)]"
             >
               {statusLabel}
             </p>
@@ -173,9 +201,9 @@ export function StatusScreen({
 
       {variant === "auth" ? (
         <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
-          <div className="status-screen-content w-full max-w-xl text-center">
+          <div className="auth-hero-enter w-full max-w-xl text-center">
             {iconTile}
-            <div className="status-screen-badge mt-7 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/82 px-3.5 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur">
+            <div className="mt-7 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
             </div>
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -201,9 +229,9 @@ export function StatusScreen({
 
       {variant === "system" ? (
         <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
-          <div className="status-screen-content w-full max-w-xl text-center">
+          <div className="auth-hero-enter w-full max-w-xl text-center">
             {iconTile}
-            <div className="status-screen-badge mt-7 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/82 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur">
+            <div className="mt-7 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
             </div>
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -223,7 +251,7 @@ export function StatusScreen({
             </p>
 
             {(noteTitle || noteDescription) && (
-              <div className="status-screen-note mx-auto mt-7 max-w-lg rounded-2xl border border-white/80 bg-white/72 p-4 text-left shadow-sm backdrop-blur-xl">
+              <div className="mx-auto mt-7 max-w-lg rounded-2xl border border-white/80 bg-white/70 p-4 text-left shadow-[0_22px_54px_-40px_rgba(98,91,255,0.32),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl">
                 {noteTitle ? (
                   <p className="text-sm font-semibold text-slate-900">{noteTitle}</p>
                 ) : null}
