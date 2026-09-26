@@ -1,4 +1,11 @@
-import { useEffect, useId, useRef, type ComponentType, type ReactNode, type SVGProps } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  type ComponentType,
+  type ReactNode,
+  type SVGProps
+} from "react";
 import { createPortal } from "react-dom";
 
 import { BrandLogo } from "@/components/brand/BrandLogo";
@@ -87,7 +94,7 @@ export function StatusScreen({
   }, []);
 
   const actions = (
-    <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+    <div className="status-screen-actions mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
       {primaryAction ? (
         <Button className="h-11 min-w-36 px-5" onClick={primaryAction.onClick} type="button">
           {primaryAction.icon}
@@ -109,7 +116,7 @@ export function StatusScreen({
   );
 
   const iconTile = (
-    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 bg-white text-indigo-600 shadow-sm">
+    <div className="status-screen-icon-tile mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/80 bg-white/90 text-indigo-600">
       <Icon className="h-8 w-8" aria-hidden="true" />
     </div>
   );
@@ -120,46 +127,33 @@ export function StatusScreen({
       aria-labelledby={titleId}
       aria-live={critical ? "assertive" : "polite"}
       aria-modal={critical ? true : undefined}
-      className="fixed inset-0 z-[110] flex min-h-dvh flex-col overflow-y-auto bg-[#F7F9FF] text-[#101426]"
+      className="status-screen-shell fixed inset-0 z-[110] flex min-h-dvh flex-col overflow-y-auto text-[#101426]"
       data-status-screen
       data-status-variant={variant}
       ref={containerRef}
       role={critical ? "alertdialog" : "main"}
       tabIndex={-1}
     >
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div
-          className="absolute inset-0 opacity-45"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgb(98 91 255 / 0.055) 1px, transparent 1px), linear-gradient(90deg, rgb(98 91 255 / 0.055) 1px, transparent 1px)",
-            backgroundSize: "56px 56px",
-            maskImage: "radial-gradient(ellipse 66% 58% at 50% 38%, black, transparent)"
-          }}
-        />
-        <div
-          className="absolute left-1/2 top-[-12rem] h-[34rem] w-[70rem] max-w-[120vw] -translate-x-1/2 rounded-full opacity-60 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(circle at 45% 55%, rgb(0 140 255 / 0.16), transparent 48%), radial-gradient(circle at 62% 45%, rgb(98 91 255 / 0.15), transparent 52%)"
-          }}
-        />
+      <div className="status-screen-ambient" aria-hidden="true">
+        <span className="status-screen-aurora status-screen-aurora--one" />
+        <span className="status-screen-aurora status-screen-aurora--two" />
+        <span className="status-screen-grid" />
       </div>
 
-      <header className="relative z-10 flex items-center gap-3 px-6 py-5 sm:px-10 sm:py-7">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-          <BrandLogo className="h-7 w-7 object-contain" />
-        </span>
-        <span className="text-sm font-semibold tracking-tight text-slate-900">Ysabelle Store</span>
+      <header className="status-screen-brand relative z-10 flex items-center px-6 py-5 sm:px-10 sm:py-7">
+        <BrandLogo
+          className="status-screen-brand__logo h-auto w-[10.75rem] max-w-[48vw] object-contain object-left"
+          variant="full"
+        />
       </header>
 
       {variant === "navigation" ? (
         <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
-          <div className="w-full max-w-2xl text-center">
+          <div className="status-screen-content w-full max-w-2xl text-center">
             {iconTile}
             <p
               aria-hidden="true"
-              className="mt-6 select-none bg-gradient-to-b from-[#101426] via-[#625BFF] to-slate-300 bg-clip-text text-[clamp(7rem,20vw,11rem)] font-bold leading-[0.82] tracking-[-0.075em] text-transparent"
+              className="status-screen-code mt-6 select-none bg-gradient-to-b from-[#101426] via-[#625BFF] to-slate-300 bg-clip-text text-[clamp(7rem,20vw,11rem)] font-bold leading-[0.82] tracking-[-0.075em] text-transparent"
             >
               {statusLabel}
             </p>
@@ -186,9 +180,9 @@ export function StatusScreen({
 
       {variant === "auth" ? (
         <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
-          <div className="w-full max-w-xl text-center">
+          <div className="status-screen-content w-full max-w-xl text-center">
             {iconTile}
-            <div className="mt-7 inline-flex items-center rounded-full border border-indigo-100 bg-white px-3.5 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-700 shadow-sm">
+            <div className="status-screen-badge mt-7 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/82 px-3.5 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur">
               {statusLabel}
             </div>
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -214,9 +208,9 @@ export function StatusScreen({
 
       {variant === "system" ? (
         <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
-          <div className="w-full max-w-xl text-center">
+          <div className="status-screen-content w-full max-w-xl text-center">
             {iconTile}
-            <div className="mt-7 inline-flex items-center rounded-full border border-indigo-100 bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm">
+            <div className="status-screen-badge mt-7 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/82 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur">
               {statusLabel}
             </div>
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -236,7 +230,7 @@ export function StatusScreen({
             </p>
 
             {(noteTitle || noteDescription) && (
-              <div className="mx-auto mt-7 max-w-lg rounded-2xl border border-slate-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur">
+              <div className="status-screen-note mx-auto mt-7 max-w-lg rounded-2xl border border-white/80 bg-white/72 p-4 text-left shadow-sm backdrop-blur-xl">
                 {noteTitle ? (
                   <p className="text-sm font-semibold text-slate-900">{noteTitle}</p>
                 ) : null}
