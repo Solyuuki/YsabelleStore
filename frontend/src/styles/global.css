@@ -1084,7 +1084,6 @@ body {
   }
 }
 
-
 /* Status illustrations use locally vendored open illustrations with restrained product motion. */
 .status-screen-main {
   padding-top: clamp(0.5rem, 1.5vh, 1.25rem);
