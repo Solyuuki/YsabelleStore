@@ -31,8 +31,7 @@ type StatusScreenProps = {
 const LOCK_ATTRIBUTE = "data-status-overlay-lock-count";
 
 const STATUS_AMBIENT: Record<StatusScreenVariant, string> = {
-  auth:
-    "radial-gradient(ellipse at 18% 20%, rgb(0 140 255 / 20%), transparent 34%), radial-gradient(ellipse at 76% 18%, rgb(98 91 255 / 20%), transparent 36%), radial-gradient(ellipse at 56% 82%, rgb(168 60 240 / 13%), transparent 38%)",
+  auth: "radial-gradient(ellipse at 18% 20%, rgb(0 140 255 / 20%), transparent 34%), radial-gradient(ellipse at 76% 18%, rgb(98 91 255 / 20%), transparent 36%), radial-gradient(ellipse at 56% 82%, rgb(168 60 240 / 13%), transparent 38%)",
   navigation:
     "radial-gradient(ellipse at 22% 18%, rgb(98 91 255 / 20%), transparent 35%), radial-gradient(ellipse at 78% 24%, rgb(168 60 240 / 17%), transparent 36%), radial-gradient(ellipse at 48% 82%, rgb(0 140 255 / 13%), transparent 40%)",
   system:
