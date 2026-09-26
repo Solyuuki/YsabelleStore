@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  type ComponentType,
-  type ReactNode,
-  type SVGProps
-} from "react";
+import { useEffect, useId, useRef, type ComponentType, type ReactNode, type SVGProps } from "react";
 import { createPortal } from "react-dom";
 
 import { BrandLogo } from "@/components/brand/BrandLogo";
