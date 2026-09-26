@@ -2,34 +2,16 @@
 
 ## Purpose
 
-Sprint 11 uses one status-page design language with three deliberate page families instead of one
-repeated composition for every failure state:
+Sprint 11 uses one canonical full-screen status presentation for authentication, authorization,
+navigation, service availability, backend connectivity, database readiness, offline state, and
+system-wide timeouts.
 
-- authentication and permission states: HTTP 401 and HTTP 403;
-- navigation states: HTTP 404;
-- system and reliability states: HTTP 503, backend unreachable, database unavailable, offline, and
-  repeated/system-wide timeout.
-
-This preserves a consistent Ysabelle Store product language without making every screen look like a
-copy with only the icon and headline changed.
+The goal is to keep status handling company-grade and visually uniform instead of maintaining a
+different one-off layout for every error state.
 
 ## UI foundation
 
-The presentation layer now adapts complete open-source error and maintenance page patterns rather
-than composing the visual hierarchy from low-level primitives.
-
-Primary references:
-
-- OrbynAdmin `ErrorState` and maintenance layouts:
-  https://github.com/masondevx/orbynadmin
-- Shadcn Dashboard Vite error-page family:
-  https://github.com/chanseek/shadcn-dashboard
-
-Both references are MIT-licensed. The implementation keeps Ysabelle Store's own React/Vite runtime,
-Button and Lucide primitives, brand mark, accessibility behavior, and reliability logic. No new
-runtime dependency is introduced.
-
-Ysabelle Store palette remains:
+The status screen uses the existing Ysabelle Store reliability shell and design tokens:
 
 - Blue: `#008CFF`
 - Indigo: `#625BFF`
@@ -39,24 +21,29 @@ Ysabelle Store palette remains:
 - Surface: `#F7F9FF`
 - White: `#FFFFFF`
 
-The redesign intentionally removes the previous concentric status rings, repeated accent dots,
-floating HTTP badge treatment, and generic safety cards from non-system pages. Typography, spacing,
-and CTA hierarchy are inherited from the referenced full-page patterns, then reskinned to the
-Ysabelle system.
+The content composition follows the open-code Empty-state pattern published by shadcn/ui:
+icon/media, title, description, supporting content, and actions. The implementation is local to
+Ysabelle Store and uses the repository's existing React, Tailwind, Button, Lucide, typography,
+motion, and accessibility conventions. No new runtime dependency is introduced.
+
+Reference:
+
+- https://ui.shadcn.com/docs/components/base/empty
+- https://ui.shadcn.com/docs
 
 ## Full-screen status matrix
 
-| Condition                  | Status label | Page family                | Presentation                       |
-| -------------------------- | ------------ | -------------------------- | ---------------------------------- |
-| Protected session expired  | 401          | Auth / permission          | Session expired / sign in again    |
-| Route authorization denied | 403          | Auth / permission          | Access denied                      |
-| Missing internal route     | 404          | Navigation                 | Large-code page-not-found layout   |
-| Missing storefront route   | 404          | Navigation                 | Large-code storefront not found    |
-| Service unavailable        | 503          | System / reliability       | Service unavailable / retry        |
-| Backend unreachable        | SERVICE      | System / reliability       | Store service unavailable / retry  |
-| Database unavailable       | DATABASE     | System / reliability       | Database safety mode / retry       |
-| Device offline             | OFFLINE      | System / reliability       | Offline state / automatic recovery |
-| Repeated/system timeout    | TIMEOUT      | System / reliability       | Service timeout / retry            |
+| Condition                  | Status label | Presentation                       |
+| -------------------------- | ------------ | ---------------------------------- |
+| Protected session expired  | HTTP 401     | Session expired / sign in again    |
+| Route authorization denied | HTTP 403     | Access denied                      |
+| Missing internal route     | HTTP 404     | Page not found                     |
+| Missing storefront route   | HTTP 404     | Page not found                     |
+| Service unavailable        | HTTP 503     | Service unavailable / retry        |
+| Backend unreachable        | SERVICE      | Store service unavailable / retry  |
+| Database unavailable       | DATABASE     | Database safety mode / retry       |
+| Device offline             | OFFLINE      | Offline state / automatic recovery |
+| Repeated/system timeout    | TIMEOUT      | Service timeout / retry            |
 
 ## Approved notification statuses
 
@@ -82,7 +69,7 @@ The canonical status screen:
 - uses a lock counter so concurrent status screens cannot prematurely re-enable the background;
 - moves focus to the status surface and restores prior focus when appropriate;
 - supports assertive live announcements for critical states;
-- respects the repository-wide reduced-motion policy;
+- reuses the existing reduced-motion behavior;
 - preserves transaction/write gating during reliability failures;
 - does not treat a failed request as successful;
 - avoids showing a session-expired screen for normal guest storefront session probes.

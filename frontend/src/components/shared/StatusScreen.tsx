@@ -89,11 +89,7 @@ export function StatusScreen({
   const actions = (
     <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
       {primaryAction ? (
-        <Button
-          className="h-11 min-w-36 px-5"
-          onClick={primaryAction.onClick}
-          type="button"
-        >
+        <Button className="h-11 min-w-36 px-5" onClick={primaryAction.onClick} type="button">
           {primaryAction.icon}
           {primaryAction.label}
         </Button>
