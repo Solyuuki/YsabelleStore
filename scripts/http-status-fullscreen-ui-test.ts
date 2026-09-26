@@ -8,6 +8,7 @@ function source(path: string) {
 }
 
 const statusScreenSource = source("src/components/shared/StatusScreen.tsx");
+const illustrationSource = source("src/components/shared/StatusIllustration.tsx");
 const authScreenSource = source("src/components/shared/GlobalAuthenticationStatusScreen.tsx");
 const reliabilitySource = source("src/components/shared/GlobalReliabilityUI.tsx");
 const reliabilityContextSource = source("src/context/SystemReliabilityContext.tsx");
@@ -21,11 +22,23 @@ assert.match(statusScreenSource, /createPortal/);
 assert.match(statusScreenSource, /data-status-overlay-lock-count/);
 assert.match(statusScreenSource, /data-status-variant/);
 assert.match(statusScreenSource, /BrandLogo/);
+assert.match(statusScreenSource, /StatusIllustration/);
+assert.match(statusScreenSource, /status-screen-main/);
 assert.match(statusScreenSource, /variant === "auth"/);
 assert.match(statusScreenSource, /variant === "navigation"/);
 assert.match(statusScreenSource, /variant === "system"/);
 assert.doesNotMatch(statusScreenSource, /reliability-ring/);
 assert.doesNotMatch(statusScreenSource, /reliability-eyebrow__dot/);
+
+assert.match(illustrationSource, /401-login\\.svg/);
+assert.match(illustrationSource, /403-security\\.svg/);
+assert.match(illustrationSource, /404-lost\\.svg/);
+assert.match(illustrationSource, /503-maintenance\\.svg/);
+assert.match(illustrationSource, /service-unavailable\\.svg/);
+assert.match(illustrationSource, /database-unavailable\\.svg/);
+assert.match(illustrationSource, /offline\\.svg/);
+assert.match(illustrationSource, /timeout\\.svg/);
+assert.match(illustrationSource, /data-status-illustration/);
 
 assert.match(authScreenSource, /statusLabel="401"/);
 assert.match(authScreenSource, /variant="auth"/);
