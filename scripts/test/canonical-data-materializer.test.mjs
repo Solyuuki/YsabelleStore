@@ -109,9 +109,7 @@ test("canonical subset excludes unrelated catalog rows", () => {
     "INSERT INTO `product_aliases` (`id`,`canonical_product_id`,`value`) VALUES ('alias','product-0','Alias'),('other-alias','unrelated','Other');",
     "INSERT INTO `sarima_source_product_mappings` (`id`,`canonical_product_id`,`source_product_id`) VALUES " +
       productIds
-        .map((id, index) =>
-          tuple(["mapping-" + index, id, "P" + String(index).padStart(3, "0")])
-        )
+        .map((id, index) => tuple(["mapping-" + index, id, "P" + String(index).padStart(3, "0")]))
         .join(",") +
       ";"
   ].join("\n");
@@ -126,13 +124,18 @@ test("canonical subset excludes unrelated catalog rows", () => {
     sarima_source_product_mappings: 50,
     product_barcodes: 50
   });
-  assert.equal(subset.rows.products.some((product) => product.id === "unrelated"), false);
+  assert.equal(
+    subset.rows.products.some((product) => product.id === "unrelated"),
+    false
+  );
   assert.equal(
     subset.rows.product_barcodes.every((barcode) => barcode.type === "MANUFACTURER"),
     true
   );
   assert.equal(
-    subset.statements.slice(0, 5).every((statement) => statement.includes("ON DUPLICATE KEY UPDATE")),
+    subset.statements
+      .slice(0, 5)
+      .every((statement) => statement.includes("ON DUPLICATE KEY UPDATE")),
     true
   );
   assert.match(subset.statements.at(-1), /INSERT INTO product_barcodes/);
