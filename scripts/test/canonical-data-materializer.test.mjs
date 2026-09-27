@@ -155,11 +155,7 @@ test("canonical JSON drift comparison ignores storage formatting", () => {
 
   assert.equal(
     normalizeCanonicalDbValue("sarima_source_product_mappings", "evidence", compact),
-    normalizeCanonicalDbValue(
-      "sarima_source_product_mappings",
-      "evidence",
-      mysqlFormatted
-    )
+    normalizeCanonicalDbValue("sarima_source_product_mappings", "evidence", mysqlFormatted)
   );
   assert.notEqual(
     normalizeCanonicalDbValue("products", "description", compact),
