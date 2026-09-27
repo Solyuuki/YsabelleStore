@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   buildCanonicalSubset,
+  decodeSqlValue,
   normalizeCanonicalDbValue
 } from "../canonical-data-materializer.mjs";
 
@@ -145,6 +146,20 @@ test("canonical subset excludes unrelated catalog rows", () => {
   assert.match(barcodeInsert, /INSERT INTO product_barcodes/);
   assert.match(barcodeInsert, /created_at,updated_at/);
   assert.match(barcodeInsert, /CURRENT_TIMESTAMP\(3\),CURRENT_TIMESTAMP\(3\)/);
+});
+
+test("canonical SQL decoder restores MySQL-escaped JSON text", () => {
+  const encoded =
+    "'{\\\"source\\\": {\\\"dataset\\\": \\\"historical-sales\\\", \\\"productId\\\": \\\"P317\\\"}}'";
+  const decoded = decodeSqlValue(encoded);
+
+  assert.equal(
+    decoded,
+    '{"source": {"dataset": "historical-sales", "productId": "P317"}}'
+  );
+  assert.deepEqual(JSON.parse(decoded), {
+    source: { dataset: "historical-sales", productId: "P317" }
+  });
 });
 
 test("canonical JSON drift comparison ignores storage formatting", () => {
