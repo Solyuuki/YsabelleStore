@@ -172,7 +172,7 @@ function buildCanonicalBarcodeState(release) {
         ]
           .map(encodeSqlValue)
           .join(",") +
-        ")"
+        ",CURRENT_TIMESTAMP(3),CURRENT_TIMESTAMP(3))"
     )
     .join(",\n");
 
@@ -182,7 +182,7 @@ function buildCanonicalBarcodeState(release) {
       "UPDATE product_barcodes SET is_primary=0 WHERE product_id IN (" + productIds + ")",
       "DELETE FROM product_barcodes WHERE barcode IN (" + barcodes + ") OR id IN (" + ids + ")",
       "INSERT INTO product_barcodes " +
-        "(id,product_id,barcode,type,is_primary,source,registered_by_id,source_reference) VALUES\n" +
+        "(id,product_id,barcode,type,is_primary,source,registered_by_id,source_reference,created_at,updated_at) VALUES\n" +
         values
     ]
   };
