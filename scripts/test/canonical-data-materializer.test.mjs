@@ -138,5 +138,8 @@ test("canonical subset excludes unrelated catalog rows", () => {
       .every((statement) => statement.includes("ON DUPLICATE KEY UPDATE")),
     true
   );
-  assert.match(subset.statements.at(-1), /INSERT INTO product_barcodes/);
+  const barcodeInsert = subset.statements.at(-1);
+  assert.match(barcodeInsert, /INSERT INTO product_barcodes/);
+  assert.match(barcodeInsert, /created_at,updated_at/);
+  assert.match(barcodeInsert, /CURRENT_TIMESTAMP\(3\),CURRENT_TIMESTAMP\(3\)/);
 });
