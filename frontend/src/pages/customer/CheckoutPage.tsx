@@ -457,7 +457,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 role="radiogroup"
               >
                 <label
-                  className={`customer-payment-option${paymentMethod === "PAYMONGO" ? " is-selected" : ""}`}
+                  className={`customer-payment-option${
+                    paymentMethod === "PAYMONGO" ? " is-selected" : ""
+                  }`}
                 >
                   <input
                     checked={paymentMethod === "PAYMONGO"}
@@ -479,7 +481,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   {paymentMethod === "PAYMONGO" ? <CheckCircle2 aria-hidden="true" /> : null}
                 </label>
                 <label
-                  className={`customer-payment-option${paymentMethod === "CASH_ON_PICKUP" ? " is-selected" : ""}`}
+                  className={`customer-payment-option${
+                    paymentMethod === "CASH_ON_PICKUP" ? " is-selected" : ""
+                  }`}
                 >
                   <input
                     checked={paymentMethod === "CASH_ON_PICKUP"}
