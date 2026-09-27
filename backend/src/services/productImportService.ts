@@ -1,7 +1,13 @@
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
-import { Prisma, ProductBarcodeSource, type ProductStatus, type ProductUnit } from "@prisma/client";
+import {
+  Prisma,
+  ProductBarcodeSource,
+  type ProductSizeUnit,
+  type ProductStatus,
+  type ProductUnit
+} from "@prisma/client";
 import { readSheet } from "read-excel-file/node";
 
 import { prisma } from "../database/prismaClient.js";
@@ -33,6 +39,10 @@ const PRODUCT_IMPORT_TEMPLATE_HEADERS = [
   "initialStock",
   "status",
   "description",
+  "brand",
+  "variant",
+  "sizeValue",
+  "sizeUnit",
   "imageUrl"
 ] as const;
 
@@ -70,6 +80,14 @@ const ALLOWED_UNITS = new Set<ProductUnit>([
   "MILLILITER"
 ]);
 
+const ALLOWED_SIZE_UNITS = new Set<ProductSizeUnit>([
+  "MILLILITER",
+  "LITER",
+  "GRAM",
+  "KILOGRAM",
+  "PIECE"
+]);
+
 type UploadFile = {
   originalname: string;
   mimetype: string;
@@ -99,6 +117,10 @@ type NormalizedImportRow = {
   initialStock: number;
   status: ProductStatus;
   description: string | null;
+  brand: string | null;
+  variant: string | null;
+  sizeValue: string | null;
+  sizeUnit: ProductSizeUnit | null;
   imageUrl: string | null;
 };
 
@@ -197,6 +219,26 @@ const headerAliasEntries: Array<[string, string]> = [
   ["initial_stock", "initialStock"],
   ["status", "status"],
   ["description", "description"],
+  ["brand", "brand"],
+  ["brand name", "brand"],
+  ["brandname", "brand"],
+  ["variant", "variant"],
+  ["flavor", "variant"],
+  ["flavour", "variant"],
+  ["product variant", "variant"],
+  ["productvariant", "variant"],
+  ["sizevalue", "sizeValue"],
+  ["size value", "sizeValue"],
+  ["pack size", "sizeValue"],
+  ["package size", "sizeValue"],
+  ["packsize", "sizeValue"],
+  ["packagesize", "sizeValue"],
+  ["sizeunit", "sizeUnit"],
+  ["size unit", "sizeUnit"],
+  ["pack size unit", "sizeUnit"],
+  ["package size unit", "sizeUnit"],
+  ["packsizeunit", "sizeUnit"],
+  ["packagesizeunit", "sizeUnit"],
   ["imageurl", "imageUrl"],
   ["image url", "imageUrl"],
   ["image_url", "imageUrl"],
@@ -606,6 +648,74 @@ function resolveUnit(value: string, rowNumber: number, errors: ImportIssue[]) {
   return normalized as ProductUnit;
 }
 
+function resolveSizeUnit(value: string, rowNumber: number, errors: ImportIssue[]) {
+  if (isBlank(value)) return null;
+
+  const aliases: Record<string, ProductSizeUnit> = {
+    ML: "MILLILITER",
+    MILLILITER: "MILLILITER",
+    MILLILITERS: "MILLILITER",
+    L: "LITER",
+    LITER: "LITER",
+    LITERS: "LITER",
+    G: "GRAM",
+    GRAM: "GRAM",
+    GRAMS: "GRAM",
+    KG: "KILOGRAM",
+    KILOGRAM: "KILOGRAM",
+    KILOGRAMS: "KILOGRAM",
+    PC: "PIECE",
+    PCS: "PIECE",
+    PIECE: "PIECE",
+    PIECES: "PIECE"
+  };
+  const normalized = value.trim().toUpperCase();
+  const resolved = aliases[normalized] ?? null;
+
+  if (!resolved || !ALLOWED_SIZE_UNITS.has(resolved)) {
+    errors.push({
+      code: "INVALID_SIZE_UNIT",
+      field: "sizeUnit",
+      message: "Pack size unit must be MILLILITER, LITER, GRAM, KILOGRAM, or PIECE.",
+      rowNumber,
+      value
+    });
+    return null;
+  }
+
+  return resolved;
+}
+
+function resolveSizeValue(value: string, rowNumber: number, errors: ImportIssue[]) {
+  if (isBlank(value)) return null;
+  const normalized = value.trim();
+
+  if (!/^\d+(?:\.\d{1,3})?$/.test(normalized)) {
+    errors.push({
+      code: "INVALID_SIZE_VALUE",
+      field: "sizeValue",
+      message: "Pack size must be a positive number with up to three decimal places.",
+      rowNumber,
+      value
+    });
+    return null;
+  }
+
+  const decimal = new Prisma.Decimal(normalized);
+  if (decimal.lessThanOrEqualTo(0)) {
+    errors.push({
+      code: "INVALID_SIZE_VALUE",
+      field: "sizeValue",
+      message: "Pack size must be greater than zero.",
+      rowNumber,
+      value
+    });
+    return null;
+  }
+
+  return decimal.toString();
+}
+
 function buildImportIssue(
   rowNumber: number,
   field: string,
@@ -723,6 +833,10 @@ function normalizeImportRow(
   const descriptionRaw = normalizeTextCell(
     resolveCellValue(row, columnIndexByCanonical, "description")
   );
+  const brandRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "brand"));
+  const variantRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "variant"));
+  const sizeValueRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "sizeValue"));
+  const sizeUnitRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "sizeUnit"));
   const imageUrlRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "imageUrl"));
 
   if (!name) {
@@ -872,8 +986,48 @@ function normalizeImportRow(
   const status = resolveStatus(statusRaw, row.rowNumber, errors);
   const unit = resolveUnit(unitRaw, row.rowNumber, errors);
   const description = parseOptionalText(descriptionRaw);
+  const brand = parseOptionalText(brandRaw);
+  const variant = parseOptionalText(variantRaw);
+  const explicitSizeValue = resolveSizeValue(sizeValueRaw, row.rowNumber, errors);
+  const explicitSizeUnit = resolveSizeUnit(sizeUnitRaw, row.rowNumber, errors);
+  const extractedSize = name ? extractCanonicalProductSize(normalizeCanonicalProductName(name)) : null;
+  const sizeValue = explicitSizeValue ?? extractedSize?.sizeValue ?? null;
+  const sizeUnit = explicitSizeUnit ?? extractedSize?.sizeUnit ?? null;
   const imageUrl = normalizeCatalogImageUrl(imageUrlRaw);
   const barcode = parseOptionalText(barcodeRaw);
+
+  if ((sizeValueRaw.length > 0) !== (sizeUnitRaw.length > 0)) {
+    errors.push(
+      buildImportIssue(
+        row.rowNumber,
+        sizeValueRaw.length > 0 ? "sizeUnit" : "sizeValue",
+        "PRODUCT_SIZE_INCOMPLETE",
+        "Pack size value and pack size unit must be supplied together."
+      )
+    );
+  }
+
+  if (!brand) {
+    warnings.push(
+      buildImportIssue(
+        row.rowNumber,
+        "brand",
+        "PRODUCT_IDENTITY_INCOMPLETE",
+        "Brand is not set. Add brand metadata during catalog review so related products can be grouped reliably."
+      )
+    );
+  }
+
+  if (!variant) {
+    warnings.push(
+      buildImportIssue(
+        row.rowNumber,
+        "variant",
+        "PRODUCT_IDENTITY_INCOMPLETE",
+        "Variant or product type is not set. Add it during catalog review for reliable storefront grouping."
+      )
+    );
+  }
 
   if (barcodeRaw.length > 0 && barcode === null) {
     errors.push(
@@ -977,6 +1131,10 @@ function normalizeImportRow(
           initialStock,
           status,
           description,
+          brand,
+          variant,
+          sizeValue,
+          sizeUnit,
           imageUrl
         } satisfies NormalizedImportRow
       };
@@ -1341,7 +1499,6 @@ export async function importProductsFromFile(
     for (const importRow of importRows) {
       const row = importRow.data;
       const canonicalName = normalizeCanonicalProductName(row.name);
-      const size = extractCanonicalProductSize(canonicalName);
       const product = await tx.product.create({
         data: {
           name: canonicalName,
@@ -1356,8 +1513,10 @@ export async function importProductsFromFile(
           status: row.status,
           description: row.description,
           imageUrl: row.imageUrl,
-          sizeValue: size.sizeValue ? new Prisma.Decimal(size.sizeValue) : null,
-          sizeUnit: size.sizeUnit,
+          brand: row.brand,
+          variant: row.variant,
+          sizeValue: row.sizeValue ? new Prisma.Decimal(row.sizeValue) : null,
+          sizeUnit: row.sizeUnit,
           recordSource: "IMPORT",
           dataQualityStatus: "NEEDS_REVIEW",
           isStorefrontVisible: false,
