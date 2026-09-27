@@ -11,14 +11,8 @@ const customerCss = await readFile(
 );
 
 assert.match(normalizeSource, /CATALOG_CANVAS_RGBA\s*=\s*\(255, 255, 255, 255\)/);
-assert.match(
-  normalizeSource,
-  /Image\.new\("RGBA", \(side, side\), CATALOG_CANVAS_RGBA\)/
-);
-assert.doesNotMatch(
-  normalizeSource,
-  /background_rgba\s*=\s*\(\*detection\.background_rgb/
-);
+assert.match(normalizeSource, /Image\.new\("RGBA", \(side, side\), CATALOG_CANVAS_RGBA\)/);
+assert.doesNotMatch(normalizeSource, /background_rgba\s*=\s*\(\*detection\.background_rgb/);
 
 assert.match(customerCss, /--product-media-surface:\s*#fff;/);
 assert.match(customerCss, /background:\s*var\(--product-media-surface\);/);
