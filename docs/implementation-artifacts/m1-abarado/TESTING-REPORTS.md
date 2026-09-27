@@ -213,3 +213,7 @@ Automated coverage verifies that only in-stock siblings from the same product fa
 ## Sprint 11 Product Error State Validation
 
 Automated coverage guards the product error state against raw service-error rendering and verifies the dedicated polished error-state class, safe copy, secondary navigation action, relaxed description line-height, and removal of dashed-border styling from the product-specific fallback. CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`, including Phase 6 canonical release hardening.
+
+## Sprint 11 Catalog Identity Validation
+
+Automated coverage verifies the canonical 50 identity manifest against the release and seed SQL, structured CSV/XLSX and package-import identity support, Owner catalog readiness visibility, brand/variant completeness, package-size pair integrity, and compatibility with the canonical release security chain. Exact-head CI is pending.
