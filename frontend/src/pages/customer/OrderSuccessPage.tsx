@@ -15,10 +15,7 @@ import {
   fetchStorefrontPaymentStatus,
   startPaymongoCheckout
 } from "@/services/storefrontService";
-import type {
-  StorefrontOrder,
-  StorefrontPaymentStatusResult
-} from "@/types/storefront";
+import type { StorefrontOrder, StorefrontPaymentStatusResult } from "@/types/storefront";
 import { LAST_ORDER_KEY } from "./CheckoutPage";
 
 const PAYMENT_POLL_ATTEMPTS = 5;
@@ -110,9 +107,7 @@ export function OrderSuccessPage({
   return (
     <div className="customer-page customer-success-page">
       <div className="customer-container customer-success-card">
-        <div
-          className={`customer-success-card__icon${paymentPending ? " is-pending" : ""}`}
-        >
+        <div className={`customer-success-card__icon${paymentPending ? " is-pending" : ""}`}>
           {paymentPending ? <CreditCard aria-hidden="true" /> : <Check aria-hidden="true" />}
         </div>
         <p className="customer-kicker">
@@ -196,7 +191,12 @@ export function OrderSuccessPage({
             <strong>Store pickup</strong>
             <span>110 A. Mabini Street, Pasig City, Metro Manila</span>
             <small>
-              Payment: {isPaymongo ? (paid ? "PayMongo test payment confirmed" : "PayMongo pending") : "Cash on pickup"}
+              Payment:{" "}
+              {isPaymongo
+                ? paid
+                  ? "PayMongo test payment confirmed"
+                  : "PayMongo pending"
+                : "Cash on pickup"}
             </small>
           </div>
         </div>
