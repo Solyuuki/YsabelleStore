@@ -99,4 +99,4 @@ Validation: CI #1653 passed on implementation head `a46254b427c65fad8448a5c94421
 
 On 2026-09-27, catalog identity was hardened end-to-end: structured brand/variant/package-size import support, Owner visibility for incomplete identity, ZIP-package readiness metrics, and canonical release `g2-s2-c4-a2` with a 50-product identity manifest. Package size is populated only where approved catalog names/descriptions provide deterministic evidence; unknown sizes remain an explicit review condition rather than guessed data.
 
-Validation: Pending exact-head CI.
+Validation: CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51`; manual QA is next.
