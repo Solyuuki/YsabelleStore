@@ -112,11 +112,13 @@ Status: Ready for manual QA. CI #1693 passed on implementation head `6f148cb3b8f
 Task YSB-M1-CANONICAL-MATERIALIZE-007 tracks a GEN2 canonical materialization defect discovered during manual QA after legacy recovery. The authoritative release `g2-s2-c4-a2` contains descriptions and manufacturer barcodes for all 50 canonical products, but the canonical SQL/materializer currently reconstructs only 3/50 descriptions and 1/50 legacy `products.barcode` values. The `product_barcodes` domain is also outside the current canonical materialized table set.
 
 Observed gap:
+
 - Release descriptions: 50/50; seed/materialized descriptions: 3/50; missing after reconstruction: 47.
 - Release manufacturer barcodes: 50/50; seed/materialized legacy barcodes: 1/50; missing after reconstruction: 49.
 - Brand/variant/package-size metadata currently matches the enriched release where present.
 
 Required acceptance criteria:
+
 - Every populated canonical release product field is reproduced in the GEN2 database unless explicitly classified runtime-only.
 - `manufacturerBarcode` is restored to the product primary barcode identity and canonical barcode registry used by Owner, POS, Receiving, and barcode search.
 - Canonical descriptions are restored exactly.
