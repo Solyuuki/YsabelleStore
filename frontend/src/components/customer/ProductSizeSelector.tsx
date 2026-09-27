@@ -67,9 +67,7 @@ export function ProductSizeSelector({
   );
 }
 
-export function formatProductSize(
-  variant: Pick<StorefrontSizeVariant, "sizeUnit" | "sizeValue">
-) {
+export function formatProductSize(variant: Pick<StorefrontSizeVariant, "sizeUnit" | "sizeValue">) {
   const numericValue = Number(variant.sizeValue);
   const value = Number.isFinite(numericValue)
     ? new Intl.NumberFormat("en-PH", { maximumFractionDigits: 3 }).format(numericValue)
