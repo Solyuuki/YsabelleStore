@@ -11,16 +11,9 @@ const PAYMONGO_CREATE_CHECKOUT_PATH = "/v2/checkout_sessions";
 const PAYMONGO_RETRIEVE_CHECKOUT_PATH = "/v1/checkout_sessions";
 const PAYMONGO_CURRENCY = "PHP";
 
-const PAYMONGO_TEST_CHECKOUT_METHODS = [
-  "card",
-  "gcash",
-  "paymaya",
-  "grab_pay",
-  "qrph"
-] as const;
+const PAYMONGO_TEST_CHECKOUT_METHODS = ["card", "gcash", "paymaya", "grab_pay", "qrph"] as const;
 
-type PaymongoCheckoutPaymentMethod =
-  (typeof PAYMONGO_TEST_CHECKOUT_METHODS)[number];
+type PaymongoCheckoutPaymentMethod = (typeof PAYMONGO_TEST_CHECKOUT_METHODS)[number];
 
 type JsonRecord = Record<string, unknown>;
 
@@ -69,7 +62,10 @@ async function paymongoRequest(path: string, init: RequestInit = {}) {
   const secretKey = requireTestSecretKey();
   const headers = new Headers(init.headers);
   headers.set("Accept", "application/json");
-  headers.set("Authorization", `Basic ${Buffer.from(`${secretKey}:`, "utf8").toString("base64")}`);
+  headers.set(
+    "Authorization",
+    `Basic ${Buffer.from(`${secretKey}:`, "utf8").toString("base64")}`
+  );
 
   if (init.body !== undefined) {
     headers.set("Content-Type", "application/json");
@@ -103,7 +99,10 @@ async function paymongoRequest(path: string, init: RequestInit = {}) {
   return payload;
 }
 
-function parsePaymongoResource(payload: unknown, expectedType = "checkout_session"): PaymongoResource {
+function parsePaymongoResource(
+  payload: unknown,
+  expectedType = "checkout_session"
+): PaymongoResource {
   const root = asRecord(payload);
   const data = asRecord(root?.data);
   const attributes = asRecord(data?.attributes);
@@ -131,6 +130,7 @@ async function getPaymongoCheckoutPaymentMethods(): Promise<PaymongoCheckoutPaym
   // cards and e-wallets are available.
   return getPaymongoTestCheckoutPaymentMethods();
 }
+
 function storefrontReturnUrl(orderNumber: string, payment: string) {
   const url = new URL("/order-success", env.FRONTEND_URL);
   url.searchParams.set("order", orderNumber);
@@ -479,7 +479,9 @@ export function paymongoCentavos(value: Prisma.Decimal | string | number) {
   const centavos = decimal.mul(100);
 
   if (!centavos.isInteger() || centavos.isNegative()) {
-    throw new Error("PayMongo amount must be a non-negative value with at most two decimal places.");
+    throw new Error(
+      "PayMongo amount must be a non-negative value with at most two decimal places."
+    );
   }
 
   return centavos.toNumber();
@@ -495,7 +497,10 @@ export function verifyPaymongoWebhookSignature(
     signatureHeader
       .split(",")
       .map((part) => part.trim().split("=", 2))
-      .filter((part): part is [string, string] => part.length === 2 && Boolean(part[0] && part[1]))
+      .filter(
+        (part): part is [string, string] =>
+          part.length === 2 && Boolean(part[0] && part[1])
+      )
   );
   const timestamp = parts.get("t");
   const signature = parts.get(livemode ? "li" : "te");
