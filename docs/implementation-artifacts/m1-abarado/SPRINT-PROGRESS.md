@@ -86,3 +86,11 @@ On 2026-09-27, the storefront product detail page gained a stock-aware package-s
 Evidence: `backend/src/services/storefrontService.ts`, `backend/test/storefront-product-detail.test.ts`, `frontend/src/components/customer/ProductSizeSelector.tsx`, `frontend/src/pages/customer/ProductDetailPage.tsx`, `frontend/src/styles/customer.css`, and `scripts/test/storefront-size-variant-ui.test.mjs`.
 
 Validation: CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`; manual visual QA is next.
+
+## Sprint 11 Product Error State Polish
+
+On 2026-09-27, the product-detail load failure state was redesigned as a compact storefront card with safe customer-facing copy, improved serif/sans hierarchy, deliberate vertical rhythm, responsive actions, and no raw backend service URL rendered to customers.
+
+Evidence: `frontend/src/pages/customer/ProductDetailPage.tsx`, `frontend/src/styles/customer.css`, and `scripts/test/storefront-product-error-state.test.mjs`.
+
+Validation: Pending exact-head CI.
