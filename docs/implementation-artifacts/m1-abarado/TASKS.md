@@ -82,3 +82,11 @@ Task YSB-M1-CIE-IMG-003 standardizes CIE derivatives and storefront media on pur
 Evidence: `m1/v0.11/fix/cie-white-catalog-canvas`
 
 Status: In review. Complete exact-head automated validation before integration.
+
+## Sprint 11 Storefront Size Variants
+
+Task YSB-M1-STOREFRONT-VARIANT-004 upgrades the existing product-detail experience with a stock-aware, image-backed package-size selector while preserving each size as an independent product.
+
+Evidence: `sprint/v0.11/sprint-11`; `backend/src/services/storefrontService.ts`; `backend/test/storefront-product-detail.test.ts`; `frontend/src/components/customer/ProductSizeSelector.tsx`; `frontend/src/pages/customer/ProductDetailPage.tsx`; `frontend/src/styles/customer.css`; `scripts/test/storefront-size-variant-ui.test.mjs`
+
+Status: In progress. Exact-head automated validation is required before QA.
