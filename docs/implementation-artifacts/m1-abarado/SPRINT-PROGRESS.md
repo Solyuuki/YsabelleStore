@@ -93,4 +93,4 @@ On 2026-09-27, the product-detail load failure state was redesigned as a compact
 
 Evidence: `frontend/src/pages/customer/ProductDetailPage.tsx`, `frontend/src/styles/customer.css`, and `scripts/test/storefront-product-error-state.test.mjs`.
 
-Validation: Pending exact-head CI.
+Validation: CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`; manual visual QA is next.
