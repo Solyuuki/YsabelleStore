@@ -6,6 +6,7 @@ import type {
   StorefrontOrderInput,
   StorefrontPagination,
   StorefrontProduct,
+  StorefrontProductDetail,
   StorefrontProductReviews,
   StorefrontRelatedProducts
 } from "@/types/storefront";
@@ -54,7 +55,7 @@ export async function fetchStorefrontProducts(
 }
 
 export async function fetchStorefrontProduct(productId: string, signal?: AbortSignal) {
-  const response = await apiClient.request<StorefrontProduct>(
+  const response = await apiClient.request<StorefrontProductDetail>(
     `/api/storefront/products/${encodeURIComponent(productId)}`,
     { signal }
   );
