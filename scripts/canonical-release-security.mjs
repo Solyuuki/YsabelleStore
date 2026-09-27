@@ -204,15 +204,16 @@ export function inspectRepository(root = ROOT) {
   const identities = JSON.parse(readFileSync(identityPath, "utf8"));
   const findings = inspectReleaseContract({ state, release, identities, root });
 
-  if (\n    identities.releaseId !== state.releaseId ||\n    identities.catalogVersion !== state.catalogVersion\n  ) {
+  if (
+    identities.releaseId !== state.releaseId ||
+    identities.catalogVersion !== state.catalogVersion
+  ) {
     findings.push("BLOCK: canonical product identity manifest differs from canonical state.");
   }
   if (identities.items?.length !== 50) {
     findings.push("BLOCK: canonical product identity manifest must contain exactly 50 products.");
   } else {
-    const identityByCode = new Map(
-      identities.items.map((item) => [item.sourceProductId, item])
-    );
+    const identityByCode = new Map(identities.items.map((item) => [item.sourceProductId, item]));
     for (const product of release.products ?? []) {
       const identity = identityByCode.get(product.sourceProductId);
       if (!identity) {
@@ -221,9 +222,7 @@ export function inspectRepository(root = ROOT) {
       }
       for (const field of ["productId", "sku", "brand", "variant", "sizeValue", "sizeUnit"]) {
         if ((identity[field] ?? null) !== (product[field] ?? null)) {
-          findings.push(
-            `BLOCK: ${product.sourceProductId} release identity differs for ${field}.`
-          );
+          findings.push(`BLOCK: ${product.sourceProductId} release identity differs for ${field}.`);
         }
       }
     }
