@@ -438,7 +438,10 @@ async function webStartupSmoke(url, runtimeRoot, release) {
     );
 
     const storefrontResponse = await fetch(
-      new URL("/api/storefront/products?page=1&pageSize=48&availability=all", runtime.apiBaseUrl + "/"),
+      new URL(
+        "/api/storefront/products?page=1&pageSize=48&availability=all",
+        runtime.apiBaseUrl + "/"
+      ),
       { signal: AbortSignal.timeout(10_000) }
     );
     assert.equal(storefrontResponse.ok, true, "Storefront product parity endpoint failed.");

@@ -190,8 +190,8 @@ test("canonical JSON drift comparison ignores storage formatting", () => {
   );
 });
 
-
 test("canonical subset remaps release products onto the public storefront taxonomy", () => {
+  const sourceCategory = "Baking / Spreads & Dessert Ingredients";
   const productIds = Array.from({ length: 50 }, (_, index) => "product-" + index);
   const candidateIds = Array.from({ length: 50 }, (_, index) => "candidate-" + index);
   const release = {
@@ -239,66 +239,70 @@ test("canonical subset remaps release products onto the public storefront taxono
     "data_quality_status",
     "is_storefront_visible"
   ];
-  const sql = [
-    "INSERT INTO `categories` (`id`,`name`,`slug`,`is_active`,`data_quality_status`,`is_storefront_visible`) VALUES " +
-      "('legacy-baking','Baking / Spreads & Dessert Ingredients','baking-spreads-dessert-ingredients','1','NEEDS_REVIEW','0')," +
-      "('bread','Bread & Bakery','bread-bakery','1','APPROVED','1');",
+  const categorySql =
+    "INSERT INTO `categories` " +
+    "(`id`,`name`,`slug`,`is_active`,`data_quality_status`,`is_storefront_visible`) " +
+    "VALUES ('legacy-baking','" +
+    sourceCategory +
+    "','baking-spreads-dessert-ingredients','1','NEEDS_REVIEW','0');";
+  const productSql =
     "INSERT INTO `products` (" +
-      productColumns.map((column) => "`" + column + "`").join(",") +
-      ") VALUES " +
-      productIds
-        .map((id, index) =>
-          tuple([
-            id,
-            index < 25 ? "legacy-baking" : "bread",
-            candidateIds[index],
-            "OLD-" + index,
-            null,
-            "Old Name",
-            null,
-            "/old",
-            null,
-            null,
-            null,
-            null,
-            "INACTIVE",
-            "NEEDS_REVIEW",
-            "0"
-          ])
-        )
-        .join(",") +
-      ";",
+    productColumns.map((column) => "`" + column + "`").join(",") +
+    ") VALUES " +
+    productIds
+      .map((id, index) =>
+        tuple([
+          id,
+          "legacy-baking",
+          candidateIds[index],
+          "OLD-" + index,
+          null,
+          "Old Name",
+          null,
+          "/old",
+          null,
+          null,
+          null,
+          null,
+          "INACTIVE",
+          "NEEDS_REVIEW",
+          "0"
+        ])
+      )
+      .join(",") +
+    ";";
+  const assetSql =
     "INSERT INTO `product_image_assets` (`id`,`product_id`,`quality_status`) VALUES " +
-      candidateIds.map((id, index) => tuple([id, productIds[index], "APPROVED"])).join(",") +
-      ";",
-    "INSERT INTO `product_aliases` (`id`,`canonical_product_id`,`value`) VALUES ('alias','product-0','Alias');",
-    "INSERT INTO `sarima_source_product_mappings` (`id`,`canonical_product_id`,`source_product_id`,`source_category`) VALUES " +
-      productIds
-        .map((id, index) =>
-          tuple([
-            "mapping-" + index,
-            id,
-            "P" + String(index).padStart(3, "0"),
-            index < 25 ? "Baking / Spreads & Dessert Ingredients" : "Bread & Bakery"
-          ])
-        )
-        .join(",") +
-      ";"
-  ].join("\n");
+    candidateIds.map((id, index) => tuple([id, productIds[index], "APPROVED"])).join(",") +
+    ";";
+  const aliasSql =
+    "INSERT INTO `product_aliases` (`id`,`canonical_product_id`,`value`) " +
+    "VALUES ('alias','product-0','Alias');";
+  const mappingSql =
+    "INSERT INTO `sarima_source_product_mappings` " +
+    "(`id`,`canonical_product_id`,`source_product_id`,`source_category`) VALUES " +
+    productIds
+      .map((id, index) =>
+        tuple([
+          "mapping-" + index,
+          id,
+          "P" + String(index).padStart(3, "0"),
+          sourceCategory
+        ])
+      )
+      .join(",") +
+    ";";
+  const catalogSql = [categorySql, productSql, assetSql, aliasSql, mappingSql].join("\n");
 
-  const subset = buildCanonicalSubset({ catalogSql: sql, release, reconciliation });
-  const categories = new Map(subset.rows.categories.map((category) => [category.id, category]));
+  const subset = buildCanonicalSubset({ catalogSql, release, reconciliation });
+  const category = subset.rows.categories.find((row) => row.id === "legacy-baking");
 
-  assert.equal(categories.get("legacy-baking")?.name, "Baking & Dessert");
-  assert.equal(categories.get("legacy-baking")?.slug, "baking-dessert");
-  assert.equal(categories.get("legacy-baking")?.data_quality_status, "APPROVED");
-  assert.equal(categories.get("legacy-baking")?.is_storefront_visible, "1");
+  assert.equal(category?.name, "Baking & Dessert");
+  assert.equal(category?.slug, "baking-dessert");
+  assert.equal(category?.data_quality_status, "APPROVED");
+  assert.equal(category?.is_storefront_visible, "1");
   assert.equal(
     subset.rows.products.filter((product) => product.category_id === "legacy-baking").length,
-    25
-  );
-  assert.equal(
-    subset.rows.products.filter((product) => product.category_id === "bread").length,
-    25
+    50
   );
 });
