@@ -77,6 +77,8 @@ A task is complete only when implementation evidence and the matching artifact u
 
 ## Sprint 11 CIE White Canvas
 
-| Task ID            | Date       | Scope                                                          | Status    | Evidence                                    | Next Action                                                  |
-| ------------------ | ---------- | -------------------------------------------------------------- | --------- | ------------------------------------------- | ------------------------------------------------------------ |
-| YSB-M1-CIE-IMG-003 | 2026-09-27 | Standardize CIE derivatives and storefront media on pure white | In Review | `m1/v0.11/fix/cie-white-catalog-canvas` | Complete exact-head automated validation before integration. |
+Task YSB-M1-CIE-IMG-003 standardizes CIE derivatives and storefront media on pure white.
+
+Evidence: `m1/v0.11/fix/cie-white-catalog-canvas`
+
+Status: In review. Complete exact-head automated validation before integration.
