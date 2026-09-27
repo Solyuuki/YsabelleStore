@@ -19,4 +19,4 @@ Branch: `sprint/v0.11/sprint-11`
 
 ## Validation status
 
-Exact-head automated validation is required before this implementation is considered QA-ready.
+CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`, including formatting, linting, typechecking, workspace tests/builds, guardrail tests, aggregate read-only verification, and Phase 6 canonical release hardening. The implementation is ready for manual visual QA.
