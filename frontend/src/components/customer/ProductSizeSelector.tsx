@@ -25,9 +25,7 @@ export function ProductSizeSelector({
     const overflow = rail.scrollWidth > rail.clientWidth + 2;
     setHasOverflow(overflow);
     setCanScrollLeft(overflow && rail.scrollLeft > 2);
-    setCanScrollRight(
-      overflow && rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 2
-    );
+    setCanScrollRight(overflow && rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 2);
   }, []);
 
   useEffect(() => {

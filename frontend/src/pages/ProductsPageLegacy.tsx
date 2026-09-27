@@ -119,10 +119,7 @@ function productIdentitySummary(product: ProductRecord) {
 
 function productSizeFamilyLabel(product: ProductRecord) {
   const identity = [product.brand, product.variant].filter(Boolean).join(" · ");
-  return (
-    identity ||
-    product.name.replace(/\b\d+(?:\.\d+)?\s*(?:ml|l|g|kg|pcs?)\b/gi, "").trim()
-  );
+  return identity || product.name.replace(/\b\d+(?:\.\d+)?\s*(?:ml|l|g|kg|pcs?)\b/gi, "").trim();
 }
 
 function productPackagingLabel(product: ProductRecord) {
