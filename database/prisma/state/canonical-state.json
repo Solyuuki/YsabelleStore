@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "migrationEpoch": 2,
   "schemaVersion": 2,
-  "catalogVersion": 4,
+  "catalogVersion": 5,
   "assetVersion": 2,
   "baselineMigration": "0000_generation2_baseline",
   "schemaPath": "database/prisma/schema.prisma",
@@ -13,10 +13,10 @@
   "legacyArchivePath": "database/prisma/migration-history-archive/generation-1",
   "cutoverSourceCommit": "265fb7e9b5f6ac162f0b49ea75794ce6659f0e8f",
   "status": "active",
-  "releaseId": "g2-s2-c4-a2",
+  "releaseId": "g2-s2-c5-a2",
   "distributionReady": true,
   "distributionBlockers": [],
-  "canonicalReleasePath": "database/canonical/releases/g2-s2-c4-a2.json",
-  "canonicalReleaseGitBlobOid": "e2a23691cfbcc0ed96dfc8df8d31d256623f18e1",
+  "canonicalReleasePath": "database/canonical/releases/g2-s2-c5-a2.json",
+  "canonicalReleaseGitBlobOid": "2e9d578fa73e2209b73e816ac4ba37db0ecb1e65",
   "canonicalProductImageRoot": "database/canonical/product-images/sources"
 }

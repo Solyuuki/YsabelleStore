@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
-  "releaseId": "g2-s2-c4-a2",
-  "catalogVersion": 4,
+  "releaseId": "g2-s2-c5-a2",
+  "catalogVersion": 5,
   "evidencePolicy": "CANONICAL_NAME_OR_APPROVED_DESCRIPTION",
   "items": [
     {
@@ -10,8 +10,8 @@
       "sku": "SARIMA-P299",
       "brand": "Jack ‘n Jill",
       "variant": "Piattos Supersized Cheese",
-      "sizeValue": null,
-      "sizeUnit": null
+      "sizeValue": "170",
+      "sizeUnit": "GRAM"
     },
     {
       "sourceProductId": "P352",
@@ -19,8 +19,8 @@
       "sku": "SARIMA-P352",
       "brand": "Presto",
       "variant": "Creams Peanut Butter Sandwich Cookies",
-      "sizeValue": null,
-      "sizeUnit": null
+      "sizeValue": "30",
+      "sizeUnit": "GRAM"
     },
     {
       "sourceProductId": "P361",
@@ -28,8 +28,8 @@
       "sku": "SARIMA-P361",
       "brand": "Rebisco",
       "variant": "Magic Flakes Cheese",
-      "sizeValue": null,
-      "sizeUnit": null
+      "sizeValue": "28",
+      "sizeUnit": "GRAM"
     },
     {
       "sourceProductId": "P023",
@@ -55,8 +55,8 @@
       "sku": "SARIMA-P027",
       "brand": "Marby",
       "variant": "Cheese Bites Healthy Kids Pack",
-      "sizeValue": null,
-      "sizeUnit": null
+      "sizeValue": "110",
+      "sizeUnit": "GRAM"
     },
     {
       "sourceProductId": "P030",

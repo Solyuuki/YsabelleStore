@@ -116,10 +116,9 @@ export function inspectReleaseContract({ state, release, root = ROOT }) {
       findings.push(`BLOCK: ${code} is missing canonical variant identity.`);
     const hasSizeValue = product.sizeValue !== null && product.sizeValue !== undefined;
     const hasSizeUnit = product.sizeUnit !== null && product.sizeUnit !== undefined;
-    if (hasSizeValue !== hasSizeUnit) {
-      findings.push(`BLOCK: ${code} canonical package size is incomplete.`);
-    }
-    if (hasSizeValue) {
+    if (!hasSizeValue || !hasSizeUnit) {
+      findings.push(`BLOCK: ${code} is missing canonical package size identity.`);
+    } else {
       const sizeValue = Number(product.sizeValue);
       if (!Number.isFinite(sizeValue) || sizeValue <= 0) {
         findings.push(`BLOCK: ${code} canonical package size value is invalid.`);
