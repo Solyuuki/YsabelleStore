@@ -208,8 +208,14 @@ test("product detail exposes only in-stock size siblings in ascending package or
         { id: large.id, sizeUnit: "LITER", sizeValue: "1" }
       ]
     );
-    assert.equal(detail.sizeVariants.some((variant) => variant.id === unavailable.id), false);
-    assert.equal(detail.sizeVariants.some((variant) => variant.id === otherVariant.id), false);
+    assert.equal(
+      detail.sizeVariants.some((variant) => variant.id === unavailable.id),
+      false
+    );
+    assert.equal(
+      detail.sizeVariants.some((variant) => variant.id === otherVariant.id),
+      false
+    );
   } finally {
     await scope.cleanup();
   }
