@@ -138,7 +138,7 @@ export function decodeSqlValue(v) {
 
     const escaped = body[index + 1];
     const replacements = {
-      "0": "\0",
+      0: "\0",
       b: "\b",
       n: "\n",
       r: "\r",
