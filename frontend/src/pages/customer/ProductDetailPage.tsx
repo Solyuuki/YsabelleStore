@@ -5,6 +5,7 @@ import {
   ChevronRight,
   MapPin,
   MessageSquareText,
+  RefreshCw,
   ShieldCheck,
   ShoppingBasket,
   Star
@@ -120,25 +121,54 @@ export function ProductDetailPage({
     return () => controller.abort();
   }, [productId, relatedReload]);
 
-  if (error)
+  if (error) {
+    const productMissing = /(?:not found|404)/i.test(error);
+
     return (
-      <div className="customer-page customer-container">
-        <div className="customer-empty-state">
-          <h1>Product Unavailable</h1>
-          <p>{error}</p>
-          <button
-            className="customer-button"
-            onClick={() => window.location.reload()}
-            type="button"
-          >
-            Try again
-          </button>
-          <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
-            Back to shop
-          </CustomerLink>
-        </div>
+      <div className="customer-page customer-container customer-product-error-page">
+        <section
+          aria-labelledby="product-load-error-title"
+          className="customer-product-error-state"
+          role="status"
+        >
+          <div aria-hidden="true" className="customer-product-error-state__icon">
+            <RefreshCw size={24} />
+          </div>
+
+          <p className="customer-product-error-state__eyebrow">
+            {productMissing ? "Product status" : "Store connection"}
+          </p>
+          <h1 id="product-load-error-title">
+            {productMissing ? "This product isn’t available" : "We couldn’t load this product"}
+          </h1>
+          <p className="customer-product-error-state__description">
+            {productMissing
+              ? "It may have been removed from the storefront or is no longer available."
+              : "The store connection is temporarily unavailable. Please try again in a moment."}
+          </p>
+
+          <div className="customer-product-error-state__actions">
+            <button
+              className="customer-button"
+              onClick={() => window.location.reload()}
+              type="button"
+            >
+              <RefreshCw aria-hidden="true" size={18} />
+              Try again
+            </button>
+            <CustomerLink
+              className="customer-button customer-button--secondary"
+              href="/shop"
+              navigate={navigate}
+            >
+              <ArrowLeft aria-hidden="true" size={18} />
+              Back to shop
+            </CustomerLink>
+          </div>
+        </section>
       </div>
     );
+  }
   if (!product)
     return (
       <div className="customer-page customer-container">
