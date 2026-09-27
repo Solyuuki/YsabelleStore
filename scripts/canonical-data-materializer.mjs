@@ -200,6 +200,36 @@ function rowObject(parsed, tuple) {
   );
 }
 
+const JSON_COLUMNS = {
+  product_aliases: new Set(["evidence"]),
+  product_image_assets: new Set(["diagnostics"]),
+  sarima_source_product_mappings: new Set(["evidence"])
+};
+
+function stableJsonValue(value) {
+  if (Array.isArray(value)) return value.map(stableJsonValue);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, stableJsonValue(value[key])])
+    );
+  }
+  return value;
+}
+
+export function normalizeCanonicalDbValue(table, column, value) {
+  if (value === null || value === undefined) return null;
+  const text = String(value);
+  if (!JSON_COLUMNS[table]?.has(column)) return text;
+
+  try {
+    return JSON.stringify(stableJsonValue(JSON.parse(text)));
+  } catch {
+    return text;
+  }
+}
+
 function upsert(p, rows) {
   if (!rows.length) return null;
   const cols = p.columns.map((c) => "`" + c + "`").join(", "),
@@ -396,8 +426,8 @@ export async function inspectCanonicalDbDrift(prisma, subset) {
         continue;
       }
       for (const column of columns) {
-        const expectedValue = expected[column] === null ? null : String(expected[column]);
-        const actualValue = actual[column] === null ? null : String(actual[column]);
+        const expectedValue = normalizeCanonicalDbValue(table, column, expected[column]);
+        const actualValue = normalizeCanonicalDbValue(table, column, actual[column]);
         if (expectedValue !== actualValue) {
           findings.push(
             table +
