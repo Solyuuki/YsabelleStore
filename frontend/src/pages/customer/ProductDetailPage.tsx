@@ -10,7 +10,7 @@ import {
   ShoppingBasket,
   Star
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard, formatCurrency, formatUnit } from "@/components/customer/ProductCard";
@@ -188,23 +188,25 @@ export function ProductDetailPage({
           <ArrowLeft aria-hidden="true" size={17} /> Back to {product.category.name}
         </CustomerLink>
         <section className="customer-product-detail">
-          <ProductVisual
-            category={product.category.name}
-            imageUrl={product.detailImageUrl ?? product.imageUrl}
-            large
-            name={product.name}
-          />
+          <div className="customer-product-detail__media">
+            <ProductVisual
+              category={product.category.name}
+              imageUrl={product.detailImageUrl ?? product.imageUrl}
+              large
+              name={product.name}
+            />
+            <ProductSizeSelector
+              currentProductId={product.id}
+              navigate={navigate}
+              variants={product.sizeVariants}
+            />
+          </div>
           <div className="customer-product-detail__copy">
             <p className="customer-kicker">{product.category.name}</p>
             <h1>{product.name}</h1>
             <p className="customer-product-detail__description">
               {product.description || "An everyday essential from Ysabelle's Store."}
             </p>
-            <ProductSizeSelector
-              currentProductId={product.id}
-              navigate={navigate}
-              variants={product.sizeVariants}
-            />
             <div className="customer-product-detail__price">
               <strong>{formatCurrency(product.sellingPrice)}</strong>
               <span>per {formatUnit(product.unit)}</span>
@@ -461,8 +463,7 @@ function RelatedProductsSection({
   resource: Resource<StorefrontRelatedProducts>;
 }) {
   const sameCategory = resource.data?.sameCategory ?? [];
-  const fallback = resource.data?.fallback ?? [];
-  const hasProducts = sameCategory.length + fallback.length > 0;
+  const hasProducts = sameCategory.length > 0;
 
   return (
     <section aria-labelledby="related-products-heading" className="customer-related-products">
@@ -470,27 +471,15 @@ function RelatedProductsSection({
         <header className="customer-product-section-heading customer-product-section-heading--related">
           <div>
             <p className="customer-kicker">Keep browsing</p>
-            <h2 id="related-products-heading">
-              {sameCategory.length ? `More from ${productCategory.name}` : "More store picks"}
-            </h2>
+            <h2 id="related-products-heading">More from {productCategory.name}</h2>
           </div>
-          {sameCategory.length ? (
-            <CustomerLink
-              className="customer-related-products__link"
-              href={`/shop/category/${productCategory.slug}`}
-              navigate={navigate}
-            >
-              View all {productCategory.name} <ChevronRight aria-hidden="true" size={17} />
-            </CustomerLink>
-          ) : (
-            <CustomerLink
-              className="customer-related-products__link"
-              href="/shop"
-              navigate={navigate}
-            >
-              Browse the shop <ChevronRight aria-hidden="true" size={17} />
-            </CustomerLink>
-          )}
+          <CustomerLink
+            className="customer-related-products__link"
+            href={`/shop/category/${productCategory.slug}`}
+            navigate={navigate}
+          >
+            View all {productCategory.name} <ChevronRight aria-hidden="true" size={17} />
+          </CustomerLink>
         </header>
       </ProductDetailReveal>
 
@@ -520,50 +509,98 @@ function RelatedProductsSection({
         </div>
       ) : null}
       {resource.status === "success" && hasProducts ? (
-        <>
-          {sameCategory.length ? (
-            <ProductDetailReveal
-              className="customer-product-grid customer-related-products__grid"
-              stagger
-            >
-              {sameCategory.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} navigate={navigate} product={relatedProduct} />
-              ))}
-            </ProductDetailReveal>
-          ) : null}
-          {fallback.length ? (
-            <div
-              className={sameCategory.length ? "customer-related-products__fallback" : undefined}
-            >
-              {sameCategory.length ? (
-                <div>
-                  <p className="customer-kicker">From other aisles</p>
-                  <h3>You may also like</h3>
-                </div>
-              ) : null}
-              <ProductDetailReveal
-                className="customer-product-grid customer-related-products__grid"
-                stagger
-              >
-                {fallback.map((relatedProduct) => (
-                  <ProductCard
-                    key={relatedProduct.id}
-                    navigate={navigate}
-                    product={relatedProduct}
-                  />
-                ))}
-              </ProductDetailReveal>
-            </div>
-          ) : null}
-        </>
+        <RelatedProductsRail navigate={navigate} products={sameCategory} />
       ) : null}
       {resource.status === "success" && !hasProducts ? (
         <div className="customer-product-section-state">
-          <strong>No related products are available right now.</strong>
-          <p>Browse the full shop to continue exploring the live catalog.</p>
+          <strong>No more products are available in this category right now.</strong>
+          <p>Use “View all {productCategory.name}” to return to the full category.</p>
         </div>
       ) : null}
     </section>
+  );
+}
+
+function RelatedProductsRail({
+  navigate,
+  products
+}: {
+  navigate: (path: string) => void;
+  products: StorefrontProduct[];
+}) {
+  const railRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
+
+  const updateState = useCallback(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const overflow = rail.scrollWidth > rail.clientWidth + 2;
+    setHasOverflow(overflow);
+    setCanScrollLeft(overflow && rail.scrollLeft > 2);
+    setCanScrollRight(
+      overflow && rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 2
+    );
+  }, []);
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+
+    updateState();
+    const observer = new ResizeObserver(updateState);
+    observer.observe(rail);
+    rail.addEventListener("scroll", updateState, { passive: true });
+    window.addEventListener("resize", updateState);
+    return () => {
+      observer.disconnect();
+      rail.removeEventListener("scroll", updateState);
+      window.removeEventListener("resize", updateState);
+    };
+  }, [products.length, updateState]);
+
+  function scroll(direction: -1 | 1) {
+    const rail = railRef.current;
+    if (!rail) return;
+    rail.scrollBy({
+      behavior: "smooth",
+      left: direction * Math.max(280, rail.clientWidth * 0.82)
+    });
+  }
+
+  return (
+    <ProductDetailReveal className="customer-related-products__rail-shell">
+      {hasOverflow ? (
+        <button
+          aria-label="Previous related products"
+          className="customer-related-products__arrow customer-related-products__arrow--previous"
+          disabled={!canScrollLeft}
+          onClick={() => scroll(-1)}
+          type="button"
+        >
+          <ChevronLeft aria-hidden="true" />
+        </button>
+      ) : null}
+
+      <div className="customer-related-products__viewport" ref={railRef}>
+        {products.map((relatedProduct) => (
+          <ProductCard key={relatedProduct.id} navigate={navigate} product={relatedProduct} />
+        ))}
+      </div>
+
+      {hasOverflow ? (
+        <button
+          aria-label="Next related products"
+          className="customer-related-products__arrow customer-related-products__arrow--next"
+          disabled={!canScrollRight}
+          onClick={() => scroll(1)}
+          type="button"
+        >
+          <ChevronRight aria-hidden="true" />
+        </button>
+      ) : null}
+    </ProductDetailReveal>
   );
 }
 

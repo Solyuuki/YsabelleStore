@@ -117,6 +117,19 @@ function productIdentitySummary(product: ProductRecord) {
     .join(" · ");
 }
 
+function productSizeFamilyLabel(product: ProductRecord) {
+  const identity = [product.brand, product.variant].filter(Boolean).join(" · ");
+  return (
+    identity ||
+    product.name.replace(/\b\d+(?:\.\d+)?\s*(?:ml|l|g|kg|pcs?)\b/gi, "").trim()
+  );
+}
+
+function productPackagingLabel(product: ProductRecord) {
+  const unit = String(product.unit).toLowerCase().replaceAll("_", " ");
+  return unit.charAt(0).toUpperCase() + unit.slice(1);
+}
+
 type CatalogLoadingReason =
   | "initial"
   | "search"
@@ -3083,7 +3096,7 @@ function ProductDetailsDialog({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-unit">Unit</Label>
+                    <Label htmlFor="edit-unit">Selling / packaging unit</Label>
                     <Select
                       id="edit-unit"
                       value={form.unit}
@@ -3241,6 +3254,8 @@ function ProductDetailsDialog({
                   <DetailLine label="Category" value={product.category.name} />
                   <DetailLine label="Brand" value={product.brand ?? "Unknown"} />
                   <DetailLine label="Variant" value={product.variant ?? "Not specified"} />
+                  <DetailLine label="Size family" value={productSizeFamilyLabel(product)} />
+                  <DetailLine label="Packaging" value={productPackagingLabel(product)} />
                   <DetailLine
                     label="Pack size"
                     value={

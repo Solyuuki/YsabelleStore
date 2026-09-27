@@ -152,12 +152,14 @@ export function StatusScreen({
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(247,249,255,0.3))]" />
       </div>
 
-      <header className="auth-footer-enter relative z-10 flex items-center px-6 py-5 sm:px-10 sm:py-7">
-        <BrandLogo
-          className="h-auto w-[10.75rem] max-w-[48vw] object-contain object-left drop-shadow-[0_8px_18px_rgba(49,46,129,0.1)]"
-          variant="full"
-        />
-      </header>
+      {variant !== "system" ? (
+        <header className="auth-footer-enter relative z-10 flex items-center px-6 py-5 sm:px-10 sm:py-7">
+          <BrandLogo
+            className="h-auto w-[10.75rem] max-w-[48vw] object-contain object-left drop-shadow-[0_8px_18px_rgba(49,46,129,0.1)]"
+            variant="full"
+          />
+        </header>
+      ) : null}
 
       {variant === "navigation" ? (
         <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
@@ -221,8 +223,11 @@ export function StatusScreen({
       {variant === "system" ? (
         <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
           <div className="auth-hero-enter w-full max-w-xl text-center">
-            <StatusIllustration statusLabel={statusLabel} variant={variant} />
-            <div className="mt-4 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
+            <BrandLogo
+              className="status-system-brand-mark mx-auto h-28 w-28 rounded-full object-contain drop-shadow-[0_20px_36px_rgba(98,91,255,0.2)] sm:h-32 sm:w-32"
+              variant="mark"
+            />
+            <div className="mt-5 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
             </div>
             <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">

@@ -14,6 +14,7 @@ import {
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
+import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
 import { formatCurrency } from "@/components/customer/ProductCard";
 import { ProductVisual } from "@/components/customer/ProductVisual";
 import { ProductImage } from "@/components/customer/ProductImage";
@@ -1079,8 +1080,8 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
         </div>
 
         <div className="customer-container story-welcome__stage" data-story-motion>
-          <div className="story-welcome__mark">
-            <Store aria-hidden="true" />
+          <div className="story-welcome__mark story-welcome__mark--branded">
+            <YsabelleBrandMark eager variant="display" />
           </div>
           <span className="story-kicker">01 / Welcome</span>
           <h1 className="story-display-safe story-welcome__title">
