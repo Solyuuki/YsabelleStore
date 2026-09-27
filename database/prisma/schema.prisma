@@ -190,6 +190,14 @@ enum CustomerFulfillmentMethod {
 
 enum CustomerPaymentMethod {
   CASH_ON_PICKUP
+  PAYMONGO
+}
+
+enum CustomerPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
 }
 
 enum ForecastStatus {
@@ -938,9 +946,15 @@ model CustomerOrder {
   customerName      String                    @map("customer_name") @db.VarChar(120)
   customerEmail     String?                   @map("customer_email") @db.VarChar(191)
   customerPhone     String                    @map("customer_phone") @db.VarChar(40)
-  fulfillmentMethod CustomerFulfillmentMethod @default(STORE_PICKUP) @map("fulfillment_method")
-  paymentMethod     CustomerPaymentMethod     @default(CASH_ON_PICKUP) @map("payment_method")
-  status            CustomerOrderStatus       @default(PENDING)
+  fulfillmentMethod        CustomerFulfillmentMethod @default(STORE_PICKUP) @map("fulfillment_method")
+  paymentMethod            CustomerPaymentMethod     @default(CASH_ON_PICKUP) @map("payment_method")
+  paymentStatus            CustomerPaymentStatus     @default(PENDING) @map("payment_status")
+  paymongoCheckoutSessionId String?                   @unique(map: "uq_customer_orders_paymongo_checkout_session") @map("paymongo_checkout_session_id") @db.VarChar(191)
+  paymongoCheckoutUrl       String?                   @map("paymongo_checkout_url") @db.VarChar(2048)
+  paymongoPaymentIntentId   String?                   @map("paymongo_payment_intent_id") @db.VarChar(191)
+  paymongoPaymentId         String?                   @unique(map: "uq_customer_orders_paymongo_payment") @map("paymongo_payment_id") @db.VarChar(191)
+  paidAt                    DateTime?                 @map("paid_at")
+  status                    CustomerOrderStatus       @default(PENDING)
   subtotalAmount    Decimal                   @map("subtotal_amount") @db.Decimal(12, 2)
   totalAmount       Decimal                   @map("total_amount") @db.Decimal(12, 2)
   notes             String?                   @db.VarChar(255)
@@ -952,6 +966,7 @@ model CustomerOrder {
 
   @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")
   @@index([status, createdAt], map: "idx_customer_orders_status_created")
+  @@index([paymentStatus, createdAt], map: "idx_customer_orders_payment_status_created")
   @@index([customerPhone, createdAt], map: "idx_customer_orders_phone_created")
   @@map("customer_orders")
 }

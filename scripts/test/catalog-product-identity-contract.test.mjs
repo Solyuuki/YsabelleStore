@@ -78,18 +78,25 @@ function unquote(value) {
 }
 
 test("canonical 50 identity manifest is complete and matches release and seed", async () => {
-  const [manifestText, stateText, releaseText, seedSql] = await Promise.all([
+  const stateText = await readFile(
+    new URL("database/prisma/state/canonical-state.json", ROOT),
+    "utf8"
+  );
+  const state = JSON.parse(stateText);
+  const [manifestText, releaseText, seedSql] = await Promise.all([
     readFile(new URL("database/canonical/product-identities.json", ROOT), "utf8"),
-    readFile(new URL("database/prisma/state/canonical-state.json", ROOT), "utf8"),
-    readFile(new URL("database/canonical/releases/g2-s2-c4-a2.json", ROOT), "utf8"),
+    readFile(new URL(state.canonicalReleasePath, ROOT), "utf8"),
     readFile(new URL("database/seed/canonical-catalog-v1.sql", ROOT), "utf8")
   ]);
   const manifest = JSON.parse(manifestText);
-  const state = JSON.parse(stateText);
   const release = JSON.parse(releaseText);
+  const expectedReleaseId = `g${state.migrationEpoch}-s${state.schemaVersion}-c${state.catalogVersion}-a${state.assetVersion}`;
 
   assert.equal(state.catalogVersion, 4);
-  assert.equal(state.releaseId, "g2-s2-c4-a2");
+  assert.equal(state.releaseId, expectedReleaseId);
+  assert.equal(state.canonicalReleasePath, `database/canonical/releases/${state.releaseId}.json`);
+  assert.equal(release.releaseId, state.releaseId);
+  assert.equal(release.catalogVersion, state.catalogVersion);
   assert.equal(manifest.releaseId, state.releaseId);
   assert.equal(manifest.catalogVersion, state.catalogVersion);
   assert.equal(manifest.items.length, 50);

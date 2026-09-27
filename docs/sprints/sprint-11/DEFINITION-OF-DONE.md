@@ -36,3 +36,36 @@ Before a Sprint 11 task is accepted, the exact branch head must pass the applica
 - GitHub CI, Pull Request Checks, and Repository Governance.
 
 Manual QA is additionally required for changed user-facing workflows, failure/recovery states, and transactional safety behavior.
+
+## Validation Status
+
+| Date | Member | Validation Checklist | Status | Notes |
+| ---- | ------ | -------------------- | ------ | ----- |
+
+## Validation Status
+
+| Date       | Member  | Validation Checklist | Status  | Notes                                                        |
+| ---------- | ------- | -------------------- | ------- | ------------------------------------------------------------ |
+| 2026-09-27 | M3 Vito | npm run verify:code  | Pending | Aggregate read-only code verification must pass before push. |
+
+## Validation Status
+
+| Date | Member | Validation Checklist | Status | Notes |
+| ---- | ------ | -------------------- | ------ | ----- |
+
+## Validation Status
+
+| Date       | Member  | Validation Checklist | Status  | Notes                                                        |
+| ---------- | ------- | -------------------- | ------- | ------------------------------------------------------------ |
+| 2026-09-27 | M3 Vito | npm run verify:code  | Pending | Aggregate read-only code verification must pass before push. |
+
+## Validation Status
+
+| Date | Member | Validation Checklist | Status | Notes |
+| ---- | ------ | -------------------- | ------ | ----- |
+
+## Validation Status
+
+| Date       | Member  | Validation Checklist | Status | Notes                                                 |
+| ---------- | ------- | -------------------- | ------ | ----------------------------------------------------- |
+| 2026-09-27 | M3 Vito | npm run verify:code  | Passed | Aggregate read-only code verification passed locally. |

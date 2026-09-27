@@ -30,6 +30,8 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().url().optional(),
   DATABASE_URL: z.string().url().optional(),
   JWT_SECRET: z.string().min(1).optional(),
+  PAYMONGO_SECRET_KEY: optionalNonEmptyString,
+  PAYMONGO_WEBHOOK_SECRET: optionalNonEmptyString,
   RESEND_API_KEY: z.string().min(1).optional(),
   CUSTOMER_RECOVERY_FROM_EMAIL: z.string().email().optional(),
   CUSTOMER_DEV_GMAIL_SMTP_USER: z.string().email().optional(),
