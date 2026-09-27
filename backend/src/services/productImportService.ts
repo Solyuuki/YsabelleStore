@@ -835,7 +835,7 @@ function normalizeImportRow(
   );
   const brandRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "brand"));
   const variantRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "variant"));
-  const sizeValueRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "sizeValue"));
+  const sizeValueRaw = normalizeTextCell(\n    resolveCellValue(row, columnIndexByCanonical, "sizeValue")\n  );
   const sizeUnitRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "sizeUnit"));
   const imageUrlRaw = normalizeTextCell(resolveCellValue(row, columnIndexByCanonical, "imageUrl"));
 
@@ -990,13 +990,13 @@ function normalizeImportRow(
   const variant = parseOptionalText(variantRaw);
   const explicitSizeValue = resolveSizeValue(sizeValueRaw, row.rowNumber, errors);
   const explicitSizeUnit = resolveSizeUnit(sizeUnitRaw, row.rowNumber, errors);
-  const extractedSize = name ? extractCanonicalProductSize(normalizeCanonicalProductName(name)) : null;
+  const extractedSize = name\n    ? extractCanonicalProductSize(normalizeCanonicalProductName(name))\n    : null;
   const sizeValue = explicitSizeValue ?? extractedSize?.sizeValue ?? null;
   const sizeUnit = explicitSizeUnit ?? extractedSize?.sizeUnit ?? null;
   const imageUrl = normalizeCatalogImageUrl(imageUrlRaw);
   const barcode = parseOptionalText(barcodeRaw);
 
-  if ((sizeValueRaw.length > 0) !== (sizeUnitRaw.length > 0)) {
+  if (sizeValueRaw.length > 0 !== sizeUnitRaw.length > 0) {
     errors.push(
       buildImportIssue(
         row.rowNumber,
