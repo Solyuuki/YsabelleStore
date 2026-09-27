@@ -61,7 +61,11 @@ export const getStorefrontPaymentStatusController: RequestHandler = async (
   }
 };
 
-export const paymongoWebhookController: RequestHandler = async (request, response, next) => {
+export const paymongoWebhookController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
   try {
     const rawBody = (request as typeof request & { rawBody?: Buffer }).rawBody;
 
