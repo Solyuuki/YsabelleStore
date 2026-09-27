@@ -209,3 +209,7 @@ The one-time cleanup script normalized these live products from `DISCONTINUED` t
 ## Sprint 11 Storefront Size Variant Validation
 
 Automated coverage verifies that only in-stock siblings from the same product family and variant are returned in ascending normalized package size, and the frontend contract covers image-backed selection, product navigation, selected-state styling, and horizontal scroll-snap behavior. CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`, including the Phase 6 canonical release rehearsal.
+
+## Sprint 11 Product Error State Validation
+
+Automated coverage guards the product error state against raw service-error rendering and verifies the dedicated polished error-state class, safe copy, secondary navigation action, relaxed description line-height, and removal of dashed-border styling from the product-specific fallback. Exact-head CI is pending.
