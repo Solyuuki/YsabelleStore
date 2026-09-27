@@ -100,13 +100,13 @@ The following packages are direct frontend dependencies or development dependenc
 
 These services are integrations, not redistributed open-source dependencies:
 
-| Provider                            | Current Purpose                                               | Credential / Terms Boundary                     |
-| ----------------------------------- | ------------------------------------------------------------- | ----------------------------------------------- |
-| Resend                              | Production customer email, OTP and password-recovery delivery | API key required; provider terms apply          |
-| Gmail SMTP                          | Development-only registration/login OTP QA                    | Google account + App Password; development-only |
-| Google OAuth                        | Customer social authentication                                | OAuth client credentials; Google terms apply    |
-| Facebook / Meta OAuth and Graph API | Customer social authentication                                | App credentials; Meta platform terms apply      |
-| PayMongo                           | Test-mode hosted checkout and payment-status verification      | Secret/API keys; PayMongo provider terms apply  |
+| Provider                            | Current Purpose                                               | Credential / Terms Boundary                      |
+| ----------------------------------- | ------------------------------------------------------------- | ------------------------------------------------ |
+| Resend                              | Production customer email, OTP and password-recovery delivery | API key required; provider terms apply           |
+| Gmail SMTP                          | Development-only registration/login OTP QA                    | Google account + App Password; development-only  |
+| Google OAuth                        | Customer social authentication                                | OAuth client credentials; Google terms apply     |
+| Facebook / Meta OAuth and Graph API | Customer social authentication                                | App credentials; Meta platform terms apply       |
+| PayMongo                            | Test-mode hosted checkout and payment-status verification     | Secret/API keys; PayMongo provider terms apply   |
 
 ## 8. Internally Authored Components
 
