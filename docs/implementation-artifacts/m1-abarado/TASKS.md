@@ -97,4 +97,4 @@ Task YSB-M1-STOREFRONT-ERROR-005 replaces the product-detail fallback with a com
 
 Evidence: `sprint/v0.11/sprint-11`; `frontend/src/pages/customer/ProductDetailPage.tsx`; `frontend/src/styles/customer.css`; `scripts/test/storefront-product-error-state.test.mjs`
 
-Status: In progress. Exact-head automated validation is required before QA.
+Status: Ready for manual QA. CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`.
