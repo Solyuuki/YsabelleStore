@@ -305,9 +305,16 @@ export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
   ) {
     throw new Error("Canonical subset incomplete");
   }
+  const barcodeState = buildCanonicalBarcodeState(release);
+  if (barcodeState.rows.length !== 50) {
+    throw new Error("Canonical barcode subset must contain exactly 50 rows");
+  }
+
   const ids = Object.fromEntries(
     Object.entries(selected).map(([t, rows]) => [t, rows.map((r) => value(p[t], r, "id"))])
   );
+  ids.product_barcodes = barcodeState.rows.map((row) => row.id);
+
   const rows = Object.fromEntries(
     Object.entries(selected).map(([table, tuples]) => [
       table,
@@ -316,11 +323,21 @@ export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
         .sort((left, right) => String(left.id).localeCompare(String(right.id)))
     ])
   );
+  rows.product_barcodes = [...barcodeState.rows].sort((left, right) =>
+    String(left.id).localeCompare(String(right.id))
+  );
+
+  const counts = Object.fromEntries(Object.entries(selected).map(([t, r]) => [t, r.length]));
+  counts.product_barcodes = barcodeState.rows.length;
+
   return {
-    statements: CANONICAL_TABLES.map((t) => upsert(p[t], selected[t])).filter(Boolean),
+    statements: [
+      ...CANONICAL_TABLES.map((t) => upsert(p[t], selected[t])).filter(Boolean),
+      ...barcodeState.statements
+    ],
     ids,
     rows,
-    counts: Object.fromEntries(Object.entries(selected).map(([t, r]) => [t, r.length]))
+    counts
   };
 }
 
@@ -339,17 +356,17 @@ async function count(prisma, table, ids) {
 
 export async function verifyCanonicalSubset(prisma, subset) {
   const f = [];
-  for (const t of CANONICAL_TABLES) {
-    const a = await count(prisma, t, subset.ids[t]),
-      e = subset.ids[t].length;
-    if (a !== e) f.push(t + ": " + a + "/" + e);
+  for (const [table, ids] of Object.entries(subset.ids)) {
+    const actual = await count(prisma, table, ids);
+    const expected = ids.length;
+    if (actual !== expected) f.push(table + ": " + actual + "/" + expected);
   }
   return f;
 }
 
 export async function inspectCanonicalDbDrift(prisma, subset) {
   const findings = [];
-  for (const table of CANONICAL_TABLES) {
+  for (const table of Object.keys(subset.rows ?? {})) {
     const expectedRows = subset.rows?.[table] ?? [];
     if (!expectedRows.length) continue;
     const columns = Object.keys(expectedRows[0]);
