@@ -43,7 +43,7 @@ function listFiles(directory) {
     .map((entry) => join(directory, entry.name));
 }
 
-export function inspectReleaseContract({ state, release, identities = null, root = ROOT }) {
+export function inspectReleaseContract({ state, release, root = ROOT }) {
   const findings = [];
 
   if (release.formatVersion !== 1)
@@ -202,7 +202,7 @@ export function inspectRepository(root = ROOT) {
   const identityPath = join(root, "database", "canonical", "product-identities.json");
   if (!existsSync(identityPath)) return ["BLOCK: canonical product identity manifest is missing."];
   const identities = JSON.parse(readFileSync(identityPath, "utf8"));
-  const findings = inspectReleaseContract({ state, release, identities, root });
+  const findings = inspectReleaseContract({ state, release, root });
 
   if (
     identities.releaseId !== state.releaseId ||
