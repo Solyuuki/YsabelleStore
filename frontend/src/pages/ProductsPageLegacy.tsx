@@ -112,7 +112,7 @@ function isProductVariantReady(product: ProductRecord) {
 }
 
 function productIdentitySummary(product: ProductRecord) {
-  return [product.brand, product.variant, formatProductPackSize(product)].filter(Boolean).join(" · ");
+  return [product.brand, product.variant, formatProductPackSize(product)]\n    .filter(Boolean)\n    .join(" · ");
 }
 
 type CatalogLoadingReason =
