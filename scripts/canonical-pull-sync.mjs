@@ -209,7 +209,6 @@ async function recover({ PrismaClient, state, classification, allowUnready }) {
   console.log("CANONICAL_RECOVERY_BACKUP=" + backup);
   resetDatabaseToGeneration2();
   const result = await materialize({ PrismaClient, state, allowUnready });
-  npm(["run", "prisma:generate"]);
   console.log("CANONICAL_RECOVERY=PASS class=" + classification);
   return result;
 }
