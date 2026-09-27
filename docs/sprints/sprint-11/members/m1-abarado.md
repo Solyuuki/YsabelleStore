@@ -36,3 +36,7 @@ CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19
 - Adds canonical security and regression checks so future catalog releases cannot silently lose brand/variant identity or create one-sided package sizes.
 
 Validation: CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51`, including workspace builds, formatting, linting, typechecking, workspace tests, canonical release security, aggregate verification, and Phase 6 release hardening. Ready for manual QA.
+
+## Canonical reconstruction issue tracking
+
+YSB-M1-CANONICAL-MATERIALIZE-007 is tracked from manual QA of the recovered GEN2 database. The current release has complete descriptions and manufacturer barcodes for all 50 canonical products, but reconstruction leaves 47 descriptions and 49 legacy barcode values missing. The barcode registry is not part of the current canonical materialized table set. This remains an open implementation item; no product values should be manually re-entered because the reviewed canonical release is the source of truth.
