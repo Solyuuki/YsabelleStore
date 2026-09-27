@@ -1570,9 +1570,7 @@
   padding: clamp(2.25rem, 5vw, 3.4rem);
   border: 1px solid var(--customer-line);
   border-radius: clamp(1.35rem, 2.5vw, 1.8rem);
-  background:
-    radial-gradient(circle at 50% 0%, rgb(98 91 255 / 7%), transparent 34%),
-    #fff;
+  background: radial-gradient(circle at 50% 0%, rgb(98 91 255 / 7%), transparent 34%), #fff;
   box-shadow: 0 24px 60px rgb(34 40 78 / 8%);
   text-align: center;
 }
