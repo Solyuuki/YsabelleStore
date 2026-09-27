@@ -190,7 +190,7 @@ test("canonical JSON drift comparison ignores storage formatting", () => {
   );
 });
 
-test("canonical subset remaps release products onto the public storefront taxonomy", () => {
+// prettier-ignore\ntest("canonical subset remaps release products onto the public storefront taxonomy", () => {
   const sourceCategory = "Baking / Spreads & Dessert Ingredients";
   const productIds = Array.from({ length: 50 }, (_, index) => "product-" + index);
   const candidateIds = Array.from({ length: 50 }, (_, index) => "candidate-" + index);
