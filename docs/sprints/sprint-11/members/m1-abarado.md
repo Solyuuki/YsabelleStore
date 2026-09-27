@@ -22,3 +22,7 @@ Branch: `sprint/v0.11/sprint-11`
 ## Validation status
 
 CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`, including formatting, linting, typechecking, workspace tests/builds, guardrail tests, aggregate read-only verification, and Phase 6 canonical release hardening. The implementation is ready for manual visual QA.
+
+## Product error state validation
+
+CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`, including workspace builds, formatting, linting, typechecking, guardrail tests, aggregate verification, and Phase 6 canonical release hardening. The product error-state polish is ready for manual visual QA.
