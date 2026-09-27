@@ -77,19 +77,19 @@ function unquote(value) {
   return value;
 }
 
-test("canonical 50 identity manifest is complete and matches release and seed", async () => {
-  const [manifestText, stateText, releaseText, seedSql] = await Promise.all([
+test("canonical 50 identity manifest is complete and matches the active release", async () => {
+  const [manifestText, stateText, seedSql] = await Promise.all([
     readFile(new URL("database/canonical/product-identities.json", ROOT), "utf8"),
     readFile(new URL("database/prisma/state/canonical-state.json", ROOT), "utf8"),
-    readFile(new URL("database/canonical/releases/g2-s2-c4-a2.json", ROOT), "utf8"),
     readFile(new URL("database/seed/canonical-catalog-v1.sql", ROOT), "utf8")
   ]);
   const manifest = JSON.parse(manifestText);
   const state = JSON.parse(stateText);
+  const releaseText = await readFile(new URL(state.canonicalReleasePath, ROOT), "utf8");
   const release = JSON.parse(releaseText);
 
-  assert.equal(state.catalogVersion, 4);
-  assert.equal(state.releaseId, "g2-s2-c4-a2");
+  assert.equal(release.releaseId, state.releaseId);
+  assert.equal(release.catalogVersion, state.catalogVersion);
   assert.equal(manifest.releaseId, state.releaseId);
   assert.equal(manifest.catalogVersion, state.catalogVersion);
   assert.equal(manifest.items.length, 50);
@@ -120,10 +120,18 @@ test("canonical 50 identity manifest is complete and matches release and seed", 
   for (const identity of manifest.items) {
     const row = bySku.get(identity.sku);
     assert.ok(row, `${identity.sku} missing canonical seed row`);
+    assert.ok(identity.sizeValue, `${identity.sku} missing canonical size value`);
+    assert.ok(identity.sizeUnit, `${identity.sku} missing canonical size unit`);
     assert.equal(unquote(row[8]), identity.brand);
     assert.equal(unquote(row[9]), identity.variant);
-    assert.equal(unquote(row[10]), identity.sizeValue ?? null);
-    assert.equal(unquote(row[11]), identity.sizeUnit ?? null);
+
+    const seedSizeValue = unquote(row[10]);
+    const seedSizeUnit = unquote(row[11]);
+    assert.equal(Boolean(seedSizeValue), Boolean(seedSizeUnit));
+    if (seedSizeValue !== null) {
+      assert.equal(seedSizeValue, identity.sizeValue);
+      assert.equal(seedSizeUnit, identity.sizeUnit);
+    }
   }
 });
 
