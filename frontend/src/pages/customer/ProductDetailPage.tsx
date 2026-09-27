@@ -5,6 +5,7 @@ import {
   ChevronRight,
   MapPin,
   MessageSquareText,
+  RefreshCw,
   ShieldCheck,
   ShoppingBasket,
   Star
@@ -13,6 +14,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard, formatCurrency, formatUnit } from "@/components/customer/ProductCard";
+import { ProductSizeSelector } from "@/components/customer/ProductSizeSelector";
 import { ProductVisual } from "@/components/customer/ProductVisual";
 import { QuantityControl } from "@/components/customer/QuantityControl";
 import { useCart } from "@/context/CartContext";
@@ -24,6 +26,7 @@ import {
 } from "@/services/storefrontService";
 import type {
   StorefrontProduct,
+  StorefrontProductDetail,
   StorefrontProductReviews,
   StorefrontRelatedProducts
 } from "@/types/storefront";
@@ -44,7 +47,7 @@ export function ProductDetailPage({
   navigate: (path: string) => void;
 }) {
   const { addItem } = useCart();
-  const [product, setProduct] = useState<StorefrontProduct | null>(null);
+  const [product, setProduct] = useState<StorefrontProductDetail | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState("");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
@@ -118,25 +121,54 @@ export function ProductDetailPage({
     return () => controller.abort();
   }, [productId, relatedReload]);
 
-  if (error)
+  if (error) {
+    const productMissing = /(?:not found|404)/i.test(error);
+
     return (
-      <div className="customer-page customer-container">
-        <div className="customer-empty-state">
-          <h1>Product Unavailable</h1>
-          <p>{error}</p>
-          <button
-            className="customer-button"
-            onClick={() => window.location.reload()}
-            type="button"
-          >
-            Try again
-          </button>
-          <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
-            Back to shop
-          </CustomerLink>
-        </div>
+      <div className="customer-page customer-container customer-product-error-page">
+        <section
+          aria-labelledby="product-load-error-title"
+          className="customer-product-error-state"
+          role="status"
+        >
+          <div aria-hidden="true" className="customer-product-error-state__icon">
+            <RefreshCw size={24} />
+          </div>
+
+          <p className="customer-product-error-state__eyebrow">
+            {productMissing ? "Product status" : "Store connection"}
+          </p>
+          <h1 id="product-load-error-title">
+            {productMissing ? "This product isn’t available" : "We couldn’t load this product"}
+          </h1>
+          <p className="customer-product-error-state__description">
+            {productMissing
+              ? "It may have been removed from the storefront or is no longer available."
+              : "The store connection is temporarily unavailable. Please try again in a moment."}
+          </p>
+
+          <div className="customer-product-error-state__actions">
+            <button
+              className="customer-button"
+              onClick={() => window.location.reload()}
+              type="button"
+            >
+              <RefreshCw aria-hidden="true" size={18} />
+              Try again
+            </button>
+            <CustomerLink
+              className="customer-button customer-button--secondary"
+              href="/shop"
+              navigate={navigate}
+            >
+              <ArrowLeft aria-hidden="true" size={18} />
+              Back to shop
+            </CustomerLink>
+          </div>
+        </section>
       </div>
     );
+  }
   if (!product)
     return (
       <div className="customer-page customer-container">
@@ -168,6 +200,11 @@ export function ProductDetailPage({
             <p className="customer-product-detail__description">
               {product.description || "An everyday essential from Ysabelle's Store."}
             </p>
+            <ProductSizeSelector
+              currentProductId={product.id}
+              navigate={navigate}
+              variants={product.sizeVariants}
+            />
             <div className="customer-product-detail__price">
               <strong>{formatCurrency(product.sellingPrice)}</strong>
               <span>per {formatUnit(product.unit)}</span>

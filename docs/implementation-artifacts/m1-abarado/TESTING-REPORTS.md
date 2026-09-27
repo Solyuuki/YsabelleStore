@@ -193,3 +193,27 @@ The one-time cleanup script normalized these live products from `DISCONTINUED` t
 - `prd_hand_sanitizer` - Pocket Hand Sanitizer - `TOI-SANI-001`
 - `cmrgb64pg007tibtw4uar02vb` - DATA FLOW TEST PRODUCT e78d9047 - `TEST-9B3A7C4E-0F4`
 - `cmrgb8s9r007tibr4g6j4hezb` - DATA FLOW TEST PRODUCT 4955628f - `TEST-4C43F0A5-0E5`
+
+## Sprint 11 Status Screen Validation
+
+| Date       | Command               | Result | Notes                                                                                         |
+| ---------- | --------------------- | ------ | --------------------------------------------------------------------------------------------- |
+| 2026-09-26 | `npm run verify:code` | Passed | Exact-head CI runs the aggregate read-only verifier before artifact verification; QA follows. |
+
+## Sprint 11 CIE White Canvas Validation
+
+| Date       | Command               | Result | Notes                                                                                                                                                         |
+| ---------- | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-27 | `npm run verify:code` | Passed | Aggregate read-only code verification completed successfully in CI #1600; subsequent failure was limited to missing current implementation-artifact evidence. |
+
+## Sprint 11 Storefront Size Variant Validation
+
+Automated coverage verifies that only in-stock siblings from the same product family and variant are returned in ascending normalized package size, and the frontend contract covers image-backed selection, product navigation, selected-state styling, and horizontal scroll-snap behavior. CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`, including the Phase 6 canonical release rehearsal.
+
+## Sprint 11 Product Error State Validation
+
+Automated coverage guards the product error state against raw service-error rendering and verifies the dedicated polished error-state class, safe copy, secondary navigation action, relaxed description line-height, and removal of dashed-border styling from the product-specific fallback. CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`, including Phase 6 canonical release hardening.
+
+## Sprint 11 Catalog Identity Validation
+
+Automated coverage verifies the canonical 50 identity manifest against the release and seed SQL, structured CSV/XLSX and package-import identity support, Owner catalog readiness visibility, brand/variant completeness, package-size pair integrity, and compatibility with the canonical release security chain. CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51`, including Phase 6 release hardening.

@@ -9,6 +9,7 @@ import {
   type ReactNode
 } from "react";
 
+import type { HttpErrorEventDetail } from "@/services/apiClient";
 import { checkSystemHealth, type SystemHealthState } from "@/services/systemHealthService";
 import { setSystemMutationGate } from "@/services/systemReliabilityGate";
 
@@ -22,6 +23,7 @@ export type SystemReliabilityMode =
 type SystemReliabilityContextValue = {
   healthState: SystemHealthState;
   lastHealthyAt: Date | null;
+  lastHttpStatus: number | null;
   mode: SystemReliabilityMode;
   recentlyRestored: boolean;
   retryNow: () => Promise<void>;
@@ -38,6 +40,7 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
   const [healthState, setHealthState] = useState<SystemHealthState>("checking");
   const [mode, setMode] = useState<SystemReliabilityMode>("checking");
   const [lastHealthyAt, setLastHealthyAt] = useState<Date | null>(null);
+  const [lastHttpStatus, setLastHttpStatus] = useState<number | null>(null);
   const [recentlyRestored, setRecentlyRestored] = useState(false);
   const consecutiveTransportFailuresRef = useRef(0);
   const modeRef = useRef<SystemReliabilityMode>("checking");
@@ -57,6 +60,7 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
 
       if (nextState === "healthy") {
         consecutiveTransportFailuresRef.current = 0;
+        setLastHttpStatus(null);
         setLastHealthyAt(new Date());
         applyMode("healthy");
 
@@ -84,17 +88,22 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
 
       if (nextState === "degraded") {
         consecutiveTransportFailuresRef.current = 0;
+        setLastHttpStatus(null);
         applyMode("degraded");
         return;
       }
 
       if (nextState === "database-unavailable" || nextState === "offline") {
         consecutiveTransportFailuresRef.current = 2;
+        setLastHttpStatus(null);
         applyMode("unavailable");
         return;
       }
 
       if (nextState === "backend-unavailable" || nextState === "timeout") {
+        if (nextState === "timeout") {
+          setLastHttpStatus(null);
+        }
         consecutiveTransportFailuresRef.current += 1;
         applyMode(consecutiveTransportFailuresRef.current >= 2 ? "unavailable" : "reconnecting");
         return;
@@ -132,22 +141,39 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
       void retryNow();
     };
     const handleOffline = () => {
+      setLastHttpStatus(null);
       applyHealthState("offline");
     };
     const handleFocus = () => {
       void retryNow();
     };
     const handleApiUnreachable = () => {
+      setLastHttpStatus(null);
       if (modeRef.current === "healthy") {
         applyHealthState("backend-unavailable");
       }
       void retryNow();
+    };
+    const handleHttpError = (event: Event) => {
+      const detail = (event as CustomEvent<HttpErrorEventDetail>).detail;
+
+      if (detail?.status !== 503) {
+        return;
+      }
+
+      setLastHttpStatus(503);
+      consecutiveTransportFailuresRef.current = Math.max(
+        consecutiveTransportFailuresRef.current,
+        1
+      );
+      applyHealthState("backend-unavailable");
     };
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     window.addEventListener("focus", handleFocus);
     window.addEventListener("ysabelle:api-unreachable", handleApiUnreachable);
+    window.addEventListener("ysabelle:http-error", handleHttpError);
 
     return () => {
       window.clearInterval(intervalId);
@@ -155,6 +181,7 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("ysabelle:api-unreachable", handleApiUnreachable);
+      window.removeEventListener("ysabelle:http-error", handleHttpError);
 
       if (restoredTimerRef.current !== null) {
         window.clearTimeout(restoredTimerRef.current);
@@ -166,11 +193,12 @@ export function SystemReliabilityProvider({ children }: { children: ReactNode })
     () => ({
       healthState,
       lastHealthyAt,
+      lastHttpStatus,
       mode,
       recentlyRestored,
       retryNow
     }),
-    [healthState, lastHealthyAt, mode, recentlyRestored, retryNow]
+    [healthState, lastHealthyAt, lastHttpStatus, mode, recentlyRestored, retryNow]
   );
 
   return (

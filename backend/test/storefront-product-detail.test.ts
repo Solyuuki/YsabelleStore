@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { prisma } from "../src/database/prismaClient.js";
 import {
+  getStorefrontProduct,
   listStorefrontProducts,
   listStorefrontProductReviews,
   listStorefrontRelatedProducts
@@ -151,6 +152,70 @@ test("storefront reviews aggregate persisted ratings and support bounded rating 
     }
     assert.equal(storefrontProductReviewQuerySchema.safeParse({ rating: 0 }).success, false);
     assert.equal(storefrontProductReviewQuerySchema.safeParse({ rating: 6 }).success, false);
+  } finally {
+    await scope.cleanup();
+  }
+});
+
+test("product detail exposes only in-stock size siblings in ascending package order", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  const suffix = randomUUID().slice(0, 8);
+
+  try {
+    const { category } = await ensureCanonicalStorefrontCategory(0);
+    const small = await createProduct(
+      category.id,
+      `Variant Water ${suffix} 330ml`,
+      `${suffix}-330`,
+      5
+    );
+    const current = await createProduct(
+      category.id,
+      `Variant Water ${suffix} 500ml`,
+      `${suffix}-500`,
+      4
+    );
+    const large = await createProduct(
+      category.id,
+      `Variant Water ${suffix} 1L`,
+      `${suffix}-1000`,
+      3
+    );
+    const unavailable = await createProduct(
+      category.id,
+      `Variant Water ${suffix} 1.5L`,
+      `${suffix}-1500`,
+      0
+    );
+    const otherVariant = await createProduct(
+      category.id,
+      `Variant Water Zero ${suffix} 500ml`,
+      `${suffix}-zero`,
+      6
+    );
+
+    const detail = await getStorefrontProduct(current.id);
+
+    assert.deepEqual(
+      detail.sizeVariants.map((variant) => ({
+        id: variant.id,
+        sizeUnit: variant.sizeUnit,
+        sizeValue: variant.sizeValue
+      })),
+      [
+        { id: small.id, sizeUnit: "MILLILITER", sizeValue: "330" },
+        { id: current.id, sizeUnit: "MILLILITER", sizeValue: "500" },
+        { id: large.id, sizeUnit: "LITER", sizeValue: "1" }
+      ]
+    );
+    assert.equal(
+      detail.sizeVariants.some((variant) => variant.id === unavailable.id),
+      false
+    );
+    assert.equal(
+      detail.sizeVariants.some((variant) => variant.id === otherVariant.id),
+      false
+    );
   } finally {
     await scope.cleanup();
   }

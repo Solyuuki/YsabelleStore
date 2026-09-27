@@ -10,6 +10,7 @@ const INTERNAL_APP_ROUTE_PATHS = new Set([
   "/pos",
   "/products",
   "/inventory",
+  "/receiving",
   "/sales",
   "/forecast",
   "/historical-sales",

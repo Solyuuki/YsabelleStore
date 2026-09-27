@@ -143,6 +143,9 @@ jobs:
       - name: Check version consistency
         run: npm run version:check
 
+      - name: Run aggregate read-only code verification
+        run: npm run verify:code
+
       - name: Verify committed sprint and artifact status
         run: npm run verify:status
 

@@ -12,3 +12,4 @@ forecasting-service/data
 forecasting-service/outputs
 .agents/
 .codex/
+frontend/src/assets/status/*.svg

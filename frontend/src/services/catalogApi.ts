@@ -286,6 +286,10 @@ export type ProductImportRow = {
     initialStock: number;
     status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
     description: string | null;
+    brand: string | null;
+    variant: string | null;
+    sizeValue: string | null;
+    sizeUnit: ProductSizeUnit | null;
     imageUrl: string | null;
   } | null;
   valid: boolean;

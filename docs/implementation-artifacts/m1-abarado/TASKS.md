@@ -68,3 +68,41 @@ A task is complete only when implementation evidence and the matching artifact u
 | Task ID             | Date       | Scope                                                   | Status    | Evidence                                    | Next Action                                                  |
 | ------------------- | ---------- | ------------------------------------------------------- | --------- | ------------------------------------------- | ------------------------------------------------------------ |
 | YSB-M1-QOL-HTTP-001 | 2026-09-18 | Complete and standardize HTTP status/transport handling | In Review | `m1/v0.11/fix/http-status-contract`; PR #41 | Complete exact-head automated validation before integration. |
+
+## Sprint 11 Full-Screen Status UX
+
+| Task ID           | Date       | Scope                                                        | Status              | Evidence                                     | Next Action                            |
+| ----------------- | ---------- | ------------------------------------------------------------ | ------------------- | -------------------------------------------- | -------------------------------------- |
+| YSB-M1-QOL-UI-002 | 2026-09-26 | Standardize full-screen HTTP and reliability status surfaces | Ready for manual QA | `m1/v0.11/feat/status-screen-system`; PR #43 | QA 401/403/404/503 and reliability UI. |
+
+## Sprint 11 CIE White Canvas
+
+Task YSB-M1-CIE-IMG-003 standardizes CIE derivatives and storefront media on pure white.
+
+Evidence: `m1/v0.11/fix/cie-white-catalog-canvas`
+
+Status: In review. Complete exact-head automated validation before integration.
+
+## Sprint 11 Storefront Size Variants
+
+Task YSB-M1-STOREFRONT-VARIANT-004 upgrades the existing product-detail experience with a stock-aware, image-backed package-size selector while preserving each size as an independent product.
+
+Evidence: `sprint/v0.11/sprint-11`; `backend/src/services/storefrontService.ts`; `backend/test/storefront-product-detail.test.ts`; `frontend/src/components/customer/ProductSizeSelector.tsx`; `frontend/src/pages/customer/ProductDetailPage.tsx`; `frontend/src/styles/customer.css`; `scripts/test/storefront-size-variant-ui.test.mjs`
+
+Status: Ready for manual QA. CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`.
+
+## Sprint 11 Product Error State Polish
+
+Task YSB-M1-STOREFRONT-ERROR-005 replaces the product-detail fallback with a compact, premium storefront error card using safe customer-facing copy, balanced typography, responsive action spacing, and a regression guard that prevents raw service URLs from being rendered.
+
+Evidence: `sprint/v0.11/sprint-11`; `frontend/src/pages/customer/ProductDetailPage.tsx`; `frontend/src/styles/customer.css`; `scripts/test/storefront-product-error-state.test.mjs`
+
+Status: Ready for manual QA. CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`.
+
+## Sprint 11 Catalog Identity Hardening
+
+Task YSB-M1-CATALOG-IDENTITY-006 closes the variant-readiness gap across Owner Products, CSV/XLSX import, ZIP package import, and the canonical 50-product release.
+
+Evidence: `backend/src/services/productImportService.ts`; `frontend/src/services/catalogApi.ts`; `frontend/src/pages/ProductsPageLegacy.tsx`; `frontend/src/components/catalog/ProductPackageImportDialog.tsx`; `database/canonical/product-identities.json`; `database/canonical/releases/g2-s2-c4-a2.json`; `database/seed/canonical-catalog-v1.sql`; `scripts/canonical-release-security.mjs`; `scripts/test/catalog-product-identity-contract.test.mjs`
+
+Status: Ready for manual QA. CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51`.

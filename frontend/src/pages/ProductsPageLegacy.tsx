@@ -91,6 +91,32 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency"
 });
 
+function formatProductPackSize(product: ProductRecord) {
+  if (!product.sizeValue || !product.sizeUnit) return null;
+  const unitLabels: Record<ProductRecord["sizeUnit"] & string, string> = {
+    MILLILITER: "mL",
+    LITER: "L",
+    GRAM: "g",
+    KILOGRAM: "kg",
+    PIECE: "pcs"
+  };
+  const numeric = Number(product.sizeValue);
+  const value = Number.isFinite(numeric)
+    ? new Intl.NumberFormat("en-PH", { maximumFractionDigits: 3 }).format(numeric)
+    : product.sizeValue;
+  return `${value} ${unitLabels[product.sizeUnit]}`;
+}
+
+function isProductVariantReady(product: ProductRecord) {
+  return Boolean(product.brand && product.variant && product.sizeValue && product.sizeUnit);
+}
+
+function productIdentitySummary(product: ProductRecord) {
+  return [product.brand, product.variant, formatProductPackSize(product)]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 type CatalogLoadingReason =
   | "initial"
   | "search"
@@ -1020,6 +1046,8 @@ export function ProductsPage() {
                             const isSelected = selectedProductId === product.id;
                             const isStatusPending = pendingAvailabilityProductIds.has(product.id);
                             const availabilityAction = getAvailabilityAction(product.status);
+                            const variantReady = isProductVariantReady(product);
+                            const identitySummary = productIdentitySummary(product);
 
                             return (
                               <tr
@@ -1049,7 +1077,7 @@ export function ProductsPage() {
                                   <div className="mt-0.5 max-h-10 overflow-hidden text-xs leading-5 text-slate-500">
                                     {product.description ?? "No description"}
                                   </div>
-                                  <div className="mt-1.5">
+                                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                     <StatusBadge
                                       variant={
                                         product.dataQualityStatus === "APPROVED"
@@ -1067,6 +1095,18 @@ export function ProductsPage() {
                                           ? "Rejected"
                                           : "Needs review"}
                                     </StatusBadge>
+                                    <StatusBadge variant={variantReady ? "success" : "warning"}>
+                                      {variantReady ? "Variant ready" : "Identity incomplete"}
+                                    </StatusBadge>
+                                  </div>
+                                  <div
+                                    className={[
+                                      "mt-1.5 text-xs leading-5",
+                                      variantReady ? "text-slate-600" : "font-medium text-amber-700"
+                                    ].join(" ")}
+                                  >
+                                    {identitySummary ||
+                                      "Brand, variant, and package size need catalog review."}
                                   </div>
                                   <div className="mt-2 grid gap-1 text-xs text-slate-500 lg:hidden">
                                     <div className="flex items-start justify-between gap-3">
@@ -1423,7 +1463,11 @@ function ImportProductsDialog({
                 <li>Keep the headers unchanged.</li>
                 <li>Use unique SKU and barcode values.</li>
                 <li>Barcode is optional.</li>
-                <li>Categories and units must use supported values.</li>
+                <li>
+                  Include brand, variant, sizeValue, and sizeUnit for products that belong to a size
+                  or flavor family.
+                </li>
+                <li>Categories, units, and pack-size units must use supported values.</li>
               </ul>
             </div>
 

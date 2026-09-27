@@ -44,6 +44,66 @@ class CatalogImageNormalizationTests(unittest.TestCase):
         self.assertEqual(result["variants"]["processed"]["fileName"], "processed.webp")
         self.assertEqual(result["subjectDetection"], "detected")
 
+    def test_standardizes_detected_light_background_to_white_canvas(self) -> None:
+        source = Image.new("RGB", (900, 700), (244, 242, 240))
+        ImageDraw.Draw(source).rectangle((350, 100, 550, 600), fill=(30, 80, 180))
+        path = self.save("off-white-background.png", source)
+        output = self.root / "out"
+
+        result = normalize_image_path(path, output, canvas_policy="white")
+
+        self.assertEqual(result["subjectDetection"], "detected")
+        for variant_name in ("processed.webp", "card.webp", "pdp.webp"):
+            with Image.open(output / variant_name) as opened:
+                variant = opened.convert("RGB")
+                corners = (
+                    variant.getpixel((0, 0)),
+                    variant.getpixel((variant.width - 1, 0)),
+                    variant.getpixel((0, variant.height - 1)),
+                    variant.getpixel((variant.width - 1, variant.height - 1)),
+                )
+            for corner in corners:
+                self.assertGreaterEqual(min(corner), 248, (variant_name, corner))
+
+    def test_flattens_transparent_product_onto_white_storefront_canvas(self) -> None:
+        source = Image.new("RGBA", (900, 900), (0, 0, 0, 0))
+        ImageDraw.Draw(source).rounded_rectangle(
+            (250, 160, 650, 740), radius=40, fill=(30, 120, 190, 255)
+        )
+        path = self.save("transparent-product.png", source)
+        output = self.root / "out"
+
+        result = normalize_image_path(path, output, canvas_policy="white")
+
+        self.assertEqual(result["subjectDetection"], "alpha-bounds")
+        with Image.open(output / "processed.webp") as opened:
+            processed = opened.convert("RGB")
+            corner = processed.getpixel((0, 0))
+        self.assertGreaterEqual(min(corner), 248, corner)
+
+    def test_legacy_canvas_policy_preserves_transparency_for_canonical_reconstruction(self) -> None:
+        source = Image.new("RGBA", (900, 900), (0, 0, 0, 0))
+        ImageDraw.Draw(source).rounded_rectangle(
+            (250, 160, 650, 740), radius=40, fill=(30, 120, 190, 255)
+        )
+        path = self.save("legacy-transparent-product.png", source)
+        output = self.root / "out"
+
+        result = normalize_image_path(path, output)
+
+        self.assertEqual(result["subjectDetection"], "alpha-bounds")
+        with Image.open(output / "processed.webp") as opened:
+            processed = opened.convert("RGBA")
+            alpha = processed.getchannel("A").getextrema()
+        self.assertLess(alpha[0], 250)
+
+    def test_rejects_unknown_canvas_policy(self) -> None:
+        source = Image.new("RGB", (300, 300), "white")
+        path = self.save("unknown-policy.png", source)
+
+        with self.assertRaisesRegex(ValueError, "Unsupported catalog canvas policy"):
+            normalize_image_path(path, self.root / "out", canvas_policy="unknown")
+
     def test_preserves_product_aspect_ratio_instead_of_stretching(self) -> None:
         source = Image.new("RGB", (700, 700), "white")
         ImageDraw.Draw(source).rectangle((250, 100, 450, 600), fill=(20, 70, 170))

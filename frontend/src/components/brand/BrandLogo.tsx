@@ -7,12 +7,16 @@ const WEB_BRAND_MARK_SRC = `/brand/ysabelle-store-mark-256.png?v=${BRAND_ASSET_V
 
 type BrandLogoProps = {
   className?: string;
+  variant?: "mark" | "full";
 };
 
-export function BrandLogo({ className }: BrandLogoProps) {
+export function BrandLogo({ className, variant = "mark" }: BrandLogoProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const classes = ["ys-brand-logo", className].filter(Boolean).join(" ");
-  const source = window.location.protocol === "file:" ? officialLogoUrl : WEB_BRAND_MARK_SRC;
+  const source =
+    variant === "full" || window.location.protocol === "file:"
+      ? officialLogoUrl
+      : WEB_BRAND_MARK_SRC;
 
   if (imageFailed) {
     return (

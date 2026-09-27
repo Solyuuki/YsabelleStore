@@ -86,6 +86,19 @@ export function ProductPackageImportDialog({
     if (!preview) return [];
     return preview.errors.slice(0, 10);
   }, [preview]);
+  const identityStats = useMemo(() => {
+    if (!preview) return { ready: 0, review: 0 };
+
+    const ready = preview.rows.filter((row) => {
+      const data = row.normalizedData;
+      return Boolean(data?.brand && data.variant && data.sizeValue && data.sizeUnit);
+    }).length;
+
+    return {
+      ready,
+      review: preview.totalRows - ready
+    };
+  }, [preview]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -317,7 +330,9 @@ export function ProductPackageImportDialog({
                       name, sku, category, unit, costPrice, sellingPrice, reorderLevel, initialStock
                     </p>
                     <p className="mt-3 leading-6">
-                      Optional: targetStockLevel, status, description, imageUrl, barcode.
+                      Optional: targetStockLevel, status, description, barcode, brand, variant,
+                      sizeValue, sizeUnit, imageUrl. Include the identity fields for products that
+                      belong to a size or flavor family.
                     </p>
                   </div>
 
@@ -549,9 +564,11 @@ export function ProductPackageImportDialog({
                   </StatusBadge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                   <Metric label="Valid products" value={preview.validRows} />
                   <Metric label="Invalid products" value={preview.invalidRows} />
+                  <Metric label="Variant-ready" value={identityStats.ready} />
+                  <Metric label="Identity review" value={identityStats.review} />
                   <Metric label="Images matched" value={preview.package.imagesMatched} />
                   <Metric label="Images approved" value={preview.package.imagesApproved} />
                 </div>

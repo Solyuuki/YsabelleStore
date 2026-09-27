@@ -66,3 +66,37 @@ M1 Sprint 2 auth behavior remains intact. Sprint 3 planning now shifts M1 into i
 | Date       | Progress                                                                                                                                                                                                                           | Evidence                                                                       |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | 2026-09-18 | Bootstrapped Sprint 11 guardrails and implemented the first QoL reliability slice covering canonical HTTP statuses, 405 routing semantics, safe dependency failures, frontend transport metadata, and focused regression coverage. | `m1/v0.11/fix/http-status-contract`; PR #41; automated validation in progress. |
+
+## Sprint 11 Full-Screen Status UX
+
+| Date       | Progress                                                                                                                         | Evidence                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 2026-09-26 | Unified 401, 403, 404, 503, backend-unreachable, database-unavailable, offline, and timeout states on one Ysabelle status shell. | `m1/v0.11/feat/status-screen-system`; PR #43; manual visual QA remains next. |
+
+## Sprint 11 CIE White Canvas Completion
+
+| Date       | Progress                                                                                                                                            | Evidence                                                                                                                                                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-27 | Completed the CIE/storefront white-canvas consistency fix and added regression coverage for opaque off-white and transparent product-image sources. | `m1/v0.11/fix/cie-white-catalog-canvas`; `catalog-image-engine/ciqe/normalize.py`; `catalog-image-engine/tests/test_normalize.py`; `frontend/src/styles/customer.css`; `scripts/test/catalog-image-white-canvas.test.mjs`; validation: Passed |
+
+## Sprint 11 Storefront Size Variant Upgrade
+
+On 2026-09-27, the storefront product detail page gained a stock-aware package-size selector without changing the existing PDP layout. The implementation groups real product records by conservative family identity, normalizes package sizes for ascending ordering, filters unavailable siblings, and uses product thumbnails with accessible selection behavior.
+
+Evidence: `backend/src/services/storefrontService.ts`, `backend/test/storefront-product-detail.test.ts`, `frontend/src/components/customer/ProductSizeSelector.tsx`, `frontend/src/pages/customer/ProductDetailPage.tsx`, `frontend/src/styles/customer.css`, and `scripts/test/storefront-size-variant-ui.test.mjs`.
+
+Validation: CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`; manual visual QA is next.
+
+## Sprint 11 Product Error State Polish
+
+On 2026-09-27, the product-detail load failure state was redesigned as a compact storefront card with safe customer-facing copy, improved serif/sans hierarchy, deliberate vertical rhythm, responsive actions, and no raw backend service URL rendered to customers.
+
+Evidence: `frontend/src/pages/customer/ProductDetailPage.tsx`, `frontend/src/styles/customer.css`, and `scripts/test/storefront-product-error-state.test.mjs`.
+
+Validation: CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`; manual visual QA is next.
+
+## Sprint 11 Catalog Identity Hardening
+
+On 2026-09-27, catalog identity was hardened end-to-end: structured brand/variant/package-size import support, Owner visibility for incomplete identity, ZIP-package readiness metrics, and canonical release `g2-s2-c4-a2` with a 50-product identity manifest. Package size is populated only where approved catalog names/descriptions provide deterministic evidence; unknown sizes remain an explicit review condition rather than guessed data.
+
+Validation: CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51`; manual QA is next.

@@ -144,3 +144,27 @@
 | 2026-09-06 | unknown                                 | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-09-10 | m1/v0.9/feat/catalog-data-readiness     | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
 | 2026-09-22 | m1/v0.11/fix/http-status-contract       | npm run verify:code                    | Passed  | The aggregate read-only code verification completed successfully. |
+
+## Sprint 11 Status Screen Validation
+
+| Date       | Branch                             | Command               | Result | Notes                                                                                         |
+| ---------- | ---------------------------------- | --------------------- | ------ | --------------------------------------------------------------------------------------------- |
+| 2026-09-26 | m1/v0.11/feat/status-screen-system | `npm run verify:code` | Passed | Exact-head CI runs the aggregate read-only verifier before artifact verification; QA follows. |
+
+## Sprint 11 CIE White Canvas Validation
+
+| Date       | Branch                                | Command               | Result | Notes                                                                                                                    |
+| ---------- | ------------------------------------- | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------ |
+| 2026-09-27 | m1/v0.11/fix/cie-white-catalog-canvas | `npm run verify:code` | Passed | Aggregate read-only code verification completed successfully in CI #1600 before the implementation-artifact status gate. |
+
+## Sprint 11 Storefront Size Variant Validation
+
+CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`. Repository formatting, linting, typechecking, backend/frontend/electron workspace builds, workspace tests, storefront variant regression coverage, guardrail tests, aggregate read-only verification, and Phase 6 canonical release hardening all completed successfully.
+
+## Sprint 11 Product Error State Validation
+
+CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`. Formatting, lint, typecheck, frontend/backend/electron workspace builds, guardrail tests, aggregate verification, and Phase 6 canonical release hardening completed successfully.
+
+## Sprint 11 Catalog Identity Validation
+
+CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51` for catalog release `g2-s2-c4-a2`. Formatting, lint, typecheck, workspace tests/builds, product-identity guardrails, canonical state/release security, candidate/image distribution compatibility, aggregate verification, pull convergence, and Phase 6 release hardening completed successfully.

@@ -45,7 +45,7 @@ def main() -> int:
 
     if not diagnostic_codes.intersection(blocking_codes):
         output = Path(output_directory)
-        normalized = normalize_image_path(source, output)
+        normalized = normalize_image_path(source, output, canvas_policy="white")
         post_optimization = analyze_image_path(output / "processed.webp")
         result = {
             "status": (
