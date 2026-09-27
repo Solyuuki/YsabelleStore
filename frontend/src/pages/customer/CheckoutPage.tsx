@@ -1,4 +1,12 @@
-import { ArrowLeft, Banknote, CheckCircle2, CreditCard, MapPin, ShieldCheck, Store } from "lucide-react";
+import {
+  ArrowLeft,
+  Banknote,
+  CheckCircle2,
+  CreditCard,
+  MapPin,
+  ShieldCheck,
+  Store
+} from "lucide-react";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
@@ -38,7 +46,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
   const [addressLoadError, setAddressLoadError] = useState("");
   const [saveAddressToAccount, setSaveAddressToAccount] = useState(Boolean(customer));
   const [paymentMethod, setPaymentMethod] = useState<StorefrontPaymentMethod>("PAYMONGO");
-  const [pendingPaymongoOrder, setPendingPaymongoOrder] = useState<StorefrontOrder | null>(null);
+  const [pendingPaymongoOrder, setPendingPaymongoOrder] =
+    useState<StorefrontOrder | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -121,7 +130,10 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
           notes: String(form.get("notes") ?? ""),
           fulfillmentMethod: "STORE_PICKUP",
           paymentMethod,
-          items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity }))
+          items: items.map((item) => ({
+            productId: item.product.id,
+            quantity: item.quantity
+          }))
         });
         sessionStorage.setItem(LAST_ORDER_KEY, JSON.stringify(order));
       }
@@ -206,7 +218,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         <div className="customer-page-heading">
           <p className="customer-kicker">Pickup order</p>
           <h1>Checkout</h1>
-          <p>Tell us who will collect this order, then choose test online payment or cash on pickup.</p>
+          <p>
+            Tell us who will collect this order, then choose test online payment or cash on pickup.
+          </p>
         </div>
         <form className="customer-checkout-layout" onSubmit={submit}>
           <div className="customer-checkout-form">
@@ -432,7 +446,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <span>4</span>
                 <div>
                   <h2>Payment</h2>
-                  <p>Choose PayMongo test checkout or pay at the store when you collect the order.</p>
+                  <p>
+                    Choose PayMongo test checkout or pay at the store when you collect the order.
+                  </p>
                 </div>
               </div>
               <div
@@ -455,7 +471,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   <span>
                     <strong>PayMongo online payment</strong>
                     <small>
-                      Secure hosted checkout in test mode. Choose card, GCash, Maya, GrabPay, or QR Ph in the PayMongo test checkout when available. No real money will be charged.
+                      Secure hosted checkout in test mode. Choose card, GCash, Maya, GrabPay, or QR
+                      Ph in the PayMongo test checkout when available. No real money will be
+                      charged.
                     </small>
                   </span>
                   {paymentMethod === "PAYMONGO" ? <CheckCircle2 aria-hidden="true" /> : null}
