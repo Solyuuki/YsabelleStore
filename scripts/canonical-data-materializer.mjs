@@ -122,6 +122,71 @@ export function decodeSqlValue(v) {
   return v.slice(1, -1).replace(/''/g, "'").replace(/\\'/g, "'").replace(/\\\\/g, "\\");
 }
 
+function encodeSqlValue(value) {
+  if (value === null || value === undefined) return "NULL";
+  if (typeof value === "number") return String(value);
+  return "'" + String(value).replaceAll("\\", "\\\\").replaceAll("'", "\\'") + "'";
+}
+
+function rewriteTuple(parsed, tuple, updates) {
+  const values = [...tuple.values];
+  for (const [column, nextValue] of Object.entries(updates)) {
+    const index = parsed.columns.indexOf(column);
+    if (index < 0) throw new Error(parsed.table + " missing " + column);
+    values[index] = encodeSqlValue(nextValue);
+  }
+  return { values, raw: "(" + values.join(",") + ")" };
+}
+
+function canonicalBarcodeId(sourceProductId) {
+  return "canonical-barcode-" + String(sourceProductId).toLowerCase();
+}
+
+function buildCanonicalBarcodeState(release) {
+  const rows = (release.products || []).map((product) => ({
+    id: canonicalBarcodeId(product.sourceProductId),
+    product_id: product.productId,
+    barcode: product.manufacturerBarcode,
+    type: "MANUFACTURER",
+    is_primary: "1",
+    source: "VERIFIED_BOOTSTRAP",
+    registered_by_id: null,
+    source_reference: "canonical-release:" + release.releaseId + ":" + product.sourceProductId
+  }));
+  const productIds = rows.map((row) => encodeSqlValue(row.product_id)).join(",");
+  const barcodes = rows.map((row) => encodeSqlValue(row.barcode)).join(",");
+  const ids = rows.map((row) => encodeSqlValue(row.id)).join(",");
+  const values = rows
+    .map((row) =>
+      "(" +
+      [
+        row.id,
+        row.product_id,
+        row.barcode,
+        row.type,
+        Number(row.is_primary),
+        row.source,
+        row.registered_by_id,
+        row.source_reference
+      ]
+        .map(encodeSqlValue)
+        .join(",") +
+      ")"
+    )
+    .join(",\n");
+
+  return {
+    rows,
+    statements: [
+      "UPDATE product_barcodes SET is_primary=0 WHERE product_id IN (" + productIds + ")",
+      "DELETE FROM product_barcodes WHERE barcode IN (" + barcodes + ") OR id IN (" + ids + ")",
+      "INSERT INTO product_barcodes " +
+        "(id,product_id,barcode,type,is_primary,source,registered_by_id,source_reference) VALUES\n" +
+        values
+    ]
+  };
+}
+
 function value(p, t, c) {
   const i = p.columns.indexOf(c);
   if (i < 0) throw new Error(p.table + " missing " + c);
