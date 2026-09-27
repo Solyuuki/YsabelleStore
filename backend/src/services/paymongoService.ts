@@ -62,10 +62,7 @@ async function paymongoRequest(path: string, init: RequestInit = {}) {
   const secretKey = requireTestSecretKey();
   const headers = new Headers(init.headers);
   headers.set("Accept", "application/json");
-  headers.set(
-    "Authorization",
-    `Basic ${Buffer.from(`${secretKey}:`, "utf8").toString("base64")}`
-  );
+  headers.set("Authorization", `Basic ${Buffer.from(`${secretKey}:`, "utf8").toString("base64")}`);
 
   if (init.body !== undefined) {
     headers.set("Content-Type", "application/json");
@@ -497,10 +494,7 @@ export function verifyPaymongoWebhookSignature(
     signatureHeader
       .split(",")
       .map((part) => part.trim().split("=", 2))
-      .filter(
-        (part): part is [string, string] =>
-          part.length === 2 && Boolean(part[0] && part[1])
-      )
+      .filter((part): part is [string, string] => part.length === 2 && Boolean(part[0] && part[1]))
   );
   const timestamp = parts.get("t");
   const signature = parts.get(livemode ? "li" : "te");

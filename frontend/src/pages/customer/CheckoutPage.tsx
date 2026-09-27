@@ -46,8 +46,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
   const [addressLoadError, setAddressLoadError] = useState("");
   const [saveAddressToAccount, setSaveAddressToAccount] = useState(Boolean(customer));
   const [paymentMethod, setPaymentMethod] = useState<StorefrontPaymentMethod>("PAYMONGO");
-  const [pendingPaymongoOrder, setPendingPaymongoOrder] =
-    useState<StorefrontOrder | null>(null);
+  const [pendingPaymongoOrder, setPendingPaymongoOrder] = useState<StorefrontOrder | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 

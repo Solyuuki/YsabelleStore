@@ -11,10 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
-import {
-  fetchStorefrontPaymentStatus,
-  startPaymongoCheckout
-} from "@/services/storefrontService";
+import { fetchStorefrontPaymentStatus, startPaymongoCheckout } from "@/services/storefrontService";
 import type { StorefrontOrder, StorefrontPaymentStatusResult } from "@/types/storefront";
 import { LAST_ORDER_KEY } from "./CheckoutPage";
 

@@ -11,11 +11,7 @@ import { HttpError } from "../utils/httpError.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import { storefrontOrderPaymentParamsSchema } from "../validators/storefront.validators.js";
 
-export const createPaymongoCheckoutController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const createPaymongoCheckoutController: RequestHandler = async (request, response, next) => {
   try {
     const customer = getAuthenticatedCustomer(request);
     if (!customer) {
@@ -61,11 +57,7 @@ export const getStorefrontPaymentStatusController: RequestHandler = async (
   }
 };
 
-export const paymongoWebhookController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const paymongoWebhookController: RequestHandler = async (request, response, next) => {
   try {
     const rawBody = (request as typeof request & { rawBody?: Buffer }).rawBody;
 
