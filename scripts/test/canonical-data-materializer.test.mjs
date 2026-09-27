@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildCanonicalSubset } from "../canonical-data-materializer.mjs";
+import { buildCanonicalSubset, normalizeCanonicalDbValue } from "../canonical-data-materializer.mjs";
 
 const q = (value) => (value === null ? "NULL" : "'" + value + "'");
 const tuple = (values) => "(" + values.map(q).join(",") + ")";
@@ -142,4 +142,24 @@ test("canonical subset excludes unrelated catalog rows", () => {
   assert.match(barcodeInsert, /INSERT INTO product_barcodes/);
   assert.match(barcodeInsert, /created_at,updated_at/);
   assert.match(barcodeInsert, /CURRENT_TIMESTAMP\(3\),CURRENT_TIMESTAMP\(3\)/);
+});
+
+test("canonical JSON drift comparison ignores storage formatting", () => {
+  const compact =
+    '{"source":{"dataset":"historical-sales","workbooks":["a.xlsx","b.xlsx"]},"identityBasis":["SKU"]}';
+  const mysqlFormatted =
+    '{"identityBasis": ["SKU"], "source": {"workbooks": ["a.xlsx", "b.xlsx"], "dataset": "historical-sales"}}';
+
+  assert.equal(
+    normalizeCanonicalDbValue("sarima_source_product_mappings", "evidence", compact),
+    normalizeCanonicalDbValue(
+      "sarima_source_product_mappings",
+      "evidence",
+      mysqlFormatted
+    )
+  );
+  assert.notEqual(
+    normalizeCanonicalDbValue("products", "description", compact),
+    normalizeCanonicalDbValue("products", "description", mysqlFormatted)
+  );
 });
