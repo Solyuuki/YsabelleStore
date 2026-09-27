@@ -6,16 +6,17 @@ M1 owns integration-facing Quality of Life, reliability UX, HTTP/API standardiza
 
 ## Current activity
 
-Branch: `m1/v0.11/fix/cie-white-catalog-canvas`
+Branch: `sprint/v0.11/sprint-11`
 
-- Standardizes CIQE processed, card, and PDP derivatives on one opaque pure-white catalog canvas.
-- Aligns the storefront product-media surface with the same pure-white background.
-- Preserves original uploads and the existing conservative subject-detection and full-frame fallback behavior.
-- Adds regression coverage for off-white opaque sources and transparent product sources.
-- Keeps product aspect ratio, contain behavior, derivative sizing, and the 1.25× upscale cap unchanged.
-- Adds a cross-layer guardrail so CIE and storefront background policy cannot silently drift.
-- PR #45 remains blocked from integration until the exact-head automated checks are fully green.
+- Adds a premium image-backed size selector to the existing storefront product-detail layout without redesigning the PDP.
+- Treats each size as its own real product record, so image, price, stock, SKU/barcode identity, quantity limits, and cart behavior remain product-specific.
+- Groups size siblings conservatively by normalized product family name plus brand and variant identity.
+- Uses structured `sizeValue`/`sizeUnit` when available and the existing canonical size parser as a safe fallback.
+- Shows only storefront-visible size siblings with sellable stock and sorts mixed package units by normalized ascending size.
+- Keeps different flavor/formula variants separate even when package sizes match.
+- Uses accessible native radio selection, horizontal overflow/scroll-snap on narrow screens, product thumbnails, and the existing Ysabelle visual tokens.
+- Adds backend ordering/filtering coverage and a storefront UI contract guardrail.
 
 ## Validation status
 
-Automated validation is required to pass on the exact PR head before integration.
+Exact-head automated validation is required before this implementation is considered QA-ready.
