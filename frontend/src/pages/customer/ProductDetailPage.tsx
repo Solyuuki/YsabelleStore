@@ -13,6 +13,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard, formatCurrency, formatUnit } from "@/components/customer/ProductCard";
+import { ProductSizeSelector } from "@/components/customer/ProductSizeSelector";
 import { ProductVisual } from "@/components/customer/ProductVisual";
 import { QuantityControl } from "@/components/customer/QuantityControl";
 import { useCart } from "@/context/CartContext";
@@ -24,6 +25,7 @@ import {
 } from "@/services/storefrontService";
 import type {
   StorefrontProduct,
+  StorefrontProductDetail,
   StorefrontProductReviews,
   StorefrontRelatedProducts
 } from "@/types/storefront";
@@ -44,7 +46,7 @@ export function ProductDetailPage({
   navigate: (path: string) => void;
 }) {
   const { addItem } = useCart();
-  const [product, setProduct] = useState<StorefrontProduct | null>(null);
+  const [product, setProduct] = useState<StorefrontProductDetail | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState("");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
@@ -168,6 +170,11 @@ export function ProductDetailPage({
             <p className="customer-product-detail__description">
               {product.description || "An everyday essential from Ysabelle's Store."}
             </p>
+            <ProductSizeSelector
+              currentProductId={product.id}
+              navigate={navigate}
+              variants={product.sizeVariants}
+            />
             <div className="customer-product-detail__price">
               <strong>{formatCurrency(product.sellingPrice)}</strong>
               <span>per {formatUnit(product.unit)}</span>
