@@ -1,0 +1,458 @@
+{
+  "formatVersion": 1,
+  "releaseId": "g2-s2-c4-a2",
+  "catalogVersion": 4,
+  "evidencePolicy": "CANONICAL_NAME_OR_APPROVED_DESCRIPTION",
+  "items": [
+    {
+      "sourceProductId": "P299",
+      "productId": "cmtk4sfqw00utib1givs20mwk",
+      "sku": "SARIMA-P299",
+      "brand": "Jack ‘n Jill",
+      "variant": "Piattos Supersized Cheese",
+      "sizeValue": null,
+      "sizeUnit": null
+    },
+    {
+      "sourceProductId": "P352",
+      "productId": "cmtk4sg34010pib1grc379g43",
+      "sku": "SARIMA-P352",
+      "brand": "Presto",
+      "variant": "Creams Peanut Butter Sandwich Cookies",
+      "sizeValue": null,
+      "sizeUnit": null
+    },
+    {
+      "sourceProductId": "P361",
+      "productId": "cmtk4sg5n011pib1gyrtmog78",
+      "sku": "SARIMA-P361",
+      "brand": "Rebisco",
+      "variant": "Magic Flakes Cheese",
+      "sizeValue": null,
+      "sizeUnit": null
+    },
+    {
+      "sourceProductId": "P023",
+      "productId": "cmtk4sci10029ib1ggerp7k5p",
+      "sku": "SARIMA-P023",
+      "brand": "Gardenia",
+      "variant": "California Raisin Loaf",
+      "sizeValue": "400",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P024",
+      "productId": "cmtk4scia002dib1ghawtsxbd",
+      "sku": "SARIMA-P024",
+      "brand": "Gardenia",
+      "variant": "High Fiber Whole Wheat Bread",
+      "sizeValue": "400",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P027",
+      "productId": "cmtk4scj2002pib1gq2hussan",
+      "sku": "SARIMA-P027",
+      "brand": "Marby",
+      "variant": "Cheese Bites Healthy Kids Pack",
+      "sizeValue": null,
+      "sizeUnit": null
+    },
+    {
+      "sourceProductId": "P030",
+      "productId": "cmtk4scjq0031ib1giurdrvya",
+      "sku": "SARIMA-P030",
+      "brand": "Marby",
+      "variant": "Mini Mamon",
+      "sizeValue": "70",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P031",
+      "productId": "cmtk4scjx0035ib1g6t5r5v5f",
+      "sku": "SARIMA-P031",
+      "brand": "Marby",
+      "variant": "Hopia Roll Mongo",
+      "sizeValue": "220",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P201",
+      "productId": "cmtk4sf1o00khib1g7fl8t8dt",
+      "sku": "SARIMA-P201",
+      "brand": "Barrio Fiesta",
+      "variant": "Ginisang Bagoong Spicy",
+      "sizeValue": "250",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P202",
+      "productId": "cmtk4sf1w00klib1glktf3vae",
+      "sku": "SARIMA-P202",
+      "brand": "Barrio Fiesta",
+      "variant": "Ginisang Bagoong Regular",
+      "sizeValue": "250",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P204",
+      "productId": "cmtk4sf2i00ktib1g7ol0mvpm",
+      "sku": "SARIMA-P204",
+      "brand": "Alaska",
+      "variant": "Sweetened Filled Milk",
+      "sizeValue": "377",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P219",
+      "productId": "cmtk4sf5m00m9ib1g50dzc76m",
+      "sku": "SARIMA-P219",
+      "brand": "Nature’s Spring",
+      "variant": "Purified Drinking Water",
+      "sizeValue": "500",
+      "sizeUnit": "MILLILITER"
+    },
+    {
+      "sourceProductId": "P238",
+      "productId": "cmtk4sf9q00o9ib1ga719u9g9",
+      "sku": "SARIMA-P238",
+      "brand": "Pocari Sweat",
+      "variant": "Original",
+      "sizeValue": "900",
+      "sizeUnit": "MILLILITER"
+    },
+    {
+      "sourceProductId": "P022",
+      "productId": "prd_sarima_p022_gardenia_white_bread_600g",
+      "sku": "SARIMA-P022",
+      "brand": "Gardenia",
+      "variant": "Enriched White",
+      "sizeValue": "600",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P074",
+      "productId": "cmtk4se9t007lib1gunsvwhxr",
+      "sku": "SARIMA-P074",
+      "brand": "Those Days",
+      "variant": "Regular With Wings",
+      "sizeValue": "8",
+      "sizeUnit": "PIECE"
+    },
+    {
+      "sourceProductId": "P075",
+      "productId": "cmtk4sea1007pib1gbxjuxh8l",
+      "sku": "SARIMA-P075",
+      "brand": "Those Days",
+      "variant": "All Night With Wings",
+      "sizeValue": "8",
+      "sizeUnit": "PIECE"
+    },
+    {
+      "sourceProductId": "P089",
+      "productId": "cmtk4sect008xib1gjtvt85e4",
+      "sku": "SARIMA-P089",
+      "brand": "Fresca",
+      "variant": "Tuna Hot & Spicy",
+      "sizeValue": "175",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P103",
+      "productId": "cmtk4sefj00a5ib1gnmrwxogu",
+      "sku": "SARIMA-P103",
+      "brand": "Lady’s Choice",
+      "variant": "Chicken Spread",
+      "sizeValue": "27",
+      "sizeUnit": "MILLILITER"
+    },
+    {
+      "sourceProductId": "P122",
+      "productId": "cmtk4sejz00c9ib1gskrgscp7",
+      "sku": "SARIMA-P122",
+      "brand": "Hokkaido",
+      "variant": "Mackerel in Oil",
+      "sizeValue": "425",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P141",
+      "productId": "cmtk4seo700e5ib1gsvgdoypz",
+      "sku": "SARIMA-P141",
+      "brand": "Magnolia",
+      "variant": "Cheezee",
+      "sizeValue": "160",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P317",
+      "productId": "cmtk4sfus00wtib1g6dzghbwy",
+      "sku": "SARIMA-P317",
+      "brand": "Nature’s Spring",
+      "variant": "Distilled Drinking Water",
+      "sizeValue": "10",
+      "sizeUnit": "LITER"
+    },
+    {
+      "sourceProductId": "P318",
+      "productId": "cmtk4sfv400wxib1g4ien5yh1",
+      "sku": "SARIMA-P318",
+      "brand": "Wilkins",
+      "variant": "Distilled Drinking Water",
+      "sizeValue": "7",
+      "sizeUnit": "LITER"
+    },
+    {
+      "sourceProductId": "P397",
+      "productId": "cmtk4sgdp015dib1ggq0l8xb8",
+      "sku": "SARIMA-P397",
+      "brand": "Alaska",
+      "variant": "Fortified Powdered Milk Drink",
+      "sizeValue": "300",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P268",
+      "productId": "cmtk4sfhp00rdib1gf6kmdn3x",
+      "sku": "SARIMA-P268",
+      "brand": "Absolute",
+      "variant": "Pure Distilled Drinking Water",
+      "sizeValue": "500",
+      "sizeUnit": "MILLILITER"
+    },
+    {
+      "sourceProductId": "P115",
+      "productId": "cmtk4seik00bhib1g2zfn7xzv",
+      "sku": "SARIMA-P115",
+      "brand": "Eden",
+      "variant": "Original Cheese",
+      "sizeValue": "160",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P048",
+      "productId": "cmtk4scoh004xib1gioe0pcxe",
+      "sku": "SARIMA-P048",
+      "brand": "Happy",
+      "variant": "Absorbent Cotton",
+      "sizeValue": "10",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P342",
+      "productId": "cmtk4sg0y00zlib1gefat8q3s",
+      "sku": "SARIMA-P342",
+      "brand": "Jack ‘n Jill",
+      "variant": "Cloud 9 Classic",
+      "sizeValue": "12",
+      "sizeUnit": "PIECE"
+    },
+    {
+      "sourceProductId": "P386",
+      "productId": "cmtk4sgau0145ib1g7v73blt9",
+      "sku": "SARIMA-P386",
+      "brand": "Nescafé",
+      "variant": "Classic",
+      "sizeValue": "48",
+      "sizeUnit": "PIECE"
+    },
+    {
+      "sourceProductId": "P085",
+      "productId": "cmtk4sec2008lib1gfwalixjn",
+      "sku": "SARIMA-P085",
+      "brand": "555",
+      "variant": "Tuna Adobo",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P114",
+      "productId": "cmtk4sei500bdib1gwna3d0r1",
+      "sku": "SARIMA-P114",
+      "brand": "555",
+      "variant": "Tuna Afritada",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P011",
+      "productId": "cmtk4scf70015ib1gf27xkvrk",
+      "sku": "SARIMA-P011",
+      "brand": "555",
+      "variant": "Tuna Caldereta",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P009",
+      "productId": "cmtk4sces000xib1g923ipxb4",
+      "sku": "SARIMA-P009",
+      "brand": "555",
+      "variant": "Tuna Flakes in Oil",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P010",
+      "productId": "cmtk4scez0011ib1g0t6vl515",
+      "sku": "SARIMA-P010",
+      "brand": "555",
+      "variant": "Tuna Mechado",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P012",
+      "productId": "cmtk4scff0019ib1ghf25vq2y",
+      "sku": "SARIMA-P012",
+      "brand": "555",
+      "variant": "Tuna Spicy Paksiw",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P013",
+      "productId": "cmtk4scfm001dib1gan55o4g5",
+      "sku": "SARIMA-P013",
+      "brand": "555",
+      "variant": "Sardines in Tomato Sauce",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P121",
+      "productId": "cmtk4sejq00c5ib1gcgpwrdue",
+      "sku": "SARIMA-P121",
+      "brand": "555",
+      "variant": "Hot Sardines in Tomato Sauce",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P087",
+      "productId": "cmtk4secl008tib1ghrluie38",
+      "sku": "SARIMA-P087",
+      "brand": "555",
+      "variant": "Spanish Style Sardines",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P086",
+      "productId": "cmtk4secc008pib1g6qmsigf4",
+      "sku": "SARIMA-P086",
+      "brand": "555",
+      "variant": "Tuna Sisig",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P054",
+      "productId": "prd_sarima_p054_sunsilk_anti_dandruff_135ml",
+      "sku": "SARIMA-P054",
+      "brand": "Sunsilk",
+      "variant": "Anti-Dandruff & Silky",
+      "sizeValue": "13.5",
+      "sizeUnit": "MILLILITER"
+    },
+    {
+      "sourceProductId": "P123",
+      "productId": "cmtk4sekd00cdib1gbqewt1b2",
+      "sku": "SARIMA-P123",
+      "brand": "SABA",
+      "variant": "Mackerel in Natural Oil",
+      "sizeValue": "155",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P038",
+      "productId": "prd_sarima_p038_purefoods_tocino_450g",
+      "sku": "SARIMA-P038",
+      "brand": "Purefoods",
+      "variant": "Classic",
+      "sizeValue": "450",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P199",
+      "productId": "cmtk4sf1800k9ib1gx2asls2n",
+      "sku": "SARIMA-P199",
+      "brand": "Jersey",
+      "variant": "Melon Condensed Creamer",
+      "sizeValue": "390",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P343",
+      "productId": "cmtk4sg1400zpib1gefrxzec7",
+      "sku": "SARIMA-P343",
+      "brand": "Jack ‘n Jill",
+      "variant": "Cloud 9 Overload",
+      "sizeValue": "12",
+      "sizeUnit": "PIECE"
+    },
+    {
+      "sourceProductId": "P061",
+      "productId": "cmtk4se700069ib1gkthu04j5",
+      "sku": "SARIMA-P061",
+      "brand": "Irish Spring",
+      "variant": "Original Soap",
+      "sizeValue": "113",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P008",
+      "productId": "cmtk4scej000tib1gqyt07zv1",
+      "sku": "SARIMA-P008",
+      "brand": "Century Tuna",
+      "variant": "Flakes in Oil",
+      "sizeValue": "180",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P107",
+      "productId": "cmtk4segi00alib1gwa698gt4",
+      "sku": "SARIMA-P107",
+      "brand": "Argentina",
+      "variant": "Corned Beef",
+      "sizeValue": "175",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P177",
+      "productId": "cmtk4sew400htib1gqq2dlm6e",
+      "sku": "SARIMA-P177",
+      "brand": "Datu Puti",
+      "variant": "Soy Sauce",
+      "sizeValue": "1",
+      "sizeUnit": "LITER"
+    },
+    {
+      "sourceProductId": "P394",
+      "productId": "cmtk4sgd30151ib1ga9liamem",
+      "sku": "SARIMA-P394",
+      "brand": "Bear Brand",
+      "variant": "Fortified Powdered Milk Drink",
+      "sizeValue": "900",
+      "sizeUnit": "GRAM"
+    },
+    {
+      "sourceProductId": "P266",
+      "productId": "cmtk4sfh400r5ib1gig7ft1jc",
+      "sku": "SARIMA-P266",
+      "brand": "100 Plus",
+      "variant": "Active",
+      "sizeValue": "500",
+      "sizeUnit": "MILLILITER"
+    },
+    {
+      "sourceProductId": "P257",
+      "productId": "cmtk4sfeq00q9ib1gooiodt15",
+      "sku": "SARIMA-P257",
+      "brand": "C2",
+      "variant": "Apple Green Tea",
+      "sizeValue": "500",
+      "sizeUnit": "MILLILITER"
+    }
+  ]
+}
