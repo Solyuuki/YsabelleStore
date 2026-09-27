@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-  buildMysqldumpArgs,
-  parseMysqlDatabaseUrl
-} from "../canonical-database-recovery.mjs";
+import { buildMysqldumpArgs, parseMysqlDatabaseUrl } from "../canonical-database-recovery.mjs";
 
 test("mysqldump recovery ignores machine-local option files", () => {
   const connection = parseMysqlDatabaseUrl(
