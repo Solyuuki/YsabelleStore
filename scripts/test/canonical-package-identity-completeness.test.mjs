@@ -4,17 +4,13 @@ import test from "node:test";
 
 const state = JSON.parse(readFileSync("database/prisma/state/canonical-state.json", "utf8"));
 const release = JSON.parse(readFileSync(state.canonicalReleasePath, "utf8"));
-const identities = JSON.parse(
-  readFileSync("database/canonical/product-identities.json", "utf8")
-);
+const identities = JSON.parse(readFileSync("database/canonical/product-identities.json", "utf8"));
 
 test("active canonical release has complete package-size identities", () => {
   assert.equal(release.products.length, 50);
   assert.equal(identities.items.length, 50);
 
-  const identityByCode = new Map(
-    identities.items.map((item) => [item.sourceProductId, item])
-  );
+  const identityByCode = new Map(identities.items.map((item) => [item.sourceProductId, item]));
 
   for (const product of release.products) {
     const code = product.sourceProductId;
