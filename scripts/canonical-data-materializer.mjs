@@ -119,7 +119,42 @@ export function decodeSqlValue(v) {
   v = v.trim();
   if (/^NULL$/i.test(v)) return null;
   if (!v.startsWith("'")) return v;
-  return v.slice(1, -1).replace(/''/g, "'").replace(/\\'/g, "'").replace(/\\\\/g, "\\");
+
+  const body = v.slice(1, -1);
+  let decoded = "";
+  for (let index = 0; index < body.length; index += 1) {
+    const character = body[index];
+
+    if (character === "'" && body[index + 1] === "'") {
+      decoded += "'";
+      index += 1;
+      continue;
+    }
+
+    if (character !== "\\" || index + 1 >= body.length) {
+      decoded += character;
+      continue;
+    }
+
+    const escaped = body[index + 1];
+    const replacements = {
+      "0": "\0",
+      b: "\b",
+      n: "\n",
+      r: "\r",
+      t: "\t",
+      Z: "\x1a",
+      "'": "'",
+      '"': '"',
+      "\\": "\\",
+      "%": "%",
+      _: "_"
+    };
+    decoded += replacements[escaped] ?? escaped;
+    index += 1;
+  }
+
+  return decoded;
 }
 
 function encodeSqlValue(value) {
