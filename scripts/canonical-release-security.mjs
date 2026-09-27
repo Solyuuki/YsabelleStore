@@ -43,7 +43,7 @@ function listFiles(directory) {
     .map((entry) => join(directory, entry.name));
 }
 
-export function inspectReleaseContract({ state, release, root = ROOT }) {
+export function inspectReleaseContract({ state, release, identities = null, root = ROOT }) {
   const findings = [];
 
   if (release.formatVersion !== 1)
@@ -110,6 +110,24 @@ export function inspectReleaseContract({ state, release, root = ROOT }) {
 
     if (!product.description?.trim())
       findings.push(`BLOCK: ${code} is missing its approved description.`);
+    if (!product.brand?.trim())
+      findings.push(`BLOCK: ${code} is missing canonical brand identity.`);
+    if (!product.variant?.trim())
+      findings.push(`BLOCK: ${code} is missing canonical variant identity.`);
+    const hasSizeValue = product.sizeValue !== null && product.sizeValue !== undefined;
+    const hasSizeUnit = product.sizeUnit !== null && product.sizeUnit !== undefined;
+    if (hasSizeValue !== hasSizeUnit) {
+      findings.push(`BLOCK: ${code} canonical package size is incomplete.`);
+    }
+    if (hasSizeValue) {
+      const sizeValue = Number(product.sizeValue);
+      if (!Number.isFinite(sizeValue) || sizeValue <= 0) {
+        findings.push(`BLOCK: ${code} canonical package size value is invalid.`);
+      }
+      if (!["MILLILITER", "LITER", "GRAM", "KILOGRAM", "PIECE"].includes(product.sizeUnit)) {
+        findings.push(`BLOCK: ${code} canonical package size unit is invalid.`);
+      }
+    }
 
     const source = product.sourceImage;
     if (!source?.path) continue;
@@ -181,7 +199,37 @@ export function inspectRepository(root = ROOT) {
     return ["BLOCK: canonical release manifest bytes differ from canonical-state.json."];
 
   const release = JSON.parse(releaseBytes.toString("utf8"));
-  return inspectReleaseContract({ state, release, root });
+  const identityPath = join(root, "database", "canonical", "product-identities.json");
+  if (!existsSync(identityPath)) return ["BLOCK: canonical product identity manifest is missing."];
+  const identities = JSON.parse(readFileSync(identityPath, "utf8"));
+  const findings = inspectReleaseContract({ state, release, identities, root });
+
+  if (identities.releaseId !== state.releaseId || identities.catalogVersion !== state.catalogVersion) {
+    findings.push("BLOCK: canonical product identity manifest differs from canonical state.");
+  }
+  if (identities.items?.length !== 50) {
+    findings.push("BLOCK: canonical product identity manifest must contain exactly 50 products.");
+  } else {
+    const identityByCode = new Map(
+      identities.items.map((item) => [item.sourceProductId, item])
+    );
+    for (const product of release.products ?? []) {
+      const identity = identityByCode.get(product.sourceProductId);
+      if (!identity) {
+        findings.push(`BLOCK: ${product.sourceProductId} is missing from identity manifest.`);
+        continue;
+      }
+      for (const field of ["productId", "sku", "brand", "variant", "sizeValue", "sizeUnit"]) {
+        if ((identity[field] ?? null) !== (product[field] ?? null)) {
+          findings.push(
+            `BLOCK: ${product.sourceProductId} release identity differs for ${field}.`
+          );
+        }
+      }
+    }
+  }
+
+  return findings;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
