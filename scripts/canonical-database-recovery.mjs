@@ -50,6 +50,25 @@ export function resolveRecoveryBackupRoot(env = process.env) {
   );
 }
 
+export function buildMysqldumpArgs(connection) {
+  return [
+    "--no-defaults",
+    "--host",
+    connection.host,
+    "--port",
+    connection.port,
+    "--user",
+    connection.user,
+    "--single-transaction",
+    "--routines",
+    "--triggers",
+    "--events",
+    "--set-gtid-purged=OFF",
+    "--default-character-set=utf8mb4",
+    connection.database
+  ];
+}
+
 export function backupDatabase({
   databaseUrl,
   classification,
@@ -76,21 +95,7 @@ export function backupDatabase({
   try {
     const result = spawnSync(
       environment.MYSQLDUMP_EXECUTABLE?.trim() || "mysqldump",
-      [
-        "--host",
-        connection.host,
-        "--port",
-        connection.port,
-        "--user",
-        connection.user,
-        "--single-transaction",
-        "--routines",
-        "--triggers",
-        "--events",
-        "--set-gtid-purged=OFF",
-        "--default-character-set=utf8mb4",
-        connection.database
-      ],
+      buildMysqldumpArgs(connection),
       {
         cwd: ROOT,
         env: { ...environment, MYSQL_PWD: connection.password },
