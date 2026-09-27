@@ -28,6 +28,20 @@ export type StorefrontProduct = {
   category: Pick<StorefrontCategory, "id" | "name" | "slug">;
 };
 
+export type StorefrontSizeVariant = {
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  sellingPrice: string;
+  availableStock: number;
+  sizeValue: string;
+  sizeUnit: "MILLILITER" | "LITER" | "GRAM" | "KILOGRAM" | "PIECE";
+};
+
+export type StorefrontProductDetail = StorefrontProduct & {
+  sizeVariants: StorefrontSizeVariant[];
+};
+
 export type StorefrontPagination = {
   page: number;
   pageSize: number;
