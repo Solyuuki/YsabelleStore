@@ -2,7 +2,6 @@ import { randomBytes } from "node:crypto";
 
 import {
   CustomerOrderStatus,
-  InventoryBatchStatus,
   Prisma,
   SaleStatus,
   type ProductSizeUnit

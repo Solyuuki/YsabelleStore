@@ -321,11 +321,8 @@ test("related products stay strictly inside the current category", async () => {
       assert.equal(result.sameCategory[0]?.reviewCount, 2);
       assert.equal(result.sameCategory[1]?.averageRating, 0);
       assert.equal(result.sameCategory[1]?.reviewCount, 0);
-      assert.equal(
-        result.fallback.some((product) => product.id === fallbackAvailable.id),
-        true
-      );
-      assert.ok((result.fallback[0]?.availableStock ?? 0) > 0);
+      assert.equal(returnedIds.includes(fallbackAvailable.id), false);
+      assert.deepEqual(result.fallback, []);
     }
   } finally {
     await scope.cleanup();
