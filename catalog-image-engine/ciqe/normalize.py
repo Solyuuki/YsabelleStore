@@ -16,6 +16,7 @@ PROCESSED_MAX_SIDE = 1600
 NORMALIZATION_INPUT_MAX_SIDE = 1480
 MAX_UPSCALE_FACTOR = 1.25
 WEBP_QUALITY = 90
+CATALOG_CANVAS_RGBA = (255, 255, 255, 255)
 
 _SUBJECT_DETECTOR = EdgeConnectedBackgroundDetector()
 
@@ -49,30 +50,30 @@ def _normalized_master(oriented: Image.Image) -> tuple[Image.Image, str]:
         bounding_box = rgba.getchannel("A").point(
             lambda value: 255 if value >= 24 else 0
         ).getbbox()
-        background_rgba = (255, 255, 255, 0)
         detection_state = "alpha-bounds" if bounding_box is not None else "preserved-full-frame"
     else:
         detection = _SUBJECT_DETECTOR.detect(rgba)
         if detection is None:
             bounding_box = None
-            background_rgba = (255, 255, 255, 255)
             detection_state = "preserved-full-frame"
         else:
             bounding_box = detection.bounding_box
-            background_rgba = (*detection.background_rgb, 255)
             detection_state = "detected"
 
     subject = rgba.crop(bounding_box) if bounding_box is not None else rgba
     subject = _enhance_bounded(subject).convert("RGBA")
     padding = max(MIN_SAFE_PADDING, math.ceil(max(subject.size) * SAFE_PADDING_RATIO))
     side = max(subject.width, subject.height) + 2 * padding
-    canvas = Image.new("RGBA", (side, side), background_rgba)
+
+    # Storefront derivatives intentionally use one opaque white canvas. The source
+    # background is evidence for safe subject detection, not a presentation color.
+    # Original uploads remain untouched in storage.
+    canvas = Image.new("RGBA", (side, side), CATALOG_CANVAS_RGBA)
     x = (side - subject.width) // 2
     y = (side - subject.height) // 2
     canvas.alpha_composite(subject, (x, y))
 
-    master = canvas if background_rgba[3] < 255 else canvas.convert("RGB")
-    return master, detection_state
+    return canvas.convert("RGB"), detection_state
 
 
 def _variant(master: Image.Image, max_side: int) -> tuple[Image.Image, float]:
