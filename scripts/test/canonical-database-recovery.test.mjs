@@ -22,3 +22,16 @@ test("mysqldump recovery ignores machine-local option files", () => {
   assert.ok(args.includes("--single-transaction"));
   assert.ok(args.includes("--default-character-set=utf8mb4"));
 });
+
+test("canonical pull recovery never regenerates Prisma after loading the engine", async () => {
+  const source = await import("node:fs/promises").then(({ readFile }) =>
+    readFile(new URL("../canonical-pull-sync.mjs", import.meta.url), "utf8")
+  );
+  const recoverStart = source.indexOf("async function recover(");
+  const recoverEnd = source.indexOf("\nfunction blockers", recoverStart);
+  assert.ok(recoverStart >= 0 && recoverEnd > recoverStart);
+  const recoverSource = source.slice(recoverStart, recoverEnd);
+
+  assert.doesNotMatch(recoverSource, /prisma:generate/);
+  assert.match(source, /requiresPrismaRegeneration\(relevant, state\)/);
+});
