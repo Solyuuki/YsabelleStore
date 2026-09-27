@@ -241,6 +241,22 @@ const JSON_COLUMNS = {
   sarima_source_product_mappings: new Set(["evidence"])
 };
 
+const DECIMAL_COLUMNS = {
+  products: new Set(["size_value", "cost_price", "selling_price"]),
+  sarima_source_product_mappings: new Set(["source_selling_price"])
+};
+
+function normalizeDecimalText(value) {
+  const text = String(value).trim();
+  const match = text.match(/^(-?)(\d+)(?:\.(\d+))?$/);
+  if (!match) return text;
+
+  const sign = match[1];
+  const integer = match[2].replace(/^0+(?=\d)/, "");
+  const fraction = (match[3] ?? "").replace(/0+$/, "");
+  return sign + integer + (fraction ? "." + fraction : "");
+}
+
 function stableJsonValue(value) {
   if (Array.isArray(value)) return value.map(stableJsonValue);
   if (value && typeof value === "object") {
@@ -256,6 +272,10 @@ function stableJsonValue(value) {
 export function normalizeCanonicalDbValue(table, column, value) {
   if (value === null || value === undefined) return null;
   const text = String(value);
+
+  if (DECIMAL_COLUMNS[table]?.has(column)) {
+    return normalizeDecimalText(text);
+  }
   if (!JSON_COLUMNS[table]?.has(column)) return text;
 
   try {
