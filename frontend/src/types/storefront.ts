@@ -34,8 +34,12 @@ export type StorefrontSizeVariant = {
   imageUrl: string | null;
   sellingPrice: string;
   availableStock: number;
+  stockStatus: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
   sizeValue: string;
   sizeUnit: "MILLILITER" | "LITER" | "GRAM" | "KILOGRAM" | "PIECE";
+  unit: string;
+  packagingLabel: string;
+  sizeTier: "SMALL" | "MEDIUM" | "LARGE" | null;
 };
 
 export type StorefrontProductDetail = StorefrontProduct & {

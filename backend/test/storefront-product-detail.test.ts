@@ -157,7 +157,7 @@ test("storefront reviews aggregate persisted ratings and support bounded rating 
   }
 });
 
-test("product detail exposes only in-stock size siblings in ascending package order", async () => {
+test("product detail exposes size siblings in ascending package order and keeps sold-out options visible", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
 
@@ -199,18 +199,45 @@ test("product detail exposes only in-stock size siblings in ascending package or
     assert.deepEqual(
       detail.sizeVariants.map((variant) => ({
         id: variant.id,
+        sizeTier: variant.sizeTier,
         sizeUnit: variant.sizeUnit,
-        sizeValue: variant.sizeValue
+        sizeValue: variant.sizeValue,
+        stockStatus: variant.stockStatus
       })),
       [
-        { id: small.id, sizeUnit: "MILLILITER", sizeValue: "330" },
-        { id: current.id, sizeUnit: "MILLILITER", sizeValue: "500" },
-        { id: large.id, sizeUnit: "LITER", sizeValue: "1" }
+        {
+          id: small.id,
+          sizeTier: "SMALL",
+          sizeUnit: "MILLILITER",
+          sizeValue: "330",
+          stockStatus: "IN_STOCK"
+        },
+        {
+          id: current.id,
+          sizeTier: "MEDIUM",
+          sizeUnit: "MILLILITER",
+          sizeValue: "500",
+          stockStatus: "IN_STOCK"
+        },
+        {
+          id: large.id,
+          sizeTier: "LARGE",
+          sizeUnit: "LITER",
+          sizeValue: "1",
+          stockStatus: "IN_STOCK"
+        },
+        {
+          id: unavailable.id,
+          sizeTier: "LARGE",
+          sizeUnit: "LITER",
+          sizeValue: "1.5",
+          stockStatus: "OUT_OF_STOCK"
+        }
       ]
     );
     assert.equal(
       detail.sizeVariants.some((variant) => variant.id === unavailable.id),
-      false
+      true
     );
     assert.equal(
       detail.sizeVariants.some((variant) => variant.id === otherVariant.id),
@@ -221,7 +248,7 @@ test("product detail exposes only in-stock size siblings in ascending package or
   }
 });
 
-test("related products exclude the current item and keep fallback products separately labeled", async () => {
+test("related products stay strictly inside the current category", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
 
@@ -268,8 +295,7 @@ test("related products exclude the current item and keep fallback products separ
     });
 
     const result = await listStorefrontRelatedProducts(current.id, 4);
-    const returned = [...result.sameCategory, ...result.fallback];
-    const returnedIds = returned.map((product) => product.id);
+    const returnedIds = result.sameCategory.map((product) => product.id);
 
     assert.equal(returnedIds.includes(current.id), false);
     assert.equal(new Set(returnedIds).size, returnedIds.length);
@@ -277,6 +303,7 @@ test("related products exclude the current item and keep fallback products separ
       result.sameCategory.every((product) => product.category.id === category.id),
       true
     );
+    assert.deepEqual(result.fallback, []);
     assert.equal(
       result.fallback.every((product) => product.category.id !== category.id),
       true

@@ -12,8 +12,8 @@ import { prisma } from "../database/prismaClient.js";
 import { compareStorefrontCategoryNames } from "../modules/catalog/storefront-category-taxonomy.js";
 import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
 import {
+  buildProductSizeFamilyKey,
   extractCanonicalProductSize,
-  normalizeCanonicalProductName,
   normalizeProductIdentity
 } from "../utils/catalogIdentity.js";
 import { HttpError } from "../utils/httpError.js";
@@ -73,18 +73,6 @@ type ResolvedProductSize = {
   sizeValue: string;
 };
 
-const SIZE_TOKEN_PATTERN = /\b\d+(?:\.\d+)?\s*(?:ml|l|g|kg|pcs?)\b/gi;
-
-function normalizedOptionalIdentity(value: string | null | undefined) {
-  return value ? normalizeProductIdentity(value) : "";
-}
-
-function normalizedSizeFamilyName(name: string) {
-  return normalizeProductIdentity(
-    normalizeCanonicalProductName(name).replace(SIZE_TOKEN_PATTERN, " ")
-  );
-}
-
 function resolveProductSize(
   product: Pick<StorefrontProductRecord, "name" | "sizeUnit" | "sizeValue">
 ): ResolvedProductSize | null {
@@ -136,65 +124,115 @@ function resolveProductSize(
   }
 }
 
+function isPackageConfiguration(unit: StorefrontProductRecord["unit"]) {
+  return unit === "PACK" || unit === "BOX";
+}
+
+function packagingLabel(unit: StorefrontProductRecord["unit"]) {
+  switch (unit) {
+    case "BOX":
+      return "Box";
+    case "PACK":
+      return "Pack";
+    case "BOTTLE":
+      return "Bottle";
+    case "SACHET":
+      return "Sachet";
+    case "KILOGRAM":
+      return "Kilogram";
+    case "GRAM":
+      return "Gram";
+    case "LITER":
+      return "Liter";
+    case "MILLILITER":
+      return "Milliliter";
+    default:
+      return "Single";
+  }
+}
+
 function isSameSizeVariantFamily(left: StorefrontProductRecord, right: StorefrontProductRecord) {
-  return (
-    normalizedSizeFamilyName(left.name) === normalizedSizeFamilyName(right.name) &&
-    normalizedOptionalIdentity(left.brand) === normalizedOptionalIdentity(right.brand) &&
-    normalizedOptionalIdentity(left.variant) === normalizedOptionalIdentity(right.variant)
-  );
+  return buildProductSizeFamilyKey(left) === buildProductSizeFamilyKey(right);
+}
+
+function sizeTier(index: number, count: number) {
+  if (count <= 1) return null;
+  if (count === 2) return index === 0 ? ("SMALL" as const) : ("LARGE" as const);
+  if (count === 3) return (["SMALL", "MEDIUM", "LARGE"] as const)[index] ?? null;
+
+  const position = index / Math.max(1, count - 1);
+  if (position < 1 / 3) return "SMALL" as const;
+  if (position < 2 / 3) return "MEDIUM" as const;
+  return "LARGE" as const;
 }
 
 async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
   const selectedSize = resolveProductSize(product);
   if (!selectedSize) return [];
 
-  const candidates = await prisma.product.findMany({
-    include: storefrontProductInclude,
-    orderBy: [{ name: "asc" }, { id: "asc" }],
-    where: storefrontProductWhere({ categoryId: product.categoryId })
-  });
-
-  return candidates
+  const candidates = (
+    await prisma.product.findMany({
+      include: storefrontProductInclude,
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      where: storefrontProductWhere({ categoryId: product.categoryId })
+    })
+  )
     .map((candidate) => {
       const size = resolveProductSize(candidate);
+      if (!size || !isSameSizeVariantFamily(product, candidate)) return null;
+
+      const packageConfiguration = isPackageConfiguration(candidate.unit);
+      const compatibleDimension =
+        size.dimension === selectedSize.dimension ||
+        packageConfiguration ||
+        isPackageConfiguration(product.unit);
+      if (!compatibleDimension) return null;
+
       const availableStock = getSellableStockQuantity(candidate.inventoryBatches);
-
-      if (
-        !size ||
-        size.dimension !== selectedSize.dimension ||
-        availableStock <= 0 ||
-        !isSameSizeVariantFamily(product, candidate)
-      ) {
-        return null;
-      }
-
       return {
         id: candidate.id,
         name: candidate.name,
         imageUrl: candidate.imageUrl,
         sellingPrice: candidate.sellingPrice.toString(),
         availableStock,
+        stockStatus: stockStatus(availableStock, candidate.reorderLevel),
         sizeValue: size.sizeValue,
         sizeUnit: size.sizeUnit,
+        unit: candidate.unit,
+        packageConfiguration,
         sortValue: size.baseValue
       };
     })
     .filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== null)
     .sort(
       (left, right) =>
+        Number(left.packageConfiguration) - Number(right.packageConfiguration) ||
         left.sortValue - right.sortValue ||
         left.name.localeCompare(right.name) ||
         left.id.localeCompare(right.id)
-    )
-    .map((candidate) => ({
-      id: candidate.id,
-      name: candidate.name,
-      imageUrl: candidate.imageUrl,
-      sellingPrice: candidate.sellingPrice,
-      availableStock: candidate.availableStock,
-      sizeValue: candidate.sizeValue,
-      sizeUnit: candidate.sizeUnit
-    }));
+    );
+
+  const physicalCandidates = candidates.filter((candidate) => !candidate.packageConfiguration);
+  const physicalTier = new Map(
+    physicalCandidates.map((candidate, index) => [
+      candidate.id,
+      sizeTier(index, physicalCandidates.length)
+    ])
+  );
+
+  return candidates.map((candidate) => ({
+    id: candidate.id,
+    name: candidate.name,
+    imageUrl: candidate.imageUrl,
+    sellingPrice: candidate.sellingPrice,
+    availableStock: candidate.availableStock,
+    stockStatus: candidate.stockStatus,
+    sizeValue: candidate.sizeValue,
+    sizeUnit: candidate.sizeUnit,
+    unit: candidate.unit,
+    packagingLabel: packagingLabel(candidate.unit),
+    sizeTier: physicalTier.get(candidate.id) ?? null
+  }));
 }
 
 function serializeStorefrontProduct(
@@ -487,82 +525,39 @@ export async function listStorefrontProductReviews(
 
 export async function listStorefrontRelatedProducts(productId: string, limit = 4) {
   const product = await requireStorefrontProduct(productId);
-  const sellableBatchWhere = {
-    OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
-    quantityRemaining: { gt: 0 },
-    status: { in: [InventoryBatchStatus.AVAILABLE, InventoryBatchStatus.LOW_STOCK] }
-  } satisfies Prisma.InventoryBatchWhereInput;
-  const candidateLimit = limit * STOREFRONT_RELATED_CANDIDATE_MULTIPLIER;
-  const sameCategoryAvailable = (
-    await prisma.product.findMany({
-      include: storefrontProductInclude,
-      orderBy: [{ name: "asc" }, { id: "asc" }],
-      take: candidateLimit,
-      where: storefrontProductWhere({
-        categoryId: product.category.id,
-        id: { not: product.id },
-        inventoryBatches: { some: sellableBatchWhere }
-      })
+  const candidateLimit = Math.max(limit * STOREFRONT_RELATED_CANDIDATE_MULTIPLIER, limit);
+
+  const candidates = await prisma.product.findMany({
+    include: storefrontProductInclude,
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+    take: candidateLimit,
+    where: storefrontProductWhere({
+      categoryId: product.category.id,
+      id: { not: product.id }
     })
-  )
-    .filter((candidate) => getSellableStockQuantity(candidate.inventoryBatches) > 0)
+  });
+
+  const currentBrand = product.brand ? normalizeProductIdentity(product.brand) : "";
+  const sameCategory = candidates
+    .sort((left, right) => {
+      const leftBrandMatch =
+        Boolean(currentBrand) && normalizeProductIdentity(left.brand ?? "") === currentBrand;
+      const rightBrandMatch =
+        Boolean(currentBrand) && normalizeProductIdentity(right.brand ?? "") === currentBrand;
+      if (leftBrandMatch !== rightBrandMatch) return leftBrandMatch ? -1 : 1;
+
+      const leftAvailable = getSellableStockQuantity(left.inventoryBatches) > 0;
+      const rightAvailable = getSellableStockQuantity(right.inventoryBatches) > 0;
+      if (leftAvailable !== rightAvailable) return leftAvailable ? -1 : 1;
+
+      return left.name.localeCompare(right.name) || left.id.localeCompare(right.id);
+    })
     .slice(0, limit);
-  const sameCategory = [...sameCategoryAvailable];
-
-  if (sameCategory.length < limit) {
-    const sameCategoryUnavailable = await prisma.product.findMany({
-      include: storefrontProductInclude,
-      orderBy: [{ name: "asc" }, { id: "asc" }],
-      take: limit - sameCategory.length,
-      where: storefrontProductWhere({
-        categoryId: product.category.id,
-        id: { notIn: [product.id, ...sameCategory.map((candidate) => candidate.id)] }
-      })
-    });
-    sameCategory.push(...sameCategoryUnavailable);
-  }
-
-  const fallback: StorefrontProductRecord[] = [];
-  const fallbackLimit = limit - sameCategory.length;
-  if (fallbackLimit > 0) {
-    const fallbackAvailable = (
-      await prisma.product.findMany({
-        include: storefrontProductInclude,
-        orderBy: [{ name: "asc" }, { id: "asc" }],
-        take: fallbackLimit * STOREFRONT_RELATED_CANDIDATE_MULTIPLIER,
-        where: storefrontProductWhere({
-          categoryId: { not: product.category.id },
-          id: { not: product.id },
-          inventoryBatches: { some: sellableBatchWhere }
-        })
-      })
-    )
-      .filter((candidate) => getSellableStockQuantity(candidate.inventoryBatches) > 0)
-      .slice(0, fallbackLimit);
-    fallback.push(...fallbackAvailable);
-
-    if (fallback.length < fallbackLimit) {
-      const fallbackUnavailable = await prisma.product.findMany({
-        include: storefrontProductInclude,
-        orderBy: [{ name: "asc" }, { id: "asc" }],
-        take: fallbackLimit - fallback.length,
-        where: storefrontProductWhere({
-          categoryId: { not: product.category.id },
-          id: {
-            notIn: [product.id, ...fallback.map((candidate) => candidate.id)]
-          }
-        })
-      });
-      fallback.push(...fallbackUnavailable);
-    }
-  }
-
-  const serializedProducts = await serializeStorefrontProducts([...sameCategory, ...fallback]);
 
   return {
     category: product.category,
-    sameCategory: serializedProducts.slice(0, sameCategory.length),
-    fallback: serializedProducts.slice(sameCategory.length)
+    sameCategory: await serializeStorefrontProducts(sameCategory),
+    fallback: []
   };
 }
 
@@ -570,6 +565,7 @@ async function requireStorefrontProduct(productId: string) {
   const product = await prisma.product.findFirst({
     select: {
       id: true,
+      brand: true,
       category: { select: { id: true, name: true, slug: true } }
     },
     where: storefrontProductWhere({ id: productId })
