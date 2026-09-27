@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildCanonicalSubset, normalizeCanonicalDbValue } from "../canonical-data-materializer.mjs";
+import {
+  buildCanonicalSubset,
+  normalizeCanonicalDbValue
+} from "../canonical-data-materializer.mjs";
 
 const q = (value) => (value === null ? "NULL" : "'" + value + "'");
 const tuple = (values) => "(" + values.map(q).join(",") + ")";
