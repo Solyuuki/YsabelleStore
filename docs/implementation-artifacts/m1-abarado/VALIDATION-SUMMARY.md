@@ -160,3 +160,7 @@
 ## Sprint 11 Storefront Size Variant Validation
 
 CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`. Repository formatting, linting, typechecking, backend/frontend/electron workspace builds, workspace tests, storefront variant regression coverage, guardrail tests, aggregate read-only verification, and Phase 6 canonical release hardening all completed successfully.
+
+## Sprint 11 Product Error State Validation
+
+Exact-head CI is pending for the direct `sprint/v0.11/sprint-11` implementation. Validation must include formatting, lint, typecheck, frontend build, guardrail tests, aggregate verification, and Phase 6 canonical release hardening.
