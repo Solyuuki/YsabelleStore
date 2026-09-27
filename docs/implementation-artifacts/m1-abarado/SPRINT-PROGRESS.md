@@ -100,3 +100,9 @@ Validation: CI #1653 passed on implementation head `a46254b427c65fad8448a5c94421
 On 2026-09-27, catalog identity was hardened end-to-end: structured brand/variant/package-size import support, Owner visibility for incomplete identity, ZIP-package readiness metrics, and canonical release `g2-s2-c4-a2` with a 50-product identity manifest. Package size is populated only where approved catalog names/descriptions provide deterministic evidence; unknown sizes remain an explicit review condition rather than guessed data.
 
 Validation: CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51`; manual QA is next.
+
+## Sprint 11 Canonical Product Reconstruction Gap
+
+On 2026-09-27, manual QA of a freshly recovered GEN2 database exposed an upstream reconstruction gap: `g2-s2-c4-a2` holds 50/50 reviewed descriptions and 50/50 manufacturer barcodes, while the canonical seed/materialized product rows currently retain only 3 descriptions and 1 legacy barcode. This explains the Owner Products UI showing `No description` and `-` for barcode even though the authoritative release is complete.
+
+The issue is tracked as YSB-M1-CANONICAL-MATERIALIZE-007. No implementation has started yet; the repair must restore canonical release product metadata and barcode-domain records during convergence rather than re-entering or guessing product data.
