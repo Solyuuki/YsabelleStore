@@ -157,21 +157,22 @@ function buildCanonicalBarcodeState(release) {
   const barcodes = rows.map((row) => encodeSqlValue(row.barcode)).join(",");
   const ids = rows.map((row) => encodeSqlValue(row.id)).join(",");
   const values = rows
-    .map((row) =>
-      "(" +
-      [
-        row.id,
-        row.product_id,
-        row.barcode,
-        row.type,
-        Number(row.is_primary),
-        row.source,
-        row.registered_by_id,
-        row.source_reference
-      ]
-        .map(encodeSqlValue)
-        .join(",") +
-      ")"
+    .map(
+      (row) =>
+        "(" +
+        [
+          row.id,
+          row.product_id,
+          row.barcode,
+          row.type,
+          Number(row.is_primary),
+          row.source,
+          row.registered_by_id,
+          row.source_reference
+        ]
+          .map(encodeSqlValue)
+          .join(",") +
+        ")"
     )
     .join(",\n");
 
@@ -247,8 +248,7 @@ export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
       }
       const hasSizeValue =
         releaseProduct.sizeValue !== null && releaseProduct.sizeValue !== undefined;
-      const hasSizeUnit =
-        releaseProduct.sizeUnit !== null && releaseProduct.sizeUnit !== undefined;
+      const hasSizeUnit = releaseProduct.sizeUnit !== null && releaseProduct.sizeUnit !== undefined;
       if (hasSizeValue !== hasSizeUnit) {
         throw new Error("Canonical release package size incomplete for " + productId);
       }
