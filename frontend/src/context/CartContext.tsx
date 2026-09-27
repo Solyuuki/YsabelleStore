@@ -36,7 +36,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 async function hydrateCustomerCart(entries: CustomerCartEntry[]): Promise<CartItem[]> {
   const hydrated = await Promise.all(
-    entries.map(async (entry) => {
+    entries.map(async (entry): Promise<CartItem | null> => {
       try {
         const product = await fetchStorefrontProduct(entry.productId);
         if (product.availableStock <= 0) return null;
