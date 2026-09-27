@@ -72,10 +72,7 @@ function parseRawTuples(source) {
 function unquote(value) {
   if (value === "NULL") return null;
   if (value.startsWith("'") && value.endsWith("'")) {
-    return value
-      .slice(1, -1)
-      .replaceAll("\\'", "'")
-      .replaceAll("\\\\", "\\");
+    return value.slice(1, -1).replaceAll("\\'", "'").replaceAll("\\\\", "\\");
   }
   return value;
 }
@@ -117,9 +114,7 @@ test("canonical 50 identity manifest is complete and matches release and seed", 
   assert.ok(insertStart >= 0 && valuesStart > 0 && valuesEnd > valuesStart);
   const rows = parseRawTuples(seedSql.slice(valuesStart, valuesEnd));
   const bySku = new Map(
-    rows
-      .filter((row) => row.length === 23)
-      .map((row) => [unquote(row[3]), row])
+    rows.filter((row) => row.length === 23).map((row) => [unquote(row[3]), row])
   );
 
   for (const identity of manifest.items) {
@@ -135,7 +130,10 @@ test("canonical 50 identity manifest is complete and matches release and seed", 
 test("CSV/XLSX and ZIP package import expose structured product identity", async () => {
   const [importSource, packageDialog, catalogApi] = await Promise.all([
     readFile(new URL("backend/src/services/productImportService.ts", ROOT), "utf8"),
-    readFile(new URL("frontend/src/components/catalog/ProductPackageImportDialog.tsx", ROOT), "utf8"),
+    readFile(
+      new URL("frontend/src/components/catalog/ProductPackageImportDialog.tsx", ROOT),
+      "utf8"
+    ),
     readFile(new URL("frontend/src/services/catalogApi.ts", ROOT), "utf8")
   ]);
 
