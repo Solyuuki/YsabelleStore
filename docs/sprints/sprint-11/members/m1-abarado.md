@@ -26,3 +26,13 @@ CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd
 ## Product error state validation
 
 CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`, including workspace builds, formatting, linting, typechecking, guardrail tests, aggregate verification, and Phase 6 canonical release hardening. The product error-state polish is ready for manual visual QA.
+
+## Catalog identity and variant readiness
+
+- Extends CSV/XLSX product import with structured `brand`, `variant`, `sizeValue`, and `sizeUnit` fields plus safe aliases and package-size fallback parsing.
+- Makes ZIP/Google Drive package imports inherit the same identity contract and exposes variant-ready versus identity-review counts before commit.
+- Surfaces variant readiness directly in the Owner Products catalog so incomplete master data is visible without opening every record.
+- Publishes canonical catalog release `g2-s2-c4-a2` with a reviewed 50-product identity manifest and evidence-backed package sizes.
+- Adds canonical security and regression checks so future catalog releases cannot silently lose brand/variant identity or create one-sided package sizes.
+
+Validation: exact-head CI pending before manual QA.
