@@ -90,3 +90,11 @@ Task YSB-M1-STOREFRONT-VARIANT-004 upgrades the existing product-detail experien
 Evidence: `sprint/v0.11/sprint-11`; `backend/src/services/storefrontService.ts`; `backend/test/storefront-product-detail.test.ts`; `frontend/src/components/customer/ProductSizeSelector.tsx`; `frontend/src/pages/customer/ProductDetailPage.tsx`; `frontend/src/styles/customer.css`; `scripts/test/storefront-size-variant-ui.test.mjs`
 
 Status: Ready for manual QA. CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`.
+
+## Sprint 11 Product Error State Polish
+
+Task YSB-M1-STOREFRONT-ERROR-005 replaces the product-detail fallback with a compact, premium storefront error card using safe customer-facing copy, balanced typography, responsive action spacing, and a regression guard that prevents raw service URLs from being rendered.
+
+Evidence: `sprint/v0.11/sprint-11`; `frontend/src/pages/customer/ProductDetailPage.tsx`; `frontend/src/styles/customer.css`; `scripts/test/storefront-product-error-state.test.mjs`
+
+Status: In progress. Exact-head automated validation is required before QA.
