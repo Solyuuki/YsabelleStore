@@ -1,10 +1,17 @@
 import { randomBytes } from "node:crypto";
 
-import { CustomerOrderStatus, InventoryBatchStatus, Prisma, SaleStatus } from "@prisma/client";
+import {
+  CustomerOrderStatus,
+  InventoryBatchStatus,
+  Prisma,
+  SaleStatus,
+  type ProductSizeUnit
+} from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { compareStorefrontCategoryNames } from "../modules/catalog/storefront-category-taxonomy.js";
 import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
+import { extractCanonicalProductSize, normalizeProductIdentity } from "../utils/catalogIdentity.js";
 import { HttpError } from "../utils/httpError.js";
 import type {
   StorefrontOrderInput,
@@ -53,6 +60,127 @@ function stockStatus(availableStock: number, reorderLevel: number) {
   if (availableStock <= 0) return "OUT_OF_STOCK" as const;
   if (availableStock <= reorderLevel) return "LOW_STOCK" as const;
   return "IN_STOCK" as const;
+}
+
+type ResolvedProductSize = {
+  baseValue: number;
+  dimension: "COUNT" | "VOLUME" | "WEIGHT";
+  sizeUnit: ProductSizeUnit;
+  sizeValue: string;
+};
+
+const SIZE_TOKEN_PATTERN = /\b\d+(?:\.\d+)?\s*(?:ml|l|g|kg|pcs?)\b/gi;
+
+function normalizedOptionalIdentity(value: string | null | undefined) {
+  return value ? normalizeProductIdentity(value) : "";
+}
+
+function normalizedSizeFamilyName(name: string) {
+  return normalizeProductIdentity(name.replace(SIZE_TOKEN_PATTERN, " "));
+}
+
+function resolveProductSize(
+  product: Pick<StorefrontProductRecord, "name" | "sizeUnit" | "sizeValue">
+): ResolvedProductSize | null {
+  const extracted = extractCanonicalProductSize(product.name);
+  const sizeUnit = product.sizeUnit ?? extracted.sizeUnit;
+  const sizeValue = product.sizeValue?.toString() ?? extracted.sizeValue;
+
+  if (!sizeUnit || !sizeValue) return null;
+
+  const numericValue = Number(sizeValue);
+  if (!Number.isFinite(numericValue) || numericValue <= 0) return null;
+
+  switch (sizeUnit) {
+    case "LITER":
+      return {
+        baseValue: numericValue * 1000,
+        dimension: "VOLUME",
+        sizeUnit,
+        sizeValue
+      };
+    case "MILLILITER":
+      return {
+        baseValue: numericValue,
+        dimension: "VOLUME",
+        sizeUnit,
+        sizeValue
+      };
+    case "KILOGRAM":
+      return {
+        baseValue: numericValue * 1000,
+        dimension: "WEIGHT",
+        sizeUnit,
+        sizeValue
+      };
+    case "GRAM":
+      return {
+        baseValue: numericValue,
+        dimension: "WEIGHT",
+        sizeUnit,
+        sizeValue
+      };
+    case "PIECE":
+      return {
+        baseValue: numericValue,
+        dimension: "COUNT",
+        sizeUnit,
+        sizeValue
+      };
+  }
+}
+
+function isSameSizeVariantFamily(left: StorefrontProductRecord, right: StorefrontProductRecord) {
+  return (
+    normalizedSizeFamilyName(left.name) === normalizedSizeFamilyName(right.name) &&
+    normalizedOptionalIdentity(left.brand) === normalizedOptionalIdentity(right.brand) &&
+    normalizedOptionalIdentity(left.variant) === normalizedOptionalIdentity(right.variant)
+  );
+}
+
+async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
+  const selectedSize = resolveProductSize(product);
+  if (!selectedSize) return [];
+
+  const candidates = await prisma.product.findMany({
+    include: storefrontProductInclude,
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+    where: storefrontProductWhere({ categoryId: product.categoryId })
+  });
+
+  return candidates
+    .map((candidate) => {
+      const size = resolveProductSize(candidate);
+      const availableStock = getSellableStockQuantity(candidate.inventoryBatches);
+
+      if (
+        !size ||
+        size.dimension !== selectedSize.dimension ||
+        availableStock <= 0 ||
+        !isSameSizeVariantFamily(product, candidate)
+      ) {
+        return null;
+      }
+
+      return {
+        id: candidate.id,
+        name: candidate.name,
+        imageUrl: candidate.imageUrl,
+        sellingPrice: candidate.sellingPrice.toString(),
+        availableStock,
+        sizeValue: size.sizeValue,
+        sizeUnit: size.sizeUnit,
+        sortValue: size.baseValue
+      };
+    })
+    .filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== null)
+    .sort(
+      (left, right) =>
+        left.sortValue - right.sortValue ||
+        left.name.localeCompare(right.name) ||
+        left.id.localeCompare(right.id)
+    )
+    .map(({ sortValue: _sortValue, ...candidate }) => candidate);
 }
 
 function serializeStorefrontProduct(
@@ -267,7 +395,15 @@ export async function getStorefrontProduct(productId: string) {
     });
   }
 
-  return (await serializeStorefrontProducts([product]))[0]!;
+  const [serializedProduct, sizeVariants] = await Promise.all([
+    serializeStorefrontProducts([product]).then((products) => products[0]!),
+    listStorefrontSizeVariants(product)
+  ]);
+
+  return {
+    ...serializedProduct,
+    sizeVariants
+  };
 }
 
 export async function listStorefrontProductReviews(
