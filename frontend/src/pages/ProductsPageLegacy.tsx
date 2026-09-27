@@ -1461,7 +1461,11 @@ function ImportProductsDialog({
                 <li>Keep the headers unchanged.</li>
                 <li>Use unique SKU and barcode values.</li>
                 <li>Barcode is optional.</li>
-                <li>Categories and units must use supported values.</li>
+                <li>
+                  Include brand, variant, sizeValue, and sizeUnit for products that belong to a
+                  size or flavor family.
+                </li>
+                <li>Categories, units, and pack-size units must use supported values.</li>
               </ul>
             </div>
 
