@@ -74,3 +74,9 @@ A task is complete only when implementation evidence and the matching artifact u
 | Task ID           | Date       | Scope                                                        | Status              | Evidence                                     | Next Action                            |
 | ----------------- | ---------- | ------------------------------------------------------------ | ------------------- | -------------------------------------------- | -------------------------------------- |
 | YSB-M1-QOL-UI-002 | 2026-09-26 | Standardize full-screen HTTP and reliability status surfaces | Ready for manual QA | `m1/v0.11/feat/status-screen-system`; PR #43 | QA 401/403/404/503 and reliability UI. |
+
+## Sprint 11 CIE White Canvas
+
+| Task ID            | Date       | Scope                                                          | Status    | Evidence                                    | Next Action                                                  |
+| ------------------ | ---------- | -------------------------------------------------------------- | --------- | ------------------------------------------- | ------------------------------------------------------------ |
+| YSB-M1-CIE-IMG-003 | 2026-09-27 | Standardize CIE derivatives and storefront media on pure white | In Review | `m1/v0.11/fix/cie-white-catalog-canvas` | Complete exact-head automated validation before integration. |
