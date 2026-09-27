@@ -89,4 +89,4 @@ Task YSB-M1-STOREFRONT-VARIANT-004 upgrades the existing product-detail experien
 
 Evidence: `sprint/v0.11/sprint-11`; `backend/src/services/storefrontService.ts`; `backend/test/storefront-product-detail.test.ts`; `frontend/src/components/customer/ProductSizeSelector.tsx`; `frontend/src/pages/customer/ProductDetailPage.tsx`; `frontend/src/styles/customer.css`; `scripts/test/storefront-size-variant-ui.test.mjs`
 
-Status: In progress. Exact-head automated validation is required before QA.
+Status: Ready for manual QA. CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`.
