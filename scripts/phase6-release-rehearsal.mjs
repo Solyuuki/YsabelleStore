@@ -228,6 +228,82 @@ function verifyCanonicalImageBindings(url, release) {
   }
 }
 
+
+function verifyCanonicalProductMetadata(url, release) {
+  const productIds = release.products.map((product) => product.productId);
+  const rows = mysql(
+    url,
+    "SELECT p.id,p.sku,p.barcode,p.name,p.description,p.brand,p.variant," +
+      "IFNULL(CAST(p.size_value AS CHAR),'NULL'),IFNULL(p.size_unit,'NULL')," +
+      "p.status,p.data_quality_status,p.is_storefront_visible," +
+      "pb.barcode,pb.type,pb.is_primary,pb.source " +
+      "FROM products p LEFT JOIN product_barcodes pb " +
+      "ON pb.product_id=p.id AND pb.is_primary=1 " +
+      "WHERE p.id IN (" +
+      productIds.map(sqlString).join(",") +
+      ") ORDER BY p.id;"
+  )
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => line.split("\t"));
+
+  assert.equal(rows.length, 50, "Expected 50 complete canonical product metadata rows.");
+  const releaseByProductId = new Map(
+    release.products.map((product) => [product.productId, product])
+  );
+
+  for (const row of rows) {
+    const [
+      productId,
+      sku,
+      barcode,
+      name,
+      description,
+      brand,
+      variant,
+      sizeValue,
+      sizeUnit,
+      status,
+      quality,
+      storefrontVisible,
+      primaryBarcode,
+      barcodeType,
+      barcodePrimary,
+      barcodeSource
+    ] = row;
+    const expected = releaseByProductId.get(productId);
+    assert.ok(expected, productId + " missing from canonical release.");
+    assert.equal(sku, expected.sku, productId + " SKU differs from release.");
+    assert.equal(barcode, expected.manufacturerBarcode, productId + " barcode differs from release.");
+    assert.equal(name, expected.name, productId + " name differs from release.");
+    assert.equal(description, expected.description, productId + " description differs from release.");
+    assert.equal(brand, expected.brand, productId + " brand differs from release.");
+    assert.equal(variant, expected.variant, productId + " variant differs from release.");
+    if (expected.sizeValue === null || expected.sizeValue === undefined) {
+      assert.equal(sizeValue, "NULL", productId + " unexpected package size value.");
+      assert.equal(sizeUnit, "NULL", productId + " unexpected package size unit.");
+    } else {
+      assert.equal(Number(sizeValue), Number(expected.sizeValue), productId + " size differs.");
+      assert.equal(sizeUnit, expected.sizeUnit, productId + " size unit differs.");
+    }
+    assert.equal(status, "ACTIVE", productId + " is not ACTIVE.");
+    assert.equal(quality, "APPROVED", productId + " is not APPROVED.");
+    assert.equal(storefrontVisible, "1", productId + " is not storefront-visible.");
+    assert.equal(
+      primaryBarcode,
+      expected.manufacturerBarcode,
+      productId + " primary barcode record differs from release."
+    );
+    assert.equal(barcodeType, "MANUFACTURER", productId + " barcode type is not MANUFACTURER.");
+    assert.equal(barcodePrimary, "1", productId + " manufacturer barcode is not primary.");
+    assert.equal(
+      barcodeSource,
+      "VERIFIED_BOOTSTRAP",
+      productId + " barcode source is not canonical bootstrap."
+    );
+  }
+}
+
 function frozenMigrationGuard(state) {
   const checksums = JSON.parse(readFileSync(CHECKSUM_PATH, "utf8"));
   const first = Object.keys(checksums.migrations || {}).sort()[0];
@@ -494,6 +570,7 @@ async function main() {
     assert.deepEqual(verifyMaterializedAssets(distribution.plan), []);
     verifyDbImageReferences(url, assets, distribution.plan, reconciliation);
     verifyCanonicalImageBindings(url, release);
+    verifyCanonicalProductMetadata(url, release);
 
     const card = distribution.plan.find((record) => record.role === "card");
     assert.ok(card, "No card asset record available for corruption rehearsal.");
@@ -537,7 +614,7 @@ async function main() {
 
     console.log(
       "PHASE6_RELEASE_REHEARSAL=PASS phase4=pass phase5=pass staleCatalogAssets=converged " +
-        "private=preserved teamAuth=pass teamStock=50 imageRefs=50x4 productImageBindings=50 " +
+        "private=preserved teamAuth=pass teamStock=50 productMetadata=50 imageRefs=50x4 productImageBindings=50 " +
         "reachableImages=50 corruptImage=blockedAndRepaired restart=idempotent " +
         "frozenMigration=blocked prismaGenerate=pass appStartup=pass"
     );
