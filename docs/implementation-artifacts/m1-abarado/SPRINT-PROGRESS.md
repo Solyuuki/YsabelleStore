@@ -94,3 +94,9 @@ On 2026-09-27, the product-detail load failure state was redesigned as a compact
 Evidence: `frontend/src/pages/customer/ProductDetailPage.tsx`, `frontend/src/styles/customer.css`, and `scripts/test/storefront-product-error-state.test.mjs`.
 
 Validation: CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`; manual visual QA is next.
+
+## Sprint 11 Catalog Identity Hardening
+
+On 2026-09-27, catalog identity was hardened end-to-end: structured brand/variant/package-size import support, Owner visibility for incomplete identity, ZIP-package readiness metrics, and canonical release `g2-s2-c4-a2` with a 50-product identity manifest. Package size is populated only where approved catalog names/descriptions provide deterministic evidence; unknown sizes remain an explicit review condition rather than guessed data.
+
+Validation: Pending exact-head CI.
