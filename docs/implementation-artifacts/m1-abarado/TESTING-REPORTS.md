@@ -205,3 +205,7 @@ The one-time cleanup script normalized these live products from `DISCONTINUED` t
 | Date       | Command               | Result | Notes                                                                                                                                                         |
 | ---------- | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-09-27 | `npm run verify:code` | Passed | Aggregate read-only code verification completed successfully in CI #1600; subsequent failure was limited to missing current implementation-artifact evidence. |
+
+## Sprint 11 Storefront Size Variant Validation
+
+Automated coverage includes backend verification that only in-stock siblings from the same product family and variant are returned in ascending normalized package size, plus a frontend contract guard for image-backed selection, product navigation, selected-state styling, and horizontal scroll-snap behavior. Exact-head CI is pending.
