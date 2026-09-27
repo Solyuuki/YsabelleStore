@@ -437,6 +437,34 @@ async function webStartupSmoke(url, runtimeRoot, release) {
       "Expected every team inventory product to have positive stock."
     );
 
+    const storefrontResponse = await fetch(
+      new URL("/api/storefront/products?page=1&pageSize=48&availability=all", runtime.apiBaseUrl + "/"),
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    assert.equal(storefrontResponse.ok, true, "Storefront product parity endpoint failed.");
+    const storefrontPayload = await storefrontResponse.json();
+    assert.equal(
+      storefrontPayload?.meta?.totalItems,
+      50,
+      "Expected all 50 canonical products to be visible in the storefront."
+    );
+
+    const categoryResponse = await fetch(
+      new URL("/api/storefront/categories", runtime.apiBaseUrl + "/"),
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    assert.equal(categoryResponse.ok, true, "Storefront category parity endpoint failed.");
+    const categoryPayload = await categoryResponse.json();
+    const storefrontCategoryTotal = (categoryPayload?.data ?? []).reduce(
+      (total, category) => total + Number(category.productCount ?? 0),
+      0
+    );
+    assert.equal(
+      storefrontCategoryTotal,
+      50,
+      "Expected storefront category counts to cover all 50 canonical products."
+    );
+
     for (const product of release.products) {
       const imageId = product.catalogImage?.activeImageAssetId;
       assert.ok(imageId, product.productId + " has no active image asset.");

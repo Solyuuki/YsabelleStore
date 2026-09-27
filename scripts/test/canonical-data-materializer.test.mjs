@@ -189,3 +189,116 @@ test("canonical JSON drift comparison ignores storage formatting", () => {
     normalizeCanonicalDbValue("products", "description", mysqlFormatted)
   );
 });
+
+
+test("canonical subset remaps release products onto the public storefront taxonomy", () => {
+  const productIds = Array.from({ length: 50 }, (_, index) => "product-" + index);
+  const candidateIds = Array.from({ length: 50 }, (_, index) => "candidate-" + index);
+  const release = {
+    releaseId: "taxonomy-release",
+    products: productIds.map((productId, index) => {
+      const sourceProductId = "P" + String(index).padStart(3, "0");
+      return {
+        productId,
+        sourceProductId,
+        sku: "SARIMA-" + sourceProductId,
+        name: "Product " + index,
+        manufacturerBarcode: "481000000" + String(index).padStart(4, "0"),
+        description: "Canonical product description " + index,
+        brand: "Brand " + index,
+        variant: "Variant " + index,
+        sizeValue: String(index + 1),
+        sizeUnit: "PIECE",
+        catalogImage: {
+          activeImageAssetId: candidateIds[index],
+          legacyImageUrl: "/api/storefront/product-images/" + candidateIds[index] + "/card"
+        }
+      };
+    })
+  };
+  const reconciliation = {
+    items: candidateIds.map((candidateId, index) => ({
+      candidateId,
+      sourceProductId: "P" + String(index).padStart(3, "0")
+    }))
+  };
+  const productColumns = [
+    "id",
+    "category_id",
+    "active_image_asset_id",
+    "sku",
+    "barcode",
+    "name",
+    "description",
+    "image_url",
+    "brand",
+    "variant",
+    "size_value",
+    "size_unit",
+    "status",
+    "data_quality_status",
+    "is_storefront_visible"
+  ];
+  const sql = [
+    "INSERT INTO `categories` (`id`,`name`,`slug`,`is_active`,`data_quality_status`,`is_storefront_visible`) VALUES " +
+      "('legacy-baking','Baking / Spreads & Dessert Ingredients','baking-spreads-dessert-ingredients','1','NEEDS_REVIEW','0')," +
+      "('bread','Bread & Bakery','bread-bakery','1','APPROVED','1');",
+    "INSERT INTO `products` (" +
+      productColumns.map((column) => "`" + column + "`").join(",") +
+      ") VALUES " +
+      productIds
+        .map((id, index) =>
+          tuple([
+            id,
+            index < 25 ? "legacy-baking" : "bread",
+            candidateIds[index],
+            "OLD-" + index,
+            null,
+            "Old Name",
+            null,
+            "/old",
+            null,
+            null,
+            null,
+            null,
+            "INACTIVE",
+            "NEEDS_REVIEW",
+            "0"
+          ])
+        )
+        .join(",") +
+      ";",
+    "INSERT INTO `product_image_assets` (`id`,`product_id`,`quality_status`) VALUES " +
+      candidateIds.map((id, index) => tuple([id, productIds[index], "APPROVED"])).join(",") +
+      ";",
+    "INSERT INTO `product_aliases` (`id`,`canonical_product_id`,`value`) VALUES ('alias','product-0','Alias');",
+    "INSERT INTO `sarima_source_product_mappings` (`id`,`canonical_product_id`,`source_product_id`,`source_category`) VALUES " +
+      productIds
+        .map((id, index) =>
+          tuple([
+            "mapping-" + index,
+            id,
+            "P" + String(index).padStart(3, "0"),
+            index < 25 ? "Baking / Spreads & Dessert Ingredients" : "Bread & Bakery"
+          ])
+        )
+        .join(",") +
+      ";"
+  ].join("\n");
+
+  const subset = buildCanonicalSubset({ catalogSql: sql, release, reconciliation });
+  const categories = new Map(subset.rows.categories.map((category) => [category.id, category]));
+
+  assert.equal(categories.get("legacy-baking")?.name, "Baking & Dessert");
+  assert.equal(categories.get("legacy-baking")?.slug, "baking-dessert");
+  assert.equal(categories.get("legacy-baking")?.data_quality_status, "APPROVED");
+  assert.equal(categories.get("legacy-baking")?.is_storefront_visible, "1");
+  assert.equal(
+    subset.rows.products.filter((product) => product.category_id === "legacy-baking").length,
+    25
+  );
+  assert.equal(
+    subset.rows.products.filter((product) => product.category_id === "bread").length,
+    25
+  );
+});

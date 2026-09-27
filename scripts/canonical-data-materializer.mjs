@@ -246,6 +246,120 @@ const DECIMAL_COLUMNS = {
   sarima_source_product_mappings: new Set(["source_selling_price"])
 };
 
+const STOREFRONT_CATEGORY_TAXONOMY = [
+  {
+    name: "Coffee & Milk",
+    slug: "coffee-milk",
+    sourceCategories: ["Beverages / Coffee & Milk"]
+  },
+  {
+    name: "Juice, Tea, Soda & Water",
+    slug: "juice-tea-soda-water",
+    sourceCategories: ["Beverages / Juice, Tea, Soda & Water"]
+  },
+  { name: "Bread & Bakery", slug: "bread-bakery", sourceCategories: ["Bread & Bakery"] },
+  {
+    name: "Baking & Dessert",
+    slug: "baking-dessert",
+    sourceCategories: ["Baking / Spreads & Dessert Ingredients"]
+  },
+  { name: "Canned Goods", slug: "canned-goods", sourceCategories: ["Canned Goods"] },
+  {
+    name: "Condiments & Cooking",
+    slug: "condiments-cooking",
+    sourceCategories: ["Condiments & Cooking Ingredients"]
+  },
+  { name: "Noodles & Pasta", slug: "noodles-pasta", sourceCategories: ["Noodles & Pasta"] },
+  { name: "Rice & Staples", slug: "rice-staples", sourceCategories: ["Rice & Staples"] },
+  {
+    name: "Snacks & Confectionery",
+    slug: "snacks-confectionery",
+    sourceCategories: ["Snacks / Biscuits & Confectionery"]
+  },
+  {
+    name: "Frozen & Chilled",
+    slug: "frozen-chilled",
+    sourceCategories: ["Frozen / Chilled"]
+  },
+  {
+    name: "Household Supplies",
+    slug: "household-supplies",
+    sourceCategories: ["Household Supplies"]
+  },
+  {
+    name: "Laundry Supplies",
+    slug: "laundry-supplies",
+    sourceCategories: ["Laundry Supplies"]
+  },
+  {
+    name: "Personal Care & Hygiene",
+    slug: "personal-care-hygiene",
+    sourceCategories: ["Personal Care / Hygiene"]
+  },
+  { name: "Tissue & Cotton", slug: "tissue-cotton", sourceCategories: ["Tissue & Cotton"] }
+];
+
+const storefrontCategoryBySource = new Map(
+  STOREFRONT_CATEGORY_TAXONOMY.flatMap((category) =>
+    category.sourceCategories.map((source) => [normalizeCategoryName(source), category])
+  )
+);
+
+function normalizeCategoryName(value) {
+  return String(value).trim().toLocaleLowerCase("en-US");
+}
+
+function buildStorefrontCategoryPlan(parsed, selectedMappings) {
+  if (!parsed.sarima_source_product_mappings.columns.includes("source_category")) {
+    return null;
+  }
+
+  const categoriesByName = new Map(
+    parsed.categories.tuples.map((tuple) => [
+      normalizeCategoryName(value(parsed.categories, tuple, "name")),
+      tuple
+    ])
+  );
+  const categoryByProductId = new Map();
+  const selectedCategories = new Map();
+
+  for (const mapping of selectedMappings) {
+    const productId = value(parsed.sarima_source_product_mappings, mapping, "canonical_product_id");
+    const sourceCategory = value(parsed.sarima_source_product_mappings, mapping, "source_category");
+    const taxonomy = storefrontCategoryBySource.get(normalizeCategoryName(sourceCategory));
+    if (!taxonomy) {
+      throw new Error(
+        "Unsupported canonical storefront source category for " + productId + ": " + sourceCategory
+      );
+    }
+
+    const publicTuple =
+      categoriesByName.get(normalizeCategoryName(taxonomy.name)) ??
+      categoriesByName.get(normalizeCategoryName(sourceCategory));
+    if (!publicTuple) {
+      throw new Error(
+        "Canonical storefront category row missing for " + productId + ": " + sourceCategory
+      );
+    }
+
+    const rewritten = rewriteTuple(parsed.categories, publicTuple, {
+      name: taxonomy.name,
+      slug: taxonomy.slug,
+      is_active: 1,
+      data_quality_status: "APPROVED",
+      is_storefront_visible: 1
+    });
+    const categoryId = value(parsed.categories, publicTuple, "id");
+    selectedCategories.set(categoryId, rewritten);
+    categoryByProductId.set(productId, categoryId);
+  }
+
+  return {
+    categoryByProductId,
+    categories: [...selectedCategories.values()]
+  };
+}
+
 function normalizeDecimalText(value) {
   const text = String(value).trim();
   const match = text.match(/^(-?)(\d+)(?:\.(\d+))?$/);
@@ -316,6 +430,10 @@ export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
   const releaseByProductId = new Map(
     (release.products || []).map((product) => [product.productId, product])
   );
+  const selectedMappings = p.sarima_source_product_mappings.tuples.filter((tuple) =>
+    productIds.has(value(p.sarima_source_product_mappings, tuple, "canonical_product_id"))
+  );
+  const storefrontCategories = buildStorefrontCategoryPlan(p, selectedMappings);
   const products = p.products.tuples
     .filter((tuple) => productIds.has(value(p.products, tuple, "id")))
     .map((tuple) => {
@@ -339,6 +457,9 @@ export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
       }
 
       return rewriteTuple(p.products, tuple, {
+        category_id:
+          storefrontCategories?.categoryByProductId.get(productId) ??
+          value(p.products, tuple, "category_id"),
         active_image_asset_id:
           releaseProduct.catalogImage?.activeImageAssetId ??
           value(p.products, tuple, "active_image_asset_id"),
@@ -361,15 +482,17 @@ export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
   const categoryIds = new Set(
     products.map((t) => value(p.products, t, "category_id")).filter(Boolean)
   );
-  const categories = p.categories.tuples
-    .filter((tuple) => categoryIds.has(value(p.categories, tuple, "id")))
-    .map((tuple) =>
-      rewriteTuple(p.categories, tuple, {
-        is_active: 1,
-        data_quality_status: "APPROVED",
-        is_storefront_visible: 1
-      })
-    );
+  const categories =
+    storefrontCategories?.categories ??
+    p.categories.tuples
+      .filter((tuple) => categoryIds.has(value(p.categories, tuple, "id")))
+      .map((tuple) =>
+        rewriteTuple(p.categories, tuple, {
+          is_active: 1,
+          data_quality_status: "APPROVED",
+          is_storefront_visible: 1
+        })
+      );
   const selected = {
     categories,
     products,
@@ -379,9 +502,7 @@ export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
     product_aliases: p.product_aliases.tuples.filter((t) =>
       productIds.has(value(p.product_aliases, t, "canonical_product_id"))
     ),
-    sarima_source_product_mappings: p.sarima_source_product_mappings.tuples.filter((t) =>
-      productIds.has(value(p.sarima_source_product_mappings, t, "canonical_product_id"))
-    )
+    sarima_source_product_mappings: selectedMappings
   };
   if (
     selected.categories.length !== categoryIds.size ||
