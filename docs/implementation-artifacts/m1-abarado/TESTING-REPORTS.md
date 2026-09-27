@@ -202,7 +202,7 @@ The one-time cleanup script normalized these live products from `DISCONTINUED` t
 
 ## Sprint 11 CIE White Canvas Validation
 
-| Date | Command | Result | Notes |
-| --- | --- | --- | --- |
+| Date       | Command               | Result | Notes                                                                                                                                                         |
+| ---------- | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-09-27 | `npm run verify:code` | Passed | Aggregate read-only code verification completed successfully in CI #1600; subsequent failure was limited to missing current implementation-artifact evidence. |
 
