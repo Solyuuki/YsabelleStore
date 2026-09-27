@@ -29,7 +29,7 @@ export function createApp() {
     express.json({
       limit: securityConfig.limits.jsonBodyLimit,
       verify(request, _response, buffer) {
-        if (request.url.includes("/storefront/payments/paymongo/webhook")) {
+        if (request.url?.includes("/storefront/payments/paymongo/webhook")) {
           (request as typeof request & { rawBody?: Buffer }).rawBody = Buffer.from(buffer);
         }
       }
