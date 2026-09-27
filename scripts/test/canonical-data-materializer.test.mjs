@@ -150,13 +150,10 @@ test("canonical subset excludes unrelated catalog rows", () => {
 
 test("canonical SQL decoder restores MySQL-escaped JSON text", () => {
   const encoded =
-    "'{\\\"source\\\": {\\\"dataset\\\": \\\"historical-sales\\\", \\\"productId\\\": \\\"P317\\\"}}'";
+    '\'{\\"source\\": {\\"dataset\\": \\"historical-sales\\", \\"productId\\": \\"P317\\"}}\'';
   const decoded = decodeSqlValue(encoded);
 
-  assert.equal(
-    decoded,
-    '{"source": {"dataset": "historical-sales", "productId": "P317"}}'
-  );
+  assert.equal(decoded, '{"source": {"dataset": "historical-sales", "productId": "P317"}}');
   assert.deepEqual(JSON.parse(decoded), {
     source: { dataset: "historical-sales", productId: "P317" }
   });
