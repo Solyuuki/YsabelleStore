@@ -228,7 +228,6 @@ function verifyCanonicalImageBindings(url, release) {
   }
 }
 
-
 function verifyCanonicalProductMetadata(url, release) {
   const productIds = release.products.map((product) => product.productId);
   const rows = mysql(
@@ -274,9 +273,17 @@ function verifyCanonicalProductMetadata(url, release) {
     const expected = releaseByProductId.get(productId);
     assert.ok(expected, productId + " missing from canonical release.");
     assert.equal(sku, expected.sku, productId + " SKU differs from release.");
-    assert.equal(barcode, expected.manufacturerBarcode, productId + " barcode differs from release.");
+    assert.equal(
+      barcode,
+      expected.manufacturerBarcode,
+      productId + " barcode differs from release."
+    );
     assert.equal(name, expected.name, productId + " name differs from release.");
-    assert.equal(description, expected.description, productId + " description differs from release.");
+    assert.equal(
+      description,
+      expected.description,
+      productId + " description differs from release."
+    );
     assert.equal(brand, expected.brand, productId + " brand differs from release.");
     assert.equal(variant, expected.variant, productId + " variant differs from release.");
     if (expected.sizeValue === null || expected.sizeValue === undefined) {
