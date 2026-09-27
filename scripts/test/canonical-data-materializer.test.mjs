@@ -159,6 +159,21 @@ test("canonical SQL decoder restores MySQL-escaped JSON text", () => {
   });
 });
 
+test("canonical decimal drift comparison ignores MySQL scale formatting", () => {
+  assert.equal(
+    normalizeCanonicalDbValue("products", "size_value", "13.5"),
+    normalizeCanonicalDbValue("products", "size_value", "13.500")
+  );
+  assert.equal(
+    normalizeCanonicalDbValue("products", "size_value", "180"),
+    normalizeCanonicalDbValue("products", "size_value", "180.000")
+  );
+  assert.notEqual(
+    normalizeCanonicalDbValue("products", "description", "13.5"),
+    normalizeCanonicalDbValue("products", "description", "13.500")
+  );
+});
+
 test("canonical JSON drift comparison ignores storage formatting", () => {
   const compact =
     '{"source":{"dataset":"historical-sales","workbooks":["a.xlsx","b.xlsx"]},"identityBasis":["SKU"]}';
