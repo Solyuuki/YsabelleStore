@@ -105,4 +105,4 @@ Task YSB-M1-CATALOG-IDENTITY-006 closes the variant-readiness gap across Owner P
 
 Evidence: `backend/src/services/productImportService.ts`; `frontend/src/services/catalogApi.ts`; `frontend/src/pages/ProductsPageLegacy.tsx`; `frontend/src/components/catalog/ProductPackageImportDialog.tsx`; `database/canonical/product-identities.json`; `database/canonical/releases/g2-s2-c4-a2.json`; `database/seed/canonical-catalog-v1.sql`; `scripts/canonical-release-security.mjs`; `scripts/test/catalog-product-identity-contract.test.mjs`
 
-Status: In progress. Exact-head automated validation is required before manual QA.
+Status: Ready for manual QA. CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51`.
