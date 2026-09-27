@@ -131,10 +131,7 @@ export async function startPaymongoCheckout(orderNumber: string) {
   return response.data;
 }
 
-export async function fetchStorefrontPaymentStatus(
-  orderNumber: string,
-  signal?: AbortSignal
-) {
+export async function fetchStorefrontPaymentStatus(orderNumber: string, signal?: AbortSignal) {
   const response = await apiClient.request<StorefrontPaymentStatusResult>(
     `/api/storefront/orders/${encodeURIComponent(orderNumber)}/payment-status`,
     {
