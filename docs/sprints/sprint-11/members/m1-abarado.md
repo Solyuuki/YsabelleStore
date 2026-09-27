@@ -6,16 +6,16 @@ M1 owns integration-facing Quality of Life, reliability UX, HTTP/API standardiza
 
 ## Current activity
 
-Branch: `m1/v0.11/feat/status-screen-system`
+Branch: `m1/v0.11/fix/cie-white-catalog-canvas`
 
-- Standardizes full-screen HTTP and reliability states on one Ysabelle status-screen shell.
-- Covers protected 401, route-level 403, internal/storefront 404, and service-level 503 presentation.
-- Reuses the existing Ysabelle reliability palette, typography, motion, focus treatment, and responsive layout.
-- Preserves the approved toast treatment for isolated 405, 409, 413, 415, 429, 500, 502, and 504 responses.
-- Escalates backend unreachable, database unavailable, offline, and repeated timeout states through the existing write-safety reliability gate.
-- Adds exact-head aggregate verification before sprint/artifact status verification.
-- PR #43 is ready for manual visual QA only after all automated checks are green.
+- Standardizes CIQE processed, card, and PDP derivatives on one opaque pure-white catalog canvas.
+- Aligns the storefront product-media surface with the same pure-white background.
+- Preserves original uploads and the existing conservative subject-detection and full-frame fallback behavior.
+- Adds regression coverage for off-white opaque sources and transparent product sources.
+- Keeps product aspect ratio, contain behavior, derivative sizing, and the 1.25× upscale cap unchanged.
+- Adds a cross-layer guardrail so CIE and storefront background policy cannot silently drift.
+- PR #45 remains blocked from integration until the exact-head automated checks are fully green.
 
 ## Validation status
 
-Automated validation is required to pass on the exact PR head before manual browser/Electron QA begins.
+Automated validation is required to pass on the exact PR head before integration.

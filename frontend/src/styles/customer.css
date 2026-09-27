@@ -30,7 +30,7 @@
   --product-card-border: #dde2ec;
   --product-card-shadow: 0 10px 28px rgb(16 20 38 / 7%);
   --product-card-shadow-active: 0 18px 42px rgb(16 20 38 / 12%);
-  --product-media-surface: #fcfcfb;
+  --product-media-surface: #fff;
   --product-media-border: #ececea;
   --product-motion-duration: 180ms;
   --customer-font-body: var(--font-sans);
