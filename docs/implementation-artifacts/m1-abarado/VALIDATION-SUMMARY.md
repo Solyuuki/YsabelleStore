@@ -156,3 +156,7 @@
 | Date       | Branch                                | Command               | Result | Notes                                                                                                                    |
 | ---------- | ------------------------------------- | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------ |
 | 2026-09-27 | m1/v0.11/fix/cie-white-catalog-canvas | `npm run verify:code` | Passed | Aggregate read-only code verification completed successfully in CI #1600 before the implementation-artifact status gate. |
+
+## Sprint 11 Storefront Size Variant Validation
+
+Exact-head CI is pending for the direct `sprint/v0.11/sprint-11` implementation. Required validation includes repository formatting/lint/typecheck/build, backend storefront product-detail coverage, guardrail tests, canonical release rehearsal, and workspace builds.
