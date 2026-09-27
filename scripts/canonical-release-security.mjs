@@ -204,7 +204,7 @@ export function inspectRepository(root = ROOT) {
   const identities = JSON.parse(readFileSync(identityPath, "utf8"));
   const findings = inspectReleaseContract({ state, release, identities, root });
 
-  if (identities.releaseId !== state.releaseId || identities.catalogVersion !== state.catalogVersion) {
+  if (\n    identities.releaseId !== state.releaseId ||\n    identities.catalogVersion !== state.catalogVersion\n  ) {
     findings.push("BLOCK: canonical product identity manifest differs from canonical state.");
   }
   if (identities.items?.length !== 50) {
