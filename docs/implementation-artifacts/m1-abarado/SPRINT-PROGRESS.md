@@ -72,3 +72,10 @@ M1 Sprint 2 auth behavior remains intact. Sprint 3 planning now shifts M1 into i
 | Date       | Progress                                                                                                                         | Evidence                                                                     |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | 2026-09-26 | Unified 401, 403, 404, 503, backend-unreachable, database-unavailable, offline, and timeout states on one Ysabelle status shell. | `m1/v0.11/feat/status-screen-system`; PR #43; manual visual QA remains next. |
+
+## Sprint 11 CIE White Canvas Completion
+
+| Date | Progress | Evidence |
+| --- | --- | --- |
+| 2026-09-27 | Completed the CIE/storefront white-canvas consistency fix and added regression coverage for opaque off-white and transparent product-image sources. | `m1/v0.11/fix/cie-white-catalog-canvas`; `catalog-image-engine/ciqe/normalize.py`; `catalog-image-engine/tests/test_normalize.py`; `frontend/src/styles/customer.css`; `scripts/test/catalog-image-white-canvas.test.mjs`; validation: Passed |
+
