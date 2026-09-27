@@ -17,6 +17,8 @@ Branch: `sprint/v0.11/sprint-11`
 - Uses accessible native radio selection, horizontal overflow/scroll-snap on narrow screens, product thumbnails, and the existing Ysabelle visual tokens.
 - Adds backend ordering/filtering coverage and a storefront UI contract guardrail.
 
+- Polishes the product-load error state into a compact storefront card with safe customer copy, stronger typography hierarchy, deliberate spacing, responsive actions, and no raw backend URL exposure.
+
 ## Validation status
 
 CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`, including formatting, linting, typechecking, workspace tests/builds, guardrail tests, aggregate read-only verification, and Phase 6 canonical release hardening. The implementation is ready for manual visual QA.
