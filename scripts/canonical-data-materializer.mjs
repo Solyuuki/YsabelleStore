@@ -227,13 +227,66 @@ export function buildCanonicalSubset({ catalogSql, release, reconciliation }) {
   if (productIds.size !== 50 || candidateIds.size !== 50) {
     throw new Error("Production subset must contain 50 products/candidates");
   }
-  const products = p.products.tuples.filter((t) => productIds.has(value(p.products, t, "id")));
+  const releaseByProductId = new Map(
+    (release.products || []).map((product) => [product.productId, product])
+  );
+  const products = p.products.tuples
+    .filter((tuple) => productIds.has(value(p.products, tuple, "id")))
+    .map((tuple) => {
+      const productId = value(p.products, tuple, "id");
+      const releaseProduct = releaseByProductId.get(productId);
+      if (!releaseProduct) throw new Error("Canonical release product missing for " + productId);
+      if (
+        !releaseProduct.name?.trim() ||
+        !releaseProduct.description?.trim() ||
+        !releaseProduct.manufacturerBarcode?.trim() ||
+        !releaseProduct.brand?.trim() ||
+        !releaseProduct.variant?.trim()
+      ) {
+        throw new Error("Canonical release product metadata incomplete for " + productId);
+      }
+      const hasSizeValue =
+        releaseProduct.sizeValue !== null && releaseProduct.sizeValue !== undefined;
+      const hasSizeUnit =
+        releaseProduct.sizeUnit !== null && releaseProduct.sizeUnit !== undefined;
+      if (hasSizeValue !== hasSizeUnit) {
+        throw new Error("Canonical release package size incomplete for " + productId);
+      }
+
+      return rewriteTuple(p.products, tuple, {
+        active_image_asset_id:
+          releaseProduct.catalogImage?.activeImageAssetId ??
+          value(p.products, tuple, "active_image_asset_id"),
+        sku: releaseProduct.sku,
+        barcode: releaseProduct.manufacturerBarcode,
+        name: releaseProduct.name,
+        description: releaseProduct.description,
+        image_url:
+          releaseProduct.catalogImage?.legacyImageUrl ?? value(p.products, tuple, "image_url"),
+        brand: releaseProduct.brand,
+        variant: releaseProduct.variant,
+        size_value: releaseProduct.sizeValue ?? null,
+        size_unit: releaseProduct.sizeUnit ?? null,
+        status: "ACTIVE",
+        data_quality_status: "APPROVED",
+        is_storefront_visible: 1
+      });
+    });
   if (products.length !== 50) throw new Error("Selected product rows=" + products.length + "/50");
   const categoryIds = new Set(
     products.map((t) => value(p.products, t, "category_id")).filter(Boolean)
   );
+  const categories = p.categories.tuples
+    .filter((tuple) => categoryIds.has(value(p.categories, tuple, "id")))
+    .map((tuple) =>
+      rewriteTuple(p.categories, tuple, {
+        is_active: 1,
+        data_quality_status: "APPROVED",
+        is_storefront_visible: 1
+      })
+    );
   const selected = {
-    categories: p.categories.tuples.filter((t) => categoryIds.has(value(p.categories, t, "id"))),
+    categories,
     products,
     product_image_assets: p.product_image_assets.tuples.filter((t) =>
       candidateIds.has(value(p.product_image_assets, t, "id"))
