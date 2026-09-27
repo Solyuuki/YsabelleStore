@@ -361,6 +361,7 @@ export async function verifyCanonicalSubset(prisma, subset) {
     const expected = ids.length;
     if (actual !== expected) f.push(table + ": " + actual + "/" + expected);
   }
+  f.push(...(await inspectCanonicalDbDrift(prisma, subset)));
   return f;
 }
 
