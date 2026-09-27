@@ -94,10 +94,7 @@ test("canonical 50 identity manifest is complete and matches release and seed", 
 
   assert.equal(state.catalogVersion, 4);
   assert.equal(state.releaseId, expectedReleaseId);
-  assert.equal(
-    state.canonicalReleasePath,
-    `database/canonical/releases/${state.releaseId}.json`
-  );
+  assert.equal(state.canonicalReleasePath, `database/canonical/releases/${state.releaseId}.json`);
   assert.equal(release.releaseId, state.releaseId);
   assert.equal(release.catalogVersion, state.catalogVersion);
   assert.equal(manifest.releaseId, state.releaseId);
