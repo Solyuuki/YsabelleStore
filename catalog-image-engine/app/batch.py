@@ -66,7 +66,7 @@ def process_source(source: Path, output_directory: Path) -> dict[str, Any]:
     if diagnostic_codes.intersection(BLOCKING_DIAGNOSTICS):
         return source_result
 
-    normalized = normalize_image_path(source, output_directory)
+    normalized = normalize_image_path(source, output_directory, canvas_policy="legacy")
     post_optimization = analyze_image_path(output_directory / "processed.webp")
     result: dict[str, Any] = {
         "status": "APPROVED" if post_optimization["status"] == "APPROVED" else "REJECTED",
