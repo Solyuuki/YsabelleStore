@@ -156,4 +156,3 @@
 | Date       | Branch                                | Command               | Result | Notes                                                                                                                    |
 | ---------- | ------------------------------------- | --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------ |
 | 2026-09-27 | m1/v0.11/fix/cie-white-catalog-canvas | `npm run verify:code` | Passed | Aggregate read-only code verification completed successfully in CI #1600 before the implementation-artifact status gate. |
-
