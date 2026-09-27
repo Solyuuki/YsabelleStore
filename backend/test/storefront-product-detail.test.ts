@@ -304,10 +304,6 @@ test("related products stay strictly inside the current category", async () => {
       true
     );
     assert.deepEqual(result.fallback, []);
-    assert.equal(
-      result.fallback.every((product) => product.category.id !== category.id),
-      true
-    );
     assert.ok(returnedIds.length <= 4);
 
     if (categoryFixture.created && fallbackCategoryFixture.created) {
