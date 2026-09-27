@@ -11,7 +11,11 @@ import {
 import { prisma } from "../database/prismaClient.js";
 import { compareStorefrontCategoryNames } from "../modules/catalog/storefront-category-taxonomy.js";
 import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
-import { extractCanonicalProductSize, normalizeProductIdentity } from "../utils/catalogIdentity.js";
+import {
+  extractCanonicalProductSize,
+  normalizeCanonicalProductName,
+  normalizeProductIdentity
+} from "../utils/catalogIdentity.js";
 import { HttpError } from "../utils/httpError.js";
 import type {
   StorefrontOrderInput,
@@ -76,7 +80,9 @@ function normalizedOptionalIdentity(value: string | null | undefined) {
 }
 
 function normalizedSizeFamilyName(name: string) {
-  return normalizeProductIdentity(name.replace(SIZE_TOKEN_PATTERN, " "));
+  return normalizeProductIdentity(
+    normalizeCanonicalProductName(name).replace(SIZE_TOKEN_PATTERN, " ")
+  );
 }
 
 function resolveProductSize(
@@ -180,7 +186,15 @@ async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
         left.name.localeCompare(right.name) ||
         left.id.localeCompare(right.id)
     )
-    .map(({ sortValue: _sortValue, ...candidate }) => candidate);
+    .map((candidate) => ({
+      id: candidate.id,
+      name: candidate.name,
+      imageUrl: candidate.imageUrl,
+      sellingPrice: candidate.sellingPrice,
+      availableStock: candidate.availableStock,
+      sizeValue: candidate.sizeValue,
+      sizeUnit: candidate.sizeUnit
+    }));
 }
 
 function serializeStorefrontProduct(
