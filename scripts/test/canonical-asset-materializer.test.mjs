@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  applyDistributionRecordOverrides,
   buildAssetMaterializationPlan,
   parseDistributionRecords,
   processedCardAliases
@@ -21,6 +22,24 @@ test("distribution roles parse", () =>
     parseDistributionRecords(rows).map((r) => r.role),
     ["original", "processed", "card", "pdp"]
   ));
+test("derived runtime records can be explicitly overridden", () => {
+  const replacementSha = "2".repeat(64);
+  const replacementBlob = "b".repeat(40);
+  const records = applyDistributionRecordOverrides(parseDistributionRecords(rows), [
+    {
+      candidateId: id,
+      role: "pdp",
+      sizeBytes: 31,
+      sha256: replacementSha,
+      gitBlobOid: replacementBlob
+    }
+  ]);
+  const pdp = records.find((record) => record.role === "pdp");
+  assert.equal(pdp?.sizeBytes, 31);
+  assert.equal(pdp?.sha256, replacementSha);
+  assert.equal(pdp?.gitBlobOid, replacementBlob);
+  assert.equal(records.find((record) => record.role === "original")?.sizeBytes, 10);
+});
 test("plan uses Git source and manifest aliases", () => {
   const release = {
       products: [
