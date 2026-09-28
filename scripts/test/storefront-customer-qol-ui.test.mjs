@@ -13,12 +13,8 @@ const discoverSource = await readFile(
   new URL("../../frontend/src/pages/customer/DiscoverPage.tsx", import.meta.url),
   "utf8"
 );
-const productImageSource = await readFile(
-  new URL("../../frontend/src/components/customer/ProductImage.tsx", import.meta.url),
-  "utf8"
-);
-const catalogImageMetadataSource = await readFile(
-  new URL("../../frontend/src/utils/catalogImageMetadata.ts", import.meta.url),
+const storefrontImagesSource = await readFile(
+  new URL("../../frontend/src/utils/storefrontImages.ts", import.meta.url),
   "utf8"
 );
 
@@ -35,8 +31,8 @@ assert.doesNotMatch(
   discoverSource,
   /<div className="story-welcome__mark story-welcome__mark--branded">/
 );
-assert.match(productImageSource, /data-image-cleanup=/);
-assert.match(catalogImageMetadataSource, /sarima-p219-b7553e591e41/);
-assert.match(customerCss, /data-image-cleanup="trim-top-edge"/);
+assert.match(storefrontImagesSource, /sarima-p219-b7553e591e41/);
+assert.match(storefrontImagesSource, /edge-artifact-20260928/);
+assert.doesNotMatch(customerCss, /data-image-cleanup="trim-top-edge"/);
 
 console.log("storefront customer QoL UI contract passed");
