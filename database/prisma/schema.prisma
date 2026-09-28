@@ -91,6 +91,33 @@ enum ProductImageProcessingStatus {
   FAILED
 }
 
+enum CategoryImageQualityStatus {
+  APPROVED
+  NEEDS_REVIEW
+  REJECTED
+}
+
+enum CategoryImageProcessingStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum CategoryCoverStatus {
+  MISSING
+  PROCESSING
+  NEEDS_REVIEW
+  READY
+  FAILED
+}
+
+enum CategoryCoverPosition {
+  LEFT
+  CENTER
+  RIGHT
+}
+
 enum ProductSizeUnit {
   MILLILITER
   LITER
@@ -551,19 +578,26 @@ model CustomerSession {
 }
 
 model Category {
-  id                  String               @id @default(cuid()) @db.VarChar(191)
-  name                String               @unique(map: "uq_categories_name") @db.VarChar(120)
-  slug                String               @unique(map: "uq_categories_slug") @db.VarChar(140)
-  description         String?              @db.VarChar(255)
-  isActive            Boolean              @default(true) @map("is_active")
-  recordSource        CatalogRecordSource  @default(CATALOG) @map("record_source")
-  dataQualityStatus   CatalogQualityStatus @default(NEEDS_REVIEW) @map("data_quality_status")
-  isStorefrontVisible Boolean              @default(false) @map("is_storefront_visible")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  updatedAt           DateTime             @updatedAt @map("updated_at")
+  id                  String                @id @default(cuid()) @db.VarChar(191)
+  name                String                @unique(map: "uq_categories_name") @db.VarChar(120)
+  slug                String                @unique(map: "uq_categories_slug") @db.VarChar(140)
+  description         String?               @db.VarChar(255)
+  isActive            Boolean               @default(true) @map("is_active")
+  recordSource        CatalogRecordSource   @default(CATALOG) @map("record_source")
+  dataQualityStatus   CatalogQualityStatus  @default(NEEDS_REVIEW) @map("data_quality_status")
+  isStorefrontVisible Boolean               @default(false) @map("is_storefront_visible")
+  activeCoverAssetId  String?               @unique(map: "uq_categories_active_cover_asset") @map("active_cover_asset_id") @db.VarChar(191)
+  coverStatus         CategoryCoverStatus   @default(MISSING) @map("cover_status")
+  coverPosition       CategoryCoverPosition @default(CENTER) @map("cover_position")
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
   products            Product[]
+  coverAssets         CategoryImageAsset[]  @relation("CategoryCoverAssets")
+  activeCoverAsset    CategoryImageAsset?   @relation("ActiveCategoryCover", fields: [activeCoverAssetId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([isActive], map: "idx_categories_is_active")
+  @@index([coverStatus], map: "idx_categories_cover_status")
+  @@index([isStorefrontVisible, coverStatus, isActive], map: "idx_categories_storefront_cover")
   @@index([isStorefrontVisible, dataQualityStatus, isActive], map: "idx_categories_storefront_quality")
   @@map("categories")
 }
@@ -643,6 +677,34 @@ model ProductBarcode {
   @@index([source, createdAt], map: "idx_product_barcodes_source_created")
   @@index([registeredById], map: "idx_product_barcodes_registered_by")
   @@map("product_barcodes")
+}
+
+model CategoryImageAsset {
+  id                  String                        @id @default(cuid()) @db.VarChar(191)
+  categoryId          String                        @map("category_id") @db.VarChar(191)
+  qualityStatus       CategoryImageQualityStatus    @default(NEEDS_REVIEW) @map("quality_status")
+  processingStatus    CategoryImageProcessingStatus @default(PENDING) @map("processing_status")
+  originalStorageKey  String                        @map("original_storage_key") @db.VarChar(500)
+  processedStorageKey String?                       @map("processed_storage_key") @db.VarChar(500)
+  coverStorageKey     String?                       @map("cover_storage_key") @db.VarChar(500)
+  thumbnailStorageKey String?                       @map("thumbnail_storage_key") @db.VarChar(500)
+  sourceMimeType      String                        @map("source_mime_type") @db.VarChar(80)
+  sourceBytes         Int                           @map("source_bytes") @db.UnsignedInt
+  sourceWidth         Int?                          @map("source_width") @db.UnsignedInt
+  sourceHeight        Int?                          @map("source_height") @db.UnsignedInt
+  diagnostics         Json?
+  processingVersion   String                        @default("category-cover-v1") @map("processing_version") @db.VarChar(40)
+  approvedAt          DateTime?                     @map("approved_at")
+  rejectedAt          DateTime?                     @map("rejected_at")
+  supersededAt        DateTime?                     @map("superseded_at")
+  createdAt           DateTime                      @default(now()) @map("created_at")
+  updatedAt           DateTime                      @updatedAt @map("updated_at")
+  category            Category                      @relation("CategoryCoverAssets", fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  activeForCategory   Category?                     @relation("ActiveCategoryCover")
+
+  @@index([categoryId, createdAt], map: "idx_category_image_assets_category_created")
+  @@index([categoryId, qualityStatus, processingStatus], map: "idx_category_image_assets_quality")
+  @@map("category_image_assets")
 }
 
 model ProductImageAsset {
