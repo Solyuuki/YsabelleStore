@@ -21,7 +21,6 @@ import {
 } from "react";
 
 import { ProductImageUploadPanel } from "@/components/catalog/ProductImageUploadPanel";
-import { useAuth } from "@/context/AuthContext";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -47,7 +46,6 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 import {
   createProduct,
-  createCategory,
   fetchCategories,
   fetchProductById,
   fetchProducts,
@@ -83,7 +81,6 @@ const CATALOG_PAGE_SIZE_MINIMUM_MS = 400;
 const CATALOG_REFRESH_MINIMUM_MS = 350;
 const PREVIEW_LOADING_MINIMUM_MS = 500;
 const IMPORT_LOADING_MINIMUM_MS = 700;
-const CATEGORY_CREATE_MINIMUM_MS = 450;
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
   maximumFractionDigits: 2,
@@ -155,7 +152,6 @@ type ImportState = {
 };
 
 export function ProductsPage() {
-  const { user } = useAuth();
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -212,7 +208,6 @@ export function ProductsPage() {
     initialized: false
   });
   const { pushToast } = useToast();
-  const isOwner = user?.role === "OWNER";
 
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId) ?? null,
@@ -883,16 +878,7 @@ export function ProductsPage() {
         categoryLoading={categoriesLoading}
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
-        onCategoryCreated={(category) => {
-          setCategories((current) => {
-            const next = current.filter((entry) => entry.id !== category.id);
-            next.push(category);
-            next.sort((left, right) => left.name.localeCompare(right.name));
-            return next;
-          });
-        }}
         onCreated={() => void refreshCatalog()}
-        isOwner={isOwner}
       />
 
       <ImportProductsDialog
@@ -2194,18 +2180,14 @@ function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
 function CreateProductDialog({
   categories,
   categoryLoading,
-  isOwner,
   isOpen,
   onClose,
-  onCategoryCreated,
   onCreated
 }: {
   categories: ProductCategorySummary[];
   categoryLoading: boolean;
-  isOwner: boolean;
   isOpen: boolean;
   onClose: () => void;
-  onCategoryCreated: (category: ProductCategorySummary) => void;
   onCreated: () => void;
 }) {
   const { pushToast } = useToast();
@@ -2233,13 +2215,6 @@ function CreateProductDialog({
   const [createdProductId, setCreatedProductId] = useState<string | null>(null);
   const [hasSelectedImage, setHasSelectedImage] = useState(false);
   const [imageSession, setImageSession] = useState(0);
-  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
-  const [categoryForm, setCategoryForm] = useState({
-    description: "",
-    name: ""
-  });
-  const [categoryError, setCategoryError] = useState<string | null>(null);
-  const [creatingCategory, setCreatingCategory] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -2262,67 +2237,6 @@ function CreateProductDialog({
       categoryId: current.categoryId || categories[0]?.id || ""
     }));
   }, [categories, isOpen]);
-
-  useEffect(() => {
-    if (!isCategoryDialogOpen) {
-      return;
-    }
-
-    setCategoryError(null);
-  }, [isCategoryDialogOpen]);
-
-  async function handleCreateCategory(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (creatingCategory || createdProductId) {
-      return;
-    }
-
-    const name = categoryForm.name.trim();
-
-    if (!name) {
-      setCategoryError("Category name is required.");
-      return;
-    }
-
-    setCreatingCategory(true);
-    setCategoryError(null);
-
-    try {
-      const response = await waitForMinimumDuration(
-        createCategory({
-          description: categoryForm.description.trim() || null,
-          name
-        }),
-        CATEGORY_CREATE_MINIMUM_MS
-      );
-
-      if (!response.success || !response.data) {
-        setCategoryError(response.message || "Unable to create category.");
-        return;
-      }
-
-      const createdCategory = response.data;
-      onCategoryCreated(createdCategory);
-      setForm((current) => ({ ...current, categoryId: createdCategory.id }));
-      setCategoryForm({
-        description: "",
-        name: ""
-      });
-      setIsCategoryDialogOpen(false);
-      pushToast({
-        message: "The new category is ready to use.",
-        title: "Category created",
-        variant: "success"
-      });
-    } catch (creationError) {
-      setCategoryError(
-        creationError instanceof Error ? creationError.message : "Unable to create category."
-      );
-    } finally {
-      setCreatingCategory(false);
-    }
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -2511,49 +2425,46 @@ function CreateProductDialog({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="product-category">Category</Label>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                    <div className="min-w-0 flex-1">
-                      <Select
-                        id="product-category"
-                        disabled={categoryLoading || categories.length === 0}
-                        value={form.categoryId}
-                        onChange={(event) =>
-                          setForm((current) => ({ ...current, categoryId: event.target.value }))
-                        }
-                      >
-                        {categoryLoading ? (
-                          <option value="">Loading categories...</option>
-                        ) : categories.length === 0 ? (
-                          <option value="">No categories found</option>
-                        ) : (
-                          <>
-                            <option value="">Select a category</option>
-                            {categories.map((category) => (
-                              <option key={category.id} value={category.id}>
-                                {category.name}
-                              </option>
-                            ))}
-                          </>
-                        )}
-                      </Select>
-                      {!categoryLoading && categories.length === 0 ? (
-                        <p className="mt-2 text-xs leading-5 text-slate-500">No categories found</p>
-                      ) : null}
-                    </div>
-                    {isOwner ? (
-                      <Button
-                        className="shrink-0 whitespace-nowrap"
-                        type="button"
-                        variant="secondary"
-                        onClick={() => {
-                          setCategoryError(null);
-                          setIsCategoryDialogOpen(true);
-                        }}
-                      >
-                        <Plus className="h-4 w-4" aria-hidden="true" />
-                        Add category
-                      </Button>
-                    ) : null}
+                  <Select
+                    id="product-category"
+                    disabled={categoryLoading || categories.length === 0}
+                    value={form.categoryId}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, categoryId: event.target.value }))
+                    }
+                  >
+                    {categoryLoading ? (
+                      <option value="">Loading categories...</option>
+                    ) : categories.length === 0 ? (
+                      <option value="">No categories available</option>
+                    ) : (
+                      <>
+                        <option value="">Select a category</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </>
+                    )}
+                  </Select>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs leading-5 text-slate-500">
+                      {categories.length === 0
+                        ? "Create a category first before saving this product."
+                        : "Category setup and storefront covers are managed separately."}
+                    </p>
+                    <Button
+                      className="h-auto px-0 py-1 text-xs"
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        window.history.pushState({}, "", "/categories");
+                        window.dispatchEvent(new PopStateEvent("popstate"));
+                      }}
+                    >
+                      Manage categories
+                    </Button>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -2702,81 +2613,6 @@ function CreateProductDialog({
           </DialogFooter>
         </form>
 
-        <Dialog
-          open={isCategoryDialogOpen}
-          onOpenChange={(nextOpen) => {
-            if (!nextOpen) {
-              setIsCategoryDialogOpen(false);
-            }
-          }}
-        >
-          <DialogContent className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[460px] flex-col overflow-hidden p-0">
-            <DialogHeader className="border-b border-slate-200 px-6 py-5">
-              <DialogTitle>Create category</DialogTitle>
-              <DialogDescription>
-                Add a new category without closing the Add Product form.
-              </DialogDescription>
-            </DialogHeader>
-
-            <form
-              className="flex-1 space-y-4 overflow-y-auto px-6 py-5"
-              onSubmit={handleCreateCategory}
-            >
-              {categoryError ? (
-                <Alert variant="destructive">
-                  <AlertTitle>Category creation failed</AlertTitle>
-                  <AlertDescription>{categoryError}</AlertDescription>
-                </Alert>
-              ) : null}
-
-              <div className="space-y-2">
-                <Label htmlFor="category-name">Category name</Label>
-                <Input
-                  id="category-name"
-                  autoFocus
-                  value={categoryForm.name}
-                  onChange={(event) =>
-                    setCategoryForm((current) => ({ ...current, name: event.target.value }))
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category-description">Description</Label>
-                <Textarea
-                  id="category-description"
-                  value={categoryForm.description}
-                  onChange={(event) =>
-                    setCategoryForm((current) => ({
-                      ...current,
-                      description: event.target.value
-                    }))
-                  }
-                />
-                <p className="text-xs leading-5 text-slate-500">
-                  Slug will be generated automatically from the category name.
-                </p>
-              </div>
-
-              <DialogFooter className="px-0 pb-0 pt-2">
-                <Button
-                  disabled={creatingCategory}
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsCategoryDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button disabled={creatingCategory || !categoryForm.name.trim()} type="submit">
-                  {creatingCategory ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-                  ) : null}
-                  {creatingCategory ? "Creating category…" : "Create category"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
       </DialogContent>
     </Dialog>
   );
