@@ -9,7 +9,16 @@ export type CategoryCoverStatus =
   | "READY"
   | "FAILED";
 
-export type CategoryCoverPosition = "LEFT" | "CENTER" | "RIGHT";
+export type CategoryCoverPosition =
+  | "LEFT"
+  | "CENTER"
+  | "RIGHT"
+  | "TOP"
+  | "BOTTOM"
+  | "TOP_LEFT"
+  | "TOP_RIGHT"
+  | "BOTTOM_LEFT"
+  | "BOTTOM_RIGHT";
 export type CategoryVisibilityFilter = "ALL" | "VISIBLE" | "HIDDEN";
 export type CategoryStatusFilter = "ALL" | "ACTIVE" | "INACTIVE";
 export type CategoryCoverStatusFilter = "ALL" | CategoryCoverStatus;

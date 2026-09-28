@@ -27,11 +27,19 @@ assert.match(categoriesPage, /visibility/);
 assert.match(categoriesPage, /productCount/);
 assert.match(categoriesPage, /<CategoryCoverUploadPanel/);
 assert.match(categoriesPage, /Product images are never used as automatic category artwork/);
+assert.match(categoriesPage, /category-cover-horizontal-focus/);
+assert.match(categoriesPage, /category-cover-vertical-focus/);
+assert.match(categoriesPage, /composeCoverPosition/);
+assert.match(categoriesPage, /Live crop preview/);
+assert.match(categoriesPage, /Desktop/);
+assert.match(categoriesPage, /Mobile/);
 
 assert.match(categoryApi, /\/api\/catalog\/categories/);
 assert.match(categoryApi, /pageSize/);
 assert.match(categoryApi, /sortBy/);
 assert.match(categoryApi, /getPublicCategoryCoverUrl/);
+assert.match(categoryApi, /TOP_LEFT/);
+assert.match(categoryApi, /BOTTOM_RIGHT/);
 
 assert.match(categoryCoverPanel, /Choose a premium category image/);
 assert.match(categoryCoverPanel, /Current storefront cover stays live/);
@@ -57,5 +65,8 @@ assert.doesNotMatch(homeSource, /home-category-card__assortment/);
 assert.match(homeSource, /fallbackLabel="Category image pending"/);
 assert.match(homeSource, /category\.storefrontCover \|\| getCategoryPresentation/);
 assert.match(homeSource, /objectPosition=\{item\.objectPosition\}/);
+assert.match(homeSource, /categoryCoverObjectPosition/);
+assert.match(homeSource, /TOP_LEFT/);
+assert.match(homeSource, /BOTTOM_RIGHT/);
 
 console.log("Category management frontend contract passed.");

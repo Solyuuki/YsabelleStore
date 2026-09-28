@@ -25,6 +25,11 @@ test("category management query defaults and limits are stable", () => {
 test("category update requires a meaningful change", () => {
   assert.throws(() => updateCategorySchema.parse({}));
   assert.equal(updateCategorySchema.parse({ coverPosition: "LEFT" }).coverPosition, "LEFT");
+  assert.equal(updateCategorySchema.parse({ coverPosition: "TOP_RIGHT" }).coverPosition, "TOP_RIGHT");
+  assert.equal(
+    updateCategorySchema.parse({ coverPosition: "BOTTOM_LEFT" }).coverPosition,
+    "BOTTOM_LEFT"
+  );
   assert.equal(updateCategorySchema.parse({ description: "" }).description, null);
 });
 
@@ -45,4 +50,8 @@ test("category cover persistence is separate from product image assets", () => {
   assert.match(schemaSource, /activeCoverAssetId/);
   assert.match(schemaSource, /coverStatus\s+CategoryCoverStatus/);
   assert.match(schemaSource, /coverPosition\s+CategoryCoverPosition/);
+  assert.match(
+    schemaSource,
+    /enum CategoryCoverPosition \{[\s\S]*TOP_LEFT[\s\S]*TOP_RIGHT[\s\S]*BOTTOM_LEFT[\s\S]*BOTTOM_RIGHT[\s\S]*\}/
+  );
 });

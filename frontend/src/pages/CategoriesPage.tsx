@@ -2,9 +2,11 @@ import {
   Filter,
   Image as ImageIcon,
   LoaderCircle,
+  Monitor,
   PencilLine,
   Plus,
   Search,
+  Smartphone,
   Tags
 } from "lucide-react";
 import {
@@ -163,10 +165,55 @@ function sortOptionFromQuery(query: CategoryQueryState): SortOption {
   return `${query.sortBy}:${query.sortOrder}` as SortOption;
 }
 
+type CategoryCoverHorizontalFocus = "LEFT" | "CENTER" | "RIGHT";
+type CategoryCoverVerticalFocus = "TOP" | "CENTER" | "BOTTOM";
+
+function splitCoverPosition(position: CategoryCoverPosition): {
+  horizontal: CategoryCoverHorizontalFocus;
+  vertical: CategoryCoverVerticalFocus;
+} {
+  switch (position) {
+    case "TOP_LEFT":
+      return { horizontal: "LEFT", vertical: "TOP" };
+    case "TOP":
+      return { horizontal: "CENTER", vertical: "TOP" };
+    case "TOP_RIGHT":
+      return { horizontal: "RIGHT", vertical: "TOP" };
+    case "LEFT":
+      return { horizontal: "LEFT", vertical: "CENTER" };
+    case "RIGHT":
+      return { horizontal: "RIGHT", vertical: "CENTER" };
+    case "BOTTOM_LEFT":
+      return { horizontal: "LEFT", vertical: "BOTTOM" };
+    case "BOTTOM":
+      return { horizontal: "CENTER", vertical: "BOTTOM" };
+    case "BOTTOM_RIGHT":
+      return { horizontal: "RIGHT", vertical: "BOTTOM" };
+    default:
+      return { horizontal: "CENTER", vertical: "CENTER" };
+  }
+}
+
+function composeCoverPosition(
+  horizontal: CategoryCoverHorizontalFocus,
+  vertical: CategoryCoverVerticalFocus
+): CategoryCoverPosition {
+  if (vertical === "TOP") {
+    if (horizontal === "LEFT") return "TOP_LEFT";
+    if (horizontal === "RIGHT") return "TOP_RIGHT";
+    return "TOP";
+  }
+  if (vertical === "BOTTOM") {
+    if (horizontal === "LEFT") return "BOTTOM_LEFT";
+    if (horizontal === "RIGHT") return "BOTTOM_RIGHT";
+    return "BOTTOM";
+  }
+  return horizontal;
+}
+
 function coverPositionStyle(position: CategoryCoverPosition) {
-  if (position === "LEFT") return "left center";
-  if (position === "RIGHT") return "right center";
-  return "center center";
+  const focus = splitCoverPosition(position);
+  return `${focus.horizontal.toLowerCase()} ${focus.vertical.toLowerCase()}`;
 }
 
 function coverStatusLabel(status: CategoryCoverStatus) {
@@ -777,6 +824,8 @@ function EditCategoryDialog({
 
   if (!category) return null;
 
+  const coverFocus = splitCoverPosition(coverPosition);
+
   async function handleCoverChanged() {
     try {
       const refreshed = await fetchManagedCategory(category.id);
@@ -905,22 +954,57 @@ function EditCategoryDialog({
 
               <CategoryCoverPreview category={{ ...category, coverPosition }} />
 
-              <div className="space-y-2">
-                <Label htmlFor="category-cover-position">Image focus</Label>
-                <Select
-                  disabled={!category.activeCoverAssetId}
-                  id="category-cover-position"
-                  value={coverPosition}
-                  onChange={(event) =>
-                    setCoverPosition(event.target.value as CategoryCoverPosition)
-                  }
-                >
-                  <option value="LEFT">Left</option>
-                  <option value="CENTER">Center</option>
-                  <option value="RIGHT">Right</option>
-                </Select>
+              <div className="space-y-3">
+                <div>
+                  <Label>Image focus</Label>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    Anchor the subject on both crop axes. The preview updates immediately.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="category-cover-horizontal-focus">Horizontal</Label>
+                    <Select
+                      disabled={!category.activeCoverAssetId}
+                      id="category-cover-horizontal-focus"
+                      value={coverFocus.horizontal}
+                      onChange={(event) =>
+                        setCoverPosition(
+                          composeCoverPosition(
+                            event.target.value as CategoryCoverHorizontalFocus,
+                            coverFocus.vertical
+                          )
+                        )
+                      }
+                    >
+                      <option value="LEFT">Left</option>
+                      <option value="CENTER">Center</option>
+                      <option value="RIGHT">Right</option>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category-cover-vertical-focus">Vertical</Label>
+                    <Select
+                      disabled={!category.activeCoverAssetId}
+                      id="category-cover-vertical-focus"
+                      value={coverFocus.vertical}
+                      onChange={(event) =>
+                        setCoverPosition(
+                          composeCoverPosition(
+                            coverFocus.horizontal,
+                            event.target.value as CategoryCoverVerticalFocus
+                          )
+                        )
+                      }
+                    >
+                      <option value="TOP">Top</option>
+                      <option value="CENTER">Center</option>
+                      <option value="BOTTOM">Bottom</option>
+                    </Select>
+                  </div>
+                </div>
                 <p className="text-xs leading-5 text-slate-500">
-                  Controls where the cover stays anchored when responsive cards crop the image.
+                  Focus only shifts on an axis when the responsive card crops that side of the image.
                 </p>
               </div>
             </aside>
@@ -951,42 +1035,105 @@ function EditCategoryDialog({
 
 function CategoryCoverPreview({ category }: { category: ManagedCategoryRecord }) {
   const [failed, setFailed] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"DESKTOP" | "MOBILE">("DESKTOP");
 
   useEffect(() => {
     setFailed(false);
   }, [category.activeCoverAssetId]);
 
+  const productLabel = `${category.productCount} ${category.productCount === 1 ? "product" : "products"}`;
+
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <div className="relative aspect-[16/9] bg-slate-100">
-        {category.activeCoverAssetId && !failed ? (
-          <img
-            alt=""
-            className="h-full w-full object-cover"
-            src={getPublicCategoryCoverUrl(category.activeCoverAssetId, "cover")}
-            style={{ objectPosition: coverPositionStyle(category.coverPosition) }}
-            onError={() => setFailed(true)}
-          />
-        ) : (
-          <div className="grid h-full place-items-center px-6 text-center">
-            <div>
-              <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-white text-slate-400 shadow-sm">
-                <ImageIcon className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <p className="mt-3 text-sm font-semibold text-slate-700">No category cover</p>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
-                A premium cover can be assigned from this category workspace.
-              </p>
-            </div>
-          </div>
-        )}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 to-transparent px-4 pb-3 pt-8 text-white">
-          <p className="text-sm font-semibold">{category.name}</p>
-          <p className="mt-0.5 text-xs text-white/80">
-            {category.productCount} {category.productCount === 1 ? "product" : "products"}
-          </p>
+    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Live crop preview
+        </p>
+        <div
+          aria-label="Storefront preview size"
+          className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1"
+          role="group"
+        >
+          <Button
+            aria-pressed={previewMode === "DESKTOP"}
+            className="h-7 gap-1.5 px-2.5 text-xs"
+            size="sm"
+            type="button"
+            variant={previewMode === "DESKTOP" ? "secondary" : "ghost"}
+            onClick={() => setPreviewMode("DESKTOP")}
+          >
+            <Monitor className="h-3.5 w-3.5" aria-hidden="true" />
+            Desktop
+          </Button>
+          <Button
+            aria-pressed={previewMode === "MOBILE"}
+            className="h-7 gap-1.5 px-2.5 text-xs"
+            size="sm"
+            type="button"
+            variant={previewMode === "MOBILE" ? "secondary" : "ghost"}
+            onClick={() => setPreviewMode("MOBILE")}
+          >
+            <Smartphone className="h-3.5 w-3.5" aria-hidden="true" />
+            Mobile
+          </Button>
         </div>
       </div>
+
+      <div
+        className={
+          previewMode === "MOBILE"
+            ? "mx-auto w-full max-w-[18rem]"
+            : "w-full"
+        }
+      >
+        <div className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white shadow-sm">
+          <div
+            className={
+              previewMode === "MOBILE"
+                ? "relative h-[175px] overflow-hidden bg-slate-100"
+                : "relative h-[170px] overflow-hidden bg-slate-100"
+            }
+          >
+            {category.activeCoverAssetId && !failed ? (
+              <img
+                alt=""
+                className="h-full w-full object-cover transition-[object-position] duration-200 motion-reduce:transition-none"
+                src={getPublicCategoryCoverUrl(category.activeCoverAssetId, "cover")}
+                style={{ objectPosition: coverPositionStyle(category.coverPosition) }}
+                onError={() => setFailed(true)}
+              />
+            ) : (
+              <div className="grid h-full place-items-center px-6 text-center">
+                <div>
+                  <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-white text-slate-400 shadow-sm">
+                    <ImageIcon className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <p className="mt-3 text-sm font-semibold text-slate-700">No category cover</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    Assign a premium cover to preview storefront framing.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <span className="absolute bottom-3 right-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-slate-700 shadow-sm backdrop-blur-sm">
+              {productLabel}
+            </span>
+          </div>
+
+          <div className="min-h-[92px] px-4 py-3.5">
+            <p className="truncate text-sm font-semibold text-slate-950">{category.name}</p>
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+              {category.description || "Explore this aisle"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p className="text-xs leading-5 text-slate-500">
+        Mirrors the storefront cover behavior: Desktop uses a 170px visual and Mobile uses a
+        175px visual with responsive width.
+      </p>
     </div>
   );
 }

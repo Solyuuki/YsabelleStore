@@ -600,6 +600,31 @@ function MerchandisingShelfState({
   );
 }
 
+function categoryCoverObjectPosition(
+  position: NonNullable<StorefrontCategory["storefrontCover"]>["position"]
+) {
+  switch (position) {
+    case "TOP_LEFT":
+      return "left top";
+    case "TOP":
+      return "center top";
+    case "TOP_RIGHT":
+      return "right top";
+    case "LEFT":
+      return "left center";
+    case "RIGHT":
+      return "right center";
+    case "BOTTOM_LEFT":
+      return "left bottom";
+    case "BOTTOM":
+      return "center bottom";
+    case "BOTTOM_RIGHT":
+      return "right bottom";
+    default:
+      return "center center";
+  }
+}
+
 function CategoryCard({
   category,
   index,
@@ -635,13 +660,7 @@ function CategoryCard({
               fallbackLabel="Category image unavailable"
               imageUrl={managedCover.imageUrl}
               loading="lazy"
-              objectPosition={
-                managedCover.position === "LEFT"
-                  ? "left center"
-                  : managedCover.position === "RIGHT"
-                    ? "right center"
-                    : "center center"
-              }
+              objectPosition={categoryCoverObjectPosition(managedCover.position)}
             />
           ) : categoryPresentation ? (
             <ProductImage

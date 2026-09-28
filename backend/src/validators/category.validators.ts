@@ -41,7 +41,17 @@ const categoryCoverStatusFilterSchema = z.enum([
 ]);
 const categoryVisibilityFilterSchema = z.enum(["ALL", "VISIBLE", "HIDDEN"]);
 const categoryStatusFilterSchema = z.enum(["ALL", "ACTIVE", "INACTIVE"]);
-const categoryCoverPositionSchema = z.enum(["LEFT", "CENTER", "RIGHT"]);
+const categoryCoverPositionSchema = z.enum([
+  "LEFT",
+  "CENTER",
+  "RIGHT",
+  "TOP",
+  "BOTTOM",
+  "TOP_LEFT",
+  "TOP_RIGHT",
+  "BOTTOM_LEFT",
+  "BOTTOM_RIGHT"
+]);
 
 const nullableOptionalTrimmedString = (maxLength: number) =>
   z.preprocess(
