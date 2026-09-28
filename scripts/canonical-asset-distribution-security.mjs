@@ -40,6 +40,40 @@ function parseRecords(text) {
   return { records, headerValid: true };
 }
 
+function recordOverrideDigest(overrides) {
+  const rows = overrides
+    .map((record) =>
+      [
+        record.candidateId,
+        record.role,
+        record.sizeBytes,
+        record.sha256,
+        record.gitBlobOid
+      ].join("|")
+    )
+    .sort();
+  return sha256(rows.join("\n"));
+}
+
+function applyRecordOverrides(records, overrides) {
+  const recordMap = new Map(
+    records.map((record) => [record.candidateId + ":" + record.role, record])
+  );
+  const seen = new Set();
+
+  for (const override of overrides) {
+    const key = override.candidateId + ":" + override.role;
+    if (seen.has(key)) throw new Error("duplicate runtime record override " + key);
+    seen.add(key);
+    if (override.role === "original")
+      throw new Error("runtime record overrides cannot replace canonical originals");
+    if (!recordMap.has(key)) throw new Error("runtime record override has no base record " + key);
+    recordMap.set(key, { ...override });
+  }
+
+  return [...recordMap.values()];
+}
+
 function runtimePath(candidateId, originalExtension, role) {
   if (role === "original") return `candidates/${candidateId}/original.${originalExtension}`;
   if (role === "processed") return `candidates/${candidateId}/processed/processed.webp`;
@@ -76,6 +110,28 @@ export function inspectAssetDistribution({
 }) {
   const findings = [];
   const parsed = parseRecords(recordsText);
+  const overrides = Array.isArray(distribution.recordOverrides)
+    ? distribution.recordOverrides
+    : [];
+  let effectiveRecords = parsed.records;
+  try {
+    effectiveRecords = applyRecordOverrides(parsed.records, overrides);
+  } catch (error) {
+    findings.push(
+      "BLOCK: " + (error instanceof Error ? error.message : "runtime record override is invalid.")
+    );
+  }
+
+  const overrideDigest = recordOverrideDigest(overrides);
+  if (overrides.length > 0) {
+    if (distribution.recordOverridesSha256 !== overrideDigest) {
+      findings.push("BLOCK: runtime record override checksum is invalid.");
+    }
+    const effectiveDigest = sha256(distribution.payloadSha256 + "|" + overrideDigest);
+    if (distribution.effectivePayloadSha256 !== effectiveDigest) {
+      findings.push("BLOCK: effective runtime payload checksum is invalid.");
+    }
+  }
 
   if (distribution.formatVersion !== 1) {
     findings.push("BLOCK: runtime distribution manifest formatVersion must be 1.");
@@ -191,9 +247,13 @@ export function inspectAssetDistribution({
   );
   const rolesByCandidate = new Map();
   const seenRecordKeys = new Set();
+  const basePayloadBytes = parsed.records.reduce(
+    (total, record) => total + (Number(record.sizeBytes) || 0),
+    0
+  );
   let payloadBytes = 0;
 
-  for (const record of parsed.records) {
+  for (const record of effectiveRecords) {
     const item = reconciliationByCandidate.get(record.candidateId);
     if (!item) {
       findings.push(
@@ -263,18 +323,24 @@ export function inspectAssetDistribution({
     }
   }
 
-  if (parsed.records.length !== distribution.payloadFileCount) {
+  if (
+    parsed.records.length !== distribution.payloadFileCount ||
+    effectiveRecords.length !== distribution.payloadFileCount
+  ) {
     findings.push("BLOCK: runtime distribution file count differs from manifest metadata.");
   }
-  if (payloadBytes !== distribution.payloadByteCount) {
-    findings.push("BLOCK: runtime distribution byte count differs from manifest metadata.");
+  if (basePayloadBytes !== distribution.payloadByteCount) {
+    findings.push("BLOCK: base runtime distribution byte count differs from manifest metadata.");
   }
   if (payloadDigest(parsed.records, reconciliationByCandidate) !== distribution.payloadSha256) {
-    findings.push("BLOCK: runtime distribution aggregate payload digest is invalid.");
+    findings.push("BLOCK: base runtime distribution aggregate payload digest is invalid.");
+  }
+  if (overrides.length > 0 && payloadBytes !== distribution.effectivePayloadByteCount) {
+    findings.push("BLOCK: effective runtime distribution byte count differs from manifest metadata.");
   }
 
   const recordMap = new Map(
-    parsed.records.map((record) => [record.candidateId + ":" + record.role, record])
+    effectiveRecords.map((record) => [record.candidateId + ":" + record.role, record])
   );
   let aliasCount = 0;
   for (const item of reconciliation.items ?? []) {
