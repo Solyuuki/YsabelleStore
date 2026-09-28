@@ -20,6 +20,14 @@ assert.match(detailSource, /if \(controller\.signal\.aborted\) return/);
 assert.match(detailSource, /const displayedProductId = product\?\.id \?\? null/);
 assert.match(detailSource, /fetchStorefrontProductReviews\(\s*displayedProductId,/);
 assert.match(detailSource, /fetchStorefrontRelatedProducts\(displayedProductId, 4,/);
+assert.doesNotMatch(detailSource, /setRelatedResource\(\{ data: null/);
+assert.match(
+  detailSource,
+  /setRelatedResource\(\(current\) => \(\{ \.\.\.current, error: "", status: "loading" \}\)\)/
+);
+assert.match(detailSource, /const hasCurrentData = dataMatchesCategory && Boolean\(resource\.data\)/);
+assert.match(detailSource, /resource\.status === "loading" && !hasCurrentData/);
+assert.match(detailSource, /hasCurrentData && hasProducts/);
 assert.match(detailSource, /currentProductId=\{productId\}/);
 assert.match(detailSource, /key=\{product\.id\}/);
 assert.match(detailSource, /disabled=\{isProductTransitioning\}/);
@@ -33,6 +41,7 @@ assert.match(imageSource, /createImagePreloadAbortError/);
 
 assert.match(customerCss, /@keyframes customer-product-detail-enter/);
 assert.match(customerCss, /data-product-transitioning="true"/);
+assert.match(customerCss, /data-revalidating="true"/);
 assert.match(customerCss, /prefers-reduced-motion: reduce/);
 
 console.log("Storefront product transition contract passed.");

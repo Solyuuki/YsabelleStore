@@ -130,11 +130,11 @@ export function ProductDetailPage({
       .then((data) => setReviewResource({ data, error: "", status: "success" }))
       .catch((reason: unknown) => {
         if (!controller.signal.aborted) {
-          setReviewResource({
-            data: null,
+          setReviewResource((current) => ({
+            data: current.data,
             error: reason instanceof Error ? reason.message : "Reviews could not be loaded.",
             status: "error"
-          });
+          }));
         }
       });
     return () => controller.abort();
@@ -144,17 +144,17 @@ export function ProductDetailPage({
     if (!displayedProductId) return;
 
     const controller = new AbortController();
-    setRelatedResource({ data: null, error: "", status: "loading" });
+    setRelatedResource((current) => ({ ...current, error: "", status: "loading" }));
     fetchStorefrontRelatedProducts(displayedProductId, 4, controller.signal)
       .then((data) => setRelatedResource({ data, error: "", status: "success" }))
       .catch((reason: unknown) => {
         if (!controller.signal.aborted) {
-          setRelatedResource({
-            data: null,
+          setRelatedResource((current) => ({
+            data: current.data,
             error:
               reason instanceof Error ? reason.message : "Related products could not be loaded.",
             status: "error"
-          });
+          }));
         }
       });
     return () => controller.abort();
@@ -354,7 +354,7 @@ function ReviewsSection({
           Loading ratings and reviews...
         </div>
       ) : null}
-      {resource.status === "error" ? (
+      {resource.status === "error" && !hasCurrentData ? (
         <div className="customer-product-section-state customer-product-section-state--error">
           <div>
             <strong>Ratings and reviews could not be loaded.</strong>
@@ -506,11 +506,19 @@ function RelatedProductsSection({
   productCategory: StorefrontProduct["category"];
   resource: Resource<StorefrontRelatedProducts>;
 }) {
-  const sameCategory = resource.data?.sameCategory ?? [];
+  const dataMatchesCategory = resource.data?.category.id === productCategory.id;
+  const sameCategory = dataMatchesCategory ? (resource.data?.sameCategory ?? []) : [];
   const hasProducts = sameCategory.length > 0;
+  const hasCurrentData = dataMatchesCategory && Boolean(resource.data);
+  const isRevalidating = resource.status === "loading" && hasCurrentData;
 
   return (
-    <section aria-labelledby="related-products-heading" className="customer-related-products">
+    <section
+      aria-busy={resource.status === "loading"}
+      aria-labelledby="related-products-heading"
+      className="customer-related-products"
+      data-revalidating={isRevalidating || undefined}
+    >
       <ProductDetailReveal className="product-detail-reveal--heading">
         <header className="customer-product-section-heading customer-product-section-heading--related">
           <div>
@@ -527,7 +535,7 @@ function RelatedProductsSection({
         </header>
       </ProductDetailReveal>
 
-      {resource.status === "loading" ? (
+      {resource.status === "loading" && !hasCurrentData ? (
         <div aria-live="polite" className="customer-related-products__loading">
           <span>Loading related products...</span>
           <div className="customer-related-products__skeleton-grid" aria-hidden="true">
@@ -552,10 +560,10 @@ function RelatedProductsSection({
           </button>
         </div>
       ) : null}
-      {resource.status === "success" && hasProducts ? (
+      {hasCurrentData && hasProducts ? (
         <RelatedProductsRail navigate={navigate} products={sameCategory} />
       ) : null}
-      {resource.status === "success" && !hasProducts ? (
+      {resource.status === "success" && hasCurrentData && !hasProducts ? (
         <div className="customer-product-section-state">
           <strong>No more products are available in this category right now.</strong>
           <p>Use “View all {productCategory.name}” to return to the full category.</p>

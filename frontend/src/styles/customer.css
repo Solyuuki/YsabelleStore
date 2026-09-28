@@ -2246,6 +2246,30 @@
   margin-top: 1.4rem;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .customer-related-products__rail-shell {
+    transition:
+      opacity 180ms var(--ease-standard),
+      filter 180ms var(--ease-standard);
+  }
+
+  .customer-related-products[data-revalidating="true"] .customer-related-products__rail-shell {
+    opacity: 0.94;
+    filter: saturate(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-related-products__rail-shell {
+    transition: none;
+  }
+
+  .customer-related-products[data-revalidating="true"] .customer-related-products__rail-shell {
+    opacity: 1;
+    filter: none;
+  }
+}
+
 .customer-related-products__viewport {
   display: flex;
   gap: 1rem;
