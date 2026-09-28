@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import test from "node:test";
 
 import { InventoryBatchStatus } from "@prisma/client";
@@ -103,14 +105,13 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
     assert.equal(storefrontProduct?.imageUrl, `/images/products/storefront-test-${suffix}.webp`);
     assert.ok(storefrontCategory);
 
-    if (categoryFixture.created) {
-      assert.deepEqual(storefrontCategory.representativeProducts, [
-        {
-          id: product.id,
-          imageUrl: `/images/products/storefront-test-${suffix}.webp`,
-          name: product.name
-        }
-      ]);
+    assert.equal("representativeProducts" in storefrontCategory, false);
+    if (storefrontCategory.storefrontCover) {
+      assert.match(
+        storefrontCategory.storefrontCover.imageUrl,
+        /^\/api\/storefront\/category-images\/[^/]+\/cover$/
+      );
+      assert.ok(["LEFT", "CENTER", "RIGHT"].includes(storefrontCategory.storefrontCover.position));
     }
 
     assert.equal("costPrice" in (storefrontProduct ?? {}), false);
@@ -139,4 +140,17 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
   } finally {
     await scope.cleanup();
   }
+});
+
+
+test("storefront category serializer exposes only dedicated category cover media", async () => {
+  const serviceSource = readFileSync(
+    resolve(process.cwd(), "src/services/storefrontService.ts"),
+    "utf8"
+  );
+
+  assert.match(serviceSource, /storefrontCover:/);
+  assert.match(serviceSource, /approvedCategoryCoverUrl\(activeCoverAssetId, "cover"\)/);
+  assert.doesNotMatch(serviceSource, /representativeProducts/);
+  assert.doesNotMatch(serviceSource, /select: \{ id: true, imageUrl: true, name: true \}/);
 });

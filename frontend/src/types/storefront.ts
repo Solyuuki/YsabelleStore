@@ -6,11 +6,10 @@ export type StorefrontCategory = {
   slug: string;
   description: string | null;
   productCount: number;
-  representativeProducts: Array<{
-    id: string;
+  storefrontCover: {
     imageUrl: string;
-    name: string;
-  }>;
+    position: "LEFT" | "CENTER" | "RIGHT";
+  } | null;
 };
 
 export type StorefrontProduct = {

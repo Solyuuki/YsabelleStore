@@ -11,6 +11,11 @@ const categoryCoverPanel = readFileSync(
 const selectSource = readFileSync(resolve(process.cwd(), "src/components/ui/select.tsx"), "utf8");
 const routesSource = readFileSync(resolve(process.cwd(), "src/app/routes.ts"), "utf8");
 const productsSource = readFileSync(resolve(process.cwd(), "src/pages/ProductsPageLegacy.tsx"), "utf8");
+const homeSource = readFileSync(
+  resolve(process.cwd(), "src/pages/customer/CustomerHomePage.tsx"),
+  "utf8"
+);
+const storefrontTypes = readFileSync(resolve(process.cwd(), "src/types/storefront.ts"), "utf8");
 
 assert.match(routesSource, /path: "\/categories"/);
 assert.match(routesSource, /allowedRoles: \["OWNER"\]/);
@@ -37,11 +42,18 @@ assert.match(selectSource, /appearance-none/);
 assert.match(selectSource, /right 0\.875rem center/);
 assert.match(selectSource, /pr-10/);
 
-console.log("Category management frontend contract passed.");
-
-
 assert.doesNotMatch(productsSource, /Add category/);
 assert.doesNotMatch(productsSource, /handleCreateCategory/);
 assert.doesNotMatch(productsSource, /isCategoryDialogOpen/);
 assert.match(productsSource, /Manage categories/);
 assert.match(productsSource, /Create a category first before saving this product/);
+
+
+assert.match(storefrontTypes, /storefrontCover:/);
+assert.doesNotMatch(storefrontTypes, /representativeProducts/);
+assert.match(homeSource, /const managedCover = category\.storefrontCover/);
+assert.doesNotMatch(homeSource, /getCategoryRepresentativeProducts/);
+assert.doesNotMatch(homeSource, /home-category-card__assortment/);
+assert.match(homeSource, /fallbackLabel="Category image pending"/);
+
+console.log("Category management frontend contract passed.");

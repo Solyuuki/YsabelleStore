@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { CustomerOrderStatus, Prisma, SaleStatus, type ProductSizeUnit } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { approvedCategoryCoverUrl } from "../modules/catalog-image/categoryImageService.js";
 import { compareStorefrontCategoryNames } from "../modules/catalog/storefront-category-taxonomy.js";
 import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sales.service.js";
 import {
@@ -317,12 +318,9 @@ export async function listStorefrontCategories() {
       name: true,
       slug: true,
       description: true,
-      products: {
-        orderBy: [{ name: "asc" }, { id: "asc" }],
-        select: { id: true, imageUrl: true, name: true },
-        take: 3,
-        where: categoryProductWhere
-      },
+      activeCoverAssetId: true,
+      coverPosition: true,
+      coverStatus: true,
       _count: {
         select: { products: { where: categoryProductWhere } }
       }
@@ -331,12 +329,16 @@ export async function listStorefrontCategories() {
 
   return categories
     .sort((left, right) => compareStorefrontCategoryNames(left.name, right.name))
-    .map(({ _count, products, ...category }) => ({
+    .map(({ _count, activeCoverAssetId, coverPosition, coverStatus, ...category }) => ({
       ...category,
       productCount: _count.products,
-      representativeProducts: products.filter(
-        (product): product is typeof product & { imageUrl: string } => Boolean(product.imageUrl)
-      )
+      storefrontCover:
+        activeCoverAssetId && coverStatus === "READY"
+          ? {
+              imageUrl: approvedCategoryCoverUrl(activeCoverAssetId, "cover"),
+              position: coverPosition
+            }
+          : null
     }));
 }
 

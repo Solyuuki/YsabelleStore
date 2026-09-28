@@ -21,6 +21,7 @@ type ProductImageProps = {
   imageUrl?: string | null;
   loading?: ImgHTMLAttributes<HTMLImageElement>["loading"];
   fetchPriority?: ImgHTMLAttributes<HTMLImageElement>["fetchPriority"];
+  objectPosition?: CSSProperties["objectPosition"];
 };
 
 export function ProductImage({
@@ -29,7 +30,8 @@ export function ProductImage({
   fallbackLabel = "Catalog image pending",
   fetchPriority,
   imageUrl,
-  loading = "lazy"
+  loading = "lazy",
+  objectPosition
 }: ProductImageProps) {
   const source = getCatalogImageUrl(imageUrl);
   const [failedSource, setFailedSource] = useState<string | null>(null);
@@ -83,6 +85,7 @@ export function ProductImage({
           onError={() => setFailedSource(source)}
           onLoad={handleLoad}
           src={source}
+          style={objectPosition ? { objectPosition } : undefined}
           width={metadata?.width}
         />
       ) : (

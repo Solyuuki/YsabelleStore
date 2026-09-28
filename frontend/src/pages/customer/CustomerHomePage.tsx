@@ -26,7 +26,6 @@ import type {
   StorefrontMerchandisingEntry,
   StorefrontProduct
 } from "@/types/storefront";
-import { getCategoryRepresentativeProducts } from "@/utils/storefrontImages";
 import {
   getCategoryPresentation,
   getEssentialShelfItems
@@ -132,7 +131,8 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
   const featuredCategories = [...categories.data]
     .sort(
       (left, right) =>
-        right.representativeProducts.length - left.representativeProducts.length ||
+        Number(Boolean(right.storefrontCover || getCategoryPresentation(right.slug))) -
+          Number(Boolean(left.storefrontCover || getCategoryPresentation(left.slug))) ||
         right.productCount - left.productCount ||
         left.name.localeCompare(right.name)
     )
@@ -589,7 +589,7 @@ function CategoryCard({
   navigate: (path: string) => void;
 }) {
   const categoryPresentation = getCategoryPresentation(category.slug);
-  const representativeProducts = getCategoryRepresentativeProducts(category);
+  const managedCover = category.storefrontCover;
   const reveal = useRevealOnView<HTMLDivElement>({
     rootMargin: "0px 0px -8% 0px",
     threshold: 0.18
@@ -608,31 +608,32 @@ function CategoryCard({
         navigate={navigate}
       >
         <span className="home-category-card__visual">
-          {categoryPresentation ? (
+          {managedCover ? (
+            <ProductImage
+              alt={`${category.name} category cover`}
+              fallbackLabel="Category image unavailable"
+              imageUrl={managedCover.imageUrl}
+              loading="lazy"
+              objectPosition={
+                managedCover.position === "LEFT"
+                  ? "left center"
+                  : managedCover.position === "RIGHT"
+                    ? "right center"
+                    : "center center"
+              }
+            />
+          ) : categoryPresentation ? (
             <ProductImage
               alt={categoryPresentation.alt}
               fallbackLabel="Category image unavailable"
               imageUrl={categoryPresentation.imageUrl}
               loading="lazy"
             />
-          ) : representativeProducts.length ? (
-            <span
-              className="home-category-card__assortment"
-              data-image-count={representativeProducts.length}
-            >
-              {representativeProducts.map((product) => (
-                <ProductImage
-                  alt={`${product.name} product photo`}
-                  imageUrl={product.imageUrl}
-                  key={product.id}
-                />
-              ))}
-            </span>
           ) : (
             <ProductImage
               alt={`${category.name} category`}
               className="home-category-card__image-pending"
-              fallbackLabel="Verified category imagery pending"
+              fallbackLabel="Category image pending"
             />
           )}
           <span className="home-category-card__count">
