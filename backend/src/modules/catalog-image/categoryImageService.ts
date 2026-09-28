@@ -31,7 +31,7 @@ export async function createCategoryImageCandidate(
   file: CategoryCoverUploadFile
 ) {
   const category = await prisma.category.findUnique({
-    select: { id: true },
+    select: { activeCoverAssetId: true, id: true },
     where: { id: categoryId }
   });
 
@@ -58,9 +58,12 @@ export async function createCategoryImageCandidate(
           sourceMimeType: inspection.detectedMimeType
         }
       }),
-      prisma.category.update({
+      prisma.category.updateMany({
         data: { coverStatus: "PROCESSING" },
-        where: { id: categoryId }
+        where: {
+          activeCoverAssetId: null,
+          id: categoryId
+        }
       })
     ]);
   } catch (error) {
@@ -113,9 +116,12 @@ export async function processCategoryImageCandidate(candidateId: string) {
     return prisma.categoryImageAsset.findUniqueOrThrow({ where: { id: candidateId } });
   }
 
-  await prisma.category.update({
+  await prisma.category.updateMany({
     data: { coverStatus: "PROCESSING" },
-    where: { id: candidate.categoryId }
+    where: {
+      activeCoverAssetId: null,
+      id: candidate.categoryId
+    }
   });
 
   try {
@@ -143,9 +149,14 @@ export async function processCategoryImageCandidate(candidateId: string) {
       where: { id: candidateId }
     });
 
-    await prisma.category.update({
-      data: { coverStatus: "NEEDS_REVIEW" },
-      where: { id: candidate.categoryId }
+    await prisma.category.updateMany({
+      data: {
+        coverStatus: result.status === "REJECTED" ? "FAILED" : "NEEDS_REVIEW"
+      },
+      where: {
+        activeCoverAssetId: null,
+        id: candidate.categoryId
+      }
     });
 
     return updated;
@@ -170,9 +181,12 @@ export async function processCategoryImageCandidate(candidateId: string) {
       where: { id: candidateId }
     });
 
-    await prisma.category.update({
+    await prisma.category.updateMany({
       data: { coverStatus: "FAILED" },
-      where: { id: candidate.categoryId }
+      where: {
+        activeCoverAssetId: null,
+        id: candidate.categoryId
+      }
     });
 
     return updated;
@@ -201,7 +215,7 @@ export async function approveCategoryImageCandidate(categoryId: string, imageId:
     }
     if (
       candidate.processingStatus !== "READY" ||
-      candidate.qualityStatus !== "APPROVED" ||
+      candidate.qualityStatus === "REJECTED" ||
       !candidate.processedStorageKey ||
       !candidate.coverStorageKey ||
       !candidate.thumbnailStorageKey
@@ -221,6 +235,7 @@ export async function approveCategoryImageCandidate(categoryId: string, imageId:
     const approved = await transaction.categoryImageAsset.update({
       data: {
         approvedAt,
+        qualityStatus: "APPROVED",
         rejectedAt: null,
         supersededAt: null
       },
