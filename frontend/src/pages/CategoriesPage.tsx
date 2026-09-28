@@ -316,7 +316,7 @@ export function CategoriesPage() {
             <CardTitle>Category directory</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 px-4 pb-4 pt-2 lg:px-5">
-            <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_180px_170px_160px_210px]">
+            <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_180px_180px_170px_210px]">
               <label className="relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
                 <Search className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
                 <input
@@ -592,10 +592,13 @@ function FilterSelect({
   label: string;
 }) {
   return (
-    <label className="flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2">
-      <Filter className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
+    <label className="relative block h-11">
+      <Filter
+        className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-500"
+        aria-hidden="true"
+      />
       <span className="sr-only">{label}</span>
-      <div className="min-w-0 flex-1">{children}</div>
+      <div className="h-full [&_select]:h-11 [&_select]:pl-9">{children}</div>
     </label>
   );
 }

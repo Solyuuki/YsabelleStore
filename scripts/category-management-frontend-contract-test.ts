@@ -34,6 +34,12 @@ assert.match(categoriesPage, /fetchManagedCategories/);
 assert.match(categoriesPage, /<AppPagination/);
 assert.match(categoriesPage, /coverStatus/);
 assert.match(categoriesPage, /visibility/);
+assert.match(categoriesPage, /xl:grid-cols-\[minmax\(240px,1fr\)_180px_180px_170px_210px\]/);
+assert.match(categoriesPage, /\[&_select\]:pl-9/);
+assert.doesNotMatch(
+  categoriesPage,
+  /flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2/
+);
 assert.match(categoriesPage, /productCount/);
 assert.match(categoriesPage, /<CategoryCoverUploadPanel/);
 assert.match(categoriesPage, /Product images are never used as automatic category artwork/);
