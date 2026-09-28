@@ -9,6 +9,10 @@ const detailSource = await readFile(
   new URL("../../frontend/src/pages/customer/ProductDetailPage.tsx", import.meta.url),
   "utf8"
 );
+const adaptiveTitleSource = await readFile(
+  new URL("../../frontend/src/components/customer/AdaptiveProductTitle.tsx", import.meta.url),
+  "utf8"
+);
 const discoverSource = await readFile(
   new URL("../../frontend/src/pages/customer/DiscoverPage.tsx", import.meta.url),
   "utf8"
@@ -25,6 +29,13 @@ assert.match(detailSource, /Previous related products/);
 assert.match(detailSource, /Next related products/);
 assert.match(detailSource, /More from \{productCategory\.name\}/);
 assert.doesNotMatch(detailSource, /From other aisles/);
+assert.match(detailSource, /<AdaptiveProductTitle name=\{product\.name\} \/>/);
+assert.match(adaptiveTitleSource, /ResizeObserver/);
+assert.match(adaptiveTitleSource, /DESKTOP_MAX_LINES = 3/);
+assert.match(adaptiveTitleSource, /MOBILE_MAX_LINES = 4/);
+assert.match(adaptiveTitleSource, /document\.fonts\.ready/);
+assert.doesNotMatch(adaptiveTitleSource, /Nature(?:’|'|)s Spring|Absolute Pure/i);
+assert.match(customerCss, /customer-product-detail__title\[data-title-density="minimum"\]/);
 assert.match(discoverSource, /className="story-welcome__mark story-welcome__mark--branded"/);
 assert.match(discoverSource, /<YsabelleBrandMark[\s\S]*variant="display"/);
 assert.doesNotMatch(
