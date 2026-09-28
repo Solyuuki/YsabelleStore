@@ -118,7 +118,8 @@ export function inspectAssetDistribution({
     effectiveRecords = applyRecordOverrides(parsed.records, overrides);
   } catch (error) {
     findings.push(
-      "BLOCK: " + (error instanceof Error ? error.message : "runtime record override is invalid.")
+      "BLOCK: " +
+        (error instanceof Error ? error.message : "runtime record override is invalid.")
     );
   }
 
@@ -335,7 +336,10 @@ export function inspectAssetDistribution({
   if (payloadDigest(parsed.records, reconciliationByCandidate) !== distribution.payloadSha256) {
     findings.push("BLOCK: base runtime distribution aggregate payload digest is invalid.");
   }
-  if (overrides.length > 0 && payloadBytes !== distribution.effectivePayloadByteCount) {
+  if (
+    overrides.length > 0 &&
+    payloadBytes !== distribution.effectivePayloadByteCount
+  ) {
     findings.push("BLOCK: effective runtime distribution byte count differs from manifest metadata.");
   }
 
