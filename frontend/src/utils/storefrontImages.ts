@@ -23,7 +23,9 @@ export function getCatalogImageUrl(imageUrl: string | null | undefined) {
     return null;
   }
 
-  const resolved = normalized.startsWith("/api/") ? resolveApiUrl(normalized).toString() : normalized;
+  const resolved = normalized.startsWith("/api/")
+    ? resolveApiUrl(normalized).toString()
+    : normalized;
   return withCatalogImageRevision(resolved);
 }
 
