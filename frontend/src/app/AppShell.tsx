@@ -20,6 +20,9 @@ const DashboardPage = lazy(() =>
 const ProductsPage = lazy(() =>
   import("@/pages/ProductsPage").then(({ ProductsPage }) => ({ default: ProductsPage }))
 );
+const CategoriesPage = lazy(() =>
+  import("@/pages/CategoriesPage").then(({ CategoriesPage }) => ({ default: CategoriesPage }))
+);
 const InventoryPage = lazy(() =>
   import("@/pages/InventoryPage").then(({ InventoryPage }) => ({ default: InventoryPage }))
 );
@@ -57,6 +60,7 @@ const validRoutePaths = new Set<string>([
   "/dashboard",
   "/pos",
   "/products",
+  "/categories",
   "/inventory",
   "/receiving",
   "/sales",
@@ -322,6 +326,8 @@ function renderRoute(
       return <PosPage />;
     case "/products":
       return <ProductsPage />;
+    case "/categories":
+      return <CategoriesPage />;
     case "/inventory":
       return <InventoryPage />;
     case "/receiving":

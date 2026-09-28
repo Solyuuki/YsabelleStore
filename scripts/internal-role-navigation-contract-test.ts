@@ -6,6 +6,7 @@ import { appRoutes, canRoleAccessRoute } from "../frontend/src/app/routes.ts";
 
 const ownerOnlyPaths = [
   "/products",
+  "/categories",
   "/receiving",
   "/forecast",
   "/reports",
@@ -46,6 +47,7 @@ assert.match(appShellSource, /const CustomerApp = lazy\(\(\) =>/);
 for (const pageName of [
   "DashboardPage",
   "ProductsPage",
+  "CategoriesPage",
   "InventoryPage",
   "ReceivingPage",
   "PosPage",

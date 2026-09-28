@@ -25,6 +25,7 @@ const mainRoutes: readonly AppRoutePath[] = [
   "/dashboard",
   "/pos",
   "/products",
+  "/categories",
   "/inventory",
   "/receiving",
   "/sales"

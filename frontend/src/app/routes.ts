@@ -7,6 +7,7 @@ import {
   LineChart,
   Package,
   ReceiptText,
+  Tags,
   ScanBarcode,
   Settings,
   Truck,
@@ -21,6 +22,7 @@ export type AppRoutePath =
   | "/dashboard"
   | "/pos"
   | "/products"
+  | "/categories"
   | "/inventory"
   | "/receiving"
   | "/sales"
@@ -60,6 +62,13 @@ export const appRoutes: readonly AppRoute[] = [
     label: "Products",
     description: "Product catalog, import, and inventory workspace",
     icon: Package,
+    allowedRoles: ["OWNER"]
+  },
+  {
+    path: "/categories",
+    label: "Categories",
+    description: "Catalog taxonomy and storefront presentation",
+    icon: Tags,
     allowedRoles: ["OWNER"]
   },
   {
