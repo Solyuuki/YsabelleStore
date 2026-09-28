@@ -1,6 +1,26 @@
 import { prisma } from "../../database/prismaClient.js";
 import type { ProductForecastDetail } from "./forecast.types.js";
 
+type ForecastBatchIdentity = {
+  createdAt: Date;
+  id: string;
+};
+
+const REALIZED_ACCURACY_CACHE_LIMIT = 512;
+const currentBatchCache = new Map<string, Promise<ForecastBatchIdentity | null>>();
+const previousBatchCache = new Map<string, Promise<string | null>>();
+const previousDetailCache = new Map<string, Promise<ProductForecastDetail | null>>();
+const realizedDetailCache = new Map<string, ProductForecastDetail>();
+
+function setBoundedCache<K, V>(cache: Map<K, V>, key: K, value: V) {
+  cache.set(key, value);
+
+  if (cache.size > REALIZED_ACCURACY_CACHE_LIMIT) {
+    const oldestKey = cache.keys().next().value;
+    if (oldestKey !== undefined) cache.delete(oldestKey);
+  }
+}
+
 function round4(value: number) {
   return Math.round(value * 10_000) / 10_000;
 }
@@ -38,46 +58,86 @@ export function applyRealizedAccuracyFeedback(
   };
 }
 
-async function currentBatch(batchId?: string) {
-  if (batchId) {
-    return await prisma.forecastBatchCache.findUnique({
+async function currentBatch(batchId?: string): Promise<ForecastBatchIdentity | null> {
+  if (!batchId) {
+    return await prisma.forecastBatchCache.findFirst({
+      orderBy: { generatedAt: "desc" },
       select: { createdAt: true, id: true },
-      where: { id: batchId }
+      where: { isActive: true, status: "READY" }
     });
   }
 
-  return await prisma.forecastBatchCache.findFirst({
-    orderBy: { generatedAt: "desc" },
-    select: { createdAt: true, id: true },
-    where: { isActive: true, status: "READY" }
-  });
+  const cached = currentBatchCache.get(batchId);
+  if (cached) return await cached;
+
+  const request = prisma.forecastBatchCache
+    .findUnique({
+      select: { createdAt: true, id: true },
+      where: { id: batchId }
+    })
+    .catch((error) => {
+      currentBatchCache.delete(batchId);
+      throw error;
+    });
+
+  setBoundedCache(currentBatchCache, batchId, request);
+  return await request;
+}
+
+async function previousBatchId(current: ForecastBatchIdentity) {
+  const cached = previousBatchCache.get(current.id);
+  if (cached) return await cached;
+
+  const request = prisma.forecastBatchCache
+    .findFirst({
+      orderBy: { generatedAt: "desc" },
+      select: { id: true },
+      where: {
+        createdAt: { lt: current.createdAt },
+        status: "SUPERSEDED"
+      }
+    })
+    .then((batch) => batch?.id ?? null)
+    .catch((error) => {
+      previousBatchCache.delete(current.id);
+      throw error;
+    });
+
+  setBoundedCache(previousBatchCache, current.id, request);
+  return await request;
 }
 
 async function previousDetail(productId: string, batchId?: string) {
   const current = await currentBatch(batchId);
   if (!current) return null;
 
-  const previousBatch = await prisma.forecastBatchCache.findFirst({
-    orderBy: { generatedAt: "desc" },
-    select: { id: true },
-    where: {
-      createdAt: { lt: current.createdAt },
-      status: "SUPERSEDED"
-    }
-  });
-  if (!previousBatch) return null;
+  const previousId = await previousBatchId(current);
+  if (!previousId) return null;
 
-  const row = await prisma.forecastProductResult.findUnique({
-    select: { detailPayload: true },
-    where: {
-      batchId_sourceProductId: {
-        batchId: previousBatch.id,
-        sourceProductId: productId
+  const cacheKey = `${current.id}:${previousId}:${productId}`;
+  const cached = previousDetailCache.get(cacheKey);
+  if (cached) return await cached;
+
+  const request = prisma.forecastProductResult
+    .findUnique({
+      select: { detailPayload: true },
+      where: {
+        batchId_sourceProductId: {
+          batchId: previousId,
+          sourceProductId: productId
+        }
       }
-    }
-  });
+    })
+    .then((row) =>
+      row?.detailPayload ? (row.detailPayload as unknown as ProductForecastDetail) : null
+    )
+    .catch((error) => {
+      previousDetailCache.delete(cacheKey);
+      throw error;
+    });
 
-  return row?.detailPayload ? (row.detailPayload as unknown as ProductForecastDetail) : null;
+  setBoundedCache(previousDetailCache, cacheKey, request);
+  return await request;
 }
 
 export async function withRealizedAccuracyFeedback(
@@ -86,9 +146,21 @@ export async function withRealizedAccuracyFeedback(
 ): Promise<ProductForecastDetail | null> {
   if (!detail) return detail;
 
+  const cacheKey = batchId ? `${batchId}:${detail.productId}` : null;
+  if (cacheKey) {
+    const cached = realizedDetailCache.get(cacheKey);
+    if (cached) return cached;
+  }
+
   try {
     const previous = await previousDetail(detail.productId, batchId);
-    return applyRealizedAccuracyFeedback(detail, previous);
+    const result = applyRealizedAccuracyFeedback(detail, previous);
+
+    if (cacheKey) {
+      setBoundedCache(realizedDetailCache, cacheKey, result);
+    }
+
+    return result;
   } catch (error) {
     console.warn(
       "[forecast] Realized accuracy feedback unavailable; serving forecast without it.",

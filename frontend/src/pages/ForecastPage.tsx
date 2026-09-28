@@ -119,15 +119,71 @@ export function ForecastPage() {
   const forecastDataRef = useRef<PaginatedForecastProductsResponse | null>(null);
   const collectionRequestRef = useRef(0);
   const detailRequestRef = useRef(0);
+  const detailCacheBatchRef = useRef<string | null>(null);
+  const detailCacheRef = useRef(new Map<string, ProductForecastDetail>());
+  const detailPromiseRef = useRef(new Map<string, Promise<ProductForecastDetail>>());
 
   useEffect(() => {
     forecastDataRef.current = forecastData;
   }, [forecastData]);
 
+  const prepareDetailCacheForBatch = useCallback((batchId: string | null) => {
+    if (detailCacheBatchRef.current === batchId) return;
+
+    detailCacheBatchRef.current = batchId;
+    detailCacheRef.current.clear();
+    detailPromiseRef.current.clear();
+  }, []);
+
+  const fetchForecastProductDetail = useCallback(
+    async (productId: string, batchId: string | null) => {
+      prepareDetailCacheForBatch(batchId);
+
+      const cached = detailCacheRef.current.get(productId);
+      if (cached) return cached;
+
+      const pending = detailPromiseRef.current.get(productId);
+      if (pending) return await pending;
+
+      const request = getForecastProduct(productId, batchId)
+        .then((response) => {
+          if (!response.success || !response.data) {
+            throw new Error(response.message || "Product forecast could not be loaded.");
+          }
+
+          if (detailCacheBatchRef.current === batchId) {
+            detailCacheRef.current.set(productId, response.data);
+          }
+
+          return response.data;
+        })
+        .finally(() => {
+          if (detailCacheBatchRef.current === batchId) {
+            detailPromiseRef.current.delete(productId);
+          }
+        });
+
+      detailPromiseRef.current.set(productId, request);
+      return await request;
+    },
+    [prepareDetailCacheForBatch]
+  );
+
   const loadSelectedProductDetail = useCallback(
     async (productId: string, options: { interactive?: boolean } = {}) => {
       const interactive = options.interactive ?? true;
+      const batchId = forecastDataRef.current?.batchId ?? null;
+
+      prepareDetailCacheForBatch(batchId);
+      const cached = detailCacheRef.current.get(productId);
       const requestId = ++detailRequestRef.current;
+
+      if (cached) {
+        setSelectedProduct(cached);
+        setDetailError(null);
+        setLoadingDetail(false);
+        return;
+      }
 
       if (interactive) {
         setLoadingDetail(true);
@@ -136,29 +192,25 @@ export function ForecastPage() {
       }
 
       try {
-        const response = await getForecastProduct(productId, forecastDataRef.current?.batchId);
+        const detail = await fetchForecastProductDetail(productId, batchId);
 
         if (requestId !== detailRequestRef.current) {
           return;
         }
 
-        if (!response.success || !response.data) {
-          if (interactive) {
-            setDetailError(response.message || "Product forecast could not be loaded.");
-          }
-
-          return;
-        }
-
-        setSelectedProduct(response.data);
+        setSelectedProduct(detail);
         setDetailError(null);
-      } catch {
+      } catch (error) {
         if (requestId !== detailRequestRef.current) {
           return;
         }
 
         if (interactive) {
-          setDetailError("Product forecast could not be loaded. Please try again.");
+          setDetailError(
+            error instanceof Error
+              ? error.message
+              : "Product forecast could not be loaded. Please try again."
+          );
           setSelectedProduct(null);
         }
       } finally {
@@ -167,7 +219,7 @@ export function ForecastPage() {
         }
       }
     },
-    []
+    [fetchForecastProductDetail, prepareDetailCacheForBatch]
   );
 
   const loadForecasts = useCallback(
@@ -270,6 +322,40 @@ export function ForecastPage() {
         : (pageProducts.at(0)?.productId ?? null)
     );
   }, [pageProducts]);
+
+  useEffect(() => {
+    const batchId = forecastData?.batchId ?? null;
+    if (!batchId || pageProducts.length === 0) return;
+
+    let cancelled = false;
+    let cursor = 0;
+    const productIds = pageProducts.map((product) => product.productId);
+    const workerCount = Math.min(4, productIds.length);
+
+    async function worker() {
+      while (!cancelled) {
+        const productId = productIds[cursor++];
+        if (!productId) return;
+
+        try {
+          await fetchForecastProductDetail(productId, batchId);
+        } catch {
+          // Prefetch is opportunistic. Interactive loading still owns user-visible errors.
+        }
+      }
+    }
+
+    const timerId = window.setTimeout(() => {
+      for (let index = 0; index < workerCount; index += 1) {
+        void worker();
+      }
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timerId);
+    };
+  }, [forecastData?.batchId, fetchForecastProductDetail, pageProducts]);
 
   useEffect(() => {
     if (!selectedProductId) {

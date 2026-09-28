@@ -90,8 +90,14 @@ export const getForecastProduct: RequestHandler = async (request, response, next
     }
 
     const persistedDetail = await getForecastProductDetail(productId, parsedQuery.data.batchId);
-    const comparisonDetail = await withReconstructedComparisonOverlay(persistedDetail);
-    const result = await withRealizedAccuracyFeedback(comparisonDetail, parsedQuery.data.batchId);
+    const [comparisonDetail, accuracyDetail] = await Promise.all([
+      withReconstructedComparisonOverlay(persistedDetail),
+      withRealizedAccuracyFeedback(persistedDetail, parsedQuery.data.batchId)
+    ]);
+    const result =
+      comparisonDetail && accuracyDetail?.accuracyFeedback
+        ? { ...comparisonDetail, accuracyFeedback: accuracyDetail.accuracyFeedback }
+        : comparisonDetail;
 
     response.status(200).json(createSuccessResponse("Forecast product loaded.", result));
   } catch (error) {

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { applyRealizedAccuracyFeedback } from "../src/modules/forecasting/forecast-realized-accuracy.service.js";
@@ -96,4 +97,18 @@ test("realized accuracy leaves diagnostics unchanged when no earlier forecast co
   const result = applyRealizedAccuracyFeedback(current, previous);
 
   assert.equal(result.accuracyFeedback?.strategy, "existing diagnostic");
+});
+
+
+test("realized accuracy detail delivery caches immutable batch lookups", () => {
+  const source = readFileSync(
+    "src/modules/forecasting/forecast-realized-accuracy.service.ts",
+    "utf8"
+  );
+
+  assert.match(source, /currentBatchCache/);
+  assert.match(source, /previousBatchCache/);
+  assert.match(source, /previousDetailCache/);
+  assert.match(source, /realizedDetailCache/);
+  assert.match(source, /REALIZED_ACCURACY_CACHE_LIMIT = 512/);
 });

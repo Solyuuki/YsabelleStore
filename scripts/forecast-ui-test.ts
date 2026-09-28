@@ -240,3 +240,20 @@ assert.equal(
   true
 );
 assert.equal(restockForecastPanelSource.includes("getForecastProduct("), false);
+
+
+assert.equal(forecastPageSource.includes("detailCacheBatchRef"), true);
+assert.equal(forecastPageSource.includes("detailCacheRef"), true);
+assert.equal(forecastPageSource.includes("detailPromiseRef"), true);
+assert.equal(
+  forecastPageSource.includes("const pending = detailPromiseRef.current.get(productId)"),
+  true
+);
+assert.equal(
+  forecastPageSource.includes("const workerCount = Math.min(4, productIds.length)"),
+  true
+);
+assert.equal(
+  forecastPageSource.includes("await fetchForecastProductDetail(productId, batchId)"),
+  true
+);
