@@ -46,6 +46,24 @@ export function parseDistributionRecords(text) {
     };
   });
 }
+export function applyDistributionRecordOverrides(records, overrides = []) {
+  const recordMap = new Map(
+    records.map((record) => [record.candidateId + ":" + record.role, record])
+  );
+  const seen = new Set();
+
+  for (const override of overrides) {
+    const key = override.candidateId + ":" + override.role;
+    if (seen.has(key)) throw new Error("Duplicate runtime record override: " + key);
+    seen.add(key);
+    if (override.role === "original")
+      throw new Error("Runtime record overrides cannot replace canonical originals: " + key);
+    if (!recordMap.has(key)) throw new Error("Runtime record override has no base record: " + key);
+    recordMap.set(key, { ...override });
+  }
+
+  return [...recordMap.values()];
+}
 function relativePath(item, role) {
   if (!/^[a-z0-9-]+$/.test(item.candidateId))
     throw new Error("Unsafe candidate id: " + item.candidateId);
@@ -65,12 +83,16 @@ export function buildAssetMaterializationPlan({
   release,
   reconciliation,
   recordsText,
+  recordOverrides = [],
   runtimeRoot,
   root = ROOT
 }) {
   const products = new Map((release.products || []).map((p) => [p.sourceProductId, p]));
   const items = new Map((reconciliation.items || []).map((i) => [i.candidateId, i]));
-  return parseDistributionRecords(recordsText).map((record) => {
+  return applyDistributionRecordOverrides(
+    parseDistributionRecords(recordsText),
+    recordOverrides
+  ).map((record) => {
     const item = items.get(record.candidateId),
       product = item && products.get(item.sourceProductId);
     if (!item || !product || !product.sourceImage || !product.sourceImage.path)
@@ -353,6 +375,7 @@ export function loadAssetDistribution(root = ROOT, runtimeRoot = resolveRuntimeR
       release,
       reconciliation,
       recordsText,
+      recordOverrides: distribution.recordOverrides,
       runtimeRoot,
       root
     }),
