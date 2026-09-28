@@ -14,7 +14,8 @@ const CATALOG_IMAGE_ENGINE_SCRIPT = path.resolve(
 const MAX_PROCESS_OUTPUT_BYTES = 1024 * 1024;
 const STATUS_VALUES = new Set(["APPROVED", "NEEDS_REVIEW", "REJECTED"] as const);
 const SEVERITY_VALUES = new Set(["info", "warning", "error"] as const);
-const VARIANT_FILE_NAMES = new Set(["processed.webp", "card.webp", "pdp.webp"]);
+const PRODUCT_VARIANT_FILE_NAMES = new Set(["processed.webp", "card.webp", "pdp.webp"]);
+const CATEGORY_VARIANT_FILE_NAMES = new Set(["processed.webp", "cover.webp", "thumbnail.webp"]);
 const catalogImageProcessGate = new CatalogImageProcessGate(1);
 
 export type CatalogImageQualityStatus = "APPROVED" | "NEEDS_REVIEW" | "REJECTED";
@@ -34,7 +35,7 @@ type CatalogImageVariantResult = CatalogImageDimensions & {
   fileName: string;
 };
 
-export type CatalogImageEngineResult = {
+type CatalogImageEngineBaseResult = {
   status: CatalogImageQualityStatus;
   source: {
     width: number | null;
@@ -50,6 +51,9 @@ export type CatalogImageEngineResult = {
     touchesSafeMargin: boolean | null;
   };
   orientedSource?: CatalogImageDimensions;
+};
+
+export type CatalogImageEngineResult = CatalogImageEngineBaseResult & {
   upscaleFactor?: {
     card: number;
     pdp: number;
@@ -58,6 +62,14 @@ export type CatalogImageEngineResult = {
     processed: CatalogImageVariantResult;
     card: CatalogImageVariantResult;
     pdp: CatalogImageVariantResult;
+  };
+};
+
+export type CategoryCoverImageEngineResult = CatalogImageEngineBaseResult & {
+  variants?: {
+    processed: CatalogImageVariantResult;
+    cover: CatalogImageVariantResult;
+    thumbnail: CatalogImageVariantResult;
   };
 };
 
@@ -90,18 +102,22 @@ function parseDimensions(value: unknown): CatalogImageDimensions {
   return { width: value.width, height: value.height };
 }
 
-function parseVariant(value: unknown, expectedFileName: string): CatalogImageVariantResult {
+function parseVariant(
+  value: unknown,
+  expectedFileName: string,
+  allowedFileNames: ReadonlySet<string>
+): CatalogImageVariantResult {
   if (!isRecord(value) || value.fileName !== expectedFileName) {
     invalidResult();
   }
   const dimensions = parseDimensions(value);
-  if (!VARIANT_FILE_NAMES.has(value.fileName)) {
+  if (!allowedFileNames.has(value.fileName)) {
     invalidResult();
   }
   return { fileName: value.fileName, ...dimensions };
 }
 
-export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngineResult {
+function parseBase(stdout: string) {
   let parsed: unknown;
   try {
     parsed = JSON.parse(stdout);
@@ -125,6 +141,7 @@ export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngin
     invalidResult();
   }
   if (!Array.isArray(parsed.diagnostics)) invalidResult();
+
   const diagnostics = parsed.diagnostics.map((item): CatalogImageDiagnostic => {
     if (
       !isRecord(item) ||
@@ -143,6 +160,7 @@ export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngin
       severity: item.severity as CatalogImageDiagnostic["severity"]
     };
   });
+
   if (!isRecord(parsed.metrics)) invalidResult();
   const metrics = parsed.metrics;
   if (
@@ -155,7 +173,7 @@ export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngin
     invalidResult();
   }
 
-  const result: CatalogImageEngineResult = {
+  const result: CatalogImageEngineBaseResult = {
     status: parsed.status as CatalogImageQualityStatus,
     source: {
       width: parsed.source.width,
@@ -172,16 +190,30 @@ export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngin
     }
   };
 
+  if (parsed.orientedSource !== undefined) {
+    result.orientedSource = parseDimensions(parsed.orientedSource);
+  }
+
+  return { parsed, result };
+}
+
+export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngineResult {
+  const { parsed, result } = parseBase(stdout);
+  const productResult: CatalogImageEngineResult = { ...result };
+
   if (parsed.variants !== undefined) {
     if (!isRecord(parsed.variants)) invalidResult();
-    result.variants = {
-      processed: parseVariant(parsed.variants.processed, "processed.webp"),
-      card: parseVariant(parsed.variants.card, "card.webp"),
-      pdp: parseVariant(parsed.variants.pdp, "pdp.webp")
+    productResult.variants = {
+      processed: parseVariant(
+        parsed.variants.processed,
+        "processed.webp",
+        PRODUCT_VARIANT_FILE_NAMES
+      ),
+      card: parseVariant(parsed.variants.card, "card.webp", PRODUCT_VARIANT_FILE_NAMES),
+      pdp: parseVariant(parsed.variants.pdp, "pdp.webp", PRODUCT_VARIANT_FILE_NAMES)
     };
 
-    if (!isRecord(parsed.orientedSource) || !isRecord(parsed.upscaleFactor)) invalidResult();
-    result.orientedSource = parseDimensions(parsed.orientedSource);
+    if (!result.orientedSource || !isRecord(parsed.upscaleFactor)) invalidResult();
     if (
       typeof parsed.upscaleFactor.card !== "number" ||
       !Number.isFinite(parsed.upscaleFactor.card) ||
@@ -194,25 +226,72 @@ export function parseCatalogImageEngineOutput(stdout: string): CatalogImageEngin
     ) {
       invalidResult();
     }
-    result.upscaleFactor = {
+    productResult.upscaleFactor = {
       card: parsed.upscaleFactor.card,
       pdp: parsed.upscaleFactor.pdp
     };
   }
 
-  return result;
+  return productResult;
+}
+
+export function parseCategoryCoverImageEngineOutput(
+  stdout: string
+): CategoryCoverImageEngineResult {
+  const { parsed, result } = parseBase(stdout);
+  const categoryResult: CategoryCoverImageEngineResult = { ...result };
+
+  if (parsed.variants !== undefined) {
+    if (!isRecord(parsed.variants) || !result.orientedSource) invalidResult();
+    categoryResult.variants = {
+      processed: parseVariant(
+        parsed.variants.processed,
+        "processed.webp",
+        CATEGORY_VARIANT_FILE_NAMES
+      ),
+      cover: parseVariant(parsed.variants.cover, "cover.webp", CATEGORY_VARIANT_FILE_NAMES),
+      thumbnail: parseVariant(
+        parsed.variants.thumbnail,
+        "thumbnail.webp",
+        CATEGORY_VARIANT_FILE_NAMES
+      )
+    };
+  }
+
+  return categoryResult;
 }
 
 export async function runCatalogImageEngine(sourcePath: string, outputDirectory: string) {
   return catalogImageProcessGate.run(() =>
-    runCatalogImageEngineProcess(sourcePath, outputDirectory)
+    runCatalogImageEngineProcess(
+      sourcePath,
+      outputDirectory,
+      "product",
+      parseCatalogImageEngineOutput
+    )
   );
 }
 
-async function runCatalogImageEngineProcess(sourcePath: string, outputDirectory: string) {
-  const requestBody = JSON.stringify({ sourcePath, outputDirectory });
+export async function runCategoryCoverImageEngine(sourcePath: string, outputDirectory: string) {
+  return catalogImageProcessGate.run(() =>
+    runCatalogImageEngineProcess(
+      sourcePath,
+      outputDirectory,
+      "category-cover",
+      parseCategoryCoverImageEngineOutput
+    )
+  );
+}
 
-  return await new Promise<CatalogImageEngineResult>((resolve, reject) => {
+async function runCatalogImageEngineProcess<T>(
+  sourcePath: string,
+  outputDirectory: string,
+  profile: "product" | "category-cover",
+  parseOutput: (stdout: string) => T
+) {
+  const requestBody = JSON.stringify({ sourcePath, outputDirectory, profile });
+
+  return await new Promise<T>((resolve, reject) => {
     const child = spawn(env.PYTHON_EXECUTABLE, [CATALOG_IMAGE_ENGINE_SCRIPT], {
       shell: false,
       stdio: ["pipe", "pipe", "pipe"]
@@ -294,7 +373,7 @@ async function runCatalogImageEngineProcess(sourcePath: string, outputDirectory:
       }
 
       try {
-        resolve(parseCatalogImageEngineOutput(stdout));
+        resolve(parseOutput(stdout));
       } catch (error) {
         reject(error);
       }

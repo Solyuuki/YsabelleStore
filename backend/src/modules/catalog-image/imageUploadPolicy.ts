@@ -1,7 +1,10 @@
-import { PRODUCT_IMAGE_UPLOAD_LIMITS } from "../../security/security.constants.js";
+import {
+  CATEGORY_COVER_UPLOAD_LIMITS,
+  PRODUCT_IMAGE_UPLOAD_LIMITS
+} from "../../security/security.constants.js";
 import { HttpError } from "../../utils/httpError.js";
 
-export type ProductImageUploadInspection = {
+export type CatalogImageUploadInspection = {
   detectedMimeType: "image/jpeg" | "image/png" | "image/webp";
   extension: ".jpg" | ".png" | ".webp";
 };
@@ -18,7 +21,7 @@ function startsWithBytes(buffer: Buffer, signature: readonly number[]) {
   return signature.every((byte, index) => buffer[index] === byte);
 }
 
-function detectImageType(buffer: Buffer): ProductImageUploadInspection | null {
+function detectImageType(buffer: Buffer): CatalogImageUploadInspection | null {
   if (startsWithBytes(buffer, [0xff, 0xd8, 0xff])) {
     return { detectedMimeType: "image/jpeg", extension: ".jpg" };
   }
@@ -40,7 +43,7 @@ function detectImageType(buffer: Buffer): ProductImageUploadInspection | null {
 
 export function inspectProductImageUpload(
   input: ProductImageUploadInput
-): ProductImageUploadInspection {
+): CatalogImageUploadInspection {
   if (input.size > PRODUCT_IMAGE_UPLOAD_LIMITS.maxFileBytes) {
     throw new HttpError(413, "Product image exceeds the upload size limit.", {
       code: "PRODUCT_IMAGE_TOO_LARGE",
@@ -55,6 +58,31 @@ export function inspectProductImageUpload(
       code: "PRODUCT_IMAGE_UNSUPPORTED_TYPE",
       details: {
         allowedMimeTypes: [...PRODUCT_IMAGE_UPLOAD_LIMITS.allowedMimeTypes]
+      }
+    });
+  }
+
+  return detected;
+}
+
+
+export function inspectCategoryCoverUpload(
+  input: ProductImageUploadInput
+): CatalogImageUploadInspection {
+  if (input.size > CATEGORY_COVER_UPLOAD_LIMITS.maxFileBytes) {
+    throw new HttpError(413, "Category cover exceeds the upload size limit.", {
+      code: "CATEGORY_COVER_TOO_LARGE",
+      details: { maxFileBytes: CATEGORY_COVER_UPLOAD_LIMITS.maxFileBytes }
+    });
+  }
+
+  const detected = detectImageType(input.buffer);
+
+  if (!detected) {
+    throw new HttpError(415, "Category cover type is not supported.", {
+      code: "CATEGORY_COVER_UNSUPPORTED_TYPE",
+      details: {
+        allowedMimeTypes: [...CATEGORY_COVER_UPLOAD_LIMITS.allowedMimeTypes]
       }
     });
   }

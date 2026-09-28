@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parseCatalogImageEngineOutput } from "../src/modules/catalog-image/catalogImageEngineRunner.js";
+import {
+  parseCatalogImageEngineOutput,
+  parseCategoryCoverImageEngineOutput
+} from "../src/modules/catalog-image/catalogImageEngineRunner.js";
 
 const validResult = {
   diagnostics: [],
@@ -67,4 +70,43 @@ test("catalog image runner rejects malformed or incomplete Python output", () =>
         (error as { code?: string }).code === "CATALOG_IMAGE_INVALID_RESULT"
     );
   }
+});
+
+
+test("catalog image runner accepts category-cover variants", () => {
+  const result = parseCategoryCoverImageEngineOutput(
+    JSON.stringify({
+      diagnostics: [],
+      metrics: {
+        contrastStdDev: 35,
+        foregroundOccupancy: null,
+        luminance: 118,
+        sharpnessRms: 18,
+        touchesSafeMargin: null
+      },
+      orientedSource: { height: 900, width: 1400 },
+      source: { height: 900, mode: "RGB", width: 1400 },
+      status: "APPROVED",
+      variants: {
+        processed: { fileName: "processed.webp", height: 900, width: 1400 },
+        cover: { fileName: "cover.webp", height: 900, width: 1400 },
+        thumbnail: { fileName: "thumbnail.webp", height: 270, width: 480 }
+      }
+    })
+  );
+
+  assert.equal(result.status, "APPROVED");
+  assert.equal(result.variants?.cover.fileName, "cover.webp");
+  assert.equal(result.variants?.thumbnail.width, 480);
+});
+
+test("category-cover parser rejects product variant names", () => {
+  assert.throws(() =>
+    parseCategoryCoverImageEngineOutput(
+      JSON.stringify({
+        ...validResult,
+        upscaleFactor: undefined
+      })
+    )
+  );
 });

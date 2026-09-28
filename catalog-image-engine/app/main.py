@@ -8,6 +8,10 @@ ENGINE_ROOT = Path(__file__).resolve().parents[1]
 if str(ENGINE_ROOT) not in sys.path:
     sys.path.insert(0, str(ENGINE_ROOT))
 
+from ciqe.category_cover import (
+    analyze_category_cover_path,
+    normalize_category_cover_path,
+)
 from ciqe.normalize import normalize_image_path
 from ciqe.quality import analyze_image_path
 
@@ -28,31 +32,42 @@ def main() -> int:
 
     source_path = payload.get("sourcePath")
     output_directory = payload.get("outputDirectory")
+    profile = payload.get("profile", "product")
 
     if not isinstance(source_path, str) or not source_path.strip():
         return invalid_request("sourcePath is required")
     if not isinstance(output_directory, str) or not output_directory.strip():
         return invalid_request("outputDirectory is required")
+    if profile not in {"product", "category-cover"}:
+        return invalid_request("profile must be product or category-cover")
 
     source = Path(source_path)
     if not source.is_file():
         return invalid_request("sourcePath must reference an existing file")
 
-    source_result = analyze_image_path(source)
+    analyzer = analyze_category_cover_path if profile == "category-cover" else analyze_image_path
+    source_result = analyzer(source)
     diagnostic_codes = {item["code"] for item in source_result["diagnostics"]}
     blocking_codes = {"DECODE_FAILED", "PIXEL_LIMIT_EXCEEDED"}
     result = source_result
 
     if not diagnostic_codes.intersection(blocking_codes):
         output = Path(output_directory)
-        normalized = normalize_image_path(source, output, canvas_policy="white")
-        post_optimization = analyze_image_path(output / "processed.webp")
-        result = {
-            "status": (
+        if profile == "category-cover":
+            normalized = normalize_category_cover_path(source, output)
+            post_optimization = analyze_category_cover_path(output / "cover.webp")
+            status = post_optimization["status"]
+        else:
+            normalized = normalize_image_path(source, output, canvas_policy="white")
+            post_optimization = analyze_image_path(output / "processed.webp")
+            status = (
                 "APPROVED"
                 if post_optimization["status"] == "APPROVED"
                 else "REJECTED"
-            ),
+            )
+
+        result = {
+            "status": status,
             "source": source_result["source"],
             "diagnostics": post_optimization["diagnostics"],
             "metrics": post_optimization["metrics"],

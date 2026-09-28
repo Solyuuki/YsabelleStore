@@ -32,6 +32,35 @@ test("catalog image storage exposes only generated candidate output paths", asyn
   }
 });
 
+
+test("catalog image storage isolates category cover candidates", async () => {
+  const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "ysabelle-category-images-"));
+
+  try {
+    const storage = new CatalogImageStorage(temporaryRoot);
+    const directory = await storage.prepareCategoryCandidateOutputDirectory("category-2");
+
+    assert.equal(
+      directory,
+      path.join(temporaryRoot, "category-candidates", "category-2", "processed")
+    );
+    assert.equal(
+      storage.categoryVariantStorageKey("category-2", "processed"),
+      "category-candidates/category-2/processed/processed.webp"
+    );
+    assert.equal(
+      storage.categoryVariantStorageKey("category-2", "cover"),
+      "category-candidates/category-2/processed/cover.webp"
+    );
+    assert.equal(
+      storage.categoryVariantStorageKey("category-2", "thumbnail"),
+      "category-candidates/category-2/processed/thumbnail.webp"
+    );
+  } finally {
+    await rm(temporaryRoot, { force: true, recursive: true });
+  }
+});
+
 test("catalog image storage recovers and promotes an existing asset from a linked-worktree fallback root", async () => {
   const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "ysabelle-catalog-fallback-"));
   const canonicalRoot = path.join(temporaryRoot, "primary", ".data", "catalog-images");

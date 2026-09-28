@@ -145,6 +145,13 @@ export const PRODUCT_IMAGE_UPLOAD_LIMITS = {
   allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"]
 } as const;
 
+export const CATEGORY_COVER_UPLOAD_LIMITS = {
+  maxFileBytes: 8 * 1024 * 1024,
+  maxDecodedPixels: 24_000_000,
+  maxDimensionPixels: 8_000,
+  allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"]
+} as const;
+
 export const FUTURE_AUTH_ROLES = {
   admin: "admin",
   user: "user"

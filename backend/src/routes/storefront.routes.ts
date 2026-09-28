@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { publicCategoryImageController } from "../controllers/categoryImageController.js";
 import { publicProductImageController } from "../controllers/productImageController.js";
 import {
   createStorefrontOrderController,
@@ -15,6 +16,7 @@ import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
 export const storefrontRouter = Router();
 
 storefrontRouter.get("/product-images/:imageId/:variant", publicProductImageController);
+storefrontRouter.get("/category-images/:imageId/:variant", publicCategoryImageController);
 storefrontRouter.get("/categories", listStorefrontCategoriesController);
 storefrontRouter.get("/merchandising", listStorefrontMerchandisingController);
 storefrontRouter.get("/products", listStorefrontProductsController);
