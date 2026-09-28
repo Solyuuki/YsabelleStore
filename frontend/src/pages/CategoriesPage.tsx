@@ -770,10 +770,11 @@ function EditCategoryDialog({
   const [isStorefrontVisible, setIsStorefrontVisible] = useState(true);
   const [coverPosition, setCoverPosition] = useState<CategoryCoverPosition>("CENTER");
   const [coverCropState, setCoverCropState] = useState<
-    CategoryCoverCropState & { mode: "DESKTOP" | "MOBILE" }
+    CategoryCoverCropState & { measured: boolean; mode: "DESKTOP" | "MOBILE" }
   >({
     horizontalActive: false,
     horizontalPx: 0,
+    measured: false,
     mode: "DESKTOP",
     verticalActive: false,
     verticalPx: 0
@@ -791,6 +792,7 @@ function EditCategoryDialog({
     setCoverCropState({
       horizontalActive: false,
       horizontalPx: 0,
+      measured: false,
       mode: "DESKTOP",
       verticalActive: false,
       verticalPx: 0
@@ -945,7 +947,10 @@ function EditCategoryDialog({
                   <div className="space-y-2">
                     <Label htmlFor="category-cover-horizontal-focus">Horizontal</Label>
                     <Select
-                      disabled={!category.activeCoverAssetId}
+                      disabled={
+                        !category.activeCoverAssetId ||
+                        (coverCropState.measured && !coverCropState.horizontalActive)
+                      }
                       id="category-cover-horizontal-focus"
                       value={coverFocus.horizontal}
                       onChange={(event) =>
@@ -965,13 +970,17 @@ function EditCategoryDialog({
                       active={coverCropState.horizontalActive}
                       axis="horizontal"
                       croppedPixels={coverCropState.horizontalPx}
+                      measured={coverCropState.measured}
                       mode={coverCropState.mode}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="category-cover-vertical-focus">Vertical</Label>
                     <Select
-                      disabled={!category.activeCoverAssetId}
+                      disabled={
+                        !category.activeCoverAssetId ||
+                        (coverCropState.measured && !coverCropState.verticalActive)
+                      }
                       id="category-cover-vertical-focus"
                       value={coverFocus.vertical}
                       onChange={(event) =>
@@ -991,6 +1000,7 @@ function EditCategoryDialog({
                       active={coverCropState.verticalActive}
                       axis="vertical"
                       croppedPixels={coverCropState.verticalPx}
+                      measured={coverCropState.measured}
                       mode={coverCropState.mode}
                     />
                   </div>
@@ -1029,11 +1039,13 @@ function CropAxisStatus({
   active,
   axis,
   croppedPixels,
+  measured,
   mode
 }: {
   active: boolean;
   axis: "horizontal" | "vertical";
   croppedPixels: number;
+  measured: boolean;
   mode: "DESKTOP" | "MOBILE";
 }) {
   const modeLabel = mode === "DESKTOP" ? "Desktop" : "Mobile";
@@ -1047,9 +1059,11 @@ function CropAxisStatus({
         }`}
       />
       <span>
-        {active
-          ? `${modeLabel}: ~${Math.round(croppedPixels)}px total ${axis} crop. Focus is active.`
-          : `${modeLabel}: no ${axis} crop at this preview size. Selection still applies at other responsive widths.`}
+        {!measured
+          ? `${modeLabel}: measuring ${axis} crop…`
+          : active
+            ? `${modeLabel}: ~${Math.round(croppedPixels)}px total ${axis} crop. Focus is active.`
+            : `${modeLabel}: no ${axis} crop at this preview size. Control is disabled here.`}
       </span>
     </p>
   );
@@ -1061,7 +1075,7 @@ function CategoryCoverPreview({
 }: {
   category: ManagedCategoryRecord;
   onCropStateChange: (
-    state: CategoryCoverCropState & { mode: "DESKTOP" | "MOBILE" }
+    state: CategoryCoverCropState & { measured: boolean; mode: "DESKTOP" | "MOBILE" }
   ) => void;
 }) {
   const [failed, setFailed] = useState(false);
@@ -1114,6 +1128,11 @@ function CategoryCoverPreview({
   useEffect(() => {
     onCropStateChange({
       ...cropState,
+      measured:
+        sourceSize.width > 0 &&
+        sourceSize.height > 0 &&
+        frameSize.width > 0 &&
+        frameSize.height > 0,
       mode: previewMode
     });
   }, [

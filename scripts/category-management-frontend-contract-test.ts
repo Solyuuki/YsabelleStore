@@ -54,7 +54,10 @@ assert.match(categoriesPage, /naturalWidth/);
 assert.match(categoriesPage, /naturalHeight/);
 assert.match(categoriesPage, /calculateCategoryCoverCrop/);
 assert.match(categoriesPage, /no \$\{axis\} crop at this preview size/);
-assert.match(categoriesPage, /Selection still applies at other responsive widths/);
+assert.match(categoriesPage, /Control is disabled here/);
+assert.match(categoriesPage, /coverCropState\.measured && !coverCropState\.horizontalActive/);
+assert.match(categoriesPage, /coverCropState\.measured && !coverCropState\.verticalActive/);
+assert.match(categoriesPage, /measuring \$\{axis\} crop/);
 
 assert.match(categoryApi, /\/api\/catalog\/categories/);
 assert.match(categoryApi, /pageSize/);
