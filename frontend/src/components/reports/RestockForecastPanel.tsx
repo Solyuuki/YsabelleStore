@@ -688,6 +688,7 @@ function DemandChart({ data }: { data: ReturnType<typeof buildDemandChart> }) {
         <Line
           connectNulls={false}
           dataKey="actual"
+          isAnimationActive={false}
           dot={false}
           name="Recent sales"
           stroke="#475569"
@@ -697,6 +698,7 @@ function DemandChart({ data }: { data: ReturnType<typeof buildDemandChart> }) {
         <Line
           connectNulls={false}
           dataKey="forecast"
+          isAnimationActive={false}
           dot={{ r: 2.5 }}
           name="Expected demand"
           stroke="#4f46e5"
@@ -716,7 +718,13 @@ function RestockPreviewChart({ data }: { data: ReturnType<typeof buildRestockPre
         <XAxis dataKey="label" tick={{ fontSize: 11 }} />
         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
         <Tooltip formatter={(value) => [formatNumber(Number(value)), "Restock units"]} />
-        <Bar dataKey="restock" fill="#4f46e5" name="Restock units" radius={[4, 4, 0, 0]} />
+        <Bar
+          dataKey="restock"
+          fill="#4f46e5"
+          isAnimationActive={false}
+          name="Restock units"
+          radius={[4, 4, 0, 0]}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

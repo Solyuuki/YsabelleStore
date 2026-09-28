@@ -14,6 +14,10 @@ import {
 } from "../frontend/src/utils/forecastPresentation";
 
 const forecastPageSource = readFileSync("frontend/src/pages/ForecastPage.tsx", "utf8");
+const restockForecastPanelSource = readFileSync(
+  "frontend/src/components/reports/RestockForecastPanel.tsx",
+  "utf8"
+);
 const appLayoutSource = readFileSync("frontend/src/layouts/AppLayout.tsx", "utf8");
 
 function product(input: Partial<ForecastProductSummary>): ForecastProductSummary {
@@ -224,3 +228,15 @@ assert.equal(forecastPageSource.includes("<AppPagination"), true);
 assert.equal(forecastPageSource.includes("waitForMinimumDuration"), false);
 assert.equal(forecastPageSource.includes("FORECAST_PRODUCTS_DESKTOP_QUERY"), true);
 assert.equal(forecastPageSource.includes("forecastRows.map"), true);
+
+
+const disabledRestockChartAnimations =
+  restockForecastPanelSource.match(/isAnimationActive=\{false\}/g) ?? [];
+assert.equal(disabledRestockChartAnimations.length, 3);
+assert.equal(
+  restockForecastPanelSource.includes(
+    "onClick={() => setSelectedProductId(item.product.id)}"
+  ),
+  true
+);
+assert.equal(restockForecastPanelSource.includes("getForecastProduct("), false);
