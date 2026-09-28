@@ -1035,6 +1035,10 @@
   user-select: none;
 }
 
+.catalog-product-image[data-image-cleanup="trim-top-edge"] > img {
+  clip-path: inset(2% 0 0 0);
+}
+
 .catalog-product-image[data-image-resolution="low"] > img {
   width: auto;
   height: auto;

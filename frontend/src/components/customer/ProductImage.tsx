@@ -9,6 +9,7 @@ import {
 
 import {
   describeCatalogImage,
+  getCatalogImageCleanup,
   getCatalogImageMetadata,
   type CatalogImageMetadata
 } from "@/utils/catalogImageMetadata";
@@ -34,6 +35,7 @@ export function ProductImage({
   const source = getCatalogImageUrl(imageUrl);
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const knownMetadata = getCatalogImageMetadata(source);
+  const imageCleanup = getCatalogImageCleanup(source);
   const [detectedMetadata, setDetectedMetadata] = useState<CatalogImageMetadata | null>(null);
   const metadata = knownMetadata ?? detectedMetadata;
   const presentation = metadata ? describeCatalogImage(metadata.width, metadata.height) : null;
@@ -66,6 +68,7 @@ export function ProductImage({
       aria-label={isAvailable ? undefined : `${alt}. Image unavailable.`}
       className={`catalog-product-image ${className}`.trim()}
       data-image-background={metadata?.background}
+      data-image-cleanup={imageCleanup ?? undefined}
       data-image-state={isAvailable ? "available" : "fallback"}
       data-image-resolution={presentation?.resolution}
       data-image-shape={presentation?.shape}

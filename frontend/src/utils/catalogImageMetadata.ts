@@ -4,6 +4,12 @@ export type CatalogImageMetadata = {
   width: number;
 };
 
+export type CatalogImageCleanup = "trim-top-edge";
+
+const catalogImageCleanupByAssetId = {
+  "sarima-p219-b7553e591e41": "trim-top-edge"
+} as const satisfies Record<string, CatalogImageCleanup>;
+
 const catalogImageMetadata = {
   "/images/products/gardenia-enriched-white-bread-600g.webp": {
     background: "transparent",
@@ -25,6 +31,16 @@ const catalogImageMetadata = {
 export function getCatalogImageMetadata(imageUrl: string | null) {
   if (!imageUrl) return null;
   return catalogImageMetadata[imageUrl as keyof typeof catalogImageMetadata] ?? null;
+}
+
+export function getCatalogImageCleanup(imageUrl: string | null) {
+  if (!imageUrl) return null;
+
+  for (const [assetId, cleanup] of Object.entries(catalogImageCleanupByAssetId)) {
+    if (imageUrl.includes(assetId)) return cleanup;
+  }
+
+  return null;
 }
 
 export function describeCatalogImage(width: number, height: number) {
