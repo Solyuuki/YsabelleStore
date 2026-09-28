@@ -33,6 +33,9 @@ assert.match(categoriesPage, /composeCoverPosition/);
 assert.match(categoriesPage, /Live crop preview/);
 assert.match(categoriesPage, /Desktop/);
 assert.match(categoriesPage, /Mobile/);
+assert.match(categoriesPage, /max-w-\[15rem\]/);
+assert.match(categoriesPage, /240px × 170px/);
+assert.match(categoriesPage, /288px × 175px/);
 
 assert.match(categoryApi, /\/api\/catalog\/categories/);
 assert.match(categoryApi, /pageSize/);
