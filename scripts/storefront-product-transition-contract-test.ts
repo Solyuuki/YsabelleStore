@@ -27,6 +27,8 @@ assert.match(
 );
 assert.match(detailSource, /const hasCurrentData = dataMatchesCategory && Boolean\(resource\.data\)/);
 assert.match(detailSource, /resource\.status === "loading" && !hasCurrentData/);
+assert.match(detailSource, /resource\.status === "error" && !hasCurrentData/);
+assert.match(detailSource, /resource\.status === "error" && !resource\.data/);
 assert.match(detailSource, /hasCurrentData && hasProducts/);
 assert.match(detailSource, /currentProductId=\{productId\}/);
 assert.match(detailSource, /key=\{product\.id\}/);

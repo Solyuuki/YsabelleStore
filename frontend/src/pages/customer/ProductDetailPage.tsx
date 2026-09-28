@@ -354,7 +354,7 @@ function ReviewsSection({
           Loading ratings and reviews...
         </div>
       ) : null}
-      {resource.status === "error" && !hasCurrentData ? (
+      {resource.status === "error" && !resource.data ? (
         <div className="customer-product-section-state customer-product-section-state--error">
           <div>
             <strong>Ratings and reviews could not be loaded.</strong>
@@ -545,7 +545,7 @@ function RelatedProductsSection({
           </div>
         </div>
       ) : null}
-      {resource.status === "error" ? (
+      {resource.status === "error" && !hasCurrentData ? (
         <div className="customer-product-section-state customer-product-section-state--error">
           <div>
             <strong>Related products could not be loaded.</strong>
