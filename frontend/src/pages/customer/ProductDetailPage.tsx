@@ -31,6 +31,7 @@ import type {
   StorefrontProductReviews,
   StorefrontRelatedProducts
 } from "@/types/storefront";
+import { preloadCatalogImage } from "@/utils/storefrontImages";
 
 type Resource<T> = {
   data: T | null;
@@ -49,6 +50,8 @@ export function ProductDetailPage({
 }) {
   const { addItem } = useCart();
   const [product, setProduct] = useState<StorefrontProductDetail | null>(null);
+  const productRef = useRef<StorefrontProductDetail | null>(null);
+  const [isProductTransitioning, setIsProductTransitioning] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState("");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
@@ -68,26 +71,59 @@ export function ProductDetailPage({
 
   useEffect(() => {
     const controller = new AbortController();
-    setProduct(null);
+    const displayedProduct = productRef.current;
+
+    if (displayedProduct?.id === productId) {
+      setError("");
+      setIsProductTransitioning(false);
+      return () => controller.abort();
+    }
+
     setError("");
-    setQuantity(1);
-    setRatingFilter(null);
-    setReviewPage(1);
-    setReviewResource({ data: null, error: "", status: "loading" });
-    fetchStorefrontProduct(productId, controller.signal)
-      .then(setProduct)
-      .catch((reason: unknown) => {
-        if (!controller.signal.aborted)
+    setIsProductTransitioning(Boolean(displayedProduct));
+
+    async function loadProduct() {
+      try {
+        const nextProduct = await fetchStorefrontProduct(productId, controller.signal);
+
+        try {
+          await preloadCatalogImage(
+            nextProduct.detailImageUrl ?? nextProduct.imageUrl,
+            controller.signal
+          );
+        } catch {
+          if (controller.signal.aborted) return;
+        }
+
+        if (controller.signal.aborted) return;
+
+        productRef.current = nextProduct;
+        setQuantity(1);
+        setRatingFilter(null);
+        setReviewPage(1);
+        setProduct(nextProduct);
+        setIsProductTransitioning(false);
+      } catch (reason: unknown) {
+        if (!controller.signal.aborted) {
+          setIsProductTransitioning(false);
           setError(reason instanceof Error ? reason.message : "Product could not be loaded.");
-      });
+        }
+      }
+    }
+
+    void loadProduct();
     return () => controller.abort();
   }, [productId]);
 
+  const displayedProductId = product?.id ?? null;
+
   useEffect(() => {
+    if (!displayedProductId) return;
+
     const controller = new AbortController();
     setReviewResource((current) => ({ ...current, error: "", status: "loading" }));
     fetchStorefrontProductReviews(
-      productId,
+      displayedProductId,
       { page: reviewPage, pageSize: 10, ...(ratingFilter ? { rating: ratingFilter } : {}) },
       controller.signal
     )
@@ -102,12 +138,14 @@ export function ProductDetailPage({
         }
       });
     return () => controller.abort();
-  }, [productId, ratingFilter, reviewPage, reviewReload]);
+  }, [displayedProductId, ratingFilter, reviewPage, reviewReload]);
 
   useEffect(() => {
+    if (!displayedProductId) return;
+
     const controller = new AbortController();
     setRelatedResource({ data: null, error: "", status: "loading" });
-    fetchStorefrontRelatedProducts(productId, 4, controller.signal)
+    fetchStorefrontRelatedProducts(displayedProductId, 4, controller.signal)
       .then((data) => setRelatedResource({ data, error: "", status: "success" }))
       .catch((reason: unknown) => {
         if (!controller.signal.aborted) {
@@ -120,7 +158,7 @@ export function ProductDetailPage({
         }
       });
     return () => controller.abort();
-  }, [productId, relatedReload]);
+  }, [displayedProductId, relatedReload]);
 
   if (error) {
     const productMissing = /(?:not found|404)/i.test(error);
@@ -179,7 +217,11 @@ export function ProductDetailPage({
   const outOfStock = product.availableStock <= 0;
 
   return (
-    <div className="customer-page customer-product-page">
+    <div
+      aria-busy={isProductTransitioning}
+      className="customer-page customer-product-page"
+      data-product-transitioning={isProductTransitioning || undefined}
+    >
       <div className="customer-container">
         <CustomerLink
           className="customer-back-link"
@@ -188,7 +230,7 @@ export function ProductDetailPage({
         >
           <ArrowLeft aria-hidden="true" size={17} /> Back to {product.category.name}
         </CustomerLink>
-        <section className="customer-product-detail">
+        <section className="customer-product-detail" key={product.id}>
           <div className="customer-product-detail__media">
             <ProductVisual
               category={product.category.name}
@@ -197,7 +239,7 @@ export function ProductDetailPage({
               name={product.name}
             />
             <ProductSizeSelector
-              currentProductId={product.id}
+              currentProductId={productId}
               navigate={navigate}
               variants={product.sizeVariants}
             />
@@ -229,6 +271,7 @@ export function ProductDetailPage({
                 />
                 <button
                   className="customer-button"
+                  disabled={isProductTransitioning}
                   onClick={() => addItem(product, quantity)}
                   type="button"
                 >

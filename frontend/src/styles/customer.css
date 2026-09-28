@@ -2535,6 +2535,41 @@
   gap: clamp(3rem, 7vw, 7rem);
 }
 
+@keyframes customer-product-detail-enter {
+  from {
+    opacity: 0.82;
+    transform: translate3d(0, 6px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .customer-product-detail {
+    animation: customer-product-detail-enter 220ms var(--ease-standard) both;
+    transition: opacity 140ms var(--ease-standard);
+  }
+
+  .customer-product-page[data-product-transitioning="true"] .customer-product-detail {
+    opacity: 0.94;
+    will-change: opacity;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-product-detail {
+    animation: none;
+    transition: none;
+  }
+
+  .customer-product-page[data-product-transitioning="true"] .customer-product-detail {
+    opacity: 1;
+  }
+}
+
 .customer-product-detail__copy {
   min-width: 0;
 }
