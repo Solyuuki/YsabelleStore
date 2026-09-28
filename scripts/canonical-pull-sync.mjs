@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { pathToFileURL } from "node:url";
@@ -71,10 +71,23 @@ const git = (args, options) => run("git", args, { ...options, capture: true });
 export function isRelevantCanonicalPath(path) {
   return PREFIXES.some((p) => path.startsWith(p));
 }
-export function requiresPrismaRegeneration(paths, state) {
-  return paths.some(
-    (path) => path === state.schemaPath || path.startsWith("database/prisma/migrations/")
-  );
+export function requiresPrismaRegeneration(paths, state, root = process.cwd()) {
+  if (
+    paths.some(
+      (path) => path === state.schemaPath || path.startsWith("database/prisma/migrations/")
+    )
+  ) {
+    return true;
+  }
+
+  const generatedSchemaPath = resolve(root, "node_modules", ".prisma", "client", "schema.prisma");
+  const repositorySchemaPath = resolve(root, state.schemaPath);
+
+  if (!existsSync(generatedSchemaPath) || !existsSync(repositorySchemaPath)) {
+    return true;
+  }
+
+  return readFileSync(generatedSchemaPath, "utf8") !== readFileSync(repositorySchemaPath, "utf8");
 }
 export function classifyDatabaseState({
   applicationTableCount,

@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import {
   classifyDatabaseState,
@@ -88,4 +91,28 @@ test("ahead and wrong-epoch databases fail closed", () => {
     }),
     "DRIFTED"
   );
+});
+
+
+test("requiresPrismaRegeneration detects stale or missing generated client schema", () => {
+  const root = mkdtempSync(join(tmpdir(), "ysabelle-prisma-sync-"));
+  try {
+    const repositorySchema = join(root, "database", "prisma", "schema.prisma");
+    const generatedSchema = join(root, "node_modules", ".prisma", "client", "schema.prisma");
+    mkdirSync(join(root, "database", "prisma"), { recursive: true });
+    mkdirSync(join(root, "node_modules", ".prisma", "client"), { recursive: true });
+
+    writeFileSync(repositorySchema, "model Category { id String @id }\n");
+
+    const state = { schemaPath: "database/prisma/schema.prisma" };
+    assert.equal(requiresPrismaRegeneration([], state, root), true);
+
+    writeFileSync(generatedSchema, "model Category { id String @id }\n");
+    assert.equal(requiresPrismaRegeneration([], state, root), false);
+
+    writeFileSync(generatedSchema, "model Category { id String @id\n products Product[]\n }\n");
+    assert.equal(requiresPrismaRegeneration([], state, root), true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
