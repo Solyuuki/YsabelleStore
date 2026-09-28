@@ -43,13 +43,9 @@ function parseRecords(text) {
 function recordOverrideDigest(overrides) {
   const rows = overrides
     .map((record) =>
-      [
-        record.candidateId,
-        record.role,
-        record.sizeBytes,
-        record.sha256,
-        record.gitBlobOid
-      ].join("|")
+      [record.candidateId, record.role, record.sizeBytes, record.sha256, record.gitBlobOid].join(
+        "|"
+      )
     )
     .sort();
   return sha256(rows.join("\n"));
@@ -115,18 +111,13 @@ export function inspectAssetDistribution({
 }) {
   const findings = [];
   const parsed = parseRecords(recordsText);
-  const overrides = Array.isArray(distribution.recordOverrides)
-    ? distribution.recordOverrides
-    : [];
+  const overrides = Array.isArray(distribution.recordOverrides) ? distribution.recordOverrides : [];
   let effectiveRecords = parsed.records;
   try {
     effectiveRecords = applyRecordOverrides(parsed.records, overrides);
   } catch (error) {
     findings.push(
-      "BLOCK: " +
-        (error instanceof Error
-          ? error.message
-          : "runtime record override is invalid.")
+      "BLOCK: " + (error instanceof Error ? error.message : "runtime record override is invalid.")
     );
   }
 
@@ -135,9 +126,7 @@ export function inspectAssetDistribution({
     if (distribution.recordOverridesSha256 !== overrideDigest) {
       findings.push("BLOCK: runtime record override checksum is invalid.");
     }
-    const effectiveDigest = sha256(
-      distribution.payloadSha256 + "|" + overrideDigest
-    );
+    const effectiveDigest = sha256(distribution.payloadSha256 + "|" + overrideDigest);
     if (distribution.effectivePayloadSha256 !== effectiveDigest) {
       findings.push("BLOCK: effective runtime payload checksum is invalid.");
     }
@@ -345,20 +334,14 @@ export function inspectAssetDistribution({
   if (payloadDigest(parsed.records, reconciliationByCandidate) !== distribution.payloadSha256) {
     findings.push("BLOCK: base runtime distribution aggregate payload digest is invalid.");
   }
-  if (
-    overrides.length > 0 &&
-    payloadBytes !== distribution.effectivePayloadByteCount
-  ) {
+  if (overrides.length > 0 && payloadBytes !== distribution.effectivePayloadByteCount) {
     findings.push(
       "BLOCK: effective runtime distribution byte count differs from manifest metadata."
     );
   }
 
   const recordMap = new Map(
-    effectiveRecords.map((record) => [
-      record.candidateId + ":" + record.role,
-      record
-    ])
+    effectiveRecords.map((record) => [record.candidateId + ":" + record.role, record])
   );
   let aliasCount = 0;
   for (const item of reconciliation.items ?? []) {
