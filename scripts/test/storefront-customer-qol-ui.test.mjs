@@ -21,7 +21,11 @@ assert.match(detailSource, /Previous related products/);
 assert.match(detailSource, /Next related products/);
 assert.match(detailSource, /More from \{productCategory\.name\}/);
 assert.doesNotMatch(detailSource, /From other aisles/);
-assert.match(discoverSource, /story-welcome__mark--branded/);
-assert.match(discoverSource, /<YsabelleBrandMark eager variant="display" \/>/);
+assert.match(discoverSource, /className="story-welcome__mark story-welcome__mark--branded"/);
+assert.match(discoverSource, /<YsabelleBrandMark[\s\S]*variant="display"/);
+assert.doesNotMatch(
+  discoverSource,
+  /<div className="story-welcome__mark story-welcome__mark--branded">/
+);
 
 console.log("storefront customer QoL UI contract passed");

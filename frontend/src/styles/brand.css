@@ -54,23 +54,17 @@
   display: none;
 }
 
-.story-welcome__mark--branded {
+.ysabelle-brand-mark.story-welcome__mark--branded {
   width: clamp(6rem, 7vw, 7rem);
   height: clamp(6rem, 7vw, 7rem);
+  overflow: hidden;
   border-radius: 50%;
   background: var(--ysabelle-brand-fallback);
   box-shadow: 0 22px 45px rgb(98 91 255 / 24%);
 }
 
-.story-welcome__mark--branded > svg,
 .story-live-store__identity--branded > svg {
   display: none;
-}
-
-.story-welcome__mark--branded > .ysabelle-brand-mark {
-  width: 100%;
-  height: 100%;
-  box-shadow: none;
 }
 
 .story-live-store__identity--branded > .ysabelle-brand-mark {
@@ -86,7 +80,7 @@
 }
 
 @media (max-width: 480px) {
-  .story-welcome__mark--branded,
+  .ysabelle-brand-mark.story-welcome__mark--branded,
   .ysabelle-brand-mark--display {
     width: 5.5rem;
     height: 5.5rem;

@@ -1080,9 +1080,11 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
         </div>
 
         <div className="customer-container story-welcome__stage" data-story-motion>
-          <div className="story-welcome__mark story-welcome__mark--branded">
-            <YsabelleBrandMark eager variant="display" />
-          </div>
+          <YsabelleBrandMark
+            className="story-welcome__mark story-welcome__mark--branded"
+            eager
+            variant="display"
+          />
           <span className="story-kicker">01 / Welcome</span>
           <h1 className="story-display-safe story-welcome__title">
             <span className="story-mask">
