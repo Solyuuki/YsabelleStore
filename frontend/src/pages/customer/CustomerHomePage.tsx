@@ -45,6 +45,7 @@ type HomeShowcaseItem = {
   alt: string;
   category: string;
   imageUrl: string;
+  objectPosition?: string;
   slug: string;
 };
 
@@ -138,7 +139,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
     )
     .slice(0, 8);
   const showcaseCategories = [...categories.data]
-    .filter((category) => getCategoryPresentation(category.slug))
+    .filter((category) => category.storefrontCover || getCategoryPresentation(category.slug))
     .sort(
       (left, right) =>
         showcaseRank(left.slug) - showcaseRank(right.slug) ||
@@ -149,6 +150,25 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
   const showcaseItems: HomeShowcaseItem[] = showcaseCategories.length
     ? showcaseCategories.flatMap((category) => {
         const presentation = getCategoryPresentation(category.slug);
+        const managedCover = category.storefrontCover;
+
+        if (managedCover) {
+          return [
+            {
+              alt: `${category.name} category cover`,
+              category: category.name,
+              imageUrl: managedCover.imageUrl,
+              objectPosition:
+                managedCover.position === "LEFT"
+                  ? "left center"
+                  : managedCover.position === "RIGHT"
+                    ? "right center"
+                    : "center center",
+              slug: category.slug
+            }
+          ];
+        }
+
         return presentation
           ? [
               {
@@ -407,6 +427,7 @@ function HomeCategoryShowcase({
             fetchPriority="high"
             imageUrl={item.imageUrl}
             key={item.slug}
+            objectPosition={item.objectPosition}
             loading="eager"
           />
           <span className="home-showcase__media-label">Featured aisle</span>

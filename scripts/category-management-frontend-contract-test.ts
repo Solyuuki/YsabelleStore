@@ -55,5 +55,7 @@ assert.match(homeSource, /const managedCover = category\.storefrontCover/);
 assert.doesNotMatch(homeSource, /getCategoryRepresentativeProducts/);
 assert.doesNotMatch(homeSource, /home-category-card__assortment/);
 assert.match(homeSource, /fallbackLabel="Category image pending"/);
+assert.match(homeSource, /category\.storefrontCover \|\| getCategoryPresentation/);
+assert.match(homeSource, /objectPosition=\{item\.objectPosition\}/);
 
 console.log("Category management frontend contract passed.");
