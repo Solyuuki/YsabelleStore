@@ -6,7 +6,7 @@
   "assetVersion": 2,
   "baselineMigration": "0000_generation2_baseline",
   "schemaPath": "database/prisma/schema.prisma",
-  "schemaSha256": "37f6b24afe419ddf4406f1d9a465d9f24275331afe43a5453cfb7335d2ede82e",
+  "schemaSha256": "b78b852ab384afb2f26c0283418c5e1b5960b0352d877b31cafd6cf74db27fc5",
   "canonicalCatalogPath": "database/seed/canonical-catalog-v1.sql",
   "canonicalCatalogSha256": "97cf79b8cadf2283786b619f5128f9b308be790220c5d429af030556ac7ff3e6",
   "productAssetManifestPath": "database/prisma/state/product-assets.manifest.json",
