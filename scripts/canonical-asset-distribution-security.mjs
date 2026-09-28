@@ -63,11 +63,16 @@ function applyRecordOverrides(records, overrides) {
 
   for (const override of overrides) {
     const key = override.candidateId + ":" + override.role;
-    if (seen.has(key)) throw new Error("duplicate runtime record override " + key);
+    if (seen.has(key)) {
+      throw new Error("duplicate runtime record override " + key);
+    }
     seen.add(key);
-    if (override.role === "original")
+    if (override.role === "original") {
       throw new Error("runtime record overrides cannot replace canonical originals");
-    if (!recordMap.has(key)) throw new Error("runtime record override has no base record " + key);
+    }
+    if (!recordMap.has(key)) {
+      throw new Error("runtime record override has no base record " + key);
+    }
     recordMap.set(key, { ...override });
   }
 
@@ -119,7 +124,9 @@ export function inspectAssetDistribution({
   } catch (error) {
     findings.push(
       "BLOCK: " +
-        (error instanceof Error ? error.message : "runtime record override is invalid.")
+        (error instanceof Error
+          ? error.message
+          : "runtime record override is invalid.")
     );
   }
 
@@ -128,7 +135,9 @@ export function inspectAssetDistribution({
     if (distribution.recordOverridesSha256 !== overrideDigest) {
       findings.push("BLOCK: runtime record override checksum is invalid.");
     }
-    const effectiveDigest = sha256(distribution.payloadSha256 + "|" + overrideDigest);
+    const effectiveDigest = sha256(
+      distribution.payloadSha256 + "|" + overrideDigest
+    );
     if (distribution.effectivePayloadSha256 !== effectiveDigest) {
       findings.push("BLOCK: effective runtime payload checksum is invalid.");
     }
@@ -340,11 +349,16 @@ export function inspectAssetDistribution({
     overrides.length > 0 &&
     payloadBytes !== distribution.effectivePayloadByteCount
   ) {
-    findings.push("BLOCK: effective runtime distribution byte count differs from manifest metadata.");
+    findings.push(
+      "BLOCK: effective runtime distribution byte count differs from manifest metadata."
+    );
   }
 
   const recordMap = new Map(
-    effectiveRecords.map((record) => [record.candidateId + ":" + record.role, record])
+    effectiveRecords.map((record) => [
+      record.candidateId + ":" + record.role,
+      record
+    ])
   );
   let aliasCount = 0;
   for (const item of reconciliation.items ?? []) {
