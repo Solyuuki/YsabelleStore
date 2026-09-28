@@ -64,6 +64,15 @@ import {
   type ManagedCategoryRecord
 } from "@/services/categoryApi";
 import type { PaginationMeta } from "@/services/catalogApi";
+import {
+  calculateCategoryCoverCrop,
+  categoryCoverObjectPosition,
+  composeCoverPosition,
+  splitCoverPosition,
+  type CategoryCoverCropState,
+  type CategoryCoverHorizontalFocus,
+  type CategoryCoverVerticalFocus
+} from "@/utils/categoryCoverPosition";
 
 const DEFAULT_PAGE_SIZE = 20;
 const PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
@@ -163,57 +172,6 @@ function writeCategoryQueryToLocation(
 
 function sortOptionFromQuery(query: CategoryQueryState): SortOption {
   return `${query.sortBy}:${query.sortOrder}` as SortOption;
-}
-
-type CategoryCoverHorizontalFocus = "LEFT" | "CENTER" | "RIGHT";
-type CategoryCoverVerticalFocus = "TOP" | "CENTER" | "BOTTOM";
-
-function splitCoverPosition(position: CategoryCoverPosition): {
-  horizontal: CategoryCoverHorizontalFocus;
-  vertical: CategoryCoverVerticalFocus;
-} {
-  switch (position) {
-    case "TOP_LEFT":
-      return { horizontal: "LEFT", vertical: "TOP" };
-    case "TOP":
-      return { horizontal: "CENTER", vertical: "TOP" };
-    case "TOP_RIGHT":
-      return { horizontal: "RIGHT", vertical: "TOP" };
-    case "LEFT":
-      return { horizontal: "LEFT", vertical: "CENTER" };
-    case "RIGHT":
-      return { horizontal: "RIGHT", vertical: "CENTER" };
-    case "BOTTOM_LEFT":
-      return { horizontal: "LEFT", vertical: "BOTTOM" };
-    case "BOTTOM":
-      return { horizontal: "CENTER", vertical: "BOTTOM" };
-    case "BOTTOM_RIGHT":
-      return { horizontal: "RIGHT", vertical: "BOTTOM" };
-    default:
-      return { horizontal: "CENTER", vertical: "CENTER" };
-  }
-}
-
-function composeCoverPosition(
-  horizontal: CategoryCoverHorizontalFocus,
-  vertical: CategoryCoverVerticalFocus
-): CategoryCoverPosition {
-  if (vertical === "TOP") {
-    if (horizontal === "LEFT") return "TOP_LEFT";
-    if (horizontal === "RIGHT") return "TOP_RIGHT";
-    return "TOP";
-  }
-  if (vertical === "BOTTOM") {
-    if (horizontal === "LEFT") return "BOTTOM_LEFT";
-    if (horizontal === "RIGHT") return "BOTTOM_RIGHT";
-    return "BOTTOM";
-  }
-  return horizontal;
-}
-
-function coverPositionStyle(position: CategoryCoverPosition) {
-  const focus = splitCoverPosition(position);
-  return `${focus.horizontal.toLowerCase()} ${focus.vertical.toLowerCase()}`;
 }
 
 function coverStatusLabel(status: CategoryCoverStatus) {
@@ -663,7 +621,7 @@ function CategoryCoverThumbnail({ category }: { category: ManagedCategoryRecord 
       className="h-12 w-20 shrink-0 rounded-md border border-slate-200 bg-slate-50 object-cover"
       loading="lazy"
       src={getPublicCategoryCoverUrl(category.activeCoverAssetId, "thumbnail")}
-      style={{ objectPosition: coverPositionStyle(category.coverPosition) }}
+      style={{ objectPosition: categoryCoverObjectPosition(category.coverPosition) }}
       onError={() => setFailed(true)}
     />
   );
@@ -808,6 +766,15 @@ function EditCategoryDialog({
   const [isActive, setIsActive] = useState(true);
   const [isStorefrontVisible, setIsStorefrontVisible] = useState(true);
   const [coverPosition, setCoverPosition] = useState<CategoryCoverPosition>("CENTER");
+  const [coverCropState, setCoverCropState] = useState<
+    CategoryCoverCropState & { mode: "DESKTOP" | "MOBILE" }
+  >({
+    horizontalActive: false,
+    horizontalPx: 0,
+    mode: "DESKTOP",
+    verticalActive: false,
+    verticalPx: 0
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -818,6 +785,13 @@ function EditCategoryDialog({
     setIsActive(category.isActive);
     setIsStorefrontVisible(category.isStorefrontVisible);
     setCoverPosition(category.coverPosition);
+    setCoverCropState({
+      horizontalActive: false,
+      horizontalPx: 0,
+      mode: "DESKTOP",
+      verticalActive: false,
+      verticalPx: 0
+    });
     setSaving(false);
     setError(null);
   }, [category]);
@@ -952,7 +926,10 @@ function EditCategoryDialog({
                 </StatusBadge>
               </div>
 
-              <CategoryCoverPreview category={{ ...category, coverPosition }} />
+              <CategoryCoverPreview
+                category={{ ...category, coverPosition }}
+                onCropStateChange={setCoverCropState}
+              />
 
               <div className="space-y-3">
                 <div>
@@ -981,6 +958,12 @@ function EditCategoryDialog({
                       <option value="CENTER">Center</option>
                       <option value="RIGHT">Right</option>
                     </Select>
+                    <CropAxisStatus
+                      active={coverCropState.horizontalActive}
+                      axis="horizontal"
+                      croppedPixels={coverCropState.horizontalPx}
+                      mode={coverCropState.mode}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="category-cover-vertical-focus">Vertical</Label>
@@ -1001,10 +984,16 @@ function EditCategoryDialog({
                       <option value="CENTER">Center</option>
                       <option value="BOTTOM">Bottom</option>
                     </Select>
+                    <CropAxisStatus
+                      active={coverCropState.verticalActive}
+                      axis="vertical"
+                      croppedPixels={coverCropState.verticalPx}
+                      mode={coverCropState.mode}
+                    />
                   </div>
                 </div>
                 <p className="text-xs leading-5 text-slate-500">
-                  Focus only shifts on an axis when the responsive card crops that side of the image.
+                  Focus is always saved. An axis only moves visibly when that preview size crops it.
                 </p>
               </div>
             </aside>
@@ -1033,13 +1022,105 @@ function EditCategoryDialog({
   );
 }
 
-function CategoryCoverPreview({ category }: { category: ManagedCategoryRecord }) {
+function CropAxisStatus({
+  active,
+  axis,
+  croppedPixels,
+  mode
+}: {
+  active: boolean;
+  axis: "horizontal" | "vertical";
+  croppedPixels: number;
+  mode: "DESKTOP" | "MOBILE";
+}) {
+  const modeLabel = mode === "DESKTOP" ? "Desktop" : "Mobile";
+
+  return (
+    <p className="flex items-start gap-2 text-[11px] leading-4 text-slate-500">
+      <span
+        aria-hidden="true"
+        className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${
+          active ? "bg-emerald-500" : "bg-slate-300"
+        }`}
+      />
+      <span>
+        {active
+          ? `${modeLabel}: ~${Math.round(croppedPixels)}px total ${axis} crop. Focus is active.`
+          : `${modeLabel}: no ${axis} crop at this preview size. Selection still applies at other responsive widths.`}
+      </span>
+    </p>
+  );
+}
+
+function CategoryCoverPreview({
+  category,
+  onCropStateChange
+}: {
+  category: ManagedCategoryRecord;
+  onCropStateChange: (
+    state: CategoryCoverCropState & { mode: "DESKTOP" | "MOBILE" }
+  ) => void;
+}) {
   const [failed, setFailed] = useState(false);
   const [previewMode, setPreviewMode] = useState<"DESKTOP" | "MOBILE">("DESKTOP");
+  const [sourceSize, setSourceSize] = useState({ height: 0, width: 0 });
+  const [frameSize, setFrameSize] = useState({ height: 0, width: 0 });
+  const frameRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setFailed(false);
+    setSourceSize({ height: 0, width: 0 });
   }, [category.activeCoverAssetId]);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+
+    const measure = () => {
+      const rect = frame.getBoundingClientRect();
+      setFrameSize((current) => {
+        if (
+          Math.abs(current.width - rect.width) < 0.5 &&
+          Math.abs(current.height - rect.height) < 0.5
+        ) {
+          return current;
+        }
+        return { height: rect.height, width: rect.width };
+      });
+    };
+
+    measure();
+
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(measure);
+      observer.observe(frame);
+      return () => observer.disconnect();
+    }
+
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [previewMode]);
+
+  const cropState = calculateCategoryCoverCrop(
+    sourceSize.width,
+    sourceSize.height,
+    frameSize.width,
+    frameSize.height
+  );
+
+  useEffect(() => {
+    onCropStateChange({
+      ...cropState,
+      mode: previewMode
+    });
+  }, [
+    cropState.horizontalActive,
+    cropState.horizontalPx,
+    cropState.verticalActive,
+    cropState.verticalPx,
+    onCropStateChange,
+    previewMode
+  ]);
 
   const productLabel = `${category.productCount} ${category.productCount === 1 ? "product" : "products"}`;
 
@@ -1093,14 +1174,24 @@ function CategoryCoverPreview({ category }: { category: ManagedCategoryRecord })
                 ? "relative h-[175px] overflow-hidden bg-slate-100"
                 : "relative h-[170px] overflow-hidden bg-slate-100"
             }
+            ref={frameRef}
           >
             {category.activeCoverAssetId && !failed ? (
               <img
                 alt=""
                 className="h-full w-full object-cover transition-[object-position] duration-200 motion-reduce:transition-none"
                 src={getPublicCategoryCoverUrl(category.activeCoverAssetId, "cover")}
-                style={{ objectPosition: coverPositionStyle(category.coverPosition) }}
-                onError={() => setFailed(true)}
+                style={{ objectPosition: categoryCoverObjectPosition(category.coverPosition) }}
+                onError={() => {
+                  setFailed(true);
+                  setSourceSize({ height: 0, width: 0 });
+                }}
+                onLoad={(event) => {
+                  setSourceSize({
+                    height: event.currentTarget.naturalHeight,
+                    width: event.currentTarget.naturalWidth
+                  });
+                }}
               />
             ) : (
               <div className="grid h-full place-items-center px-6 text-center">
@@ -1131,8 +1222,8 @@ function CategoryCoverPreview({ category }: { category: ManagedCategoryRecord })
       </div>
 
       <p className="text-xs leading-5 text-slate-500">
-        Mirrors the storefront cover behavior: Desktop uses a 170px visual and Mobile uses a
-        175px visual with responsive width.
+        Crop detection uses the loaded cover dimensions and the live preview frame, matching
+        object-fit: cover behavior.
       </p>
     </div>
   );

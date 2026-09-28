@@ -30,6 +30,7 @@ import {
   getCategoryPresentation,
   getEssentialShelfItems
 } from "@/utils/storefrontCategoryPresentation";
+import { categoryCoverObjectPosition } from "@/utils/categoryCoverPosition";
 import {
   getStorefrontProductBadge,
   type StorefrontProductBadge
@@ -158,12 +159,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
               alt: `${category.name} category cover`,
               category: category.name,
               imageUrl: managedCover.imageUrl,
-              objectPosition:
-                managedCover.position === "LEFT"
-                  ? "left center"
-                  : managedCover.position === "RIGHT"
-                    ? "right center"
-                    : "center center",
+              objectPosition: categoryCoverObjectPosition(managedCover.position),
               slug: category.slug
             }
           ];
@@ -598,31 +594,6 @@ function MerchandisingShelfState({
       <CompactSectionState message={message} onRetry={onRetry} title={title} />
     </div>
   );
-}
-
-function categoryCoverObjectPosition(
-  position: NonNullable<StorefrontCategory["storefrontCover"]>["position"]
-) {
-  switch (position) {
-    case "TOP_LEFT":
-      return "left top";
-    case "TOP":
-      return "center top";
-    case "TOP_RIGHT":
-      return "right top";
-    case "LEFT":
-      return "left center";
-    case "RIGHT":
-      return "right center";
-    case "BOTTOM_LEFT":
-      return "left bottom";
-    case "BOTTOM":
-      return "center bottom";
-    case "BOTTOM_RIGHT":
-      return "right bottom";
-    default:
-      return "center center";
-  }
 }
 
 function CategoryCard({
