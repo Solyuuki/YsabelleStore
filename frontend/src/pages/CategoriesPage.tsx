@@ -16,6 +16,7 @@ import {
   type ReactNode
 } from "react";
 
+import { CategoryCoverUploadPanel } from "@/components/catalog/CategoryCoverUploadPanel";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -48,6 +49,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   createManagedCategory,
   fetchManagedCategories,
+  fetchManagedCategory,
   getPublicCategoryCoverUrl,
   updateManagedCategory,
   type CategoryCoverPosition,
@@ -559,6 +561,10 @@ export function CategoriesPage() {
         category={selectedCategory}
         isOpen={Boolean(selectedCategory)}
         onClose={() => setSelectedCategory(null)}
+        onCategoryChanged={(category) => {
+          setSelectedCategory(category);
+          refreshCategories();
+        }}
         onSaved={(category) => {
           setSelectedCategory(category);
           refreshCategories();
@@ -741,11 +747,13 @@ function EditCategoryDialog({
   category,
   isOpen,
   onClose,
+  onCategoryChanged,
   onSaved
 }: {
   category: ManagedCategoryRecord | null;
   isOpen: boolean;
   onClose: () => void;
+  onCategoryChanged: (category: ManagedCategoryRecord) => void;
   onSaved: (category: ManagedCategoryRecord) => void;
 }) {
   const [name, setName] = useState("");
@@ -768,6 +776,15 @@ function EditCategoryDialog({
   }, [category]);
 
   if (!category) return null;
+
+  async function handleCoverChanged() {
+    try {
+      const refreshed = await fetchManagedCategory(category.id);
+      onCategoryChanged(refreshed);
+    } catch {
+      // Cover mutations already succeeded server-side; list refresh remains best-effort.
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -907,6 +924,14 @@ function EditCategoryDialog({
                 </p>
               </div>
             </aside>
+          </div>
+
+          <div className="border-t border-slate-200 px-6 py-6">
+            <CategoryCoverUploadPanel
+              activeCoverAssetId={category.activeCoverAssetId}
+              categoryId={category.id}
+              onChanged={handleCoverChanged}
+            />
           </div>
 
           <DialogFooter>
