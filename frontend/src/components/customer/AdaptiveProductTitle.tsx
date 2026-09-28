@@ -1,12 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 
-const PRODUCT_TITLE_DENSITIES = [
-  "display",
-  "balanced",
-  "compact",
-  "dense",
-  "minimum"
-] as const;
+const PRODUCT_TITLE_DENSITIES = ["display", "balanced", "compact", "dense", "minimum"] as const;
 
 type ProductTitleDensity = (typeof PRODUCT_TITLE_DENSITIES)[number];
 
@@ -75,11 +69,7 @@ export function AdaptiveProductTitle({ name }: { name: string }) {
   }, [name]);
 
   return (
-    <h1
-      className="customer-product-detail__title"
-      data-title-density={density}
-      ref={titleRef}
-    >
+    <h1 className="customer-product-detail__title" data-title-density={density} ref={titleRef}>
       {name}
     </h1>
   );
