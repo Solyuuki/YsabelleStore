@@ -34,5 +34,31 @@
     "processedCardAliasPolicy": "MANIFEST_IDENTICAL_IDENTITY",
     "processedCardAliasCount": 16,
     "exactByteRehearsalPassed": true
-  }
+  },
+  "recordOverrides": [
+    {
+      "candidateId": "sarima-p219-b7553e591e41",
+      "role": "processed",
+      "sizeBytes": 13938,
+      "sha256": "1de6f1fbf0edb6f201fa1af5a071a7588c2178e13b727075ff8b5df1b7be0489",
+      "gitBlobOid": "8f6f56a9b586311074acfcd2f0a08c40c832d1cc"
+    },
+    {
+      "candidateId": "sarima-p219-b7553e591e41",
+      "role": "card",
+      "sizeBytes": 12944,
+      "sha256": "18cba4b69df25d2bc5778bdb045d7dbf4fdd9cb92167d1298ab3cda42d974e4e",
+      "gitBlobOid": "d328ca7e41b3c853132673ee6ef811794a75a13d"
+    },
+    {
+      "candidateId": "sarima-p219-b7553e591e41",
+      "role": "pdp",
+      "sizeBytes": 17982,
+      "sha256": "33d14e3719f31e89b8b6fc0c0452d736eb9c07a12ae1778e831e25098687b425",
+      "gitBlobOid": "25baafbf0ad74840c68997aa8937c1a9f08b5d5d"
+    }
+  ],
+  "recordOverridesSha256": "6d5266f7fbb19bd1afd6a3314cc234d449ea595f98598f59abcf317f841311a0",
+  "effectivePayloadByteCount": 9747094,
+  "effectivePayloadSha256": "8f388a68254eecc8f27a7c4e186d4c25afadf75f723d66303ca8fd9a8f151c59"
 }
