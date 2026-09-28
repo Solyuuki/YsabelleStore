@@ -1083,7 +1083,7 @@ function CategoryCoverPreview({ category }: { category: ManagedCategoryRecord })
         className={
           previewMode === "MOBILE"
             ? "mx-auto w-full max-w-[18rem]"
-            : "mx-auto w-full max-w-[15rem]"
+            : "w-full"
         }
       >
         <div className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white shadow-sm">
@@ -1131,9 +1131,8 @@ function CategoryCoverPreview({ category }: { category: ManagedCategoryRecord })
       </div>
 
       <p className="text-xs leading-5 text-slate-500">
-        Desktop uses a compact 240px × 170px storefront card to expose horizontal cropping.
-        Mobile uses the real 288px × 175px maximum card size to expose vertical cropping.
-        Actual crop still adapts with viewport width.
+        Mirrors the storefront cover behavior: Desktop uses a 170px visual and Mobile uses a
+        175px visual with responsive width.
       </p>
     </div>
   );
