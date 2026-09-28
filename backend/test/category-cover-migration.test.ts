@@ -17,6 +17,12 @@ test("legacy category cover manifest has unique canonical slugs", () => {
   assert.ok(slugs.includes("coffee-milk"));
   assert.ok(slugs.includes("juice-tea-soda-water"));
   assert.ok(slugs.includes("snacks-confectionery"));
+  assert.ok(slugs.includes("noodles-pasta"));
+  assert.ok(slugs.includes("rice-staples"));
+  assert.ok(slugs.includes("household-supplies"));
+  assert.ok(slugs.includes("laundry-supplies"));
+  assert.equal(slugs.includes("frozen-chilled"), false);
+  assert.equal(slugs.includes("tissue-cotton"), false);
 });
 
 test("legacy local category cover resolver rejects traversal and unrelated paths", () => {
@@ -82,4 +88,29 @@ test("migration manifest stays aligned with the temporary storefront fallback ma
       `temporary storefront fallback must retain ${source.slug}`
     );
   }
+});
+
+
+test("legacy migration only aliases editorial assets to semantically matching canonical categories", () => {
+  const bySlug = new Map(LEGACY_CATEGORY_COVER_SOURCES.map((source) => [source.slug, source]));
+
+  assert.equal(
+    bySlug.get("noodles-pasta")?.imageUrl,
+    "/images/discover/essentials/instant-food-retail-display.webp"
+  );
+  assert.equal(
+    bySlug.get("rice-staples")?.imageUrl,
+    "/images/discover/essentials/staples-retail-display.webp"
+  );
+  assert.equal(
+    bySlug.get("household-supplies")?.imageUrl,
+    "/images/discover/essentials/household-retail-display.webp"
+  );
+  assert.equal(
+    bySlug.get("laundry-supplies")?.imageUrl,
+    "/images/discover/essentials/household-retail-display.webp"
+  );
+
+  assert.equal(bySlug.has("frozen-chilled"), false);
+  assert.equal(bySlug.has("tissue-cotton"), false);
 });

@@ -61,6 +61,30 @@ const essentialShelfItems = [
     slug: "kitchen-dining"
   },
   {
+    alt: "Packaged instant noodle bags and cups arranged for retail",
+    category: "Noodles & Pasta",
+    imageUrl: "/images/discover/essentials/instant-food-retail-display.webp",
+    slug: "noodles-pasta"
+  },
+  {
+    alt: "Packaged rice and grains arranged in a supermarket aisle",
+    category: "Rice & Staples",
+    imageUrl: "/images/discover/essentials/staples-retail-display.webp",
+    slug: "rice-staples"
+  },
+  {
+    alt: "Neutral bottled cleaners and household products arranged on a display shelf",
+    category: "Household Supplies",
+    imageUrl: "/images/discover/essentials/household-retail-display.webp",
+    slug: "household-supplies"
+  },
+  {
+    alt: "Bottled cleaners and laundry products arranged on a display shelf",
+    category: "Laundry Supplies",
+    imageUrl: "/images/discover/essentials/household-retail-display.webp",
+    slug: "laundry-supplies"
+  },
+  {
     alt: "Packaged crackers, chips, and snacks arranged on a grocery shelf",
     category: "Snacks & Confectionery",
     imageUrl: "/images/discover/essentials/snacks-retail-display.webp",
