@@ -1,5 +1,5 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -128,30 +128,46 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     () => buildActiveRestockByProduct(activeOrders),
     [activeOrders]
   );
-  const selected = useMemo(
-    () => items.find((item) => item.product.id === selectedProductId) ?? null,
-    [items, selectedProductId]
+  const itemsByProductId = useMemo(
+    () => new Map(items.map((item) => [item.product.id, item])),
+    [items]
   );
+  const selected = selectedProductId ? (itemsByProductId.get(selectedProductId) ?? null) : null;
+  const deferredSelectedProductId = useDeferredValue(selectedProductId);
+  const deferredSelected = deferredSelectedProductId
+    ? (itemsByProductId.get(deferredSelectedProductId) ?? null)
+    : null;
   const selectedActiveRestock = selected
     ? (activeRestockByProduct.get(selected.product.id) ?? null)
+    : null;
+  const deferredSelectedActiveRestock = deferredSelected
+    ? (activeRestockByProduct.get(deferredSelected.product.id) ?? null)
     : null;
   const actionableItems = useMemo(
     () => items.filter((item) => item.recommendedQuantity > 0),
     [items]
   );
-  const productDemandChart = useMemo(() => buildDemandChart(selected), [selected]);
+  const productDemandChart = useMemo(
+    () => buildDemandChart(deferredSelected),
+    [deferredSelected]
+  );
   const nextMonthPreview = useMemo(
     () => buildNextMonthRestockPreview(selected, selectedActiveRestock),
     [selected, selectedActiveRestock]
+  );
+  const deferredNextMonthPreview = useMemo(
+    () => buildNextMonthRestockPreview(deferredSelected, deferredSelectedActiveRestock),
+    [deferredSelected, deferredSelectedActiveRestock]
   );
   const allProductsPreview = useMemo(
     () => buildAllProductsRestockPreview(items, activeRestockByProduct),
     [activeRestockByProduct, items]
   );
   const displayedPreview = chartView === "ALL" ? allProductsPreview : nextMonthPreview;
+  const chartPreview = chartView === "ALL" ? allProductsPreview : deferredNextMonthPreview;
   const restockPreviewChart = useMemo(
-    () => buildRestockPreviewChart(displayedPreview),
-    [displayedPreview]
+    () => buildRestockPreviewChart(chartPreview),
+    [chartPreview]
   );
   const watchlistTotalPages = Math.max(1, Math.ceil(items.length / WATCHLIST_PAGE_SIZE));
   const normalizedWatchlistPage = Math.min(watchlistPage, watchlistTotalPages);
@@ -456,7 +472,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 <div className="relative h-56 rounded-md border border-slate-200 bg-white p-2">
                   {chartView === "DEMAND" ? (
                     productDemandChart.length > 0 ? (
-                      <DemandChart data={productDemandChart} />
+                      <MemoizedDemandChart data={productDemandChart} />
                     ) : (
                       <ChartEmptyState
                         detail="Demand trend will appear when this product has POS sales activity."
@@ -464,7 +480,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                       />
                     )
                   ) : restockPreviewChart.length > 0 ? (
-                    <RestockPreviewChart data={restockPreviewChart} />
+                    <MemoizedRestockPreviewChart data={restockPreviewChart} />
                   ) : (
                     <ChartEmptyState
                       detail={
@@ -729,6 +745,9 @@ function RestockPreviewChart({ data }: { data: ReturnType<typeof buildRestockPre
     </ResponsiveContainer>
   );
 }
+
+const MemoizedDemandChart = memo(DemandChart);
+const MemoizedRestockPreviewChart = memo(RestockPreviewChart);
 
 function ChartEmptyState({ detail, title }: { detail: string; title: string }) {
   return (

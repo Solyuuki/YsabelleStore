@@ -48,6 +48,15 @@ assert.match(forecastSource, /Recommended next step/);
 assert.match(forecastSource, /Expected monthly demand/);
 assert.match(forecastSource, /Gray shows recent sales\. Blue shows expected demand/);
 assert.match(forecastSource, /Forecast chart ready/);
+assert.match(forecastSource, /useDeferredValue\(selectedProductId\)/);
+assert.match(forecastSource, /itemsByProductId/);
+assert.match(forecastSource, /memo\(DemandChart\)/);
+assert.match(forecastSource, /memo\(RestockPreviewChart\)/);
+assert.match(forecastSource, /buildDemandChart\(deferredSelected\)/);
+assert.match(
+  forecastSource,
+  /buildNextMonthRestockPreview\(deferredSelected, deferredSelectedActiveRestock\)/
+);
 assert.doesNotMatch(forecastSource, /confidence interval/i);
 assert.doesNotMatch(forecastSource, /Projected inventory/);
 assert.match(reportsSource, /RestockPlanningPanel/);
