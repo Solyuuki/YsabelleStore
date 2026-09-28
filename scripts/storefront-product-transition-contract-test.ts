@@ -43,6 +43,7 @@ assert.match(imageSource, /createImagePreloadAbortError/);
 
 assert.match(customerCss, /@keyframes customer-product-detail-enter/);
 assert.match(customerCss, /data-product-transitioning="true"/);
+assert.match(customerCss, /will-change: opacity, transform/);
 assert.match(customerCss, /data-revalidating="true"/);
 assert.match(customerCss, /prefers-reduced-motion: reduce/);
 

@@ -2561,8 +2561,8 @@
 
 @keyframes customer-product-detail-enter {
   from {
-    opacity: 0.82;
-    transform: translate3d(0, 6px, 0);
+    opacity: 0.86;
+    transform: translate3d(0, 2px, 0);
   }
 
   to {
@@ -2573,13 +2573,16 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .customer-product-detail {
-    animation: customer-product-detail-enter 220ms var(--ease-standard) both;
-    transition: opacity 140ms var(--ease-standard);
+    animation: customer-product-detail-enter 240ms var(--ease-standard) both;
+    transition:
+      opacity 180ms var(--ease-standard),
+      transform 180ms var(--ease-standard);
   }
 
   .customer-product-page[data-product-transitioning="true"] .customer-product-detail {
-    opacity: 0.94;
-    will-change: opacity;
+    opacity: 0.86;
+    transform: translate3d(0, 2px, 0);
+    will-change: opacity, transform;
   }
 }
 
