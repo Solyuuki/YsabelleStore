@@ -126,7 +126,10 @@
     "phase5:rehearsal": "node scripts/phase5-publication-rehearsal.mjs",
     "phase6:rehearsal": "node scripts/phase6-release-rehearsal.mjs",
     "team-state:sync": "node --env-file=.env scripts/canonical-team-development-state.mjs",
-    "team-state:verify": "node --env-file=.env scripts/canonical-team-development-state.mjs --verify-only"
+    "team-state:verify": "node --env-file=.env scripts/canonical-team-development-state.mjs --verify-only",
+    "category-covers:migrate": "tsx backend/src/scripts/migrateLegacyCategoryCovers.ts",
+    "category-covers:migrate:apply": "tsx backend/src/scripts/migrateLegacyCategoryCovers.ts --apply-legacy-category-covers",
+    "category-covers:migrate:verify": "tsx backend/src/scripts/migrateLegacyCategoryCovers.ts --verify-only"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"
