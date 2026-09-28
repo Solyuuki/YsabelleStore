@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
+import { AdaptiveProductTitle } from "@/components/customer/AdaptiveProductTitle";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard, formatCurrency, formatUnit } from "@/components/customer/ProductCard";
 import { ProductSizeSelector } from "@/components/customer/ProductSizeSelector";
@@ -203,7 +204,7 @@ export function ProductDetailPage({
           </div>
           <div className="customer-product-detail__copy">
             <p className="customer-kicker">{product.category.name}</p>
-            <h1>{product.name}</h1>
+            <AdaptiveProductTitle name={product.name} />
             <p className="customer-product-detail__description">
               {product.description || "An everyday essential from Ysabelle's Store."}
             </p>
