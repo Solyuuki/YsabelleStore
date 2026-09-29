@@ -30,6 +30,14 @@ enum UserStatus {
 enum CustomerAccountStatus {
   ACTIVE
   INACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum ProductReviewStatus {
+  VISIBLE
+  HIDDEN
+  REMOVED
 }
 
 enum CustomerSocialProvider {
@@ -345,6 +353,7 @@ model User {
   approvedRestockOrders     RestockOrder[]               @relation("RestockOrderApprovedBy")
   createdSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetCreatedBy")
   updatedSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetUpdatedBy")
+  moderatedProductReviews  ProductReview[]               @relation("ProductReviewModeratedBy")
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
@@ -391,6 +400,8 @@ model CustomerAccount {
   cartItems           CustomerCartItem[]
   savedAddress        CustomerSavedAddress?
   rememberedAuth      CustomerRememberedAuth[]
+  favorites           CustomerFavorite[]
+  reviews             ProductReview[]
 
   @@index([status], map: "idx_customer_accounts_status")
   @@map("customer_accounts")
@@ -648,6 +659,7 @@ model Product {
   historicalSalesImportRows HistoricalSalesImportRow[]
   customerOrderItems        CustomerOrderItem[]
   customerCartItems         CustomerCartItem[]
+  customerFavorites         CustomerFavorite[]
   reviews                   ProductReview[]
   aliases                   ProductAlias[]
   sourceMapping             ProductCanonicalMapping?    @relation("SourceProductMapping")
@@ -744,17 +756,30 @@ model ProductImageAsset {
 }
 
 model ProductReview {
-  id                  String   @id @default(cuid()) @db.VarChar(191)
-  productId           String   @map("product_id") @db.VarChar(191)
-  reviewerDisplayName String   @map("reviewer_display_name") @db.VarChar(120)
-  rating              Int      @db.UnsignedTinyInt
-  comment             String   @db.VarChar(1000)
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
-  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id                  String              @id @default(cuid()) @db.VarChar(191)
+  productId           String              @map("product_id") @db.VarChar(191)
+  customerAccountId   String?             @map("customer_account_id") @db.VarChar(191)
+  verifiedOrderId     String?             @map("verified_order_id") @db.VarChar(191)
+  reviewerDisplayName String              @map("reviewer_display_name") @db.VarChar(120)
+  rating              Int                 @db.UnsignedTinyInt
+  comment             String              @db.VarChar(1000)
+  status              ProductReviewStatus @default(VISIBLE)
+  moderatedById       String?             @map("moderated_by_id") @db.VarChar(191)
+  moderationReason    String?             @map("moderation_reason") @db.VarChar(500)
+  moderatedAt         DateTime?           @map("moderated_at")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  product             Product             @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  customerAccount     CustomerAccount?    @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  verifiedOrder       CustomerOrder?      @relation("ProductReviewVerifiedOrder", fields: [verifiedOrderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  moderatedBy         User?               @relation("ProductReviewModeratedBy", fields: [moderatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  @@index([productId, createdAt], map: "idx_product_reviews_product_created")
-  @@index([productId, rating, createdAt], map: "idx_product_reviews_product_rating_created")
+  @@unique([customerAccountId, productId], map: "uq_product_reviews_customer_product")
+  @@index([productId, status, createdAt], map: "idx_product_reviews_product_status_created")
+  @@index([productId, status, rating, createdAt], map: "idx_product_reviews_product_status_rating_created")
+  @@index([customerAccountId, createdAt], map: "idx_product_reviews_customer_created")
+  @@index([verifiedOrderId], map: "idx_product_reviews_verified_order")
+  @@index([moderatedById], map: "idx_product_reviews_moderated_by")
   @@map("product_reviews")
 }
 
@@ -985,6 +1010,20 @@ model DailySalesTarget {
   @@map("daily_sales_targets")
 }
 
+model CustomerFavorite {
+  id                String          @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String          @map("customer_account_id") @db.VarChar(191)
+  productId         String          @map("product_id") @db.VarChar(191)
+  createdAt         DateTime        @default(now()) @map("created_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product           Product         @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([customerAccountId, productId], map: "uq_customer_favorites_customer_product")
+  @@index([customerAccountId, createdAt], map: "idx_customer_favorites_customer_created")
+  @@index([productId, createdAt], map: "idx_customer_favorites_product_created")
+  @@map("customer_favorites")
+}
+
 model CustomerCartItem {
   id                String          @id @default(cuid()) @db.VarChar(191)
   customerAccountId String          @map("customer_account_id") @db.VarChar(191)
@@ -1035,6 +1074,7 @@ model CustomerOrder {
   items             CustomerOrderItem[]
   addressSnapshot   CustomerOrderAddressSnapshot?
   customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  verifiedReviews   ProductReview[]            @relation("ProductReviewVerifiedOrder")
 
   @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")
   @@index([status, createdAt], map: "idx_customer_orders_status_created")
