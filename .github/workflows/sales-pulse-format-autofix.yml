@@ -1,0 +1,39 @@
+name: Sales Pulse Format Autofix
+
+on:
+  push:
+    branches:
+      - sprint/v0.11/sprint-11
+    paths:
+      - frontend/src/components/dashboard/SalesPulseCard.tsx
+      - .github/workflows/sales-pulse-format-autofix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.11/sprint-11
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write frontend/src/components/dashboard/SalesPulseCard.tsx
+      - name: Commit formatting
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/components/dashboard/SalesPulseCard.tsx
+          git commit --no-verify -m "style(dashboard): format sales pulse card"
+          git push --no-verify origin HEAD:sprint/v0.11/sprint-11
