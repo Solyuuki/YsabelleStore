@@ -5,9 +5,12 @@ import {
   updateCustomerAddressController
 } from "../controllers/customerAddressController.js";
 import {
+  addCustomerFavoriteController,
   changeCustomerPasswordController,
   claimCustomerUsernameController,
+  listCustomerFavoritesController,
   listCustomerOrdersController,
+  removeCustomerFavoriteController,
   listCustomerSessionsController,
   revokeOtherCustomerSessionsController,
   updateCustomerProfileController
@@ -76,6 +79,19 @@ const sensitiveMutationMiddleware = [
 
 customerAccountRouter.use(disableSensitiveResponseCaching);
 customerAccountRouter.get("/orders", requireCustomerAuth, listCustomerOrdersController);
+customerAccountRouter.get("/favorites", requireCustomerAuth, listCustomerFavoritesController);
+customerAccountRouter.put(
+  "/favorites/:productId",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  addCustomerFavoriteController
+);
+customerAccountRouter.delete(
+  "/favorites/:productId",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  removeCustomerFavoriteController
+);
 customerAccountRouter.get("/cart", requireCustomerAuth, getCustomerCartController);
 customerAccountRouter.post(
   "/cart/merge",

@@ -5,13 +5,16 @@ import { publicProductImageController } from "../controllers/productImageControl
 import {
   createStorefrontOrderController,
   getStorefrontProductController,
+  getStorefrontProductReviewContextController,
   listStorefrontCategoriesController,
   listStorefrontMerchandisingController,
   listStorefrontProductReviewsController,
   listStorefrontProductsController,
-  listStorefrontRelatedProductsController
+  listStorefrontRelatedProductsController,
+  upsertStorefrontProductReviewController
 } from "../controllers/storefrontController.js";
 import { requireCustomerAuth } from "../middleware/customerAuthMiddleware.js";
+import { requireAllowedCustomerAuthOrigin } from "../middleware/customerAuthSecurity.js";
 
 export const storefrontRouter = Router();
 
@@ -21,6 +24,17 @@ storefrontRouter.get("/categories", listStorefrontCategoriesController);
 storefrontRouter.get("/merchandising", listStorefrontMerchandisingController);
 storefrontRouter.get("/products", listStorefrontProductsController);
 storefrontRouter.get("/products/:id/reviews", listStorefrontProductReviewsController);
+storefrontRouter.get(
+  "/products/:id/review-context",
+  requireCustomerAuth,
+  getStorefrontProductReviewContextController
+);
+storefrontRouter.put(
+  "/products/:id/review",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  upsertStorefrontProductReviewController
+);
 storefrontRouter.get("/products/:id/related", listStorefrontRelatedProductsController);
 storefrontRouter.get("/products/:id", getStorefrontProductController);
 storefrontRouter.post("/orders", requireCustomerAuth, createStorefrontOrderController);

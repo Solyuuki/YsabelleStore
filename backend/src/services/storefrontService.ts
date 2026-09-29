@@ -14,6 +14,7 @@ import {
 import { HttpError } from "../utils/httpError.js";
 import type {
   StorefrontOrderInput,
+  StorefrontProductReviewMutation,
   StorefrontProductReviewQuery,
   StorefrontProductQuery
 } from "../validators/storefront.validators.js";
@@ -54,6 +55,7 @@ type StorefrontOrderContext = {
 const STOREFRONT_MERCHANDISING_LIMIT = 4;
 const STOREFRONT_RELATED_CANDIDATE_MULTIPLIER = 3;
 const TRENDING_WINDOW_DAYS = 30;
+const TRENDING_MINIMUM_AVERAGE_RATING = 4;
 
 function stockStatus(availableStock: number, reorderLevel: number) {
   if (availableStock <= 0) return "OUT_OF_STOCK" as const;
@@ -283,7 +285,7 @@ async function serializeStorefrontProducts(products: StorefrontProductRecord[]) 
     _avg: { rating: true },
     _count: { _all: true },
     by: ["productId"],
-    where: { productId: { in: productIds } }
+    where: { productId: { in: productIds }, status: "VISIBLE" }
   });
   const summaries = new Map<string, StorefrontProductReviewSummary>(
     aggregates.map((aggregate) => [
@@ -400,33 +402,130 @@ export async function listStorefrontMerchandising(now = new Date()) {
     };
   }
 
-  const trendingWindowStart = new Date(now.getTime() - TRENDING_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-  const [availableProducts, effectiveSeries, recentSaleItems] = await Promise.all([
+  const trendingWindowStart = new Date(
+    now.getTime() - TRENDING_WINDOW_DAYS * 24 * 60 * 60 * 1000
+  );
+  const [
+    availableProducts,
+    effectiveSeries,
+    historicalMappings,
+    recentReviews,
+    recentFavoriteCounts
+  ] = await Promise.all([
     serializeStorefrontProducts(availableProductRecords),
     getEffectiveMonthlySeries(productIds),
-    prisma.saleItem.findMany({
-      select: { productId: true, quantity: true },
+    prisma.sarimaSourceProductMapping.findMany({
+      select: { canonicalProductId: true, totalHistoricalUnits: true },
+      where: { canonicalProductId: { in: productIds } }
+    }),
+    prisma.productReview.findMany({
+      select: { productId: true, rating: true, comment: true, createdAt: true },
       where: {
+        customerAccountId: { not: null },
+        verifiedOrderId: { not: null },
         productId: { in: productIds },
-        sale: {
-          saleDate: { gte: trendingWindowStart, lte: now },
-          status: SaleStatus.COMPLETED
-        }
+        status: "VISIBLE",
+        createdAt: { gte: trendingWindowStart, lte: now },
+        customerAccount: { is: { status: "ACTIVE" } }
+      }
+    }),
+    prisma.customerFavorite.groupBy({
+      _count: { _all: true },
+      by: ["productId"],
+      where: {
+        createdAt: { gte: trendingWindowStart, lte: now },
+        productId: { in: productIds }
       }
     })
   ]);
-  const recentUnits = sumUnitsByProduct(recentSaleItems);
+
   const historicalUnits = new Map(
     effectiveSeries.map((series) => [
       series.productId,
       series.points.reduce((total, point) => total + point.quantitySold, 0)
     ])
   );
+  for (const mapping of historicalMappings) {
+    if ((historicalUnits.get(mapping.canonicalProductId) ?? 0) <= 0) {
+      historicalUnits.set(mapping.canonicalProductId, mapping.totalHistoricalUnits);
+    }
+  }
+
+  const favoriteCounts = new Map(
+    recentFavoriteCounts.map((entry) => [entry.productId, entry._count._all])
+  );
+  const reviewSignals = new Map<
+    string,
+    Array<{ rating: number; createdAt: Date; hasComment: boolean }>
+  >();
+  for (const review of recentReviews) {
+    const values = reviewSignals.get(review.productId) ?? [];
+    values.push({
+      rating: review.rating,
+      createdAt: review.createdAt,
+      hasComment: review.comment.trim().length >= 3
+    });
+    reviewSignals.set(review.productId, values);
+  }
+
+  const trending = availableProducts
+    .flatMap((product) => {
+      const reviews = reviewSignals.get(product.id) ?? [];
+      const commentedReviews = reviews.filter((review) => review.hasComment);
+      if (commentedReviews.length === 0) return [];
+
+      const averageRating =
+        commentedReviews.reduce((sum, review) => sum + review.rating, 0) / commentedReviews.length;
+      if (averageRating < TRENDING_MINIMUM_AVERAGE_RATING) return [];
+
+      const bayesianRating =
+        (averageRating * commentedReviews.length + 4 * 4) / (commentedReviews.length + 4);
+      const confidence = Math.min(1, Math.log1p(commentedReviews.length) / Math.log(9));
+      const recency =
+        commentedReviews.reduce((sum, review) => {
+          const ageDays = Math.max(0, (now.getTime() - review.createdAt.getTime()) / 86_400_000);
+          return sum + Math.exp(-ageDays / 14);
+        }, 0) / commentedReviews.length;
+      const favoriteCount = favoriteCounts.get(product.id) ?? 0;
+      const favoriteSignal = Math.min(1, Math.log1p(favoriteCount) / Math.log(13));
+      const score =
+        (bayesianRating / 5) * 0.62 + confidence * 0.2 + recency * 0.13 + favoriteSignal * 0.05;
+
+      return [
+        {
+          product,
+          score,
+          recentReviewCount: commentedReviews.length,
+          favoriteCount
+        }
+      ];
+    })
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        right.recentReviewCount - left.recentReviewCount ||
+        right.favoriteCount - left.favoriteCount ||
+        left.product.name.localeCompare(right.product.name)
+    )
+    .slice(0, STOREFRONT_MERCHANDISING_LIMIT)
+    .map((entry, index) => ({
+      product: entry.product,
+      rank: index + 1,
+      unitsSold: 0,
+      trendingScore: Math.round(entry.score * 1000) / 1000,
+      recentReviewCount: entry.recentReviewCount,
+      favoriteCount: entry.favoriteCount
+    }));
 
   return {
-    bestSellers: rankStorefrontProducts(availableProducts, historicalUnits),
+    bestSellers: rankStorefrontProducts(availableProducts, historicalUnits).map((entry) => ({
+      ...entry,
+      trendingScore: 0,
+      recentReviewCount: 0,
+      favoriteCount: 0
+    })),
     generatedAt: now.toISOString(),
-    trending: rankStorefrontProducts(availableProducts, recentUnits),
+    trending,
     trendingWindowDays: TRENDING_WINDOW_DAYS
   };
 }
@@ -462,6 +561,7 @@ export async function listStorefrontProductReviews(
 
   const reviewWhere = {
     productId,
+    status: "VISIBLE" as const,
     ...(query.rating ? { rating: query.rating } : {})
   } satisfies Prisma.ProductReviewWhereInput;
   const [aggregate, groupedRatings, reviews, filteredCount] = await Promise.all([
@@ -482,7 +582,8 @@ export async function listStorefrontProductReviews(
         reviewerDisplayName: true,
         rating: true,
         comment: true,
-        createdAt: true
+        createdAt: true,
+        verifiedOrderId: true
       },
       skip: (query.page - 1) * query.pageSize,
       take: query.pageSize,
@@ -509,7 +610,10 @@ export async function listStorefrontProductReviews(
         };
       })
     },
-    reviews,
+    reviews: reviews.map((review) => ({
+      ...review,
+      verifiedPurchase: Boolean(review.verifiedOrderId)
+    })),
     meta: {
       page: query.page,
       pageSize: query.pageSize,
@@ -517,6 +621,188 @@ export async function listStorefrontProductReviews(
       totalPages: Math.max(1, Math.ceil(filteredCount / query.pageSize))
     }
   };
+}
+
+export async function listCustomerFavoriteProducts(customerAccountId: string) {
+  const favorites = await prisma.customerFavorite.findMany({
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    select: { productId: true, createdAt: true },
+    where: { customerAccountId }
+  });
+  if (favorites.length === 0) return [];
+
+  const productIds = favorites.map((favorite) => favorite.productId);
+  const products = await prisma.product.findMany({
+    include: storefrontProductInclude,
+    where: storefrontProductWhere({ id: { in: productIds } })
+  });
+  const serialized = await serializeStorefrontProducts(products);
+  const productMap = new Map(serialized.map((product) => [product.id, product]));
+
+  return favorites.flatMap((favorite) => {
+    const product = productMap.get(favorite.productId);
+    return product ? [{ ...product, favoritedAt: favorite.createdAt }] : [];
+  });
+}
+
+export async function addCustomerFavorite(customerAccountId: string, productId: string) {
+  await requireStorefrontProduct(productId);
+  await prisma.customerFavorite.upsert({
+    create: { customerAccountId, productId },
+    update: {},
+    where: {
+      customerAccountId_productId: { customerAccountId, productId }
+    }
+  });
+  return { productId, favorited: true as const };
+}
+
+export async function removeCustomerFavorite(customerAccountId: string, productId: string) {
+  await prisma.customerFavorite.deleteMany({
+    where: { customerAccountId, productId }
+  });
+  return { productId, favorited: false as const };
+}
+
+export async function getCustomerReviewContext(
+  customerAccountId: string,
+  productId: string
+) {
+  await requireStorefrontProduct(productId);
+  const [existingReview, verifiedOrder] = await Promise.all([
+    prisma.productReview.findUnique({
+      where: {
+        customerAccountId_productId: { customerAccountId, productId }
+      }
+    }),
+    prisma.customerOrder.findFirst({
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      select: { id: true, orderNumber: true, updatedAt: true },
+      where: {
+        customerAccountId,
+        status: CustomerOrderStatus.COMPLETED,
+        items: { some: { productId } }
+      }
+    })
+  ]);
+
+  return {
+    eligible: Boolean(verifiedOrder),
+    reason: verifiedOrder
+      ? null
+      : "A completed signed-in purchase of this product is required before publishing a review.",
+    verifiedOrder: verifiedOrder
+      ? {
+          id: verifiedOrder.id,
+          orderNumber: verifiedOrder.orderNumber,
+          completedAt: verifiedOrder.updatedAt
+        }
+      : null,
+    review: existingReview
+      ? {
+          id: existingReview.id,
+          rating: existingReview.rating,
+          comment: existingReview.comment,
+          status: existingReview.status,
+          createdAt: existingReview.createdAt,
+          updatedAt: existingReview.updatedAt,
+          verifiedPurchase: Boolean(existingReview.verifiedOrderId)
+        }
+      : null
+  };
+}
+
+export async function upsertCustomerProductReview(
+  customerAccountId: string,
+  productId: string,
+  input: StorefrontProductReviewMutation
+) {
+  await requireStorefrontProduct(productId);
+  const [customer, verifiedOrder, existingReview] = await Promise.all([
+    prisma.customerAccount.findUnique({
+      select: { id: true, name: true, status: true },
+      where: { id: customerAccountId }
+    }),
+    prisma.customerOrder.findFirst({
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      select: { id: true },
+      where: {
+        customerAccountId,
+        status: CustomerOrderStatus.COMPLETED,
+        items: { some: { productId } }
+      }
+    }),
+    prisma.productReview.findUnique({
+      select: { id: true, status: true },
+      where: {
+        customerAccountId_productId: { customerAccountId, productId }
+      }
+    })
+  ]);
+
+  if (!customer || customer.status !== "ACTIVE") {
+    throw new HttpError(403, "This customer account cannot publish reviews.", {
+      code: "CUSTOMER_REVIEW_ACCOUNT_INELIGIBLE"
+    });
+  }
+  if (!verifiedOrder) {
+    throw new HttpError(403, "A completed purchase is required before reviewing this product.", {
+      code: "CUSTOMER_REVIEW_PURCHASE_REQUIRED"
+    });
+  }
+  if (existingReview && existingReview.status !== "VISIBLE") {
+    throw new HttpError(409, "This review is currently under moderation and cannot be republished.", {
+      code: "CUSTOMER_REVIEW_MODERATED"
+    });
+  }
+
+  const comment = normalizeReviewComment(input.comment);
+  const review = existingReview
+    ? await prisma.productReview.update({
+        data: {
+          comment,
+          rating: input.rating,
+          reviewerDisplayName: customer.name,
+          verifiedOrderId: verifiedOrder.id
+        },
+        where: { id: existingReview.id }
+      })
+    : await prisma.productReview.create({
+        data: {
+          comment,
+          customerAccountId,
+          productId,
+          rating: input.rating,
+          reviewerDisplayName: customer.name,
+          verifiedOrderId: verifiedOrder.id
+        }
+      });
+
+  return {
+    id: review.id,
+    rating: review.rating,
+    comment: review.comment,
+    status: review.status,
+    createdAt: review.createdAt,
+    updatedAt: review.updatedAt,
+    verifiedPurchase: true
+  };
+}
+
+function normalizeReviewComment(value: string) {
+  const normalized = value.trim().replace(/\s+/g, " ");
+  const urlCount = (normalized.match(/https?:\/\//gi) ?? []).length;
+  if (urlCount > 1) {
+    throw new HttpError(422, "Review comments cannot contain repeated promotional links.", {
+      code: "CUSTOMER_REVIEW_SPAM"
+    });
+  }
+  if (/(.)\1{11,}/i.test(normalized)) {
+    throw new HttpError(422, "Review comment appears to contain repeated spam text.", {
+      code: "CUSTOMER_REVIEW_SPAM"
+    });
+  }
+  return normalized;
 }
 
 export async function listStorefrontRelatedProducts(productId: string, limit = 4) {

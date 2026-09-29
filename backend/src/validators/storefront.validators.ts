@@ -20,6 +20,11 @@ export const storefrontProductReviewQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(50).default(10)
 });
 
+export const storefrontProductReviewMutationSchema = z.object({
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().trim().min(3).max(1000)
+});
+
 export const storefrontRelatedProductQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(8).default(4)
 });
@@ -46,5 +51,6 @@ export const storefrontOrderSchema = z.object({
 
 export type StorefrontProductQuery = z.infer<typeof storefrontProductQuerySchema>;
 export type StorefrontProductReviewQuery = z.infer<typeof storefrontProductReviewQuerySchema>;
+export type StorefrontProductReviewMutation = z.infer<typeof storefrontProductReviewMutationSchema>;
 export type StorefrontRelatedProductQuery = z.infer<typeof storefrontRelatedProductQuerySchema>;
 export type StorefrontOrderInput = z.infer<typeof storefrontOrderSchema>;

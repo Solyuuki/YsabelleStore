@@ -8,12 +8,14 @@ import {
 } from "../services/customerAddressService.js";
 import {
   createStorefrontOrder,
+  getCustomerReviewContext,
   getStorefrontProduct,
   listStorefrontProductReviews,
   listStorefrontRelatedProducts,
   listStorefrontCategories,
   listStorefrontMerchandising,
-  listStorefrontProducts
+  listStorefrontProducts,
+  upsertCustomerProductReview
 } from "../services/storefrontService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
@@ -22,6 +24,7 @@ import {
   storefrontOrderSchema,
   storefrontProductParamsSchema,
   storefrontProductQuerySchema,
+  storefrontProductReviewMutationSchema,
   storefrontProductReviewQuerySchema,
   storefrontRelatedProductQuerySchema
 } from "../validators/storefront.validators.js";
@@ -60,6 +63,56 @@ export const listStorefrontMerchandisingController: RequestHandler = async (
   try {
     const merchandising = await listStorefrontMerchandising();
     response.json(createSuccessResponse("Storefront merchandising loaded.", merchandising));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getStorefrontProductReviewContextController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = getAuthenticatedCustomer(request);
+    if (!customer) {
+      throw new HttpError(401, "Customer session is required.", {
+        code: "CUSTOMER_SESSION_REQUIRED"
+      });
+    }
+    const params = parseOrThrow(storefrontProductParamsSchema, request.params, {
+      message: "Storefront product id is invalid.",
+      code: "INVALID_STOREFRONT_PRODUCT_ID"
+    });
+    const context = await getCustomerReviewContext(customer.id, params.id);
+    response.json(createSuccessResponse("Customer review context loaded.", context));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const upsertStorefrontProductReviewController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = getAuthenticatedCustomer(request);
+    if (!customer) {
+      throw new HttpError(401, "Customer session is required.", {
+        code: "CUSTOMER_SESSION_REQUIRED"
+      });
+    }
+    const params = parseOrThrow(storefrontProductParamsSchema, request.params, {
+      message: "Storefront product id is invalid.",
+      code: "INVALID_STOREFRONT_PRODUCT_ID"
+    });
+    const body = parseOrThrow(storefrontProductReviewMutationSchema, request.body, {
+      message: "Review request is invalid.",
+      code: "INVALID_STOREFRONT_REVIEW_REQUEST"
+    });
+    const review = await upsertCustomerProductReview(customer.id, params.id, body);
+    response.status(200).json(createSuccessResponse("Review saved.", review));
   } catch (error) {
     next(error);
   }

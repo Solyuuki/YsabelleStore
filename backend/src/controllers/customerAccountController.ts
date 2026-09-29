@@ -8,7 +8,12 @@ import {
   revokeOtherCustomerSessions,
   updateCustomerProfile
 } from "../services/customerAccountService.js";
-import { listCustomerOrders } from "../services/storefrontService.js";
+import {
+  addCustomerFavorite,
+  listCustomerFavoriteProducts,
+  listCustomerOrders,
+  removeCustomerFavorite
+} from "../services/storefrontService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import {
   readCustomerSessionCookie,
@@ -41,6 +46,48 @@ function requireSessionToken(request: Request) {
   }
   return sessionToken;
 }
+
+export const listCustomerFavoritesController: RequestHandler = async (request, response, next) => {
+  try {
+    const customer = requireCustomer(request);
+    const favorites = await listCustomerFavoriteProducts(customer.id);
+    response.json(createSuccessResponse("Customer favorites loaded.", favorites));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addCustomerFavoriteController: RequestHandler = async (request, response, next) => {
+  try {
+    const customer = requireCustomer(request);
+    const productId = String(request.params.productId ?? "").trim();
+    if (!productId || productId.length > 191) {
+      throw new HttpError(400, "Favorite product id is invalid.", {
+        code: "INVALID_CUSTOMER_FAVORITE_PRODUCT"
+      });
+    }
+    const result = await addCustomerFavorite(customer.id, productId);
+    response.status(200).json(createSuccessResponse("Product saved to favorites.", result));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removeCustomerFavoriteController: RequestHandler = async (request, response, next) => {
+  try {
+    const customer = requireCustomer(request);
+    const productId = String(request.params.productId ?? "").trim();
+    if (!productId || productId.length > 191) {
+      throw new HttpError(400, "Favorite product id is invalid.", {
+        code: "INVALID_CUSTOMER_FAVORITE_PRODUCT"
+      });
+    }
+    const result = await removeCustomerFavorite(customer.id, productId);
+    response.status(200).json(createSuccessResponse("Product removed from favorites.", result));
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const listCustomerOrdersController: RequestHandler = async (request, response, next) => {
   try {
