@@ -48,10 +48,7 @@ test("About story branding keeps the real Ysabelle mark without synthetic fallba
   const handoff = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
   const styles = read("frontend/src/styles/brand.css");
 
-  assert.match(
-    brandMark,
-    /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/
-  );
+  assert.match(brandMark, /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/);
   assert.match(brandMark, /src=\{source\}/);
   assert.match(brandMark, /\/brand\/ysabelle-store-mark-256\.png/);
   assert.doesNotMatch(brandMark, /ysabelle-brand-mark__fallback|\bStore\b|<BrandLogo/);
