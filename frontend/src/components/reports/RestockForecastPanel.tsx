@@ -1,5 +1,5 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -63,6 +63,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const [localRefreshVersion, setLocalRefreshVersion] = useState(0);
   const [watchlistPage, setWatchlistPage] = useState(1);
   const [chartView, setChartView] = useState<ChartView>("DEMAND");
+  const detailTransitionRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -122,6 +123,37 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
   useEffect(() => {
     setChartView("DEMAND");
+  }, [selectedProductId]);
+
+  useLayoutEffect(() => {
+    const container = detailTransitionRef.current;
+    if (!container || !selectedProductId) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const sections = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-product-transition]")
+    );
+    const animations = sections
+      .filter((section) => typeof section.animate === "function")
+      .map((section, index) =>
+        section.animate(
+          [
+            { opacity: 0.48, transform: "translateY(5px)" },
+            { opacity: 1, transform: "translateY(0)" }
+          ],
+          {
+            delay: Math.min(index * 22, 88),
+            duration: 180,
+            easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+            fill: "both"
+          }
+        )
+      );
+
+    return () => {
+      animations.forEach((animation) => animation.cancel());
+    };
   }, [selectedProductId]);
 
   const activeRestockByProduct = useMemo(
@@ -316,7 +348,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                         <TableRow
                           aria-label={`View forecast for ${item.product.name}`}
                           aria-pressed={selectedRow}
-                          className={`cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
+                          className={`cursor-pointer select-none transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
                             selectedRow
                               ? "bg-indigo-50/70 hover:bg-indigo-50/80"
                               : "hover:bg-slate-50"
@@ -399,8 +431,14 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             ) : null}
           </div>
 
-          <div className="min-w-0 rounded-lg border border-slate-200 bg-white">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
+          <div
+            className="min-w-0 rounded-lg border border-slate-200 bg-white"
+            ref={detailTransitionRef}
+          >
+            <div
+              className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-4 py-3"
+              data-product-transition
+            >
               <div>
                 <p className="text-sm font-semibold text-slate-950">
                   {selected?.product.name ?? "Restock details"}
@@ -419,7 +457,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             </div>
 
             <div className="space-y-4 p-4">
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-product-transition>
                 <ForecastMetric compact label="Usable stock" value={usableStock(selected)} />
                 <ForecastMetric compact label="Expected 30d" value={selectedDemand} />
                 <ForecastMetric compact label="Stock cover" value={coverageLabel(selected)} />
@@ -431,17 +469,19 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               </div>
 
               {selected ? (
-                <RecommendationCard
-                  activeRestock={selectedActiveRestock}
-                  demand={selectedDemand}
-                  hasProcessedOrder={selectedHasProcessedOrder}
-                  needsOrder={selectedNeedsOrder}
-                  risk={selectedRisk}
-                  selected={selected}
-                />
+                <div data-product-transition>
+                  <RecommendationCard
+                    activeRestock={selectedActiveRestock}
+                    demand={selectedDemand}
+                    hasProcessedOrder={selectedHasProcessedOrder}
+                    needsOrder={selectedNeedsOrder}
+                    risk={selectedRisk}
+                    selected={selected}
+                  />
+                </div>
               ) : null}
 
-              <div>
+              <div data-product-transition>
                 <div className="mb-2 flex flex-col gap-2 xl:flex-row xl:items-end xl:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-950">
@@ -487,7 +527,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               </div>
 
               {displayedPreview ? (
-                <div className="rounded-lg border border-indigo-200 bg-indigo-50/60 p-4">
+                <div
+                  className="rounded-lg border border-indigo-200 bg-indigo-50/60 p-4"
+                  data-product-transition
+                >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
@@ -539,7 +582,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               ) : null}
 
               {selected && selectedCoverageDays !== null ? (
-                <p className="text-xs leading-5 text-slate-500">
+                <p className="text-xs leading-5 text-slate-500" data-product-transition>
                   Forecasts are estimates. Use this as ordering guidance together with supplier lead
                   time and current store conditions.
                 </p>
