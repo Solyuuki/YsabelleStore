@@ -1,14 +1,23 @@
 import { Activity, CalendarDays, ChevronLeft, ChevronRight, LineChart, Target } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   fetchDashboardSalesCalendar,
   fetchDashboardSalesDay,
-  saveDashboardSalesTarget,
   type DashboardSalesCalendar,
   type DashboardSalesCalendarDay,
   type DashboardSalesDayDetail,
@@ -52,14 +61,12 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
   const today = manilaDateKey(new Date());
   const [month, setMonth] = useState(today.slice(0, 7));
   const [selectedDate, setSelectedDate] = useState(today);
-  const [view, setView] = useState<"calendar" | "activity">("calendar");
+  const [view, setView] = useState<"calendar" | "performance">("calendar");
   const [calendar, setCalendar] = useState<DashboardSalesCalendar | null>(null);
   const [detail, setDetail] = useState<DashboardSalesDayDetail | null>(null);
   const [loadingCalendar, setLoadingCalendar] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [targetInput, setTargetInput] = useState("");
-  const [savingTarget, setSavingTarget] = useState(false);
   const lastSummaryGeneratedAt = useRef(summary.generatedAt);
 
   async function loadCalendar(activeMonth = month) {
@@ -87,13 +94,11 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
     let active = true;
     setLoadingDetail(true);
     setDetail(null);
-    setTargetInput("");
 
     void fetchDashboardSalesDay(selectedDate)
       .then((data) => {
         if (!active) return;
         setDetail(data);
-        setTargetInput(data.targetAmount ?? "");
       })
       .catch((loadError) => {
         if (!active) return;
@@ -132,24 +137,15 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
     label: bucket.label,
     sales: bucket.saleCount
   }));
-
-  async function saveTarget(value: number | null) {
-    setSavingTarget(true);
-    try {
-      await saveDashboardSalesTarget(selectedDate, value);
-      await Promise.all([loadCalendar(month), refreshDetail(selectedDate)]);
-      setError(null);
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unable to save sales target.");
-    } finally {
-      setSavingTarget(false);
-    }
-  }
+  const monthlyPerformanceData = (calendar?.days ?? []).map((day) => ({
+    actual: day.actualDataAvailable ? Number(day.actualAmount) : null,
+    label: String(Number(day.date.slice(-2))),
+    target: day.targetAmount ? Number(day.targetAmount) : null
+  }));
 
   async function refreshDetail(date: string) {
     const data = await fetchDashboardSalesDay(date);
     setDetail(data);
-    setTargetInput(data.targetAmount ?? "");
   }
 
   const selectedAmount = detail?.actualAmount ?? selectedCalendarDay?.actualAmount ?? "0.00";
@@ -180,12 +176,12 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               Calendar
             </button>
             <button
-              className={tabClass(view === "activity")}
-              onClick={() => setView("activity")}
+              className={tabClass(view === "performance")}
+              onClick={() => setView("performance")}
               type="button"
             >
               <LineChart className="h-3.5 w-3.5" />
-              Activity chart
+              Performance
             </button>
           </div>
         </div>
@@ -211,7 +207,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 value={formatCurrency(calendar?.summary.actualAmount ?? "0")}
               />
               <SummaryTile
-                label="Target"
+                label="Forecast target"
                 value={
                   calendar?.summary.targetAmount
                     ? formatCurrency(calendar.summary.targetAmount)
@@ -219,8 +215,8 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 }
                 helper={
                   calendar?.summary.targetDays
-                    ? `${calendar.summary.targetDays} targeted day${calendar.summary.targetDays === 1 ? "" : "s"}`
-                    : "Set targets per business day"
+                    ? `${calendar.summary.targetDays} forecast-derived day${calendar.summary.targetDays === 1 ? "" : "s"}`
+                    : "Generated automatically from the active forecast"
                 }
               />
               <SummaryTile
@@ -262,9 +258,18 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <p className="min-w-[150px] text-center text-sm font-semibold text-slate-900">
-                      {formatMonth(month)}
-                    </p>
+                    <label className="relative flex min-w-[164px] items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 shadow-sm">
+                      <span className="sr-only">Choose month and year</span>
+                      <input
+                        aria-label="Choose month and year"
+                        className="w-full cursor-pointer bg-transparent text-center text-sm font-semibold text-slate-900 outline-none"
+                        onChange={(event) => {
+                          if (event.target.value) setMonth(event.target.value);
+                        }}
+                        type="month"
+                        value={month}
+                      />
+                    </label>
                     <Button
                       aria-label="Next month"
                       className="h-8 w-8 p-0"
@@ -341,10 +346,10 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                           {day.status === "FUTURE"
                             ? day.targetAmount
                               ? compactCurrencyFormatter.format(Number(day.targetAmount))
-                              : "No target"
+                              : "—"
                             : day.actualDataAvailable
                               ? compactCurrencyFormatter.format(Number(day.actualAmount))
-                              : "No data"}
+                              : "—"}
                         </p>
                         <p className="mt-0.5 hidden text-[10px] text-slate-400 sm:block">
                           {calendarDaySecondaryLabel(day)}
@@ -376,7 +381,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 </h4>
                 <p className="mt-1 text-xs text-slate-500">
                   {detail?.status === "FUTURE"
-                    ? "Future target planning"
+                    ? "Future forecast target"
                     : detail?.status === "TODAY"
                       ? "Live Manila business day"
                       : "Historical completed sales"}
@@ -390,8 +395,8 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     }
                   />
                   <MiniMetric
-                    label="Target"
-                    value={detail?.targetAmount ? formatCurrency(detail.targetAmount) : "Not set"}
+                    label="Forecast target"
+                    value={detail?.targetAmount ? formatCurrency(detail.targetAmount) : "Unavailable"}
                   />
                   <MiniMetric
                     label="Transactions"
@@ -403,54 +408,6 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                   />
                   <MiniMetric label="Target progress" value={targetProgressLabel(detail)} />
                 </div>
-
-                {isOwner ? (
-                  <div className="mt-5 border-t border-slate-200 pt-4">
-                    <label
-                      className="text-xs font-semibold text-slate-700"
-                      htmlFor="sales-target-amount"
-                    >
-                      Daily sales target
-                    </label>
-                    <div className="mt-2 flex gap-2">
-                      <Input
-                        id="sales-target-amount"
-                        inputMode="decimal"
-                        min="0"
-                        onChange={(event) => setTargetInput(event.target.value)}
-                        placeholder="0.00"
-                        step="0.01"
-                        type="number"
-                        value={targetInput}
-                      />
-                      <Button
-                        disabled={
-                          savingTarget ||
-                          targetInput.trim() === "" ||
-                          !Number.isFinite(Number(targetInput)) ||
-                          Number(targetInput) < 0
-                        }
-                        onClick={() => void saveTarget(Number(targetInput))}
-                        size="sm"
-                        type="button"
-                      >
-                        Save
-                      </Button>
-                    </div>
-                    {detail?.targetAmount ? (
-                      <Button
-                        className="mt-2 px-0 text-xs"
-                        disabled={savingTarget}
-                        onClick={() => void saveTarget(null)}
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                      >
-                        Clear target
-                      </Button>
-                    ) : null}
-                  </div>
-                ) : null}
 
                 <Button
                   className="mt-5 w-full"
@@ -469,96 +426,125 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
             </div>
 
             <p className="text-xs text-slate-500">
-              Actuals come from completed POS sales. Targets are owner-managed per business day.
-              Forecast is shown only at monthly resolution because the forecasting model produces
-              monthly output; it is not artificially distributed across days.
+              Actuals come from completed POS sales. Daily targets are generated automatically from
+              the active monthly forecast and reconcile back to that forecast. Historical dates
+              without POS coverage remain blank rather than being treated as zero sales.
             </p>
           </div>
         ) : (
-          <div>
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-slate-900">{formatDay(selectedDate)}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#625bff]">
+                  Target vs actual
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{formatMonthLabel(month)}</p>
                 <p className="mt-1 text-xs text-slate-500">
-                  Completed-sale revenue across 2-hour Manila windows.
+                  Daily completed-sales revenue against the forecast-derived target.
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-semibold tracking-tight text-slate-950">
-                  {loadingDetail
-                    ? "Loading…"
-                    : selectedActualAvailable
-                      ? formatCurrency(selectedAmount)
-                      : detail?.status === "FUTURE"
-                        ? "Not started"
-                        : "No daily data"}
+                  {calendar?.summary.targetAmount
+                    ? formatCurrency(calendar.summary.targetAmount)
+                    : "Forecast unavailable"}
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  {(detail?.completedSales ?? 0).toLocaleString()} completed sales
-                </p>
+                <p className="mt-1 text-xs text-slate-500">Monthly forecast target</p>
               </div>
             </div>
-            <div className="h-64 w-full">
-              {loadingDetail ? (
-                <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-400">
-                  Loading selected-day activity…
-                </div>
-              ) : detail && !detail.actualDataAvailable ? (
-                <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-5 text-center text-xs font-medium text-slate-500">
-                  {detail.status === "FUTURE"
-                    ? "Actual sales activity will appear after this business day begins."
-                    : "Daily POS history is not available for this date. No zero-sales value is being assumed."}
-                </div>
-              ) : (
-                <ResponsiveContainer height="100%" width="100%">
-                  <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
-                    <defs>
-                      <linearGradient id="dashboardSalesAreaCalendar" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
-                        <stop offset="65%" stopColor="#008cff" stopOpacity={0.1} />
-                        <stop offset="100%" stopColor="#f43f8c" stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
-                    <XAxis
-                      axisLine={false}
-                      dataKey="label"
-                      interval={1}
-                      tick={{ fill: "#94a3b8", fontSize: 11 }}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#514bcf",
-                        border: "1px solid rgba(255,255,255,0.16)",
-                        borderRadius: "10px",
-                        boxShadow: "0 18px 40px -18px rgba(98,91,255,0.65)",
-                        color: "#fff",
-                        fontSize: "12px"
-                      }}
-                      cursor={{ stroke: "#c4b5fd", strokeDasharray: "4 4" }}
-                      formatter={(value) => [formatCurrency(Number(value)), "Sales"]}
-                      itemStyle={{ color: "#ffffff" }}
-                      labelStyle={{ color: "#ffffff", fontWeight: 600, marginBottom: "4px" }}
-                    />
-                    <Area
-                      dataKey="amount"
-                      fill="url(#dashboardSalesAreaCalendar)"
-                      fillOpacity={1}
-                      stroke="#625bff"
-                      strokeWidth={2.5}
-                      type="monotone"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
+
+            <div className="h-64 rounded-xl border border-slate-200 bg-slate-50/40 p-3">
+              <ResponsiveContainer height="100%" width="100%">
+                <ComposedChart data={monthlyPerformanceData} margin={{ bottom: 0, left: 0, right: 8, top: 8 }}>
+                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
+                  <XAxis
+                    axisLine={false}
+                    dataKey="label"
+                    interval={Math.max(0, Math.floor(monthlyPerformanceData.length / 10))}
+                    tick={{ fill: "#94a3b8", fontSize: 10 }}
+                    tickLine={false}
+                  />
+                  <YAxis axisLine={false} tick={{ fill: "#94a3b8", fontSize: 10 }} tickLine={false} width={44} />
+                  <Tooltip
+                    formatter={(value, name) => [
+                      formatCurrency(Number(value)),
+                      name === "actual" ? "Actual" : "Forecast target"
+                    ]}
+                    labelFormatter={(label) => `Day ${String(label)}`}
+                  />
+                  <Bar dataKey="actual" fill="#625bff" name="actual" radius={[4, 4, 0, 0]} />
+                  <Line
+                    connectNulls
+                    dataKey="target"
+                    dot={false}
+                    name="target"
+                    stroke="#f43f8c"
+                    strokeWidth={2}
+                    type="monotone"
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
             </div>
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
-              <span className="flex items-center gap-1.5">
-                <Activity className="h-3.5 w-3.5 text-[#625bff]" aria-hidden="true" />
-                Completed-sale activity
-              </span>
-              <span>Manila business day</span>
+
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.55fr)]">
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{formatDay(selectedDate)}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Completed-sale revenue across 2-hour Manila windows.
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-semibold tracking-tight text-slate-950">
+                      {loadingDetail
+                        ? "Loading…"
+                        : selectedActualAvailable
+                          ? formatCurrency(selectedAmount)
+                          : detail?.status === "FUTURE"
+                            ? "Not started"
+                            : "No daily history"}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {(detail?.completedSales ?? 0).toLocaleString()} completed sales
+                    </p>
+                  </div>
+                </div>
+                <div className="h-56 w-full">
+                  {loadingDetail ? (
+                    <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-400">
+                      Loading selected-day activity…
+                    </div>
+                  ) : detail && !detail.actualDataAvailable ? (
+                    <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-5 text-center text-xs font-medium text-slate-500">
+                      {detail.status === "FUTURE"
+                        ? "Actual sales activity will appear after this business day begins."
+                        : "Daily POS history is not available for this date. No zero-sales value is being assumed."}
+                    </div>
+                  ) : (
+                    <ResponsiveContainer height="100%" width="100%">
+                      <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
+                        <defs>
+                          <linearGradient id="dashboardSalesAreaCalendar" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
+                            <stop offset="65%" stopColor="#008cff" stopOpacity={0.1} />
+                            <stop offset="100%" stopColor="#f43f8c" stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
+                        <XAxis axisLine={false} dataKey="label" interval={1} tick={{ fill: "#94a3b8", fontSize: 11 }} tickLine={false} />
+                        <Tooltip
+                          formatter={(value) => [formatCurrency(Number(value)), "Sales"]}
+                          labelFormatter={(label) => String(label)}
+                        />
+                        <Area dataKey="amount" fill="url(#dashboardSalesAreaCalendar)" fillOpacity={1} stroke="#625bff" strokeWidth={2.5} type="monotone" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+              </div>
+
+              <PerformanceSignal detail={detail} />
             </div>
           </div>
         )}
@@ -568,7 +554,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
 }
 
 function calendarDaySecondaryLabel(day: DashboardSalesCalendarDay) {
-  if (day.status === "FUTURE") return day.targetAmount ? "Target" : "Future";
+  if (day.status === "FUTURE") return day.targetAmount ? "Forecast target" : "Forecast unavailable";
   if (!day.actualDataAvailable) return "No POS history";
   if (day.targetAmount && Number(day.targetAmount) > 0) {
     const progress = Math.round((Number(day.actualAmount) / Number(day.targetAmount)) * 100);
@@ -578,10 +564,56 @@ function calendarDaySecondaryLabel(day: DashboardSalesCalendarDay) {
 }
 
 function targetProgressLabel(detail: DashboardSalesDayDetail | null) {
-  if (!detail?.targetAmount || Number(detail.targetAmount) <= 0) return "Not set";
+  if (!detail?.targetAmount || Number(detail.targetAmount) <= 0) return "Unavailable";
   if (detail.status === "FUTURE") return "Starts on business day";
   if (!detail.actualDataAvailable) return "No daily actual";
   return `${Math.round((Number(detail.actualAmount) / Number(detail.targetAmount)) * 100)}%`;
+}
+
+function PerformanceSignal({ detail }: { detail: DashboardSalesDayDetail | null }) {
+  const target = Number(detail?.targetAmount ?? 0);
+  const actual = Number(detail?.actualAmount ?? 0);
+  const hasComparableActual = Boolean(detail?.actualDataAvailable && target > 0 && detail?.status !== "FUTURE");
+  const achievement = hasComparableActual ? Math.round((actual / target) * 100) : null;
+  const belowTarget = achievement !== null && achievement < 100;
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#625bff]">
+        Recommender signal
+      </p>
+      <p className="mt-2 text-base font-semibold text-slate-950">
+        {achievement === null
+          ? detail?.status === "FUTURE"
+            ? "Waiting for actual sales"
+            : "Not enough comparable daily data"
+          : belowTarget
+            ? "Below forecast target"
+            : "Target met or exceeded"}
+      </p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        {achievement === null
+          ? "The Inventory Recommender will evaluate this date when actual POS activity and a forecast target are both available."
+          : belowTarget
+            ? `Achievement is ${achievement}%. The Inventory Recommender evaluates inventory availability, incoming stock and demand signals before recommending an action.`
+            : `Achievement is ${achievement}%. Stronger-than-expected demand is carried into inventory coverage and future replenishment decisions.`}
+      </p>
+      {detail?.targetAmount ? (
+        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+          <div className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
+            <span className="text-slate-400">Actual</span>
+            <strong className="mt-1 block text-slate-900">
+              {detail.actualDataAvailable ? formatCurrency(detail.actualAmount) : "—"}
+            </strong>
+          </div>
+          <div className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
+            <span className="text-slate-400">Forecast target</span>
+            <strong className="mt-1 block text-slate-900">{formatCurrency(detail.targetAmount)}</strong>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function SummaryTile({ helper, label, value }: { helper?: string; label: string; value: string }) {
@@ -598,7 +630,7 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 truncate text-sm font-semibold text-slate-900">{value}</p>
+      <p className="mt-1 break-words text-sm font-semibold leading-5 text-slate-900">{value}</p>
     </div>
   );
 }
@@ -616,7 +648,7 @@ function formatCurrency(value: string | number) {
   return currencyFormatter.format(Number(value));
 }
 
-function formatMonth(month: string) {
+function formatMonthLabel(month: string) {
   return monthFormatter.format(new Date(`${month}-01T00:00:00.000Z`));
 }
 
