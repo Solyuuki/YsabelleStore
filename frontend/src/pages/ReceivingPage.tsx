@@ -751,7 +751,8 @@ export function ReceivingPage() {
                               <Label htmlFor="cancel-restock-reason">Cancel ticket</Label>
                               <p className="mt-1 text-xs leading-5 text-slate-500">
                                 Use this when the owner declines the recommended restock before any
-                                stock has been physically received. The reason remains in the audit trail.
+                                stock has been physically received. The reason remains in the audit
+                                trail.
                               </p>
                               <Input
                                 className="mt-2"

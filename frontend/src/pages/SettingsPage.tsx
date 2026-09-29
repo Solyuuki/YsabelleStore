@@ -238,7 +238,8 @@ export function SettingsPage() {
             <div>
               <CardTitle>Data integrity</CardTitle>
               <p className="mt-1 text-sm text-slate-500">
-                Technical synchronization status is kept here so the Dashboard can stay focused on owner decisions.
+                Technical synchronization status is kept here so the Dashboard can stay focused
+                on owner decisions.
               </p>
             </div>
             <ServerCog className="h-5 w-5 text-slate-500" aria-hidden="true" />
@@ -251,9 +252,18 @@ export function SettingsPage() {
             </div>
           ) : dataIntegrity ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <IntegrityMetric label="Catalog products" value={dataIntegrity.inventory.catalogItems} />
-              <IntegrityMetric label="Inventory records" value={dataIntegrity.inventory.trackedItems} />
-              <IntegrityMetric label="Available products" value={dataIntegrity.inventory.availableItems} />
+              <IntegrityMetric
+                label="Catalog products"
+                value={dataIntegrity.inventory.catalogItems}
+              />
+              <IntegrityMetric
+                label="Inventory records"
+                value={dataIntegrity.inventory.trackedItems}
+              />
+              <IntegrityMetric
+                label="Available products"
+                value={dataIntegrity.inventory.availableItems}
+              />
               <IntegrityMetric
                 label="Unlinked catalog"
                 value={dataIntegrity.inventory.unlinkedCatalogItems}
@@ -263,7 +273,9 @@ export function SettingsPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="text-sm font-medium text-slate-700">Catalog → Inventory</span>
                   <StatusBadge
-                    variant={dataIntegrity.inventory.unlinkedCatalogItems === 0 ? "success" : "warning"}
+                    variant={
+                      dataIntegrity.inventory.unlinkedCatalogItems === 0 ? "success" : "warning"
+                    }
                   >
                     {dataIntegrity.inventory.unlinkedCatalogItems === 0
                       ? "Synced"

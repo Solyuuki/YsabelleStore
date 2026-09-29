@@ -110,7 +110,8 @@ export function RestockDraftsPanel({
                 <Badge>{total.toLocaleString()} saved</Badge>
               </div>
               <p className="mt-1 text-xs text-slate-500">
-                Forecast-driven plans wait here for one owner approval. Manual drafts remain available for later review.
+                Forecast-driven plans wait here for one owner approval. Manual drafts remain
+                available for later review.
               </p>
             </div>
             <Button
@@ -152,12 +153,15 @@ export function RestockDraftsPanel({
 
           <div className="space-y-2">
             {[...drafts]
-              .sort((left, right) => Number(isRecommendedPlan(right)) - Number(isRecommendedPlan(left)))
+              .sort(
+                (left, right) =>
+                  Number(isRecommendedPlan(right)) - Number(isRecommendedPlan(left))
+              )
               .map((draft) => {
-              const lines = selectedLines(draft);
-              const units = unitCount(lines);
-              const recommendedPlan = isRecommendedPlan(draft);
-              return (
+                const lines = selectedLines(draft);
+                const units = unitCount(lines);
+                const recommendedPlan = isRecommendedPlan(draft);
+                return (
                 <article
                   className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
                   key={draft.id}
@@ -167,7 +171,9 @@ export function RestockDraftsPanel({
                       <p className="truncate text-sm font-semibold text-slate-950">
                         {draft.orderNumber}
                       </p>
-                      {recommendedPlan ? <Badge variant="info">Recommended inventory plan</Badge> : null}
+                      {recommendedPlan ? (
+                        <Badge variant="info">Recommended inventory plan</Badge>
+                      ) : null}
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
                       {lines.length.toLocaleString()} product{lines.length === 1 ? "" : "s"} ·{" "}
@@ -183,8 +189,8 @@ export function RestockDraftsPanel({
                     {recommendedPlan ? "Review recommended plan" : "Review draft"}
                   </Button>
                 </article>
-              );
-            })}
+                );
+              })}
           </div>
 
           {total > drafts.length ? (
