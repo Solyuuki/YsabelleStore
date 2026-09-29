@@ -118,7 +118,9 @@ test("shared brand components render only the bundled approved circular logo", a
     staffMark,
     /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
   );
-  assert.match(staffMark, /src=\{officialLogoUrl\}/);
+  assert.match(staffMark, /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/);
+  assert.match(staffMark, /\? officialLogoUrl\s*:\s*WEB_BRAND_MARK_SRC/);
+  assert.match(staffMark, /src=\{source\}/);
   assert.doesNotMatch(staffMark, /<svg[\s>]/);
   assert.doesNotMatch(staffMark, /setImageFailed|imageFailed/);
 
@@ -126,10 +128,13 @@ test("shared brand components render only the bundled approved circular logo", a
     customerMark,
     /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
   );
-  assert.match(customerMark, /src=\{officialLogoUrl\}/);
+  assert.match(customerMark, /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/);
+  assert.match(customerMark, /src=\{source\}/);
+  assert.match(customerMark, /\/brand\/ysabelle-store-mark-128\.png/);
+  assert.match(customerMark, /\/brand\/ysabelle-store-mark-256\.png/);
   assert.doesNotMatch(customerMark, /<BrandLogo|\bStore\b/);
   assert.doesNotMatch(customerMark, /ysabelle-brand-mark__fallback/);
-  assert.doesNotMatch(customerMark, /WEB_BRAND_MARK_SRC|BRAND_ASSET_VERSION/);
+  assert.doesNotMatch(customerMark, /ysabelle-brand-mark__fallback|<svg[\s>]/);
 });
 
 test("keeps approved header and footer on shared mark", async () => {

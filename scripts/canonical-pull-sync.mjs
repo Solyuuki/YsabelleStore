@@ -80,6 +80,10 @@ export function requiresPrismaRegeneration(paths, state, root = process.cwd()) {
     return true;
   }
 
+  if (paths.length > 0) {
+    return false;
+  }
+
   const generatedSchemaPath = resolve(root, "node_modules", ".prisma", "client", "schema.prisma");
   const repositorySchemaPath = resolve(root, state.schemaPath);
 

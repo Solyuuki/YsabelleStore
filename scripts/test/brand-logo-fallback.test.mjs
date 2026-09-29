@@ -22,7 +22,9 @@ test("brand components use only the approved circular Ysabelle logo", async () =
     brandLogo,
     /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
   );
-  assert.match(brandLogo, /src=\{officialLogoUrl\}/);
+  assert.match(brandLogo, /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/);
+  assert.match(brandLogo, /\? officialLogoUrl\s*:\s*WEB_BRAND_MARK_SRC/);
+  assert.match(brandLogo, /src=\{source\}/);
   assert.doesNotMatch(brandLogo, /<svg[\s>]/);
   assert.doesNotMatch(brandLogo, /M18 21h28|#625bff|#008cff/);
 
@@ -30,7 +32,9 @@ test("brand components use only the approved circular Ysabelle logo", async () =
     customerMark,
     /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
   );
-  assert.match(customerMark, /src=\{officialLogoUrl\}/);
+  assert.match(customerMark, /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/);
+  assert.match(customerMark, /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/);
+  assert.match(customerMark, /src=\{source\}/);
   assert.doesNotMatch(customerMark, /<BrandLogo|\bStore\b/);
   assert.doesNotMatch(customerMark, /ysabelle-brand-mark__fallback/);
 
