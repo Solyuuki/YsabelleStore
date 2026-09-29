@@ -969,16 +969,6 @@ function createOrderNumber() {
   return `YS-${date}-${randomBytes(3).toString("hex").toUpperCase()}`;
 }
 
-function sumUnitsByProduct(items: Array<{ productId: string; quantity: number }>) {
-  const totals = new Map<string, number>();
-
-  for (const item of items) {
-    totals.set(item.productId, (totals.get(item.productId) ?? 0) + item.quantity);
-  }
-
-  return totals;
-}
-
 function rankStorefrontProducts(
   products: ReturnType<typeof serializeStorefrontProduct>[],
   unitsByProduct: Map<string, number>
