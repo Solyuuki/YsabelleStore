@@ -40,22 +40,25 @@ test("customer sign-in preserves a safe checkout return path", () => {
   assert.match(customerRoutes, /return getCustomerReturnPath\(search\) \?\? "\/";/);
 });
 
-test("customer account loads Orders first and keeps Profile and Security secondary", () => {
+test("customer account loads Orders first and keeps Favorites, Profile and Security secondary", () => {
   assert.match(customerApp, /customer-account-premium\.css/);
-  assert.match(customerAccountPage, /type AccountTab = "orders" \| "profile" \| "security";/);
+  assert.match(customerAccountPage, /type AccountTab = "orders" \| "favorites" \| "profile" \| "security";/);
   assert.match(customerAccountPage, /useState<AccountTab>\("orders"\)/);
   assert.match(customerAccountPage, /role="tablist"/);
   assert.match(customerAccountPage, /aria-selected=\{activeTab === "orders"\}/);
+  assert.match(customerAccountPage, /aria-selected=\{activeTab === "favorites"\}/);
   assert.match(customerAccountPage, /aria-selected=\{activeTab === "profile"\}/);
   assert.match(customerAccountPage, /aria-selected=\{activeTab === "security"\}/);
   assert.match(customerAccountPage, /hidden=\{activeTab !== "orders"\}/);
+  assert.match(customerAccountPage, /hidden=\{activeTab !== "favorites"\}/);
   assert.match(customerAccountPage, /hidden=\{activeTab !== "profile"\}/);
   assert.match(customerAccountPage, /hidden=\{activeTab !== "security"\}/);
 });
 
 test("account tabs never use hash anchors that make the browser scroll", () => {
-  assert.doesNotMatch(customerAccountPage, /href="#(?:orders|profile|security)"/);
+  assert.doesNotMatch(customerAccountPage, /href="#(?:orders|favorites|profile|security)"/);
   assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("orders"\)\}/);
+  assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("favorites"\)\}/);
   assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("profile"\)\}/);
   assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("security"\)\}/);
   assert.doesNotMatch(premiumAccountCss, /:target/);
@@ -66,6 +69,8 @@ test("account hero changes premium context with the active account tab", () => {
   assert.match(customerAccountPage, /const ACCOUNT_HERO_CONTENT: Record<\s*AccountTab,/);
   assert.match(customerAccountPage, /orders:[\s\S]*eyebrow: "Order center"/);
   assert.match(customerAccountPage, /orders:[\s\S]*title: "Your orders, organized\."/);
+  assert.match(customerAccountPage, /favorites:[\s\S]*eyebrow: "Saved items"/);
+  assert.match(customerAccountPage, /favorites:[\s\S]*title: "Favorites, ready when you are\."/);
   assert.match(customerAccountPage, /profile:[\s\S]*eyebrow: "Profile"/);
   assert.match(customerAccountPage, /profile:[\s\S]*title: "Your identity, your account\."/);
   assert.match(customerAccountPage, /security:[\s\S]*eyebrow: "Account security"/);
