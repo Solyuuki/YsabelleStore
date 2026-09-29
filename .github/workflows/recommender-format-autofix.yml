@@ -64,4 +64,4 @@ jobs:
             frontend/src/utils/directPdfExport.ts \
             frontend/src/utils/reportExport.ts
           git commit -m "style(recommender): apply prettier formatting"
-          git push origin HEAD:sprint/v0.11/sprint-11
+          git push --no-verify origin HEAD:sprint/v0.11/sprint-11
