@@ -10,7 +10,8 @@ export type DashboardForecastSummary =
   | {
       access: "AVAILABLE";
       failedProducts: number;
-      forecastUnits2026: number;
+      forecastHorizonMonths: number;
+      forecastHorizonTotal: number;
       generatedAt: string | null;
       totalProductsForecasted: number;
       warningProducts: number;
@@ -18,7 +19,8 @@ export type DashboardForecastSummary =
   | {
       access: "RESTRICTED" | "UNAVAILABLE";
       failedProducts: null;
-      forecastUnits2026: null;
+      forecastHorizonMonths: null;
+      forecastHorizonTotal: null;
       generatedAt: null;
       totalProductsForecasted: null;
       warningProducts: null;

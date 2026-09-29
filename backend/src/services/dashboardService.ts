@@ -34,7 +34,8 @@ export type DashboardForecastSummary =
   | {
       access: "AVAILABLE";
       failedProducts: number;
-      forecastUnits2026: number;
+      forecastHorizonMonths: number;
+      forecastHorizonTotal: number;
       generatedAt: string | null;
       totalProductsForecasted: number;
       warningProducts: number;
@@ -454,7 +455,8 @@ async function getDashboardForecast(role: UserRole): Promise<DashboardForecastSu
     return {
       access: "RESTRICTED",
       failedProducts: null,
-      forecastUnits2026: null,
+      forecastHorizonMonths: null,
+      forecastHorizonTotal: null,
       generatedAt: null,
       totalProductsForecasted: null,
       warningProducts: null
@@ -467,7 +469,8 @@ async function getDashboardForecast(role: UserRole): Promise<DashboardForecastSu
     return {
       access: "AVAILABLE",
       failedProducts: summary.failedProducts,
-      forecastUnits2026: summary.forecastUnits2026,
+      forecastHorizonMonths: summary.forecastPeriod.months,
+      forecastHorizonTotal: summary.forecastPeriod.forecastUnits,
       generatedAt: summary.generatedAt,
       totalProductsForecasted: summary.totalProductsForecasted,
       warningProducts: summary.warningProducts
@@ -476,7 +479,8 @@ async function getDashboardForecast(role: UserRole): Promise<DashboardForecastSu
     return {
       access: "UNAVAILABLE",
       failedProducts: null,
-      forecastUnits2026: null,
+      forecastHorizonMonths: null,
+      forecastHorizonTotal: null,
       generatedAt: null,
       totalProductsForecasted: null,
       warningProducts: null

@@ -29,6 +29,14 @@ const appShellSource = readFileSync(resolve(process.cwd(), "src/app/AppShell.tsx
 const reportsSource = readFileSync(resolve(process.cwd(), "src/pages/ReportsPage.tsx"), "utf8");
 const settingsSource = readFileSync(resolve(process.cwd(), "src/pages/SettingsPage.tsx"), "utf8");
 const dashboardSource = readFileSync(resolve(process.cwd(), "src/pages/DashboardPage.tsx"), "utf8");
+const dashboardApiSource = readFileSync(
+  resolve(process.cwd(), "src/services/dashboardApi.ts"),
+  "utf8"
+);
+const dashboardBackendSource = readFileSync(
+  resolve(process.cwd(), "../backend/src/services/dashboardService.ts"),
+  "utf8"
+);
 
 assert.match(appShellSource, /case "\/reports":[\s\S]*?<ReportsPage \/>/);
 assert.match(appShellSource, /case "\/settings":[\s\S]*?<SettingsPage \/>/);
@@ -50,3 +58,22 @@ assert.match(dashboardSource, /preferences\.refreshDashboardOnFocus/);
 assert.match(dashboardSource, /preferences\.showForecastSummary/);
 
 console.log("Owner Reports and Settings frontend contract passed.");
+
+
+assert.match(dashboardSource, /summary\.forecast\.forecastHorizonTotal\.toLocaleString\(\)/);
+assert.match(dashboardSource, /summary\.forecast\.forecastHorizonMonths/);
+assert.doesNotMatch(dashboardSource, /forecastUnits2026/);
+
+assert.match(dashboardApiSource, /forecastHorizonTotal:\s*number/);
+assert.match(dashboardApiSource, /forecastHorizonMonths:\s*number/);
+assert.doesNotMatch(dashboardApiSource, /forecastUnits2026/);
+
+assert.match(
+  dashboardBackendSource,
+  /forecastHorizonTotal:\s*summary\.forecastPeriod\.forecastUnits/
+);
+assert.match(
+  dashboardBackendSource,
+  /forecastHorizonMonths:\s*summary\.forecastPeriod\.months/
+);
+assert.doesNotMatch(dashboardBackendSource, /summary\.forecastUnits2026/);

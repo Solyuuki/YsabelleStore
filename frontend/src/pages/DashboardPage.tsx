@@ -195,8 +195,8 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
   const forecastStat = summary
     ? summary.forecast.access === "AVAILABLE"
       ? {
-          value: `${summary.forecast.forecastUnits2026.toLocaleString()} units`,
-          detail: `${summary.forecast.totalProductsForecasted} products forecasted`
+          value: `${summary.forecast.forecastHorizonTotal.toLocaleString()} units`,
+          detail: `${summary.forecast.totalProductsForecasted} products · ${summary.forecast.forecastHorizonMonths} month horizon`
         }
       : summary.forecast.access === "RESTRICTED"
         ? { value: "Protected", detail: "Owner verification required" }
