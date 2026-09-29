@@ -2,12 +2,14 @@ import { lazy, Suspense, useEffect } from "react";
 
 import { CartProvider } from "@/context/CartContext";
 import { CustomerAuthProvider, useCustomerAuth } from "@/context/CustomerAuthContext";
+import { CustomerFavoritesProvider } from "@/context/CustomerFavoritesContext";
 import { CustomerLayout } from "@/layouts/CustomerLayout";
 import "driver.js/dist/driver.css";
 import "@/styles/customer.css";
 import "@/styles/customer-auth.css";
 import "@/styles/customer-account.css";
 import "@/styles/customer-account-premium.css";
+import "@/styles/customer-commerce-premium.css";
 import "@/styles/auth-brand.css";
 import "@/styles/customer-header-actions.css";
 import "@/styles/customer-guide-route-transition.css";
@@ -88,9 +90,11 @@ export function CustomerApp({
 }) {
   return (
     <CustomerAuthProvider>
-      <CartProvider>
-        <CustomerAppRoutes location={location} navigate={navigate} />
-      </CartProvider>
+      <CustomerFavoritesProvider>
+        <CartProvider>
+          <CustomerAppRoutes location={location} navigate={navigate} />
+        </CartProvider>
+      </CustomerFavoritesProvider>
     </CustomerAuthProvider>
   );
 }
