@@ -7,6 +7,7 @@ import type {
   StorefrontPagination,
   StorefrontProduct,
   StorefrontProductDetail,
+  StorefrontProductReview,
   StorefrontProductReviews,
   StorefrontRelatedProducts,
   StorefrontReviewContext,
