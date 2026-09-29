@@ -96,8 +96,7 @@ export async function getDashboardSalesCalendar(
         saleDate: { lte: now },
         status: "COMPLETED"
       }
-    }),
-    getForecastDerivedMonthPlan(date.slice(0, 7), now)
+    })
   ]);
 
   const todayKey = manilaDateKey(now);
@@ -190,7 +189,8 @@ export async function getDashboardSalesDay(
         saleDate: { lte: now },
         status: "COMPLETED"
       }
-    })
+    }),
+    getForecastDerivedMonthPlan(date.slice(0, 7), now)
   ]);
 
   const amount = sales.reduce((sum, sale) => sum.add(sale.totalAmount), new Prisma.Decimal(0));
