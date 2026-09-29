@@ -54,7 +54,6 @@ test("operational automation preserves monthly duplicate and lifecycle safeguard
   assert.match(automationSource, /AutomatedRestock:/);
 });
 
-
 test("automated monthly restock stays as an owner-review draft until explicit approval", () => {
   assert.equal(automationSource.includes("approveRestockOrder"), false);
   assert.match(automationSource, /Owner approval is required before Receiving/);

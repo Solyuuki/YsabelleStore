@@ -189,7 +189,10 @@ function deterministicSummary(evidence: RecommenderAssistantEvidence[]) {
         ? `${high} high-priority`
         : `${evidence.length} active`;
 
-  const unitSummary = totalUnits > 0 ? `, including ${totalUnits.toLocaleString()} suggested replenishment unit${totalUnits === 1 ? "" : "s"}` : "";
+  const unitSummary =
+    totalUnits > 0
+      ? `, including ${totalUnits.toLocaleString()} suggested replenishment unit${totalUnits === 1 ? "" : "s"}`
+      : "";
   return `${priority} inventory recommendation${evidence.length === 1 ? "" : "s"} require review${unitSummary}. Highest priority: ${top.productName} — ${top.rationale}`;
 }
 

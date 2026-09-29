@@ -8,7 +8,10 @@ import {
 import { prisma } from "../database/prismaClient.js";
 import { getForecastSummary } from "../modules/forecasting/forecast.service.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
-import { buildRecommenderAssistant, type RecommenderAssistantResult } from "./recommenderAiService.js";
+import {
+  buildRecommenderAssistant,
+  type RecommenderAssistantResult
+} from "./recommenderAiService.js";
 
 const MANILA_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -77,7 +80,10 @@ export type DashboardSummary = {
 };
 
 export type DashboardRestockRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-export type DashboardRecommendationAction = "RESTOCK" | "REDUCE_REPLENISHMENT" | "EXPIRY_REVIEW";
+export type DashboardRecommendationAction =
+  | "RESTOCK"
+  | "REDUCE_REPLENISHMENT"
+  | "EXPIRY_REVIEW";
 
 export type DashboardRestockAction = {
   actionType: DashboardRecommendationAction;

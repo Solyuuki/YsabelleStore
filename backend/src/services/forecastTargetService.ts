@@ -127,7 +127,9 @@ async function loadDailyWeightProfile(now: Date): Promise<DailyWeightProfile> {
 
   if (!firstSale) return uniformProfile();
 
-  const coverageStart = new Date(Math.max(start.getTime(), manilaDayStart(manilaDateKey(firstSale.saleDate)).getTime()));
+  const coverageStart = new Date(
+    Math.max(start.getTime(), manilaDayStart(manilaDateKey(firstSale.saleDate)).getTime())
+  );
   const coverageDays = Math.max(0, Math.floor((end.getTime() - coverageStart.getTime()) / DAY_MS));
   if (coverageDays < MIN_WEIGHTED_HISTORY_DAYS) return uniformProfile();
 
@@ -146,7 +148,11 @@ async function loadDailyWeightProfile(now: Date): Promise<DailyWeightProfile> {
 
   const weekdayTotals = Array.from({ length: 7 }, () => 0);
   const weekdayCounts = Array.from({ length: 7 }, () => 0);
-  for (let cursor = new Date(coverageStart); cursor < end; cursor = new Date(cursor.getTime() + DAY_MS)) {
+  for (
+    let cursor = new Date(coverageStart);
+    cursor < end;
+    cursor = new Date(cursor.getTime() + DAY_MS)
+  ) {
     const key = manilaDateKey(cursor);
     const weekday = new Date(`${key}T00:00:00.000Z`).getUTCDay();
     weekdayTotals[weekday] = (weekdayTotals[weekday] ?? 0) + (revenueByDate.get(key) ?? 0);
@@ -177,7 +183,9 @@ function allocateMonth(month: string, amount: number, weekdayWeights: number[]) 
   });
   const totalWeight = rawWeights.reduce((sum, value) => sum + value, 0);
   const normalized =
-    totalWeight > 0 ? rawWeights.map((value) => value / totalWeight) : dates.map(() => 1 / dates.length);
+    totalWeight > 0
+      ? rawWeights.map((value) => value / totalWeight)
+      : dates.map(() => 1 / dates.length);
   const totalCents = Math.max(0, Math.round(amount * 100));
   const rawCents = normalized.map((weight) => totalCents * weight);
   const cents = rawCents.map((value) => Math.floor(value));
@@ -186,7 +194,11 @@ function allocateMonth(month: string, amount: number, weekdayWeights: number[]) 
   const remainderOrder = rawCents
     .map((value, index) => ({ fraction: value - Math.floor(value), index }))
     .sort((left, right) => right.fraction - left.fraction || left.index - right.index);
-  for (let index = 0; remainder > 0 && index < remainderOrder.length; index += 1, remainder -= 1) {
+  for (
+    let index = 0;
+    remainder > 0 && index < remainderOrder.length;
+    index += 1, remainder -= 1
+  ) {
     cents[remainderOrder[index]!.index] = (cents[remainderOrder[index]!.index] ?? 0) + 1;
   }
 
@@ -217,5 +229,8 @@ function manilaDayStart(date: string) {
 
 function manilaDateKey(date: Date) {
   const shifted = new Date(date.getTime() + MANILA_OFFSET_MS);
-  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, "0")}-${String(shifted.getUTCDate()).padStart(2, "0")}`;
+  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(
+    2,
+    "0"
+  )}-${String(shifted.getUTCDate()).padStart(2, "0")}`;
 }
