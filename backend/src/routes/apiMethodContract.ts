@@ -37,6 +37,8 @@ const API_ROUTE_METHODS: readonly ApiRouteMethodContract[] = [
   { pattern: "/api/customer-auth/logout", methods: ["POST"] },
 
   { pattern: "/api/customer-account/orders", methods: ["GET"] },
+  { pattern: "/api/customer-account/favorites", methods: ["GET"] },
+  { pattern: "/api/customer-account/favorites/:productId", methods: ["DELETE", "PUT"] },
   { pattern: "/api/customer-account/cart", methods: ["DELETE", "GET"] },
   { pattern: "/api/customer-account/cart/merge", methods: ["POST"] },
   { pattern: "/api/customer-account/cart/items/:productId", methods: ["DELETE", "PUT"] },
@@ -46,6 +48,12 @@ const API_ROUTE_METHODS: readonly ApiRouteMethodContract[] = [
   { pattern: "/api/customer-account/password/change", methods: ["POST"] },
   { pattern: "/api/customer-account/sessions", methods: ["GET"] },
   { pattern: "/api/customer-account/sessions/revoke-others", methods: ["POST"] },
+
+  { pattern: "/api/customer-admin/accounts", methods: ["GET"] },
+  { pattern: "/api/customer-admin/accounts/:id/status", methods: ["PATCH"] },
+  { pattern: "/api/customer-admin/accounts/:id/audit", methods: ["GET"] },
+  { pattern: "/api/customer-admin/reviews", methods: ["GET"] },
+  { pattern: "/api/customer-admin/reviews/:id/status", methods: ["PATCH"] },
 
   { pattern: "/api/dashboard/summary", methods: ["GET"] },
   { pattern: "/api/dashboard/operations", methods: ["GET"] },
@@ -130,6 +138,8 @@ const API_ROUTE_METHODS: readonly ApiRouteMethodContract[] = [
   { pattern: "/api/storefront/merchandising", methods: ["GET"] },
   { pattern: "/api/storefront/products", methods: ["GET"] },
   { pattern: "/api/storefront/products/:id/reviews", methods: ["GET"] },
+  { pattern: "/api/storefront/products/:id/review-context", methods: ["GET"] },
+  { pattern: "/api/storefront/products/:id/review", methods: ["PUT"] },
   { pattern: "/api/storefront/products/:id/related", methods: ["GET"] },
   { pattern: "/api/storefront/products/:id", methods: ["GET"] },
   { pattern: "/api/storefront/orders", methods: ["POST"] }
