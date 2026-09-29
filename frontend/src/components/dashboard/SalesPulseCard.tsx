@@ -246,7 +246,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               />
             </div>
 
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.55fr)]">
+            <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.55fr)]">
               <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
                 <div className="flex items-center justify-between border-b border-slate-100 px-3 py-3 sm:px-4">
                   <div className="flex items-center gap-2">
@@ -378,7 +378,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 ) : null}
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+              <div className="self-start rounded-xl border border-slate-200 bg-slate-50/60 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#625bff]">
                   Selected day
                 </p>
@@ -494,7 +494,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               </ResponsiveContainer>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.55fr)]">
+            <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.55fr)]">
               <div className="rounded-xl border border-slate-200 bg-white p-4">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                   <div>
