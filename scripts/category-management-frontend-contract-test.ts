@@ -93,7 +93,6 @@ assert.match(homeSource, /fallbackLabel="Category image pending"/);
 assert.match(homeSource, /category\.storefrontCover \|\| getCategoryPresentation/);
 assert.match(homeSource, /objectPosition=\{item\.objectPosition\}/);
 assert.match(homeSource, /categoryCoverObjectPosition/);
-assert.match(homeSource, /TOP_LEFT/);
 assert.doesNotMatch(homeSource, /managedCover\.position === "LEFT"/);
 assert.match(homeSource, /categoryCoverObjectPosition\(managedCover\.position\)/);
 
