@@ -240,6 +240,8 @@ export function downloadInventoryReportCsv(snapshot: InternalReportSnapshot) {
 
 export function printOperationalSummary(printWindow: Window, snapshot: InternalReportSnapshot) {
   const summary = snapshot.summary;
+  const performance = operationalPerformance(snapshot);
+  const recommendations = snapshot.recommendations ?? [];
   const healthyInventory =
     summary.inventory.lowStockItems === 0 && summary.inventory.outOfStockItems === 0;
   const expiryClear = summary.expiry.nearExpiryBatches === 0 && summary.expiry.expiredBatches === 0;
@@ -300,6 +302,33 @@ export function printOperationalSummary(printWindow: Window, snapshot: InternalR
     <div class="status"><strong>Inventory status</strong>${healthyInventory ? "No low-stock or out-of-stock products need attention." : "Inventory has products that need replenishment attention."}</div>
     <div class="status"><strong>Expiry status</strong>${expiryClear ? "No expiry issues need attention right now." : `${summary.expiry.nearExpiryBatches.toLocaleString()} near-expiry and ${summary.expiry.expiredBatches.toLocaleString()} expired batches need review.`}</div>
   </section>
+
+  ${performance
+    ? `<section class="section">
+    <h2>Forecast performance — ${escapeHtml(performance.month)}</h2>
+    <div class="grid">
+      <div class="metric"><span>Completed-day actual</span><strong>${escapeHtml(currency(performance.actual))}</strong></div>
+      <div class="metric"><span>Completed-day target</span><strong>${escapeHtml(currency(performance.target))}</strong></div>
+      <div class="metric"><span>Achievement</span><strong>${escapeHtml(percentage(performance.achievement))}</strong></div>
+      <div class="metric"><span>Days below target</span><strong>${performance.belowTargetDays.toLocaleString()}</strong></div>
+    </div>
+  </section>`
+    : ""}
+
+  ${recommendations.length > 0
+    ? `<section class="section">
+    <h2>Inventory Recommender</h2>
+    ${recommendations
+      .slice(0, 8)
+      .map(
+        (item) =>
+          `<div class="status"><strong>${escapeHtml(item.product.name)} — ${escapeHtml(
+            item.forecastDecision?.riskLevel ?? "LOW"
+          )}</strong>${escapeHtml(item.rationale)} Recommended: ${item.recommendedQuantity.toLocaleString()} unit(s).</div>`
+      )
+      .join("")}
+  </section>`
+    : ""}
 
   <p class="note">This is a management summary. Use the separate Inventory Report for product-level stock rows and Restock / Supplier Order for supplier-facing quantities.</p>
 </body>

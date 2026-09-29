@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-import type { InternalReportSnapshot } from "@/utils/reportExport";
+import { operationalPerformance, type InternalReportSnapshot } from "@/utils/reportExport";
 import type { RestockSupplierSnapshot } from "@/utils/restockExport";
 
 const dateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
@@ -77,6 +77,8 @@ function drawMetric(doc: jsPDF, x: number, y: number, width: number, label: stri
 
 export function downloadOperationalSummaryPdf(snapshot: InternalReportSnapshot) {
   const doc = new jsPDF({ format: "a4", unit: "mm" });
+  const performance = operationalPerformance(snapshot);
+  const recommendations = snapshot.recommendations ?? [];
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 14;
   const gap = 4;
@@ -197,6 +199,55 @@ export function downloadOperationalSummaryPdf(snapshot: InternalReportSnapshot) 
     151,
     { maxWidth: pageWidth - margin * 2 }
   );
+
+  if (performance || recommendations.length > 0) {
+    doc.addPage();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(15, 23, 42);
+    doc.text("FORECAST PERFORMANCE & RECOMMENDER", margin, 18);
+    let nextY = 28;
+
+    if (performance) {
+      drawMetric(doc, margin, nextY, metricWidth, "Actual", money(performance.actual));
+      drawMetric(doc, margin + (metricWidth + gap), nextY, metricWidth, "Target", money(performance.target));
+      drawMetric(
+        doc,
+        margin + (metricWidth + gap) * 2,
+        nextY,
+        metricWidth,
+        "Achievement",
+        performance.achievement === null ? "N/A" : `${performance.achievement.toFixed(1)}%`
+      );
+      drawMetric(
+        doc,
+        margin + (metricWidth + gap) * 3,
+        nextY,
+        metricWidth,
+        "Below target days",
+        performance.belowTargetDays.toLocaleString()
+      );
+      nextY += 28;
+    }
+
+    if (recommendations.length > 0) {
+      autoTable(doc, {
+        body: recommendations.slice(0, 8).map((item) => [
+          item.product.name,
+          item.recommendationSource,
+          item.forecastDecision?.riskLevel ?? "LOW",
+          item.recommendedQuantity.toLocaleString(),
+          item.rationale
+        ]),
+        head: [["Product", "Source", "Risk", "Units", "Recommendation"]],
+        headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105] },
+        margin: { left: margin, right: margin },
+        startY: nextY,
+        styles: { cellPadding: 2.5, fontSize: 7.5, lineColor: [226, 232, 240], lineWidth: 0.2 },
+        theme: "grid"
+      });
+    }
+  }
 
   addPageNumber(doc);
   doc.save(`ysabelle-operational-summary-${fileDate(summary.generatedAt)}.pdf`);
