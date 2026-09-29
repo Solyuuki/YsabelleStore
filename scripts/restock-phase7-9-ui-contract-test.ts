@@ -42,6 +42,30 @@ assert.match(
 );
 assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(forecastSource, /Forecast watchlist/);
+const forecastWatchlistBodyStart = forecastSource.indexOf("<TableBody>");
+const forecastWatchlistBodyEnd = forecastSource.indexOf(
+  "</TableBody>",
+  forecastWatchlistBodyStart
+);
+assert.ok(forecastWatchlistBodyStart >= 0);
+assert.ok(forecastWatchlistBodyEnd > forecastWatchlistBodyStart);
+const forecastWatchlistBody = forecastSource.slice(
+  forecastWatchlistBodyStart,
+  forecastWatchlistBodyEnd
+);
+assert.match(forecastWatchlistBody, /role="button"/);
+assert.match(forecastWatchlistBody, /tabIndex=\{0\}/);
+assert.match(forecastWatchlistBody, /aria-pressed=\{selectedRow\}/);
+assert.match(
+  forecastWatchlistBody,
+  /onClick=\{\(\) => setSelectedProductId\(item\.product\.id\)\}/
+);
+assert.match(forecastWatchlistBody, /event\.key !== "Enter"/);
+assert.match(forecastWatchlistBody, /event\.key !== " "/);
+assert.match(forecastWatchlistBody, /cursor-pointer/);
+assert.match(forecastWatchlistBody, /select-none/);
+assert.match(forecastWatchlistBody, /focus-visible:ring-indigo-500/);
+assert.doesNotMatch(forecastWatchlistBody, /<button/);
 assert.match(forecastSource, /loadAllRestockPlanningCandidates\(controller\.signal\)/);
 assert.match(forecastViewModelSource, /includeZero:\s*true/);
 assert.match(forecastSource, /Recommended next step/);

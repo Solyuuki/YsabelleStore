@@ -314,22 +314,30 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                       const activeRestock = activeRestockByProduct.get(item.product.id) ?? null;
                       return (
                         <TableRow
-                          className={selectedRow ? "bg-indigo-50/70" : "hover:bg-slate-50"}
+                          aria-label={`View forecast for ${item.product.name}`}
+                          aria-pressed={selectedRow}
+                          className={`cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
+                            selectedRow
+                              ? "bg-indigo-50/70 hover:bg-indigo-50/80"
+                              : "hover:bg-slate-50"
+                          }`}
                           key={item.product.id}
+                          onClick={() => setSelectedProductId(item.product.id)}
+                          onKeyDown={(event) => {
+                            if (event.key !== "Enter" && event.key !== " ") return;
+                            event.preventDefault();
+                            setSelectedProductId(item.product.id);
+                          }}
+                          role="button"
+                          tabIndex={0}
                         >
                           <TableCell className="max-w-[16rem]">
-                            <button
-                              className="w-full text-left"
-                              onClick={() => setSelectedProductId(item.product.id)}
-                              type="button"
-                            >
-                              <span className="block truncate font-medium text-slate-950">
-                                {item.product.name}
-                              </span>
-                              <span className="mt-0.5 block text-xs text-slate-500">
-                                {sourceLabel(item)} · {item.product.sku}
-                              </span>
-                            </button>
+                            <span className="block truncate font-medium text-slate-950">
+                              {item.product.name}
+                            </span>
+                            <span className="mt-0.5 block text-xs text-slate-500">
+                              {sourceLabel(item)} · {item.product.sku}
+                            </span>
                           </TableCell>
                           <TableCell>
                             <Badge
