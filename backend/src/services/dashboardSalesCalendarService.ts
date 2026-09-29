@@ -228,36 +228,6 @@ export async function getDashboardSalesDay(
   };
 }
 
-export async function setDashboardSalesTarget(
-  date: string,
-  targetAmount: number | null,
-  userId: string
-) {
-  assertValidDateKey(date);
-  const businessDate = businessDateValue(date);
-
-  if (targetAmount === null) {
-    await prisma.dailySalesTarget.deleteMany({ where: { businessDate } });
-    return { date, targetAmount: null };
-  }
-
-  const target = await prisma.dailySalesTarget.upsert({
-    create: {
-      businessDate,
-      createdById: userId,
-      targetAmount: new Prisma.Decimal(targetAmount.toFixed(2)),
-      updatedById: userId
-    },
-    update: {
-      targetAmount: new Prisma.Decimal(targetAmount.toFixed(2)),
-      updatedById: userId
-    },
-    where: { businessDate }
-  });
-
-  return { date, targetAmount: target.targetAmount.toFixed(2) };
-}
-
 function aggregateSalesByDate(sales: SaleRow[]) {
   const result = new Map<string, { amount: Prisma.Decimal; sales: number; units: number }>();
 

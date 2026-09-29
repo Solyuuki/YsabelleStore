@@ -5,8 +5,7 @@ import {
   getDashboardSalesCalendarController,
   getDashboardSalesDayController,
   getDashboardSummaryController,
-  getNavigationBadgesController,
-  setDashboardSalesTargetController
+  getNavigationBadgesController
 } from "../controllers/dashboardController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
@@ -25,11 +24,6 @@ dashboardRouter.get(
   "/sales-calendar/day",
   requireRole("OWNER", "STAFF"),
   getDashboardSalesDayController
-);
-dashboardRouter.put(
-  "/sales-calendar/targets/:date",
-  requireRole("OWNER"),
-  setDashboardSalesTargetController
 );
 dashboardRouter.get(
   "/navigation-badges",

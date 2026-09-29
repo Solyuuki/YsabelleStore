@@ -78,16 +78,17 @@ assert.match(
 assert.match(dashboardBackendSource, /forecastHorizonMonths:\s*summary\.forecastPeriod\.months/);
 assert.doesNotMatch(dashboardBackendSource, /summary\.forecastUnits2026/);
 
-assert.match(dashboardSource, /<SalesPulseCard isOwner=\{isOwner\} summary=\{summary\} \/>/);
-assert.match(salesPulseSource, /useState<"calendar" \| "activity">\("calendar"\)/);
+assert.match(dashboardSource, /<SalesPulseCard isOwner summary=\{summary\} \/>/);
+assert.match(dashboardSource, /<SalesPulseCard isOwner=\{false\} summary=\{summary\} \/>/);
+assert.match(salesPulseSource, /useState<"calendar" \| "performance">\("calendar"\)/);
 assert.match(salesPulseSource, /Calendar\s*<\/button>/);
-assert.match(salesPulseSource, /Activity chart\s*<\/button>/);
+assert.match(salesPulseSource, /Performance\s*<\/button>/);
 assert.match(salesPulseSource, /fetchDashboardSalesCalendar/);
 assert.match(salesPulseSource, /fetchDashboardSalesDay/);
-assert.match(salesPulseSource, /saveDashboardSalesTarget/);
-assert.match(salesPulseSource, /Forecast is shown only at monthly resolution/);
+assert.doesNotMatch(salesPulseSource, /saveDashboardSalesTarget/);
+assert.match(salesPulseSource, /Daily targets are generated automatically from/);
 assert.match(dashboardApiSource, /\/api\/dashboard\/sales-calendar\?month=/);
 assert.match(dashboardApiSource, /\/api\/dashboard\/sales-calendar\/day\?date=/);
-assert.match(dashboardApiSource, /\/api\/dashboard\/sales-calendar\/targets\//);
+assert.doesNotMatch(dashboardApiSource, /\/api\/dashboard\/sales-calendar\/targets\//);
 
 console.log("Sales Pulse calendar frontend contract passed.");

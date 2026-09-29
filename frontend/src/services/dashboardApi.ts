@@ -213,19 +213,3 @@ export async function fetchDashboardSalesDay(date: string) {
 
   return response.data;
 }
-
-export async function saveDashboardSalesTarget(date: string, targetAmount: number | null) {
-  const response = await apiClient.request<{ date: string; targetAmount: string | null }, never>(
-    `/api/dashboard/sales-calendar/targets/${encodeURIComponent(date)}`,
-    {
-      json: { targetAmount },
-      method: "PUT"
-    }
-  );
-
-  if (!response.success || !response.data) {
-    throw new Error(response.message);
-  }
-
-  return response.data;
-}
