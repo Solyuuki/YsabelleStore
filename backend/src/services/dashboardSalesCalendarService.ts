@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, type UserRole } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import type { ProductForecastDetail } from "../modules/forecasting/forecast.types.js";
@@ -55,6 +55,7 @@ type SaleRow = {
 
 export async function getDashboardSalesCalendar(
   month: string,
+  role: UserRole,
   now = new Date()
 ): Promise<DashboardSalesCalendar> {
   const { end, start } = getManilaMonthRange(month);
@@ -82,7 +83,7 @@ export async function getDashboardSalesCalendar(
         targetAmount: true
       }
     }),
-    getMonthlyForecastEstimate(month)
+    role === "OWNER" ? getMonthlyForecastEstimate(month) : Promise.resolve(null)
   ]);
 
   const todayKey = manilaDateKey(now);
@@ -209,11 +210,11 @@ export async function setDashboardSalesTarget(
     create: {
       businessDate,
       createdById: userId,
-      targetAmount: new Prisma.Decimal(targetAmount),
+      targetAmount: new Prisma.Decimal(targetAmount.toFixed(2)),
       updatedById: userId
     },
     update: {
-      targetAmount: new Prisma.Decimal(targetAmount),
+      targetAmount: new Prisma.Decimal(targetAmount.toFixed(2)),
       updatedById: userId
     },
     where: { businessDate }

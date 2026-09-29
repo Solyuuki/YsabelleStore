@@ -33,6 +33,10 @@ const dashboardApiSource = readFileSync(
   resolve(process.cwd(), "src/services/dashboardApi.ts"),
   "utf8"
 );
+const salesPulseSource = readFileSync(
+  resolve(process.cwd(), "src/components/dashboard/SalesPulseCard.tsx"),
+  "utf8"
+);
 const dashboardBackendSource = readFileSync(
   resolve(process.cwd(), "../backend/src/services/dashboardService.ts"),
   "utf8"
@@ -77,3 +81,21 @@ assert.match(
   /forecastHorizonMonths:\s*summary\.forecastPeriod\.months/
 );
 assert.doesNotMatch(dashboardBackendSource, /summary\.forecastUnits2026/);
+
+
+assert.match(dashboardSource, /<SalesPulseCard isOwner=\{isOwner\} summary=\{summary\} \/>/);
+assert.match(salesPulseSource, /useState<"calendar" \| "activity">\("calendar"\)/);
+assert.match(salesPulseSource, />Calendar<\/button>/);
+assert.match(salesPulseSource, />Activity chart<\/button>/);
+assert.match(salesPulseSource, /fetchDashboardSalesCalendar/);
+assert.match(salesPulseSource, /fetchDashboardSalesDay/);
+assert.match(salesPulseSource, /saveDashboardSalesTarget/);
+assert.match(
+  salesPulseSource,
+  /Forecast is shown only at monthly resolution/
+);
+assert.match(dashboardApiSource, /\/api\/dashboard\/sales-calendar\?month=/);
+assert.match(dashboardApiSource, /\/api\/dashboard\/sales-calendar\/day\?date=/);
+assert.match(dashboardApiSource, /\/api\/dashboard\/sales-calendar\/targets\//);
+
+console.log("Sales Pulse calendar frontend contract passed.");

@@ -88,7 +88,14 @@ export const getDashboardSalesCalendarController: RequestHandler = async (
       });
     }
 
-    const calendar = await getDashboardSalesCalendar(parsed.data.month);
+    const user = getAuthenticatedUser(request);
+    if (!user) {
+      throw new HttpError(401, "Authentication token is required.", {
+        code: "AUTH_TOKEN_REQUIRED"
+      });
+    }
+
+    const calendar = await getDashboardSalesCalendar(parsed.data.month, user.role);
     response
       .status(200)
       .json(createSuccessResponse("Sales calendar loaded successfully.", calendar));

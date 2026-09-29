@@ -87,8 +87,6 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
 
   useEffect(() => {
     void loadCalendar(month);
-    // Calendar reloads when its visible month changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month]);
 
   useEffect(() => {
@@ -226,15 +224,19 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               <SummaryTile
                 label="Forecast"
                 value={
-                  calendar?.summary.forecastAmount
-                    ? formatCurrency(calendar.summary.forecastAmount)
-                    : "Unavailable"
+                  !isOwner
+                    ? "Protected"
+                    : calendar?.summary.forecastAmount
+                      ? formatCurrency(calendar.summary.forecastAmount)
+                      : "Unavailable"
                 }
                 helper={
-                  calendar?.summary.forecastUnits !== null &&
-                  calendar?.summary.forecastUnits !== undefined
-                    ? `${calendar.summary.forecastUnits.toLocaleString()} forecast units · monthly estimate`
-                    : "No forecast for this month"
+                  !isOwner
+                    ? "Owner verification required"
+                    : calendar?.summary.forecastUnits !== null &&
+                        calendar?.summary.forecastUnits !== undefined
+                      ? `${calendar.summary.forecastUnits.toLocaleString()} forecast units · monthly estimate`
+                      : "No forecast for this month"
                 }
               />
               <SummaryTile
@@ -453,8 +455,8 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
 
             <p className="text-xs text-slate-500">
               Actuals come from completed POS sales. Targets are owner-managed per business day.
-              Forecast is shown only at monthly resolution because the forecasting model produces monthly
-              output; it is not artificially distributed across days.
+              Forecast is shown only at monthly resolution because the forecasting model produces
+              monthly output; it is not artificially distributed across days.
             </p>
           </div>
         ) : (
@@ -483,22 +485,22 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               ) : (
                 <ResponsiveContainer height="100%" width="100%">
                   <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
-                  <defs>
+                    <defs>
                     <linearGradient id="dashboardSalesAreaCalendar" x1="0" x2="0" y1="0" y2="1">
                       <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
                       <stop offset="65%" stopColor="#008cff" stopOpacity={0.1} />
                       <stop offset="100%" stopColor="#f43f8c" stopOpacity={0.02} />
                     </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
-                  <XAxis
+                    </defs>
+                    <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
+                    <XAxis
                     axisLine={false}
                     dataKey="label"
                     interval={1}
                     tick={{ fill: "#94a3b8", fontSize: 11 }}
                     tickLine={false}
                   />
-                  <Tooltip
+                    <Tooltip
                     contentStyle={{
                       backgroundColor: "#514bcf",
                       border: "1px solid rgba(255,255,255,0.16)",
@@ -512,7 +514,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     itemStyle={{ color: "#ffffff" }}
                     labelStyle={{ color: "#ffffff", fontWeight: 600, marginBottom: "4px" }}
                   />
-                  <Area
+                    <Area
                     dataKey="amount"
                     fill="url(#dashboardSalesAreaCalendar)"
                     fillOpacity={1}

@@ -17,7 +17,7 @@ export const dashboardSalesTargetParamsSchema = z.object({
 
 export const dashboardSalesTargetBodySchema = z.object({
   targetAmount: z
-    .union([z.number(), z.string(), z.null()])
+    .union([z.number(), z.string().trim().min(1), z.null()])
     .transform((value) => (value === null ? null : Number(value)))
     .refine(
       (value) => value === null || (Number.isFinite(value) && value >= 0 && value <= 9_999_999_999.99),

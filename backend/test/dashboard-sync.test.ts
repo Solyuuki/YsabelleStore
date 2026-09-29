@@ -6,6 +6,10 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "../src/database/prismaClient.js";
 import { getDashboardSummary } from "../src/services/dashboardService.js";
+import {
+  getDashboardSalesCalendar,
+  getDashboardSalesDay
+} from "../src/services/dashboardSalesCalendarService.js";
 import { ensureCatalogInventoryShells } from "../src/services/inventoryBootstrapService.js";
 import { addStock } from "../src/services/inventoryService.js";
 import { createCategory, createProduct } from "../src/services/productService.js";
@@ -193,6 +197,113 @@ test(
     assert.equal(after.forecast.access, "RESTRICTED");
   }
 );
+
+test(
+  "sales calendar groups completed sales by Manila business day",
+  { concurrency: false },
+  async () => {
+    const now = new Date("2026-09-20T04:00:00.000Z");
+    const saleDate = new Date("2026-09-18T15:30:00.000Z");
+    const beforeCalendar = await getDashboardSalesCalendar("2026-09", "STAFF", now);
+    const beforeDay = await getDashboardSalesDay("2026-09-18", now);
+    const beforeCalendarDay = beforeCalendar.days.find((day) => day.date === "2026-09-18");
+    assert.ok(beforeCalendarDay);
+
+    const category = await createCategory({ name: uniqueLabel("Calendar Category") });
+    const product = await createProduct({
+      categoryId: category.id,
+      costPrice: "8.00",
+      dataQualityStatus: "APPROVED",
+      isStorefrontVisible: false,
+      name: uniqueLabel("Calendar Product"),
+      reorderLevel: 2,
+      sellingPrice: "12.50",
+      sku: uniqueSku("CALENDAR"),
+      status: "ACTIVE",
+      targetStockLevel: 10,
+      unit: "PIECE"
+    });
+
+    await prisma.sale.create({
+      data: {
+        items: {
+          create: {
+            productId: product.id,
+            quantity: 2,
+            totalAmount: new Prisma.Decimal("25.00"),
+            unitPrice: new Prisma.Decimal("12.50")
+          }
+        },
+        saleDate,
+        saleNumber: uniqueLabel("CALENDAR-SALE"),
+        status: "COMPLETED",
+        subtotalAmount: new Prisma.Decimal("25.00"),
+        totalAmount: new Prisma.Decimal("25.00")
+      }
+    });
+
+    const afterCalendar = await getDashboardSalesCalendar("2026-09", "STAFF", now);
+    const afterDay = await getDashboardSalesDay("2026-09-18", now);
+    const afterCalendarDay = afterCalendar.days.find((day) => day.date === "2026-09-18");
+    assert.ok(afterCalendarDay);
+
+    assert.equal(
+      Number(afterCalendarDay.actualAmount),
+      Number(beforeCalendarDay.actualAmount) + 25
+    );
+    assert.equal(afterCalendarDay.completedSales, beforeCalendarDay.completedSales + 1);
+    assert.equal(afterCalendarDay.unitsSold, beforeCalendarDay.unitsSold + 2);
+    assert.equal(Number(afterDay.actualAmount), Number(beforeDay.actualAmount) + 25);
+    assert.equal(afterDay.completedSales, beforeDay.completedSales + 1);
+    assert.equal(afterDay.unitsSold, beforeDay.unitsSold + 2);
+    assert.equal(
+      afterDay.activity.reduce((sum, bucket) => sum + bucket.saleCount, 0),
+      beforeDay.activity.reduce((sum, bucket) => sum + bucket.saleCount, 0) + 1
+    );
+  }
+);
+
+test(
+  "sales calendar reads durable daily targets without fabricating daily forecasts",
+  { concurrency: false },
+  async () => {
+    const date = "2099-12-31";
+    const businessDate = new Date(`${date}T00:00:00.000Z`);
+
+    await prisma.dailySalesTarget.deleteMany({ where: { businessDate } });
+
+    try {
+      await prisma.dailySalesTarget.create({
+        data: {
+          businessDate,
+          targetAmount: new Prisma.Decimal("1234.50")
+        }
+      });
+
+      const calendar = await getDashboardSalesCalendar(
+        "2099-12",
+        "STAFF",
+        new Date("2099-12-01T04:00:00.000Z")
+      );
+      const day = calendar.days.find((candidate) => candidate.date === date);
+
+      assert.ok(day);
+      assert.equal(day.targetAmount, "1234.50");
+      assert.equal(day.status, "FUTURE");
+      assert.equal(calendar.summary.forecastAmount, null);
+      assert.equal(calendar.summary.forecastUnits, null);
+    } finally {
+      await prisma.dailySalesTarget.deleteMany({ where: { businessDate } });
+    }
+  }
+);
+
+test("sales calendar rejects impossible business dates", async () => {
+  await assert.rejects(
+    () => getDashboardSalesDay("2026-02-31"),
+    /Sales calendar date is invalid/
+  );
+});
 
 function uniqueLabel(prefix: string) {
   return `${prefix}-${randomUUID().slice(0, 8)}`;
