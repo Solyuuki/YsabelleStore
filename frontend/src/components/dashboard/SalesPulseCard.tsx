@@ -6,7 +6,7 @@ import {
   LineChart,
   Target
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 import { Button } from "@/components/ui/button";
@@ -66,9 +66,11 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [targetInput, setTargetInput] = useState("");
   const [savingTarget, setSavingTarget] = useState(false);
+  const lastSummaryGeneratedAt = useRef(summary.generatedAt);
 
   async function loadCalendar(activeMonth = month) {
     setLoadingCalendar(true);
+    setCalendar((current) => (current?.month === activeMonth ? current : null));
     try {
       const data = await fetchDashboardSalesCalendar(activeMonth);
       setCalendar(data);
@@ -92,6 +94,8 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
   useEffect(() => {
     let active = true;
     setLoadingDetail(true);
+    setDetail(null);
+    setTargetInput("");
 
     void fetchDashboardSalesDay(selectedDate)
       .then((data) => {
@@ -112,13 +116,25 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
     };
   }, [selectedDate]);
 
+  useEffect(() => {
+    if (lastSummaryGeneratedAt.current === summary.generatedAt) return;
+    lastSummaryGeneratedAt.current = summary.generatedAt;
+
+    if (month === today.slice(0, 7)) {
+      void loadCalendar(month);
+    }
+    if (selectedDate === today) {
+      void refreshDetail(selectedDate);
+    }
+  }, [month, selectedDate, summary.generatedAt, today]);
+
   const firstWeekday = useMemo(() => {
     const first = calendar?.days[0]?.date;
     return first ? new Date(`${first}T00:00:00.000Z`).getUTCDay() : 0;
   }, [calendar]);
 
   const selectedCalendarDay = calendar?.days.find((day) => day.date === selectedDate) ?? null;
-  const chartData = (detail?.activity ?? summary.sales.activity).map((bucket) => ({
+  const chartData = (detail?.activity ?? []).map((bucket) => ({
     amount: Number(bucket.totalAmount),
     label: bucket.label,
     sales: bucket.saleCount
@@ -190,7 +206,10 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
         {view === "calendar" ? (
           <div className="space-y-5">
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <SummaryTile label="Actual sales" value={formatCurrency(calendar?.summary.actualAmount ?? "0")} />
+              <SummaryTile
+                label="Actual sales"
+                value={formatCurrency(calendar?.summary.actualAmount ?? "0")}
+              />
               <SummaryTile
                 label="Target"
                 value={
@@ -457,8 +476,13 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               </div>
             </div>
             <div className="h-64 w-full">
-              <ResponsiveContainer height="100%" width="100%">
-                <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
+              {loadingDetail ? (
+                <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-400">
+                  Loading selected-day activity…
+                </div>
+              ) : (
+                <ResponsiveContainer height="100%" width="100%">
+                  <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
                   <defs>
                     <linearGradient id="dashboardSalesAreaCalendar" x1="0" x2="0" y1="0" y2="1">
                       <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
@@ -496,8 +520,9 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     strokeWidth={2.5}
                     type="monotone"
                   />
-                </AreaChart>
-              </ResponsiveContainer>
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
               <span className="flex items-center gap-1.5">

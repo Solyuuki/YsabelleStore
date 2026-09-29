@@ -16,6 +16,7 @@ const REQUIRED_RUNTIME_EXCLUSIONS = new Set([
   "customer_order_items",
   "sales",
   "sale_items",
+  "daily_sales_targets",
   "inventory",
   "inventory_batches",
   "inventory_movements"
