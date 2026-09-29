@@ -224,12 +224,13 @@ export function ProductDetailPage({
       </div>
     );
   const outOfStock = product.availableStock <= 0;
-  const isFavorite = favoriteIds.has(product.id);
+  const activeProductId = product.id;
+  const isFavorite = favoriteIds.has(activeProductId);
 
   async function handleFavorite() {
-    const result = await toggleFavorite(product.id);
+    const result = await toggleFavorite(activeProductId);
     if (result === "auth-required") {
-      navigate(buildCustomerAuthPath("/login", `/product/${product.id}`));
+      navigate(buildCustomerAuthPath("/login", `/product/${activeProductId}`));
     }
   }
 
@@ -455,6 +456,7 @@ function ReviewsSection({
       aria-busy={resource.status === "loading"}
       aria-labelledby="product-reviews-heading"
       className="customer-product-reviews"
+      id="reviews"
     >
       <ProductDetailReveal className="product-detail-reveal--heading">
         <header className="customer-product-section-heading">
