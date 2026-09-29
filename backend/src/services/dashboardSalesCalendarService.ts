@@ -325,7 +325,7 @@ function manilaDateKey(date: Date) {
 }
 
 function assertValidDateKey(date: string) {
-  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(date);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
   if (!match) {
     throw new HttpError(400, "Sales calendar date is invalid.", {
       code: "INVALID_SALES_CALENDAR_DATE"
