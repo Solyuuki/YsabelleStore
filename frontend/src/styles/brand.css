@@ -1,7 +1,3 @@
-.customer-app {
-  --ysabelle-brand-fallback: linear-gradient(145deg, #008cff, #625bff 48%, #f43f8c);
-}
-
 .ysabelle-brand-mark {
   position: relative;
   display: inline-grid;
@@ -9,8 +5,8 @@
   overflow: hidden;
   place-items: center;
   border-radius: 50%;
-  background: var(--ysabelle-brand-fallback);
-  box-shadow: 0 8px 20px rgb(98 91 255 / 24%);
+  background: transparent;
+  box-shadow: none;
   isolation: isolate;
 }
 
@@ -29,7 +25,6 @@
   height: clamp(6rem, 7vw, 7rem);
 }
 
-.ysabelle-brand-mark__fallback,
 .ysabelle-brand-mark__image {
   position: absolute;
   inset: 0;
@@ -37,21 +32,9 @@
   height: 100%;
 }
 
-.ysabelle-brand-mark__fallback {
-  z-index: 0;
-  margin: auto;
-  padding: 24%;
-  color: #fff;
-}
-
 .ysabelle-brand-mark__image {
-  z-index: 1;
   display: block;
   object-fit: contain;
-}
-
-.ysabelle-brand-mark__image[hidden] {
-  display: none;
 }
 
 .ysabelle-brand-mark.story-welcome__mark--branded {
@@ -59,8 +42,8 @@
   height: clamp(6rem, 7vw, 7rem);
   overflow: hidden;
   border-radius: 50%;
-  background: var(--ysabelle-brand-fallback);
-  box-shadow: 0 22px 45px rgb(98 91 255 / 24%);
+  background: transparent;
+  box-shadow: none;
 }
 
 .story-live-store__identity--branded > svg {
