@@ -371,11 +371,6 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                   ))}
                 </div>
 
-                {loadingCalendar ? (
-                  <div className="border-t border-slate-100 px-4 py-2 text-xs text-slate-400">
-                    Refreshing calendar…
-                  </div>
-                ) : null}
               </div>
 
               <div className="self-start rounded-xl border border-slate-200 bg-slate-50/60 p-4">
