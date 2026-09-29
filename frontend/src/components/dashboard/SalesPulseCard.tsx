@@ -370,7 +370,6 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     />
                   ))}
                 </div>
-
               </div>
 
               <div className="self-start rounded-xl border border-slate-200 bg-slate-50/60 p-4">
