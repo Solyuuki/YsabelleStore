@@ -440,7 +440,9 @@ function ReviewsSection({
     try {
       await saveStorefrontProductReview(productId, { rating: reviewRating, comment });
       clearReviewDraft(productId);
-      setReviewMessage(reviewContext.review ? "Your review was updated." : "Your review was published.");
+      setReviewMessage(
+        reviewContext.review ? "Your review was updated." : "Your review was published."
+      );
       const nextContext = await fetchStorefrontReviewContext(productId);
       setReviewContext(nextContext);
       onReviewSaved();
@@ -531,7 +533,7 @@ function ReviewsSection({
                   {authStatus === "authenticated"
                     ? reviewContext?.eligible
                       ? "Verified purchase detected. Your rating and comment can be published."
-                      : reviewContext?.reason ?? "Checking your purchase eligibility."
+                      : (reviewContext?.reason ?? "Checking your purchase eligibility.")
                     : "Write now if you want. Your draft will be kept when you sign in."}
                 </p>
               </div>
@@ -542,7 +544,11 @@ function ReviewsSection({
                 </span>
               ) : null}
             </div>
-            <div className="customer-review-composer__stars" role="radiogroup" aria-label="Your rating">
+            <div
+              className="customer-review-composer__stars"
+              role="radiogroup"
+              aria-label="Your rating"
+            >
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   aria-checked={reviewRating === star}
@@ -552,10 +558,7 @@ function ReviewsSection({
                   role="radio"
                   type="button"
                 >
-                  <Star
-                    aria-hidden="true"
-                    fill={star <= reviewRating ? "currentColor" : "none"}
-                  />
+                  <Star aria-hidden="true" fill={star <= reviewRating ? "currentColor" : "none"} />
                 </button>
               ))}
             </div>
@@ -633,7 +636,9 @@ function ReviewsSection({
                     <div>
                       <strong>{review.reviewerDisplayName}</strong>
                       <span className="customer-review__meta">
-                        <time dateTime={review.createdAt}>{formatReviewDate(review.createdAt)}</time>
+                        <time dateTime={review.createdAt}>
+                          {formatReviewDate(review.createdAt)}
+                        </time>
                         {review.verifiedPurchase ? (
                           <span className="customer-review__verified">
                             <BadgeCheck aria-hidden="true" /> Verified purchase

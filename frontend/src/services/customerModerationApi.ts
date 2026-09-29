@@ -93,10 +93,13 @@ export async function updateCustomerModerationAccount(
   id: string,
   input: { status: "ACTIVE" | "SUSPENDED" | "BANNED"; reason: string }
 ) {
-  const response = await apiClient.request<{ id: string; status: CustomerModerationAccount["status"] }>(
-    `/api/customer-admin/accounts/${encodeURIComponent(id)}/status`,
-    { method: "PATCH", json: input }
-  );
+  const response = await apiClient.request<{
+    id: string;
+    status: CustomerModerationAccount["status"];
+  }>(`/api/customer-admin/accounts/${encodeURIComponent(id)}/status`, {
+    method: "PATCH",
+    json: input
+  });
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
 }
@@ -131,10 +134,13 @@ export async function updateCustomerModerationReview(
   id: string,
   input: { status: "VISIBLE" | "HIDDEN" | "REMOVED"; reason: string }
 ) {
-  const response = await apiClient.request<{ id: string; status: CustomerModerationReview["status"] }>(
-    `/api/customer-admin/reviews/${encodeURIComponent(id)}/status`,
-    { method: "PATCH", json: input }
-  );
+  const response = await apiClient.request<{
+    id: string;
+    status: CustomerModerationReview["status"];
+  }>(`/api/customer-admin/reviews/${encodeURIComponent(id)}/status`, {
+    method: "PATCH",
+    json: input
+  });
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
 }

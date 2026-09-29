@@ -506,9 +506,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
               <div>
                 <p className="customer-eyebrow">Saved for later</p>
                 <h2 id="favorites-title">Your favorites</h2>
-                <p>
-                  Products saved with the heart button stay connected to this customer account.
-                </p>
+                <p>Products saved with the heart button stay connected to this customer account.</p>
               </div>
               <Heart aria-hidden="true" size={22} />
             </div>

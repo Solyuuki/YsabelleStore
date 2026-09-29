@@ -97,9 +97,7 @@ export function CustomerFavoritesProvider({ children }: { children: ReactNode })
   );
 
   return (
-    <CustomerFavoritesContext.Provider value={value}>
-      {children}
-    </CustomerFavoritesContext.Provider>
+    <CustomerFavoritesContext.Provider value={value}>{children}</CustomerFavoritesContext.Provider>
   );
 }
 

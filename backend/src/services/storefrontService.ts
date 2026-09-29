@@ -402,9 +402,7 @@ export async function listStorefrontMerchandising(now = new Date()) {
     };
   }
 
-  const trendingWindowStart = new Date(
-    now.getTime() - TRENDING_WINDOW_DAYS * 24 * 60 * 60 * 1000
-  );
+  const trendingWindowStart = new Date(now.getTime() - TRENDING_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   const [
     availableProducts,
     effectiveSeries,
@@ -664,10 +662,7 @@ export async function removeCustomerFavorite(customerAccountId: string, productI
   return { productId, favorited: false as const };
 }
 
-export async function getCustomerReviewContext(
-  customerAccountId: string,
-  productId: string
-) {
+export async function getCustomerReviewContext(customerAccountId: string, productId: string) {
   await requireStorefrontProduct(productId);
   const [existingReview, verifiedOrder] = await Promise.all([
     prisma.productReview.findUnique({
@@ -751,9 +746,13 @@ export async function upsertCustomerProductReview(
     });
   }
   if (existingReview && existingReview.status !== "VISIBLE") {
-    throw new HttpError(409, "This review is currently under moderation and cannot be republished.", {
-      code: "CUSTOMER_REVIEW_MODERATED"
-    });
+    throw new HttpError(
+      409,
+      "This review is currently under moderation and cannot be republished.",
+      {
+        code: "CUSTOMER_REVIEW_MODERATED"
+      }
+    );
   }
 
   const comment = normalizeReviewComment(input.comment);

@@ -88,7 +88,9 @@ export function ProductCard({
             showCategory={false}
           />
           {resolvedBadge ? (
-            <span className={`customer-product-badge customer-product-badge--${resolvedBadge.tone}`}>
+            <span
+              className={`customer-product-badge customer-product-badge--${resolvedBadge.tone}`}
+            >
               {resolvedBadge.label}
             </span>
           ) : null}

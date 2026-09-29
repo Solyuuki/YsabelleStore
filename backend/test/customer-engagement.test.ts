@@ -65,7 +65,10 @@ test("favorites persist per customer and verified reviews require a completed pu
 
     await addCustomerFavorite(registered.customer.id, product.id);
     const favorites = await listCustomerFavoriteProducts(registered.customer.id);
-    assert.equal(favorites.some((favorite) => favorite.id === product.id), true);
+    assert.equal(
+      favorites.some((favorite) => favorite.id === product.id),
+      true
+    );
 
     await removeCustomerFavorite(registered.customer.id, product.id);
     assert.equal((await listCustomerFavoriteProducts(registered.customer.id)).length, 0);

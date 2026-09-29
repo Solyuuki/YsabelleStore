@@ -46,8 +46,16 @@ type UserManagementPageProps = {
 type ManagementTab = "store" | "customers";
 type CustomerView = "accounts" | "reviews";
 type ModerationTarget =
-  | { kind: "account"; item: CustomerModerationAccount; nextStatus: "ACTIVE" | "SUSPENDED" | "BANNED" }
-  | { kind: "review"; item: CustomerModerationReview; nextStatus: "VISIBLE" | "HIDDEN" | "REMOVED" };
+  | {
+      kind: "account";
+      item: CustomerModerationAccount;
+      nextStatus: "ACTIVE" | "SUSPENDED" | "BANNED";
+    }
+  | {
+      kind: "review";
+      item: CustomerModerationReview;
+      nextStatus: "VISIBLE" | "HIDDEN" | "REMOVED";
+    };
 
 export function UserManagementPage({ error, onRegister, user }: UserManagementPageProps) {
   const [activeTab, setActiveTab] = useState<ManagementTab>("store");
@@ -91,15 +99,21 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
         .then((result) => {
           if (controller.signal.aborted) return;
           if (customerView === "accounts") {
-            setAccounts((result as Awaited<ReturnType<typeof fetchCustomerModerationAccounts>>).items);
+            setAccounts(
+              (result as Awaited<ReturnType<typeof fetchCustomerModerationAccounts>>).items
+            );
           } else {
-            setReviews((result as Awaited<ReturnType<typeof fetchCustomerModerationReviews>>).items);
+            setReviews(
+              (result as Awaited<ReturnType<typeof fetchCustomerModerationReviews>>).items
+            );
           }
         })
         .catch((reason: unknown) => {
           if (!controller.signal.aborted) {
             setModerationError(
-              reason instanceof Error ? reason.message : "Customer moderation data could not be loaded."
+              reason instanceof Error
+                ? reason.message
+                : "Customer moderation data could not be loaded."
             );
           }
         })
@@ -155,10 +169,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
 
     setIsSubmitting(true);
     try {
-      const created = await onRegister(
-        { name, email, password, role },
-        { preserveSession: true }
-      );
+      const created = await onRegister({ name, email, password, role }, { preserveSession: true });
       if (created) resetForm();
     } finally {
       setIsSubmitting(false);
@@ -314,7 +325,11 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                   type="submit"
                 >
                   <UserPlus className="h-4 w-4" aria-hidden="true" />
-                  {isSubmitting ? "Creating..." : role === "STAFF" ? "Create Staff Account" : "Create Account"}
+                  {isSubmitting
+                    ? "Creating..."
+                    : role === "STAFF"
+                      ? "Create Staff Account"
+                      : "Create Account"}
                 </Button>
               </form>
             </CardContent>
@@ -348,20 +363,30 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
           <div className="grid gap-3 md:grid-cols-3">
             <Card>
               <CardContent className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Loaded customers</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  Loaded customers
+                </p>
                 <p className="mt-1 text-2xl font-semibold text-slate-950">{accounts.length}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Active</p>
-                <p className="mt-1 text-2xl font-semibold text-emerald-700">{accountSummary.active}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  Active
+                </p>
+                <p className="mt-1 text-2xl font-semibold text-emerald-700">
+                  {accountSummary.active}
+                </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Restricted</p>
-                <p className="mt-1 text-2xl font-semibold text-amber-700">{accountSummary.restricted}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  Restricted
+                </p>
+                <p className="mt-1 text-2xl font-semibold text-amber-700">
+                  {accountSummary.restricted}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -418,7 +443,9 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
               ) : null}
 
               {moderationLoading ? (
-                <div className="py-12 text-center text-sm text-slate-500">Loading moderation data...</div>
+                <div className="py-12 text-center text-sm text-slate-500">
+                  Loading moderation data...
+                </div>
               ) : customerView === "accounts" ? (
                 <CustomerAccountModerationList
                   accounts={accounts}
@@ -458,7 +485,9 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
           <DialogHeader>
             <DialogTitle>Moderation history</DialogTitle>
             <DialogDescription>
-              {auditCustomer ? `Recent owner actions for ${auditCustomer.name}.` : "Customer audit history."}
+              {auditCustomer
+                ? `Recent owner actions for ${auditCustomer.name}.`
+                : "Customer audit history."}
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-[420px] space-y-3 overflow-y-auto px-6 pb-6">
@@ -545,7 +574,11 @@ function CustomerAccountModerationList({
   onModerate: (target: ModerationTarget) => void;
 }) {
   if (accounts.length === 0) {
-    return <p className="py-10 text-center text-sm text-slate-500">No customer accounts match this view.</p>;
+    return (
+      <p className="py-10 text-center text-sm text-slate-500">
+        No customer accounts match this view.
+      </p>
+    );
   }
 
   return (
@@ -556,11 +589,14 @@ function CustomerAccountModerationList({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <strong className="text-sm text-slate-950">{account.name}</strong>
-                <StatusBadge variant={accountStatusVariant(account.status)}>{account.status}</StatusBadge>
+                <StatusBadge variant={accountStatusVariant(account.status)}>
+                  {account.status}
+                </StatusBadge>
               </div>
               <p className="mt-1 text-sm text-slate-500">{account.email}</p>
               <p className="mt-2 text-xs text-slate-400">
-                {account.counts.orders} orders · {account.counts.favorites} favorites · {account.counts.reviews} reviews · {account.counts.activeSessions} active sessions
+                {account.counts.orders} orders · {account.counts.favorites} favorites ·{" "}
+                {account.counts.reviews} reviews · {account.counts.activeSessions} active sessions
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -569,7 +605,9 @@ function CustomerAccountModerationList({
               </Button>
               {account.status !== "ACTIVE" ? (
                 <Button
-                  onClick={() => onModerate({ kind: "account", item: account, nextStatus: "ACTIVE" })}
+                  onClick={() =>
+                    onModerate({ kind: "account", item: account, nextStatus: "ACTIVE" })
+                  }
                   size="sm"
                   type="button"
                   variant="secondary"
@@ -579,7 +617,9 @@ function CustomerAccountModerationList({
               ) : null}
               {account.status !== "SUSPENDED" ? (
                 <Button
-                  onClick={() => onModerate({ kind: "account", item: account, nextStatus: "SUSPENDED" })}
+                  onClick={() =>
+                    onModerate({ kind: "account", item: account, nextStatus: "SUSPENDED" })
+                  }
                   size="sm"
                   type="button"
                   variant="secondary"
@@ -589,7 +629,9 @@ function CustomerAccountModerationList({
               ) : null}
               {account.status !== "BANNED" ? (
                 <Button
-                  onClick={() => onModerate({ kind: "account", item: account, nextStatus: "BANNED" })}
+                  onClick={() =>
+                    onModerate({ kind: "account", item: account, nextStatus: "BANNED" })
+                  }
                   size="sm"
                   type="button"
                   variant="secondary"
@@ -613,7 +655,11 @@ function CustomerReviewModerationList({
   onModerate: (target: ModerationTarget) => void;
 }) {
   if (reviews.length === 0) {
-    return <p className="py-10 text-center text-sm text-slate-500">No product reviews match this view.</p>;
+    return (
+      <p className="py-10 text-center text-sm text-slate-500">
+        No product reviews match this view.
+      </p>
+    );
   }
 
   return (
@@ -624,8 +670,12 @@ function CustomerReviewModerationList({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <strong className="text-sm text-slate-950">{review.product.name}</strong>
-                <StatusBadge variant={reviewStatusVariant(review.status)}>{review.status}</StatusBadge>
-                {review.verifiedPurchase ? <StatusBadge variant="success">Verified purchase</StatusBadge> : null}
+                <StatusBadge variant={reviewStatusVariant(review.status)}>
+                  {review.status}
+                </StatusBadge>
+                {review.verifiedPurchase ? (
+                  <StatusBadge variant="success">Verified purchase</StatusBadge>
+                ) : null}
               </div>
               <p className="mt-1 text-xs text-slate-500">
                 {review.rating}/5 · {review.reviewerDisplayName}
@@ -633,13 +683,17 @@ function CustomerReviewModerationList({
               </p>
               <p className="mt-3 text-sm leading-6 text-slate-700">{review.comment}</p>
               {review.moderationReason ? (
-                <p className="mt-2 text-xs text-slate-400">Last moderation: {review.moderationReason}</p>
+                <p className="mt-2 text-xs text-slate-400">
+                  Last moderation: {review.moderationReason}
+                </p>
               ) : null}
             </div>
             <div className="flex flex-wrap gap-2">
               {review.status !== "VISIBLE" ? (
                 <Button
-                  onClick={() => onModerate({ kind: "review", item: review, nextStatus: "VISIBLE" })}
+                  onClick={() =>
+                    onModerate({ kind: "review", item: review, nextStatus: "VISIBLE" })
+                  }
                   size="sm"
                   type="button"
                   variant="secondary"
@@ -658,7 +712,9 @@ function CustomerReviewModerationList({
               )}
               {review.status !== "REMOVED" ? (
                 <Button
-                  onClick={() => onModerate({ kind: "review", item: review, nextStatus: "REMOVED" })}
+                  onClick={() =>
+                    onModerate({ kind: "review", item: review, nextStatus: "REMOVED" })
+                  }
                   size="sm"
                   type="button"
                   variant="secondary"
@@ -718,7 +774,12 @@ function ModerationDialog({
           </label>
         </div>
         <DialogFooter>
-          <Button disabled={saving} onClick={() => onOpenChange(false)} type="button" variant="secondary">
+          <Button
+            disabled={saving}
+            onClick={() => onOpenChange(false)}
+            type="button"
+            variant="secondary"
+          >
             Cancel
           </Button>
           <Button disabled={saving || reason.trim().length < 3} onClick={onSubmit} type="button">

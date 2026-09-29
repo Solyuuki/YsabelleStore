@@ -94,7 +94,6 @@ export async function revokeOtherCustomerSessions(currentPassword: string) {
   );
 }
 
-
 export async function fetchCustomerFavorites(signal?: AbortSignal) {
   return request<StorefrontFavoriteProduct[]>("/api/customer-account/favorites", {
     method: "GET",

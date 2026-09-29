@@ -10,7 +10,8 @@ export function getStorefrontProductBadge(
   placement: "best-seller" | "standard" | "trending" = "standard",
   rank?: number
 ): StorefrontProductBadge | null {
-  if (placement === "trending") return { label: rank ? `Trending #${rank}` : "Trending", tone: "trending" };
+  if (placement === "trending")
+    return { label: rank ? `Trending #${rank}` : "Trending", tone: "trending" };
   if (placement === "best-seller") {
     return {
       label: rank === 1 ? "No. 1 best seller" : "Best seller",

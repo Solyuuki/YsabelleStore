@@ -12,10 +12,22 @@ const [
   storefrontRoutes,
   moderationRoutes
 ] = await Promise.all([
-  readFile(new URL("../../frontend/src/components/customer/ProductCard.tsx", import.meta.url), "utf8"),
-  readFile(new URL("../../frontend/src/pages/customer/ProductDetailPage.tsx", import.meta.url), "utf8"),
-  readFile(new URL("../../frontend/src/pages/customer/CustomerAccountPage.tsx", import.meta.url), "utf8"),
-  readFile(new URL("../../frontend/src/pages/customer/CustomerHomePage.tsx", import.meta.url), "utf8"),
+  readFile(
+    new URL("../../frontend/src/components/customer/ProductCard.tsx", import.meta.url),
+    "utf8"
+  ),
+  readFile(
+    new URL("../../frontend/src/pages/customer/ProductDetailPage.tsx", import.meta.url),
+    "utf8"
+  ),
+  readFile(
+    new URL("../../frontend/src/pages/customer/CustomerAccountPage.tsx", import.meta.url),
+    "utf8"
+  ),
+  readFile(
+    new URL("../../frontend/src/pages/customer/CustomerHomePage.tsx", import.meta.url),
+    "utf8"
+  ),
   readFile(new URL("../../backend/src/services/storefrontService.ts", import.meta.url), "utf8"),
   readFile(new URL("../../backend/src/routes/customerAccount.routes.ts", import.meta.url), "utf8"),
   readFile(new URL("../../backend/src/routes/storefront.routes.ts", import.meta.url), "utf8"),
@@ -46,8 +58,13 @@ test("review posting is verified-purchase gated and preserves drafts through sig
 });
 
 test("trending is driven by verified review momentum rather than recent POS sales", () => {
-  const merchandisingStart = storefrontService.indexOf("export async function listStorefrontMerchandising");
-  const merchandisingEnd = storefrontService.indexOf("export async function getStorefrontProduct", merchandisingStart);
+  const merchandisingStart = storefrontService.indexOf(
+    "export async function listStorefrontMerchandising"
+  );
+  const merchandisingEnd = storefrontService.indexOf(
+    "export async function getStorefrontProduct",
+    merchandisingStart
+  );
   const merchandisingSource = storefrontService.slice(merchandisingStart, merchandisingEnd);
 
   assert.match(merchandisingSource, /productReview\.findMany/);
