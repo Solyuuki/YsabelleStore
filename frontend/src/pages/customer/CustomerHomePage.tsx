@@ -457,7 +457,7 @@ function MerchandisingArea({
       <section className="customer-section home-merchandising home-merchandising--loading">
         <div className="customer-container">
           <SectionHeading eyebrow="What shoppers are choosing" title="Hot Right Now">
-            Checking recent completed sales for the products customers are choosing now.
+            Checking recent verified ratings and customer review momentum.
           </SectionHeading>
           <ProductSkeletons />
         </div>
@@ -473,7 +473,7 @@ function MerchandisingArea({
           title: "Trending Could Not Be Loaded"
         }
       : {
-          message: `Fresh customer activity will appear here after completed sales are recorded in the last ${resource.data.trendingWindowDays} days.`,
+          message: `Products will appear here after recent verified customer ratings and comments build enough positive momentum within the last ${resource.data.trendingWindowDays} days.`,
           title: "Trending Is Building"
         };
   const bestSellerState =
@@ -499,7 +499,7 @@ function MerchandisingArea({
         placement="trending"
         title="Hot Right Now"
       >
-        {`Ranked by completed sales in the last ${resource.data.trendingWindowDays} days.`}
+        {`Based on recent verified ratings, customer comments, and review momentum from the last ${resource.data.trendingWindowDays} days.`}
       </MerchandisingShelf>
       <MerchandisingShelf
         emptyState={bestSellerState}
