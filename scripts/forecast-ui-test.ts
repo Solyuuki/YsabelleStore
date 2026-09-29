@@ -4,9 +4,11 @@ import { readFileSync } from "node:fs";
 import type { ForecastProductSummary } from "../frontend/src/types/forecast";
 import {
   buildMonthWindow,
+  clampForecastWindowStart,
   deriveForecastProducts,
   FORECAST_PRODUCTS_COMPACT_PAGE_SIZE,
   FORECAST_PRODUCTS_DESKTOP_PAGE_SIZE,
+  getForecastDetailWindowSizes,
   getForecastProductsPageSize,
   formatForecastVariance,
   matchesForecastSearch,
@@ -19,16 +21,15 @@ const appLayoutSource = readFileSync("frontend/src/layouts/AppLayout.tsx", "utf8
 function product(input: Partial<ForecastProductSummary>): ForecastProductSummary {
   return {
     category: "Beverages",
+    comparisonPeriodTotal: null,
     currentMonthForecastQuantity: 0,
+    forecastHorizonMonths: 12,
+    forecastHorizonTotal: 0,
     forecastVariancePercentage: null,
-    growthVersus2025: null,
+    growthVersusComparisonPeriod: null,
     productId: "P000",
     productName: "Sample",
     recentHistoricalSalesTotal: 0,
-    totalForecast2026: 0,
-    totalHistorical2024: 0,
-    totalHistorical2025: 0,
-    twelveMonthForecastTotal: 0,
     warningCount: 0,
     ...input
   };
@@ -40,7 +41,7 @@ const products = [
     productId: "P002",
     productName: "Beta Coffee",
     recentHistoricalSalesTotal: 60,
-    twelveMonthForecastTotal: 120
+    forecastHorizonTotal: 120
   }),
   product({
     category: "Snacks",
@@ -48,14 +49,14 @@ const products = [
     productId: "P001",
     productName: "Alpha Crackers",
     recentHistoricalSalesTotal: 40,
-    twelveMonthForecastTotal: 200
+    forecastHorizonTotal: 200
   }),
   product({
     currentMonthForecastQuantity: 10,
     productId: "P003",
     productName: "Gamma Milk",
     recentHistoricalSalesTotal: 90,
-    twelveMonthForecastTotal: 80
+    forecastHorizonTotal: 80
   })
 ];
 const manyProducts = Array.from({ length: 15 }, (_, index) =>
@@ -66,7 +67,7 @@ const manyProducts = Array.from({ length: 15 }, (_, index) =>
     productName:
       index === 14 ? "Zeta Search Target" : `Paged Product ${String(index + 1).padStart(2, "0")}`,
     recentHistoricalSalesTotal: index * 10,
-    twelveMonthForecastTotal: index * 100
+    forecastHorizonTotal: index * 100
   })
 );
 
@@ -85,6 +86,11 @@ assert.deepEqual(buildMonthWindow("2026-07", 12), [
   "2027-06"
 ]);
 assert.deepEqual(buildMonthWindow("2026-12", 12).at(-1), "2027-11");
+assert.deepEqual(getForecastDetailWindowSizes(12), [12]);
+assert.deepEqual(getForecastDetailWindowSizes(36), [12, 24, 36]);
+assert.deepEqual(getForecastDetailWindowSizes(60), [12, 24, 36, 60]);
+assert.equal(clampForecastWindowStart(36, 12, 24), 24);
+assert.equal(clampForecastWindowStart(36, 12, 40), 24);
 
 assert.equal(matchesForecastSearch(products[0]!, "coffee"), true);
 assert.equal(matchesForecastSearch(products[0]!, "P002"), true);
@@ -224,3 +230,12 @@ assert.equal(forecastPageSource.includes("<AppPagination"), true);
 assert.equal(forecastPageSource.includes("waitForMinimumDuration"), false);
 assert.equal(forecastPageSource.includes("FORECAST_PRODUCTS_DESKTOP_QUERY"), true);
 assert.equal(forecastPageSource.includes("forecastRows.map"), true);
+
+
+assert.match(forecastPageSource, /forecastHorizonMonths/);
+assert.match(forecastPageSource, /forecastHorizonTotal/);
+assert.match(forecastPageSource, /Forecast range/);
+assert.match(forecastPageSource, /Next forecast range/);
+assert.match(forecastPageSource, /visibleForecastRows/);
+assert.doesNotMatch(forecastPageSource, /verified 2026 records/);
+assert.doesNotMatch(forecastPageSource, /View this year's product demand forecast/);

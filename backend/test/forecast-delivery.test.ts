@@ -96,11 +96,13 @@ test("database and workbook sources never share a source version", () => {
 test("persisted summary preserves workbook identity and exact aggregate fields", () => {
   const summary = summarizePersistedProduct(detail());
   assert.equal(summary.productId, "workbook:P001");
-  assert.equal(summary.totalHistorical2024, 78);
-  assert.equal(summary.totalHistorical2025, 222);
-  assert.equal(summary.totalForecast2026, 90);
+  assert.equal(summary.forecastHorizonMonths, 12);
+  assert.equal(summary.forecastHorizonTotal, 90);
+  assert.equal(summary.comparisonPeriodTotal, null);
+  assert.equal(summary.growthVersusComparisonPeriod, null);
   assert.equal(summary.currentMonthForecastQuantity, 2);
   assert.equal(summary.forecastVariancePercentage, 10);
+
 });
 
 test("collection query normalizes safe defaults", () => {
@@ -112,15 +114,21 @@ test("collection query normalizes safe defaults", () => {
   });
 });
 
-test("collection query accepts indexed demand sorting", () => {
+test("collection query accepts generic horizon demand sorting", () => {
   const query = forecastListQuerySchema.parse({
     page: "2",
     pageSize: "10",
-    sortBy: "twelveMonthForecastTotal",
+    sortBy: "forecastHorizonTotal",
     sortDirection: "desc"
   });
   assert.equal(query.page, 2);
-  assert.equal(query.sortBy, "twelveMonthForecastTotal");
+  assert.equal(query.sortBy, "forecastHorizonTotal");
+
+  // Legacy aliases remain accepted for older clients.
+  assert.equal(
+    forecastListQuerySchema.parse({ sortBy: "twelveMonthForecastTotal" }).sortBy,
+    "twelveMonthForecastTotal"
+  );
 });
 
 test("collection query rejects oversized pages and unknown sort fields", () => {

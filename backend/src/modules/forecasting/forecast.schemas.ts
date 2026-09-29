@@ -8,10 +8,12 @@ export const forecastListQuerySchema = z.object({
       "productId",
       "productName",
       "category",
-      "totalForecast2026",
-      "growthVersus2025",
       "currentMonthForecastQuantity",
       "recentHistoricalSalesTotal",
+      "forecastHorizonTotal",
+      "growthVersusComparisonPeriod",
+      "totalForecast2026",
+      "growthVersus2025",
       "twelveMonthForecastTotal"
     ])
     .default("productId"),

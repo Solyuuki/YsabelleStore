@@ -4,7 +4,6 @@ import type {
   ForecastGenerationSummary,
   ForecastInputSource,
   ForecastModel,
-  ForecastPoint,
   ForecastProductSummary,
   ForecastSummary,
   HistoricalImportIssue,
@@ -13,7 +12,13 @@ import type {
   ProductForecastDetail
 } from "./forecast.types.js";
 import type { ForecastDeliveryStatus, ForecastRefreshResponse } from "./forecast.types.js";
-import { getActiveForecastMonth, monthStartIso } from "./forecast-window.js";
+import { env } from "../../config/env.js";
+import { buildForecastWindow, getActiveForecastMonth, monthStartIso } from "./forecast-window.js";
+import {
+  historicalYearTotals,
+  percentageChange,
+  summarizeForecastProduct
+} from "./forecast-summary.js";
 import {
   loadHistoricalSalesData,
   loadHistoricalSalesFallbackData,
@@ -72,49 +77,6 @@ const defaultDependencies: ForecastRuntimeDependencies = {
   runForecast: runPythonForecast
 };
 
-function sumForecast(points: ForecastPoint[]) {
-  return points.reduce((sum, point) => sum + point.recommendedQuantity, 0);
-}
-
-function sumHistorical(product: ProductForecastDetail, year: number) {
-  return product.historical
-    .filter((point) => point.period.startsWith(`${year}-`))
-    .reduce((sum, point) => sum + point.quantitySold, 0);
-}
-
-function sumRecentHistorical(product: ProductForecastDetail, months = 12) {
-  return product.historical.slice(-months).reduce((sum, point) => sum + point.quantitySold, 0);
-}
-
-function percentageChange(current: number, previous: number) {
-  if (previous === 0) {
-    return null;
-  }
-
-  return ((current - previous) / previous) * 100;
-}
-
-function summarizeProduct(product: ProductForecastDetail): ForecastProductSummary {
-  const totalHistorical2025 = sumHistorical(product, 2025);
-  const totalForecast2026 = sumForecast(product.forecast);
-  const currentForecastPoint = product.forecast[0];
-
-  return {
-    category: product.category,
-    currentMonthForecastQuantity: currentForecastPoint?.recommendedQuantity ?? null,
-    forecastVariancePercentage: currentForecastPoint?.forecastVariancePercentage ?? null,
-    growthVersus2025: percentageChange(totalForecast2026, totalHistorical2025),
-    productId: product.productId,
-    productName: product.productName,
-    recentHistoricalSalesTotal: sumRecentHistorical(product),
-    twelveMonthForecastTotal: totalForecast2026,
-    totalForecast2026,
-    totalHistorical2024: sumHistorical(product, 2024),
-    totalHistorical2025,
-    warningCount: product.warnings.length
-  };
-}
-
 function countByModel(products: ProductForecastDetail[], model: ForecastModel) {
   return products.filter((product) => product.model === model).length;
 }
@@ -170,11 +132,16 @@ function buildGenerationSummary(
     product.forecast.map((point) => point.period)
   );
   const sortedForecastPeriods = [...forecastPeriods].sort();
+  const forecastHorizonMonths = Math.max(
+    0,
+    ...products.map((product) => product.forecast.length)
+  );
 
   return {
     durationMs,
     failedProducts: products.filter((product) => product.status === "FAILED").length,
     firstForecastMonth: sortedForecastPeriods[0] ?? null,
+    forecastHorizonMonths: forecastHorizonMonths || env.FORECAST_DEFAULT_HORIZON,
     forecastStartMonth: monthStartIso(forecastStartMonth),
     forecastPointsGenerated: forecastPeriods.length,
     generatedAt,
@@ -793,7 +760,7 @@ export async function validateHistoricalSales() {
 
 export function buildForecastProductList(batch: ForecastBatch, filters: ForecastFilters) {
   const categories = [...new Set(batch.products.map((product) => product.category))].sort();
-  const summaries = batch.products.map(summarizeProduct);
+  const summaries = batch.products.map(summarizeForecastProduct);
   const search = filters.search?.toLowerCase();
   const filtered = summaries.filter((item) => {
     const matchesSearch = search
@@ -805,8 +772,14 @@ export function buildForecastProductList(batch: ForecastBatch, filters: Forecast
   });
 
   filtered.sort((left, right) => {
-    const leftValue = left[filters.sortBy];
-    const rightValue = right[filters.sortBy];
+    const sortKey =
+      filters.sortBy === "totalForecast2026" || filters.sortBy === "twelveMonthForecastTotal"
+        ? "forecastHorizonTotal"
+        : filters.sortBy === "growthVersus2025"
+          ? "growthVersusComparisonPeriod"
+          : filters.sortBy;
+    const leftValue = left[sortKey];
+    const rightValue = right[sortKey];
     const direction = filters.sortDirection === "asc" ? 1 : -1;
 
     if (leftValue === null) {
@@ -844,10 +817,15 @@ export async function getForecastProductList(filters: ForecastFilters) {
   const context = await getForecastDeliveryContext();
 
   if (!context.active) {
+    const forecastStartMonth = getActiveForecastMonth();
+    const window = buildForecastWindow(forecastStartMonth, env.FORECAST_DEFAULT_HORIZON);
+
     return {
       batchId: null,
       categories: [],
-      forecastStartMonth: monthStartIso(getActiveForecastMonth()),
+      forecastEndMonth: monthStartIso(window.endMonth),
+      forecastHorizonMonths: window.months.length,
+      forecastStartMonth: monthStartIso(forecastStartMonth),
       generatedAt: null,
       isRefreshing: context.status === "GENERATING",
       isStale: false,
@@ -910,75 +888,110 @@ export async function getForecastSummary(): Promise<ForecastSummary> {
       code: "FORECAST_GENERATING"
     });
   }
-  const summaries = batch.products.map(summarizeProduct);
-  const actualUnits2024 = summaries.reduce((sum, item) => sum + item.totalHistorical2024, 0);
-  const actualUnits2025 = summaries.reduce((sum, item) => sum + item.totalHistorical2025, 0);
-  const forecastUnits2026 = summaries.reduce((sum, item) => sum + item.totalForecast2026, 0);
-  const categories = new Map<string, ForecastSummary["categorySummaries"][number]>();
 
+  const summaries = batch.products.map(summarizeForecastProduct);
+  const forecastUnits = summaries.reduce((sum, item) => sum + item.forecastHorizonTotal, 0);
+  const comparisonComplete = summaries.every((item) => item.comparisonPeriodTotal !== null);
+  const comparisonUnits = comparisonComplete
+    ? summaries.reduce((sum, item) => sum + (item.comparisonPeriodTotal ?? 0), 0)
+    : null;
+
+  const historicalByYear = new Map<number, number>();
+  const monthly = new Map<
+    string,
+    { actualUnits: number | null; forecastUnits: number | null; period: string }
+  >();
+
+  for (const product of batch.products) {
+    for (const entry of historicalYearTotals(product)) {
+      historicalByYear.set(entry.year, (historicalByYear.get(entry.year) ?? 0) + entry.units);
+    }
+
+    for (const point of product.historical) {
+      const current = monthly.get(point.period) ?? {
+        actualUnits: 0,
+        forecastUnits: null,
+        period: point.period
+      };
+      current.actualUnits = (current.actualUnits ?? 0) + point.quantitySold;
+      monthly.set(point.period, current);
+    }
+
+    for (const point of product.forecast) {
+      const current = monthly.get(point.period) ?? {
+        actualUnits: null,
+        forecastUnits: 0,
+        period: point.period
+      };
+      current.forecastUnits = (current.forecastUnits ?? 0) + point.recommendedQuantity;
+      monthly.set(point.period, current);
+    }
+  }
+
+  const categories = new Map<string, ForecastSummary["categorySummaries"][number]>();
   for (const summary of summaries) {
     const current =
       categories.get(summary.category) ??
       ({
-        actualUnits2024: 0,
-        actualUnits2025: 0,
         category: summary.category,
-        forecastUnits2026: 0
+        comparisonPeriodTotal: 0,
+        forecastHorizonTotal: 0,
+        growthVersusComparisonPeriod: null
       } satisfies ForecastSummary["categorySummaries"][number]);
 
-    current.actualUnits2024 += summary.totalHistorical2024;
-    current.actualUnits2025 += summary.totalHistorical2025;
-    current.forecastUnits2026 += summary.totalForecast2026;
+    current.forecastHorizonTotal += summary.forecastHorizonTotal;
+    if (current.comparisonPeriodTotal !== null && summary.comparisonPeriodTotal !== null) {
+      current.comparisonPeriodTotal += summary.comparisonPeriodTotal;
+    } else {
+      current.comparisonPeriodTotal = null;
+    }
+    current.growthVersusComparisonPeriod = percentageChange(
+      current.forecastHorizonTotal,
+      current.comparisonPeriodTotal
+    );
     categories.set(summary.category, current);
   }
 
+  const historicalYears = [...historicalByYear.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([year, units]) => ({ units, year }));
+  const forecastStartMonth = batch.generation.firstForecastMonth ?? null;
+  const forecastEndMonth = batch.generation.lastForecastMonth ?? null;
+  const forecastHorizonMonths =
+    batch.generation.forecastHorizonMonths ??
+    Math.max(0, ...batch.products.map((product) => product.forecast.length));
+
   return {
-    actualUnits2024,
-    actualUnits2025,
     categorySummaries: [...categories.values()].sort((left, right) =>
       left.category.localeCompare(right.category)
     ),
     failedProducts: batch.products.filter((item) => item.status === "FAILED").length,
-    forecastGrowthVersus2025: percentageChange(forecastUnits2026, actualUnits2025),
-    forecastUnits2026,
+    forecastPeriod: {
+      comparisonUnits,
+      endMonth: forecastEndMonth,
+      forecastUnits,
+      growthVersusComparisonPeriod: percentageChange(forecastUnits, comparisonUnits),
+      months: forecastHorizonMonths,
+      startMonth: forecastStartMonth
+    },
     generatedAt: batch.generation.generatedAt,
     highestGrowthProducts: [...summaries]
-      .filter((item) => item.growthVersus2025 !== null)
-      .sort((left, right) => (right.growthVersus2025 ?? 0) - (left.growthVersus2025 ?? 0))
+      .filter((item) => item.growthVersusComparisonPeriod !== null)
+      .sort(
+        (left, right) =>
+          (right.growthVersusComparisonPeriod ?? 0) -
+          (left.growthVersusComparisonPeriod ?? 0)
+      )
       .slice(0, 8),
-    monthlySummary: [
-      ...Array.from({ length: 24 }, (_, index) => {
-        const year = index < 12 ? 2024 : 2025;
-        const month = (index % 12) + 1;
-        const period = `${year}-${String(month).padStart(2, "0")}`;
-
-        return {
-          actualUnits: batch.products
-            .flatMap((product) => product.historical)
-            .filter((point) => point.period === period)
-            .reduce((sum, point) => sum + point.quantitySold, 0),
-          forecastUnits: null,
-          period
-        };
-      }),
-      ...Array.from({ length: 12 }, (_, index) => {
-        const period = `2026-${String(index + 1).padStart(2, "0")}`;
-
-        return {
-          actualUnits: null,
-          forecastUnits: batch.products
-            .flatMap((product) => product.forecast)
-            .filter((point) => point.period === period)
-            .reduce((sum, point) => sum + point.recommendedQuantity, 0),
-          period
-        };
-      })
-    ],
+    historicalYears,
+    monthlySummary: [...monthly.values()].sort((left, right) =>
+      left.period.localeCompare(right.period)
+    ),
     movingAverageProducts: countByModel(batch.products, "MOVING_AVERAGE"),
     sarimaProducts: countByModel(batch.products, "SARIMA"),
     seasonalNaiveProducts: countByModel(batch.products, "SEASONAL_NAIVE"),
     topForecastedProducts: [...summaries]
-      .sort((left, right) => right.totalForecast2026 - left.totalForecast2026)
+      .sort((left, right) => right.forecastHorizonTotal - left.forecastHorizonTotal)
       .slice(0, 8),
     totalProductsForecasted: batch.products.filter((item) => item.status !== "FAILED").length,
     warningProducts: summaries.filter((item) => item.warningCount > 0).length

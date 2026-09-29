@@ -4,12 +4,18 @@ import { prisma } from "../../database/prismaClient.js";
 import type {
   ForecastBatch,
   ForecastFilters,
+  ForecastGenerationSummary,
   ForecastInputSource,
   ForecastProductSummary,
   PaginatedForecastProductsResponse,
   ProductForecastDetail
 } from "./forecast.types.js";
 import type { ForecastSourceSnapshot } from "./forecast-source-version.service.js";
+import { addMonths, monthStartIso } from "./forecast-window.js";
+import {
+  summarizeForecastProduct,
+  sumHistoricalYear
+} from "./forecast-summary.js";
 
 const PERSISTENCE_CHUNK_SIZE = 100;
 const PAGE_CACHE_LIMIT = 50;
@@ -109,17 +115,20 @@ export async function persistAndActivateForecastBatch(jobId: string, batch: Fore
           currentMonthForecastQuantity: summary.currentMonthForecastQuantity,
           detailPayload: asJson(product),
           forecastVariancePercentage: summary.forecastVariancePercentage,
-          growthVersus2025: summary.growthVersus2025,
+          // Legacy column retained as a non-destructive compatibility alias.
+          growthVersus2025: summary.growthVersusComparisonPeriod,
           modelName: product.model,
           productName: product.productName,
           recentHistoricalSalesTotal: summary.recentHistoricalSalesTotal,
           resultStatus: product.status,
           sellingPrice: product.sellingPrice,
           sourceProductId: product.productId,
-          totalForecast2026: summary.totalForecast2026,
-          totalHistorical2024: summary.totalHistorical2024,
-          totalHistorical2025: summary.totalHistorical2025,
-          twelveMonthForecastTotal: summary.twelveMonthForecastTotal,
+          // Legacy year-named columns remain populated during the compatibility window.
+          totalForecast2026: summary.forecastHorizonTotal,
+          totalHistorical2024: sumHistoricalYear(product, 2024),
+          totalHistorical2025: sumHistoricalYear(product, 2025),
+          // This physical column now stores the configured forecast-horizon total.
+          twelveMonthForecastTotal: summary.forecastHorizonTotal,
           warningCount: summary.warningCount
         };
       })
@@ -191,67 +200,14 @@ export async function cleanupSupersededForecastData(activeBatchId: string) {
   });
 }
 
-export function summarizePersistedProduct(product: ProductForecastDetail): ForecastProductSummary {
-  const sumHistorical = (year: number) =>
-    product.historical
-      .filter((point) => point.period.startsWith(`${year}-`))
-      .reduce((sum, point) => sum + point.quantitySold, 0);
-  const totalHistorical2025 = sumHistorical(2025);
-  const totalForecast2026 = product.forecast.reduce(
-    (sum, point) => sum + point.recommendedQuantity,
-    0
-  );
-  const current = product.forecast[0];
-
-  return {
-    category: product.category,
-    currentMonthForecastQuantity: current?.recommendedQuantity ?? null,
-    forecastVariancePercentage: current?.forecastVariancePercentage ?? null,
-    growthVersus2025:
-      totalHistorical2025 === 0
-        ? null
-        : ((totalForecast2026 - totalHistorical2025) / totalHistorical2025) * 100,
-    productId: product.productId,
-    productName: product.productName,
-    recentHistoricalSalesTotal: product.historical
-      .slice(-12)
-      .reduce((sum, point) => sum + point.quantitySold, 0),
-    totalForecast2026,
-    totalHistorical2024: sumHistorical(2024),
-    totalHistorical2025,
-    twelveMonthForecastTotal: totalForecast2026,
-    warningCount: product.warnings.length
-  };
+export function summarizePersistedProduct(
+  product: ProductForecastDetail
+): ForecastProductSummary {
+  return summarizeForecastProduct(product);
 }
 
-function persistedSummary(row: {
-  category: string;
-  currentMonthForecastQuantity: { toString(): string } | null;
-  forecastVariancePercentage: { toString(): string } | null;
-  growthVersus2025: { toString(): string } | null;
-  productName: string;
-  recentHistoricalSalesTotal: { toString(): string };
-  sourceProductId: string;
-  totalForecast2026: { toString(): string };
-  totalHistorical2024: { toString(): string };
-  totalHistorical2025: { toString(): string };
-  twelveMonthForecastTotal: { toString(): string };
-  warningCount: number;
-}): ForecastProductSummary {
-  return {
-    category: row.category,
-    currentMonthForecastQuantity: asNumber(row.currentMonthForecastQuantity),
-    forecastVariancePercentage: asNumber(row.forecastVariancePercentage),
-    growthVersus2025: asNumber(row.growthVersus2025),
-    productId: row.sourceProductId,
-    productName: row.productName,
-    recentHistoricalSalesTotal: Number(row.recentHistoricalSalesTotal),
-    totalForecast2026: Number(row.totalForecast2026),
-    totalHistorical2024: Number(row.totalHistorical2024),
-    totalHistorical2025: Number(row.totalHistorical2025),
-    twelveMonthForecastTotal: Number(row.twelveMonthForecastTotal),
-    warningCount: row.warningCount
-  };
+function persistedSummary(row: { detailPayload: unknown }): ForecastProductSummary {
+  return summarizeForecastProduct(row.detailPayload as ProductForecastDetail);
 }
 
 function orderByFor(
@@ -259,7 +215,13 @@ function orderByFor(
 ): Prisma.ForecastProductResultOrderByWithRelationInput[] {
   const direction = filters.sortDirection;
   const field: keyof Prisma.ForecastProductResultOrderByWithRelationInput =
-    filters.sortBy === "productId" ? "sourceProductId" : filters.sortBy;
+    filters.sortBy === "productId"
+      ? "sourceProductId"
+      : filters.sortBy === "forecastHorizonTotal"
+        ? "twelveMonthForecastTotal"
+        : filters.sortBy === "growthVersusComparisonPeriod"
+          ? "growthVersus2025"
+          : filters.sortBy;
   return [{ [field]: direction }, { sourceProductId: "asc" }];
 }
 
@@ -268,7 +230,15 @@ export async function queryPersistedForecastProducts(
   filters: ForecastFilters,
   delivery: Omit<
     PaginatedForecastProductsResponse,
-    "categories" | "generatedAt" | "items" | "page" | "pageSize" | "totalItems" | "totalPages"
+    | "categories"
+    | "forecastEndMonth"
+    | "forecastHorizonMonths"
+    | "generatedAt"
+    | "items"
+    | "page"
+    | "pageSize"
+    | "totalItems"
+    | "totalPages"
   >
 ) {
   const cacheKey = JSON.stringify([batch.id, filters, delivery.status]);
@@ -296,18 +266,7 @@ export async function queryPersistedForecastProducts(
     prisma.forecastProductResult.findMany({
       orderBy: orderByFor(filters),
       select: {
-        category: true,
-        currentMonthForecastQuantity: true,
-        forecastVariancePercentage: true,
-        growthVersus2025: true,
-        productName: true,
-        recentHistoricalSalesTotal: true,
-        sourceProductId: true,
-        totalForecast2026: true,
-        totalHistorical2024: true,
-        totalHistorical2025: true,
-        twelveMonthForecastTotal: true,
-        warningCount: true
+        detailPayload: true
       },
       skip: (page - 1) * filters.pageSize,
       take: filters.pageSize,
@@ -320,9 +279,33 @@ export async function queryPersistedForecastProducts(
       where: { batchId: batch.id }
     })
   ]);
+  const generation = batch.generationMetadata as
+    | Partial<ForecastGenerationSummary>
+    | null;
+  const inferredHorizon =
+    generation?.totalProductsProcessed && generation.forecastPointsGenerated
+      ? Math.max(
+          1,
+          Math.round(
+            generation.forecastPointsGenerated / generation.totalProductsProcessed
+          )
+        )
+      : 12;
+  const forecastHorizonMonths = Math.max(
+    1,
+    generation?.forecastHorizonMonths ?? inferredHorizon
+  );
+
+  const startMonthKey = batch.forecastStartMonth.toISOString().slice(0, 7);
+  const forecastEndMonth =
+    generation?.lastForecastMonth ??
+    monthStartIso(addMonths(startMonthKey, forecastHorizonMonths - 1));
+
   const response: PaginatedForecastProductsResponse = {
     ...delivery,
     categories: categoryRows.map((row) => row.category),
+    forecastEndMonth,
+    forecastHorizonMonths,
     generatedAt: batch.generatedAt?.toISOString() ?? null,
     items: rows.map(persistedSummary),
     page,

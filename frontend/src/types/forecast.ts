@@ -43,8 +43,10 @@ export type ForecastPoint = {
   lowerConfidence: number | null;
   upperConfidence: number | null;
   sameMonthLastYear: number | null;
-  differenceVersus2025: number | null;
-  percentageChangeVersus2025: number | null;
+  /** @deprecated Use comparisonSalesQuantity and forecastVariancePercentage. */
+  differenceVersus2025?: number | null;
+  /** @deprecated Use forecastVariancePercentage. */
+  percentageChangeVersus2025?: number | null;
   comparisonSalesQuantity: number | null;
   comparisonSalesEstimated?: boolean;
   forecastVariancePercentage: number | null;
@@ -86,25 +88,36 @@ export type ForecastProductSummary = {
   productId: string;
   productName: string;
   category: string;
-  totalHistorical2024: number;
-  totalHistorical2025: number;
-  totalForecast2026: number;
-  growthVersus2025: number | null;
   currentMonthForecastQuantity: number | null;
   recentHistoricalSalesTotal: number;
-  twelveMonthForecastTotal: number;
+  forecastHorizonMonths: number;
+  forecastHorizonTotal: number;
+  comparisonPeriodTotal: number | null;
+  growthVersusComparisonPeriod: number | null;
   forecastVariancePercentage: number | null;
   warningCount: number;
+  /** @deprecated Compatibility alias. Use forecastHorizonTotal. */
+  totalForecast2026?: number;
+  /** @deprecated Compatibility alias. Use growthVersusComparisonPeriod. */
+  growthVersus2025?: number | null;
+  /** @deprecated Compatibility alias. Use forecastHorizonTotal. */
+  twelveMonthForecastTotal?: number;
+  /** @deprecated Legacy year snapshot retained for older clients. */
+  totalHistorical2024?: number;
+  /** @deprecated Legacy year snapshot retained for older clients. */
+  totalHistorical2025?: number;
 };
 
 export type ForecastSort =
   | "productId"
   | "productName"
   | "category"
-  | "totalForecast2026"
-  | "growthVersus2025"
   | "currentMonthForecastQuantity"
   | "recentHistoricalSalesTotal"
+  | "forecastHorizonTotal"
+  | "growthVersusComparisonPeriod"
+  | "totalForecast2026"
+  | "growthVersus2025"
   | "twelveMonthForecastTotal";
 
 export type ForecastFilters = {
@@ -125,6 +138,8 @@ export type PaginatedForecastProductsResponse = {
   categories: string[];
   generatedAt: string | null;
   forecastStartMonth: string | null;
+  forecastEndMonth: string | null;
+  forecastHorizonMonths: number;
   status: ForecastDeliveryStatus;
   isStale: boolean;
   isRefreshing: boolean;
@@ -140,10 +155,18 @@ export type ForecastRefreshResponse = {
 
 export type ForecastSummary = {
   generatedAt: string | null;
-  actualUnits2024: number;
-  actualUnits2025: number;
-  forecastUnits2026: number;
-  forecastGrowthVersus2025: number | null;
+  historicalYears: {
+    year: number;
+    units: number;
+  }[];
+  forecastPeriod: {
+    startMonth: string | null;
+    endMonth: string | null;
+    months: number;
+    forecastUnits: number;
+    comparisonUnits: number | null;
+    growthVersusComparisonPeriod: number | null;
+  };
   totalProductsForecasted: number;
   sarimaProducts: number;
   seasonalNaiveProducts: number;
@@ -154,20 +177,29 @@ export type ForecastSummary = {
   highestGrowthProducts: ForecastProductSummary[];
   categorySummaries: {
     category: string;
-    actualUnits2024: number;
-    actualUnits2025: number;
-    forecastUnits2026: number;
+    forecastHorizonTotal: number;
+    comparisonPeriodTotal: number | null;
+    growthVersusComparisonPeriod: number | null;
   }[];
   monthlySummary: {
     period: string;
     actualUnits: number | null;
     forecastUnits: number | null;
   }[];
+  /** @deprecated Legacy compatibility field. */
+  actualUnits2024?: number;
+  /** @deprecated Legacy compatibility field. */
+  actualUnits2025?: number;
+  /** @deprecated Legacy compatibility field. */
+  forecastUnits2026?: number;
+  /** @deprecated Legacy compatibility field. */
+  forecastGrowthVersus2025?: number | null;
 };
 
 export type ForecastGenerationSummary = {
   generatedAt: string | null;
   forecastStartMonth: string | null;
+  forecastHorizonMonths: number;
   durationMs: number;
   totalProductsProcessed: number;
   sarimaProducts: number;

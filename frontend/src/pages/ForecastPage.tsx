@@ -1,4 +1,4 @@
-import { AlertTriangle, LoaderCircle, Search } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, LoaderCircle, Search } from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
@@ -30,10 +30,13 @@ import type {
   ProductForecastDetail
 } from "@/types/forecast";
 import {
+  FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS,
   FORECAST_PRODUCTS_DESKTOP_QUERY,
+  clampForecastWindowStart,
   forecastSortOptions,
   formatForecastVariance,
   formatMonthLabel,
+  getForecastDetailWindowSizes,
   getForecastProductsPageSize,
   getForecastServerSort,
   getLocalMonthKey,
@@ -401,12 +404,6 @@ export function ForecastPage() {
   }, [forecastData?.isRefreshing, forecastData?.status, loadForecasts]);
 
   const forecastRows = selectedProduct?.forecast ?? EMPTY_FORECAST_ROWS;
-  const chartData = useMemo(() => buildChartData(forecastRows), [forecastRows]);
-
-  const currentForecast = forecastRows[0] ?? null;
-  const twelveMonthForecast = selectedProduct
-    ? forecastRows.reduce((sum, point) => sum + point.predictedQuantity, 0)
-    : null;
   const selectedProductSummary = useMemo(
     () => pageProducts.find((product) => product.productId === selectedProductId) ?? null,
     [pageProducts, selectedProductId]
@@ -432,7 +429,7 @@ export function ForecastPage() {
       <PageHeader
         eyebrow="Owner forecast"
         title="Demand Forecast"
-        description="View this year's product demand forecast from verified sales history."
+        description="View rolling product demand forecasts from verified sales history."
       />
 
       {effectiveCollectionError ? (
@@ -494,6 +491,7 @@ export function ForecastPage() {
         <ForecastedProductsCard
           categories={categories}
           generatedAt={forecastData?.generatedAt ?? null}
+          forecastHorizonMonths={forecastData?.forecastHorizonMonths ?? 12}
           loading={listLoading}
           networkUpdating={refreshing}
           pagination={forecastData}
@@ -514,8 +512,6 @@ export function ForecastPage() {
         />
 
         <MonthlyForecastCard
-          chartData={chartData}
-          currentForecast={currentForecast}
           collectionError={effectiveCollectionError}
           detailError={detailError}
           initialLoading={listLoading}
@@ -532,7 +528,6 @@ export function ForecastPage() {
           selectedSummary={selectedProductSummary}
           forecastRows={forecastRows}
           product={selectedProduct}
-          twelveMonthForecast={twelveMonthForecast ?? null}
         />
       </section>
     </>
@@ -544,6 +539,7 @@ function ForecastedProductsCard({
   collectionError,
   deliveryStatus,
   generatedAt,
+  forecastHorizonMonths,
   loading,
   networkUpdating,
   onCategoryChange,
@@ -564,6 +560,7 @@ function ForecastedProductsCard({
   collectionError: string | null;
   deliveryStatus: PaginatedForecastProductsResponse["status"] | null;
   generatedAt: string | null;
+  forecastHorizonMonths: number;
   loading: boolean;
   networkUpdating: boolean;
   onCategoryChange: (category: string) => void;
@@ -678,7 +675,9 @@ function ForecastedProductsCard({
                     <tr>
                       <th className="px-3 py-2">Product</th>
                       <th className="px-3 py-2 text-right">Current Month</th>
-                      <th className="px-3 py-2 text-right">12 Months</th>
+                      <th className="px-3 py-2 text-right">
+                        {forecastHorizonMonths}M Horizon
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -707,7 +706,7 @@ function ForecastedProductsCard({
                           {formatNumber(product.currentMonthForecastQuantity)}
                         </td>
                         <td className="px-3 py-3 text-right font-medium">
-                          {formatNumber(product.twelveMonthForecastTotal)}
+                          {formatNumber(product.forecastHorizonTotal)}
                         </td>
                       </tr>
                     ))}
@@ -740,8 +739,6 @@ function ForecastedProductsCard({
 }
 
 function MonthlyForecastCard({
-  chartData,
-  currentForecast,
   collectionError,
   detailError,
   initialLoading,
@@ -751,11 +748,8 @@ function MonthlyForecastCard({
   forecastRows,
   onRetryDetail,
   product,
-  selectedSummary,
-  twelveMonthForecast
+  selectedSummary
 }: {
-  chartData: ReturnType<typeof buildChartData>;
-  currentForecast: ForecastPoint | null;
   collectionError: string | null;
   detailError: string | null;
   initialLoading: boolean;
@@ -766,17 +760,60 @@ function MonthlyForecastCard({
   onRetryDetail: () => void;
   product: ProductForecastDetail | null;
   selectedSummary: ForecastProductSummary | null;
-  twelveMonthForecast: number | null;
 }) {
+  const [windowMonths, setWindowMonths] = useState(FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS);
+  const [windowStart, setWindowStart] = useState(0);
+  const totalForecastMonths = forecastRows.length;
+  const windowSizes = useMemo(
+    () => getForecastDetailWindowSizes(Math.max(1, totalForecastMonths)),
+    [totalForecastMonths]
+  );
+  const effectiveWindowMonths = Math.min(
+    Math.max(1, windowMonths),
+    Math.max(1, totalForecastMonths)
+  );
+  const effectiveWindowStart = clampForecastWindowStart(
+    totalForecastMonths,
+    effectiveWindowMonths,
+    windowStart
+  );
+  const visibleForecastRows = forecastRows.slice(
+    effectiveWindowStart,
+    effectiveWindowStart + effectiveWindowMonths
+  );
+  const chartData = useMemo(
+    () => buildChartData(visibleForecastRows),
+    [visibleForecastRows]
+  );
+  const currentForecast = forecastRows[0] ?? null;
+  const forecastHorizonTotal = product
+    ? forecastRows.reduce((sum, point) => sum + point.predictedQuantity, 0)
+    : null;
+  const visibleStartLabel = visibleForecastRows[0]
+    ? formatMonthLabel(visibleForecastRows[0].period)
+    : null;
+  const visibleEndPoint = visibleForecastRows.at(-1);
+  const visibleEndLabel = visibleEndPoint ? formatMonthLabel(visibleEndPoint.period) : null;
+  const canMoveWindowBack = effectiveWindowStart > 0;
+  const canMoveWindowForward =
+    effectiveWindowStart + effectiveWindowMonths < totalForecastMonths;
+
+  useEffect(() => {
+    setWindowMonths(FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS);
+    setWindowStart(0);
+  }, [product?.productId]);
+
   const detailTitle = product?.productName ?? selectedSummary?.productName ?? "Forecast details";
   const detailSubtitle = product
     ? `${product.productId} - ${product.category}`
     : selectedSummary
       ? `${selectedSummary.productId} - ${selectedSummary.category}`
       : hasForecastData
-        ? "Select a product to view its 12-month forecast."
+        ? "Select a product to view its forecast horizon."
         : "The selected product forecast will appear when data is ready.";
-  const hasEstimatedComparison = forecastRows.some((point) => point.comparisonSalesEstimated);
+  const hasEstimatedComparison = visibleForecastRows.some(
+    (point) => point.comparisonSalesEstimated
+  );
 
   return (
     <Card className="flex h-full min-h-0 flex-col">
@@ -861,7 +898,7 @@ function MonthlyForecastCard({
           <EmptyState
             description={
               hasForecastData
-                ? "Select a product to view its 12-month forecast."
+                ? "Select a product to view its forecast horizon."
                 : "The selected product forecast will appear when data is ready."
             }
             icon={AlertTriangle}
@@ -874,7 +911,10 @@ function MonthlyForecastCard({
                 label="Current Month Forecast"
                 value={formatNumber(currentForecast.predictedQuantity, 1)}
               />
-              <Metric label="12-Month Forecast" value={formatNumber(twelveMonthForecast, 1)} />
+              <Metric
+                label={`Forecast Horizon (${totalForecastMonths} mo)`}
+                value={formatNumber(forecastHorizonTotal, 1)}
+              />
               <Metric
                 label="Expected Change"
                 supportingText="Compared with the same month last year"
@@ -882,6 +922,83 @@ function MonthlyForecastCard({
                 valueClassName={expectedChangeClassName(currentForecast.forecastVariancePercentage)}
               />
             </div>
+
+            {totalForecastMonths > FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                <div>
+                  <p className="text-xs font-semibold text-slate-700">Forecast range</p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {visibleStartLabel && visibleEndLabel
+                      ? `${visibleStartLabel} – ${visibleEndLabel}`
+                      : "No forecast months available"}
+                    {" · "}
+                    {Math.min(effectiveWindowStart + 1, totalForecastMonths)}–
+                    {Math.min(
+                      effectiveWindowStart + effectiveWindowMonths,
+                      totalForecastMonths
+                    )}{" "}
+                    of {totalForecastMonths} months
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="flex items-center gap-2 text-xs text-slate-600">
+                    View
+                    <select
+                      className="h-8 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900"
+                      onChange={(event) => {
+                        setWindowMonths(Number(event.target.value));
+                        setWindowStart(0);
+                      }}
+                      value={effectiveWindowMonths}
+                    >
+                      {windowSizes.map((months) => (
+                        <option key={months} value={months}>
+                          {months === totalForecastMonths
+                            ? `All ${months} months`
+                            : `${months} months`}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <Button
+                    aria-label="Previous forecast range"
+                    disabled={!canMoveWindowBack}
+                    onClick={() =>
+                      setWindowStart((current) =>
+                        clampForecastWindowStart(
+                          totalForecastMonths,
+                          effectiveWindowMonths,
+                          current - effectiveWindowMonths
+                        )
+                      )
+                    }
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    aria-label="Next forecast range"
+                    disabled={!canMoveWindowForward}
+                    onClick={() =>
+                      setWindowStart((current) =>
+                        clampForecastWindowStart(
+                          totalForecastMonths,
+                          effectiveWindowMonths,
+                          current + effectiveWindowMonths
+                        )
+                      )
+                    }
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                  >
+                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                  </Button>
+                </div>
+              </div>
+            ) : null}
 
             <div className="min-h-[20rem] flex-1">
               <ResponsiveContainer height="100%" width="100%">
@@ -911,9 +1028,9 @@ function MonthlyForecastCard({
 
             {hasEstimatedComparison ? (
               <p className="text-xs text-slate-500">
-                * Some prior-year values are reconstructed estimates because verified 2026 records
-                are unavailable. They are shown for comparison only and are not used as SARIMA
-                training history.
+                * Some prior-year values are reconstructed estimates because verified comparison
+                history is unavailable. They are shown for comparison only and are not used as
+                SARIMA training history.
               </p>
             ) : null}
 
@@ -928,7 +1045,7 @@ function MonthlyForecastCard({
                   </tr>
                 </thead>
                 <tbody>
-                  {forecastRows.map((point) => (
+                  {visibleForecastRows.map((point) => (
                     <tr className="border-t border-slate-100" key={point.period}>
                       <td className="px-3 py-2 font-medium">{formatMonthLabel(point.period)}</td>
                       <td className="px-3 py-2 text-right">

@@ -34,7 +34,7 @@ type HistoricalSalesPoint = {
 };
 ```
 
-`period` is always `YYYY-MM`, with accepted historical points covering `2024-01` through `2025-12`.
+`period` is always `YYYY-MM`. Historical periods are year-agnostic and may grow as verified database history accumulates; the 2024/2025 workbooks are development fallback inputs, not a runtime year limit.
 
 The historical workbooks do not provide a verified SKU or barcode. Forecast responses therefore expose `productId`
 without relabeling it as `sku` or `productCode`.
@@ -49,13 +49,13 @@ type ForecastPoint = {
   lowerConfidence: number | null;
   upperConfidence: number | null;
   sameMonthLastYear: number | null;
-  differenceVersus2025: number | null;
-  percentageChangeVersus2025: number | null;
+  comparisonSalesQuantity: number | null;
+  comparisonSalesEstimated?: boolean;
+  forecastVariancePercentage: number | null;
 };
 ```
 
-Forecast periods begin at the active forecast month and cover the configured horizon (12 months by default).
-Recommended quantity is non-negative and rounded up.
+Forecast periods begin at the active forecast month and cover the configured horizon (12 months by default). The engine accepts a configurable horizon; list/detail responses expose `forecastHorizonMonths` and the start/end months so clients do not hardcode a calendar year. Recommended quantity is non-negative and rounded up.
 
 ## Model Labels
 
@@ -104,3 +104,18 @@ Supported query fields:
 Only 24 monthly observations and two seasonal cycles are available. SARIMA diagnostics are provided as a Sprint 3
 foundation, not a guarantee of operational purchasing accuracy. Forecasts do not directly model promotions, price
 changes, supplier disruptions, stockouts, lost demand, or economic shocks.
+
+
+## Year-Agnostic Delivery Contract
+
+Forecast list summaries use rolling-period semantics:
+
+- `forecastHorizonMonths`: number of generated months for the active batch.
+- `forecastHorizonTotal`: total operational forecast across the configured horizon.
+- `comparisonPeriodTotal`: same-month prior-year comparison across the same horizon when complete.
+- `growthVersusComparisonPeriod`: percentage change against that aligned comparison period.
+- `forecastStartMonth` / `forecastEndMonth`: explicit rolling window boundaries.
+
+The application must not derive business meaning from fixed year field names. Legacy year-named persistence columns may remain populated temporarily for non-destructive compatibility, but they are not part of the active owner-facing contract.
+
+Long horizons are presented in bounded month windows in the owner UI. Increasing the configured horizon therefore does not require rendering every month at once.
