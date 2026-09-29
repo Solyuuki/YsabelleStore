@@ -26,8 +26,12 @@ test("brand components use only the approved circular Ysabelle logo", async () =
   assert.doesNotMatch(brandLogo, /<svg[\s>]/);
   assert.doesNotMatch(brandLogo, /M18 21h28|#625bff|#008cff/);
 
-  assert.match(customerMark, /BrandLogo/);
-  assert.doesNotMatch(customerMark, /\bStore\b/);
+  assert.match(
+    customerMark,
+    /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
+  );
+  assert.match(customerMark, /src=\{officialLogoUrl\}/);
+  assert.doesNotMatch(customerMark, /<BrandLogo|\bStore\b/);
   assert.doesNotMatch(customerMark, /ysabelle-brand-mark__fallback/);
 
   for (const consumer of [header, footer, sidebar]) {

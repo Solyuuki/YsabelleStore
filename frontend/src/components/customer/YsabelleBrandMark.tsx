@@ -1,4 +1,4 @@
-import { BrandLogo } from "@/components/brand/BrandLogo";
+import officialLogoUrl from "@/assets/brand/ysabelle-logo-official.webp";
 
 type YsabelleBrandMarkProps = {
   className?: string;
@@ -16,7 +16,14 @@ export function YsabelleBrandMark({
       aria-hidden="true"
       className={`ysabelle-brand-mark ysabelle-brand-mark--${variant} ${className}`.trim()}
     >
-      <BrandLogo className="ysabelle-brand-mark__image" eager={eager} variant="mark" />
+      <img
+        alt=""
+        aria-hidden="true"
+        className="ysabelle-brand-mark__image"
+        decoding="async"
+        loading={eager ? "eager" : "lazy"}
+        src={officialLogoUrl}
+      />
     </span>
   );
 }

@@ -6,7 +6,7 @@ type BrandLogoProps = {
   variant?: "mark" | "full";
 };
 
-export function BrandLogo({ className, eager = false, variant = "mark" }: BrandLogoProps) {
+export function BrandLogo({ className, eager = false }: BrandLogoProps) {
   const classes = ["ys-brand-logo", className].filter(Boolean).join(" ");
 
   return (
@@ -14,10 +14,7 @@ export function BrandLogo({ className, eager = false, variant = "mark" }: BrandL
       alt=""
       aria-hidden="true"
       className={classes}
-      data-brand-variant={variant}
       decoding="async"
-      draggable={false}
-      fetchPriority={eager ? "high" : "auto"}
       loading={eager ? "eager" : "lazy"}
       src={officialLogoUrl}
     />

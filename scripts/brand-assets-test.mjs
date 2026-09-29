@@ -122,9 +122,12 @@ test("shared brand components render only the bundled approved circular logo", a
   assert.doesNotMatch(staffMark, /<svg[\s>]/);
   assert.doesNotMatch(staffMark, /setImageFailed|imageFailed/);
 
-  assert.match(customerMark, /import \{ BrandLogo \} from "@\/components\/brand\/BrandLogo";/);
-  assert.match(customerMark, /<BrandLogo[\s\S]*variant="mark"/);
-  assert.doesNotMatch(customerMark, /\bStore\b/);
+  assert.match(
+    customerMark,
+    /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
+  );
+  assert.match(customerMark, /src=\{officialLogoUrl\}/);
+  assert.doesNotMatch(customerMark, /<BrandLogo|\bStore\b/);
   assert.doesNotMatch(customerMark, /ysabelle-brand-mark__fallback/);
   assert.doesNotMatch(customerMark, /WEB_BRAND_MARK_SRC|BRAND_ASSET_VERSION/);
 });
