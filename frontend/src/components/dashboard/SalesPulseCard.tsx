@@ -66,7 +66,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
   const [view, setView] = useState<"calendar" | "performance">("calendar");
   const [calendar, setCalendar] = useState<DashboardSalesCalendar | null>(null);
   const [detail, setDetail] = useState<DashboardSalesDayDetail | null>(null);
-  const [loadingCalendar, setLoadingCalendar] = useState(true);
+  const [, setLoadingCalendar] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const lastSummaryGeneratedAt = useRef(summary.generatedAt);
