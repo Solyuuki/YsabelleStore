@@ -251,6 +251,7 @@ test(
       Number(afterCalendarDay.actualAmount),
       Number(beforeCalendarDay.actualAmount) + 25
     );
+    assert.equal(afterCalendarDay.actualDataAvailable, true);
     assert.equal(afterCalendarDay.completedSales, beforeCalendarDay.completedSales + 1);
     assert.equal(afterCalendarDay.unitsSold, beforeCalendarDay.unitsSold + 2);
     assert.equal(Number(afterDay.actualAmount), Number(beforeDay.actualAmount) + 25);
@@ -288,6 +289,7 @@ test(
       const day = calendar.days.find((candidate) => candidate.date === date);
 
       assert.ok(day);
+      assert.equal(day.actualDataAvailable, false);
       assert.equal(day.targetAmount, "1234.50");
       assert.equal(day.status, "FUTURE");
       assert.equal(calendar.summary.forecastAmount, null);

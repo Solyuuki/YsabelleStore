@@ -8,6 +8,7 @@ export type DashboardActivityBucket = {
 
 export type DashboardSalesCalendarDay = {
   actualAmount: string;
+  actualDataAvailable: boolean;
   completedSales: number;
   date: string;
   status: "PAST" | "TODAY" | "FUTURE";
@@ -25,6 +26,7 @@ export type DashboardSalesCalendar = {
   month: string;
   summary: {
     actualAmount: string;
+    actualDataDays: number;
     completedSales: number;
     forecastAmount: string | null;
     forecastUnits: number | null;

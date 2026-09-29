@@ -14,6 +14,7 @@ export type SalesCalendarDayStatus = "PAST" | "TODAY" | "FUTURE";
 
 export type DashboardSalesCalendarDay = {
   actualAmount: string;
+  actualDataAvailable: boolean;
   completedSales: number;
   date: string;
   status: SalesCalendarDayStatus;
@@ -37,6 +38,7 @@ export type DashboardSalesCalendar = {
   month: string;
   summary: {
     actualAmount: string;
+    actualDataDays: number;
     completedSales: number;
     forecastAmount: string | null;
     forecastUnits: number | null;
@@ -59,7 +61,7 @@ export async function getDashboardSalesCalendar(
   now = new Date()
 ): Promise<DashboardSalesCalendar> {
   const { end, start } = getManilaMonthRange(month);
-  const [sales, targets, forecast] = await Promise.all([
+  const [sales, targets, forecast, firstCompletedSale] = await Promise.all([
     prisma.sale.findMany({
       where: {
         status: "COMPLETED",
@@ -83,10 +85,16 @@ export async function getDashboardSalesCalendar(
         targetAmount: true
       }
     }),
-    role === "OWNER" ? getMonthlyForecastEstimate(month) : Promise.resolve(null)
+    role === "OWNER" ? getMonthlyForecastEstimate(month) : Promise.resolve(null),
+    prisma.sale.findFirst({
+      orderBy: { saleDate: "asc" },
+      select: { saleDate: true },
+      where: { status: "COMPLETED" }
+    })
   ]);
 
   const todayKey = manilaDateKey(now);
+  const firstRecordedDate = firstCompletedSale ? manilaDateKey(firstCompletedSale.saleDate) : null;
   const salesByDate = aggregateSalesByDate(sales);
   const targetsByDate = new Map(
     targets.map((target) => [utcDateKey(target.businessDate), target.targetAmount])
@@ -95,11 +103,18 @@ export async function getDashboardSalesCalendar(
     const aggregate = salesByDate.get(date);
     const target = targetsByDate.get(date);
 
+    const status: SalesCalendarDayStatus =
+      date < todayKey ? "PAST" : date === todayKey ? "TODAY" : "FUTURE";
+    const actualDataAvailable =
+      status === "TODAY" ||
+      (status === "PAST" && firstRecordedDate !== null && date >= firstRecordedDate);
+
     return {
       actualAmount: aggregate?.amount.toFixed(2) ?? "0.00",
+      actualDataAvailable,
       completedSales: aggregate?.sales ?? 0,
       date,
-      status: date < todayKey ? "PAST" : date === todayKey ? "TODAY" : "FUTURE",
+      status,
       targetAmount: target?.toFixed(2) ?? null,
       unitsSold: aggregate?.units ?? 0
     };
@@ -124,6 +139,7 @@ export async function getDashboardSalesCalendar(
     month,
     summary: {
       actualAmount: actualAmount.toFixed(2),
+      actualDataDays: days.filter((day) => day.actualDataAvailable).length,
       completedSales: days.reduce((sum, day) => sum + day.completedSales, 0),
       forecastAmount: forecast?.amount ?? null,
       forecastUnits: forecast?.units ?? null,
@@ -142,7 +158,7 @@ export async function getDashboardSalesDay(
   assertValidDateKey(date);
   const start = manilaDayStart(date);
   const end = new Date(start.getTime() + DAY_MS);
-  const [sales, target] = await Promise.all([
+  const [sales, target, firstCompletedSale] = await Promise.all([
     prisma.sale.findMany({
       where: {
         status: "COMPLETED",
@@ -157,6 +173,11 @@ export async function getDashboardSalesDay(
     prisma.dailySalesTarget.findUnique({
       where: { businessDate: businessDateValue(date) },
       select: { targetAmount: true }
+    }),
+    prisma.sale.findFirst({
+      orderBy: { saleDate: "asc" },
+      select: { saleDate: true },
+      where: { status: "COMPLETED" }
     })
   ]);
 
@@ -174,9 +195,16 @@ export async function getDashboardSalesDay(
   }
 
   const todayKey = manilaDateKey(now);
+  const status: SalesCalendarDayStatus =
+    date < todayKey ? "PAST" : date === todayKey ? "TODAY" : "FUTURE";
+  const firstRecordedDate = firstCompletedSale ? manilaDateKey(firstCompletedSale.saleDate) : null;
+  const actualDataAvailable =
+    status === "TODAY" ||
+    (status === "PAST" && firstRecordedDate !== null && date >= firstRecordedDate);
 
   return {
     actualAmount: amount.toFixed(2),
+    actualDataAvailable,
     activity: activityTotals.map((total, index) => ({
       label: formatBucketLabel(index),
       saleCount: activityCounts[index] ?? 0,
@@ -184,7 +212,7 @@ export async function getDashboardSalesDay(
     })),
     completedSales: sales.length,
     date,
-    status: date < todayKey ? "PAST" : date === todayKey ? "TODAY" : "FUTURE",
+    status,
     targetAmount: target?.targetAmount.toFixed(2) ?? null,
     unitsSold: sales.reduce(
       (sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0),

@@ -17,6 +17,7 @@ import {
   fetchDashboardSalesDay,
   saveDashboardSalesTarget,
   type DashboardSalesCalendar,
+  type DashboardSalesCalendarDay,
   type DashboardSalesDayDetail,
   type DashboardSummary
 } from "@/services/dashboardApi";
@@ -132,6 +133,9 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
   }, [calendar]);
 
   const selectedCalendarDay = calendar?.days.find((day) => day.date === selectedDate) ?? null;
+  const trailingDays = calendar
+    ? (7 - ((firstWeekday + calendar.days.length) % 7)) % 7
+    : 0;
   const chartData = (detail?.activity ?? []).map((bucket) => ({
     amount: Number(bucket.totalAmount),
     label: bucket.label,
@@ -158,6 +162,8 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
   }
 
   const selectedAmount = detail?.actualAmount ?? selectedCalendarDay?.actualAmount ?? "0.00";
+  const selectedActualAvailable =
+    detail?.actualDataAvailable ?? selectedCalendarDay?.actualDataAvailable ?? false;
 
   return (
     <Card className={brandCardClass}>
@@ -205,6 +211,11 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
           <div className="space-y-5">
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <SummaryTile
+                helper={
+                  calendar
+                    ? `${calendar.summary.actualDataDays} day${calendar.summary.actualDataDays === 1 ? "" : "s"} with POS daily coverage`
+                    : "Loading operational history"
+                }
                 label="Actual sales"
                 value={formatCurrency(calendar?.summary.actualAmount ?? "0")}
               />
@@ -338,18 +349,22 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                             ? day.targetAmount
                               ? compactCurrencyFormatter.format(Number(day.targetAmount))
                               : "No target"
-                            : compactCurrencyFormatter.format(Number(day.actualAmount))}
+                            : day.actualDataAvailable
+                              ? compactCurrencyFormatter.format(Number(day.actualAmount))
+                              : "No data"}
                         </p>
                         <p className="mt-0.5 hidden text-[10px] text-slate-400 sm:block">
-                          {day.status === "FUTURE"
-                            ? day.targetAmount
-                              ? "Target"
-                              : "Future"
-                            : `${day.completedSales} sale${day.completedSales === 1 ? "" : "s"}`}
+                          {calendarDaySecondaryLabel(day)}
                         </p>
                       </button>
                     );
                   })}
+                  {Array.from({ length: trailingDays }).map((_, index) => (
+                    <div
+                      className="min-h-[78px] border-b border-r border-slate-100 bg-slate-50/30 sm:min-h-[96px]"
+                      key={`trailing-empty-${index}`}
+                    />
+                  ))}
                 </div>
 
                 {loadingCalendar ? (
@@ -375,7 +390,10 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 </p>
 
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                  <MiniMetric label="Actual" value={formatCurrency(selectedAmount)} />
+                  <MiniMetric
+                    label="Actual"
+                    value={selectedActualAvailable ? formatCurrency(selectedAmount) : "No daily data"}
+                  />
                   <MiniMetric
                     label="Target"
                     value={
@@ -387,6 +405,10 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     value={(detail?.completedSales ?? 0).toLocaleString()}
                   />
                   <MiniMetric label="Units sold" value={(detail?.unitsSold ?? 0).toLocaleString()} />
+                  <MiniMetric
+                    label="Target progress"
+                    value={targetProgressLabel(detail)}
+                  />
                 </div>
 
                 {isOwner ? (
@@ -482,46 +504,58 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-400">
                   Loading selected-day activity…
                 </div>
+              ) : detail && !detail.actualDataAvailable ? (
+                <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-5 text-center text-xs font-medium text-slate-500">
+                  {detail.status === "FUTURE"
+                    ? "Actual sales activity will appear after this business day begins."
+                    : "Daily POS history is not available for this date. No zero-sales value is being assumed."}
+                </div>
               ) : (
                 <ResponsiveContainer height="100%" width="100%">
                   <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
                     <defs>
-                    <linearGradient id="dashboardSalesAreaCalendar" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
-                      <stop offset="65%" stopColor="#008cff" stopOpacity={0.1} />
-                      <stop offset="100%" stopColor="#f43f8c" stopOpacity={0.02} />
-                    </linearGradient>
+                      <linearGradient
+                        id="dashboardSalesAreaCalendar"
+                        x1="0"
+                        x2="0"
+                        y1="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
+                        <stop offset="65%" stopColor="#008cff" stopOpacity={0.1} />
+                        <stop offset="100%" stopColor="#f43f8c" stopOpacity={0.02} />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
                     <XAxis
-                    axisLine={false}
-                    dataKey="label"
-                    interval={1}
-                    tick={{ fill: "#94a3b8", fontSize: 11 }}
-                    tickLine={false}
-                  />
+                      axisLine={false}
+                      dataKey="label"
+                      interval={1}
+                      tick={{ fill: "#94a3b8", fontSize: 11 }}
+                      tickLine={false}
+                    />
                     <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#514bcf",
-                      border: "1px solid rgba(255,255,255,0.16)",
-                      borderRadius: "10px",
-                      boxShadow: "0 18px 40px -18px rgba(98,91,255,0.65)",
-                      color: "#fff",
-                      fontSize: "12px"
-                    }}
-                    cursor={{ stroke: "#c4b5fd", strokeDasharray: "4 4" }}
-                    formatter={(value) => [formatCurrency(Number(value)), "Sales"]}
-                    itemStyle={{ color: "#ffffff" }}
-                    labelStyle={{ color: "#ffffff", fontWeight: 600, marginBottom: "4px" }}
-                  />
+                      contentStyle={{
+                        backgroundColor: "#514bcf",
+                        border: "1px solid rgba(255,255,255,0.16)",
+                        borderRadius: "10px",
+                        boxShadow: "0 18px 40px -18px rgba(98,91,255,0.65)",
+                        color: "#fff",
+                        fontSize: "12px"
+                      }}
+                      cursor={{ stroke: "#c4b5fd", strokeDasharray: "4 4" }}
+                      formatter={(value) => [formatCurrency(Number(value)), "Sales"]}
+                      itemStyle={{ color: "#ffffff" }}
+                      labelStyle={{ color: "#ffffff", fontWeight: 600, marginBottom: "4px" }}
+                    />
                     <Area
-                    dataKey="amount"
-                    fill="url(#dashboardSalesAreaCalendar)"
-                    fillOpacity={1}
-                    stroke="#625bff"
-                    strokeWidth={2.5}
-                    type="monotone"
-                  />
+                      dataKey="amount"
+                      fill="url(#dashboardSalesAreaCalendar)"
+                      fillOpacity={1}
+                      stroke="#625bff"
+                      strokeWidth={2.5}
+                      type="monotone"
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -538,6 +572,23 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
       </CardContent>
     </Card>
   );
+}
+
+function calendarDaySecondaryLabel(day: DashboardSalesCalendarDay) {
+  if (day.status === "FUTURE") return day.targetAmount ? "Target" : "Future";
+  if (!day.actualDataAvailable) return "No POS history";
+  if (day.targetAmount && Number(day.targetAmount) > 0) {
+    const progress = Math.round((Number(day.actualAmount) / Number(day.targetAmount)) * 100);
+    return `${progress}% of target`;
+  }
+  return `${day.completedSales} sale${day.completedSales === 1 ? "" : "s"}`;
+}
+
+function targetProgressLabel(detail: DashboardSalesDayDetail | null) {
+  if (!detail?.targetAmount || Number(detail.targetAmount) <= 0) return "Not set";
+  if (detail.status === "FUTURE") return "Starts on business day";
+  if (!detail.actualDataAvailable) return "No daily actual";
+  return `${Math.round((Number(detail.actualAmount) / Number(detail.targetAmount)) * 100)}%`;
 }
 
 function SummaryTile({
