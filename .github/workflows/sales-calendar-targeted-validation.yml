@@ -52,17 +52,17 @@ jobs:
       - name: Apply active migrations
         run: npx prisma migrate deploy --schema database/prisma/schema.prisma
 
-      - name: Format calendar-owned files
-        run: |
-          npx prettier --write             backend/src/controllers/dashboardController.ts             backend/src/services/dashboardSalesCalendarService.ts             backend/src/validators/dashboard.validators.ts             backend/test/dashboard-sync.test.ts             frontend/src/components/dashboard/SalesPulseCard.tsx             frontend/src/services/dashboardApi.ts
+      - name: Normalize repository formatting
+        run: npx prettier --write .
 
-      - name: Check calendar-owned formatting
-        run: |
-          npx prettier --check             backend/src/controllers/dashboardController.ts             backend/src/services/dashboardSalesCalendarService.ts             backend/src/validators/dashboard.validators.ts             backend/test/dashboard-sync.test.ts             frontend/src/components/dashboard/SalesPulseCard.tsx             frontend/src/services/dashboardApi.ts
+      - name: Verify repository formatting
+        run: npm run format:check
 
-      - name: Lint calendar-owned implementation
-        run: |
-          npx eslint             backend/src/controllers/dashboardController.ts             backend/src/services/dashboardSalesCalendarService.ts             backend/src/validators/dashboard.validators.ts             backend/test/dashboard-sync.test.ts             frontend/src/components/dashboard/SalesPulseCard.tsx             frontend/src/services/dashboardApi.ts
+      - name: Lint repository
+        run: npm run lint
+
+      - name: Typecheck repository
+        run: npm run typecheck
 
       - name: Run dashboard calendar backend contracts
         run: npx tsx --test --test-concurrency=1 --test-name-pattern="sales calendar" backend/test/dashboard-sync.test.ts
@@ -71,14 +71,14 @@ jobs:
         working-directory: frontend
         run: npx tsx --tsconfig tsconfig.app.json ../scripts/owner-modules-frontend-test.ts
 
-      - name: Remove temporary validator and persist formatting
+      - name: Remove temporary validator and persist validated convergence
         run: |
           git rm .github/workflows/sales-calendar-targeted-validation.yml
-          git add             backend/src/controllers/dashboardController.ts             backend/src/services/dashboardSalesCalendarService.ts             backend/src/validators/dashboard.validators.ts             backend/test/dashboard-sync.test.ts             frontend/src/components/dashboard/SalesPulseCard.tsx             frontend/src/services/dashboardApi.ts
+          git add -A
           if git diff --cached --quiet; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit --no-verify -m "style(dashboard): format validated sales calendar"
-          git push origin HEAD:sprint/v0.11/sprint-11
+          HUSKY=0 git commit -m "style(sprint11): normalize repository after calendar integration"
+          HUSKY=0 git push origin HEAD:sprint/v0.11/sprint-11
