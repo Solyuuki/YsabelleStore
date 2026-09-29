@@ -6,6 +6,7 @@
     "0000_generation2_baseline": "cb901c955361e5b3ff1a85bfc48e6a040c48394b0800a377d214e95495f26d56",
     "0001_system_canonical_state": "f105339ddb9cc975c5392e66dfa493a739cbffbcf425347279e1cc2c52fe491b",
     "0002_category_management_foundation": "8a4c0bea12e0b1e126a3148526fd3d2667c1a08aa9d81598d48e45b332d52285",
-    "0003_category_cover_focal_grid": "e4d6578e6915e083c4878e62936c4b3e274cc438fdf2a44237c63bb014eb9587"
+    "0003_category_cover_focal_grid": "e4d6578e6915e083c4878e62936c4b3e274cc438fdf2a44237c63bb014eb9587",
+    "0004_dashboard_sales_calendar_targets": "f5475ec1d101ebb3c160d7b05d86e11ca681220a4bdc59f14f94564c16198796"
   }
 }

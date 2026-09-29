@@ -343,6 +343,8 @@ model User {
   invalidatedMonthlySales   HistoricalMonthlySales[]     @relation("HistoricalSalesInvalidatedBy")
   createdRestockOrders      RestockOrder[]               @relation("RestockOrderCreatedBy")
   approvedRestockOrders     RestockOrder[]               @relation("RestockOrderApprovedBy")
+  createdSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetCreatedBy")
+  updatedSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetUpdatedBy")
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
@@ -965,6 +967,22 @@ model SaleItem {
   @@index([productId], map: "idx_sale_items_product")
   @@index([batchId], map: "idx_sale_items_batch")
   @@map("sale_items")
+}
+
+model DailySalesTarget {
+  id            String   @id @default(cuid()) @db.VarChar(191)
+  businessDate  DateTime @unique(map: "uq_daily_sales_targets_business_date") @map("business_date") @db.Date
+  targetAmount  Decimal  @map("target_amount") @db.Decimal(12, 2)
+  createdById   String?  @map("created_by_id") @db.VarChar(191)
+  updatedById   String?  @map("updated_by_id") @db.VarChar(191)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdBy     User?    @relation("DailySalesTargetCreatedBy", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updatedBy     User?    @relation("DailySalesTargetUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([createdById], map: "idx_daily_sales_targets_created_by")
+  @@index([updatedById], map: "idx_daily_sales_targets_updated_by")
+  @@map("daily_sales_targets")
 }
 
 model CustomerCartItem {

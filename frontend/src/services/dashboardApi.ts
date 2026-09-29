@@ -6,6 +6,35 @@ export type DashboardActivityBucket = {
   totalAmount: string;
 };
 
+export type DashboardSalesCalendarDay = {
+  actualAmount: string;
+  completedSales: number;
+  date: string;
+  status: "PAST" | "TODAY" | "FUTURE";
+  targetAmount: string | null;
+  unitsSold: number;
+};
+
+export type DashboardSalesDayDetail = DashboardSalesCalendarDay & {
+  activity: DashboardActivityBucket[];
+};
+
+export type DashboardSalesCalendar = {
+  days: DashboardSalesCalendarDay[];
+  generatedAt: string;
+  month: string;
+  summary: {
+    actualAmount: string;
+    completedSales: number;
+    forecastAmount: string | null;
+    forecastUnits: number | null;
+    targetAmount: string | null;
+    targetDays: number;
+    unitsSold: number;
+  };
+  timeZone: "Asia/Manila";
+};
+
 export type DashboardForecastSummary =
   | {
       access: "AVAILABLE";
@@ -143,6 +172,47 @@ export async function fetchDashboardOperations() {
 export async function fetchNavigationBadges() {
   const response = await apiClient.request<NavigationBadgeSummary, never>(
     "/api/dashboard/navigation-badges"
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+
+export async function fetchDashboardSalesCalendar(month: string) {
+  const response = await apiClient.request<DashboardSalesCalendar, never>(
+    `/api/dashboard/sales-calendar?month=${encodeURIComponent(month)}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function fetchDashboardSalesDay(date: string) {
+  const response = await apiClient.request<DashboardSalesDayDetail, never>(
+    `/api/dashboard/sales-calendar/day?date=${encodeURIComponent(date)}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function saveDashboardSalesTarget(date: string, targetAmount: number | null) {
+  const response = await apiClient.request<{ date: string; targetAmount: string | null }, never>(
+    `/api/dashboard/sales-calendar/targets/${encodeURIComponent(date)}`,
+    {
+      json: { targetAmount },
+      method: "PUT"
+    }
   );
 
   if (!response.success || !response.data) {

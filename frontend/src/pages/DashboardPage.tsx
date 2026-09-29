@@ -1,5 +1,4 @@
 import {
-  Activity,
   ArrowRight,
   Boxes,
   CheckCircle2,
@@ -14,12 +13,12 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 import type { AppRoutePath } from "@/app/routes";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { SalesPulseCard } from "@/components/dashboard/SalesPulseCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
@@ -269,7 +268,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
           </section>
 
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
-            <SalesActivityCard summary={summary} />
+            <SalesPulseCard isOwner={isOwner} summary={summary} />
             {isOwner ? (
               <RestockPipelineCard
                 loading={operationsLoading}
@@ -377,93 +376,6 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
             ? "No immediate stock exceptions"
             : `${alertCount.toLocaleString()} total inventory exceptions`}
         </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function SalesActivityCard({ summary }: { summary: DashboardSummary }) {
-  const chartData = summary.sales.activity.map((bucket) => ({
-    amount: Number(bucket.totalAmount),
-    label: bucket.label,
-    sales: bucket.saleCount
-  }));
-
-  return (
-    <Card className={brandCardClass}>
-      <BrandAccent />
-      <CardHeader className="border-b border-slate-100 pb-4 pt-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#625bff]">
-              Sales pulse
-            </p>
-            <CardTitle className="mt-1">Retail activity</CardTitle>
-            <p className="mt-1 text-xs text-slate-500">
-              Revenue movement across today's 2-hour windows.
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-2xl font-semibold tracking-tight text-slate-950">
-              {formatCurrency(summary.sales.todayAmount)}
-            </p>
-            <p className="mt-1 text-xs text-slate-500">
-              {formatCount(summary.sales.completedSales, "completed sale")}
-            </p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-5">
-        <div className="h-64 w-full">
-          <ResponsiveContainer height="100%" width="100%">
-            <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
-              <defs>
-                <linearGradient id="dashboardSalesArea" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
-                  <stop offset="65%" stopColor="#008cff" stopOpacity={0.1} />
-                  <stop offset="100%" stopColor="#f43f8c" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
-              <XAxis
-                axisLine={false}
-                dataKey="label"
-                interval={1}
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#514bcf",
-                  border: "1px solid rgba(255,255,255,0.16)",
-                  borderRadius: "10px",
-                  boxShadow: "0 18px 40px -18px rgba(98,91,255,0.65)",
-                  color: "#fff",
-                  fontSize: "12px"
-                }}
-                cursor={{ stroke: "#c4b5fd", strokeDasharray: "4 4" }}
-                formatter={(value) => [formatCurrency(Number(value)), "Sales"]}
-                itemStyle={{ color: "#ffffff" }}
-                labelStyle={{ color: "#ffffff", fontWeight: 600, marginBottom: "4px" }}
-              />
-              <Area
-                dataKey="amount"
-                fill="url(#dashboardSalesArea)"
-                fillOpacity={1}
-                stroke="#625bff"
-                strokeWidth={2.5}
-                type="monotone"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
-          <span className="flex items-center gap-1.5">
-            <Activity className="h-3.5 w-3.5 text-[#625bff]" aria-hidden="true" />
-            Live completed-sale activity
-          </span>
-          <span>Manila business day</span>
-        </div>
       </CardContent>
     </Card>
   );
