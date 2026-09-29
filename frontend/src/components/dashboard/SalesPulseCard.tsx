@@ -492,7 +492,13 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               </div>
               <div className="text-right">
                 <p className="text-2xl font-semibold tracking-tight text-slate-950">
-                  {formatCurrency(selectedAmount)}
+                  {loadingDetail
+                    ? "Loading…"
+                    : selectedActualAvailable
+                      ? formatCurrency(selectedAmount)
+                      : detail?.status === "FUTURE"
+                        ? "Not started"
+                        : "No daily data"}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
                   {(detail?.completedSales ?? 0).toLocaleString()} completed sales

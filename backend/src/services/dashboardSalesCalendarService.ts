@@ -61,11 +61,12 @@ export async function getDashboardSalesCalendar(
   now = new Date()
 ): Promise<DashboardSalesCalendar> {
   const { end, start } = getManilaMonthRange(month);
+  const actualEnd = new Date(Math.min(end.getTime(), now.getTime() + 1));
   const [sales, targets, forecast, firstCompletedSale] = await Promise.all([
     prisma.sale.findMany({
       where: {
         status: "COMPLETED",
-        saleDate: { gte: start, lt: end }
+        saleDate: { gte: start, lt: actualEnd }
       },
       select: {
         items: { select: { quantity: true } },
@@ -89,7 +90,10 @@ export async function getDashboardSalesCalendar(
     prisma.sale.findFirst({
       orderBy: { saleDate: "asc" },
       select: { saleDate: true },
-      where: { status: "COMPLETED" }
+      where: {
+        saleDate: { lte: now },
+        status: "COMPLETED"
+      }
     })
   ]);
 
@@ -158,11 +162,12 @@ export async function getDashboardSalesDay(
   assertValidDateKey(date);
   const start = manilaDayStart(date);
   const end = new Date(start.getTime() + DAY_MS);
+  const actualEnd = new Date(Math.min(end.getTime(), now.getTime() + 1));
   const [sales, target, firstCompletedSale] = await Promise.all([
     prisma.sale.findMany({
       where: {
         status: "COMPLETED",
-        saleDate: { gte: start, lt: end }
+        saleDate: { gte: start, lt: actualEnd }
       },
       select: {
         items: { select: { quantity: true } },
@@ -177,7 +182,10 @@ export async function getDashboardSalesDay(
     prisma.sale.findFirst({
       orderBy: { saleDate: "asc" },
       select: { saleDate: true },
-      where: { status: "COMPLETED" }
+      where: {
+        saleDate: { lte: now },
+        status: "COMPLETED"
+      }
     })
   ]);
 
