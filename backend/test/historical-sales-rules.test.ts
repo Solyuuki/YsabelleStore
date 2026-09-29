@@ -267,6 +267,7 @@ test("an empty eligible set produces a valid empty forecast collection", () => {
       firstForecastMonth: null,
       forecastPointsGenerated: 0,
       forecastStartMonth: "2026-07-01",
+      forecastHorizonMonths: 0,
       generatedAt: "2026-07-15T12:00:00.000Z",
       infinityCount: 0,
       lastForecastMonth: null,

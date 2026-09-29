@@ -13,16 +13,17 @@ import {
 
 test("legacy category cover manifest has unique canonical slugs", () => {
   const slugs = LEGACY_CATEGORY_COVER_SOURCES.map((source) => source.slug);
-  assert.equal(new Set(slugs).size, slugs.length);
-  assert.ok(slugs.includes("coffee-milk"));
-  assert.ok(slugs.includes("juice-tea-soda-water"));
-  assert.ok(slugs.includes("snacks-confectionery"));
-  assert.ok(slugs.includes("noodles-pasta"));
-  assert.ok(slugs.includes("rice-staples"));
-  assert.ok(slugs.includes("household-supplies"));
-  assert.ok(slugs.includes("laundry-supplies"));
-  assert.equal(slugs.includes("frozen-chilled"), false);
-  assert.equal(slugs.includes("tissue-cotton"), false);
+  const slugSet = new Set<string>(slugs);
+  assert.equal(slugSet.size, slugs.length);
+  assert.ok(slugSet.has("coffee-milk"));
+  assert.ok(slugSet.has("juice-tea-soda-water"));
+  assert.ok(slugSet.has("snacks-confectionery"));
+  assert.ok(slugSet.has("noodles-pasta"));
+  assert.ok(slugSet.has("rice-staples"));
+  assert.ok(slugSet.has("household-supplies"));
+  assert.ok(slugSet.has("laundry-supplies"));
+  assert.equal(slugSet.has("frozen-chilled"), false);
+  assert.equal(slugSet.has("tissue-cotton"), false);
 });
 
 test("legacy local category cover resolver rejects traversal and unrelated paths", () => {
@@ -77,7 +78,7 @@ test("legacy remote category cover migration only trusts the curated Cloudinary 
 
 test("migration manifest stays aligned with the temporary storefront fallback map", () => {
   const presentationSource = readFileSync(
-    resolve(process.cwd(), "../frontend/src/utils/storefrontCategoryPresentation.ts"),
+    path.resolve(process.cwd(), "../frontend/src/utils/storefrontCategoryPresentation.ts"),
     "utf8"
   );
 
@@ -92,7 +93,9 @@ test("migration manifest stays aligned with the temporary storefront fallback ma
 
 
 test("legacy migration only aliases editorial assets to semantically matching canonical categories", () => {
-  const bySlug = new Map(LEGACY_CATEGORY_COVER_SOURCES.map((source) => [source.slug, source]));
+  const bySlug = new Map<string, (typeof LEGACY_CATEGORY_COVER_SOURCES)[number]>(
+    LEGACY_CATEGORY_COVER_SOURCES.map((source) => [source.slug, source])
+  );
 
   assert.equal(
     bySlug.get("noodles-pasta")?.imageUrl,

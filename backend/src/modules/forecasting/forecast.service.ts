@@ -4,7 +4,6 @@ import type {
   ForecastGenerationSummary,
   ForecastInputSource,
   ForecastModel,
-  ForecastProductSummary,
   ForecastSummary,
   HistoricalImportIssue,
   HistoricalImportValidation,

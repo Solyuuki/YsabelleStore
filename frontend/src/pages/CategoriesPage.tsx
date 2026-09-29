@@ -803,11 +803,12 @@ function EditCategoryDialog({
 
   if (!category) return null;
 
+  const categoryId = category.id;
   const coverFocus = splitCoverPosition(coverPosition);
 
   async function handleCoverChanged() {
     try {
-      const refreshed = await fetchManagedCategory(category.id);
+      const refreshed = await fetchManagedCategory(categoryId);
       onCategoryChanged(refreshed);
     } catch {
       // Cover mutations already succeeded server-side; list refresh remains best-effort.
@@ -822,7 +823,7 @@ function EditCategoryDialog({
     setError(null);
 
     try {
-      const response = await updateManagedCategory(category.id, {
+      const response = await updateManagedCategory(categoryId, {
         name: name.trim(),
         description: description.trim() || null,
         isActive,

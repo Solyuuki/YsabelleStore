@@ -28,9 +28,6 @@ function asDate(monthStart: string) {
   return new Date(`${monthStart.slice(0, 10)}T00:00:00.000Z`);
 }
 
-function asNumber(value: { toString(): string } | number | null) {
-  return value === null ? null : Number(value);
-}
 
 function asJson(value: unknown) {
   return value as Prisma.InputJsonValue;

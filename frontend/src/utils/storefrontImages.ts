@@ -1,5 +1,4 @@
 import { resolveApiUrl } from "@/config/runtime";
-import type { StorefrontProduct } from "@/types/storefront";
 
 const catalogImageRevisionByAssetId = {
   "sarima-p219-b7553e591e41": "edge-artifact-20260928"
