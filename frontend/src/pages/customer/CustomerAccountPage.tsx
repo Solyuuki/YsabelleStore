@@ -1,5 +1,6 @@
 import {
   CheckCircle2,
+  Heart,
   History,
   KeyRound,
   LogOut,
@@ -11,8 +12,9 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
-import { formatCurrency } from "@/components/customer/ProductCard";
+import { ProductCard, formatCurrency } from "@/components/customer/ProductCard";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import {
   CustomerAccountRequestError,
   changeCustomerPassword,
@@ -34,7 +36,7 @@ const sessionDateFormatter = new Intl.DateTimeFormat("en-PH", {
   timeStyle: "short"
 });
 
-type AccountTab = "orders" | "profile" | "security";
+type AccountTab = "orders" | "favorites" | "profile" | "security";
 
 const ACCOUNT_HERO_CONTENT: Record<
   AccountTab,
@@ -45,6 +47,12 @@ const ACCOUNT_HERO_CONTENT: Record<
     title: "Your orders, organized.",
     description:
       "Track signed-in purchases, pickup activity, and your recent order history in one focused view."
+  },
+  favorites: {
+    eyebrow: "Saved items",
+    title: "Favorites, ready when you are.",
+    description:
+      "Keep products you want to revisit in one clean list, with live price, rating, and stock status."
   },
   profile: {
     eyebrow: "Profile",
@@ -83,6 +91,7 @@ function isCustomerSessionError(reason: unknown) {
 
 export function CustomerAccountPage({ navigate }: { navigate: (path: string) => void }) {
   const { customer, error, logout, refreshSession } = useCustomerAuth();
+  const { favoriteProducts, loading: favoritesLoading } = useCustomerFavorites();
   const [activeTab, setActiveTab] = useState<AccountTab>("orders");
   const [orders, setOrders] = useState<StorefrontOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -355,6 +364,15 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
               <History size={17} /> Orders
             </button>
             <button
+              aria-controls="favorites-panel"
+              aria-selected={activeTab === "favorites"}
+              onClick={() => setActiveTab("favorites")}
+              role="tab"
+              type="button"
+            >
+              <Heart size={17} /> Favorites
+            </button>
+            <button
               aria-controls="profile-panel"
               aria-selected={activeTab === "profile"}
               onClick={() => setActiveTab("profile")}
@@ -396,6 +414,8 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
               <span className="customer-account-hero__icon" aria-hidden="true">
                 {activeTab === "orders" ? (
                   <History size={28} />
+                ) : activeTab === "favorites" ? (
+                  <Heart size={28} />
                 ) : activeTab === "profile" ? (
                   <UserRound size={28} />
                 ) : (
@@ -470,6 +490,51 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                       ))}
                     </ul>
                   </article>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section
+            aria-labelledby="favorites-title"
+            className="customer-account-section"
+            hidden={activeTab !== "favorites"}
+            id="favorites-panel"
+            role="tabpanel"
+          >
+            <div className="customer-account-section-heading">
+              <div>
+                <p className="customer-eyebrow">Saved for later</p>
+                <h2 id="favorites-title">Your favorites</h2>
+                <p>
+                  Products saved with the heart button stay connected to this customer account.
+                </p>
+              </div>
+              <Heart aria-hidden="true" size={22} />
+            </div>
+
+            {favoritesLoading ? (
+              <div className="customer-account-state" role="status">
+                Loading your favorites...
+              </div>
+            ) : favoriteProducts.length === 0 ? (
+              <div className="customer-account-empty">
+                <Heart aria-hidden="true" size={30} />
+                <strong>No favorites yet</strong>
+                <p>Save products with the heart icon while browsing the storefront.</p>
+                <button onClick={() => navigate("/shop")} type="button">
+                  Browse the shop
+                </button>
+              </div>
+            ) : (
+              <div className="customer-account-favorites-grid">
+                {favoriteProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    navigate={navigate}
+                    presentation="catalog"
+                    product={product}
+                  />
                 ))}
               </div>
             )}
