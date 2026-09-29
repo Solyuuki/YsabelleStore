@@ -42,7 +42,10 @@ test("customer sign-in preserves a safe checkout return path", () => {
 
 test("customer account loads Orders first and keeps Favorites, Profile and Security secondary", () => {
   assert.match(customerApp, /customer-account-premium\.css/);
-  assert.match(customerAccountPage, /type AccountTab = "orders" \| "favorites" \| "profile" \| "security";/);
+  assert.match(
+    customerAccountPage,
+    /type AccountTab = "orders" \| "favorites" \| "profile" \| "security";/
+  );
   assert.match(customerAccountPage, /useState<AccountTab>\("orders"\)/);
   assert.match(customerAccountPage, /role="tablist"/);
   assert.match(customerAccountPage, /aria-selected=\{activeTab === "orders"\}/);
