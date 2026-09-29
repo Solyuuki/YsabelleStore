@@ -8,7 +8,9 @@ import type {
   StorefrontProduct,
   StorefrontProductDetail,
   StorefrontProductReviews,
-  StorefrontRelatedProducts
+  StorefrontRelatedProducts,
+  StorefrontReviewContext,
+  StorefrontReviewInput
 } from "@/types/storefront";
 
 function queryString(values: Record<string, string | number | undefined>) {
@@ -72,6 +74,28 @@ export async function fetchStorefrontProductReviews(
   const response = await apiClient.request<StorefrontProductReviews>(
     `/api/storefront/products/${encodeURIComponent(productId)}/reviews${search ? `?${search}` : ""}`,
     { signal }
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function fetchStorefrontReviewContext(productId: string, signal?: AbortSignal) {
+  const response = await apiClient.request<StorefrontReviewContext>(
+    `/api/storefront/products/${encodeURIComponent(productId)}/review-context`,
+    { credentials: "include", signal }
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function saveStorefrontProductReview(productId: string, input: StorefrontReviewInput) {
+  const response = await apiClient.request<StorefrontProductReview, unknown>(
+    `/api/storefront/products/${encodeURIComponent(productId)}/review`,
+    {
+      method: "PUT",
+      credentials: "include",
+      json: input
+    }
   );
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
