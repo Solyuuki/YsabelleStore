@@ -161,9 +161,7 @@ async function synchronizeBatchTargets(batchId: string, now: Date) {
   void weightProfile.mode;
 }
 
-function aggregateForecastMonths(
-  rows: Array<{ detailPayload: unknown }>
-): ForecastAggregate {
+function aggregateForecastMonths(rows: Array<{ detailPayload: unknown }>): ForecastAggregate {
   const monthlyRevenue = new Map<string, number>();
   const monthlyUnits = new Map<string, number>();
 

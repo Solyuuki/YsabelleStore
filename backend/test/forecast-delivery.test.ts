@@ -146,7 +146,6 @@ test("detail batch identity rejects unbounded input", () => {
   assert.equal(forecastDetailQuerySchema.safeParse({ batchId: "x".repeat(192) }).success, false);
 });
 
-
 test("forecast period normalization accepts Python month-start dates", () => {
   assert.equal(normalizeForecastPeriodMonth("2026-10"), "2026-10");
   assert.equal(normalizeForecastPeriodMonth("2026-10-01"), "2026-10");

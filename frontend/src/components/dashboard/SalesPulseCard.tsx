@@ -254,9 +254,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                       aria-label="Previous month"
                       className="h-8 w-8 p-0"
                       disabled={month <= SALES_CALENDAR_MIN_MONTH}
-                      onClick={() =>
-                        setMonth(clampCalendarMonth(offsetMonth(month, -1)))
-                      }
+                      onClick={() => setMonth(clampCalendarMonth(offsetMonth(month, -1)))}
                       size="sm"
                       type="button"
                       variant="ghost"

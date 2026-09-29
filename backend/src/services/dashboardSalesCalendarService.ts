@@ -114,8 +114,8 @@ export async function getDashboardSalesCalendar(
       date < todayKey ? "PAST" : date === todayKey ? "TODAY" : "FUTURE";
     const target =
       status === "FUTURE"
-        ? generatedTarget ?? persistedTarget
-        : persistedTarget ?? generatedTarget;
+        ? (generatedTarget ?? persistedTarget)
+        : (persistedTarget ?? generatedTarget);
     const actualDataAvailable =
       status === "TODAY" ||
       (status === "PAST" && firstRecordedDate !== null && date >= firstRecordedDate);
@@ -217,8 +217,8 @@ export async function getDashboardSalesDay(
   const generatedTarget = forecastPlan?.targets.get(date) ?? null;
   const resolvedTarget =
     status === "FUTURE"
-      ? generatedTarget ?? persistedTarget
-      : persistedTarget ?? generatedTarget;
+      ? (generatedTarget ?? persistedTarget)
+      : (persistedTarget ?? generatedTarget);
 
   return {
     actualAmount: amount.toFixed(2),
