@@ -5,6 +5,8 @@ ALTER TABLE `customer_accounts`
   NOT NULL DEFAULT 'ACTIVE';
 
 ALTER TABLE `product_reviews`
+  DROP INDEX `idx_product_reviews_product_created`,
+  DROP INDEX `idx_product_reviews_product_rating_created`,
   ADD COLUMN `customer_account_id` VARCHAR(191) NULL,
   ADD COLUMN `verified_order_id` VARCHAR(191) NULL,
   ADD COLUMN `status` ENUM('VISIBLE', 'HIDDEN', 'REMOVED') NOT NULL DEFAULT 'VISIBLE',
