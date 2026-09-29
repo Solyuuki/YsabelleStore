@@ -43,6 +43,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import {
+  cancelRestockOrder,
   listRestockOrders,
   receiveRestockOrder,
   type RestockOrder,
@@ -193,6 +194,8 @@ export function ReceivingPage() {
   const [damageReason, setDamageReason] = useState("");
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
   const [lotDialogOpen, setLotDialogOpen] = useState(false);
   const [lotLineId, setLotLineId] = useState("");
   const [returnReportOrder, setReturnReportOrder] = useState<RestockOrder | null>(null);
@@ -311,18 +314,20 @@ export function ReceivingPage() {
     setExceptionLineIds([]);
     setDamageReason("");
     setReceiptError(null);
+    setCancelReason("");
     setLotDialogOpen(false);
     setLotLineId("");
   }
 
   function closeTicket() {
-    if (saving) return;
+    if (saving || cancelling) return;
     setSelectedOrder(null);
     setReceiptMode(null);
     setReceiptRows({});
     setExceptionLineIds([]);
     setDamageReason("");
     setReceiptError(null);
+    setCancelReason("");
     setLotDialogOpen(false);
     setLotLineId("");
   }
@@ -458,6 +463,41 @@ export function ReceivingPage() {
     }
 
     return lines;
+  }
+
+  async function cancelSelectedTicket() {
+    if (!selectedOrder || cancelling || saving) return;
+    const reason = cancelReason.trim();
+    if (reason.length < 3) {
+      setReceiptError("Add a short reason before cancelling this restock ticket.");
+      return;
+    }
+
+    setCancelling(true);
+    setReceiptError(null);
+    try {
+      const cancelled = await cancelRestockOrder(selectedOrder.id, {
+        expectedVersion: selectedOrder.version,
+        reason
+      });
+      pushToast({
+        title: "Restock ticket cancelled",
+        message: `${cancelled.orderNumber} was cancelled. No inventory quantity was changed.`,
+        variant: "success"
+      });
+      setSelectedOrder(null);
+      setCancelReason("");
+      setReceiptMode(null);
+      await loadQueue();
+    } catch (requestError) {
+      setReceiptError(
+        requestError instanceof Error
+          ? requestError.message
+          : "The restock ticket could not be cancelled."
+      );
+    } finally {
+      setCancelling(false);
+    }
   }
 
   async function confirmReceipt() {
@@ -671,7 +711,7 @@ export function ReceivingPage() {
                 <Button
                   aria-label="Close delivery"
                   className="absolute right-5 top-5 h-8 w-8"
-                  disabled={saving}
+                  disabled={saving || cancelling}
                   onClick={closeTicket}
                   size="icon"
                   type="button"
@@ -702,6 +742,47 @@ export function ReceivingPage() {
                     <>
                       <TicketItemsPreview order={selectedOrder} />
                       <ArrivalOptions onSelect={startReceipt} />
+                      {(selectedOrder.status === "APPROVED" ||
+                        selectedOrder.status === "AWAITING_DELIVERY") &&
+                      selectedTotals.accepted === 0 ? (
+                        <section className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                            <div className="min-w-0 flex-1">
+                              <Label htmlFor="cancel-restock-reason">Cancel ticket</Label>
+                              <p className="mt-1 text-xs leading-5 text-slate-500">
+                                Use this when the owner declines the recommended restock before any
+                                stock has been physically received. The reason remains in the audit trail.
+                              </p>
+                              <Input
+                                className="mt-2"
+                                disabled={cancelling}
+                                id="cancel-restock-reason"
+                                maxLength={500}
+                                onChange={(event) => {
+                                  setCancelReason(event.target.value);
+                                  setReceiptError(null);
+                                }}
+                                placeholder="Reason for cancelling this ticket"
+                                value={cancelReason}
+                              />
+                            </div>
+                            <Button
+                              className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+                              disabled={cancelling || cancelReason.trim().length < 3}
+                              onClick={() => void cancelSelectedTicket()}
+                              type="button"
+                              variant="secondary"
+                            >
+                              {cancelling ? (
+                                <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <X aria-hidden="true" className="h-4 w-4" />
+                              )}
+                              {cancelling ? "Cancelling…" : "Cancel ticket"}
+                            </Button>
+                          </div>
+                        </section>
+                      ) : null}
                     </>
                   ) : receiptMode === "complete" ? (
                     <>
