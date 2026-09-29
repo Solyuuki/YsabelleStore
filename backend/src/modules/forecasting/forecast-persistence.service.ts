@@ -12,10 +12,7 @@ import type {
 } from "./forecast.types.js";
 import type { ForecastSourceSnapshot } from "./forecast-source-version.service.js";
 import { addMonths, monthStartIso } from "./forecast-window.js";
-import {
-  summarizeForecastProduct,
-  sumHistoricalYear
-} from "./forecast-summary.js";
+import { summarizeForecastProduct, sumHistoricalYear } from "./forecast-summary.js";
 
 const PERSISTENCE_CHUNK_SIZE = 100;
 const PAGE_CACHE_LIMIT = 50;
@@ -27,7 +24,6 @@ let lastPersistenceTimings = { activationMs: 0, writeMs: 0 };
 function asDate(monthStart: string) {
   return new Date(`${monthStart.slice(0, 10)}T00:00:00.000Z`);
 }
-
 
 function asJson(value: unknown) {
   return value as Prisma.InputJsonValue;
@@ -197,9 +193,7 @@ export async function cleanupSupersededForecastData(activeBatchId: string) {
   });
 }
 
-export function summarizePersistedProduct(
-  product: ProductForecastDetail
-): ForecastProductSummary {
+export function summarizePersistedProduct(product: ProductForecastDetail): ForecastProductSummary {
   return summarizeForecastProduct(product);
 }
 
@@ -276,22 +270,15 @@ export async function queryPersistedForecastProducts(
       where: { batchId: batch.id }
     })
   ]);
-  const generation = batch.generationMetadata as
-    | Partial<ForecastGenerationSummary>
-    | null;
+  const generation = batch.generationMetadata as Partial<ForecastGenerationSummary> | null;
   const inferredHorizon =
     generation?.totalProductsProcessed && generation.forecastPointsGenerated
       ? Math.max(
           1,
-          Math.round(
-            generation.forecastPointsGenerated / generation.totalProductsProcessed
-          )
+          Math.round(generation.forecastPointsGenerated / generation.totalProductsProcessed)
         )
       : 12;
-  const forecastHorizonMonths = Math.max(
-    1,
-    generation?.forecastHorizonMonths ?? inferredHorizon
-  );
+  const forecastHorizonMonths = Math.max(1, generation?.forecastHorizonMonths ?? inferredHorizon);
 
   const startMonthKey = batch.forecastStartMonth.toISOString().slice(0, 7);
   const forecastEndMonth =

@@ -43,10 +43,7 @@ assert.match(
 assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(forecastSource, /Forecast watchlist/);
 const forecastWatchlistBodyStart = forecastSource.indexOf("<TableBody>");
-const forecastWatchlistBodyEnd = forecastSource.indexOf(
-  "</TableBody>",
-  forecastWatchlistBodyStart
-);
+const forecastWatchlistBodyEnd = forecastSource.indexOf("</TableBody>", forecastWatchlistBodyStart);
 assert.ok(forecastWatchlistBodyStart >= 0);
 assert.ok(forecastWatchlistBodyEnd > forecastWatchlistBodyStart);
 const forecastWatchlistBody = forecastSource.slice(

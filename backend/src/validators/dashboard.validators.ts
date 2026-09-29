@@ -20,7 +20,8 @@ export const dashboardSalesTargetBodySchema = z.object({
     .union([z.number(), z.string().trim().min(1), z.null()])
     .transform((value) => (value === null ? null : Number(value)))
     .refine(
-      (value) => value === null || (Number.isFinite(value) && value >= 0 && value <= 9_999_999_999.99),
+      (value) =>
+        value === null || (Number.isFinite(value) && value >= 0 && value <= 9_999_999_999.99),
       "targetAmount must be null or a non-negative amount within supported currency limits"
     )
 });

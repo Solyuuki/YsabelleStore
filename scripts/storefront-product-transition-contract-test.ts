@@ -6,10 +6,7 @@ const detailSource = readFileSync(
   resolve(process.cwd(), "src/pages/customer/ProductDetailPage.tsx"),
   "utf8"
 );
-const imageSource = readFileSync(
-  resolve(process.cwd(), "src/utils/storefrontImages.ts"),
-  "utf8"
-);
+const imageSource = readFileSync(resolve(process.cwd(), "src/utils/storefrontImages.ts"), "utf8");
 const customerCss = readFileSync(resolve(process.cwd(), "src/styles/customer.css"), "utf8");
 
 assert.doesNotMatch(detailSource, /setProduct\(null\)/);
@@ -25,7 +22,10 @@ assert.match(
   detailSource,
   /setRelatedResource\(\(current\) => \(\{ \.\.\.current, error: "", status: "loading" \}\)\)/
 );
-assert.match(detailSource, /const hasCurrentData = dataMatchesCategory && Boolean\(resource\.data\)/);
+assert.match(
+  detailSource,
+  /const hasCurrentData = dataMatchesCategory && Boolean\(resource\.data\)/
+);
 assert.match(detailSource, /resource\.status === "loading" && !hasCurrentData/);
 assert.match(detailSource, /resource\.status === "error" && !hasCurrentData/);
 assert.match(detailSource, /resource\.status === "error" && !resource\.data/);
@@ -44,7 +44,10 @@ assert.match(imageSource, /createImagePreloadAbortError/);
 assert.match(customerCss, /@keyframes customer-product-detail-enter/);
 assert.match(customerCss, /data-product-transitioning="true"/);
 assert.match(customerCss, /will-change: opacity/);
-assert.doesNotMatch(customerCss, /customer-product-page\[data-product-transitioning="true"\][\s\S]{0,220}translate3d/);
+assert.doesNotMatch(
+  customerCss,
+  /customer-product-page\[data-product-transitioning="true"\][\s\S]{0,220}translate3d/
+);
 assert.match(customerCss, /data-revalidating="true"/);
 assert.match(customerCss, /prefers-reduced-motion: reduce/);
 

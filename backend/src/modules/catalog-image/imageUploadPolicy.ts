@@ -65,7 +65,6 @@ export function inspectProductImageUpload(
   return detected;
 }
 
-
 export function inspectCategoryCoverUpload(
   input: ProductImageUploadInput
 ): CatalogImageUploadInspection {

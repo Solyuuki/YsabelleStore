@@ -1,11 +1,4 @@
-import {
-  Activity,
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  LineChart,
-  Target
-} from "lucide-react";
+import { Activity, CalendarDays, ChevronLeft, ChevronRight, LineChart, Target } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
@@ -133,9 +126,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
   }, [calendar]);
 
   const selectedCalendarDay = calendar?.days.find((day) => day.date === selectedDate) ?? null;
-  const trailingDays = calendar
-    ? (7 - ((firstWeekday + calendar.days.length) % 7)) % 7
-    : 0;
+  const trailingDays = calendar ? (7 - ((firstWeekday + calendar.days.length) % 7)) % 7 : 0;
   const chartData = (detail?.activity ?? []).map((bucket) => ({
     amount: Number(bucket.totalAmount),
     label: bucket.label,
@@ -323,7 +314,9 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                         aria-label={`Open sales for ${day.date}`}
                         className={[
                           "group min-h-[78px] border-b border-r border-slate-100 p-1.5 text-left transition sm:min-h-[96px] sm:p-2.5",
-                          selected ? "bg-violet-50 ring-2 ring-inset ring-[#625bff]" : "hover:bg-slate-50",
+                          selected
+                            ? "bg-violet-50 ring-2 ring-inset ring-[#625bff]"
+                            : "hover:bg-slate-50",
                           day.status === "TODAY" ? "relative" : ""
                         ].join(" ")}
                         key={day.date}
@@ -392,23 +385,23 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <MiniMetric
                     label="Actual"
-                    value={selectedActualAvailable ? formatCurrency(selectedAmount) : "No daily data"}
+                    value={
+                      selectedActualAvailable ? formatCurrency(selectedAmount) : "No daily data"
+                    }
                   />
                   <MiniMetric
                     label="Target"
-                    value={
-                      detail?.targetAmount ? formatCurrency(detail.targetAmount) : "Not set"
-                    }
+                    value={detail?.targetAmount ? formatCurrency(detail.targetAmount) : "Not set"}
                   />
                   <MiniMetric
                     label="Transactions"
                     value={(detail?.completedSales ?? 0).toLocaleString()}
                   />
-                  <MiniMetric label="Units sold" value={(detail?.unitsSold ?? 0).toLocaleString()} />
                   <MiniMetric
-                    label="Target progress"
-                    value={targetProgressLabel(detail)}
+                    label="Units sold"
+                    value={(detail?.unitsSold ?? 0).toLocaleString()}
                   />
+                  <MiniMetric label="Target progress" value={targetProgressLabel(detail)} />
                 </div>
 
                 {isOwner ? (
@@ -520,13 +513,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 <ResponsiveContainer height="100%" width="100%">
                   <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
                     <defs>
-                      <linearGradient
-                        id="dashboardSalesAreaCalendar"
-                        x1="0"
-                        x2="0"
-                        y1="0"
-                        y2="1"
-                      >
+                      <linearGradient id="dashboardSalesAreaCalendar" x1="0" x2="0" y1="0" y2="1">
                         <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
                         <stop offset="65%" stopColor="#008cff" stopOpacity={0.1} />
                         <stop offset="100%" stopColor="#f43f8c" stopOpacity={0.02} />
@@ -597,15 +584,7 @@ function targetProgressLabel(detail: DashboardSalesDayDetail | null) {
   return `${Math.round((Number(detail.actualAmount) / Number(detail.targetAmount)) * 100)}%`;
 }
 
-function SummaryTile({
-  helper,
-  label,
-  value
-}: {
-  helper?: string;
-  label: string;
-  value: string;
-}) {
+function SummaryTile({ helper, label, value }: { helper?: string; label: string; value: string }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
@@ -627,7 +606,9 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
 function tabClass(active: boolean) {
   return [
     "inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition",
-    active ? "bg-white text-[#625bff] shadow-sm ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-900"
+    active
+      ? "bg-white text-[#625bff] shadow-sm ring-1 ring-slate-200"
+      : "text-slate-500 hover:text-slate-900"
   ].join(" ");
 }
 

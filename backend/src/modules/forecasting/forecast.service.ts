@@ -131,10 +131,7 @@ function buildGenerationSummary(
     product.forecast.map((point) => point.period)
   );
   const sortedForecastPeriods = [...forecastPeriods].sort();
-  const forecastHorizonMonths = Math.max(
-    0,
-    ...products.map((product) => product.forecast.length)
-  );
+  const forecastHorizonMonths = Math.max(0, ...products.map((product) => product.forecast.length));
 
   return {
     durationMs,
@@ -978,8 +975,7 @@ export async function getForecastSummary(): Promise<ForecastSummary> {
       .filter((item) => item.growthVersusComparisonPeriod !== null)
       .sort(
         (left, right) =>
-          (right.growthVersusComparisonPeriod ?? 0) -
-          (left.growthVersusComparisonPeriod ?? 0)
+          (right.growthVersusComparisonPeriod ?? 0) - (left.growthVersusComparisonPeriod ?? 0)
       )
       .slice(0, 8),
     historicalYears,

@@ -142,7 +142,6 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
   }
 });
 
-
 test("storefront category serializer exposes only dedicated category cover media", async () => {
   const serviceSource = readFileSync(
     resolve(process.cwd(), "src/services/storefrontService.ts"),

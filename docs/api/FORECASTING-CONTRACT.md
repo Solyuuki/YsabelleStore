@@ -105,7 +105,6 @@ Only 24 monthly observations and two seasonal cycles are available. SARIMA diagn
 foundation, not a guarantee of operational purchasing accuracy. Forecasts do not directly model promotions, price
 changes, supplier disruptions, stockouts, lost demand, or economic shocks.
 
-
 ## Year-Agnostic Delivery Contract
 
 Forecast list summaries use rolling-period semantics:

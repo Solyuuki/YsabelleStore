@@ -52,11 +52,7 @@ export const uploadCategoryImageController: RequestHandler = async (request, res
   }
 };
 
-export const getLatestCategoryImageController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const getLatestCategoryImageController: RequestHandler = async (request, response, next) => {
   try {
     const categoryId = requiredParam(
       request.params.categoryId,

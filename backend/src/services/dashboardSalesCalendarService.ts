@@ -124,17 +124,13 @@ export async function getDashboardSalesCalendar(
     };
   });
 
-  const actualAmount = days.reduce(
-    (sum, day) => sum.add(day.actualAmount),
-    new Prisma.Decimal(0)
-  );
+  const actualAmount = days.reduce((sum, day) => sum.add(day.actualAmount), new Prisma.Decimal(0));
   const targetDays = days.filter((day) => day.targetAmount !== null);
   const targetAmount =
     targetDays.length > 0
-      ? targetDays.reduce(
-          (sum, day) => sum.add(day.targetAmount ?? 0),
-          new Prisma.Decimal(0)
-        ).toFixed(2)
+      ? targetDays
+          .reduce((sum, day) => sum.add(day.targetAmount ?? 0), new Prisma.Decimal(0))
+          .toFixed(2)
       : null;
 
   return {
@@ -260,10 +256,7 @@ export async function setDashboardSalesTarget(
 }
 
 function aggregateSalesByDate(sales: SaleRow[]) {
-  const result = new Map<
-    string,
-    { amount: Prisma.Decimal; sales: number; units: number }
-  >();
+  const result = new Map<string, { amount: Prisma.Decimal; sales: number; units: number }>();
 
   for (const sale of sales) {
     const date = manilaDateKey(sale.saleDate);
@@ -332,7 +325,10 @@ function getManilaMonthRange(month: string) {
 function monthDateKeys(month: string) {
   const [year = 0, monthNumber = 1] = month.split("-").map(Number);
   const days = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
-  return Array.from({ length: days }, (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`);
+  return Array.from(
+    { length: days },
+    (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`
+  );
 }
 
 function nextMonthDateKey(month: string) {

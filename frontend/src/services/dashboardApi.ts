@@ -183,7 +183,6 @@ export async function fetchNavigationBadges() {
   return response.data;
 }
 
-
 export async function fetchDashboardSalesCalendar(month: string) {
   const response = await apiClient.request<DashboardSalesCalendar, never>(
     `/api/dashboard/sales-calendar?month=${encodeURIComponent(month)}`

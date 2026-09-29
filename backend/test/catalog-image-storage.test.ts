@@ -32,7 +32,6 @@ test("catalog image storage exposes only generated candidate output paths", asyn
   }
 });
 
-
 test("catalog image storage isolates category cover candidates", async () => {
   const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "ysabelle-category-images-"));
 

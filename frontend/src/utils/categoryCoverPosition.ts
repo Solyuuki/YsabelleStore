@@ -66,12 +66,7 @@ export function calculateCategoryCoverCrop(
   frameWidth: number,
   frameHeight: number
 ): CategoryCoverCropState {
-  if (
-    sourceWidth <= 0 ||
-    sourceHeight <= 0 ||
-    frameWidth <= 0 ||
-    frameHeight <= 0
-  ) {
+  if (sourceWidth <= 0 || sourceHeight <= 0 || frameWidth <= 0 || frameHeight <= 0) {
     return {
       horizontalActive: false,
       horizontalPx: 0,

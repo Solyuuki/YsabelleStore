@@ -231,7 +231,6 @@ assert.equal(forecastPageSource.includes("waitForMinimumDuration"), false);
 assert.equal(forecastPageSource.includes("FORECAST_PRODUCTS_DESKTOP_QUERY"), true);
 assert.equal(forecastPageSource.includes("forecastRows.map"), true);
 
-
 assert.match(forecastPageSource, /forecastHorizonMonths/);
 assert.match(forecastPageSource, /forecastHorizonTotal/);
 assert.match(forecastPageSource, /Forecast range/);

@@ -72,7 +72,6 @@ test("catalog image runner rejects malformed or incomplete Python output", () =>
   }
 });
 
-
 test("catalog image runner accepts category-cover variants", () => {
   const result = parseCategoryCoverImageEngineOutput(
     JSON.stringify({

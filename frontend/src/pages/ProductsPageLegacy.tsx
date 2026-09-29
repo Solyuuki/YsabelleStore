@@ -2612,7 +2612,6 @@ function CreateProductDialog({
             )}
           </DialogFooter>
         </form>
-
       </DialogContent>
     </Dialog>
   );

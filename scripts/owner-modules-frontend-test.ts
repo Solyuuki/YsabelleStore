@@ -63,7 +63,6 @@ assert.match(dashboardSource, /preferences\.showForecastSummary/);
 
 console.log("Owner Reports and Settings frontend contract passed.");
 
-
 assert.match(dashboardSource, /summary\.forecast\.forecastHorizonTotal\.toLocaleString\(\)/);
 assert.match(dashboardSource, /summary\.forecast\.forecastHorizonMonths/);
 assert.doesNotMatch(dashboardSource, /forecastUnits2026/);
@@ -76,12 +75,8 @@ assert.match(
   dashboardBackendSource,
   /forecastHorizonTotal:\s*summary\.forecastPeriod\.forecastUnits/
 );
-assert.match(
-  dashboardBackendSource,
-  /forecastHorizonMonths:\s*summary\.forecastPeriod\.months/
-);
+assert.match(dashboardBackendSource, /forecastHorizonMonths:\s*summary\.forecastPeriod\.months/);
 assert.doesNotMatch(dashboardBackendSource, /summary\.forecastUnits2026/);
-
 
 assert.match(dashboardSource, /<SalesPulseCard isOwner=\{isOwner\} summary=\{summary\} \/>/);
 assert.match(salesPulseSource, /useState<"calendar" \| "activity">\("calendar"\)/);
@@ -90,10 +85,7 @@ assert.match(salesPulseSource, /Activity chart\s*<\/button>/);
 assert.match(salesPulseSource, /fetchDashboardSalesCalendar/);
 assert.match(salesPulseSource, /fetchDashboardSalesDay/);
 assert.match(salesPulseSource, /saveDashboardSalesTarget/);
-assert.match(
-  salesPulseSource,
-  /Forecast is shown only at monthly resolution/
-);
+assert.match(salesPulseSource, /Forecast is shown only at monthly resolution/);
 assert.match(dashboardApiSource, /\/api\/dashboard\/sales-calendar\?month=/);
 assert.match(dashboardApiSource, /\/api\/dashboard\/sales-calendar\/day\?date=/);
 assert.match(dashboardApiSource, /\/api\/dashboard\/sales-calendar\/targets\//);

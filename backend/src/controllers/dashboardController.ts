@@ -73,7 +73,6 @@ export const getNavigationBadgesController: RequestHandler = async (request, res
   }
 };
 
-
 export const getDashboardSalesCalendarController: RequestHandler = async (
   request,
   response,
@@ -104,11 +103,7 @@ export const getDashboardSalesCalendarController: RequestHandler = async (
   }
 };
 
-export const getDashboardSalesDayController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const getDashboardSalesDayController: RequestHandler = async (request, response, next) => {
   try {
     const parsed = dashboardSalesDayQuerySchema.safeParse(request.query);
     if (!parsed.success) {

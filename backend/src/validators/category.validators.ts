@@ -30,7 +30,6 @@ export const createCategorySchema = z.object({
 
 export type CreateCategoryRequest = z.infer<typeof createCategorySchema>;
 
-
 const categoryCoverStatusFilterSchema = z.enum([
   "ALL",
   "MISSING",
@@ -54,17 +53,14 @@ const categoryCoverPositionSchema = z.enum([
 ]);
 
 const nullableOptionalTrimmedString = (maxLength: number) =>
-  z.preprocess(
-    (value) => {
-      if (value === null) return null;
-      if (typeof value === "string") {
-        const trimmed = value.trim();
-        return trimmed.length > 0 ? trimmed : null;
-      }
-      return value;
-    },
-    z.string().max(maxLength).nullable().optional()
-  );
+  z.preprocess((value) => {
+    if (value === null) return null;
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      return trimmed.length > 0 ? trimmed : null;
+    }
+    return value;
+  }, z.string().max(maxLength).nullable().optional());
 
 export const listCategoriesQuerySchema = z.object({
   search: optionalTrimmedString(160),

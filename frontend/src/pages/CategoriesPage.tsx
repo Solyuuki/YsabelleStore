@@ -9,14 +9,7 @@ import {
   Smartphone,
   Tags
 } from "lucide-react";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-  type ReactNode
-} from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 import { CategoryCoverUploadPanel } from "@/components/catalog/CategoryCoverUploadPanel";
 import { AppPagination } from "@/components/shared/AppPagination";
@@ -125,10 +118,9 @@ function readCategoryQueryFromLocation(): CategoryQueryState {
     visibility: visibility && VISIBILITY_FILTERS.has(visibility) ? visibility : "ALL",
     status: status && STATUS_FILTERS.has(status) ? status : "ALL",
     page: Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1,
-    pageSize:
-      PAGE_SIZE_OPTIONS.includes(pageSizeValue as (typeof PAGE_SIZE_OPTIONS)[number])
-        ? pageSizeValue
-        : DEFAULT_PAGE_SIZE,
+    pageSize: PAGE_SIZE_OPTIONS.includes(pageSizeValue as (typeof PAGE_SIZE_OPTIONS)[number])
+      ? pageSizeValue
+      : DEFAULT_PAGE_SIZE,
     sortBy: sortBy && SORT_BY_VALUES.has(sortBy) ? sortBy : "updatedAt",
     sortOrder: sortOrder && SORT_ORDER_VALUES.has(sortOrder) ? sortOrder : "desc"
   };
@@ -205,10 +197,7 @@ export function CategoriesPage() {
   const { pushToast } = useToast();
 
   const applyQuery = useCallback(
-    (
-      patch: Partial<CategoryQueryState>,
-      options: { history?: "push" | "replace" } = {}
-    ) => {
+    (patch: Partial<CategoryQueryState>, options: { history?: "push" | "replace" } = {}) => {
       const next = { ...queryRef.current, ...patch };
       queryRef.current = next;
       setQuery(next);
@@ -584,13 +573,7 @@ export function CategoriesPage() {
   );
 }
 
-function FilterSelect({
-  children,
-  label
-}: {
-  children: ReactNode;
-  label: string;
-}) {
+function FilterSelect({ children, label }: { children: ReactNode; label: string }) {
   return (
     <label className="relative block h-11">
       <Filter
@@ -895,7 +878,9 @@ function EditCategoryDialog({
                     onChange={(event) => setIsActive(event.target.checked)}
                   />
                   <span>
-                    <span className="block text-sm font-semibold text-slate-900">Active category</span>
+                    <span className="block text-sm font-semibold text-slate-900">
+                      Active category
+                    </span>
                     <span className="mt-1 block text-xs leading-5 text-slate-500">
                       Available for normal catalog operations.
                     </span>
@@ -1183,13 +1168,7 @@ function CategoryCoverPreview({
         </div>
       </div>
 
-      <div
-        className={
-          previewMode === "MOBILE"
-            ? "mx-auto w-full max-w-[18rem]"
-            : "w-full"
-        }
-      >
+      <div className={previewMode === "MOBILE" ? "mx-auto w-full max-w-[18rem]" : "w-full"}>
         <div className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white shadow-sm">
           <div
             className={

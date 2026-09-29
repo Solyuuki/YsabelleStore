@@ -93,7 +93,6 @@ test("ahead and wrong-epoch databases fail closed", () => {
   );
 });
 
-
 test("requiresPrismaRegeneration detects stale or missing generated client schema", () => {
   const root = mkdtempSync(join(tmpdir(), "ysabelle-prisma-sync-"));
   try {

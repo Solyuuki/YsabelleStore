@@ -203,10 +203,7 @@ export async function createManagedCategory(input: CreateCategoryRequest) {
   }
 }
 
-export async function updateManagedCategory(
-  categoryId: string,
-  input: UpdateCategoryRequest
-) {
+export async function updateManagedCategory(categoryId: string, input: UpdateCategoryRequest) {
   const existing = await prisma.category.findUnique({ where: { id: categoryId } });
   if (!existing) {
     throw new HttpError(404, "Category was not found.", { code: "CATEGORY_NOT_FOUND" });
@@ -219,7 +216,7 @@ export async function updateManagedCategory(
       ? undefined
       : input.description === null
         ? null
-        : normalizeOptionalString(input.description) ?? null;
+        : (normalizeOptionalString(input.description) ?? null);
 
   await assertUniqueCategoryIdentity({ categoryId, name, slug });
 

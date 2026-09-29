@@ -25,7 +25,10 @@ test("category management query defaults and limits are stable", () => {
 test("category update requires a meaningful change", () => {
   assert.throws(() => updateCategorySchema.parse({}));
   assert.equal(updateCategorySchema.parse({ coverPosition: "LEFT" }).coverPosition, "LEFT");
-  assert.equal(updateCategorySchema.parse({ coverPosition: "TOP_RIGHT" }).coverPosition, "TOP_RIGHT");
+  assert.equal(
+    updateCategorySchema.parse({ coverPosition: "TOP_RIGHT" }).coverPosition,
+    "TOP_RIGHT"
+  );
   assert.equal(
     updateCategorySchema.parse({ coverPosition: "BOTTOM_LEFT" }).coverPosition,
     "BOTTOM_LEFT"

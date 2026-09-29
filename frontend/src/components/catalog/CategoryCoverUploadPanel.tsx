@@ -73,15 +73,15 @@ export function CategoryCoverUploadPanel({
   );
   const candidateIsActive = Boolean(
     candidate &&
-      activeCoverAssetId === candidate.id &&
-      candidate.approvedAt &&
-      !candidate.supersededAt
+    activeCoverAssetId === candidate.id &&
+    candidate.approvedAt &&
+    !candidate.supersededAt
   );
   const canApprove = Boolean(
     candidate &&
-      candidate.processingStatus === "READY" &&
-      candidate.qualityStatus !== "REJECTED" &&
-      coverPreviewUrl
+    candidate.processingStatus === "READY" &&
+    candidate.qualityStatus !== "REJECTED" &&
+    coverPreviewUrl
   );
   const isBusy =
     phase === "uploading" ||
@@ -237,7 +237,9 @@ export function CategoryCoverUploadPanel({
         setCandidate(null);
         setPhase("error");
         setError(
-          uploadError instanceof Error ? uploadError.message : "The category cover could not be uploaded."
+          uploadError instanceof Error
+            ? uploadError.message
+            : "The category cover could not be uploaded."
         );
       });
 
@@ -371,7 +373,9 @@ export function CategoryCoverUploadPanel({
       setRemoveConfirmOpen(false);
       setPhase(candidateIsActive ? "approved" : "preview");
       setError(
-        removeError instanceof Error ? removeError.message : "Active category cover could not be removed."
+        removeError instanceof Error
+          ? removeError.message
+          : "Active category cover could not be removed."
       );
     }
   }
@@ -481,9 +485,15 @@ export function CategoryCoverUploadPanel({
                 {diagnostics.map((diagnostic, index) => (
                   <li className="flex items-start gap-2" key={`${diagnostic.code}-${index}`}>
                     {diagnostic.severity === "error" ? (
-                      <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-red-600" aria-hidden="true" />
+                      <ShieldAlert
+                        className="mt-0.5 h-4 w-4 shrink-0 text-red-600"
+                        aria-hidden="true"
+                      />
                     ) : (
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
+                      <CheckCircle2
+                        className="mt-0.5 h-4 w-4 shrink-0 text-slate-500"
+                        aria-hidden="true"
+                      />
                     )}
                     <span>{diagnostic.message}</span>
                   </li>
@@ -497,7 +507,12 @@ export function CategoryCoverUploadPanel({
 
             <div className="flex flex-wrap justify-end gap-2 pt-1">
               {!candidateIsActive ? (
-                <Button disabled={isBusy} onClick={() => void handleDiscard()} type="button" variant="ghost">
+                <Button
+                  disabled={isBusy}
+                  onClick={() => void handleDiscard()}
+                  type="button"
+                  variant="ghost"
+                >
                   {phase === "discarding" ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                   ) : null}
@@ -543,7 +558,10 @@ export function CategoryCoverUploadPanel({
         ) : null}
       </section>
 
-      <Dialog open={removeConfirmOpen} onOpenChange={(open) => !isBusy && setRemoveConfirmOpen(open)}>
+      <Dialog
+        open={removeConfirmOpen}
+        onOpenChange={(open) => !isBusy && setRemoveConfirmOpen(open)}
+      >
         <DialogContent className="max-w-[460px] gap-0 p-0">
           <DialogHeader className="border-b border-slate-200 px-6 py-5">
             <DialogTitle>Remove category cover?</DialogTitle>
@@ -553,11 +571,25 @@ export function CategoryCoverUploadPanel({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button disabled={phase === "removing"} type="button" variant="secondary" onClick={() => setRemoveConfirmOpen(false)}>
+            <Button
+              disabled={phase === "removing"}
+              type="button"
+              variant="secondary"
+              onClick={() => setRemoveConfirmOpen(false)}
+            >
               Cancel
             </Button>
-            <Button disabled={phase === "removing"} type="button" variant="danger" onClick={() => void handleRemoveActive()}>
-              {phase === "removing" ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
+            <Button
+              disabled={phase === "removing"}
+              type="button"
+              variant="danger"
+              onClick={() => void handleRemoveActive()}
+            >
+              {phase === "removing" ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+              )}
               {phase === "removing" ? "Removing..." : "Remove cover"}
             </Button>
           </DialogFooter>

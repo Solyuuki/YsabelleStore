@@ -99,7 +99,6 @@ test("realized accuracy leaves diagnostics unchanged when no earlier forecast co
   assert.equal(result.accuracyFeedback?.strategy, "existing diagnostic");
 });
 
-
 test("realized accuracy detail delivery caches immutable batch lookups", () => {
   const source = readFileSync(
     "src/modules/forecasting/forecast-realized-accuracy.service.ts",

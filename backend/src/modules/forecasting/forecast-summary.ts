@@ -1,7 +1,4 @@
-import type {
-  ForecastProductSummary,
-  ProductForecastDetail
-} from "./forecast.types.js";
+import type { ForecastProductSummary, ProductForecastDetail } from "./forecast.types.js";
 
 export function percentageChange(current: number, previous: number | null) {
   if (previous === null || previous === 0) return null;
@@ -28,9 +25,7 @@ export function historicalYearTotals(product: ProductForecastDetail) {
     .map(([year, units]) => ({ year, units }));
 }
 
-export function summarizeForecastProduct(
-  product: ProductForecastDetail
-): ForecastProductSummary {
+export function summarizeForecastProduct(product: ProductForecastDetail): ForecastProductSummary {
   const current = product.forecast[0] ?? null;
   const forecastHorizonTotal = product.forecast.reduce(
     (sum, point) => sum + point.recommendedQuantity,
@@ -51,10 +46,7 @@ export function summarizeForecastProduct(
     forecastHorizonMonths: product.forecast.length,
     forecastHorizonTotal,
     forecastVariancePercentage: current?.forecastVariancePercentage ?? null,
-    growthVersusComparisonPeriod: percentageChange(
-      forecastHorizonTotal,
-      comparisonPeriodTotal
-    ),
+    growthVersusComparisonPeriod: percentageChange(forecastHorizonTotal, comparisonPeriodTotal),
     productId: product.productId,
     productName: product.productName,
     recentHistoricalSalesTotal: product.historical

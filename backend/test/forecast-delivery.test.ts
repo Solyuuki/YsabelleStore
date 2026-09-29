@@ -102,7 +102,6 @@ test("persisted summary preserves workbook identity and exact aggregate fields",
   assert.equal(summary.growthVersusComparisonPeriod, null);
   assert.equal(summary.currentMonthForecastQuantity, 2);
   assert.equal(summary.forecastVariancePercentage, 10);
-
 });
 
 test("collection query normalizes safe defaults", () => {

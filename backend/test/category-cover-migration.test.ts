@@ -3,9 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
-import {
-  LEGACY_CATEGORY_COVER_SOURCES
-} from "../src/modules/catalog-image/legacyCategoryCoverSources.js";
+import { LEGACY_CATEGORY_COVER_SOURCES } from "../src/modules/catalog-image/legacyCategoryCoverSources.js";
 import {
   isTrustedLegacyRemoteCategoryCover,
   resolveLegacyLocalCategoryCoverSource
@@ -90,7 +88,6 @@ test("migration manifest stays aligned with the temporary storefront fallback ma
     );
   }
 });
-
 
 test("legacy migration only aliases editorial assets to semantically matching canonical categories", () => {
   const bySlug = new Map<string, (typeof LEGACY_CATEGORY_COVER_SOURCES)[number]>(

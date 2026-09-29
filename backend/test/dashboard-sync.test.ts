@@ -301,10 +301,7 @@ test(
 );
 
 test("sales calendar rejects impossible business dates", async () => {
-  await assert.rejects(
-    () => getDashboardSalesDay("2026-02-31"),
-    /Sales calendar date is invalid/
-  );
+  await assert.rejects(() => getDashboardSalesDay("2026-02-31"), /Sales calendar date is invalid/);
 });
 
 function uniqueLabel(prefix: string) {

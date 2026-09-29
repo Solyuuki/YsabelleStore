@@ -46,10 +46,7 @@ export type LegacyCategoryCoverMigrationResult = {
   skipped: number;
 };
 
-export function resolveLegacyLocalCategoryCoverSource(
-  repositoryRoot: string,
-  imageUrl: string
-) {
+export function resolveLegacyLocalCategoryCoverSource(repositoryRoot: string, imageUrl: string) {
   const match = LOCAL_CATEGORY_IMAGE_PATTERN.exec(imageUrl);
   const basename = match?.[1];
 
@@ -105,7 +102,7 @@ export async function planLegacyCategoryCoverMigration(
   const requestedCategory =
     options.categoryId === undefined
       ? null
-      : categories.find((category) => category.id === options.categoryId) ?? null;
+      : (categories.find((category) => category.id === options.categoryId) ?? null);
 
   const relevantSources =
     options.categoryId === undefined
@@ -268,10 +265,7 @@ export async function runLegacyCategoryCoverMigration(options: {
 
       result.processed += 1;
 
-      if (
-        candidate.processingStatus !== "READY" ||
-        candidate.qualityStatus === "REJECTED"
-      ) {
+      if (candidate.processingStatus !== "READY" || candidate.qualityStatus === "REJECTED") {
         if (candidate.qualityStatus === "REJECTED") result.rejected += 1;
         else result.failed += 1;
         continue;
@@ -303,9 +297,7 @@ export async function verifyLegacyCategoryCoverMigration() {
 
   return LEGACY_CATEGORY_COVER_SOURCES.map((source) => {
     const category = categories.find((candidate) => candidate.slug === source.slug) ?? null;
-    const ready = Boolean(
-      category?.activeCoverAssetId && category.coverStatus === "READY"
-    );
+    const ready = Boolean(category?.activeCoverAssetId && category.coverStatus === "READY");
 
     return {
       categoryId: category?.id ?? null,

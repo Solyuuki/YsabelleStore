@@ -675,9 +675,7 @@ function ForecastedProductsCard({
                     <tr>
                       <th className="px-3 py-2">Product</th>
                       <th className="px-3 py-2 text-right">Current Month</th>
-                      <th className="px-3 py-2 text-right">
-                        {forecastHorizonMonths}M Horizon
-                      </th>
+                      <th className="px-3 py-2 text-right">{forecastHorizonMonths}M Horizon</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -781,10 +779,7 @@ function MonthlyForecastCard({
     effectiveWindowStart,
     effectiveWindowStart + effectiveWindowMonths
   );
-  const chartData = useMemo(
-    () => buildChartData(visibleForecastRows),
-    [visibleForecastRows]
-  );
+  const chartData = useMemo(() => buildChartData(visibleForecastRows), [visibleForecastRows]);
   const currentForecast = forecastRows[0] ?? null;
   const forecastHorizonTotal = product
     ? forecastRows.reduce((sum, point) => sum + point.predictedQuantity, 0)
@@ -795,8 +790,7 @@ function MonthlyForecastCard({
   const visibleEndPoint = visibleForecastRows.at(-1);
   const visibleEndLabel = visibleEndPoint ? formatMonthLabel(visibleEndPoint.period) : null;
   const canMoveWindowBack = effectiveWindowStart > 0;
-  const canMoveWindowForward =
-    effectiveWindowStart + effectiveWindowMonths < totalForecastMonths;
+  const canMoveWindowForward = effectiveWindowStart + effectiveWindowMonths < totalForecastMonths;
 
   useEffect(() => {
     setWindowMonths(FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS);
@@ -933,11 +927,8 @@ function MonthlyForecastCard({
                       : "No forecast months available"}
                     {" · "}
                     {Math.min(effectiveWindowStart + 1, totalForecastMonths)}–
-                    {Math.min(
-                      effectiveWindowStart + effectiveWindowMonths,
-                      totalForecastMonths
-                    )}{" "}
-                    of {totalForecastMonths} months
+                    {Math.min(effectiveWindowStart + effectiveWindowMonths, totalForecastMonths)} of{" "}
+                    {totalForecastMonths} months
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">

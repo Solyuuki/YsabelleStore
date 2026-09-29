@@ -151,7 +151,6 @@ test("approved category cover replacement is atomic and removable", async () => 
   }
 });
 
-
 test("category replacement processing is guarded from demoting an active cover", () => {
   const serviceSource = readFileSync(
     resolve(process.cwd(), "src/modules/catalog-image/categoryImageService.ts"),

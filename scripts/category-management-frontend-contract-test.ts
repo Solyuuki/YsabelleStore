@@ -16,7 +16,10 @@ const categoryCoverPanel = readFileSync(
 );
 const selectSource = readFileSync(resolve(process.cwd(), "src/components/ui/select.tsx"), "utf8");
 const routesSource = readFileSync(resolve(process.cwd(), "src/app/routes.ts"), "utf8");
-const productsSource = readFileSync(resolve(process.cwd(), "src/pages/ProductsPageLegacy.tsx"), "utf8");
+const productsSource = readFileSync(
+  resolve(process.cwd(), "src/pages/ProductsPageLegacy.tsx"),
+  "utf8"
+);
 const homeSource = readFileSync(
   resolve(process.cwd(), "src/pages/customer/CustomerHomePage.tsx"),
   "utf8"
@@ -80,7 +83,6 @@ assert.doesNotMatch(productsSource, /handleCreateCategory/);
 assert.doesNotMatch(productsSource, /isCategoryDialogOpen/);
 assert.match(productsSource, /Manage categories/);
 assert.match(productsSource, /Create a category first before saving this product/);
-
 
 assert.match(storefrontTypes, /storefrontCover:/);
 assert.doesNotMatch(storefrontTypes, /representativeProducts/);

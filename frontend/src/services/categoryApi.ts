@@ -2,12 +2,7 @@ import { resolveApiUrl } from "@/config/runtime";
 import { apiClient } from "@/services/apiClient";
 import type { PaginationMeta } from "@/services/catalogApi";
 
-export type CategoryCoverStatus =
-  | "MISSING"
-  | "PROCESSING"
-  | "NEEDS_REVIEW"
-  | "READY"
-  | "FAILED";
+export type CategoryCoverStatus = "MISSING" | "PROCESSING" | "NEEDS_REVIEW" | "READY" | "FAILED";
 
 export type CategoryCoverPosition =
   | "LEFT"
@@ -130,10 +125,7 @@ export async function createManagedCategory(input: CreateManagedCategoryInput) {
   );
 }
 
-export async function updateManagedCategory(
-  categoryId: string,
-  input: UpdateManagedCategoryInput
-) {
+export async function updateManagedCategory(categoryId: string, input: UpdateManagedCategoryInput) {
   return apiClient.request<ManagedCategoryRecord, { code?: string; details?: unknown }>(
     `/api/catalog/categories/${encodeURIComponent(categoryId)}`,
     {
