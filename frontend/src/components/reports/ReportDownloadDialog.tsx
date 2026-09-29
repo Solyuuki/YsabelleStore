@@ -46,6 +46,7 @@ import {
 } from "@/utils/restockExport";
 
 const EXPORT_PAGE_SIZE = 100;
+const SALES_CALENDAR_MIN_MONTH = "2019-01";
 const REPORT_TYPE_SESSION_KEY = "ysabelle.report-download.type";
 const SUPPLIER_ORDER_PAGE_SIZE = 6;
 const SUPPLIER_PREVIEW_PAGE_SIZE = 5;
@@ -386,8 +387,15 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
               <input
                 className="mt-2 h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 sm:max-w-[240px]"
                 id="operational-report-month"
+                min={SALES_CALENDAR_MIN_MONTH}
                 onChange={(event) => {
-                  if (event.target.value) setOperationalMonth(event.target.value);
+                  if (event.target.value) {
+                    setOperationalMonth(
+                      event.target.value < SALES_CALENDAR_MIN_MONTH
+                        ? SALES_CALENDAR_MIN_MONTH
+                        : event.target.value
+                    );
+                  }
                 }}
                 type="month"
                 value={operationalMonth}

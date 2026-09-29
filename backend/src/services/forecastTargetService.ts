@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { normalizeForecastPeriodMonth } from "../modules/forecasting/forecast-window.js";
 import type { ProductForecastDetail } from "../modules/forecasting/forecast.types.js";
 
 const MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;
@@ -14,6 +15,18 @@ let synchronizationPromise: Promise<void> | null = null;
 type DailyWeightProfile = {
   mode: "HISTORICAL_WEEKDAY" | "UNIFORM";
   weights: number[];
+};
+
+type ForecastAggregate = {
+  monthlyRevenue: Map<string, number>;
+  monthlyUnits: Map<string, number>;
+};
+
+export type ForecastDerivedMonthPlan = {
+  forecastAmount: string;
+  forecastUnits: number;
+  targetAmount: string;
+  targets: Map<string, string>;
 };
 
 export async function ensureForecastDerivedSalesTargets(now = new Date()) {
@@ -39,6 +52,43 @@ export async function ensureForecastDerivedSalesTargets(now = new Date()) {
   }
 }
 
+export async function getForecastDerivedMonthPlan(
+  month: string,
+  now = new Date()
+): Promise<ForecastDerivedMonthPlan | null> {
+  const active = await prisma.forecastBatchCache.findFirst({
+    orderBy: { generatedAt: "desc" },
+    select: { id: true },
+    where: { isActive: true, status: "READY" }
+  });
+  if (!active) return null;
+
+  const rows = await prisma.forecastProductResult.findMany({
+    select: { detailPayload: true },
+    where: { batchId: active.id }
+  });
+  const aggregate = aggregateForecastMonths(rows);
+  const revenue = aggregate.monthlyRevenue.get(month);
+  const units = aggregate.monthlyUnits.get(month);
+  if (revenue === undefined || units === undefined) return null;
+
+  const weightProfile = await loadDailyWeightProfile(now);
+  const targets = allocateMonth(month, revenue, weightProfile.weights);
+  const targetMap = new Map(
+    targets.map((target) => [target.date, target.amount.toFixed(2)] as const)
+  );
+  const targetAmount = targets
+    .reduce((sum, target) => sum.add(target.amount.toFixed(2)), new Prisma.Decimal(0))
+    .toFixed(2);
+
+  return {
+    forecastAmount: new Prisma.Decimal(revenue).toFixed(2),
+    forecastUnits: Math.max(0, Math.round(units)),
+    targetAmount,
+    targets: targetMap
+  };
+}
+
 async function synchronizeBatchTargets(batchId: string, now: Date) {
   const rows = await prisma.forecastProductResult.findMany({
     select: { detailPayload: true },
@@ -46,25 +96,7 @@ async function synchronizeBatchTargets(batchId: string, now: Date) {
   });
   if (rows.length === 0) return;
 
-  const monthlyRevenue = new Map<string, number>();
-  for (const row of rows) {
-    const detail = row.detailPayload as unknown as Partial<ProductForecastDetail>;
-    if (!Array.isArray(detail.forecast)) continue;
-
-    const sellingPrice = Number(detail.sellingPrice);
-    if (!Number.isFinite(sellingPrice) || sellingPrice < 0) continue;
-
-    for (const point of detail.forecast) {
-      const predictedQuantity = Number(point?.predictedQuantity);
-      const period = typeof point?.period === "string" ? point.period : "";
-      if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) continue;
-      if (!Number.isFinite(predictedQuantity) || predictedQuantity < 0) continue;
-
-      const revenue = predictedQuantity * sellingPrice;
-      if (!Number.isFinite(revenue)) continue;
-      monthlyRevenue.set(period, (monthlyRevenue.get(period) ?? 0) + revenue);
-    }
-  }
+  const { monthlyRevenue } = aggregateForecastMonths(rows);
   if (monthlyRevenue.size === 0) return;
 
   const weightProfile = await loadDailyWeightProfile(now);
@@ -91,40 +123,72 @@ async function synchronizeBatchTargets(batchId: string, now: Date) {
   });
   const existingByDate = new Map(existing.map((row) => [utcDateKey(row.businessDate), row]));
 
-  await prisma.$transaction(
-    targetRows.flatMap((target) => {
-      const current = existingByDate.get(target.date);
-      const amount = new Prisma.Decimal(target.amount.toFixed(2));
+  const operations = targetRows.flatMap((target) => {
+    const current = existingByDate.get(target.date);
+    const amount = new Prisma.Decimal(target.amount.toFixed(2));
 
-      if (current && target.shouldFreeze) {
-        return [];
-      }
-      if (current) {
-        return [
-          prisma.dailySalesTarget.update({
-            data: {
-              targetAmount: amount,
-              updatedById: null
-            },
-            where: { id: current.id }
-          })
-        ];
-      }
-
+    if (current && target.shouldFreeze) {
+      return [];
+    }
+    if (current) {
       return [
-        prisma.dailySalesTarget.create({
+        prisma.dailySalesTarget.update({
           data: {
-            businessDate: businessDateValue(target.date),
-            createdById: null,
             targetAmount: amount,
             updatedById: null
-          }
+          },
+          where: { id: current.id }
         })
       ];
-    })
-  );
+    }
+
+    return [
+      prisma.dailySalesTarget.create({
+        data: {
+          businessDate: businessDateValue(target.date),
+          createdById: null,
+          targetAmount: amount,
+          updatedById: null
+        }
+      })
+    ];
+  });
+
+  if (operations.length > 0) {
+    await prisma.$transaction(operations);
+  }
 
   void weightProfile.mode;
+}
+
+function aggregateForecastMonths(
+  rows: Array<{ detailPayload: unknown }>
+): ForecastAggregate {
+  const monthlyRevenue = new Map<string, number>();
+  const monthlyUnits = new Map<string, number>();
+
+  for (const row of rows) {
+    const detail = row.detailPayload as Partial<ProductForecastDetail>;
+    if (!Array.isArray(detail.forecast)) continue;
+
+    const sellingPrice = Number(detail.sellingPrice);
+    if (!Number.isFinite(sellingPrice) || sellingPrice < 0) continue;
+
+    for (const point of detail.forecast) {
+      const period =
+        typeof point?.period === "string" ? normalizeForecastPeriodMonth(point.period) : null;
+      const predictedQuantity = Number(point?.predictedQuantity);
+      if (!period || !Number.isFinite(predictedQuantity) || predictedQuantity < 0) continue;
+
+      const revenue = predictedQuantity * sellingPrice;
+      if (!Number.isFinite(revenue)) continue;
+
+      monthlyRevenue.set(period, (monthlyRevenue.get(period) ?? 0) + revenue);
+      monthlyUnits.set(period, (monthlyUnits.get(period) ?? 0) + predictedQuantity);
+    }
+  }
+
+  return { monthlyRevenue, monthlyUnits };
 }
 
 async function loadDailyWeightProfile(now: Date): Promise<DailyWeightProfile> {

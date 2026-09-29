@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { summarizePersistedProduct } from "../src/modules/forecasting/forecast-persistence.service.js";
+import { normalizeForecastPeriodMonth } from "../src/modules/forecasting/forecast-window.js";
 import {
   forecastDetailQuerySchema,
   forecastListQuerySchema
@@ -143,4 +144,12 @@ test("detail batch identity accepts workbook-safe request values", () => {
 
 test("detail batch identity rejects unbounded input", () => {
   assert.equal(forecastDetailQuerySchema.safeParse({ batchId: "x".repeat(192) }).success, false);
+});
+
+
+test("forecast period normalization accepts Python month-start dates", () => {
+  assert.equal(normalizeForecastPeriodMonth("2026-10"), "2026-10");
+  assert.equal(normalizeForecastPeriodMonth("2026-10-01"), "2026-10");
+  assert.equal(normalizeForecastPeriodMonth("2026-10-01T00:00:00.000Z"), "2026-10");
+  assert.equal(normalizeForecastPeriodMonth("invalid"), null);
 });

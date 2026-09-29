@@ -304,6 +304,17 @@ test("sales calendar rejects impossible business dates", async () => {
   await assert.rejects(() => getDashboardSalesDay("2026-02-31"), /Sales calendar date is invalid/);
 });
 
+test("sales calendar does not navigate before the store opened in 2019", async () => {
+  await assert.rejects(
+    () => getDashboardSalesCalendar("2018-12", "OWNER"),
+    /Sales calendar starts in January 2019/
+  );
+  await assert.rejects(
+    () => getDashboardSalesDay("2018-12-31"),
+    /Sales calendar starts in January 2019/
+  );
+});
+
 function uniqueLabel(prefix: string) {
   return `${prefix}-${randomUUID().slice(0, 8)}`;
 }

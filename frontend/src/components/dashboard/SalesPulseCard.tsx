@@ -24,6 +24,8 @@ import {
   type DashboardSummary
 } from "@/services/dashboardApi";
 
+const SALES_CALENDAR_MIN_MONTH = "2019-01";
+
 const brandCardClass =
   "relative overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(98,91,255,0.4)] backdrop-blur";
 
@@ -211,12 +213,12 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 value={
                   calendar?.summary.targetAmount
                     ? formatCurrency(calendar.summary.targetAmount)
-                    : "Not set"
+                    : "Unavailable"
                 }
                 helper={
                   calendar?.summary.targetDays
                     ? `${calendar.summary.targetDays} forecast-derived day${calendar.summary.targetDays === 1 ? "" : "s"}`
-                    : "Generated automatically from the active forecast"
+                    : "No active forecast target for this month"
                 }
               />
               <SummaryTile
@@ -251,7 +253,10 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     <Button
                       aria-label="Previous month"
                       className="h-8 w-8 p-0"
-                      onClick={() => setMonth(offsetMonth(month, -1))}
+                      disabled={month <= SALES_CALENDAR_MIN_MONTH}
+                      onClick={() =>
+                        setMonth(clampCalendarMonth(offsetMonth(month, -1)))
+                      }
                       size="sm"
                       type="button"
                       variant="ghost"
@@ -263,8 +268,11 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                       <input
                         aria-label="Choose month and year"
                         className="w-full cursor-pointer bg-transparent text-center text-sm font-semibold text-slate-900 outline-none"
+                        min={SALES_CALENDAR_MIN_MONTH}
                         onChange={(event) => {
-                          if (event.target.value) setMonth(event.target.value);
+                          if (event.target.value) {
+                            setMonth(clampCalendarMonth(event.target.value));
+                          }
                         }}
                         type="month"
                         value={month}
@@ -273,7 +281,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     <Button
                       aria-label="Next month"
                       className="h-8 w-8 p-0"
-                      onClick={() => setMonth(offsetMonth(month, 1))}
+                      onClick={() => setMonth(clampCalendarMonth(offsetMonth(month, 1)))}
                       size="sm"
                       type="button"
                       variant="ghost"
@@ -683,6 +691,10 @@ function formatMonthLabel(month: string) {
 
 function formatDay(date: string) {
   return dayFormatter.format(new Date(`${date}T00:00:00.000Z`));
+}
+
+function clampCalendarMonth(month: string) {
+  return month < SALES_CALENDAR_MIN_MONTH ? SALES_CALENDAR_MIN_MONTH : month;
 }
 
 function offsetMonth(month: string, amount: number) {

@@ -1,14 +1,16 @@
 import { Prisma, type UserRole } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
-import type { ProductForecastDetail } from "../modules/forecasting/forecast.types.js";
 import { HttpError } from "../utils/httpError.js";
+import { getForecastDerivedMonthPlan } from "./forecastTargetService.js";
 
 const MANILA_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const SALES_BUCKET_HOURS = 2;
 const SALES_BUCKET_MS = SALES_BUCKET_HOURS * 60 * 60 * 1000;
 const SALES_BUCKET_COUNT = 24 / SALES_BUCKET_HOURS;
+export const SALES_CALENDAR_MIN_MONTH = "2019-01";
+const SALES_CALENDAR_MIN_DATE = `${SALES_CALENDAR_MIN_MONTH}-01`;
 
 export type SalesCalendarDayStatus = "PAST" | "TODAY" | "FUTURE";
 
@@ -62,7 +64,7 @@ export async function getDashboardSalesCalendar(
 ): Promise<DashboardSalesCalendar> {
   const { end, start } = getManilaMonthRange(month);
   const actualEnd = new Date(Math.min(end.getTime(), now.getTime() + 1));
-  const [sales, targets, forecast, firstCompletedSale] = await Promise.all([
+  const [sales, targets, forecastPlan, firstCompletedSale] = await Promise.all([
     prisma.sale.findMany({
       where: {
         status: "COMPLETED",
@@ -86,7 +88,7 @@ export async function getDashboardSalesCalendar(
         targetAmount: true
       }
     }),
-    role === "OWNER" ? getMonthlyForecastEstimate(month) : Promise.resolve(null),
+    getForecastDerivedMonthPlan(month, now),
     prisma.sale.findFirst({
       orderBy: { saleDate: "asc" },
       select: { saleDate: true },
@@ -94,21 +96,27 @@ export async function getDashboardSalesCalendar(
         saleDate: { lte: now },
         status: "COMPLETED"
       }
-    })
+    }),
+    getForecastDerivedMonthPlan(date.slice(0, 7), now)
   ]);
 
   const todayKey = manilaDateKey(now);
   const firstRecordedDate = firstCompletedSale ? manilaDateKey(firstCompletedSale.saleDate) : null;
   const salesByDate = aggregateSalesByDate(sales);
   const targetsByDate = new Map(
-    targets.map((target) => [utcDateKey(target.businessDate), target.targetAmount])
+    targets.map((target) => [utcDateKey(target.businessDate), target.targetAmount.toFixed(2)])
   );
   const days = monthDateKeys(month).map((date): DashboardSalesCalendarDay => {
     const aggregate = salesByDate.get(date);
-    const target = targetsByDate.get(date);
+    const persistedTarget = targetsByDate.get(date) ?? null;
+    const generatedTarget = forecastPlan?.targets.get(date) ?? null;
 
     const status: SalesCalendarDayStatus =
       date < todayKey ? "PAST" : date === todayKey ? "TODAY" : "FUTURE";
+    const target =
+      status === "FUTURE"
+        ? generatedTarget ?? persistedTarget
+        : persistedTarget ?? generatedTarget;
     const actualDataAvailable =
       status === "TODAY" ||
       (status === "PAST" && firstRecordedDate !== null && date >= firstRecordedDate);
@@ -119,7 +127,7 @@ export async function getDashboardSalesCalendar(
       completedSales: aggregate?.sales ?? 0,
       date,
       status,
-      targetAmount: target?.toFixed(2) ?? null,
+      targetAmount: target,
       unitsSold: aggregate?.units ?? 0
     };
   });
@@ -141,8 +149,8 @@ export async function getDashboardSalesCalendar(
       actualAmount: actualAmount.toFixed(2),
       actualDataDays: days.filter((day) => day.actualDataAvailable).length,
       completedSales: days.reduce((sum, day) => sum + day.completedSales, 0),
-      forecastAmount: forecast?.amount ?? null,
-      forecastUnits: forecast?.units ?? null,
+      forecastAmount: role === "OWNER" ? (forecastPlan?.forecastAmount ?? null) : null,
+      forecastUnits: role === "OWNER" ? (forecastPlan?.forecastUnits ?? null) : null,
       targetAmount,
       targetDays: targetDays.length,
       unitsSold: days.reduce((sum, day) => sum + day.unitsSold, 0)
@@ -159,7 +167,7 @@ export async function getDashboardSalesDay(
   const start = manilaDayStart(date);
   const end = new Date(start.getTime() + DAY_MS);
   const actualEnd = new Date(Math.min(end.getTime(), now.getTime() + 1));
-  const [sales, target, firstCompletedSale] = await Promise.all([
+  const [sales, target, firstCompletedSale, forecastPlan] = await Promise.all([
     prisma.sale.findMany({
       where: {
         status: "COMPLETED",
@@ -205,6 +213,12 @@ export async function getDashboardSalesDay(
   const actualDataAvailable =
     status === "TODAY" ||
     (status === "PAST" && firstRecordedDate !== null && date >= firstRecordedDate);
+  const persistedTarget = target?.targetAmount.toFixed(2) ?? null;
+  const generatedTarget = forecastPlan?.targets.get(date) ?? null;
+  const resolvedTarget =
+    status === "FUTURE"
+      ? generatedTarget ?? persistedTarget
+      : persistedTarget ?? generatedTarget;
 
   return {
     actualAmount: amount.toFixed(2),
@@ -217,7 +231,7 @@ export async function getDashboardSalesDay(
     completedSales: sales.length,
     date,
     status,
-    targetAmount: target?.targetAmount.toFixed(2) ?? null,
+    targetAmount: resolvedTarget,
     unitsSold: sales.reduce(
       (sum, sale) => sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
       0
@@ -244,51 +258,21 @@ function aggregateSalesByDate(sales: SaleRow[]) {
   return result;
 }
 
-async function getMonthlyForecastEstimate(month: string) {
-  const batch = await prisma.forecastBatchCache.findFirst({
-    orderBy: { generatedAt: "desc" },
-    select: { id: true },
-    where: { isActive: true, status: "READY" }
-  });
-
-  if (!batch) return null;
-
-  const rows = await prisma.forecastProductResult.findMany({
-    select: { detailPayload: true },
-    where: { batchId: batch.id }
-  });
-
-  let units = 0;
-  let amount = 0;
-  let matched = false;
-
-  for (const row of rows) {
-    const detail = row.detailPayload as unknown as ProductForecastDetail;
-    const point = detail.forecast.find((candidate) => candidate.period === month);
-    if (!point) continue;
-    matched = true;
-    units += point.predictedQuantity;
-    amount += point.predictedQuantity * detail.sellingPrice;
-  }
-
-  if (!matched) return null;
-
-  return {
-    amount: new Prisma.Decimal(amount).toFixed(2),
-    units: Math.max(0, Math.round(units))
-  };
-}
-
 function getManilaMonthRange(month: string) {
-  const [year, monthNumber] = month.split("-").map(Number);
-  if (!year || !monthNumber || monthNumber < 1 || monthNumber > 12) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
     throw new HttpError(400, "Sales calendar month is invalid.", {
       code: "INVALID_SALES_CALENDAR_MONTH"
     });
   }
+  if (month < SALES_CALENDAR_MIN_MONTH) {
+    throw new HttpError(400, "Sales calendar starts in January 2019.", {
+      code: "SALES_CALENDAR_BEFORE_STORE_OPENING"
+    });
+  }
 
-  const start = new Date(Date.UTC(year, monthNumber - 1, 1) - MANILA_UTC_OFFSET_MS);
-  const end = new Date(Date.UTC(year, monthNumber, 1) - MANILA_UTC_OFFSET_MS);
+  const [year, monthNumber] = month.split("-").map(Number);
+  const start = new Date(Date.UTC(year!, monthNumber! - 1, 1) - MANILA_UTC_OFFSET_MS);
+  const end = new Date(Date.UTC(year!, monthNumber!, 1) - MANILA_UTC_OFFSET_MS);
   return { end, start };
 }
 
@@ -347,6 +331,11 @@ function assertValidDateKey(date: string) {
   ) {
     throw new HttpError(400, "Sales calendar date is invalid.", {
       code: "INVALID_SALES_CALENDAR_DATE"
+    });
+  }
+  if (date < SALES_CALENDAR_MIN_DATE) {
+    throw new HttpError(400, "Sales calendar starts in January 2019.", {
+      code: "SALES_CALENDAR_BEFORE_STORE_OPENING"
     });
   }
 }
