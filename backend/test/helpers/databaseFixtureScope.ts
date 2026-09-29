@@ -58,6 +58,28 @@ export async function captureDatabaseFixtureScope(
       ]);
 
       await prisma.$transaction(async (transaction) => {
+        if (newCustomerAccounts.length > 0 || newUsers.length > 0) {
+          await transaction.customerModerationAudit.deleteMany({
+            where: {
+              OR: [
+                ...(newCustomerAccounts.length > 0
+                  ? [{ customerAccountId: { in: newCustomerAccounts } }]
+                  : []),
+                ...(newUsers.length > 0 ? [{ actorUserId: { in: newUsers } }] : [])
+              ]
+            }
+          });
+        }
+
+        if (newCustomerAccounts.length > 0) {
+          await transaction.productReview.deleteMany({
+            where: { customerAccountId: { in: newCustomerAccounts } }
+          });
+          await transaction.customerFavorite.deleteMany({
+            where: { customerAccountId: { in: newCustomerAccounts } }
+          });
+        }
+
         if (newCustomerOrders.length > 0) {
           await transaction.customerOrder.deleteMany({ where: { id: { in: newCustomerOrders } } });
         }
@@ -96,6 +118,8 @@ export async function captureDatabaseFixtureScope(
           await transaction.productAlias.deleteMany({
             where: { canonicalProductId: productIds }
           });
+          await transaction.customerFavorite.deleteMany({ where: { productId: productIds } });
+          await transaction.productReview.deleteMany({ where: { productId: productIds } });
           await transaction.customerOrderItem.deleteMany({ where: { productId: productIds } });
           await transaction.saleItem.deleteMany({ where: { productId: productIds } });
           await transaction.recommendationRecord.deleteMany({ where: { productId: productIds } });
