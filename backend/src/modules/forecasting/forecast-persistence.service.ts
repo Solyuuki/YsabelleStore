@@ -13,6 +13,7 @@ import type {
 import type { ForecastSourceSnapshot } from "./forecast-source-version.service.js";
 import { addMonths, monthStartIso } from "./forecast-window.js";
 import { summarizeForecastProduct, sumHistoricalYear } from "./forecast-summary.js";
+import { ensureForecastDerivedSalesTargets } from "../../services/forecastTargetService.js";
 
 const PERSISTENCE_CHUNK_SIZE = 100;
 const PAGE_CACHE_LIMIT = 50;
@@ -175,6 +176,9 @@ export async function persistAndActivateForecastBatch(jobId: string, batch: Fore
   activeBatchCache = activated;
 
   clearForecastReadCaches();
+  void ensureForecastDerivedSalesTargets().catch((error) => {
+    console.error("[forecast] Forecast-derived sales target synchronization failed.", error);
+  });
   void cleanupSupersededForecastData(activated.id).catch((error) => {
     console.error("[forecast] Forecast retention cleanup failed.", error);
   });

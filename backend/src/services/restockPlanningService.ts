@@ -9,6 +9,8 @@ import {
   buildOperationalRestockForecast,
   loadOperationalPosSales
 } from "./restockDemandForecastService.js";
+import { loadActiveInventoryForecasts } from "./inventoryForecastSourceService.js";
+import { buildRestockForecastDecision } from "./restockForecastDecisionService.js";
 import { getIncomingRestockStock } from "./restockService.js";
 import { classifyStockHealth } from "./stockHealthService.js";
 import {
@@ -62,9 +64,10 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
   });
   const productIds = products.map((product) => product.id);
   const now = new Date();
-  const [incomingByProduct, operationalSalesByProduct] = await Promise.all([
+  const [incomingByProduct, operationalSalesByProduct, activeForecasts] = await Promise.all([
     getIncomingRestockStock(productIds),
-    loadOperationalPosSales(productIds, now)
+    loadOperationalPosSales(productIds, now),
+    loadActiveInventoryForecasts(productIds)
   ]);
 
   const recommendations = productIds.length
@@ -106,25 +109,38 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
       historicalSeries: salesSeries,
       sellableStock: stockTruth.sellableStock
     });
-    const operationalForecast = buildOperationalRestockForecast({
-      expiryRiskQuantity,
-      historicalSeries: salesSeries,
-      incomingStock,
-      now,
-      reorderLevel: product.reorderLevel,
-      sellableStock: stockTruth.sellableStock,
-      targetStockLevel: product.targetStockLevel
-    });
-    const forecastDecision = {
-      confidenceAdjustedDemand: operationalForecast.confidenceAdjustedDemand,
-      currentMonthDemand: operationalForecast.expected30d,
-      projectedEndingStock: operationalForecast.projectedEndingStock,
-      projectedStockoutDate: operationalForecast.projectedStockoutDate,
-      reason: operationalForecast.reason,
-      recommendedActionDate: operationalForecast.recommendedActionDate,
-      riskLevel: operationalForecast.riskLevel,
-      suggestedQuantity: operationalForecast.suggestedQuantity
-    };
+    const activeForecast = activeForecasts.get(product.id) ?? null;
+    const operationalForecast = activeForecast
+      ? null
+      : buildOperationalRestockForecast({
+          expiryRiskQuantity,
+          historicalSeries: salesSeries,
+          incomingStock,
+          now,
+          reorderLevel: product.reorderLevel,
+          sellableStock: stockTruth.sellableStock,
+          targetStockLevel: product.targetStockLevel
+        });
+    const forecastDecision = activeForecast
+      ? buildRestockForecastDecision({
+          expiryRiskQuantity,
+          forecast: activeForecast.points,
+          incomingStock,
+          now,
+          reorderLevel: product.reorderLevel,
+          sellableStock: stockTruth.sellableStock,
+          targetStockLevel: product.targetStockLevel
+        })
+      : {
+          confidenceAdjustedDemand: operationalForecast!.confidenceAdjustedDemand,
+          currentMonthDemand: operationalForecast!.expected30d,
+          projectedEndingStock: operationalForecast!.projectedEndingStock,
+          projectedStockoutDate: operationalForecast!.projectedStockoutDate,
+          reason: operationalForecast!.reason,
+          recommendedActionDate: operationalForecast!.recommendedActionDate,
+          riskLevel: operationalForecast!.riskLevel,
+          suggestedQuantity: operationalForecast!.suggestedQuantity
+        };
     const persistedOperationalRecommendation = recommendation?.forecastRecordId
       ? null
       : recommendation;
@@ -135,21 +151,27 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
         : 0;
 
     let recommendationId: string | null = null;
-    let recommendationSource: "SARIMA" | "LOW_STOCK" | "TARGET_STOCK" = "TARGET_STOCK";
-    let recommendedQuantity = operationalForecast.suggestedQuantity;
-    let rationale = operationalForecast.reason;
+    let recommendationSource: "SARIMA" | "LOW_STOCK" | "TARGET_STOCK" = activeForecast
+      ? "SARIMA"
+      : "TARGET_STOCK";
+    let recommendedQuantity = forecastDecision.suggestedQuantity;
+    let rationale = forecastDecision.reason;
 
     if (recommendedQuantity > 0) {
       const demandDrivenLowStock =
         stockHealth.status === "OUT_OF_STOCK" ||
         stockHealth.status === "LOW_STOCK" ||
-        (operationalForecast.expected30d > 0 && operationalForecast.projectedEndingStock < 0);
-      recommendationSource = demandDrivenLowStock ? "LOW_STOCK" : "TARGET_STOCK";
+        (forecastDecision.currentMonthDemand > 0 && forecastDecision.projectedEndingStock < 0);
+      recommendationSource = activeForecast
+        ? "SARIMA"
+        : demandDrivenLowStock
+          ? "LOW_STOCK"
+          : "TARGET_STOCK";
       if (
         persistedOperationalRecommendation &&
         ((recommendationSource === "LOW_STOCK" &&
           persistedOperationalRecommendation.type === "LOW_STOCK") ||
-          (recommendationSource === "TARGET_STOCK" &&
+          ((recommendationSource === "TARGET_STOCK" || recommendationSource === "SARIMA") &&
             persistedOperationalRecommendation.type === "RESTOCK"))
       ) {
         recommendationId = persistedOperationalRecommendation.id;
@@ -164,14 +186,23 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
 
     return {
       expiryRiskQuantity,
-      forecast: {
-        batchId: null,
-        currentMonthDemand: operationalForecast.expected30d,
-        generatedAt: now.toISOString(),
-        historical: operationalForecast.historical,
-        modelName: "RESTOCK_POS",
-        points: operationalForecast.points
-      },
+      forecast: activeForecast
+        ? {
+            batchId: activeForecast.batchId,
+            currentMonthDemand: forecastDecision.currentMonthDemand,
+            generatedAt: activeForecast.generatedAt,
+            historical: activeForecast.historical,
+            modelName: activeForecast.modelName,
+            points: activeForecast.points
+          }
+        : {
+            batchId: null,
+            currentMonthDemand: operationalForecast!.expected30d,
+            generatedAt: now.toISOString(),
+            historical: operationalForecast!.historical,
+            modelName: "RESTOCK_POS_FALLBACK",
+            points: operationalForecast!.points
+          },
       forecastDecision,
       incomingStock,
       physicalOnHand: stockTruth.physicalOnHand,

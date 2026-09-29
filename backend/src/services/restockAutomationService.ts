@@ -2,7 +2,7 @@ import { RestockOrderStatus, RestockRecommendationSource } from "@prisma/client"
 
 import { prisma } from "../database/prismaClient.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
-import { approveRestockOrder, createRestockOrder } from "./restockService.js";
+import { createRestockOrder } from "./restockService.js";
 
 const AUTOMATION_PAGE_SIZE = 100;
 const DEFAULT_RECONCILE_INTERVAL_MS = 30_000;
@@ -21,11 +21,7 @@ const MONTH_ABBREVIATIONS = [
   "NOV",
   "DEC"
 ] as const;
-const EXTENDABLE_BATCH_STATUSES = new Set<RestockOrderStatus>([
-  RestockOrderStatus.DRAFT,
-  RestockOrderStatus.APPROVED,
-  RestockOrderStatus.AWAITING_DELIVERY
-]);
+const EXTENDABLE_BATCH_STATUSES = new Set<RestockOrderStatus>([RestockOrderStatus.DRAFT]);
 let inFlightAutomation: Promise<RestockAutomationResult> | null = null;
 let workerTimer: NodeJS.Timeout | null = null;
 let workerReconciliation: Promise<void> | null = null;
@@ -49,6 +45,7 @@ type RestockActionLine = {
   quantity: number;
   recommendationId: string | null;
   recommendationSource:
+    | typeof RestockRecommendationSource.SARIMA
     | typeof RestockRecommendationSource.LOW_STOCK
     | typeof RestockRecommendationSource.TARGET_STOCK;
 };
@@ -136,6 +133,7 @@ async function loadOperationalActionLines() {
       const quantity = Math.max(0, Math.ceil(candidate.recommendedQuantity));
       if (quantity <= 0) continue;
       if (
+        candidate.recommendationSource !== RestockRecommendationSource.SARIMA &&
         candidate.recommendationSource !== RestockRecommendationSource.LOW_STOCK &&
         candidate.recommendationSource !== RestockRecommendationSource.TARGET_STOCK
       ) {
@@ -250,7 +248,7 @@ async function appendActionLinesToMonthlyBatch(
       await tx.restockOrderLine.create({
         data: {
           isSelected: true,
-          notes: "Operational restock forecast added this line to the monthly batch.",
+          notes: "Inventory Recommender added this forecast-driven line to the monthly plan.",
           ownerOverrideReason: null,
           productId: line.productId,
           receivedQuantity: 0,
@@ -340,32 +338,20 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
       };
     }
 
-    const actorId =
-      monthlyOrder.status === RestockOrderStatus.DRAFT ? await findAutomationActorId() : null;
-    if (monthlyOrder.status === RestockOrderStatus.DRAFT && !actorId) {
-      console.warn("[restock] No active user is available to approve the monthly restock batch.");
+    if (monthlyOrder.status !== RestockOrderStatus.DRAFT) {
+      console.info(
+        `[restock] ${batch.monthKey} recommended plan ${monthlyOrder.orderNumber} is already owner-approved; automation will not mutate it.`
+      );
       return {
         orderId: monthlyOrder.id,
         orderNumber: monthlyOrder.orderNumber,
-        status: "NO_ACTOR"
+        status: "EXISTING"
       };
     }
 
     const merged = await appendActionLinesToMonthlyBatch(monthlyOrder, actionLines);
-    if (merged.status === RestockOrderStatus.DRAFT && actorId) {
-      const approved = await approveRestockOrder(
-        merged.id,
-        { expectedVersion: merged.version },
-        actorId
-      );
-      console.info(
-        `[restock] Updated and auto-approved monthly batch ${approved.orderNumber} for ${batch.monthKey}.`
-      );
-      return { orderId: approved.id, orderNumber: approved.orderNumber, status: "UPDATED" };
-    }
-
     console.info(
-      `[restock] Added ${actionLines.length} replenishment line(s) to monthly batch ${merged.orderNumber}.`
+      `[restock] Updated owner-review draft ${merged.orderNumber} with the latest ${actionLines.length} recommendation line(s).`
     );
     return { orderId: merged.id, orderNumber: merged.orderNumber, status: "UPDATED" };
   }
@@ -394,10 +380,10 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
   const totalUnits = actionLines.reduce((sum, line) => sum + line.quantity, 0);
   const order = await createRestockOrder(
     {
-      notes: `${batch.marker} Automatically generated monthly batch from the operational restock forecast.`,
+      notes: `${batch.marker} Forecast-driven recommended inventory plan. Owner approval is required before Receiving.`,
       lines: actionLines.map((line) => ({
         isSelected: true,
-        notes: "Operational restock forecast generated this replenishment line.",
+        notes: "Inventory Recommender generated this forecast-driven replenishment line.",
         ownerOverrideReason: null,
         productId: line.productId,
         recommendationId: line.recommendationId,
@@ -411,22 +397,17 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
 
   const renamed = await prisma.restockOrder.update({
     data: { orderNumber: batch.orderNumber },
-    select: { id: true, orderNumber: true, version: true },
+    select: { id: true, orderNumber: true },
     where: { id: order.id }
   });
-  const approved = await approveRestockOrder(
-    renamed.id,
-    { expectedVersion: renamed.version },
-    actorId
-  );
 
   console.info(
-    `[restock] Created monthly batch ${approved.orderNumber} with ${actionLines.length} product(s), ${totalUnits} unit(s), and auto-approved it for Receiving.`
+    `[restock] Created owner-review monthly plan ${renamed.orderNumber} with ${actionLines.length} product(s) and ${totalUnits} recommended unit(s). Approval is required before Receiving.`
   );
 
   return {
-    orderId: approved.id,
-    orderNumber: approved.orderNumber,
+    orderId: renamed.id,
+    orderNumber: renamed.orderNumber,
     status: "CREATED"
   };
 }
