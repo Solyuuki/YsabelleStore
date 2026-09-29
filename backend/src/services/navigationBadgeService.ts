@@ -28,7 +28,7 @@ export async function getNavigationBadges(
     ? operations.restock.queue.readyToReceive + operations.restock.queue.partiallyReceived
     : 0;
   const reports = operations?.restock.actionableProducts ?? 0;
-  const dashboard = [inventory, receiving, reports].filter((count) => count > 0).length;
+  const dashboard = operations ? operations.restock.actionableProducts : inventory;
 
   return {
     dashboard,

@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   ClipboardList,
   Clock3,
-  Database,
   LineChart,
   ReceiptText,
   Sparkles,
@@ -267,30 +266,30 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
             ) : null}
           </section>
 
-          <section className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
-            <SalesPulseCard isOwner={isOwner} summary={summary} />
-            {isOwner ? (
-              <RestockPipelineCard
-                loading={operationsLoading}
-                onNavigate={onNavigate}
-                operations={operations}
-              />
-            ) : (
-              <SystemSyncCard summary={summary} />
-            )}
-          </section>
-
           {isOwner ? (
-            <section className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
-              <RestockActionsCard
-                error={operationsError}
-                loading={operationsLoading}
-                onNavigate={onNavigate}
-                operations={operations}
-              />
-              <SystemSyncCard summary={summary} />
+            <>
+              <section className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
+                <SalesPulseCard isOwner summary={summary} />
+                <RestockPipelineCard
+                  loading={operationsLoading}
+                  onNavigate={onNavigate}
+                  operations={operations}
+                />
+              </section>
+              <section>
+                <RestockActionsCard
+                  error={operationsError}
+                  loading={operationsLoading}
+                  onNavigate={onNavigate}
+                  operations={operations}
+                />
+              </section>
+            </>
+          ) : (
+            <section>
+              <SalesPulseCard isOwner={false} summary={summary} />
             </section>
-          ) : null}
+          )}
         </>
       ) : null}
     </div>
@@ -396,11 +395,11 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#625bff]">
-              Action center
+              Inventory recommender
             </p>
-            <CardTitle className="mt-1">Needs attention</CardTitle>
+            <CardTitle className="mt-1">Recommended actions</CardTitle>
             <p className="mt-1 text-xs text-slate-500">
-              Restock decisions ranked from the existing replenishment policy.
+              Forecast-driven inventory actions ranked from SARIMA demand, stock coverage, incoming supply, and expiry risk.
             </p>
           </div>
           {operations ? (
@@ -435,7 +434,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
               </p>
               <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
                 <ClipboardList className="h-4 w-4" />
-                Open restock planner
+                Review recommended plan
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
@@ -621,7 +620,7 @@ function LatestRestockOrder({ order }: LatestRestockOrderProps) {
           {" requested units"}
         </p>
         <p>
-          {order.automated ? "Automated monthly restock batch" : "Owner-created restock order"}
+          {order.automated ? "Forecast-driven recommended plan" : "Owner-created restock order"}
           {" • updated "}
           {dateTimeFormatter.format(new Date(order.updatedAt))}
         </p>
@@ -653,65 +652,6 @@ function PipelineStat({
           warning ? "text-amber-700" : "text-slate-950"
         }`}
       >
-        {value.toLocaleString()}
-      </p>
-    </div>
-  );
-}
-
-function SystemSyncCard({ summary }: { summary: DashboardSummary }) {
-  const synced = summary.inventory.unlinkedCatalogItems === 0;
-
-  return (
-    <Card className={brandCardClass}>
-      <BrandAccent />
-      <CardHeader className="border-b border-slate-100 pb-4 pt-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#625bff]">
-              Data integrity
-            </p>
-            <CardTitle className="mt-1">System sync</CardTitle>
-          </div>
-          {synced ? (
-            <BrandIcon icon={CheckCircle2} />
-          ) : (
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-700">
-              <TriangleAlert className="h-4 w-4" aria-hidden="true" />
-            </span>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3 pt-5">
-        <div
-          className={`flex items-center justify-between rounded-xl border px-3.5 py-3 ${
-            synced ? "border-violet-100 bg-violet-50/40" : "border-amber-200 bg-amber-50/60"
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            <Database className="h-4 w-4 text-[#625bff]" aria-hidden="true" />
-            <span className="text-sm font-medium text-slate-700">Catalog → inventory</span>
-          </div>
-          <span className={`text-xs font-semibold ${synced ? "text-[#625bff]" : "text-amber-700"}`}>
-            {synced ? "Synced" : `${summary.inventory.unlinkedCatalogItems} missing`}
-          </span>
-        </div>
-        <div className="grid grid-cols-2 gap-2.5">
-          <SyncMetric label="Catalog" value={summary.inventory.catalogItems} />
-          <SyncMetric label="Inventory" value={summary.inventory.trackedItems} />
-          <SyncMetric label="Available" value={summary.inventory.availableItems} />
-          <SyncMetric label="Sales today" value={summary.sales.completedSales} />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function SyncMetric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-xl border border-violet-100 bg-violet-50/35 px-3 py-3">
-      <p className="text-[11px] font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold tracking-tight text-slate-950">
         {value.toLocaleString()}
       </p>
     </div>
