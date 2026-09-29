@@ -75,7 +75,7 @@ test("trending is driven by verified review momentum rather than recent POS sale
 });
 
 test("favorites and owner moderation have authenticated server routes", () => {
-  assert.match(accountRoutes, /\/favorites\/\:productId/);
+  assert.match(accountRoutes, /\/favorites\/:productId/);
   assert.match(accountRoutes, /requireCustomerAuth/);
   assert.match(moderationRoutes, /requireAuth/);
   assert.match(moderationRoutes, /requireRole\("OWNER"\)/);

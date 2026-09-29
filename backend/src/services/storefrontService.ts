@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { CustomerOrderStatus, Prisma, SaleStatus, type ProductSizeUnit } from "@prisma/client";
+import { CustomerOrderStatus, Prisma, type ProductSizeUnit } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { approvedCategoryCoverUrl } from "../modules/catalog-image/categoryImageService.js";
