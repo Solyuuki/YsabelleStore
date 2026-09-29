@@ -210,7 +210,14 @@ export function downloadOperationalSummaryPdf(snapshot: InternalReportSnapshot) 
 
     if (performance) {
       drawMetric(doc, margin, nextY, metricWidth, "Actual", money(performance.actual));
-      drawMetric(doc, margin + (metricWidth + gap), nextY, metricWidth, "Target", money(performance.target));
+      drawMetric(
+        doc,
+        margin + (metricWidth + gap),
+        nextY,
+        metricWidth,
+        "Target",
+        money(performance.target)
+      );
       drawMetric(
         doc,
         margin + (metricWidth + gap) * 2,
@@ -249,7 +256,12 @@ export function downloadOperationalSummaryPdf(snapshot: InternalReportSnapshot) 
         headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105] },
         margin: { left: margin, right: margin },
         startY: nextY,
-        styles: { cellPadding: 2.5, fontSize: 7.5, lineColor: [226, 232, 240], lineWidth: 0.2 },
+        styles: {
+          cellPadding: 2.5,
+          fontSize: 7.5,
+          lineColor: [226, 232, 240],
+          lineWidth: 0.2
+        },
         theme: "grid"
       });
     }

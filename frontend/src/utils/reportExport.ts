@@ -86,7 +86,9 @@ export function operationalPerformance(snapshot: InternalReportSnapshot) {
 }
 
 function recommendationAction(item: RestockPlanningCandidate) {
-  if (item.recommendedQuantity > 0) return `Restock ${item.recommendedQuantity.toLocaleString()} unit(s)`;
+  if (item.recommendedQuantity > 0) {
+    return `Restock ${item.recommendedQuantity.toLocaleString()} unit(s)`;
+  }
   if (item.expiryRiskQuantity > 0) return "Review near-expiry stock";
   if (item.stockHealth.status === "OVERSTOCK") return "Reduce or pause replenishment";
   return "Monitor";

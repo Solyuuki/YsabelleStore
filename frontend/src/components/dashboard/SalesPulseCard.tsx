@@ -428,7 +428,9 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#625bff]">
                   Target vs actual
                 </p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{formatMonthLabel(month)}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {formatMonthLabel(month)}
+                </p>
                 <p className="mt-1 text-xs text-slate-500">
                   Daily completed-sales revenue against the forecast-derived target.
                 </p>
@@ -445,7 +447,10 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
 
             <div className="h-64 rounded-xl border border-slate-200 bg-slate-50/40 p-3">
               <ResponsiveContainer height="100%" width="100%">
-                <ComposedChart data={monthlyPerformanceData} margin={{ bottom: 0, left: 0, right: 8, top: 8 }}>
+                <ComposedChart
+                  data={monthlyPerformanceData}
+                  margin={{ bottom: 0, left: 0, right: 8, top: 8 }}
+                >
                   <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
                   <XAxis
                     axisLine={false}
@@ -454,7 +459,12 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     tick={{ fill: "#94a3b8", fontSize: 10 }}
                     tickLine={false}
                   />
-                  <YAxis axisLine={false} tick={{ fill: "#94a3b8", fontSize: 10 }} tickLine={false} width={44} />
+                  <YAxis
+                    axisLine={false}
+                    tick={{ fill: "#94a3b8", fontSize: 10 }}
+                    tickLine={false}
+                    width={44}
+                  />
                   <Tooltip
                     formatter={(value, name) => [
                       formatCurrency(Number(value)),
@@ -515,19 +525,38 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     <ResponsiveContainer height="100%" width="100%">
                       <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
                         <defs>
-                          <linearGradient id="dashboardSalesAreaCalendar" x1="0" x2="0" y1="0" y2="1">
+                          <linearGradient
+                            id="dashboardSalesAreaCalendar"
+                            x1="0"
+                            x2="0"
+                            y1="0"
+                            y2="1"
+                          >
                             <stop offset="0%" stopColor="#625bff" stopOpacity={0.3} />
                             <stop offset="65%" stopColor="#008cff" stopOpacity={0.1} />
                             <stop offset="100%" stopColor="#f43f8c" stopOpacity={0.02} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 6" vertical={false} />
-                        <XAxis axisLine={false} dataKey="label" interval={1} tick={{ fill: "#94a3b8", fontSize: 11 }} tickLine={false} />
+                        <XAxis
+                          axisLine={false}
+                          dataKey="label"
+                          interval={1}
+                          tick={{ fill: "#94a3b8", fontSize: 11 }}
+                          tickLine={false}
+                        />
                         <Tooltip
                           formatter={(value) => [formatCurrency(Number(value)), "Sales"]}
                           labelFormatter={(label) => String(label)}
                         />
-                        <Area dataKey="amount" fill="url(#dashboardSalesAreaCalendar)" fillOpacity={1} stroke="#625bff" strokeWidth={2.5} type="monotone" />
+                        <Area
+                          dataKey="amount"
+                          fill="url(#dashboardSalesAreaCalendar)"
+                          fillOpacity={1}
+                          stroke="#625bff"
+                          strokeWidth={2.5}
+                          type="monotone"
+                        />
                       </AreaChart>
                     </ResponsiveContainer>
                   )}
@@ -544,7 +573,9 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
 }
 
 function calendarDaySecondaryLabel(day: DashboardSalesCalendarDay) {
-  if (day.status === "FUTURE") return day.targetAmount ? "Forecast target" : "Forecast unavailable";
+  if (day.status === "FUTURE") {
+    return day.targetAmount ? "Forecast target" : "Forecast unavailable";
+  }
   if (!day.actualDataAvailable) return "No POS history";
   if (day.targetAmount && Number(day.targetAmount) > 0) {
     const progress = Math.round((Number(day.actualAmount) / Number(day.targetAmount)) * 100);
@@ -563,7 +594,9 @@ function targetProgressLabel(detail: DashboardSalesDayDetail | null) {
 function PerformanceSignal({ detail }: { detail: DashboardSalesDayDetail | null }) {
   const target = Number(detail?.targetAmount ?? 0);
   const actual = Number(detail?.actualAmount ?? 0);
-  const hasComparableActual = Boolean(detail?.actualDataAvailable && target > 0 && detail?.status !== "FUTURE");
+  const hasComparableActual = Boolean(
+    detail?.actualDataAvailable && target > 0 && detail?.status !== "FUTURE"
+  );
   const achievement = hasComparableActual ? Math.round((actual / target) * 100) : null;
   const belowTarget = achievement !== null && achievement < 100;
 
