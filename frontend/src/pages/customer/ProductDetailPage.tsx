@@ -1,8 +1,10 @@
 import {
   ArrowLeft,
+  BadgeCheck,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Heart,
   MapPin,
   MessageSquareText,
   RefreshCw,
@@ -19,19 +21,25 @@ import { ProductSizeSelector } from "@/components/customer/ProductSizeSelector";
 import { ProductVisual } from "@/components/customer/ProductVisual";
 import { QuantityControl } from "@/components/customer/QuantityControl";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import { useRevealOnView } from "@/hooks/useRevealOnView";
 import {
   fetchStorefrontProduct,
   fetchStorefrontProductReviews,
-  fetchStorefrontRelatedProducts
+  fetchStorefrontReviewContext,
+  fetchStorefrontRelatedProducts,
+  saveStorefrontProductReview
 } from "@/services/storefrontService";
 import type {
   StorefrontProduct,
   StorefrontProductDetail,
   StorefrontProductReviews,
-  StorefrontRelatedProducts
+  StorefrontRelatedProducts,
+  StorefrontReviewContext
 } from "@/types/storefront";
 import { preloadCatalogImage } from "@/utils/storefrontImages";
+import { buildCustomerAuthPath } from "@/utils/customerRoutes";
 
 type Resource<T> = {
   data: T | null;
@@ -49,6 +57,7 @@ export function ProductDetailPage({
   navigate: (path: string) => void;
 }) {
   const { addItem } = useCart();
+  const { favoriteIds, toggleFavorite } = useCustomerFavorites();
   const [product, setProduct] = useState<StorefrontProductDetail | null>(null);
   const productRef = useRef<StorefrontProductDetail | null>(null);
   const [isProductTransitioning, setIsProductTransitioning] = useState(false);
@@ -215,6 +224,14 @@ export function ProductDetailPage({
       </div>
     );
   const outOfStock = product.availableStock <= 0;
+  const isFavorite = favoriteIds.has(product.id);
+
+  async function handleFavorite() {
+    const result = await toggleFavorite(product.id);
+    if (result === "auth-required") {
+      navigate(buildCustomerAuthPath("/login", `/product/${product.id}`));
+    }
+  }
 
   return (
     <div
@@ -250,6 +267,15 @@ export function ProductDetailPage({
             <p className="customer-product-detail__description">
               {product.description || "An everyday essential from Ysabelle's Store."}
             </p>
+            <button
+              aria-pressed={isFavorite}
+              className="customer-product-detail__favorite"
+              onClick={() => void handleFavorite()}
+              type="button"
+            >
+              <Heart aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} />
+              {isFavorite ? "Saved to favorites" : "Save to favorites"}
+            </button>
             <div className="customer-product-detail__price">
               <strong>{formatCurrency(product.sellingPrice)}</strong>
               <span>per {formatUnit(product.unit)}</span>
@@ -292,6 +318,9 @@ export function ProductDetailPage({
         </section>
 
         <ReviewsSection
+          navigate={navigate}
+          productId={product.id}
+          onReviewSaved={() => setReviewReload((value) => value + 1)}
           onFilterChange={(rating) => {
             setRatingFilter(rating);
             setReviewPage(1);
@@ -315,6 +344,9 @@ export function ProductDetailPage({
 }
 
 function ReviewsSection({
+  navigate,
+  productId,
+  onReviewSaved,
   onFilterChange,
   onPageChange,
   onRetry,
@@ -322,6 +354,9 @@ function ReviewsSection({
   ratingFilter,
   resource
 }: {
+  navigate: (path: string) => void;
+  productId: string;
+  onReviewSaved: () => void;
   onFilterChange: (rating: number | null) => void;
   onPageChange: (page: number) => void;
   onRetry: () => void;
@@ -329,7 +364,91 @@ function ReviewsSection({
   ratingFilter: number | null;
   resource: Resource<StorefrontProductReviews>;
 }) {
+  const { status: authStatus } = useCustomerAuth();
   const summary = resource.data?.summary;
+  const [reviewContext, setReviewContext] = useState<StorefrontReviewContext | null>(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSaving, setReviewSaving] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const draft = readReviewDraft(productId);
+    if (draft) {
+      setReviewRating(draft.rating);
+      setReviewComment(draft.comment);
+    } else {
+      setReviewRating(0);
+      setReviewComment("");
+    }
+
+    if (authStatus !== "authenticated") {
+      setReviewContext(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    void fetchStorefrontReviewContext(productId, controller.signal)
+      .then((context) => {
+        setReviewContext(context);
+        if (!draft && context.review) {
+          setReviewRating(context.review.rating);
+          setReviewComment(context.review.comment);
+        }
+      })
+      .catch((reason: unknown) => {
+        if (!controller.signal.aborted) {
+          setReviewError(
+            reason instanceof Error ? reason.message : "Review eligibility could not be checked."
+          );
+        }
+      });
+
+    return () => controller.abort();
+  }, [authStatus, productId]);
+
+  async function handleReviewSubmit() {
+    setReviewMessage(null);
+    setReviewError(null);
+    const comment = reviewComment.trim();
+    if (reviewRating < 1 || reviewRating > 5) {
+      setReviewError("Choose a rating from 1 to 5 stars.");
+      return;
+    }
+    if (comment.length < 3) {
+      setReviewError("Write at least a few words about this product.");
+      return;
+    }
+
+    writeReviewDraft(productId, { rating: reviewRating, comment });
+
+    if (authStatus !== "authenticated") {
+      navigate(buildCustomerAuthPath("/login", `/product/${productId}#reviews`));
+      return;
+    }
+    if (!reviewContext?.eligible) {
+      setReviewError(
+        reviewContext?.reason ??
+          "A completed signed-in purchase is required before publishing this review."
+      );
+      return;
+    }
+
+    setReviewSaving(true);
+    try {
+      await saveStorefrontProductReview(productId, { rating: reviewRating, comment });
+      clearReviewDraft(productId);
+      setReviewMessage(reviewContext.review ? "Your review was updated." : "Your review was published.");
+      const nextContext = await fetchStorefrontReviewContext(productId);
+      setReviewContext(nextContext);
+      onReviewSaved();
+    } catch (reason) {
+      setReviewError(reason instanceof Error ? reason.message : "Your review could not be saved.");
+    } finally {
+      setReviewSaving(false);
+    }
+  }
 
   return (
     <section
@@ -401,6 +520,80 @@ function ReviewsSection({
             </div>
           </ProductDetailReveal>
 
+          <ProductDetailReveal className="customer-review-composer">
+            <div className="customer-review-composer__header">
+              <div>
+                <p className="customer-kicker">Share your experience</p>
+                <h3>{reviewContext?.review ? "Update your review" : "Write a review"}</h3>
+                <p>
+                  {authStatus === "authenticated"
+                    ? reviewContext?.eligible
+                      ? "Verified purchase detected. Your rating and comment can be published."
+                      : reviewContext?.reason ?? "Checking your purchase eligibility."
+                    : "Write now if you want. Your draft will be kept when you sign in."}
+                </p>
+              </div>
+              {reviewContext?.eligible ? (
+                <span className="customer-review-composer__verified">
+                  <BadgeCheck aria-hidden="true" />
+                  Verified purchase
+                </span>
+              ) : null}
+            </div>
+            <div className="customer-review-composer__stars" role="radiogroup" aria-label="Your rating">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  aria-checked={reviewRating === star}
+                  aria-label={`${star} star rating`}
+                  key={star}
+                  onClick={() => setReviewRating(star)}
+                  role="radio"
+                  type="button"
+                >
+                  <Star
+                    aria-hidden="true"
+                    fill={star <= reviewRating ? "currentColor" : "none"}
+                  />
+                </button>
+              ))}
+            </div>
+            <textarea
+              aria-label="Your review"
+              maxLength={1000}
+              onChange={(event) => setReviewComment(event.target.value)}
+              placeholder="What did you like about this product?"
+              rows={4}
+              value={reviewComment}
+            />
+            <div className="customer-review-composer__footer">
+              <span>{reviewComment.trim().length}/1000</span>
+              <button
+                className="customer-button customer-button--compact"
+                disabled={reviewSaving || reviewRating === 0 || reviewComment.trim().length < 3}
+                onClick={() => void handleReviewSubmit()}
+                type="button"
+              >
+                {reviewSaving
+                  ? "Saving..."
+                  : authStatus === "authenticated"
+                    ? reviewContext?.review
+                      ? "Update review"
+                      : "Publish review"
+                    : "Sign in to publish"}
+              </button>
+            </div>
+            {reviewError ? (
+              <p className="customer-review-composer__error" role="alert">
+                {reviewError}
+              </p>
+            ) : null}
+            {reviewMessage ? (
+              <p className="customer-review-composer__success" role="status">
+                {reviewMessage}
+              </p>
+            ) : null}
+          </ProductDetailReveal>
+
           <ProductDetailReveal className="product-detail-reveal--controls">
             <div
               aria-label="Filter customer reviews"
@@ -437,7 +630,14 @@ function ReviewsSection({
                     </span>
                     <div>
                       <strong>{review.reviewerDisplayName}</strong>
-                      <time dateTime={review.createdAt}>{formatReviewDate(review.createdAt)}</time>
+                      <span className="customer-review__meta">
+                        <time dateTime={review.createdAt}>{formatReviewDate(review.createdAt)}</time>
+                        {review.verifiedPurchase ? (
+                          <span className="customer-review__verified">
+                            <BadgeCheck aria-hidden="true" /> Verified purchase
+                          </span>
+                        ) : null}
+                      </span>
                     </div>
                     <RatingStars rating={review.rating} />
                   </header>
@@ -486,8 +686,8 @@ function ReviewsSection({
           ) : null}
 
           <p className="customer-review-policy-note">
-            <ShieldCheck aria-hidden="true" /> Review posting is unavailable until completed
-            customer purchases can be securely verified.
+            <ShieldCheck aria-hidden="true" /> Published reviews require a completed signed-in
+            purchase and remain subject to store moderation.
           </p>
         </>
       ) : null}
@@ -692,6 +892,37 @@ function RatingStars({ rating }: { rating: number }) {
       ))}
     </span>
   );
+}
+
+function reviewDraftKey(productId: string) {
+  return `ysabelle:review-draft:${productId}`;
+}
+
+function readReviewDraft(productId: string): { rating: number; comment: string } | null {
+  try {
+    const raw = window.localStorage.getItem(reviewDraftKey(productId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { rating?: unknown; comment?: unknown };
+    if (
+      typeof parsed.rating !== "number" ||
+      parsed.rating < 1 ||
+      parsed.rating > 5 ||
+      typeof parsed.comment !== "string"
+    ) {
+      return null;
+    }
+    return { rating: parsed.rating, comment: parsed.comment };
+  } catch {
+    return null;
+  }
+}
+
+function writeReviewDraft(productId: string, draft: { rating: number; comment: string }) {
+  window.localStorage.setItem(reviewDraftKey(productId), JSON.stringify(draft));
+}
+
+function clearReviewDraft(productId: string) {
+  window.localStorage.removeItem(reviewDraftKey(productId));
 }
 
 function formatReviewDate(value: string) {
