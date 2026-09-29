@@ -267,7 +267,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
             ) : null}
           </section>
 
-          <section className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
+          <section className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
             <SalesPulseCard isOwner={isOwner} summary={summary} />
             {isOwner ? (
               <RestockPipelineCard
@@ -281,7 +281,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
           </section>
 
           {isOwner ? (
-            <section className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
+            <section className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
               <RestockActionsCard
                 error={operationsError}
                 loading={operationsLoading}
