@@ -1,4 +1,5 @@
 name: Customer Engagement Finalize
+# Re-run after the reviewed 0005 migration was finalized.
 
 on:
   push:
