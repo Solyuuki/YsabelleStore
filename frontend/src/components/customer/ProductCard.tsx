@@ -1,9 +1,10 @@
-import { Check, CircleAlert, ShoppingBasket, Star } from "lucide-react";
+import { Check, CircleAlert, Heart, ShoppingBasket, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
+import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import type { StorefrontProduct } from "@/types/storefront";
+import { buildCustomerAuthPath } from "@/utils/customerRoutes";
 import {
   getStorefrontProductBadge,
   type StorefrontProductBadge
@@ -26,10 +27,12 @@ export function ProductCard({
   tourTarget?: boolean;
 }) {
   const { addItem } = useCart();
+  const { favoriteIds, toggleFavorite } = useCustomerFavorites();
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const feedbackTimer = useRef<number | null>(null);
   const outOfStock = product.availableStock <= 0;
+  const isFavorite = favoriteIds.has(product.id);
   const resolvedBadge = badge === undefined ? getStorefrontProductBadge(product) : badge;
   const hasReviewSummary =
     Number.isFinite(product.averageRating) &&
@@ -50,6 +53,14 @@ export function ProductCard({
     []
   );
 
+  async function handleFavorite() {
+    const result = await toggleFavorite(product.id);
+    if (result === "auth-required") {
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      navigate(buildCustomerAuthPath("/login", returnTo));
+    }
+  }
+
   function handleAddToCart() {
     addItem(product, quantity);
     setJustAdded(true);
@@ -63,36 +74,53 @@ export function ProductCard({
       data-stock={product.stockStatus.toLowerCase()}
       data-tour={tourTarget ? "product" : undefined}
     >
-      <CustomerLink
-        aria-label={`View ${product.name}`}
-        className="customer-product-card__visual-link"
-        href={`/product/${product.id}`}
-        navigate={navigate}
-      >
-        <ProductVisual
-          category={product.category.name}
-          imageUrl={product.imageUrl}
-          name={product.name}
-          showCategory={false}
-        />
-        {hasReviewSummary ? (
-          <Badge aria-label={ratingLabel} className="customer-product-rating-badge" role="img">
-            <Star aria-hidden="true" fill={hasReviews ? "currentColor" : "none"} />
-            <span>{formattedRating}</span>
-            <span className="customer-product-rating-badge__count">({product.reviewCount})</span>
-          </Badge>
-        ) : null}
-        {resolvedBadge ? (
-          <span className={`customer-product-badge customer-product-badge--${resolvedBadge.tone}`}>
-            {resolvedBadge.label}
-          </span>
-        ) : null}
-      </CustomerLink>
+      <div className="customer-product-card__media">
+        <CustomerLink
+          aria-label={`View ${product.name}`}
+          className="customer-product-card__visual-link"
+          href={`/product/${product.id}`}
+          navigate={navigate}
+        >
+          <ProductVisual
+            category={product.category.name}
+            imageUrl={product.imageUrl}
+            name={product.name}
+            showCategory={false}
+          />
+          {resolvedBadge ? (
+            <span className={`customer-product-badge customer-product-badge--${resolvedBadge.tone}`}>
+              {resolvedBadge.label}
+            </span>
+          ) : null}
+        </CustomerLink>
+        <button
+          aria-label={
+            isFavorite
+              ? `Remove ${product.name} from favorites`
+              : `Save ${product.name} to favorites`
+          }
+          aria-pressed={isFavorite}
+          className="customer-product-card__favorite"
+          onClick={() => void handleFavorite()}
+          type="button"
+        >
+          <Heart aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} />
+        </button>
+      </div>
       <div className="customer-product-card__body">
         <p className="customer-eyebrow">{product.category.name}</p>
         <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
           <h3>{product.name}</h3>
         </CustomerLink>
+        {hasReviews ? (
+          <div aria-label={ratingLabel} className="customer-product-card__rating" role="img">
+            <Star aria-hidden="true" fill="currentColor" />
+            <strong>{formattedRating}</strong>
+            <span>
+              · {product.reviewCount} {product.reviewCount === 1 ? "review" : "reviews"}
+            </span>
+          </div>
+        ) : null}
         <div className="customer-product-card__price-row">
           <strong>{formatCurrency(product.sellingPrice)}</strong>
           <span>per {formatUnit(product.unit)}</span>
