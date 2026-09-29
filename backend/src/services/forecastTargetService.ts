@@ -65,7 +65,7 @@ async function synchronizeBatchTargets(batchId: string, now: Date) {
   const targetRows = months.flatMap((month) =>
     allocateMonth(month, monthlyRevenue.get(month) ?? 0, weightProfile.weights).map((target) => ({
       ...target,
-      shouldFreeze: target.date < today
+      shouldFreeze: target.date <= today
     }))
   );
 
