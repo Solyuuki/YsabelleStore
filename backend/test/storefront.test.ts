@@ -39,19 +39,31 @@ test("sellable stock excludes expired and unavailable batches", () => {
   assert.equal(quantity, 4);
 });
 
-test("storefront merchandising only ranks available products with recorded sales", async () => {
+test("storefront merchandising keeps review-led trending separate from sales-backed best sellers", async () => {
   const merchandising = await listStorefrontMerchandising();
 
   assert.equal(merchandising.trendingWindowDays, 30);
-  for (const shelf of [merchandising.trending, merchandising.bestSellers]) {
-    assert.ok(shelf.length <= 4);
-    shelf.forEach((entry, index) => {
-      assert.equal(entry.rank, index + 1);
-      assert.ok(entry.unitsSold > 0);
-      assert.ok(entry.product.availableStock > 0);
-      if (index > 0) assert.ok((shelf[index - 1]?.unitsSold ?? 0) >= entry.unitsSold);
-    });
-  }
+  assert.ok(merchandising.trending.length <= 4);
+  merchandising.trending.forEach((entry, index) => {
+    assert.equal(entry.rank, index + 1);
+    assert.ok(entry.trendingScore > 0);
+    assert.ok(entry.recentReviewCount > 0);
+    assert.ok(entry.product.averageRating >= 4);
+    assert.ok(entry.product.availableStock > 0);
+    if (index > 0) {
+      assert.ok((merchandising.trending[index - 1]?.trendingScore ?? 0) >= entry.trendingScore);
+    }
+  });
+
+  assert.ok(merchandising.bestSellers.length <= 4);
+  merchandising.bestSellers.forEach((entry, index) => {
+    assert.equal(entry.rank, index + 1);
+    assert.ok(entry.unitsSold > 0);
+    assert.ok(entry.product.availableStock > 0);
+    if (index > 0) {
+      assert.ok((merchandising.bestSellers[index - 1]?.unitsSold ?? 0) >= entry.unitsSold);
+    }
+  });
 });
 
 test("storefront orders remain pending and do not deduct inventory", async () => {
