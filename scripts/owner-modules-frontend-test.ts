@@ -85,8 +85,8 @@ assert.doesNotMatch(dashboardBackendSource, /summary\.forecastUnits2026/);
 
 assert.match(dashboardSource, /<SalesPulseCard isOwner=\{isOwner\} summary=\{summary\} \/>/);
 assert.match(salesPulseSource, /useState<"calendar" \| "activity">\("calendar"\)/);
-assert.match(salesPulseSource, />Calendar<\/button>/);
-assert.match(salesPulseSource, />Activity chart<\/button>/);
+assert.match(salesPulseSource, /Calendar\s*<\/button>/);
+assert.match(salesPulseSource, /Activity chart\s*<\/button>/);
 assert.match(salesPulseSource, /fetchDashboardSalesCalendar/);
 assert.match(salesPulseSource, /fetchDashboardSalesDay/);
 assert.match(salesPulseSource, /saveDashboardSalesTarget/);
