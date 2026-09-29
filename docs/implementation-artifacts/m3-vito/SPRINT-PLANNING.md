@@ -42,3 +42,4 @@
 | Date       | Next Recommended Task                                 | QA Focus                                                            | Affected Module                                         | Priority |
 | ---------- | ----------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------- | -------- |
 | 2026-07-10 | Perform manual QA on the changed auth/device/UI flow. | Auth/device continuation, logout, route access, and toast behavior. | Backend<br>Database<br>Docs<br>Frontend<br>Scripts / CI | High     |
+| 2026-09-30 | Review generated artifact updates before commit.      | Backend/database validation and migration application.              | Other<br>Backend<br>Database                            | High     |

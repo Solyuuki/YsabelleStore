@@ -8,6 +8,7 @@
     "0002_category_management_foundation": "8a4c0bea12e0b1e126a3148526fd3d2667c1a08aa9d81598d48e45b332d52285",
     "0003_category_cover_focal_grid": "e4d6578e6915e083c4878e62936c4b3e274cc438fdf2a44237c63bb014eb9587",
     "0004_dashboard_sales_calendar_targets": "f5475ec1d101ebb3c160d7b05d86e11ca681220a4bdc59f14f94564c16198796",
-    "0005_customer_engagement": "c9fff567d396496c10b6d3243d20c9080411e62a1f9487ada11b8a857cbd3bac"
+    "0005_customer_engagement": "c9fff567d396496c10b6d3243d20c9080411e62a1f9487ada11b8a857cbd3bac",
+    "0006_customer_support_foundation": "769ff38070876ccc1fbbf6683c498e33113df57d1b0e848368a19bdfc9f75b4c"
   }
 }
