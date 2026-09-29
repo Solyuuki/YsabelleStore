@@ -35,7 +35,7 @@ export type SafeCustomer = {
   username: string | null;
   email: string;
   phone: string | null;
-  status: "ACTIVE" | "INACTIVE";
+  status: CustomerAccount["status"];
 };
 
 export type CustomerSessionToken = {
