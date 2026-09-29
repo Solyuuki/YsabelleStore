@@ -7,6 +7,7 @@ import { ensureKnownCatalogBarcodes } from "./services/catalogKnownBarcodeBootst
 import { ensureCatalogInventoryShells } from "./services/inventoryBootstrapService.js";
 import { synchronizeLegacyPrimaryBarcodes } from "./services/productBarcodeService.js";
 import { startRestockAutomationWorker } from "./services/restockAutomationService.js";
+import { ensureForecastDerivedSalesTargets } from "./services/forecastTargetService.js";
 
 const app = createApp();
 
@@ -20,6 +21,17 @@ const server = app.listen(env.PORT, () => {
   console.info(`Allowed renderer origins: ${corsOrigins.join(", ")}`);
 
   startRestockAutomationWorker();
+
+  void ensureForecastDerivedSalesTargets()
+    .then(() => {
+      console.info("[forecast-targets] Forecast-derived daily targets synchronized.");
+    })
+    .catch((error) => {
+      console.error(
+        "[forecast-targets] Unable to synchronize forecast-derived daily targets; calendar reads will remain available.",
+        error
+      );
+    });
 
   void ensureCatalogInventoryShells()
     .then((result) => {

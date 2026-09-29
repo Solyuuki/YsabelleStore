@@ -3,7 +3,6 @@ import { Prisma, type UserRole } from "@prisma/client";
 import { prisma } from "../database/prismaClient.js";
 import type { ProductForecastDetail } from "../modules/forecasting/forecast.types.js";
 import { HttpError } from "../utils/httpError.js";
-import { ensureForecastDerivedSalesTargets } from "./forecastTargetService.js";
 
 const MANILA_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -61,7 +60,6 @@ export async function getDashboardSalesCalendar(
   role: UserRole,
   now = new Date()
 ): Promise<DashboardSalesCalendar> {
-  await ensureForecastDerivedSalesTargets(now);
   const { end, start } = getManilaMonthRange(month);
   const actualEnd = new Date(Math.min(end.getTime(), now.getTime() + 1));
   const [sales, targets, forecast, firstCompletedSale] = await Promise.all([

@@ -48,10 +48,21 @@ async function synchronizeBatchTargets(batchId: string, now: Date) {
 
   const monthlyRevenue = new Map<string, number>();
   for (const row of rows) {
-    const detail = row.detailPayload as unknown as ProductForecastDetail;
+    const detail = row.detailPayload as unknown as Partial<ProductForecastDetail>;
+    if (!Array.isArray(detail.forecast)) continue;
+
+    const sellingPrice = Number(detail.sellingPrice);
+    if (!Number.isFinite(sellingPrice) || sellingPrice < 0) continue;
+
     for (const point of detail.forecast) {
-      const revenue = Math.max(0, point.predictedQuantity) * Math.max(0, detail.sellingPrice);
-      monthlyRevenue.set(point.period, (monthlyRevenue.get(point.period) ?? 0) + revenue);
+      const predictedQuantity = Number(point?.predictedQuantity);
+      const period = typeof point?.period === "string" ? point.period : "";
+      if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) continue;
+      if (!Number.isFinite(predictedQuantity) || predictedQuantity < 0) continue;
+
+      const revenue = predictedQuantity * sellingPrice;
+      if (!Number.isFinite(revenue)) continue;
+      monthlyRevenue.set(period, (monthlyRevenue.get(period) ?? 0) + revenue);
     }
   }
   if (monthlyRevenue.size === 0) return;
