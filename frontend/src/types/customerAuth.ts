@@ -1,6 +1,6 @@
 export type CustomerAuthStatus = "loading" | "authenticated" | "unauthenticated";
 
-export type CustomerAccountStatus = "ACTIVE" | "INACTIVE";
+export type CustomerAccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "BANNED";
 
 export type Customer = {
   id: string;
