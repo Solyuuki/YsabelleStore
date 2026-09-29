@@ -136,7 +136,7 @@ test("storefront reviews aggregate persisted ratings and support bounded rating 
     assert.equal(fiveStar?.count, 2);
     assert.equal(fiveStar?.percentage, 67);
     assert.equal(allReviews.reviews.length, 3);
-    assert.equal("verifiedPurchase" in (allReviews.reviews[0] ?? {}), false);
+    assert.equal(allReviews.reviews[0]?.verifiedPurchase, false);
 
     const filtered = await listStorefrontProductReviews(product.id, {
       page: 1,
