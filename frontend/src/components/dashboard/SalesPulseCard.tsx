@@ -1,4 +1,4 @@
-import { Activity, CalendarDays, ChevronLeft, ChevronRight, LineChart, Target } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, LineChart, Target } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Area,
@@ -409,16 +409,6 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                   <MiniMetric label="Target progress" value={targetProgressLabel(detail)} />
                 </div>
 
-                <Button
-                  className="mt-5 w-full"
-                  onClick={() => setView("activity")}
-                  size="sm"
-                  type="button"
-                  variant="secondary"
-                >
-                  <Activity className="h-4 w-4" />
-                  View day activity
-                </Button>
                 {loadingDetail ? (
                   <p className="mt-3 text-xs text-slate-400">Loading day details…</p>
                 ) : null}
