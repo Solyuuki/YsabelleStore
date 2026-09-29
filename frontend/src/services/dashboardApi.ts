@@ -115,6 +115,11 @@ export type DashboardRestockAction = {
 };
 
 export type DashboardOperations = {
+  assistant: {
+    generatedAt: string;
+    provider: "CLOUDFLARE" | "GROQ" | "DETERMINISTIC";
+    summary: string;
+  };
   generatedAt: string;
   restock: {
     actionableProducts: number;

@@ -52,6 +52,13 @@ const envSchema = z.object({
   FORECAST_SEASONAL_PERIOD: z.coerce.number().int().positive().default(12),
   FORECAST_WORKERS: z.coerce.number().int().min(1).max(4).default(4),
   SARIMA_FIT_TIMEOUT_SECONDS: z.coerce.number().positive().max(60).default(8),
+  RECOMMENDER_AI_PROVIDER: z.enum(["auto", "cloudflare", "groq", "disabled"]).default("auto"),
+  RECOMMENDER_AI_TIMEOUT_MS: z.coerce.number().int().positive().max(15_000).default(4_000),
+  CLOUDFLARE_AI_ACCOUNT_ID: optionalNonEmptyString,
+  CLOUDFLARE_AI_API_TOKEN: optionalNonEmptyString,
+  CLOUDFLARE_AI_MODEL: optionalNonEmptyString,
+  GROQ_API_KEY: optionalNonEmptyString,
+  GROQ_AI_MODEL: optionalNonEmptyString,
   FORECAST_CURRENT_MONTH: z
     .string()
     .regex(/^\d{4}-\d{2}$/)

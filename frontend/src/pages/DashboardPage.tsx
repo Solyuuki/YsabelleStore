@@ -418,6 +418,21 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
         </div>
       </CardHeader>
       <CardContent className="pt-5">
+        {operations ? (
+          <div className="mb-4 rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/70 to-white p-4">
+            <div className="flex items-start gap-3">
+              <BrandIcon icon={Sparkles} />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#625bff]">
+                  Decision assistant · {operations.assistant.provider.toLowerCase()}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  {operations.assistant.summary}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : null}
         {loading && !operations ? (
           <DashboardPanelLoading label="Loading replenishment actions..." />
         ) : error && !operations ? (

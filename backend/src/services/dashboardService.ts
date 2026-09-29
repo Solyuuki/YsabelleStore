@@ -8,6 +8,7 @@ import {
 import { prisma } from "../database/prismaClient.js";
 import { getForecastSummary } from "../modules/forecasting/forecast.service.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
+import { buildRecommenderAssistant, type RecommenderAssistantResult } from "./recommenderAiService.js";
 
 const MANILA_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -96,6 +97,7 @@ export type DashboardRestockAction = {
 };
 
 export type DashboardOperations = {
+  assistant: RecommenderAssistantResult;
   generatedAt: string;
   restock: {
     actionableProducts: number;
@@ -383,12 +385,27 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     0
   );
   const totalOpen = draftCount + approvedCount + awaitingDeliveryCount + partiallyReceivedCount;
+  const visibleActions = actions.slice(0, DASHBOARD_ACTION_LIMIT);
+  const assistant = await buildRecommenderAssistant(
+    visibleActions.map((action) => ({
+      expiryRiskQuantity: action.expiryRiskQuantity,
+      incomingStock: action.incomingStock,
+      productName: action.product.name,
+      rationale: action.rationale,
+      recommendationSource: action.recommendationSource,
+      recommendedQuantity: action.recommendedQuantity,
+      riskLevel: action.riskLevel,
+      sellableStock: action.sellableStock,
+      sku: action.product.sku
+    }))
+  );
 
   return {
+    assistant,
     generatedAt: now.toISOString(),
     restock: {
       actionableProducts: planning.meta.totalItems,
-      actions: actions.slice(0, DASHBOARD_ACTION_LIMIT),
+      actions: visibleActions,
       latestOpenOrder: latestOpenOrder
         ? {
             automated:
