@@ -43,7 +43,8 @@ export type DashboardForecastSummary =
   | {
       access: "RESTRICTED" | "UNAVAILABLE";
       failedProducts: null;
-      forecastUnits2026: null;
+      forecastHorizonMonths: null;
+      forecastHorizonTotal: null;
       generatedAt: null;
       totalProductsForecasted: null;
       warningProducts: null;
