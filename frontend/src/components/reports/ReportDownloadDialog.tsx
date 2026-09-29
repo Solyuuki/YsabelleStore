@@ -24,9 +24,10 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { fetchInventory, type InventoryRecord, type PaginationMeta } from "@/services/catalogApi";
-import type { DashboardSummary } from "@/services/dashboardApi";
+import { fetchDashboardSalesCalendar, type DashboardSummary } from "@/services/dashboardApi";
 import {
   listRestockOrders,
+  listRestockPlanning,
   type RestockOrder,
   type RestockOrderStatus
 } from "@/services/restockApi";
@@ -74,6 +75,16 @@ type Props = {
   summary: DashboardSummary | null;
 };
 
+function manilaMonthKey(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    month: "2-digit",
+    timeZone: "Asia/Manila",
+    year: "numeric"
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}`;
+}
+
 function initialReportType(): ReportType {
   if (typeof window === "undefined") return "operational";
   const saved = window.sessionStorage.getItem(REPORT_TYPE_SESSION_KEY);
@@ -92,6 +103,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
   const [supplierOrderError, setSupplierOrderError] = useState<string | null>(null);
   const [supplierPreviewOpen, setSupplierPreviewOpen] = useState(false);
   const [supplierPreviewPage, setSupplierPreviewPage] = useState(1);
+  const [operationalMonth, setOperationalMonth] = useState(manilaMonthKey());
 
   useEffect(() => {
     if (!open || reportType !== "restock") return;
@@ -179,8 +191,25 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
 
   async function prepareInternalSnapshot(): Promise<InternalReportSnapshot> {
     if (!summary) throw new Error("Report data is not ready yet.");
-    const inventory = await fetchAllInventory();
-    return { completedSales, inventory, summary };
+    const inventoryPromise = fetchAllInventory();
+
+    if (reportType !== "operational") {
+      return { completedSales, inventory: await inventoryPromise, summary };
+    }
+
+    const [inventory, salesCalendar, recommendationResult] = await Promise.all([
+      inventoryPromise,
+      fetchDashboardSalesCalendar(operationalMonth),
+      listRestockPlanning({ includeZero: false, page: 1, pageSize: 8 })
+    ]);
+
+    return {
+      completedSales,
+      inventory,
+      recommendations: recommendationResult.items,
+      salesCalendar,
+      summary
+    };
   }
 
   async function handlePdf() {
@@ -338,6 +367,30 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
               />
             </div>
           </div>
+
+          {reportType === "operational" ? (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <label
+                className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                htmlFor="operational-report-month"
+              >
+                Performance month
+              </label>
+              <input
+                className="mt-2 h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 sm:max-w-[240px]"
+                id="operational-report-month"
+                onChange={(event) => {
+                  if (event.target.value) setOperationalMonth(event.target.value);
+                }}
+                type="month"
+                value={operationalMonth}
+              />
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Completed POS days are compared with forecast-derived targets. The current
+                incomplete day is not treated as a failed target.
+              </p>
+            </div>
+          ) : null}
 
           {reportType === "restock" ? (
             supplierOrderLoading ? (
