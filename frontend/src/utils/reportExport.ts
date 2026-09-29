@@ -312,8 +312,9 @@ export function printOperationalSummary(printWindow: Window, snapshot: InternalR
     <div class="status"><strong>Expiry status</strong>${expiryClear ? "No expiry issues need attention right now." : `${summary.expiry.nearExpiryBatches.toLocaleString()} near-expiry and ${summary.expiry.expiredBatches.toLocaleString()} expired batches need review.`}</div>
   </section>
 
-  ${performance
-    ? `<section class="section">
+  ${
+    performance
+      ? `<section class="section">
     <h2>Forecast performance — ${escapeHtml(performance.month)}</h2>
     <div class="grid">
       <div class="metric"><span>Completed-day actual</span><strong>${escapeHtml(currency(performance.actual))}</strong></div>
@@ -322,10 +323,12 @@ export function printOperationalSummary(printWindow: Window, snapshot: InternalR
       <div class="metric"><span>Days below target</span><strong>${performance.belowTargetDays.toLocaleString()}</strong></div>
     </div>
   </section>`
-    : ""}
+      : ""
+  }
 
-  ${recommendations.length > 0
-    ? `<section class="section">
+  ${
+    recommendations.length > 0
+      ? `<section class="section">
     <h2>Inventory Recommender</h2>
     ${recommendations
       .slice(0, 8)
@@ -337,7 +340,8 @@ export function printOperationalSummary(printWindow: Window, snapshot: InternalR
       )
       .join("")}
   </section>`
-    : ""}
+      : ""
+  }
 
   <p class="note">This is a management summary. Use the separate Inventory Report for product-level stock rows and Restock / Supplier Order for supplier-facing quantities.</p>
 </body>

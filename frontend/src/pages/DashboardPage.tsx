@@ -399,8 +399,8 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
             </p>
             <CardTitle className="mt-1">Recommended actions</CardTitle>
             <p className="mt-1 text-xs text-slate-500">
-              Forecast-driven inventory actions ranked from SARIMA demand, stock coverage,
-              incoming supply, and expiry risk.
+              Forecast-driven inventory actions ranked from SARIMA demand, stock coverage, incoming
+              supply, and expiry risk.
             </p>
           </div>
           {operations ? (

@@ -194,11 +194,7 @@ function allocateMonth(month: string, amount: number, weekdayWeights: number[]) 
   const remainderOrder = rawCents
     .map((value, index) => ({ fraction: value - Math.floor(value), index }))
     .sort((left, right) => right.fraction - left.fraction || left.index - right.index);
-  for (
-    let index = 0;
-    remainder > 0 && index < remainderOrder.length;
-    index += 1, remainder -= 1
-  ) {
+  for (let index = 0; remainder > 0 && index < remainderOrder.length; index += 1, remainder -= 1) {
     cents[remainderOrder[index]!.index] = (cents[remainderOrder[index]!.index] ?? 0) + 1;
   }
 

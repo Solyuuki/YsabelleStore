@@ -154,41 +154,40 @@ export function RestockDraftsPanel({
           <div className="space-y-2">
             {[...drafts]
               .sort(
-                (left, right) =>
-                  Number(isRecommendedPlan(right)) - Number(isRecommendedPlan(left))
+                (left, right) => Number(isRecommendedPlan(right)) - Number(isRecommendedPlan(left))
               )
               .map((draft) => {
                 const lines = selectedLines(draft);
                 const units = unitCount(lines);
                 const recommendedPlan = isRecommendedPlan(draft);
                 return (
-                <article
-                  className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
-                  key={draft.id}
-                >
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-semibold text-slate-950">
-                        {draft.orderNumber}
-                      </p>
-                      {recommendedPlan ? (
-                        <Badge variant="info">Recommended inventory plan</Badge>
-                      ) : null}
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {lines.length.toLocaleString()} product{lines.length === 1 ? "" : "s"} ·{" "}
-                      {units.toLocaleString()} units
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => setSelectedDraft(draft)}
-                    size="sm"
-                    type="button"
-                    variant="secondary"
+                  <article
+                    className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                    key={draft.id}
                   >
-                    {recommendedPlan ? "Review recommended plan" : "Review draft"}
-                  </Button>
-                </article>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-semibold text-slate-950">
+                          {draft.orderNumber}
+                        </p>
+                        {recommendedPlan ? (
+                          <Badge variant="info">Recommended inventory plan</Badge>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {lines.length.toLocaleString()} product{lines.length === 1 ? "" : "s"} ·{" "}
+                        {units.toLocaleString()} units
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => setSelectedDraft(draft)}
+                      size="sm"
+                      type="button"
+                      variant="secondary"
+                    >
+                      {recommendedPlan ? "Review recommended plan" : "Review draft"}
+                    </Button>
+                  </article>
                 );
               })}
           </div>

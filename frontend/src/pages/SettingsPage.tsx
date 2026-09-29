@@ -238,8 +238,8 @@ export function SettingsPage() {
             <div>
               <CardTitle>Data integrity</CardTitle>
               <p className="mt-1 text-sm text-slate-500">
-                Technical synchronization status is kept here so the Dashboard can stay focused
-                on owner decisions.
+                Technical synchronization status is kept here so the Dashboard can stay focused on
+                owner decisions.
               </p>
             </div>
             <ServerCog className="h-5 w-5 text-slate-500" aria-hidden="true" />

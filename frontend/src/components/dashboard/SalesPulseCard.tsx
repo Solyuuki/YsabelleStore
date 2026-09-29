@@ -396,7 +396,9 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                   />
                   <MiniMetric
                     label="Forecast target"
-                    value={detail?.targetAmount ? formatCurrency(detail.targetAmount) : "Unavailable"}
+                    value={
+                      detail?.targetAmount ? formatCurrency(detail.targetAmount) : "Unavailable"
+                    }
                   />
                   <MiniMetric
                     label="Transactions"
@@ -490,7 +492,9 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               <div className="rounded-xl border border-slate-200 bg-white p-4">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">{formatDay(selectedDate)}</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {formatDay(selectedDate)}
+                    </p>
                     <p className="mt-1 text-xs text-slate-500">
                       Completed-sale revenue across 2-hour Manila windows.
                     </p>
@@ -631,7 +635,9 @@ function PerformanceSignal({ detail }: { detail: DashboardSalesDayDetail | null 
           </div>
           <div className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
             <span className="text-slate-400">Forecast target</span>
-            <strong className="mt-1 block text-slate-900">{formatCurrency(detail.targetAmount)}</strong>
+            <strong className="mt-1 block text-slate-900">
+              {formatCurrency(detail.targetAmount)}
+            </strong>
           </div>
         </div>
       ) : null}

@@ -22,13 +22,11 @@ export type RecommenderAssistantResult = {
 };
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
-let cached:
-  | {
-      expiresAt: number;
-      key: string;
-      value: RecommenderAssistantResult;
-    }
-  | null = null;
+let cached: {
+  expiresAt: number;
+  key: string;
+  value: RecommenderAssistantResult;
+} | null = null;
 
 export async function buildRecommenderAssistant(
   evidence: RecommenderAssistantEvidence[]
@@ -175,10 +173,7 @@ function deterministicSummary(evidence: RecommenderAssistantEvidence[]) {
     return "No inventory recommendation currently requires owner action. Forecast demand is covered by the present replenishment policy.";
   }
 
-  const totalUnits = evidence.reduce(
-    (sum, item) => sum + Math.max(0, item.recommendedQuantity),
-    0
-  );
+  const totalUnits = evidence.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0);
   const critical = evidence.filter((item) => item.riskLevel === "CRITICAL").length;
   const high = evidence.filter((item) => item.riskLevel === "HIGH").length;
   const top = evidence[0]!;
