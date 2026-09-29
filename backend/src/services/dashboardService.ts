@@ -539,3 +539,4 @@ async function getDashboardForecast(role: UserRole): Promise<DashboardForecastSu
     };
   }
 }
+
