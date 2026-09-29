@@ -566,12 +566,12 @@ export async function listStorefrontProductReviews(
     prisma.productReview.aggregate({
       _avg: { rating: true },
       _count: { _all: true },
-      where: { productId }
+      where: { productId, status: "VISIBLE" }
     }),
     prisma.productReview.groupBy({
       _count: { _all: true },
       by: ["rating"],
-      where: { productId }
+      where: { productId, status: "VISIBLE" }
     }),
     prisma.productReview.findMany({
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
