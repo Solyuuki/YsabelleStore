@@ -63,7 +63,7 @@ export function ReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
-  const [draftsOpen, setDraftsOpen] = useState(false);
+  const [draftsOpen, setDraftsOpen] = useState(true);
   const [restockOrdersRefreshVersion, setRestockOrdersRefreshVersion] = useState(0);
   const restockDraftsRef = useRef<HTMLDivElement | null>(null);
 

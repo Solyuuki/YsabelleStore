@@ -18,12 +18,12 @@ test("restock UI uses backend planning data without localhost QA", () => {
   assert.equal(restockApiSource.includes("items: response.data"), true);
 });
 
-test("automation consumes actionable operational restock planning instead of forecast batches", () => {
+test("automation consumes the unified restock planning result without reading forecast persistence directly", () => {
   assert.match(automationSource, /listRestockPlanningCandidates/);
   assert.match(automationSource, /includeZero: false/);
   assert.equal(automationSource.includes("candidate.forecast?.batchId"), false);
   assert.equal(automationSource.includes("forecastBatchCache"), false);
-  assert.equal(automationSource.includes('recommendationSource: "SARIMA"'), false);
+  assert.match(automationSource, /RestockRecommendationSource\.SARIMA/);
   assert.match(
     automationSource,
     /candidate\.recommendationSource !== RestockRecommendationSource\.LOW_STOCK/
@@ -34,7 +34,8 @@ test("automation consumes actionable operational restock planning instead of for
   );
 });
 
-test("owner demand forecast persistence does not trigger restock ticket generation", () => {
+test("forecast persistence synchronizes forecast-derived sales targets without directly creating restock tickets", () => {
+  assert.match(forecastPersistenceSource, /ensureForecastDerivedSalesTargets/);
   assert.equal(forecastPersistenceSource.includes("ensureForecastRestockTicket"), false);
   assert.equal(forecastPersistenceSource.includes("restockAutomationService"), false);
 });
@@ -51,4 +52,12 @@ test("operational automation preserves monthly duplicate and lifecycle safeguard
   assert.equal(automationSource.includes("RestockOrderStatus.RECEIVED"), true);
   assert.match(automationSource, /AutomatedRestockMonth:/);
   assert.match(automationSource, /AutomatedRestock:/);
+});
+
+
+test("automated monthly restock stays as an owner-review draft until explicit approval", () => {
+  assert.equal(automationSource.includes("approveRestockOrder"), false);
+  assert.match(automationSource, /Owner approval is required before Receiving/);
+  assert.match(automationSource, /RestockOrderStatus\.DRAFT/);
+  assert.match(automationSource, /recommended inventory plan/i);
 });

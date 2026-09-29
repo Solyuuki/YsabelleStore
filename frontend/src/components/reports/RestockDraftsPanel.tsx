@@ -29,6 +29,13 @@ function unitCount(lines: RestockOrderLine[]) {
   return lines.reduce((sum, line) => sum + line.requestedQuantity, 0);
 }
 
+function isRecommendedPlan(order: RestockOrder) {
+  return (
+    order.notes?.includes("[AutomatedRestockMonth:") === true ||
+    order.notes?.includes("[AutomatedRestock:") === true
+  );
+}
+
 export function RestockDraftsPanel({
   refreshVersion = 0,
   onDraftConfirmed
@@ -99,11 +106,11 @@ export function RestockDraftsPanel({
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <CardTitle>Saved restock drafts</CardTitle>
+                <CardTitle>Recommended & saved restock plans</CardTitle>
                 <Badge>{total.toLocaleString()} saved</Badge>
               </div>
               <p className="mt-1 text-xs text-slate-500">
-                Drafts stay in Reports. Once confirmed, the restock ticket moves to Receiving.
+                Forecast-driven plans wait here for one owner approval. Manual drafts remain available for later review.
               </p>
             </div>
             <Button
@@ -144,18 +151,24 @@ export function RestockDraftsPanel({
           ) : null}
 
           <div className="space-y-2">
-            {drafts.map((draft) => {
+            {[...drafts]
+              .sort((left, right) => Number(isRecommendedPlan(right)) - Number(isRecommendedPlan(left)))
+              .map((draft) => {
               const lines = selectedLines(draft);
               const units = unitCount(lines);
+              const recommendedPlan = isRecommendedPlan(draft);
               return (
                 <article
                   className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
                   key={draft.id}
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-950">
-                      {draft.orderNumber}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-sm font-semibold text-slate-950">
+                        {draft.orderNumber}
+                      </p>
+                      {recommendedPlan ? <Badge variant="info">Recommended inventory plan</Badge> : null}
+                    </div>
                     <p className="mt-1 text-xs text-slate-500">
                       {lines.length.toLocaleString()} product{lines.length === 1 ? "" : "s"} ·{" "}
                       {units.toLocaleString()} units
@@ -167,7 +180,7 @@ export function RestockDraftsPanel({
                     type="button"
                     variant="secondary"
                   >
-                    Review draft
+                    {recommendedPlan ? "Review recommended plan" : "Review draft"}
                   </Button>
                 </article>
               );
@@ -195,8 +208,9 @@ export function RestockDraftsPanel({
               <DialogHeader>
                 <DialogTitle>{selectedDraft.orderNumber}</DialogTitle>
                 <DialogDescription>
-                  Confirming this draft creates the incoming restock ticket. Physical stock still
-                  does not change until Receiving.
+                  {isRecommendedPlan(selectedDraft)
+                    ? "Approve the complete forecast-driven plan once. It then moves to Receiving; physical stock does not change until delivery is accepted."
+                    : "Confirming this draft creates the incoming restock ticket. Physical stock still does not change until Receiving."}
                 </DialogDescription>
               </DialogHeader>
 
@@ -229,7 +243,11 @@ export function RestockDraftsPanel({
                   {confirming ? (
                     <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
                   ) : null}
-                  {confirming ? "Confirming…" : "Confirm & send to Receiving"}
+                  {confirming
+                    ? "Confirming…"
+                    : isRecommendedPlan(selectedDraft)
+                      ? "Approve Recommended Plan"
+                      : "Confirm & send to Receiving"}
                 </Button>
               </DialogFooter>
             </>
