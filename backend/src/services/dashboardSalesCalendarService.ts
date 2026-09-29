@@ -155,7 +155,6 @@ export async function getDashboardSalesDay(
   date: string,
   now = new Date()
 ): Promise<DashboardSalesDayDetail> {
-  await ensureForecastDerivedSalesTargets(now);
   assertValidDateKey(date);
   const start = manilaDayStart(date);
   const end = new Date(start.getTime() + DAY_MS);
