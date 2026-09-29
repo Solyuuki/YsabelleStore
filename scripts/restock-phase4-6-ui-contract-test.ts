@@ -33,14 +33,14 @@ const directPdfSource = readFileSync(
   "utf8"
 );
 
-// Reports continuously shows the operational forecast and editable planner.
-// Saved drafts stay opt-in, while confirmed tickets hand off to Receiving.
+// Reports continuously shows the operational forecast, editable planner, and owner-review queue.
+// Forecast-driven plans are visible by default so one owner approval can hand them off to Receiving.
 assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(reportsSource, /RestockPlanningPanel/);
 assert.match(reportsSource, /RestockDraftsPanel/);
 assert.doesNotMatch(reportsSource, /RestockOrderHistoryPanel/);
 assert.doesNotMatch(reportsSource, /RestockReceivingPanel/);
-assert.match(reportsSource, /const \[draftsOpen, setDraftsOpen\] = useState\(false\)/);
+assert.match(reportsSource, /const \[draftsOpen, setDraftsOpen\] = useState\(true\)/);
 assert.match(reportsSource, /function openRestockDrafts\(\)/);
 assert.match(reportsSource, /function toggleRestockDrafts\(\)/);
 assert.match(reportsSource, /forecast-driven restocking/);
@@ -104,8 +104,10 @@ assert.match(panelSource, /max-h-\[50vh\]/);
 assert.match(panelSource, /Results stay paged so large catalogs do not stretch/);
 assert.doesNotMatch(panelSource, /searchResults\.slice\(0, 8\)/);
 
-// Saved drafts remain recoverable in Reports; confirmation explicitly hands the ticket to Receiving.
-assert.match(draftsSource, /Saved restock drafts/);
+// Recommended plans and manual drafts remain recoverable in Reports; owner approval hands the ticket to Receiving.
+assert.match(draftsSource, /Recommended & saved restock plans/);
+assert.match(draftsSource, /Recommended inventory plan/);
+assert.match(draftsSource, /Approve Recommended Plan/);
 assert.match(draftsSource, /status: "DRAFT"/);
 assert.match(draftsSource, /Review draft/);
 assert.match(draftsSource, /Confirm & send to Receiving/);
