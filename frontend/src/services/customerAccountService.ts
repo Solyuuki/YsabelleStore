@@ -1,5 +1,6 @@
 import { apiClient } from "@/services/apiClient";
 import type { CustomerAuthErrorPayload } from "@/types/customerAuth";
+import type { StorefrontFavoriteProduct } from "@/types/storefront";
 import type {
   CustomerAccountCustomerResponse,
   CustomerPasswordChangeInput,
@@ -90,5 +91,27 @@ export async function revokeOtherCustomerSessions(currentPassword: string) {
       method: "POST",
       json: { currentPassword }
     }
+  );
+}
+
+
+export async function fetchCustomerFavorites(signal?: AbortSignal) {
+  return request<StorefrontFavoriteProduct[]>("/api/customer-account/favorites", {
+    method: "GET",
+    signal
+  });
+}
+
+export async function addCustomerFavorite(productId: string) {
+  return request<{ productId: string; favorited: true }>(
+    `/api/customer-account/favorites/${encodeURIComponent(productId)}`,
+    { method: "PUT" }
+  );
+}
+
+export async function removeCustomerFavorite(productId: string) {
+  return request<{ productId: string; favorited: false }>(
+    `/api/customer-account/favorites/${encodeURIComponent(productId)}`,
+    { method: "DELETE" }
   );
 }
