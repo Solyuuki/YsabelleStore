@@ -354,6 +354,7 @@ model User {
   createdSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetCreatedBy")
   updatedSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetUpdatedBy")
   moderatedProductReviews  ProductReview[]               @relation("ProductReviewModeratedBy")
+  customerModerationAudits CustomerModerationAudit[]      @relation("CustomerModerationAuditActor")
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
@@ -1375,6 +1376,25 @@ model RestockOrderLine {
   @@index([recommendationId], map: "idx_restock_order_lines_recommendation")
   @@index([restockOrderId, isSelected], map: "idx_restock_order_lines_order_selected")
   @@map("restock_order_lines")
+}
+
+
+model CustomerModerationAudit {
+  id                String   @id @default(cuid()) @db.VarChar(191)
+  actorUserId       String   @map("actor_user_id") @db.VarChar(191)
+  customerAccountId String?  @map("customer_account_id") @db.VarChar(191)
+  productReviewId   String?  @map("product_review_id") @db.VarChar(191)
+  action            String   @db.VarChar(80)
+  reason            String   @db.VarChar(500)
+  previousState     String?  @map("previous_state") @db.VarChar(80)
+  nextState         String?  @map("next_state") @db.VarChar(80)
+  createdAt         DateTime @default(now()) @map("created_at")
+  actor             User     @relation("CustomerModerationAuditActor", fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([customerAccountId, createdAt], map: "idx_customer_moderation_customer_created")
+  @@index([productReviewId, createdAt], map: "idx_customer_moderation_review_created")
+  @@index([actorUserId, createdAt], map: "idx_customer_moderation_actor_created")
+  @@map("customer_moderation_audits")
 }
 
 model SystemCanonicalState {

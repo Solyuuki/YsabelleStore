@@ -48,6 +48,27 @@ ALTER TABLE `customer_favorites`
   FOREIGN KEY (`product_id`) REFERENCES `products`(`id`)
   ON DELETE CASCADE ON UPDATE CASCADE;
 
+CREATE TABLE `customer_moderation_audits` (
+  `id` VARCHAR(191) NOT NULL,
+  `actor_user_id` VARCHAR(191) NOT NULL,
+  `customer_account_id` VARCHAR(191) NULL,
+  `product_review_id` VARCHAR(191) NULL,
+  `action` VARCHAR(80) NOT NULL,
+  `reason` VARCHAR(500) NOT NULL,
+  `previous_state` VARCHAR(80) NULL,
+  `next_state` VARCHAR(80) NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  INDEX `idx_customer_moderation_customer_created`(`customer_account_id`, `created_at`),
+  INDEX `idx_customer_moderation_review_created`(`product_review_id`, `created_at`),
+  INDEX `idx_customer_moderation_actor_created`(`actor_user_id`, `created_at`),
+  PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE `customer_moderation_audits`
+  ADD CONSTRAINT `fk_customer_moderation_actor`
+  FOREIGN KEY (`actor_user_id`) REFERENCES `users`(`id`)
+  ON DELETE RESTRICT ON UPDATE CASCADE;
+
 UPDATE `system_canonical_state`
 SET `schema_version` = 6,
     `release_id` = 'g2-s6-c5-a2'
