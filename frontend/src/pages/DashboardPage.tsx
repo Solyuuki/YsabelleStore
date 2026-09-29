@@ -444,8 +444,8 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
             ))}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
               <p className="text-xs text-slate-500">
-                {operations.restock.suggestedUnits.toLocaleString()} total suggested units across
-                the active queue.
+                {operations.restock.suggestedUnits.toLocaleString()} suggested replenishment units ·{" "}
+                {operations.restock.actionableProducts.toLocaleString()} total inventory actions.
               </p>
               <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
                 <ClipboardList className="h-4 w-4" />
@@ -500,10 +500,14 @@ function RestockActionCard({ action }: { action: DashboardRestockAction }) {
         </div>
         <div className="rounded-lg bg-white px-3 py-2 text-right ring-1 ring-violet-100">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
-            Suggested
+            {action.actionType === "RESTOCK" ? "Suggested" : "Action"}
           </p>
-          <p className="mt-0.5 text-lg font-semibold text-slate-950">
-            {action.recommendedQuantity.toLocaleString()} units
+          <p className="mt-0.5 text-sm font-semibold text-slate-950">
+            {action.actionType === "RESTOCK"
+              ? `${action.recommendedQuantity.toLocaleString()} units`
+              : action.actionType === "EXPIRY_REVIEW"
+                ? "Review expiry"
+                : "Reduce replenishment"}
           </p>
         </div>
       </div>

@@ -77,8 +77,10 @@ export type DashboardSummary = {
 };
 
 export type DashboardRestockRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type DashboardRecommendationAction = "RESTOCK" | "REDUCE_REPLENISHMENT" | "EXPIRY_REVIEW";
 
 export type DashboardRestockAction = {
+  actionType: DashboardRecommendationAction;
   expiryRiskQuantity: number;
   incomingStock: number;
   product: {
@@ -289,7 +291,7 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     latestOpenOrder
   ] = await Promise.all([
     listRestockPlanningCandidates({
-      includeZero: false,
+      includeZero: true,
       page: 1,
       pageSize: DASHBOARD_PLANNING_PAGE_SIZE
     }),
@@ -338,28 +340,53 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     OVERSTOCK: 3
   };
 
-  const actions = planning.items.map((candidate): DashboardRestockAction => {
-    const riskLevel = candidate.forecastDecision?.riskLevel ?? "LOW";
-    riskCounts[riskLevel] += 1;
+  const actions = planning.items
+    .filter(
+      (candidate) =>
+        candidate.recommendedQuantity > 0 ||
+        candidate.stockHealth.status === "OVERSTOCK" ||
+        candidate.expiryRiskQuantity > 0
+    )
+    .map((candidate): DashboardRestockAction => {
+      const actionType: DashboardRecommendationAction =
+        candidate.recommendedQuantity > 0
+          ? "RESTOCK"
+          : candidate.expiryRiskQuantity > 0
+            ? "EXPIRY_REVIEW"
+            : "REDUCE_REPLENISHMENT";
+      const riskLevel: DashboardRestockRisk =
+        actionType === "EXPIRY_REVIEW"
+          ? "HIGH"
+          : actionType === "REDUCE_REPLENISHMENT"
+            ? "MEDIUM"
+            : (candidate.forecastDecision?.riskLevel ?? "LOW");
+      riskCounts[riskLevel] += 1;
+      const rationale =
+        actionType === "REDUCE_REPLENISHMENT"
+          ? `${candidate.stockHealth.reason} Reduce or pause the next replenishment until stock coverage returns to the normal range.`
+          : actionType === "EXPIRY_REVIEW"
+            ? `${candidate.expiryRiskQuantity.toLocaleString()} sellable unit(s) are within the near-expiry window. Review existing stock before adding more supply.`
+            : candidate.rationale;
 
-    return {
-      expiryRiskQuantity: candidate.expiryRiskQuantity,
-      incomingStock: candidate.incomingStock,
-      product: {
-        id: candidate.product.id,
-        name: candidate.product.name,
-        sku: candidate.product.sku
-      },
-      projectedStockoutDate: candidate.forecastDecision?.projectedStockoutDate ?? null,
-      rationale: candidate.rationale,
-      recommendationSource: candidate.recommendationSource,
-      recommendedActionDate: candidate.forecastDecision?.recommendedActionDate ?? null,
-      recommendedQuantity: candidate.recommendedQuantity,
-      riskLevel,
-      sellableStock: candidate.sellableStock,
-      stockHealth: candidate.stockHealth.status
-    };
-  });
+      return {
+        actionType,
+        expiryRiskQuantity: candidate.expiryRiskQuantity,
+        incomingStock: candidate.incomingStock,
+        product: {
+          id: candidate.product.id,
+          name: candidate.product.name,
+          sku: candidate.product.sku
+        },
+        projectedStockoutDate: candidate.forecastDecision?.projectedStockoutDate ?? null,
+        rationale,
+        recommendationSource: candidate.recommendationSource,
+        recommendedActionDate: candidate.forecastDecision?.recommendedActionDate ?? null,
+        recommendedQuantity: candidate.recommendedQuantity,
+        riskLevel,
+        sellableStock: candidate.sellableStock,
+        stockHealth: candidate.stockHealth.status
+      };
+    });
 
   actions.sort((left, right) => {
     const riskDifference = riskPriority[left.riskLevel] - riskPriority[right.riskLevel];
@@ -388,6 +415,7 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
   const visibleActions = actions.slice(0, DASHBOARD_ACTION_LIMIT);
   const assistant = await buildRecommenderAssistant(
     visibleActions.map((action) => ({
+      actionType: action.actionType,
       expiryRiskQuantity: action.expiryRiskQuantity,
       incomingStock: action.incomingStock,
       productName: action.product.name,
@@ -404,7 +432,7 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     assistant,
     generatedAt: now.toISOString(),
     restock: {
-      actionableProducts: planning.meta.totalItems,
+      actionableProducts: actions.length,
       actions: visibleActions,
       latestOpenOrder: latestOpenOrder
         ? {
@@ -430,8 +458,8 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
         totalOpen
       },
       risk: riskCounts,
-      suggestedUnits: planning.items.reduce(
-        (sum, candidate) => sum + Math.max(0, candidate.recommendedQuantity),
+      suggestedUnits: actions.reduce(
+        (sum, action) => sum + Math.max(0, action.recommendedQuantity),
         0
       )
     }

@@ -3,6 +3,7 @@ import { env } from "../config/env.js";
 export type RecommenderAssistantProvider = "CLOUDFLARE" | "GROQ" | "DETERMINISTIC";
 
 export type RecommenderAssistantEvidence = {
+  actionType: "RESTOCK" | "REDUCE_REPLENISHMENT" | "EXPIRY_REVIEW";
   expiryRiskQuantity: number;
   incomingStock: number;
   productName: string;
@@ -188,7 +189,8 @@ function deterministicSummary(evidence: RecommenderAssistantEvidence[]) {
         ? `${high} high-priority`
         : `${evidence.length} active`;
 
-  return `${priority} inventory recommendation${evidence.length === 1 ? "" : "s"} require review, covering ${totalUnits.toLocaleString()} suggested unit${totalUnits === 1 ? "" : "s"}. Highest priority: ${top.productName} — ${top.rationale}`;
+  const unitSummary = totalUnits > 0 ? `, including ${totalUnits.toLocaleString()} suggested replenishment unit${totalUnits === 1 ? "" : "s"}` : "";
+  return `${priority} inventory recommendation${evidence.length === 1 ? "" : "s"} require review${unitSummary}. Highest priority: ${top.productName} — ${top.rationale}`;
 }
 
 function sanitizeSummary(value: string) {

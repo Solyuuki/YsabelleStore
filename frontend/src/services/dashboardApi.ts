@@ -83,6 +83,7 @@ export type DashboardSummary = {
 };
 
 export type DashboardRestockRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type DashboardRecommendationAction = "RESTOCK" | "REDUCE_REPLENISHMENT" | "EXPIRY_REVIEW";
 export type DashboardRestockOrderStatus =
   | "DRAFT"
   | "APPROVED"
@@ -97,6 +98,7 @@ export type DashboardRestockRecommendationSource =
   | "MANUAL";
 
 export type DashboardRestockAction = {
+  actionType: DashboardRecommendationAction;
   expiryRiskQuantity: number;
   incomingStock: number;
   product: {

@@ -85,6 +85,13 @@ export function operationalPerformance(snapshot: InternalReportSnapshot) {
   };
 }
 
+function recommendationAction(item: RestockPlanningCandidate) {
+  if (item.recommendedQuantity > 0) return `Restock ${item.recommendedQuantity.toLocaleString()} unit(s)`;
+  if (item.expiryRiskQuantity > 0) return "Review near-expiry stock";
+  if (item.stockHealth.status === "OVERSTOCK") return "Reduce or pause replenishment";
+  return "Monitor";
+}
+
 function percentage(value: number | null) {
   return value === null ? "N/A" : `${value.toFixed(1)}%`;
 }
@@ -184,14 +191,14 @@ export function downloadOperationalSummaryCsv(snapshot: InternalReportSnapshot) 
     rows.push(
       [],
       ["INVENTORY RECOMMENDER", ""],
-      ["Product", "Source", "Risk", "Recommended units", "Recommendation"]
+      ["Product", "Source", "Risk", "Recommended action", "Evidence"]
     );
     for (const recommendation of recommendations) {
       rows.push([
         recommendation.product.name,
         recommendation.recommendationSource,
         recommendation.forecastDecision?.riskLevel ?? "LOW",
-        recommendation.recommendedQuantity,
+        recommendationAction(recommendation),
         recommendation.rationale
       ]);
     }
@@ -324,7 +331,7 @@ export function printOperationalSummary(printWindow: Window, snapshot: InternalR
         (item) =>
           `<div class="status"><strong>${escapeHtml(item.product.name)} — ${escapeHtml(
             item.forecastDecision?.riskLevel ?? "LOW"
-          )}</strong>${escapeHtml(item.rationale)} Recommended: ${item.recommendedQuantity.toLocaleString()} unit(s).</div>`
+          )}</strong>${escapeHtml(item.rationale)} Action: ${escapeHtml(recommendationAction(item))}.</div>`
       )
       .join("")}
   </section>`

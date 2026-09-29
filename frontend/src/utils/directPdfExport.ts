@@ -236,10 +236,16 @@ export function downloadOperationalSummaryPdf(snapshot: InternalReportSnapshot) 
           item.product.name,
           item.recommendationSource,
           item.forecastDecision?.riskLevel ?? "LOW",
-          item.recommendedQuantity.toLocaleString(),
+          item.recommendedQuantity > 0
+            ? `Restock ${item.recommendedQuantity.toLocaleString()}`
+            : item.expiryRiskQuantity > 0
+              ? "Review expiry"
+              : item.stockHealth.status === "OVERSTOCK"
+                ? "Reduce replenishment"
+                : "Monitor",
           item.rationale
         ]),
-        head: [["Product", "Source", "Risk", "Units", "Recommendation"]],
+        head: [["Product", "Source", "Risk", "Action", "Evidence"]],
         headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105] },
         margin: { left: margin, right: margin },
         startY: nextY,

@@ -200,13 +200,20 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
     const [inventory, salesCalendar, recommendationResult] = await Promise.all([
       inventoryPromise,
       fetchDashboardSalesCalendar(operationalMonth),
-      listRestockPlanning({ includeZero: false, page: 1, pageSize: 8 })
+      listRestockPlanning({ includeZero: true, page: 1, pageSize: 100 })
     ]);
 
     return {
       completedSales,
       inventory,
-      recommendations: recommendationResult.items,
+      recommendations: recommendationResult.items
+        .filter(
+          (item) =>
+            item.recommendedQuantity > 0 ||
+            item.stockHealth.status === "OVERSTOCK" ||
+            item.expiryRiskQuantity > 0
+        )
+        .slice(0, 8),
       salesCalendar,
       summary
     };
