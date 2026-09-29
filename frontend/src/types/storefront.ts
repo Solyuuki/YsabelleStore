@@ -67,6 +67,7 @@ export type StorefrontProductReview = {
   rating: number;
   comment: string;
   createdAt: string;
+  verifiedPurchase: boolean;
 };
 
 export type StorefrontProductReviews = {
@@ -93,6 +94,9 @@ export type StorefrontMerchandisingEntry = {
   product: StorefrontProduct;
   rank: number;
   unitsSold: number;
+  trendingScore: number;
+  recentReviewCount: number;
+  favoriteCount: number;
 };
 
 export type StorefrontMerchandising = {
@@ -100,6 +104,34 @@ export type StorefrontMerchandising = {
   generatedAt: string;
   trending: StorefrontMerchandisingEntry[];
   trendingWindowDays: number;
+};
+
+export type StorefrontFavoriteProduct = StorefrontProduct & {
+  favoritedAt: string;
+};
+
+export type StorefrontReviewContext = {
+  eligible: boolean;
+  reason: string | null;
+  verifiedOrder: {
+    id: string;
+    orderNumber: string;
+    completedAt: string;
+  } | null;
+  review: {
+    id: string;
+    rating: number;
+    comment: string;
+    status: "VISIBLE" | "HIDDEN" | "REMOVED";
+    createdAt: string;
+    updatedAt: string;
+    verifiedPurchase: boolean;
+  } | null;
+};
+
+export type StorefrontReviewInput = {
+  rating: number;
+  comment: string;
 };
 
 export type StorefrontOrder = {
