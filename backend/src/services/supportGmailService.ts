@@ -431,7 +431,7 @@ export async function deliverStaffSupportMessageEmail(messageId: string) {
       ticketNumber: message.ticket.ticketNumber,
       subject: message.ticket.subject,
       body: message.body,
-      threadId: message.ticket.gmailThreadId,
+      threadId: message.matchedTicket.gmailThreadId,
       replyToGmailMessageId: previousGmailMessage?.gmailMessageId ?? null
     });
     const sentAt = new Date();
@@ -525,6 +525,7 @@ export async function syncSupportGmailInboxWithClient(
       continue;
     }
 
+    const matchedTicket = ticket;
     const body = decodeMessageBody(message.payload) ?? message.snippet?.trim() ?? "";
     if (!body) {
       skipped += 1;
@@ -532,17 +533,17 @@ export async function syncSupportGmailInboxWithClient(
     }
 
     const activityAt = messageActivityAt(message, now);
-    const lastMessageAt = activityAt > ticket.lastMessageAt ? activityAt : ticket.lastMessageAt;
+    const lastMessageAt = activityAt > matchedTicket.lastMessageAt ? activityAt : matchedTicket.lastMessageAt;
     const lastCustomerMessageAt =
-      !ticket.lastCustomerMessageAt || activityAt > ticket.lastCustomerMessageAt
+      !matchedTicket.lastCustomerMessageAt || activityAt > matchedTicket.lastCustomerMessageAt
         ? activityAt
-        : ticket.lastCustomerMessageAt;
+        : matchedTicket.lastCustomerMessageAt;
 
     try {
       await prisma.$transaction(async (tx) => {
         await tx.supportMessage.create({
           data: {
-            ticketId: ticket.id,
+            ticketId: matchedTicket.id,
             senderType: "CUSTOMER",
             channel: "EMAIL",
             senderName: extractDisplayName(fromHeader, senderEmail),
@@ -557,14 +558,14 @@ export async function syncSupportGmailInboxWithClient(
 
         await tx.supportTicket.update({
           data: {
-            gmailThreadId: ticket.gmailThreadId ?? gmailThreadId,
+            gmailThreadId: matchedTicket.gmailThreadId ?? gmailThreadId,
             status: "OPEN",
             lastMessageAt,
             lastCustomerMessageAt,
             resolvedAt: null,
             closedAt: null
           },
-          where: { id: ticket.id }
+          where: { id: matchedTicket.id }
         });
       });
       imported += 1;

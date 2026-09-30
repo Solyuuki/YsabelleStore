@@ -213,9 +213,6 @@ export function CustomerSupportInboxPage() {
     try {
       const result = await syncSupportGmail();
       setReloadKey((value) => value + 1);
-      if (result.imported === 0) {
-        setError("Gmail sync completed. No new customer replies were found.");
-      }
     } catch (reason) {
       setError(supportError(reason, "Gmail inbox could not be synchronized."));
     } finally {

@@ -22,6 +22,11 @@ const optionalNonEmptyString = z.preprocess(
   z.string().min(1).optional()
 );
 
+const optionalEmail = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.string().email().optional()
+);
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(3001),
@@ -38,7 +43,7 @@ const envSchema = z.object({
   CUSTOMER_OAUTH_TRANSACTION_KEY: z.string().min(32).optional(),
   GOOGLE_OAUTH_CLIENT_ID: optionalNonEmptyString,
   GOOGLE_OAUTH_CLIENT_SECRET: optionalNonEmptyString,
-  CUSTOMER_SUPPORT_EMAIL: z.string().email().optional(),
+  CUSTOMER_SUPPORT_EMAIL: optionalEmail,
   CUSTOMER_SUPPORT_FROM_NAME: z.string().trim().min(1).max(120).default("Ysabelle Store Customer Support"),
   GOOGLE_GMAIL_REFRESH_TOKEN: optionalNonEmptyString,
   FACEBOOK_OAUTH_APP_ID: optionalNonEmptyString,
