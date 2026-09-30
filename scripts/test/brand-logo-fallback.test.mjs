@@ -6,7 +6,7 @@ async function source(path) {
   return readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 }
 
-test("brand components use only the bundled approved circular Ysabelle logo", async () => {
+test("brand components use only the approved circular Ysabelle logo", async () => {
   const [brandLogo, customerMark, header, footer, sidebar, statusScreen, styles] =
     await Promise.all([
       source("frontend/src/components/brand/BrandLogo.tsx"),
@@ -22,21 +22,40 @@ test("brand components use only the bundled approved circular Ysabelle logo", as
     brandLogo,
     /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
   );
-  assert.match(brandLogo, /src=\{officialLogoUrl\}/);
-  assert.doesNotMatch(brandLogo, /WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC|<svg[\s>]/);
+  assert.match(
+    brandLogo,
+    /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/
+  );
+  assert.match(brandLogo, /\? officialLogoUrl\s*:\s*WEB_BRAND_MARK_SRC/);
+  assert.match(brandLogo, /src=\{source\}/);
+  assert.doesNotMatch(brandLogo, /<svg[\s>]/);
+  assert.doesNotMatch(brandLogo, /M18 21h28|#625bff|#008cff/);
 
-  assert.match(customerMark, /favicon-48x48\.png/);
-  assert.match(customerMark, /apple-touch-icon\.png/);
-  assert.match(customerMark, /new URL\(relativeSource, document\.baseURI\)\.href/);
-  assert.doesNotMatch(customerMark, /officialLogoUrl|<BrandLogo|WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC/);
+  assert.match(
+    customerMark,
+    /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
+  );
+  assert.match(
+    customerMark,
+    /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/
+  );
+  assert.match(
+    customerMark,
+    /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/
+  );
+  assert.match(customerMark, /src=\{source\}/);
+  assert.doesNotMatch(customerMark, /<BrandLogo|\bStore\b/);
+  assert.doesNotMatch(customerMark, /ysabelle-brand-mark__fallback/);
 
   for (const consumer of [header, footer, sidebar]) {
     assert.match(consumer, /YsabelleBrandMark/);
   }
-
+  assert.match(statusScreen, /BrandLogo/);
+  assert.match(statusScreen, /variant !== "system"/);
   assert.match(statusScreen, /status-screen-main--system/);
   assert.doesNotMatch(statusScreen, /status-system-brand-mark/);
 
   assert.match(styles, /\.ysabelle-brand-mark[\s\S]*?background:\s*transparent/);
-  assert.doesNotMatch(styles, /ysabelle-brand-mark__fallback|--ysabelle-brand-fallback/);
+  assert.doesNotMatch(styles, /ysabelle-brand-mark__fallback/);
+  assert.doesNotMatch(styles, /--ysabelle-brand-fallback/);
 });

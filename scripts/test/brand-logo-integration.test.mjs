@@ -16,26 +16,28 @@ test("web shell uses cache-safe canonical Ysabelle favicon and touch icon assets
   assert.match(html, /<title>Ysabelle Store<\/title>/);
 });
 
-test("customer and staff brand marks use bundled official logo components", () => {
+test("customer and staff brand marks use shared bundled logo components", () => {
   const app = read("frontend/src/app/CustomerApp.tsx");
   const header = read("frontend/src/components/customer/CustomerHeader.tsx");
   const footer = read("frontend/src/components/customer/CustomerFooter.tsx");
   const sidebar = read("frontend/src/components/app/AppSidebar.tsx");
   const sharedCustomerMark = read("frontend/src/components/customer/YsabelleBrandMark.tsx");
-  const brandLogo = read("frontend/src/components/brand/BrandLogo.tsx");
 
   assert.match(app, /import "@\/styles\/brand\.css";/);
   assert.match(header, /YsabelleBrandMark/);
   assert.match(footer, /YsabelleBrandMark/);
   assert.match(sidebar, /YsabelleBrandMark/);
-  assert.match(sharedCustomerMark, /favicon-48x48\.png/);
-  assert.match(sharedCustomerMark, /apple-touch-icon\.png/);
-  assert.match(sharedCustomerMark, /src=\{source\}/);
   assert.match(
-    brandLogo,
+    sharedCustomerMark,
     /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
   );
-  assert.match(brandLogo, /src=\{officialLogoUrl\}/);
+  assert.match(
+    sharedCustomerMark,
+    /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/
+  );
+  assert.match(sharedCustomerMark, /src=\{source\}/);
+  assert.match(sharedCustomerMark, /\/brand\/ysabelle-store-mark-256\.png/);
+  assert.doesNotMatch(sharedCustomerMark, /<BrandLogo/);
   assert.doesNotMatch(sidebar, /\/brand\/ysabelle-logo-v2\.png/);
   assert.doesNotMatch(sidebar, />\s*YS\s*</);
 });
@@ -46,9 +48,10 @@ test("About story branding keeps the real Ysabelle mark without synthetic fallba
   const handoff = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
   const styles = read("frontend/src/styles/brand.css");
 
-  assert.match(brandMark, /favicon-48x48\.png/);
-  assert.match(brandMark, /apple-touch-icon\.png/);
-  assert.doesNotMatch(brandMark, /officialLogoUrl|ysabelle-brand-mark__fallback|\bStore\b|<BrandLogo/);
+  assert.match(brandMark, /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/);
+  assert.match(brandMark, /src=\{source\}/);
+  assert.match(brandMark, /\/brand\/ysabelle-store-mark-256\.png/);
+  assert.doesNotMatch(brandMark, /ysabelle-brand-mark__fallback|\bStore\b|<BrandLogo/);
   assert.match(discoverIdentity, /YsabelleBrandMark/);
   assert.match(handoff, /<YsabelleBrandMark variant="mini" \/>/);
   assert.match(styles, /background:\s*transparent/);

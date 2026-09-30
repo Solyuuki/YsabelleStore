@@ -1,25 +1,26 @@
+import officialLogoUrl from "@/assets/brand/ysabelle-logo-official.webp";
+
+const BRAND_ASSET_VERSION = "fullmark-2e25e00f";
+const WEB_BRAND_MARK_SRC = `/brand/ysabelle-store-mark-256.png?v=${BRAND_ASSET_VERSION}`;
+const WEB_BRAND_MARK_SRC_SET = [
+  `/brand/ysabelle-store-mark-128.png?v=${BRAND_ASSET_VERSION} 128w`,
+  `/brand/ysabelle-store-mark-256.png?v=${BRAND_ASSET_VERSION} 256w`
+].join(", ");
+
 type YsabelleBrandMarkProps = {
   className?: string;
   eager?: boolean;
   variant?: "compact" | "display" | "mini";
 };
 
-function resolvePublicBrandAsset(fileName: string) {
-  const relativeSource = `./brand/${fileName}`;
-  if (window.location.protocol === "file:") {
-    return new URL(relativeSource, document.baseURI).href;
-  }
-
-  return `/brand/${fileName}`;
-}
-
 export function YsabelleBrandMark({
   className = "",
   eager = false,
   variant = "compact"
 }: YsabelleBrandMarkProps) {
-  const fileName = variant === "display" ? "apple-touch-icon.png" : "favicon-48x48.png";
-  const source = resolvePublicBrandAsset(fileName);
+  const isFileProtocol = window.location.protocol === "file:";
+  const source = isFileProtocol ? officialLogoUrl : WEB_BRAND_MARK_SRC;
+  const sourceSet = isFileProtocol ? undefined : WEB_BRAND_MARK_SRC_SET;
 
   return (
     <span
@@ -31,10 +32,12 @@ export function YsabelleBrandMark({
         aria-hidden="true"
         className="ysabelle-brand-mark__image"
         decoding="async"
-        height={variant === "display" ? 180 : 48}
+        height={256}
         loading={eager ? "eager" : "lazy"}
+        sizes={variant === "display" ? "112px" : variant === "mini" ? "36px" : "48px"}
         src={source}
-        width={variant === "display" ? 180 : 48}
+        srcSet={sourceSet}
+        width={256}
       />
     </span>
   );
