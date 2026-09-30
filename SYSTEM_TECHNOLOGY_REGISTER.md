@@ -64,7 +64,7 @@ Dependency presence establishes a technical dependency, not automatically a user
 | `cors`            |                               `^2.8.5` | CORS middleware                                   |
 | `jsonwebtoken`    |                               `^9.0.2` | JWT support                                       |
 | `zod`             |                              `^3.24.1` | Request/domain validation                         |
-| `multer`          |                               `^2.3.0` | Multipart/upload handling                         |
+| `multer`          |                               `^2.4.0` | Multipart/upload handling                         |
 | `read-excel-file` |                               `^9.3.1` | Spreadsheet import parsing                        |
 | `jszip`           |                              `^3.10.2` | ZIP processing                                    |
 | `pdfjs-dist`      |                             `^6.3.289` | PDF parsing capability where used                 |
@@ -142,7 +142,7 @@ The route registry additionally distinguishes implemented and planned generic gr
 | Bundled UI              | Built frontend copied as Electron extra resource |
 | Release output          | `release/`                                       |
 
-The Electron package manifest declares Electron `^42.5.0`; the Electron Builder configuration explicitly sets `electronVersion: 42.8.1`. This discrepancy is documented rather than hidden and should be normalized before a production release if both values remain active.
+The Electron package manifest and Electron Builder configuration are aligned on the patched Electron 42.10.x line; the committed lockfile resolves Electron 42.10.0.
 
 ## 9. External Services
 

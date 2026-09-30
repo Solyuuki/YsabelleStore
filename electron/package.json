@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "electron": "^42.5.0"
+    "electron": "^42.10.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
