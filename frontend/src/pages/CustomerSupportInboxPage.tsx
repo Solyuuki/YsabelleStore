@@ -241,7 +241,14 @@ export function CustomerSupportInboxPage() {
 
   async function submitReply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!detail || replySaving || detail.status === "CLOSED") return;
+    if (
+      !detail ||
+      replySaving ||
+      detail.status === "CLOSED" ||
+      gmailStatus?.configured !== true
+    ) {
+      return;
+    }
 
     const message = reply.trim();
     if (!message) {
@@ -420,6 +427,7 @@ export function CustomerSupportInboxPage() {
           ) : detail ? (
             <SupportConversation
               detail={detail}
+              gmailConfigured={gmailStatus?.configured === true}
               onReplyChange={setReply}
               onReplySubmit={submitReply}
               onRetryEmail={(messageId) => void retryEmail(messageId)}
@@ -514,6 +522,7 @@ function TicketListItem({
 
 function SupportConversation({
   detail,
+  gmailConfigured,
   onReplyChange,
   onReplySubmit,
   onRetryEmail,
@@ -527,6 +536,7 @@ function SupportConversation({
   statusSaving
 }: {
   detail: StaffSupportTicketDetail;
+  gmailConfigured: boolean;
   onReplyChange: (value: string) => void;
   onReplySubmit: (event: FormEvent<HTMLFormElement>) => void;
   onRetryEmail: (messageId: string) => void;
@@ -620,30 +630,35 @@ function SupportConversation({
             <div>
               <p className="text-sm font-semibold text-slate-900">Staff reply</p>
               <p className="text-xs text-slate-500">
-                Connected Gmail replies are sent to the customer and kept in the same ticket thread.
-                Without Gmail configuration, replies stay local to the support workspace.
+                Staff replies are delivered through the connected Gmail mailbox and kept in the
+                ticket thread. Gmail must be connected before a customer reply can be sent.
               </p>
             </div>
             <span className="text-xs text-slate-400">{reply.length} / 5,000</span>
           </div>
           <Textarea
-            disabled={replySaving || detail.status === "CLOSED"}
+            disabled={replySaving || detail.status === "CLOSED" || !gmailConfigured}
             maxLength={5000}
             onChange={(event) => onReplyChange(event.target.value)}
             placeholder={
               detail.status === "CLOSED"
                 ? "Reopen this ticket before replying."
-                : "Write a clear response for this customer..."
+                : !gmailConfigured
+                  ? "Connect Gmail before sending customer replies."
+                  : "Write a clear response for this customer..."
             }
             rows={4}
             value={reply}
           />
           <div className="mt-3 flex items-center justify-between gap-3">
             <p className="text-xs text-slate-500">
-              Saving a reply moves the ticket to Waiting for customer.
+              Successful delivery moves the ticket to Waiting for customer. Failed delivery keeps
+              the ticket Open for follow-up.
             </p>
             <Button
-              disabled={replySaving || detail.status === "CLOSED" || !reply.trim()}
+              disabled={
+                replySaving || detail.status === "CLOSED" || !gmailConfigured || !reply.trim()
+              }
               type="submit"
             >
               <MessageSquareText className="h-4 w-4" aria-hidden="true" />

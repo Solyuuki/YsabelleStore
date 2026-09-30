@@ -8,8 +8,11 @@ const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
 const GMAIL_REQUEST_TIMEOUT_MS = 15_000;
 const GMAIL_SYNC_INTERVAL_MS = 60_000;
-const GMAIL_SYNC_MAX_RESULTS = 50;
+const GMAIL_SYNC_PAGE_SIZE = 50;
+const GMAIL_SYNC_MAX_MESSAGES = 200;
 const GMAIL_SYNC_QUERY_DAYS = 30;
+const GMAIL_ACCESS_TOKEN_REFRESH_SKEW_MS = 60_000;
+const SUPPORT_EMAIL_BODY_MAX_LENGTH = 5_000;
 const DELIVERY_ERROR_MESSAGE = "Gmail delivery failed. Retry is available.";
 const TICKET_REFERENCE_PATTERN = /\bYS-CS-\d{6}\b/i;
 
@@ -100,6 +103,14 @@ function isAutomatedTestRuntime() {
   return env.NODE_ENV === "test" || Boolean(process.env.NODE_TEST_CONTEXT);
 }
 
+export function isSupportGmailConfigured() {
+  return Boolean(runtimeConfiguration());
+}
+
+export function isSupportLocalReplyFallbackAllowed() {
+  return isAutomatedTestRuntime();
+}
+
 export function getSupportGmailStatus() {
   const configuration = runtimeConfiguration();
   return {
@@ -109,7 +120,7 @@ export function getSupportGmailStatus() {
 }
 
 export function isSupportGmailDeliveryEnabled() {
-  return Boolean(runtimeConfiguration()) && !isAutomatedTestRuntime();
+  return isSupportGmailConfigured() && !isAutomatedTestRuntime();
 }
 
 function supportGmailNotConfigured() {
@@ -223,6 +234,13 @@ function supportTicketNumberFromSubject(subject: string | null) {
   return subject?.match(TICKET_REFERENCE_PATTERN)?.[0]?.toUpperCase() ?? null;
 }
 
+function normalizeInboundMessageBody(value: string) {
+  const normalized = value.trim();
+  if (normalized.length <= SUPPORT_EMAIL_BODY_MAX_LENGTH) return normalized;
+
+  return `${normalized.slice(0, SUPPORT_EMAIL_BODY_MAX_LENGTH - 1).trimEnd()}…`;
+}
+
 function buildRawSupportEmail(
   configuration: SupportGmailConfiguration,
   input: SupportGmailSendInput,
@@ -273,8 +291,10 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
     fromName: input.fromName.trim(),
     fetchImpl: input.fetchImpl ?? fetch
   };
+  let cachedAccessToken: { token: string; expiresAt: number } | null = null;
+  let accessTokenRefresh: Promise<string> | null = null;
 
-  async function accessToken() {
+  async function refreshAccessToken() {
     let response: Response;
     try {
       response = await configuration.fetchImpl(GOOGLE_TOKEN_ENDPOINT, {
@@ -296,11 +316,42 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
 
     if (!response.ok) throw new Error("Support Gmail authentication failed.");
 
-    const payload = (await response.json()) as { access_token?: unknown };
+    const payload = (await response.json()) as {
+      access_token?: unknown;
+      expires_in?: unknown;
+    };
     if (typeof payload.access_token !== "string" || !payload.access_token.trim()) {
       throw new Error("Support Gmail authentication failed.");
     }
-    return payload.access_token;
+
+    const expiresInSeconds =
+      typeof payload.expires_in === "number" && Number.isFinite(payload.expires_in)
+        ? Math.max(60, Math.trunc(payload.expires_in))
+        : 3_600;
+    cachedAccessToken = {
+      token: payload.access_token,
+      expiresAt: Date.now() + expiresInSeconds * 1_000
+    };
+    return cachedAccessToken.token;
+  }
+
+  async function accessToken() {
+    if (
+      cachedAccessToken &&
+      cachedAccessToken.expiresAt - GMAIL_ACCESS_TOKEN_REFRESH_SKEW_MS > Date.now()
+    ) {
+      return cachedAccessToken.token;
+    }
+
+    if (accessTokenRefresh) return accessTokenRefresh;
+
+    const refresh = refreshAccessToken();
+    accessTokenRefresh = refresh;
+    try {
+      return await refresh;
+    } finally {
+      if (accessTokenRefresh === refresh) accessTokenRefresh = null;
+    }
   }
 
   async function gmailRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -336,18 +387,38 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
   }
 
   async function listInboxMessages() {
-    const params = new URLSearchParams({
-      labelIds: "INBOX",
-      maxResults: String(GMAIL_SYNC_MAX_RESULTS),
-      q: `newer_than:${GMAIL_SYNC_QUERY_DAYS}d -from:${configuration.supportEmail}`
-    });
-    const payload = await gmailRequest<{
-      messages?: Array<{ id?: string; threadId?: string }>;
-    }>(`/messages?${params.toString()}`);
+    const messages: GmailMessageReference[] = [];
+    const seenMessageIds = new Set<string>();
+    let pageToken: string | undefined;
 
-    return (payload.messages ?? [])
-      .filter((message): message is { id: string; threadId?: string } => Boolean(message.id))
-      .map((message) => ({ id: message.id, threadId: message.threadId }));
+    while (messages.length < GMAIL_SYNC_MAX_MESSAGES) {
+      const params = new URLSearchParams({
+        labelIds: "INBOX",
+        maxResults: String(GMAIL_SYNC_PAGE_SIZE),
+        q: `newer_than:${GMAIL_SYNC_QUERY_DAYS}d -from:${configuration.supportEmail}`
+      });
+      if (pageToken) params.set("pageToken", pageToken);
+
+      const payload = await gmailRequest<{
+        messages?: Array<{ id?: string; threadId?: string }>;
+        nextPageToken?: unknown;
+      }>(`/messages?${params.toString()}`);
+
+      for (const message of payload.messages ?? []) {
+        if (!message.id || seenMessageIds.has(message.id)) continue;
+        seenMessageIds.add(message.id);
+        messages.push({ id: message.id, threadId: message.threadId });
+        if (messages.length >= GMAIL_SYNC_MAX_MESSAGES) break;
+      }
+
+      pageToken =
+        typeof payload.nextPageToken === "string" && payload.nextPageToken.trim()
+          ? payload.nextPageToken
+          : undefined;
+      if (!pageToken) break;
+    }
+
+    return messages;
   }
 
   async function sendSupportReply(input: SupportGmailSendInput) {
@@ -385,16 +456,19 @@ function runtimeClient() {
   return createSupportGmailClient(configuration);
 }
 
-export async function deliverStaffSupportMessageEmail(messageId: string) {
-  const configuration = runtimeConfiguration();
-  if (!configuration) throw supportGmailNotConfigured();
-
+export async function deliverStaffSupportMessageEmail(
+  messageId: string,
+  client: SupportGmailClient = runtimeClient()
+) {
   const message = await prisma.supportMessage.findUnique({
     select: {
       id: true,
       senderType: true,
       body: true,
       ticketId: true,
+      deliveryStatus: true,
+      gmailMessageId: true,
+      gmailThreadId: true,
       ticket: {
         select: {
           ticketNumber: true,
@@ -413,6 +487,20 @@ export async function deliverStaffSupportMessageEmail(messageId: string) {
     });
   }
 
+  if (message.deliveryStatus === "SENT") {
+    return {
+      status: "SENT" as const,
+      gmailMessageId: message.gmailMessageId,
+      gmailThreadId: message.gmailThreadId
+    };
+  }
+
+  if (message.deliveryStatus !== "PENDING") {
+    throw new HttpError(409, "Support email is not pending delivery.", {
+      code: "SUPPORT_EMAIL_NOT_PENDING"
+    });
+  }
+
   const previousGmailMessage = await prisma.supportMessage.findFirst({
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     select: { gmailMessageId: true },
@@ -423,8 +511,9 @@ export async function deliverStaffSupportMessageEmail(messageId: string) {
     }
   });
 
+  let sent: SupportGmailSendResult;
   try {
-    const sent = await createSupportGmailClient(configuration).sendSupportReply({
+    sent = await client.sendSupportReply({
       to: message.ticket.customerEmail,
       ticketNumber: message.ticket.ticketNumber,
       subject: message.ticket.subject,
@@ -432,40 +521,67 @@ export async function deliverStaffSupportMessageEmail(messageId: string) {
       threadId: message.ticket.gmailThreadId,
       replyToGmailMessageId: previousGmailMessage?.gmailMessageId ?? null
     });
-    const sentAt = new Date();
-
+  } catch {
     await prisma.$transaction([
       prisma.supportMessage.update({
         data: {
           channel: "EMAIL",
-          deliveryStatus: "SENT",
-          deliveryError: null,
-          gmailMessageId: sent.id,
-          gmailThreadId: sent.threadId,
-          emailSentAt: sentAt
+          deliveryStatus: "FAILED",
+          deliveryError: DELIVERY_ERROR_MESSAGE,
+          emailSentAt: null
         },
         where: { id: message.id }
       }),
-      prisma.supportTicket.update({
-        data: { gmailThreadId: sent.threadId },
-        where: { id: message.ticketId }
+      prisma.supportTicket.updateMany({
+        data: {
+          status: "OPEN",
+          resolvedAt: null,
+          closedAt: null
+        },
+        where: {
+          id: message.ticketId,
+          status: { not: "CLOSED" }
+        }
       })
     ]);
 
-    return { status: "SENT" as const, gmailMessageId: sent.id, gmailThreadId: sent.threadId };
-  } catch {
-    await prisma.supportMessage.update({
-      data: {
-        channel: "EMAIL",
-        deliveryStatus: "FAILED",
-        deliveryError: DELIVERY_ERROR_MESSAGE,
-        emailSentAt: null
-      },
-      where: { id: message.id }
-    });
-
     return { status: "FAILED" as const, gmailMessageId: null, gmailThreadId: null };
   }
+
+  const sentAt = new Date();
+  await prisma.$transaction([
+    prisma.supportMessage.update({
+      data: {
+        channel: "EMAIL",
+        deliveryStatus: "SENT",
+        deliveryError: null,
+        gmailMessageId: sent.id,
+        gmailThreadId: sent.threadId,
+        emailSentAt: sentAt
+      },
+      where: {
+        id: message.id,
+        deliveryStatus: "PENDING"
+      }
+    }),
+    prisma.supportTicket.update({
+      data: { gmailThreadId: sent.threadId },
+      where: { id: message.ticketId }
+    }),
+    prisma.supportTicket.updateMany({
+      data: {
+        status: "WAITING_FOR_CUSTOMER",
+        resolvedAt: null,
+        closedAt: null
+      },
+      where: {
+        id: message.ticketId,
+        status: { not: "CLOSED" }
+      }
+    })
+  ]);
+
+  return { status: "SENT" as const, gmailMessageId: sent.id, gmailThreadId: sent.threadId };
 }
 
 export async function syncSupportGmailInboxWithClient(
@@ -524,7 +640,8 @@ export async function syncSupportGmailInboxWithClient(
     }
 
     const matchedTicket = ticket;
-    const body = decodeMessageBody(message.payload) ?? message.snippet?.trim() ?? "";
+    const decodedBody = decodeMessageBody(message.payload) ?? message.snippet?.trim() ?? "";
+    const body = normalizeInboundMessageBody(decodedBody);
     if (!body) {
       skipped += 1;
       continue;

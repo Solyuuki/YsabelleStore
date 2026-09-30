@@ -12,7 +12,9 @@ import type {
 import type { SafeUser } from "./authService.js";
 import {
   deliverStaffSupportMessageEmail,
-  isSupportGmailDeliveryEnabled
+  isSupportGmailConfigured,
+  isSupportGmailDeliveryEnabled,
+  isSupportLocalReplyFallbackAllowed
 } from "./supportGmailService.js";
 
 const staffSupportTicketDetailSelect = {
@@ -170,6 +172,14 @@ export async function replyToStaffSupportTicket(
   actor: SafeUser,
   now = new Date()
 ) {
+  const gmailConfigured = isSupportGmailConfigured();
+  const localFallbackAllowed = isSupportLocalReplyFallbackAllowed();
+  if (!gmailConfigured && !localFallbackAllowed) {
+    throw new HttpError(503, "Support Gmail integration is not configured.", {
+      code: "SUPPORT_GMAIL_NOT_CONFIGURED"
+    });
+  }
+
   const shouldDeliverEmail = isSupportGmailDeliveryEnabled();
   const created = await prisma.$transaction(async (tx) => {
     const ticket = await tx.supportTicket.findUnique({
@@ -206,7 +216,7 @@ export async function replyToStaffSupportTicket(
 
     await tx.supportTicket.update({
       data: {
-        status: "WAITING_FOR_CUSTOMER",
+        status: shouldDeliverEmail ? "OPEN" : "WAITING_FOR_CUSTOMER",
         lastMessageAt: now,
         lastStaffMessageAt: now,
         lastReadByStaffAt: now,
@@ -237,7 +247,12 @@ export async function retryStaffSupportEmail(ticketId: string, messageId: string
     select: {
       id: true,
       senderType: true,
-      deliveryStatus: true
+      deliveryStatus: true,
+      ticket: {
+        select: {
+          status: true
+        }
+      }
     },
     where: {
       id: messageId,
@@ -251,18 +266,47 @@ export async function retryStaffSupportEmail(ticketId: string, messageId: string
     });
   }
 
+  if (message.ticket.status === "CLOSED") {
+    throw new HttpError(409, "Closed support tickets must be reopened before retrying email.", {
+      code: "SUPPORT_TICKET_CLOSED"
+    });
+  }
+
   if (message.deliveryStatus === "SENT") {
     return getStaffSupportTicket(ticketId);
   }
 
-  await prisma.supportMessage.update({
+  if (message.deliveryStatus === "PENDING") {
+    throw new HttpError(409, "Support email delivery is already pending.", {
+      code: "SUPPORT_EMAIL_DELIVERY_PENDING"
+    });
+  }
+
+  if (message.deliveryStatus !== "FAILED") {
+    throw new HttpError(409, "This support message does not have a retryable email failure.", {
+      code: "SUPPORT_EMAIL_NOT_RETRYABLE"
+    });
+  }
+
+  const claimed = await prisma.supportMessage.updateMany({
     data: {
       channel: "EMAIL",
       deliveryStatus: "PENDING",
       deliveryError: null
     },
-    where: { id: message.id }
+    where: {
+      id: message.id,
+      ticketId,
+      senderType: "STAFF",
+      deliveryStatus: "FAILED"
+    }
   });
+
+  if (claimed.count !== 1) {
+    throw new HttpError(409, "Support email delivery is already being retried.", {
+      code: "SUPPORT_EMAIL_DELIVERY_PENDING"
+    });
+  }
 
   await deliverStaffSupportMessageEmail(message.id);
   return getStaffSupportTicket(ticketId);
