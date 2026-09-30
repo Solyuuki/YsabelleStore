@@ -3,9 +3,10 @@ import {
   CircleAlert,
   CreditCard,
   LoaderCircle,
-  MapPin,
+  PackageCheck,
   RefreshCw,
-  ShoppingBasket
+  ShoppingBasket,
+  Truck
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -45,14 +46,11 @@ export function OrderSuccessPage({
     async function refreshPayment() {
       attempts += 1;
       setCheckingPayment(true);
-
       try {
         const status = await fetchStorefrontPaymentStatus(orderNumber!, controller.signal);
         if (controller.signal.aborted) return;
-
         setPayment(status);
         setPaymentError(null);
-
         if (status.paymentStatus === "PENDING" && attempts < PAYMENT_POLL_ATTEMPTS) {
           timeout = setTimeout(() => void refreshPayment(), PAYMENT_POLL_DELAY_MS);
         }
@@ -69,7 +67,6 @@ export function OrderSuccessPage({
     }
 
     void refreshPayment();
-
     return () => {
       controller.abort();
       if (timeout) clearTimeout(timeout);
@@ -79,13 +76,14 @@ export function OrderSuccessPage({
   const paymentStatus = payment?.paymentStatus ?? order?.paymentStatus ?? "PENDING";
   const displayTotal = payment?.totalAmount ?? order?.totalAmount;
   const displayItemCount = payment?.itemCount ?? order?.itemCount;
+  const paid = isPaymongo && paymentStatus === "PAID";
+  const paymentPending = isPaymongo && !paid;
+  const cancelledReturn = paymentReturn === "cancelled" && paymentStatus !== "PAID";
 
   async function resumePayment() {
     if (!orderNumber || resumingPayment) return;
-
     setResumingPayment(true);
     setPaymentError(null);
-
     try {
       const checkout = await startPaymongoCheckout(orderNumber);
       window.location.assign(checkout.checkoutUrl);
@@ -97,44 +95,42 @@ export function OrderSuccessPage({
     }
   }
 
-  const paid = isPaymongo && paymentStatus === "PAID";
-  const paymentPending = isPaymongo && !paid;
-  const cancelledReturn = paymentReturn === "cancelled" && paymentStatus !== "PAID";
-
   return (
     <div className="customer-page customer-success-page">
       <div className="customer-container customer-success-card">
         <div className={`customer-success-card__icon${paymentPending ? " is-pending" : ""}`}>
-          {paymentPending ? <CreditCard aria-hidden="true" /> : <Check aria-hidden="true" />}
+          {paymentPending ? (
+            <CreditCard aria-hidden="true" />
+          ) : (
+            <PackageCheck aria-hidden="true" />
+          )}
         </div>
+
         <p className="customer-kicker">
-          {paid
-            ? "Test payment confirmed"
-            : paymentPending
-              ? "Order saved"
-              : "Pickup request received"}
+          {paid ? "Payment confirmed" : paymentPending ? "Order saved" : "Delivery order placed"}
         </p>
         <h1>
           {paid
-            ? "Your Test Payment Is Confirmed."
+            ? "Payment Confirmed. We’ll Prepare Your Delivery."
             : paymentPending
               ? "Your Order Is Saved."
-              : "Your Essentials Are on the List."}
+              : "Your Delivery Order Is Confirmed."}
         </h1>
         <p>
           {paid
-            ? "PayMongo confirmed this sandbox payment. The store can now continue processing your pickup order."
+            ? "PayMongo confirmed the test payment. Store staff can now prepare and coordinate delivery."
             : paymentPending
               ? cancelledReturn
                 ? "You left PayMongo before payment was confirmed. Your order is safe and you can resume the same payment below."
-                : "We are checking PayMongo for a confirmed test payment. Your order will not be marked paid from the browser redirect alone."
-              : "The store has received your pending pickup order. Please keep the reference number below."}
+                : "We are checking PayMongo for a confirmed test payment. The browser redirect alone never marks your order paid."
+              : "Your Cash on Delivery order is saved. Store staff will prepare it and coordinate a courier for your address."}
         </p>
 
         {orderNumber ? (
           <div className="customer-order-reference">
             <span>Order reference</span>
             <strong>{orderNumber}</strong>
+            {order?.deliveryTicketNumber ? <small>{order.deliveryTicketNumber}</small> : null}
           </div>
         ) : null}
 
@@ -170,11 +166,19 @@ export function OrderSuccessPage({
               <span>
                 {paid
                   ? "Verified by the backend against PayMongo."
-                  : "No inventory or payment state is finalized from the return URL alone."}
+                  : "Payment is not finalized from the return URL alone."}
               </span>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="customer-payment-status" role="status">
+            <Truck aria-hidden="true" />
+            <div>
+              <strong>Cash on Delivery</strong>
+              <span>Pay in cash when your order arrives.</span>
+            </div>
+          </div>
+        )}
 
         {paymentError ? (
           <div className="customer-form-error" role="alert">
@@ -183,25 +187,23 @@ export function OrderSuccessPage({
         ) : null}
 
         <div className="customer-success-pickup">
-          <MapPin aria-hidden="true" />
+          <Truck aria-hidden="true" />
           <div>
-            <strong>Store pickup</strong>
-            <span>110 A. Mabini Street, Pasig City, Metro Manila</span>
+            <strong>Delivery tracking starts here</strong>
+            <span>
+              Open My Account to follow Preparing, Ready for delivery, On the way, and Delivered.
+            </span>
             <small>
-              Payment:{" "}
-              {isPaymongo
-                ? paid
-                  ? "PayMongo test payment confirmed"
-                  : "PayMongo pending"
-                : "Cash on pickup"}
+              Courier booking is coordinated by store staff. Grab, Lalamove, or another service can
+              be recorded on your delivery ticket.
             </small>
           </div>
         </div>
 
         <p className="customer-success-card__note">
           {paid
-            ? "This is still a pickup order until store fulfillment is completed."
-            : "This is a pending order request, not a completed sale. Stock is finalized by the store during fulfillment."}
+            ? "Your order is paid. Inventory is finalized when the delivery is completed."
+            : "For COD, payment remains pending until delivery is confirmed and store staff verifies cash collection."}
         </p>
 
         <div className="customer-success-actions">
@@ -216,16 +218,16 @@ export function OrderSuccessPage({
               {resumingPayment ? "Opening PayMongo..." : "Resume PayMongo payment"}
             </button>
           ) : (
-            <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
-              <ShoppingBasket aria-hidden="true" size={18} /> Continue shopping
+            <CustomerLink className="customer-button" href="/account" navigate={navigate}>
+              <Truck aria-hidden="true" size={18} /> Track my order
             </CustomerLink>
           )}
           <CustomerLink
             className="customer-button customer-button--secondary"
-            href="/"
+            href="/shop"
             navigate={navigate}
           >
-            Back home
+            <ShoppingBasket aria-hidden="true" size={18} /> Continue shopping
           </CustomerLink>
         </div>
       </div>

@@ -6,7 +6,9 @@ import {
   LogOut,
   Mail,
   PackageCheck,
+  MapPin,
   Phone,
+  Truck,
   ShieldCheck,
   UserRound
 } from "lucide-react";
@@ -23,7 +25,10 @@ import {
   revokeOtherCustomerSessions,
   updateCustomerProfile
 } from "@/services/customerAccountService";
-import { fetchCustomerOrders } from "@/services/storefrontService";
+import {
+  confirmCustomerDeliveryReceived,
+  fetchCustomerOrders
+} from "@/services/storefrontService";
 import type { CustomerSessionSummary } from "@/types/customerAccount";
 import type { StorefrontOrder } from "@/types/storefront";
 
@@ -46,7 +51,7 @@ const ACCOUNT_HERO_CONTENT: Record<
     eyebrow: "Order center",
     title: "Your orders, organized.",
     description:
-      "Track signed-in purchases, pickup activity, and your recent order history in one focused view."
+      "Track active deliveries, courier progress, payment state, and your recent order history in one focused view."
   },
   favorites: {
     eyebrow: "Saved items",
@@ -96,6 +101,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   const [orders, setOrders] = useState<StorefrontOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
+  const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
   const [sessions, setSessions] = useState<CustomerSessionSummary[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [sessionsError, setSessionsError] = useState<string | null>(null);
@@ -200,6 +206,30 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     [sessions]
   );
   const heroContent = ACCOUNT_HERO_CONTENT[activeTab];
+  const activeOrders = useMemo(
+    () => orders.filter((order) => !["DELIVERED", "CANCELLED"].includes(order.deliveryStatus)),
+    [orders]
+  );
+  const historicalOrders = useMemo(
+    () => orders.filter((order) => ["DELIVERED", "CANCELLED"].includes(order.deliveryStatus)),
+    [orders]
+  );
+
+  async function handleConfirmReceived(orderNumber: string) {
+    if (confirmingOrder) return;
+    setConfirmingOrder(orderNumber);
+    setOrdersError(null);
+    try {
+      const updated = await confirmCustomerDeliveryReceived(orderNumber);
+      setOrders((current) =>
+        current.map((order) => (order.orderNumber === updated.orderNumber ? updated : order))
+      );
+    } catch (reason) {
+      setOrdersError(errorMessage(reason, "Delivery receipt could not be confirmed."));
+    } finally {
+      setConfirmingOrder(null);
+    }
+  }
 
   if (!customer) {
     return (
@@ -440,58 +470,177 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
           >
             <div className="customer-account-section-heading">
               <div>
-                <p className="customer-eyebrow">Pickup activity</p>
-                <h2 id="customer-order-history-title">Order history</h2>
-                <p>Only orders placed while signed in to this account appear here.</p>
+                <p className="customer-eyebrow">Active orders</p>
+                <h2 id="customer-order-history-title">Delivery tracking</h2>
+                <p>Follow each signed-in order from preparation through customer-confirmed delivery.</p>
               </div>
-              <History aria-hidden="true" size={22} />
+              <Truck aria-hidden="true" size={22} />
             </div>
 
             {ordersLoading ? (
               <div className="customer-account-state" role="status">
                 Loading your orders...
               </div>
-            ) : ordersError ? (
-              <div className="customer-account-form-error" role="alert">
-                {ordersError}
-              </div>
             ) : orders.length === 0 ? (
               <div className="customer-account-empty">
                 <PackageCheck aria-hidden="true" size={30} />
                 <strong>No signed-in orders yet</strong>
-                <p>Your next pickup order will appear here when you place it while signed in.</p>
+                <p>Your next delivery order will appear here when you place it while signed in.</p>
                 <button onClick={() => navigate("/shop")} type="button">
                   Browse the shop
                 </button>
               </div>
             ) : (
-              <div className="customer-account-order-list-v2">
-                {orders.map((order) => (
-                  <article className="customer-account-order-v2" key={order.id}>
-                    <div className="customer-account-order-topline">
-                      <div>
-                        <span>Order</span>
-                        <strong>{order.orderNumber}</strong>
-                      </div>
-                      <span>{order.status}</span>
-                    </div>
-                    <div className="customer-account-order-meta">
-                      <span>{orderDateFormatter.format(new Date(order.createdAt))}</span>
-                      <strong>{formatCurrency(Number(order.totalAmount))}</strong>
-                    </div>
-                    <ul>
-                      {order.items.map((item) => (
-                        <li key={`${order.id}-${item.productId}`}>
-                          <span>
-                            {item.quantity} × {item.productName}
+              <>
+                {ordersError ? (
+                  <div className="customer-account-form-error" role="alert">
+                    {ordersError}
+                  </div>
+                ) : null}
+
+                {activeOrders.length > 0 ? (
+                  <div className="customer-account-delivery-stack">
+                    {activeOrders.map((order) => (
+                      <article className="customer-account-order-v2 customer-account-order-v2--active" key={order.id}>
+                        <div className="customer-account-order-topline">
+                          <div>
+                            <span>{order.deliveryTicketNumber}</span>
+                            <strong>{order.orderNumber}</strong>
+                          </div>
+                          <span className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}>
+                            {deliveryStatusLabel(order.deliveryStatus)}
                           </span>
-                          <strong>{formatCurrency(Number(item.totalAmount))}</strong>
-                        </li>
-                      ))}
-                    </ul>
-                  </article>
-                ))}
-              </div>
+                        </div>
+
+                        <div className="customer-account-delivery-overview">
+                          <div>
+                            <span>Payment</span>
+                            <strong>
+                              {order.paymentMethod === "CASH_ON_DELIVERY"
+                                ? "Cash on Delivery"
+                                : `PayMongo · ${order.paymentStatus}`}
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Total</span>
+                            <strong>{formatCurrency(Number(order.totalAmount))}</strong>
+                          </div>
+                          <div>
+                            <span>Ordered</span>
+                            <strong>{orderDateFormatter.format(new Date(order.createdAt))}</strong>
+                          </div>
+                        </div>
+
+                        {order.address ? (
+                          <div className="customer-account-delivery-address">
+                            <MapPin aria-hidden="true" size={17} />
+                            <span>
+                              {[
+                                order.address.addressLine1,
+                                order.address.addressLine2,
+                                order.address.barangay,
+                                order.address.cityMunicipality,
+                                order.address.provinceRegion,
+                                order.address.postalCode
+                              ]
+                                .filter(Boolean)
+                                .join(", ")}
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {order.courierProvider ? (
+                          <div className="customer-account-delivery-courier">
+                            <Truck aria-hidden="true" size={17} />
+                            <span>
+                              <strong>{order.courierProvider}</strong>
+                              {order.courierReference ? ` · ${order.courierReference}` : ""}
+                            </span>
+                          </div>
+                        ) : null}
+
+                        <ol className="customer-delivery-timeline" aria-label="Delivery timeline">
+                          {order.timeline.map((event) => (
+                            <li key={event.id}>
+                              <span aria-hidden="true" />
+                              <div>
+                                <strong>{deliveryStatusLabel(event.status)}</strong>
+                                <small>{orderDateFormatter.format(new Date(event.createdAt))}</small>
+                                {event.note ? <p>{event.note}</p> : null}
+                              </div>
+                            </li>
+                          ))}
+                        </ol>
+
+                        {order.canCustomerConfirmReceipt ? (
+                          <div className="customer-account-confirm-delivery">
+                            <div>
+                              <strong>Have you received your order?</strong>
+                              <p>Only confirm after the order is physically in your possession.</p>
+                            </div>
+                            <button
+                              disabled={confirmingOrder === order.orderNumber}
+                              onClick={() => void handleConfirmReceived(order.orderNumber)}
+                              type="button"
+                            >
+                              <CheckCircle2 aria-hidden="true" size={17} />
+                              {confirmingOrder === order.orderNumber
+                                ? "Confirming..."
+                                : "Confirm received"}
+                            </button>
+                          </div>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="customer-account-state">
+                    No active deliveries right now.
+                  </div>
+                )}
+
+                <div className="customer-account-history-heading">
+                  <div>
+                    <p className="customer-eyebrow">Order history</p>
+                    <h3>Delivered and closed orders</h3>
+                  </div>
+                  <History aria-hidden="true" size={20} />
+                </div>
+
+                {historicalOrders.length > 0 ? (
+                  <div className="customer-account-order-list-v2">
+                    {historicalOrders.map((order) => (
+                      <article className="customer-account-order-v2" key={order.id}>
+                        <div className="customer-account-order-topline">
+                          <div>
+                            <span>{order.deliveryTicketNumber}</span>
+                            <strong>{order.orderNumber}</strong>
+                          </div>
+                          <span className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}>
+                            {deliveryStatusLabel(order.deliveryStatus)}
+                          </span>
+                        </div>
+                        <div className="customer-account-order-meta">
+                          <span>{orderDateFormatter.format(new Date(order.createdAt))}</span>
+                          <strong>{formatCurrency(Number(order.totalAmount))}</strong>
+                        </div>
+                        <ul>
+                          {order.items.map((item) => (
+                            <li key={`${order.id}-${item.productId}`}>
+                              <span>
+                                {item.quantity} × {item.productName}
+                              </span>
+                              <strong>{formatCurrency(Number(item.totalAmount))}</strong>
+                            </li>
+                          ))}
+                        </ul>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="customer-account-state">No completed delivery history yet.</div>
+                )}
+              </>
             )}
           </section>
 
@@ -824,4 +973,24 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       </div>
     </section>
   );
+}
+
+
+function deliveryStatusLabel(status: StorefrontOrder["deliveryStatus"]) {
+  switch (status) {
+    case "ORDER_PLACED":
+      return "Order placed";
+    case "PREPARING":
+      return "Preparing";
+    case "READY_FOR_DELIVERY":
+      return "Ready for delivery";
+    case "OUT_FOR_DELIVERY":
+      return "On the way";
+    case "DELIVERED":
+      return "Delivered";
+    case "DELIVERY_FAILED":
+      return "Delivery failed";
+    case "CANCELLED":
+      return "Cancelled";
+  }
 }

@@ -10156,3 +10156,168 @@
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
 }
+
+
+/* Customer delivery tracking */
+.customer-account-delivery-stack {
+  display: grid;
+  gap: 1rem;
+}
+.customer-account-order-v2--active {
+  border-color: #c9c7ff;
+  box-shadow: 0 14px 34px rgb(98 91 255 / 8%);
+}
+.customer-delivery-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: #eef0f7;
+  color: #505a73;
+  font-size: 0.7rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.customer-delivery-status--out_for_delivery {
+  background: #e8efff;
+  color: #315dd4;
+}
+.customer-delivery-status--delivered {
+  background: #e8f7f0;
+  color: #17765f;
+}
+.customer-delivery-status--delivery_failed,
+.customer-delivery-status--cancelled {
+  background: #fff0f0;
+  color: #a33c3c;
+}
+.customer-account-delivery-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.customer-account-delivery-overview > div {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: #f8f9fd;
+}
+.customer-account-delivery-overview span {
+  color: var(--customer-muted);
+  font-size: 0.68rem;
+}
+.customer-account-delivery-overview strong {
+  color: var(--customer-dark);
+  font-size: 0.76rem;
+}
+.customer-account-delivery-address,
+.customer-account-delivery-courier {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  color: var(--customer-muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+.customer-account-delivery-address svg,
+.customer-account-delivery-courier svg {
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--customer-primary);
+}
+.customer-delivery-timeline {
+  display: grid;
+  gap: 0;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.customer-delivery-timeline li {
+  display: grid;
+  grid-template-columns: 0.85rem minmax(0, 1fr);
+  gap: 0.7rem;
+  position: relative;
+  padding-bottom: 0.9rem;
+}
+.customer-delivery-timeline li > span {
+  width: 0.65rem;
+  height: 0.65rem;
+  margin-top: 0.25rem;
+  border-radius: 50%;
+  background: var(--customer-primary);
+  box-shadow: 0 0 0 4px #efefff;
+}
+.customer-delivery-timeline li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 0.85rem;
+  bottom: 0;
+  left: 0.3rem;
+  width: 1px;
+  background: #d7d5ff;
+}
+.customer-delivery-timeline li > div {
+  display: grid;
+  gap: 0.15rem;
+}
+.customer-delivery-timeline strong {
+  font-size: 0.76rem;
+}
+.customer-delivery-timeline small,
+.customer-delivery-timeline p {
+  margin: 0;
+  color: var(--customer-muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+.customer-account-confirm-delivery {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #c9c7ff;
+  border-radius: 0.85rem;
+  background: #f4f3ff;
+}
+.customer-account-confirm-delivery p {
+  margin: 0.25rem 0 0;
+  color: var(--customer-muted);
+  font-size: 0.7rem;
+}
+.customer-account-confirm-delivery button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: none;
+}
+.customer-account-history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1.75rem 0 0.9rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--customer-line);
+}
+.customer-account-history-heading h3 {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+}
+@media (max-width: 720px) {
+  .customer-account-delivery-overview {
+    grid-template-columns: 1fr;
+  }
+  .customer-account-confirm-delivery {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .customer-account-confirm-delivery button {
+    justify-content: center;
+    width: 100%;
+  }
+}
