@@ -168,3 +168,16 @@ export async function fetchStorefrontPaymentStatus(orderNumber: string, signal?:
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
 }
+
+
+export async function confirmCustomerDeliveryReceived(orderNumber: string) {
+  const response = await apiClient.request<StorefrontOrder, unknown>(
+    `/api/customer-account/orders/${encodeURIComponent(orderNumber)}/confirm-received`,
+    {
+      method: "POST",
+      credentials: "include"
+    }
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}

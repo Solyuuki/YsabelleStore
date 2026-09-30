@@ -134,19 +134,47 @@ export type StorefrontReviewInput = {
   comment: string;
 };
 
-export type StorefrontPaymentMethod = "CASH_ON_PICKUP" | "PAYMONGO";
+export type StorefrontPaymentMethod = "CASH_ON_DELIVERY" | "PAYMONGO";
 export type StorefrontPaymentStatus = "PENDING" | "PAID" | "FAILED" | "CANCELLED";
+export type StorefrontDeliveryStatus =
+  | "ORDER_PLACED"
+  | "PREPARING"
+  | "READY_FOR_DELIVERY"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED"
+  | "DELIVERY_FAILED"
+  | "CANCELLED";
+
+export type StorefrontDeliveryTimelineEvent = {
+  id: string;
+  status: StorefrontDeliveryStatus;
+  actorType: "SYSTEM" | "STAFF" | "CUSTOMER";
+  note: string | null;
+  createdAt: string;
+};
 
 export type StorefrontOrder = {
   id: string;
   orderNumber: string;
-  status: "PENDING" | "CONFIRMED" | "READY_FOR_PICKUP" | "COMPLETED" | "CANCELLED";
-  fulfillmentMethod: "STORE_PICKUP";
+  deliveryTicketNumber: string;
+  status: "PENDING" | "CONFIRMED" | "PROCESSING" | "COMPLETED" | "CANCELLED";
+  fulfillmentMethod: "DELIVERY";
   paymentMethod: StorefrontPaymentMethod;
   paymentStatus: StorefrontPaymentStatus;
+  deliveryStatus: StorefrontDeliveryStatus;
+  courierProvider: string | null;
+  courierReference: string | null;
+  deliveryNotes: string | null;
+  dispatchedAt: string | null;
+  deliveredAt: string | null;
+  customerConfirmedAt: string | null;
   totalAmount: string;
   paidAt: string | null;
   createdAt: string;
+  updatedAt: string;
+  address: CustomerAddress | null;
+  timeline: StorefrontDeliveryTimelineEvent[];
+  canCustomerConfirmReceipt: boolean;
   itemCount: number;
   items: Array<{
     productId: string;
@@ -164,7 +192,7 @@ export type StorefrontOrderInput = {
   customerAddress: CustomerAddress;
   saveAddressToAccount?: boolean;
   notes?: string;
-  fulfillmentMethod: "STORE_PICKUP";
+  fulfillmentMethod: "DELIVERY";
   paymentMethod: StorefrontPaymentMethod;
   items: Array<{ productId: string; quantity: number }>;
 };

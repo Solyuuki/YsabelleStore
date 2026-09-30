@@ -152,6 +152,7 @@ export type DashboardOperations = {
 
 export type NavigationBadgeSummary = {
   dashboard: number;
+  deliveries: number;
   generatedAt: string;
   inventory: number;
   receiving: number;
