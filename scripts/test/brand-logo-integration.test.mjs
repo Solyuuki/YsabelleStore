@@ -28,7 +28,10 @@ test("customer and staff brand marks share the canonical public mark component",
   assert.match(header, /YsabelleBrandMark/);
   assert.match(footer, /YsabelleBrandMark/);
   assert.match(sidebar, /YsabelleBrandMark/);
-  assert.match(sharedCustomerMark, /import \{ BrandLogo \} from "@\/components\/brand\/BrandLogo";/);
+  assert.match(
+    sharedCustomerMark,
+    /import \{ BrandLogo \} from "@\/components\/brand\/BrandLogo";/
+  );
   assert.match(sharedCustomerMark, /<BrandLogo/);
   assert.match(brandLogo, /ysabelle-store-mark-256\.png/);
   assert.match(brandLogo, /FILE_BRAND_MARK_SRC/);
