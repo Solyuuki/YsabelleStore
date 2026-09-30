@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LineChart,
   Package,
+  PackageCheck,
   ReceiptText,
   Tags,
   ScanBarcode,
@@ -26,6 +27,7 @@ export type AppRoutePath =
   | "/inventory"
   | "/receiving"
   | "/sales"
+  | "/deliveries"
   | "/forecast"
   | "/historical-sales"
   | "/reports"
@@ -90,6 +92,13 @@ export const appRoutes: readonly AppRoute[] = [
     label: "Sales",
     description: "Sales history module shell",
     icon: ReceiptText,
+    allowedRoles: ["OWNER", "STAFF"]
+  },
+  {
+    path: "/deliveries",
+    label: "Deliveries",
+    description: "Customer delivery tickets, courier handoff, and COD settlement",
+    icon: PackageCheck,
     allowedRoles: ["OWNER", "STAFF"]
   },
   {

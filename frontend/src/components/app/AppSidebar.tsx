@@ -28,7 +28,8 @@ const mainRoutes: readonly AppRoutePath[] = [
   "/categories",
   "/inventory",
   "/receiving",
-  "/sales"
+  "/sales",
+  "/deliveries"
 ];
 
 const ownerRoutesWithUsers: readonly AppRoutePath[] = [
@@ -219,6 +220,8 @@ function getBadgeCount(path: AppRoutePath, badges: NavigationBadgeSummary | null
       return badges.receiving;
     case "/reports":
       return badges.reports;
+    case "/deliveries":
+      return badges.deliveries;
     default:
       return undefined;
   }
