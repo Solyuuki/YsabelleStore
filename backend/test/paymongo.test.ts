@@ -7,6 +7,7 @@ import { Prisma } from "@prisma/client";
 import {
   paymongoCentavos,
   getPaymongoTestCheckoutPaymentMethods,
+  parsePaymongoWebhookEvent,
   verifyPaymongoWebhookSignature
 } from "../src/services/paymongoService.js";
 
@@ -42,6 +43,37 @@ test("PayMongo test webhook signature validates the raw body", () => {
       false
     ),
     false
+  );
+});
+
+test("PayMongo webhook parser reads the canonical event attributes envelope", () => {
+  const checkoutSession = {
+    id: "cs_test_ysabelle",
+    type: "checkout_session",
+    attributes: { livemode: false }
+  };
+  const event = parsePaymongoWebhookEvent({
+    data: {
+      id: "evt_test_ysabelle",
+      type: "event",
+      attributes: {
+        type: "checkout_session.payment.paid",
+        livemode: false,
+        data: checkoutSession
+      }
+    }
+  });
+
+  assert.deepEqual(event, {
+    type: "checkout_session.payment.paid",
+    livemode: false,
+    data: checkoutSession
+  });
+  assert.equal(
+    parsePaymongoWebhookEvent({
+      data: { type: "checkout_session.payment.paid", attributes: {} }
+    }),
+    null
   );
 });
 
