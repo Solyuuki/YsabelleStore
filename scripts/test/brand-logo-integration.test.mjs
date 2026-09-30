@@ -28,11 +28,9 @@ test("customer and staff brand marks use bundled official logo components", () =
   assert.match(header, /YsabelleBrandMark/);
   assert.match(footer, /YsabelleBrandMark/);
   assert.match(sidebar, /YsabelleBrandMark/);
-  assert.match(
-    sharedCustomerMark,
-    /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
-  );
-  assert.match(sharedCustomerMark, /src=\{officialLogoUrl\}/);
+  assert.match(sharedCustomerMark, /favicon-48x48\.png/);
+  assert.match(sharedCustomerMark, /apple-touch-icon\.png/);
+  assert.match(sharedCustomerMark, /src=\{source\}/);
   assert.match(
     brandLogo,
     /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
@@ -48,8 +46,9 @@ test("About story branding keeps the real Ysabelle mark without synthetic fallba
   const handoff = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
   const styles = read("frontend/src/styles/brand.css");
 
-  assert.match(brandMark, /src=\{officialLogoUrl\}/);
-  assert.doesNotMatch(brandMark, /ysabelle-brand-mark__fallback|\bStore\b|<BrandLogo/);
+  assert.match(brandMark, /favicon-48x48\.png/);
+  assert.match(brandMark, /apple-touch-icon\.png/);
+  assert.doesNotMatch(brandMark, /officialLogoUrl|ysabelle-brand-mark__fallback|\bStore\b|<BrandLogo/);
   assert.match(discoverIdentity, /YsabelleBrandMark/);
   assert.match(handoff, /<YsabelleBrandMark variant="mini" \/>/);
   assert.match(styles, /background:\s*transparent/);

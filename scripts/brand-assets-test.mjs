@@ -122,12 +122,13 @@ test("shared brand components render only the bundled approved circular logo", a
   assert.doesNotMatch(staffMark, /WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC/);
   assert.doesNotMatch(staffMark, /<svg[\s>]/);
 
-  assert.match(
+  assert.match(customerMark, /favicon-48x48\.png/);
+  assert.match(customerMark, /apple-touch-icon\.png/);
+  assert.match(customerMark, /new URL\(relativeSource, document\.baseURI\)\.href/);
+  assert.doesNotMatch(
     customerMark,
-    /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
+    /officialLogoUrl|<BrandLogo|WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC|<svg[\s>]/
   );
-  assert.match(customerMark, /src=\{officialLogoUrl\}/);
-  assert.doesNotMatch(customerMark, /<BrandLogo|WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC|<svg[\s>]/);
 });
 
 test("keeps approved header and footer on shared mark", async () => {

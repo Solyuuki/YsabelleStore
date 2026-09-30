@@ -25,12 +25,10 @@ test("brand components use only the bundled approved circular Ysabelle logo", as
   assert.match(brandLogo, /src=\{officialLogoUrl\}/);
   assert.doesNotMatch(brandLogo, /WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC|<svg[\s>]/);
 
-  assert.match(
-    customerMark,
-    /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
-  );
-  assert.match(customerMark, /src=\{officialLogoUrl\}/);
-  assert.doesNotMatch(customerMark, /<BrandLogo|WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC/);
+  assert.match(customerMark, /favicon-48x48\.png/);
+  assert.match(customerMark, /apple-touch-icon\.png/);
+  assert.match(customerMark, /new URL\(relativeSource, document\.baseURI\)\.href/);
+  assert.doesNotMatch(customerMark, /officialLogoUrl|<BrandLogo|WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC/);
 
   for (const consumer of [header, footer, sidebar]) {
     assert.match(consumer, /YsabelleBrandMark/);
