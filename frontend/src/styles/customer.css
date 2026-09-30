@@ -9961,7 +9961,6 @@
   }
 }
 
-
 /* Delivery checkout refinement: shared spacing rhythm and accessible form primitives. */
 .customer-checkout-layout {
   grid-template-columns: minmax(0, 1fr) minmax(320px, 370px);
@@ -10156,7 +10155,6 @@
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
 }
-
 
 /* Customer delivery tracking */
 .customer-account-delivery-stack {

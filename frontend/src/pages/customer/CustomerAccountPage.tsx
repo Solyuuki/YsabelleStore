@@ -25,10 +25,7 @@ import {
   revokeOtherCustomerSessions,
   updateCustomerProfile
 } from "@/services/customerAccountService";
-import {
-  confirmCustomerDeliveryReceived,
-  fetchCustomerOrders
-} from "@/services/storefrontService";
+import { confirmCustomerDeliveryReceived, fetchCustomerOrders } from "@/services/storefrontService";
 import type { CustomerSessionSummary } from "@/types/customerAccount";
 import type { StorefrontOrder } from "@/types/storefront";
 
@@ -472,7 +469,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
               <div>
                 <p className="customer-eyebrow">Active orders</p>
                 <h2 id="customer-order-history-title">Delivery tracking</h2>
-                <p>Follow each signed-in order from preparation through customer-confirmed delivery.</p>
+                <p>
+                  Follow each signed-in order from preparation through customer-confirmed delivery.
+                </p>
               </div>
               <Truck aria-hidden="true" size={22} />
             </div>
@@ -501,13 +500,18 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 {activeOrders.length > 0 ? (
                   <div className="customer-account-delivery-stack">
                     {activeOrders.map((order) => (
-                      <article className="customer-account-order-v2 customer-account-order-v2--active" key={order.id}>
+                      <article
+                        className="customer-account-order-v2 customer-account-order-v2--active"
+                        key={order.id}
+                      >
                         <div className="customer-account-order-topline">
                           <div>
                             <span>{order.deliveryTicketNumber}</span>
                             <strong>{order.orderNumber}</strong>
                           </div>
-                          <span className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}>
+                          <span
+                            className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}
+                          >
                             {deliveryStatusLabel(order.deliveryStatus)}
                           </span>
                         </div>
@@ -565,7 +569,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                               <span aria-hidden="true" />
                               <div>
                                 <strong>{deliveryStatusLabel(event.status)}</strong>
-                                <small>{orderDateFormatter.format(new Date(event.createdAt))}</small>
+                                <small>
+                                  {orderDateFormatter.format(new Date(event.createdAt))}
+                                </small>
                                 {event.note ? <p>{event.note}</p> : null}
                               </div>
                             </li>
@@ -594,9 +600,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                     ))}
                   </div>
                 ) : (
-                  <div className="customer-account-state">
-                    No active deliveries right now.
-                  </div>
+                  <div className="customer-account-state">No active deliveries right now.</div>
                 )}
 
                 <div className="customer-account-history-heading">
@@ -616,7 +620,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                             <span>{order.deliveryTicketNumber}</span>
                             <strong>{order.orderNumber}</strong>
                           </div>
-                          <span className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}>
+                          <span
+                            className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}
+                          >
                             {deliveryStatusLabel(order.deliveryStatus)}
                           </span>
                         </div>
@@ -974,7 +980,6 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     </section>
   );
 }
-
 
 function deliveryStatusLabel(status: StorefrontOrder["deliveryStatus"]) {
   switch (status) {

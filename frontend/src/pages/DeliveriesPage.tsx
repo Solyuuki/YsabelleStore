@@ -17,13 +17,7 @@ import { AppPagination } from "@/components/shared/AppPagination";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -48,10 +42,7 @@ import {
   updateDeliveryStatus
 } from "@/services/deliveryApi";
 import type { DeliveryListMeta, DeliveryTicket } from "@/types/delivery";
-import type {
-  StorefrontDeliveryStatus,
-  StorefrontPaymentMethod
-} from "@/types/storefront";
+import type { StorefrontDeliveryStatus, StorefrontPaymentMethod } from "@/types/storefront";
 
 const dateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
   dateStyle: "medium",
@@ -162,7 +153,9 @@ export function DeliveriesPage() {
         setMeta(result.meta);
       } catch (reason) {
         if (reason instanceof DOMException && reason.name === "AbortError") return;
-        setError(reason instanceof Error ? reason.message : "Delivery tickets could not be loaded.");
+        setError(
+          reason instanceof Error ? reason.message : "Delivery tickets could not be loaded."
+        );
       } finally {
         if (!signal?.aborted) setLoading(false);
       }
@@ -504,10 +497,7 @@ export function DeliveriesPage() {
                   <h3 className="mb-3 text-sm font-semibold text-slate-900">Delivery timeline</h3>
                   <ol className="space-y-0">
                     {selected.timeline.map((event, index) => (
-                      <li
-                        className="relative grid grid-cols-[18px_1fr] gap-3 pb-4"
-                        key={event.id}
-                      >
+                      <li className="relative grid grid-cols-[18px_1fr] gap-3 pb-4" key={event.id}>
                         {index < selected.timeline.length - 1 ? (
                           <span
                             className="absolute bottom-0 left-[8px] top-4 w-px bg-slate-200"

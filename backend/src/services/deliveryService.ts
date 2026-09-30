@@ -342,8 +342,7 @@ export async function updateDeliveryStatus(
         courierReference: input.courierReference?.trim() || order.courierReference,
         deliveryNotes: input.note?.trim() || order.deliveryNotes,
         deliveryStatus: target,
-        dispatchedAt:
-          target === CustomerDeliveryStatus.OUT_FOR_DELIVERY ? now : order.dispatchedAt,
+        dispatchedAt: target === CustomerDeliveryStatus.OUT_FOR_DELIVERY ? now : order.dispatchedAt,
         status:
           target === CustomerDeliveryStatus.CANCELLED
             ? CustomerOrderStatus.CANCELLED

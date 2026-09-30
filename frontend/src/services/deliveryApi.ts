@@ -1,9 +1,5 @@
 import { apiClient } from "@/services/apiClient";
-import type {
-  DeliveryListMeta,
-  DeliveryTicket,
-  DeliveryTransitionInput
-} from "@/types/delivery";
+import type { DeliveryListMeta, DeliveryTicket, DeliveryTransitionInput } from "@/types/delivery";
 import type { StorefrontDeliveryStatus, StorefrontPaymentMethod } from "@/types/storefront";
 
 function deliveryQuery(values: {

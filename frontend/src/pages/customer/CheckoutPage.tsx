@@ -87,7 +87,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         setSavedAddress(null);
         setAddress(EMPTY_CUSTOMER_ADDRESS);
         setEditingAddress(true);
-        setAddressLoadError("Your saved address could not be loaded. Enter the delivery address below.");
+        setAddressLoadError(
+          "Your saved address could not be loaded. Enter the delivery address below."
+        );
       })
       .finally(() => setAddressLoading(false));
 
@@ -216,7 +218,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         <div className="customer-page-heading">
           <p className="customer-kicker">Delivery checkout</p>
           <h1>Checkout</h1>
-          <p>Confirm your delivery details, then choose secure online payment or Cash on Delivery.</p>
+          <p>
+            Confirm your delivery details, then choose secure online payment or Cash on Delivery.
+          </p>
         </div>
 
         <form className="customer-checkout-layout" onSubmit={submit}>
@@ -278,7 +282,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <span>2</span>
                 <div>
                   <h2>Delivery address</h2>
-                  <p>This is where your order will be delivered. Check the details before placing it.</p>
+                  <p>
+                    This is where your order will be delivered. Check the details before placing it.
+                  </p>
                 </div>
               </div>
 
@@ -466,7 +472,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     <strong>Cash on Delivery</strong>
                     <small>Pay in cash when your order arrives at your delivery address.</small>
                   </span>
-                  {paymentMethod === "CASH_ON_DELIVERY" ? <CheckCircle2 aria-hidden="true" /> : null}
+                  {paymentMethod === "CASH_ON_DELIVERY" ? (
+                    <CheckCircle2 aria-hidden="true" />
+                  ) : null}
                 </label>
               </div>
 
@@ -486,7 +494,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <span>4</span>
                 <div>
                   <h2>Order notes</h2>
-                  <p>Add delivery instructions or a short note for store staff. This is optional.</p>
+                  <p>
+                    Add delivery instructions or a short note for store staff. This is optional.
+                  </p>
                 </div>
               </div>
               <label className="customer-notes-field customer-notes-field--standalone">
@@ -535,7 +545,11 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
             </div>
 
             <div className="customer-order-summary__payment">
-              {paymentMethod === "PAYMONGO" ? <CreditCard aria-hidden="true" /> : <Truck aria-hidden="true" />}
+              {paymentMethod === "PAYMONGO" ? (
+                <CreditCard aria-hidden="true" />
+              ) : (
+                <Truck aria-hidden="true" />
+              )}
               <div>
                 <strong>
                   {paymentMethod === "PAYMONGO" ? "PayMongo online payment" : "Cash on Delivery"}

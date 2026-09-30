@@ -99,11 +99,7 @@ export function OrderSuccessPage({
     <div className="customer-page customer-success-page">
       <div className="customer-container customer-success-card">
         <div className={`customer-success-card__icon${paymentPending ? " is-pending" : ""}`}>
-          {paymentPending ? (
-            <CreditCard aria-hidden="true" />
-          ) : (
-            <PackageCheck aria-hidden="true" />
-          )}
+          {paymentPending ? <CreditCard aria-hidden="true" /> : <PackageCheck aria-hidden="true" />}
         </div>
 
         <p className="customer-kicker">

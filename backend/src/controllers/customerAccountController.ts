@@ -211,7 +211,6 @@ export const revokeOtherCustomerSessionsController: RequestHandler = async (
   }
 };
 
-
 export const confirmCustomerDeliveryReceivedController: RequestHandler = async (
   request,
   response,
@@ -227,13 +226,8 @@ export const confirmCustomerDeliveryReceivedController: RequestHandler = async (
       });
     }
 
-    const order = await confirmCustomerDeliveryReceived(
-      parsedParams.data.orderNumber,
-      customer.id
-    );
-    response
-      .status(200)
-      .json(createSuccessResponse("Delivery receipt confirmed.", order));
+    const order = await confirmCustomerDeliveryReceived(parsedParams.data.orderNumber, customer.id);
+    response.status(200).json(createSuccessResponse("Delivery receipt confirmed.", order));
   } catch (error) {
     next(error);
   }

@@ -169,7 +169,6 @@ export async function fetchStorefrontPaymentStatus(orderNumber: string, signal?:
   return response.data;
 }
 
-
 export async function confirmCustomerDeliveryReceived(orderNumber: string) {
   const response = await apiClient.request<StorefrontOrder, unknown>(
     `/api/customer-account/orders/${encodeURIComponent(orderNumber)}/confirm-received`,
