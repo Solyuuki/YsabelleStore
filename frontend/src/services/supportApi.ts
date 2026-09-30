@@ -68,10 +68,7 @@ export async function replyToStaffSupportTicket(ticketId: string, message: strin
   return response.data;
 }
 
-export async function updateStaffSupportTicketStatus(
-  ticketId: string,
-  status: StaffSupportStatus
-) {
+export async function updateStaffSupportTicketStatus(ticketId: string, status: StaffSupportStatus) {
   const response = await apiClient.request<StaffSupportTicketDetail>(
     `/api/support/tickets/${encodeURIComponent(ticketId)}/status`,
     {

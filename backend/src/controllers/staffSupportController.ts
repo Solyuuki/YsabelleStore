@@ -44,11 +44,7 @@ export const listStaffSupportTicketsController: RequestHandler = async (
   }
 };
 
-export const getStaffSupportTicketController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const getStaffSupportTicketController: RequestHandler = async (request, response, next) => {
   try {
     const params = parseOrThrow(supportTicketIdParamsSchema, request.params, {
       message: "Support ticket id is invalid.",

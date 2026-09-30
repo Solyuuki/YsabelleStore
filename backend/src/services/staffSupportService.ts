@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import type { SupportTicketStatus } from "../types/customerSupport.js";
@@ -70,10 +70,7 @@ const staffSupportTicketDetailSelect = {
   }
 } satisfies Prisma.SupportTicketSelect;
 
-const SUPPORT_STATUS_TRANSITIONS: Record<
-  SupportTicketStatus,
-  readonly SupportTicketStatus[]
-> = {
+const SUPPORT_STATUS_TRANSITIONS: Record<SupportTicketStatus, readonly SupportTicketStatus[]> = {
   NEW: ["OPEN", "WAITING_FOR_CUSTOMER", "RESOLVED", "CLOSED"],
   OPEN: ["WAITING_FOR_CUSTOMER", "RESOLVED", "CLOSED"],
   WAITING_FOR_CUSTOMER: ["OPEN", "RESOLVED", "CLOSED"],
@@ -275,11 +272,7 @@ export async function updateStaffSupportTicketStatus(
         lastMessageAt: now,
         lastReadByStaffAt: now,
         resolvedAt:
-          input.status === "RESOLVED"
-            ? now
-            : input.status === "CLOSED"
-              ? ticket.resolvedAt
-              : null,
+          input.status === "RESOLVED" ? now : input.status === "CLOSED" ? ticket.resolvedAt : null,
         closedAt: input.status === "CLOSED" ? now : null
       },
       where: { id: ticket.id }

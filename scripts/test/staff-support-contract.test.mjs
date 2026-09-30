@@ -8,14 +8,8 @@ const [routes, routeIndex, appRoutes, appShell, sidebar, internalAuth, inboxPage
     readFile(new URL("../../backend/src/routes/index.ts", import.meta.url), "utf8"),
     readFile(new URL("../../frontend/src/app/routes.ts", import.meta.url), "utf8"),
     readFile(new URL("../../frontend/src/app/AppShell.tsx", import.meta.url), "utf8"),
-    readFile(
-      new URL("../../frontend/src/components/app/AppSidebar.tsx", import.meta.url),
-      "utf8"
-    ),
-    readFile(
-      new URL("../../frontend/src/utils/internalAuthRoutes.ts", import.meta.url),
-      "utf8"
-    ),
+    readFile(new URL("../../frontend/src/components/app/AppSidebar.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../../frontend/src/utils/internalAuthRoutes.ts", import.meta.url), "utf8"),
     readFile(
       new URL("../../frontend/src/pages/CustomerSupportInboxPage.tsx", import.meta.url),
       "utf8"

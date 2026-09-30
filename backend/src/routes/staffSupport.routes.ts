@@ -15,7 +15,4 @@ staffSupportRouter.use(requireAuth, requireRole("OWNER", "STAFF"));
 staffSupportRouter.get("/tickets", listStaffSupportTicketsController);
 staffSupportRouter.get("/tickets/:ticketId", getStaffSupportTicketController);
 staffSupportRouter.post("/tickets/:ticketId/replies", replyToStaffSupportTicketController);
-staffSupportRouter.patch(
-  "/tickets/:ticketId/status",
-  updateStaffSupportTicketStatusController
-);
+staffSupportRouter.patch("/tickets/:ticketId/status", updateStaffSupportTicketStatusController);

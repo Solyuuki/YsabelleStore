@@ -23,12 +23,7 @@ async function main() {
     );
   }
 
-  const internalPaths = [
-    "/api/auth/me",
-    "/api/inventory",
-    "/api/products",
-    "/api/support/tickets"
-  ];
+  const internalPaths = ["/api/auth/me", "/api/inventory", "/api/products", "/api/support/tickets"];
 
   for (const path of internalPaths) {
     assert.equal(

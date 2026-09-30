@@ -72,3 +72,14 @@
 | Date       | Member  | Work Item                                                                                                        | Status | Evidence                                                                                               |
 | ---------- | ------- | ---------------------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | 2026-09-30 | M3 Vito | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed | backend/src/controllers/customerSupportController.ts<br>backend/src/services/customerSupportService.ts |
+
+## Sprint Activity Log
+
+| Date | Member | Work Item | Status | Evidence |
+| ---- | ------ | --------- | ------ | -------- |
+
+## Sprint Activity Log
+
+| Date       | Member  | Work Item                                                                                                        | Status | Evidence                                                                                                                                                                            |
+| ---------- | ------- | ---------------------------------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-30 | M3 Vito | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed | backend/src/controllers/staffSupportController.ts<br>backend/src/routes/staffSupport.routes.ts<br>backend/src/services/staffSupportService.ts<br>backend/test/staff-support.test.ts |

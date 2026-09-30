@@ -103,19 +103,16 @@ test("staff can filter tickets, open a conversation, reply, and resolve it", asy
       });
       assert.equal(detailResponse.status, 200);
 
-      const replyResponse = await fetch(
-        `${baseUrl}/api/support/tickets/${ticket.id}/replies`,
-        {
-          method: "POST",
-          headers: {
-            ...authHeader(session.token),
-            "content-type": "application/json"
-          },
-          body: JSON.stringify({
-            message: "Your pickup request is being reviewed by the store team."
-          })
-        }
-      );
+      const replyResponse = await fetch(`${baseUrl}/api/support/tickets/${ticket.id}/replies`, {
+        method: "POST",
+        headers: {
+          ...authHeader(session.token),
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Your pickup request is being reviewed by the store team."
+        })
+      });
       assert.equal(replyResponse.status, 200);
       const replyBody = (await replyResponse.json()) as {
         data?: {
@@ -138,17 +135,14 @@ test("staff can filter tickets, open a conversation, reply, and resolve it", asy
         true
       );
 
-      const resolveResponse = await fetch(
-        `${baseUrl}/api/support/tickets/${ticket.id}/status`,
-        {
-          method: "PATCH",
-          headers: {
-            ...authHeader(session.token),
-            "content-type": "application/json"
-          },
-          body: JSON.stringify({ status: "RESOLVED" })
-        }
-      );
+      const resolveResponse = await fetch(`${baseUrl}/api/support/tickets/${ticket.id}/status`, {
+        method: "PATCH",
+        headers: {
+          ...authHeader(session.token),
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({ status: "RESOLVED" })
+      });
       assert.equal(resolveResponse.status, 200);
       const resolveBody = (await resolveResponse.json()) as {
         data?: {
@@ -186,46 +180,34 @@ test("closed support ticket blocks replies until staff explicitly reopens it", a
         "content-type": "application/json"
       };
 
-      const closeResponse = await fetch(
-        `${baseUrl}/api/support/tickets/${ticket.id}/status`,
-        {
-          method: "PATCH",
-          headers,
-          body: JSON.stringify({ status: "CLOSED" })
-        }
-      );
+      const closeResponse = await fetch(`${baseUrl}/api/support/tickets/${ticket.id}/status`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ status: "CLOSED" })
+      });
       assert.equal(closeResponse.status, 200);
 
-      const blockedReply = await fetch(
-        `${baseUrl}/api/support/tickets/${ticket.id}/replies`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ message: "This should not be accepted while closed." })
-        }
-      );
+      const blockedReply = await fetch(`${baseUrl}/api/support/tickets/${ticket.id}/replies`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ message: "This should not be accepted while closed." })
+      });
       assert.equal(blockedReply.status, 409);
       const blockedBody = (await blockedReply.json()) as { error?: { code?: string } };
       assert.equal(blockedBody.error?.code, "SUPPORT_TICKET_CLOSED");
 
-      const reopenResponse = await fetch(
-        `${baseUrl}/api/support/tickets/${ticket.id}/status`,
-        {
-          method: "PATCH",
-          headers,
-          body: JSON.stringify({ status: "OPEN" })
-        }
-      );
+      const reopenResponse = await fetch(`${baseUrl}/api/support/tickets/${ticket.id}/status`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ status: "OPEN" })
+      });
       assert.equal(reopenResponse.status, 200);
 
-      const replyResponse = await fetch(
-        `${baseUrl}/api/support/tickets/${ticket.id}/replies`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ message: "The reopened ticket can receive a staff reply." })
-        }
-      );
+      const replyResponse = await fetch(`${baseUrl}/api/support/tickets/${ticket.id}/replies`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ message: "The reopened ticket can receive a staff reply." })
+      });
       assert.equal(replyResponse.status, 200);
     });
   } finally {
