@@ -42,7 +42,6 @@ test("customer support API never receives the internal bearer token", () => {
   assert.match(internalAuth, /"\/customer-support"/);
 });
 
-
 test("Phase 4 Gmail integration preserves ticket threading and delivery state", () => {
   assert.match(gmailService, /oauth2\.googleapis\.com\/token/);
   assert.match(gmailService, /gmail\.googleapis\.com\/gmail\/v1\/users\/me/);

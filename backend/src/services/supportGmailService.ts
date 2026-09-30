@@ -141,9 +141,8 @@ function wrapBase64(value: string) {
 
 function headerValue(message: GmailApiMessage, name: string) {
   return (
-    message.payload?.headers?.find(
-      (header) => header.name?.toLowerCase() === name.toLowerCase()
-    )?.value ?? null
+    message.payload?.headers?.find((header) => header.name?.toLowerCase() === name.toLowerCase())
+      ?.value ?? null
   );
 }
 
@@ -159,7 +158,10 @@ function extractDisplayName(value: string | null, email: string) {
   if (!value) return email;
   const bracketIndex = value.indexOf("<");
   if (bracketIndex < 0) return email;
-  const name = value.slice(0, bracketIndex).replace(/^["']|["']$/g, "").trim();
+  const name = value
+    .slice(0, bracketIndex)
+    .replace(/^["']|["']$/g, "")
+    .trim();
   return name || email;
 }
 
@@ -261,9 +263,7 @@ function buildRawSupportEmail(
   ].join("\r\n");
 }
 
-export function createSupportGmailClient(
-  input: SupportGmailConfiguration
-): SupportGmailClient {
+export function createSupportGmailClient(input: SupportGmailConfiguration): SupportGmailClient {
   const configuration = {
     ...input,
     clientId: input.clientId.trim(),
@@ -325,9 +325,7 @@ export function createSupportGmailClient(
   }
 
   async function getMessage(messageId: string) {
-    return gmailRequest<GmailApiMessage>(
-      `/messages/${encodeURIComponent(messageId)}?format=full`
-    );
+    return gmailRequest<GmailApiMessage>(`/messages/${encodeURIComponent(messageId)}?format=full`);
   }
 
   async function getRfcMessageId(messageId: string) {
@@ -533,7 +531,8 @@ export async function syncSupportGmailInboxWithClient(
     }
 
     const activityAt = messageActivityAt(message, now);
-    const lastMessageAt = activityAt > matchedTicket.lastMessageAt ? activityAt : matchedTicket.lastMessageAt;
+    const lastMessageAt =
+      activityAt > matchedTicket.lastMessageAt ? activityAt : matchedTicket.lastMessageAt;
     const lastCustomerMessageAt =
       !matchedTicket.lastCustomerMessageAt || activityAt > matchedTicket.lastCustomerMessageAt
         ? activityAt

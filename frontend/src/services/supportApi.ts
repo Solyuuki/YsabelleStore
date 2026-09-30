@@ -83,20 +83,16 @@ export async function updateStaffSupportTicketStatus(ticketId: string, status: S
   return response.data;
 }
 
-
 export async function fetchSupportGmailStatus() {
-  const response = await apiClient.request<SupportGmailStatus>(
-    "/api/support/gmail/status"
-  );
+  const response = await apiClient.request<SupportGmailStatus>("/api/support/gmail/status");
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
 }
 
 export async function syncSupportGmail() {
-  const response = await apiClient.request<SupportGmailSyncResult>(
-    "/api/support/gmail/sync",
-    { method: "POST" }
-  );
+  const response = await apiClient.request<SupportGmailSyncResult>("/api/support/gmail/sync", {
+    method: "POST"
+  });
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
 }

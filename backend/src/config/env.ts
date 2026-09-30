@@ -44,7 +44,12 @@ const envSchema = z.object({
   GOOGLE_OAUTH_CLIENT_ID: optionalNonEmptyString,
   GOOGLE_OAUTH_CLIENT_SECRET: optionalNonEmptyString,
   CUSTOMER_SUPPORT_EMAIL: optionalEmail,
-  CUSTOMER_SUPPORT_FROM_NAME: z.string().trim().min(1).max(120).default("Ysabelle Store Customer Support"),
+  CUSTOMER_SUPPORT_FROM_NAME: z
+    .string()
+    .trim()
+    .min(1)
+    .max(120)
+    .default("Ysabelle Store Customer Support"),
   GOOGLE_GMAIL_REFRESH_TOKEN: optionalNonEmptyString,
   FACEBOOK_OAUTH_APP_ID: optionalNonEmptyString,
   FACEBOOK_OAUTH_APP_SECRET: optionalNonEmptyString,

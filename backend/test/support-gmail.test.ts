@@ -69,7 +69,9 @@ test("Gmail client exchanges the refresh token and sends the canonical ticket su
   assert.match(rawEmail, /Subject: =\?UTF-8\?B\?/);
   assert.match(
     Buffer.from(
-      rawEmail.match(/Content-Transfer-Encoding: base64\r\n\r\n([\s\S]+?)\r\n$/)?.[1]?.replace(/\r\n/g, "") ?? "",
+      rawEmail
+        .match(/Content-Transfer-Encoding: base64\r\n\r\n([\s\S]+?)\r\n$/)?.[1]
+        ?.replace(/\r\n/g, "") ?? "",
       "base64"
     ).toString("utf8"),
     /YS-CS-000124/

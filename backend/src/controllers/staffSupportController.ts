@@ -8,10 +8,7 @@ import {
   retryStaffSupportEmail,
   updateStaffSupportTicketStatus
 } from "../services/staffSupportService.js";
-import {
-  getSupportGmailStatus,
-  syncSupportGmailInbox
-} from "../services/supportGmailService.js";
+import { getSupportGmailStatus, syncSupportGmailInbox } from "../services/supportGmailService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
@@ -107,7 +104,6 @@ export const updateStaffSupportTicketStatusController: RequestHandler = async (
   }
 };
 
-
 export const getSupportGmailStatusController: RequestHandler = async (_request, response, next) => {
   try {
     response.json(createSuccessResponse("Support Gmail status loaded.", getSupportGmailStatus()));
@@ -125,11 +121,7 @@ export const syncSupportGmailController: RequestHandler = async (_request, respo
   }
 };
 
-export const retryStaffSupportEmailController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const retryStaffSupportEmailController: RequestHandler = async (request, response, next) => {
   try {
     const params = parseOrThrow(supportTicketMessageParamsSchema, request.params, {
       message: "Support message id is invalid.",

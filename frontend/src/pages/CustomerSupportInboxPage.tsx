@@ -620,8 +620,8 @@ function SupportConversation({
             <div>
               <p className="text-sm font-semibold text-slate-900">Staff reply</p>
               <p className="text-xs text-slate-500">
-                Connected Gmail replies are sent to the customer and kept in the same ticket
-                thread. Without Gmail configuration, replies stay local to the support workspace.
+                Connected Gmail replies are sent to the customer and kept in the same ticket thread.
+                Without Gmail configuration, replies stay local to the support workspace.
               </p>
             </div>
             <span className="text-xs text-slate-400">{reply.length} / 5,000</span>

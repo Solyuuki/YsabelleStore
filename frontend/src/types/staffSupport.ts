@@ -93,7 +93,6 @@ export type StaffSupportTicketDetail = {
   messages: StaffSupportMessage[];
 };
 
-
 export type SupportGmailStatus = {
   configured: boolean;
   mailbox: string | null;
