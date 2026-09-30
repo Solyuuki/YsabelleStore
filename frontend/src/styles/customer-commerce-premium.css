@@ -500,3 +500,47 @@
     background: #fff;
   }
 }
+
+
+/* Customer storefront runtime recovery */
+.customer-runtime-fallback {
+  display: grid;
+  min-height: 70vh;
+  place-items: center;
+  padding: clamp(24px, 6vw, 72px);
+  background: var(--customer-page, #f7f8ff);
+}
+
+.customer-runtime-fallback__card {
+  display: grid;
+  width: min(100%, 560px);
+  gap: 14px;
+  padding: clamp(24px, 4vw, 36px);
+  border: 1px solid var(--customer-line);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(31, 38, 76, 0.1);
+}
+
+.customer-runtime-fallback__card h1,
+.customer-runtime-fallback__card p {
+  margin: 0;
+}
+
+.customer-runtime-fallback__card p:not(.customer-kicker) {
+  color: var(--customer-muted);
+  line-height: 1.65;
+}
+
+.customer-runtime-fallback__card button {
+  min-height: 48px;
+  width: fit-content;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 20px;
+  background: var(--customer-primary);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 850;
+}

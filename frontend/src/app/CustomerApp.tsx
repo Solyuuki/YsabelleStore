@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 
+import { CustomerErrorBoundary } from "@/components/customer/CustomerErrorBoundary";
 import { CartProvider } from "@/context/CartContext";
 import { CustomerAuthProvider, useCustomerAuth } from "@/context/CustomerAuthContext";
 import { CustomerFavoritesProvider } from "@/context/CustomerFavoritesContext";
@@ -92,7 +93,9 @@ export function CustomerApp({
     <CustomerAuthProvider>
       <CustomerFavoritesProvider>
         <CartProvider>
-          <CustomerAppRoutes location={location} navigate={navigate} />
+          <CustomerErrorBoundary resetKey={location}>
+            <CustomerAppRoutes location={location} navigate={navigate} />
+          </CustomerErrorBoundary>
         </CartProvider>
       </CustomerFavoritesProvider>
     </CustomerAuthProvider>
