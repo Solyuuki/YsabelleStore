@@ -9,7 +9,8 @@ export type CustomerSessionSummary = {
 };
 
 export type CustomerProfileUpdateInput = {
-  name: string;
+  name?: string;
+  defaultContactPhone?: string | null;
 };
 
 export type CustomerUsernameClaimInput = {

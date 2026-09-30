@@ -8,6 +8,7 @@ export type Customer = {
   username: string | null;
   email: string;
   phone: string | null;
+  defaultContactPhone?: string | null;
   status: CustomerAccountStatus;
 };
 

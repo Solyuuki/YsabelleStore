@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   CreditCard,
   MapPin,
+  Phone,
   ShieldCheck,
   Truck
 } from "lucide-react";
@@ -39,8 +40,13 @@ function addressSummary(address: CustomerAddress) {
 export function CheckoutPage({ navigate }: { navigate: (path: string) => void }) {
   const { items, itemCount, subtotal, clearCart, isReady } = useCart();
   const { customer, status } = useCustomerAuth();
+  const savedContactPhone = customer?.defaultContactPhone ?? customer?.phone ?? "";
   const [contact, setContact] = useState(() => getCustomerCheckoutDefaults(customer));
   const [contactEdited, setContactEdited] = useState(false);
+  const [editingContactPhone, setEditingContactPhone] = useState(() => !savedContactPhone);
+  const [saveContactPhoneToAccount, setSaveContactPhoneToAccount] = useState(
+    () => !savedContactPhone
+  );
   const [address, setAddress] = useState<CustomerAddress>(EMPTY_CUSTOMER_ADDRESS);
   const [savedAddress, setSavedAddress] = useState<CustomerAddress | null>(null);
   const [editingAddress, setEditingAddress] = useState(true);
@@ -54,10 +60,11 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
 
   useEffect(() => {
     if (!contactEdited) setContact(getCustomerCheckoutDefaults(customer));
-  }, [contactEdited, customer]);
+    setEditingContactPhone(!savedContactPhone);
+    setSaveContactPhoneToAccount(!savedContactPhone);
+  }, [contactEdited, customer, savedContactPhone]);
 
   useEffect(() => {
-    setSaveAddressToAccount(Boolean(customer));
     if (!customer) {
       setSavedAddress(null);
       setAddress(EMPTY_CUSTOMER_ADDRESS);
@@ -76,17 +83,20 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
           setSavedAddress(null);
           setAddress(EMPTY_CUSTOMER_ADDRESS);
           setEditingAddress(true);
+          setSaveAddressToAccount(true);
           return;
         }
         setSavedAddress(loadedAddress);
         setAddress(loadedAddress);
         setEditingAddress(false);
+        setSaveAddressToAccount(false);
       })
       .catch((reason) => {
         if (reason instanceof DOMException && reason.name === "AbortError") return;
         setSavedAddress(null);
         setAddress(EMPTY_CUSTOMER_ADDRESS);
         setEditingAddress(true);
+        setSaveAddressToAccount(true);
         setAddressLoadError(
           "Your saved address could not be loaded. Enter the delivery address below."
         );
@@ -98,13 +108,15 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
 
   function updateContact(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof typeof contact;
-    setContact((current) => ({ ...current, [field]: event.currentTarget.value }));
+    const value = event.currentTarget.value;
+    setContact((current) => ({ ...current, [field]: value }));
     setContactEdited(true);
   }
 
   function updateAddress(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof CustomerAddress;
-    setAddress((current) => ({ ...current, [field]: event.currentTarget.value }));
+    const value = event.currentTarget.value;
+    setAddress((current) => ({ ...current, [field]: value }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -126,6 +138,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
           customerPhone: String(form.get("customerPhone") ?? ""),
           customerAddress: address,
           saveAddressToAccount: Boolean(customer && saveAddressToAccount),
+          saveContactPhoneToAccount: Boolean(customer && saveContactPhoneToAccount),
           notes: String(form.get("notes") ?? ""),
           fulfillmentMethod: "DELIVERY",
           paymentMethod,
@@ -248,19 +261,73 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     value={contact.customerName}
                   />
                 </label>
-                <label>
-                  <span>Mobile number</span>
-                  <input
-                    autoComplete="tel"
-                    maxLength={40}
-                    minLength={7}
-                    name="customerPhone"
-                    onChange={updateContact}
-                    required
-                    type="tel"
-                    value={contact.customerPhone}
-                  />
-                </label>
+                <div className="customer-checkout-contact-field">
+                  <span className="customer-checkout-field-label">Mobile number</span>
+                  {savedContactPhone && !editingContactPhone ? (
+                    <div className="customer-choice-card customer-choice-card--compact is-selected">
+                      <Phone aria-hidden="true" />
+                      <div>
+                        <strong>Use saved contact number</strong>
+                        <span>{savedContactPhone}</span>
+                        <button
+                          className="customer-address-change"
+                          onClick={() => {
+                            setEditingContactPhone(true);
+                            setSaveContactPhoneToAccount(false);
+                          }}
+                          type="button"
+                        >
+                          Use a different number
+                        </button>
+                      </div>
+                      <CheckCircle2 aria-hidden="true" />
+                    </div>
+                  ) : (
+                    <div className="customer-checkout-alternate-field">
+                      <input
+                        autoComplete="tel"
+                        maxLength={40}
+                        minLength={7}
+                        name="customerPhone"
+                        onChange={updateContact}
+                        required
+                        type="tel"
+                        value={contact.customerPhone}
+                      />
+                      {savedContactPhone ? (
+                        <button
+                          className="customer-checkout-use-saved"
+                          onClick={() => {
+                            setContact((current) => ({
+                              ...current,
+                              customerPhone: savedContactPhone
+                            }));
+                            setEditingContactPhone(false);
+                            setSaveContactPhoneToAccount(false);
+                          }}
+                          type="button"
+                        >
+                          Use saved number
+                        </button>
+                      ) : null}
+                      <label className="customer-profile-default-option">
+                        <Checkbox.Root
+                          checked={saveContactPhoneToAccount}
+                          className="customer-address-save-checkbox"
+                          onCheckedChange={setSaveContactPhoneToAccount}
+                        >
+                          <Checkbox.Indicator>
+                            <Check aria-hidden="true" size={14} />
+                          </Checkbox.Indicator>
+                        </Checkbox.Root>
+                        <span>
+                          <strong>Save as my default contact number</strong>
+                          <small>Use this number automatically on future checkouts.</small>
+                        </span>
+                      </label>
+                    </div>
+                  )}
+                </div>
                 <label className="customer-form-grid__full">
                   <span>
                     Email <small>(optional)</small>
@@ -304,16 +371,34 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     <span>{addressSummary(savedAddress)}</span>
                     <button
                       className="customer-address-change"
-                      onClick={() => setEditingAddress(true)}
+                      onClick={() => {
+                        setAddress(EMPTY_CUSTOMER_ADDRESS);
+                        setEditingAddress(true);
+                        setSaveAddressToAccount(false);
+                      }}
                       type="button"
                     >
-                      Change address
+                      Use a different address
                     </button>
                   </div>
                   <CheckCircle2 aria-hidden="true" />
                 </div>
               ) : (
-                <div className="customer-form-grid customer-address-form-grid">
+                <div className="customer-checkout-alternate-address">
+                  {savedAddress ? (
+                    <button
+                      className="customer-checkout-use-saved"
+                      onClick={() => {
+                        setAddress(savedAddress);
+                        setEditingAddress(false);
+                        setSaveAddressToAccount(false);
+                      }}
+                      type="button"
+                    >
+                      Use saved address
+                    </button>
+                  ) : null}
+                  <div className="customer-form-grid customer-address-form-grid">
                   <label className="customer-form-grid__full">
                     <span>Address line 1</span>
                     <input
@@ -392,6 +477,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     <span>Country</span>
                     <input readOnly value="Philippines" />
                   </label>
+                  </div>
                 </div>
               )}
 
@@ -401,23 +487,23 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 </div>
               ) : null}
 
-              <label className="customer-address-save-option">
-                <Checkbox.Root
-                  checked={saveAddressToAccount}
-                  className="customer-address-save-checkbox"
-                  onCheckedChange={setSaveAddressToAccount}
-                >
-                  <Checkbox.Indicator>
-                    <Check aria-hidden="true" size={14} />
-                  </Checkbox.Indicator>
-                </Checkbox.Root>
-                <span className="customer-address-save-copy">
-                  <strong>Save this address to My Account</strong>
-                  <small>
-                    Use it automatically on your next checkout. You can change it anytime.
-                  </small>
-                </span>
-              </label>
+              {editingAddress ? (
+                <label className="customer-address-save-option">
+                  <Checkbox.Root
+                    checked={saveAddressToAccount}
+                    className="customer-address-save-checkbox"
+                    onCheckedChange={setSaveAddressToAccount}
+                  >
+                    <Checkbox.Indicator>
+                      <Check aria-hidden="true" size={14} />
+                    </Checkbox.Indicator>
+                  </Checkbox.Root>
+                  <span className="customer-address-save-copy">
+                    <strong>Save as my default delivery address</strong>
+                    <small>Use this address automatically on future checkouts.</small>
+                  </span>
+                </label>
+              ) : null}
             </section>
 
             <section>

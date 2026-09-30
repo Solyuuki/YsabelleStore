@@ -4,6 +4,6 @@ export function getCustomerCheckoutDefaults(customer: Customer | null) {
   return {
     customerName: customer?.name ?? "",
     customerEmail: customer?.email ?? "",
-    customerPhone: customer?.phone ?? ""
+    customerPhone: customer?.defaultContactPhone ?? customer?.phone ?? ""
   };
 }

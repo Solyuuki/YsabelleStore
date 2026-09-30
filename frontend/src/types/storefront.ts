@@ -191,6 +191,7 @@ export type StorefrontOrderInput = {
   customerPhone: string;
   customerAddress: CustomerAddress;
   saveAddressToAccount?: boolean;
+  saveContactPhoneToAccount?: boolean;
   notes?: string;
   fulfillmentMethod: "DELIVERY";
   paymentMethod: StorefrontPaymentMethod;
