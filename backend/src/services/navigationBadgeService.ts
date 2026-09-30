@@ -1,9 +1,11 @@
-import type { UserRole } from "@prisma/client";
+import { CustomerDeliveryStatus, type UserRole } from "@prisma/client";
 
+import { prisma } from "../database/prismaClient.js";
 import { getDashboardOperations, getDashboardSummary } from "./dashboardService.js";
 
 export type NavigationBadgeSummary = {
   dashboard: number;
+  deliveries: number;
   generatedAt: string;
   inventory: number;
   receiving: number;
@@ -14,9 +16,16 @@ export async function getNavigationBadges(
   role: UserRole,
   now = new Date()
 ): Promise<NavigationBadgeSummary> {
-  const [summary, operations] = await Promise.all([
+  const [summary, operations, deliveries] = await Promise.all([
     getDashboardSummary(role, now),
-    role === "OWNER" ? getDashboardOperations(now) : Promise.resolve(null)
+    role === "OWNER" ? getDashboardOperations(now) : Promise.resolve(null),
+    prisma.customerOrder.count({
+      where: {
+        deliveryStatus: {
+          notIn: [CustomerDeliveryStatus.DELIVERED, CustomerDeliveryStatus.CANCELLED]
+        }
+      }
+    })
   ]);
 
   const inventory =
@@ -32,6 +41,7 @@ export async function getNavigationBadges(
 
   return {
     dashboard,
+    deliveries,
     generatedAt: now.toISOString(),
     inventory,
     receiving,

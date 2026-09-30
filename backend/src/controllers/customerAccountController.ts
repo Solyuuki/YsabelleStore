@@ -8,6 +8,7 @@ import {
   revokeOtherCustomerSessions,
   updateCustomerProfile
 } from "../services/customerAccountService.js";
+import { confirmCustomerDeliveryReceived } from "../services/deliveryService.js";
 import {
   addCustomerFavorite,
   listCustomerFavoriteProducts,
@@ -20,6 +21,7 @@ import {
   setCustomerSessionCookie
 } from "../utils/customerAuthCookie.js";
 import { HttpError } from "../utils/httpError.js";
+import { customerDeliveryParamsSchema } from "../validators/delivery.validators.js";
 import {
   customerPasswordChangeSchema,
   customerProfileUpdateSchema,
@@ -204,6 +206,34 @@ export const revokeOtherCustomerSessionsController: RequestHandler = async (
         revokedCount
       })
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const confirmCustomerDeliveryReceivedController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = requireCustomer(request);
+    const parsedParams = customerDeliveryParamsSchema.safeParse(request.params);
+    if (!parsedParams.success) {
+      throw new HttpError(400, "Delivery confirmation request is invalid.", {
+        code: "INVALID_CUSTOMER_DELIVERY_CONFIRMATION",
+        details: parsedParams.error.flatten()
+      });
+    }
+
+    const order = await confirmCustomerDeliveryReceived(
+      parsedParams.data.orderNumber,
+      customer.id
+    );
+    response
+      .status(200)
+      .json(createSuccessResponse("Delivery receipt confirmed.", order));
   } catch (error) {
     next(error);
   }

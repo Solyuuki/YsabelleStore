@@ -8,6 +8,7 @@ import {
   addCustomerFavoriteController,
   changeCustomerPasswordController,
   claimCustomerUsernameController,
+  confirmCustomerDeliveryReceivedController,
   listCustomerFavoritesController,
   listCustomerOrdersController,
   removeCustomerFavoriteController,
@@ -79,6 +80,12 @@ const sensitiveMutationMiddleware = [
 
 customerAccountRouter.use(disableSensitiveResponseCaching);
 customerAccountRouter.get("/orders", requireCustomerAuth, listCustomerOrdersController);
+customerAccountRouter.post(
+  "/orders/:orderNumber/confirm-received",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  confirmCustomerDeliveryReceivedController
+);
 customerAccountRouter.get("/favorites", requireCustomerAuth, listCustomerFavoritesController);
 customerAccountRouter.put(
   "/favorites/:productId",
