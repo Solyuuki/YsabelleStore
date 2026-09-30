@@ -225,7 +225,8 @@ export function StatusScreen({
           <div className="auth-hero-enter w-full max-w-xl text-center">
             <BrandLogo
               className="status-system-brand-mark mx-auto h-28 w-28 rounded-full object-contain drop-shadow-[0_20px_36px_rgba(98,91,255,0.2)] sm:h-32 sm:w-32"
-              variant="mark"
+              eager
+              variant="full"
             />
             <div className="mt-5 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
