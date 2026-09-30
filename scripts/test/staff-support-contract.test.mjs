@@ -69,6 +69,8 @@ test("Phase 4 Gmail integration preserves ticket threading and delivery state", 
 test("Phase 5 hardening keeps failed delivery actionable and prevents silent local replies", () => {
   assert.match(gmailService, /GMAIL_SYNC_MAX_MESSAGES/);
   assert.match(gmailService, /cachedAccessToken/);
+  assert.match(gmailService, /runtimeGmailClient/);
+  assert.match(gmailService, /response\.status === 401/);
   assert.match(gmailService, /SUPPORT_EMAIL_BODY_MAX_LENGTH/);
   assert.match(gmailService, /status: "OPEN"/);
   assert.match(gmailService, /status: "WAITING_FOR_CUSTOMER"/);

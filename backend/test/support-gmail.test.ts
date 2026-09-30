@@ -175,6 +175,63 @@ test("Gmail inbox listing paginates, deduplicates, and reuses one access token",
   assert.equal(tokenCalls, 1);
 });
 
+
+
+test("Gmail client invalidates a rejected access token and retries once", async () => {
+  let tokenCalls = 0;
+  let gmailCalls = 0;
+
+  const fetchImpl: typeof fetch = async (input, init) => {
+    const url = String(input);
+
+    if (url === "https://oauth2.googleapis.com/token") {
+      tokenCalls += 1;
+      return new Response(
+        JSON.stringify({
+          access_token: tokenCalls === 1 ? "stale-token" : "fresh-token",
+          expires_in: 3600
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (url.startsWith("https://gmail.googleapis.com/gmail/v1/users/me/messages?")) {
+      gmailCalls += 1;
+      const authorization = new Headers(init?.headers).get("authorization");
+      if (authorization === "Bearer stale-token") {
+        return new Response(JSON.stringify({ error: "invalid_token" }), {
+          status: 401,
+          headers: { "content-type": "application/json" }
+        });
+      }
+
+      assert.equal(authorization, "Bearer fresh-token");
+      return new Response(JSON.stringify({ messages: [] }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
+    }
+
+    throw new Error(`Unexpected Gmail test request: ${url}`);
+  };
+
+  const client = createSupportGmailClient({
+    clientId: "client-id",
+    clientSecret: "client-secret",
+    refreshToken: "refresh-token",
+    supportEmail: "novelaarchives@gmail.com",
+    fromName: "Ysabelle Store Customer Support",
+    fetchImpl
+  });
+
+  assert.deepEqual(await client.listInboxMessages(), []);
+  assert.equal(tokenCalls, 2);
+  assert.equal(gmailCalls, 2);
+});
+
 test("Gmail inbox sync imports only the matching customer reply and is idempotent", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
 

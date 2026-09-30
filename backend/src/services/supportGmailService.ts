@@ -81,6 +81,8 @@ export type SupportGmailClient = {
   sendSupportReply(input: SupportGmailSendInput): Promise<SupportGmailSendResult>;
 };
 
+let runtimeGmailClient: SupportGmailClient | null = null;
+
 function runtimeConfiguration(): SupportGmailConfiguration | null {
   const clientId = env.GOOGLE_OAUTH_CLIENT_ID?.trim();
   const clientSecret = env.GOOGLE_OAUTH_CLIENT_SECRET?.trim();
@@ -355,20 +357,29 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
   }
 
   async function gmailRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
-    const token = await accessToken();
-    let response: Response;
-    try {
-      response = await configuration.fetchImpl(`${GMAIL_API_BASE}${path}`, {
-        ...init,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          ...(init.body ? { "content-type": "application/json" } : {}),
-          ...Object.fromEntries(new Headers(init.headers).entries())
-        },
-        signal: init.signal ?? AbortSignal.timeout(GMAIL_REQUEST_TIMEOUT_MS)
-      });
-    } catch {
-      throw new Error("Support Gmail request failed.");
+    async function requestWithToken(token: string) {
+      try {
+        return await configuration.fetchImpl(`${GMAIL_API_BASE}${path}`, {
+          ...init,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(init.body ? { "content-type": "application/json" } : {}),
+            ...Object.fromEntries(new Headers(init.headers).entries())
+          },
+          signal: init.signal ?? AbortSignal.timeout(GMAIL_REQUEST_TIMEOUT_MS)
+        });
+      } catch {
+        throw new Error("Support Gmail request failed.");
+      }
+    }
+
+    let token = await accessToken();
+    let response = await requestWithToken(token);
+
+    if (response.status === 401) {
+      cachedAccessToken = null;
+      token = await accessToken();
+      response = await requestWithToken(token);
     }
 
     if (!response.ok) throw new Error("Support Gmail request failed.");
@@ -451,9 +462,13 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
 }
 
 function runtimeClient() {
+  if (runtimeGmailClient) return runtimeGmailClient;
+
   const configuration = runtimeConfiguration();
   if (!configuration) throw supportGmailNotConfigured();
-  return createSupportGmailClient(configuration);
+
+  runtimeGmailClient = createSupportGmailClient(configuration);
+  return runtimeGmailClient;
 }
 
 export async function deliverStaffSupportMessageEmail(
