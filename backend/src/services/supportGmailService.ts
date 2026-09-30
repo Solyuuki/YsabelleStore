@@ -431,7 +431,7 @@ export async function deliverStaffSupportMessageEmail(messageId: string) {
       ticketNumber: message.ticket.ticketNumber,
       subject: message.ticket.subject,
       body: message.body,
-      threadId: message.matchedTicket.gmailThreadId,
+      threadId: message.ticket.gmailThreadId,
       replyToGmailMessageId: previousGmailMessage?.gmailMessageId ?? null
     });
     const sentAt = new Date();
