@@ -110,36 +110,25 @@ test("browser favicon uses full-logo 16, 32, and 48 px frames", async () => {
   assert.doesNotMatch(html, /sizes="256x256"/);
 });
 
-test("shared brand components render only the bundled approved circular logo", async () => {
+test("shared brand components use the canonical public Ysabelle mark on web and Electron", async () => {
   const customerMark = await readText("frontend/src/components/customer/YsabelleBrandMark.tsx");
   const staffMark = await readText("frontend/src/components/brand/BrandLogo.tsx");
 
   assert.match(
     staffMark,
-    /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
+    /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/
   );
   assert.match(
     staffMark,
-    /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/
+    /FILE_BRAND_MARK_SRC = `\.\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/
   );
-  assert.match(staffMark, /\? officialLogoUrl\s*:\s*WEB_BRAND_MARK_SRC/);
-  assert.match(staffMark, /src=\{source\}/);
+  assert.match(staffMark, /new URL\(FILE_BRAND_MARK_SRC, document\.baseURI\)\.href/);
+  assert.doesNotMatch(staffMark, /officialLogoUrl|ysabelle-logo-official\.webp/);
   assert.doesNotMatch(staffMark, /<svg[\s>]/);
-  assert.doesNotMatch(staffMark, /setImageFailed|imageFailed/);
 
-  assert.match(
-    customerMark,
-    /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
-  );
-  assert.match(
-    customerMark,
-    /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/
-  );
-  assert.match(customerMark, /src=\{source\}/);
-  assert.match(customerMark, /\/brand\/ysabelle-store-mark-128\.png/);
-  assert.match(customerMark, /\/brand\/ysabelle-store-mark-256\.png/);
-  assert.doesNotMatch(customerMark, /<BrandLogo|\bStore\b/);
-  assert.doesNotMatch(customerMark, /ysabelle-brand-mark__fallback|<svg[\s>]/);
+  assert.match(customerMark, /import \{ BrandLogo \} from "@\/components\/brand\/BrandLogo";/);
+  assert.match(customerMark, /<BrandLogo[\s\S]*variant="mark"/);
+  assert.doesNotMatch(customerMark, /officialLogoUrl|WEB_BRAND_MARK_SRC|<svg[\s>]/);
 });
 
 test("keeps approved header and footer on shared mark", async () => {
@@ -191,7 +180,7 @@ test("Windows packaging uses generated ICO while runtime uses approved PNG", asy
   const builder = await readText("electron/electron-builder.config.cjs");
   assert.match(packageJson.scripts.dev, /^node scripts\/prepare-windows-icon\.mjs && /);
   assert.match(packageJson.scripts.package, /^node scripts\/prepare-windows-icon\.mjs && /);
-  assert.match(builder, /electronVersion:\s*"42\.8\.1"/);
+  assert.match(builder, /electronVersion: "42.10.0"/);
   assert.match(builder, /icon:\s*"build\/icon\.ico"/);
   assert.doesNotMatch(builder, /app-icon\.ico/);
   assert.match(paths, /favicon-48x48\.png/);
