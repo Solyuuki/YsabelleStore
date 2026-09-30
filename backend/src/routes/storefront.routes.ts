@@ -3,6 +3,11 @@ import { Router } from "express";
 import { publicCategoryImageController } from "../controllers/categoryImageController.js";
 import { publicProductImageController } from "../controllers/productImageController.js";
 import {
+  createPaymongoCheckoutController,
+  getStorefrontPaymentStatusController,
+  paymongoWebhookController
+} from "../controllers/paymongoController.js";
+import {
   createStorefrontOrderController,
   getStorefrontProductController,
   getStorefrontProductReviewContextController,
@@ -38,3 +43,14 @@ storefrontRouter.put(
 storefrontRouter.get("/products/:id/related", listStorefrontRelatedProductsController);
 storefrontRouter.get("/products/:id", getStorefrontProductController);
 storefrontRouter.post("/orders", requireCustomerAuth, createStorefrontOrderController);
+storefrontRouter.post(
+  "/orders/:orderNumber/paymongo-checkout",
+  requireCustomerAuth,
+  createPaymongoCheckoutController
+);
+storefrontRouter.get(
+  "/orders/:orderNumber/payment-status",
+  requireCustomerAuth,
+  getStorefrontPaymentStatusController
+);
+storefrontRouter.post("/payments/paymongo/webhook", paymongoWebhookController);
