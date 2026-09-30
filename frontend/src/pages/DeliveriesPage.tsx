@@ -1,0 +1,720 @@
+import {
+  Banknote,
+  Box,
+  CheckCircle2,
+  Clock3,
+  MapPin,
+  PackageCheck,
+  RefreshCw,
+  Search,
+  Truck,
+  UserRound,
+  XCircle
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { AppPagination } from "@/components/shared/AppPagination";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import {
+  confirmCodCollected,
+  listDeliveryTickets,
+  updateDeliveryStatus
+} from "@/services/deliveryApi";
+import type { DeliveryListMeta, DeliveryTicket } from "@/types/delivery";
+import type {
+  StorefrontDeliveryStatus,
+  StorefrontPaymentMethod
+} from "@/types/storefront";
+
+const dateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
+  dateStyle: "medium",
+  timeStyle: "short"
+});
+const currencyFormatter = new Intl.NumberFormat("en-PH", {
+  style: "currency",
+  currency: "PHP"
+});
+
+const EMPTY_SUMMARY: DeliveryListMeta["summary"] = {
+  ORDER_PLACED: 0,
+  PREPARING: 0,
+  READY_FOR_DELIVERY: 0,
+  OUT_FOR_DELIVERY: 0,
+  DELIVERED: 0,
+  DELIVERY_FAILED: 0,
+  CANCELLED: 0
+};
+
+function statusLabel(status: StorefrontDeliveryStatus) {
+  switch (status) {
+    case "ORDER_PLACED":
+      return "Order placed";
+    case "PREPARING":
+      return "Preparing";
+    case "READY_FOR_DELIVERY":
+      return "Ready for delivery";
+    case "OUT_FOR_DELIVERY":
+      return "On the way";
+    case "DELIVERED":
+      return "Delivered";
+    case "DELIVERY_FAILED":
+      return "Delivery failed";
+    case "CANCELLED":
+      return "Cancelled";
+  }
+}
+
+function statusTone(
+  status: StorefrontDeliveryStatus
+): "default" | "info" | "success" | "warning" | "danger" {
+  if (status === "DELIVERED") return "success";
+  if (status === "OUT_FOR_DELIVERY") return "info";
+  if (status === "DELIVERY_FAILED" || status === "CANCELLED") return "danger";
+  if (status === "READY_FOR_DELIVERY") return "warning";
+  return "default";
+}
+
+function paymentLabel(method: StorefrontPaymentMethod) {
+  return method === "CASH_ON_DELIVERY" ? "Cash on Delivery" : "PayMongo";
+}
+
+function addressText(ticket: DeliveryTicket) {
+  if (!ticket.address) return "No delivery address recorded";
+  return [
+    ticket.address.addressLine1,
+    ticket.address.addressLine2,
+    ticket.address.barangay,
+    ticket.address.cityMunicipality,
+    ticket.address.provinceRegion,
+    ticket.address.postalCode,
+    ticket.address.country
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+export function DeliveriesPage() {
+  const [tickets, setTickets] = useState<DeliveryTicket[]>([]);
+  const [meta, setMeta] = useState<DeliveryListMeta>({
+    page: 1,
+    pageSize: 20,
+    totalItems: 0,
+    totalPages: 0,
+    summary: EMPTY_SUMMARY
+  });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [status, setStatus] = useState<StorefrontDeliveryStatus | "all">("all");
+  const [paymentMethod, setPaymentMethod] = useState<StorefrontPaymentMethod | "all">("all");
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [selected, setSelected] = useState<DeliveryTicket | null>(null);
+  const [courierProvider, setCourierProvider] = useState("");
+  const [courierReference, setCourierReference] = useState("");
+  const [staffNote, setStaffNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const load = useCallback(
+    async (signal?: AbortSignal) => {
+      setLoading(true);
+      setError("");
+      try {
+        const result = await listDeliveryTickets(
+          {
+            page,
+            pageSize,
+            paymentMethod: paymentMethod === "all" ? undefined : paymentMethod,
+            search: search || undefined,
+            status: status === "all" ? undefined : status
+          },
+          signal
+        );
+        setTickets(result.items);
+        setMeta(result.meta);
+      } catch (reason) {
+        if (reason instanceof DOMException && reason.name === "AbortError") return;
+        setError(reason instanceof Error ? reason.message : "Delivery tickets could not be loaded.");
+      } finally {
+        if (!signal?.aborted) setLoading(false);
+      }
+    },
+    [page, pageSize, paymentMethod, search, status]
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void load(controller.signal);
+    return () => controller.abort();
+  }, [load]);
+
+  useEffect(() => {
+    if (!selected) return;
+    setCourierProvider(selected.courierProvider ?? "");
+    setCourierReference(selected.courierReference ?? "");
+    setStaffNote(selected.deliveryNotes ?? "");
+  }, [selected]);
+
+  const activeCount = useMemo(
+    () =>
+      meta.summary.ORDER_PLACED +
+      meta.summary.PREPARING +
+      meta.summary.READY_FOR_DELIVERY +
+      meta.summary.OUT_FOR_DELIVERY +
+      meta.summary.DELIVERY_FAILED,
+    [meta.summary]
+  );
+
+  function applySearch() {
+    setPage(1);
+    setSearch(searchInput.trim());
+  }
+
+  async function runTransition(
+    targetStatus:
+      | "PREPARING"
+      | "READY_FOR_DELIVERY"
+      | "OUT_FOR_DELIVERY"
+      | "DELIVERY_FAILED"
+      | "CANCELLED"
+  ) {
+    if (!selected || submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const updated = await updateDeliveryStatus(selected.id, {
+        targetStatus,
+        courierProvider: courierProvider.trim() || undefined,
+        courierReference: courierReference.trim() || undefined,
+        note: staffNote.trim() || undefined
+      });
+      setSelected(updated);
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Delivery status could not be updated.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function settleCod() {
+    if (!selected || submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const updated = await confirmCodCollected(selected.id, staffNote);
+      setSelected(updated);
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "COD payment could not be confirmed.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        actions={
+          <Button disabled={loading} onClick={() => void load()} type="button" variant="secondary">
+            <RefreshCw
+              aria-hidden="true"
+              className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"}
+            />
+            Refresh
+          </Button>
+        }
+        description="Coordinate customer delivery tickets, courier handoff, receipt confirmation, and Cash on Delivery settlement."
+        eyebrow="DELIVERY OPERATIONS"
+        title="Deliveries"
+      />
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard icon={PackageCheck} label="Active tickets" value={activeCount} />
+        <MetricCard icon={Box} label="Ready for delivery" value={meta.summary.READY_FOR_DELIVERY} />
+        <MetricCard icon={Truck} label="On the way" value={meta.summary.OUT_FOR_DELIVERY} />
+        <MetricCard icon={CheckCircle2} label="Delivered" value={meta.summary.DELIVERED} />
+      </div>
+
+      <Card>
+        <CardHeader className="gap-1">
+          <CardTitle>Delivery queue</CardTitle>
+          <CardDescription>
+            Search by ticket, order, customer, or phone. Status and payment filters scale with the
+            queue.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
+            <form
+              className="flex min-w-0 gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                applySearch();
+              }}
+            >
+              <div className="relative min-w-0 flex-1">
+                <Search
+                  aria-hidden="true"
+                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                />
+                <Input
+                  className="pl-9"
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  placeholder="Search ticket, order, customer, phone..."
+                  value={searchInput}
+                />
+              </div>
+              <Button type="submit" variant="secondary">
+                Search
+              </Button>
+            </form>
+
+            <Select
+              aria-label="Delivery status"
+              onChange={(event) => {
+                setPage(1);
+                setStatus(event.target.value as StorefrontDeliveryStatus | "all");
+              }}
+              value={status}
+            >
+              <option value="all">All delivery statuses</option>
+              <option value="ORDER_PLACED">Order placed</option>
+              <option value="PREPARING">Preparing</option>
+              <option value="READY_FOR_DELIVERY">Ready for delivery</option>
+              <option value="OUT_FOR_DELIVERY">On the way</option>
+              <option value="DELIVERED">Delivered</option>
+              <option value="DELIVERY_FAILED">Delivery failed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </Select>
+
+            <Select
+              aria-label="Payment method"
+              onChange={(event) => {
+                setPage(1);
+                setPaymentMethod(event.target.value as StorefrontPaymentMethod | "all");
+              }}
+              value={paymentMethod}
+            >
+              <option value="all">All payment methods</option>
+              <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
+              <option value="PAYMONGO">PayMongo</option>
+            </Select>
+          </div>
+
+          {error ? (
+            <div
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              role="alert"
+            >
+              {error}
+            </div>
+          ) : null}
+
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <Table>
+              <TableHeader className="bg-slate-50/80">
+                <TableRow>
+                  <TableHead>Ticket / Order</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Payment</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="w-[120px] text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading && tickets.length === 0 ? (
+                  <TableRow>
+                    <TableCell className="h-28 text-center text-slate-500" colSpan={6}>
+                      Loading delivery tickets...
+                    </TableCell>
+                  </TableRow>
+                ) : tickets.length === 0 ? (
+                  <TableRow>
+                    <TableCell className="h-28 text-center text-slate-500" colSpan={6}>
+                      No delivery tickets match these filters.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  tickets.map((ticket) => (
+                    <TableRow className="hover:bg-slate-50/70" key={ticket.id}>
+                      <TableCell>
+                        <div className="grid gap-0.5">
+                          <strong className="text-slate-950">{ticket.deliveryTicketNumber}</strong>
+                          <span className="text-xs text-slate-500">{ticket.orderNumber}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="grid gap-0.5">
+                          <strong className="font-medium text-slate-900">
+                            {ticket.customerName}
+                          </strong>
+                          <span className="text-xs text-slate-500">{ticket.customerPhone}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="grid gap-1">
+                          <span>{paymentLabel(ticket.paymentMethod)}</span>
+                          <span className="text-xs text-slate-500">{ticket.paymentStatus}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={statusTone(ticket.deliveryStatus)}>
+                          {statusLabel(ticket.deliveryStatus)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-slate-950">
+                        {currencyFormatter.format(Number(ticket.totalAmount))}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          onClick={() => setSelected(ticket)}
+                          size="sm"
+                          type="button"
+                          variant="secondary"
+                        >
+                          Open ticket
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          <AppPagination
+            isLoading={loading}
+            itemLabel="tickets"
+            onPageChange={setPage}
+            onPageSizeChange={(next) => {
+              setPage(1);
+              setPageSize(next);
+            }}
+            page={meta.page}
+            pageSize={meta.pageSize}
+            totalItems={meta.totalItems}
+            totalPages={meta.totalPages}
+          />
+        </CardContent>
+      </Card>
+
+      <Dialog
+        open={Boolean(selected)}
+        onOpenChange={(open) => {
+          if (!open && !submitting) setSelected(null);
+        }}
+      >
+        {selected ? (
+          <DialogContent className="max-h-[90vh] max-w-[900px] overflow-y-auto">
+            <DialogHeader>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={statusTone(selected.deliveryStatus)}>
+                  {statusLabel(selected.deliveryStatus)}
+                </Badge>
+                <Badge>{paymentLabel(selected.paymentMethod)}</Badge>
+              </div>
+              <DialogTitle>{selected.deliveryTicketNumber}</DialogTitle>
+              <DialogDescription>
+                {selected.orderNumber} · updated{" "}
+                {dateTimeFormatter.format(new Date(selected.updatedAt))}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-5 px-6 pb-2">
+              <div className="grid gap-3 md:grid-cols-3">
+                <TicketFact
+                  detail={selected.customerPhone}
+                  icon={UserRound}
+                  label="Customer"
+                  value={selected.customerName}
+                />
+                <TicketFact
+                  detail={selected.paymentStatus}
+                  icon={Banknote}
+                  label="Payment"
+                  value={paymentLabel(selected.paymentMethod)}
+                />
+                <TicketFact
+                  detail={selected.itemCount + " item" + (selected.itemCount === 1 ? "" : "s")}
+                  icon={Clock3}
+                  label="Total"
+                  value={currencyFormatter.format(Number(selected.totalAmount))}
+                />
+              </div>
+
+              <section className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900">
+                  <MapPin className="h-4 w-4 text-indigo-600" aria-hidden="true" />
+                  Delivery address
+                </div>
+                <p className="text-sm leading-6 text-slate-600">{addressText(selected)}</p>
+              </section>
+
+              <div className="grid gap-5 lg:grid-cols-2">
+                <section>
+                  <h3 className="mb-3 text-sm font-semibold text-slate-900">Order items</h3>
+                  <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+                    {selected.items.map((item) => (
+                      <div
+                        className="flex items-start justify-between gap-4 px-4 py-3"
+                        key={item.productId}
+                      >
+                        <span className="text-sm text-slate-700">
+                          {item.quantity} × {item.productName}
+                        </span>
+                        <strong className="shrink-0 text-sm text-slate-950">
+                          {currencyFormatter.format(Number(item.totalAmount))}
+                        </strong>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="mb-3 text-sm font-semibold text-slate-900">Delivery timeline</h3>
+                  <ol className="space-y-0">
+                    {selected.timeline.map((event, index) => (
+                      <li
+                        className="relative grid grid-cols-[18px_1fr] gap-3 pb-4"
+                        key={event.id}
+                      >
+                        {index < selected.timeline.length - 1 ? (
+                          <span
+                            className="absolute bottom-0 left-[8px] top-4 w-px bg-slate-200"
+                            aria-hidden="true"
+                          />
+                        ) : null}
+                        <span
+                          className="mt-1 h-4 w-4 rounded-full border-4 border-indigo-100 bg-indigo-600"
+                          aria-hidden="true"
+                        />
+                        <div>
+                          <strong className="text-sm text-slate-900">
+                            {statusLabel(event.status)}
+                          </strong>
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            {dateTimeFormatter.format(new Date(event.createdAt))}
+                          </p>
+                          {event.note ? (
+                            <p className="mt-1 text-xs leading-5 text-slate-600">{event.note}</p>
+                          ) : null}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              </div>
+
+              {!["DELIVERED", "CANCELLED"].includes(selected.deliveryStatus) ? (
+                <section className="grid gap-4 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-950">Delivery operations</h3>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">
+                      Courier booking stays manual. Record enough information for an auditable
+                      handoff.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                      Courier / service
+                      <Select
+                        onChange={(event) => setCourierProvider(event.target.value)}
+                        value={courierProvider}
+                      >
+                        <option value="">Choose courier when dispatching</option>
+                        <option value="Grab">Grab</option>
+                        <option value="Lalamove">Lalamove</option>
+                        <option value="Other">Other</option>
+                      </Select>
+                    </label>
+                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                      Booking / reference
+                      <Input
+                        maxLength={120}
+                        onChange={(event) => setCourierReference(event.target.value)}
+                        placeholder="Optional reference"
+                        value={courierReference}
+                      />
+                    </label>
+                  </div>
+                  <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                    Staff note
+                    <Input
+                      maxLength={255}
+                      onChange={(event) => setStaffNote(event.target.value)}
+                      placeholder="Optional operational note"
+                      value={staffNote}
+                    />
+                  </label>
+                </section>
+              ) : null}
+
+              {selected.customerConfirmedAt ? (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                  Customer confirmed receipt on{" "}
+                  {dateTimeFormatter.format(new Date(selected.customerConfirmedAt))}.
+                </div>
+              ) : selected.deliveryStatus === "OUT_FOR_DELIVERY" ? (
+                <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                  Waiting for the customer to confirm physical receipt from My Account.
+                </div>
+              ) : null}
+            </div>
+
+            <DialogFooter className="flex-wrap">
+              {selected.canConfirmCodCollected ? (
+                <Button disabled={submitting} onClick={() => void settleCod()} type="button">
+                  <Banknote className="h-4 w-4" aria-hidden="true" />
+                  {submitting ? "Confirming..." : "Confirm COD collected"}
+                </Button>
+              ) : null}
+
+              {selected.deliveryStatus === "ORDER_PLACED" ? (
+                <Button
+                  disabled={submitting}
+                  onClick={() => void runTransition("PREPARING")}
+                  type="button"
+                >
+                  Start preparing
+                </Button>
+              ) : null}
+              {selected.deliveryStatus === "PREPARING" ? (
+                <Button
+                  disabled={submitting}
+                  onClick={() => void runTransition("READY_FOR_DELIVERY")}
+                  type="button"
+                >
+                  Mark ready
+                </Button>
+              ) : null}
+              {selected.deliveryStatus === "READY_FOR_DELIVERY" ? (
+                <Button
+                  disabled={submitting || !courierProvider.trim()}
+                  onClick={() => void runTransition("OUT_FOR_DELIVERY")}
+                  type="button"
+                >
+                  <Truck className="h-4 w-4" aria-hidden="true" />
+                  Dispatch order
+                </Button>
+              ) : null}
+              {selected.deliveryStatus === "OUT_FOR_DELIVERY" ? (
+                <Button
+                  disabled={submitting}
+                  onClick={() => void runTransition("DELIVERY_FAILED")}
+                  type="button"
+                  variant="danger"
+                >
+                  <XCircle className="h-4 w-4" aria-hidden="true" />
+                  Delivery failed
+                </Button>
+              ) : null}
+              {selected.deliveryStatus === "DELIVERY_FAILED" ? (
+                <Button
+                  disabled={submitting}
+                  onClick={() => void runTransition("READY_FOR_DELIVERY")}
+                  type="button"
+                >
+                  Ready for redelivery
+                </Button>
+              ) : null}
+
+              {["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(
+                selected.deliveryStatus
+              ) ? (
+                <Button
+                  disabled={submitting || selected.paymentStatus === "PAID"}
+                  onClick={() => void runTransition("CANCELLED")}
+                  type="button"
+                  variant="ghost"
+                >
+                  Cancel order
+                </Button>
+              ) : null}
+            </DialogFooter>
+          </DialogContent>
+        ) : null}
+      </Dialog>
+    </div>
+  );
+}
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value
+}: {
+  icon: typeof PackageCheck;
+  label: string;
+  value: number;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-4 pt-5">
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-50 text-indigo-700">
+          <Icon className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+            {label}
+          </p>
+          <p className="mt-1 text-2xl font-semibold text-slate-950">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TicketFact({
+  detail,
+  icon: Icon,
+  label,
+  value
+}: {
+  detail: string;
+  icon: typeof PackageCheck;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-slate-200 p-3">
+      <span className="grid h-8 w-8 flex-none place-items-center rounded-lg bg-slate-100 text-slate-600">
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs text-slate-500">{label}</p>
+        <p className="truncate text-sm font-semibold text-slate-950">{value}</p>
+        <p className="truncate text-xs text-slate-500">{detail}</p>
+      </div>
+    </div>
+  );
+}
