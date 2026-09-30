@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 
 type CustomerErrorBoundaryProps = {
   children: ReactNode;
@@ -19,7 +19,7 @@ export class CustomerErrorBoundary extends Component<
     return { failed: true };
   }
 
-  public override componentDidCatch(_error: Error, _info: ErrorInfo) {
+  public override componentDidCatch() {
     console.error("[customer-ui] render failure");
   }
 
