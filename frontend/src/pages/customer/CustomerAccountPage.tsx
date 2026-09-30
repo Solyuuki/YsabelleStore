@@ -24,16 +24,10 @@ import {
   revokeOtherCustomerSessions,
   updateCustomerProfile
 } from "@/services/customerAccountService";
-import {
-  fetchCustomerAddress,
-  updateCustomerAddress
-} from "@/services/customerAddressService";
+import { fetchCustomerAddress, updateCustomerAddress } from "@/services/customerAddressService";
 import { confirmCustomerDeliveryReceived, fetchCustomerOrders } from "@/services/storefrontService";
 import type { CustomerSessionSummary } from "@/types/customerAccount";
-import {
-  EMPTY_CUSTOMER_ADDRESS,
-  type CustomerAddress
-} from "@/types/customerAddress";
+import { EMPTY_CUSTOMER_ADDRESS, type CustomerAddress } from "@/types/customerAddress";
 import type { StorefrontOrder } from "@/types/storefront";
 
 const orderDateFormatter = new Intl.DateTimeFormat("en-PH", {
@@ -778,9 +772,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
               <div>
                 <p className="customer-eyebrow">Profile information</p>
                 <h2 id="profile-title">Your shopping profile</h2>
-                <p>
-                  Manage the details Ysabelle Store can reuse for faster delivery checkout.
-                </p>
+                <p>Manage the details Ysabelle Store can reuse for faster delivery checkout.</p>
               </div>
               <UserRound aria-hidden="true" size={22} />
             </div>
@@ -803,12 +795,18 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   {savingName ? "Saving..." : "Save"}
                 </button>
                 {profileError ? (
-                  <p className="customer-account-form-error customer-account-form-message" role="alert">
+                  <p
+                    className="customer-account-form-error customer-account-form-message"
+                    role="alert"
+                  >
                     {profileError}
                   </p>
                 ) : null}
                 {profileMessage ? (
-                  <p className="customer-account-form-success customer-account-form-message" role="status">
+                  <p
+                    className="customer-account-form-success customer-account-form-message"
+                    role="status"
+                  >
                     {profileMessage}
                   </p>
                 ) : null}
@@ -851,8 +849,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   <button
                     disabled={
                       savingContactPhone ||
-                      contactPhone.trim() ===
-                        (customer.defaultContactPhone ?? customer.phone ?? "")
+                      contactPhone.trim() === (customer.defaultContactPhone ?? customer.phone ?? "")
                     }
                     type="submit"
                   >
@@ -877,7 +874,10 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                     <span>
                       <MapPin size={17} /> Default delivery address
                     </span>
-                    <p>Automatically offered on your next checkout. You can still use another address per order.</p>
+                    <p>
+                      Automatically offered on your next checkout. You can still use another address
+                      per order.
+                    </p>
                   </div>
                   {savedAddress && !addressEditing ? (
                     <button onClick={() => setAddressEditing(true)} type="button">
@@ -920,7 +920,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                       />
                     </label>
                     <label className="customer-account-address-form__full">
-                      <span>Address line 2 <small>(optional)</small></span>
+                      <span>
+                        Address line 2 <small>(optional)</small>
+                      </span>
                       <input
                         autoComplete="address-line2"
                         maxLength={180}

@@ -412,7 +412,6 @@
   }
 }
 
-
 /* Checkout reusable customer defaults */
 .customer-checkout-contact-field {
   display: grid;
@@ -500,7 +499,6 @@
     background: #fff;
   }
 }
-
 
 /* Customer storefront runtime recovery */
 .customer-runtime-fallback {

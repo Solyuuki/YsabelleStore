@@ -37,9 +37,7 @@ export class CustomerErrorBoundary extends Component<
         <div className="customer-runtime-fallback__card">
           <p className="customer-kicker">Storefront recovery</p>
           <h1>Something went wrong</h1>
-          <p>
-            We could not display this page correctly. Your account and cart data remain stored.
-          </p>
+          <p>We could not display this page correctly. Your account and cart data remain stored.</p>
           <button onClick={() => window.location.reload()} type="button">
             Reload page
           </button>

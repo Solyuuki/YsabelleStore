@@ -399,84 +399,84 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     </button>
                   ) : null}
                   <div className="customer-form-grid customer-address-form-grid">
-                  <label className="customer-form-grid__full">
-                    <span>Address line 1</span>
-                    <input
-                      autoComplete="address-line1"
-                      maxLength={180}
-                      minLength={3}
-                      name="addressLine1"
-                      onChange={updateAddress}
-                      placeholder="House / unit number and street"
-                      required
-                      value={address.addressLine1}
-                    />
-                  </label>
-                  <label className="customer-form-grid__full">
-                    <span>
-                      Address line 2 <small>(optional)</small>
-                    </span>
-                    <input
-                      autoComplete="address-line2"
-                      maxLength={180}
-                      name="addressLine2"
-                      onChange={updateAddress}
-                      placeholder="Building, subdivision, landmark"
-                      value={address.addressLine2}
-                    />
-                  </label>
-                  <label>
-                    <span>Barangay</span>
-                    <input
-                      maxLength={120}
-                      minLength={2}
-                      name="barangay"
-                      onChange={updateAddress}
-                      required
-                      value={address.barangay}
-                    />
-                  </label>
-                  <label>
-                    <span>City / Municipality</span>
-                    <input
-                      autoComplete="address-level2"
-                      maxLength={120}
-                      minLength={2}
-                      name="cityMunicipality"
-                      onChange={updateAddress}
-                      required
-                      value={address.cityMunicipality}
-                    />
-                  </label>
-                  <label>
-                    <span>Province / Region</span>
-                    <input
-                      autoComplete="address-level1"
-                      maxLength={120}
-                      minLength={2}
-                      name="provinceRegion"
-                      onChange={updateAddress}
-                      required
-                      value={address.provinceRegion}
-                    />
-                  </label>
-                  <label>
-                    <span>Postal code</span>
-                    <input
-                      autoComplete="postal-code"
-                      inputMode="numeric"
-                      maxLength={20}
-                      minLength={3}
-                      name="postalCode"
-                      onChange={updateAddress}
-                      required
-                      value={address.postalCode}
-                    />
-                  </label>
-                  <label className="customer-form-grid__full">
-                    <span>Country</span>
-                    <input readOnly value="Philippines" />
-                  </label>
+                    <label className="customer-form-grid__full">
+                      <span>Address line 1</span>
+                      <input
+                        autoComplete="address-line1"
+                        maxLength={180}
+                        minLength={3}
+                        name="addressLine1"
+                        onChange={updateAddress}
+                        placeholder="House / unit number and street"
+                        required
+                        value={address.addressLine1}
+                      />
+                    </label>
+                    <label className="customer-form-grid__full">
+                      <span>
+                        Address line 2 <small>(optional)</small>
+                      </span>
+                      <input
+                        autoComplete="address-line2"
+                        maxLength={180}
+                        name="addressLine2"
+                        onChange={updateAddress}
+                        placeholder="Building, subdivision, landmark"
+                        value={address.addressLine2}
+                      />
+                    </label>
+                    <label>
+                      <span>Barangay</span>
+                      <input
+                        maxLength={120}
+                        minLength={2}
+                        name="barangay"
+                        onChange={updateAddress}
+                        required
+                        value={address.barangay}
+                      />
+                    </label>
+                    <label>
+                      <span>City / Municipality</span>
+                      <input
+                        autoComplete="address-level2"
+                        maxLength={120}
+                        minLength={2}
+                        name="cityMunicipality"
+                        onChange={updateAddress}
+                        required
+                        value={address.cityMunicipality}
+                      />
+                    </label>
+                    <label>
+                      <span>Province / Region</span>
+                      <input
+                        autoComplete="address-level1"
+                        maxLength={120}
+                        minLength={2}
+                        name="provinceRegion"
+                        onChange={updateAddress}
+                        required
+                        value={address.provinceRegion}
+                      />
+                    </label>
+                    <label>
+                      <span>Postal code</span>
+                      <input
+                        autoComplete="postal-code"
+                        inputMode="numeric"
+                        maxLength={20}
+                        minLength={3}
+                        name="postalCode"
+                        onChange={updateAddress}
+                        required
+                        value={address.postalCode}
+                      />
+                    </label>
+                    <label className="customer-form-grid__full">
+                      <span>Country</span>
+                      <input readOnly value="Philippines" />
+                    </label>
                   </div>
                 </div>
               )}
