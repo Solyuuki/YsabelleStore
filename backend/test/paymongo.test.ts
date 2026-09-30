@@ -46,35 +46,50 @@ test("PayMongo test webhook signature validates the raw body", () => {
   );
 });
 
-test("PayMongo webhook parser reads the canonical event attributes envelope", () => {
+test("PayMongo webhook parser accepts hosted-checkout and standard event envelopes", () => {
   const checkoutSession = {
     id: "cs_test_ysabelle",
     type: "checkout_session",
     attributes: { livemode: false }
   };
-  const event = parsePaymongoWebhookEvent({
-    data: {
-      id: "evt_test_ysabelle",
-      type: "event",
-      attributes: {
+
+  assert.deepEqual(
+    parsePaymongoWebhookEvent({
+      event_type: "send.webhook",
+      data: {
         type: "checkout_session.payment.paid",
+        resource: "checkout_session",
         livemode: false,
         data: checkoutSession
       }
-    }
-  });
-
-  assert.deepEqual(event, {
-    type: "checkout_session.payment.paid",
-    livemode: false,
-    data: checkoutSession
-  });
-  assert.equal(
-    parsePaymongoWebhookEvent({
-      data: { type: "checkout_session.payment.paid", attributes: {} }
     }),
-    null
+    {
+      type: "checkout_session.payment.paid",
+      livemode: false,
+      data: checkoutSession
+    }
   );
+
+  assert.deepEqual(
+    parsePaymongoWebhookEvent({
+      data: {
+        id: "evt_test_ysabelle",
+        type: "event",
+        attributes: {
+          type: "checkout_session.payment.paid",
+          livemode: false,
+          data: checkoutSession
+        }
+      }
+    }),
+    {
+      type: "checkout_session.payment.paid",
+      livemode: false,
+      data: checkoutSession
+    }
+  );
+
+  assert.equal(parsePaymongoWebhookEvent({ data: { type: "event", attributes: {} } }), null);
 });
 
 test("PayMongo test checkout keeps card and supported sandbox alternatives", () => {
