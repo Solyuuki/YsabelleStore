@@ -48,9 +48,9 @@ async function resolveOrderReference(
 
   const linked = Boolean(
     order &&
-      (customer
-        ? order.customerAccountId === customer.id
-        : order.customerEmail?.trim().toLowerCase() === customerEmail)
+    (customer
+      ? order.customerAccountId === customer.id
+      : order.customerEmail?.trim().toLowerCase() === customerEmail)
   );
 
   return {

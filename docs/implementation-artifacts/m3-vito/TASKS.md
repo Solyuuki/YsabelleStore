@@ -18,7 +18,7 @@
 | -------------------- | -------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | YSB-M3-MIG-STD-001   | Numbered migration naming standard                             | Done               | Sprint 1 migration folder renamed to `0001_sprint_1_database_foundation`; docs updated | Validate Prisma and backend commands.                 |
 | YSB-M3-VITO-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3                                                                   | Perform manual QA on the changed auth/device/UI flow. |
-| YSB-M3-VITO-20260930 | Maintain current implementation and documentation evidence     | Needs Review       | m3/v0.11/feat/customer-service                                                         | Review generated artifact updates before commit.      |
+| YSB-M3-VITO-20260930 | Preserve artifact markdown templates during automation updates | Manual QA Required | m3/v0.11/feat/customer-service                                                         | Perform manual QA on the changed auth/device/UI flow. |
 
 ## Pending
 

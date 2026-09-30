@@ -46,6 +46,6 @@ Local Sprint 11 pull convergence now includes a development-only team-state laye
 
 ## Latest Sprint Activity
 
-| Date       | Member  | Branch                         | Latest Activity                                                                   | Validation Status |
-| ---------- | ------- | ------------------------------ | --------------------------------------------------------------------------------- | ----------------- |
-| 2026-09-30 | M3 Vito | m3/v0.11/feat/customer-service | Sprint documentation and validation evidence were updated for the current branch. | Passed            |
+| Date       | Member  | Branch                         | Latest Activity                                                                                                  | Validation Status |
+| ---------- | ------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 2026-09-30 | M3 Vito | m3/v0.11/feat/customer-service | Artifact automation was updated to preserve existing markdown templates and avoid duplicated generated sections. | Passed            |

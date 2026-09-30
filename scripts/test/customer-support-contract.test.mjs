@@ -5,7 +5,10 @@ import test from "node:test";
 const [routeIndex, supportRoutes, supportService, customerApp, supportPage, footer] =
   await Promise.all([
     readFile(new URL("../../backend/src/routes/index.ts", import.meta.url), "utf8"),
-    readFile(new URL("../../backend/src/routes/customerSupport.routes.ts", import.meta.url), "utf8"),
+    readFile(
+      new URL("../../backend/src/routes/customerSupport.routes.ts", import.meta.url),
+      "utf8"
+    ),
     readFile(
       new URL("../../backend/src/services/customerSupportService.ts", import.meta.url),
       "utf8"

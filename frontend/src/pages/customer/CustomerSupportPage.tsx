@@ -165,8 +165,8 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
             <p className="customer-kicker">Support workflow</p>
             <strong>One request, one reference.</strong>
             <p>
-              After submission, you&apos;ll receive a reference such as{" "}
-              <span>YS-CS-000124</span>. Keep it with your concern details.
+              After submission, you&apos;ll receive a reference such as <span>YS-CS-000124</span>.
+              Keep it with your concern details.
             </p>
           </aside>
         </div>
@@ -257,7 +257,9 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
 
                 <div className="customer-support-form__two-column">
                   <label>
-                    <span>Phone <small>optional</small></span>
+                    <span>
+                      Phone <small>optional</small>
+                    </span>
                     <input
                       autoComplete="tel"
                       disabled={signedIn}
@@ -285,7 +287,9 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                 </div>
 
                 <label>
-                  <span>Order number <small>optional</small></span>
+                  <span>
+                    Order number <small>optional</small>
+                  </span>
                   <input
                     autoCapitalize="characters"
                     maxLength={80}
