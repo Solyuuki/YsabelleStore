@@ -181,7 +181,7 @@ export const listStorefrontRelatedProductsController: RequestHandler = async (
 export const createStorefrontOrderController: RequestHandler = async (request, response, next) => {
   try {
     const body = parseOrThrow(storefrontOrderSchema, request.body, {
-      message: "Pickup order request is invalid.",
+      message: "Delivery order request is invalid.",
       code: "INVALID_STOREFRONT_ORDER"
     });
     const customer = getAuthenticatedCustomer(request);
@@ -199,7 +199,7 @@ export const createStorefrontOrderController: RequestHandler = async (request, r
       }
     }
 
-    response.status(201).json(createSuccessResponse("Pickup order placed successfully.", order));
+    response.status(201).json(createSuccessResponse("Delivery order placed successfully.", order));
   } catch (error) {
     next(error);
   }

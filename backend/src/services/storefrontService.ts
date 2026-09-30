@@ -1,6 +1,12 @@
 import { randomBytes } from "node:crypto";
 
-import { CustomerOrderStatus, Prisma, type ProductSizeUnit } from "@prisma/client";
+import {
+  CustomerDeliveryActorType,
+  CustomerDeliveryStatus,
+  CustomerOrderStatus,
+  Prisma,
+  type ProductSizeUnit
+} from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { approvedCategoryCoverUrl } from "../modules/catalog-image/categoryImageService.js";
@@ -32,6 +38,10 @@ const storefrontProductInclude = {
 } satisfies Prisma.ProductInclude;
 
 const storefrontOrderInclude = {
+  addressSnapshot: true,
+  deliveryEvents: {
+    orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }]
+  },
   items: { include: { product: true } }
 } satisfies Prisma.CustomerOrderInclude;
 
@@ -261,13 +271,43 @@ function serializeStorefrontOrder(order: StorefrontOrderRecord) {
   return {
     id: order.id,
     orderNumber: order.orderNumber,
+    deliveryTicketNumber: order.deliveryTicketNumber,
     status: order.status,
     fulfillmentMethod: order.fulfillmentMethod,
     paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
+    deliveryStatus: order.deliveryStatus,
+    courierProvider: order.courierProvider,
+    courierReference: order.courierReference,
+    deliveryNotes: order.deliveryNotes,
+    dispatchedAt: order.dispatchedAt,
+    deliveredAt: order.deliveredAt,
+    customerConfirmedAt: order.customerConfirmedAt,
     totalAmount: order.totalAmount.toString(),
     paidAt: order.paidAt,
     createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+    address: order.addressSnapshot
+      ? {
+          addressLine1: order.addressSnapshot.addressLine1,
+          addressLine2: order.addressSnapshot.addressLine2,
+          barangay: order.addressSnapshot.barangay,
+          cityMunicipality: order.addressSnapshot.cityMunicipality,
+          provinceRegion: order.addressSnapshot.provinceRegion,
+          postalCode: order.addressSnapshot.postalCode,
+          country: order.addressSnapshot.country
+        }
+      : null,
+    timeline: order.deliveryEvents.map((event) => ({
+      id: event.id,
+      status: event.status,
+      actorType: event.actorType,
+      note: event.note,
+      createdAt: event.createdAt
+    })),
+    canCustomerConfirmReceipt:
+      order.deliveryStatus === CustomerDeliveryStatus.OUT_FOR_DELIVERY &&
+      order.customerAccountId !== null,
     itemCount: order.items.reduce((total, item) => total + item.quantity, 0),
     items: order.items.map((item) => ({
       productId: item.productId,
@@ -920,10 +960,12 @@ export async function createStorefrontOrder(
       (sum, item) => sum.add(item.totalAmount),
       new Prisma.Decimal(0)
     );
+    const orderNumber = createOrderNumber();
     const order = await tx.customerOrder.create({
       data: {
         customerAccountId: context.customerAccountId ?? null,
-        orderNumber: createOrderNumber(),
+        orderNumber,
+        deliveryTicketNumber: `DEL-${orderNumber}`,
         customerName: input.customerName,
         customerEmail: input.customerEmail || null,
         customerPhone: input.customerPhone,
@@ -931,6 +973,14 @@ export async function createStorefrontOrder(
         paymentMethod: input.paymentMethod,
         notes: input.notes || null,
         status: CustomerOrderStatus.PENDING,
+        deliveryStatus: CustomerDeliveryStatus.ORDER_PLACED,
+        deliveryEvents: {
+          create: {
+            actorType: CustomerDeliveryActorType.SYSTEM,
+            note: "Order placed for delivery.",
+            status: CustomerDeliveryStatus.ORDER_PLACED
+          }
+        },
         subtotalAmount,
         totalAmount: subtotalAmount,
         items: {

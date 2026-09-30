@@ -33,11 +33,11 @@ export const storefrontOrderSchema = z.object({
   customerName: z.string().trim().min(2).max(120),
   customerEmail: z.string().trim().email().max(191).optional().or(z.literal("")),
   customerPhone: z.string().trim().min(7).max(40),
-  customerAddress: customerAddressSchema.optional(),
+  customerAddress: customerAddressSchema,
   saveAddressToAccount: z.boolean().optional(),
   notes: z.string().trim().max(255).optional(),
-  fulfillmentMethod: z.literal("STORE_PICKUP"),
-  paymentMethod: z.enum(["CASH_ON_PICKUP", "PAYMONGO"]),
+  fulfillmentMethod: z.literal("DELIVERY"),
+  paymentMethod: z.enum(["CASH_ON_DELIVERY", "PAYMONGO"]),
   items: z
     .array(
       z.object({
