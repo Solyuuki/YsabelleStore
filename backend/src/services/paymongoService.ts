@@ -269,7 +269,7 @@ export async function getStorefrontPaymentStatus(
       paymongoCheckoutSessionId: true,
       totalAmount: true,
       paidAt: true,
-      _count: { select: { items: true } }
+      items: { select: { quantity: true } }
     },
     where: { customerAccountId, orderNumber }
   });
@@ -302,7 +302,7 @@ export async function getStorefrontPaymentStatus(
           paymongoCheckoutSessionId: true,
           totalAmount: true,
           paidAt: true,
-          _count: { select: { items: true } }
+          items: { select: { quantity: true } }
         },
         where: { id: order.id }
       });
@@ -323,7 +323,7 @@ export async function getStorefrontPaymentStatus(
     paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
     totalAmount: order.totalAmount.toString(),
-    itemCount: order._count.items,
+    itemCount: order.items.reduce((total, item) => total + item.quantity, 0),
     paidAt: order.paidAt,
     canResumePayment:
       order.paymentMethod === CustomerPaymentMethod.PAYMONGO &&
