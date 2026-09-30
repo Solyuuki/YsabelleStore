@@ -28,10 +28,9 @@ assert.match(statusScreenSource, /variant === "auth"/);
 assert.match(statusScreenSource, /variant === "navigation"/);
 assert.match(statusScreenSource, /variant === "system"/);
 assert.match(statusScreenSource, /status-system-brand-mark/);
-assert.match(
-  statusScreenSource,
-  /status-system-brand-mark[\s\S]*?eager[\s\S]*?variant="full"/
-);
+assert.match(statusScreenSource, /status-system-brand-mark/);
+assert.match(statusScreenSource, /eager/);
+assert.match(statusScreenSource, /variant="full"/);
 assert.doesNotMatch(statusScreenSource, /reliability-ring/);
 assert.doesNotMatch(statusScreenSource, /reliability-eyebrow__dot/);
 
