@@ -146,13 +146,13 @@ The Electron package manifest declares Electron `^42.5.0`; the Electron Builder 
 
 ## 9. External Services
 
-| Service                           | Use                                                           |
-| --------------------------------- | ------------------------------------------------------------- |
-| Resend                            | Production email/OTP/password-recovery delivery configuration |
-| Gmail SMTP                        | Development-only OTP delivery QA                              |
-| Google OAuth                      | Customer social authentication                                |
-| Facebook / Meta OAuth + Graph API | Customer social authentication                                |
-| PayMongo                          | Test-mode hosted checkout and server-side payment confirmation         |
+| Service                           | Use                                                                 |
+| --------------------------------- | ------------------------------------------------------------------- |
+| Resend                            | Production email/OTP/password-recovery delivery configuration       |
+| Gmail SMTP                        | Development-only OTP delivery QA                                    |
+| Google OAuth                      | Customer social authentication                                      |
+| Facebook / Meta OAuth + Graph API | Customer social authentication                                      |
+| PayMongo                          | Test-mode hosted checkout and server-side payment confirmation       |
 
 Credentials are deployment secrets and must never be committed.
 
