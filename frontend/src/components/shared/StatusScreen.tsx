@@ -221,14 +221,9 @@ export function StatusScreen({
       ) : null}
 
       {variant === "system" ? (
-        <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
+        <main className="status-screen-main status-screen-main--system relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
           <div className="auth-hero-enter w-full max-w-xl text-center">
-            <BrandLogo
-              className="status-system-brand-mark mx-auto h-28 w-28 rounded-full object-contain drop-shadow-[0_20px_36px_rgba(98,91,255,0.2)] sm:h-32 sm:w-32"
-              eager
-              variant="mark"
-            />
-            <div className="mt-5 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
+            <div className="inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
             </div>
             <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">

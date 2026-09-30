@@ -1090,6 +1090,11 @@ body {
   padding-bottom: clamp(6.5rem, 14vh, 10rem);
 }
 
+.status-screen-main.status-screen-main--system {
+  padding-top: clamp(2rem, 6vh, 4rem);
+  padding-bottom: clamp(2rem, 6vh, 4rem);
+}
+
 .status-illustration {
   position: relative;
   isolation: isolate;

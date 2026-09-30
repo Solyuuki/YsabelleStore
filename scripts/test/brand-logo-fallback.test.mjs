@@ -31,9 +31,8 @@ test("brand components use one canonical circular Ysabelle mark source", async (
     assert.match(consumer, /YsabelleBrandMark/);
   }
 
-  assert.match(statusScreen, /status-system-brand-mark/);
-  assert.match(statusScreen, /variant="mark"/);
-  assert.doesNotMatch(statusScreen, /status-system-brand-mark[\s\S]*?variant="full"/);
+  assert.match(statusScreen, /status-screen-main--system/);
+  assert.doesNotMatch(statusScreen, /status-system-brand-mark/);
 
   assert.match(styles, /\.ysabelle-brand-mark[\s\S]*?background:\s*transparent/);
   assert.doesNotMatch(styles, /ysabelle-brand-mark__fallback|--ysabelle-brand-fallback/);
