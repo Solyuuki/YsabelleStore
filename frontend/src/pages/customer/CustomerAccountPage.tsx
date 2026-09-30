@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   UserRound
 } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { ProductCard, formatCurrency } from "@/components/customer/ProductCard";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -20,13 +20,20 @@ import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import {
   CustomerAccountRequestError,
   changeCustomerPassword,
-  claimCustomerUsername,
   fetchCustomerSessions,
   revokeOtherCustomerSessions,
   updateCustomerProfile
 } from "@/services/customerAccountService";
+import {
+  fetchCustomerAddress,
+  updateCustomerAddress
+} from "@/services/customerAddressService";
 import { confirmCustomerDeliveryReceived, fetchCustomerOrders } from "@/services/storefrontService";
 import type { CustomerSessionSummary } from "@/types/customerAccount";
+import {
+  EMPTY_CUSTOMER_ADDRESS,
+  type CustomerAddress
+} from "@/types/customerAddress";
 import type { StorefrontOrder } from "@/types/storefront";
 
 const orderDateFormatter = new Intl.DateTimeFormat("en-PH", {
@@ -58,9 +65,9 @@ const ACCOUNT_HERO_CONTENT: Record<
   },
   profile: {
     eyebrow: "Profile",
-    title: "Your identity, your account.",
+    title: "Your details, ready for checkout.",
     description:
-      "Keep your customer name and protected sign-in identifiers clear, current, and easy to review."
+      "Keep your customer name, delivery contact, and default address current for faster repeat purchases."
   },
   security: {
     eyebrow: "Account security",
@@ -110,11 +117,18 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
 
-  const [claimUsername, setClaimUsername] = useState("");
-  const [claimPassword, setClaimPassword] = useState("");
-  const [claimingUsername, setClaimingUsername] = useState(false);
-  const [usernameMessage, setUsernameMessage] = useState<string | null>(null);
-  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [contactPhone, setContactPhone] = useState("");
+  const [savingContactPhone, setSavingContactPhone] = useState(false);
+  const [contactMessage, setContactMessage] = useState<string | null>(null);
+  const [contactError, setContactError] = useState<string | null>(null);
+
+  const [savedAddress, setSavedAddress] = useState<CustomerAddress | null>(null);
+  const [addressDraft, setAddressDraft] = useState<CustomerAddress>(EMPTY_CUSTOMER_ADDRESS);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [addressEditing, setAddressEditing] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [addressMessage, setAddressMessage] = useState<string | null>(null);
+  const [addressError, setAddressError] = useState<string | null>(null);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -128,7 +142,42 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   const [sessionActionMessage, setSessionActionMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (customer) setName(customer.name);
+    if (!customer) return;
+    setName(customer.name);
+    setContactPhone(customer.defaultContactPhone ?? customer.phone ?? "");
+  }, [customer]);
+
+  useEffect(() => {
+    if (!customer) return;
+
+    const controller = new AbortController();
+    let active = true;
+    setAddressLoading(true);
+    setAddressError(null);
+
+    void fetchCustomerAddress(controller.signal)
+      .then((address) => {
+        if (!active) return;
+        setSavedAddress(address);
+        setAddressDraft(address ?? EMPTY_CUSTOMER_ADDRESS);
+        setAddressEditing(!address);
+      })
+      .catch((reason) => {
+        if (!active) return;
+        if (reason instanceof DOMException && reason.name === "AbortError") return;
+        setSavedAddress(null);
+        setAddressDraft(EMPTY_CUSTOMER_ADDRESS);
+        setAddressEditing(true);
+        setAddressError(errorMessage(reason, "Your saved delivery address could not be loaded."));
+      })
+      .finally(() => {
+        if (active) setAddressLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [customer]);
 
   useEffect(() => {
@@ -278,26 +327,51 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     }
   }
 
-  async function handleUsernameClaim(event: FormEvent<HTMLFormElement>) {
+  async function handleContactSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setUsernameMessage(null);
-    setUsernameError(null);
+    setContactMessage(null);
+    setContactError(null);
 
-    if (!claimUsername.trim() || !claimPassword) {
-      setUsernameError("Enter a username and your current password.");
+    const trimmedPhone = contactPhone.trim();
+    if (trimmedPhone.length < 7) {
+      setContactError("Enter a valid delivery contact number.");
       return;
     }
 
-    setClaimingUsername(true);
+    setSavingContactPhone(true);
     try {
-      await claimCustomerUsername({ username: claimUsername, currentPassword: claimPassword });
+      await updateCustomerProfile({ defaultContactPhone: trimmedPhone });
       await refreshSession();
-      setClaimPassword("");
-      setUsernameMessage("Username claimed. You can now use it to sign in.");
+      setContactMessage("Default delivery contact updated.");
     } catch (reason) {
-      setUsernameError(errorMessage(reason, "Your username could not be claimed."));
+      setContactError(errorMessage(reason, "Your delivery contact could not be updated."));
     } finally {
-      setClaimingUsername(false);
+      setSavingContactPhone(false);
+    }
+  }
+
+  function updateAddressDraft(event: ChangeEvent<HTMLInputElement>) {
+    const field = event.currentTarget.name as keyof CustomerAddress;
+    const value = event.currentTarget.value;
+    setAddressDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  async function handleAddressSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAddressMessage(null);
+    setAddressError(null);
+    setSavingAddress(true);
+
+    try {
+      const updated = await updateCustomerAddress(addressDraft);
+      setSavedAddress(updated);
+      setAddressDraft(updated);
+      setAddressEditing(false);
+      setAddressMessage("Default delivery address updated.");
+    } catch (reason) {
+      setAddressError(errorMessage(reason, "Your delivery address could not be updated."));
+    } finally {
+      setSavingAddress(false);
     }
   }
 
@@ -373,7 +447,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
             <div>
               <p className="customer-eyebrow">My Account</p>
               <h1>{customer.name}</h1>
-              <p>{customer.username ? `@${customer.username}` : "Username not set"}</p>
+              <p>Customer account</p>
             </div>
             <span className="customer-account-status">
               <CheckCircle2 size={15} /> Active
@@ -703,116 +777,243 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
             <div className="customer-account-section-heading">
               <div>
                 <p className="customer-eyebrow">Profile information</p>
-                <h2 id="profile-title">Your customer identity</h2>
+                <h2 id="profile-title">Your shopping profile</h2>
                 <p>
-                  Update your display name. Sign-in identifiers stay protected and read-only here.
+                  Manage the details Ysabelle Store can reuse for faster delivery checkout.
                 </p>
               </div>
               <UserRound aria-hidden="true" size={22} />
             </div>
 
-            <form
-              className="customer-account-form"
-              onSubmit={(event) => void handleProfileSubmit(event)}
-            >
-              <label>
-                <span>Full name</span>
-                <input
-                  autoComplete="name"
-                  maxLength={120}
-                  onChange={(event) => setName(event.target.value)}
-                  value={name}
-                />
-              </label>
-              {profileError ? (
-                <p className="customer-account-form-error" role="alert">
-                  {profileError}
-                </p>
-              ) : null}
-              {profileMessage ? (
-                <p className="customer-account-form-success" role="status">
-                  {profileMessage}
-                </p>
-              ) : null}
-              <button disabled={savingName || name.trim() === customer.name} type="submit">
-                {savingName ? "Saving..." : "Save name"}
-              </button>
-            </form>
+            <div className="customer-account-profile-stack">
+              <form
+                className="customer-account-inline-action-form"
+                onSubmit={(event) => void handleProfileSubmit(event)}
+              >
+                <label>
+                  <span>Full name</span>
+                  <input
+                    autoComplete="name"
+                    maxLength={120}
+                    onChange={(event) => setName(event.target.value)}
+                    value={name}
+                  />
+                </label>
+                <button disabled={savingName || name.trim() === customer.name} type="submit">
+                  {savingName ? "Saving..." : "Save"}
+                </button>
+                {profileError ? (
+                  <p className="customer-account-form-error customer-account-form-message" role="alert">
+                    {profileError}
+                  </p>
+                ) : null}
+                {profileMessage ? (
+                  <p className="customer-account-form-success customer-account-form-message" role="status">
+                    {profileMessage}
+                  </p>
+                ) : null}
+              </form>
 
-            <div className="customer-account-readonly-grid">
-              <div>
-                <span>
-                  <Mail size={16} /> Email
-                </span>
-                <strong>{customer.email}</strong>
-                <small>Sign-in identifier · changes are not available in this phase.</small>
-              </div>
-              <div>
-                <span>
-                  <Phone size={16} /> Mobile
-                </span>
-                <strong>{customer.phone || "Not provided"}</strong>
-                <small>
-                  Phone changes require ownership verification and are handled separately.
-                </small>
-              </div>
-            </div>
+              <div className="customer-account-profile-grid">
+                <div className="customer-account-info-card">
+                  <span>
+                    <Mail size={16} /> Sign-in email
+                  </span>
+                  <strong>{customer.email}</strong>
+                  <small>
+                    Protected account identifier. Checkout can use it for order communication.
+                  </small>
+                </div>
 
-            <div className="customer-account-username-card">
-              <div>
-                <span>Username</span>
-                <strong>{customer.username ? `@${customer.username}` : "Not set"}</strong>
-                <p>
-                  {customer.username
-                    ? "Your username is a permanent sign-in identifier."
-                    : "Legacy accounts can claim one username once. Your current password is required."}
-                </p>
-              </div>
-              {!customer.username ? (
                 <form
-                  className="customer-account-inline-form"
-                  onSubmit={(event) => void handleUsernameClaim(event)}
+                  className="customer-account-contact-card"
+                  onSubmit={(event) => void handleContactSubmit(event)}
                 >
                   <label>
-                    <span>Choose username</span>
+                    <span>
+                      <Phone size={16} /> Default contact mobile
+                    </span>
                     <input
-                      autoCapitalize="none"
-                      autoComplete="username"
-                      maxLength={30}
-                      onChange={(event) => setClaimUsername(event.target.value)}
-                      placeholder="your.username"
-                      value={claimUsername}
+                      autoComplete="tel"
+                      maxLength={40}
+                      minLength={7}
+                      onChange={(event) => setContactPhone(event.target.value)}
+                      placeholder="0917 123 4567"
+                      required
+                      type="tel"
+                      value={contactPhone}
                     />
                   </label>
-                  <label>
-                    <span>Current password</span>
-                    <input
-                      autoComplete="current-password"
-                      maxLength={128}
-                      onChange={(event) => setClaimPassword(event.target.value)}
-                      type="password"
-                      value={claimPassword}
-                    />
-                  </label>
-                  {usernameError ? (
-                    <p className="customer-account-form-error" role="alert">
-                      {usernameError}
-                    </p>
-                  ) : null}
-                  {usernameMessage ? (
-                    <p className="customer-account-form-success" role="status">
-                      {usernameMessage}
-                    </p>
-                  ) : null}
-                  <button disabled={claimingUsername} type="submit">
-                    {claimingUsername ? "Claiming..." : "Claim username"}
+                  <small>
+                    Used for orders and delivery coordination. This does not replace a protected
+                    sign-in phone number.
+                  </small>
+                  <button
+                    disabled={
+                      savingContactPhone ||
+                      contactPhone.trim() ===
+                        (customer.defaultContactPhone ?? customer.phone ?? "")
+                    }
+                    type="submit"
+                  >
+                    {savingContactPhone ? "Saving..." : "Save contact"}
                   </button>
+                  {contactError ? (
+                    <p className="customer-account-form-error" role="alert">
+                      {contactError}
+                    </p>
+                  ) : null}
+                  {contactMessage ? (
+                    <p className="customer-account-form-success" role="status">
+                      {contactMessage}
+                    </p>
+                  ) : null}
                 </form>
-              ) : usernameMessage ? (
-                <p className="customer-account-form-success" role="status">
-                  {usernameMessage}
-                </p>
-              ) : null}
+              </div>
+
+              <div className="customer-account-address-card">
+                <div className="customer-account-address-heading">
+                  <div>
+                    <span>
+                      <MapPin size={17} /> Default delivery address
+                    </span>
+                    <p>Automatically offered on your next checkout. You can still use another address per order.</p>
+                  </div>
+                  {savedAddress && !addressEditing ? (
+                    <button onClick={() => setAddressEditing(true)} type="button">
+                      Edit address
+                    </button>
+                  ) : null}
+                </div>
+
+                {addressLoading ? (
+                  <p className="customer-account-muted" role="status">
+                    Loading saved delivery address...
+                  </p>
+                ) : savedAddress && !addressEditing ? (
+                  <address className="customer-account-address-summary">
+                    <strong>{savedAddress.addressLine1}</strong>
+                    {savedAddress.addressLine2 ? <span>{savedAddress.addressLine2}</span> : null}
+                    <span>{savedAddress.barangay}</span>
+                    <span>
+                      {savedAddress.cityMunicipality}, {savedAddress.provinceRegion}{" "}
+                      {savedAddress.postalCode}
+                    </span>
+                    <span>{savedAddress.country}</span>
+                  </address>
+                ) : (
+                  <form
+                    className="customer-account-address-form"
+                    onSubmit={(event) => void handleAddressSubmit(event)}
+                  >
+                    <label className="customer-account-address-form__full">
+                      <span>Address line 1</span>
+                      <input
+                        autoComplete="address-line1"
+                        maxLength={180}
+                        minLength={3}
+                        name="addressLine1"
+                        onChange={updateAddressDraft}
+                        placeholder="House / unit number and street"
+                        required
+                        value={addressDraft.addressLine1}
+                      />
+                    </label>
+                    <label className="customer-account-address-form__full">
+                      <span>Address line 2 <small>(optional)</small></span>
+                      <input
+                        autoComplete="address-line2"
+                        maxLength={180}
+                        name="addressLine2"
+                        onChange={updateAddressDraft}
+                        placeholder="Building, subdivision, landmark"
+                        value={addressDraft.addressLine2}
+                      />
+                    </label>
+                    <label>
+                      <span>Barangay</span>
+                      <input
+                        maxLength={120}
+                        minLength={2}
+                        name="barangay"
+                        onChange={updateAddressDraft}
+                        required
+                        value={addressDraft.barangay}
+                      />
+                    </label>
+                    <label>
+                      <span>City / Municipality</span>
+                      <input
+                        autoComplete="address-level2"
+                        maxLength={120}
+                        minLength={2}
+                        name="cityMunicipality"
+                        onChange={updateAddressDraft}
+                        required
+                        value={addressDraft.cityMunicipality}
+                      />
+                    </label>
+                    <label>
+                      <span>Province / Region</span>
+                      <input
+                        autoComplete="address-level1"
+                        maxLength={120}
+                        minLength={2}
+                        name="provinceRegion"
+                        onChange={updateAddressDraft}
+                        required
+                        value={addressDraft.provinceRegion}
+                      />
+                    </label>
+                    <label>
+                      <span>Postal code</span>
+                      <input
+                        autoComplete="postal-code"
+                        inputMode="numeric"
+                        maxLength={20}
+                        minLength={3}
+                        name="postalCode"
+                        onChange={updateAddressDraft}
+                        required
+                        value={addressDraft.postalCode}
+                      />
+                    </label>
+                    <label className="customer-account-address-form__full">
+                      <span>Country</span>
+                      <input readOnly value="Philippines" />
+                    </label>
+                    <div className="customer-account-address-actions">
+                      <button disabled={savingAddress} type="submit">
+                        {savingAddress ? "Saving..." : "Save address"}
+                      </button>
+                      {savedAddress ? (
+                        <button
+                          className="customer-account-secondary-button"
+                          onClick={() => {
+                            setAddressDraft(savedAddress);
+                            setAddressEditing(false);
+                            setAddressError(null);
+                          }}
+                          type="button"
+                        >
+                          Cancel
+                        </button>
+                      ) : null}
+                    </div>
+                  </form>
+                )}
+
+                {addressError ? (
+                  <p className="customer-account-form-error" role="alert">
+                    {addressError}
+                  </p>
+                ) : null}
+                {addressMessage ? (
+                  <p className="customer-account-form-success" role="status">
+                    {addressMessage}
+                  </p>
+                ) : null}
+              </div>
             </div>
           </section>
 
