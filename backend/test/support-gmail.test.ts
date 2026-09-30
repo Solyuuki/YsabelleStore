@@ -175,8 +175,6 @@ test("Gmail inbox listing paginates, deduplicates, and reuses one access token",
   assert.equal(tokenCalls, 1);
 });
 
-
-
 test("Gmail client invalidates a rejected access token and retries once", async () => {
   let tokenCalls = 0;
   let gmailCalls = 0;
@@ -366,7 +364,6 @@ test("Gmail inbox sync rejects a sender that does not match the ticket customer"
     await scope.cleanup();
   }
 });
-
 
 async function createPendingSupportEmail(label: string) {
   const suffix = randomUUID().replaceAll("-", "").slice(0, 12);

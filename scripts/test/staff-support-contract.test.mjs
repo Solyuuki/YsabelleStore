@@ -13,19 +13,19 @@ const [
   gmailService,
   staffService
 ] = await Promise.all([
-    readFile(new URL("../../backend/src/routes/staffSupport.routes.ts", import.meta.url), "utf8"),
-    readFile(new URL("../../backend/src/routes/index.ts", import.meta.url), "utf8"),
-    readFile(new URL("../../frontend/src/app/routes.ts", import.meta.url), "utf8"),
-    readFile(new URL("../../frontend/src/app/AppShell.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../../frontend/src/components/app/AppSidebar.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../../frontend/src/utils/internalAuthRoutes.ts", import.meta.url), "utf8"),
-    readFile(
-      new URL("../../frontend/src/pages/CustomerSupportInboxPage.tsx", import.meta.url),
-      "utf8"
-    ),
-    readFile(new URL("../../backend/src/services/supportGmailService.ts", import.meta.url), "utf8"),
-    readFile(new URL("../../backend/src/services/staffSupportService.ts", import.meta.url), "utf8")
-  ]);
+  readFile(new URL("../../backend/src/routes/staffSupport.routes.ts", import.meta.url), "utf8"),
+  readFile(new URL("../../backend/src/routes/index.ts", import.meta.url), "utf8"),
+  readFile(new URL("../../frontend/src/app/routes.ts", import.meta.url), "utf8"),
+  readFile(new URL("../../frontend/src/app/AppShell.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../../frontend/src/components/app/AppSidebar.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../../frontend/src/utils/internalAuthRoutes.ts", import.meta.url), "utf8"),
+  readFile(
+    new URL("../../frontend/src/pages/CustomerSupportInboxPage.tsx", import.meta.url),
+    "utf8"
+  ),
+  readFile(new URL("../../backend/src/services/supportGmailService.ts", import.meta.url), "utf8"),
+  readFile(new URL("../../backend/src/services/staffSupportService.ts", import.meta.url), "utf8")
+]);
 
 test("staff support API is bearer protected for both OWNER and STAFF", () => {
   assert.match(routeIndex, /router\.use\("\/support", staffSupportRouter\)/);
@@ -64,7 +64,6 @@ test("Phase 4 Gmail integration preserves ticket threading and delivery state", 
   assert.match(inboxPage, /Sync Gmail/);
   assert.match(inboxPage, /Retry email/);
 });
-
 
 test("Phase 5 hardening keeps failed delivery actionable and prevents silent local replies", () => {
   assert.match(gmailService, /GMAIL_SYNC_MAX_MESSAGES/);

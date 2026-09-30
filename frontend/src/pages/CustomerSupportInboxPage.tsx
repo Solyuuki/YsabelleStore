@@ -241,12 +241,7 @@ export function CustomerSupportInboxPage() {
 
   async function submitReply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (
-      !detail ||
-      replySaving ||
-      detail.status === "CLOSED" ||
-      gmailStatus?.configured !== true
-    ) {
+    if (!detail || replySaving || detail.status === "CLOSED" || gmailStatus?.configured !== true) {
       return;
     }
 
