@@ -354,23 +354,22 @@ export async function handlePaymongoWebhook(
     });
   }
 
-  const event = asRecord(asRecord(payload)?.data);
-  const eventType = stringValue(event?.type);
+  const event = parsePaymongoWebhookEvent(payload);
 
-  if (!event || !eventType) {
+  if (!event) {
     throw new HttpError(400, "PayMongo webhook payload is invalid.", {
       code: "INVALID_PAYMONGO_WEBHOOK"
     });
   }
 
-  if (event.livemode === true) {
+  if (event.livemode) {
     throw new HttpError(400, "Live PayMongo webhook events are not accepted in test mode.", {
       code: "PAYMONGO_LIVE_EVENT_REJECTED"
     });
   }
 
-  if (eventType !== "checkout_session.payment.paid") {
-    return { handled: false, type: eventType };
+  if (event.type !== "checkout_session.payment.paid") {
+    return { handled: false, type: event.type };
   }
 
   const session = parsePaymongoResource(event.data);
@@ -469,6 +468,23 @@ async function reconcilePaidCheckoutSession(
   });
 
   return true;
+}
+
+export function parsePaymongoWebhookEvent(payload: unknown) {
+  const root = asRecord(payload);
+  const event = asRecord(root?.data);
+  const attributes = asRecord(event?.attributes);
+  const type = stringValue(attributes?.type);
+
+  if (!event || event.type !== "event" || !attributes || !type) {
+    return null;
+  }
+
+  return {
+    type,
+    livemode: attributes.livemode === true,
+    data: attributes.data
+  };
 }
 
 export function paymongoCentavos(value: Prisma.Decimal | string | number) {
