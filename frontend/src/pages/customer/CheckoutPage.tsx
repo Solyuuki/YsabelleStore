@@ -1,11 +1,13 @@
+import { Checkbox } from "@base-ui/react/checkbox";
 import {
   ArrowLeft,
   Banknote,
+  Check,
   CheckCircle2,
   CreditCard,
   MapPin,
   ShieldCheck,
-  Store
+  Truck
 } from "lucide-react";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
@@ -51,9 +53,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!contactEdited) {
-      setContact(getCustomerCheckoutDefaults(customer));
-    }
+    if (!contactEdited) setContact(getCustomerCheckoutDefaults(customer));
   }, [contactEdited, customer]);
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         setSavedAddress(null);
         setAddress(EMPTY_CUSTOMER_ADDRESS);
         setEditingAddress(true);
-        setAddressLoadError("Your saved address could not be loaded. You can enter it below.");
+        setAddressLoadError("Your saved address could not be loaded. Enter the delivery address below.");
       })
       .finally(() => setAddressLoading(false));
 
@@ -96,15 +96,13 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
 
   function updateContact(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof typeof contact;
-    const value = event.currentTarget.value;
-    setContact((current) => ({ ...current, [field]: value }));
+    setContact((current) => ({ ...current, [field]: event.currentTarget.value }));
     setContactEdited(true);
   }
 
   function updateAddress(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof CustomerAddress;
-    const value = event.currentTarget.value;
-    setAddress((current) => ({ ...current, [field]: value }));
+    setAddress((current) => ({ ...current, [field]: event.currentTarget.value }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -127,7 +125,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
           customerAddress: address,
           saveAddressToAccount: Boolean(customer && saveAddressToAccount),
           notes: String(form.get("notes") ?? ""),
-          fulfillmentMethod: "STORE_PICKUP",
+          fulfillmentMethod: "DELIVERY",
           paymentMethod,
           items: items.map((item) => ({
             productId: item.product.id,
@@ -139,9 +137,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
 
       if (order.paymentMethod === "PAYMONGO") {
         try {
-          const checkout = await startPaymongoCheckout(order.orderNumber);
+          const paymongoCheckout = await startPaymongoCheckout(order.orderNumber);
           clearCart();
-          window.location.assign(checkout.checkoutUrl);
+          window.location.assign(paymongoCheckout.checkoutUrl);
           return;
         } catch (reason) {
           retryOrder = order;
@@ -214,27 +212,24 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         <CustomerLink className="customer-back-link" href="/cart" navigate={navigate}>
           <ArrowLeft aria-hidden="true" size={17} /> Back to cart
         </CustomerLink>
+
         <div className="customer-page-heading">
-          <p className="customer-kicker">Pickup order</p>
+          <p className="customer-kicker">Delivery checkout</p>
           <h1>Checkout</h1>
-          <p>
-            Tell us who will collect this order, then choose test online payment or cash on pickup.
-          </p>
+          <p>Confirm your delivery details, then choose secure online payment or Cash on Delivery.</p>
         </div>
+
         <form className="customer-checkout-layout" onSubmit={submit}>
           <div className="customer-checkout-form">
             <section>
               <div className="customer-checkout-section-title">
                 <span>1</span>
                 <div>
-                  <h2>Your Details</h2>
-                  <p>
-                    {customer
-                      ? "We prefilled your account details. You can edit them for this order."
-                      : "Used only to identify and coordinate this pickup request."}
-                  </p>
+                  <h2>Your details</h2>
+                  <p>We prefilled your account details. You can edit them for this order.</p>
                 </div>
               </div>
+
               <div className="customer-form-grid">
                 <label>
                   <span>Full name</span>
@@ -282,11 +277,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
               <div className="customer-checkout-section-title">
                 <span>2</span>
                 <div>
-                  <h2>Contact address</h2>
-                  <p>
-                    This identifies your customer record. Your order is still collected at the
-                    store.
-                  </p>
+                  <h2>Delivery address</h2>
+                  <p>This is where your order will be delivered. Check the details before placing it.</p>
                 </div>
               </div>
 
@@ -295,14 +287,14 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   <MapPin aria-hidden="true" />
                   <div>
                     <strong>Loading saved address...</strong>
-                    <span>Checking your account details.</span>
+                    <span>Checking your account delivery details.</span>
                   </div>
                 </div>
               ) : savedAddress && !editingAddress ? (
                 <div className="customer-choice-card is-selected">
                   <MapPin aria-hidden="true" />
                   <div>
-                    <strong>Saved address</strong>
+                    <strong>Deliver to this address</strong>
                     <span>{addressSummary(savedAddress)}</span>
                     <button
                       className="customer-address-change"
@@ -403,62 +395,41 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 </div>
               ) : null}
 
-              {customer ? (
-                <label className="customer-address-save-option">
-                  <input
-                    checked={saveAddressToAccount}
-                    onChange={(event) => setSaveAddressToAccount(event.target.checked)}
-                    type="checkbox"
-                  />
-                  <span>
-                    <strong>Save this address to My Account</strong>
-                    <small>
-                      Use it automatically on your next checkout. You can change it anytime.
-                    </small>
-                  </span>
-                </label>
-              ) : null}
+              <label className="customer-address-save-option">
+                <Checkbox.Root
+                  checked={saveAddressToAccount}
+                  className="customer-address-save-checkbox"
+                  onCheckedChange={setSaveAddressToAccount}
+                >
+                  <Checkbox.Indicator>
+                    <Check aria-hidden="true" size={14} />
+                  </Checkbox.Indicator>
+                </Checkbox.Root>
+                <span className="customer-address-save-copy">
+                  <strong>Save this address to My Account</strong>
+                  <small>
+                    Use it automatically on your next checkout. You can change it anytime.
+                  </small>
+                </span>
+              </label>
             </section>
 
             <section>
               <div className="customer-checkout-section-title">
                 <span>3</span>
                 <div>
-                  <h2>Fulfillment</h2>
-                  <p>Pickup is the currently supported option.</p>
+                  <h2>Payment method</h2>
+                  <p>Pay securely online now or pay in cash when your order arrives.</p>
                 </div>
               </div>
-              <div className="customer-choice-card is-selected">
-                <Store aria-hidden="true" />
-                <div>
-                  <strong>Store pickup</strong>
-                  <span>
-                    <MapPin aria-hidden="true" size={15} /> 110 A. Mabini Street, Pasig City, Metro
-                    Manila
-                  </span>
-                </div>
-                <CheckCircle2 aria-hidden="true" />
-              </div>
-            </section>
-            <section>
-              <div className="customer-checkout-section-title">
-                <span>4</span>
-                <div>
-                  <h2>Payment</h2>
-                  <p>
-                    Choose PayMongo test checkout or pay at the store when you collect the order.
-                  </p>
-                </div>
-              </div>
+
               <div
                 aria-label="Payment method"
                 className="customer-payment-options"
                 role="radiogroup"
               >
                 <label
-                  className={`customer-payment-option${
-                    paymentMethod === "PAYMONGO" ? " is-selected" : ""
-                  }`}
+                  className={`customer-payment-option${paymentMethod === "PAYMONGO" ? " is-selected" : ""}`}
                 >
                   <input
                     checked={paymentMethod === "PAYMONGO"}
@@ -472,34 +443,33 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   <span>
                     <strong>PayMongo online payment</strong>
                     <small>
-                      Secure hosted checkout in test mode. Choose card, GCash, Maya, GrabPay, or QR
-                      Ph in the PayMongo test checkout when available. No real money will be
-                      charged.
+                      Secure hosted test checkout. Pay before delivery using an available PayMongo
+                      test payment method. No real money will be charged.
                     </small>
                   </span>
                   {paymentMethod === "PAYMONGO" ? <CheckCircle2 aria-hidden="true" /> : null}
                 </label>
+
                 <label
-                  className={`customer-payment-option${
-                    paymentMethod === "CASH_ON_PICKUP" ? " is-selected" : ""
-                  }`}
+                  className={`customer-payment-option${paymentMethod === "CASH_ON_DELIVERY" ? " is-selected" : ""}`}
                 >
                   <input
-                    checked={paymentMethod === "CASH_ON_PICKUP"}
+                    checked={paymentMethod === "CASH_ON_DELIVERY"}
                     disabled={Boolean(pendingPaymongoOrder)}
                     name="paymentMethod"
-                    onChange={() => setPaymentMethod("CASH_ON_PICKUP")}
+                    onChange={() => setPaymentMethod("CASH_ON_DELIVERY")}
                     type="radio"
-                    value="CASH_ON_PICKUP"
+                    value="CASH_ON_DELIVERY"
                   />
                   <Banknote aria-hidden="true" />
                   <span>
-                    <strong>Cash on pickup</strong>
-                    <small>Pay at the store when your order is collected.</small>
+                    <strong>Cash on Delivery</strong>
+                    <small>Pay in cash when your order arrives at your delivery address.</small>
                   </span>
-                  {paymentMethod === "CASH_ON_PICKUP" ? <CheckCircle2 aria-hidden="true" /> : null}
+                  {paymentMethod === "CASH_ON_DELIVERY" ? <CheckCircle2 aria-hidden="true" /> : null}
                 </label>
               </div>
+
               {pendingPaymongoOrder ? (
                 <div className="customer-payment-resume" role="status">
                   <ShieldCheck aria-hidden="true" size={18} />
@@ -509,24 +479,38 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   </span>
                 </div>
               ) : null}
-              <label className="customer-notes-field">
+            </section>
+
+            <section>
+              <div className="customer-checkout-section-title">
+                <span>4</span>
+                <div>
+                  <h2>Order notes</h2>
+                  <p>Add delivery instructions or a short note for store staff. This is optional.</p>
+                </div>
+              </div>
+              <label className="customer-notes-field customer-notes-field--standalone">
                 <span>
-                  Order notes <small>(optional)</small>
+                  Notes <small>(optional)</small>
                 </span>
                 <textarea
                   maxLength={255}
                   name="notes"
-                  placeholder="A short note for the store"
+                  placeholder="Example: Please call before delivery."
                   rows={3}
                 />
               </label>
             </section>
           </div>
+
           <aside className="customer-order-summary customer-checkout-summary">
-            <p className="customer-kicker">Final review</p>
-            <h2>
-              {itemCount} item{itemCount === 1 ? "" : "s"}
-            </h2>
+            <div className="customer-order-summary__heading">
+              <p className="customer-kicker">Final review</p>
+              <h2>
+                {itemCount} item{itemCount === 1 ? "" : "s"}
+              </h2>
+            </div>
+
             <div className="customer-checkout-lines">
               {items.map((item) => (
                 <div key={item.product.id}>
@@ -539,37 +523,56 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 </div>
               ))}
             </div>
-            <div>
-              <span>Pickup</span>
-              <strong>Free</strong>
+
+            <div className="customer-order-summary__row">
+              <span>Delivery</span>
+              <strong>Store coordinated</strong>
             </div>
+
             <div className="customer-order-summary__total">
               <span>Total</span>
               <strong>{formatCurrency(subtotal)}</strong>
             </div>
-            <p>
-              Placing this order creates a pending pickup request. Inventory is deducted only when
-              the store completes the sale.
+
+            <div className="customer-order-summary__payment">
+              {paymentMethod === "PAYMONGO" ? <CreditCard aria-hidden="true" /> : <Truck aria-hidden="true" />}
+              <div>
+                <strong>
+                  {paymentMethod === "PAYMONGO" ? "PayMongo online payment" : "Cash on Delivery"}
+                </strong>
+                <span>
+                  {paymentMethod === "PAYMONGO"
+                    ? "Payment is verified before delivery."
+                    : "Payment is collected when your order arrives."}
+                </span>
+              </div>
+            </div>
+
+            <p className="customer-order-summary__helper">
+              Store staff will prepare your order and coordinate the courier. You can follow its
+              delivery status from My Account.
             </p>
+
             {error ? (
               <div aria-live="assertive" className="customer-form-error" role="alert">
                 {error}
               </div>
             ) : null}
+
             <button
-              className="customer-button customer-button--full"
+              className="customer-button customer-button--full customer-order-summary__action"
               disabled={submitting || addressLoading}
               type="submit"
             >
               {submitting
                 ? paymentMethod === "PAYMONGO"
                   ? "Starting secure checkout..."
-                  : "Checking stock..."
+                  : "Placing delivery order..."
                 : pendingPaymongoOrder
                   ? "Retry PayMongo checkout"
                   : paymentMethod === "PAYMONGO"
                     ? "Continue to PayMongo"
-                    : "Place pickup order"}
+                    : "Place COD order"}
             </button>
           </aside>
         </form>

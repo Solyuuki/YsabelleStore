@@ -9960,3 +9960,199 @@
     animation: none !important;
   }
 }
+
+
+/* Delivery checkout refinement: shared spacing rhythm and accessible form primitives. */
+.customer-checkout-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 370px);
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+.customer-checkout-form {
+  gap: 1.5rem;
+}
+.customer-checkout-form section {
+  padding: clamp(1.35rem, 2.5vw, 1.8rem);
+}
+.customer-checkout-section-title {
+  gap: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+.customer-form-grid {
+  column-gap: 1rem;
+  row-gap: 1.15rem;
+}
+.customer-address-save-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--customer-line);
+  border-radius: 0.85rem;
+  background: #fbfcff;
+  cursor: pointer;
+}
+.customer-address-save-checkbox {
+  display: flex;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.08rem;
+  border: 1px solid #b9bfd4;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #fff;
+}
+.customer-address-save-checkbox[data-checked] {
+  border-color: var(--customer-primary);
+  background: var(--customer-primary);
+}
+.customer-address-save-checkbox:focus-visible {
+  outline: 3px solid var(--customer-focus);
+  outline-offset: 2px;
+}
+.customer-address-save-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.3rem;
+}
+.customer-address-save-copy strong {
+  color: var(--customer-dark);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+.customer-address-save-copy small {
+  color: var(--customer-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.customer-address-change {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--customer-primary-strong);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+.customer-payment-options {
+  gap: 0.9rem;
+}
+.customer-payment-option {
+  min-height: 88px;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+}
+.customer-payment-option > span {
+  gap: 0.35rem;
+}
+.customer-payment-option small {
+  line-height: 1.55;
+}
+.customer-notes-field--standalone {
+  margin-top: 0;
+}
+.customer-order-summary {
+  padding: clamp(1.5rem, 2.8vw, 1.9rem);
+}
+.customer-order-summary__heading {
+  display: grid !important;
+  gap: 0.45rem !important;
+  padding: 0 0 1.1rem !important;
+}
+.customer-order-summary__heading .customer-kicker {
+  margin: 0;
+}
+.customer-order-summary__heading h2 {
+  margin: 0;
+}
+.customer-checkout-lines {
+  max-height: 260px;
+  gap: 0.2rem !important;
+  padding: 0.25rem 0 0.75rem !important;
+  border-bottom: 1px solid #d7d5ff;
+}
+.customer-checkout-lines > div {
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding-block: 0.65rem;
+  line-height: 1.45;
+}
+.customer-checkout-lines > div span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.customer-checkout-lines > div strong {
+  flex: none;
+  text-align: right;
+}
+.customer-order-summary__row {
+  align-items: center;
+  padding-block: 1rem !important;
+}
+.customer-order-summary__total {
+  margin-top: 0;
+  padding-block: 1rem !important;
+}
+.customer-order-summary__payment {
+  display: flex !important;
+  align-items: flex-start;
+  justify-content: flex-start !important;
+  gap: 0.75rem !important;
+  margin-top: 0.75rem;
+  padding: 0.9rem !important;
+  border: 1px solid #d7d5ff;
+  border-radius: 0.8rem;
+  background: rgb(255 255 255 / 55%);
+}
+.customer-order-summary__payment > svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--customer-primary);
+}
+.customer-order-summary__payment > div {
+  display: grid;
+  gap: 0.25rem;
+}
+.customer-order-summary__payment strong {
+  color: var(--customer-dark);
+  font-size: 0.76rem;
+}
+.customer-order-summary__payment span {
+  color: var(--customer-muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+.customer-order-summary__helper {
+  margin: 1rem 0 0 !important;
+  font-size: 0.72rem !important;
+  line-height: 1.6 !important;
+}
+.customer-order-summary__action {
+  margin-top: 1.25rem;
+}
+@media (max-width: 960px) {
+  .customer-checkout-layout {
+    grid-template-columns: 1fr;
+  }
+  .customer-checkout-summary {
+    position: static;
+  }
+}
+@media (max-width: 640px) {
+  .customer-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .customer-form-grid__full {
+    grid-column: auto;
+  }
+  .customer-payment-option {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+}
