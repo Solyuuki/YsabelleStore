@@ -220,18 +220,34 @@ enum SaleStatus {
 enum CustomerOrderStatus {
   PENDING
   CONFIRMED
-  READY_FOR_PICKUP
+  PROCESSING
   COMPLETED
   CANCELLED
 }
 
 enum CustomerFulfillmentMethod {
-  STORE_PICKUP
+  DELIVERY
 }
 
 enum CustomerPaymentMethod {
-  CASH_ON_PICKUP
+  CASH_ON_DELIVERY
   PAYMONGO
+}
+
+enum CustomerDeliveryStatus {
+  ORDER_PLACED
+  PREPARING
+  READY_FOR_DELIVERY
+  OUT_FOR_DELIVERY
+  DELIVERED
+  DELIVERY_FAILED
+  CANCELLED
+}
+
+enum CustomerDeliveryActorType {
+  SYSTEM
+  STAFF
+  CUSTOMER
 }
 
 enum CustomerPaymentStatus {
@@ -363,6 +379,8 @@ model User {
   updatedSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetUpdatedBy")
   moderatedProductReviews  ProductReview[]               @relation("ProductReviewModeratedBy")
   customerModerationAudits CustomerModerationAudit[]      @relation("CustomerModerationAuditActor")
+  codCollectedOrders       CustomerOrder[]                @relation("CustomerOrderCodCollectedBy")
+  customerDeliveryEvents   CustomerDeliveryEvent[]        @relation("CustomerDeliveryEventStaffActor")
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
@@ -411,6 +429,7 @@ model CustomerAccount {
   rememberedAuth      CustomerRememberedAuth[]
   favorites           CustomerFavorite[]
   reviews             ProductReview[]
+  deliveryEvents      CustomerDeliveryEvent[]        @relation("CustomerDeliveryEventCustomerActor")
 
   @@index([status], map: "idx_customer_accounts_status")
   @@map("customer_accounts")
@@ -977,6 +996,7 @@ model Sale {
   updatedAt      DateTime   @updatedAt @map("updated_at")
   cashier        User?      @relation(fields: [cashierId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   items          SaleItem[]
+  customerOrder  CustomerOrder?
 
   @@index([saleDate], map: "idx_sales_sale_date")
   @@index([status, saleDate], map: "idx_sales_status_date")
@@ -1066,36 +1086,71 @@ model CustomerSavedAddress {
 }
 
 model CustomerOrder {
-  id                String                    @id @default(cuid()) @db.VarChar(191)
-  customerAccountId String?                   @map("customer_account_id") @db.VarChar(191)
-  orderNumber       String                    @unique(map: "uq_customer_orders_order_number") @map("order_number") @db.VarChar(80)
-  customerName      String                    @map("customer_name") @db.VarChar(120)
-  customerEmail     String?                   @map("customer_email") @db.VarChar(191)
-  customerPhone     String                    @map("customer_phone") @db.VarChar(40)
-  fulfillmentMethod CustomerFulfillmentMethod @default(STORE_PICKUP) @map("fulfillment_method")
-  paymentMethod            CustomerPaymentMethod     @default(CASH_ON_PICKUP) @map("payment_method")
+  id                       String                    @id @default(cuid()) @db.VarChar(191)
+  customerAccountId        String?                   @map("customer_account_id") @db.VarChar(191)
+  orderNumber              String                    @unique(map: "uq_customer_orders_order_number") @map("order_number") @db.VarChar(80)
+  deliveryTicketNumber     String                    @unique(map: "uq_customer_orders_delivery_ticket") @map("delivery_ticket_number") @db.VarChar(96)
+  customerName             String                    @map("customer_name") @db.VarChar(120)
+  customerEmail            String?                   @map("customer_email") @db.VarChar(191)
+  customerPhone            String                    @map("customer_phone") @db.VarChar(40)
+  fulfillmentMethod        CustomerFulfillmentMethod @default(DELIVERY) @map("fulfillment_method")
+  paymentMethod            CustomerPaymentMethod     @default(CASH_ON_DELIVERY) @map("payment_method")
   paymentStatus            CustomerPaymentStatus     @default(PENDING) @map("payment_status")
-  paymongoCheckoutSessionId String?                   @unique(map: "uq_customer_orders_paymongo_checkout_session") @map("paymongo_checkout_session_id") @db.VarChar(191)
-  paymongoCheckoutUrl       String?                   @map("paymongo_checkout_url") @db.VarChar(2048)
-  paymongoPaymentIntentId   String?                   @map("paymongo_payment_intent_id") @db.VarChar(191)
-  paymongoPaymentId         String?                   @unique(map: "uq_customer_orders_paymongo_payment") @map("paymongo_payment_id") @db.VarChar(191)
+  deliveryStatus           CustomerDeliveryStatus    @default(ORDER_PLACED) @map("delivery_status")
+  courierProvider          String?                   @map("courier_provider") @db.VarChar(80)
+  courierReference         String?                   @map("courier_reference") @db.VarChar(120)
+  deliveryNotes            String?                   @map("delivery_notes") @db.VarChar(255)
+  dispatchedAt             DateTime?                 @map("dispatched_at")
+  deliveredAt              DateTime?                 @map("delivered_at")
+  customerConfirmedAt      DateTime?                 @map("customer_confirmed_at")
+  codCollectedAt           DateTime?                 @map("cod_collected_at")
+  codCollectedById         String?                   @map("cod_collected_by_id") @db.VarChar(191)
+  saleId                   String?                   @unique(map: "uq_customer_orders_sale") @map("sale_id") @db.VarChar(191)
+  paymongoCheckoutSessionId String?                  @unique(map: "uq_customer_orders_paymongo_checkout_session") @map("paymongo_checkout_session_id") @db.VarChar(191)
+  paymongoCheckoutUrl       String?                  @map("paymongo_checkout_url") @db.VarChar(2048)
+  paymongoPaymentIntentId   String?                  @map("paymongo_payment_intent_id") @db.VarChar(191)
+  paymongoPaymentId         String?                  @unique(map: "uq_customer_orders_paymongo_payment") @map("paymongo_payment_id") @db.VarChar(191)
   paidAt                    DateTime?                 @map("paid_at")
   status                    CustomerOrderStatus       @default(PENDING)
-  subtotalAmount    Decimal                   @map("subtotal_amount") @db.Decimal(12, 2)
-  totalAmount       Decimal                   @map("total_amount") @db.Decimal(12, 2)
-  notes             String?                   @db.VarChar(255)
-  createdAt         DateTime                  @default(now()) @map("created_at")
-  updatedAt         DateTime                  @updatedAt @map("updated_at")
-  items             CustomerOrderItem[]
-  addressSnapshot   CustomerOrderAddressSnapshot?
-  customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  verifiedReviews   ProductReview[]            @relation("ProductReviewVerifiedOrder")
+  subtotalAmount            Decimal                   @map("subtotal_amount") @db.Decimal(12, 2)
+  totalAmount               Decimal                   @map("total_amount") @db.Decimal(12, 2)
+  notes                     String?                   @db.VarChar(255)
+  createdAt                 DateTime                  @default(now()) @map("created_at")
+  updatedAt                 DateTime                  @updatedAt @map("updated_at")
+  items                     CustomerOrderItem[]
+  addressSnapshot           CustomerOrderAddressSnapshot?
+  deliveryEvents            CustomerDeliveryEvent[]
+  customerAccount           CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  codCollectedBy            User?                     @relation("CustomerOrderCodCollectedBy", fields: [codCollectedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  sale                      Sale?                     @relation(fields: [saleId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  verifiedReviews           ProductReview[]            @relation("ProductReviewVerifiedOrder")
 
   @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")
   @@index([status, createdAt], map: "idx_customer_orders_status_created")
   @@index([paymentStatus, createdAt], map: "idx_customer_orders_payment_status_created")
+  @@index([deliveryStatus, updatedAt], map: "idx_customer_orders_delivery_status_updated")
   @@index([customerPhone, createdAt], map: "idx_customer_orders_phone_created")
+  @@index([codCollectedById], map: "idx_customer_orders_cod_collected_by")
   @@map("customer_orders")
+}
+
+model CustomerDeliveryEvent {
+  id                     String                    @id @default(cuid()) @db.VarChar(191)
+  orderId                String                    @map("order_id") @db.VarChar(191)
+  status                 CustomerDeliveryStatus
+  actorType              CustomerDeliveryActorType @map("actor_type")
+  actorUserId            String?                   @map("actor_user_id") @db.VarChar(191)
+  actorCustomerAccountId String?                   @map("actor_customer_account_id") @db.VarChar(191)
+  note                   String?                   @db.VarChar(255)
+  createdAt              DateTime                  @default(now()) @map("created_at")
+  order                  CustomerOrder             @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  actorUser              User?                     @relation("CustomerDeliveryEventStaffActor", fields: [actorUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  actorCustomerAccount   CustomerAccount?          @relation("CustomerDeliveryEventCustomerActor", fields: [actorCustomerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([orderId, createdAt], map: "idx_customer_delivery_events_order_created")
+  @@index([actorUserId], map: "idx_customer_delivery_events_user")
+  @@index([actorCustomerAccountId], map: "idx_customer_delivery_events_customer")
+  @@map("customer_delivery_events")
 }
 
 model CustomerOrderItem {

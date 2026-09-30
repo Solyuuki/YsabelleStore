@@ -9,6 +9,7 @@
     "0003_category_cover_focal_grid": "e4d6578e6915e083c4878e62936c4b3e274cc438fdf2a44237c63bb014eb9587",
     "0004_dashboard_sales_calendar_targets": "f5475ec1d101ebb3c160d7b05d86e11ca681220a4bdc59f14f94564c16198796",
     "0005_customer_engagement": "c9fff567d396496c10b6d3243d20c9080411e62a1f9487ada11b8a857cbd3bac",
-    "0006_paymongo_billing": "be72ae159d9671a212827f7fc7920b554e2a4956bff69947029133a121a1c47a"
+    "0006_paymongo_billing": "be72ae159d9671a212827f7fc7920b554e2a4956bff69947029133a121a1c47a",
+    "0007_delivery_fulfillment": "609c83f14ac4ff5c2d24ef5cf2db63a3c6b9c88b1cca410d47350c4de9fd0eaa"
   }
 }
