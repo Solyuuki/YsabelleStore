@@ -75,7 +75,7 @@ test("account hero changes premium context with the active account tab", () => {
   assert.match(customerAccountPage, /favorites:[\s\S]*eyebrow: "Saved items"/);
   assert.match(customerAccountPage, /favorites:[\s\S]*title: "Favorites, ready when you are\."/);
   assert.match(customerAccountPage, /profile:[\s\S]*eyebrow: "Profile"/);
-  assert.match(customerAccountPage, /profile:[\s\S]*title: "Your identity, your account\."/);
+  assert.match(customerAccountPage, /profile:[\s\S]*title: "Your details, ready for checkout\."/);
   assert.match(customerAccountPage, /security:[\s\S]*eyebrow: "Account security"/);
   assert.match(customerAccountPage, /security:[\s\S]*title: "Protect your account\."/);
   assert.match(customerAccountPage, /const heroContent = ACCOUNT_HERO_CONTENT\[activeTab\]/);
