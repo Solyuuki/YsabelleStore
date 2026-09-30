@@ -16,7 +16,7 @@ test("web shell uses cache-safe canonical Ysabelle favicon and touch icon assets
   assert.match(html, /<title>Ysabelle Store<\/title>/);
 });
 
-test("customer and staff brand marks share the canonical public mark component", () => {
+test("customer and staff brand marks use bundled official logo components", () => {
   const app = read("frontend/src/app/CustomerApp.tsx");
   const header = read("frontend/src/components/customer/CustomerHeader.tsx");
   const footer = read("frontend/src/components/customer/CustomerFooter.tsx");
@@ -30,12 +30,14 @@ test("customer and staff brand marks share the canonical public mark component",
   assert.match(sidebar, /YsabelleBrandMark/);
   assert.match(
     sharedCustomerMark,
-    /import \{ BrandLogo \} from "@\/components\/brand\/BrandLogo";/
+    /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
   );
-  assert.match(sharedCustomerMark, /<BrandLogo/);
-  assert.match(brandLogo, /ysabelle-store-mark-256\.png/);
-  assert.match(brandLogo, /FILE_BRAND_MARK_SRC/);
-  assert.doesNotMatch(brandLogo, /officialLogoUrl|ysabelle-logo-official\.webp/);
+  assert.match(sharedCustomerMark, /src=\{officialLogoUrl\}/);
+  assert.match(
+    brandLogo,
+    /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
+  );
+  assert.match(brandLogo, /src=\{officialLogoUrl\}/);
   assert.doesNotMatch(sidebar, /\/brand\/ysabelle-logo-v2\.png/);
   assert.doesNotMatch(sidebar, />\s*YS\s*</);
 });
@@ -46,10 +48,8 @@ test("About story branding keeps the real Ysabelle mark without synthetic fallba
   const handoff = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
   const styles = read("frontend/src/styles/brand.css");
 
-  assert.match(brandMark, /BrandLogo/);
-  assert.match(brandMark, /variant="mark"/);
-  assert.doesNotMatch(brandMark, /officialLogoUrl|ysabelle-logo-official\.webp/);
-  assert.doesNotMatch(brandMark, /ysabelle-brand-mark__fallback|\bStore\b/);
+  assert.match(brandMark, /src=\{officialLogoUrl\}/);
+  assert.doesNotMatch(brandMark, /ysabelle-brand-mark__fallback|\bStore\b|<BrandLogo/);
   assert.match(discoverIdentity, /YsabelleBrandMark/);
   assert.match(handoff, /<YsabelleBrandMark variant="mini" \/>/);
   assert.match(styles, /background:\s*transparent/);

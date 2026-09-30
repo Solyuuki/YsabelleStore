@@ -110,25 +110,24 @@ test("browser favicon uses full-logo 16, 32, and 48 px frames", async () => {
   assert.doesNotMatch(html, /sizes="256x256"/);
 });
 
-test("shared brand components use the canonical public Ysabelle mark on web and Electron", async () => {
+test("shared brand components render only the bundled approved circular logo", async () => {
   const customerMark = await readText("frontend/src/components/customer/YsabelleBrandMark.tsx");
   const staffMark = await readText("frontend/src/components/brand/BrandLogo.tsx");
 
   assert.match(
     staffMark,
-    /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/
+    /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
   );
-  assert.match(
-    staffMark,
-    /FILE_BRAND_MARK_SRC = `\.\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/
-  );
-  assert.match(staffMark, /new URL\(FILE_BRAND_MARK_SRC, document\.baseURI\)\.href/);
-  assert.doesNotMatch(staffMark, /officialLogoUrl|ysabelle-logo-official\.webp/);
+  assert.match(staffMark, /src=\{officialLogoUrl\}/);
+  assert.doesNotMatch(staffMark, /WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC/);
   assert.doesNotMatch(staffMark, /<svg[\s>]/);
 
-  assert.match(customerMark, /import \{ BrandLogo \} from "@\/components\/brand\/BrandLogo";/);
-  assert.match(customerMark, /<BrandLogo[\s\S]*variant="mark"/);
-  assert.doesNotMatch(customerMark, /officialLogoUrl|WEB_BRAND_MARK_SRC|<svg[\s>]/);
+  assert.match(
+    customerMark,
+    /import officialLogoUrl from "@\/assets\/brand\/ysabelle-logo-official\.webp";/
+  );
+  assert.match(customerMark, /src=\{officialLogoUrl\}/);
+  assert.doesNotMatch(customerMark, /<BrandLogo|WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC|<svg[\s>]/);
 });
 
 test("keeps approved header and footer on shared mark", async () => {

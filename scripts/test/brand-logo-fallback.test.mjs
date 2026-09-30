@@ -6,7 +6,7 @@ async function source(path) {
   return readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 }
 
-test("brand components use one canonical circular Ysabelle mark source", async () => {
+test("brand components use only the bundled approved circular Ysabelle logo", async () => {
   const [brandLogo, customerMark, header, footer, sidebar, statusScreen, styles] =
     await Promise.all([
       source("frontend/src/components/brand/BrandLogo.tsx"),
@@ -18,14 +18,19 @@ test("brand components use one canonical circular Ysabelle mark source", async (
       source("frontend/src/styles/brand.css")
     ]);
 
-  assert.match(brandLogo, /ysabelle-store-mark-256\.png/);
-  assert.match(brandLogo, /new URL\(FILE_BRAND_MARK_SRC, document\.baseURI\)\.href/);
-  assert.doesNotMatch(brandLogo, /officialLogoUrl|ysabelle-logo-official\.webp/);
-  assert.doesNotMatch(brandLogo, /<svg[\s>]|M18 21h28|#625bff|#008cff/);
+  assert.match(
+    brandLogo,
+    /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
+  );
+  assert.match(brandLogo, /src=\{officialLogoUrl\}/);
+  assert.doesNotMatch(brandLogo, /WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC|<svg[\s>]/);
 
-  assert.match(customerMark, /BrandLogo/);
-  assert.match(customerMark, /variant="mark"/);
-  assert.doesNotMatch(customerMark, /officialLogoUrl|ysabelle-logo-official\.webp/);
+  assert.match(
+    customerMark,
+    /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
+  );
+  assert.match(customerMark, /src=\{officialLogoUrl\}/);
+  assert.doesNotMatch(customerMark, /<BrandLogo|WEB_BRAND_MARK_SRC|FILE_BRAND_MARK_SRC/);
 
   for (const consumer of [header, footer, sidebar]) {
     assert.match(consumer, /YsabelleBrandMark/);
