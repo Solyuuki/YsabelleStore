@@ -990,7 +990,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                         <button
                           className="customer-account-secondary-button"
                           onClick={() => {
-                            setAddressDraft(savedAddress);
+                            setAddressDraft(savedAddress ?? EMPTY_CUSTOMER_ADDRESS);
                             setAddressEditing(false);
                             setAddressError(null);
                           }}

@@ -13,23 +13,23 @@ export class CustomerErrorBoundary extends Component<
   CustomerErrorBoundaryProps,
   CustomerErrorBoundaryState
 > {
-  public state: CustomerErrorBoundaryState = { failed: false };
+  public override state: CustomerErrorBoundaryState = { failed: false };
 
   public static getDerivedStateFromError(): CustomerErrorBoundaryState {
     return { failed: true };
   }
 
-  public componentDidCatch(_error: Error, _info: ErrorInfo) {
+  public override componentDidCatch(_error: Error, _info: ErrorInfo) {
     console.error("[customer-ui] render failure");
   }
 
-  public componentDidUpdate(previousProps: CustomerErrorBoundaryProps) {
+  public override componentDidUpdate(previousProps: CustomerErrorBoundaryProps) {
     if (this.state.failed && previousProps.resetKey !== this.props.resetKey) {
       this.setState({ failed: false });
     }
   }
 
-  public render() {
+  public override render() {
     if (!this.state.failed) return this.props.children;
 
     return (
