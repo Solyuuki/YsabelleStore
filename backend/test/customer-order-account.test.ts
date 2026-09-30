@@ -121,6 +121,15 @@ function orderInput(productId: string, customerName: string) {
     customerName,
     customerEmail: `${customerName.toLowerCase().replaceAll(" ", "-")}@example.com`,
     customerPhone: "09171234567",
+    customerAddress: {
+      addressLine1: "110 A. Mabini Street",
+      addressLine2: "",
+      barangay: "Kapitolyo",
+      cityMunicipality: "Pasig City",
+      provinceRegion: "Metro Manila",
+      postalCode: "1603",
+      country: "Philippines"
+    },
     fulfillmentMethod: "DELIVERY",
     paymentMethod: "CASH_ON_DELIVERY",
     items: [{ productId, quantity: 1 }]
@@ -163,6 +172,7 @@ test("customer order history is strictly isolated to the authenticated customer"
       data: {
         customerAccountId: fixture.customerA.customer.id,
         orderNumber: `YS-ACCOUNT-${randomUUID().slice(0, 8).toUpperCase()}`,
+        deliveryTicketNumber: `DEL-YS-ACCOUNT-${randomUUID().slice(0, 8).toUpperCase()}`,
         customerName: "Customer A",
         customerEmail: fixture.customerA.customer.email,
         customerPhone: "09171234567",

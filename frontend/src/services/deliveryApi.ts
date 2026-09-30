@@ -35,7 +35,10 @@ export async function listDeliveryTickets(
     `/api/deliveries${search ? `?${search}` : ""}`,
     { signal }
   );
-  if (!response.success || !response.data) throw new Error(response.message);
+  if (!response.success || !response.data || !response.meta) {
+    throw new Error(response.message || "Delivery ticket metadata is missing.");
+  }
+
   return {
     items: response.data,
     meta: response.meta

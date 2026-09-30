@@ -134,6 +134,15 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
       customerName: "Storefront Test Customer",
       customerEmail: "customer@example.com",
       customerPhone: "09171234567",
+      customerAddress: {
+        addressLine1: "110 A. Mabini Street",
+        addressLine2: "",
+        barangay: "Kapitolyo",
+        cityMunicipality: "Pasig City",
+        provinceRegion: "Metro Manila",
+        postalCode: "1603",
+        country: "Philippines"
+      },
       fulfillmentMethod: "DELIVERY",
       paymentMethod: "CASH_ON_DELIVERY",
       items: [{ productId: product.id, quantity: 2 }]

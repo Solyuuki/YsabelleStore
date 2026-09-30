@@ -89,6 +89,7 @@ test("favorites persist per customer and verified reviews require a completed pu
       data: {
         customerAccountId: registered.customer.id,
         orderNumber: `YS-REVIEW-${suffix.toUpperCase()}`,
+        deliveryTicketNumber: `DEL-YS-REVIEW-${suffix.toUpperCase()}`,
         customerName: registered.customer.name,
         customerEmail: registered.customer.email,
         customerPhone: registered.customer.phone ?? "09181234567",
@@ -196,6 +197,7 @@ test("owner moderation hides reviews and restricted customers lose active sessio
       data: {
         customerAccountId: registered.customer.id,
         orderNumber: `YS-MOD-${suffix.toUpperCase()}`,
+        deliveryTicketNumber: `DEL-YS-MOD-${suffix.toUpperCase()}`,
         customerName: registered.customer.name,
         customerEmail: registered.customer.email,
         customerPhone: registered.customer.phone ?? "09191234567",
