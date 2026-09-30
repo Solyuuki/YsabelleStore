@@ -23,6 +23,13 @@ export const supportTicketIdParamsSchema = z
   })
   .strict();
 
+export const supportTicketMessageParamsSchema = z
+  .object({
+    ticketId: z.string().trim().min(1).max(191),
+    messageId: z.string().trim().min(1).max(191)
+  })
+  .strict();
+
 export const supportTicketListQuerySchema = z
   .object({
     status: supportTicketStatusSchema.optional(),

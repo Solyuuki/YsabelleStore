@@ -38,6 +38,9 @@ const envSchema = z.object({
   CUSTOMER_OAUTH_TRANSACTION_KEY: z.string().min(32).optional(),
   GOOGLE_OAUTH_CLIENT_ID: optionalNonEmptyString,
   GOOGLE_OAUTH_CLIENT_SECRET: optionalNonEmptyString,
+  CUSTOMER_SUPPORT_EMAIL: z.string().email().optional(),
+  CUSTOMER_SUPPORT_FROM_NAME: z.string().trim().min(1).max(120).default("Ysabelle Store Customer Support"),
+  GOOGLE_GMAIL_REFRESH_TOKEN: optionalNonEmptyString,
   FACEBOOK_OAUTH_APP_ID: optionalNonEmptyString,
   FACEBOOK_OAUTH_APP_SECRET: optionalNonEmptyString,
   FACEBOOK_GRAPH_API_VERSION: z

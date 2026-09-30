@@ -80,3 +80,30 @@ export async function updateStaffSupportTicketStatus(ticketId: string, status: S
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
 }
+
+
+export async function fetchSupportGmailStatus() {
+  const response = await apiClient.request<import("@/types/staffSupport").SupportGmailStatus>(
+    "/api/support/gmail/status"
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function syncSupportGmail() {
+  const response = await apiClient.request<import("@/types/staffSupport").SupportGmailSyncResult>(
+    "/api/support/gmail/sync",
+    { method: "POST" }
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function retryStaffSupportMessageEmail(ticketId: string, messageId: string) {
+  const response = await apiClient.request<StaffSupportTicketDetail>(
+    `/api/support/tickets/${encodeURIComponent(ticketId)}/messages/${encodeURIComponent(messageId)}/retry-email`,
+    { method: "POST" }
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}

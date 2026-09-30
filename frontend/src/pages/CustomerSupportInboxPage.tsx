@@ -18,7 +18,10 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   fetchStaffSupportTicket,
   fetchStaffSupportTickets,
+  fetchSupportGmailStatus,
   replyToStaffSupportTicket,
+  retryStaffSupportMessageEmail,
+  syncSupportGmail,
   updateStaffSupportTicketStatus
 } from "@/services/supportApi";
 import {
@@ -28,7 +31,8 @@ import {
   type StaffSupportMessage,
   type StaffSupportStatus,
   type StaffSupportTicketDetail,
-  type StaffSupportTicketSummary
+  type StaffSupportTicketSummary,
+  type SupportGmailStatus
 } from "@/types/staffSupport";
 import type { StorefrontPagination } from "@/types/storefront";
 
@@ -95,6 +99,15 @@ export function CustomerSupportInboxPage() {
   const [replySaving, setReplySaving] = useState(false);
   const [statusDraft, setStatusDraft] = useState<StaffSupportStatus>("NEW");
   const [statusSaving, setStatusSaving] = useState(false);
+  const [gmailStatus, setGmailStatus] = useState<SupportGmailStatus | null>(null);
+  const [gmailSyncing, setGmailSyncing] = useState(false);
+  const [retryingMessageId, setRetryingMessageId] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetchSupportGmailStatus()
+      .then(setGmailStatus)
+      .catch(() => setGmailStatus({ configured: false, mailbox: null }));
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -193,6 +206,42 @@ export function CustomerSupportInboxPage() {
     }
   }
 
+  async function syncMailbox() {
+    if (!gmailStatus?.configured || gmailSyncing) return;
+    setGmailSyncing(true);
+    setError(null);
+    try {
+      const result = await syncSupportGmail();
+      setReloadKey((value) => value + 1);
+      if (result.imported === 0) {
+        setError("Gmail sync completed. No new customer replies were found.");
+      }
+    } catch (reason) {
+      setError(supportError(reason, "Gmail inbox could not be synchronized."));
+    } finally {
+      setGmailSyncing(false);
+    }
+  }
+
+  async function retryEmail(messageId: string) {
+    if (!detail || retryingMessageId) return;
+    setRetryingMessageId(messageId);
+    setError(null);
+    try {
+      const updated = await retryStaffSupportMessageEmail(detail.id, messageId);
+      setDetail(updated);
+      setReloadKey((value) => value + 1);
+      const retried = updated.messages.find((message) => message.id === messageId);
+      if (retried?.deliveryStatus === "FAILED") {
+        setError("The reply remains saved, but Gmail delivery failed again.");
+      }
+    } catch (reason) {
+      setError(supportError(reason, "Support email could not be retried."));
+    } finally {
+      setRetryingMessageId(null);
+    }
+  }
+
   async function submitReply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!detail || replySaving || detail.status === "CLOSED") return;
@@ -211,6 +260,12 @@ export function CustomerSupportInboxPage() {
       setStatusDraft(updated.status);
       setReply("");
       setReloadKey((value) => value + 1);
+      const latestStaffMessage = [...updated.messages]
+        .reverse()
+        .find((item) => item.senderType === "STAFF");
+      if (latestStaffMessage?.deliveryStatus === "FAILED") {
+        setError("Reply saved to the ticket, but Gmail delivery failed. Use Retry email.");
+      }
     } catch (reason) {
       setError(supportError(reason, "Support reply could not be saved."));
     } finally {
@@ -222,15 +277,30 @@ export function CustomerSupportInboxPage() {
     <>
       <PageHeader
         actions={
-          <Button
-            onClick={() => setReloadKey((value) => value + 1)}
-            size="sm"
-            type="button"
-            variant="secondary"
-          >
-            <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            Refresh
-          </Button>
+          <>
+            <StatusBadge variant={gmailStatus?.configured ? "success" : "warning"}>
+              {gmailStatus?.configured ? "Gmail connected" : "Gmail setup required"}
+            </StatusBadge>
+            <Button
+              disabled={!gmailStatus?.configured || gmailSyncing}
+              onClick={() => void syncMailbox()}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              {gmailSyncing ? "Syncing..." : "Sync Gmail"}
+            </Button>
+            <Button
+              onClick={() => setReloadKey((value) => value + 1)}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Refresh
+            </Button>
+          </>
         }
         description="Review customer concerns, keep conversation history together, and manage ticket lifecycle from one staff workspace."
         eyebrow="Customer care"
@@ -355,10 +425,12 @@ export function CustomerSupportInboxPage() {
               detail={detail}
               onReplyChange={setReply}
               onReplySubmit={submitReply}
+              onRetryEmail={(messageId) => void retryEmail(messageId)}
               onStatusChange={(status) => setStatusDraft(status)}
               onStatusSave={() => void saveStatus()}
               reply={reply}
               replySaving={replySaving}
+              retryingMessageId={retryingMessageId}
               statusDraft={statusDraft}
               statusOptions={statusOptions}
               statusSaving={statusSaving}
@@ -447,10 +519,12 @@ function SupportConversation({
   detail,
   onReplyChange,
   onReplySubmit,
+  onRetryEmail,
   onStatusChange,
   onStatusSave,
   reply,
   replySaving,
+  retryingMessageId,
   statusDraft,
   statusOptions,
   statusSaving
@@ -458,10 +532,12 @@ function SupportConversation({
   detail: StaffSupportTicketDetail;
   onReplyChange: (value: string) => void;
   onReplySubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onRetryEmail: (messageId: string) => void;
   onStatusChange: (status: StaffSupportStatus) => void;
   onStatusSave: () => void;
   reply: string;
   replySaving: boolean;
+  retryingMessageId: string | null;
   statusDraft: StaffSupportStatus;
   statusOptions: readonly StaffSupportStatus[];
   statusSaving: boolean;
@@ -531,7 +607,12 @@ function SupportConversation({
       <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/70 p-5">
         <div className="mx-auto max-w-4xl space-y-3">
           {detail.messages.map((message) => (
-            <ConversationMessage key={message.id} message={message} />
+            <ConversationMessage
+              key={message.id}
+              message={message}
+              onRetryEmail={onRetryEmail}
+              retrying={retryingMessageId === message.id}
+            />
           ))}
         </div>
       </div>
@@ -542,8 +623,8 @@ function SupportConversation({
             <div>
               <p className="text-sm font-semibold text-slate-900">Staff reply</p>
               <p className="text-xs text-slate-500">
-                Replies are recorded in the ticket conversation. Email delivery is enabled in the
-                mailbox integration phase.
+                Connected Gmail replies are sent to the customer and kept in the same ticket
+                thread. Without Gmail configuration, replies stay local to the support workspace.
               </p>
             </div>
             <span className="text-xs text-slate-400">{reply.length} / 5,000</span>
@@ -578,7 +659,15 @@ function SupportConversation({
   );
 }
 
-function ConversationMessage({ message }: { message: StaffSupportMessage }) {
+function ConversationMessage({
+  message,
+  onRetryEmail,
+  retrying
+}: {
+  message: StaffSupportMessage;
+  onRetryEmail: (messageId: string) => void;
+  retrying: boolean;
+}) {
   if (message.senderType === "SYSTEM") {
     return (
       <div className="flex justify-center py-1">
@@ -614,6 +703,27 @@ function ConversationMessage({ message }: { message: StaffSupportMessage }) {
           <span>{message.channel}</span>
         </div>
         <p className="whitespace-pre-wrap text-sm leading-6">{message.body}</p>
+        {staff && message.channel === "EMAIL" ? (
+          <div className="mt-2 flex flex-wrap items-center justify-end gap-2 text-[11px]">
+            <span>
+              {message.deliveryStatus === "SENT"
+                ? "Email sent"
+                : message.deliveryStatus === "FAILED"
+                  ? "Email failed"
+                  : "Email pending"}
+            </span>
+            {message.deliveryStatus === "FAILED" ? (
+              <button
+                className="rounded-md border border-white/35 px-2 py-1 font-semibold hover:bg-white/10 disabled:opacity-60"
+                disabled={retrying}
+                onClick={() => onRetryEmail(message.id)}
+                type="button"
+              >
+                {retrying ? "Retrying..." : "Retry email"}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </article>
     </div>
   );

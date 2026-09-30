@@ -49,6 +49,8 @@ export type StaffSupportMessage = {
   body: string;
   deliveryStatus: "NOT_APPLICABLE" | "PENDING" | "SENT" | "FAILED";
   deliveryError: string | null;
+  gmailMessageId: string | null;
+  gmailThreadId: string | null;
   emailSentAt: string | null;
   createdAt: string;
   senderUser: {
@@ -89,4 +91,15 @@ export type StaffSupportTicketDetail = {
     status: string;
   } | null;
   messages: StaffSupportMessage[];
+};
+
+
+export type SupportGmailStatus = {
+  configured: boolean;
+  mailbox: string | null;
+};
+
+export type SupportGmailSyncResult = {
+  imported: number;
+  skipped: number;
 };

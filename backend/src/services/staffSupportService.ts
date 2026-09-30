@@ -10,6 +10,10 @@ import type {
   SupportTicketStatusUpdateInput
 } from "../validators/customerSupport.validators.js";
 import type { SafeUser } from "./authService.js";
+import {
+  deliverStaffSupportMessageEmail,
+  isSupportGmailDeliveryEnabled
+} from "./supportGmailService.js";
 
 const staffSupportTicketDetailSelect = {
   id: true,
@@ -57,6 +61,8 @@ const staffSupportTicketDetailSelect = {
       body: true,
       deliveryStatus: true,
       deliveryError: true,
+      gmailMessageId: true,
+      gmailThreadId: true,
       emailSentAt: true,
       createdAt: true,
       senderUser: {
@@ -164,7 +170,8 @@ export async function replyToStaffSupportTicket(
   actor: SafeUser,
   now = new Date()
 ) {
-  return prisma.$transaction(async (tx) => {
+  const shouldDeliverEmail = isSupportGmailDeliveryEnabled();
+  const created = await prisma.$transaction(async (tx) => {
     const ticket = await tx.supportTicket.findUnique({
       select: {
         id: true,
@@ -183,17 +190,18 @@ export async function replyToStaffSupportTicket(
       });
     }
 
-    await tx.supportMessage.create({
+    const message = await tx.supportMessage.create({
       data: {
         ticketId: ticket.id,
         senderType: "STAFF",
-        channel: "WEB",
+        channel: shouldDeliverEmail ? "EMAIL" : "WEB",
         senderUserId: actor.id,
         senderName: actor.name,
         senderEmail: actor.email,
         body: input.message,
-        deliveryStatus: "NOT_APPLICABLE"
-      }
+        deliveryStatus: shouldDeliverEmail ? "PENDING" : "NOT_APPLICABLE"
+      },
+      select: { id: true }
     });
 
     await tx.supportTicket.update({
@@ -208,11 +216,56 @@ export async function replyToStaffSupportTicket(
       where: { id: ticket.id }
     });
 
-    return tx.supportTicket.findUniqueOrThrow({
-      select: staffSupportTicketDetailSelect,
-      where: { id: ticket.id }
-    });
+    return message;
   });
+
+  if (shouldDeliverEmail) {
+    await deliverStaffSupportMessageEmail(created.id);
+  }
+
+  return getStaffSupportTicket(ticketId);
+}
+
+export async function retryStaffSupportEmail(ticketId: string, messageId: string) {
+  if (!isSupportGmailDeliveryEnabled()) {
+    throw new HttpError(503, "Support Gmail integration is not configured.", {
+      code: "SUPPORT_GMAIL_NOT_CONFIGURED"
+    });
+  }
+
+  const message = await prisma.supportMessage.findFirst({
+    select: {
+      id: true,
+      senderType: true,
+      deliveryStatus: true
+    },
+    where: {
+      id: messageId,
+      ticketId
+    }
+  });
+
+  if (!message || message.senderType !== "STAFF") {
+    throw new HttpError(404, "Support message was not found.", {
+      code: "SUPPORT_MESSAGE_NOT_FOUND"
+    });
+  }
+
+  if (message.deliveryStatus === "SENT") {
+    return getStaffSupportTicket(ticketId);
+  }
+
+  await prisma.supportMessage.update({
+    data: {
+      channel: "EMAIL",
+      deliveryStatus: "PENDING",
+      deliveryError: null
+    },
+    where: { id: message.id }
+  });
+
+  await deliverStaffSupportMessageEmail(message.id);
+  return getStaffSupportTicket(ticketId);
 }
 
 export async function updateStaffSupportTicketStatus(
