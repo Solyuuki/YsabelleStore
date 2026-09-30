@@ -473,15 +473,28 @@ async function reconcilePaidCheckoutSession(
 export function parsePaymongoWebhookEvent(payload: unknown) {
   const root = asRecord(payload);
   const event = asRecord(root?.data);
-  const attributes = asRecord(event?.attributes);
-  const type = stringValue(attributes?.type);
 
-  if (!event || event.type !== "event" || !attributes || !type) {
+  if (!event) {
+    return null;
+  }
+
+  const directType = stringValue(event.type);
+  if (directType && directType !== "event") {
+    return {
+      type: directType,
+      livemode: event.livemode === true,
+      data: event.data
+    };
+  }
+
+  const attributes = asRecord(event.attributes);
+  const attributeType = stringValue(attributes?.type);
+  if (directType !== "event" || !attributes || !attributeType) {
     return null;
   }
 
   return {
-    type,
+    type: attributeType,
     livemode: attributes.livemode === true,
     data: attributes.data
   };
