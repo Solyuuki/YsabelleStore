@@ -121,8 +121,8 @@ function orderInput(productId: string, customerName: string) {
     customerName,
     customerEmail: `${customerName.toLowerCase().replaceAll(" ", "-")}@example.com`,
     customerPhone: "09171234567",
-    fulfillmentMethod: "STORE_PICKUP",
-    paymentMethod: "CASH_ON_PICKUP",
+    fulfillmentMethod: "DELIVERY",
+    paymentMethod: "CASH_ON_DELIVERY",
     items: [{ productId, quantity: 1 }]
   };
 }
@@ -166,8 +166,8 @@ test("customer order history is strictly isolated to the authenticated customer"
         customerName: "Customer A",
         customerEmail: fixture.customerA.customer.email,
         customerPhone: "09171234567",
-        fulfillmentMethod: "STORE_PICKUP",
-        paymentMethod: "CASH_ON_PICKUP",
+        fulfillmentMethod: "DELIVERY",
+        paymentMethod: "CASH_ON_DELIVERY",
         status: "PENDING",
         subtotalAmount: "15.00",
         totalAmount: "15.00",
