@@ -8,7 +8,9 @@ export async function fetchCustomerAddress(signal?: AbortSignal) {
     credentials: "include",
     signal
   });
-  if (!response.success || !response.data) throw new Error(response.message);
+  if (!response.success || !response.data?.address) {
+    throw new Error(response.message || "Customer address update did not return a saved address.");
+  }
   return response.data.address;
 }
 
