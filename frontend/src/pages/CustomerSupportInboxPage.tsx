@@ -8,7 +8,7 @@ import {
   Search,
   UserRound
 } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -378,7 +378,7 @@ function FilterSelect({
   onChange,
   value
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   label: string;
   onChange: (value: string) => void;
   value: string;

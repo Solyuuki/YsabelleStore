@@ -11,7 +11,8 @@ async function main() {
     "/api/storefront/orders",
     "/api/customer-auth/me",
     "/api/customer-auth/login",
-    "/api/customer-account/orders"
+    "/api/customer-account/orders",
+    "/api/customer-support/tickets"
   ];
 
   for (const path of customerPaths) {
@@ -22,7 +23,12 @@ async function main() {
     );
   }
 
-  const internalPaths = ["/api/auth/me", "/api/inventory", "/api/products"];
+  const internalPaths = [
+    "/api/auth/me",
+    "/api/inventory",
+    "/api/products",
+    "/api/support/tickets"
+  ];
 
   for (const path of internalPaths) {
     assert.equal(
@@ -63,12 +69,16 @@ async function main() {
     await client.request("/api/storefront/products");
     await client.request("/api/customer-auth/me");
     await client.request("/api/customer-account/orders");
+    await client.request("/api/customer-support/tickets");
     await client.request("/api/auth/me");
+    await client.request("/api/support/tickets");
 
     assert.equal(observedAuthorization.get("/api/storefront/products"), null);
     assert.equal(observedAuthorization.get("/api/customer-auth/me"), null);
     assert.equal(observedAuthorization.get("/api/customer-account/orders"), null);
+    assert.equal(observedAuthorization.get("/api/customer-support/tickets"), null);
     assert.equal(observedAuthorization.get("/api/auth/me"), "Bearer internal-test-token");
+    assert.equal(observedAuthorization.get("/api/support/tickets"), "Bearer internal-test-token");
 
     const plainHeadersClient = new ApiClient({ baseUrl: apiBase });
     plainHeadersClient.addRequestInterceptor((context) => ({
