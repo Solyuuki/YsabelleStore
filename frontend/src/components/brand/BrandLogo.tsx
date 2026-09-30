@@ -1,4 +1,4 @@
-const BRAND_ASSET_VERSION = "fullmark-2e25e00f";
+const BRAND_ASSET_VERSION = "canonical-mark-20260930";
 const WEB_BRAND_MARK_SRC = `/brand/ysabelle-store-mark-256.png?v=${BRAND_ASSET_VERSION}`;
 const FILE_BRAND_MARK_SRC = `./brand/ysabelle-store-mark-256.png?v=${BRAND_ASSET_VERSION}`;
 
