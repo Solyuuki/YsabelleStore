@@ -35,6 +35,7 @@ export const storefrontOrderSchema = z.object({
   customerPhone: z.string().trim().min(7).max(40),
   customerAddress: customerAddressSchema,
   saveAddressToAccount: z.boolean().optional(),
+  saveContactPhoneToAccount: z.boolean().optional(),
   notes: z.string().trim().max(255).optional(),
   fulfillmentMethod: z.literal("DELIVERY"),
   paymentMethod: z.enum(["CASH_ON_DELIVERY", "PAYMONGO"]),

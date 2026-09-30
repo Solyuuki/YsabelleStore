@@ -981,6 +981,17 @@ export async function createStorefrontOrder(
             status: CustomerDeliveryStatus.ORDER_PLACED
           }
         },
+        addressSnapshot: {
+          create: {
+            addressLine1: input.customerAddress.addressLine1,
+            addressLine2: input.customerAddress.addressLine2 || null,
+            barangay: input.customerAddress.barangay,
+            cityMunicipality: input.customerAddress.cityMunicipality,
+            provinceRegion: input.customerAddress.provinceRegion,
+            postalCode: input.customerAddress.postalCode,
+            country: input.customerAddress.country
+          }
+        },
         subtotalAmount,
         totalAmount: subtotalAmount,
         items: {
@@ -995,10 +1006,44 @@ export async function createStorefrontOrder(
       include: storefrontOrderInclude
     });
 
-    if (context.customerAccountId && input.paymentMethod !== "PAYMONGO") {
-      await tx.customerCartItem.deleteMany({
-        where: { customerAccountId: context.customerAccountId }
-      });
+    if (context.customerAccountId) {
+      if (input.saveAddressToAccount) {
+        await tx.customerSavedAddress.upsert({
+          create: {
+            customerAccountId: context.customerAccountId,
+            addressLine1: input.customerAddress.addressLine1,
+            addressLine2: input.customerAddress.addressLine2 || null,
+            barangay: input.customerAddress.barangay,
+            cityMunicipality: input.customerAddress.cityMunicipality,
+            provinceRegion: input.customerAddress.provinceRegion,
+            postalCode: input.customerAddress.postalCode,
+            country: input.customerAddress.country
+          },
+          update: {
+            addressLine1: input.customerAddress.addressLine1,
+            addressLine2: input.customerAddress.addressLine2 || null,
+            barangay: input.customerAddress.barangay,
+            cityMunicipality: input.customerAddress.cityMunicipality,
+            provinceRegion: input.customerAddress.provinceRegion,
+            postalCode: input.customerAddress.postalCode,
+            country: input.customerAddress.country
+          },
+          where: { customerAccountId: context.customerAccountId }
+        });
+      }
+
+      if (input.saveContactPhoneToAccount) {
+        await tx.customerAccount.update({
+          data: { defaultContactPhone: input.customerPhone },
+          where: { id: context.customerAccountId }
+        });
+      }
+
+      if (input.paymentMethod !== "PAYMONGO") {
+        await tx.customerCartItem.deleteMany({
+          where: { customerAccountId: context.customerAccountId }
+        });
+      }
     }
 
     return serializeStorefrontOrder(order);

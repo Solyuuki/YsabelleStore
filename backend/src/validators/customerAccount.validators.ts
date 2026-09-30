@@ -19,9 +19,14 @@ const currentPasswordSchema = z.string().min(1).max(128);
 
 export const customerProfileUpdateSchema = z
   .object({
-    name: z.string().trim().min(2).max(120)
+    name: z.string().trim().min(2).max(120).optional(),
+    defaultContactPhone: z.string().trim().min(7).max(40).nullable().optional()
   })
-  .strict();
+  .strict()
+  .refine(
+    (value) => value.name !== undefined || value.defaultContactPhone !== undefined,
+    "Provide at least one profile field to update."
+  );
 
 export const customerUsernameClaimSchema = z
   .object({

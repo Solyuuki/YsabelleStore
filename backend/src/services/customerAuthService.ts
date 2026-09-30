@@ -35,6 +35,7 @@ export type SafeCustomer = {
   username: string | null;
   email: string;
   phone: string | null;
+  defaultContactPhone: string | null;
   status: CustomerAccount["status"];
 };
 
@@ -63,6 +64,7 @@ export function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
     username: customer.username,
     email: customer.email,
     phone: customer.phone,
+    defaultContactPhone: customer.defaultContactPhone,
     status: customer.status
   };
 }

@@ -3,10 +3,6 @@ import type { RequestHandler } from "express";
 import { getAuthenticatedCustomer } from "../middleware/customerAuthMiddleware.js";
 import { resolveProductDetailImageUrl } from "../modules/catalog-image/catalogImageUrls.js";
 import {
-  saveCustomerAddress,
-  saveCustomerOrderAddressSnapshot
-} from "../services/customerAddressService.js";
-import {
   createStorefrontOrder,
   getCustomerReviewContext,
   getStorefrontProduct,
@@ -191,14 +187,6 @@ export const createStorefrontOrderController: RequestHandler = async (request, r
       });
     }
     const order = await createStorefrontOrder(body, { customerAccountId: customer.id });
-
-    if (body.customerAddress) {
-      await saveCustomerOrderAddressSnapshot(order.id, body.customerAddress);
-      if (customer && body.saveAddressToAccount) {
-        await saveCustomerAddress(customer.id, body.customerAddress);
-      }
-    }
-
     response.status(201).json(createSuccessResponse("Delivery order placed successfully.", order));
   } catch (error) {
     next(error);

@@ -44,6 +44,7 @@ function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
     username: customer.username,
     email: customer.email,
     phone: customer.phone,
+    defaultContactPhone: customer.defaultContactPhone,
     status: customer.status
   };
 }
@@ -116,7 +117,12 @@ export async function updateCustomerProfile(
   await requireActiveCustomer(customerAccountId);
 
   const customer = await prisma.customerAccount.update({
-    data: { name: parsed.name },
+    data: {
+      ...(parsed.name !== undefined ? { name: parsed.name } : {}),
+      ...(parsed.defaultContactPhone !== undefined
+        ? { defaultContactPhone: parsed.defaultContactPhone }
+        : {})
+    },
     where: { id: customerAccountId }
   });
 
