@@ -1,7 +1,8 @@
 const CUSTOMER_API_PREFIXES = [
   "/api/storefront",
   "/api/customer-auth",
-  "/api/customer-account"
+  "/api/customer-account",
+  "/api/customer-support"
 ] as const;
 
 const INTERNAL_APP_ROUTE_PATHS = new Set([
@@ -12,6 +13,7 @@ const INTERNAL_APP_ROUTE_PATHS = new Set([
   "/inventory",
   "/receiving",
   "/sales",
+  "/customer-support",
   "/forecast",
   "/historical-sales",
   "/reports",

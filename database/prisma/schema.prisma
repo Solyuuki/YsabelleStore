@@ -233,6 +233,44 @@ enum CustomerPaymentMethod {
   CASH_ON_PICKUP
 }
 
+enum SupportTicketStatus {
+  NEW
+  OPEN
+  WAITING_FOR_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketCategory {
+  ORDER
+  PAYMENT
+  PRODUCT
+  PICKUP_DELIVERY
+  ACCOUNT
+  RETURN_REFUND
+  FEEDBACK
+  OTHER
+}
+
+enum SupportMessageSenderType {
+  CUSTOMER
+  STAFF
+  SYSTEM
+}
+
+enum SupportMessageChannel {
+  WEB
+  EMAIL
+  SYSTEM
+}
+
+enum SupportMessageDeliveryStatus {
+  NOT_APPLICABLE
+  PENDING
+  SENT
+  FAILED
+}
+
 enum ForecastStatus {
   PENDING
   GENERATED
@@ -351,10 +389,11 @@ model User {
   invalidatedMonthlySales   HistoricalMonthlySales[]     @relation("HistoricalSalesInvalidatedBy")
   createdRestockOrders      RestockOrder[]               @relation("RestockOrderCreatedBy")
   approvedRestockOrders     RestockOrder[]               @relation("RestockOrderApprovedBy")
-  createdSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetCreatedBy")
-  updatedSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetUpdatedBy")
-  moderatedProductReviews  ProductReview[]               @relation("ProductReviewModeratedBy")
-  customerModerationAudits CustomerModerationAudit[]      @relation("CustomerModerationAuditActor")
+  createdSalesTargets       DailySalesTarget[]           @relation("DailySalesTargetCreatedBy")
+  updatedSalesTargets       DailySalesTarget[]           @relation("DailySalesTargetUpdatedBy")
+  moderatedProductReviews   ProductReview[]              @relation("ProductReviewModeratedBy")
+  customerModerationAudits  CustomerModerationAudit[]    @relation("CustomerModerationAuditActor")
+  supportMessages           SupportMessage[]             @relation("SupportMessageSenderUser")
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
@@ -403,6 +442,7 @@ model CustomerAccount {
   rememberedAuth      CustomerRememberedAuth[]
   favorites           CustomerFavorite[]
   reviews             ProductReview[]
+  supportTickets      SupportTicket[]
 
   @@index([status], map: "idx_customer_accounts_status")
   @@map("customer_accounts")
@@ -996,15 +1036,15 @@ model SaleItem {
 }
 
 model DailySalesTarget {
-  id            String   @id @default(cuid()) @db.VarChar(191)
-  businessDate  DateTime @unique(map: "uq_daily_sales_targets_business_date") @map("business_date") @db.Date
-  targetAmount  Decimal  @map("target_amount") @db.Decimal(12, 2)
-  createdById   String?  @map("created_by_id") @db.VarChar(191)
-  updatedById   String?  @map("updated_by_id") @db.VarChar(191)
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  createdBy     User?    @relation("DailySalesTargetCreatedBy", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  updatedBy     User?    @relation("DailySalesTargetUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id           String   @id @default(cuid()) @db.VarChar(191)
+  businessDate DateTime @unique(map: "uq_daily_sales_targets_business_date") @map("business_date") @db.Date
+  targetAmount Decimal  @map("target_amount") @db.Decimal(12, 2)
+  createdById  String?  @map("created_by_id") @db.VarChar(191)
+  updatedById  String?  @map("updated_by_id") @db.VarChar(191)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdBy    User?    @relation("DailySalesTargetCreatedBy", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updatedBy    User?    @relation("DailySalesTargetUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([createdById], map: "idx_daily_sales_targets_created_by")
   @@index([updatedById], map: "idx_daily_sales_targets_updated_by")
@@ -1058,24 +1098,25 @@ model CustomerSavedAddress {
 }
 
 model CustomerOrder {
-  id                String                    @id @default(cuid()) @db.VarChar(191)
-  customerAccountId String?                   @map("customer_account_id") @db.VarChar(191)
-  orderNumber       String                    @unique(map: "uq_customer_orders_order_number") @map("order_number") @db.VarChar(80)
-  customerName      String                    @map("customer_name") @db.VarChar(120)
-  customerEmail     String?                   @map("customer_email") @db.VarChar(191)
-  customerPhone     String                    @map("customer_phone") @db.VarChar(40)
-  fulfillmentMethod CustomerFulfillmentMethod @default(STORE_PICKUP) @map("fulfillment_method")
-  paymentMethod     CustomerPaymentMethod     @default(CASH_ON_PICKUP) @map("payment_method")
-  status            CustomerOrderStatus       @default(PENDING)
-  subtotalAmount    Decimal                   @map("subtotal_amount") @db.Decimal(12, 2)
-  totalAmount       Decimal                   @map("total_amount") @db.Decimal(12, 2)
-  notes             String?                   @db.VarChar(255)
-  createdAt         DateTime                  @default(now()) @map("created_at")
-  updatedAt         DateTime                  @updatedAt @map("updated_at")
+  id                String                        @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String?                       @map("customer_account_id") @db.VarChar(191)
+  orderNumber       String                        @unique(map: "uq_customer_orders_order_number") @map("order_number") @db.VarChar(80)
+  customerName      String                        @map("customer_name") @db.VarChar(120)
+  customerEmail     String?                       @map("customer_email") @db.VarChar(191)
+  customerPhone     String                        @map("customer_phone") @db.VarChar(40)
+  fulfillmentMethod CustomerFulfillmentMethod     @default(STORE_PICKUP) @map("fulfillment_method")
+  paymentMethod     CustomerPaymentMethod         @default(CASH_ON_PICKUP) @map("payment_method")
+  status            CustomerOrderStatus           @default(PENDING)
+  subtotalAmount    Decimal                       @map("subtotal_amount") @db.Decimal(12, 2)
+  totalAmount       Decimal                       @map("total_amount") @db.Decimal(12, 2)
+  notes             String?                       @db.VarChar(255)
+  createdAt         DateTime                      @default(now()) @map("created_at")
+  updatedAt         DateTime                      @updatedAt @map("updated_at")
   items             CustomerOrderItem[]
   addressSnapshot   CustomerOrderAddressSnapshot?
-  customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  verifiedReviews   ProductReview[]            @relation("ProductReviewVerifiedOrder")
+  customerAccount   CustomerAccount?              @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  verifiedReviews   ProductReview[]               @relation("ProductReviewVerifiedOrder")
+  supportTickets    SupportTicket[]
 
   @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")
   @@index([status, createdAt], map: "idx_customer_orders_status_created")
@@ -1100,18 +1141,76 @@ model CustomerOrderItem {
 }
 
 model CustomerOrderAddressSnapshot {
-  orderId            String        @id @map("order_id") @db.VarChar(191)
-  addressLine1       String        @map("address_line_1") @db.VarChar(180)
-  addressLine2       String?       @map("address_line_2") @db.VarChar(180)
-  barangay           String        @db.VarChar(120)
-  cityMunicipality   String        @map("city_municipality") @db.VarChar(120)
-  provinceRegion     String        @map("province_region") @db.VarChar(120)
-  postalCode         String        @map("postal_code") @db.VarChar(20)
-  country            String        @default("Philippines") @db.VarChar(80)
-  createdAt          DateTime      @default(now()) @map("created_at")
-  order              CustomerOrder @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId          String        @id @map("order_id") @db.VarChar(191)
+  addressLine1     String        @map("address_line_1") @db.VarChar(180)
+  addressLine2     String?       @map("address_line_2") @db.VarChar(180)
+  barangay         String        @db.VarChar(120)
+  cityMunicipality String        @map("city_municipality") @db.VarChar(120)
+  provinceRegion   String        @map("province_region") @db.VarChar(120)
+  postalCode       String        @map("postal_code") @db.VarChar(20)
+  country          String        @default("Philippines") @db.VarChar(80)
+  createdAt        DateTime      @default(now()) @map("created_at")
+  order            CustomerOrder @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("customer_order_address_snapshots")
+}
+
+model SupportTicket {
+  id                    String                @id @default(cuid()) @db.VarChar(191)
+  ticketNumber          String                @unique(map: "uq_support_tickets_ticket_number") @map("ticket_number") @db.VarChar(80)
+  customerAccountId     String?               @map("customer_account_id") @db.VarChar(191)
+  customerOrderId       String?               @map("customer_order_id") @db.VarChar(191)
+  customerName          String                @map("customer_name") @db.VarChar(120)
+  customerEmail         String                @map("customer_email") @db.VarChar(191)
+  customerPhone         String?               @map("customer_phone") @db.VarChar(40)
+  category              SupportTicketCategory
+  subject               String                @db.VarChar(160)
+  status                SupportTicketStatus   @default(NEW)
+  gmailThreadId         String?               @unique(map: "uq_support_tickets_gmail_thread_id") @map("gmail_thread_id") @db.VarChar(191)
+  lastMessageAt         DateTime              @default(now()) @map("last_message_at")
+  lastCustomerMessageAt DateTime?             @map("last_customer_message_at")
+  lastStaffMessageAt    DateTime?             @map("last_staff_message_at")
+  lastReadByStaffAt     DateTime?             @map("last_read_by_staff_at")
+  resolvedAt            DateTime?             @map("resolved_at")
+  closedAt              DateTime?             @map("closed_at")
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+  customerAccount       CustomerAccount?      @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  customerOrder         CustomerOrder?        @relation(fields: [customerOrderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  messages              SupportMessage[]
+
+  @@index([status, lastMessageAt], map: "idx_support_tickets_status_last_message")
+  @@index([category, status, lastMessageAt], map: "idx_support_tickets_category_status_message")
+  @@index([customerAccountId, createdAt], map: "idx_support_tickets_customer_created")
+  @@index([customerEmail, createdAt], map: "idx_support_tickets_email_created")
+  @@index([customerOrderId], map: "idx_support_tickets_order")
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id             String                       @id @default(cuid()) @db.VarChar(191)
+  ticketId       String                       @map("ticket_id") @db.VarChar(191)
+  senderType     SupportMessageSenderType     @map("sender_type")
+  channel        SupportMessageChannel        @default(WEB)
+  senderUserId   String?                      @map("sender_user_id") @db.VarChar(191)
+  senderName     String?                      @map("sender_name") @db.VarChar(120)
+  senderEmail    String?                      @map("sender_email") @db.VarChar(191)
+  body           String                       @db.Text
+  gmailMessageId String?                      @unique(map: "uq_support_messages_gmail_message_id") @map("gmail_message_id") @db.VarChar(191)
+  gmailThreadId  String?                      @map("gmail_thread_id") @db.VarChar(191)
+  deliveryStatus SupportMessageDeliveryStatus @default(NOT_APPLICABLE) @map("delivery_status")
+  deliveryError  String?                      @map("delivery_error") @db.VarChar(500)
+  emailSentAt    DateTime?                    @map("email_sent_at")
+  createdAt      DateTime                     @default(now()) @map("created_at")
+  ticket         SupportTicket                @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  senderUser     User?                        @relation("SupportMessageSenderUser", fields: [senderUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([ticketId, createdAt], map: "idx_support_messages_ticket_created")
+  @@index([senderType, createdAt], map: "idx_support_messages_sender_created")
+  @@index([channel, createdAt], map: "idx_support_messages_channel_created")
+  @@index([gmailThreadId], map: "idx_support_messages_gmail_thread")
+  @@index([senderUserId], map: "idx_support_messages_sender_user")
+  @@map("support_messages")
 }
 
 model ForecastRecord {
@@ -1377,7 +1476,6 @@ model RestockOrderLine {
   @@index([restockOrderId, isSelected], map: "idx_restock_order_lines_order_selected")
   @@map("restock_order_lines")
 }
-
 
 model CustomerModerationAudit {
   id                String   @id @default(cuid()) @db.VarChar(191)

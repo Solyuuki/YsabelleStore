@@ -8,6 +8,8 @@ type AuthRateLimitOptions = {
   windowMs: number;
   maxAttempts: number;
   scope: string;
+  code?: string;
+  message?: string;
   keyResolver?: (request: Request) => string | null;
 };
 
@@ -52,9 +54,13 @@ export function createAuthRateLimit(options: AuthRateLimitOptions): RequestHandl
       );
       response.setHeader("Retry-After", String(retryAfterSeconds));
       next(
-        new HttpError(429, "Too many authentication attempts. Please try again later.", {
-          code: "AUTH_RATE_LIMITED"
-        })
+        new HttpError(
+          429,
+          options.message ?? "Too many authentication attempts. Please try again later.",
+          {
+            code: options.code ?? "AUTH_RATE_LIMITED"
+          }
+        )
       );
       return;
     }

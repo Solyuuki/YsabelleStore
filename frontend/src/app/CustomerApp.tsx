@@ -10,6 +10,7 @@ import "@/styles/customer-auth.css";
 import "@/styles/customer-account.css";
 import "@/styles/customer-account-premium.css";
 import "@/styles/customer-commerce-premium.css";
+import "@/styles/customer-support.css";
 import "@/styles/auth-brand.css";
 import "@/styles/customer-header-actions.css";
 import "@/styles/customer-guide-route-transition.css";
@@ -73,6 +74,11 @@ const CustomerAccountRecoveryPage = lazy(() =>
 const CustomerAccountPage = lazy(() =>
   import("@/pages/customer/CustomerAccountPage").then(({ CustomerAccountPage }) => ({
     default: CustomerAccountPage
+  }))
+);
+const CustomerSupportPage = lazy(() =>
+  import("@/pages/customer/CustomerSupportPage").then(({ CustomerSupportPage }) => ({
+    default: CustomerSupportPage
   }))
 );
 const CustomerNotFoundPage = lazy(() =>
@@ -163,6 +169,7 @@ function CustomerAppRoutes({
   else if (pathname === "/account-recovery")
     page = <CustomerAccountRecoveryPage location={location} navigate={navigate} />;
   else if (pathname === "/account") page = <CustomerAccountPage navigate={navigate} />;
+  else if (pathname === "/support") page = <CustomerSupportPage navigate={navigate} />;
   else page = <CustomerNotFoundPage navigate={navigate} />;
 
   return (
