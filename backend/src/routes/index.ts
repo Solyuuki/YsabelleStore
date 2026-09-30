@@ -7,6 +7,7 @@ import { categoryRouter } from "./category.routes.js";
 import { customerAccountRouter } from "./customerAccount.routes.js";
 import { customerAdminRouter } from "./customerAdmin.routes.js";
 import { customerAuthRouter } from "./customerAuth.routes.js";
+import { customerSupportRouter } from "./customerSupport.routes.js";
 import { dashboardRouter } from "./dashboard.routes.js";
 import { healthRouter } from "./health.routes.js";
 import { historicalSalesRouter } from "./historicalSales.routes.js";
@@ -41,6 +42,7 @@ export const apiRouteGroups: readonly RouteGroup[] = [
   { path: "/api/storefront", module: "Customer storefront", status: "implemented" },
   { path: "/api/customer-auth", module: "Customer authentication", status: "implemented" },
   { path: "/api/customer-account", module: "Customer account", status: "implemented" },
+  { path: "/api/customer-support", module: "Customer support", status: "implemented" },
   { path: "/api/customer-admin", module: "Customer moderation", status: "implemented" }
 ];
 
@@ -49,6 +51,7 @@ export const router = Router();
 router.use("/auth", authRouter);
 router.use("/customer-auth", customerAuthRouter);
 router.use("/customer-account", customerAccountRouter);
+router.use("/customer-support", customerSupportRouter);
 router.use("/customer-admin", customerAdminRouter);
 router.use("/dashboard", dashboardRouter);
 router.use("/forecasts", forecastRouter);

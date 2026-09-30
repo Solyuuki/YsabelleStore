@@ -7,6 +7,7 @@ type BaselineIds = {
   customerSessions: string[];
   products: string[];
   sales: string[];
+  supportTickets: string[];
   users: string[];
 };
 
@@ -17,14 +18,23 @@ export type DatabaseFixtureScope = {
 export async function captureDatabaseFixtureScope(
   prisma: PrismaClient
 ): Promise<DatabaseFixtureScope> {
-  const [categories, customerAccounts, customerOrders, customerSessions, products, sales, users] =
-    await Promise.all([
+  const [
+    categories,
+    customerAccounts,
+    customerOrders,
+    customerSessions,
+    products,
+    sales,
+    supportTickets,
+    users
+  ] = await Promise.all([
       prisma.category.findMany({ select: { id: true } }),
       prisma.customerAccount.findMany({ select: { id: true } }),
       prisma.customerOrder.findMany({ select: { id: true } }),
       prisma.customerSession.findMany({ select: { id: true } }),
       prisma.product.findMany({ select: { id: true } }),
       prisma.sale.findMany({ select: { id: true } }),
+      prisma.supportTicket.findMany({ select: { id: true } }),
       prisma.user.findMany({ select: { id: true } })
     ]);
   const baseline: BaselineIds = {
@@ -34,6 +44,7 @@ export async function captureDatabaseFixtureScope(
     customerSessions: customerSessions.map(({ id }) => id),
     products: products.map(({ id }) => id),
     sales: sales.map(({ id }) => id),
+    supportTickets: supportTickets.map(({ id }) => id),
     users: users.map(({ id }) => id)
   };
 
@@ -46,6 +57,7 @@ export async function captureDatabaseFixtureScope(
         newCustomerSessions,
         newProducts,
         newSales,
+        newSupportTickets,
         newUsers
       ] = await Promise.all([
         findNewIds(prisma.category, baseline.categories),
@@ -54,10 +66,17 @@ export async function captureDatabaseFixtureScope(
         findNewIds(prisma.customerSession, baseline.customerSessions),
         findNewIds(prisma.product, baseline.products),
         findNewIds(prisma.sale, baseline.sales),
+        findNewIds(prisma.supportTicket, baseline.supportTickets),
         findNewIds(prisma.user, baseline.users)
       ]);
 
       await prisma.$transaction(async (transaction) => {
+        if (newSupportTickets.length > 0) {
+          await transaction.supportTicket.deleteMany({
+            where: { id: { in: newSupportTickets } }
+          });
+        }
+
         if (newCustomerAccounts.length > 0 || newUsers.length > 0) {
           await transaction.customerModerationAudit.deleteMany({
             where: {
