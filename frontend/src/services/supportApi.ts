@@ -3,7 +3,9 @@ import type {
   StaffSupportCategory,
   StaffSupportStatus,
   StaffSupportTicketDetail,
-  StaffSupportTicketSummary
+  StaffSupportTicketSummary,
+  SupportGmailStatus,
+  SupportGmailSyncResult
 } from "@/types/staffSupport";
 import type { StorefrontPagination } from "@/types/storefront";
 
@@ -83,7 +85,7 @@ export async function updateStaffSupportTicketStatus(ticketId: string, status: S
 
 
 export async function fetchSupportGmailStatus() {
-  const response = await apiClient.request<import("@/types/staffSupport").SupportGmailStatus>(
+  const response = await apiClient.request<SupportGmailStatus>(
     "/api/support/gmail/status"
   );
   if (!response.success || !response.data) throw new Error(response.message);
@@ -91,7 +93,7 @@ export async function fetchSupportGmailStatus() {
 }
 
 export async function syncSupportGmail() {
-  const response = await apiClient.request<import("@/types/staffSupport").SupportGmailSyncResult>(
+  const response = await apiClient.request<SupportGmailSyncResult>(
     "/api/support/gmail/sync",
     { method: "POST" }
   );

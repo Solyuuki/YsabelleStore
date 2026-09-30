@@ -211,7 +211,7 @@ export function CustomerSupportInboxPage() {
     setGmailSyncing(true);
     setError(null);
     try {
-      const result = await syncSupportGmail();
+      await syncSupportGmail();
       setReloadKey((value) => value + 1);
     } catch (reason) {
       setError(supportError(reason, "Gmail inbox could not be synchronized."));
