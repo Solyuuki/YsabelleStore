@@ -18,6 +18,7 @@ import { productsRouter } from "./products.routes.js";
 import restockRouter from "./restock.routes.js";
 import { salesRouter } from "./sales.routes.js";
 import { searchRouter } from "./search.routes.js";
+import { staffSupportRouter } from "./staffSupport.routes.js";
 import { storefrontRouter } from "./storefront.routes.js";
 
 export const apiRouteGroups: readonly RouteGroup[] = [
@@ -43,6 +44,7 @@ export const apiRouteGroups: readonly RouteGroup[] = [
   { path: "/api/customer-auth", module: "Customer authentication", status: "implemented" },
   { path: "/api/customer-account", module: "Customer account", status: "implemented" },
   { path: "/api/customer-support", module: "Customer support", status: "implemented" },
+  { path: "/api/support", module: "Staff customer support", status: "implemented" },
   { path: "/api/customer-admin", module: "Customer moderation", status: "implemented" }
 ];
 
@@ -64,5 +66,6 @@ router.use("/catalog/categories", categoryRouter);
 router.use("/inventory", inventoryRouter);
 router.use("/restock-orders", restockRouter);
 router.use("/sales", salesRouter);
+router.use("/support", staffSupportRouter);
 router.use("/search", searchRouter);
 router.use("/storefront", storefrontRouter);
