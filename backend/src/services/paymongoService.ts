@@ -386,7 +386,7 @@ export async function handlePaymongoWebhook(
   });
 
   if (!order) {
-    return { handled: false, type: eventType };
+    return { handled: false, type: event.type };
   }
 
   const paid = await reconcilePaidCheckoutSession(
@@ -396,7 +396,7 @@ export async function handlePaymongoWebhook(
     order.totalAmount
   );
 
-  return { handled: paid, type: eventType };
+  return { handled: paid, type: event.type };
 }
 
 async function reconcilePaidCheckoutSession(
