@@ -28,15 +28,15 @@ export async function captureDatabaseFixtureScope(
     supportTickets,
     users
   ] = await Promise.all([
-      prisma.category.findMany({ select: { id: true } }),
-      prisma.customerAccount.findMany({ select: { id: true } }),
-      prisma.customerOrder.findMany({ select: { id: true } }),
-      prisma.customerSession.findMany({ select: { id: true } }),
-      prisma.product.findMany({ select: { id: true } }),
-      prisma.sale.findMany({ select: { id: true } }),
-      prisma.supportTicket.findMany({ select: { id: true } }),
-      prisma.user.findMany({ select: { id: true } })
-    ]);
+    prisma.category.findMany({ select: { id: true } }),
+    prisma.customerAccount.findMany({ select: { id: true } }),
+    prisma.customerOrder.findMany({ select: { id: true } }),
+    prisma.customerSession.findMany({ select: { id: true } }),
+    prisma.product.findMany({ select: { id: true } }),
+    prisma.sale.findMany({ select: { id: true } }),
+    prisma.supportTicket.findMany({ select: { id: true } }),
+    prisma.user.findMany({ select: { id: true } })
+  ]);
   const baseline: BaselineIds = {
     categories: categories.map(({ id }) => id),
     customerAccounts: customerAccounts.map(({ id }) => id),

@@ -20,9 +20,9 @@ export const createCustomerSupportTicketController: RequestHandler = async (
       customer: getAuthenticatedCustomer(request)
     });
 
-    response.status(201).json(
-      createSuccessResponse("Customer support request submitted.", ticket)
-    );
+    response
+      .status(201)
+      .json(createSuccessResponse("Customer support request submitted.", ticket));
   } catch (error) {
     next(error);
   }

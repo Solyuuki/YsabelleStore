@@ -65,10 +65,11 @@ test("guest support request creates a NEW ticket with a customer web message", a
       assert.equal(body.success, true);
       assert.match(body.data?.ticketNumber ?? "", /^YS-CS-\d{6}$/);
       assert.equal(body.data?.status, "NEW");
+      assert.ok(body.data?.id);
 
       const ticket = await prisma.supportTicket.findUniqueOrThrow({
         include: { messages: { orderBy: { createdAt: "asc" } } },
-        where: { id: body.data?.id }
+        where: { id: body.data.id }
       });
 
       assert.equal(ticket.customerAccountId, null);
@@ -77,14 +78,17 @@ test("guest support request creates a NEW ticket with a customer web message", a
       assert.equal(ticket.messages.length, 1);
       assert.equal(ticket.messages[0]?.senderType, "CUSTOMER");
       assert.equal(ticket.messages[0]?.channel, "WEB");
-      assert.equal(ticket.messages[0]?.body, supportInput().message);
+      assert.equal(
+        ticket.messages[0]?.body,
+        "I need help checking the status of my recent store order."
+      );
     });
   } finally {
     await scope.cleanup();
   }
 });
 
-test("signed-in support request uses verified account identity and links an owned order", async () => {
+test("signed-in support request uses account identity and links an owned order", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
 
@@ -131,9 +135,11 @@ test("signed-in support request uses verified account identity and links an owne
 
       assert.equal(response.status, 201);
       const body = (await response.json()) as { data?: { id?: string } };
+      assert.ok(body.data?.id);
+
       const ticket = await prisma.supportTicket.findUniqueOrThrow({
         include: { messages: { orderBy: { createdAt: "asc" } } },
-        where: { id: body.data?.id }
+        where: { id: body.data.id }
       });
 
       assert.equal(ticket.customerAccountId, registered.customer.id);

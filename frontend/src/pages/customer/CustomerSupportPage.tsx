@@ -225,7 +225,10 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                 </div>
               ) : null}
 
-              <form className="customer-support-form" onSubmit={(event) => void handleSubmit(event)}>
+              <form
+                className="customer-support-form"
+                onSubmit={(event) => void handleSubmit(event)}
+              >
                 <div className="customer-support-form__two-column">
                   <label>
                     <span>Name</span>
