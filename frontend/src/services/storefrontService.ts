@@ -1,8 +1,8 @@
 import { apiClient } from "@/services/apiClient";
 import type {
+  PaymongoCheckoutSession,
   StorefrontCategory,
   StorefrontMerchandising,
-  PaymongoCheckoutSession,
   StorefrontOrder,
   StorefrontOrderInput,
   StorefrontPaymentStatusResult,
@@ -144,7 +144,6 @@ export async function placeStorefrontOrder(input: StorefrontOrderInput) {
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
 }
-
 
 export async function startPaymongoCheckout(orderNumber: string) {
   const response = await apiClient.request<PaymongoCheckoutSession, unknown>(
