@@ -46,7 +46,7 @@ function verify(path) {
 }
 
 function candidateSources() {
-  const explicit = process.argv.find((arg) => !arg.startsWith("--") && arg !== process.argv[1]);
+  const explicit = process.argv.slice(2).find((arg) => !arg.startsWith("--"));
   const home = homedir();
 
   return [
