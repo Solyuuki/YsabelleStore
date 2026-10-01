@@ -7,7 +7,7 @@
 
 /* Cinematic first-session store entrance */
 .store-entrance {
-  --store-entrance-scrim: 0.54;
+  --store-entrance-shade: 0.12;
   position: relative;
   min-height: 100svh;
   isolation: isolate;
@@ -39,21 +39,21 @@
   object-position: center;
 }
 
-.store-entrance__video {
-  filter: saturate(0.94) contrast(1.025);
-}
-
 .store-entrance__scrim {
   z-index: -3;
   background:
     linear-gradient(
-      90deg,
-      rgb(2 4 10 / 78%) 0%,
-      rgb(3 5 12 / 64%) 34%,
-      rgb(3 5 12 / 38%) 62%,
-      rgb(3 5 12 / 29%) 100%
+      rgb(0 0 0 / var(--store-entrance-shade)),
+      rgb(0 0 0 / var(--store-entrance-shade))
     ),
-    linear-gradient(180deg, rgb(0 0 0 / 18%), rgb(0 0 0 / 38%));
+    linear-gradient(
+      90deg,
+      rgb(2 4 10 / 72%) 0%,
+      rgb(3 5 12 / 56%) 34%,
+      rgb(3 5 12 / 30%) 62%,
+      rgb(3 5 12 / 20%) 100%
+    ),
+    linear-gradient(180deg, rgb(0 0 0 / 12%), rgb(0 0 0 / 30%));
 }
 
 .store-entrance__vignette {
