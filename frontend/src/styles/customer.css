@@ -3234,111 +3234,199 @@
 
 .customer-success-page {
   display: grid;
-  min-height: 80vh;
+  min-height: 72vh;
   place-items: center;
+  padding-block: clamp(1.75rem, 4vw, 3rem);
   background:
-    radial-gradient(circle at 42% 18%, rgb(0 140 255 / 13%), transparent 38%),
-    radial-gradient(circle at 62% 30%, rgb(168 60 240 / 10%), transparent 42%);
+    radial-gradient(circle at 30% 18%, rgb(0 140 255 / 9%), transparent 34%),
+    radial-gradient(circle at 72% 28%, rgb(168 60 240 / 7%), transparent 38%);
 }
 .customer-success-card {
-  width: min(100% - 2rem, 680px);
-  padding: clamp(2rem, 5vw, 4rem);
+  width: min(100% - 2rem, 620px);
+  padding: clamp(1.6rem, 3.5vw, 2.5rem);
   border: 1px solid var(--customer-line);
-  border-radius: 2rem 2rem 2rem 0.7rem;
+  border-radius: 1.5rem 1.5rem 1.5rem 0.65rem;
   background: #fff;
-  box-shadow: 0 30px 70px rgb(98 91 255 / 14%);
+  box-shadow: 0 22px 54px rgb(98 91 255 / 10%);
   text-align: center;
 }
 .customer-success-card__icon {
   display: grid;
-  width: 4rem;
-  height: 4rem;
+  width: 3rem;
+  height: 3rem;
   place-items: center;
-  margin: 0 auto 1.2rem;
+  margin: 0 auto 0.8rem;
   border-radius: 50%;
   background: var(--customer-success);
   color: #fff;
 }
+.customer-success-card__icon > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
 .customer-success-card__icon.is-pending {
   background: var(--customer-primary);
 }
+.customer-success-card > .customer-kicker {
+  margin: 0 0 0.65rem;
+  color: var(--customer-primary-strong);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
 .customer-success-card h1 {
-  margin: 0;
+  max-width: 520px;
+  margin: 0 auto;
   font-family: var(--customer-font-display);
-  font-size: var(--customer-type-h1);
+  font-size: clamp(2.2rem, 5vw, 3.45rem);
   font-weight: var(--customer-display-weight);
   letter-spacing: -0.04em;
-  line-height: var(--customer-leading-heading);
+  line-height: 1.02;
 }
 .customer-success-card > p:not(.customer-kicker):not(.customer-success-card__note) {
-  max-width: 520px;
-  margin: 1rem auto;
+  max-width: 500px;
+  margin: 0.8rem auto 1.1rem;
   color: var(--customer-muted);
+  font-size: 0.8rem;
   line-height: 1.6;
 }
 .customer-order-reference {
   display: grid;
-  gap: 0.35rem;
-  margin: 1.5rem 0 1rem;
-  padding: 1rem;
-  border: 1px dashed #9c96ff;
-  border-radius: 0.9rem;
-  background: #f2f1ff;
+  gap: 0.25rem;
+  margin: 1rem 0 0.65rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #cbc8ff;
+  border-radius: 0.8rem;
+  background: #f8f7ff;
 }
 .customer-order-reference span {
   color: var(--customer-muted);
-  font-size: 0.7rem;
+  font-size: 0.64rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 .customer-order-reference strong {
   color: var(--customer-primary-strong);
-  font-size: 1.2rem;
-  letter-spacing: 0.06em;
+  font-size: 1rem;
+  letter-spacing: 0.045em;
+  font-variant-numeric: tabular-nums;
+}
+.customer-order-reference small {
+  color: #59617a;
+  font-size: 0.66rem;
 }
 .customer-success-summary {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 0.6rem 1rem;
+  padding: 0.45rem 0.15rem;
   color: var(--customer-muted);
-  font-size: 0.8rem;
+  font-size: 0.74rem;
 }
 .customer-success-summary strong {
   color: var(--customer-dark);
+  font-variant-numeric: tabular-nums;
+}
+.customer-success-card .customer-payment-status {
+  margin: 0.65rem 0 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.75rem;
 }
 .customer-success-pickup {
   display: flex;
-  gap: 0.8rem;
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 0.9rem;
-  background: var(--customer-info-soft);
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid #dce9fb;
+  border-radius: 0.8rem;
+  background: #f2f7ff;
   text-align: left;
 }
 .customer-success-pickup > svg {
+  width: 1.1rem;
+  height: 1.1rem;
   flex: none;
+  margin-top: 0.08rem;
   color: var(--customer-info);
 }
 .customer-success-pickup div {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.18rem;
 }
-.customer-success-pickup span,
+.customer-success-pickup strong {
+  color: var(--customer-dark);
+  font-size: 0.78rem;
+}
+.customer-success-pickup span {
+  color: #58627a;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
 .customer-success-pickup small {
-  color: var(--customer-muted);
-  font-size: 0.72rem;
+  color: #737c92;
+  font-size: 0.66rem;
+  line-height: 1.45;
 }
 .customer-success-card__note {
-  margin: 1rem 0;
-  color: var(--customer-muted);
-  font-size: 0.7rem;
+  margin: 0.75rem 0 0.15rem;
+  color: #69728a;
+  font-size: 0.67rem;
   line-height: 1.5;
 }
-.customer-success-actions {
-  display: flex;
-  justify-content: center;
-  gap: 0.7rem;
-  margin-top: 1.5rem;
+.customer-success-actions-v2 {
+  display: grid;
+  width: 100%;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.customer-success-card a.customer-success-primary-action,
+.customer-success-card button.customer-success-primary-action {
+  border-color: #4f46e5;
+  background: #4f46e5;
+  color: #fff;
+  box-shadow: 0 6px 16px rgb(79 70 229 / 18%);
+}
+.customer-success-card a.customer-success-primary-action:hover,
+.customer-success-card button.customer-success-primary-action:hover {
+  background: #4338ca;
+  color: #fff;
+}
+.customer-success-card .customer-success-primary-action > svg {
+  color: currentcolor;
+}
+.customer-success-card a.customer-success-secondary-action,
+.customer-success-card button.customer-success-secondary-action {
+  border-color: #d8ddea;
+  background: #fff;
+  color: #20283c;
+  box-shadow: 0 1px 2px rgb(16 20 38 / 4%);
+}
+.customer-success-card a.customer-success-secondary-action:hover,
+.customer-success-card button.customer-success-secondary-action:hover {
+  border-color: #c9c7ff;
+  background: #f8f8ff;
+  color: #171d2d;
+}
+.customer-success-card .customer-success-secondary-action > svg {
+  color: currentcolor;
+}
+@media (max-width: 640px) {
+  .customer-success-page {
+    min-height: auto;
+    padding-block: 1rem 2rem;
+  }
+  .customer-success-card {
+    width: min(100% - 1.25rem, 620px);
+    padding: 1.35rem 1.1rem 1.5rem;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.55rem;
+  }
+  .customer-success-card h1 {
+    font-size: clamp(2rem, 10vw, 2.65rem);
+  }
+  .customer-order-reference strong {
+    overflow-wrap: anywhere;
+  }
 }
 
 .customer-about-page {

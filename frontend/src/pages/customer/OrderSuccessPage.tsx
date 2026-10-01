@@ -150,10 +150,10 @@ export function OrderSuccessPage({
         </p>
         <h1>
           {paid
-            ? "Payment Confirmed. We’ll Prepare Your Delivery."
+            ? "Payment confirmed."
             : paymentPending
-              ? "Your Order Is Saved."
-              : "Your Delivery Order Is Confirmed."}
+              ? "Your order is saved."
+              : "Your order is confirmed."}
         </h1>
         <p>
           {paid
@@ -250,11 +250,11 @@ export function OrderSuccessPage({
             : "For COD, payment remains pending until delivery is confirmed and store staff verifies cash collection."}
         </p>
 
-        <div className="mt-6 grid w-full gap-3">
+        <div className="customer-success-actions-v2">
           {paymentPending && orderNumber ? (
             <>
               <Button
-                className="h-12 w-full rounded-xl text-sm font-semibold shadow-lg shadow-indigo-100"
+                className="customer-success-primary-action h-11 w-full rounded-xl text-sm font-semibold"
                 disabled={resumingPayment || switchingPayment}
                 onClick={() => void resumePayment()}
                 type="button"
@@ -270,7 +270,7 @@ export function OrderSuccessPage({
               >
                 {payment?.canChangePaymentMethod ? (
                   <Button
-                    className="h-11 rounded-xl text-sm font-semibold"
+                    className="customer-success-secondary-action h-11 rounded-xl text-sm font-semibold"
                     disabled={resumingPayment || switchingPayment}
                     onClick={() => void switchToCod()}
                     type="button"
@@ -281,7 +281,11 @@ export function OrderSuccessPage({
                   </Button>
                 ) : null}
 
-                <Button asChild className="h-11 rounded-xl text-sm font-semibold" variant="ghost">
+                <Button
+                  asChild
+                  className="customer-success-secondary-action h-11 rounded-xl text-sm font-semibold"
+                  variant="secondary"
+                >
                   <CustomerLink href="/shop" navigate={navigate}>
                     <ShoppingBasket aria-hidden="true" className="h-4 w-4" />
                     Continue shopping
@@ -291,13 +295,20 @@ export function OrderSuccessPage({
             </>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Button asChild className="h-11 rounded-xl text-sm font-semibold">
+              <Button
+                asChild
+                className="customer-success-primary-action h-11 rounded-xl text-sm font-semibold"
+              >
                 <CustomerLink href="/account" navigate={navigate}>
                   <Truck aria-hidden="true" className="h-4 w-4" />
                   Track my order
                 </CustomerLink>
               </Button>
-              <Button asChild className="h-11 rounded-xl text-sm font-semibold" variant="secondary">
+              <Button
+                asChild
+                className="customer-success-secondary-action h-11 rounded-xl text-sm font-semibold"
+                variant="secondary"
+              >
                 <CustomerLink href="/shop" navigate={navigate}>
                   <ShoppingBasket aria-hidden="true" className="h-4 w-4" />
                   Continue shopping
