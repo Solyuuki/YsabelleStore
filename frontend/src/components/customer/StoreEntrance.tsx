@@ -1,8 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const STORE_ENTRANCE_VIDEO = "/media/gemini_generated_video_418a3614.mp4";
-const LEGACY_STORE_ENTRANCE_VIDEO = "/media/store-entrance.mp4";
+const STORE_ENTRANCE_VIDEO = "/media/store-entrance.mp4?v=26c4d4b0";
 const STORE_ENTRANCE_POSTER =
   "/images/discover/essentials/canned-goods-retail-display.webp";
 
@@ -17,14 +16,12 @@ type SceneTransition = {
 };
 
 const SCENE_TRANSITIONS: readonly SceneTransition[] = [
-  // Gemini dissolve: refrigerators -> snacks.
-  { trigger: 4.0, next: 4.48, holdMs: 120 },
-  // Gemini dissolve: snacks -> personal care.
-  { trigger: 5.74, next: 6.3, holdMs: 120 },
-  // Gemini dissolve: household -> cooking/pantry.
-  { trigger: 9.2, next: 9.66, holdMs: 160 },
-  // Controlled end-to-start loop. The source MP4 remains untouched.
-  { trigger: 9.84, next: 0.04, holdMs: 420 }
+  // Frame-inspected Gemini dissolve windows. The source MP4 is never edited.
+  { trigger: 3.95, next: 4.55, holdMs: 110 },
+  { trigger: 5.72, next: 6.28, holdMs: 110 },
+  { trigger: 9.22, next: 9.65, holdMs: 130 },
+  // Controlled end-to-start loop avoids a visible native-loop jump.
+  { trigger: 9.92, next: 0.04, holdMs: 260 }
 ];
 
 function wait(duration: number) {
@@ -69,6 +66,25 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
       mountedRef.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      const video = videoRef.current;
+      if (!video || prefersReducedMotion || videoFailed || exitingRef.current) return;
+
+      if (document.hidden) {
+        video.pause();
+        return;
+      }
+
+      if (!transitionBusyRef.current) {
+        void video.play().catch(() => undefined);
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [prefersReducedMotion, videoFailed]);
 
   useEffect(() => {
     if (prefersReducedMotion || videoFailed) return;
@@ -176,7 +192,6 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
             ref={videoRef}
           >
             <source src={STORE_ENTRANCE_VIDEO} type="video/mp4" />
-            <source src={LEGACY_STORE_ENTRANCE_VIDEO} type="video/mp4" />
           </video>
         )}
       </div>
