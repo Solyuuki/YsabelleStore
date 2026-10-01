@@ -29,7 +29,7 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
   return (
     <main
       aria-label="Ysabelle Store entrance"
-      className={`store-entrance ${isExiting ? "is-exiting" : ""}`}
+      className={`customer-app store-entrance ${isExiting ? "is-exiting" : ""}`}
     >
       <div aria-hidden="true" className="store-entrance__media">
         {prefersReducedMotion || videoFailed ? (
