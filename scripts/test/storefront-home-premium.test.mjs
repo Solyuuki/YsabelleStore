@@ -33,6 +33,14 @@ const headerCss = await readFile(
   new URL("../../frontend/src/styles/customer-header-actions.css", import.meta.url),
   "utf8"
 );
+const checkoutSource = await readFile(
+  new URL("../../frontend/src/pages/customer/CheckoutPage.tsx", import.meta.url),
+  "utf8"
+);
+const commerceCss = await readFile(
+  new URL("../../frontend/src/styles/customer-commerce-premium.css", import.meta.url),
+  "utf8"
+);
 
 assert.match(customerAppSource, /<StoreEntrance/);
 assert.match(customerAppSource, /sessionStorage\.setItem\(STORE_ENTRANCE_SESSION_KEY/);
