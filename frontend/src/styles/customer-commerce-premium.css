@@ -542,3 +542,70 @@
   font: inherit;
   font-weight: 850;
 }
+
+
+/* Premium checkout field alignment + Base UI ScrollArea */
+.customer-form-grid {
+  align-items: start;
+}
+
+.customer-form-grid > label {
+  align-content: start;
+}
+
+.customer-form-grid > label > input {
+  min-height: 48px;
+  height: 48px;
+}
+
+.customer-checkout-lines {
+  overflow: hidden !important;
+  padding: 0 !important;
+  border-bottom: 1px solid #d7d5ff;
+}
+
+.customer-checkout-lines__viewport {
+  padding: 4px 16px 12px 0;
+}
+
+.customer-checkout-lines__content {
+  display: grid;
+  gap: 2px;
+}
+
+.customer-checkout-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-block: 10px;
+  color: var(--customer-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.customer-checkout-line span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.customer-checkout-line strong {
+  flex: none;
+  color: var(--customer-dark);
+  text-align: right;
+}
+
+.customer-checkout-lines [data-orientation="vertical"] {
+  right: 0;
+  width: 10px;
+}
+
+.customer-checkout-lines [data-orientation="vertical"] > div {
+  background: color-mix(in srgb, var(--customer-primary) 28%, #cbd5e1);
+}
+
+@media (max-width: 640px) {
+  .customer-checkout-lines__viewport {
+    padding-right: 12px;
+  }
+}

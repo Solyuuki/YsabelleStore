@@ -1,5 +1,6 @@
 import {
   CheckCircle2,
+  ChevronDown,
   Heart,
   History,
   KeyRound,
@@ -38,6 +39,17 @@ const sessionDateFormatter = new Intl.DateTimeFormat("en-PH", {
   dateStyle: "medium",
   timeStyle: "short"
 });
+
+const DELIVERY_PROGRESS_STEPS: Array<{
+  status: StorefrontOrder["deliveryStatus"];
+  label: string;
+}> = [
+  { status: "ORDER_PLACED", label: "Order placed" },
+  { status: "PREPARING", label: "Preparing" },
+  { status: "READY_FOR_DELIVERY", label: "Ready" },
+  { status: "OUT_FOR_DELIVERY", label: "On the way" },
+  { status: "DELIVERED", label: "Delivered" }
+];
 
 type AccountTab = "orders" | "favorites" | "profile" | "security";
 
@@ -631,20 +643,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                           </div>
                         ) : null}
 
-                        <ol className="customer-delivery-timeline" aria-label="Delivery timeline">
-                          {order.timeline.map((event) => (
-                            <li key={event.id}>
-                              <span aria-hidden="true" />
-                              <div>
-                                <strong>{deliveryStatusLabel(event.status)}</strong>
-                                <small>
-                                  {orderDateFormatter.format(new Date(event.createdAt))}
-                                </small>
-                                {event.note ? <p>{event.note}</p> : null}
-                              </div>
-                            </li>
-                          ))}
-                        </ol>
+                        <DeliveryProgress order={order} />
 
                         {order.canCustomerConfirmReceipt ? (
                           <div className="customer-account-confirm-delivery">
@@ -682,33 +681,49 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 {historicalOrders.length > 0 ? (
                   <div className="customer-account-order-list-v2">
                     {historicalOrders.map((order) => (
-                      <article className="customer-account-order-v2" key={order.id}>
-                        <div className="customer-account-order-topline">
-                          <div>
+                      <details className="customer-account-history-card" key={order.id}>
+                        <summary>
+                          <div className="customer-account-history-card__identity">
                             <span>{order.deliveryTicketNumber}</span>
                             <strong>{order.orderNumber}</strong>
+                            <small>{orderDateFormatter.format(new Date(order.createdAt))}</small>
                           </div>
-                          <span
-                            className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}
-                          >
-                            {deliveryStatusLabel(order.deliveryStatus)}
-                          </span>
+                          <div className="customer-account-history-card__summary">
+                            <span>
+                              {order.itemCount} item{order.itemCount === 1 ? "" : "s"}
+                            </span>
+                            <strong>{formatCurrency(Number(order.totalAmount))}</strong>
+                            <span
+                              className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}
+                            >
+                              {deliveryStatusLabel(order.deliveryStatus)}
+                            </span>
+                            <ChevronDown aria-hidden="true" size={18} />
+                          </div>
+                        </summary>
+                        <div className="customer-account-history-card__details">
+                          <div className="customer-account-history-card__payment">
+                            <span>Payment</span>
+                            <strong>
+                              {order.paymentMethod === "CASH_ON_DELIVERY"
+                                ? order.paymentStatus === "PAID"
+                                  ? "Cash on Delivery · Payment received"
+                                  : "Cash on Delivery"
+                                : `PayMongo · ${order.paymentStatus}`}
+                            </strong>
+                          </div>
+                          <ul>
+                            {order.items.map((item) => (
+                              <li key={`${order.id}-${item.productId}`}>
+                                <span>
+                                  {item.quantity} × {item.productName}
+                                </span>
+                                <strong>{formatCurrency(Number(item.totalAmount))}</strong>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <div className="customer-account-order-meta">
-                          <span>{orderDateFormatter.format(new Date(order.createdAt))}</span>
-                          <strong>{formatCurrency(Number(order.totalAmount))}</strong>
-                        </div>
-                        <ul>
-                          {order.items.map((item) => (
-                            <li key={`${order.id}-${item.productId}`}>
-                              <span>
-                                {item.quantity} × {item.productName}
-                              </span>
-                              <strong>{formatCurrency(Number(item.totalAmount))}</strong>
-                            </li>
-                          ))}
-                        </ul>
-                      </article>
+                      </details>
                     ))}
                   </div>
                 ) : (
@@ -1181,6 +1196,51 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
         </main>
       </div>
     </section>
+  );
+}
+
+function DeliveryProgress({ order }: { order: StorefrontOrder }) {
+  const eventByStatus = new Map(
+    order.timeline.map((event) => [event.status, event] as const)
+  );
+
+  return (
+    <div className="customer-delivery-progress" aria-label="Delivery progress">
+      <ol className="customer-delivery-stepper">
+        {DELIVERY_PROGRESS_STEPS.map((step, index) => {
+          const event = eventByStatus.get(step.status);
+          const isCurrent = order.deliveryStatus === step.status;
+          const isComplete = Boolean(event);
+
+          return (
+            <li
+              className={[
+                isComplete ? "is-complete" : "",
+                isCurrent ? "is-current" : ""
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              key={step.status}
+            >
+              <div className="customer-delivery-stepper__track">
+                <span className="customer-delivery-stepper__marker" aria-hidden="true">
+                  {isComplete ? <CheckCircle2 size={15} /> : index + 1}
+                </span>
+                {index < DELIVERY_PROGRESS_STEPS.length - 1 ? (
+                  <span className="customer-delivery-stepper__connector" aria-hidden="true" />
+                ) : null}
+              </div>
+              <div className="customer-delivery-stepper__copy">
+                <strong>{step.label}</strong>
+                <small>
+                  {event ? orderDateFormatter.format(new Date(event.createdAt)) : "Pending"}
+                </small>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }
 

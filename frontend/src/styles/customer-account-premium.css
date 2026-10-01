@@ -606,3 +606,215 @@
     width: 100%;
   }
 }
+
+
+/* Premium delivery progress + compact order history */
+.customer-account-inline-action-form {
+  grid-template-columns: minmax(320px, 560px) auto;
+  justify-content: start;
+  max-width: none;
+}
+
+.customer-delivery-progress {
+  margin-top: 20px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scrollbar-width: thin;
+}
+
+.customer-delivery-stepper {
+  display: flex;
+  min-width: 650px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.customer-delivery-stepper > li {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.customer-delivery-stepper__track {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+}
+
+.customer-delivery-stepper__marker {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  border: 1px solid #d9dcef;
+  border-radius: 999px;
+  background: #fff;
+  color: #7b849c;
+  font-size: 0.72rem;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(42, 47, 78, 0.05);
+}
+
+.customer-delivery-stepper__connector {
+  height: 1px;
+  flex: 1 1 auto;
+  margin-inline: 8px;
+  background: #dfe2ee;
+}
+
+.customer-delivery-stepper li.is-complete .customer-delivery-stepper__marker {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--ys-blue), var(--ys-indigo), var(--ys-violet));
+  color: #fff;
+}
+
+.customer-delivery-stepper li.is-complete .customer-delivery-stepper__connector {
+  background: linear-gradient(90deg, var(--ys-indigo), #c8c5ff);
+}
+
+.customer-delivery-stepper li.is-current .customer-delivery-stepper__marker {
+  box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.1);
+}
+
+.customer-delivery-stepper__copy {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  padding-right: 12px;
+}
+
+.customer-delivery-stepper__copy strong {
+  color: #27324b;
+  font-size: 0.76rem;
+}
+
+.customer-delivery-stepper__copy small {
+  color: #8992a7;
+  font-size: 0.66rem;
+  line-height: 1.4;
+}
+
+.customer-account-history-card {
+  overflow: hidden;
+  border: 1px solid rgba(113, 104, 174, 0.12);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(253, 253, 255, 0.98), rgba(249, 249, 255, 0.9));
+}
+
+.customer-account-history-card summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 16px 18px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.customer-account-history-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.customer-account-history-card__identity,
+.customer-account-history-card__summary {
+  min-width: 0;
+}
+
+.customer-account-history-card__identity {
+  display: grid;
+  gap: 3px;
+}
+
+.customer-account-history-card__identity > span,
+.customer-account-history-card__identity > small,
+.customer-account-history-card__summary > span:first-child {
+  color: #7a8499;
+  font-size: 0.72rem;
+}
+
+.customer-account-history-card__identity strong {
+  color: #202a42;
+  font-size: 0.9rem;
+}
+
+.customer-account-history-card__summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.customer-account-history-card__summary > strong {
+  color: #202a42;
+  font-size: 0.86rem;
+}
+
+.customer-account-history-card__summary > svg {
+  flex: none;
+  color: #7a8499;
+  transition: transform 160ms ease;
+}
+
+.customer-account-history-card[open] .customer-account-history-card__summary > svg {
+  transform: rotate(180deg);
+}
+
+.customer-account-history-card__details {
+  display: grid;
+  gap: 14px;
+  padding: 0 18px 18px;
+  border-top: 1px solid #edf0f5;
+}
+
+.customer-account-history-card__payment {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 14px;
+  color: #69748d;
+  font-size: 0.76rem;
+}
+
+.customer-account-history-card__payment strong {
+  color: #25304a;
+}
+
+.customer-account-history-card__details ul {
+  display: grid;
+  max-height: 240px;
+  gap: 8px;
+  margin: 0;
+  padding: 0 4px 0 0;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.customer-account-history-card__details li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #69748d;
+  font-size: 0.78rem;
+}
+
+.customer-account-history-card__details li strong {
+  flex: none;
+  color: #25304a;
+}
+
+@media (max-width: 720px) {
+  .customer-account-inline-action-form {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-account-history-card summary {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-account-history-card__summary {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

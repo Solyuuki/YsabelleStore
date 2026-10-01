@@ -14,6 +14,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { fetchCustomerAddress } from "@/services/customerAddressService";
@@ -607,18 +608,24 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
               </h2>
             </div>
 
-            <div className="customer-checkout-lines">
-              {items.map((item) => (
-                <div key={item.product.id}>
-                  <span>
-                    {item.quantity} × {item.product.name}
-                  </span>
-                  <strong>
-                    {formatCurrency(Number(item.product.sellingPrice) * item.quantity)}
-                  </strong>
-                </div>
-              ))}
-            </div>
+            <ScrollArea
+              className="customer-checkout-lines"
+              style={{ height: Math.min(260, Math.max(64, items.length * 42)) }}
+              viewportClassName="customer-checkout-lines__viewport"
+            >
+              <div className="customer-checkout-lines__content">
+                {items.map((item) => (
+                  <div className="customer-checkout-line" key={item.product.id}>
+                    <span>
+                      {item.quantity} × {item.product.name}
+                    </span>
+                    <strong>
+                      {formatCurrency(Number(item.product.sellingPrice) * item.quantity)}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
 
             <div className="customer-order-summary__row">
               <span>Delivery</span>
