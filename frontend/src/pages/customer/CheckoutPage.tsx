@@ -27,6 +27,7 @@ const LAST_ORDER_KEY = "ysabelle:last-customer-order";
 
 type CheckoutValidationErrors = {
   address?: string;
+  customerEmail?: string;
   customerName?: string;
   customerPhone?: string;
 };
@@ -156,7 +157,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
     const value = event.currentTarget.value;
     setContact((current) => ({ ...current, [field]: value }));
     setContactEdited(true);
-    if (field === "customerName" || field === "customerPhone") {
+    if (field === "customerName" || field === "customerPhone" || field === "customerEmail") {
       setValidationErrors((current) => ({ ...current, [field]: undefined }));
     }
   }
@@ -191,6 +192,12 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
       }
       if (effectivePhone.length < 7) {
         nextValidationErrors.customerPhone = "Enter a valid mobile number for delivery coordination.";
+      }
+      if (
+        customerEmail &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)
+      ) {
+        nextValidationErrors.customerEmail = "Enter a valid email address or leave this field blank.";
       }
       if (!checkoutAddressIsComplete(effectiveAddress)) {
         nextValidationErrors.address = "Complete all required delivery address fields.";
@@ -318,7 +325,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
           </p>
         </div>
 
-        <form className="customer-checkout-layout" onSubmit={submit}>
+        <form className="customer-checkout-layout" noValidate onSubmit={submit}>
           <div className="customer-checkout-form">
             <section>
               <div className="customer-checkout-section-title">
@@ -429,6 +436,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     Email <small>(optional)</small>
                   </span>
                   <input
+                    aria-describedby={validationErrors.customerEmail ? "checkout-email-error" : undefined}
+                    aria-invalid={Boolean(validationErrors.customerEmail)}
                     autoComplete="email"
                     maxLength={191}
                     name="customerEmail"
@@ -436,6 +445,11 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     type="email"
                     value={contact.customerEmail}
                   />
+                  {validationErrors.customerEmail ? (
+                    <small className="customer-field-error" id="checkout-email-error">
+                      {validationErrors.customerEmail}
+                    </small>
+                  ) : null}
                 </label>
               </div>
             </section>
