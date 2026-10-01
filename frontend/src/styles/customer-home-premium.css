@@ -61,10 +61,10 @@
 .store-entrance__vignette {
   z-index: -2;
   background: radial-gradient(
-    circle at 65% 48%,
-    transparent 28%,
-    rgb(0 0 0 / 9%) 72%,
-    rgb(0 0 0 / 32%) 122%
+    circle at 50% 48%,
+    transparent 30%,
+    rgb(0 0 0 / 10%) 74%,
+    rgb(0 0 0 / 34%) 124%
   );
   pointer-events: none;
 }
@@ -72,13 +72,9 @@
 .store-entrance__scene-curtain {
   z-index: 1;
   background: #000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 180ms ease;
-}
-
-.store-entrance__scene-curtain.is-active {
   opacity: 1;
+  pointer-events: none;
+  will-change: opacity;
 }
 
 .store-entrance__exit-curtain {
@@ -97,14 +93,15 @@
   position: relative;
   z-index: 2;
   display: flex;
-  width: min(100% - 3rem, 1240px);
+  width: min(100% - 2rem, 760px);
   min-height: 100svh;
   flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-start;
-  gap: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.15rem, 2.6vh, 1.8rem);
   margin-inline: auto;
-  padding-block: clamp(2rem, 9vh, 5.5rem);
+  padding-block: clamp(2rem, 6vh, 4rem);
+  text-align: center;
   transition:
     opacity 280ms ease,
     transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -115,28 +112,29 @@
   transform: translateY(-8px);
 }
 
-.store-entrance__brand-name {
-  margin: 0;
-  color: #fff;
-  font-size: 0.74rem;
-  font-weight: 850;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.store-entrance__logo {
+  width: clamp(96px, 8vw, 120px);
+  height: auto;
+  max-height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 26px rgb(0 0 0 / 22%));
+  user-select: none;
 }
 
 .store-entrance__copy {
-  width: min(100%, 560px);
+  width: min(100%, 640px);
 }
 
 .store-entrance h1 {
   margin: 0;
   color: #fff;
   font-family: var(--customer-font-display);
-  font-size: clamp(2.65rem, 5.4vw, 5rem);
+  font-size: clamp(2.3rem, 4.2vw, 3.35rem);
   font-weight: 650;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
+  letter-spacing: -0.042em;
+  line-height: 1.04;
   text-wrap: balance;
+  text-shadow: 0 2px 24px rgb(0 0 0 / 24%);
 }
 
 .store-entrance__enter {
@@ -145,8 +143,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.65rem;
-  padding: 0.78rem 1.05rem 0.78rem 1.15rem;
-  border: 1px solid rgb(255 255 255 / 82%);
+  padding: 0.78rem 1.08rem 0.78rem 1.16rem;
+  border: 1px solid rgb(255 255 255 / 86%);
   border-radius: 0.7rem;
   background: #fff;
   box-shadow: 0 12px 30px rgb(0 0 0 / 18%);
@@ -177,6 +175,51 @@
 .store-entrance__enter:focus-visible {
   outline: 3px solid #7dd3fc;
   outline-offset: 4px;
+}
+
+@media (max-width: 700px) {
+  .store-entrance__content {
+    width: min(100% - 1.5rem, 620px);
+    gap: 1rem;
+    padding-block: max(1.5rem, env(safe-area-inset-top))
+      max(1.75rem, env(safe-area-inset-bottom));
+  }
+
+  .store-entrance__video,
+  .store-entrance__poster {
+    object-position: 56% center;
+  }
+
+  .store-entrance__scrim {
+    background:
+      linear-gradient(rgb(0 0 0 / 10%), rgb(0 0 0 / 10%)),
+      linear-gradient(180deg, rgb(0 0 0 / 18%) 0%, rgb(0 0 0 / 30%) 48%, rgb(0 0 0 / 58%) 100%);
+  }
+
+  .store-entrance__logo {
+    width: clamp(82px, 23vw, 102px);
+    max-height: 102px;
+  }
+
+  .store-entrance h1 {
+    max-width: 15ch;
+    font-size: clamp(2.05rem, 9vw, 2.85rem);
+  }
+
+  .store-entrance__enter {
+    min-width: 148px;
+  }
+}
+
+@media (max-width: 520px) {
+  .store-entrance__logo {
+    width: clamp(76px, 24vw, 92px);
+    max-height: 92px;
+  }
+
+  .store-entrance h1 {
+    font-size: clamp(1.95rem, 9.2vw, 2.55rem);
+  }
 }
 
 /* Home becomes shopping-first after the entrance experience. */
@@ -554,48 +597,12 @@
 
 /* Responsive behavior */
 @media (max-width: 920px) {
-  .store-entrance__content {
-    width: min(100% - 2rem, 760px);
-  }
-
-  .store-entrance__scrim {
-    background:
-      linear-gradient(rgb(0 0 0 / 8%), rgb(0 0 0 / 8%)),
-      linear-gradient(90deg, rgb(0 0 0 / 62%) 0%, rgb(0 0 0 / 42%) 68%, rgb(0 0 0 / 24%) 100%),
-      linear-gradient(180deg, rgb(0 0 0 / 6%), rgb(0 0 0 / 28%));
-  }
-
   .home-next-step__grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 700px) {
-  .store-entrance__content {
-    width: min(100% - 1.5rem, 620px);
-    gap: 1rem;
-    padding-bottom: max(1.75rem, env(safe-area-inset-bottom));
-  }
-
-  .store-entrance__video,
-  .store-entrance__poster {
-    object-position: 56% center;
-  }
-
-  .store-entrance__scrim {
-    background:
-      linear-gradient(180deg, rgb(0 0 0 / 12%) 0%, rgb(0 0 0 / 28%) 42%, rgb(0 0 0 / 72%) 100%);
-  }
-
-  .store-entrance h1 {
-    max-width: 12ch;
-    font-size: clamp(2.5rem, 12vw, 4rem);
-  }
-
-  .store-entrance__enter {
-    min-width: 148px;
-  }
-
   .customer-home .customer-section {
     padding-block: 3.25rem;
   }
@@ -606,14 +613,6 @@
 }
 
 @media (max-width: 520px) {
-  .store-entrance__brand-name {
-    font-size: 0.68rem;
-  }
-
-  .store-entrance h1 {
-    font-size: clamp(2.35rem, 12vw, 3.5rem);
-  }
-
   .home-category-card {
     border-radius: 0.85rem;
   }
@@ -628,7 +627,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .store-entrance__content,
-  .store-entrance__scene-curtain,
   .store-entrance__exit-curtain,
   .store-entrance__enter,
   .customer-product-card,
