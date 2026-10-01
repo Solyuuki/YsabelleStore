@@ -308,6 +308,8 @@ export async function getStorefrontPaymentStatus(
           customerAccountId: true,
           paymentMethod: true,
           paymentStatus: true,
+          status: true,
+          deliveryStatus: true,
           paymongoCheckoutSessionId: true,
           totalAmount: true,
           paidAt: true,
