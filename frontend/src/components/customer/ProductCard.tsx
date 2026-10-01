@@ -31,6 +31,8 @@ export function ProductCard({
   const isFavorite = favoriteIds.has(product.id);
   const cartQuantity = items.find((item) => item.product.id === product.id)?.quantity ?? 0;
   const resolvedBadge = badge === undefined ? getStorefrontProductBadge(product) : badge;
+  const showStockMessage =
+    outOfStock || (product.stockStatus === "LOW_STOCK" && resolvedBadge?.tone !== "low-stock");
   const hasReviewSummary =
     Number.isFinite(product.averageRating) &&
     Number.isInteger(product.reviewCount) &&
@@ -122,7 +124,7 @@ export function ProductCard({
           <span>per {formatUnit(product.unit)}</span>
         </div>
 
-        {product.stockStatus !== "IN_STOCK" ? (
+        {showStockMessage ? (
           <p className={`customer-stock customer-stock--${product.stockStatus.toLowerCase()}`}>
             <span aria-hidden="true" className="customer-stock__dot" />
             {outOfStock ? "Out of stock" : `Only ${product.availableStock} left`}
