@@ -609,11 +609,11 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
             </div>
 
             <ScrollArea
-              className="customer-checkout-lines"
+              className="customer-checkout-scroll-area"
               style={{ height: Math.min(260, Math.max(64, items.length * 42)) }}
-              viewportClassName="customer-checkout-lines__viewport"
+              viewportClassName="customer-checkout-scroll-area__viewport"
             >
-              <div className="customer-checkout-lines__content">
+              <div className="customer-checkout-scroll-area__content">
                 {items.map((item) => (
                   <div className="customer-checkout-line" key={item.product.id}>
                     <span>
