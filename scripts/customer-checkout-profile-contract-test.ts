@@ -41,3 +41,13 @@ assert.match(checkout, /customerPhone: contact\.customerPhone/);
 assert.doesNotMatch(checkout, /customerPhone: String\(form\.get\("customerPhone"\)/);
 assert.match(profile, /AppPagination/);
 assert.match(profile, /paginatedHistoricalOrders/);
+
+
+assert.match(checkout, /const effectivePhone =/);
+assert.match(checkout, /editingContactPhone \? contact\.customerPhone : savedContactPhone/);
+assert.match(checkout, /editingAddress \? address : savedAddress \?\? address/);
+assert.match(checkout, /normalizeCheckoutAddress/);
+assert.match(checkout, /checkoutAddressIsComplete/);
+assert.match(checkout, /customerPhone: effectivePhone/);
+assert.match(checkout, /customerAddress: effectiveAddress/);
+assert.match(checkout, /paymentMethod,/);

@@ -14,6 +14,7 @@ import {
   listStorefrontProducts
 } from "../src/services/storefrontService.js";
 import { getSellableStockQuantity } from "../src/services/stockDomainService.js";
+import { storefrontOrderSchema } from "../src/validators/storefront.validators.js";
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
 import { ensureCanonicalStorefrontCategory } from "./helpers/storefrontCanonicalCategory.js";
 
@@ -173,4 +174,33 @@ test("storefront category serializer exposes only dedicated category cover media
   assert.match(serviceSource, /approvedCategoryCoverUrl\(activeCoverAssetId, "cover"\)/);
   assert.doesNotMatch(serviceSource, /representativeProducts/);
   assert.doesNotMatch(serviceSource, /select: \{ id: true, imageUrl: true, name: true \}/);
+});
+
+
+test("PayMongo delivery checkout payload accepts saved customer defaults", () => {
+  const parsed = storefrontOrderSchema.safeParse({
+    customerName: "ALTHEA PERONA",
+    customerEmail: "perona_althea@plpasig.edu.ph",
+    customerPhone: "09766500867",
+    customerAddress: {
+      addressLine1: "217 C Dr. Pilapil St.",
+      addressLine2: "",
+      barangay: "San Miguel",
+      cityMunicipality: "Pasig",
+      provinceRegion: "Metro Manila",
+      postalCode: "1600",
+      country: "Philippines"
+    },
+    saveAddressToAccount: false,
+    saveContactPhoneToAccount: false,
+    notes: "",
+    fulfillmentMethod: "DELIVERY",
+    paymentMethod: "PAYMONGO",
+    items: [
+      { productId: "product-1", quantity: 2 },
+      { productId: "product-2", quantity: 1 }
+    ]
+  });
+
+  assert.equal(parsed.success, true);
 });

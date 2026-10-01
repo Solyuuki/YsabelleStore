@@ -38,6 +38,28 @@ function addressSummary(address: CustomerAddress) {
     .join(", ");
 }
 
+function normalizeCheckoutAddress(address: CustomerAddress): CustomerAddress {
+  return {
+    addressLine1: address.addressLine1.trim(),
+    addressLine2: address.addressLine2.trim(),
+    barangay: address.barangay.trim(),
+    cityMunicipality: address.cityMunicipality.trim(),
+    provinceRegion: address.provinceRegion.trim(),
+    postalCode: address.postalCode.trim(),
+    country: "Philippines"
+  };
+}
+
+function checkoutAddressIsComplete(address: CustomerAddress) {
+  return (
+    address.addressLine1.length >= 3 &&
+    address.barangay.length >= 2 &&
+    address.cityMunicipality.length >= 2 &&
+    address.provinceRegion.length >= 2 &&
+    address.postalCode.length >= 3
+  );
+}
+
 export function CheckoutPage({ navigate }: { navigate: (path: string) => void }) {
   const { items, itemCount, subtotal, clearCart, isReady } = useCart();
   const { customer, status } = useCustomerAuth();
@@ -124,6 +146,32 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
     event.preventDefault();
     if ((!items.length && !pendingPaymongoOrder) || submitting) return;
 
+    const form = new FormData(event.currentTarget);
+    const effectivePhone = (
+      editingContactPhone ? contact.customerPhone : savedContactPhone || contact.customerPhone
+    ).trim();
+    const effectiveAddress = normalizeCheckoutAddress(
+      editingAddress ? address : savedAddress ?? address
+    );
+    const customerName = contact.customerName.trim();
+    const customerEmail = contact.customerEmail.trim();
+    const notes = String(form.get("notes") ?? "").trim();
+
+    if (!pendingPaymongoOrder) {
+      if (customerName.length < 2) {
+        setError("Enter your full name before placing the order.");
+        return;
+      }
+      if (effectivePhone.length < 7) {
+        setError("Enter a valid mobile number for delivery coordination.");
+        return;
+      }
+      if (!checkoutAddressIsComplete(effectiveAddress)) {
+        setError("Complete the delivery address before placing the order.");
+        return;
+      }
+    }
+
     setSubmitting(true);
     setError("");
     let retryOrder = pendingPaymongoOrder;
@@ -132,15 +180,16 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
       let order = pendingPaymongoOrder;
 
       if (!order) {
-        const form = new FormData(event.currentTarget);
         order = await placeStorefrontOrder({
-          customerName: contact.customerName,
-          customerEmail: contact.customerEmail,
-          customerPhone: contact.customerPhone,
-          customerAddress: address,
-          saveAddressToAccount: Boolean(customer && saveAddressToAccount),
-          saveContactPhoneToAccount: Boolean(customer && saveContactPhoneToAccount),
-          notes: String(form.get("notes") ?? ""),
+          customerName,
+          customerEmail,
+          customerPhone: effectivePhone,
+          customerAddress: effectiveAddress,
+          saveAddressToAccount: Boolean(customer && editingAddress && saveAddressToAccount),
+          saveContactPhoneToAccount: Boolean(
+            customer && editingContactPhone && saveContactPhoneToAccount
+          ),
+          notes,
           fulfillmentMethod: "DELIVERY",
           paymentMethod,
           items: items.map((item) => ({
