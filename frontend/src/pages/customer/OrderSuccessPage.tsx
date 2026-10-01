@@ -5,6 +5,7 @@ import {
   LoaderCircle,
   PackageCheck,
   RefreshCw,
+  Banknote,
   ShoppingBasket,
   Truck
 } from "lucide-react";
@@ -12,7 +13,11 @@ import { useEffect, useMemo, useState } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
-import { fetchStorefrontPaymentStatus, startPaymongoCheckout } from "@/services/storefrontService";
+import {
+  fetchStorefrontPaymentStatus,
+  startPaymongoCheckout,
+  switchStorefrontPaymentToCod
+} from "@/services/storefrontService";
 import type { StorefrontOrder, StorefrontPaymentStatusResult } from "@/types/storefront";
 import { LAST_ORDER_KEY } from "./CheckoutPage";
 
@@ -30,11 +35,17 @@ export function OrderSuccessPage({
   const locationUrl = useMemo(() => new URL(location, window.location.origin), [location]);
   const orderNumber = order?.orderNumber ?? locationUrl.searchParams.get("order");
   const paymentReturn = locationUrl.searchParams.get("payment");
-  const isPaymongo = order?.paymentMethod === "PAYMONGO" || paymentReturn !== null;
   const [payment, setPayment] = useState<StorefrontPaymentStatusResult | null>(null);
-  const [checkingPayment, setCheckingPayment] = useState(isPaymongo);
+  const paymentMethod =
+    payment?.paymentMethod ?? order?.paymentMethod ?? (paymentReturn !== null ? "PAYMONGO" : "CASH_ON_DELIVERY");
+  const isPaymongo = paymentMethod === "PAYMONGO";
+  const [checkingPayment, setCheckingPayment] = useState(
+    order?.paymentMethod === "PAYMONGO" || paymentReturn !== null
+  );
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [resumingPayment, setResumingPayment] = useState(false);
+  const [switchingPayment, setSwitchingPayment] = useState(false);
+  const [paymentChangeMessage, setPaymentChangeMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isPaymongo || !orderNumber) return;
@@ -79,6 +90,35 @@ export function OrderSuccessPage({
   const paid = isPaymongo && paymentStatus === "PAID";
   const paymentPending = isPaymongo && !paid;
   const cancelledReturn = paymentReturn === "cancelled" && paymentStatus !== "PAID";
+
+  async function switchToCod() {
+    if (!orderNumber || switchingPayment) return;
+    setSwitchingPayment(true);
+    setPaymentError(null);
+    setPaymentChangeMessage(null);
+    try {
+      const status = await switchStorefrontPaymentToCod(orderNumber);
+      setPayment(status);
+      setPaymentChangeMessage("Payment method changed to Cash on Delivery.");
+
+      if (order) {
+        sessionStorage.setItem(
+          LAST_ORDER_KEY,
+          JSON.stringify({
+            ...order,
+            paymentMethod: "CASH_ON_DELIVERY",
+            paymentStatus: status.paymentStatus
+          })
+        );
+      }
+    } catch (reason) {
+      setPaymentError(
+        reason instanceof Error ? reason.message : "Payment method could not be changed."
+      );
+    } finally {
+      setSwitchingPayment(false);
+    }
+  }
 
   async function resumePayment() {
     if (!orderNumber || resumingPayment) return;
@@ -181,6 +221,11 @@ export function OrderSuccessPage({
             {paymentError}
           </div>
         ) : null}
+        {paymentChangeMessage ? (
+          <div className="customer-form-success" role="status">
+            {paymentChangeMessage}
+          </div>
+        ) : null}
 
         <div className="customer-success-pickup">
           <Truck aria-hidden="true" />
@@ -204,15 +249,28 @@ export function OrderSuccessPage({
 
         <div className="customer-success-actions">
           {paymentPending && orderNumber ? (
-            <button
-              className="customer-button"
-              disabled={resumingPayment}
-              onClick={() => void resumePayment()}
-              type="button"
-            >
-              <RefreshCw aria-hidden="true" size={18} />
-              {resumingPayment ? "Opening PayMongo..." : "Resume PayMongo payment"}
-            </button>
+            <>
+              <button
+                className="customer-button"
+                disabled={resumingPayment || switchingPayment}
+                onClick={() => void resumePayment()}
+                type="button"
+              >
+                <RefreshCw aria-hidden="true" size={18} />
+                {resumingPayment ? "Opening PayMongo..." : "Resume PayMongo payment"}
+              </button>
+              {payment?.canChangePaymentMethod ? (
+                <button
+                  className="customer-button customer-button--secondary"
+                  disabled={resumingPayment || switchingPayment}
+                  onClick={() => void switchToCod()}
+                  type="button"
+                >
+                  <Banknote aria-hidden="true" size={18} />
+                  {switchingPayment ? "Switching..." : "Switch to Cash on Delivery"}
+                </button>
+              ) : null}
+            </>
           ) : (
             <CustomerLink className="customer-button" href="/account" navigate={navigate}>
               <Truck aria-hidden="true" size={18} /> Track my order

@@ -1,6 +1,12 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-import { CustomerPaymentMethod, CustomerPaymentStatus, Prisma } from "@prisma/client";
+import {
+  CustomerDeliveryStatus,
+  CustomerOrderStatus,
+  CustomerPaymentMethod,
+  CustomerPaymentStatus,
+  Prisma
+} from "@prisma/client";
 
 import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
@@ -36,6 +42,7 @@ export type StorefrontPaymentStatusResult = {
   itemCount: number;
   paidAt: Date | null;
   canResumePayment: boolean;
+  canChangePaymentMethod: boolean;
 };
 
 function requireTestSecretKey() {
@@ -211,7 +218,7 @@ export async function createOrReusePaymongoCheckout(
           success_url: storefrontReturnUrl(order.orderNumber, "paymongo"),
           cancel_url: storefrontReturnUrl(order.orderNumber, "cancelled"),
           reference_number: order.orderNumber,
-          description: `Ysabelle Store pickup order ${order.orderNumber}`,
+          description: `Ysabelle Store delivery order ${order.orderNumber}`,
           show_description: true,
           show_line_items: true,
           metadata: {
@@ -266,6 +273,8 @@ export async function getStorefrontPaymentStatus(
       customerAccountId: true,
       paymentMethod: true,
       paymentStatus: true,
+      status: true,
+      deliveryStatus: true,
       paymongoCheckoutSessionId: true,
       totalAmount: true,
       paidAt: true,
@@ -327,7 +336,135 @@ export async function getStorefrontPaymentStatus(
     paidAt: order.paidAt,
     canResumePayment:
       order.paymentMethod === CustomerPaymentMethod.PAYMONGO &&
-      order.paymentStatus !== CustomerPaymentStatus.PAID
+      order.paymentStatus !== CustomerPaymentStatus.PAID,
+    canChangePaymentMethod:
+      order.paymentMethod === CustomerPaymentMethod.PAYMONGO &&
+      order.paymentStatus === CustomerPaymentStatus.PENDING &&
+      order.status === CustomerOrderStatus.PENDING &&
+      order.deliveryStatus === CustomerDeliveryStatus.ORDER_PLACED
+  };
+}
+
+export async function switchPendingPaymongoOrderToCod(
+  orderNumber: string,
+  customerAccountId: string
+): Promise<StorefrontPaymentStatusResult> {
+  let order = await prisma.customerOrder.findFirst({
+    select: {
+      id: true,
+      orderNumber: true,
+      paymentMethod: true,
+      paymentStatus: true,
+      status: true,
+      deliveryStatus: true,
+      paymongoCheckoutSessionId: true,
+      totalAmount: true,
+      paidAt: true,
+      items: { select: { quantity: true } }
+    },
+    where: { customerAccountId, orderNumber }
+  });
+
+  if (!order) {
+    throw new HttpError(404, "Order was not found.", {
+      code: "STOREFRONT_ORDER_NOT_FOUND"
+    });
+  }
+
+  if (order.paymentMethod === CustomerPaymentMethod.CASH_ON_DELIVERY) {
+    return {
+      orderNumber: order.orderNumber,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      totalAmount: order.totalAmount.toString(),
+      itemCount: order.items.reduce((total, item) => total + item.quantity, 0),
+      paidAt: order.paidAt,
+      canResumePayment: false,
+      canChangePaymentMethod: false
+    };
+  }
+
+  if (order.paymentMethod !== CustomerPaymentMethod.PAYMONGO) {
+    throw new HttpError(409, "This order cannot switch payment methods.", {
+      code: "PAYMENT_METHOD_CHANGE_NOT_ALLOWED"
+    });
+  }
+
+  if (order.paymentStatus === CustomerPaymentStatus.PAID) {
+    throw new HttpError(409, "Paid orders cannot change payment method.", {
+      code: "PAID_ORDER_PAYMENT_METHOD_LOCKED"
+    });
+  }
+
+  if (
+    order.status !== CustomerOrderStatus.PENDING ||
+    order.deliveryStatus !== CustomerDeliveryStatus.ORDER_PLACED
+  ) {
+    throw new HttpError(409, "Payment method can only be changed before fulfillment starts.", {
+      code: "FULFILLMENT_ALREADY_STARTED"
+    });
+  }
+
+  if (order.paymongoCheckoutSessionId) {
+    const response = await paymongoRequest(
+      `${PAYMONGO_RETRIEVE_CHECKOUT_PATH}/${encodeURIComponent(order.paymongoCheckoutSessionId)}`
+    );
+    const session = parsePaymongoResource(response);
+    await reconcilePaidCheckoutSession(session, order.id, order.orderNumber, order.totalAmount);
+
+    order = await prisma.customerOrder.findUniqueOrThrow({
+      select: {
+        id: true,
+        orderNumber: true,
+        paymentMethod: true,
+        paymentStatus: true,
+        status: true,
+        deliveryStatus: true,
+        paymongoCheckoutSessionId: true,
+        totalAmount: true,
+        paidAt: true,
+        items: { select: { quantity: true } }
+      },
+      where: { id: order.id }
+    });
+
+    if (order.paymentStatus === CustomerPaymentStatus.PAID) {
+      throw new HttpError(409, "PayMongo already confirmed payment for this order.", {
+        code: "ORDER_ALREADY_PAID"
+      });
+    }
+  }
+
+  const updated = await prisma.customerOrder.update({
+    data: {
+      paymentMethod: CustomerPaymentMethod.CASH_ON_DELIVERY,
+      paymentStatus: CustomerPaymentStatus.PENDING,
+      paymongoCheckoutSessionId: null,
+      paymongoCheckoutUrl: null,
+      paymongoPaymentIntentId: null,
+      paymongoPaymentId: null,
+      paidAt: null
+    },
+    select: {
+      orderNumber: true,
+      paymentMethod: true,
+      paymentStatus: true,
+      totalAmount: true,
+      paidAt: true,
+      items: { select: { quantity: true } }
+    },
+    where: { id: order.id }
+  });
+
+  return {
+    orderNumber: updated.orderNumber,
+    paymentMethod: updated.paymentMethod,
+    paymentStatus: updated.paymentStatus,
+    totalAmount: updated.totalAmount.toString(),
+    itemCount: updated.items.reduce((total, item) => total + item.quantity, 0),
+    paidAt: updated.paidAt,
+    canResumePayment: false,
+    canChangePaymentMethod: false
   };
 }
 

@@ -5,7 +5,8 @@ import { publicProductImageController } from "../controllers/productImageControl
 import {
   createPaymongoCheckoutController,
   getStorefrontPaymentStatusController,
-  paymongoWebhookController
+  paymongoWebhookController,
+  switchPendingPaymongoOrderToCodController
 } from "../controllers/paymongoController.js";
 import {
   createStorefrontOrderController,
@@ -52,5 +53,11 @@ storefrontRouter.get(
   "/orders/:orderNumber/payment-status",
   requireCustomerAuth,
   getStorefrontPaymentStatusController
+);
+storefrontRouter.patch(
+  "/orders/:orderNumber/payment-method/cash-on-delivery",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  switchPendingPaymongoOrderToCodController
 );
 storefrontRouter.post("/payments/paymongo/webhook", paymongoWebhookController);

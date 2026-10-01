@@ -4,7 +4,8 @@ import { getAuthenticatedCustomer } from "../middleware/customerAuthMiddleware.j
 import {
   createOrReusePaymongoCheckout,
   getStorefrontPaymentStatus,
-  handlePaymongoWebhook
+  handlePaymongoWebhook,
+  switchPendingPaymongoOrderToCod
 } from "../services/paymongoService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
@@ -52,6 +53,31 @@ export const getStorefrontPaymentStatusController: RequestHandler = async (
     const status = await getStorefrontPaymentStatus(params.orderNumber, customer.id);
 
     response.json(createSuccessResponse("Order payment status loaded.", status));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const switchPendingPaymongoOrderToCodController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = getAuthenticatedCustomer(request);
+    if (!customer) {
+      throw new HttpError(401, "Customer session is required.", {
+        code: "CUSTOMER_SESSION_REQUIRED"
+      });
+    }
+
+    const params = parseOrThrow(storefrontOrderPaymentParamsSchema, request.params, {
+      message: "Order reference is invalid.",
+      code: "INVALID_STOREFRONT_ORDER_REFERENCE"
+    });
+    const status = await switchPendingPaymongoOrderToCod(params.orderNumber, customer.id);
+
+    response.json(createSuccessResponse("Payment method changed to Cash on Delivery.", status));
   } catch (error) {
     next(error);
   }

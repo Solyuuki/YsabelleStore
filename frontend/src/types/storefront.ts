@@ -212,4 +212,5 @@ export type StorefrontPaymentStatusResult = {
   itemCount: number;
   paidAt: string | null;
   canResumePayment: boolean;
+  canChangePaymentMethod: boolean;
 };
