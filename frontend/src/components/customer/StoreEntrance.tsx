@@ -1,4 +1,3 @@
-import { ArrowRight } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { YsabelleBrandMark } from "./YsabelleBrandMark";
@@ -80,7 +79,6 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
 
         <button className="store-entrance__enter" onClick={enterStore} type="button">
           <span>Get Started</span>
-          <ArrowRight aria-hidden="true" size={18} />
         </button>
       </div>
     </main>
