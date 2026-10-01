@@ -2,58 +2,91 @@ import { ArrowRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const STORE_ENTRANCE_VIDEO = "/media/store-entrance.mp4?v=26c4d4b0";
+const STORE_ENTRANCE_LOGO = "/brand/store-entrance-logo.png?v=12c660a6";
+const STORE_ENTRANCE_LOGO_FALLBACK = "/brand/ysabelle-store-mark.png";
 const STORE_ENTRANCE_POSTER =
   "/images/discover/essentials/canned-goods-retail-display.webp";
 
 const EXIT_DURATION_MS = 620;
-const SCENE_FADE_MS = 180;
-const BLACK_HOLD_MS = 90;
 
-type SceneTransition = {
-  holdMs: number;
-  next: number;
-  trigger: number;
+type FadeWindow = {
+  end: number;
+  peak: number;
+  start: number;
 };
 
-const SCENE_TRANSITIONS: readonly SceneTransition[] = [
-  // Frame-inspected Gemini dissolve windows. The source MP4 is never edited.
-  { trigger: 3.95, next: 4.55, holdMs: 110 },
-  { trigger: 5.72, next: 6.28, holdMs: 110 },
-  { trigger: 9.22, next: 9.65, holdMs: 130 },
-  // Controlled end-to-start loop avoids a visible native-loop jump.
-  { trigger: 9.92, next: 0.04, holdMs: 260 }
+const SCENE_FADE_WINDOWS: readonly FadeWindow[] = [
+  // Hard scene cut: aisle -> refrigerators.
+  { start: 1.88, peak: 2.0, end: 2.12 },
+  // Gemini dissolve: refrigerators -> snacks.
+  { start: 3.95, peak: 4.25, end: 4.55 },
+  // Gemini dissolve: snacks -> personal care.
+  { start: 5.75, peak: 6.0, end: 6.25 },
+  // Hard scene cut: personal care -> household.
+  { start: 7.88, peak: 8.0, end: 8.12 },
+  // Gemini dissolve: household -> cooking/pantry.
+  { start: 9.25, peak: 9.48, end: 9.7 }
 ];
 
-function wait(duration: number) {
-  return new Promise<void>((resolve) => window.setTimeout(resolve, duration));
+const LOOP_FADE_OUT_START = 9.72;
+const LOOP_FADE_IN_END = 0.34;
+const FALLBACK_DURATION_SECONDS = 10;
+
+function clamp01(value: number) {
+  return Math.min(1, Math.max(0, value));
 }
 
-function seekVideo(video: HTMLVideoElement, time: number) {
-  return new Promise<void>((resolve) => {
-    let settled = false;
+function smoothStep(value: number) {
+  const progress = clamp01(value);
+  return progress * progress * (3 - 2 * progress);
+}
 
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      video.removeEventListener("seeked", finish);
-      resolve();
-    };
+function fadeWindowOpacity(time: number, window: FadeWindow) {
+  if (time < window.start || time > window.end) return 0;
 
-    video.addEventListener("seeked", finish, { once: true });
-    video.currentTime = time;
-    window.setTimeout(finish, 450);
-  });
+  if (time <= window.peak) {
+    return smoothStep((time - window.start) / (window.peak - window.start));
+  }
+
+  return 1 - smoothStep((time - window.peak) / (window.end - window.peak));
+}
+
+function sceneCurtainOpacity(time: number, duration: number) {
+  let opacity = 0;
+
+  // The first frame starts black and reveals the moving source video.
+  if (time <= LOOP_FADE_IN_END) {
+    opacity = Math.max(opacity, 1 - smoothStep(time / LOOP_FADE_IN_END));
+  }
+
+  for (const window of SCENE_FADE_WINDOWS) {
+    opacity = Math.max(opacity, fadeWindowOpacity(time, window));
+  }
+
+  const resolvedDuration =
+    Number.isFinite(duration) && duration > LOOP_FADE_OUT_START
+      ? duration
+      : FALLBACK_DURATION_SECONDS;
+
+  if (time >= LOOP_FADE_OUT_START) {
+    opacity = Math.max(
+      opacity,
+      smoothStep(
+        (time - LOOP_FADE_OUT_START) /
+          Math.max(0.01, resolvedDuration - LOOP_FADE_OUT_START)
+      )
+    );
+  }
+
+  return clamp01(opacity);
 }
 
 export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const transitionBusyRef = useRef(false);
-  const transitionIndexRef = useRef(0);
-  const mountedRef = useRef(true);
+  const sceneCurtainRef = useRef<HTMLDivElement | null>(null);
   const exitingRef = useRef(false);
 
   const [isExiting, setIsExiting] = useState(false);
-  const [sceneCurtainActive, setSceneCurtainActive] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
 
   const prefersReducedMotion =
@@ -61,11 +94,27 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
-    mountedRef.current = true;
+    if (prefersReducedMotion || videoFailed) return;
+
+    let animationFrame = 0;
+
+    function syncCurtainToVideo() {
+      const video = videoRef.current;
+      const curtain = sceneCurtainRef.current;
+
+      if (video && curtain) {
+        curtain.style.opacity = String(sceneCurtainOpacity(video.currentTime, video.duration));
+      }
+
+      animationFrame = window.requestAnimationFrame(syncCurtainToVideo);
+    }
+
+    animationFrame = window.requestAnimationFrame(syncCurtainToVideo);
+
     return () => {
-      mountedRef.current = false;
+      window.cancelAnimationFrame(animationFrame);
     };
-  }, []);
+  }, [prefersReducedMotion, videoFailed]);
 
   useEffect(() => {
     function handleVisibilityChange() {
@@ -77,88 +126,18 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
         return;
       }
 
-      if (!transitionBusyRef.current) {
-        void video.play().catch(() => undefined);
-      }
+      void video.play().catch(() => undefined);
     }
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [prefersReducedMotion, videoFailed]);
 
-  useEffect(() => {
-    if (prefersReducedMotion || videoFailed) return;
-
-    let animationFrame = 0;
-    let cancelled = false;
-
-    async function runTransition(transition: SceneTransition, index: number) {
-      const video = videoRef.current;
-      if (!video || transitionBusyRef.current || exitingRef.current) return;
-
-      transitionBusyRef.current = true;
-      video.pause();
-
-      await wait(transition.holdMs);
-      if (cancelled || exitingRef.current) return;
-
-      if (mountedRef.current) setSceneCurtainActive(true);
-      await wait(SCENE_FADE_MS + 20);
-      if (cancelled || exitingRef.current) return;
-
-      await seekVideo(video, transition.next);
-      if (cancelled || exitingRef.current) return;
-
-      await wait(BLACK_HOLD_MS);
-      if (mountedRef.current) setSceneCurtainActive(false);
-      await wait(SCENE_FADE_MS + 20);
-
-      if (transition.next < transition.trigger) {
-        transitionIndexRef.current = 0;
-      } else {
-        transitionIndexRef.current = index + 1;
-      }
-
-      transitionBusyRef.current = false;
-
-      if (!cancelled && !exitingRef.current) {
-        void video.play().catch(() => undefined);
-      }
-    }
-
-    function monitorVideo() {
-      const video = videoRef.current;
-      const transition = SCENE_TRANSITIONS[transitionIndexRef.current];
-
-      if (
-        video &&
-        transition &&
-        !video.paused &&
-        !transitionBusyRef.current &&
-        !exitingRef.current &&
-        video.currentTime >= transition.trigger
-      ) {
-        void runTransition(transition, transitionIndexRef.current);
-      }
-
-      animationFrame = window.requestAnimationFrame(monitorVideo);
-    }
-
-    animationFrame = window.requestAnimationFrame(monitorVideo);
-
-    return () => {
-      cancelled = true;
-      window.cancelAnimationFrame(animationFrame);
-    };
-  }, [prefersReducedMotion, videoFailed]);
-
   function enterStore() {
     if (isExiting) return;
 
     exitingRef.current = true;
-    transitionBusyRef.current = true;
     videoRef.current?.pause();
-    setSceneCurtainActive(false);
 
     if (prefersReducedMotion) {
       onEnter();
@@ -181,6 +160,7 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
           <video
             autoPlay
             className="store-entrance__video"
+            loop
             muted
             onCanPlay={(event) => {
               void event.currentTarget.play().catch(() => undefined);
@@ -200,12 +180,24 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
       <div aria-hidden="true" className="store-entrance__vignette" />
       <div
         aria-hidden="true"
-        className={`store-entrance__scene-curtain ${sceneCurtainActive ? "is-active" : ""}`}
+        className="store-entrance__scene-curtain"
+        ref={sceneCurtainRef}
       />
       <div aria-hidden="true" className="store-entrance__exit-curtain" />
 
       <div className="store-entrance__content">
-        <p className="store-entrance__brand-name">Ysabelle Store</p>
+        <img
+          alt="Ysabelle Store"
+          className="store-entrance__logo"
+          decoding="async"
+          draggable={false}
+          onError={(event) => {
+            if (!event.currentTarget.src.endsWith(STORE_ENTRANCE_LOGO_FALLBACK)) {
+              event.currentTarget.src = STORE_ENTRANCE_LOGO_FALLBACK;
+            }
+          }}
+          src={STORE_ENTRANCE_LOGO}
+        />
 
         <div className="store-entrance__copy">
           <h1>Your neighborhood store, now online.</h1>
