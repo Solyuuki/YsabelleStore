@@ -182,6 +182,7 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
         aria-hidden="true"
         className="store-entrance__scene-curtain"
         ref={sceneCurtainRef}
+        style={prefersReducedMotion || videoFailed ? { opacity: 0 } : undefined}
       />
       <div aria-hidden="true" className="store-entrance__exit-curtain" />
 
