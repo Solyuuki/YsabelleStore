@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clock3,
   MapPin,
+  MessageSquareText,
   PackageCheck,
   RefreshCw,
   Search,
@@ -27,6 +28,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select } from "@/components/ui/select";
 import {
   Table,
@@ -52,6 +54,17 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency",
   currency: "PHP"
 });
+
+const DELIVERY_PROGRESS_STEPS: Array<{
+  status: StorefrontDeliveryStatus;
+  label: string;
+}> = [
+  { status: "ORDER_PLACED", label: "Order placed" },
+  { status: "PREPARING", label: "Preparing" },
+  { status: "READY_FOR_DELIVERY", label: "Ready" },
+  { status: "OUT_FOR_DELIVERY", label: "On the way" },
+  { status: "DELIVERED", label: "Delivered" }
+];
 
 const EMPTY_SUMMARY: DeliveryListMeta["summary"] = {
   ORDER_PLACED: 0,
@@ -96,6 +109,30 @@ function paymentLabel(method: StorefrontPaymentMethod) {
   return method === "CASH_ON_DELIVERY" ? "Cash on Delivery" : "PayMongo";
 }
 
+function operationalStatusLabel(ticket: DeliveryTicket) {
+  if (
+    ticket.paymentMethod === "CASH_ON_DELIVERY" &&
+    ticket.paymentStatus === "PAID" &&
+    ticket.deliveryStatus === "DELIVERED"
+  ) {
+    return "Payment received";
+  }
+  return statusLabel(ticket.deliveryStatus);
+}
+
+function operationalStatusTone(
+  ticket: DeliveryTicket
+): "default" | "info" | "success" | "warning" | "danger" {
+  if (
+    ticket.paymentMethod === "CASH_ON_DELIVERY" &&
+    ticket.paymentStatus === "PAID" &&
+    ticket.deliveryStatus === "DELIVERED"
+  ) {
+    return "success";
+  }
+  return statusTone(ticket.deliveryStatus);
+}
+
 function addressText(ticket: DeliveryTicket) {
   if (!ticket.address) return "No delivery address recorded";
   return [
@@ -130,6 +167,7 @@ export function DeliveriesPage() {
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<DeliveryTicket | null>(null);
   const [courierProvider, setCourierProvider] = useState("");
+  const [customCourierProvider, setCustomCourierProvider] = useState("");
   const [courierReference, setCourierReference] = useState("");
   const [staffNote, setStaffNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -171,10 +209,25 @@ export function DeliveriesPage() {
 
   useEffect(() => {
     if (!selected) return;
-    setCourierProvider(selected.courierProvider ?? "");
+
+    const provider = selected.courierProvider?.trim() ?? "";
+    if (!provider) {
+      setCourierProvider("");
+      setCustomCourierProvider("");
+    } else if (provider === "Grab" || provider === "Lalamove") {
+      setCourierProvider(provider);
+      setCustomCourierProvider("");
+    } else {
+      setCourierProvider("Other");
+      setCustomCourierProvider(provider === "Other" ? "" : provider);
+    }
+
     setCourierReference(selected.courierReference ?? "");
     setStaffNote(selected.deliveryNotes ?? "");
   }, [selected]);
+
+  const resolvedCourierProvider =
+    courierProvider === "Other" ? customCourierProvider.trim() : courierProvider.trim();
 
   const activeCount = useMemo(
     () =>
@@ -205,7 +258,7 @@ export function DeliveriesPage() {
     try {
       const updated = await updateDeliveryStatus(selected.id, {
         targetStatus,
-        courierProvider: courierProvider.trim() || undefined,
+        courierProvider: resolvedCourierProvider || undefined,
         courierReference: courierReference.trim() || undefined,
         note: staffNote.trim() || undefined
       });
@@ -381,8 +434,8 @@ export function DeliveriesPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusTone(ticket.deliveryStatus)}>
-                          {statusLabel(ticket.deliveryStatus)}
+                        <Badge variant={operationalStatusTone(ticket)}>
+                          {operationalStatusLabel(ticket)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-semibold text-slate-950">
@@ -431,8 +484,8 @@ export function DeliveriesPage() {
           <DialogContent className="max-h-[90vh] max-w-[900px] overflow-y-auto">
             <DialogHeader>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={statusTone(selected.deliveryStatus)}>
-                  {statusLabel(selected.deliveryStatus)}
+                <Badge variant={operationalStatusTone(selected)}>
+                  {operationalStatusLabel(selected)}
                 </Badge>
                 <Badge>{paymentLabel(selected.paymentMethod)}</Badge>
               </div>
@@ -452,7 +505,13 @@ export function DeliveriesPage() {
                   value={selected.customerName}
                 />
                 <TicketFact
-                  detail={selected.paymentStatus}
+                  detail={
+                    selected.paymentMethod === "CASH_ON_DELIVERY"
+                      ? selected.paymentStatus === "PAID"
+                        ? "Payment received"
+                        : "Awaiting cash collection"
+                      : selected.paymentStatus
+                  }
                   icon={Banknote}
                   label="Payment"
                   value={paymentLabel(selected.paymentMethod)}
@@ -473,55 +532,89 @@ export function DeliveriesPage() {
                 <p className="text-sm leading-6 text-slate-600">{addressText(selected)}</p>
               </section>
 
-              <div className="grid gap-5 lg:grid-cols-2">
+              {selected.notes ? (
+                <section className="rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+                  <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900">
+                    <MessageSquareText className="h-4 w-4 text-amber-600" aria-hidden="true" />
+                    Customer delivery note
+                  </div>
+                  <p className="text-sm leading-6 text-slate-700">{selected.notes}</p>
+                </section>
+              ) : null}
+
+              <section className="rounded-xl border border-slate-200 bg-white p-4">
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-slate-950">Delivery progress</h3>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    The primary handoff stages stay visible at a glance. Detailed activity remains
+                    available below for audit history.
+                  </p>
+                </div>
+                <StaffDeliveryProgress ticket={selected} />
+              </section>
+
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
                 <section>
                   <h3 className="mb-3 text-sm font-semibold text-slate-900">Order items</h3>
-                  <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
-                    {selected.items.map((item) => (
-                      <div
-                        className="flex items-start justify-between gap-4 px-4 py-3"
-                        key={item.productId}
-                      >
-                        <span className="text-sm text-slate-700">
-                          {item.quantity} × {item.productName}
-                        </span>
-                        <strong className="shrink-0 text-sm text-slate-950">
-                          {currencyFormatter.format(Number(item.totalAmount))}
-                        </strong>
-                      </div>
-                    ))}
-                  </div>
+                  <ScrollArea
+                    className="rounded-xl border border-slate-200"
+                    style={{ height: Math.min(300, Math.max(92, selected.items.length * 46)) }}
+                    viewportClassName="pr-3"
+                  >
+                    <div className="divide-y divide-slate-100">
+                      {selected.items.map((item) => (
+                        <div
+                          className="flex items-start justify-between gap-4 px-4 py-3"
+                          key={item.productId}
+                        >
+                          <span className="text-sm text-slate-700">
+                            {item.quantity} × {item.productName}
+                          </span>
+                          <strong className="shrink-0 text-sm text-slate-950">
+                            {currencyFormatter.format(Number(item.totalAmount))}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-sm font-semibold text-slate-900">Delivery timeline</h3>
-                  <ol className="space-y-0">
-                    {selected.timeline.map((event, index) => (
-                      <li className="relative grid grid-cols-[18px_1fr] gap-3 pb-4" key={event.id}>
-                        {index < selected.timeline.length - 1 ? (
+                  <details className="group rounded-xl border border-slate-200 bg-slate-50/60">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-slate-900">
+                      Activity log
+                      <span className="text-xs font-medium text-slate-500">
+                        {selected.timeline.length} event{selected.timeline.length === 1 ? "" : "s"}
+                      </span>
+                    </summary>
+                    <ol className="space-y-0 border-t border-slate-200 px-4 pt-4">
+                      {selected.timeline.map((event, index) => (
+                        <li className="relative grid grid-cols-[18px_1fr] gap-3 pb-4" key={event.id}>
+                          {index < selected.timeline.length - 1 ? (
+                            <span
+                              className="absolute bottom-0 left-[8px] top-4 w-px bg-slate-200"
+                              aria-hidden="true"
+                            />
+                          ) : null}
                           <span
-                            className="absolute bottom-0 left-[8px] top-4 w-px bg-slate-200"
+                            className="mt-1 h-4 w-4 rounded-full border-4 border-indigo-100 bg-indigo-600"
                             aria-hidden="true"
                           />
-                        ) : null}
-                        <span
-                          className="mt-1 h-4 w-4 rounded-full border-4 border-indigo-100 bg-indigo-600"
-                          aria-hidden="true"
-                        />
-                        <div>
-                          <strong className="text-sm text-slate-900">
-                            {statusLabel(event.status)}
-                          </strong>
-                          <p className="mt-0.5 text-xs text-slate-500">
-                            {dateTimeFormatter.format(new Date(event.createdAt))}
-                          </p>
-                          {event.note ? (
-                            <p className="mt-1 text-xs leading-5 text-slate-600">{event.note}</p>
-                          ) : null}
-                        </div>
-                      </li>
-                    ))}
-                  </ol>
+                          <div>
+                            <strong className="text-sm text-slate-900">
+                              {statusLabel(event.status)}
+                            </strong>
+                            <p className="mt-0.5 text-xs text-slate-500">
+                              {dateTimeFormatter.format(new Date(event.createdAt))}
+                            </p>
+                            {event.note ? (
+                              <p className="mt-1 text-xs leading-5 text-slate-600">{event.note}</p>
+                            ) : null}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
                 </section>
               </div>
 
@@ -535,36 +628,61 @@ export function DeliveriesPage() {
                     </p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                      Courier / service
-                      <Select
-                        onChange={(event) => setCourierProvider(event.target.value)}
-                        value={courierProvider}
-                      >
-                        <option value="">Choose courier when dispatching</option>
-                        <option value="Grab">Grab</option>
-                        <option value="Lalamove">Lalamove</option>
-                        <option value="Other">Other</option>
-                      </Select>
-                    </label>
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                      Booking / reference
+                    <div className="grid gap-3">
+                      <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                        Courier / service
+                        <Select
+                          onChange={(event) => {
+                            const next = event.target.value;
+                            setCourierProvider(next);
+                            if (next !== "Other") setCustomCourierProvider("");
+                          }}
+                          value={courierProvider}
+                        >
+                          <option value="">Choose courier when dispatching</option>
+                          <option value="Grab">Grab</option>
+                          <option value="Lalamove">Lalamove</option>
+                          <option value="Other">Other</option>
+                        </Select>
+                      </label>
+                      {courierProvider === "Other" ? (
+                        <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                          Other courier / service name
+                          <Input
+                            maxLength={80}
+                            onChange={(event) => setCustomCourierProvider(event.target.value)}
+                            placeholder="e.g. JoyRide, local courier, in-house rider"
+                            value={customCourierProvider}
+                          />
+                        </label>
+                      ) : null}
+                    </div>
+
+                    <label className="grid content-start gap-1.5 text-sm font-medium text-slate-700">
+                      Rider / booking reference
                       <Input
                         maxLength={120}
                         onChange={(event) => setCourierReference(event.target.value)}
-                        placeholder="Optional reference"
+                        placeholder="e.g. rider mobile, booking ID, plate number"
                         value={courierReference}
                       />
+                      <span className="text-xs font-normal leading-5 text-slate-500">
+                        Add the rider phone number or app booking ID when available so the handoff
+                        can be verified.
+                      </span>
                     </label>
                   </div>
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                    Staff note
+                    Internal staff note
                     <Input
                       maxLength={255}
                       onChange={(event) => setStaffNote(event.target.value)}
-                      placeholder="Optional operational note"
+                      placeholder="Internal handoff note for owner/staff only"
                       value={staffNote}
                     />
+                    <span className="text-xs font-normal leading-5 text-slate-500">
+                      This operational note is not shown to the customer.
+                    </span>
                   </label>
                 </section>
               ) : null}
@@ -609,7 +727,7 @@ export function DeliveriesPage() {
               ) : null}
               {selected.deliveryStatus === "READY_FOR_DELIVERY" ? (
                 <Button
-                  disabled={submitting || !courierProvider.trim()}
+                  disabled={submitting || !resolvedCourierProvider}
                   onClick={() => void runTransition("OUT_FOR_DELIVERY")}
                   type="button"
                 >
@@ -654,6 +772,55 @@ export function DeliveriesPage() {
           </DialogContent>
         ) : null}
       </Dialog>
+    </div>
+  );
+}
+
+function StaffDeliveryProgress({ ticket }: { ticket: DeliveryTicket }) {
+  const eventByStatus = new Map(
+    ticket.timeline.map((event) => [event.status, event] as const)
+  );
+
+  return (
+    <div className="overflow-x-auto pb-1">
+      <ol className="flex min-w-[650px] list-none p-0">
+        {DELIVERY_PROGRESS_STEPS.map((step, index) => {
+          const event = eventByStatus.get(step.status);
+          const isCurrent = ticket.deliveryStatus === step.status;
+
+          return (
+            <li className="min-w-0 flex-1" key={step.status}>
+              <div className="flex min-h-7 items-center">
+                <span
+                  className={[
+                    "grid h-7 w-7 flex-none place-items-center rounded-full border text-xs font-semibold",
+                    event
+                      ? "border-transparent bg-indigo-600 text-white"
+                      : "border-slate-200 bg-white text-slate-500",
+                    isCurrent ? "ring-4 ring-indigo-100" : ""
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {event ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : index + 1}
+                </span>
+                {index < DELIVERY_PROGRESS_STEPS.length - 1 ? (
+                  <span
+                    className={`mx-2 h-px flex-1 ${event ? "bg-indigo-300" : "bg-slate-200"}`}
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </div>
+              <div className="mt-2 pr-3">
+                <strong className="block text-xs font-semibold text-slate-900">{step.label}</strong>
+                <span className="mt-1 block text-[11px] leading-4 text-slate-500">
+                  {event ? dateTimeFormatter.format(new Date(event.createdAt)) : "Pending"}
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }
