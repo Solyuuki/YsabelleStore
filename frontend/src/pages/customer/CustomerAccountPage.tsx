@@ -695,8 +695,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 </div>
 
                 {historicalOrders.length > 0 ? (
-                  <div className="customer-account-order-list-v2">
-                    {paginatedHistoricalOrders.map((order) => (
+                  <>
+                    <div className="customer-account-order-list-v2">
+                      {paginatedHistoricalOrders.map((order) => (
                       <details className="customer-account-history-card" key={order.id}>
                         <summary>
                           <div className="customer-account-history-card__identity">
@@ -740,19 +741,20 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                           </ul>
                         </div>
                       </details>
-                    ))}
-                  </div>
-                  {historicalOrders.length > historyPageSize ? (
-                    <AppPagination
-                      className="customer-account-history-pagination"
-                      itemLabel="orders"
-                      onPageChange={setHistoryPage}
-                      page={historyPage}
-                      pageSize={historyPageSize}
-                      totalItems={historicalOrders.length}
-                      totalPages={historyTotalPages}
-                    />
-                  ) : null}
+                      ))}
+                    </div>
+                    {historicalOrders.length > historyPageSize ? (
+                      <AppPagination
+                        className="customer-account-history-pagination"
+                        itemLabel="orders"
+                        onPageChange={setHistoryPage}
+                        page={historyPage}
+                        pageSize={historyPageSize}
+                        totalItems={historicalOrders.length}
+                        totalPages={historyTotalPages}
+                      />
+                    ) : null}
+                  </>
                 ) : (
                   <div className="customer-account-state">No completed delivery history yet.</div>
                 )}
