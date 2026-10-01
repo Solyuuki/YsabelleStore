@@ -561,7 +561,10 @@ export function DeliveriesPage() {
                 </div>
                 {isPaymongoAwaitingPayment(selected) ? (
                   <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-                    <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" />
+                    <CreditCard
+                      className="mt-0.5 h-5 w-5 shrink-0 text-amber-700"
+                      aria-hidden="true"
+                    />
                     <div>
                       <strong className="text-sm text-amber-950">Awaiting PayMongo payment</strong>
                       <p className="mt-1 text-xs leading-5 text-amber-800">
@@ -731,7 +734,8 @@ export function DeliveriesPage() {
                 </Button>
               ) : null}
 
-              {selected.deliveryStatus === "ORDER_PLACED" && !isPaymongoAwaitingPayment(selected) ? (
+              {selected.deliveryStatus === "ORDER_PLACED" &&
+              !isPaymongoAwaitingPayment(selected) ? (
                 <Button
                   disabled={submitting}
                   onClick={() => void runTransition("PREPARING")}

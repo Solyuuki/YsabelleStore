@@ -690,8 +690,8 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                             <div>
                               <strong>Payment required before delivery starts</strong>
                               <p>
-                                This order is saved, but Ysabelle Store will not prepare or dispatch it
-                                until PayMongo confirms the payment.
+                                This order is saved, but Ysabelle Store will not prepare or dispatch
+                                it until PayMongo confirms the payment.
                               </p>
                             </div>
                             <button

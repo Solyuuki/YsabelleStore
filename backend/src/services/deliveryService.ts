@@ -330,9 +330,13 @@ export async function updateDeliveryStatus(
     }
 
     if (isPaymongoPaymentPending(order) && target !== CustomerDeliveryStatus.CANCELLED) {
-      throw new HttpError(409, "PayMongo payment must be confirmed before delivery processing starts.", {
-        code: "PAYMONGO_PAYMENT_REQUIRED"
-      });
+      throw new HttpError(
+        409,
+        "PayMongo payment must be confirmed before delivery processing starts.",
+        {
+          code: "PAYMONGO_PAYMENT_REQUIRED"
+        }
+      );
     }
 
     if (

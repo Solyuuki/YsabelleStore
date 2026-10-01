@@ -42,7 +42,6 @@ assert.doesNotMatch(checkout, /customerPhone: String\(form\.get\("customerPhone"
 assert.match(profile, /AppPagination/);
 assert.match(profile, /paginatedHistoricalOrders/);
 
-
 assert.match(checkout, /const effectivePhone =/);
 assert.match(checkout, /editingContactPhone \? contact\.customerPhone : savedContactPhone/);
 assert.match(checkout, /editingAddress \? address : savedAddress \?\? address/);

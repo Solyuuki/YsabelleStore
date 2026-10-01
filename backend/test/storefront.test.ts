@@ -176,7 +176,6 @@ test("storefront category serializer exposes only dedicated category cover media
   assert.doesNotMatch(serviceSource, /select: \{ id: true, imageUrl: true, name: true \}/);
 });
 
-
 test("PayMongo delivery checkout payload accepts saved customer defaults", () => {
   const parsed = storefrontOrderSchema.safeParse({
     customerName: "ALTHEA PERONA",

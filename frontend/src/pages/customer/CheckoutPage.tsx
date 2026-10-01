@@ -151,7 +151,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
       editingContactPhone ? contact.customerPhone : savedContactPhone || contact.customerPhone
     ).trim();
     const effectiveAddress = normalizeCheckoutAddress(
-      editingAddress ? address : savedAddress ?? address
+      editingAddress ? address : (savedAddress ?? address)
     );
     const customerName = contact.customerName.trim();
     const customerEmail = contact.customerEmail.trim();
