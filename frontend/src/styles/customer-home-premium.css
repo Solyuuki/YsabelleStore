@@ -21,7 +21,6 @@
 .store-entrance__poster,
 .store-entrance__scrim,
 .store-entrance__vignette,
-.store-entrance__scene-curtain,
 .store-entrance__exit-curtain {
   position: absolute;
   inset: 0;
@@ -69,13 +68,6 @@
   pointer-events: none;
 }
 
-.store-entrance__scene-curtain {
-  z-index: 1;
-  background: #000;
-  opacity: 1;
-  pointer-events: none;
-  will-change: opacity;
-}
 
 .store-entrance__exit-curtain {
   z-index: 8;
@@ -93,12 +85,12 @@
   position: relative;
   z-index: 2;
   display: flex;
-  width: min(100% - 2rem, 760px);
+  width: min(100% - 2rem, 720px);
   min-height: 100svh;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(1.15rem, 2.6vh, 1.8rem);
+  gap: clamp(1rem, 2.2vh, 1.5rem);
   margin-inline: auto;
   padding-block: clamp(2rem, 6vh, 4rem);
   text-align: center;
@@ -112,29 +104,42 @@
   transform: translateY(-8px);
 }
 
+.store-entrance__logo-wrap {
+  display: grid;
+  width: clamp(132px, 10vw, 156px);
+  aspect-ratio: 1;
+  place-items: center;
+}
+
 .store-entrance__logo {
-  width: clamp(96px, 8vw, 120px);
-  height: auto;
-  max-height: 120px;
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 10px 26px rgb(0 0 0 / 22%));
+  filter: drop-shadow(0 12px 30px rgb(0 0 0 / 24%));
   user-select: none;
 }
 
 .store-entrance__copy {
-  width: min(100%, 640px);
+  width: min(100%, 620px);
 }
 
 .store-entrance h1 {
+  display: grid;
+  gap: 0.08em;
   margin: 0;
   color: #fff;
   font-family: var(--customer-font-display);
-  font-size: clamp(2.3rem, 4.2vw, 3.35rem);
+  font-size: clamp(2.2rem, 3.7vw, 3.1rem);
   font-weight: 650;
-  letter-spacing: -0.042em;
-  line-height: 1.04;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
   text-wrap: balance;
   text-shadow: 0 2px 24px rgb(0 0 0 / 24%);
+}
+
+.store-entrance h1 span {
+  display: block;
 }
 
 .store-entrance__enter {
@@ -196,14 +201,12 @@
       linear-gradient(180deg, rgb(0 0 0 / 18%) 0%, rgb(0 0 0 / 30%) 48%, rgb(0 0 0 / 58%) 100%);
   }
 
-  .store-entrance__logo {
-    width: clamp(82px, 23vw, 102px);
-    max-height: 102px;
+  .store-entrance__logo-wrap {
+    width: clamp(104px, 28vw, 128px);
   }
 
   .store-entrance h1 {
-    max-width: 15ch;
-    font-size: clamp(2.05rem, 9vw, 2.85rem);
+    font-size: clamp(1.95rem, 8vw, 2.6rem);
   }
 
   .store-entrance__enter {
@@ -212,13 +215,12 @@
 }
 
 @media (max-width: 520px) {
-  .store-entrance__logo {
-    width: clamp(76px, 24vw, 92px);
-    max-height: 92px;
+  .store-entrance__logo-wrap {
+    width: clamp(96px, 30vw, 116px);
   }
 
   .store-entrance h1 {
-    font-size: clamp(1.95rem, 9.2vw, 2.55rem);
+    font-size: clamp(1.85rem, 8.5vw, 2.3rem);
   }
 }
 
