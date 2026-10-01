@@ -129,8 +129,7 @@
     "team-state:verify": "node --env-file=.env scripts/canonical-team-development-state.mjs --verify-only",
     "category-covers:migrate": "tsx backend/src/scripts/migrateLegacyCategoryCovers.ts",
     "category-covers:migrate:apply": "tsx backend/src/scripts/migrateLegacyCategoryCovers.ts --apply-legacy-category-covers",
-    "category-covers:migrate:verify": "tsx backend/src/scripts/migrateLegacyCategoryCovers.ts --verify-only",
-    "storefront:entrance:prepare": "node scripts/prepare-storefront-entrance-video.mjs"
+    "category-covers:migrate:verify": "tsx backend/src/scripts/migrateLegacyCategoryCovers.ts --verify-only"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"
