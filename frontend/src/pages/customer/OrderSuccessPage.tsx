@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
+import { Button } from "@/components/ui/button";
 import {
   fetchStorefrontPaymentStatus,
   startPaymongoCheckout,
@@ -249,42 +250,71 @@ export function OrderSuccessPage({
             : "For COD, payment remains pending until delivery is confirmed and store staff verifies cash collection."}
         </p>
 
-        <div className="customer-success-actions">
+        <div className="mt-6 grid w-full gap-3">
           {paymentPending && orderNumber ? (
             <>
-              <button
-                className="customer-button"
+              <Button
+                className="h-12 w-full rounded-xl text-sm font-semibold shadow-lg shadow-indigo-100"
                 disabled={resumingPayment || switchingPayment}
                 onClick={() => void resumePayment()}
                 type="button"
               >
-                <RefreshCw aria-hidden="true" size={18} />
-                {resumingPayment ? "Opening PayMongo..." : "Resume PayMongo payment"}
-              </button>
-              {payment?.canChangePaymentMethod ? (
-                <button
-                  className="customer-button customer-button--secondary"
-                  disabled={resumingPayment || switchingPayment}
-                  onClick={() => void switchToCod()}
-                  type="button"
+                <RefreshCw aria-hidden="true" className="h-4 w-4" />
+                {resumingPayment ? "Opening PayMongo..." : "Resume PayMongo"}
+              </Button>
+
+              <div
+                className={
+                  payment?.canChangePaymentMethod
+                    ? "grid gap-3 sm:grid-cols-2"
+                    : "grid gap-3"
+                }
+              >
+                {payment?.canChangePaymentMethod ? (
+                  <Button
+                    className="h-11 rounded-xl text-sm font-semibold"
+                    disabled={resumingPayment || switchingPayment}
+                    onClick={() => void switchToCod()}
+                    type="button"
+                    variant="secondary"
+                  >
+                    <Banknote aria-hidden="true" className="h-4 w-4" />
+                    {switchingPayment ? "Switching..." : "Use Cash on Delivery"}
+                  </Button>
+                ) : null}
+
+                <Button
+                  asChild
+                  className="h-11 rounded-xl text-sm font-semibold"
+                  variant="ghost"
                 >
-                  <Banknote aria-hidden="true" size={18} />
-                  {switchingPayment ? "Switching..." : "Switch to Cash on Delivery"}
-                </button>
-              ) : null}
+                  <CustomerLink href="/shop" navigate={navigate}>
+                    <ShoppingBasket aria-hidden="true" className="h-4 w-4" />
+                    Continue shopping
+                  </CustomerLink>
+                </Button>
+              </div>
             </>
           ) : (
-            <CustomerLink className="customer-button" href="/account" navigate={navigate}>
-              <Truck aria-hidden="true" size={18} /> Track my order
-            </CustomerLink>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Button asChild className="h-11 rounded-xl text-sm font-semibold">
+                <CustomerLink href="/account" navigate={navigate}>
+                  <Truck aria-hidden="true" className="h-4 w-4" />
+                  Track my order
+                </CustomerLink>
+              </Button>
+              <Button
+                asChild
+                className="h-11 rounded-xl text-sm font-semibold"
+                variant="secondary"
+              >
+                <CustomerLink href="/shop" navigate={navigate}>
+                  <ShoppingBasket aria-hidden="true" className="h-4 w-4" />
+                  Continue shopping
+                </CustomerLink>
+              </Button>
+            </div>
           )}
-          <CustomerLink
-            className="customer-button customer-button--secondary"
-            href="/shop"
-            navigate={navigate}
-          >
-            <ShoppingBasket aria-hidden="true" size={18} /> Continue shopping
-          </CustomerLink>
         </div>
       </div>
     </div>
