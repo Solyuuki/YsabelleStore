@@ -265,9 +265,7 @@ export function OrderSuccessPage({
 
               <div
                 className={
-                  payment?.canChangePaymentMethod
-                    ? "grid gap-3 sm:grid-cols-2"
-                    : "grid gap-3"
+                  payment?.canChangePaymentMethod ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"
                 }
               >
                 {payment?.canChangePaymentMethod ? (
@@ -283,11 +281,7 @@ export function OrderSuccessPage({
                   </Button>
                 ) : null}
 
-                <Button
-                  asChild
-                  className="h-11 rounded-xl text-sm font-semibold"
-                  variant="ghost"
-                >
+                <Button asChild className="h-11 rounded-xl text-sm font-semibold" variant="ghost">
                   <CustomerLink href="/shop" navigate={navigate}>
                     <ShoppingBasket aria-hidden="true" className="h-4 w-4" />
                     Continue shopping
@@ -303,11 +297,7 @@ export function OrderSuccessPage({
                   Track my order
                 </CustomerLink>
               </Button>
-              <Button
-                asChild
-                className="h-11 rounded-xl text-sm font-semibold"
-                variant="secondary"
-              >
+              <Button asChild className="h-11 rounded-xl text-sm font-semibold" variant="secondary">
                 <CustomerLink href="/shop" navigate={navigate}>
                   <ShoppingBasket aria-hidden="true" className="h-4 w-4" />
                   Continue shopping
