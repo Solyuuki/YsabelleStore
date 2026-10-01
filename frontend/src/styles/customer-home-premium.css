@@ -338,27 +338,34 @@
 
 .home-categories {
   scroll-margin-top: 6rem;
-  border-top: 1px solid #e9e7e1;
-  border-bottom: 1px solid #e9e7e1;
-  background: #fff;
-  color: #111827;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  background:
+    linear-gradient(180deg, rgb(7 10 17 / 16%), rgb(7 10 17 / 28%)),
+    url("/images/home/shop-category-background.webp") center / cover no-repeat;
+  background-color: #171819;
+  color: #fff;
 }
 
 .home-categories .customer-kicker {
-  color: #625bff;
+  color: #aeb9ff;
+  text-shadow: 0 1px 14px rgb(0 0 0 / 28%);
 }
 
 .home-categories .home-section-heading h2 {
-  color: #111827;
+  color: #fff;
+  text-shadow: 0 2px 18px rgb(0 0 0 / 28%);
 }
 
 .home-categories .home-section-heading p:last-child {
-  color: #687085;
+  color: #e4e7ef;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 26%);
 }
 
 .home-categories .home-section-heading > a {
-  border-color: #d8d5ff;
-  color: #4138b8;
+  border-color: rgb(177 188 255 / 58%);
+  color: #c7d0ff;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 24%);
 }
 
 .home-category-grid {
