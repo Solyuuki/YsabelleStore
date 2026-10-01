@@ -193,61 +193,6 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
 
   return (
     <div className="customer-home">
-      <section className="home-hero">
-        <div className="customer-container home-hero__grid">
-          <div className="home-hero__copy home-hero__copy--animated">
-            <p className="customer-kicker">
-              <span /> Your neighborhood grocery, online
-            </p>
-            <h1>
-              <span className="home-hero__headline-primary">Your Everyday List,</span>
-              <em className="home-hero__headline-accent">Ready When You Are.</em>
-            </h1>
-            <p className="home-hero__lead">
-              Find groceries, pantry staples, and home essentials with live store availability from
-              Ysabelle&apos;s Store in Pasig City.
-            </p>
-
-            <div className="home-hero__actions">
-              <span className="home-hero__primary-action-reveal">
-                <CustomerLink
-                  className="customer-button home-hero__primary-action"
-                  data-tour="start-shopping"
-                  href="/shop"
-                  navigate={navigate}
-                >
-                  <span>Shop groceries</span>
-                  <ArrowRight aria-hidden="true" size={18} />
-                </CustomerLink>
-              </span>
-              <a
-                className="home-hero__category-link home-hero__secondary-action home-secondary-link"
-                href="#shop-by-category"
-              >
-                Browse categories
-              </a>
-            </div>
-
-            <div className="home-hero__trust" aria-label="Store information">
-              <span>
-                <BadgeCheck aria-hidden="true" />
-                {catalogProductCount > 0
-                  ? `${catalogProductCount} catalog products`
-                  : "Live catalog"}
-              </span>
-              <span>
-                <PackageCheck aria-hidden="true" /> Store pickup
-              </span>
-              <span>
-                <Clock3 aria-hidden="true" /> Established 2019
-              </span>
-            </div>
-          </div>
-
-          <HomeCategoryShowcase items={showcaseItems} navigate={navigate} />
-        </div>
-      </section>
-
       <section
         className="customer-section home-categories"
         data-tour="categories"
@@ -456,7 +401,7 @@ function MerchandisingArea({
     return (
       <section className="customer-section home-merchandising home-merchandising--loading">
         <div className="customer-container">
-          <SectionHeading eyebrow="What shoppers are choosing" title="Hot Right Now">
+          <SectionHeading eyebrow="What shoppers are choosing" title="Trending Now">
             Checking recent verified ratings and customer review momentum.
           </SectionHeading>
           <ProductSkeletons />
@@ -497,7 +442,7 @@ function MerchandisingArea({
         eyebrow="What shoppers are choosing"
         navigate={navigate}
         placement="trending"
-        title="Hot Right Now"
+        title="Trending Now"
       >
         {`Based on recent verified ratings, customer comments, and review momentum from the last ${resource.data.trendingWindowDays} days.`}
       </MerchandisingShelf>
