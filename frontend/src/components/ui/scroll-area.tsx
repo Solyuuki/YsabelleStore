@@ -7,12 +7,7 @@ type ScrollAreaProps = ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
   viewportClassName?: string;
 };
 
-export function ScrollArea({
-  children,
-  className,
-  viewportClassName,
-  ...props
-}: ScrollAreaProps) {
+export function ScrollArea({ children, className, viewportClassName, ...props }: ScrollAreaProps) {
   return (
     <ScrollAreaPrimitive.Root className={cn("relative overflow-hidden", className)} {...props}>
       <ScrollAreaPrimitive.Viewport

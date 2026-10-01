@@ -1200,9 +1200,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 }
 
 function DeliveryProgress({ order }: { order: StorefrontOrder }) {
-  const eventByStatus = new Map(
-    order.timeline.map((event) => [event.status, event] as const)
-  );
+  const eventByStatus = new Map(order.timeline.map((event) => [event.status, event] as const));
 
   return (
     <div className="customer-delivery-progress" aria-label="Delivery progress">
@@ -1214,10 +1212,7 @@ function DeliveryProgress({ order }: { order: StorefrontOrder }) {
 
           return (
             <li
-              className={[
-                isComplete ? "is-complete" : "",
-                isCurrent ? "is-current" : ""
-              ]
+              className={[isComplete ? "is-complete" : "", isCurrent ? "is-current" : ""]
                 .filter(Boolean)
                 .join(" ")}
               key={step.status}

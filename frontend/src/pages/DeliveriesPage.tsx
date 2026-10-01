@@ -589,7 +589,10 @@ export function DeliveriesPage() {
                     </summary>
                     <ol className="space-y-0 border-t border-slate-200 px-4 pt-4">
                       {selected.timeline.map((event, index) => (
-                        <li className="relative grid grid-cols-[18px_1fr] gap-3 pb-4" key={event.id}>
+                        <li
+                          className="relative grid grid-cols-[18px_1fr] gap-3 pb-4"
+                          key={event.id}
+                        >
                           {index < selected.timeline.length - 1 ? (
                             <span
                               className="absolute bottom-0 left-[8px] top-4 w-px bg-slate-200"
@@ -777,9 +780,7 @@ export function DeliveriesPage() {
 }
 
 function StaffDeliveryProgress({ ticket }: { ticket: DeliveryTicket }) {
-  const eventByStatus = new Map(
-    ticket.timeline.map((event) => [event.status, event] as const)
-  );
+  const eventByStatus = new Map(ticket.timeline.map((event) => [event.status, event] as const));
 
   return (
     <div className="overflow-x-auto pb-1">
