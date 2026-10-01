@@ -1,6 +1,7 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import { CustomerErrorBoundary } from "@/components/customer/CustomerErrorBoundary";
+import { StoreEntrance } from "@/components/customer/StoreEntrance";
 import { CartProvider } from "@/context/CartContext";
 import { CustomerAuthProvider, useCustomerAuth } from "@/context/CustomerAuthContext";
 import { CustomerFavoritesProvider } from "@/context/CustomerFavoritesContext";
@@ -11,6 +12,7 @@ import "@/styles/customer-auth.css";
 import "@/styles/customer-account.css";
 import "@/styles/customer-account-premium.css";
 import "@/styles/customer-commerce-premium.css";
+import "@/styles/customer-home-premium.css";
 import "@/styles/auth-brand.css";
 import "@/styles/customer-header-actions.css";
 import "@/styles/customer-guide-route-transition.css";
@@ -21,6 +23,8 @@ import {
   isCustomerProtectedRoute,
   resolveCustomerAuthRedirect
 } from "@/utils/customerRoutes";
+
+const STORE_ENTRANCE_SESSION_KEY = "ysabelle-store-entrance-entered";
 
 const CustomerHomePage = lazy(() =>
   import("@/pages/customer/CustomerHomePage").then(({ CustomerHomePage }) => ({
@@ -117,6 +121,7 @@ function CustomerAppRoutes({
   const redirect = resolveCustomerAuthRedirect(pathname, status, locationUrl.search);
   const authPageKind = getCustomerAuthPageKind(pathname);
   const protectedRoute = isCustomerProtectedRoute(pathname);
+  const [storeEntranceDismissed, setStoreEntranceDismissed] = useState(readStoreEntranceState);
 
   useEffect(() => {
     if (redirect) navigate(redirect);
@@ -131,6 +136,17 @@ function CustomerAppRoutes({
           </div>
         </section>
       </CustomerLayout>
+    );
+  }
+
+  if (pathname === "/" && !storeEntranceDismissed) {
+    return (
+      <StoreEntrance
+        onEnter={() => {
+          writeStoreEntranceState();
+          setStoreEntranceDismissed(true);
+        }}
+      />
     );
   }
 
@@ -184,4 +200,21 @@ function CustomerRouteFallback() {
       </div>
     </div>
   );
+}
+
+
+function readStoreEntranceState() {
+  try {
+    return window.sessionStorage.getItem(STORE_ENTRANCE_SESSION_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function writeStoreEntranceState() {
+  try {
+    window.sessionStorage.setItem(STORE_ENTRANCE_SESSION_KEY, "true");
+  } catch {
+    // Session storage can be unavailable in hardened/private browsing contexts.
+  }
 }
