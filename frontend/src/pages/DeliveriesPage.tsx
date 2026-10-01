@@ -114,6 +114,51 @@ function isPaymongoAwaitingPayment(ticket: DeliveryTicket) {
   return ticket.paymentMethod === "PAYMONGO" && ticket.paymentStatus !== "PAID";
 }
 
+function activityStages(ticket: DeliveryTicket) {
+  const deliveryStages = DELIVERY_PROGRESS_STEPS.map((step) => {
+    const matchingEvents = ticket.timeline
+      .filter((event) => event.status === step.status)
+      .sort(
+        (left, right) =>
+          new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
+      );
+
+    return {
+      key: step.status,
+      label: statusLabel(step.status),
+      timestamp: matchingEvents[0]?.createdAt,
+      note: matchingEvents[0]?.note ?? null
+    };
+  });
+
+  if (ticket.paymentMethod !== "CASH_ON_DELIVERY") {
+    return deliveryStages;
+  }
+
+  const deliveredEvents = ticket.timeline
+    .filter((event) => event.status === "DELIVERED")
+    .sort(
+      (left, right) =>
+        new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
+    );
+  const paymentRecordedAt =
+    ticket.paymentStatus === "PAID"
+      ? deliveredEvents.length > 1
+        ? deliveredEvents[deliveredEvents.length - 1]?.createdAt
+        : ticket.updatedAt
+      : undefined;
+
+  return [
+    ...deliveryStages,
+    {
+      key: "PAYMENT_RECEIVED",
+      label: "Payment received",
+      timestamp: paymentRecordedAt,
+      note: paymentRecordedAt ? "Cash on Delivery payment received." : null
+    }
+  ];
+}
+
 function operationalStatusLabel(ticket: DeliveryTicket) {
   if (isPaymongoAwaitingPayment(ticket)) return "Awaiting payment";
   if (
@@ -603,45 +648,97 @@ export function DeliveriesPage() {
                   </ScrollArea>
                 </section>
 
-                <section>
-                  <details className="group rounded-xl border border-slate-200 bg-slate-50/60">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-slate-900">
-                      Activity log
-                      <span className="text-xs font-medium text-slate-500">
-                        {selected.timeline.length} event{selected.timeline.length === 1 ? "" : "s"}
-                      </span>
-                    </summary>
-                    <ol className="space-y-0 border-t border-slate-200 px-4 pt-4">
-                      {selected.timeline.map((event, index) => (
-                        <li
-                          className="relative grid grid-cols-[18px_1fr] gap-3 pb-4"
-                          key={event.id}
-                        >
-                          {index < selected.timeline.length - 1 ? (
-                            <span
-                              className="absolute bottom-0 left-[8px] top-4 w-px bg-slate-200"
-                              aria-hidden="true"
-                            />
-                          ) : null}
-                          <span
-                            className="mt-1 h-4 w-4 rounded-full border-4 border-indigo-100 bg-indigo-600"
-                            aria-hidden="true"
-                          />
-                          <div>
-                            <strong className="text-sm text-slate-900">
-                              {statusLabel(event.status)}
-                            </strong>
-                            <p className="mt-0.5 text-xs text-slate-500">
-                              {dateTimeFormatter.format(new Date(event.createdAt))}
-                            </p>
-                            {event.note ? (
-                              <p className="mt-1 text-xs leading-5 text-slate-600">{event.note}</p>
-                            ) : null}
-                          </div>
-                        </li>
-                      ))}
-                    </ol>
-                  </details>
+                <section className="self-start overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  {(() => {
+                    const stages = activityStages(selected);
+                    const activatedStages = stages.filter((stage) => stage.timestamp);
+                    const latestActivatedKey = activatedStages.at(-1)?.key;
+
+                    return (
+                      <>
+                        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+                          <h3 className="text-sm font-semibold text-slate-950">Activity log</h3>
+                          <span className="text-xs font-medium text-slate-500">
+                            {stages.length} stage{stages.length === 1 ? "" : "s"}
+                          </span>
+                        </div>
+
+                        <ol className="px-4 py-4">
+                          {stages.map((stage, index) => {
+                            const isActivated = Boolean(stage.timestamp);
+                            const isCurrent = isActivated && stage.key === latestActivatedKey;
+                            const hasNext = index < stages.length - 1;
+
+                            return (
+                              <li
+                                aria-current={isCurrent ? "step" : undefined}
+                                className="relative grid grid-cols-[18px_minmax(0,1fr)] gap-3 pb-4 last:pb-0"
+                                key={stage.key}
+                              >
+                                {hasNext ? (
+                                  <span
+                                    className={`absolute bottom-0 left-[7px] top-4 w-px ${
+                                      isActivated &&
+                                      Boolean(stages[index + 1]?.timestamp)
+                                        ? "bg-indigo-300"
+                                        : "bg-slate-200"
+                                    }`}
+                                    aria-hidden="true"
+                                  />
+                                ) : null}
+
+                                <span
+                                  className={`relative mt-1 h-4 w-4 rounded-full border-[3px] ${
+                                    isCurrent
+                                      ? "border-indigo-100 bg-indigo-600 ring-2 ring-indigo-100"
+                                      : isActivated
+                                        ? "border-indigo-100 bg-indigo-500"
+                                        : "border-slate-200 bg-slate-100"
+                                  }`}
+                                  aria-hidden="true"
+                                />
+
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <strong
+                                      className={`text-sm ${
+                                        isActivated
+                                          ? "font-semibold text-slate-900"
+                                          : "font-medium text-slate-400"
+                                      }`}
+                                    >
+                                      {stage.label}
+                                    </strong>
+                                    {isCurrent ? (
+                                      <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700">
+                                        Current
+                                      </span>
+                                    ) : null}
+                                  </div>
+
+                                  <p
+                                    className={`mt-0.5 text-xs ${
+                                      isActivated ? "text-slate-500" : "text-slate-400"
+                                    }`}
+                                  >
+                                    {stage.timestamp
+                                      ? dateTimeFormatter.format(new Date(stage.timestamp))
+                                      : "Pending"}
+                                  </p>
+
+                                  {isActivated && stage.note ? (
+                                    <p className="mt-1 text-xs leading-5 text-slate-600">
+                                      {stage.note}
+                                    </p>
+                                  ) : null}
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ol>
+                      </>
+                    );
+                  })()}
                 </section>
               </div>
 
