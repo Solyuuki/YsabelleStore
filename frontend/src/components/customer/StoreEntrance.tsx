@@ -4,7 +4,7 @@ import { useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 
 const STORE_ENTRANCE_VIDEO = "/media/store-entrance.mp4";
-const STORE_ENTRANCE_POSTER = "/media/store-entrance-poster.jpg";
+const STORE_ENTRANCE_POSTER = "/images/discover/essentials/canned-goods-retail-display.webp";
 const EXIT_DURATION_MS = 620;
 
 export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
