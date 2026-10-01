@@ -1,14 +1,11 @@
 import {
   ArrowRight,
-  BadgeCheck,
-  Clock3,
   MapPin,
-  PackageCheck,
   ShoppingBasket,
   Sparkles,
   Store
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { HomeProductRail } from "@/components/customer/HomeProductRail";
@@ -26,10 +23,7 @@ import type {
   StorefrontMerchandisingEntry,
   StorefrontProduct
 } from "@/types/storefront";
-import {
-  getCategoryPresentation,
-  getEssentialShelfItems
-} from "@/utils/storefrontCategoryPresentation";
+import { getCategoryPresentation } from "@/utils/storefrontCategoryPresentation";
 import { categoryCoverObjectPosition } from "@/utils/categoryCoverPosition";
 import {
   getStorefrontProductBadge,
@@ -41,16 +35,6 @@ type Resource<T> = {
   error: string;
   status: "error" | "loading" | "success";
 };
-
-type HomeShowcaseItem = {
-  alt: string;
-  category: string;
-  imageUrl: string;
-  objectPosition?: string;
-  slug: string;
-};
-
-const homeShowcaseOrder = ["beverages", "snacks", "instant-food"];
 
 const emptyMerchandising: StorefrontMerchandising = {
   bestSellers: [],
@@ -139,56 +123,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
         left.name.localeCompare(right.name)
     )
     .slice(0, 8);
-  const showcaseCategories = [...categories.data]
-    .filter((category) => category.storefrontCover || getCategoryPresentation(category.slug))
-    .sort(
-      (left, right) =>
-        showcaseRank(left.slug) - showcaseRank(right.slug) ||
-        right.productCount - left.productCount ||
-        left.name.localeCompare(right.name)
-    )
-    .slice(0, 3);
-  const showcaseItems: HomeShowcaseItem[] = showcaseCategories.length
-    ? showcaseCategories.flatMap((category) => {
-        const presentation = getCategoryPresentation(category.slug);
-        const managedCover = category.storefrontCover;
-
-        if (managedCover) {
-          return [
-            {
-              alt: `${category.name} category cover`,
-              category: category.name,
-              imageUrl: managedCover.imageUrl,
-              objectPosition: categoryCoverObjectPosition(managedCover.position),
-              slug: category.slug
-            }
-          ];
-        }
-
-        return presentation
-          ? [
-              {
-                alt: presentation.alt,
-                category: category.name,
-                imageUrl: presentation.imageUrl,
-                slug: category.slug
-              }
-            ]
-          : [];
-      })
-    : getEssentialShelfItems()
-        .slice(0, 3)
-        .map((item) => ({
-          alt: item.alt,
-          category: item.category,
-          imageUrl: item.imageUrl,
-          slug: item.slug
-        }));
   const everydayProducts = selectEverydayProducts(products.data, categories.data, 12);
-  const catalogProductCount = categories.data.reduce(
-    (total, category) => total + category.productCount,
-    0
-  );
   const retry = () => setReloadKey((current) => current + 1);
 
   return (
@@ -286,104 +221,6 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
       </section>
 
       <HomeNextStep navigate={navigate} />
-    </div>
-  );
-}
-
-function HomeCategoryShowcase({
-  items,
-  navigate
-}: {
-  items: HomeShowcaseItem[];
-  navigate: (path: string) => void;
-}) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const transitionTimeout = useRef<number | null>(null);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const syncPreference = () => setPrefersReducedMotion(mediaQuery.matches);
-    syncPreference();
-    mediaQuery.addEventListener?.("change", syncPreference);
-    return () => mediaQuery.removeEventListener?.("change", syncPreference);
-  }, []);
-
-  useEffect(() => {
-    setActiveIndex((current) => (items.length ? current % items.length : 0));
-    setIsTransitioning(false);
-  }, [items.length]);
-
-  useEffect(
-    () => () => {
-      if (transitionTimeout.current !== null) window.clearTimeout(transitionTimeout.current);
-    },
-    []
-  );
-
-  const advanceCategory = useCallback(() => {
-    if (isTransitioning || items.length < 2) return;
-
-    setIsTransitioning(true);
-    transitionTimeout.current = window.setTimeout(() => {
-      setActiveIndex((current) => (current + 1) % items.length);
-      setIsTransitioning(false);
-      transitionTimeout.current = null;
-    }, 160);
-  }, [isTransitioning, items.length]);
-
-  useEffect(() => {
-    if (isPaused || prefersReducedMotion || items.length < 2) return;
-
-    const interval = window.setInterval(() => {
-      if (document.visibilityState === "visible") {
-        advanceCategory();
-      }
-    }, 7000);
-
-    return () => window.clearInterval(interval);
-  }, [advanceCategory, isPaused, items.length, prefersReducedMotion]);
-
-  const item = items[activeIndex] ?? items[0];
-  if (!item) return null;
-
-  return (
-    <div className="home-hero__merchandise home-hero__merchandise--animated">
-      <CustomerLink
-        aria-label={`Browse the ${item.category} category`}
-        className={`home-showcase ${isTransitioning ? "is-transitioning" : ""}`}
-        href={`/shop/category/${item.slug}`}
-        navigate={navigate}
-        onBlur={() => setIsPaused(false)}
-        onFocus={() => setIsPaused(true)}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        <span className="home-showcase__media">
-          <ProductImage
-            alt={item.alt}
-            className="home-showcase__image"
-            fetchPriority="high"
-            imageUrl={item.imageUrl}
-            key={item.slug}
-            objectPosition={item.objectPosition}
-            loading="eager"
-          />
-          <span className="home-showcase__media-label">Featured aisle</span>
-        </span>
-        <span className="home-showcase__content" key={item.slug}>
-          <strong className="home-showcase__category">{item.category}</strong>
-          <span className="home-showcase__title">{getShowcaseTitle(item.category)}</span>
-          <span className="home-showcase__footer">
-            <span className="home-showcase__availability">
-              <span aria-hidden="true" /> Live availability
-            </span>
-            <ArrowRight aria-hidden="true" className="home-showcase__arrow" size={17} />
-          </span>
-        </span>
-      </CustomerLink>
     </div>
   );
 }
@@ -828,19 +665,4 @@ function homeError(reason: unknown, fallback: string) {
   if (!(reason instanceof Error) || /^failed to fetch$/i.test(reason.message.trim()))
     return fallback;
   return reason.message;
-}
-
-function showcaseRank(slug: string) {
-  const rank = homeShowcaseOrder.indexOf(slug);
-  return rank === -1 ? homeShowcaseOrder.length : rank;
-}
-
-function getShowcaseTitle(category: string) {
-  const titles: Record<string, string> = {
-    Beverages: "Everyday refreshments, ready when you are.",
-    "Instant Food": "Quick pantry favorites for busy days.",
-    Snacks: "Easy-to-reach favorites for every little break."
-  };
-
-  return titles[category] ?? "Everyday essentials, ready for your next shop.";
 }
