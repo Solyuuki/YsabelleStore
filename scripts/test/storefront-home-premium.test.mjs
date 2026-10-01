@@ -53,6 +53,7 @@ assert.match(quantitySource, /min = 1/);
 assert.match(quantitySource, /Math\.max\(min, value - 1\)/);
 
 assert.match(premiumCss, /--customer-focus:\s*#0070c9/);
+assert.match(premiumCss, /--customer-warning:\s*#8b5100/);
 assert.match(premiumCss, /\.store-entrance__enter[\s\S]*?min-height:\s*48px/);
 assert.match(premiumCss, /\.customer-product-card__favorite[\s\S]*?width:\s*44px;[\s\S]*?height:\s*44px/);
 assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(0, 1fr\) 44px/);
@@ -81,7 +82,7 @@ function contrast(left, right) {
 assert.ok(contrast("#625BFF", "#FFFFFF") >= 4.5);
 assert.ok(contrast("#0070C9", "#FFFFFF") >= 3);
 assert.ok(contrast("#17765F", "#FFFFFF") >= 4.5);
-assert.ok(contrast("#A76408", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#8B5100", "#FFF6E5") >= 4.5);
 assert.ok(contrast("#B33B3B", "#FFFFFF") >= 4.5);
 
 console.log("Storefront premium home/accessibility contract passed.");
