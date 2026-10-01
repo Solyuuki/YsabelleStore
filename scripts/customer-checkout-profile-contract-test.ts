@@ -43,7 +43,7 @@ assert.match(profile, /paginatedHistoricalOrders/);
 
 assert.match(checkout, /const effectivePhone =/);
 assert.match(checkout, /editingContactPhone \? contact\.customerPhone : savedContactPhone/);
-assert.match(checkout, /editingAddress \? address : savedAddress \?\? address/);
+assert.match(checkout, /editingAddress \? address : \(savedAddress \?\? address\)/);
 assert.match(checkout, /normalizeCheckoutAddress/);
 assert.match(checkout, /checkoutAddressIsComplete/);
 assert.match(checkout, /customerPhone: effectivePhone/);
