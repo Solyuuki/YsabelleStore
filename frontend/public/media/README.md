@@ -6,11 +6,10 @@ Canonical runtime video:
 
 - `frontend/public/media/store-entrance.mp4`
 
-Preferred entrance logo:
+Entrance logo:
 
-- `frontend/public/brand/store-entrance-logo.png`
-
-If that uploaded logo asset is not installed locally, `StoreEntrance.tsx` falls back to the bundled official Ysabelle logo so the entrance never shows a broken image.
+- `StoreEntrance.tsx` reuses the same `YsabelleBrandMark` component used by the customer header.
+- This intentionally removes the separate entrance-logo asset path and its failure mode.
 
 ## Runtime behavior
 
@@ -28,13 +27,6 @@ Verify the approved video:
 
 ```bash
 npm run storefront:entrance:verify
-```
-
-Install/verify the preferred uploaded logo:
-
-```bash
-npm run storefront:entrance:logo:install
-npm run storefront:entrance:logo:verify
 ```
 
 Reduced-motion users receive the static grocery fallback instead of autoplay video.
