@@ -56,7 +56,7 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
 
       <div className="store-entrance__content">
         <div className="store-entrance__brand" aria-label="Ysabelle Store">
-          <BrandLogo className="store-entrance__logo" eager />
+          <BrandLogo className="store-entrance__logo" eager variant="full" />
           <span>
             <strong>Ysabelle</strong>
             <small>STORE</small>
