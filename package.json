@@ -131,9 +131,7 @@
     "category-covers:migrate:apply": "tsx backend/src/scripts/migrateLegacyCategoryCovers.ts --apply-legacy-category-covers",
     "category-covers:migrate:verify": "tsx backend/src/scripts/migrateLegacyCategoryCovers.ts --verify-only",
     "storefront:entrance:install": "node scripts/install-storefront-entrance-video.mjs",
-    "storefront:entrance:verify": "node scripts/install-storefront-entrance-video.mjs --verify",
-    "storefront:entrance:logo:install": "node scripts/install-storefront-entrance-logo.mjs",
-    "storefront:entrance:logo:verify": "node scripts/install-storefront-entrance-logo.mjs --verify"
+    "storefront:entrance:verify": "node scripts/install-storefront-entrance-video.mjs --verify"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"
