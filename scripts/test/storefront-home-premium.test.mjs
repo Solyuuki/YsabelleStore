@@ -81,6 +81,10 @@ assert.match(premiumCss, /\.store-entrance__content[\s\S]*?align-items:\s*center
 assert.match(premiumCss, /\.store-entrance__brand-mark[\s\S]*?width:\s*clamp\(132px, 10vw, 156px\)/);
 assert.match(premiumCss, /\.store-entrance h1[\s\S]*?font-size:\s*clamp\(2\.2rem, 3\.7vw, 3\.1rem\)/);
 assert.match(premiumCss, /\.store-entrance__enter[\s\S]*?min-height:\s*48px/);
+assert.match(premiumCss, /\.store-entrance__enter::after[\s\S]*?store-entrance-cta-sheen 3\.8s/);
+assert.match(premiumCss, /@keyframes store-entrance-cta-sheen/);
+assert.match(premiumCss, /@keyframes store-entrance-cta-glow/);
+assert.match(premiumCss, /@media \(prefers-reduced-motion: no-preference\)[\s\S]*?\.store-entrance__enter::after/);
 assert.match(premiumCss, /\.customer-product-card__favorite[\s\S]*?width:\s*44px;[\s\S]*?height:\s*44px/);
 assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(0, 1fr\) 44px/);
 assert.match(railCss, /width:\s*44px;[\s\S]*?height:\s*44px/);
