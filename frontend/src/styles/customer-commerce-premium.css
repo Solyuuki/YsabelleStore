@@ -665,3 +665,51 @@
     padding-right: 24px;
   }
 }
+
+
+/* Checkout validation evidence: explicit field, focus, and recovery states. */
+.customer-checkout-page input[aria-invalid="true"] {
+  border-color: var(--customer-danger) !important;
+  background: #fffafa;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--customer-danger) 18%, transparent);
+}
+
+.customer-checkout-page input[aria-invalid="true"]:focus-visible {
+  border-color: var(--customer-danger) !important;
+  outline: 3px solid color-mix(in srgb, var(--customer-danger) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.customer-field-error {
+  display: block;
+  margin-top: 0.38rem;
+  color: var(--customer-danger);
+  font-size: 0.7rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.customer-address-validation {
+  padding: 0.72rem 0.82rem;
+  border: 1px solid color-mix(in srgb, var(--customer-danger) 35%, #fff);
+  border-radius: 0.65rem;
+  background: #fff5f5;
+  color: var(--customer-danger);
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.customer-checkout-phone-change,
+.customer-checkout-use-saved,
+.customer-address-change {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  .customer-checkout-use-saved {
+    min-height: 44px;
+  }
+}
