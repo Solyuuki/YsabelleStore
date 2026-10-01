@@ -25,6 +25,12 @@ import { getCustomerCheckoutDefaults } from "@/utils/customerAccountState";
 
 const LAST_ORDER_KEY = "ysabelle:last-customer-order";
 
+type CheckoutValidationErrors = {
+  address?: string;
+  customerName?: string;
+  customerPhone?: string;
+};
+
 function addressSummary(address: CustomerAddress) {
   return [
     address.addressLine1,
@@ -95,6 +101,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
   const [pendingPaymongoOrder, setPendingPaymongoOrder] = useState<StorefrontOrder | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState<CheckoutValidationErrors>({});
 
   useEffect(() => {
     if (!contactEdited) setContact(getCustomerCheckoutDefaults(customer));
@@ -149,12 +156,16 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
     const value = event.currentTarget.value;
     setContact((current) => ({ ...current, [field]: value }));
     setContactEdited(true);
+    if (field === "customerName" || field === "customerPhone") {
+      setValidationErrors((current) => ({ ...current, [field]: undefined }));
+    }
   }
 
   function updateAddress(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof CustomerAddress;
     const value = event.currentTarget.value;
     setAddress((current) => ({ ...current, [field]: value }));
+    setValidationErrors((current) => ({ ...current, address: undefined }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -173,20 +184,26 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
     const notes = String(form.get("notes") ?? "").trim();
 
     if (!pendingPaymongoOrder) {
+      const nextValidationErrors: CheckoutValidationErrors = {};
+
       if (customerName.length < 2) {
-        setError("Enter your full name before placing the order.");
-        return;
+        nextValidationErrors.customerName = "Enter your full name.";
       }
       if (effectivePhone.length < 7) {
-        setError("Enter a valid mobile number for delivery coordination.");
-        return;
+        nextValidationErrors.customerPhone = "Enter a valid mobile number for delivery coordination.";
       }
       if (!checkoutAddressIsComplete(effectiveAddress)) {
-        setError("Complete the delivery address before placing the order.");
+        nextValidationErrors.address = "Complete all required delivery address fields.";
+      }
+
+      if (Object.keys(nextValidationErrors).length) {
+        setValidationErrors(nextValidationErrors);
+        setError("Check the highlighted fields before placing your order.");
         return;
       }
     }
 
+    setValidationErrors({});
     setSubmitting(true);
     setError("");
     let retryOrder = pendingPaymongoOrder;
@@ -316,6 +333,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <label>
                   <span>Full name</span>
                   <input
+                    aria-describedby={validationErrors.customerName ? "checkout-name-error" : undefined}
+                    aria-invalid={Boolean(validationErrors.customerName)}
                     autoComplete="name"
                     maxLength={120}
                     minLength={2}
@@ -325,6 +344,11 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     type="text"
                     value={contact.customerName}
                   />
+                  {validationErrors.customerName ? (
+                    <small className="customer-field-error" id="checkout-name-error">
+                      {validationErrors.customerName}
+                    </small>
+                  ) : null}
                 </label>
                 <div className="customer-checkout-contact-field">
                   <span className="customer-checkout-field-label">Mobile number</span>
@@ -349,6 +373,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   ) : (
                     <div className="customer-checkout-alternate-field">
                       <input
+                        aria-describedby={validationErrors.customerPhone ? "checkout-phone-error" : undefined}
+                        aria-invalid={Boolean(validationErrors.customerPhone)}
                         autoComplete="tel"
                         maxLength={40}
                         minLength={7}
@@ -358,6 +384,11 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         type="tel"
                         value={contact.customerPhone}
                       />
+                      {validationErrors.customerPhone ? (
+                        <small className="customer-field-error" id="checkout-phone-error">
+                          {validationErrors.customerPhone}
+                        </small>
+                      ) : null}
                       {savedContactPhone ? (
                         <button
                           className="customer-checkout-use-saved"
@@ -368,6 +399,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                             }));
                             setEditingContactPhone(false);
                             setSaveContactPhoneToAccount(false);
+                            setValidationErrors((current) => ({ ...current, customerPhone: undefined }));
                           }}
                           type="button"
                         >
@@ -456,11 +488,17 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         setAddress(savedAddress);
                         setEditingAddress(false);
                         setSaveAddressToAccount(false);
+                        setValidationErrors((current) => ({ ...current, address: undefined }));
                       }}
                       type="button"
                     >
                       Use saved address
                     </button>
+                  ) : null}
+                  {validationErrors.address ? (
+                    <div className="customer-address-validation" id="checkout-address-error" role="alert">
+                      {validationErrors.address}
+                    </div>
                   ) : null}
                   <div className="customer-form-grid customer-address-form-grid">
                     <label className="customer-form-grid__full">
@@ -469,6 +507,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         autoComplete="address-line1"
                         maxLength={180}
                         minLength={3}
+                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-invalid={Boolean(validationErrors.address)}
                         name="addressLine1"
                         onChange={updateAddress}
                         placeholder="House / unit number and street"
@@ -494,6 +534,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                       <input
                         maxLength={120}
                         minLength={2}
+                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-invalid={Boolean(validationErrors.address)}
                         name="barangay"
                         onChange={updateAddress}
                         required
@@ -506,6 +548,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         autoComplete="address-level2"
                         maxLength={120}
                         minLength={2}
+                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-invalid={Boolean(validationErrors.address)}
                         name="cityMunicipality"
                         onChange={updateAddress}
                         required
@@ -518,6 +562,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         autoComplete="address-level1"
                         maxLength={120}
                         minLength={2}
+                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-invalid={Boolean(validationErrors.address)}
                         name="provinceRegion"
                         onChange={updateAddress}
                         required
@@ -531,6 +577,8 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         inputMode="numeric"
                         maxLength={20}
                         minLength={3}
+                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-invalid={Boolean(validationErrors.address)}
                         name="postalCode"
                         onChange={updateAddress}
                         required
