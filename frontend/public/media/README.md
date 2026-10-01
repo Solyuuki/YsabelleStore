@@ -1,42 +1,36 @@
 # Store entrance media
 
-The cinematic storefront entrance uses the approved original Gemini MP4 without modifying its bytes.
+The storefront entrance uses the approved original Gemini MP4 without modifying its bytes.
 
 Canonical runtime video:
 
 - `frontend/public/media/store-entrance.mp4`
 
-Canonical entrance logo:
+Preferred entrance logo:
 
 - `frontend/public/brand/store-entrance-logo.png`
 
-## Runtime choreography
+If that uploaded logo asset is not installed locally, `StoreEntrance.tsx` falls back to the bundled official Ysabelle logo so the entrance never shows a broken image.
 
-`StoreEntrance.tsx` keeps the MP4 playing continuously. It does **not** pause, trim, seek, or re-encode the source during scene fades.
+## Runtime behavior
 
-A separate compositor layer follows the video's playback clock and performs fade-through-black over the inspected scene-change windows:
+The video now uses normal browser autoplay + muted + inline + native loop playback.
 
-- 1.88s → 2.12s: aisle → refrigerators
-- 3.95s → 4.55s: refrigerators → snacks
-- 5.75s → 6.25s: snacks → personal care
-- 7.88s → 8.12s: personal care → household
-- 9.25s → 9.70s: household → cooking/pantry
-- 9.72s → end and 0.00s → 0.34s: smooth loop boundary
+There is no scene fade compositor, no pause choreography, no seeking, and no re-encoding. The source MP4 plays exactly as generated.
 
-The curtain opacity is derived from `video.currentTime` every animation frame, so the black fade moves with the original footage rather than stopping it.
+The approved dark shader/scrim remains a separate CSS layer in `customer-home-premium.css`. It is not baked into the video.
 
-The approved dark shader/scrim is also a separate CSS layer. It is never baked into the MP4.
+The only remaining transition is the page-exit fade when the customer clicks **Get Started**.
 
 ## Asset verification
 
-Install/verify the approved video:
+Verify the approved video:
 
 ```bash
-npm run storefront:entrance:install
 npm run storefront:entrance:verify
 ```
 
-Install/verify the approved logo:
+Install/verify the preferred uploaded logo:
 
 ```bash
 npm run storefront:entrance:logo:install
