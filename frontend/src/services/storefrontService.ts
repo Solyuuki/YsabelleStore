@@ -181,7 +181,6 @@ export async function confirmCustomerDeliveryReceived(orderNumber: string) {
   return response.data;
 }
 
-
 export async function switchStorefrontPaymentToCod(orderNumber: string) {
   const response = await apiClient.request<StorefrontPaymentStatusResult, unknown>(
     `/api/storefront/orders/${encodeURIComponent(orderNumber)}/payment-method/cash-on-delivery`,

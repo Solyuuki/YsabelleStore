@@ -37,7 +37,9 @@ export function OrderSuccessPage({
   const paymentReturn = locationUrl.searchParams.get("payment");
   const [payment, setPayment] = useState<StorefrontPaymentStatusResult | null>(null);
   const paymentMethod =
-    payment?.paymentMethod ?? order?.paymentMethod ?? (paymentReturn !== null ? "PAYMONGO" : "CASH_ON_DELIVERY");
+    payment?.paymentMethod ??
+    order?.paymentMethod ??
+    (paymentReturn !== null ? "PAYMONGO" : "CASH_ON_DELIVERY");
   const isPaymongo = paymentMethod === "PAYMONGO";
   const [checkingPayment, setCheckingPayment] = useState(
     order?.paymentMethod === "PAYMONGO" || paymentReturn !== null
