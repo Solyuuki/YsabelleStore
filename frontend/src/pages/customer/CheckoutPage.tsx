@@ -38,6 +38,21 @@ function addressSummary(address: CustomerAddress) {
     .join(", ");
 }
 
+function formatContactPhone(value: string) {
+  const normalized = value.trim();
+  const digits = normalized.replace(/\D/g, "");
+
+  if (/^09\d{9}$/.test(digits)) {
+    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`;
+  }
+
+  if (/^639\d{9}$/.test(digits)) {
+    return `+63 ${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
+  }
+
+  return normalized;
+}
+
 function normalizeCheckoutAddress(address: CustomerAddress): CustomerAddress {
   return {
     addressLine1: address.addressLine1.trim(),
@@ -314,13 +329,12 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <div className="customer-checkout-contact-field">
                   <span className="customer-checkout-field-label">Mobile number</span>
                   {savedContactPhone && !editingContactPhone ? (
-                    <div className="customer-choice-card customer-choice-card--compact is-selected">
+                    <div className="customer-checkout-saved-phone">
                       <Phone aria-hidden="true" />
-                      <div>
-                        <strong>Use saved contact number</strong>
-                        <span>{savedContactPhone}</span>
+                      <div className="customer-checkout-saved-phone__copy">
+                        <strong>{formatContactPhone(savedContactPhone)}</strong>
                         <button
-                          className="customer-address-change"
+                          className="customer-checkout-phone-change"
                           onClick={() => {
                             setEditingContactPhone(true);
                             setSaveContactPhoneToAccount(false);

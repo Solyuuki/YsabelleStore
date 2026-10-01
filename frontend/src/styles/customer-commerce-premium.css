@@ -425,8 +425,65 @@
   font-weight: 800;
 }
 
-.customer-choice-card--compact {
-  min-height: 0;
+.customer-checkout-saved-phone {
+  display: grid;
+  min-height: 48px;
+  align-items: center;
+  grid-template-columns: 20px minmax(0, 1fr) 20px;
+  gap: 12px;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--customer-primary) 36%, var(--customer-line));
+  border-radius: 12px;
+  background: color-mix(in srgb, #fff 96%, var(--customer-primary-soft));
+  box-shadow: 0 1px 2px rgb(23 31 56 / 3%);
+}
+
+.customer-checkout-saved-phone > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--customer-primary);
+}
+
+.customer-checkout-saved-phone__copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.customer-checkout-saved-phone__copy strong {
+  overflow: hidden;
+  color: var(--customer-dark);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.customer-checkout-phone-change {
+  width: fit-content;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--customer-primary-strong);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.customer-checkout-phone-change:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.customer-checkout-phone-change:focus-visible {
+  border-radius: 4px;
+  outline: 3px solid var(--customer-focus);
+  outline-offset: 2px;
 }
 
 .customer-checkout-alternate-field,
