@@ -817,3 +817,15 @@
     flex-wrap: wrap;
   }
 }
+
+
+.customer-account-history-pagination {
+  margin-top: 14px;
+  border-color: rgba(113, 104, 174, 0.12);
+  background: rgba(250, 250, 255, 0.82);
+  box-shadow: none;
+}
+
+.customer-account-history-pagination p {
+  color: #7a8499;
+}

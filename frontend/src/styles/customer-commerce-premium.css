@@ -564,7 +564,7 @@
 }
 
 .customer-checkout-scroll-area__viewport {
-  padding: 4px 16px 12px 0;
+  padding: 4px 30px 12px 0;
 }
 
 .customer-checkout-scroll-area__content {
@@ -595,8 +595,8 @@
 }
 
 .customer-checkout-scroll-area [data-orientation="vertical"] {
-  right: 0;
-  width: 10px;
+  right: 5px;
+  width: 8px;
 }
 
 .customer-checkout-scroll-area [data-orientation="vertical"] > div {
@@ -605,6 +605,6 @@
 
 @media (max-width: 640px) {
   .customer-checkout-scroll-area__viewport {
-    padding-right: 12px;
+    padding-right: 24px;
   }
 }

@@ -16,6 +16,7 @@ import {
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { ProductCard, formatCurrency } from "@/components/customer/ProductCard";
+import { AppPagination } from "@/components/shared/AppPagination";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import {
@@ -112,6 +113,8 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
+  const [historyPage, setHistoryPage] = useState(1);
+  const historyPageSize = 5;
   const [sessions, setSessions] = useState<CustomerSessionSummary[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [sessionsError, setSessionsError] = useState<string | null>(null);
@@ -266,6 +269,19 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     () => orders.filter((order) => ["DELIVERED", "CANCELLED"].includes(order.deliveryStatus)),
     [orders]
   );
+  const historyTotalPages = Math.max(1, Math.ceil(historicalOrders.length / historyPageSize));
+  const paginatedHistoricalOrders = useMemo(
+    () =>
+      historicalOrders.slice(
+        (historyPage - 1) * historyPageSize,
+        historyPage * historyPageSize
+      ),
+    [historicalOrders, historyPage]
+  );
+
+  useEffect(() => {
+    if (historyPage > historyTotalPages) setHistoryPage(historyTotalPages);
+  }, [historyPage, historyTotalPages]);
 
   async function handleConfirmReceived(orderNumber: string) {
     if (confirmingOrder) return;
@@ -680,7 +696,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
                 {historicalOrders.length > 0 ? (
                   <div className="customer-account-order-list-v2">
-                    {historicalOrders.map((order) => (
+                    {paginatedHistoricalOrders.map((order) => (
                       <details className="customer-account-history-card" key={order.id}>
                         <summary>
                           <div className="customer-account-history-card__identity">
@@ -726,6 +742,17 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                       </details>
                     ))}
                   </div>
+                  {historicalOrders.length > historyPageSize ? (
+                    <AppPagination
+                      className="customer-account-history-pagination"
+                      itemLabel="orders"
+                      onPageChange={setHistoryPage}
+                      page={historyPage}
+                      pageSize={historyPageSize}
+                      totalItems={historicalOrders.length}
+                      totalPages={historyTotalPages}
+                    />
+                  ) : null}
                 ) : (
                   <div className="customer-account-state">No completed delivery history yet.</div>
                 )}

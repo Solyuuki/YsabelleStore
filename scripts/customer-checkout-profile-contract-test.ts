@@ -36,3 +36,9 @@ assert.match(customerApp, /CustomerErrorBoundary/);
 assert.match(customerApp, /resetKey=\{location\}/);
 
 console.log("Customer checkout/profile runtime contract passed.");
+
+
+assert.match(checkout, /customerPhone: contact\.customerPhone/);
+assert.doesNotMatch(checkout, /customerPhone: String\(form\.get\("customerPhone"\)/);
+assert.match(profile, /AppPagination/);
+assert.match(profile, /paginatedHistoricalOrders/);

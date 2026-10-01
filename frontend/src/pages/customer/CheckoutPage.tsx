@@ -134,9 +134,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
       if (!order) {
         const form = new FormData(event.currentTarget);
         order = await placeStorefrontOrder({
-          customerName: String(form.get("customerName") ?? ""),
-          customerEmail: String(form.get("customerEmail") ?? ""),
-          customerPhone: String(form.get("customerPhone") ?? ""),
+          customerName: contact.customerName,
+          customerEmail: contact.customerEmail,
+          customerPhone: contact.customerPhone,
           customerAddress: address,
           saveAddressToAccount: Boolean(customer && saveAddressToAccount),
           saveContactPhoneToAccount: Boolean(customer && saveContactPhoneToAccount),
