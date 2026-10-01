@@ -46,7 +46,7 @@ assert.match(customerAppSource, /<StoreEntrance/);
 assert.match(customerAppSource, /sessionStorage\.setItem\(STORE_ENTRANCE_SESSION_KEY/);
 assert.match(customerAppSource, /pathname === "\/" && !storeEntranceDismissed/);
 assert.match(entranceSource, /autoPlay/);
-assert.doesNotMatch(entranceSource, /<video[\\s\\S]{0,700}\\bloop\\b/);
+assert.doesNotMatch(entranceSource, /<video[\s\S]{0,700}\bloop\b/);
 assert.match(entranceSource, /muted/);
 assert.match(entranceSource, /playsInline/);
 assert.match(entranceSource, /gemini_generated_video_418a3614\.mp4/);
@@ -59,7 +59,7 @@ assert.match(entranceSource, /video\.play\(\)/);
 assert.match(entranceSource, /Your neighborhood store, now online\./);
 assert.match(entranceSource, />Get Started</);
 assert.doesNotMatch(entranceSource, /Step inside a compact neighborhood store/);
-assert.doesNotMatch(entranceSource, /Neighborhood grocery · Pasig City/);assert.match(entranceSource, /prefers-reduced-motion: reduce/);
+assert.doesNotMatch(entranceSource, /Neighborhood grocery · Pasig City/);\nassert.match(entranceSource, /prefers-reduced-motion: reduce/);
 assert.doesNotMatch(entranceSource, /controls/);
 assert.doesNotMatch(homeSource, /<section className="home-hero">/);
 
