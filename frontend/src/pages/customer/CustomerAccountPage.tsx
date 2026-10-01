@@ -272,10 +272,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   const historyTotalPages = Math.max(1, Math.ceil(historicalOrders.length / historyPageSize));
   const paginatedHistoricalOrders = useMemo(
     () =>
-      historicalOrders.slice(
-        (historyPage - 1) * historyPageSize,
-        historyPage * historyPageSize
-      ),
+      historicalOrders.slice((historyPage - 1) * historyPageSize, historyPage * historyPageSize),
     [historicalOrders, historyPage]
   );
 
@@ -698,49 +695,49 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   <>
                     <div className="customer-account-order-list-v2">
                       {paginatedHistoricalOrders.map((order) => (
-                      <details className="customer-account-history-card" key={order.id}>
-                        <summary>
-                          <div className="customer-account-history-card__identity">
-                            <span>{order.deliveryTicketNumber}</span>
-                            <strong>{order.orderNumber}</strong>
-                            <small>{orderDateFormatter.format(new Date(order.createdAt))}</small>
+                        <details className="customer-account-history-card" key={order.id}>
+                          <summary>
+                            <div className="customer-account-history-card__identity">
+                              <span>{order.deliveryTicketNumber}</span>
+                              <strong>{order.orderNumber}</strong>
+                              <small>{orderDateFormatter.format(new Date(order.createdAt))}</small>
+                            </div>
+                            <div className="customer-account-history-card__summary">
+                              <span>
+                                {order.itemCount} item{order.itemCount === 1 ? "" : "s"}
+                              </span>
+                              <strong>{formatCurrency(Number(order.totalAmount))}</strong>
+                              <span
+                                className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}
+                              >
+                                {deliveryStatusLabel(order.deliveryStatus)}
+                              </span>
+                              <ChevronDown aria-hidden="true" size={18} />
+                            </div>
+                          </summary>
+                          <div className="customer-account-history-card__details">
+                            <div className="customer-account-history-card__payment">
+                              <span>Payment</span>
+                              <strong>
+                                {order.paymentMethod === "CASH_ON_DELIVERY"
+                                  ? order.paymentStatus === "PAID"
+                                    ? "Cash on Delivery · Payment received"
+                                    : "Cash on Delivery"
+                                  : `PayMongo · ${order.paymentStatus}`}
+                              </strong>
+                            </div>
+                            <ul>
+                              {order.items.map((item) => (
+                                <li key={`${order.id}-${item.productId}`}>
+                                  <span>
+                                    {item.quantity} × {item.productName}
+                                  </span>
+                                  <strong>{formatCurrency(Number(item.totalAmount))}</strong>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                          <div className="customer-account-history-card__summary">
-                            <span>
-                              {order.itemCount} item{order.itemCount === 1 ? "" : "s"}
-                            </span>
-                            <strong>{formatCurrency(Number(order.totalAmount))}</strong>
-                            <span
-                              className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}
-                            >
-                              {deliveryStatusLabel(order.deliveryStatus)}
-                            </span>
-                            <ChevronDown aria-hidden="true" size={18} />
-                          </div>
-                        </summary>
-                        <div className="customer-account-history-card__details">
-                          <div className="customer-account-history-card__payment">
-                            <span>Payment</span>
-                            <strong>
-                              {order.paymentMethod === "CASH_ON_DELIVERY"
-                                ? order.paymentStatus === "PAID"
-                                  ? "Cash on Delivery · Payment received"
-                                  : "Cash on Delivery"
-                                : `PayMongo · ${order.paymentStatus}`}
-                            </strong>
-                          </div>
-                          <ul>
-                            {order.items.map((item) => (
-                              <li key={`${order.id}-${item.productId}`}>
-                                <span>
-                                  {item.quantity} × {item.productName}
-                                </span>
-                                <strong>{formatCurrency(Number(item.totalAmount))}</strong>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </details>
+                        </details>
                       ))}
                     </div>
                     {historicalOrders.length > historyPageSize ? (
