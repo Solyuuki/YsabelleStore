@@ -1288,8 +1288,11 @@ function DeliveryProgress({ order }: { order: StorefrontOrder }) {
       <ol className="customer-delivery-stepper">
         {DELIVERY_PROGRESS_STEPS.map((step, index) => {
           const event = eventByStatus.get(step.status);
+          const nextStep = DELIVERY_PROGRESS_STEPS[index + 1];
+          const nextEvent = nextStep ? eventByStatus.get(nextStep.status) : undefined;
           const isCurrent = order.deliveryStatus === step.status;
           const isComplete = Boolean(event);
+          const isConnectorComplete = isComplete && Boolean(nextEvent);
 
           return (
             <li
@@ -1303,7 +1306,12 @@ function DeliveryProgress({ order }: { order: StorefrontOrder }) {
                   {isComplete ? <CheckCircle2 size={15} /> : index + 1}
                 </span>
                 {index < DELIVERY_PROGRESS_STEPS.length - 1 ? (
-                  <span className="customer-delivery-stepper__connector" aria-hidden="true" />
+                  <span
+                    className={`customer-delivery-stepper__connector${
+                      isConnectorComplete ? " is-complete" : ""
+                    }`}
+                    aria-hidden="true"
+                  />
                 ) : null}
               </div>
               <div className="customer-delivery-stepper__copy">

@@ -711,8 +711,12 @@
 }
 
 .customer-delivery-stepper > li {
+  display: block;
   min-width: 0;
   flex: 1 1 0;
+  gap: 0;
+  align-items: initial;
+  justify-content: initial;
   text-align: center;
   scroll-snap-align: center;
 }
@@ -762,8 +766,7 @@
   box-shadow: 0 4px 12px rgba(98, 91, 255, 0.18);
 }
 
-.customer-delivery-stepper li.is-complete:has(+ li.is-complete)
-  .customer-delivery-stepper__connector {
+.customer-delivery-stepper__connector.is-complete {
   background: linear-gradient(90deg, #625bff, #9892ff);
 }
 
