@@ -77,6 +77,16 @@ export function deliveryStatusLabel(status: CustomerDeliveryStatus) {
   }
 }
 
+export function isPaymongoPaymentPending(order: {
+  paymentMethod: CustomerPaymentMethod;
+  paymentStatus: CustomerPaymentStatus;
+}) {
+  return (
+    order.paymentMethod === CustomerPaymentMethod.PAYMONGO &&
+    order.paymentStatus !== CustomerPaymentStatus.PAID
+  );
+}
+
 export function isCodSettlementReady(order: {
   customerConfirmedAt: Date | null;
   deliveryStatus: CustomerDeliveryStatus;
@@ -316,6 +326,12 @@ export async function updateDeliveryStatus(
       throw new HttpError(409, "Delivery status transition is not allowed.", {
         code: "INVALID_DELIVERY_STATUS_TRANSITION",
         details: { current: order.deliveryStatus, target }
+      });
+    }
+
+    if (isPaymongoPaymentPending(order) && target !== CustomerDeliveryStatus.CANCELLED) {
+      throw new HttpError(409, "PayMongo payment must be confirmed before delivery processing starts.", {
+        code: "PAYMONGO_PAYMENT_REQUIRED"
       });
     }
 

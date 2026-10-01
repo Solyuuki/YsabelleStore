@@ -1,6 +1,7 @@
 import {
   CheckCircle2,
   ChevronDown,
+  CreditCard,
   Heart,
   History,
   KeyRound,
@@ -9,6 +10,7 @@ import {
   PackageCheck,
   MapPin,
   Phone,
+  RefreshCw,
   Truck,
   ShieldCheck,
   UserRound
@@ -27,7 +29,11 @@ import {
   updateCustomerProfile
 } from "@/services/customerAccountService";
 import { fetchCustomerAddress, updateCustomerAddress } from "@/services/customerAddressService";
-import { confirmCustomerDeliveryReceived, fetchCustomerOrders } from "@/services/storefrontService";
+import {
+  confirmCustomerDeliveryReceived,
+  fetchCustomerOrders,
+  startPaymongoCheckout
+} from "@/services/storefrontService";
 import type { CustomerSessionSummary } from "@/types/customerAccount";
 import { EMPTY_CUSTOMER_ADDRESS, type CustomerAddress } from "@/types/customerAddress";
 import type { StorefrontOrder } from "@/types/storefront";
@@ -113,6 +119,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
+  const [resumingPaymentOrder, setResumingPaymentOrder] = useState<string | null>(null);
   const [historyPage, setHistoryPage] = useState(1);
   const historyPageSize = 5;
   const [sessions, setSessions] = useState<CustomerSessionSummary[]>([]);
@@ -279,6 +286,19 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   useEffect(() => {
     if (historyPage > historyTotalPages) setHistoryPage(historyTotalPages);
   }, [historyPage, historyTotalPages]);
+
+  async function handleResumePaymongo(orderNumber: string) {
+    if (resumingPaymentOrder) return;
+    setResumingPaymentOrder(orderNumber);
+    setOrdersError(null);
+    try {
+      const checkout = await startPaymongoCheckout(orderNumber);
+      window.location.assign(checkout.checkoutUrl);
+    } catch (reason) {
+      setOrdersError(errorMessage(reason, "PayMongo checkout could not be reopened."));
+      setResumingPaymentOrder(null);
+    }
+  }
 
   async function handleConfirmReceived(orderNumber: string) {
     if (confirmingOrder) return;
@@ -603,9 +623,15 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                             <strong>{order.orderNumber}</strong>
                           </div>
                           <span
-                            className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}
+                            className={`customer-delivery-status ${
+                              isPaymongoAwaitingPayment(order)
+                                ? "customer-delivery-status--awaiting-payment"
+                                : `customer-delivery-status--${order.deliveryStatus.toLowerCase()}`
+                            }`}
                           >
-                            {deliveryStatusLabel(order.deliveryStatus)}
+                            {isPaymongoAwaitingPayment(order)
+                              ? "Awaiting payment"
+                              : deliveryStatusLabel(order.deliveryStatus)}
                           </span>
                         </div>
 
@@ -615,7 +641,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                             <strong>
                               {order.paymentMethod === "CASH_ON_DELIVERY"
                                 ? "Cash on Delivery"
-                                : `PayMongo · ${order.paymentStatus}`}
+                                : order.paymentStatus === "PAID"
+                                  ? "PayMongo · Paid"
+                                  : "PayMongo · Awaiting payment"}
                             </strong>
                           </div>
                           <div>
@@ -656,7 +684,30 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                           </div>
                         ) : null}
 
-                        <DeliveryProgress order={order} />
+                        {isPaymongoAwaitingPayment(order) ? (
+                          <div className="customer-account-payment-gate">
+                            <CreditCard aria-hidden="true" size={20} />
+                            <div>
+                              <strong>Payment required before delivery starts</strong>
+                              <p>
+                                This order is saved, but Ysabelle Store will not prepare or dispatch it
+                                until PayMongo confirms the payment.
+                              </p>
+                            </div>
+                            <button
+                              disabled={resumingPaymentOrder === order.orderNumber}
+                              onClick={() => void handleResumePaymongo(order.orderNumber)}
+                              type="button"
+                            >
+                              <RefreshCw aria-hidden="true" size={16} />
+                              {resumingPaymentOrder === order.orderNumber
+                                ? "Opening PayMongo..."
+                                : "Resume payment"}
+                            </button>
+                          </div>
+                        ) : (
+                          <DeliveryProgress order={order} />
+                        )}
 
                         {order.canCustomerConfirmReceipt ? (
                           <div className="customer-account-confirm-delivery">
@@ -1223,6 +1274,10 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       </div>
     </section>
   );
+}
+
+function isPaymongoAwaitingPayment(order: StorefrontOrder) {
+  return order.paymentMethod === "PAYMONGO" && order.paymentStatus !== "PAID";
 }
 
 function DeliveryProgress({ order }: { order: StorefrontOrder }) {

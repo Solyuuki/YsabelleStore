@@ -1,12 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { CustomerDeliveryStatus, CustomerPaymentMethod } from "@prisma/client";
+import {
+  CustomerDeliveryStatus,
+  CustomerPaymentMethod,
+  CustomerPaymentStatus
+} from "@prisma/client";
 
 import {
   canTransitionDeliveryStatus,
   deliveryStatusLabel,
-  isCodSettlementReady
+  isCodSettlementReady,
+  isPaymongoPaymentPending
 } from "../src/services/deliveryService.js";
 
 test("delivery status workflow permits only controlled forward transitions", () => {
@@ -68,6 +73,31 @@ test("COD settlement requires confirmed physical delivery", () => {
       customerConfirmedAt: new Date(),
       deliveryStatus: CustomerDeliveryStatus.DELIVERED,
       paymentMethod: CustomerPaymentMethod.PAYMONGO
+    }),
+    false
+  );
+});
+
+
+test("PayMongo delivery processing stays locked until payment is confirmed", () => {
+  assert.equal(
+    isPaymongoPaymentPending({
+      paymentMethod: CustomerPaymentMethod.PAYMONGO,
+      paymentStatus: CustomerPaymentStatus.PENDING
+    }),
+    true
+  );
+  assert.equal(
+    isPaymongoPaymentPending({
+      paymentMethod: CustomerPaymentMethod.PAYMONGO,
+      paymentStatus: CustomerPaymentStatus.PAID
+    }),
+    false
+  );
+  assert.equal(
+    isPaymongoPaymentPending({
+      paymentMethod: CustomerPaymentMethod.CASH_ON_DELIVERY,
+      paymentStatus: CustomerPaymentStatus.PENDING
     }),
     false
   );

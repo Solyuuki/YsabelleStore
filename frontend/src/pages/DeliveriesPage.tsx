@@ -3,6 +3,7 @@ import {
   Box,
   CheckCircle2,
   Clock3,
+  CreditCard,
   MapPin,
   MessageSquareText,
   PackageCheck,
@@ -109,7 +110,12 @@ function paymentLabel(method: StorefrontPaymentMethod) {
   return method === "CASH_ON_DELIVERY" ? "Cash on Delivery" : "PayMongo";
 }
 
+function isPaymongoAwaitingPayment(ticket: DeliveryTicket) {
+  return ticket.paymentMethod === "PAYMONGO" && ticket.paymentStatus !== "PAID";
+}
+
 function operationalStatusLabel(ticket: DeliveryTicket) {
+  if (isPaymongoAwaitingPayment(ticket)) return "Awaiting payment";
   if (
     ticket.paymentMethod === "CASH_ON_DELIVERY" &&
     ticket.paymentStatus === "PAID" &&
@@ -123,6 +129,7 @@ function operationalStatusLabel(ticket: DeliveryTicket) {
 function operationalStatusTone(
   ticket: DeliveryTicket
 ): "default" | "info" | "success" | "warning" | "danger" {
+  if (isPaymongoAwaitingPayment(ticket)) return "warning";
   if (
     ticket.paymentMethod === "CASH_ON_DELIVERY" &&
     ticket.paymentStatus === "PAID" &&
@@ -510,7 +517,9 @@ export function DeliveriesPage() {
                       ? selected.paymentStatus === "PAID"
                         ? "Payment received"
                         : "Awaiting cash collection"
-                      : selected.paymentStatus
+                      : selected.paymentStatus === "PAID"
+                        ? "Payment confirmed"
+                        : "Awaiting PayMongo payment"
                   }
                   icon={Banknote}
                   label="Payment"
@@ -550,7 +559,19 @@ export function DeliveriesPage() {
                     available below for audit history.
                   </p>
                 </div>
-                <StaffDeliveryProgress ticket={selected} />
+                {isPaymongoAwaitingPayment(selected) ? (
+                  <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                    <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" />
+                    <div>
+                      <strong className="text-sm text-amber-950">Awaiting PayMongo payment</strong>
+                      <p className="mt-1 text-xs leading-5 text-amber-800">
+                        Delivery processing is locked until PayMongo confirms this order as paid.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <StaffDeliveryProgress ticket={selected} />
+                )}
               </section>
 
               <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -710,7 +731,7 @@ export function DeliveriesPage() {
                 </Button>
               ) : null}
 
-              {selected.deliveryStatus === "ORDER_PLACED" ? (
+              {selected.deliveryStatus === "ORDER_PLACED" && !isPaymongoAwaitingPayment(selected) ? (
                 <Button
                   disabled={submitting}
                   onClick={() => void runTransition("PREPARING")}

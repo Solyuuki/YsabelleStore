@@ -828,3 +828,78 @@
 .customer-account-history-pagination p {
   color: #7a8499;
 }
+
+
+/* Pending PayMongo orders stay outside the delivery lifecycle until payment is confirmed. */
+.customer-delivery-status--awaiting-payment {
+  border-color: #f4d58d;
+  background: #fff8e8;
+  color: #9a5b00;
+}
+
+.customer-account-payment-gate {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #f1d28a;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fffaf0, #fff7e3);
+  color: #7b4a00;
+}
+
+.customer-account-payment-gate > svg {
+  color: #b87500;
+}
+
+.customer-account-payment-gate > div {
+  display: grid;
+  gap: 4px;
+}
+
+.customer-account-payment-gate strong {
+  color: #5f3b00;
+  font-size: 0.86rem;
+}
+
+.customer-account-payment-gate p {
+  margin: 0;
+  color: #8b641e;
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+.customer-account-payment-gate button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 11px;
+  padding: 0 14px;
+  background: #6a5cff;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.customer-account-payment-gate button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 720px) {
+  .customer-account-payment-gate {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .customer-account-payment-gate button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
