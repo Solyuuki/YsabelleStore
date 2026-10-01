@@ -765,7 +765,7 @@ function StaffDeliveryProgress({ ticket }: { ticket: DeliveryTicket }) {
 
   return (
     <div className="overflow-x-auto pb-1">
-      <ol className="flex min-w-[650px] list-none p-0">
+      <ol className="flex min-w-[650px] list-none px-1 pb-0 pt-1">
         {DELIVERY_PROGRESS_STEPS.map((step, index) => {
           const event = eventByStatus.get(step.status);
           const isCurrent = ticket.deliveryStatus === step.status;
