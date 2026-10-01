@@ -140,16 +140,21 @@
 }
 
 .store-entrance__enter {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   min-height: 48px;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   gap: 0.65rem;
-  padding: 0.78rem 1.08rem 0.78rem 1.16rem;
+  padding: 0.78rem 1.16rem;
   border: 1px solid rgb(255 255 255 / 86%);
   border-radius: 0.7rem;
   background: #fff;
-  box-shadow: 0 12px 30px rgb(0 0 0 / 18%);
+  box-shadow:
+    0 12px 30px rgb(0 0 0 / 18%),
+    0 0 0 0 rgb(255 255 255 / 0%);
   color: #111827;
   cursor: pointer;
   font: inherit;
@@ -161,6 +166,11 @@
     box-shadow 160ms ease,
     color 160ms ease,
     transform 160ms ease;
+}
+
+.store-entrance__enter > span {
+  position: relative;
+  z-index: 2;
 }
 
 .store-entrance__enter:hover {
@@ -177,6 +187,74 @@
 .store-entrance__enter:focus-visible {
   outline: 3px solid #7dd3fc;
   outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .store-entrance__enter::after {
+    position: absolute;
+    top: -55%;
+    left: 0;
+    z-index: 1;
+    width: 42%;
+    height: 210%;
+    background: linear-gradient(
+      105deg,
+      transparent 12%,
+      rgb(255 255 255 / 0%) 26%,
+      rgb(147 197 253 / 28%) 40%,
+      rgb(255 255 255 / 96%) 50%,
+      rgb(196 181 253 / 38%) 61%,
+      transparent 78%
+    );
+    content: "";
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(-170%, 0, 0) skewX(-18deg);
+    animation: store-entrance-cta-sheen 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .store-entrance__enter {
+    animation: store-entrance-cta-glow 3.8s ease-in-out infinite;
+  }
+}
+
+@keyframes store-entrance-cta-sheen {
+  0%,
+  57% {
+    opacity: 0;
+    transform: translate3d(-170%, 0, 0) skewX(-18deg);
+  }
+
+  62% {
+    opacity: 1;
+  }
+
+  78% {
+    opacity: 1;
+    transform: translate3d(360%, 0, 0) skewX(-18deg);
+  }
+
+  83%,
+  100% {
+    opacity: 0;
+    transform: translate3d(360%, 0, 0) skewX(-18deg);
+  }
+}
+
+@keyframes store-entrance-cta-glow {
+  0%,
+  56%,
+  100% {
+    box-shadow:
+      0 12px 30px rgb(0 0 0 / 18%),
+      0 0 0 0 rgb(255 255 255 / 0%);
+  }
+
+  69% {
+    box-shadow:
+      0 14px 34px rgb(0 0 0 / 20%),
+      0 0 0 5px rgb(255 255 255 / 10%);
+  }
 }
 
 @media (max-width: 700px) {
