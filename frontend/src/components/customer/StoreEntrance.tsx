@@ -1,10 +1,8 @@
 import { ArrowRight } from "lucide-react";
 import { useRef, useState } from "react";
 
-import { BrandLogo } from "@/components/brand/BrandLogo";
-
 const STORE_ENTRANCE_VIDEO = "/media/store-entrance.mp4?v=26c4d4b0";
-const STORE_ENTRANCE_LOGO = "/brand/store-entrance-logo.png?v=12c660a6";
+const STORE_ENTRANCE_LOGO = "/brand/ysabelle-store-mark-256.png?v=fullmark-2e25e00f";
 const STORE_ENTRANCE_POSTER =
   "/images/discover/essentials/canned-goods-retail-display.webp";
 
@@ -14,7 +12,6 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isExiting, setIsExiting] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
-  const [logoFailed, setLogoFailed] = useState(false);
 
   const prefersReducedMotion =
     typeof window !== "undefined" &&
@@ -68,24 +65,19 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
 
       <div className="store-entrance__content">
         <div className="store-entrance__logo-wrap">
-          {logoFailed ? (
-            <BrandLogo className="store-entrance__logo" eager variant="full" />
-          ) : (
-            <img
-              alt="Ysabelle Store"
-              className="store-entrance__logo"
-              decoding="async"
-              draggable={false}
-              onError={() => setLogoFailed(true)}
-              src={STORE_ENTRANCE_LOGO}
-            />
-          )}
+          <img
+            alt="Ysabelle Store"
+            className="store-entrance__logo"
+            decoding="async"
+            draggable={false}
+            src={STORE_ENTRANCE_LOGO}
+          />
         </div>
 
         <div className="store-entrance__copy">
           <h1>
-            <span>Your neighborhood store,</span>
-            <span>now online.</span>
+            <span>Your Neighborhood Store,</span>
+            <span>Now Online.</span>
           </h1>
         </div>
 
