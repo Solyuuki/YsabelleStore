@@ -1,5 +1,4 @@
-import { Check, CircleAlert, Heart, ShoppingBasket, Star } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { CircleAlert, Heart, ShoppingBasket, Star } from "lucide-react";
 
 import { useCart } from "@/context/CartContext";
 import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
@@ -26,13 +25,11 @@ export function ProductCard({
   presentation?: "catalog" | "editorial";
   tourTarget?: boolean;
 }) {
-  const { addItem } = useCart();
+  const { addItem, isReady, items, updateQuantity } = useCart();
   const { favoriteIds, toggleFavorite } = useCustomerFavorites();
-  const [quantity, setQuantity] = useState(1);
-  const [justAdded, setJustAdded] = useState(false);
-  const feedbackTimer = useRef<number | null>(null);
   const outOfStock = product.availableStock <= 0;
   const isFavorite = favoriteIds.has(product.id);
+  const cartQuantity = items.find((item) => item.product.id === product.id)?.quantity ?? 0;
   const resolvedBadge = badge === undefined ? getStorefrontProductBadge(product) : badge;
   const hasReviewSummary =
     Number.isFinite(product.averageRating) &&
@@ -46,13 +43,6 @@ export function ProductCard({
     ? `Rated ${formattedRating} out of 5 from ${product.reviewCount} ${product.reviewCount === 1 ? "review" : "reviews"}.`
     : "No reviews yet.";
 
-  useEffect(
-    () => () => {
-      if (feedbackTimer.current !== null) window.clearTimeout(feedbackTimer.current);
-    },
-    []
-  );
-
   async function handleFavorite() {
     const result = await toggleFavorite(product.id);
     if (result === "auth-required") {
@@ -62,10 +52,11 @@ export function ProductCard({
   }
 
   function handleAddToCart() {
-    addItem(product, quantity);
-    setJustAdded(true);
-    if (feedbackTimer.current !== null) window.clearTimeout(feedbackTimer.current);
-    feedbackTimer.current = window.setTimeout(() => setJustAdded(false), 1400);
+    addItem(product, 1);
+  }
+
+  function handleQuantityChange(nextQuantity: number) {
+    updateQuantity(product.id, nextQuantity);
   }
 
   return (
@@ -109,11 +100,13 @@ export function ProductCard({
           <Heart aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} />
         </button>
       </div>
+
       <div className="customer-product-card__body">
         <p className="customer-eyebrow">{product.category.name}</p>
         <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
           <h3>{product.name}</h3>
         </CustomerLink>
+
         {hasReviews ? (
           <div aria-label={ratingLabel} className="customer-product-card__rating" role="img">
             <Star aria-hidden="true" fill="currentColor" />
@@ -123,43 +116,44 @@ export function ProductCard({
             </span>
           </div>
         ) : null}
+
         <div className="customer-product-card__price-row">
           <strong>{formatCurrency(product.sellingPrice)}</strong>
           <span>per {formatUnit(product.unit)}</span>
         </div>
-        <p className={`customer-stock customer-stock--${product.stockStatus.toLowerCase()}`}>
-          <span aria-hidden="true" className="customer-stock__dot" />
-          {outOfStock
-            ? "Out of stock"
-            : product.stockStatus === "LOW_STOCK"
-              ? `Only ${product.availableStock} left`
-              : "In stock"}
-        </p>
+
+        {product.stockStatus !== "IN_STOCK" ? (
+          <p className={`customer-stock customer-stock--${product.stockStatus.toLowerCase()}`}>
+            <span aria-hidden="true" className="customer-stock__dot" />
+            {outOfStock ? "Out of stock" : `Only ${product.availableStock} left`}
+          </p>
+        ) : null}
+
         <div className="customer-product-card__actions">
-          {!outOfStock ? (
+          {!outOfStock && cartQuantity > 0 ? (
             <QuantityControl
               label={`Quantity for ${product.name}`}
               max={product.availableStock}
-              onChange={setQuantity}
-              value={quantity}
+              min={0}
+              onChange={handleQuantityChange}
+              value={cartQuantity}
             />
-          ) : null}
-          <button
-            className="customer-button customer-button--compact"
-            data-tour={tourTarget ? "add-to-cart" : undefined}
-            disabled={outOfStock}
-            onClick={handleAddToCart}
-            type="button"
-          >
-            {outOfStock ? (
-              <CircleAlert aria-hidden="true" size={17} />
-            ) : justAdded ? (
-              <Check aria-hidden="true" size={17} />
-            ) : (
-              <ShoppingBasket aria-hidden="true" size={17} />
-            )}
-            {outOfStock ? "Unavailable" : justAdded ? "Added" : "Add to cart"}
-          </button>
+          ) : (
+            <button
+              className="customer-button customer-button--compact"
+              data-tour={tourTarget ? "add-to-cart" : undefined}
+              disabled={outOfStock || !isReady}
+              onClick={handleAddToCart}
+              type="button"
+            >
+              {outOfStock ? (
+                <CircleAlert aria-hidden="true" size={17} />
+              ) : (
+                <ShoppingBasket aria-hidden="true" size={17} />
+              )}
+              {outOfStock ? "Out of stock" : isReady ? "Add to cart" : "Cart loading"}
+            </button>
+          )}
         </div>
       </div>
     </article>
