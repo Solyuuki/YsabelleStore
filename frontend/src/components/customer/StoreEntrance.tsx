@@ -1,8 +1,9 @@
 import { ArrowRight } from "lucide-react";
 import { useRef, useState } from "react";
 
+import entranceLogoUrl from "@/assets/brand/ysabelle-logo-official.webp";
+
 const STORE_ENTRANCE_VIDEO = "/media/store-entrance.mp4?v=26c4d4b0";
-const STORE_ENTRANCE_LOGO = "/brand/ysabelle-store-mark-256.png?v=fullmark-2e25e00f";
 const STORE_ENTRANCE_POSTER =
   "/images/discover/essentials/canned-goods-retail-display.webp";
 
@@ -66,11 +67,12 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
       <div className="store-entrance__content">
         <div className="store-entrance__logo-wrap">
           <img
-            alt="Ysabelle Store"
+            alt=""
+            aria-hidden="true"
             className="store-entrance__logo"
             decoding="async"
             draggable={false}
-            src={STORE_ENTRANCE_LOGO}
+            src={entranceLogoUrl}
           />
         </div>
 
