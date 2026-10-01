@@ -2,6 +2,7 @@
 
 .customer-app {
   --customer-focus: #0070c9;
+  --customer-warning: #8b5100;
 }
 
 /* Cinematic first-session store entrance */
