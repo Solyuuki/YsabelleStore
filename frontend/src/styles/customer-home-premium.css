@@ -717,7 +717,7 @@
   inset: -14px;
   z-index: 0;
   background:
-    url("/images/home/shop-category-background.webp") center bottom / cover no-repeat;
+    url("/images/home/storefront-merchandising-background.webp") center bottom / cover no-repeat;
   content: "";
   filter: blur(4px) saturate(0.82) brightness(0.8);
   pointer-events: none;
