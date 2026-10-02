@@ -704,6 +704,150 @@
   font-size: clamp(2rem, 3.8vw, 3.2rem);
 }
 
+/* Shared merchandising atmosphere: one retail wall image, softened and shaded for both light and dark modes. */
+.home-merchandising--trending,
+.home-merchandising--best-seller,
+.home-essentials,
+.home-next-step {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #171411 !important;
+}
+
+.home-merchandising--trending::before,
+.home-merchandising--best-seller::before,
+.home-essentials::before,
+.home-next-step::before {
+  position: absolute;
+  inset: -18px;
+  z-index: 0;
+  background:
+    url("/images/home/storefront-merchandising-background.webp") center / cover no-repeat;
+  content: "";
+  filter: blur(5px) saturate(0.82) brightness(0.72);
+  pointer-events: none;
+  transform: scale(1.035);
+  transform-origin: center;
+}
+
+.home-merchandising--trending::after,
+.home-merchandising--best-seller::after,
+.home-essentials::after,
+.home-next-step::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 50% 38%, rgb(0 0 0 / 14%), rgb(0 0 0 / 30%) 72%),
+    linear-gradient(180deg, rgb(5 7 11 / 46%), rgb(5 7 11 / 60%));
+  content: "";
+  pointer-events: none;
+}
+
+.home-merchandising--trending > .customer-container,
+.home-merchandising--best-seller > .customer-container,
+.home-essentials > .customer-container,
+.home-next-step > .customer-container {
+  position: relative;
+  z-index: 2;
+}
+
+.home-merchandising--trending {
+  border-bottom-color: rgb(255 255 255 / 10%);
+}
+
+.home-merchandising--best-seller {
+  border-block-color: rgb(255 255 255 / 10%);
+}
+
+.home-merchandising--trending .customer-kicker,
+.home-essentials .customer-kicker {
+  color: #c7bdff;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 72%),
+    0 0 10px rgb(113 92 255 / 18%);
+}
+
+.home-merchandising--best-seller .customer-kicker {
+  color: #ffd487;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 72%),
+    0 0 10px rgb(255 180 63 / 16%);
+}
+
+.home-merchandising--trending .home-section-heading h2,
+.home-merchandising--best-seller .home-section-heading h2,
+.home-essentials .home-section-heading h2 {
+  color: #fff;
+  -webkit-text-stroke: 0.45px rgb(151 139 255 / 44%);
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 58%),
+    0 0 10px rgb(113 92 255 / 12%),
+    0 2px 18px rgb(0 0 0 / 24%);
+}
+
+.home-merchandising--trending .home-section-heading p:last-child,
+.home-merchandising--best-seller .home-section-heading p:last-child,
+.home-essentials .home-section-heading p:last-child {
+  color: #d8dbe5;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 38%);
+}
+
+.home-merchandising--trending .home-section-heading > a,
+.home-merchandising--best-seller .home-section-heading > a,
+.home-essentials .home-section-heading > a {
+  border-bottom-color: #9b8cff;
+  color: #f2efff;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 62%),
+    0 0 8px rgb(118 87 246 / 16%);
+}
+
+.home-merchandising--trending .home-section-heading > a:hover,
+.home-merchandising--trending .home-section-heading > a:focus-visible,
+.home-merchandising--best-seller .home-section-heading > a:hover,
+.home-merchandising--best-seller .home-section-heading > a:focus-visible,
+.home-essentials .home-section-heading > a:hover,
+.home-essentials .home-section-heading > a:focus-visible {
+  border-bottom-color: #cf4fc8;
+  color: #fff;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 64%),
+    0 0 10px rgb(118 87 246 / 24%);
+}
+
+.home-merchandising--trending .customer-product-card,
+.home-merchandising--best-seller .customer-product-card,
+.home-essentials .customer-product-card {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 72%),
+    0 12px 30px rgb(0 0 0 / 18%);
+}
+
+.home-merchandising--trending .customer-product-card:hover,
+.home-merchandising--best-seller .customer-product-card:hover,
+.home-essentials .customer-product-card:hover {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 78%),
+    0 16px 34px rgb(0 0 0 / 24%);
+}
+
+.home-next-step {
+  padding-top: clamp(2rem, 3.5vw, 3rem);
+  padding-bottom: clamp(3rem, 5vw, 4.5rem);
+}
+
+.home-next-step::before {
+  background-position: center bottom;
+  filter: blur(5px) saturate(0.78) brightness(0.66);
+}
+
+.home-next-step::after {
+  background:
+    linear-gradient(180deg, rgb(5 7 11 / 54%), rgb(5 7 11 / 68%));
+}
+
 /* ProductTile: quieter media, fewer badges, product -> price -> action hierarchy. */
 .customer-product-card {
   overflow: hidden;
