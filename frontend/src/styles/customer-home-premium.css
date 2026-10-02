@@ -398,18 +398,15 @@
 
 .home-categories .customer-kicker {
   width: fit-content;
-  background: linear-gradient(90deg, #8ea1ff 0%, #9d72ff 52%, #ef6fd7 100%);
-  font-size: clamp(0.72rem, 0.69rem + 0.12vw, 0.79rem);
-  line-height: 1.2;
-  background-clip: text;
-  color: transparent;
+  color: #f0edff;
+  font-size: clamp(0.82rem, 0.78rem + 0.14vw, 0.9rem);
+  line-height: 1.15;
   font-weight: 900;
-  letter-spacing: 0.13em;
-  filter:
-    drop-shadow(0 1px 2px rgb(3 7 18 / 78%))
-    drop-shadow(0 0 8px rgb(99 102 241 / 14%));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.12em;
+  -webkit-text-stroke: 0.2px rgb(255 255 255 / 34%);
+  text-shadow:
+    0 1px 2px rgb(3 7 18 / 92%),
+    0 0 10px rgb(107 92 255 / 22%);
 }
 
 .home-categories .home-section-heading h2 {
@@ -424,16 +421,18 @@
 
 .home-categories .home-section-heading > a {
   position: relative;
-  gap: 0.45rem;
-  font-size: clamp(0.82rem, 0.78rem + 0.12vw, 0.9rem);
-  line-height: 1.25;
+  gap: 0.48rem;
+  font-size: clamp(0.9rem, 0.86rem + 0.14vw, 0.98rem);
+  line-height: 1.2;
   border-bottom: 0;
-  color: #cfd6ff;
+  color: #f4f2ff;
   font-weight: 850;
-  filter: drop-shadow(0 1px 2px rgb(3 7 18 / 72%));
+  text-shadow:
+    0 1px 2px rgb(3 7 18 / 92%),
+    0 0 10px rgb(107 92 255 / 18%);
   transition:
     color 180ms ease,
-    filter 180ms ease,
+    text-shadow 180ms ease,
     transform 180ms ease;
 }
 
@@ -454,14 +453,11 @@
 }
 
 .home-categories .home-section-heading > a > span {
-  background: linear-gradient(90deg, #8ea1ff 0%, #9d72ff 52%, #ef6fd7 100%);
-  background-size: 180% 100%;
-  background-position: 0% 50%;
-  background-clip: text;
-  color: transparent;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  transition: background-position 260ms ease;
+  color: #f4f2ff;
+  -webkit-text-fill-color: currentColor;
+  transition:
+    color 180ms ease,
+    text-shadow 180ms ease;
 }
 
 .home-categories .home-section-heading > a > svg {
@@ -475,15 +471,16 @@
 
 .home-categories .home-section-heading > a:hover,
 .home-categories .home-section-heading > a:focus-visible {
-  filter:
-    drop-shadow(0 1px 2px rgb(3 7 18 / 78%))
-    drop-shadow(0 0 10px rgb(111 99 255 / 16%));
+  color: #ffffff;
+  text-shadow:
+    0 1px 2px rgb(3 7 18 / 94%),
+    0 0 12px rgb(157 114 255 / 28%);
   transform: translateY(-1px);
 }
 
 .home-categories .home-section-heading > a:hover > span,
 .home-categories .home-section-heading > a:focus-visible > span {
-  background-position: 100% 50%;
+  color: #ffffff;
 }
 
 .home-categories .home-section-heading > a:hover > svg,
