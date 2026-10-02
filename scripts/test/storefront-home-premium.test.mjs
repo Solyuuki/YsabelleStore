@@ -72,9 +72,10 @@ assert.doesNotMatch(entranceSource, /controls/);
 assert.doesNotMatch(homeSource, /<section className="home-hero">/);
 
 assert.doesNotMatch(productCardSource, /"In stock"/);
-assert.match(productCardSource, /cartQuantity > 0/);
-assert.match(productCardSource, /min=\{0\}/);
-assert.match(productCardSource, /disabled=\{outOfStock \|\| !isReady\}/);
+assert.match(productCardSource, /selectedQuantity/);
+assert.match(productCardSource, /min=\{1\}/);
+assert.match(productCardSource, /ShoppingCart aria-hidden="true" size=\{17\} strokeWidth=\{2\}/);
+assert.match(productCardSource, /customer-product-card__purchase-row/);
 assert.match(productCardSource, /data-tooltip=\{isFavorite \? "Remove from favorites" : "Save to favorites"\}/);
 assert.match(productCardSource, /customer-product-card__cart-button/);
 assert.match(productCardSource, /customer-product-badge__fire/);
@@ -107,7 +108,8 @@ assert.match(premiumCss, /\.customer-product-badge__medal[\s\S]*?color:\s*#17120
 assert.match(premiumCss, /\.customer-product-badge__medal-center[\s\S]*?background:\s*#ffbf47/);
 assert.match(premiumCss, /\.customer-product-card__cart-button[\s\S]*?linear-gradient\(110deg, #4f46e5 0%, #7c3aed 56%, #b832d0 100%\)/);
 assert.match(premiumCss, /@keyframes customer-merchandising-shine/);
-assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(0, 1fr\) 44px/);
+assert.match(premiumCss, /\.customer-product-card__purchase-row[\s\S]*?grid-template-columns:\s*112px minmax\(0, 1fr\)/);
+assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(20px, 1fr\) 44px/);
 assert.match(railCss, /width:\s*44px;[\s\S]*?height:\s*44px/);
 
 function relativeLuminance(hex) {
