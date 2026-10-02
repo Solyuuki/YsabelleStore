@@ -75,6 +75,10 @@ assert.doesNotMatch(productCardSource, /"In stock"/);
 assert.match(productCardSource, /cartQuantity > 0/);
 assert.match(productCardSource, /min=\{0\}/);
 assert.match(productCardSource, /disabled=\{outOfStock \|\| !isReady\}/);
+assert.match(productCardSource, /data-tooltip=\{isFavorite \? "Remove from favorites" : "Save to favorites"\}/);
+assert.match(productCardSource, /customer-product-card__cart-button/);
+assert.match(productCardSource, /<Flame aria-hidden="true" className="customer-product-badge__icon" \/>/);
+assert.match(productCardSource, /<Award aria-hidden="true" className="customer-product-badge__icon" \/>/);
 assert.match(quantitySource, /min = 1/);
 assert.match(quantitySource, /Math\.max\(min, value - 1\)/);
 
@@ -94,6 +98,11 @@ assert.match(premiumCss, /@keyframes store-entrance-cta-sheen/);
 assert.match(premiumCss, /@keyframes store-entrance-cta-glow/);
 assert.match(premiumCss, /@media \(prefers-reduced-motion: no-preference\)[\s\S]*?\.store-entrance__enter::after/);
 assert.match(premiumCss, /\.customer-product-card__favorite[\s\S]*?width:\s*44px;[\s\S]*?height:\s*44px/);
+assert.match(premiumCss, /\.customer-product-card__favorite\[aria-pressed="true"\][\s\S]*?linear-gradient\(135deg, #4f46e5 0%, #7c3aed 58%, #b832d0 100%\)/);
+assert.match(premiumCss, /\.customer-product-badge--trending[\s\S]*?linear-gradient\(110deg, #4938e8 0%, #6748f5 60%, #a13cd4 100%\)/);
+assert.match(premiumCss, /\.customer-product-badge--best-seller[\s\S]*?#ffcf5a[\s\S]*?#ffb43f/);
+assert.match(premiumCss, /\.customer-product-card__cart-button[\s\S]*?linear-gradient\(110deg, #4f46e5 0%, #7c3aed 56%, #b832d0 100%\)/);
+assert.match(premiumCss, /@keyframes customer-merchandising-shine/);
 assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(0, 1fr\) 44px/);
 assert.match(railCss, /width:\s*44px;[\s\S]*?height:\s*44px/);
 
@@ -118,6 +127,11 @@ function contrast(left, right) {
 
 // WCAG evidence for the primary CTA, focus ring, and semantic status colors.
 assert.ok(contrast("#625BFF", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#4F46E5", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#7C3AED", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#B832D0", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#4938E8", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#A13CD4", "#FFFFFF") >= 4.5);
 assert.ok(contrast("#0070C9", "#FFFFFF") >= 3);
 assert.ok(contrast("#17765F", "#FFFFFF") >= 4.5);
 assert.ok(contrast("#8B5100", "#FFF6E5") >= 4.5);
