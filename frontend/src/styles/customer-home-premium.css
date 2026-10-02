@@ -965,6 +965,18 @@
   line-height: 1;
 }
 
+.customer-product-card__rating.is-empty svg {
+  color: #9aa6c4;
+  filter: none;
+}
+
+.customer-product-card__rating.is-empty span {
+  margin-left: 0.02rem;
+  padding-left: 0.12rem;
+  border-left: 0;
+  color: #8a92a7;
+}
+
 .customer-product-card__price-row {
   margin-top: 0.54rem;
 }
