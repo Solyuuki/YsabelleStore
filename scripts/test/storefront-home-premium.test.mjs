@@ -111,10 +111,10 @@ assert.match(premiumCss, /@media \(prefers-reduced-motion: no-preference\)[\s\S]
 assert.match(premiumCss, /\.home-categories \.customer-kicker[\s\S]*?-webkit-text-stroke:\s*0\.45px rgb\(151 139 255 \/ 72%\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading h2[\s\S]*?-webkit-text-stroke:\s*0\.55px rgb\(151 139 255 \/ 58%\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading h2[\s\S]*?0 0 12px rgb\(113 92 255 \/ 16%\)[\s\S]*?0 2px 24px rgb\(0 0 0 \/ 20%\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a > span[\s\S]*?linear-gradient\(100deg, #5b7cff 0%, #7657f6 54%, #cf4fc8 100%\)[\s\S]*?-webkit-text-fill-color:\s*transparent/);
+assert.match(premiumCss, /\.home-categories \.home-section-heading > a > span[\s\S]*?-webkit-text-fill-color:\s*#fff[\s\S]*?-webkit-text-stroke:\s*0\.55px rgb\(151 139 255 \/ 58%\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading > a::after[\s\S]*?linear-gradient\([\s\S]*?#5b7cff 0%[\s\S]*?#7657f6 54%[\s\S]*?#cf4fc8 100%/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading > a > svg[\s\S]*?color:\s*#cf4fc8/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover > span[\s\S]*?background-position:\s*100% 50%/);
+assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover > span[\s\S]*?0 0 14px rgb\(113 92 255 \/ 22%\)[\s\S]*?translateY\(-0\.5px\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover::after[\s\S]*?background-position:\s*100% 50%/);
 assert.match(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.match(premiumCss, /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/);
