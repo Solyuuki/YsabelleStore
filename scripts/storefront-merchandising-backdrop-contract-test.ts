@@ -8,7 +8,7 @@ const assetPath = resolve(
 );
 const nextStepAssetPath = resolve(
   process.cwd(),
-  "public/images/home/home-next-step-background.webp"
+  "public/images/home/home-next-step-background.avif"
 );
 const cssPath = resolve(process.cwd(), "src/styles/customer-home-premium.css");
 const homePath = resolve(process.cwd(), "src/pages/customer/CustomerHomePage.tsx");
@@ -27,13 +27,21 @@ assert.equal(
   "Merchandising WebP is truncated or has an invalid RIFF size."
 );
 
-assert.ok(nextStepAsset.length > 1024, "Next-step backdrop is unexpectedly small.");
-assert.equal(nextStepAsset.subarray(0, 4).toString("ascii"), "RIFF");
-assert.equal(nextStepAsset.subarray(8, 12).toString("ascii"), "WEBP");
-assert.equal(
-  nextStepAsset.readUInt32LE(4) + 8,
-  nextStepAsset.length,
-  "Next-step WebP is truncated or has an invalid RIFF size."
+assert.ok(nextStepAsset.length >= 7000, "Next-step AVIF is unexpectedly small or over-compressed.");
+assert.equal(nextStepAsset.subarray(4, 8).toString("ascii"), "ftyp");
+assert.match(
+  nextStepAsset.subarray(0, 32).toString("ascii"),
+  /avif/,
+  "Next-step backdrop is not an AVIF image."
+);
+
+const ispeIndex = nextStepAsset.indexOf(Buffer.from("ispe"));
+assert.ok(ispeIndex >= 0, "Next-step AVIF is missing image dimensions.");
+const nextStepWidth = nextStepAsset.readUInt32BE(ispeIndex + 8);
+const nextStepHeight = nextStepAsset.readUInt32BE(ispeIndex + 12);
+assert.ok(
+  nextStepWidth >= 1900 && nextStepHeight >= 800,
+  "Next-step backdrop must remain at least 1900x800."
 );
 
 const stageBeforeMatch = css.match(
@@ -57,9 +65,14 @@ assert.doesNotMatch(stageBefore, /background-size:\s*cover/);
 const nextStepBeforeMatch = css.match(/\.home-next-step::before\s*\{([\s\S]*?)\n\}/);
 assert.ok(nextStepBeforeMatch, "Next-step background layer is missing.");
 const nextStepBefore = nextStepBeforeMatch[1];
-assert.match(nextStepBefore, /home-next-step-background\.webp/);
-assert.match(nextStepBefore, /\/\s*cover\s+no-repeat/);
-assert.match(nextStepBefore, /mask-image:/);
+assert.match(nextStepBefore, /home-next-step-background\.avif/);
+assert.match(nextStepBefore, /background-size:\s*cover/);
+assert.match(nextStepBefore, /background-repeat:\s*no-repeat/);
+assert.doesNotMatch(nextStepBefore, /home-next-step-background\.webp/);
+assert.doesNotMatch(nextStepBefore, /filter:\s*[^;]*blur\(/);
+assert.doesNotMatch(nextStepBefore, /backdrop-filter:/);
+assert.doesNotMatch(nextStepBefore, /transform:\s*[^;]*scale\(/);
+assert.doesNotMatch(nextStepBefore, /mask-image:/);
 
 assert.match(home, /<div className="home-merchandising-stage">/);
 assert.match(
