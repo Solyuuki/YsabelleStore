@@ -718,9 +718,9 @@
   inset: -20px;
   z-index: 0;
   background:
-    url("/images/home/storefront-merchandising-background.webp") center top / cover no-repeat;
+    url("/images/home/storefront-merchandising-background.webp") center top / 100% 160% no-repeat;
   content: "";
-  filter: blur(4px) saturate(0.88) brightness(0.94);
+  filter: blur(3px) saturate(0.9) brightness(0.98);
   pointer-events: none;
   transform: scale(1.02);
   transform-origin: top center;
@@ -733,10 +733,10 @@
   background:
     linear-gradient(
       180deg,
-      rgb(5 7 11 / 18%) 0%,
-      rgb(5 7 11 / 20%) 38%,
-      rgb(5 7 11 / 24%) 72%,
-      rgb(5 7 11 / 28%) 100%
+      rgb(5 7 11 / 14%) 0%,
+      rgb(5 7 11 / 16%) 38%,
+      rgb(5 7 11 / 20%) 72%,
+      rgb(5 7 11 / 24%) 100%
     );
   content: "";
   pointer-events: none;
@@ -810,16 +810,17 @@
 @media (max-width: 900px) {
   .home-merchandising-stage::before {
     background-position: 50% top;
-    filter: blur(3px) saturate(0.86) brightness(0.92);
+    background-size: auto 160%;
+    filter: blur(3px) saturate(0.88) brightness(0.96);
   }
 
   .home-merchandising-stage::after {
     background:
       linear-gradient(
         180deg,
-        rgb(5 7 11 / 20%) 0%,
-        rgb(5 7 11 / 24%) 55%,
-        rgb(5 7 11 / 30%) 100%
+        rgb(5 7 11 / 16%) 0%,
+        rgb(5 7 11 / 20%) 55%,
+        rgb(5 7 11 / 26%) 100%
       );
   }
 }
