@@ -138,7 +138,9 @@ export function ProductCard({
           <Star aria-hidden="true" fill={hasReviews ? "currentColor" : "none"} />
           {hasReviews ? <strong>{formattedRating}</strong> : null}
           <span>
-            ({hasReviews ? product.reviewCount : 0} {hasReviews && product.reviewCount === 1 ? "review" : "reviews"})
+            {hasReviews
+              ? `(${product.reviewCount} ${product.reviewCount === 1 ? "review" : "reviews"})`
+              : "No reviews yet"}
           </span>
         </div>
 
