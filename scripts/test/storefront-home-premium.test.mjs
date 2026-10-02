@@ -82,7 +82,7 @@ assert.match(productCardSource, /customer-product-badge__fire/);
 assert.match(productCardSource, /customer-product-badge__medal/);
 assert.match(productCardSource, /customer-product-card__rating \$\{hasReviews \? "" : "is-empty"\}/);
 assert.match(productCardSource, /fill=\{hasReviews \? "currentColor" : "none"\}/);
-assert.match(productCardSource, /\(\{hasReviews \? product\.reviewCount : 0\}/);
+assert.match(productCardSource, /No reviews yet/);
 assert.match(quantitySource, /min = 1/);
 assert.match(quantitySource, /Math\.max\(min, value - 1\)/);
 
