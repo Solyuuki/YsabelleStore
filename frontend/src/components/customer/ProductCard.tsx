@@ -1,4 +1,4 @@
-import { CircleAlert, Heart, ShoppingBasket, Star } from "lucide-react";
+import { Award, CircleAlert, Flame, Heart, ShoppingBasket, Star } from "lucide-react";
 
 import { useCart } from "@/context/CartContext";
 import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
@@ -84,7 +84,14 @@ export function ProductCard({
             <span
               className={`customer-product-badge customer-product-badge--${resolvedBadge.tone}`}
             >
-              {resolvedBadge.label}
+              {resolvedBadge.tone === "trending" ? (
+                <Flame aria-hidden="true" className="customer-product-badge__icon" />
+              ) : resolvedBadge.tone === "best-seller" ? (
+                <Award aria-hidden="true" className="customer-product-badge__icon" />
+              ) : (
+                <CircleAlert aria-hidden="true" className="customer-product-badge__icon" />
+              )}
+              <span>{resolvedBadge.label}</span>
             </span>
           ) : null}
         </CustomerLink>
@@ -96,6 +103,7 @@ export function ProductCard({
           }
           aria-pressed={isFavorite}
           className="customer-product-card__favorite"
+          data-tooltip={isFavorite ? "Remove from favorites" : "Save to favorites"}
           onClick={() => void handleFavorite()}
           type="button"
         >
@@ -142,7 +150,7 @@ export function ProductCard({
             />
           ) : (
             <button
-              className="customer-button customer-button--compact"
+              className="customer-button customer-button--compact customer-product-card__cart-button"
               data-tour={tourTarget ? "add-to-cart" : undefined}
               disabled={outOfStock || !isReady}
               onClick={handleAddToCart}
