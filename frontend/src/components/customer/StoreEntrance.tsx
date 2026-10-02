@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 import { YsabelleBrandMark } from "./YsabelleBrandMark";
 
-const STORE_ENTRANCE_VIDEO = "/media/store-entrance.mp4?v=26c4d4b0";
+const STORE_ENTRANCE_VIDEO = "/media/store-entrance.mp4?v=53360d48";
 const STORE_ENTRANCE_POSTER =
   "/images/discover/essentials/canned-goods-retail-display.webp";
 
