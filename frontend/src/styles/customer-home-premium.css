@@ -668,24 +668,13 @@
   position: absolute;
   inset: 0;
   z-index: -2;
-  background:
-    url("/images/home/home-next-step-background.webp") center 48% / cover no-repeat;
+  background-color: #191512;
+  background-image: url("/images/home/home-next-step-background.avif");
+  background-position: center 48%;
+  background-repeat: no-repeat;
+  background-size: cover;
   content: "";
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(
-    180deg,
-    transparent 0%,
-    #000 12%,
-    #000 90%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    180deg,
-    transparent 0%,
-    #000 12%,
-    #000 90%,
-    transparent 100%
-  );
 }
 
 .home-next-step::after {
@@ -695,9 +684,9 @@
   background:
     linear-gradient(
       180deg,
-      rgb(12 15 22 / 8%) 0%,
-      rgb(12 15 22 / 14%) 50%,
-      rgb(12 15 22 / 28%) 100%
+      rgb(12 15 22 / 4%) 0%,
+      rgb(12 15 22 / 8%) 52%,
+      rgb(12 15 22 / 14%) 100%
     );
   content: "";
   pointer-events: none;
