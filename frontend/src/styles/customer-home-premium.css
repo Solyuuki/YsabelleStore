@@ -808,9 +808,34 @@
   color: #fff;
 }
 
-.customer-product-badge--trending .customer-product-badge__icon {
-  color: #ff4d4f;
-  filter: drop-shadow(0 1px 2px rgb(78 8 18 / 30%));
+.customer-product-badge__fire {
+  position: relative;
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  place-items: center;
+  filter: drop-shadow(0 1px 2px rgb(78 8 18 / 32%));
+}
+
+.customer-product-badge__fire-outer,
+.customer-product-badge__fire-inner {
+  position: absolute;
+  stroke-width: 1.7;
+}
+
+.customer-product-badge__fire-outer {
+  width: 16px;
+  height: 16px;
+  color: #ff343f;
+}
+
+.customer-product-badge__fire-inner {
+  width: 9px;
+  height: 9px;
+  bottom: 1px;
+  color: #ffb020;
+  stroke-width: 1.4;
 }
 
 .customer-product-badge--best-seller {
