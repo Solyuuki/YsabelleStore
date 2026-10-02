@@ -120,10 +120,10 @@ assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover::af
 assert.match(premiumCss, /\.home-merchandising--trending[\s\S]*?background:\s*#171411 !important/);
 assert.match(premiumCss, /storefront-merchandising-background\.webp/);
 assert.match(premiumCss, /\.home-merchandising--trending::before[\s\S]*?center top \/ cover no-repeat/);
-assert.match(premiumCss, /\.home-merchandising--trending::before[\s\S]*?transform:\s*scale\(1\.02\)[\s\S]*?transform-origin:\s*top center/);
+assert.match(premiumCss, /\.home-merchandising--trending::before[\s\S]*?inset:\s*-24px[\s\S]*?transform:\s*scale\(1\.82\)[\s\S]*?transform-origin:\s*top center/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising--best-seller::before/);
 assert.doesNotMatch(premiumCss, /\.home-essentials::before/);
-assert.match(premiumCss, /\.home-merchandising--trending::before[\s\S]*?filter:\s*blur\(3px\) saturate\(0\.9\) brightness\(0\.96\)/);
+assert.match(premiumCss, /\.home-merchandising--trending::before[\s\S]*?filter:\s*blur\(4px\) saturate\(0\.88\) brightness\(0\.94\)/);
 assert.match(premiumCss, /\.home-merchandising--trending::after[\s\S]*?rgb\(5 7 11 \/ 18%\) 0%[\s\S]*?rgb\(5 7 11 \/ 28%\) 100%/);
 assert.match(premiumCss, /\.home-merchandising--trending \.home-section-heading h2[\s\S]*?color:\s*#fff[\s\S]*?-webkit-text-stroke:\s*0\.45px/);
 assert.doesNotMatch(premiumCss, /\.home-next-step::before/);
