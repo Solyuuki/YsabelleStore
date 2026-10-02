@@ -658,8 +658,54 @@
 }
 
 .home-next-step {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   padding-top: 0;
-  background: #fbfaf7;
+}
+
+.home-next-step::before {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    url("/images/home/home-next-step-background.webp") center 48% / cover no-repeat;
+  content: "";
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 12%,
+    #000 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 12%,
+    #000 90%,
+    transparent 100%
+  );
+}
+
+.home-next-step::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(12 15 22 / 8%) 0%,
+      rgb(12 15 22 / 14%) 50%,
+      rgb(12 15 22 / 28%) 100%
+    );
+  content: "";
+  pointer-events: none;
+}
+
+.home-next-step > .customer-container {
+  position: relative;
+  z-index: 1;
 }
 
 .home-next-step__grid {
@@ -1322,6 +1368,10 @@
 
 /* Responsive behavior */
 @media (max-width: 920px) {
+  .home-next-step::before {
+    background-position: center center;
+  }
+
   .home-next-step__grid {
     grid-template-columns: 1fr;
   }
