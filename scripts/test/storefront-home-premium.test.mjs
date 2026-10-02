@@ -117,6 +117,12 @@ assert.match(premiumCss, /\.home-categories \.home-section-heading > a::after[\s
 assert.match(premiumCss, /\.home-categories \.home-section-heading > a > svg[\s\S]*?color:\s*#fff[\s\S]*?rgb\(151 139 255 \/ 88%\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover > span[\s\S]*?0 0 14px rgb\(113 92 255 \/ 22%\)[\s\S]*?translateY\(-0\.5px\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover::after[\s\S]*?#f4f6ff 0%[\s\S]*?#e4dcff 46%[\s\S]*?#ffe4f8 100%[\s\S]*?rgb\(207 79 200 \/ 34%\)/);
+assert.match(premiumCss, /\.home-merchandising--trending,\s*\.home-merchandising--best-seller,\s*\.home-essentials,\s*\.home-next-step[\s\S]*?background:\s*#171411 !important/);
+assert.match(premiumCss, /storefront-merchandising-background\.webp/);
+assert.match(premiumCss, /\.home-merchandising--trending::before[\s\S]*?filter:\s*blur\(5px\) saturate\(0\.82\) brightness\(0\.72\)/);
+assert.match(premiumCss, /\.home-merchandising--trending::after[\s\S]*?linear-gradient\(180deg, rgb\(5 7 11 \/ 46%\), rgb\(5 7 11 \/ 60%\)\)/);
+assert.match(premiumCss, /\.home-merchandising--trending \.home-section-heading h2[\s\S]*?color:\s*#fff[\s\S]*?-webkit-text-stroke:\s*0\.45px/);
+assert.match(premiumCss, /\.home-next-step::before[\s\S]*?brightness\(0\.66\)/);
 assert.match(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.match(premiumCss, /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.doesNotMatch(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*#f5f4f0/);
