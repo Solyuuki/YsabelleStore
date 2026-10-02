@@ -85,7 +85,16 @@ export function ProductCard({
               className={`customer-product-badge customer-product-badge--${resolvedBadge.tone}`}
             >
               {resolvedBadge.tone === "trending" ? (
-                <Flame aria-hidden="true" className="customer-product-badge__icon" />
+                <span aria-hidden="true" className="customer-product-badge__fire">
+                  <Flame
+                    className="customer-product-badge__fire-outer"
+                    fill="currentColor"
+                  />
+                  <Flame
+                    className="customer-product-badge__fire-inner"
+                    fill="currentColor"
+                  />
+                </span>
               ) : resolvedBadge.tone === "best-seller" ? (
                 <Award aria-hidden="true" className="customer-product-badge__icon" />
               ) : (
