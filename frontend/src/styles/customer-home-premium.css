@@ -1074,7 +1074,7 @@
 }
 
 .customer-product-card__actions .customer-quantity input {
-  border-inline: 1px solid #eceaf9;
+  border: 0;
   color: #171a23;
   font-weight: 850;
 }
