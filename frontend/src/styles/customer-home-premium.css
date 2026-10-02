@@ -960,6 +960,14 @@
   padding-top: 1rem;
 }
 
+.customer-product-card__purchase-row {
+  display: grid;
+  width: 100%;
+  align-items: stretch;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
 .customer-product-card__actions .customer-button {
   min-height: 46px;
   border-radius: 0.7rem;
@@ -967,6 +975,10 @@
 
 .customer-product-card__cart-button {
   position: relative;
+  min-width: 0;
+  padding-inline: 0.58rem;
+  gap: 0.42rem;
+  white-space: nowrap;
   overflow: hidden;
   border-color: #4f46e5;
   background:
@@ -1038,7 +1050,7 @@
 .customer-product-card__actions .customer-quantity {
   width: 100%;
   height: 46px;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  grid-template-columns: 44px minmax(20px, 1fr) 44px;
   border-color: #c8c5f4;
   border-radius: 0.7rem;
   background: #fff;
