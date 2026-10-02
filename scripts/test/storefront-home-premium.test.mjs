@@ -99,6 +99,9 @@ assert.match(premiumCss, /\.store-entrance__enter::after[\s\S]*?store-entrance-c
 assert.match(premiumCss, /@keyframes store-entrance-cta-sheen/);
 assert.match(premiumCss, /@keyframes store-entrance-cta-glow/);
 assert.match(premiumCss, /@media \(prefers-reduced-motion: no-preference\)[\s\S]*?\.store-entrance__enter::after/);
+assert.match(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/);
+assert.match(premiumCss, /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/);
+assert.doesNotMatch(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*#f5f4f0/);
 assert.match(premiumCss, /\.customer-product-card__favorite[\s\S]*?width:\s*44px;[\s\S]*?height:\s*44px/);
 assert.match(premiumCss, /\.customer-product-card__favorite\[aria-pressed="true"\][\s\S]*?linear-gradient\(135deg, #4f46e5 0%, #7c3aed 58%, #b832d0 100%\)/);
 assert.match(premiumCss, /\.customer-product-badge--trending[\s\S]*?linear-gradient\(110deg, #4938e8 0%, #6748f5 60%, #a13cd4 100%\)/);
