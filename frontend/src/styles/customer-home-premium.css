@@ -704,26 +704,21 @@
   font-size: clamp(2rem, 3.8vw, 3.2rem);
 }
 
-/* Shared merchandising atmosphere: one retail wall image, softened and shaded for both light and dark modes. */
-.home-merchandising--trending,
-.home-merchandising--best-seller,
-.home-essentials,
-.home-next-step {
+/* Trending atmosphere: isolated per section so the backdrop never restarts across shelves. */
+.home-merchandising--trending {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  border-bottom-color: rgb(255 255 255 / 10%);
   background: #171411 !important;
 }
 
-.home-merchandising--trending::before,
-.home-merchandising--best-seller::before,
-.home-essentials::before,
-.home-next-step::before {
+.home-merchandising--trending::before {
   position: absolute;
   inset: -18px;
   z-index: 0;
   background:
-    url("/images/home/storefront-merchandising-background.webp") center / cover no-repeat;
+    url("/images/home/storefront-merchandising-background.webp") center 36% / cover no-repeat;
   content: "";
   filter: blur(3px) saturate(0.9) brightness(0.94);
   pointer-events: none;
@@ -731,10 +726,7 @@
   transform-origin: center;
 }
 
-.home-merchandising--trending::after,
-.home-merchandising--best-seller::after,
-.home-essentials::after,
-.home-next-step::after {
+.home-merchandising--trending::after {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -745,40 +737,19 @@
   pointer-events: none;
 }
 
-.home-merchandising--trending > .customer-container,
-.home-merchandising--best-seller > .customer-container,
-.home-essentials > .customer-container,
-.home-next-step > .customer-container {
+.home-merchandising--trending > .customer-container {
   position: relative;
   z-index: 2;
 }
 
-.home-merchandising--trending {
-  border-bottom-color: rgb(255 255 255 / 10%);
-}
-
-.home-merchandising--best-seller {
-  border-block-color: rgb(255 255 255 / 10%);
-}
-
-.home-merchandising--trending .customer-kicker,
-.home-essentials .customer-kicker {
+.home-merchandising--trending .customer-kicker {
   color: #c7bdff;
   text-shadow:
     0 1px 2px rgb(0 0 0 / 72%),
     0 0 10px rgb(113 92 255 / 18%);
 }
 
-.home-merchandising--best-seller .customer-kicker {
-  color: #ffd487;
-  text-shadow:
-    0 1px 2px rgb(0 0 0 / 72%),
-    0 0 10px rgb(255 180 63 / 16%);
-}
-
-.home-merchandising--trending .home-section-heading h2,
-.home-merchandising--best-seller .home-section-heading h2,
-.home-essentials .home-section-heading h2 {
+.home-merchandising--trending .home-section-heading h2 {
   color: #fff;
   -webkit-text-stroke: 0.45px rgb(151 139 255 / 44%);
   text-shadow:
@@ -787,16 +758,12 @@
     0 2px 18px rgb(0 0 0 / 24%);
 }
 
-.home-merchandising--trending .home-section-heading p:last-child,
-.home-merchandising--best-seller .home-section-heading p:last-child,
-.home-essentials .home-section-heading p:last-child {
+.home-merchandising--trending .home-section-heading p:last-child {
   color: #d8dbe5;
   text-shadow: 0 1px 8px rgb(0 0 0 / 38%);
 }
 
-.home-merchandising--trending .home-section-heading > a,
-.home-merchandising--best-seller .home-section-heading > a,
-.home-essentials .home-section-heading > a {
+.home-merchandising--trending .home-section-heading > a {
   border-bottom-color: #9b8cff;
   color: #f2efff;
   text-shadow:
@@ -805,11 +772,7 @@
 }
 
 .home-merchandising--trending .home-section-heading > a:hover,
-.home-merchandising--trending .home-section-heading > a:focus-visible,
-.home-merchandising--best-seller .home-section-heading > a:hover,
-.home-merchandising--best-seller .home-section-heading > a:focus-visible,
-.home-essentials .home-section-heading > a:hover,
-.home-essentials .home-section-heading > a:focus-visible {
+.home-merchandising--trending .home-section-heading > a:focus-visible {
   border-bottom-color: #cf4fc8;
   color: #fff;
   text-shadow:
@@ -817,35 +780,16 @@
     0 0 10px rgb(118 87 246 / 24%);
 }
 
-.home-merchandising--trending .customer-product-card,
-.home-merchandising--best-seller .customer-product-card,
-.home-essentials .customer-product-card {
+.home-merchandising--trending .customer-product-card {
   box-shadow:
     0 1px 0 rgb(255 255 255 / 72%),
     0 12px 30px rgb(0 0 0 / 18%);
 }
 
-.home-merchandising--trending .customer-product-card:hover,
-.home-merchandising--best-seller .customer-product-card:hover,
-.home-essentials .customer-product-card:hover {
+.home-merchandising--trending .customer-product-card:hover {
   box-shadow:
     0 1px 0 rgb(255 255 255 / 78%),
     0 16px 34px rgb(0 0 0 / 24%);
-}
-
-.home-next-step {
-  padding-top: clamp(2rem, 3.5vw, 3rem);
-  padding-bottom: clamp(3rem, 5vw, 4.5rem);
-}
-
-.home-next-step::before {
-  background-position: center bottom;
-  filter: blur(3px) saturate(0.86) brightness(0.9);
-}
-
-.home-next-step::after {
-  background:
-    linear-gradient(180deg, rgb(5 7 11 / 22%), rgb(5 7 11 / 34%));
 }
 
 /* ProductTile: quieter media, fewer badges, product -> price -> action hierarchy. */
