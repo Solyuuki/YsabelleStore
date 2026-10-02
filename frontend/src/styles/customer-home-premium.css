@@ -447,19 +447,21 @@
   left: 0;
   height: 2px;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    #5b7cff 0%,
-    #7657f6 54%,
-    #cf4fc8 100%
-  );
-  background-position: 0% 50%;
-  background-size: 180% 100%;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 38%), rgb(255 255 255 / 0%)) top / 100% 1px no-repeat,
+    linear-gradient(90deg, #5b7cff 0%, #7657f6 54%, #cf4fc8 100%);
+  background-position:
+    0 0,
+    0% 50%;
+  background-size:
+    100% 1px,
+    180% 100%;
   box-shadow:
-    0 0 7px rgb(118 87 246 / 24%),
-    0 0 12px rgb(207 79 200 / 10%);
+    0 0 0 0.5px rgb(151 139 255 / 28%),
+    0 0 8px rgb(118 87 246 / 28%),
+    0 0 14px rgb(207 79 200 / 14%);
   content: "";
-  opacity: 0.96;
+  opacity: 0.98;
   transform: scaleX(0.96);
   transform-origin: left center;
   transition:
@@ -486,11 +488,12 @@
 .home-categories .home-section-heading > a > svg {
   width: 18px;
   height: 18px;
-  color: #cf4fc8;
+  color: #fff;
   filter:
-    drop-shadow(0 1px 2px rgb(0 0 0 / 64%))
-    drop-shadow(0 0 7px rgb(207 79 200 / 26%));
-  stroke-width: 2.2;
+    drop-shadow(0 1px 2px rgb(0 0 0 / 54%))
+    drop-shadow(0 0 1px rgb(151 139 255 / 88%))
+    drop-shadow(0 0 8px rgb(113 92 255 / 24%));
+  stroke-width: 2.3;
   transition:
     color 180ms ease,
     filter 180ms ease,
@@ -517,19 +520,24 @@
 
 .home-categories .home-section-heading > a:hover > svg,
 .home-categories .home-section-heading > a:focus-visible > svg {
-  color: #dd5fd0;
+  color: #fff;
   filter:
-    drop-shadow(0 1px 2px rgb(0 0 0 / 68%))
-    drop-shadow(0 0 10px rgb(207 79 200 / 40%));
+    drop-shadow(0 1px 2px rgb(0 0 0 / 58%))
+    drop-shadow(0 0 1px rgb(207 79 200 / 92%))
+    drop-shadow(0 0 10px rgb(118 87 246 / 34%))
+    drop-shadow(0 0 14px rgb(207 79 200 / 22%));
   transform: translateX(4px) scale(1.06);
 }
 
 .home-categories .home-section-heading > a:hover::after,
 .home-categories .home-section-heading > a:focus-visible::after {
-  background-position: 100% 50%;
+  background-position:
+    0 0,
+    100% 50%;
   box-shadow:
-    0 0 9px rgb(91 124 255 / 34%),
-    0 0 15px rgb(207 79 200 / 30%);
+    0 0 0 0.5px rgb(255 255 255 / 22%),
+    0 0 10px rgb(91 124 255 / 38%),
+    0 0 16px rgb(207 79 200 / 32%);
   opacity: 1;
   transform: scaleX(1);
 }
