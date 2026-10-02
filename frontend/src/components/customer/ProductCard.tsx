@@ -1,4 +1,6 @@
-import { CircleAlert, Flame, Heart, ShoppingBasket, Star } from "lucide-react";
+import { CircleAlert, Flame, Heart, ShoppingCart, Star } from "lucide-react";
+
+import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
 import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
@@ -25,11 +27,11 @@ export function ProductCard({
   presentation?: "catalog" | "editorial";
   tourTarget?: boolean;
 }) {
-  const { addItem, isReady, items, updateQuantity } = useCart();
+  const { addItem, isReady } = useCart();
   const { favoriteIds, toggleFavorite } = useCustomerFavorites();
   const outOfStock = product.availableStock <= 0;
   const isFavorite = favoriteIds.has(product.id);
-  const cartQuantity = items.find((item) => item.product.id === product.id)?.quantity ?? 0;
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
   const resolvedBadge = badge === undefined ? getStorefrontProductBadge(product) : badge;
   const showStockMessage =
     outOfStock || (product.stockStatus === "LOW_STOCK" && resolvedBadge?.tone !== "low-stock");
@@ -54,11 +56,11 @@ export function ProductCard({
   }
 
   function handleAddToCart() {
-    addItem(product, 1);
+    addItem(product, selectedQuantity);
   }
 
   function handleQuantityChange(nextQuantity: number) {
-    updateQuantity(product.id, nextQuantity);
+    setSelectedQuantity(Math.min(product.availableStock, Math.max(1, nextQuantity)));
   }
 
   return (
@@ -151,28 +153,34 @@ export function ProductCard({
         ) : null}
 
         <div className="customer-product-card__actions">
-          {!outOfStock && cartQuantity > 0 ? (
-            <QuantityControl
-              label={`Quantity for ${product.name}`}
-              max={product.availableStock}
-              min={0}
-              onChange={handleQuantityChange}
-              value={cartQuantity}
-            />
+          {!outOfStock ? (
+            <div className="customer-product-card__purchase-row">
+              <QuantityControl
+                label={`Quantity for ${product.name}`}
+                max={product.availableStock}
+                min={1}
+                onChange={handleQuantityChange}
+                value={selectedQuantity}
+              />
+              <button
+                className="customer-button customer-button--compact customer-product-card__cart-button"
+                data-tour={tourTarget ? "add-to-cart" : undefined}
+                disabled={!isReady}
+                onClick={handleAddToCart}
+                type="button"
+              >
+                <ShoppingCart aria-hidden="true" size={17} strokeWidth={2} />
+                {isReady ? "Add to cart" : "Cart loading"}
+              </button>
+            </div>
           ) : (
             <button
               className="customer-button customer-button--compact customer-product-card__cart-button"
-              data-tour={tourTarget ? "add-to-cart" : undefined}
-              disabled={outOfStock || !isReady}
-              onClick={handleAddToCart}
+              disabled
               type="button"
             >
-              {outOfStock ? (
-                <CircleAlert aria-hidden="true" size={17} />
-              ) : (
-                <ShoppingBasket aria-hidden="true" size={17} />
-              )}
-              {outOfStock ? "Out of stock" : isReady ? "Add to cart" : "Cart loading"}
+              <CircleAlert aria-hidden="true" size={17} />
+              Out of stock
             </button>
           )}
         </div>
