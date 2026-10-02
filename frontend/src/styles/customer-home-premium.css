@@ -173,10 +173,10 @@
   overflow: hidden;
   gap: 0.65rem;
   padding: 0.78rem 1.16rem;
-  border: 1px solid transparent;
+  border: 1.5px solid transparent;
   border-radius: 0.7rem;
   background:
-    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(135deg, #fff 0%, #f8f7ff 58%, #fff8fd 100%) padding-box,
     linear-gradient(110deg, #5b7cff 0%, #7657f6 54%, #cf4fc8 100%) border-box;
   box-shadow:
     0 12px 30px rgb(0 0 0 / 18%),
@@ -196,17 +196,32 @@
 .store-entrance__enter > span {
   position: relative;
   z-index: 2;
+  background: linear-gradient(100deg, #243fbd 0%, #6548e8 52%, #b832b4 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: 850;
+  letter-spacing: 0.012em;
+  filter: drop-shadow(0 1px 1px rgb(55 48 163 / 10%));
+  transition: filter 180ms ease;
 }
 
 .store-entrance__enter:hover {
   background:
-    linear-gradient(#fbfbff, #fbfbff) padding-box,
+    linear-gradient(135deg, #fff 0%, #f3f1ff 56%, #fff4fb 100%) padding-box,
     linear-gradient(110deg, #6d88ff 0%, #865df8 52%, #dd5fd0 100%) border-box;
   box-shadow:
     0 14px 34px rgb(0 0 0 / 22%),
     0 0 0 1px rgb(118 87 246 / 18%),
     0 0 22px rgb(118 87 246 / 14%);
   transform: translateY(-1px);
+}
+
+.store-entrance__enter:hover > span {
+  filter:
+    drop-shadow(0 1px 1px rgb(55 48 163 / 12%))
+    drop-shadow(0 0 8px rgb(118 87 246 / 16%));
 }
 
 .store-entrance__enter:active {
