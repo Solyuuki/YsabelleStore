@@ -80,7 +80,9 @@ assert.match(productCardSource, /data-tooltip=\{isFavorite \? "Remove from favor
 assert.match(productCardSource, /customer-product-card__cart-button/);
 assert.match(productCardSource, /customer-product-badge__fire/);
 assert.match(productCardSource, /customer-product-badge__medal/);
-assert.match(productCardSource, /\(\{product\.reviewCount\} \{product\.reviewCount === 1 \? "review" : "reviews"\}\)/);
+assert.match(productCardSource, /customer-product-card__rating \$\{hasReviews \? "" : "is-empty"\}/);
+assert.match(productCardSource, /fill=\{hasReviews \? "currentColor" : "none"\}/);
+assert.match(productCardSource, /\(\{hasReviews \? product\.reviewCount : 0\}/);
 assert.match(quantitySource, /min = 1/);
 assert.match(quantitySource, /Math\.max\(min, value - 1\)/);
 
@@ -115,6 +117,8 @@ assert.match(premiumCss, /@keyframes customer-merchandising-shine/);
 assert.match(premiumCss, /\.customer-product-card__rating[\s\S]*?font-size:\s*0\.74rem/);
 assert.match(premiumCss, /\.customer-product-card__rating svg[\s\S]*?width:\s*15px;[\s\S]*?color:\s*#f5a623/);
 assert.match(premiumCss, /\.customer-product-card__rating span[\s\S]*?border-left:\s*1px solid #c9ceda/);
+assert.match(premiumCss, /\.customer-product-card__rating\.is-empty svg[\s\S]*?color:\s*#9aa6c4/);
+assert.match(premiumCss, /\.customer-product-card__rating\.is-empty span[\s\S]*?border-left:\s*0/);
 assert.match(premiumCss, /\.customer-product-card__price-row[\s\S]*?margin-top:\s*0\.54rem/);
 assert.match(premiumCss, /\.customer-product-card__purchase-row[\s\S]*?grid-template-columns:\s*112px minmax\(0, 1fr\)/);
 assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(20px, 1fr\) 44px/);
