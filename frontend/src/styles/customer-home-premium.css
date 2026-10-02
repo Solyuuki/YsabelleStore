@@ -151,8 +151,12 @@
   font-weight: 650;
   letter-spacing: -0.04em;
   line-height: 1.02;
+  -webkit-text-stroke: 0.55px rgb(151 139 255 / 58%);
   text-wrap: balance;
-  text-shadow: 0 2px 24px rgb(0 0 0 / 24%);
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 48%),
+    0 0 12px rgb(113 92 255 / 16%),
+    0 2px 24px rgb(0 0 0 / 20%);
 }
 
 .store-entrance h1 span {
@@ -169,23 +173,24 @@
   overflow: hidden;
   gap: 0.65rem;
   padding: 0.78rem 1.16rem;
-  border: 1px solid rgb(255 255 255 / 86%);
+  border: 1px solid transparent;
   border-radius: 0.7rem;
-  background: #fff;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(110deg, #5b7cff 0%, #7657f6 54%, #cf4fc8 100%) border-box;
   box-shadow:
     0 12px 30px rgb(0 0 0 / 18%),
-    0 0 0 0 rgb(255 255 255 / 0%);
+    0 0 0 1px rgb(118 87 246 / 12%);
   color: #111827;
   cursor: pointer;
   font: inherit;
   font-size: 0.86rem;
   font-weight: 800;
   transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
+    background 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
 }
 
 .store-entrance__enter > span {
@@ -194,9 +199,13 @@
 }
 
 .store-entrance__enter:hover {
-  border-color: #fff;
-  background: #f5f5f4;
-  box-shadow: 0 14px 34px rgb(0 0 0 / 24%);
+  background:
+    linear-gradient(#fbfbff, #fbfbff) padding-box,
+    linear-gradient(110deg, #6d88ff 0%, #865df8 52%, #dd5fd0 100%) border-box;
+  box-shadow:
+    0 14px 34px rgb(0 0 0 / 22%),
+    0 0 0 1px rgb(118 87 246 / 18%),
+    0 0 22px rgb(118 87 246 / 14%);
   transform: translateY(-1px);
 }
 
@@ -267,13 +276,14 @@
   100% {
     box-shadow:
       0 12px 30px rgb(0 0 0 / 18%),
-      0 0 0 0 rgb(255 255 255 / 0%);
+      0 0 0 1px rgb(118 87 246 / 12%);
   }
 
   69% {
     box-shadow:
       0 14px 34px rgb(0 0 0 / 20%),
-      0 0 0 5px rgb(255 255 255 / 10%);
+      0 0 0 2px rgb(118 87 246 / 16%),
+      0 0 22px rgb(118 87 246 / 14%);
   }
 }
 
