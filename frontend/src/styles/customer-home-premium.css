@@ -704,29 +704,29 @@
   font-size: clamp(2rem, 3.8vw, 3.2rem);
 }
 
-/* Trending atmosphere: isolated per section so the backdrop never restarts across shelves. */
-.home-merchandising--trending {
+/* One continuous merchandising backdrop across Trending, Best Sellers and Everyday Essentials. */
+.home-merchandising-stage {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-bottom-color: rgb(255 255 255 / 10%);
-  background: #171411 !important;
+  background:
+    linear-gradient(135deg, #2b241f 0%, #211d1a 48%, #1e1b1a 100%);
 }
 
-.home-merchandising--trending::before {
+.home-merchandising-stage::before {
   position: absolute;
-  inset: -24px;
+  inset: -20px;
   z-index: 0;
   background:
     url("/images/home/storefront-merchandising-background.webp") center top / cover no-repeat;
   content: "";
   filter: blur(4px) saturate(0.88) brightness(0.94);
   pointer-events: none;
-  transform: scale(1.82);
+  transform: scale(1.02);
   transform-origin: top center;
 }
 
-.home-merchandising--trending::after {
+.home-merchandising-stage::after {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -734,27 +734,37 @@
     linear-gradient(
       180deg,
       rgb(5 7 11 / 18%) 0%,
-      rgb(5 7 11 / 20%) 52%,
-      rgb(5 7 11 / 24%) 76%,
+      rgb(5 7 11 / 20%) 38%,
+      rgb(5 7 11 / 24%) 72%,
       rgb(5 7 11 / 28%) 100%
     );
   content: "";
   pointer-events: none;
 }
 
-.home-merchandising--trending > .customer-container {
+.home-merchandising-stage > .customer-section,
+.home-merchandising-stage > .home-merchandising {
   position: relative;
   z-index: 2;
+  border: 0;
+  background: transparent !important;
 }
 
-.home-merchandising--trending .customer-kicker {
+.home-merchandising-stage .customer-kicker {
   color: #c7bdff;
   text-shadow:
     0 1px 2px rgb(0 0 0 / 72%),
     0 0 10px rgb(113 92 255 / 18%);
 }
 
-.home-merchandising--trending .home-section-heading h2 {
+.home-merchandising-stage .home-merchandising--best-seller .customer-kicker {
+  color: #ffd487;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 72%),
+    0 0 10px rgb(255 180 63 / 16%);
+}
+
+.home-merchandising-stage .home-section-heading h2 {
   color: #fff;
   -webkit-text-stroke: 0.45px rgb(151 139 255 / 44%);
   text-shadow:
@@ -763,12 +773,12 @@
     0 2px 18px rgb(0 0 0 / 24%);
 }
 
-.home-merchandising--trending .home-section-heading p:last-child {
+.home-merchandising-stage .home-section-heading p:last-child {
   color: #d8dbe5;
   text-shadow: 0 1px 8px rgb(0 0 0 / 38%);
 }
 
-.home-merchandising--trending .home-section-heading > a {
+.home-merchandising-stage .home-section-heading > a {
   border-bottom-color: #9b8cff;
   color: #f2efff;
   text-shadow:
@@ -776,8 +786,8 @@
     0 0 8px rgb(118 87 246 / 16%);
 }
 
-.home-merchandising--trending .home-section-heading > a:hover,
-.home-merchandising--trending .home-section-heading > a:focus-visible {
+.home-merchandising-stage .home-section-heading > a:hover,
+.home-merchandising-stage .home-section-heading > a:focus-visible {
   border-bottom-color: #cf4fc8;
   color: #fff;
   text-shadow:
@@ -785,16 +795,33 @@
     0 0 10px rgb(118 87 246 / 24%);
 }
 
-.home-merchandising--trending .customer-product-card {
+.home-merchandising-stage .customer-product-card {
   box-shadow:
     0 1px 0 rgb(255 255 255 / 72%),
     0 12px 30px rgb(0 0 0 / 18%);
 }
 
-.home-merchandising--trending .customer-product-card:hover {
+.home-merchandising-stage .customer-product-card:hover {
   box-shadow:
     0 1px 0 rgb(255 255 255 / 78%),
     0 16px 34px rgb(0 0 0 / 24%);
+}
+
+@media (max-width: 900px) {
+  .home-merchandising-stage::before {
+    background-position: 50% top;
+    filter: blur(3px) saturate(0.86) brightness(0.92);
+  }
+
+  .home-merchandising-stage::after {
+    background:
+      linear-gradient(
+        180deg,
+        rgb(5 7 11 / 20%) 0%,
+        rgb(5 7 11 / 24%) 55%,
+        rgb(5 7 11 / 30%) 100%
+      );
+  }
 }
 
 /* ProductTile: quieter media, fewer badges, product -> price -> action hierarchy. */
