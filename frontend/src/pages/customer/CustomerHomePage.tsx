@@ -519,7 +519,8 @@ function SectionHeading({
           href={actionHref}
           navigate={navigate}
         >
-          {action} <ArrowRight aria-hidden="true" size={16} />
+          <span>{action}</span>
+          <ArrowRight aria-hidden="true" size={16} />
         </CustomerLink>
       ) : null}
     </div>
