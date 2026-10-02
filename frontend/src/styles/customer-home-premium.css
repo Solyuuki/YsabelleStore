@@ -447,20 +447,18 @@
   border-radius: 999px;
   background: linear-gradient(
     90deg,
-    #6f8cff 0%,
-    #9b7bff 34%,
-    #ef73d8 68%,
-    #6f8cff 100%
+    #5b7cff 0%,
+    #7657f6 54%,
+    #cf4fc8 100%
   );
-  background-position: 0% 50%;
-  background-size: 220% 100%;
-  box-shadow: 0 0 8px rgb(155 123 255 / 24%);
+  box-shadow:
+    0 0 7px rgb(118 87 246 / 24%),
+    0 0 12px rgb(207 79 200 / 10%);
   content: "";
-  opacity: 0.9;
-  transform: scaleX(0.94);
+  opacity: 0.96;
+  transform: scaleX(0.96);
   transform-origin: left center;
   transition:
-    background-position 420ms ease,
     box-shadow 220ms ease,
     opacity 180ms ease,
     transform 220ms ease;
@@ -477,10 +475,10 @@
 .home-categories .home-section-heading > a > svg {
   width: 18px;
   height: 18px;
-  color: #f0a0df;
+  color: #cf4fc8;
   filter:
     drop-shadow(0 1px 2px rgb(3 7 18 / 72%))
-    drop-shadow(0 0 7px rgb(239 115 216 / 24%));
+    drop-shadow(0 0 7px rgb(207 79 200 / 24%));
   stroke-width: 2.2;
   transition:
     color 180ms ease,
@@ -504,19 +502,18 @@
 
 .home-categories .home-section-heading > a:hover > svg,
 .home-categories .home-section-heading > a:focus-visible > svg {
-  color: #ffd7f4;
+  color: #ea67d8;
   filter:
     drop-shadow(0 1px 2px rgb(3 7 18 / 78%))
-    drop-shadow(0 0 10px rgb(239 115 216 / 36%));
-  transform: translateX(4px) scale(1.05);
+    drop-shadow(0 0 10px rgb(207 79 200 / 38%));
+  transform: translateX(4px) scale(1.06);
 }
 
 .home-categories .home-section-heading > a:hover::after,
 .home-categories .home-section-heading > a:focus-visible::after {
-  background-position: 100% 50%;
   box-shadow:
-    0 0 8px rgb(111 140 255 / 30%),
-    0 0 14px rgb(239 115 216 / 28%);
+    0 0 9px rgb(91 124 255 / 34%),
+    0 0 15px rgb(207 79 200 / 30%);
   opacity: 1;
   transform: scaleX(1);
 }
