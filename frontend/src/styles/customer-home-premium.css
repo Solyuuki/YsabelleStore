@@ -655,7 +655,7 @@
 
 .customer-product-card__visual-link {
   padding: 0;
-  background: #f5f4f0;
+  background: var(--product-media-surface);
 }
 
 .customer-product-card__visual-link:focus-visible {
@@ -666,7 +666,7 @@
 .customer-product-card .customer-product-visual {
   border: 0;
   border-radius: 0;
-  background: #f5f4f0;
+  background: var(--product-media-surface);
 }
 
 .customer-product-card .customer-product-visual__image > img {
