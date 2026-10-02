@@ -1,4 +1,4 @@
-import { Award, CircleAlert, Flame, Heart, ShoppingBasket, Star } from "lucide-react";
+import { CircleAlert, Flame, Heart, ShoppingBasket, Star } from "lucide-react";
 
 import { useCart } from "@/context/CartContext";
 import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
@@ -96,7 +96,9 @@ export function ProductCard({
                   />
                 </span>
               ) : resolvedBadge.tone === "best-seller" ? (
-                <Award aria-hidden="true" className="customer-product-badge__icon" />
+                <span aria-hidden="true" className="customer-product-badge__medal">
+                  <span className="customer-product-badge__medal-center" />
+                </span>
               ) : (
                 <CircleAlert aria-hidden="true" className="customer-product-badge__icon" />
               )}
