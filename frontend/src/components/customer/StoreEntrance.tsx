@@ -123,7 +123,7 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
 
         <div className="store-entrance__copy">
           <h1>
-            <span>Your Neighborhood Store,</span>
+            <span>Your Neighborhood Store</span>
             <span>Now Online.</span>
           </h1>
         </div>
