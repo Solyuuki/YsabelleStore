@@ -470,21 +470,17 @@
 }
 
 .home-categories .home-section-heading > a > span {
-  background: linear-gradient(100deg, #5b7cff 0%, #7657f6 54%, #cf4fc8 100%);
-  background-position: 0% 50%;
-  background-size: 180% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 0.3px rgb(255 255 255 / 44%);
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  -webkit-text-stroke: 0.55px rgb(151 139 255 / 58%);
   text-shadow:
-    0 1px 2px rgb(0 0 0 / 68%),
-    0 0 8px rgb(118 87 246 / 16%);
+    0 1px 2px rgb(0 0 0 / 48%),
+    0 0 12px rgb(113 92 255 / 16%),
+    0 2px 24px rgb(0 0 0 / 20%);
   transition:
-    background-position 320ms ease,
     filter 180ms ease,
-    text-shadow 180ms ease;
+    text-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 .home-categories .home-section-heading > a > svg {
@@ -511,8 +507,12 @@
 
 .home-categories .home-section-heading > a:hover > span,
 .home-categories .home-section-heading > a:focus-visible > span {
-  background-position: 100% 50%;
-  filter: drop-shadow(0 0 7px rgb(118 87 246 / 18%));
+  filter: drop-shadow(0 0 8px rgb(118 87 246 / 22%));
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 52%),
+    0 0 14px rgb(113 92 255 / 22%),
+    0 2px 24px rgb(0 0 0 / 22%);
+  transform: translateY(-0.5px);
 }
 
 .home-categories .home-section-heading > a:hover > svg,
