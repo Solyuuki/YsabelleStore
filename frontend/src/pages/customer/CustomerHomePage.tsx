@@ -174,51 +174,53 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
         </div>
       </section>
 
-      <MerchandisingArea navigate={navigate} onRetry={retry} resource={merchandising} />
+      <div className="home-merchandising-stage">
+        <MerchandisingArea navigate={navigate} onRetry={retry} resource={merchandising} />
 
-      <section className="customer-section home-essentials">
-        <div className="customer-container">
-          <SectionHeading
-            action="Shop all products"
-            actionHref="/shop"
-            eyebrow="Everyday picks"
-            motion="essentials"
-            navigate={navigate}
-            title="Everyday Essentials"
-          >
-            A curated selection of everyday products from Ysabelle&apos;s catalog.
-          </SectionHeading>
+        <section className="customer-section home-essentials">
+          <div className="customer-container">
+            <SectionHeading
+              action="Shop all products"
+              actionHref="/shop"
+              eyebrow="Everyday picks"
+              motion="essentials"
+              navigate={navigate}
+              title="Everyday Essentials"
+            >
+              A curated selection of everyday products from Ysabelle&apos;s catalog.
+            </SectionHeading>
 
-          {products.status === "loading" ? <ProductSkeletons /> : null}
-          {products.status === "error" ? (
-            <CompactSectionState
-              message={products.error}
-              onRetry={retry}
-              title="The Essentials Shelf Could Not Be Loaded"
-            />
-          ) : null}
-          {products.status === "success" && everydayProducts.length ? (
-            <HomeProductRail label="Everyday Essentials products">
-              {everydayProducts.map((product, index) => (
-                <HomeProductCard
-                  key={product.id}
-                  motion="essentials"
-                  navigate={navigate}
-                  product={product}
-                  tourTarget={index === 0}
-                  revealIndex={index}
-                />
-              ))}
-            </HomeProductRail>
-          ) : null}
-          {products.status === "success" && !everydayProducts.length ? (
-            <CompactSectionState
-              message="Verified product imagery is still being added. Browse again as the catalog expands."
-              title="More Everyday Picks Are Coming"
-            />
-          ) : null}
-        </div>
-      </section>
+            {products.status === "loading" ? <ProductSkeletons /> : null}
+            {products.status === "error" ? (
+              <CompactSectionState
+                message={products.error}
+                onRetry={retry}
+                title="The Essentials Shelf Could Not Be Loaded"
+              />
+            ) : null}
+            {products.status === "success" && everydayProducts.length ? (
+              <HomeProductRail label="Everyday Essentials products">
+                {everydayProducts.map((product, index) => (
+                  <HomeProductCard
+                    key={product.id}
+                    motion="essentials"
+                    navigate={navigate}
+                    product={product}
+                    tourTarget={index === 0}
+                    revealIndex={index}
+                  />
+                ))}
+              </HomeProductRail>
+            ) : null}
+            {products.status === "success" && !everydayProducts.length ? (
+              <CompactSectionState
+                message="Verified product imagery is still being added. Browse again as the catalog expands."
+                title="More Everyday Picks Are Coming"
+              />
+            ) : null}
+          </div>
+        </section>
+      </div>
 
       <HomeNextStep navigate={navigate} />
     </div>
