@@ -39,6 +39,13 @@
   object-position: center;
 }
 
+.store-entrance__video {
+  filter: blur(1.2px);
+  transform: scale(1.015);
+  transform-origin: center;
+  will-change: transform, filter;
+}
+
 .store-entrance__scrim {
   z-index: -3;
   background:
