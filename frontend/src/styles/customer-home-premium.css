@@ -838,6 +838,64 @@
   stroke-width: 1.4;
 }
 
+.customer-product-badge__medal {
+  position: relative;
+  display: inline-block;
+  width: 15px;
+  height: 17px;
+  flex: none;
+  color: #17120a;
+  filter: drop-shadow(0 1px 1px rgb(90 55 0 / 18%));
+}
+
+.customer-product-badge__medal::before,
+.customer-product-badge__medal::after {
+  position: absolute;
+  bottom: 0;
+  width: 5px;
+  height: 7px;
+  background: currentColor;
+  content: "";
+}
+
+.customer-product-badge__medal::before {
+  left: 2px;
+  clip-path: polygon(0 0, 100% 0, 82% 100%, 48% 72%, 15% 100%);
+  transform: rotate(7deg);
+}
+
+.customer-product-badge__medal::after {
+  right: 2px;
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 52% 72%, 18% 100%);
+  transform: rotate(-7deg);
+}
+
+.customer-product-badge__medal-center {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 50%;
+  width: 11px;
+  height: 11px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: #ffbf47;
+  box-shadow: inset 0 0 0 2px #ffbf47;
+  transform: translateX(-50%);
+}
+
+.customer-product-badge__medal-center::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
 .customer-product-badge--best-seller {
   background: linear-gradient(110deg, #ffcf5a 0%, #ffb43f 100%);
   color: #231700;
