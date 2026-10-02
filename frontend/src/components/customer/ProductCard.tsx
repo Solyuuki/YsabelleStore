@@ -130,15 +130,17 @@ export function ProductCard({
           <h3>{product.name}</h3>
         </CustomerLink>
 
-        {hasReviews ? (
-          <div aria-label={ratingLabel} className="customer-product-card__rating" role="img">
-            <Star aria-hidden="true" fill="currentColor" />
-            <strong>{formattedRating}</strong>
-            <span>
-              ({product.reviewCount} {product.reviewCount === 1 ? "review" : "reviews"})
-            </span>
-          </div>
-        ) : null}
+        <div
+          aria-label={ratingLabel}
+          className={`customer-product-card__rating ${hasReviews ? "" : "is-empty"}`.trim()}
+          role="img"
+        >
+          <Star aria-hidden="true" fill={hasReviews ? "currentColor" : "none"} />
+          {hasReviews ? <strong>{formattedRating}</strong> : null}
+          <span>
+            ({hasReviews ? product.reviewCount : 0} {hasReviews && product.reviewCount === 1 ? "review" : "reviews"})
+          </span>
+        </div>
 
         <div className="customer-product-card__price-row">
           <strong>{formatCurrency(product.sellingPrice)}</strong>
