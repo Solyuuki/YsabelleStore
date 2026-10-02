@@ -808,6 +808,11 @@
   color: #fff;
 }
 
+.customer-product-badge--trending .customer-product-badge__icon {
+  color: #ff4d4f;
+  filter: drop-shadow(0 1px 2px rgb(78 8 18 / 30%));
+}
+
 .customer-product-badge--best-seller {
   background: linear-gradient(110deg, #ffcf5a 0%, #ffb43f 100%);
   color: #231700;
