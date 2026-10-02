@@ -715,14 +715,14 @@
 
 .home-merchandising--trending::before {
   position: absolute;
-  inset: -18px;
+  inset: -24px;
   z-index: 0;
   background:
     url("/images/home/storefront-merchandising-background.webp") center top / cover no-repeat;
   content: "";
-  filter: blur(3px) saturate(0.9) brightness(0.96);
+  filter: blur(4px) saturate(0.88) brightness(0.94);
   pointer-events: none;
-  transform: scale(1.02);
+  transform: scale(1.82);
   transform-origin: top center;
 }
 
