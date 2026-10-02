@@ -220,9 +220,9 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
             ) : null}
           </div>
         </section>
-      </div>
 
-      <HomeNextStep navigate={navigate} />
+        <HomeNextStep navigate={navigate} />
+      </div>
     </div>
   );
 }
