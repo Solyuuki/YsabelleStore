@@ -10,9 +10,9 @@ import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 
 const EXPECTED_SHA256 =
-  "26c4d4b0d08395aa585a624e275cd57c07300923b5fa9fc06ca4292a34c40417";
-const EXPECTED_SIZE = 7_475_099;
-const SOURCE_NAME = "gemini_generated_video_418a3614.mp4";
+  "53360d489f4303761658cc62cc5984f4ea43116b470ae7e63d263c48497e4df3";
+const EXPECTED_SIZE = 5_417_920;
+const SOURCE_NAME = "gemini_generated_video_9a2cd402.mp4";
 const DESTINATION = resolve(
   process.cwd(),
   "frontend/public/media/store-entrance.mp4"
@@ -33,7 +33,7 @@ function verify(path) {
   if (size !== EXPECTED_SIZE || hash !== EXPECTED_SHA256) {
     throw new Error(
       [
-        "The storefront entrance video does not match the approved original Gemini MP4.",
+        "The storefront entrance video does not match the approved final Gemini MP4.",
         `Expected size: ${EXPECTED_SIZE} bytes`,
         `Actual size:   ${size} bytes`,
         `Expected SHA:  ${EXPECTED_SHA256}`,
