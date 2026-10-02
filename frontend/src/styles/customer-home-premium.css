@@ -411,10 +411,12 @@
 }
 
 .home-categories .home-section-heading h2 {
-  color: #fffdf8;
+  color: #fff;
+  -webkit-text-stroke: 0.55px rgb(151 139 255 / 58%);
   text-shadow:
-    0 2px 16px rgb(0 0 0 / 34%),
-    0 0 1px rgb(255 255 255 / 18%);
+    0 1px 2px rgb(0 0 0 / 48%),
+    0 0 12px rgb(113 92 255 / 16%),
+    0 2px 24px rgb(0 0 0 / 20%);
 }
 
 .home-categories .home-section-heading p:last-child {
