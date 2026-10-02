@@ -100,8 +100,10 @@ assert.match(premiumCss, /\.store-entrance h1[\s\S]*?font-size:\s*clamp\(2\.2rem
 assert.match(premiumCss, /\.store-entrance h1[\s\S]*?-webkit-text-stroke:\s*0\.55px rgb\(151 139 255 \/ 58%\)/);
 assert.match(premiumCss, /\.store-entrance h1[\s\S]*?0 0 12px rgb\(113 92 255 \/ 16%\)/);
 assert.match(premiumCss, /\.store-entrance__enter[\s\S]*?min-height:\s*48px/);
-assert.match(premiumCss, /\.store-entrance__enter[\s\S]*?border:\s*1px solid transparent[\s\S]*?linear-gradient\(110deg, #5b7cff 0%, #7657f6 54%, #cf4fc8 100%\) border-box/);
+assert.match(premiumCss, /\.store-entrance__enter[\s\S]*?border:\s*1\.5px solid transparent[\s\S]*?linear-gradient\(110deg, #5b7cff 0%, #7657f6 54%, #cf4fc8 100%\) border-box/);
 assert.match(premiumCss, /\.store-entrance__enter:hover[\s\S]*?linear-gradient\(110deg, #6d88ff 0%, #865df8 52%, #dd5fd0 100%\) border-box/);
+assert.match(premiumCss, /\.store-entrance__enter > span[\s\S]*?linear-gradient\(100deg, #243fbd 0%, #6548e8 52%, #b832b4 100%\)[\s\S]*?-webkit-text-fill-color:\s*transparent/);
+assert.match(premiumCss, /\.store-entrance__enter > span[\s\S]*?font-weight:\s*850/);
 assert.match(premiumCss, /\.store-entrance__enter::after[\s\S]*?store-entrance-cta-sheen 3\.8s/);
 assert.match(premiumCss, /@keyframes store-entrance-cta-sheen/);
 assert.match(premiumCss, /@keyframes store-entrance-cta-glow/);
