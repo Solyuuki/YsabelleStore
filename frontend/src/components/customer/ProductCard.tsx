@@ -135,7 +135,7 @@ export function ProductCard({
             <Star aria-hidden="true" fill="currentColor" />
             <strong>{formattedRating}</strong>
             <span>
-              · {product.reviewCount} {product.reviewCount === 1 ? "review" : "reviews"}
+              ({product.reviewCount} {product.reviewCount === 1 ? "review" : "reviews"})
             </span>
           </div>
         ) : null}
