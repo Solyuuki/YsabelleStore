@@ -447,25 +447,23 @@
   left: 0;
   height: 2px;
   border-radius: 999px;
-  background:
-    linear-gradient(90deg, rgb(255 255 255 / 38%), rgb(255 255 255 / 0%)) top / 100% 1px no-repeat,
-    linear-gradient(90deg, #5b7cff 0%, #7657f6 54%, #cf4fc8 100%);
-  background-position:
-    0 0,
-    0% 50%;
-  background-size:
-    100% 1px,
-    180% 100%;
+  background: linear-gradient(
+    90deg,
+    #e9edff 0%,
+    #d8d0ff 46%,
+    #ffd9f5 100%
+  );
   box-shadow:
-    0 0 0 0.5px rgb(151 139 255 / 28%),
-    0 0 8px rgb(118 87 246 / 28%),
-    0 0 14px rgb(207 79 200 / 14%);
+    inset 0 1px 0 rgb(255 255 255 / 88%),
+    0 0 0 0.5px rgb(151 139 255 / 54%),
+    0 0 8px rgb(118 87 246 / 30%),
+    0 0 14px rgb(207 79 200 / 18%);
   content: "";
   opacity: 0.98;
   transform: scaleX(0.96);
   transform-origin: left center;
   transition:
-    background-position 320ms ease,
+    background 220ms ease,
     box-shadow 220ms ease,
     opacity 180ms ease,
     transform 220ms ease;
@@ -531,13 +529,17 @@
 
 .home-categories .home-section-heading > a:hover::after,
 .home-categories .home-section-heading > a:focus-visible::after {
-  background-position:
-    0 0,
-    100% 50%;
+  background: linear-gradient(
+    90deg,
+    #f4f6ff 0%,
+    #e4dcff 46%,
+    #ffe4f8 100%
+  );
   box-shadow:
-    0 0 0 0.5px rgb(255 255 255 / 22%),
-    0 0 10px rgb(91 124 255 / 38%),
-    0 0 16px rgb(207 79 200 / 32%);
+    inset 0 1px 0 rgb(255 255 255 / 96%),
+    0 0 0 0.5px rgb(151 139 255 / 68%),
+    0 0 10px rgb(91 124 255 / 42%),
+    0 0 16px rgb(207 79 200 / 34%);
   opacity: 1;
   transform: scaleX(1);
 }
