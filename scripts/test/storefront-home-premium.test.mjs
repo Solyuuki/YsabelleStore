@@ -112,11 +112,11 @@ assert.match(premiumCss, /\.home-categories \.customer-kicker[\s\S]*?-webkit-tex
 assert.match(premiumCss, /\.home-categories \.home-section-heading h2[\s\S]*?-webkit-text-stroke:\s*0\.55px rgb\(151 139 255 \/ 58%\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading h2[\s\S]*?0 0 12px rgb\(113 92 255 \/ 16%\)[\s\S]*?0 2px 24px rgb\(0 0 0 \/ 20%\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading > a > span[\s\S]*?-webkit-text-fill-color:\s*#fff[\s\S]*?-webkit-text-stroke:\s*0\.55px rgb\(151 139 255 \/ 58%\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a::after[\s\S]*?linear-gradient\([\s\S]*?#5b7cff 0%[\s\S]*?#7657f6 54%[\s\S]*?#cf4fc8 100%/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a::after[\s\S]*?rgb\(255 255 255 \/ 38%\)[\s\S]*?0 0 14px rgb\(207 79 200 \/ 14%\)/);
+assert.match(premiumCss, /\.home-categories \.home-section-heading > a::after[\s\S]*?#e9edff 0%[\s\S]*?#d8d0ff 46%[\s\S]*?#ffd9f5 100%/);
+assert.match(premiumCss, /\.home-categories \.home-section-heading > a::after[\s\S]*?inset 0 1px 0 rgb\(255 255 255 \/ 88%\)[\s\S]*?0 0 14px rgb\(207 79 200 \/ 18%\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading > a > svg[\s\S]*?color:\s*#fff[\s\S]*?rgb\(151 139 255 \/ 88%\)/);
 assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover > span[\s\S]*?0 0 14px rgb\(113 92 255 \/ 22%\)[\s\S]*?translateY\(-0\.5px\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover::after[\s\S]*?100% 50%[\s\S]*?rgb\(207 79 200 \/ 32%\)/);
+assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover::after[\s\S]*?#f4f6ff 0%[\s\S]*?#e4dcff 46%[\s\S]*?#ffe4f8 100%[\s\S]*?rgb\(207 79 200 \/ 34%\)/);
 assert.match(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.match(premiumCss, /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.doesNotMatch(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*#f5f4f0/);
