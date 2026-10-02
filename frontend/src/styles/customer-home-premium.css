@@ -354,6 +354,8 @@
 .home-categories .customer-kicker {
   width: fit-content;
   background: linear-gradient(90deg, #8ea1ff 0%, #9d72ff 52%, #ef6fd7 100%);
+  font-size: clamp(0.72rem, 0.69rem + 0.12vw, 0.79rem);
+  line-height: 1.2;
   background-clip: text;
   color: transparent;
   font-weight: 900;
@@ -378,6 +380,8 @@
 .home-categories .home-section-heading > a {
   position: relative;
   gap: 0.45rem;
+  font-size: clamp(0.82rem, 0.78rem + 0.12vw, 0.9rem);
+  line-height: 1.25;
   border-bottom: 0;
   color: #cfd6ff;
   font-weight: 850;
@@ -416,6 +420,8 @@
 }
 
 .home-categories .home-section-heading > a > svg {
+  width: 17px;
+  height: 17px;
   color: #d8d4ff;
   transition:
     color 180ms ease,
