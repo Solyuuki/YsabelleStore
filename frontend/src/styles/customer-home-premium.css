@@ -714,15 +714,14 @@
 
 .home-merchandising-stage::before {
   position: absolute;
-  inset: -14px;
+  inset: 0;
   z-index: 0;
-  background:
-    url("/images/home/storefront-merchandising-background.webp") center bottom / cover no-repeat;
+  background-image: url("/images/home/storefront-merchandising-background.webp");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   content: "";
-  filter: blur(4px) saturate(0.82) brightness(0.8);
   pointer-events: none;
-  transform: scale(1.018);
-  transform-origin: center bottom;
 }
 
 .home-merchandising-stage::after {
@@ -732,10 +731,10 @@
   background:
     linear-gradient(
       180deg,
-      rgb(5 7 11 / 24%) 0%,
-      rgb(5 7 11 / 28%) 40%,
-      rgb(5 7 11 / 30%) 72%,
-      rgb(5 7 11 / 34%) 100%
+      rgb(5 7 11 / 8%) 0%,
+      rgb(5 7 11 / 11%) 40%,
+      rgb(5 7 11 / 14%) 72%,
+      rgb(5 7 11 / 18%) 100%
     );
   content: "";
   pointer-events: none;
@@ -808,19 +807,17 @@
 
 @media (max-width: 900px) {
   .home-merchandising-stage::before {
-    background-position: center bottom;
-    background-size: cover;
-    filter: blur(4px) saturate(0.8) brightness(0.78);
-    transform: scale(1.02);
+    background-position: center center;
+    background-size: 100% 100%;
   }
 
   .home-merchandising-stage::after {
     background:
       linear-gradient(
         180deg,
-        rgb(5 7 11 / 26%) 0%,
-        rgb(5 7 11 / 30%) 55%,
-        rgb(5 7 11 / 36%) 100%
+        rgb(5 7 11 / 10%) 0%,
+        rgb(5 7 11 / 14%) 55%,
+        rgb(5 7 11 / 20%) 100%
       );
   }
 }
