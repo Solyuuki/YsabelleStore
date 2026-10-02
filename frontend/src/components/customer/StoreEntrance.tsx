@@ -8,7 +8,6 @@ const STORE_ENTRANCE_POSTER =
 
 const EXIT_DURATION_MS = 620;
 const LOOP_FADE_LEAD_SECONDS = 0.55;
-const LOOP_FADE_MS = 420;
 const LOOP_REVEAL_DELAY_MS = 30;
 
 export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
