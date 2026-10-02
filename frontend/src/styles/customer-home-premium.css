@@ -348,12 +348,12 @@
 }
 
 .home-categories .customer-kicker {
-  color: #bec7ff;
-  font-weight: 950;
+  color: #bdc8ff;
+  font-weight: 900;
   letter-spacing: 0.13em;
   text-shadow:
-    0 1px 2px rgb(0 0 0 / 52%),
-    0 1px 14px rgb(0 0 0 / 30%);
+    0 1px 2px rgb(3 7 18 / 78%),
+    0 0 10px rgb(99 102 241 / 16%);
 }
 
 .home-categories .home-section-heading h2 {
@@ -367,12 +367,12 @@
 }
 
 .home-categories .home-section-heading > a {
-  border-color: rgb(190 199 255 / 72%);
-  color: #d3d9ff;
+  border-color: rgb(199 208 255 / 70%);
+  color: #d7dcff;
   font-weight: 850;
   text-shadow:
-    0 1px 2px rgb(0 0 0 / 48%),
-    0 1px 12px rgb(0 0 0 / 26%);
+    0 1px 2px rgb(3 7 18 / 76%),
+    0 0 10px rgb(99 102 241 / 14%);
 }
 
 .home-category-grid {
