@@ -398,25 +398,27 @@
 
 .home-categories .customer-kicker {
   width: fit-content;
-  color: #f0edff;
+  color: #b9adff;
   font-size: clamp(0.82rem, 0.78rem + 0.14vw, 0.9rem);
   line-height: 1.15;
   font-weight: 900;
   letter-spacing: 0.12em;
-  -webkit-text-stroke: 0.2px rgb(255 255 255 / 34%);
+  -webkit-text-stroke: 0.15px rgb(255 255 255 / 22%);
   text-shadow:
-    0 1px 2px rgb(3 7 18 / 92%),
-    0 0 10px rgb(107 92 255 / 22%);
+    0 1px 2px rgb(3 7 18 / 94%),
+    0 0 10px rgb(111 99 255 / 24%);
 }
 
 .home-categories .home-section-heading h2 {
-  color: #fff;
-  text-shadow: 0 2px 18px rgb(0 0 0 / 28%);
+  color: #fffdf8;
+  text-shadow:
+    0 2px 16px rgb(0 0 0 / 34%),
+    0 0 1px rgb(255 255 255 / 18%);
 }
 
 .home-categories .home-section-heading p:last-child {
-  color: #e4e7ef;
-  text-shadow: 0 1px 12px rgb(0 0 0 / 26%);
+  color: #d7dce8;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 30%);
 }
 
 .home-categories .home-section-heading > a {
@@ -425,11 +427,11 @@
   font-size: clamp(0.9rem, 0.86rem + 0.14vw, 0.98rem);
   line-height: 1.2;
   border-bottom: 0;
-  color: #f4f2ff;
+  color: #c9d4ff;
   font-weight: 850;
   text-shadow:
     0 1px 2px rgb(3 7 18 / 92%),
-    0 0 10px rgb(107 92 255 / 18%);
+    0 0 9px rgb(92 124 255 / 20%);
   transition:
     color 180ms ease,
     text-shadow 180ms ease,
@@ -442,7 +444,7 @@
   bottom: 0;
   left: 0;
   height: 1px;
-  background: linear-gradient(90deg, #8ea1ff 0%, #9d72ff 52%, #ef6fd7 100%);
+  background: linear-gradient(90deg, #6f8cff 0%, #9b7bff 52%, #ef73d8 100%);
   content: "";
   opacity: 0.72;
   transform: scaleX(1);
@@ -453,7 +455,7 @@
 }
 
 .home-categories .home-section-heading > a > span {
-  color: #f4f2ff;
+  color: #c9d4ff;
   -webkit-text-fill-color: currentColor;
   transition:
     color 180ms ease,
@@ -463,9 +465,11 @@
 .home-categories .home-section-heading > a > svg {
   width: 17px;
   height: 17px;
-  color: #d8d4ff;
+  color: #ef8de0;
+  filter: drop-shadow(0 0 6px rgb(239 141 224 / 18%));
   transition:
     color 180ms ease,
+    filter 180ms ease,
     transform 180ms ease;
 }
 
