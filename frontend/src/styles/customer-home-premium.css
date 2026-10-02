@@ -443,15 +443,27 @@
   right: 0;
   bottom: 0;
   left: 0;
-  height: 1px;
-  background: linear-gradient(90deg, #6f8cff 0%, #9b7bff 52%, #ef73d8 100%);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #6f8cff 0%,
+    #9b7bff 34%,
+    #ef73d8 68%,
+    #6f8cff 100%
+  );
+  background-position: 0% 50%;
+  background-size: 220% 100%;
+  box-shadow: 0 0 8px rgb(155 123 255 / 24%);
   content: "";
-  opacity: 0.72;
-  transform: scaleX(1);
+  opacity: 0.9;
+  transform: scaleX(0.94);
   transform-origin: left center;
   transition:
+    background-position 420ms ease,
+    box-shadow 220ms ease,
     opacity 180ms ease,
-    transform 180ms ease;
+    transform 220ms ease;
 }
 
 .home-categories .home-section-heading > a > span {
@@ -463,14 +475,17 @@
 }
 
 .home-categories .home-section-heading > a > svg {
-  width: 17px;
-  height: 17px;
-  color: #ef8de0;
-  filter: drop-shadow(0 0 6px rgb(239 141 224 / 18%));
+  width: 18px;
+  height: 18px;
+  color: #f0a0df;
+  filter:
+    drop-shadow(0 1px 2px rgb(3 7 18 / 72%))
+    drop-shadow(0 0 7px rgb(239 115 216 / 24%));
+  stroke-width: 2.2;
   transition:
     color 180ms ease,
     filter 180ms ease,
-    transform 180ms ease;
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home-categories .home-section-heading > a:hover,
@@ -489,14 +504,21 @@
 
 .home-categories .home-section-heading > a:hover > svg,
 .home-categories .home-section-heading > a:focus-visible > svg {
-  color: #ef8de0;
-  transform: translateX(3px);
+  color: #ffd7f4;
+  filter:
+    drop-shadow(0 1px 2px rgb(3 7 18 / 78%))
+    drop-shadow(0 0 10px rgb(239 115 216 / 36%));
+  transform: translateX(4px) scale(1.05);
 }
 
 .home-categories .home-section-heading > a:hover::after,
 .home-categories .home-section-heading > a:focus-visible::after {
+  background-position: 100% 50%;
+  box-shadow:
+    0 0 8px rgb(111 140 255 / 30%),
+    0 0 14px rgb(239 115 216 / 28%);
   opacity: 1;
-  transform: scaleX(0.88);
+  transform: scaleX(1);
 }
 
 .home-category-grid {
