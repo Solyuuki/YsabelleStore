@@ -77,7 +77,7 @@ assert.match(productCardSource, /min=\{0\}/);
 assert.match(productCardSource, /disabled=\{outOfStock \|\| !isReady\}/);
 assert.match(productCardSource, /data-tooltip=\{isFavorite \? "Remove from favorites" : "Save to favorites"\}/);
 assert.match(productCardSource, /customer-product-card__cart-button/);
-assert.match(productCardSource, /<Flame aria-hidden="true" className="customer-product-badge__icon" \/>/);
+assert.match(productCardSource, /customer-product-badge__fire/);
 assert.match(productCardSource, /<Award aria-hidden="true" className="customer-product-badge__icon" \/>/);
 assert.match(quantitySource, /min = 1/);
 assert.match(quantitySource, /Math\.max\(min, value - 1\)/);
@@ -100,6 +100,8 @@ assert.match(premiumCss, /@media \(prefers-reduced-motion: no-preference\)[\s\S]
 assert.match(premiumCss, /\.customer-product-card__favorite[\s\S]*?width:\s*44px;[\s\S]*?height:\s*44px/);
 assert.match(premiumCss, /\.customer-product-card__favorite\[aria-pressed="true"\][\s\S]*?linear-gradient\(135deg, #4f46e5 0%, #7c3aed 58%, #b832d0 100%\)/);
 assert.match(premiumCss, /\.customer-product-badge--trending[\s\S]*?linear-gradient\(110deg, #4938e8 0%, #6748f5 60%, #a13cd4 100%\)/);
+assert.match(premiumCss, /\.customer-product-badge__fire-outer[\s\S]*?color:\s*#ff343f/);
+assert.match(premiumCss, /\.customer-product-badge__fire-inner[\s\S]*?color:\s*#ffb020/);
 assert.match(premiumCss, /\.customer-product-badge--best-seller[\s\S]*?#ffcf5a[\s\S]*?#ffb43f/);
 assert.match(premiumCss, /\.customer-product-card__cart-button[\s\S]*?linear-gradient\(110deg, #4f46e5 0%, #7c3aed 56%, #b832d0 100%\)/);
 assert.match(premiumCss, /@keyframes customer-merchandising-shine/);
