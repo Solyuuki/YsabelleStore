@@ -4,6 +4,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   statSync
 } from "node:fs";
 import { homedir } from "node:os";
@@ -45,16 +46,28 @@ function verify(path) {
   return { size, hash };
 }
 
+function matchingGeminiCopies(directory) {
+  if (!existsSync(directory)) return [];
+
+  const pattern = /^gemini_generated_video_09d5c3a9(?: \(\d+\))?\.mp4$/i;
+
+  return readdirSync(directory)
+    .filter((name) => pattern.test(name))
+    .map((name) => resolve(directory, name));
+}
+
 function candidateSources() {
   const explicit = process.argv.slice(2).find((arg) => !arg.startsWith("--"));
   const home = homedir();
+  const downloads = resolve(home, "Downloads");
+  const desktop = resolve(home, "Desktop");
 
   return [
     explicit ? resolve(process.cwd(), explicit) : null,
     resolve(process.cwd(), SOURCE_NAME),
     resolve(process.cwd(), "frontend/public/media", SOURCE_NAME),
-    resolve(home, "Downloads", SOURCE_NAME),
-    resolve(home, "Desktop", SOURCE_NAME)
+    ...matchingGeminiCopies(downloads),
+    ...matchingGeminiCopies(desktop)
   ].filter(Boolean);
 }
 
