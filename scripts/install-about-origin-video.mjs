@@ -59,6 +59,7 @@ function candidateSources() {
 }
 
 const verifyOnly = process.argv.includes("--verify");
+const ifPresent = process.argv.includes("--if-present");
 
 try {
   if (verifyOnly) {
@@ -70,9 +71,25 @@ try {
     process.exit(0);
   }
 
+  if (existsSync(DESTINATION)) {
+    const result = verify(DESTINATION);
+    console.log("About origin video is already installed and verified.");
+    console.log(`Path:   ${DESTINATION}`);
+    console.log(`Size:   ${result.size} bytes`);
+    console.log(`SHA256: ${result.hash}`);
+    process.exit(0);
+  }
+
   const source = candidateSources().find((candidate) => existsSync(candidate));
 
   if (!source) {
+    if (ifPresent) {
+      console.warn(
+        `About origin video not found. Expected ${SOURCE_NAME} in the repository, Downloads, or Desktop. Continuing with the animated CSS fallback.`
+      );
+      process.exit(0);
+    }
+
     throw new Error(
       [
         "Could not find the approved Gemini About MP4.",
