@@ -185,7 +185,17 @@ assert.match(
 assert.match(premiumCss, /--customer-focus:\s*#0070c9/);
 assert.match(premiumCss, /--customer-warning:\s*#8b5100/);
 assert.doesNotMatch(premiumCss, /\.store-entrance__scene-curtain/);
-assert.match(premiumCss, /--store-entrance-shade:\s*0\.08/);
+assert.match(premiumCss, /--store-entrance-shade:\s*0\.2/);
+assert.match(premiumCss, /--store-entrance-cool-blue:\s*rgb\(33 92 184 \/ 20%\)/);
+assert.match(premiumCss, /--store-entrance-cool-indigo:\s*rgb\(83 72 180 \/ 15%\)/);
+assert.match(
+  premiumCss,
+  /\.store-entrance__scrim\s*\{[\s\S]*?118deg[\s\S]*?var\(--store-entrance-cool-blue\)[\s\S]*?var\(--store-entrance-cool-indigo\)[\s\S]*?rgb\(4 8 20 \/ 46%\)/
+);
+assert.match(
+  premiumCss,
+  /\.store-entrance__vignette\s*\{[\s\S]*?rgb\(2 6 16 \/ 42%\) 118%/
+);
 assert.match(premiumCss, /\.store-entrance__video[\s\S]*?filter:\s*blur\(2\.8px\)[\s\S]*?transform:\s*scale\(1\.025\)/);
 assert.match(premiumCss, /\.store-entrance__loop-curtain[\s\S]*?transition:\s*opacity 420ms/);
 assert.match(premiumCss, /\.store-entrance__loop-curtain\.is-visible[\s\S]*?opacity:\s*1/);
