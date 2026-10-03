@@ -680,12 +680,12 @@
   --next-step-pink: #ff91ce;
   position: relative;
   overflow: hidden;
+  margin-top: -1px;
   padding-block: clamp(4.5rem, 7vw, 7rem);
   background:
-    radial-gradient(ellipse at 12% 20%, rgb(127 199 255 / 20%) 0, transparent 34%),
-    radial-gradient(ellipse at 88% 22%, rgb(200 156 255 / 18%) 0, transparent 32%),
-    radial-gradient(ellipse at 74% 82%, rgb(169 140 255 / 11%) 0, transparent 30%),
-    linear-gradient(100deg, #eef7ff 0%, #f9fbff 48%, #f6efff 100%);
+    linear-gradient(90deg, rgb(255 255 255 / 8%) 0%, rgb(255 255 255 / 3%) 46%, transparent 72%),
+    url("/media/home-delivery-closing-background.svg") center / cover no-repeat,
+    #f3f8ff;
 }
 
 .home-next-step > .customer-container {
@@ -862,19 +862,6 @@
   z-index: 1;
   align-self: stretch;
   min-height: 25rem;
-}
-
-.home-next-step__visual::before {
-  position: absolute;
-  z-index: -1;
-  inset: 10% -8% 6% -10%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 44% 42%, rgb(127 199 255 / 24%) 0, transparent 42%),
-    radial-gradient(circle at 68% 48%, rgb(200 156 255 / 20%) 0, transparent 46%);
-  content: "";
-  filter: blur(20px);
-  pointer-events: none;
 }
 
 .home-next-step__visual-svg {
@@ -1587,6 +1574,7 @@
 
   .home-next-step {
     padding-block: 3.5rem;
+    background-position: 50% center;
   }
 
   .home-next-step__main {
