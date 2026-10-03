@@ -122,7 +122,7 @@
   z-index: 80;
   isolation: isolate;
   overflow: hidden;
-  border-bottom: 1px solid rgb(98 91 255 / 17%);
+  border-bottom: 0;
   background:
     radial-gradient(
       ellipse at 8% 46%,
@@ -171,14 +171,18 @@
   right: 0;
   bottom: 0;
   left: 0;
-  height: 2px;
+  height: 1px;
   background: linear-gradient(
     90deg,
-    rgb(0 140 255 / 24%),
-    rgb(98 91 255 / 34%) 52%,
-    rgb(168 60 240 / 24%)
+    transparent 0%,
+    rgb(0 140 255 / 18%) 12%,
+    rgb(98 91 255 / 28%) 50%,
+    rgb(168 60 240 / 18%) 88%,
+    transparent 100%
   );
+  box-shadow: 0 1px 8px rgb(98 91 255 / 8%);
   content: "";
+  opacity: 0.78;
   pointer-events: none;
 }
 
