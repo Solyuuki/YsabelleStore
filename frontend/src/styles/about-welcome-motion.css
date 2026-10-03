@@ -1,0 +1,212 @@
+/* About Scene 01: branded Gemini motion plate with responsive HTML typography. */
+.about-experience .discover-story--about .story-welcome {
+  position: relative;
+  min-height: max(740px, calc(100svh - 76px));
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 20%, rgb(98 91 255 / 24%), transparent 35%),
+    radial-gradient(circle at 82% 70%, rgb(244 63 140 / 18%), transparent 34%),
+    linear-gradient(135deg, #090d20 0%, #111633 50%, #17122e 100%);
+  isolation: isolate;
+}
+
+.about-experience .discover-story--about .story-welcome::before {
+  display: none;
+}
+
+.about-experience .discover-story--about .story-brand-canvas,
+.about-experience .discover-story--about .story-grocery-drift {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.about-welcome-motion {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 22% 18%, rgb(98 91 255 / 26%), transparent 36%),
+    radial-gradient(circle at 82% 72%, rgb(244 63 140 / 18%), transparent 34%),
+    #090d20;
+  pointer-events: none;
+}
+
+.about-welcome-motion__video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.94) contrast(1.04) brightness(0.78);
+  transform: scale(1.018);
+  transform-origin: center;
+}
+
+.about-welcome-motion__scrim,
+.about-welcome-motion__edge-light {
+  position: absolute;
+  inset: 0;
+}
+
+.about-welcome-motion__scrim {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(7 11 29 / 38%) 0%,
+      rgb(7 11 29 / 14%) 28%,
+      rgb(7 11 29 / 20%) 64%,
+      rgb(7 11 29 / 54%) 100%
+    ),
+    radial-gradient(circle at 50% 44%, transparent 0 26%, rgb(7 11 29 / 15%) 58%, rgb(7 11 29 / 38%) 100%);
+}
+
+.about-welcome-motion__edge-light {
+  background:
+    linear-gradient(90deg, rgb(0 140 255 / 10%), transparent 18% 82%, rgb(244 63 140 / 10%)),
+    linear-gradient(to bottom, rgb(255 255 255 / 3%), transparent 22% 78%, rgb(98 91 255 / 10%));
+  mix-blend-mode: screen;
+  opacity: 0.72;
+}
+
+.about-experience .discover-story--about .story-welcome__stage {
+  position: relative;
+  z-index: 2;
+  min-height: max(740px, calc(100svh - 76px));
+  justify-content: center;
+  padding-block: clamp(3.5rem, 8vh, 7rem);
+}
+
+.about-experience .discover-story--about .story-welcome__mark--branded {
+  width: clamp(4.25rem, 5.5vw, 5.5rem);
+  height: clamp(4.25rem, 5.5vw, 5.5rem);
+  margin-bottom: clamp(1rem, 2vh, 1.45rem);
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 7%);
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 26%),
+    0 0 40px rgb(98 91 255 / 19%);
+  backdrop-filter: blur(14px);
+}
+
+.about-experience .discover-story--about .story-welcome__title {
+  width: min(100%, 11ch);
+  max-width: 11ch;
+  margin-top: 0 !important;
+  color: #f8f9ff;
+  font-size: clamp(4rem, min(9.6vw, 14vh), 9rem);
+  letter-spacing: -0.055em;
+  line-height: 0.88;
+  text-wrap: balance;
+  text-shadow: 0 20px 54px rgb(0 0 0 / 30%);
+}
+
+.about-experience
+  .discover-story--about
+  .story-welcome__title
+  .story-mask__line--accent {
+  background: linear-gradient(110deg, #f7f8ff 0%, #c2a1ff 38%, #e875d2 72%, #8fd7ff 100%);
+  background-clip: text;
+  color: transparent;
+  font-style: italic;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-experience .discover-story--about .story-welcome__support {
+  gap: 0;
+  margin-top: clamp(1.1rem, 2.6vh, 1.75rem);
+}
+
+.about-experience .discover-story--about .story-welcome__support strong {
+  order: 1;
+  padding: 0.58rem 0.92rem;
+  border: 1px solid rgb(189 177 255 / 26%);
+  background: rgb(14 20 48 / 48%);
+  color: #d9d4ff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+  backdrop-filter: blur(12px);
+}
+
+.about-experience .discover-story--about .story-welcome__support p {
+  order: 2;
+  margin: 0.9rem 0 0;
+  color: rgb(238 241 255 / 78%);
+  font-size: clamp(1rem, min(1.55vw, 2.4vh), 1.34rem);
+  text-shadow: 0 8px 28px rgb(0 0 0 / 28%);
+}
+
+.about-experience .discover-story--about .story-welcome__scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  order: 3;
+  margin-top: clamp(1.15rem, 2.5vh, 1.6rem);
+  color: rgb(224 228 255 / 62%);
+  font-size: 0.69rem;
+  font-weight: 760;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.about-experience .discover-story--about .story-welcome__scroll-cue svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  transform: rotate(90deg);
+}
+
+.about-experience .discover-story--about .story-welcome__handoff {
+  z-index: 3;
+  background: linear-gradient(90deg, var(--story-blue), var(--story-indigo), var(--story-violet));
+  box-shadow: 0 0 22px rgb(98 91 255 / 32%);
+}
+
+@media (max-width: 699px) {
+  .about-experience .discover-story--about .story-welcome {
+    min-height: max(660px, calc(100svh - 118px));
+    padding-block: 0;
+  }
+
+  .about-experience .discover-story--about .story-welcome__stage {
+    min-height: max(660px, calc(100svh - 118px));
+    padding-block: clamp(3rem, 7vh, 4.75rem);
+  }
+
+  .about-welcome-motion__video {
+    object-position: 50% center;
+    transform: scale(1.06);
+  }
+
+  .about-experience .discover-story--about .story-welcome__title {
+    width: min(100%, 9.5ch);
+    max-width: 9.5ch;
+    font-size: clamp(3.45rem, min(19vw, 13vh), 5.8rem);
+    line-height: 0.9;
+  }
+
+  .about-experience .discover-story--about .story-welcome__support p {
+    max-width: 24ch;
+    font-size: clamp(0.98rem, 4.5vw, 1.16rem);
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 420px) {
+  .about-experience .discover-story--about .story-welcome__mark--branded {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .about-experience .discover-story--about .story-welcome__title {
+    font-size: clamp(3.15rem, 18vw, 4.65rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-welcome-motion__video {
+    display: none;
+  }
+}
