@@ -93,15 +93,15 @@ assert.match(quantitySource, /Math\.max\(min, value - 1\)/);
 
 assert.match(
   customerCss,
-  /\.customer-header\s*\{[\s\S]*?linear-gradient\([\s\S]*?232 246 255 \/ 97%[\s\S]*?240 247 255 \/ 97%[\s\S]*?238 241 255 \/ 97%/
+  /\.customer-header\s*\{[\s\S]*?radial-gradient\([\s\S]*?127 199 255 \/ 26%[\s\S]*?200 156 255 \/ 28%[\s\S]*?#dfefff[\s\S]*?#eef0ff[\s\S]*?#eadfff/
 );
 assert.match(
   customerCss,
-  /\.customer-header::before\s*\{[\s\S]*?linear-gradient\([\s\S]*?169deg[\s\S]*?rgb\(255 255 255 \/ 68%\)[\s\S]*?rgb\(255 255 255 \/ 42%\)/
+  /\.customer-header::before\s*\{[\s\S]*?linear-gradient\([\s\S]*?172deg[\s\S]*?rgb\(255 255 255 \/ 34%\)[\s\S]*?rgb\(255 255 255 \/ 14%\)/
 );
 assert.match(
   customerCss,
-  /\.customer-header::after\s*\{[\s\S]*?top:\s*0;[\s\S]*?height:\s*2px;[\s\S]*?rgb\(0 140 255 \/ 20%\)[\s\S]*?rgb\(98 91 255 \/ 24%\)/
+  /\.customer-header::after\s*\{[\s\S]*?bottom:\s*0;[\s\S]*?height:\s*2px;[\s\S]*?rgb\(0 140 255 \/ 24%\)[\s\S]*?rgb\(98 91 255 \/ 34%\)/
 );
 assert.match(
   customerCss,
