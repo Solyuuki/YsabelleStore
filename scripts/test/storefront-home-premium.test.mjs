@@ -294,6 +294,10 @@ assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(20px, 1fr\) 44px
 assert.match(railCss, /width:\s*44px;[\s\S]*?height:\s*44px/);
 assert.match(
   railCss,
+  /\.home-product-rail__control:not\(:disabled\):hover,[\s\S]*?#8f84f7[\s\S]*?#9f83f4[\s\S]*?#c48ff0[\s\S]*?0 0 0 2px rgb\(255 255 255 \/ 72%\)[\s\S]*?0 0 26px rgb\(196 143 240 \/ 22%\)/
+);
+assert.match(
+  railCss,
   /\.home-product-rail \.home-reveal\.home-reveal--product\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?transform:\s*none;[\s\S]*?transition:\s*none;[\s\S]*?transition-delay:\s*0ms;[\s\S]*?will-change:\s*auto;/
 );
 
