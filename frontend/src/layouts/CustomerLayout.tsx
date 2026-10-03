@@ -33,7 +33,7 @@ export function CustomerLayout({
       />
       <main id="customer-main">{children}</main>
       <DiscoverBrandIdentity pathname={pathname} />
-      <CustomerFooter navigate={navigate} onStartGuide={startGuide} />
+      <CustomerFooter navigate={navigate} onStartGuide={startGuide} pathname={pathname} />
       <div aria-live="polite" className="sr-only" role="status">
         {announcement}
       </div>
