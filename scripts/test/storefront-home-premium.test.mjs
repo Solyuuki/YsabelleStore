@@ -151,14 +151,25 @@ assert.match(
   premiumCss,
   /\.home-categories \.home-section-heading p:last-child[\s\S]*?color:\s*var\(--customer-muted\)/
 );
-assert.match(homeSource, /<div className="home-merchandising-stage">[\s\S]*?<MerchandisingArea[\s\S]*?<section className="customer-section home-essentials">[\s\S]*?<HomeNextStep[\s\S]*?<\/div>/);
+assert.match(
+  homeSource,
+  /<div className="home-merchandising-stage">[\s\S]*?<div className="home-merchandising-canvas">[\s\S]*?<MerchandisingArea[\s\S]*?<section className="customer-section home-essentials">[\s\S]*?<\/div>[\s\S]*?<HomeNextStep[\s\S]*?<\/div>/
+);
 assert.match(
   premiumCss,
   /\.home-merchandising-stage\s*\{[\s\S]*?background:\s*transparent/
 );
 assert.match(
   premiumCss,
-  /\.home-merchandising-stage > \.customer-section,[\s\S]*?background:\s*transparent !important/
+  /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#f4f9ff[\s\S]*?--merch-blue-rgb:\s*99 184 255[\s\S]*?--merch-violet-rgb:\s*185 118 241[\s\S]*?radial-gradient\([\s\S]*?linear-gradient\(/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-canvas > \.customer-section,[\s\S]*?background:\s*transparent !important/
+);
+assert.match(
+  premiumCss,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-merchandising-canvas\s*\{[\s\S]*?rgb\(var\(--merch-blue-rgb\) \/ 10%\)[\s\S]*?rgb\(var\(--merch-violet-rgb\) \/ 6%\)/
 );
 assert.match(
   premiumCss,
@@ -168,8 +179,14 @@ assert.doesNotMatch(
   premiumCss,
   /shop-category-background\.webp|storefront-merchandising-background\.webp|home-next-step-background\.(?:avif|webp)/
 );
+assert.doesNotMatch(
+  premiumCss,
+  /\.home-merchandising-canvas[\s\S]*?(?:url\(|repeating-linear-gradient)/
+);
 assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::before/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::after/);
+assert.doesNotMatch(premiumCss, /\.home-merchandising-canvas::before/);
+assert.doesNotMatch(premiumCss, /\.home-merchandising-canvas::after/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising--trending::before/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising--best-seller::before/);
 assert.doesNotMatch(premiumCss, /\.home-essentials::before/);
