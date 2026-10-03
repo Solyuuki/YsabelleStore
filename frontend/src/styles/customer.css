@@ -8226,6 +8226,16 @@
   color: #e9e7ff;
 }
 
+.customer-footer--shop {
+  --footer-transition-surface: #e5e9f7;
+  --footer-transition-blue: #d2e2f5;
+  --footer-transition-center: #e3e7f4;
+  --footer-transition-violet: #ddd5ef;
+  --footer-accent-blue: #84bce8;
+  --footer-accent-indigo: #8276df;
+  --footer-accent-violet: #ab7fd8;
+}
+
 .customer-footer__transition {
   position: relative;
   z-index: 0;
