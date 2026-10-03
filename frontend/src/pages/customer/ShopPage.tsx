@@ -221,61 +221,124 @@ export function ShopPage({
 
             <rect fill="var(--shop-catalog-surface)" height="2400" width="1600" />
 
+            <ellipse
+              cx="120"
+              cy="420"
+              fill="var(--shop-catalog-blue-glow)"
+              opacity="0.52"
+              rx="380"
+              ry="500"
+            />
+            <ellipse
+              cx="1510"
+              cy="760"
+              fill="var(--shop-catalog-violet-glow)"
+              opacity="0.46"
+              rx="420"
+              ry="560"
+            />
+            <ellipse
+              cx="160"
+              cy="1660"
+              fill="var(--shop-catalog-blue-glow)"
+              opacity="0.38"
+              rx="360"
+              ry="520"
+            />
+            <ellipse
+              cx="1490"
+              cy="2050"
+              fill="var(--shop-catalog-violet-glow)"
+              opacity="0.42"
+              rx="390"
+              ry="500"
+            />
+
             <path
-              d="M0 70C210 135 390 160 575 128C760 96 915 42 1110 70C1300 97 1450 150 1600 122V560C1430 590 1260 535 1080 520C850 502 700 575 500 592C315 607 150 565 0 505Z"
+              d="M0 80C220 145 395 165 580 130C760 98 920 48 1110 76C1295 104 1450 152 1600 126V560C1435 592 1260 540 1085 526C855 508 700 578 505 596C320 614 155 570 0 510Z"
+              fill="url(#shopCatalogWash)"
+              opacity="0.44"
+            />
+
+            <path
+              d="M0 610C205 520 390 550 560 680C735 814 900 860 1080 802C1260 745 1420 660 1600 698V1040C1415 1012 1240 1080 1060 1135C860 1197 690 1110 525 1010C350 905 190 872 0 950Z"
+              fill="url(#shopCatalogWash)"
+              opacity="0.30"
+            />
+
+            <path
+              d="M0 1090C180 1015 350 1032 530 1155C710 1278 875 1320 1050 1265C1240 1205 1405 1120 1600 1152V1500C1410 1472 1245 1538 1065 1595C865 1658 690 1582 520 1472C345 1358 185 1322 0 1400Z"
+              fill="url(#shopCatalogWash)"
+              opacity="0.27"
+            />
+
+            <path
+              d="M0 1555C210 1465 370 1518 548 1660C710 1788 875 1828 1058 1745C1240 1660 1390 1568 1600 1632V2000C1400 1932 1220 2018 1030 2080C830 2145 650 2055 500 1940C332 1810 175 1765 0 1850Z"
               fill="url(#shopCatalogWash)"
               opacity="0.31"
             />
 
             <path
-              d="M0 730C180 620 345 642 515 760C680 875 825 925 1010 865C1200 803 1370 690 1600 746V1230C1390 1190 1220 1280 1040 1332C840 1390 650 1298 505 1195C340 1080 190 1038 0 1135Z"
+              d="M0 1985C220 1902 390 1955 560 2092C730 2228 900 2258 1070 2188C1240 2118 1405 2040 1600 2102V2350C1400 2295 1215 2342 1032 2375H0Z"
               fill="url(#shopCatalogWash)"
-              opacity="0.20"
+              opacity="0.34"
             />
 
             <path
-              d="M0 1550C210 1460 365 1518 545 1660C705 1787 875 1825 1055 1740C1240 1652 1390 1560 1600 1625V2210C1400 2135 1220 2225 1025 2288C830 2352 650 2260 500 2140C330 2005 175 1960 0 2050Z"
-              fill="url(#shopCatalogWash)"
-              opacity="0.23"
+              d="M-40 245C210 80 425 118 650 248C875 378 1070 338 1285 210C1435 120 1535 98 1640 128"
+              fill="none"
+              stroke="url(#shopCatalogLine)"
+              strokeLinecap="round"
+              strokeWidth="2.6"
+              opacity="0.68"
             />
 
             <path
-              d="M-40 260C210 72 425 112 650 245C875 378 1070 335 1285 205C1435 114 1535 92 1640 122"
+              d="M-70 760C170 610 395 632 600 780C805 928 1010 928 1210 792C1380 678 1500 660 1660 705"
+              fill="none"
+              stroke="url(#shopCatalogLine)"
+              strokeLinecap="round"
+              strokeWidth="2.1"
+              opacity="0.50"
+            />
+
+            <path
+              d="M-60 1260C180 1115 400 1132 610 1278C815 1420 1018 1418 1210 1288C1380 1174 1510 1148 1660 1192"
               fill="none"
               stroke="url(#shopCatalogLine)"
               strokeLinecap="round"
               strokeWidth="2.2"
-              opacity="0.58"
-            />
-
-            <path
-              d="M-70 1020C180 840 410 860 610 1010C815 1165 1020 1162 1210 1018C1380 888 1500 866 1660 912"
-              fill="none"
-              stroke="url(#shopCatalogLine)"
-              strokeLinecap="round"
-              strokeWidth="1.8"
-              opacity="0.42"
-            />
-
-            <path
-              d="M-40 1870C170 1710 390 1738 585 1878C785 2022 980 2028 1170 1905C1365 1780 1495 1765 1650 1812"
-              fill="none"
-              stroke="url(#shopCatalogLine)"
-              strokeLinecap="round"
-              strokeWidth="2"
               opacity="0.48"
             />
 
-            <g fill="var(--shop-catalog-sparkle)" opacity="0.58">
-              <circle cx="120" cy="390" r="8" />
-              <circle cx="1450" cy="510" r="7" />
-              <circle cx="210" cy="1260" r="6" />
-              <circle cx="1388" cy="1480" r="9" />
-              <circle cx="280" cy="2120" r="7" />
-              <circle cx="1325" cy="2180" r="6" />
+            <path
+              d="M-40 1775C170 1635 390 1660 585 1800C785 1942 980 1948 1170 1828C1365 1702 1495 1692 1650 1738"
+              fill="none"
+              stroke="url(#shopCatalogLine)"
+              strokeLinecap="round"
+              strokeWidth="2.2"
+              opacity="0.54"
+            />
+
+            <path
+              d="M-30 2180C210 2060 430 2090 625 2205C830 2328 1040 2328 1240 2220C1400 2132 1518 2122 1635 2154"
+              fill="none"
+              stroke="url(#shopCatalogLine)"
+              strokeLinecap="round"
+              strokeWidth="1.9"
+              opacity="0.44"
+            />
+
+            <g fill="var(--shop-catalog-sparkle)" opacity="0.42">
+              <circle cx="126" cy="405" r="7" />
+              <circle cx="1450" cy="520" r="7" />
+              <circle cx="190" cy="1190" r="6" />
+              <circle cx="1405" cy="1445" r="8" />
+              <circle cx="265" cy="2030" r="7" />
+              <circle cx="1320" cy="2175" r="6" />
               <path d="M230 235L237 250L252 257L237 264L230 279L223 264L208 257L223 250Z" />
-              <path d="M1420 1110L1427 1125L1442 1132L1427 1139L1420 1154L1413 1139L1398 1132L1413 1125Z" />
-              <path d="M360 1788L367 1803L382 1810L367 1817L360 1832L353 1817L338 1810L353 1803Z" />
+              <path d="M1420 1090L1427 1105L1442 1112L1427 1119L1420 1134L1413 1119L1398 1112L1413 1105Z" />
+              <path d="M360 1748L367 1763L382 1770L367 1777L360 1792L353 1777L338 1770L353 1763Z" />
             </g>
 
             <rect
