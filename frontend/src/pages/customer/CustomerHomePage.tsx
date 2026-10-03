@@ -231,196 +231,192 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
 function CategoryRetailBackdrop() {
   return (
     <div aria-hidden="true" className="home-categories__backdrop">
+      <div className="home-categories__center-light" />
+
       <svg
-        className="home-categories__retail-scene"
+        className="home-categories__scene home-categories__scene--left"
         focusable="false"
-        preserveAspectRatio="xMidYMid slice"
-        viewBox="0 0 1600 820"
+        preserveAspectRatio="xMinYMid slice"
+        viewBox="0 0 420 760"
       >
         <defs>
-          <linearGradient id="categoryShelfGlow" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.78" />
-            <stop offset="48%" stopColor="#cfe4ff" stopOpacity="0.48" />
-            <stop offset="100%" stopColor="#baa8ff" stopOpacity="0.18" />
+          <linearGradient id="categoryLeftBlue" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--retail-object-light)" stopOpacity="0.82" />
+            <stop offset="100%" stopColor="var(--retail-object-blue)" stopOpacity="0.48" />
           </linearGradient>
-          <linearGradient id="categoryShelfGlowRight" x1="1" x2="0" y1="0" y2="0">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.78" />
-            <stop offset="48%" stopColor="#ddd2ff" stopOpacity="0.46" />
-            <stop offset="100%" stopColor="#9ecfff" stopOpacity="0.16" />
+          <linearGradient id="categoryLeftViolet" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--retail-object-light)" stopOpacity="0.76" />
+            <stop offset="100%" stopColor="var(--retail-object-violet)" stopOpacity="0.46" />
           </linearGradient>
-          <linearGradient id="categoryProductBlue" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#dff2ff" stopOpacity="0.72" />
-            <stop offset="100%" stopColor="#6db8ff" stopOpacity="0.18" />
-          </linearGradient>
-          <linearGradient id="categoryProductViolet" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#f2ebff" stopOpacity="0.72" />
-            <stop offset="100%" stopColor="#8269ff" stopOpacity="0.18" />
-          </linearGradient>
-          <linearGradient id="categoryProductWhite" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.76" />
-            <stop offset="100%" stopColor="#dfe9ff" stopOpacity="0.2" />
-          </linearGradient>
-          <linearGradient id="categoryFloorBlue" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="#8bc7ff" stopOpacity="0.16" />
-            <stop offset="58%" stopColor="#ffffff" stopOpacity="0.04" />
-            <stop offset="100%" stopColor="#9a82ff" stopOpacity="0.13" />
-          </linearGradient>
-          <linearGradient id="categoryFloorViolet" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="#728dff" stopOpacity="0.08" />
-            <stop offset="52%" stopColor="#ffffff" stopOpacity="0" />
-            <stop offset="100%" stopColor="#b46aff" stopOpacity="0.12" />
-          </linearGradient>
-          <radialGradient id="categoryCenterWash" cx="50%" cy="43%" r="58%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.84" />
-            <stop offset="38%" stopColor="#ffffff" stopOpacity="0.68" />
-            <stop offset="66%" stopColor="#ffffff" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-          </radialGradient>
-          <filter id="categoryBlurNear" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.8" />
+          <filter id="categoryLeftBlurNear" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.5" />
           </filter>
-          <filter id="categoryBlurMid" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="6.5" />
+          <filter id="categoryLeftBlurMid" x="-35%" y="-35%" width="170%" height="170%">
+            <feGaussianBlur stdDeviation="4.5" />
           </filter>
-          <filter id="categoryBlurFar" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="12" />
-          </filter>
-          <filter id="categoryGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur result="blur" stdDeviation="5" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
+          <filter id="categoryLeftBlurFar" x="-45%" y="-45%" width="190%" height="190%">
+            <feGaussianBlur stdDeviation="7.5" />
           </filter>
         </defs>
 
-        <g className="home-categories__ceiling" filter="url(#categoryGlow)">
-          <path d="M-70 104C132 2 350 -10 592 78" />
-          <path className="home-categories__ceiling-soft" d="M-82 142C120 50 332 44 552 112" />
-          <path d="M1670 96C1464 -8 1248 -16 1018 72" />
-          <path className="home-categories__ceiling-soft" d="M1682 138C1476 44 1268 40 1052 108" />
-          <circle cx="188" cy="58" r="13" />
-          <circle cx="362" cy="80" r="10" />
-          <circle cx="1248" cy="62" r="11" />
-          <circle cx="1436" cy="78" r="13" />
-        </g>
+        <g className="home-categories__scene-far" filter="url(#categoryLeftBlurFar)">
+          <path className="home-categories__ceiling-arc" d="M-70 104C54 24 214 10 458 108" />
+          <path className="home-categories__ceiling-arc home-categories__ceiling-arc--soft" d="M-82 142C70 62 236 58 456 146" />
+          <circle className="home-categories__ceiling-light" cx="116" cy="72" r="10" />
+          <circle className="home-categories__ceiling-light" cx="258" cy="76" r="8" />
 
-        <g className="home-categories__retail-depth home-categories__retail-depth--left" filter="url(#categoryBlurFar)">
-          <path className="home-categories__shelf-curve" d="M-90 280C96 224 282 230 512 304" />
-          <path className="home-categories__shelf-curve home-categories__shelf-curve--lower" d="M-102 424C104 368 284 376 486 438" />
-          <g transform="translate(24 196)">
-            <rect fill="url(#categoryProductBlue)" height="70" rx="14" width="56" x="0" y="16" />
-            <rect fill="url(#categoryProductWhite)" height="58" rx="12" width="48" x="70" y="28" />
-            <rect fill="url(#categoryProductViolet)" height="76" rx="13" width="58" x="132" y="10" />
-            <g fill="url(#categoryProductBlue)" transform="translate(208 4)">
-              <rect height="16" rx="5" width="24" x="13" y="0" />
-              <rect height="70" rx="17" width="50" x="0" y="15" />
-            </g>
-            <g fill="url(#categoryProductWhite)" transform="translate(280 16)">
-              <rect height="14" rx="5" width="22" x="12" y="0" />
-              <rect height="56" rx="15" width="46" x="0" y="13" />
-            </g>
-          </g>
-          <g transform="translate(-14 344)">
-            <g fill="url(#categoryProductWhite)" transform="translate(18 12)">
-              <rect height="15" rx="5" width="22" x="12" y="0" />
-              <rect height="62" rx="16" width="46" x="0" y="14" />
-            </g>
-            <rect fill="url(#categoryProductViolet)" height="72" rx="13" width="62" x="82" y="6" />
-            <rect fill="url(#categoryProductBlue)" height="58" rx="12" width="52" x="158" y="20" />
-            <rect fill="url(#categoryProductWhite)" height="68" rx="12" width="58" x="226" y="10" />
-          </g>
-        </g>
+          <path className="home-categories__shelf-arc" d="M-94 282C44 224 214 220 456 310" />
+          <path className="home-categories__shelf-arc home-categories__shelf-arc--lower" d="M-104 442C64 378 228 382 448 458" />
 
-        <g className="home-categories__retail-near home-categories__retail-near--left" filter="url(#categoryBlurMid)">
-          <path className="home-categories__shelf-near" d="M-140 170C82 98 262 112 438 190" />
-          <path className="home-categories__shelf-near home-categories__shelf-near--lower" d="M-156 520C54 454 232 466 418 534" />
-          <g transform="translate(-34 82)">
-            <g fill="url(#categoryProductWhite)" transform="translate(0 4)">
+          <g className="home-categories__products home-categories__products--far" transform="translate(-6 180)">
+            <rect fill="url(#categoryLeftBlue)" height="88" rx="18" width="62" x="0" y="20" />
+            <g fill="url(#categoryLeftViolet)" transform="translate(82 2)">
               <rect height="18" rx="5" width="27" x="14" y="0" />
-              <rect height="88" rx="19" width="56" x="0" y="17" />
+              <rect height="88" rx="20" width="56" x="0" y="17" />
             </g>
-            <g fill="url(#categoryProductBlue)" transform="translate(72 22)">
+            <rect fill="url(#categoryLeftBlue)" height="76" rx="15" width="66" x="160" y="30" />
+            <g fill="url(#categoryLeftViolet)" transform="translate(246 22)">
               <rect height="15" rx="5" width="24" x="13" y="0" />
-              <rect height="70" rx="17" width="50" x="0" y="14" />
+              <rect height="70" rx="18" width="50" x="0" y="14" />
             </g>
-            <rect fill="url(#categoryProductViolet)" height="92" rx="17" width="74" x="142" y="14" />
           </g>
-          <g className="home-categories__retail-podiums" transform="translate(-76 594)">
-            <rect height="202" rx="34" width="146" x="0" y="20" />
-            <rect className="home-categories__retail-podium--violet" height="168" rx="30" width="132" x="116" y="54" />
-            <rect className="home-categories__retail-podium--light" height="124" rx="26" width="120" x="232" y="98" />
-          </g>
-          <g className="home-categories__retail-leaves" transform="translate(42 552)">
-            <path d="M0 76C10 28 36 4 78 0C70 46 46 70 0 76Z" />
-            <path d="M48 86C66 42 94 24 132 32C116 70 88 90 48 86Z" />
+
+          <g className="home-categories__products home-categories__products--far" transform="translate(-24 344)">
+            <g fill="url(#categoryLeftBlue)" transform="translate(0 10)">
+              <rect height="17" rx="5" width="25" x="13" y="0" />
+              <rect height="78" rx="18" width="52" x="0" y="16" />
+            </g>
+            <rect fill="url(#categoryLeftViolet)" height="90" rx="18" width="72" x="74" y="4" />
+            <rect fill="url(#categoryLeftBlue)" height="70" rx="15" width="60" x="166" y="24" />
+            <rect fill="url(#categoryLeftViolet)" height="82" rx="16" width="66" x="246" y="12" />
           </g>
         </g>
 
-        <g className="home-categories__retail-depth home-categories__retail-depth--right" filter="url(#categoryBlurFar)">
-          <path className="home-categories__shelf-curve home-categories__shelf-curve--right" d="M1690 276C1506 220 1324 228 1092 302" />
-          <path className="home-categories__shelf-curve home-categories__shelf-curve--right home-categories__shelf-curve--lower" d="M1702 420C1498 366 1322 374 1110 436" />
-          <g transform="translate(1262 194)">
-            <g fill="url(#categoryProductViolet)" transform="translate(0 6)">
-              <rect height="15" rx="5" width="23" x="12" y="0" />
-              <rect height="68" rx="17" width="48" x="0" y="14" />
+        <g className="home-categories__scene-mid" filter="url(#categoryLeftBlurMid)">
+          <path className="home-categories__shelf-near" d="M-128 170C34 100 192 102 390 194" />
+          <path className="home-categories__shelf-near home-categories__shelf-near--lower" d="M-142 548C34 476 202 482 390 560" />
+
+          <g className="home-categories__products home-categories__products--near" transform="translate(-44 76)">
+            <g fill="url(#categoryLeftBlue)" transform="translate(0 8)">
+              <rect height="20" rx="6" width="30" x="15" y="0" />
+              <rect height="102" rx="22" width="60" x="0" y="19" />
             </g>
-            <rect fill="url(#categoryProductWhite)" height="62" rx="12" width="50" x="64" y="22" />
-            <rect fill="url(#categoryProductBlue)" height="76" rx="13" width="58" x="128" y="8" />
-            <g fill="url(#categoryProductWhite)" transform="translate(204 18)">
-              <rect height="13" rx="4" width="21" x="11" y="0" />
-              <rect height="52" rx="14" width="44" x="0" y="12" />
+            <rect fill="url(#categoryLeftViolet)" height="108" rx="20" width="84" x="82" y="16" />
+            <g fill="url(#categoryLeftBlue)" transform="translate(188 28)">
+              <rect height="16" rx="5" width="26" x="14" y="0" />
+              <rect height="78" rx="19" width="54" x="0" y="15" />
             </g>
-          </g>
-          <g transform="translate(1308 342)">
-            <rect fill="url(#categoryProductBlue)" height="68" rx="13" width="58" x="0" y="10" />
-            <g fill="url(#categoryProductWhite)" transform="translate(72 8)">
-              <rect height="14" rx="5" width="22" x="12" y="0" />
-              <rect height="58" rx="15" width="46" x="0" y="13" />
-            </g>
-            <rect fill="url(#categoryProductViolet)" height="72" rx="13" width="62" x="138" y="6" />
-            <rect fill="url(#categoryProductWhite)" height="54" rx="11" width="50" x="214" y="24" />
           </g>
         </g>
 
-        <g className="home-categories__retail-near home-categories__retail-near--right" filter="url(#categoryBlurMid)">
-          <path className="home-categories__shelf-near home-categories__shelf-near--right" d="M1740 166C1518 94 1340 108 1164 188" />
-          <path className="home-categories__shelf-near home-categories__shelf-near--right home-categories__shelf-near--lower" d="M1756 516C1544 450 1368 462 1182 532" />
-          <g transform="translate(1384 82)">
-            <rect fill="url(#categoryProductViolet)" height="94" rx="17" width="74" x="0" y="12" />
-            <g fill="url(#categoryProductBlue)" transform="translate(92 18)">
-              <rect height="16" rx="5" width="24" x="13" y="0" />
-              <rect height="74" rx="18" width="50" x="0" y="15" />
+        <g className="home-categories__scene-near" filter="url(#categoryLeftBlurNear)">
+          <g className="home-categories__podiums" transform="translate(-88 586)">
+            <rect height="212" rx="38" width="154" x="0" y="18" />
+            <rect className="home-categories__podium--violet" height="178" rx="34" width="140" x="126" y="52" />
+            <rect className="home-categories__podium--light" height="128" rx="30" width="126" x="250" y="102" />
+          </g>
+
+          <g className="home-categories__leaves" transform="translate(34 536)">
+            <path d="M0 90C12 34 42 5 90 0C82 52 54 82 0 90Z" />
+            <path d="M54 102C76 52 108 32 152 40C132 84 100 108 54 102Z" />
+          </g>
+
+          <path className="home-categories__floor-ribbon" d="M-90 696C66 642 218 648 440 724L440 810L-90 810Z" />
+          <path className="home-categories__floor-ribbon home-categories__floor-ribbon--violet" d="M-98 746C78 696 244 704 448 770L448 820L-98 820Z" />
+        </g>
+      </svg>
+
+      <svg
+        className="home-categories__scene home-categories__scene--right"
+        focusable="false"
+        preserveAspectRatio="xMaxYMid slice"
+        viewBox="0 0 420 760"
+      >
+        <defs>
+          <linearGradient id="categoryRightBlue" x1="1" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--retail-object-light)" stopOpacity="0.82" />
+            <stop offset="100%" stopColor="var(--retail-object-blue)" stopOpacity="0.46" />
+          </linearGradient>
+          <linearGradient id="categoryRightViolet" x1="1" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--retail-object-light)" stopOpacity="0.76" />
+            <stop offset="100%" stopColor="var(--retail-object-violet)" stopOpacity="0.48" />
+          </linearGradient>
+          <filter id="categoryRightBlurNear" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.5" />
+          </filter>
+          <filter id="categoryRightBlurMid" x="-35%" y="-35%" width="170%" height="170%">
+            <feGaussianBlur stdDeviation="4.5" />
+          </filter>
+          <filter id="categoryRightBlurFar" x="-45%" y="-45%" width="190%" height="190%">
+            <feGaussianBlur stdDeviation="7.5" />
+          </filter>
+        </defs>
+
+        <g className="home-categories__scene-far" filter="url(#categoryRightBlurFar)">
+          <path className="home-categories__ceiling-arc" d="M-38 104C166 16 322 28 492 118" />
+          <path className="home-categories__ceiling-arc home-categories__ceiling-arc--soft" d="M-36 146C150 66 316 72 504 158" />
+          <circle className="home-categories__ceiling-light" cx="164" cy="76" r="8" />
+          <circle className="home-categories__ceiling-light" cx="316" cy="72" r="10" />
+
+          <path className="home-categories__shelf-arc" d="M-36 306C178 222 342 228 510 286" />
+          <path className="home-categories__shelf-arc home-categories__shelf-arc--lower" d="M-30 458C176 382 340 380 520 434" />
+
+          <g className="home-categories__products home-categories__products--far" transform="translate(82 184)">
+            <g fill="url(#categoryRightViolet)" transform="translate(0 8)">
+              <rect height="16" rx="5" width="25" x="13" y="0" />
+              <rect height="76" rx="18" width="52" x="0" y="15" />
             </g>
-            <g fill="url(#categoryProductWhite)" transform="translate(160 2)">
+            <rect fill="url(#categoryRightBlue)" height="82" rx="16" width="68" x="70" y="14" />
+            <rect fill="url(#categoryRightViolet)" height="68" rx="14" width="58" x="158" y="28" />
+            <g fill="url(#categoryRightBlue)" transform="translate(236 4)">
               <rect height="18" rx="5" width="27" x="14" y="0" />
-              <rect height="88" rx="19" width="56" x="0" y="17" />
+              <rect height="88" rx="20" width="56" x="0" y="17" />
             </g>
           </g>
-          <g className="home-categories__retail-podiums" transform="translate(1324 592)">
-            <rect className="home-categories__retail-podium--light" height="126" rx="26" width="120" x="0" y="96" />
-            <rect className="home-categories__retail-podium--violet" height="170" rx="30" width="132" x="104" y="52" />
-            <rect height="204" rx="34" width="148" x="218" y="18" />
-          </g>
-          <g className="home-categories__retail-leaves home-categories__retail-leaves--right" transform="translate(1368 546)">
-            <path d="M0 82C12 32 40 6 84 0C76 48 50 76 0 82Z" />
-            <path d="M52 92C72 46 102 28 142 36C124 76 94 96 52 92Z" />
+
+          <g className="home-categories__products home-categories__products--far" transform="translate(104 344)">
+            <rect fill="url(#categoryRightBlue)" height="72" rx="15" width="62" x="0" y="20" />
+            <g fill="url(#categoryRightViolet)" transform="translate(80 6)">
+              <rect height="16" rx="5" width="25" x="13" y="0" />
+              <rect height="80" rx="18" width="52" x="0" y="15" />
+            </g>
+            <rect fill="url(#categoryRightBlue)" height="88" rx="18" width="72" x="152" y="4" />
+            <rect fill="url(#categoryRightViolet)" height="66" rx="14" width="58" x="244" y="26" />
           </g>
         </g>
 
-        <g className="home-categories__floor" filter="url(#categoryBlurNear)">
-          <path d="M-80 690C286 604 560 620 824 704C1068 780 1302 776 1680 670L1680 860L-80 860Z" fill="url(#categoryFloorBlue)" />
-          <path d="M-80 752C244 666 536 668 828 748C1100 822 1378 812 1680 716L1680 860L-80 860Z" fill="url(#categoryFloorViolet)" />
+        <g className="home-categories__scene-mid" filter="url(#categoryRightBlurMid)">
+          <path className="home-categories__shelf-near" d="M18 194C218 100 374 102 546 170" />
+          <path className="home-categories__shelf-near home-categories__shelf-near--lower" d="M22 560C210 482 378 476 558 548" />
+
+          <g className="home-categories__products home-categories__products--near" transform="translate(164 78)">
+            <rect fill="url(#categoryRightViolet)" height="106" rx="20" width="84" x="0" y="18" />
+            <g fill="url(#categoryRightBlue)" transform="translate(106 26)">
+              <rect height="16" rx="5" width="26" x="14" y="0" />
+              <rect height="80" rx="19" width="54" x="0" y="15" />
+            </g>
+            <g fill="url(#categoryRightViolet)" transform="translate(184 6)">
+              <rect height="20" rx="6" width="30" x="15" y="0" />
+              <rect height="102" rx="22" width="60" x="0" y="19" />
+            </g>
+          </g>
         </g>
 
-        <rect
-          className="home-categories__center-wash"
-          fill="url(#categoryCenterWash)"
-          height="820"
-          width="1600"
-          x="0"
-          y="0"
-        />
+        <g className="home-categories__scene-near" filter="url(#categoryRightBlurNear)">
+          <g className="home-categories__podiums" transform="translate(74 584)">
+            <rect className="home-categories__podium--light" height="132" rx="30" width="126" x="0" y="100" />
+            <rect className="home-categories__podium--violet" height="180" rx="34" width="140" x="110" y="52" />
+            <rect height="214" rx="38" width="156" x="232" y="18" />
+          </g>
+
+          <g className="home-categories__leaves home-categories__leaves--right" transform="translate(230 530)">
+            <path d="M0 96C14 38 46 7 96 0C88 56 58 88 0 96Z" />
+            <path d="M58 108C80 56 114 34 160 44C140 90 106 114 58 108Z" />
+          </g>
+
+          <path className="home-categories__floor-ribbon" d="M-26 724C194 648 346 642 510 696L510 812L-26 812Z" />
+          <path className="home-categories__floor-ribbon home-categories__floor-ribbon--violet" d="M-30 770C174 704 340 696 518 746L518 822L-30 822Z" />
+        </g>
       </svg>
     </div>
   );
