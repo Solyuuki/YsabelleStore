@@ -1453,41 +1453,20 @@
     padding-block: 3.25rem;
   }
 
-  .home-merchandising-canvas {
-    background:
-      radial-gradient(
-        ellipse 96% 24% at -20% 5%,
-        rgb(var(--merch-blue-rgb) / 14%) 0%,
-        transparent 72%
-      ),
-      radial-gradient(
-        ellipse 96% 24% at 120% 10%,
-        rgb(var(--merch-indigo-rgb) / 12%) 0%,
-        transparent 74%
-      ),
-      radial-gradient(
-        ellipse 104% 30% at 110% 82%,
-        rgb(var(--merch-violet-rgb) / 8%) 0%,
-        transparent 74%
-      ),
-      linear-gradient(
-        180deg,
-        var(--merch-bg-top) 0%,
-        var(--merch-bg-mid) 46%,
-        var(--merch-bg-bottom) 100%
-      );
+  .home-merchandising-canvas__waves--top {
+    opacity: 0.68;
   }
 
-  .home-merchandising-canvas::before {
-    top: 10%;
-    height: 11rem;
-    opacity: 0.54;
+  .home-merchandising-canvas__mid-glow {
+    opacity: 0.4;
   }
 
-  .home-merchandising-canvas::after {
-    bottom: 6%;
-    height: 12rem;
-    opacity: 0.5;
+  .home-merchandising-canvas__waves--bottom {
+    opacity: 0.72;
+  }
+
+  .home-merchandising-canvas__sparkles {
+    opacity: 0.32;
   }
 
   .home-categories__scene {
