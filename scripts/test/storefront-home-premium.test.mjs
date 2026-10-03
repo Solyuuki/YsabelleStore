@@ -161,7 +161,20 @@ assert.match(
 );
 assert.match(
   premiumCss,
-  /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#edf6ff[\s\S]*?--merch-blue-rgb:\s*82 177 255[\s\S]*?--merch-violet-rgb:\s*177 102 241[\s\S]*?radial-gradient\([\s\S]*?linear-gradient\(/
+  /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#eef7ff[\s\S]*?--merch-wave-blue:\s*#7fc7ff[\s\S]*?--merch-wave-violet:\s*#c89cff[\s\S]*?background:\s*var\(--merch-bg-mid\)/
+);
+assert.match(homeSource, /<MerchandisingBackdrop \/>/);
+assert.match(
+  homeSource,
+  /function MerchandisingBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?viewBox="0 0 1600 2400"[\s\S]*?home-merchandising-canvas__waves--top[\s\S]*?home-merchandising-canvas__waves--bottom/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-canvas__backdrop\s*\{[\s\S]*?position:\s*absolute[\s\S]*?inset:\s*0[\s\S]*?pointer-events:\s*none/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-canvas__scene\s*\{[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%/
 );
 assert.match(
   premiumCss,
@@ -169,7 +182,7 @@ assert.match(
 );
 assert.match(
   premiumCss,
-  /@media \(max-width: 700px\)[\s\S]*?\.home-merchandising-canvas\s*\{[\s\S]*?rgb\(var\(--merch-blue-rgb\) \/ 14%\)[\s\S]*?rgb\(var\(--merch-violet-rgb\) \/ 8%\)/
+  /@media \(max-width: 700px\)[\s\S]*?\.home-merchandising-canvas__waves--top[\s\S]*?opacity:\s*0\.68[\s\S]*?\.home-merchandising-canvas__waves--bottom[\s\S]*?opacity:\s*0\.72/
 );
 assert.match(
   premiumCss,
@@ -181,18 +194,10 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(
   premiumCss,
-  /\.home-merchandising-canvas[\s\S]*?(?:url\(|repeating-linear-gradient)/
+  /\.home-merchandising-canvas::before|\.home-merchandising-canvas::after|repeating-linear-gradient|background-image:\s*url\(/
 );
 assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::before/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::after/);
-assert.match(
-  premiumCss,
-  /\.home-merchandising-canvas::before,[\s\S]*?\.home-merchandising-canvas::after[\s\S]*?content:\s*""[\s\S]*?pointer-events:\s*none/
-);
-assert.match(
-  premiumCss,
-  /\.home-merchandising-canvas::before[\s\S]*?linear-gradient\([\s\S]*?\.home-merchandising-canvas::after[\s\S]*?linear-gradient\(/
-);
 assert.doesNotMatch(premiumCss, /\.home-merchandising--trending::before/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising--best-seller::before/);
 assert.doesNotMatch(premiumCss, /\.home-essentials::before/);
