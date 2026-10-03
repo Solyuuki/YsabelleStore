@@ -39,6 +39,30 @@ assert.doesNotMatch(
 );
 
 assert.match(
+  home,
+  /<CategoryRetailBackdrop \/>/,
+  "Shop by Category must render the responsive vector retail ambience."
+);
+
+assert.match(
+  home,
+  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__backdrop-side--left[\s\S]*?home-categories__backdrop-side--right/,
+  "Retail ambience must stay decorative, inaccessible to assistive tech, and balanced on both sides."
+);
+
+assert.match(
+  css,
+  /\.home-categories__backdrop-side[\s\S]*?width:\s*clamp\([\s\S]*?opacity:\s*0\.58/,
+  "Retail vector sides must use responsive sizing with restrained opacity."
+);
+
+assert.match(
+  css,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__backdrop-side[\s\S]*?opacity:\s*0\.42/,
+  "Retail vector ambience must reduce intensity on small screens."
+);
+
+assert.match(
   css,
   /\.home-merchandising-stage\s*\{[\s\S]*?background:\s*transparent/,
   "Merchandising stage must inherit the Shop/Catalog canvas."
