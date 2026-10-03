@@ -94,38 +94,44 @@ assert.match(
 
 assert.match(
   css,
-  /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#edf6ff[\s\S]*?--merch-blue-rgb:\s*82 177 255[\s\S]*?--merch-violet-rgb:\s*177 102 241[\s\S]*?radial-gradient\([\s\S]*?linear-gradient\(/,
-  "Trending through Everyday Essentials must share the calm cold editorial merchandising canvas."
+  /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#eef7ff[\s\S]*?--merch-wave-blue:\s*#7fc7ff[\s\S]*?--merch-wave-violet:\s*#c89cff[\s\S]*?background:\s*var\(--merch-bg-mid\)/,
+  "Trending through Everyday Essentials must share the cold vertical merchandising canvas."
+);
+
+assert.match(
+  home,
+  /<MerchandisingBackdrop \/>/,
+  "Merchandising canvas must render the dedicated decorative backdrop."
+);
+
+assert.match(
+  home,
+  /function MerchandisingBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?viewBox="0 0 1600 2400"[\s\S]*?home-merchandising-canvas__waves--top[\s\S]*?home-merchandising-canvas__waves--bottom/,
+  "Merchandising backdrop must be a tall, full-height vector scene with top and bottom wave zones."
+);
+
+assert.match(
+  css,
+  /\.home-merchandising-canvas__backdrop\s*\{[\s\S]*?position:\s*absolute[\s\S]*?inset:\s*0[\s\S]*?pointer-events:\s*none/,
+  "Merchandising vector backdrop must stay decorative and non-interactive."
+);
+
+assert.match(
+  css,
+  /\.home-merchandising-canvas__scene\s*\{[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%/,
+  "Tall merchandising vector scene must scale with the entire canvas."
+);
+
+assert.match(
+  css,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-merchandising-canvas__waves--top[\s\S]*?opacity:\s*0\.68[\s\S]*?\.home-merchandising-canvas__waves--bottom[\s\S]*?opacity:\s*0\.72/,
+  "Tall merchandising atmosphere must reduce intensity on small screens."
 );
 
 assert.doesNotMatch(
   css,
-  /\.home-merchandising-canvas[\s\S]*?(?:url\(|repeating-linear-gradient)/,
-  "Merchandising canvas must remain CSS-only and pattern-free."
-);
-
-assert.match(
-  css,
-  /@media \(max-width: 700px\)[\s\S]*?\.home-merchandising-canvas\s*\{[\s\S]*?rgb\(var\(--merch-blue-rgb\) \/ 14%\)[\s\S]*?rgb\(var\(--merch-violet-rgb\) \/ 8%\)/,
-  "Merchandising ambience must reduce edge intensity on small screens."
-);
-
-assert.doesNotMatch(
-  css,
-  /\.home-merchandising-stage::before\s*\{|\.home-merchandising-stage::after\s*\{/,
-  "Outer merchandising stage must not create image or overlay layers."
-);
-
-assert.match(
-  css,
-  /\.home-merchandising-canvas::before,[\s\S]*?\.home-merchandising-canvas::after[\s\S]*?content:\s*""[\s\S]*?pointer-events:\s*none/,
-  "Merchandising canvas must use non-interactive CSS-only ambient ribbon layers."
-);
-
-assert.match(
-  css,
-  /\.home-merchandising-canvas::before[\s\S]*?linear-gradient\([\s\S]*?\.home-merchandising-canvas::after[\s\S]*?linear-gradient\(/,
-  "Merchandising canvas must include visible blue-violet wave geometry from CSS gradients."
+  /\.home-merchandising-canvas::before|\.home-merchandising-canvas::after|repeating-linear-gradient|background-image:\s*url\(/,
+  "Merchandising canvas must not depend on pseudo-element ribbons, repeating patterns, or raster background images."
 );
 
 assert.doesNotMatch(
