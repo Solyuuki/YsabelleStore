@@ -47,9 +47,9 @@ Canonical runtime video:
 
 Approved source:
 
-- `gemini_generated_video_09d5c3a9.mp4`
-- Size: `3,117,523` bytes
-- SHA256: `28b458ffced16e4900aa8699e1d80a3497916d3c0b4d5a091a81d161e9ec07bf`
+- `gemini_generated_video_4013f49c.mp4`
+- Size: `2,554,527` bytes
+- SHA256: `6738635db4cf22b744aba5ced30bc4a9533245e0f02352df406381d21487dad9`
 
 Install the source from the repository root:
 
@@ -60,7 +60,7 @@ npm run storefront:about-origin:install
 The installer searches the repository root, `frontend/public/media`, Downloads, and Desktop for the approved Gemini filename. An explicit source path can also be supplied:
 
 ```bash
-npm run storefront:about-origin:install -- "C:\\path\\to\\gemini_generated_video_09d5c3a9.mp4"
+npm run storefront:about-origin:install -- "C:\\path\\to\\gemini_generated_video_4013f49c.mp4"
 ```
 
 Verify the installed runtime asset:
