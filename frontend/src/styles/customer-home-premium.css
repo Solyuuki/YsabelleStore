@@ -829,15 +829,61 @@
   font-size: clamp(2rem, 3.8vw, 3.2rem);
 }
 
-/* Trending, Best Sellers, Everyday Essentials, and next-step CTA share the Shop/Catalog canvas. */
+/* Trending, Best Sellers, and Everyday Essentials share one quiet editorial merchandising canvas. */
 .home-merchandising-stage {
   position: relative;
   background: transparent;
 }
 
-.home-merchandising-stage > .customer-section,
-.home-merchandising-stage > .home-merchandising {
+.home-merchandising-canvas {
+  --merch-bg-top: #f4f9ff;
+  --merch-bg-mid: #f8f8fd;
+  --merch-bg-bottom: #f7f3fc;
+  --merch-blue-rgb: 99 184 255;
+  --merch-indigo-rgb: 108 106 255;
+  --merch-violet-rgb: 185 118 241;
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 72% 30% at -8% 4%,
+      rgb(var(--merch-blue-rgb) / 16%) 0%,
+      rgb(var(--merch-blue-rgb) / 6%) 38%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 70% 30% at 108% 8%,
+      rgb(var(--merch-indigo-rgb) / 14%) 0%,
+      rgb(var(--merch-violet-rgb) / 5%) 40%,
+      transparent 74%
+    ),
+    radial-gradient(
+      ellipse 78% 34% at 4% 67%,
+      rgb(var(--merch-blue-rgb) / 8%) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 80% 36% at 102% 78%,
+      rgb(var(--merch-violet-rgb) / 9%) 0%,
+      rgb(var(--merch-indigo-rgb) / 3%) 42%,
+      transparent 72%
+    ),
+    linear-gradient(
+      180deg,
+      var(--merch-bg-top) 0%,
+      var(--merch-bg-mid) 44%,
+      var(--merch-bg-bottom) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgb(98 91 255 / 5%),
+    inset 0 -1px 0 rgb(98 91 255 / 4%);
+}
+
+.home-merchandising-canvas > .customer-section,
+.home-merchandising-canvas > .home-merchandising {
+  position: relative;
+  z-index: 1;
   border: 0;
   background: transparent !important;
 }
@@ -1395,6 +1441,31 @@
 @media (max-width: 700px) {
   .customer-home .customer-section {
     padding-block: 3.25rem;
+  }
+
+  .home-merchandising-canvas {
+    background:
+      radial-gradient(
+        ellipse 94% 24% at -18% 5%,
+        rgb(var(--merch-blue-rgb) / 10%) 0%,
+        transparent 72%
+      ),
+      radial-gradient(
+        ellipse 94% 24% at 118% 10%,
+        rgb(var(--merch-indigo-rgb) / 9%) 0%,
+        transparent 74%
+      ),
+      radial-gradient(
+        ellipse 100% 28% at 108% 82%,
+        rgb(var(--merch-violet-rgb) / 6%) 0%,
+        transparent 74%
+      ),
+      linear-gradient(
+        180deg,
+        var(--merch-bg-top) 0%,
+        var(--merch-bg-mid) 46%,
+        var(--merch-bg-bottom) 100%
+      );
   }
 
   .home-categories__scene {
