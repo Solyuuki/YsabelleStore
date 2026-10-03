@@ -176,7 +176,8 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
       </section>
 
       <div className="home-merchandising-stage">
-        <MerchandisingArea navigate={navigate} onRetry={retry} resource={merchandising} />
+        <div className="home-merchandising-canvas">
+          <MerchandisingArea navigate={navigate} onRetry={retry} resource={merchandising} />
 
         <section className="customer-section home-essentials">
           <div className="customer-container">
@@ -221,6 +222,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
             ) : null}
           </div>
         </section>
+        </div>
 
         <HomeNextStep navigate={navigate} />
       </div>
