@@ -114,15 +114,12 @@ assert.match(
 );
 assert.match(
   premiumCss,
-  /\.home-categories\s*\{[\s\S]*?rgb\(0 140 255 \/ 16%\)[\s\S]*?rgb\(98 91 255 \/ 17%\)[\s\S]*?rgb\(168 60 240 \/ 10%\)[\s\S]*?var\(--home-category-bg-end\)/
+  /\.home-categories\s*\{[\s\S]*?rgb\(0 140 255 \/ 9%\)[\s\S]*?rgb\(98 91 255 \/ 10%\)[\s\S]*?rgb\(168 60 240 \/ 5%\)[\s\S]*?var\(--home-category-bg-end\)/
 );
-assert.match(
+assert.doesNotMatch(premiumCss, /\.home-categories::(?:before|after)/);
+assert.doesNotMatch(
   premiumCss,
-  /\.home-categories::before\s*\{[\s\S]*?repeating-linear-gradient\([\s\S]*?var\(--home-category-shelf-line\)[\s\S]*?var\(--home-category-stock-blue\)[\s\S]*?-webkit-mask-image:[\s\S]*?mask-image:/
-);
-assert.match(
-  premiumCss,
-  /\.home-categories > \.customer-container\s*\{[\s\S]*?z-index:\s*1/
+  /\.home-categories[\s\S]*?(?:repeating-linear-gradient|url\()/
 );
 assert.match(
   premiumCss,
