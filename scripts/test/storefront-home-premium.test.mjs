@@ -258,6 +258,18 @@ assert.match(
   premiumCss,
   /@keyframes home-next-step-story-arrow-nudge[\s\S]*?translateX\(5px\)[\s\S]*?@media \(prefers-reduced-motion: no-preference\)[\s\S]*?\.home-next-step__actions \.home-secondary-link > svg[\s\S]*?animation:\s*home-next-step-story-arrow-nudge 2\.8s ease-in-out infinite/
 );
+assert.match(
+  premiumCss,
+  /\.home-merchandising-stage \.customer-product-card\s*\{[\s\S]*?border-color:\s*rgb\(98 91 255 \/ 14%\)[\s\S]*?0 4px 14px rgb\(98 91 255 \/ 5%\)/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-stage \.customer-product-card:hover\s*\{[\s\S]*?border-color:\s*rgb\(98 91 255 \/ 22%\)[\s\S]*?0 7px 18px rgb\(98 91 255 \/ 8%\)/
+);
+assert.doesNotMatch(
+  premiumCss,
+  /\.home-merchandising-stage \.customer-product-card[\s\S]{0,420}?rgb\(17 24 39 \/ (?:6|9)%\)/
+);
 assert.match(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.match(premiumCss, /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.doesNotMatch(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*#f5f4f0/);
