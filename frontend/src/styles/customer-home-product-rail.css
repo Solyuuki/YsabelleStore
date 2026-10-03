@@ -40,6 +40,21 @@
   height: 100%;
 }
 
+/*
+ * Carousel items must already be visually present before horizontal navigation.
+ * The generic viewport reveal is useful for vertical page entry, but hidden
+ * off-screen rail items create a white/ghost gap when the user advances right.
+ * Scope this override to product rails only so arrow motion stays symmetrical
+ * while other storefront reveal animations remain unchanged.
+ */
+.home-product-rail .home-reveal.home-reveal--product {
+  opacity: 1;
+  transform: none;
+  transition: none;
+  transition-delay: 0ms;
+  will-change: auto;
+}
+
 .home-product-rail .customer-product-card h3 {
   display: -webkit-box;
   min-height: 2.56em;
