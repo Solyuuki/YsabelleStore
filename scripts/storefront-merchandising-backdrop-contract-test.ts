@@ -184,8 +184,14 @@ assert.match(
 
 assert.match(
   css,
-  /\.home-next-step__main\s*\{[\s\S]*?grid-template-columns:[\s\S]*?background:[\s\S]*?linear-gradient\(135deg/,
-  "Closing CTA must use the premium two-column delivery composition."
+  /\.home-next-step__main\s*\{[\s\S]*?grid-template-columns:[\s\S]*?border:\s*0;[\s\S]*?border-radius:\s*0;[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;/,
+  "Closing CTA must remain a full-width section composition without a floating card shell."
+);
+
+assert.match(
+  css,
+  /\.home-next-step__visual::before[\s\S]*?radial-gradient\([\s\S]*?filter:\s*blur\(20px\)/,
+  "Delivery illustration may use ambient glow but must not recreate a bordered card."
 );
 
 assert.doesNotMatch(
