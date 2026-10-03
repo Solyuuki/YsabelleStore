@@ -36,3 +36,17 @@ Approved source:
 - `gemini_generated_video_9a2cd402.mp4`
 - Size: `5,417,920` bytes
 - SHA256: `53360d489f4303761658cc62cc5984f4ea43116b470ae7e63d263c48497e4df3`
+
+## About origin motion
+
+The first About story scene uses a dedicated decorative motion plate:
+
+- Runtime path: `frontend/public/media/about-origin-motion.mp4`
+- UI owner: `AboutWelcomeMotion.tsx`
+- The video is decorative only; logo, origin copy, and typography remain real responsive HTML.
+- Playback starts only while the hero intersects the viewport and pauses when the tab is hidden or the hero leaves view.
+- Reduced-motion users receive the CSS fallback plate instead of video playback.
+- The video has no runtime audio dependency.
+
+The motion plate is intentionally separate from the story typography so the layout can reflow independently on desktop, tablet, and mobile.
+
