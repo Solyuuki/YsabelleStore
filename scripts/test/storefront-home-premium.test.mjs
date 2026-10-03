@@ -292,6 +292,10 @@ assert.match(premiumCss, /\.customer-product-card__price-row[\s\S]*?margin-top:\
 assert.match(premiumCss, /\.customer-product-card__purchase-row[\s\S]*?grid-template-columns:\s*112px minmax\(0, 1fr\)/);
 assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(20px, 1fr\) 44px/);
 assert.match(railCss, /width:\s*44px;[\s\S]*?height:\s*44px/);
+assert.match(
+  railCss,
+  /\.home-product-rail \.home-reveal\.home-reveal--product\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?transform:\s*none;[\s\S]*?transition:\s*none;[\s\S]*?transition-delay:\s*0ms;[\s\S]*?will-change:\s*auto;/
+);
 
 function relativeLuminance(hex) {
   const channels = hex
