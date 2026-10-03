@@ -89,13 +89,19 @@ assert.match(shopSource, /shopHeroWaveViolet/);
 assert.match(shopSource, /customer-shop-catalog-backdrop/);
 assert.match(shopSource, /viewBox="0 0 1600 2400"/);
 assert.match(shopSource, /shopCatalogFadeToFooter/);
+assert.match(shopSource, /shop-catalog-blue-glow/);
+assert.match(shopSource, /shop-catalog-violet-glow/);
+assert.match(
+  customerCss,
+  /\.customer-shop-catalog-backdrop::before\s*\{[\s\S]*?rgb\(255 255 255 \/ 28%\) 50%/
+);
 assert.match(
   customerCss,
   /\.customer-shop-catalog-backdrop\s*\{[\s\S]*?bottom:\s*-6rem;[\s\S]*?width:\s*100vw;[\s\S]*?pointer-events:\s*none;/
 );
 assert.match(
   customerCss,
-  /--shop-catalog-surface:\s*#f8faff[\s\S]*?--shop-catalog-footer-surface:\s*#f7f9ff/
+  /--shop-catalog-surface:\s*#eef3fb[\s\S]*?--shop-catalog-blue-glow:[\s\S]*?--shop-catalog-violet-glow:[\s\S]*?--shop-catalog-footer-surface:\s*#f7f9ff/
 );
 assert.doesNotMatch(shopSource, /customer-shop-heading__backdrop[^\n]*url\(/);
 assert.match(
