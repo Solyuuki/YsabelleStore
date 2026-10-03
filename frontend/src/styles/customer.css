@@ -122,18 +122,30 @@
   z-index: 80;
   isolation: isolate;
   overflow: hidden;
-  border-bottom: 1px solid rgb(98 91 255 / 12%);
+  border-bottom: 1px solid rgb(98 91 255 / 17%);
   background:
+    radial-gradient(
+      ellipse at 8% 46%,
+      rgb(127 199 255 / 26%) 0,
+      rgb(127 199 255 / 12%) 34%,
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse at 92% 44%,
+      rgb(200 156 255 / 28%) 0,
+      rgb(200 156 255 / 13%) 34%,
+      transparent 62%
+    ),
     linear-gradient(
       100deg,
-      rgb(232 246 255 / 97%) 0%,
-      rgb(240 247 255 / 97%) 48%,
-      rgb(238 241 255 / 97%) 100%
+      #dfefff 0%,
+      #eef0ff 50%,
+      #eadfff 100%
     );
   box-shadow:
-    0 5px 18px rgb(73 62 160 / 5%),
-    inset 0 1px 0 rgb(255 255 255 / 76%);
-  backdrop-filter: blur(18px) saturate(108%);
+    0 6px 20px rgb(73 62 160 / 8%),
+    inset 0 1px 0 rgb(255 255 255 / 72%);
+  backdrop-filter: blur(18px) saturate(112%);
 }
 
 .customer-header::before {
@@ -142,28 +154,29 @@
   inset: 0;
   background:
     linear-gradient(
-      169deg,
-      transparent 0 67%,
-      rgb(255 255 255 / 68%) 67.5%,
-      rgb(255 255 255 / 42%) 72.5%,
-      transparent 73%
+      172deg,
+      transparent 0 61%,
+      rgb(255 255 255 / 34%) 61.5%,
+      rgb(255 255 255 / 14%) 70%,
+      transparent 70.5%
     );
   content: "";
+  opacity: 0.82;
   pointer-events: none;
 }
 
 .customer-header::after {
   position: absolute;
   z-index: 0;
-  top: 0;
   right: 0;
+  bottom: 0;
   left: 0;
   height: 2px;
   background: linear-gradient(
     90deg,
-    rgb(0 140 255 / 20%),
-    rgb(98 91 255 / 24%) 50%,
-    rgb(168 60 240 / 16%)
+    rgb(0 140 255 / 24%),
+    rgb(98 91 255 / 34%) 52%,
+    rgb(168 60 240 / 24%)
   );
   content: "";
   pointer-events: none;
