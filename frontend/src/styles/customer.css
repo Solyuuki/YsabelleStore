@@ -126,26 +126,26 @@
   background:
     radial-gradient(
       ellipse at 8% 46%,
-      rgb(127 199 255 / 26%) 0,
-      rgb(127 199 255 / 12%) 34%,
+      rgb(127 199 255 / 12%) 0,
+      rgb(127 199 255 / 5%) 34%,
       transparent 62%
     ),
     radial-gradient(
       ellipse at 92% 44%,
-      rgb(200 156 255 / 28%) 0,
-      rgb(200 156 255 / 13%) 34%,
+      rgb(200 156 255 / 13%) 0,
+      rgb(200 156 255 / 5%) 34%,
       transparent 62%
     ),
     linear-gradient(
       100deg,
-      #dfefff 0%,
-      #eef0ff 50%,
-      #eadfff 100%
+      #f7fbff 0%,
+      #fbfcff 50%,
+      #faf7ff 100%
     );
   box-shadow:
-    0 6px 20px rgb(73 62 160 / 8%),
-    inset 0 1px 0 rgb(255 255 255 / 72%);
-  backdrop-filter: blur(18px) saturate(112%);
+    0 5px 18px rgb(73 62 160 / 5%),
+    inset 0 1px 0 rgb(255 255 255 / 88%);
+  backdrop-filter: blur(18px) saturate(106%);
 }
 
 .customer-header::before {
@@ -155,13 +155,13 @@
   background:
     linear-gradient(
       172deg,
-      transparent 0 61%,
-      rgb(255 255 255 / 34%) 61.5%,
-      rgb(255 255 255 / 14%) 70%,
+      transparent 0 58%,
+      rgb(255 255 255 / 72%) 58.5%,
+      rgb(255 255 255 / 34%) 70%,
       transparent 70.5%
     );
   content: "";
-  opacity: 0.82;
+  opacity: 0.9;
   pointer-events: none;
 }
 
@@ -175,14 +175,14 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgb(0 140 255 / 18%) 12%,
-    rgb(98 91 255 / 28%) 50%,
-    rgb(168 60 240 / 18%) 88%,
+    rgb(255 255 255 / 70%) 16%,
+    rgb(98 91 255 / 16%) 50%,
+    rgb(255 255 255 / 70%) 84%,
     transparent 100%
   );
-  box-shadow: 0 1px 8px rgb(98 91 255 / 8%);
+  box-shadow: 0 1px 6px rgb(98 91 255 / 5%);
   content: "";
-  opacity: 0.78;
+  opacity: 0.72;
   pointer-events: none;
 }
 
