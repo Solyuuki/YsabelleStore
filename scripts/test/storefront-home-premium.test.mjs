@@ -17,6 +17,10 @@ const shopSource = await readFile(
   new URL("../../frontend/src/pages/customer/ShopPage.tsx", import.meta.url),
   "utf8"
 );
+const shopBackdropSource = await readFile(
+  new URL("../../frontend/src/components/customer/ShopCatalogBackdrop.tsx", import.meta.url),
+  "utf8"
+);
 const productCardSource = await readFile(
   new URL("../../frontend/src/components/customer/ProductCard.tsx", import.meta.url),
   "utf8"
@@ -90,25 +94,29 @@ assert.doesNotMatch(homeSource, /<section className="home-hero">/);
 assert.match(shopSource, /customer-shop-heading__backdrop/);
 assert.match(shopSource, /shopHeroWaveBlue/);
 assert.match(shopSource, /shopHeroWaveViolet/);
-assert.match(shopSource, /customer-shop-catalog-backdrop/);
-assert.match(shopSource, /viewBox="0 0 1600 2400"/);
-assert.match(shopSource, /shopCatalogFadeFromHero/);
-assert.doesNotMatch(shopSource, /shopCatalogFadeToFooter/);
-assert.match(shopSource, /shop-catalog-blue-glow/);
-assert.match(shopSource, /shop-catalog-violet-glow/);
+assert.match(shopSource, /<ShopCatalogBackdrop \/>/);
+assert.match(shopBackdropSource, /customer-shop-catalog-backdrop/);
+assert.match(shopBackdropSource, /customer-shop-catalog-wave--top/);
+assert.match(shopBackdropSource, /customer-shop-catalog-wave--upper/);
+assert.match(shopBackdropSource, /customer-shop-catalog-wave--middle/);
+assert.match(shopBackdropSource, /customer-shop-catalog-wave--lower/);
+assert.match(shopBackdropSource, /customer-shop-catalog-wave--bottom/);
+assert.match(shopBackdropSource, /preserveAspectRatio="xMidYMid slice"/);
+assert.doesNotMatch(shopBackdropSource, /preserveAspectRatio="none"/);
+assert.doesNotMatch(shopBackdropSource, /viewBox="0 0 1600 2400"/);
+assert.doesNotMatch(shopBackdropSource, /<ellipse|<circle/);
 assert.match(
   customerCss,
-  /\.customer-shop-catalog-backdrop::before\s*\{[\s\S]*?rgb\(255 255 255 \/ 16%\) 50%/
+  /\.customer-shop-catalog-backdrop\s*\{[\s\S]*?--shop-catalog-top-surface|background:[\s\S]*?var\(--shop-catalog-top-surface\)[\s\S]*?var\(--shop-catalog-bottom-surface\)/
 );
 assert.match(
   customerCss,
-  /\.customer-shop-catalog-backdrop\s*\{[\s\S]*?bottom:\s*-6rem;[\s\S]*?width:\s*100vw;[\s\S]*?pointer-events:\s*none;/
+  /\.customer-shop-catalog-wave\s*\{[\s\S]*?height:\s*clamp\(260px, 24vw, 430px\)/
 );
 assert.match(
   customerCss,
-  /--shop-catalog-surface:\s*#edf2fa[\s\S]*?--shop-catalog-blue-glow:[\s\S]*?--shop-catalog-violet-glow:[\s\S]*?--shop-catalog-hero-surface:\s*#fafbff/
+  /--shop-catalog-top-surface:\s*#fafbff[\s\S]*?--shop-catalog-bottom-surface:\s*#e5e9f7/
 );
-assert.doesNotMatch(customerCss, /--shop-catalog-footer-surface/);
 assert.doesNotMatch(shopSource, /customer-shop-heading__backdrop[^\n]*url\(/);
 assert.match(
   customerCss,
