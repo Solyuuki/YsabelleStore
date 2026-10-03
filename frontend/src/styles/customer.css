@@ -122,30 +122,18 @@
   z-index: 80;
   isolation: isolate;
   overflow: hidden;
-  border-bottom: 1px solid rgb(98 91 255 / 18%);
+  border-bottom: 1px solid rgb(98 91 255 / 12%);
   background:
-    radial-gradient(
-      ellipse at 4% 46%,
-      rgb(127 199 255 / 22%) 0,
-      rgb(127 199 255 / 8%) 34%,
-      transparent 58%
-    ),
-    radial-gradient(
-      ellipse at 96% 44%,
-      rgb(200 156 255 / 24%) 0,
-      rgb(200 156 255 / 9%) 32%,
-      transparent 56%
-    ),
     linear-gradient(
-      90deg,
-      rgb(236 247 255 / 96%) 0%,
-      rgb(247 249 255 / 95%) 48%,
-      rgb(246 239 255 / 96%) 100%
+      100deg,
+      rgb(232 246 255 / 97%) 0%,
+      rgb(240 247 255 / 97%) 48%,
+      rgb(238 241 255 / 97%) 100%
     );
   box-shadow:
-    0 7px 24px rgb(73 62 160 / 8%),
-    inset 0 -1px 0 rgb(255 255 255 / 58%);
-  backdrop-filter: blur(18px) saturate(112%);
+    0 5px 18px rgb(73 62 160 / 5%),
+    inset 0 1px 0 rgb(255 255 255 / 76%);
+  backdrop-filter: blur(18px) saturate(108%);
 }
 
 .customer-header::before {
@@ -153,37 +141,29 @@
   z-index: 0;
   inset: 0;
   background:
-    radial-gradient(
-      ellipse at -4% 48%,
-      transparent 0 57%,
-      rgb(255 255 255 / 58%) 57.5%,
-      rgb(255 255 255 / 18%) 59%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 104% 46%,
-      transparent 0 57%,
-      rgb(255 255 255 / 52%) 57.5%,
-      rgb(255 255 255 / 16%) 59%,
-      transparent 60%
+    linear-gradient(
+      169deg,
+      transparent 0 67%,
+      rgb(255 255 255 / 68%) 67.5%,
+      rgb(255 255 255 / 42%) 72.5%,
+      transparent 73%
     );
   content: "";
-  opacity: 0.72;
   pointer-events: none;
 }
 
 .customer-header::after {
   position: absolute;
   z-index: 0;
+  top: 0;
   right: 0;
-  bottom: 0;
   left: 0;
-  height: 1px;
+  height: 2px;
   background: linear-gradient(
     90deg,
-    rgb(0 140 255 / 18%),
-    rgb(98 91 255 / 28%) 52%,
-    rgb(168 60 240 / 18%)
+    rgb(0 140 255 / 20%),
+    rgb(98 91 255 / 24%) 50%,
+    rgb(168 60 240 / 16%)
   );
   content: "";
   pointer-events: none;
