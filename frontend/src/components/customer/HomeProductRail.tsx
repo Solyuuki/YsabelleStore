@@ -20,8 +20,6 @@ const initialRailState: RailState = {
 export function HomeProductRail({ children, label }: { children: ReactNode; label: string }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const navigationLockRef = useRef(false);
-  const navigationUnlockTimerRef = useRef<number | null>(null);
   const [state, setState] = useState<RailState>(initialRailState);
   const items = Children.toArray(children);
 
@@ -86,17 +84,12 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
         window.cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
-      if (navigationUnlockTimerRef.current !== null) {
-        window.clearTimeout(navigationUnlockTimerRef.current);
-        navigationUnlockTimerRef.current = null;
-      }
-      navigationLockRef.current = false;
     };
   }, [items.length, scheduleSync]);
 
   function scroll(direction: -1 | 1) {
     const viewport = viewportRef.current;
-    if (!viewport || navigationLockRef.current) return;
+    if (!viewport) return;
 
     const railItems = Array.from(
       viewport.querySelectorAll<HTMLElement>("[data-home-product-rail-item]")
@@ -104,49 +97,17 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
     const firstItem = railItems[0];
     if (!firstItem) return;
 
-    const itemStarts = railItems.map((item) => item.offsetLeft - firstItem.offsetLeft);
-    const currentScrollLeft = Math.max(0, viewport.scrollLeft);
-    const currentIndex = itemStarts.reduce((closestIndex, itemStart, index) => {
-      const closestDistance = Math.abs(itemStarts[closestIndex] - currentScrollLeft);
-      const itemDistance = Math.abs(itemStart - currentScrollLeft);
-      return itemDistance < closestDistance ? index : closestIndex;
-    }, 0);
-
     const secondItem = railItems[1];
     const itemStep = secondItem
       ? Math.max(1, secondItem.offsetLeft - firstItem.offsetLeft)
       : Math.max(1, firstItem.offsetWidth);
     const visibleCount = Math.max(1, Math.round(viewport.clientWidth / itemStep));
-    const maxStartIndex = Math.max(0, railItems.length - visibleCount);
-    const targetIndex = Math.min(
-      maxStartIndex,
-      Math.max(0, currentIndex + direction)
-    );
-    const targetItem = railItems[targetIndex];
-    if (!targetItem || targetIndex === currentIndex) return;
-
-    const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-    const targetLeft = Math.min(
-      maxScrollLeft,
-      Math.max(0, targetItem.offsetLeft - firstItem.offsetLeft)
-    );
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    navigationLockRef.current = true;
-    if (navigationUnlockTimerRef.current !== null) {
-      window.clearTimeout(navigationUnlockTimerRef.current);
-    }
-
-    viewport.scrollTo({
+    viewport.scrollBy({
       behavior: prefersReducedMotion ? "auto" : "smooth",
-      left: targetLeft
+      left: direction * itemStep * visibleCount
     });
-
-    navigationUnlockTimerRef.current = window.setTimeout(() => {
-      navigationLockRef.current = false;
-      navigationUnlockTimerRef.current = null;
-      scheduleSync();
-    }, prefersReducedMotion ? 0 : 460);
   }
 
   const visibleStart = items.length ? state.firstVisible + 1 : 0;
