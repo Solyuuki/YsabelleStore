@@ -732,6 +732,48 @@
   background: transparent;
 }
 
+.home-category-merch-handoff {
+  position: relative;
+  z-index: 2;
+  height: clamp(4.5rem, 7vw, 7rem);
+  margin-top: calc(-1 * clamp(2.4rem, 3.8vw, 3.8rem));
+  margin-bottom: calc(-1 * clamp(2.1rem, 3.2vw, 3.2rem));
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 62% 90% at 8% 50%,
+      rgb(127 199 255 / 14%) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 62% 90% at 92% 50%,
+      rgb(200 156 255 / 13%) 0%,
+      transparent 72%
+    ),
+    linear-gradient(
+      180deg,
+      rgb(245 241 255 / 0%) 0%,
+      rgb(245 241 255 / 72%) 24%,
+      rgb(241 245 255 / 90%) 52%,
+      rgb(238 247 255 / 96%) 78%,
+      #eef7ff 100%
+    );
+}
+
+.home-category-merch-handoff::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 42%;
+  content: "";
+  background:
+    linear-gradient(
+      180deg,
+      rgb(238 247 255 / 0%) 0%,
+      rgb(238 247 255 / 78%) 58%,
+      #eef7ff 100%
+    );
+}
+
 .home-merchandising-canvas {
   --merch-bg-top: #eef7ff;
   --merch-bg-mid: #f9faff;
@@ -743,6 +785,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  margin-top: -1px;
   background: var(--merch-bg-mid);
   box-shadow:
     inset 0 1px 0 rgb(98 91 255 / 6%),
@@ -1348,6 +1391,12 @@
 @media (max-width: 700px) {
   .customer-home .customer-section {
     padding-block: 3.25rem;
+  }
+
+  .home-category-merch-handoff {
+    height: 3.75rem;
+    margin-top: -2rem;
+    margin-bottom: -1.75rem;
   }
 
   .home-merchandising-canvas__waves--top {
