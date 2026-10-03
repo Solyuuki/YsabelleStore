@@ -154,6 +154,24 @@ assert.match(
 
 assert.doesNotMatch(
   home,
+  /className="home-next-step__story"/,
+  "Closing CTA must not restore the removed Discover Ysabelle story strip."
+);
+
+assert.doesNotMatch(
+  home,
+  /Start shopping\s*<ArrowRight/,
+  "Primary shop CTA must not render the old arrow icon."
+);
+
+assert.match(
+  home,
+  /className="customer-button home-next-step__shop-button"[\s\S]*?>\s*Start shopping\s*<\/CustomerLink>/,
+  "Primary shop CTA must use the dedicated shine-animation button class."
+);
+
+assert.doesNotMatch(
+  home,
   /Simple store pickup|Cash on pickup|Pay When You Collect It/,
   "Closing CTA must not restore pickup-only messaging."
 );
@@ -170,10 +188,22 @@ assert.match(
   "Closing CTA must use the premium two-column delivery composition."
 );
 
+assert.doesNotMatch(
+  css,
+  /\.home-next-step__story(?:\s|\{|:)/,
+  "Removed story strip styles must not remain in the premium home stylesheet."
+);
+
 assert.match(
   css,
-  /\.home-next-step__story\s*\{[\s\S]*?grid-template-columns:[\s\S]*?backdrop-filter:\s*blur\(14px\)/,
-  "Ysabelle story CTA must remain a compact editorial strip beneath the primary delivery action."
+  /\.home-next-step__shop-button::after[\s\S]*?rgb\(255 255 255 \/ 62%\)[\s\S]*?transform:\s*translateX\(-260%\) skewX\(-18deg\)/,
+  "Primary shop CTA must render a restrained shine layer."
+);
+
+assert.match(
+  css,
+  /@keyframes home-next-step-button-shine[\s\S]*?translateX\(650%\) skewX\(-18deg\)[\s\S]*?@media \(prefers-reduced-motion: no-preference\)[\s\S]*?home-next-step__shop-button::after[\s\S]*?animation:\s*home-next-step-button-shine 4\.8s ease-in-out infinite/,
+  "Primary shop CTA shine must animate only when motion is allowed."
 );
 
 assert.match(home, /<div className="home-merchandising-stage">/);
