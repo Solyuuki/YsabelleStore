@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
+import { AboutWelcomeMotion } from "@/components/customer/about/AboutWelcomeMotion";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
 import { formatCurrency } from "@/components/customer/ProductCard";
@@ -314,7 +315,16 @@ function initializeIntelligenceTimeline(
   };
 }
 
-export function DiscoverPage({ navigate }: { navigate: (path: string) => void }) {
+type DiscoverPageVariant = "discover" | "about";
+
+export function DiscoverPage({
+  navigate,
+  variant = "discover"
+}: {
+  navigate: (path: string) => void;
+  variant?: DiscoverPageVariant;
+}) {
+  const isAboutExperience = variant === "about";
   const rootRef = useRef<HTMLDivElement>(null);
   const [activeScene, setActiveScene] = useState(0);
   const [catalogProducts, setCatalogProducts] = useState<StorefrontProduct[]>([]);
@@ -1041,7 +1051,11 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
   }, []);
 
   return (
-    <div className="customer-discover discover-story" ref={rootRef}>
+    <div
+      className={`customer-discover discover-story${isAboutExperience ? " discover-story--about" : ""}`}
+      data-story-variant={variant}
+      ref={rootRef}
+    >
       <nav aria-label="About Ysabelle story progress" className="discover-progress">
         <span aria-hidden="true" className="discover-progress__rail">
           <span className="discover-progress__fill" />
@@ -1062,6 +1076,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
       </nav>
 
       <section className="story-scene story-welcome" id="discover-welcome">
+        {isAboutExperience ? <AboutWelcomeMotion /> : null}
         <div aria-hidden="true" className="story-brand-canvas">
           <span className="story-brand-path story-brand-path--one" />
           <span className="story-brand-path story-brand-path--two" />
@@ -1085,7 +1100,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             eager
             variant="display"
           />
-          <span className="story-kicker">01 / Welcome</span>
+          {!isAboutExperience ? <span className="story-kicker">01 / Welcome</span> : null}
           <h1 className="story-display-safe story-welcome__title">
             <span className="story-mask">
               <span className="story-mask__line">Ysabelle&apos;s</span>
@@ -1095,11 +1110,23 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             </span>
           </h1>
           <div className="story-welcome__support">
-            <p>Everyday essentials, closer to home.</p>
-            <strong>Established 2019</strong>
-            <a className="story-skip" href="#discover-location">
-              Skip story <ArrowRight aria-hidden="true" />
-            </a>
+            {isAboutExperience ? (
+              <>
+                <strong>Established 2019 · Pasig City</strong>
+                <p>Everyday essentials, closer to home.</p>
+                <span className="story-welcome__scroll-cue">
+                  Scroll to continue <ArrowRight aria-hidden="true" />
+                </span>
+              </>
+            ) : (
+              <>
+                <p>Everyday essentials, closer to home.</p>
+                <strong>Established 2019</strong>
+                <a className="story-skip" href="#discover-location">
+                  Skip story <ArrowRight aria-hidden="true" />
+                </a>
+              </>
+            )}
           </div>
         </div>
         <span aria-hidden="true" className="story-welcome__handoff" />
