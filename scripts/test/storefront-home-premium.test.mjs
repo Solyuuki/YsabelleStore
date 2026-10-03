@@ -298,7 +298,11 @@ assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(20px, 1fr\) 44px
 assert.match(railCss, /width:\s*44px;[\s\S]*?height:\s*44px/);
 assert.match(
   railSource,
-  /targetIndexRef[\s\S]*?maxStartIndex[\s\S]*?targetItem\.offsetLeft - firstItem\.offsetLeft[\s\S]*?viewport\.scrollTo\(/
+  /targetIndexRef[\s\S]*?maxStartIndex[\s\S]*?baseIndex \+ direction\)[\s\S]*?targetItem\.offsetLeft - firstItem\.offsetLeft[\s\S]*?viewport\.scrollTo\(/
+);
+assert.doesNotMatch(
+  railSource,
+  /baseIndex \+ direction \* visibleCount/
 );
 assert.doesNotMatch(railSource, /viewport\.scrollBy\(/);
 assert.match(
