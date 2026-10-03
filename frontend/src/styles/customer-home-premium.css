@@ -841,7 +841,7 @@
   align-items: center;
   gap: 0.45rem;
   padding-inline: 0.25rem;
-  border-bottom: 1px solid rgb(98 91 255 / 28%);
+  border-bottom: 0;
   color: #5149db;
   font-weight: 800;
 }
