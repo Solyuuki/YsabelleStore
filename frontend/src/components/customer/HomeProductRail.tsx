@@ -20,6 +20,8 @@ const initialRailState: RailState = {
 export function HomeProductRail({ children, label }: { children: ReactNode; label: string }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const targetIndexRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<number | null>(null);
   const [state, setState] = useState<RailState>(initialRailState);
   const items = Children.toArray(children);
 
@@ -68,6 +70,14 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
     });
   }, [syncRailState]);
 
+  const clearProgrammaticTarget = useCallback(() => {
+    targetIndexRef.current = null;
+    if (settleTimerRef.current !== null) {
+      window.clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
@@ -75,17 +85,25 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
     const resizeObserver = new ResizeObserver(scheduleSync);
     resizeObserver.observe(viewport);
     viewport.addEventListener("scroll", scheduleSync, { passive: true });
+    viewport.addEventListener("pointerdown", clearProgrammaticTarget, { passive: true });
+    viewport.addEventListener("wheel", clearProgrammaticTarget, { passive: true });
     scheduleSync();
 
     return () => {
       viewport.removeEventListener("scroll", scheduleSync);
+      viewport.removeEventListener("pointerdown", clearProgrammaticTarget);
+      viewport.removeEventListener("wheel", clearProgrammaticTarget);
       resizeObserver.disconnect();
       if (animationFrameRef.current !== null) {
         window.cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
+      if (settleTimerRef.current !== null) {
+        window.clearTimeout(settleTimerRef.current);
+        settleTimerRef.current = null;
+      }
     };
-  }, [items.length, scheduleSync]);
+  }, [clearProgrammaticTarget, items.length, scheduleSync]);
 
   function scroll(direction: -1 | 1) {
     const viewport = viewportRef.current;
@@ -102,11 +120,34 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
       ? Math.max(1, secondItem.offsetLeft - firstItem.offsetLeft)
       : Math.max(1, firstItem.offsetWidth);
     const visibleCount = Math.max(1, Math.round(viewport.clientWidth / itemStep));
+    const maxStartIndex = Math.max(0, railItems.length - visibleCount);
+    const currentIndex = Math.min(
+      maxStartIndex,
+      Math.max(0, Math.round(Math.max(0, viewport.scrollLeft) / itemStep))
+    );
+    const baseIndex = targetIndexRef.current ?? currentIndex;
+    const targetIndex = Math.min(
+      maxStartIndex,
+      Math.max(0, baseIndex + direction * visibleCount)
+    );
+    const targetItem = railItems[targetIndex];
+    if (!targetItem) return;
+
+    const targetLeft = Math.max(0, targetItem.offsetLeft - firstItem.offsetLeft);
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    viewport.scrollBy({
+    targetIndexRef.current = targetIndex;
+    if (settleTimerRef.current !== null) {
+      window.clearTimeout(settleTimerRef.current);
+    }
+    settleTimerRef.current = window.setTimeout(() => {
+      targetIndexRef.current = null;
+      settleTimerRef.current = null;
+    }, prefersReducedMotion ? 0 : 650);
+
+    viewport.scrollTo({
       behavior: prefersReducedMotion ? "auto" : "smooth",
-      left: direction * itemStep * visibleCount
+      left: targetLeft
     });
   }
 
