@@ -114,7 +114,7 @@ assert.match(
 );
 assert.match(
   premiumCss,
-  /\.home-categories\s*\{[\s\S]*?rgb\(0 140 255 \/ 8%\)[\s\S]*?rgb\(98 91 255 \/ 9%\)[\s\S]*?rgb\(168 60 240 \/ 4\.5%\)[\s\S]*?var\(--home-category-bg-end\)/
+  /\.home-categories\s*\{[\s\S]*?--retail-bg-a:\s*#edf8ff[\s\S]*?--retail-object-blue:\s*#78c7ff[\s\S]*?--retail-object-violet:\s*#a88cff[\s\S]*?var\(--retail-bg-c\)/
 );
 assert.doesNotMatch(premiumCss, /\.home-categories::(?:before|after)/);
 assert.doesNotMatch(
@@ -124,19 +124,24 @@ assert.doesNotMatch(
 assert.match(homeSource, /<CategoryRetailBackdrop \/>/);
 assert.match(
   homeSource,
-  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__retail-depth--left[\s\S]*?home-categories__retail-depth--right/
+  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__center-light[\s\S]*?home-categories__scene--left[\s\S]*?home-categories__scene--right/
 );
 assert.match(
   homeSource,
-  /id="categoryBlurFar"[\s\S]*?<feGaussianBlur stdDeviation="12" \/>[\s\S]*?id="categoryCenterWash"/
+  /categoryLeftBlurNear[\s\S]*?stdDeviation="2\.5"[\s\S]*?categoryLeftBlurMid[\s\S]*?stdDeviation="4\.5"[\s\S]*?categoryLeftBlurFar[\s\S]*?stdDeviation="7\.5"/
+);
+assert.match(
+  homeSource,
+  /categoryRightBlurNear[\s\S]*?stdDeviation="2\.5"[\s\S]*?categoryRightBlurMid[\s\S]*?stdDeviation="4\.5"[\s\S]*?categoryRightBlurFar[\s\S]*?stdDeviation="7\.5"/
+);
+assert.doesNotMatch(homeSource, /stdDeviation="12"/);
+assert.match(
+  premiumCss,
+  /\.home-categories__scene\s*\{[\s\S]*?width:\s*clamp\(20rem, 30vw, 31rem\)[\s\S]*?height:\s*100%/
 );
 assert.match(
   premiumCss,
-  /\.home-categories__retail-scene[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%[\s\S]*?opacity:\s*0\.78/
-);
-assert.match(
-  premiumCss,
-  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__retail-scene[\s\S]*?opacity:\s*0\.56[\s\S]*?\.home-categories__retail-near[\s\S]*?opacity:\s*0\.38/
+  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__scene-far\s*\{[\s\S]*?display:\s*none[\s\S]*?\.home-categories__scene-mid[\s\S]*?opacity:\s*0\.42/
 );
 assert.match(
   premiumCss,
