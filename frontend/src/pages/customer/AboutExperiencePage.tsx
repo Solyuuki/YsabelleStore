@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef, type CSSProperties } from "react";
 import { AboutStorefrontHandoff } from "@/components/customer/about/AboutStorefrontHandoff";
 import { DiscoverPage } from "@/pages/customer/DiscoverPage";
 import "@/styles/about-origin-timeline.css";
+import "@/styles/about-welcome-motion.css";
 import "@/styles/about-storefront-handoff.css";
 import "@/styles/about-storefront-handoff-layout.css";
 
@@ -36,7 +37,7 @@ export function AboutExperiencePage({ navigate }: { navigate: (path: string) => 
 
   return (
     <div className="about-experience" ref={rootRef} style={storyTheme}>
-      <DiscoverPage navigate={navigate} />
+      <DiscoverPage navigate={navigate} variant="about" />
       <AboutStorefrontHandoff navigate={navigate} />
     </div>
   );
