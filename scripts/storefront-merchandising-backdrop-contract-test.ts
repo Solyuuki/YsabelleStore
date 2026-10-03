@@ -22,7 +22,7 @@ assert.match(
 
 assert.match(
   css,
-  /\.home-categories\s*\{[\s\S]*?rgb\(0 140 255 \/ 9%\)[\s\S]*?rgb\(98 91 255 \/ 10%\)[\s\S]*?rgb\(168 60 240 \/ 5%\)[\s\S]*?var\(--home-category-bg-end\)/,
+  /\.home-categories\s*\{[\s\S]*?rgb\(0 140 255 \/ 8%\)[\s\S]*?rgb\(98 91 255 \/ 9%\)[\s\S]*?rgb\(168 60 240 \/ 4\.5%\)[\s\S]*?var\(--home-category-bg-end\)/,
   "Shop by Category must use the calm cold blue-indigo-violet canvas."
 );
 
@@ -34,7 +34,7 @@ assert.doesNotMatch(
 
 assert.doesNotMatch(
   css,
-  /\.home-categories[\s\S]*?(?:repeating-linear-gradient|url\()/,
+  /\.home-categories[\s\S]*?(?:repeating-linear-gradient|url\(["']?\/)/,
   "Shop by Category must remain pattern-free and independent of raster backgrounds."
 );
 
@@ -46,20 +46,26 @@ assert.match(
 
 assert.match(
   home,
-  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__backdrop-side--left[\s\S]*?home-categories__backdrop-side--right/,
+  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__retail-depth--left[\s\S]*?home-categories__retail-depth--right/,
   "Retail ambience must stay decorative, inaccessible to assistive tech, and balanced on both sides."
 );
 
 assert.match(
-  css,
-  /\.home-categories__backdrop-side[\s\S]*?width:\s*clamp\([\s\S]*?opacity:\s*0\.58/,
-  "Retail vector sides must use responsive sizing with restrained opacity."
+  home,
+  /id="categoryBlurFar"[\s\S]*?<feGaussianBlur stdDeviation="12" \/>[\s\S]*?id="categoryCenterWash"/,
+  "Retail ambience must use soft-focus depth and a clean center wash."
 );
 
 assert.match(
   css,
-  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__backdrop-side[\s\S]*?opacity:\s*0\.42/,
-  "Retail vector ambience must reduce intensity on small screens."
+  /\.home-categories__retail-scene[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%[\s\S]*?opacity:\s*0\.78/,
+  "Retail scene must scale with the category section at restrained opacity."
+);
+
+assert.match(
+  css,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__retail-scene[\s\S]*?opacity:\s*0\.56[\s\S]*?\.home-categories__retail-near[\s\S]*?opacity:\s*0\.38/,
+  "Retail atmosphere must reduce intensity on small screens."
 );
 
 assert.match(
