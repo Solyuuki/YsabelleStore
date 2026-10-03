@@ -21,6 +21,10 @@ const quantitySource = await readFile(
   new URL("../../frontend/src/components/customer/QuantityControl.tsx", import.meta.url),
   "utf8"
 );
+const customerCss = await readFile(
+  new URL("../../frontend/src/styles/customer.css", import.meta.url),
+  "utf8"
+);
 const premiumCss = await readFile(
   new URL("../../frontend/src/styles/customer-home-premium.css", import.meta.url),
   "utf8"
@@ -87,6 +91,18 @@ assert.match(productCardSource, /No reviews yet/);
 assert.match(quantitySource, /min = 1/);
 assert.match(quantitySource, /Math\.max\(min, value - 1\)/);
 
+assert.match(
+  customerCss,
+  /\.customer-header\s*\{[\s\S]*?radial-gradient\([\s\S]*?127 199 255 \/ 22%[\s\S]*?200 156 255 \/ 24%[\s\S]*?linear-gradient\([\s\S]*?236 247 255 \/ 96%[\s\S]*?246 239 255 \/ 96%/
+);
+assert.match(
+  customerCss,
+  /\.customer-header::before\s*\{[\s\S]*?radial-gradient\([\s\S]*?rgb\(255 255 255 \/ 58%\)[\s\S]*?rgb\(255 255 255 \/ 52%\)/
+);
+assert.match(
+  customerCss,
+  /\.customer-header__bar\s*\{[\s\S]*?position:\s*relative;[\s\S]*?z-index:\s*1;/
+);
 assert.match(premiumCss, /--customer-focus:\s*#0070c9/);
 assert.match(premiumCss, /--customer-warning:\s*#8b5100/);
 assert.doesNotMatch(premiumCss, /\.store-entrance__scene-curtain/);
