@@ -5,13 +5,17 @@ import { YsabelleBrandMark } from "./YsabelleBrandMark";
 
 export function CustomerFooter({
   navigate,
-  onStartGuide
+  onStartGuide,
+  pathname
 }: {
   navigate: (path: string) => void;
   onStartGuide: () => void;
+  pathname: string;
 }) {
+  const isShopRoute = pathname === "/shop" || pathname.startsWith("/shop/");
+
   return (
-    <footer className="customer-footer">
+    <footer className={`customer-footer ${isShopRoute ? "customer-footer--shop" : ""}`}>
       <div aria-hidden="true" className="customer-footer__transition">
         <svg focusable="false" preserveAspectRatio="none" viewBox="0 0 1600 72">
           <defs>
