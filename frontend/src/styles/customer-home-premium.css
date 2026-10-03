@@ -386,10 +386,38 @@
 }
 
 .home-categories {
+  --home-category-bg-base: #f6f9ff;
+  --home-category-bg-mid: #f1f5fc;
+  --home-category-bg-end: #f8f4ff;
   scroll-margin-top: 6rem;
   border-top: 1px solid rgb(98 91 255 / 8%);
   border-bottom: 1px solid rgb(98 91 255 / 8%);
-  background: transparent;
+  background:
+    radial-gradient(
+      ellipse at 0% 10%,
+      rgb(0 140 255 / 10%) 0,
+      rgb(0 140 255 / 3.8%) 28%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 100% 12%,
+      rgb(98 91 255 / 12%) 0,
+      rgb(98 91 255 / 4.5%) 30%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse at 100% 88%,
+      rgb(168 60 240 / 8%) 0,
+      rgb(168 60 240 / 2.5%) 32%,
+      transparent 58%
+    ),
+    radial-gradient(ellipse at 0% 90%, rgb(0 140 255 / 6%) 0, transparent 48%),
+    linear-gradient(
+      145deg,
+      var(--home-category-bg-base) 0%,
+      var(--home-category-bg-mid) 50%,
+      var(--home-category-bg-end) 100%
+    );
   color: var(--customer-dark);
 }
 
