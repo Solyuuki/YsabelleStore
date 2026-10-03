@@ -146,6 +146,36 @@ assert.doesNotMatch(
   "Next-step CTA must not create a dark image overlay."
 );
 
+assert.match(
+  home,
+  /function HomeNextStep\([\s\S]*?Shop your way[\s\S]*?Pay when it&apos;s delivered\.[\s\S]*?Cash on Delivery[\s\S]*?Start shopping[\s\S]*?See our story/,
+  "Closing CTA must use the approved Cash on Delivery hierarchy."
+);
+
+assert.doesNotMatch(
+  home,
+  /Simple store pickup|Cash on pickup|Pay When You Collect It/,
+  "Closing CTA must not restore pickup-only messaging."
+);
+
+assert.match(
+  home,
+  /function HomeNextStepVisual\(\)[\s\S]*?viewBox="0 0 720 520"[\s\S]*?nextStepBasket[\s\S]*?home-next-step__cart/,
+  "Closing CTA must render the scalable shopping-cart visual rather than a raster background."
+);
+
+assert.match(
+  css,
+  /\.home-next-step__main\s*\{[\s\S]*?grid-template-columns:[\s\S]*?background:[\s\S]*?linear-gradient\(135deg/,
+  "Closing CTA must use the premium two-column delivery composition."
+);
+
+assert.match(
+  css,
+  /\.home-next-step__story\s*\{[\s\S]*?grid-template-columns:[\s\S]*?backdrop-filter:\s*blur\(14px\)/,
+  "Ysabelle story CTA must remain a compact editorial strip beneath the primary delivery action."
+);
+
 assert.match(home, /<div className="home-merchandising-stage">/);
 assert.match(
   home,
