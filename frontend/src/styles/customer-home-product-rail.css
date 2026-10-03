@@ -107,16 +107,38 @@
 
 .home-product-rail__control:not(:disabled):hover,
 .home-product-rail__control:not(:disabled):focus-visible {
-  border-color: transparent;
-  background: linear-gradient(135deg, var(--customer-info), var(--customer-primary));
-  box-shadow: 0 14px 32px rgb(98 91 255 / 22%);
+  border-color: rgb(255 255 255 / 82%);
+  background: linear-gradient(
+    135deg,
+    #8f84f7 0%,
+    #9f83f4 48%,
+    #c48ff0 100%
+  );
+  box-shadow:
+    0 12px 28px rgb(122 92 235 / 24%),
+    0 0 0 2px rgb(255 255 255 / 72%),
+    0 0 26px rgb(196 143 240 / 22%);
   color: #fff;
-  transform: translateY(-50%) scale(1.05);
+  transform: translateY(-50%) scale(1.045);
+}
+
+.home-product-rail__control:not(:disabled):focus-visible {
+  outline: 3px solid rgb(98 91 255 / 28%);
+  outline-offset: 3px;
 }
 
 .home-product-rail__control:not(:disabled):active {
-  box-shadow: 0 8px 18px rgb(98 91 255 / 18%);
-  transform: translateY(-50%) scale(0.97);
+  border-color: rgb(255 255 255 / 72%);
+  background: linear-gradient(
+    135deg,
+    #8173ef 0%,
+    #9274ee 48%,
+    #b67ee8 100%
+  );
+  box-shadow:
+    0 8px 18px rgb(122 92 235 / 20%),
+    0 0 0 2px rgb(255 255 255 / 58%);
+  transform: translateY(-50%) scale(0.98);
 }
 
 .home-product-rail__control:disabled {
