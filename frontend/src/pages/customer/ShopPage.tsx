@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, type CSSProperties, type FormEvent } 
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard } from "@/components/customer/ProductCard";
+import { ShopCatalogBackdrop } from "@/components/customer/ShopCatalogBackdrop";
 import { useRevealOnView } from "@/hooks/useRevealOnView";
 import { fetchStorefrontCategories, fetchStorefrontProducts } from "@/services/storefrontService";
 import type {
@@ -204,66 +205,7 @@ export function ShopPage({
         </div>
       </section>
       <div className="customer-container customer-shop-layout">
-        <div aria-hidden="true" className="customer-shop-catalog-backdrop">
-          <svg focusable="false" preserveAspectRatio="none" viewBox="0 0 1600 2400">
-            <defs>
-              <linearGradient id="shopCatalogWash" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stopColor="var(--shop-catalog-blue)" />
-                <stop offset="52%" stopColor="var(--shop-catalog-center)" />
-                <stop offset="100%" stopColor="var(--shop-catalog-violet)" />
-              </linearGradient>
-              <linearGradient id="shopCatalogLine" x1="0" x2="1" y1="0" y2="0">
-                <stop offset="0%" stopColor="var(--shop-catalog-line-blue)" />
-                <stop offset="50%" stopColor="var(--shop-catalog-line-center)" />
-                <stop offset="100%" stopColor="var(--shop-catalog-line-violet)" />
-              </linearGradient>
-              <linearGradient id="shopCatalogFadeFromHero" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="var(--shop-catalog-hero-surface)" stopOpacity="1" />
-                <stop offset="100%" stopColor="var(--shop-catalog-hero-surface)" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-
-            <rect fill="var(--shop-catalog-surface)" height="2400" width="1600" />
-
-            <ellipse cx="-10" cy="390" fill="var(--shop-catalog-blue-glow)" opacity="0.64" rx="470" ry="560" />
-            <ellipse cx="1570" cy="565" fill="var(--shop-catalog-violet-glow)" opacity="0.58" rx="470" ry="610" />
-            <ellipse cx="90" cy="1330" fill="var(--shop-catalog-blue-glow)" opacity="0.42" rx="430" ry="610" />
-            <ellipse cx="1515" cy="1500" fill="var(--shop-catalog-violet-glow)" opacity="0.40" rx="450" ry="620" />
-            <ellipse cx="120" cy="2220" fill="var(--shop-catalog-blue-glow)" opacity="0.46" rx="500" ry="440" />
-            <ellipse cx="1480" cy="2200" fill="var(--shop-catalog-violet-glow)" opacity="0.50" rx="500" ry="460" />
-
-            <path d="M0 70C210 150 395 155 585 118C780 80 950 38 1135 82C1315 125 1465 165 1600 128V410C1435 452 1270 420 1092 390C895 356 718 386 520 430C325 472 152 452 0 382Z" fill="url(#shopCatalogWash)" opacity="0.47" />
-            <path d="M0 315C190 250 365 290 545 410C720 528 890 555 1075 500C1260 446 1422 388 1600 430V735C1420 700 1240 752 1062 810C870 872 690 805 522 700C350 592 185 558 0 632Z" fill="url(#shopCatalogWash)" opacity="0.34" />
-            <path d="M0 720C175 642 340 674 515 790C695 910 875 944 1055 888C1245 830 1415 762 1600 808V1095C1415 1055 1240 1110 1058 1164C870 1220 700 1160 530 1058C350 950 180 915 0 985Z" fill="url(#shopCatalogWash)" opacity="0.29" />
-            <path d="M0 1110C198 1030 370 1070 548 1190C730 1312 895 1348 1075 1290C1250 1232 1410 1168 1600 1210V1515C1415 1482 1240 1538 1058 1598C870 1660 695 1602 525 1492C350 1380 178 1348 0 1420Z" fill="url(#shopCatalogWash)" opacity="0.27" />
-            <path d="M0 1520C210 1428 382 1476 558 1618C728 1755 900 1788 1085 1708C1262 1630 1418 1550 1600 1612V1905C1405 1840 1230 1912 1042 1974C850 2038 680 1972 518 1848C345 1715 175 1675 0 1750Z" fill="url(#shopCatalogWash)" opacity="0.33" />
-            <path d="M0 1910C220 1815 400 1875 572 2018C742 2158 915 2190 1090 2110C1268 2028 1418 1962 1600 2030V2320C1405 2262 1225 2328 1038 2378H0Z" fill="url(#shopCatalogWash)" opacity="0.42" />
-
-            <path d="M-40 152C205 22 420 64 650 202C875 338 1080 312 1288 188C1440 98 1538 82 1640 112" fill="none" stroke="url(#shopCatalogLine)" strokeLinecap="round" strokeWidth="2.4" opacity="0.58" />
-            <path d="M-55 208C188 78 418 126 635 256C848 383 1050 364 1260 242C1410 155 1530 138 1645 170" fill="none" stroke="url(#shopCatalogLine)" strokeLinecap="round" strokeWidth="1.5" opacity="0.34" />
-            <path d="M-65 610C168 468 390 492 598 638C806 784 1010 790 1210 652C1380 536 1505 520 1660 560" fill="none" stroke="url(#shopCatalogLine)" strokeLinecap="round" strokeWidth="2" opacity="0.44" />
-            <path d="M-70 1000C175 852 402 874 608 1025C812 1173 1015 1175 1212 1038C1385 918 1510 900 1660 942" fill="none" stroke="url(#shopCatalogLine)" strokeLinecap="round" strokeWidth="1.8" opacity="0.38" />
-            <path d="M-55 1398C180 1258 398 1280 605 1424C812 1568 1015 1570 1212 1436C1385 1320 1510 1300 1660 1345" fill="none" stroke="url(#shopCatalogLine)" strokeLinecap="round" strokeWidth="2" opacity="0.42" />
-            <path d="M-45 1770C180 1638 392 1660 592 1798C798 1938 996 1942 1188 1822C1375 1704 1490 1690 1650 1738" fill="none" stroke="url(#shopCatalogLine)" strokeLinecap="round" strokeWidth="2.1" opacity="0.48" />
-            <path d="M-35 2135C195 2010 412 2040 610 2160C818 2285 1024 2280 1220 2174C1398 2078 1510 2075 1640 2110" fill="none" stroke="url(#shopCatalogLine)" strokeLinecap="round" strokeWidth="1.8" opacity="0.38" />
-
-            <g fill="var(--shop-catalog-sparkle)" opacity="0.44">
-              <circle cx="132" cy="338" r="7" />
-              <circle cx="1460" cy="468" r="8" />
-              <circle cx="208" cy="910" r="6" />
-              <circle cx="1388" cy="1268" r="8" />
-              <circle cx="278" cy="1720" r="7" />
-              <circle cx="1332" cy="1998" r="6" />
-              <circle cx="120" cy="2195" r="8" />
-              <path d="M224 205L231 220L246 227L231 234L224 249L217 234L202 227L217 220Z" />
-              <path d="M1430 952L1437 967L1452 974L1437 981L1430 996L1423 981L1408 974L1423 967Z" />
-              <path d="M365 1650L372 1665L387 1672L372 1679L365 1694L358 1679L343 1672L358 1665Z" />
-              <path d="M1328 2220L1335 2235L1350 2242L1335 2249L1328 2264L1321 2249L1306 2242L1321 2235Z" />
-            </g>
-
-            <rect fill="url(#shopCatalogFadeFromHero)" height="240" width="1600" />
-          </svg>
-        </div>
+        <ShopCatalogBackdrop />
         <aside
           aria-label="Shop filters"
           className={`customer-filter-panel shop-category-navigation ${categoryNavigationReveal.isVisible ? "is-visible" : ""}`}
