@@ -22,8 +22,8 @@ assert.match(
 
 assert.match(
   css,
-  /\.home-categories\s*\{[\s\S]*?background:\s*transparent/,
-  "Shop by Category must inherit the Shop/Catalog canvas."
+  /\.home-categories\s*\{[\s\S]*?radial-gradient\([\s\S]*?rgb\(0 140 255 \/ 10%\)[\s\S]*?rgb\(98 91 255 \/ 12%\)[\s\S]*?rgb\(168 60 240 \/ 8%\)[\s\S]*?linear-gradient\([\s\S]*?var\(--home-category-bg-base\)[\s\S]*?var\(--home-category-bg-end\)/,
+  "Shop by Category must use the responsive cool blue-indigo-violet CSS gradient."
 );
 
 assert.match(
