@@ -8555,12 +8555,9 @@
   will-change: auto;
 }
 
-.home-merchandising {
-  background: #fff;
-}
-
+.home-merchandising,
 .home-merchandising--trending {
-  background: linear-gradient(180deg, #fff 0%, #faf8ff 100%);
+  background: transparent;
 }
 
 .home-merchandising--trending .customer-kicker {
@@ -8568,12 +8565,12 @@
 }
 
 .home-merchandising--best-seller {
-  background: radial-gradient(circle at 90% 0, rgb(168 60 240 / 8%), transparent 28%), #f5f6ff;
+  background: transparent;
 }
 
 .home-merchandising-status {
   padding-block: 2rem;
-  background: #fff;
+  background: transparent;
 }
 
 .home-merchandising--loading {
@@ -8654,28 +8651,25 @@
 
 .home-categories {
   scroll-margin-top: 6rem;
-  background:
-    radial-gradient(circle at 10% 0, rgb(0 140 255 / 18%), transparent 28%),
-    radial-gradient(circle at 88% 100%, rgb(244 63 140 / 13%), transparent 30%),
-    linear-gradient(135deg, #101426, #202655 58%, #30317d);
-  color: #fff;
+  background: transparent;
+  color: var(--customer-dark);
 }
 
 .home-categories .customer-kicker {
-  color: #87c8ff;
+  color: var(--customer-primary);
 }
 
 .home-categories .home-section-heading h2 {
-  color: #fff;
+  color: var(--customer-dark);
 }
 
 .home-categories .home-section-heading p:last-child {
-  color: #cbd0ea;
+  color: var(--customer-muted);
 }
 
 .home-categories .home-section-heading > a {
-  border-color: rgb(255 255 255 / 28%);
-  color: #fff;
+  border-color: rgb(98 91 255 / 22%);
+  color: var(--customer-primary);
 }
 
 .home-category-grid {
@@ -8905,13 +8899,12 @@
 }
 
 .home-essentials {
-  background:
-    radial-gradient(circle at 0 50%, rgb(0 140 255 / 6%), transparent 22%), var(--customer-surface);
+  background: transparent;
 }
 
 .home-next-step {
   padding-top: 1rem;
-  background: var(--customer-surface);
+  background: transparent;
 }
 
 .home-next-step__grid {
