@@ -179,8 +179,8 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
         <div className="home-merchandising-canvas">
           <MerchandisingArea navigate={navigate} onRetry={retry} resource={merchandising} />
 
-        <section className="customer-section home-essentials">
-          <div className="customer-container">
+          <section className="customer-section home-essentials">
+            <div className="customer-container">
             <SectionHeading
               action="Shop all products"
               actionHref="/shop"
@@ -220,8 +220,8 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
                 title="More Everyday Picks Are Coming"
               />
             ) : null}
-          </div>
-        </section>
+            </div>
+          </section>
         </div>
 
         <HomeNextStep navigate={navigate} />
