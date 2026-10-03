@@ -86,6 +86,17 @@ assert.doesNotMatch(homeSource, /<section className="home-hero">/);
 assert.match(shopSource, /customer-shop-heading__backdrop/);
 assert.match(shopSource, /shopHeroWaveBlue/);
 assert.match(shopSource, /shopHeroWaveViolet/);
+assert.match(shopSource, /customer-shop-catalog-backdrop/);
+assert.match(shopSource, /viewBox="0 0 1600 2400"/);
+assert.match(shopSource, /shopCatalogFadeToFooter/);
+assert.match(
+  customerCss,
+  /\.customer-shop-catalog-backdrop\s*\{[\s\S]*?bottom:\s*-6rem;[\s\S]*?width:\s*100vw;[\s\S]*?pointer-events:\s*none;/
+);
+assert.match(
+  customerCss,
+  /--shop-catalog-surface:\s*#f8faff[\s\S]*?--shop-catalog-footer-surface:\s*#f7f9ff/
+);
 assert.doesNotMatch(shopSource, /customer-shop-heading__backdrop[^\n]*url\(/);
 assert.match(
   customerCss,
