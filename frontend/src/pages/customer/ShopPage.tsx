@@ -221,10 +221,6 @@ export function ShopPage({
                 <stop offset="0%" stopColor="var(--shop-catalog-hero-surface)" stopOpacity="1" />
                 <stop offset="100%" stopColor="var(--shop-catalog-hero-surface)" stopOpacity="0" />
               </linearGradient>
-              <linearGradient id="shopCatalogFadeToFooter" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="var(--shop-catalog-footer-surface)" stopOpacity="0" />
-                <stop offset="100%" stopColor="var(--shop-catalog-footer-surface)" stopOpacity="1" />
-              </linearGradient>
             </defs>
 
             <rect fill="var(--shop-catalog-surface)" height="2400" width="1600" />
@@ -266,7 +262,6 @@ export function ShopPage({
             </g>
 
             <rect fill="url(#shopCatalogFadeFromHero)" height="240" width="1600" />
-            <rect fill="url(#shopCatalogFadeToFooter)" height="300" width="1600" x="0" y="2100" />
           </svg>
         </div>
         <aside
