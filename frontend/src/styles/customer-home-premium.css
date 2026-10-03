@@ -836,38 +836,38 @@
 }
 
 .home-merchandising-canvas {
-  --merch-bg-top: #f4f9ff;
-  --merch-bg-mid: #f8f8fd;
-  --merch-bg-bottom: #f7f3fc;
-  --merch-blue-rgb: 99 184 255;
-  --merch-indigo-rgb: 108 106 255;
-  --merch-violet-rgb: 185 118 241;
+  --merch-bg-top: #edf6ff;
+  --merch-bg-mid: #f8f9ff;
+  --merch-bg-bottom: #f7efff;
+  --merch-blue-rgb: 82 177 255;
+  --merch-indigo-rgb: 103 92 255;
+  --merch-violet-rgb: 177 102 241;
   position: relative;
   isolation: isolate;
   overflow: hidden;
   background:
     radial-gradient(
-      ellipse 72% 30% at -8% 4%,
-      rgb(var(--merch-blue-rgb) / 16%) 0%,
-      rgb(var(--merch-blue-rgb) / 6%) 38%,
+      ellipse 78% 26% at -10% 4%,
+      rgb(var(--merch-blue-rgb) / 21%) 0%,
+      rgb(var(--merch-blue-rgb) / 8%) 38%,
       transparent 72%
     ),
     radial-gradient(
-      ellipse 70% 30% at 108% 8%,
-      rgb(var(--merch-indigo-rgb) / 14%) 0%,
-      rgb(var(--merch-violet-rgb) / 5%) 40%,
+      ellipse 76% 28% at 110% 9%,
+      rgb(var(--merch-indigo-rgb) / 18%) 0%,
+      rgb(var(--merch-violet-rgb) / 7%) 42%,
       transparent 74%
     ),
     radial-gradient(
-      ellipse 78% 34% at 4% 67%,
-      rgb(var(--merch-blue-rgb) / 8%) 0%,
-      transparent 68%
+      ellipse 82% 32% at -4% 69%,
+      rgb(var(--merch-blue-rgb) / 11%) 0%,
+      transparent 70%
     ),
     radial-gradient(
-      ellipse 80% 36% at 102% 78%,
-      rgb(var(--merch-violet-rgb) / 9%) 0%,
-      rgb(var(--merch-indigo-rgb) / 3%) 42%,
-      transparent 72%
+      ellipse 84% 34% at 106% 82%,
+      rgb(var(--merch-violet-rgb) / 12%) 0%,
+      rgb(var(--merch-indigo-rgb) / 4%) 42%,
+      transparent 74%
     ),
     linear-gradient(
       180deg,
@@ -876,8 +876,50 @@
       var(--merch-bg-bottom) 100%
     );
   box-shadow:
-    inset 0 1px 0 rgb(98 91 255 / 5%),
-    inset 0 -1px 0 rgb(98 91 255 / 4%);
+    inset 0 1px 0 rgb(98 91 255 / 7%),
+    inset 0 -1px 0 rgb(98 91 255 / 5%);
+}
+
+.home-merchandising-canvas::before,
+.home-merchandising-canvas::after {
+  position: absolute;
+  left: -12%;
+  width: 124%;
+  content: "";
+  pointer-events: none;
+  z-index: 0;
+}
+
+.home-merchandising-canvas::before {
+  top: 7%;
+  height: clamp(14rem, 24vw, 24rem);
+  border-radius: 48% 52% 54% 46% / 62% 58% 42% 38%;
+  background:
+    linear-gradient(
+      104deg,
+      rgb(var(--merch-blue-rgb) / 11%) 0%,
+      rgb(255 255 255 / 7%) 40%,
+      rgb(var(--merch-indigo-rgb) / 8%) 72%,
+      rgb(var(--merch-violet-rgb) / 9%) 100%
+    );
+  opacity: 0.82;
+  transform: rotate(-4deg);
+}
+
+.home-merchandising-canvas::after {
+  bottom: 4%;
+  height: clamp(15rem, 27vw, 28rem);
+  border-radius: 58% 42% 46% 54% / 46% 52% 48% 54%;
+  background:
+    linear-gradient(
+      96deg,
+      rgb(var(--merch-blue-rgb) / 8%) 0%,
+      rgb(255 255 255 / 5%) 38%,
+      rgb(var(--merch-indigo-rgb) / 7%) 68%,
+      rgb(var(--merch-violet-rgb) / 11%) 100%
+    );
+  opacity: 0.76;
+  transform: rotate(3deg);
 }
 
 .home-merchandising-canvas > .customer-section,
@@ -1446,18 +1488,18 @@
   .home-merchandising-canvas {
     background:
       radial-gradient(
-        ellipse 94% 24% at -18% 5%,
-        rgb(var(--merch-blue-rgb) / 10%) 0%,
+        ellipse 96% 24% at -20% 5%,
+        rgb(var(--merch-blue-rgb) / 14%) 0%,
         transparent 72%
       ),
       radial-gradient(
-        ellipse 94% 24% at 118% 10%,
-        rgb(var(--merch-indigo-rgb) / 9%) 0%,
+        ellipse 96% 24% at 120% 10%,
+        rgb(var(--merch-indigo-rgb) / 12%) 0%,
         transparent 74%
       ),
       radial-gradient(
-        ellipse 100% 28% at 108% 82%,
-        rgb(var(--merch-violet-rgb) / 6%) 0%,
+        ellipse 104% 30% at 110% 82%,
+        rgb(var(--merch-violet-rgb) / 8%) 0%,
         transparent 74%
       ),
       linear-gradient(
@@ -1466,6 +1508,18 @@
         var(--merch-bg-mid) 46%,
         var(--merch-bg-bottom) 100%
       );
+  }
+
+  .home-merchandising-canvas::before {
+    top: 10%;
+    height: 11rem;
+    opacity: 0.54;
+  }
+
+  .home-merchandising-canvas::after {
+    bottom: 6%;
+    height: 12rem;
+    opacity: 0.5;
   }
 
   .home-categories__scene {
