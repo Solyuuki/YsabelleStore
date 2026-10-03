@@ -22,8 +22,8 @@ assert.match(
 
 assert.match(
   css,
-  /\.home-categories\s*\{[\s\S]*?--retail-bg-a:\s*#edf8ff[\s\S]*?--retail-object-blue:\s*#78c7ff[\s\S]*?--retail-object-violet:\s*#a88cff[\s\S]*?linear-gradient\([\s\S]*?var\(--retail-bg-a\)[\s\S]*?var\(--retail-bg-c\)/,
-  "Shop by Category must use theme-ready cold retail color tokens."
+  /\.home-categories\s*\{[\s\S]*?--retail-bg-a:\s*#edf8ff[\s\S]*?--category-portal-blue:\s*#7fc7ff[\s\S]*?--category-portal-violet:\s*#c89cff[\s\S]*?linear-gradient\([\s\S]*?var\(--retail-bg-a\)[\s\S]*?var\(--retail-bg-c\)/,
+  "Shop by Category must use the cold showroom-portal palette."
 );
 
 assert.doesNotMatch(
@@ -41,49 +41,31 @@ assert.doesNotMatch(
 assert.match(
   home,
   /<CategoryRetailBackdrop \/>/,
-  "Shop by Category must render the responsive vector retail ambience."
+  "Shop by Category must render the responsive vector showroom ambience."
 );
 
 assert.match(
   home,
-  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__center-light[\s\S]*?home-categories__scene--left[\s\S]*?home-categories__scene--right/,
-  "Retail ambience must keep the center light behind two independent decorative side scenes."
-);
-
-assert.match(
-  home,
-  /categoryLeftBlurNear[\s\S]*?stdDeviation="2\.5"[\s\S]*?categoryLeftBlurMid[\s\S]*?stdDeviation="4\.5"[\s\S]*?categoryLeftBlurFar[\s\S]*?stdDeviation="7\.5"/,
-  "Left retail scene must use the restrained near-mid-far blur hierarchy."
-);
-
-assert.match(
-  home,
-  /categoryRightBlurNear[\s\S]*?stdDeviation="2\.5"[\s\S]*?categoryRightBlurMid[\s\S]*?stdDeviation="4\.5"[\s\S]*?categoryRightBlurFar[\s\S]*?stdDeviation="7\.5"/,
-  "Right retail scene must use the restrained near-mid-far blur hierarchy."
+  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?viewBox="0 0 1600 900"[\s\S]*?home-categories__portal-ceiling[\s\S]*?home-categories__portal-side--left[\s\S]*?home-categories__portal-side--right[\s\S]*?home-categories__handoff/,
+  "Category backdrop must use architectural portal framing and a merchandising handoff wave."
 );
 
 assert.doesNotMatch(
   home,
-  /stdDeviation="12"/,
-  "Retail ambience must not restore the destructive 12px far blur."
+  /function CategoryRetailBackdrop\(\)[\s\S]*?home-categories__(?:products|podiums|leaves|shelf)/,
+  "Category showroom backdrop must not restore literal retail-object silhouettes."
 );
 
 assert.match(
   css,
-  /\.home-categories__scene\s*\{[\s\S]*?width:\s*clamp\(20rem, 30vw, 31rem\)[\s\S]*?height:\s*100%/,
-  "Retail side scenes must scale responsively with the category section."
+  /\.home-categories__portal-scene\s*\{[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%/,
+  "Category portal scene must scale with the entire section."
 );
 
 assert.match(
   css,
-  /\.home-categories__scene--left[\s\S]*?mask-image:\s*linear-gradient[\s\S]*?\.home-categories__scene--right[\s\S]*?mask-image:\s*linear-gradient/,
-  "Each retail side scene must fade toward the clean center with its own mask."
-);
-
-assert.match(
-  css,
-  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__scene-far\s*\{[\s\S]*?display:\s*none[\s\S]*?\.home-categories__scene-mid[\s\S]*?opacity:\s*0\.42/,
-  "Retail ambience must simplify and reduce depth on small screens."
+  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__portal-ceiling[\s\S]*?opacity:\s*0\.42[\s\S]*?\.home-categories__portal-side[\s\S]*?opacity:\s*0\.38/,
+  "Category portal must simplify its architecture on small screens."
 );
 
 assert.match(
