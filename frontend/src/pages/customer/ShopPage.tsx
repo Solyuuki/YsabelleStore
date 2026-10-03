@@ -204,6 +204,96 @@ export function ShopPage({
         </div>
       </section>
       <div className="customer-container customer-shop-layout">
+        <div aria-hidden="true" className="customer-shop-catalog-backdrop">
+          <svg focusable="false" preserveAspectRatio="none" viewBox="0 0 1600 2400">
+            <defs>
+              <linearGradient id="shopCatalogWash" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0%" stopColor="var(--shop-catalog-blue)" />
+                <stop offset="52%" stopColor="var(--shop-catalog-center)" />
+                <stop offset="100%" stopColor="var(--shop-catalog-violet)" />
+              </linearGradient>
+              <linearGradient id="shopCatalogLine" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stopColor="var(--shop-catalog-line-blue)" />
+                <stop offset="52%" stopColor="var(--shop-catalog-line-center)" />
+                <stop offset="100%" stopColor="var(--shop-catalog-line-violet)" />
+              </linearGradient>
+            </defs>
+
+            <rect fill="var(--shop-catalog-surface)" height="2400" width="1600" />
+
+            <path
+              d="M0 70C210 135 390 160 575 128C760 96 915 42 1110 70C1300 97 1450 150 1600 122V560C1430 590 1260 535 1080 520C850 502 700 575 500 592C315 607 150 565 0 505Z"
+              fill="url(#shopCatalogWash)"
+              opacity="0.31"
+            />
+
+            <path
+              d="M0 730C180 620 345 642 515 760C680 875 825 925 1010 865C1200 803 1370 690 1600 746V1230C1390 1190 1220 1280 1040 1332C840 1390 650 1298 505 1195C340 1080 190 1038 0 1135Z"
+              fill="url(#shopCatalogWash)"
+              opacity="0.20"
+            />
+
+            <path
+              d="M0 1550C210 1460 365 1518 545 1660C705 1787 875 1825 1055 1740C1240 1652 1390 1560 1600 1625V2210C1400 2135 1220 2225 1025 2288C830 2352 650 2260 500 2140C330 2005 175 1960 0 2050Z"
+              fill="url(#shopCatalogWash)"
+              opacity="0.23"
+            />
+
+            <path
+              d="M-40 260C210 72 425 112 650 245C875 378 1070 335 1285 205C1435 114 1535 92 1640 122"
+              fill="none"
+              stroke="url(#shopCatalogLine)"
+              strokeLinecap="round"
+              strokeWidth="2.2"
+              opacity="0.58"
+            />
+
+            <path
+              d="M-70 1020C180 840 410 860 610 1010C815 1165 1020 1162 1210 1018C1380 888 1500 866 1660 912"
+              fill="none"
+              stroke="url(#shopCatalogLine)"
+              strokeLinecap="round"
+              strokeWidth="1.8"
+              opacity="0.42"
+            />
+
+            <path
+              d="M-40 1870C170 1710 390 1738 585 1878C785 2022 980 2028 1170 1905C1365 1780 1495 1765 1650 1812"
+              fill="none"
+              stroke="url(#shopCatalogLine)"
+              strokeLinecap="round"
+              strokeWidth="2"
+              opacity="0.48"
+            />
+
+            <g fill="var(--shop-catalog-sparkle)" opacity="0.58">
+              <circle cx="120" cy="390" r="8" />
+              <circle cx="1450" cy="510" r="7" />
+              <circle cx="210" cy="1260" r="6" />
+              <circle cx="1388" cy="1480" r="9" />
+              <circle cx="280" cy="2120" r="7" />
+              <circle cx="1325" cy="2180" r="6" />
+              <path d="M230 235L237 250L252 257L237 264L230 279L223 264L208 257L223 250Z" />
+              <path d="M1420 1110L1427 1125L1442 1132L1427 1139L1420 1154L1413 1139L1398 1132L1413 1125Z" />
+              <path d="M360 1788L367 1803L382 1810L367 1817L360 1832L353 1817L338 1810L353 1803Z" />
+            </g>
+
+            <rect
+              fill="url(#shopCatalogFadeToFooter)"
+              height="260"
+              width="1600"
+              x="0"
+              y="2140"
+            />
+
+            <defs>
+              <linearGradient id="shopCatalogFadeToFooter" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="var(--shop-catalog-footer-surface)" stopOpacity="0" />
+                <stop offset="100%" stopColor="var(--shop-catalog-footer-surface)" stopOpacity="1" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
         <aside
           aria-label="Shop filters"
           className={`customer-filter-panel shop-category-navigation ${categoryNavigationReveal.isVisible ? "is-visible" : ""}`}
