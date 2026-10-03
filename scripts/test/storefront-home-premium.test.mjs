@@ -107,11 +107,15 @@ assert.doesNotMatch(shopBackdropSource, /viewBox="0 0 1600 2400"/);
 assert.doesNotMatch(shopBackdropSource, /<ellipse|<circle/);
 assert.match(
   customerCss,
-  /\.customer-shop-catalog-backdrop\s*\{[\s\S]*?--shop-catalog-top-surface|background:[\s\S]*?var\(--shop-catalog-top-surface\)[\s\S]*?var\(--shop-catalog-bottom-surface\)/
+  /\.customer-shop-catalog-backdrop\s*\{[\s\S]*?background:[\s\S]*?var\(--shop-catalog-top-surface\)[\s\S]*?var\(--shop-catalog-bottom-surface\)/
 );
 assert.match(
   customerCss,
   /\.customer-shop-catalog-wave\s*\{[\s\S]*?height:\s*clamp\(260px, 24vw, 430px\)/
+);
+assert.match(
+  customerCss,
+  /@media \(max-width:\s*720px\)[\s\S]*?\.customer-shop-catalog-wave\s*\{[\s\S]*?height:\s*clamp\(220px, 54vw, 300px\)/
 );
 assert.match(
   customerCss,
