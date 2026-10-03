@@ -211,6 +211,26 @@ assert.doesNotMatch(premiumCss, /\.home-merchandising--best-seller::before/);
 assert.doesNotMatch(premiumCss, /\.home-essentials::before/);
 assert.doesNotMatch(premiumCss, /\.home-next-step::before/);
 assert.doesNotMatch(premiumCss, /\.home-next-step::after/);
+assert.match(
+  homeSource,
+  /function HomeNextStep\([\s\S]*?Shop your way[\s\S]*?Pay when it&apos;s delivered\.[\s\S]*?Cash on Delivery[\s\S]*?Start shopping[\s\S]*?See our story/
+);
+assert.doesNotMatch(
+  homeSource,
+  /Simple store pickup|Cash on pickup|Pay When You Collect It/
+);
+assert.match(
+  homeSource,
+  /function HomeNextStepVisual\(\)[\s\S]*?viewBox="0 0 720 520"[\s\S]*?nextStepBasket[\s\S]*?home-next-step__cart/
+);
+assert.match(
+  premiumCss,
+  /\.home-next-step__main\s*\{[\s\S]*?grid-template-columns:[\s\S]*?linear-gradient\(135deg/
+);
+assert.match(
+  premiumCss,
+  /\.home-next-step__story\s*\{[\s\S]*?backdrop-filter:\s*blur\(14px\)/
+);
 assert.match(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.match(premiumCss, /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.doesNotMatch(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*#f5f4f0/);
