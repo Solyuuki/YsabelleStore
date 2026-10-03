@@ -12,7 +12,7 @@
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-inline: contain;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   scroll-padding-inline: 0.25rem;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
