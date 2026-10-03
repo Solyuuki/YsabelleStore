@@ -108,30 +108,43 @@ assert.match(premiumCss, /\.store-entrance__enter::after[\s\S]*?store-entrance-c
 assert.match(premiumCss, /@keyframes store-entrance-cta-sheen/);
 assert.match(premiumCss, /@keyframes store-entrance-cta-glow/);
 assert.match(premiumCss, /@media \(prefers-reduced-motion: no-preference\)[\s\S]*?\.store-entrance__enter::after/);
-assert.match(premiumCss, /\.home-categories \.customer-kicker[\s\S]*?-webkit-text-stroke:\s*0\.45px rgb\(151 139 255 \/ 72%\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading h2[\s\S]*?-webkit-text-stroke:\s*0\.55px rgb\(151 139 255 \/ 58%\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading h2[\s\S]*?0 0 12px rgb\(113 92 255 \/ 16%\)[\s\S]*?0 2px 24px rgb\(0 0 0 \/ 20%\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a > span[\s\S]*?-webkit-text-fill-color:\s*#fff[\s\S]*?-webkit-text-stroke:\s*0\.55px rgb\(151 139 255 \/ 58%\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a::after[\s\S]*?#e9edff 0%[\s\S]*?#d8d0ff 46%[\s\S]*?#ffd9f5 100%/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a::after[\s\S]*?inset 0 1px 0 rgb\(255 255 255 \/ 88%\)[\s\S]*?0 0 14px rgb\(207 79 200 \/ 18%\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a > svg[\s\S]*?color:\s*#fff[\s\S]*?rgb\(151 139 255 \/ 88%\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover > span[\s\S]*?0 0 14px rgb\(113 92 255 \/ 22%\)[\s\S]*?translateY\(-0\.5px\)/);
-assert.match(premiumCss, /\.home-categories \.home-section-heading > a:hover::after[\s\S]*?#f4f6ff 0%[\s\S]*?#e4dcff 46%[\s\S]*?#ffe4f8 100%[\s\S]*?rgb\(207 79 200 \/ 34%\)/);
+assert.match(
+  premiumCss,
+  /\.customer-home\s*\{[\s\S]*?linear-gradient\(145deg, #f4f6fb 0%, #f1f0f8 50%, #f7f2f6 100%\)/
+);
+assert.match(premiumCss, /\.home-categories\s*\{[\s\S]*?background:\s*transparent/);
+assert.match(
+  premiumCss,
+  /\.home-categories \.home-section-heading h2[\s\S]*?color:\s*var\(--customer-dark\)[\s\S]*?-webkit-text-stroke:\s*0/
+);
+assert.match(
+  premiumCss,
+  /\.home-categories \.home-section-heading p:last-child[\s\S]*?color:\s*var\(--customer-muted\)/
+);
 assert.match(homeSource, /<div className="home-merchandising-stage">[\s\S]*?<MerchandisingArea[\s\S]*?<section className="customer-section home-essentials">[\s\S]*?<HomeNextStep[\s\S]*?<\/div>/);
-assert.match(premiumCss, /\.home-merchandising-stage[\s\S]*?background:\s*#171614/);
-assert.match(premiumCss, /shop-category-background\\.webp/);
-assert.match(premiumCss, /\.home-merchandising-stage::before[\s\S]*?center bottom \/ cover no-repeat/);
-assert.match(premiumCss, /\.home-merchandising-stage::before[\s\S]*?inset:\s*-14px[\s\S]*?transform:\s*scale\(1\.018\)[\s\S]*?transform-origin:\s*center bottom/);
-assert.match(premiumCss, /\.home-merchandising-stage::before[\s\S]*?filter:\s*blur\(4px\) saturate\(0\.82\) brightness\(0\.8\)/);
-assert.match(premiumCss, /\.home-merchandising-stage::after[\s\S]*?rgb\(5 7 11 \/ 24%\) 0%[\s\S]*?rgb\(5 7 11 \/ 34%\) 100%/);
-assert.match(premiumCss, /\.home-merchandising-stage > \.customer-section,[\s\S]*?background:\s*transparent !important/);
-assert.match(premiumCss, /\.home-merchandising-stage \.home-section-heading h2[\s\S]*?color:\s*#fff[\s\S]*?-webkit-text-stroke:\s*0\.45px/);
-assert.match(premiumCss, /\.home-merchandising-stage \.home-merchandising--best-seller \.customer-kicker[\s\S]*?color:\s*#ffd487/);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-stage\s*\{[\s\S]*?background:\s*transparent/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-stage > \.customer-section,[\s\S]*?background:\s*transparent !important/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-stage \.home-section-heading h2[\s\S]*?color:\s*var\(--customer-dark\)[\s\S]*?-webkit-text-stroke:\s*0/
+);
+assert.doesNotMatch(
+  premiumCss,
+  /shop-category-background\.webp|storefront-merchandising-background\.webp|home-next-step-background\.(?:avif|webp)/
+);
+assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::before/);
+assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::after/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising--trending::before/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising--best-seller::before/);
 assert.doesNotMatch(premiumCss, /\.home-essentials::before/);
 assert.doesNotMatch(premiumCss, /\.home-next-step::before/);
-assert.match(premiumCss, /@media \(max-width: 900px\)[\s\S]*?\.home-merchandising-stage::before[\s\S]*?background-position:\s*center bottom[\s\S]*?background-size:\s*cover[\s\S]*?brightness\(0\.78\)/);
+assert.doesNotMatch(premiumCss, /\.home-next-step::after/);
 assert.match(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.match(premiumCss, /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.doesNotMatch(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*#f5f4f0/);
