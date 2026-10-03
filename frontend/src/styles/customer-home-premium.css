@@ -419,95 +419,101 @@
   pointer-events: none;
 }
 
-.home-categories__backdrop-side {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: clamp(15rem, 24vw, 27rem);
+.home-categories__retail-scene {
+  display: block;
+  width: 100%;
   height: 100%;
-  opacity: 0.58;
+  opacity: 0.78;
 }
 
-.home-categories__backdrop-side--left {
-  left: 0;
-  -webkit-mask-image: linear-gradient(90deg, #000 0%, rgb(0 0 0 / 86%) 52%, transparent 100%);
-  mask-image: linear-gradient(90deg, #000 0%, rgb(0 0 0 / 86%) 52%, transparent 100%);
-}
-
-.home-categories__backdrop-side--right {
-  right: 0;
-  -webkit-mask-image: linear-gradient(270deg, #000 0%, rgb(0 0 0 / 86%) 52%, transparent 100%);
-  mask-image: linear-gradient(270deg, #000 0%, rgb(0 0 0 / 86%) 52%, transparent 100%);
-}
-
-.home-categories__light-arc {
-  fill: none;
-  stroke: rgb(255 255 255 / 72%);
+.home-categories__ceiling {
+  fill: rgb(255 255 255 / 52%);
+  stroke: rgb(255 255 255 / 76%);
   stroke-linecap: round;
   stroke-width: 10;
 }
 
-.home-categories__light-arc--soft {
-  stroke: rgb(167 190 255 / 22%);
+.home-categories__ceiling-soft {
+  fill: none;
+  stroke: rgb(157 181 255 / 24%);
   stroke-width: 5;
 }
 
-.home-categories__shelf {
-  opacity: 0.5;
+.home-categories__retail-depth {
+  opacity: 0.66;
 }
 
-.home-categories__shelf--secondary {
-  opacity: 0.34;
+.home-categories__retail-near {
+  opacity: 0.58;
 }
 
-.home-categories__shelf-rail {
-  fill: rgb(255 255 255 / 62%);
-  stroke: rgb(117 139 214 / 13%);
-  stroke-width: 1;
+.home-categories__retail-depth--left,
+.home-categories__retail-near--left {
+  transform-origin: left center;
 }
 
-.home-categories__product-box {
-  fill: rgb(255 255 255 / 54%);
-  stroke: rgb(122 143 211 / 10%);
-  stroke-width: 1;
+.home-categories__retail-depth--right,
+.home-categories__retail-near--right {
+  transform-origin: right center;
 }
 
-.home-categories__product-box--blue {
-  fill: rgb(80 165 255 / 16%);
+.home-categories__shelf-curve,
+.home-categories__shelf-near {
+  fill: none;
+  stroke: url(#categoryShelfGlow);
+  stroke-linecap: round;
 }
 
-.home-categories__product-box--violet {
-  fill: rgb(126 102 255 / 14%);
+.home-categories__shelf-curve {
+  stroke-width: 14;
 }
 
-.home-categories__product-bottle {
-  fill: rgb(83 174 255 / 15%);
+.home-categories__shelf-curve--lower {
+  opacity: 0.7;
 }
 
-.home-categories__product-bottle--indigo {
-  fill: rgb(109 92 255 / 14%);
+.home-categories__shelf-curve--right,
+.home-categories__shelf-near--right {
+  stroke: url(#categoryShelfGlowRight);
 }
 
-.home-categories__podiums {
-  fill: rgb(132 175 255 / 11%);
-  opacity: 0.68;
+.home-categories__shelf-near {
+  stroke-width: 18;
+  opacity: 0.8;
 }
 
-.home-categories__podium--violet {
-  fill: rgb(136 105 255 / 12%);
+.home-categories__shelf-near--lower {
+  opacity: 0.58;
 }
 
-.home-categories__podium--soft {
-  fill: rgb(255 255 255 / 52%);
+.home-categories__retail-podiums {
+  fill: rgb(112 167 255 / 15%);
+  opacity: 0.72;
 }
 
-.home-categories__leaves {
-  fill: rgb(98 91 255 / 12%);
-  opacity: 0.6;
+.home-categories__retail-podium--violet {
+  fill: rgb(132 101 255 / 15%);
 }
 
-.home-categories__leaves--right {
-  fill: rgb(168 60 240 / 10%);
+.home-categories__retail-podium--light {
+  fill: rgb(255 255 255 / 58%);
+}
+
+.home-categories__retail-leaves {
+  fill: rgb(99 103 255 / 13%);
+  opacity: 0.72;
+}
+
+.home-categories__retail-leaves--right {
+  fill: rgb(156 86 240 / 11%);
+}
+
+.home-categories__floor {
+  opacity: 0.8;
+}
+
+.home-categories__center-wash {
+  pointer-events: none;
 }
 
 .home-categories > .customer-container {
@@ -1316,18 +1322,21 @@
     padding-block: 3.25rem;
   }
 
-  .home-categories__backdrop-side {
-    width: clamp(7.5rem, 34vw, 11rem);
+  .home-categories__retail-scene {
+    opacity: 0.56;
+  }
+
+  .home-categories__retail-depth {
+    opacity: 0.44;
+  }
+
+  .home-categories__retail-near {
+    opacity: 0.38;
+  }
+
+  .home-categories__retail-leaves,
+  .home-categories__floor {
     opacity: 0.42;
-  }
-
-  .home-categories__shelf--secondary,
-  .home-categories__leaves {
-    display: none;
-  }
-
-  .home-categories__light-arc {
-    stroke-width: 7;
   }
 
   .home-category-card__visual {
