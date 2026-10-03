@@ -156,6 +156,18 @@ assert.match(
   /\.home-merchandising-stage\s*\{[\s\S]*?background:\s*transparent/
 );
 assert.match(
+  homeSource,
+  /<div aria-hidden="true" className="home-category-merch-handoff" \/>/
+);
+assert.match(
+  premiumCss,
+  /\.home-category-merch-handoff\s*\{[\s\S]*?margin-top:\s*calc\(-1 \* clamp\([\s\S]*?margin-bottom:\s*calc\(-1 \* clamp\([\s\S]*?#eef7ff 100%/
+);
+assert.match(
+  premiumCss,
+  /\.home-category-merch-handoff::after[\s\S]*?#eef7ff 100%/
+);
+assert.match(
   premiumCss,
   /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#eef7ff[\s\S]*?--merch-wave-blue:\s*#7fc7ff[\s\S]*?--merch-wave-violet:\s*#c89cff[\s\S]*?background:\s*var\(--merch-bg-mid\)/
 );
