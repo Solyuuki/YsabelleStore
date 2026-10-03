@@ -298,15 +298,16 @@ assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(20px, 1fr\) 44px
 assert.match(railCss, /width:\s*44px;[\s\S]*?height:\s*44px/);
 assert.match(
   railSource,
-  /viewport\.scrollBy\(\{[\s\S]*?behavior:\s*prefersReducedMotion \? "auto" : "smooth"[\s\S]*?left:\s*direction \* itemStep/
+  /navigationLockRef[\s\S]*?itemStarts = railItems\.map[\s\S]*?currentIndex = itemStarts\.reduce[\s\S]*?targetIndex = Math\.min[\s\S]*?targetItem\.offsetLeft - firstItem\.offsetLeft[\s\S]*?viewport\.scrollTo\(/
 );
-assert.doesNotMatch(
+assert.doesNotMatch(railSource, /viewport\.scrollBy\(/);
+assert.match(
   railSource,
-  /left:\s*direction \* itemStep \* visibleCount/
+  /navigationUnlockTimerRef[\s\S]*?window\.setTimeout[\s\S]*?460/
 );
 assert.match(
   railCss,
-  /\.home-product-rail__viewport\s*\{[\s\S]*?scroll-behavior:\s*auto;[\s\S]*?scroll-snap-type:\s*x mandatory;/
+  /\.home-product-rail__viewport\s*\{[\s\S]*?scroll-behavior:\s*auto;[\s\S]*?scroll-snap-type:\s*x proximity;/
 );
 
 function relativeLuminance(hex) {
