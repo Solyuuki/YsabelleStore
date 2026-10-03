@@ -229,6 +229,10 @@ assert.match(
 );
 assert.match(
   premiumCss,
+  /\.home-next-step\s*\{[\s\S]*?url\("\/media\/home-delivery-closing-background\.svg"\) center \/ cover no-repeat/
+);
+assert.match(
+  premiumCss,
   /\.home-next-step__visual::before[\s\S]*?radial-gradient\([\s\S]*?filter:\s*blur\(20px\)/
 );
 assert.doesNotMatch(homeSource, /className="home-next-step__story"/);
