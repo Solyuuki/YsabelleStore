@@ -114,6 +114,7 @@
     opacity: 0.68;
   }
 
+  .customer-home::before,
   .customer-shop-page::before {
     opacity: 0.56;
   }
