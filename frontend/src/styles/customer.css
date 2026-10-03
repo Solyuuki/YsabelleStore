@@ -120,10 +120,24 @@
   position: sticky;
   top: 0;
   z-index: 80;
-  border-bottom: 1px solid rgb(98 91 255 / 13%);
-  background: rgb(255 255 255 / 92%);
-  box-shadow: 0 4px 20px rgb(16 20 38 / 6%);
-  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgb(98 91 255 / 17%);
+  background:
+    linear-gradient(126deg, rgb(0 140 255 / 8%) 0%, transparent 13%) left / 19rem 100% no-repeat,
+    linear-gradient(234deg, rgb(244 63 140 / 7%) 0%, transparent 13%) right / 19rem 100% no-repeat,
+    radial-gradient(circle at 18% 50%, rgb(98 91 255 / 9%), transparent 34%),
+    radial-gradient(circle at 82% 50%, rgb(244 63 140 / 7%), transparent 32%),
+    linear-gradient(
+      100deg,
+      rgb(248 250 255 / 96%) 0%,
+      rgb(241 247 255 / 96%) 34%,
+      rgb(247 242 255 / 96%) 68%,
+      rgb(255 246 252 / 96%) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 84%),
+    inset 0 -1px 0 rgb(98 91 255 / 5%),
+    0 7px 24px rgb(16 20 38 / 7%);
+  backdrop-filter: blur(18px) saturate(1.12);
 }
 
 .customer-header__bar {
