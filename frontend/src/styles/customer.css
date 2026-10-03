@@ -1426,6 +1426,15 @@
   --shop-hero-violet: #edcfff;
   --shop-hero-line: rgb(255 255 255 / 88%);
   --shop-hero-sparkle: rgb(255 255 255 / 92%);
+  --shop-catalog-surface: #f8faff;
+  --shop-catalog-blue: #d9ebff;
+  --shop-catalog-center: #f9fbff;
+  --shop-catalog-violet: #eee4ff;
+  --shop-catalog-line-blue: rgb(145 205 255 / 72%);
+  --shop-catalog-line-center: rgb(255 255 255 / 92%);
+  --shop-catalog-line-violet: rgb(198 153 255 / 70%);
+  --shop-catalog-sparkle: rgb(255 255 255 / 90%);
+  --shop-catalog-footer-surface: #f7f9ff;
 
   padding-top: 0;
 }
@@ -1483,10 +1492,51 @@
 }
 
 .customer-shop-layout {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);
   gap: 2.2rem;
   padding-top: 2.5rem;
+}
+
+.customer-shop-catalog-backdrop {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: -6rem;
+  left: 50%;
+  width: 100vw;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.customer-shop-catalog-backdrop::before {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(255 255 255 / 9%) 0%,
+      rgb(255 255 255 / 56%) 34%,
+      rgb(255 255 255 / 70%) 50%,
+      rgb(255 255 255 / 56%) 66%,
+      rgb(255 255 255 / 9%) 100%
+    );
+  content: "";
+}
+
+.customer-shop-catalog-backdrop svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.customer-shop-layout > :not(.customer-shop-catalog-backdrop) {
+  position: relative;
+  z-index: 1;
 }
 
 .customer-filter-panel {
