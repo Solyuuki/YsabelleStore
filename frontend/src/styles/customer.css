@@ -1426,14 +1426,16 @@
   --shop-hero-violet: #edcfff;
   --shop-hero-line: rgb(255 255 255 / 88%);
   --shop-hero-sparkle: rgb(255 255 255 / 92%);
-  --shop-catalog-surface: #f8faff;
-  --shop-catalog-blue: #d9ebff;
-  --shop-catalog-center: #f9fbff;
-  --shop-catalog-violet: #eee4ff;
-  --shop-catalog-line-blue: rgb(145 205 255 / 72%);
-  --shop-catalog-line-center: rgb(255 255 255 / 92%);
-  --shop-catalog-line-violet: rgb(198 153 255 / 70%);
-  --shop-catalog-sparkle: rgb(255 255 255 / 90%);
+  --shop-catalog-surface: #eef3fb;
+  --shop-catalog-blue: #cbdff6;
+  --shop-catalog-center: #edf0f9;
+  --shop-catalog-violet: #ddd3f3;
+  --shop-catalog-blue-glow: rgb(143 193 236 / 34%);
+  --shop-catalog-violet-glow: rgb(186 147 229 / 30%);
+  --shop-catalog-line-blue: rgb(104 177 232 / 68%);
+  --shop-catalog-line-center: rgb(228 234 249 / 88%);
+  --shop-catalog-line-violet: rgb(170 123 222 / 64%);
+  --shop-catalog-sparkle: rgb(245 248 255 / 88%);
   --shop-catalog-footer-surface: #f7f9ff;
 
   padding-top: 0;
@@ -1519,11 +1521,11 @@
   background:
     linear-gradient(
       90deg,
-      rgb(255 255 255 / 9%) 0%,
-      rgb(255 255 255 / 56%) 34%,
-      rgb(255 255 255 / 70%) 50%,
-      rgb(255 255 255 / 56%) 66%,
-      rgb(255 255 255 / 9%) 100%
+      rgb(255 255 255 / 2%) 0%,
+      rgb(255 255 255 / 18%) 32%,
+      rgb(255 255 255 / 28%) 50%,
+      rgb(255 255 255 / 18%) 68%,
+      rgb(255 255 255 / 2%) 100%
     );
   content: "";
 }
