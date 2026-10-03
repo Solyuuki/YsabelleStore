@@ -112,7 +112,10 @@ assert.match(
   premiumCss,
   /\.customer-home\s*\{[\s\S]*?linear-gradient\(145deg, #f4f6fb 0%, #f1f0f8 50%, #f7f2f6 100%\)/
 );
-assert.match(premiumCss, /\.home-categories\s*\{[\s\S]*?background:\s*transparent/);
+assert.match(
+  premiumCss,
+  /\.home-categories\s*\{[\s\S]*?rgb\(0 140 255 \/ 10%\)[\s\S]*?rgb\(98 91 255 \/ 12%\)[\s\S]*?rgb\(168 60 240 \/ 8%\)[\s\S]*?var\(--home-category-bg-end\)/
+);
 assert.match(
   premiumCss,
   /\.home-categories \.home-section-heading h2[\s\S]*?color:\s*var\(--customer-dark\)[\s\S]*?-webkit-text-stroke:\s*0/
