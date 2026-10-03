@@ -17,6 +17,10 @@ const productCardSource = await readFile(
   new URL("../../frontend/src/components/customer/ProductCard.tsx", import.meta.url),
   "utf8"
 );
+const footerSource = await readFile(
+  new URL("../../frontend/src/components/customer/CustomerFooter.tsx", import.meta.url),
+  "utf8"
+);
 const quantitySource = await readFile(
   new URL("../../frontend/src/components/customer/QuantityControl.tsx", import.meta.url),
   "utf8"
@@ -75,6 +79,26 @@ assert.doesNotMatch(entranceSource, /Neighborhood grocery · Pasig City/);
 assert.match(entranceSource, /prefers-reduced-motion: reduce/);
 assert.doesNotMatch(entranceSource, /controls/);
 assert.doesNotMatch(homeSource, /<section className="home-hero">/);
+
+assert.match(footerSource, /customer-footer__transition/);
+assert.match(footerSource, /footerTransitionLight/);
+assert.match(footerSource, /footerTransitionAccent/);
+assert.match(
+  customerCss,
+  /\.customer-footer\s*\{[\s\S]*?--footer-bg:\s*#101426[\s\S]*?radial-gradient\([\s\S]*?0 140 255 \/ 8%[\s\S]*?168 60 240 \/ 8%/
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__transition\s*\{[\s\S]*?height:\s*clamp\(34px, 4vw, 58px\)/
+);
+assert.match(
+  customerCss,
+  /\.customer-footer h2::after\s*\{[\s\S]*?linear-gradient\(90deg, #7fc7ff, #8d8cff 58%, #c89cff\)/
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__bottom\s*\{[\s\S]*?border-image:\s*linear-gradient\([\s\S]*?rgb\(98 91 255 \/ 34%\)/
+);
 
 assert.doesNotMatch(productCardSource, /"In stock"/);
 assert.match(productCardSource, /selectedQuantity/);
