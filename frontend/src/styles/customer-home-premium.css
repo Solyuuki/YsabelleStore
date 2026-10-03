@@ -387,40 +387,29 @@
 
 .home-categories {
   --retail-bg-a: #edf8ff;
-  --retail-bg-b: #f8fbff;
-  --retail-bg-c: #f5efff;
-  --retail-blue-rgb: 82 177 255;
-  --retail-indigo-rgb: 103 92 255;
-  --retail-violet-rgb: 177 102 241;
-  --retail-shelf-glow: #ffffff;
-  --retail-shelf-soft: #b7d2ff;
-  --retail-object-light: #ffffff;
-  --retail-object-blue: #78c7ff;
-  --retail-object-violet: #a88cff;
-  --retail-podium-blue: #88bfff;
-  --retail-podium-violet: #ad8dff;
-  --retail-leaf-blue: #7e8cff;
-  --retail-leaf-violet: #bb82ed;
+  --retail-bg-b: #f9fbff;
+  --retail-bg-c: #f5f1ff;
+  --category-portal-blue: #7fc7ff;
+  --category-portal-indigo: #8d8cff;
+  --category-portal-violet: #c89cff;
+  --category-portal-line: #ffffff;
   position: relative;
   isolation: isolate;
   overflow: hidden;
   scroll-margin-top: 6rem;
-  border-top: 1px solid rgb(98 91 255 / 8%);
-  border-bottom: 1px solid rgb(98 91 255 / 8%);
+  border-top: 1px solid rgb(98 91 255 / 7%);
+  border-bottom: 0;
   background:
-    radial-gradient(ellipse at 7% 14%, rgb(var(--retail-blue-rgb) / 16%) 0, transparent 43%),
-    radial-gradient(ellipse at 94% 16%, rgb(var(--retail-indigo-rgb) / 15%) 0, transparent 45%),
-    radial-gradient(ellipse at 82% 96%, rgb(var(--retail-violet-rgb) / 9%) 0, transparent 52%),
+    radial-gradient(ellipse at 7% 12%, rgb(127 199 255 / 16%) 0, transparent 42%),
+    radial-gradient(ellipse at 93% 14%, rgb(200 156 255 / 14%) 0, transparent 44%),
     linear-gradient(
-      145deg,
+      180deg,
       var(--retail-bg-a) 0%,
-      var(--retail-bg-b) 48%,
+      var(--retail-bg-b) 50%,
       var(--retail-bg-c) 100%
     );
   color: var(--customer-dark);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 78%),
-    inset 0 -1px 0 rgb(98 91 255 / 4%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 80%);
 }
 
 .home-categories__backdrop {
@@ -437,158 +426,66 @@
   z-index: 0;
   background:
     radial-gradient(
-      ellipse at 50% 43%,
-      rgb(255 255 255 / 82%) 0%,
-      rgb(255 255 255 / 66%) 30%,
-      rgb(255 255 255 / 24%) 52%,
-      transparent 72%
+      ellipse at 50% 40%,
+      rgb(255 255 255 / 86%) 0%,
+      rgb(255 255 255 / 68%) 32%,
+      rgb(255 255 255 / 22%) 56%,
+      transparent 74%
     );
 }
 
-.home-categories__scene {
+.home-categories__portal-scene {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 1;
   display: block;
-  width: clamp(20rem, 30vw, 31rem);
+  width: 100%;
   height: 100%;
-  overflow: visible;
 }
 
-.home-categories__scene--left {
-  left: 0;
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    #000 0%,
-    #000 48%,
-    rgb(0 0 0 / 82%) 64%,
-    rgb(0 0 0 / 38%) 82%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    #000 0%,
-    #000 48%,
-    rgb(0 0 0 / 82%) 64%,
-    rgb(0 0 0 / 38%) 82%,
-    transparent 100%
-  );
+.home-categories__portal-glows {
+  opacity: 0.9;
 }
 
-.home-categories__scene--right {
-  right: 0;
-  -webkit-mask-image: linear-gradient(
-    270deg,
-    #000 0%,
-    #000 48%,
-    rgb(0 0 0 / 82%) 64%,
-    rgb(0 0 0 / 38%) 82%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    270deg,
-    #000 0%,
-    #000 48%,
-    rgb(0 0 0 / 82%) 64%,
-    rgb(0 0 0 / 38%) 82%,
-    transparent 100%
-  );
-}
-
-.home-categories__scene-far {
-  opacity: 0.48;
-}
-
-.home-categories__scene-mid {
+.home-categories__portal-ceiling,
+.home-categories__portal-side {
+  fill: none;
+  stroke: var(--category-portal-line);
+  stroke-linecap: round;
+  stroke-width: 12;
   opacity: 0.58;
 }
 
-.home-categories__scene-near {
-  opacity: 0.68;
-}
-
-.home-categories__ceiling-arc {
-  fill: none;
-  stroke: var(--retail-shelf-glow);
-  stroke-linecap: round;
-  stroke-width: 9;
-  opacity: 0.32;
-}
-
-.home-categories__ceiling-arc--soft {
-  stroke: var(--retail-shelf-soft);
-  stroke-width: 5;
-  opacity: 0.34;
-}
-
-.home-categories__ceiling-light {
-  fill: var(--retail-shelf-glow);
+.home-categories__portal-line--soft {
+  stroke: var(--category-portal-indigo);
+  stroke-width: 6;
   opacity: 0.28;
 }
 
-.home-categories__shelf-arc,
-.home-categories__shelf-near {
+.home-categories__portal-line--inner {
+  stroke-width: 5;
+  opacity: 0.42;
+}
+
+.home-categories__portal-fill {
+  stroke: none;
+  opacity: 0.86;
+}
+
+.home-categories__portal-sparkles {
+  fill: rgb(255 255 255 / 72%);
+  opacity: 0.52;
+}
+
+.home-categories__handoff {
+  opacity: 0.84;
+}
+
+.home-categories__handoff-highlight {
   fill: none;
-  stroke: var(--retail-shelf-glow);
+  stroke: rgb(255 255 255 / 62%);
   stroke-linecap: round;
-}
-
-.home-categories__shelf-arc {
-  stroke-width: 13;
-  opacity: 0.7;
-}
-
-.home-categories__shelf-arc--lower {
-  opacity: 0.54;
-}
-
-.home-categories__shelf-near {
-  stroke-width: 17;
-  opacity: 0.78;
-}
-
-.home-categories__shelf-near--lower {
-  opacity: 0.56;
-}
-
-.home-categories__products--far {
-  opacity: 0.58;
-}
-
-.home-categories__products--near {
-  opacity: 0.72;
-}
-
-.home-categories__podiums {
-  fill: var(--retail-podium-blue);
-  opacity: 0.24;
-}
-
-.home-categories__podium--violet {
-  fill: var(--retail-podium-violet);
-}
-
-.home-categories__podium--light {
-  fill: var(--retail-object-light);
-  opacity: 0.72;
-}
-
-.home-categories__leaves {
-  fill: var(--retail-leaf-blue);
-  opacity: 0.18;
-}
-
-.home-categories__leaves--right {
-  fill: var(--retail-leaf-violet);
-}
-
-.home-categories__floor-ribbon {
-  fill: rgb(var(--retail-blue-rgb) / 12%);
-}
-
-.home-categories__floor-ribbon--violet {
-  fill: rgb(var(--retail-violet-rgb) / 10%);
+  stroke-width: 3;
 }
 
 .home-categories > .customer-container {
@@ -1469,28 +1366,25 @@
     opacity: 0.32;
   }
 
-  .home-categories__scene {
-    width: clamp(9rem, 38vw, 12rem);
+  .home-categories__portal-glows {
+    opacity: 0.62;
   }
 
-  .home-categories__scene-far {
-    display: none;
-  }
-
-  .home-categories__scene-mid {
+  .home-categories__portal-ceiling {
     opacity: 0.42;
   }
 
-  .home-categories__scene-near {
-    opacity: 0.5;
+  .home-categories__portal-side {
+    opacity: 0.38;
   }
 
-  .home-categories__leaves {
-    opacity: 0.12;
+  .home-categories__portal-line--inner,
+  .home-categories__portal-sparkles {
+    display: none;
   }
 
-  .home-categories__floor-ribbon {
-    opacity: 0.62;
+  .home-categories__handoff {
+    opacity: 0.68;
   }
 
   .home-category-card__visual {
