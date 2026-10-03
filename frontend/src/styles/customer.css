@@ -1561,6 +1561,32 @@
   bottom: clamp(5.5rem, 8vw, 8rem);
 }
 
+@media (max-width: 720px) {
+  .customer-shop-catalog-wave {
+    height: clamp(220px, 54vw, 300px);
+  }
+
+  .customer-shop-catalog-wave--top {
+    top: 1rem;
+  }
+
+  .customer-shop-catalog-wave--upper {
+    top: 25%;
+  }
+
+  .customer-shop-catalog-wave--middle {
+    top: 49%;
+  }
+
+  .customer-shop-catalog-wave--lower {
+    top: 73%;
+  }
+
+  .customer-shop-catalog-wave--bottom {
+    bottom: 4.5rem;
+  }
+}
+
 .customer-shop-layout > :not(.customer-shop-catalog-backdrop) {
   position: relative;
   z-index: 1;
