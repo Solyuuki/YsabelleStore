@@ -128,7 +128,7 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
     const baseIndex = targetIndexRef.current ?? currentIndex;
     const targetIndex = Math.min(
       maxStartIndex,
-      Math.max(0, baseIndex + direction * visibleCount)
+      Math.max(0, baseIndex + direction)
     );
     const targetItem = railItems[targetIndex];
     if (!targetItem) return;
@@ -143,7 +143,7 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
     settleTimerRef.current = window.setTimeout(() => {
       targetIndexRef.current = null;
       settleTimerRef.current = null;
-    }, prefersReducedMotion ? 0 : 650);
+    }, prefersReducedMotion ? 0 : 420);
 
     viewport.scrollTo({
       behavior: prefersReducedMotion ? "auto" : "smooth",
