@@ -94,7 +94,7 @@ assert.match(
 
 assert.match(
   css,
-  /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#f4f9ff[\s\S]*?--merch-blue-rgb:\s*99 184 255[\s\S]*?--merch-violet-rgb:\s*185 118 241[\s\S]*?radial-gradient\([\s\S]*?linear-gradient\(/,
+  /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#edf6ff[\s\S]*?--merch-blue-rgb:\s*82 177 255[\s\S]*?--merch-violet-rgb:\s*177 102 241[\s\S]*?radial-gradient\([\s\S]*?linear-gradient\(/,
   "Trending through Everyday Essentials must share the calm cold editorial merchandising canvas."
 );
 
@@ -106,14 +106,26 @@ assert.doesNotMatch(
 
 assert.match(
   css,
-  /@media \(max-width: 700px\)[\s\S]*?\.home-merchandising-canvas\s*\{[\s\S]*?rgb\(var\(--merch-blue-rgb\) \/ 10%\)[\s\S]*?rgb\(var\(--merch-violet-rgb\) \/ 6%\)/,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-merchandising-canvas\s*\{[\s\S]*?rgb\(var\(--merch-blue-rgb\) \/ 14%\)[\s\S]*?rgb\(var\(--merch-violet-rgb\) \/ 8%\)/,
   "Merchandising ambience must reduce edge intensity on small screens."
 );
 
 assert.doesNotMatch(
   css,
-  /\.home-merchandising-stage::before\s*\{|\.home-merchandising-stage::after\s*\{|\.home-merchandising-canvas::before\s*\{|\.home-merchandising-canvas::after\s*\{/,
-  "Merchandising background must not depend on pseudo-element image or overlay layers."
+  /\.home-merchandising-stage::before\s*\{|\.home-merchandising-stage::after\s*\{/,
+  "Outer merchandising stage must not create image or overlay layers."
+);
+
+assert.match(
+  css,
+  /\.home-merchandising-canvas::before,[\s\S]*?\.home-merchandising-canvas::after[\s\S]*?content:\s*""[\s\S]*?pointer-events:\s*none/,
+  "Merchandising canvas must use non-interactive CSS-only ambient ribbon layers."
+);
+
+assert.match(
+  css,
+  /\.home-merchandising-canvas::before[\s\S]*?linear-gradient\([\s\S]*?\.home-merchandising-canvas::after[\s\S]*?linear-gradient\(/,
+  "Merchandising canvas must include visible blue-violet wave geometry from CSS gradients."
 );
 
 assert.doesNotMatch(
