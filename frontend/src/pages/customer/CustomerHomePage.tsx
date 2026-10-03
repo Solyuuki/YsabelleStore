@@ -177,6 +177,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
 
       <div className="home-merchandising-stage">
         <div className="home-merchandising-canvas">
+          <MerchandisingBackdrop />
           <MerchandisingArea navigate={navigate} onRetry={retry} resource={merchandising} />
 
           <section className="customer-section home-essentials">
@@ -226,6 +227,123 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
 
         <HomeNextStep navigate={navigate} />
       </div>
+    </div>
+  );
+}
+
+function MerchandisingBackdrop() {
+  return (
+    <div aria-hidden="true" className="home-merchandising-canvas__backdrop">
+      <svg
+        className="home-merchandising-canvas__scene"
+        focusable="false"
+        preserveAspectRatio="none"
+        viewBox="0 0 1600 2400"
+      >
+        <defs>
+          <linearGradient id="merchVerticalBase" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--merch-bg-top)" />
+            <stop offset="48%" stopColor="var(--merch-bg-mid)" />
+            <stop offset="100%" stopColor="var(--merch-bg-bottom)" />
+          </linearGradient>
+
+          <linearGradient id="merchTopBlue" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="var(--merch-wave-blue)" stopOpacity="0.34" />
+            <stop offset="58%" stopColor="var(--merch-wave-indigo)" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="var(--merch-wave-violet)" stopOpacity="0.1" />
+          </linearGradient>
+
+          <linearGradient id="merchTopViolet" x1="1" x2="0" y1="0" y2="0">
+            <stop offset="0%" stopColor="var(--merch-wave-violet)" stopOpacity="0.28" />
+            <stop offset="58%" stopColor="var(--merch-wave-indigo)" stopOpacity="0.14" />
+            <stop offset="100%" stopColor="var(--merch-wave-blue)" stopOpacity="0.08" />
+          </linearGradient>
+
+          <linearGradient id="merchBottomBlue" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="var(--merch-wave-blue)" stopOpacity="0.22" />
+            <stop offset="58%" stopColor="var(--merch-wave-indigo)" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="var(--merch-wave-violet)" stopOpacity="0.18" />
+          </linearGradient>
+
+          <linearGradient id="merchBottomViolet" x1="1" x2="0" y1="0" y2="0">
+            <stop offset="0%" stopColor="var(--merch-wave-violet)" stopOpacity="0.3" />
+            <stop offset="52%" stopColor="var(--merch-wave-indigo)" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="var(--merch-wave-blue)" stopOpacity="0.1" />
+          </linearGradient>
+
+          <radialGradient id="merchGlowBlue" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="var(--merch-wave-blue)" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="var(--merch-wave-blue)" stopOpacity="0" />
+          </radialGradient>
+
+          <radialGradient id="merchGlowViolet" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="var(--merch-wave-violet)" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="var(--merch-wave-violet)" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        <rect fill="url(#merchVerticalBase)" height="2400" width="1600" />
+
+        <g className="home-merchandising-canvas__waves home-merchandising-canvas__waves--top">
+          <path
+            d="M0 0H1600V190C1370 128 1170 132 956 208C688 302 414 300 0 154Z"
+            fill="url(#merchTopBlue)"
+          />
+          <path
+            d="M0 126C286 216 514 232 754 172C1038 102 1304 88 1600 150V322C1330 270 1094 280 862 346C562 430 278 408 0 300Z"
+            fill="url(#merchTopViolet)"
+          />
+          <path
+            d="M0 318C294 390 526 386 766 316C1054 232 1316 250 1600 344V430C1324 360 1080 370 832 438C520 524 252 492 0 410Z"
+            fill="var(--merch-wave-white)"
+            opacity="0.54"
+          />
+          <path
+            className="home-merchandising-canvas__highlight"
+            d="M0 300C320 390 566 374 812 308C1076 236 1322 250 1600 330"
+          />
+        </g>
+
+        <g className="home-merchandising-canvas__mid-glow">
+          <ellipse cx="118" cy="790" fill="url(#merchGlowBlue)" rx="360" ry="430" />
+          <ellipse cx="1512" cy="1160" fill="url(#merchGlowViolet)" rx="420" ry="500" />
+          <ellipse cx="80" cy="1520" fill="url(#merchGlowBlue)" rx="300" ry="360" />
+        </g>
+
+        <g className="home-merchandising-canvas__waves home-merchandising-canvas__waves--bottom">
+          <path
+            d="M0 1614C268 1534 530 1550 792 1644C1074 1746 1326 1732 1600 1638V1812C1312 1728 1080 1752 842 1848C548 1968 290 1948 0 1850Z"
+            fill="url(#merchBottomBlue)"
+          />
+          <path
+            d="M0 1830C252 1916 490 1932 742 1870C1012 1804 1266 1810 1600 1904V2094C1292 2020 1054 2034 808 2118C526 2214 264 2194 0 2106Z"
+            fill="url(#merchBottomViolet)"
+          />
+          <path
+            d="M0 2070C284 2150 542 2170 816 2110C1098 2048 1348 2056 1600 2136V2286C1328 2216 1084 2234 820 2314C520 2404 256 2386 0 2302Z"
+            fill="var(--merch-wave-white)"
+            opacity="0.5"
+          />
+          <path
+            d="M0 2244C286 2324 542 2344 820 2280C1088 2218 1334 2230 1600 2310V2400H0Z"
+            fill="url(#merchBottomBlue)"
+            opacity="0.68"
+          />
+          <path
+            className="home-merchandising-canvas__highlight"
+            d="M0 2074C286 2154 542 2172 816 2112C1096 2050 1348 2058 1600 2138"
+          />
+        </g>
+
+        <g className="home-merchandising-canvas__sparkles">
+          <circle cx="112" cy="210" r="10" />
+          <circle cx="1454" cy="284" r="8" />
+          <circle cx="118" cy="1130" r="7" />
+          <circle cx="1486" cy="1470" r="9" />
+          <circle cx="146" cy="2128" r="8" />
+          <circle cx="1434" cy="2260" r="10" />
+        </g>
+      </svg>
     </div>
   );
 }
