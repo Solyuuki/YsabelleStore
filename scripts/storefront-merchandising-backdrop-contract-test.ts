@@ -89,19 +89,31 @@ assert.match(
 assert.match(
   css,
   /\.home-merchandising-stage\s*\{[\s\S]*?background:\s*transparent/,
-  "Merchandising stage must inherit the Shop/Catalog canvas."
+  "Outer merchandising stage must stay neutral so the CTA can remain separate."
+);
+
+assert.match(
+  css,
+  /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#f4f9ff[\s\S]*?--merch-blue-rgb:\s*99 184 255[\s\S]*?--merch-violet-rgb:\s*185 118 241[\s\S]*?radial-gradient\([\s\S]*?linear-gradient\(/,
+  "Trending through Everyday Essentials must share the calm cold editorial merchandising canvas."
 );
 
 assert.doesNotMatch(
   css,
-  /\.home-merchandising-stage::before\s*\{/,
-  "Merchandising stage must not create a photographic background layer."
+  /\.home-merchandising-canvas[\s\S]*?(?:url\(|repeating-linear-gradient)/,
+  "Merchandising canvas must remain CSS-only and pattern-free."
+);
+
+assert.match(
+  css,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-merchandising-canvas\s*\{[\s\S]*?rgb\(var\(--merch-blue-rgb\) \/ 10%\)[\s\S]*?rgb\(var\(--merch-violet-rgb\) \/ 6%\)/,
+  "Merchandising ambience must reduce edge intensity on small screens."
 );
 
 assert.doesNotMatch(
   css,
-  /\.home-merchandising-stage::after\s*\{/,
-  "Merchandising stage must not create a dark image overlay."
+  /\.home-merchandising-stage::before\s*\{|\.home-merchandising-stage::after\s*\{|\.home-merchandising-canvas::before\s*\{|\.home-merchandising-canvas::after\s*\{/,
+  "Merchandising background must not depend on pseudo-element image or overlay layers."
 );
 
 assert.doesNotMatch(
@@ -119,8 +131,8 @@ assert.doesNotMatch(
 assert.match(home, /<div className="home-merchandising-stage">/);
 assert.match(
   home,
-  /<div className="home-merchandising-stage">[\s\S]*?<MerchandisingArea[\s\S]*?<section className="customer-section home-essentials">[\s\S]*?<HomeNextStep/,
-  "Trending, Best Sellers, Everyday Essentials, and the next-step CTA must stay within one storefront stage."
+  /<div className="home-merchandising-stage">[\s\S]*?<div className="home-merchandising-canvas">[\s\S]*?<MerchandisingArea[\s\S]*?<section className="customer-section home-essentials">[\s\S]*?<\/div>[\s\S]*?<HomeNextStep/,
+  "Trending, Best Sellers, and Everyday Essentials must share one canvas while the next-step CTA stays outside it."
 );
 
 console.log("Storefront Shop/Catalog background contract passed.");
