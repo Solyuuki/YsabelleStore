@@ -354,188 +354,79 @@ function CategoryRetailBackdrop() {
       <div className="home-categories__center-light" />
 
       <svg
-        className="home-categories__scene home-categories__scene--left"
+        className="home-categories__portal-scene"
         focusable="false"
-        preserveAspectRatio="xMinYMid slice"
-        viewBox="0 0 420 760"
+        preserveAspectRatio="none"
+        viewBox="0 0 1600 900"
       >
         <defs>
-          <linearGradient id="categoryLeftBlue" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="var(--retail-object-light)" stopOpacity="0.82" />
-            <stop offset="100%" stopColor="var(--retail-object-blue)" stopOpacity="0.48" />
+          <linearGradient id="categoryPortalBlue" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--category-portal-blue)" stopOpacity="0.34" />
+            <stop offset="100%" stopColor="var(--category-portal-indigo)" stopOpacity="0.1" />
           </linearGradient>
-          <linearGradient id="categoryLeftViolet" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="var(--retail-object-light)" stopOpacity="0.76" />
-            <stop offset="100%" stopColor="var(--retail-object-violet)" stopOpacity="0.46" />
+          <linearGradient id="categoryPortalViolet" x1="1" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--category-portal-violet)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="var(--category-portal-indigo)" stopOpacity="0.08" />
           </linearGradient>
-          <filter id="categoryLeftBlurNear" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.5" />
-          </filter>
-          <filter id="categoryLeftBlurMid" x="-35%" y="-35%" width="170%" height="170%">
-            <feGaussianBlur stdDeviation="4.5" />
-          </filter>
-          <filter id="categoryLeftBlurFar" x="-45%" y="-45%" width="190%" height="190%">
-            <feGaussianBlur stdDeviation="7.5" />
-          </filter>
+          <linearGradient id="categoryHandoff" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#7fc7ff" stopOpacity="0.16" />
+            <stop offset="48%" stopColor="#ffffff" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#c89cff" stopOpacity="0.16" />
+          </linearGradient>
+          <radialGradient id="categoryPortalGlowBlue" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="var(--category-portal-blue)" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="var(--category-portal-blue)" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="categoryPortalGlowViolet" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="var(--category-portal-violet)" stopOpacity="0.14" />
+            <stop offset="100%" stopColor="var(--category-portal-violet)" stopOpacity="0" />
+          </radialGradient>
         </defs>
 
-        <g className="home-categories__scene-far" filter="url(#categoryLeftBlurFar)">
-          <path className="home-categories__ceiling-arc" d="M-70 104C54 24 214 10 458 108" />
-          <path className="home-categories__ceiling-arc home-categories__ceiling-arc--soft" d="M-82 142C70 62 236 58 456 146" />
-          <circle className="home-categories__ceiling-light" cx="116" cy="72" r="10" />
-          <circle className="home-categories__ceiling-light" cx="258" cy="76" r="8" />
-
-          <path className="home-categories__shelf-arc" d="M-94 282C44 224 214 220 456 310" />
-          <path className="home-categories__shelf-arc home-categories__shelf-arc--lower" d="M-104 442C64 378 228 382 448 458" />
-
-          <g className="home-categories__products home-categories__products--far" transform="translate(-6 180)">
-            <rect fill="url(#categoryLeftBlue)" height="88" rx="18" width="62" x="0" y="20" />
-            <g fill="url(#categoryLeftViolet)" transform="translate(82 2)">
-              <rect height="18" rx="5" width="27" x="14" y="0" />
-              <rect height="88" rx="20" width="56" x="0" y="17" />
-            </g>
-            <rect fill="url(#categoryLeftBlue)" height="76" rx="15" width="66" x="160" y="30" />
-            <g fill="url(#categoryLeftViolet)" transform="translate(246 22)">
-              <rect height="15" rx="5" width="24" x="13" y="0" />
-              <rect height="70" rx="18" width="50" x="0" y="14" />
-            </g>
-          </g>
-
-          <g className="home-categories__products home-categories__products--far" transform="translate(-24 344)">
-            <g fill="url(#categoryLeftBlue)" transform="translate(0 10)">
-              <rect height="17" rx="5" width="25" x="13" y="0" />
-              <rect height="78" rx="18" width="52" x="0" y="16" />
-            </g>
-            <rect fill="url(#categoryLeftViolet)" height="90" rx="18" width="72" x="74" y="4" />
-            <rect fill="url(#categoryLeftBlue)" height="70" rx="15" width="60" x="166" y="24" />
-            <rect fill="url(#categoryLeftViolet)" height="82" rx="16" width="66" x="246" y="12" />
-          </g>
+        <g className="home-categories__portal-glows">
+          <ellipse cx="110" cy="226" fill="url(#categoryPortalGlowBlue)" rx="330" ry="310" />
+          <ellipse cx="1490" cy="234" fill="url(#categoryPortalGlowViolet)" rx="350" ry="320" />
         </g>
 
-        <g className="home-categories__scene-mid" filter="url(#categoryLeftBlurMid)">
-          <path className="home-categories__shelf-near" d="M-128 170C34 100 192 102 390 194" />
-          <path className="home-categories__shelf-near home-categories__shelf-near--lower" d="M-142 548C34 476 202 482 390 560" />
-
-          <g className="home-categories__products home-categories__products--near" transform="translate(-44 76)">
-            <g fill="url(#categoryLeftBlue)" transform="translate(0 8)">
-              <rect height="20" rx="6" width="30" x="15" y="0" />
-              <rect height="102" rx="22" width="60" x="0" y="19" />
-            </g>
-            <rect fill="url(#categoryLeftViolet)" height="108" rx="20" width="84" x="82" y="16" />
-            <g fill="url(#categoryLeftBlue)" transform="translate(188 28)">
-              <rect height="16" rx="5" width="26" x="14" y="0" />
-              <rect height="78" rx="19" width="54" x="0" y="15" />
-            </g>
-          </g>
+        <g className="home-categories__portal-ceiling">
+          <path d="M-120 122C258 -26 554 -10 798 86C1046 -10 1346 -22 1720 126" />
+          <path className="home-categories__portal-line--soft" d="M-108 168C272 34 548 38 800 122C1056 34 1338 28 1706 170" />
+          <path className="home-categories__portal-line--inner" d="M92 96C330 20 568 24 800 104C1034 24 1268 20 1508 98" />
         </g>
 
-        <g className="home-categories__scene-near" filter="url(#categoryLeftBlurNear)">
-          <g className="home-categories__podiums" transform="translate(-88 586)">
-            <rect height="212" rx="38" width="154" x="0" y="18" />
-            <rect className="home-categories__podium--violet" height="178" rx="34" width="140" x="126" y="52" />
-            <rect className="home-categories__podium--light" height="128" rx="30" width="126" x="250" y="102" />
-          </g>
-
-          <g className="home-categories__leaves" transform="translate(34 536)">
-            <path d="M0 90C12 34 42 5 90 0C82 52 54 82 0 90Z" />
-            <path d="M54 102C76 52 108 32 152 40C132 84 100 108 54 102Z" />
-          </g>
-
-          <path className="home-categories__floor-ribbon" d="M-90 696C66 642 218 648 440 724L440 810L-90 810Z" />
-          <path className="home-categories__floor-ribbon home-categories__floor-ribbon--violet" d="M-98 746C78 696 244 704 448 770L448 820L-98 820Z" />
-        </g>
-      </svg>
-
-      <svg
-        className="home-categories__scene home-categories__scene--right"
-        focusable="false"
-        preserveAspectRatio="xMaxYMid slice"
-        viewBox="0 0 420 760"
-      >
-        <defs>
-          <linearGradient id="categoryRightBlue" x1="1" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="var(--retail-object-light)" stopOpacity="0.82" />
-            <stop offset="100%" stopColor="var(--retail-object-blue)" stopOpacity="0.46" />
-          </linearGradient>
-          <linearGradient id="categoryRightViolet" x1="1" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="var(--retail-object-light)" stopOpacity="0.76" />
-            <stop offset="100%" stopColor="var(--retail-object-violet)" stopOpacity="0.48" />
-          </linearGradient>
-          <filter id="categoryRightBlurNear" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.5" />
-          </filter>
-          <filter id="categoryRightBlurMid" x="-35%" y="-35%" width="170%" height="170%">
-            <feGaussianBlur stdDeviation="4.5" />
-          </filter>
-          <filter id="categoryRightBlurFar" x="-45%" y="-45%" width="190%" height="190%">
-            <feGaussianBlur stdDeviation="7.5" />
-          </filter>
-        </defs>
-
-        <g className="home-categories__scene-far" filter="url(#categoryRightBlurFar)">
-          <path className="home-categories__ceiling-arc" d="M-38 104C166 16 322 28 492 118" />
-          <path className="home-categories__ceiling-arc home-categories__ceiling-arc--soft" d="M-36 146C150 66 316 72 504 158" />
-          <circle className="home-categories__ceiling-light" cx="164" cy="76" r="8" />
-          <circle className="home-categories__ceiling-light" cx="316" cy="72" r="10" />
-
-          <path className="home-categories__shelf-arc" d="M-36 306C178 222 342 228 510 286" />
-          <path className="home-categories__shelf-arc home-categories__shelf-arc--lower" d="M-30 458C176 382 340 380 520 434" />
-
-          <g className="home-categories__products home-categories__products--far" transform="translate(82 184)">
-            <g fill="url(#categoryRightViolet)" transform="translate(0 8)">
-              <rect height="16" rx="5" width="25" x="13" y="0" />
-              <rect height="76" rx="18" width="52" x="0" y="15" />
-            </g>
-            <rect fill="url(#categoryRightBlue)" height="82" rx="16" width="68" x="70" y="14" />
-            <rect fill="url(#categoryRightViolet)" height="68" rx="14" width="58" x="158" y="28" />
-            <g fill="url(#categoryRightBlue)" transform="translate(236 4)">
-              <rect height="18" rx="5" width="27" x="14" y="0" />
-              <rect height="88" rx="20" width="56" x="0" y="17" />
-            </g>
-          </g>
-
-          <g className="home-categories__products home-categories__products--far" transform="translate(104 344)">
-            <rect fill="url(#categoryRightBlue)" height="72" rx="15" width="62" x="0" y="20" />
-            <g fill="url(#categoryRightViolet)" transform="translate(80 6)">
-              <rect height="16" rx="5" width="25" x="13" y="0" />
-              <rect height="80" rx="18" width="52" x="0" y="15" />
-            </g>
-            <rect fill="url(#categoryRightBlue)" height="88" rx="18" width="72" x="152" y="4" />
-            <rect fill="url(#categoryRightViolet)" height="66" rx="14" width="58" x="244" y="26" />
-          </g>
+        <g className="home-categories__portal-side home-categories__portal-side--left">
+          <path d="M-54 80C112 116 214 230 232 378C242 486 214 592 150 690" />
+          <path className="home-categories__portal-line--soft" d="M-14 108C126 142 198 246 206 380C214 478 190 568 134 654" />
+          <path className="home-categories__portal-fill" d="M-80 58C106 94 248 224 262 382C274 520 230 650 124 760L0 804H-80Z" fill="url(#categoryPortalBlue)" />
         </g>
 
-        <g className="home-categories__scene-mid" filter="url(#categoryRightBlurMid)">
-          <path className="home-categories__shelf-near" d="M18 194C218 100 374 102 546 170" />
-          <path className="home-categories__shelf-near home-categories__shelf-near--lower" d="M22 560C210 482 378 476 558 548" />
-
-          <g className="home-categories__products home-categories__products--near" transform="translate(164 78)">
-            <rect fill="url(#categoryRightViolet)" height="106" rx="20" width="84" x="0" y="18" />
-            <g fill="url(#categoryRightBlue)" transform="translate(106 26)">
-              <rect height="16" rx="5" width="26" x="14" y="0" />
-              <rect height="80" rx="19" width="54" x="0" y="15" />
-            </g>
-            <g fill="url(#categoryRightViolet)" transform="translate(184 6)">
-              <rect height="20" rx="6" width="30" x="15" y="0" />
-              <rect height="102" rx="22" width="60" x="0" y="19" />
-            </g>
-          </g>
+        <g className="home-categories__portal-side home-categories__portal-side--right">
+          <path d="M1654 82C1486 116 1382 232 1366 380C1354 490 1384 594 1448 692" />
+          <path className="home-categories__portal-line--soft" d="M1614 110C1472 144 1400 250 1392 382C1386 482 1410 570 1466 658" />
+          <path className="home-categories__portal-fill" d="M1680 60C1494 96 1350 226 1338 384C1326 522 1370 654 1478 762L1600 806H1680Z" fill="url(#categoryPortalViolet)" />
         </g>
 
-        <g className="home-categories__scene-near" filter="url(#categoryRightBlurNear)">
-          <g className="home-categories__podiums" transform="translate(74 584)">
-            <rect className="home-categories__podium--light" height="132" rx="30" width="126" x="0" y="100" />
-            <rect className="home-categories__podium--violet" height="180" rx="34" width="140" x="110" y="52" />
-            <rect height="214" rx="38" width="156" x="232" y="18" />
-          </g>
+        <g className="home-categories__portal-sparkles">
+          <circle cx="118" cy="248" r="8" />
+          <circle cx="270" cy="138" r="6" />
+          <circle cx="1334" cy="142" r="6" />
+          <circle cx="1482" cy="250" r="8" />
+        </g>
 
-          <g className="home-categories__leaves home-categories__leaves--right" transform="translate(230 530)">
-            <path d="M0 96C14 38 46 7 96 0C88 56 58 88 0 96Z" />
-            <path d="M58 108C80 56 114 34 160 44C140 90 106 114 58 108Z" />
-          </g>
-
-          <path className="home-categories__floor-ribbon" d="M-26 724C194 648 346 642 510 696L510 812L-26 812Z" />
-          <path className="home-categories__floor-ribbon home-categories__floor-ribbon--violet" d="M-30 770C174 704 340 696 518 746L518 822L-30 822Z" />
+        <g className="home-categories__handoff">
+          <path
+            d="M0 730C256 674 492 686 734 742C1010 806 1284 796 1600 718V900H0Z"
+            fill="url(#categoryHandoff)"
+          />
+          <path
+            d="M0 794C288 738 548 750 806 806C1060 860 1320 850 1600 782V900H0Z"
+            fill="#eef7ff"
+            opacity="0.46"
+          />
+          <path
+            className="home-categories__handoff-highlight"
+            d="M0 758C282 706 530 718 786 772C1040 826 1306 816 1600 744"
+          />
         </g>
       </svg>
     </div>
