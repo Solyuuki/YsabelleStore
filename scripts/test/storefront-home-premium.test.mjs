@@ -114,7 +114,7 @@ assert.match(
 );
 assert.match(
   premiumCss,
-  /\.home-categories\s*\{[\s\S]*?--retail-bg-a:\s*#edf8ff[\s\S]*?--retail-object-blue:\s*#78c7ff[\s\S]*?--retail-object-violet:\s*#a88cff[\s\S]*?var\(--retail-bg-c\)/
+  /\.home-categories\s*\{[\s\S]*?--retail-bg-a:\s*#edf8ff[\s\S]*?--category-portal-blue:\s*#7fc7ff[\s\S]*?--category-portal-violet:\s*#c89cff[\s\S]*?var\(--retail-bg-c\)/
 );
 assert.doesNotMatch(premiumCss, /\.home-categories::(?:before|after)/);
 assert.doesNotMatch(
@@ -124,25 +124,21 @@ assert.doesNotMatch(
 assert.match(homeSource, /<CategoryRetailBackdrop \/>/);
 assert.match(
   homeSource,
-  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__center-light[\s\S]*?home-categories__scene--left[\s\S]*?home-categories__scene--right/
+  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?viewBox="0 0 1600 900"[\s\S]*?home-categories__portal-ceiling[\s\S]*?home-categories__portal-side--left[\s\S]*?home-categories__portal-side--right[\s\S]*?home-categories__handoff/
 );
-assert.match(
+assert.doesNotMatch(
   homeSource,
-  /categoryLeftBlurNear[\s\S]*?stdDeviation="2\.5"[\s\S]*?categoryLeftBlurMid[\s\S]*?stdDeviation="4\.5"[\s\S]*?categoryLeftBlurFar[\s\S]*?stdDeviation="7\.5"/
-);
-assert.match(
-  homeSource,
-  /categoryRightBlurNear[\s\S]*?stdDeviation="2\.5"[\s\S]*?categoryRightBlurMid[\s\S]*?stdDeviation="4\.5"[\s\S]*?categoryRightBlurFar[\s\S]*?stdDeviation="7\.5"/
-);
-assert.doesNotMatch(homeSource, /stdDeviation="12"/);
-assert.match(
-  premiumCss,
-  /\.home-categories__scene\s*\{[\s\S]*?width:\s*clamp\(20rem, 30vw, 31rem\)[\s\S]*?height:\s*100%/
+  /function CategoryRetailBackdrop\(\)[\s\S]*?home-categories__(?:products|podiums|leaves|shelf)/
 );
 assert.match(
   premiumCss,
-  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__scene-far\s*\{[\s\S]*?display:\s*none[\s\S]*?\.home-categories__scene-mid[\s\S]*?opacity:\s*0\.42/
+  /\.home-categories__portal-scene\s*\{[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%/
 );
+assert.match(
+  premiumCss,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__portal-ceiling[\s\S]*?opacity:\s*0\.42[\s\S]*?\.home-categories__portal-side[\s\S]*?opacity:\s*0\.38/
+);
+
 assert.match(
   premiumCss,
   /\.home-categories \.home-section-heading h2[\s\S]*?color:\s*var\(--customer-dark\)[\s\S]*?-webkit-text-stroke:\s*0/
