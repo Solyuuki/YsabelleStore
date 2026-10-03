@@ -39,14 +39,41 @@ Approved source:
 
 ## About origin motion
 
-The first About story scene uses a dedicated decorative motion plate:
+The first About story scene uses the approved Gemini MP4 as a decorative motion plate while all logo and story typography remain responsive HTML.
 
-- Runtime path: `frontend/public/media/about-origin-motion.mp4`
-- UI owner: `AboutWelcomeMotion.tsx`
-- The video is decorative only; logo, origin copy, and typography remain real responsive HTML.
-- Playback starts only while the hero intersects the viewport and pauses when the tab is hidden or the hero leaves view.
-- Reduced-motion users receive the CSS fallback plate instead of video playback.
-- The video has no runtime audio dependency.
+Canonical runtime video:
 
-The motion plate is intentionally separate from the story typography so the layout can reflow independently on desktop, tablet, and mobile.
+- `frontend/public/media/about-origin-motion.mp4`
+
+Approved source:
+
+- `gemini_generated_video_09d5c3a9.mp4`
+- Size: `3,117,523` bytes
+- SHA256: `28b458ffced16e4900aa8699e1d80a3497916d3c0b4d5a091a81d161e9ec07bf`
+
+Install the source from the repository root:
+
+```bash
+npm run storefront:about-origin:install
+```
+
+The installer searches the repository root, `frontend/public/media`, Downloads, and Desktop for the approved Gemini filename. An explicit source path can also be supplied:
+
+```bash
+npm run storefront:about-origin:install -- "C:\\path\\to\\gemini_generated_video_09d5c3a9.mp4"
+```
+
+Verify the installed runtime asset:
+
+```bash
+npm run storefront:about-origin:verify
+```
+
+Runtime behavior:
+
+- The approved source is copied byte-for-byte. It is not re-encoded, trimmed, recolored, or otherwise modified.
+- The video is muted in the browser and starts only while the About hero intersects the viewport.
+- Playback pauses when the hero leaves the viewport or the document becomes hidden.
+- A lightweight animated CSS plate remains behind the video and is used if the media is missing, still loading, autoplay is unavailable, or reduced motion is requested.
+- Shader/scrim, responsive typography, and scroll transitions remain separate CSS/GSAP layers.
 
