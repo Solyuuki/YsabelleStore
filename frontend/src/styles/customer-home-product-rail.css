@@ -14,7 +14,7 @@
   overscroll-behavior-inline: contain;
   scroll-behavior: auto;
   scroll-padding-inline: 0.25rem;
-  scroll-snap-type: x mandatory;
+  scroll-snap-type: x proximity;
   scrollbar-width: none;
   touch-action: pan-x pan-y;
 }
