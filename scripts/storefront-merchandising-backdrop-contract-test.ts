@@ -190,6 +190,12 @@ assert.match(
 
 assert.match(
   css,
+  /\.home-next-step\s*\{[\s\S]*?url\("\/media\/home-delivery-closing-background\.svg"\) center \/ cover no-repeat/,
+  "Closing CTA must use the approved balanced blue-violet background artwork."
+);
+
+assert.match(
+  css,
   /\.home-next-step__visual::before[\s\S]*?radial-gradient\([\s\S]*?filter:\s*blur\(20px\)/,
   "Delivery illustration may use ambient glow but must not recreate a bordered card."
 );
