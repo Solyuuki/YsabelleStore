@@ -22,8 +22,8 @@ assert.match(
 
 assert.match(
   css,
-  /\.home-categories\s*\{[\s\S]*?rgb\(0 140 255 \/ 8%\)[\s\S]*?rgb\(98 91 255 \/ 9%\)[\s\S]*?rgb\(168 60 240 \/ 4\.5%\)[\s\S]*?var\(--home-category-bg-end\)/,
-  "Shop by Category must use the calm cold blue-indigo-violet canvas."
+  /\.home-categories\s*\{[\s\S]*?--retail-bg-a:\s*#edf8ff[\s\S]*?--retail-object-blue:\s*#78c7ff[\s\S]*?--retail-object-violet:\s*#a88cff[\s\S]*?linear-gradient\([\s\S]*?var\(--retail-bg-a\)[\s\S]*?var\(--retail-bg-c\)/,
+  "Shop by Category must use theme-ready cold retail color tokens."
 );
 
 assert.doesNotMatch(
@@ -46,26 +46,44 @@ assert.match(
 
 assert.match(
   home,
-  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__retail-depth--left[\s\S]*?home-categories__retail-depth--right/,
-  "Retail ambience must stay decorative, inaccessible to assistive tech, and balanced on both sides."
+  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__center-light[\s\S]*?home-categories__scene--left[\s\S]*?home-categories__scene--right/,
+  "Retail ambience must keep the center light behind two independent decorative side scenes."
 );
 
 assert.match(
   home,
-  /id="categoryBlurFar"[\s\S]*?<feGaussianBlur stdDeviation="12" \/>[\s\S]*?id="categoryCenterWash"/,
-  "Retail ambience must use soft-focus depth and a clean center wash."
+  /categoryLeftBlurNear[\s\S]*?stdDeviation="2\.5"[\s\S]*?categoryLeftBlurMid[\s\S]*?stdDeviation="4\.5"[\s\S]*?categoryLeftBlurFar[\s\S]*?stdDeviation="7\.5"/,
+  "Left retail scene must use the restrained near-mid-far blur hierarchy."
+);
+
+assert.match(
+  home,
+  /categoryRightBlurNear[\s\S]*?stdDeviation="2\.5"[\s\S]*?categoryRightBlurMid[\s\S]*?stdDeviation="4\.5"[\s\S]*?categoryRightBlurFar[\s\S]*?stdDeviation="7\.5"/,
+  "Right retail scene must use the restrained near-mid-far blur hierarchy."
+);
+
+assert.doesNotMatch(
+  home,
+  /stdDeviation="12"/,
+  "Retail ambience must not restore the destructive 12px far blur."
 );
 
 assert.match(
   css,
-  /\.home-categories__retail-scene[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%[\s\S]*?opacity:\s*0\.78/,
-  "Retail scene must scale with the category section at restrained opacity."
+  /\.home-categories__scene\s*\{[\s\S]*?width:\s*clamp\(20rem, 30vw, 31rem\)[\s\S]*?height:\s*100%/,
+  "Retail side scenes must scale responsively with the category section."
 );
 
 assert.match(
   css,
-  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__retail-scene[\s\S]*?opacity:\s*0\.56[\s\S]*?\.home-categories__retail-near[\s\S]*?opacity:\s*0\.38/,
-  "Retail atmosphere must reduce intensity on small screens."
+  /\.home-categories__scene--left[\s\S]*?mask-image:\s*linear-gradient[\s\S]*?\.home-categories__scene--right[\s\S]*?mask-image:\s*linear-gradient/,
+  "Each retail side scene must fade toward the clean center with its own mask."
+);
+
+assert.match(
+  css,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__scene-far\s*\{[\s\S]*?display:\s*none[\s\S]*?\.home-categories__scene-mid[\s\S]*?opacity:\s*0\.42/,
+  "Retail ambience must simplify and reduce depth on small screens."
 );
 
 assert.match(
