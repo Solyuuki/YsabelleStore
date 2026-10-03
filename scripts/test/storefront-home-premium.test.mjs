@@ -101,7 +101,11 @@ assert.match(
 );
 assert.match(
   customerCss,
-  /\.customer-header::after\s*\{[\s\S]*?bottom:\s*0;[\s\S]*?height:\s*2px;[\s\S]*?rgb\(0 140 255 \/ 24%\)[\s\S]*?rgb\(98 91 255 \/ 34%\)/
+  /\.customer-header\s*\{[\s\S]*?border-bottom:\s*0;/
+);
+assert.match(
+  customerCss,
+  /\.customer-header::after\s*\{[\s\S]*?height:\s*1px;[\s\S]*?transparent 0%[\s\S]*?rgb\(0 140 255 \/ 18%\)[\s\S]*?rgb\(98 91 255 \/ 28%\)[\s\S]*?rgb\(168 60 240 \/ 18%\)[\s\S]*?transparent 100%[\s\S]*?0 1px 8px rgb\(98 91 255 \/ 8%\)/
 );
 assert.match(
   customerCss,
