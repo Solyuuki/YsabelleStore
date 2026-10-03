@@ -133,6 +133,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
         data-tour="categories"
         id="shop-by-category"
       >
+        <CategoryRetailBackdrop />
         <div className="customer-container">
           <SectionHeading
             action="View all categories"
@@ -223,6 +224,117 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
 
         <HomeNextStep navigate={navigate} />
       </div>
+    </div>
+  );
+}
+
+function CategoryRetailBackdrop() {
+  return (
+    <div aria-hidden="true" className="home-categories__backdrop">
+      <svg
+        className="home-categories__backdrop-side home-categories__backdrop-side--left"
+        focusable="false"
+        preserveAspectRatio="none"
+        viewBox="0 0 360 780"
+      >
+        <path
+          className="home-categories__light-arc"
+          d="M-30 88C72 14 208 18 390 116"
+        />
+        <path
+          className="home-categories__light-arc home-categories__light-arc--soft"
+          d="M-42 122C92 44 230 56 392 152"
+        />
+
+        <g className="home-categories__shelf" transform="translate(-10 150)">
+          <rect className="home-categories__shelf-rail" height="8" rx="4" width="330" x="0" y="84" />
+          <rect className="home-categories__product-box home-categories__product-box--blue" height="70" rx="9" width="50" x="20" y="10" />
+          <rect className="home-categories__product-box" height="56" rx="9" width="42" x="78" y="24" />
+          <rect className="home-categories__product-box home-categories__product-box--violet" height="64" rx="8" width="54" x="132" y="16" />
+          <g className="home-categories__product-bottle" transform="translate(208 2)">
+            <rect height="15" rx="4" width="22" x="11" y="0" />
+            <rect height="64" rx="12" width="44" x="0" y="14" />
+          </g>
+          <g className="home-categories__product-bottle home-categories__product-bottle--indigo" transform="translate(266 14)">
+            <rect height="13" rx="4" width="20" x="10" y="0" />
+            <rect height="52" rx="11" width="40" x="0" y="12" />
+          </g>
+        </g>
+
+        <g className="home-categories__shelf home-categories__shelf--secondary" transform="translate(-34 352)">
+          <rect className="home-categories__shelf-rail" height="8" rx="4" width="340" x="0" y="88" />
+          <g className="home-categories__product-bottle" transform="translate(34 12)">
+            <rect height="14" rx="4" width="21" x="11" y="0" />
+            <rect height="60" rx="12" width="43" x="0" y="13" />
+          </g>
+          <rect className="home-categories__product-box home-categories__product-box--violet" height="70" rx="10" width="58" x="94" y="8" />
+          <rect className="home-categories__product-box" height="54" rx="8" width="46" x="164" y="24" />
+          <rect className="home-categories__product-box home-categories__product-box--blue" height="64" rx="9" width="54" x="224" y="14" />
+        </g>
+
+        <g className="home-categories__podiums" transform="translate(-34 610)">
+          <rect height="140" rx="20" width="118" x="0" y="32" />
+          <rect className="home-categories__podium--violet" height="112" rx="18" width="104" x="102" y="60" />
+          <rect className="home-categories__podium--soft" height="86" rx="16" width="92" x="196" y="86" />
+        </g>
+
+        <g className="home-categories__leaves" transform="translate(52 564)">
+          <path d="M0 56C6 20 24 2 54 0C50 32 34 50 0 56Z" />
+          <path d="M34 64C50 28 72 14 100 20C88 50 66 66 34 64Z" />
+        </g>
+      </svg>
+
+      <svg
+        className="home-categories__backdrop-side home-categories__backdrop-side--right"
+        focusable="false"
+        preserveAspectRatio="none"
+        viewBox="0 0 360 780"
+      >
+        <path
+          className="home-categories__light-arc"
+          d="M-30 106C92 16 224 18 396 72"
+        />
+        <path
+          className="home-categories__light-arc home-categories__light-arc--soft"
+          d="M-34 150C106 62 236 64 394 110"
+        />
+
+        <g className="home-categories__shelf" transform="translate(46 142)">
+          <rect className="home-categories__shelf-rail" height="8" rx="4" width="334" x="0" y="86" />
+          <g className="home-categories__product-bottle home-categories__product-bottle--indigo" transform="translate(20 6)">
+            <rect height="14" rx="4" width="22" x="11" y="0" />
+            <rect height="62" rx="12" width="44" x="0" y="13" />
+          </g>
+          <rect className="home-categories__product-box home-categories__product-box--violet" height="68" rx="9" width="54" x="82" y="10" />
+          <rect className="home-categories__product-box" height="52" rx="8" width="46" x="148" y="26" />
+          <g className="home-categories__product-bottle" transform="translate(214 16)">
+            <rect height="12" rx="4" width="19" x="10" y="0" />
+            <rect height="50" rx="10" width="39" x="0" y="11" />
+          </g>
+        </g>
+
+        <g className="home-categories__shelf home-categories__shelf--secondary" transform="translate(64 350)">
+          <rect className="home-categories__shelf-rail" height="8" rx="4" width="326" x="0" y="88" />
+          <rect className="home-categories__product-box home-categories__product-box--blue" height="66" rx="9" width="52" x="18" y="12" />
+          <g className="home-categories__product-bottle" transform="translate(88 10)">
+            <rect height="13" rx="4" width="20" x="10" y="0" />
+            <rect height="56" rx="11" width="40" x="0" y="12" />
+          </g>
+          <rect className="home-categories__product-box home-categories__product-box--violet" height="72" rx="10" width="58" x="146" y="6" />
+          <rect className="home-categories__product-box" height="52" rx="8" width="46" x="220" y="26" />
+        </g>
+
+        <g className="home-categories__podiums" transform="translate(116 610)">
+          <rect className="home-categories__podium--soft" height="88" rx="16" width="94" x="0" y="84" />
+          <rect className="home-categories__podium--violet" height="116" rx="18" width="106" x="82" y="56" />
+          <rect height="144" rx="20" width="120" x="176" y="28" />
+        </g>
+
+        <g className="home-categories__leaves home-categories__leaves--right" transform="translate(210 552)">
+          <path d="M0 66C8 26 28 6 60 0C56 36 38 58 0 66Z" />
+          <path d="M38 72C58 34 80 22 110 30C96 60 72 76 38 72Z" />
+        </g>
+      </svg>
     </div>
   );
 }
