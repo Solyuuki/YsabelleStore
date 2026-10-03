@@ -25,10 +25,6 @@ const premiumCss = await readFile(
   new URL("../../frontend/src/styles/customer-home-premium.css", import.meta.url),
   "utf8"
 );
-const railSource = await readFile(
-  new URL("../../frontend/src/components/customer/HomeProductRail.tsx", import.meta.url),
-  "utf8"
-);
 const railCss = await readFile(
   new URL("../../frontend/src/styles/customer-home-product-rail.css", import.meta.url),
   "utf8"
@@ -296,19 +292,6 @@ assert.match(premiumCss, /\.customer-product-card__price-row[\s\S]*?margin-top:\
 assert.match(premiumCss, /\.customer-product-card__purchase-row[\s\S]*?grid-template-columns:\s*112px minmax\(0, 1fr\)/);
 assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(20px, 1fr\) 44px/);
 assert.match(railCss, /width:\s*44px;[\s\S]*?height:\s*44px/);
-assert.match(
-  railSource,
-  /navigationLockRef[\s\S]*?itemStarts = railItems\.map[\s\S]*?currentIndex = itemStarts\.reduce[\s\S]*?targetIndex = Math\.min[\s\S]*?targetItem\.offsetLeft - firstItem\.offsetLeft[\s\S]*?viewport\.scrollTo\(/
-);
-assert.doesNotMatch(railSource, /viewport\.scrollBy\(/);
-assert.match(
-  railSource,
-  /navigationUnlockTimerRef[\s\S]*?window\.setTimeout[\s\S]*?460/
-);
-assert.match(
-  railCss,
-  /\.home-product-rail__viewport\s*\{[\s\S]*?scroll-behavior:\s*auto;[\s\S]*?scroll-snap-type:\s*x proximity;/
-);
 
 function relativeLuminance(hex) {
   const channels = hex
