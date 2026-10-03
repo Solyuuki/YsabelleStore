@@ -227,9 +227,20 @@ assert.match(
   premiumCss,
   /\.home-next-step__main\s*\{[\s\S]*?grid-template-columns:[\s\S]*?linear-gradient\(135deg/
 );
+assert.doesNotMatch(homeSource, /className="home-next-step__story"/);
+assert.doesNotMatch(homeSource, /Start shopping\s*<ArrowRight/);
+assert.match(
+  homeSource,
+  /className="customer-button home-next-step__shop-button"[\s\S]*?>\s*Start shopping\s*<\/CustomerLink>/
+);
+assert.doesNotMatch(premiumCss, /\.home-next-step__story(?:\s|\{|:)/);
 assert.match(
   premiumCss,
-  /\.home-next-step__story\s*\{[\s\S]*?backdrop-filter:\s*blur\(14px\)/
+  /\.home-next-step__shop-button::after[\s\S]*?rgb\(255 255 255 \/ 62%\)[\s\S]*?translateX\(-260%\) skewX\(-18deg\)/
+);
+assert.match(
+  premiumCss,
+  /@keyframes home-next-step-button-shine[\s\S]*?translateX\(650%\) skewX\(-18deg\)[\s\S]*?@media \(prefers-reduced-motion: no-preference\)[\s\S]*?home-next-step__shop-button::after[\s\S]*?animation:\s*home-next-step-button-shine 4\.8s ease-in-out infinite/
 );
 assert.match(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.match(premiumCss, /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/);
