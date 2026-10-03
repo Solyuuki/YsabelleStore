@@ -11,9 +11,9 @@ import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 
 const EXPECTED_SHA256 =
-  "28b458ffced16e4900aa8699e1d80a3497916d3c0b4d5a091a81d161e9ec07bf";
-const EXPECTED_SIZE = 3_117_523;
-const SOURCE_NAME = "gemini_generated_video_09d5c3a9.mp4";
+  "6738635db4cf22b744aba5ced30bc4a9533245e0f02352df406381d21487dad9";
+const EXPECTED_SIZE = 2_554_527;
+const SOURCE_NAME = "gemini_generated_video_4013f49c.mp4";
 const DESTINATION = resolve(
   process.cwd(),
   "frontend/public/media/about-origin-motion.mp4"
@@ -49,7 +49,7 @@ function verify(path) {
 function matchingGeminiCopies(directory) {
   if (!existsSync(directory)) return [];
 
-  const pattern = /^gemini_generated_video_09d5c3a9(?: \(\d+\))?\.mp4$/i;
+  const pattern = /^gemini_generated_video_4013f49c(?: \(\d+\))?\.mp4$/i;
 
   return readdirSync(directory)
     .filter((name) => pattern.test(name))
