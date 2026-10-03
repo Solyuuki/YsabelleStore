@@ -145,6 +145,53 @@ export function ShopPage({
         className={`customer-shop-heading shop-motion-intro ${introReveal.isVisible ? "is-visible" : ""}`}
         ref={introReveal.ref}
       >
+        <div aria-hidden="true" className="customer-shop-heading__backdrop">
+          <svg focusable="false" preserveAspectRatio="none" viewBox="0 0 1600 420">
+            <defs>
+              <linearGradient id="shopHeroWaveBlue" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stopColor="var(--shop-hero-blue)" />
+                <stop offset="100%" stopColor="var(--shop-hero-blue-soft)" />
+              </linearGradient>
+              <linearGradient id="shopHeroWaveViolet" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stopColor="var(--shop-hero-violet-soft)" />
+                <stop offset="100%" stopColor="var(--shop-hero-violet)" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M0 262C220 312 420 302 620 252C820 204 1010 222 1190 275C1350 322 1470 318 1600 282V420H0Z"
+              fill="url(#shopHeroWaveBlue)"
+              opacity="0.34"
+            />
+            <path
+              d="M0 330C230 274 430 292 630 342C820 390 1000 365 1170 318C1350 269 1490 279 1600 308V420H0Z"
+              fill="url(#shopHeroWaveViolet)"
+              opacity="0.28"
+            />
+            <path
+              d="M-40 188C210 365 480 384 760 292C1000 214 1220 224 1640 94"
+              fill="none"
+              stroke="var(--shop-hero-line)"
+              strokeLinecap="round"
+              strokeWidth="2.4"
+              opacity="0.72"
+            />
+            <path
+              d="M20 112C220 182 250 302 520 318C780 334 980 180 1240 132C1390 104 1515 118 1620 152"
+              fill="none"
+              stroke="var(--shop-hero-line)"
+              strokeLinecap="round"
+              strokeWidth="1.7"
+              opacity="0.5"
+            />
+            <g fill="var(--shop-hero-sparkle)" opacity="0.7">
+              <circle cx="82" cy="230" r="7" />
+              <circle cx="1385" cy="215" r="9" />
+              <circle cx="1260" cy="145" r="6" />
+              <path d="M176 177L182 190L195 196L182 202L176 215L170 202L157 196L170 190Z" />
+              <path d="M1450 92L1456 105L1469 111L1456 117L1450 130L1444 117L1431 111L1444 105Z" />
+            </g>
+          </svg>
+        </div>
         <div className="customer-container">
           <p className="customer-kicker shop-motion-intro__eyebrow">The grocery aisle, online</p>
           <h1 className="shop-motion-intro__title">
