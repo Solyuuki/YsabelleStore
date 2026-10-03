@@ -22,26 +22,20 @@ assert.match(
 
 assert.match(
   css,
-  /\.home-categories\s*\{[\s\S]*?rgb\(0 140 255 \/ 16%\)[\s\S]*?rgb\(98 91 255 \/ 17%\)[\s\S]*?rgb\(168 60 240 \/ 10%\)[\s\S]*?var\(--home-category-bg-end\)/,
-  "Shop by Category must use the branded cool retail canvas."
-);
-
-assert.match(
-  css,
-  /\.home-categories::before\s*\{[\s\S]*?repeating-linear-gradient\([\s\S]*?var\(--home-category-shelf-line\)[\s\S]*?var\(--home-category-stock-blue\)[\s\S]*?mask-image:/,
-  "Shop by Category must render the retail shelf abstraction with scalable CSS gradients."
-);
-
-assert.match(
-  css,
-  /\.home-categories > \.customer-container\s*\{[\s\S]*?z-index:\s*1/,
-  "Category content must remain above the decorative retail backdrop."
+  /\.home-categories\s*\{[\s\S]*?rgb\(0 140 255 \/ 9%\)[\s\S]*?rgb\(98 91 255 \/ 10%\)[\s\S]*?rgb\(168 60 240 \/ 5%\)[\s\S]*?var\(--home-category-bg-end\)/,
+  "Shop by Category must use the calm cold blue-indigo-violet canvas."
 );
 
 assert.doesNotMatch(
   css,
-  /\.home-categories[\s\S]*?url\(/,
-  "Shop by Category must not depend on raster or photographic backgrounds."
+  /\.home-categories::(?:before|after)\s*\{/,
+  "Shop by Category must not use decorative pseudo-element patterns."
+);
+
+assert.doesNotMatch(
+  css,
+  /\.home-categories[\s\S]*?(?:repeating-linear-gradient|url\()/,
+  "Shop by Category must remain pattern-free and independent of raster backgrounds."
 );
 
 assert.match(
