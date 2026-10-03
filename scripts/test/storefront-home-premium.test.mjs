@@ -25,6 +25,10 @@ const footerSource = await readFile(
   new URL("../../frontend/src/components/customer/CustomerFooter.tsx", import.meta.url),
   "utf8"
 );
+const customerLayoutSource = await readFile(
+  new URL("../../frontend/src/layouts/CustomerLayout.tsx", import.meta.url),
+  "utf8"
+);
 const quantitySource = await readFile(
   new URL("../../frontend/src/components/customer/QuantityControl.tsx", import.meta.url),
   "utf8"
@@ -115,6 +119,14 @@ assert.match(
   /\.customer-shop-heading__backdrop\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?pointer-events:\s*none;/
 );
 
+assert.match(customerLayoutSource, /<CustomerFooter[\s\S]*pathname=\{pathname\}/);
+assert.match(footerSource, /pathname:\s*string/);
+assert.match(footerSource, /pathname === "\/shop" \|\| pathname\.startsWith\("\/shop\/"\)/);
+assert.match(footerSource, /customer-footer--shop/);
+assert.match(
+  customerCss,
+  /\.customer-footer--shop\s*\{[\s\S]*?--footer-transition-surface:\s*#e5e9f7[\s\S]*?--footer-transition-blue:\s*#d2e2f5[\s\S]*?--footer-transition-violet:\s*#ddd5ef/
+);
 assert.match(footerSource, /customer-footer__transition/);
 assert.match(footerSource, /footerTransitionLight/);
 assert.match(footerSource, /footerTransitionAccent/);
