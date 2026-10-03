@@ -106,7 +106,7 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
 
     viewport.scrollBy({
       behavior: prefersReducedMotion ? "auto" : "smooth",
-      left: direction * itemStep * visibleCount
+      left: direction * itemStep
     });
   }
 
