@@ -89,7 +89,7 @@ assert.match(shopSource, /shopHeroWaveViolet/);
 assert.match(shopSource, /customer-shop-catalog-backdrop/);
 assert.match(shopSource, /viewBox="0 0 1600 2400"/);
 assert.match(shopSource, /shopCatalogFadeFromHero/);
-assert.match(shopSource, /shopCatalogFadeToFooter/);
+assert.doesNotMatch(shopSource, /shopCatalogFadeToFooter/);
 assert.match(shopSource, /shop-catalog-blue-glow/);
 assert.match(shopSource, /shop-catalog-violet-glow/);
 assert.match(
@@ -102,8 +102,9 @@ assert.match(
 );
 assert.match(
   customerCss,
-  /--shop-catalog-surface:\s*#edf2fa[\s\S]*?--shop-catalog-blue-glow:[\s\S]*?--shop-catalog-violet-glow:[\s\S]*?--shop-catalog-hero-surface:\s*#fafbff[\s\S]*?--shop-catalog-footer-surface:\s*#f7f9ff/
+  /--shop-catalog-surface:\s*#edf2fa[\s\S]*?--shop-catalog-blue-glow:[\s\S]*?--shop-catalog-violet-glow:[\s\S]*?--shop-catalog-hero-surface:\s*#fafbff/
 );
+assert.doesNotMatch(customerCss, /--shop-catalog-footer-surface/);
 assert.doesNotMatch(shopSource, /customer-shop-heading__backdrop[^\n]*url\(/);
 assert.match(
   customerCss,
