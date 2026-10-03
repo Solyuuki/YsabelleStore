@@ -1,9 +1,9 @@
 import {
   ArrowRight,
   MapPin,
+  ShieldCheck,
   ShoppingBasket,
-  Sparkles,
-  Store
+  Truck
 } from "lucide-react";
 import { useEffect, useState, type CSSProperties } from "react";
 
@@ -745,46 +745,190 @@ function HomeNextStep({ navigate }: { navigate: (path: string) => void }) {
   return (
     <section className="customer-section home-next-step">
       <div
-        className={`customer-container home-next-step__grid ${reveal.isVisible ? "is-visible" : ""}`}
+        className={`customer-container home-next-step__shell ${reveal.isVisible ? "is-visible" : ""}`}
         ref={reveal.ref}
       >
-        <article className="home-pickup-card" data-tour="checkout">
-          <span className="home-next-step__icon">
-            <ShoppingBasket aria-hidden="true" />
-          </span>
-          <p className="customer-kicker">Simple store pickup</p>
-          <h2>Build Your Basket Now. Pay When You Collect It.</h2>
-          <p>
-            Send your grocery request online, then pick it up at 110 A. Mabini Street, Pasig City.
-          </p>
-          <div className="home-pickup-card__meta">
-            <span>
-              <MapPin aria-hidden="true" /> Pasig City
-            </span>
-            <span>
-              <Store aria-hidden="true" /> Cash on pickup
-            </span>
-          </div>
-          <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
-            Build your basket <ArrowRight aria-hidden="true" size={18} />
-          </CustomerLink>
-        </article>
+        <div className="home-next-step__main" data-tour="checkout">
+          <div className="home-next-step__copy">
+            <p className="customer-kicker">Shop your way</p>
+            <h2>
+              Build your basket.
+              <span>Pay when it&apos;s delivered.</span>
+            </h2>
+            <p className="home-next-step__lede">
+              Order everyday essentials online and pay cash when your order arrives.
+              Simple, familiar, and convenient.
+            </p>
 
-        <article className="home-discover-card">
-          <span className="home-next-step__icon">
-            <Sparkles aria-hidden="true" />
+            <div className="home-next-step__meta" aria-label="Ordering highlights">
+              <span>
+                <Truck aria-hidden="true" />
+                <strong>Cash on Delivery</strong>
+              </span>
+              <span>
+                <MapPin aria-hidden="true" />
+                <strong>Pasig City</strong>
+              </span>
+              <span>
+                <ShieldCheck aria-hidden="true" />
+                <strong>Everyday essentials</strong>
+              </span>
+            </div>
+
+            <div className="home-next-step__actions">
+              <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
+                Start shopping <ArrowRight aria-hidden="true" size={18} />
+              </CustomerLink>
+              <CustomerLink className="home-secondary-link" href="/about" navigate={navigate}>
+                See our story <ArrowRight aria-hidden="true" size={17} />
+              </CustomerLink>
+            </div>
+          </div>
+
+          <HomeNextStepVisual />
+        </div>
+
+        <CustomerLink
+          className="home-next-step__story"
+          href="/about"
+          navigate={navigate}
+        >
+          <span className="home-next-step__story-mark" aria-hidden="true">
+            Y
           </span>
-          <p className="customer-kicker">Discover Ysabelle</p>
-          <h2>See the Story Behind the Shelves.</h2>
-          <p>
-            Step into the store&apos;s journey from a local beginning to smarter everyday retail.
-          </p>
-          <CustomerLink className="home-secondary-link" href="/about" navigate={navigate}>
-            Explore our story
-          </CustomerLink>
-        </article>
+          <span className="home-next-step__story-copy">
+            <small>Discover Ysabelle</small>
+            <strong>A neighborhood store, designed for everyday convenience.</strong>
+            <span>From local beginnings to a smoother everyday shopping experience.</span>
+          </span>
+          <span className="home-next-step__story-action">
+            Our story <ArrowRight aria-hidden="true" size={18} />
+          </span>
+        </CustomerLink>
       </div>
     </section>
+  );
+}
+
+function HomeNextStepVisual() {
+  return (
+    <div aria-hidden="true" className="home-next-step__visual">
+      <svg
+        className="home-next-step__visual-svg"
+        focusable="false"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 720 520"
+      >
+        <defs>
+          <linearGradient id="nextStepBasket" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--next-step-pink)" />
+            <stop offset="52%" stopColor="var(--next-step-lilac)" />
+            <stop offset="100%" stopColor="var(--next-step-indigo)" />
+          </linearGradient>
+          <linearGradient id="nextStepBagBlue" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#9fc9ff" />
+            <stop offset="100%" stopColor="#5f70ff" />
+          </linearGradient>
+          <linearGradient id="nextStepBagPink" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#ffc6e8" />
+            <stop offset="100%" stopColor="#ff74c4" />
+          </linearGradient>
+          <linearGradient id="nextStepBagViolet" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#cab7ff" />
+            <stop offset="100%" stopColor="#7658ef" />
+          </linearGradient>
+          <filter id="nextStepShadow" x="-35%" y="-35%" width="170%" height="190%">
+            <feDropShadow dx="0" dy="18" floodColor="#6657d8" floodOpacity="0.18" stdDeviation="16" />
+          </filter>
+        </defs>
+
+        <path
+          className="home-next-step__visual-orbit"
+          d="M58 368C178 470 420 470 624 350C700 306 722 244 680 206"
+        />
+        <path
+          className="home-next-step__visual-orbit home-next-step__visual-orbit--soft"
+          d="M118 104C264 18 536 48 668 170"
+        />
+
+        <g className="home-next-step__floating-bag home-next-step__floating-bag--pink" transform="translate(458 42) rotate(8)">
+          <path d="M16 30H104L96 118H24Z" fill="url(#nextStepBagPink)" />
+          <path d="M40 34C40 6 80 6 80 34" fill="none" stroke="#e766b1" strokeLinecap="round" strokeWidth="10" />
+        </g>
+
+        <g className="home-next-step__floating-bag home-next-step__floating-bag--violet" transform="translate(596 80) rotate(12)">
+          <path d="M12 28H88L82 104H18Z" fill="url(#nextStepBagViolet)" />
+          <path d="M34 30C34 8 68 8 68 30" fill="none" stroke="#6547d7" strokeLinecap="round" strokeWidth="9" />
+        </g>
+
+        <g className="home-next-step__cart" filter="url(#nextStepShadow)" transform="translate(236 128)">
+          <g transform="translate(84 18)">
+            <path d="M18 46H104L96 154H28Z" fill="url(#nextStepBagPink)" />
+            <path d="M42 48C42 14 82 14 82 48" fill="none" stroke="#e466b4" strokeLinecap="round" strokeWidth="11" />
+          </g>
+          <g transform="translate(166 0)">
+            <path d="M18 46H114L104 164H30Z" fill="url(#nextStepBagBlue)" />
+            <path d="M48 48C48 10 88 10 88 48" fill="none" stroke="#5b62d9" strokeLinecap="round" strokeWidth="11" />
+          </g>
+          <g transform="translate(252 40)">
+            <path d="M18 42H92L86 136H26Z" fill="url(#nextStepBagViolet)" />
+            <path d="M40 44C40 16 72 16 72 44" fill="none" stroke="#6547d7" strokeLinecap="round" strokeWidth="9" />
+          </g>
+
+          <path
+            d="M54 126H382L352 326H104Z"
+            fill="url(#nextStepBasket)"
+            opacity="0.95"
+          />
+          <path
+            d="M52 126H382"
+            fill="none"
+            stroke="#f6eeff"
+            strokeLinecap="round"
+            strokeWidth="24"
+          />
+          <path
+            d="M50 126L22 84H-4"
+            fill="none"
+            stroke="#8a7af4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="20"
+          />
+
+          {Array.from({ length: 6 }, (_, index) => (
+            <rect
+              fill="#ffffff"
+              height="112"
+              key={index}
+              opacity="0.38"
+              rx="13"
+              transform={`translate(${122 + index * 40} 176) rotate(7)`}
+              width="17"
+            />
+          ))}
+
+          <path
+            d="M104 326H362"
+            fill="none"
+            stroke="#9185ef"
+            strokeLinecap="round"
+            strokeWidth="16"
+          />
+          <circle cx="144" cy="360" fill="#6559d8" r="30" />
+          <circle cx="144" cy="360" fill="#d9d2ff" r="13" />
+          <circle cx="324" cy="360" fill="#6559d8" r="30" />
+          <circle cx="324" cy="360" fill="#d9d2ff" r="13" />
+        </g>
+
+        <g className="home-next-step__visual-sparkles">
+          <circle cx="118" cy="330" r="18" />
+          <circle cx="624" cy="326" r="14" />
+          <path d="M166 206L176 228L198 238L176 248L166 270L156 248L134 238L156 228Z" />
+          <path d="M604 196L612 212L628 220L612 228L604 244L596 228L580 220L596 212Z" />
+        </g>
+      </svg>
+    </div>
   );
 }
 
