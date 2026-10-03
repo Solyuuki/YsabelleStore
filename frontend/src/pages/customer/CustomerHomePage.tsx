@@ -776,8 +776,12 @@ function HomeNextStep({ navigate }: { navigate: (path: string) => void }) {
             </div>
 
             <div className="home-next-step__actions">
-              <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
-                Start shopping <ArrowRight aria-hidden="true" size={18} />
+              <CustomerLink
+                className="customer-button home-next-step__shop-button"
+                href="/shop"
+                navigate={navigate}
+              >
+                Start shopping
               </CustomerLink>
               <CustomerLink className="home-secondary-link" href="/about" navigate={navigate}>
                 See our story <ArrowRight aria-hidden="true" size={17} />
@@ -788,23 +792,6 @@ function HomeNextStep({ navigate }: { navigate: (path: string) => void }) {
           <HomeNextStepVisual />
         </div>
 
-        <CustomerLink
-          className="home-next-step__story"
-          href="/about"
-          navigate={navigate}
-        >
-          <span className="home-next-step__story-mark" aria-hidden="true">
-            Y
-          </span>
-          <span className="home-next-step__story-copy">
-            <small>Discover Ysabelle</small>
-            <strong>A neighborhood store, designed for everyday convenience.</strong>
-            <span>From local beginnings to a smoother everyday shopping experience.</span>
-          </span>
-          <span className="home-next-step__story-action">
-            Our story <ArrowRight aria-hidden="true" size={18} />
-          </span>
-        </CustomerLink>
       </div>
     </section>
   );
