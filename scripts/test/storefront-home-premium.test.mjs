@@ -246,6 +246,10 @@ assert.match(
   premiumCss,
   /@keyframes home-next-step-button-shine[\s\S]*?translateX\(650%\) skewX\(-18deg\)[\s\S]*?@media \(prefers-reduced-motion: no-preference\)[\s\S]*?home-next-step__shop-button::after[\s\S]*?animation:\s*home-next-step-button-shine 4\.8s ease-in-out infinite/
 );
+assert.match(
+  premiumCss,
+  /\.home-next-step__actions \.home-secondary-link\s*\{[\s\S]*?border-bottom:\s*0;/
+);
 assert.match(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.match(premiumCss, /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/);
 assert.doesNotMatch(premiumCss, /\.customer-product-card__visual-link[\s\S]*?background:\s*#f5f4f0/);
