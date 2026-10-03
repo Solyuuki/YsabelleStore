@@ -7,7 +7,10 @@
 
 /* Cinematic first-session store entrance */
 .store-entrance {
-  --store-entrance-shade: 0.08;
+  --store-entrance-shade: 0.2;
+  --store-entrance-cool-blue: rgb(33 92 184 / 20%);
+  --store-entrance-cool-indigo: rgb(83 72 180 / 15%);
+  --store-entrance-cool-violet: rgb(130 74 180 / 10%);
   position: relative;
   min-height: 100svh;
   isolation: isolate;
@@ -51,28 +54,46 @@
   z-index: -3;
   background:
     linear-gradient(
-      rgb(0 0 0 / var(--store-entrance-shade)),
-      rgb(0 0 0 / var(--store-entrance-shade))
+      rgb(4 8 20 / var(--store-entrance-shade)),
+      rgb(4 8 20 / var(--store-entrance-shade))
+    ),
+    linear-gradient(
+      118deg,
+      var(--store-entrance-cool-blue) 0%,
+      var(--store-entrance-cool-indigo) 54%,
+      var(--store-entrance-cool-violet) 100%
     ),
     linear-gradient(
       90deg,
-      rgb(0 0 0 / 58%) 0%,
-      rgb(0 0 0 / 43%) 34%,
-      rgb(0 0 0 / 22%) 65%,
-      rgb(0 0 0 / 12%) 100%
+      rgb(4 8 20 / 46%) 0%,
+      rgb(5 10 24 / 33%) 34%,
+      rgb(8 15 34 / 22%) 66%,
+      rgb(8 15 34 / 18%) 100%
     ),
-    linear-gradient(180deg, rgb(0 0 0 / 6%), rgb(0 0 0 / 24%));
+    linear-gradient(
+      180deg,
+      rgb(8 14 30 / 8%) 0%,
+      rgb(5 10 24 / 16%) 48%,
+      rgb(3 7 18 / 30%) 100%
+    );
   pointer-events: none;
 }
 
 .store-entrance__vignette {
   z-index: -2;
-  background: radial-gradient(
-    circle at 50% 48%,
-    transparent 30%,
-    rgb(0 0 0 / 10%) 74%,
-    rgb(0 0 0 / 34%) 124%
-  );
+  background:
+    radial-gradient(
+      circle at 50% 46%,
+      transparent 28%,
+      rgb(4 10 26 / 12%) 66%,
+      rgb(2 6 16 / 42%) 118%
+    ),
+    linear-gradient(
+      180deg,
+      rgb(27 74 156 / 5%) 0%,
+      transparent 44%,
+      rgb(35 28 92 / 6%) 100%
+    );
   pointer-events: none;
 }
 
@@ -317,8 +338,19 @@
 
   .store-entrance__scrim {
     background:
-      linear-gradient(rgb(0 0 0 / 10%), rgb(0 0 0 / 10%)),
-      linear-gradient(180deg, rgb(0 0 0 / 18%) 0%, rgb(0 0 0 / 30%) 48%, rgb(0 0 0 / 58%) 100%);
+      linear-gradient(rgb(4 8 20 / 18%), rgb(4 8 20 / 18%)),
+      linear-gradient(
+        135deg,
+        rgb(33 92 184 / 18%) 0%,
+        rgb(83 72 180 / 14%) 58%,
+        rgb(130 74 180 / 8%) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgb(5 10 24 / 16%) 0%,
+        rgb(5 10 24 / 28%) 48%,
+        rgb(2 6 16 / 56%) 100%
+      );
   }
 
   .store-entrance__brand-mark {
