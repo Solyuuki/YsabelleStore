@@ -176,6 +176,7 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
       </section>
 
       <div className="home-merchandising-stage">
+        <div aria-hidden="true" className="home-category-merch-handoff" />
         <div className="home-merchandising-canvas">
           <MerchandisingBackdrop />
           <MerchandisingArea navigate={navigate} onRetry={retry} resource={merchandising} />
