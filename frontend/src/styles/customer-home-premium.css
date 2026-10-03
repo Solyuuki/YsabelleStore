@@ -836,90 +836,58 @@
 }
 
 .home-merchandising-canvas {
-  --merch-bg-top: #edf6ff;
-  --merch-bg-mid: #f8f9ff;
-  --merch-bg-bottom: #f7efff;
-  --merch-blue-rgb: 82 177 255;
-  --merch-indigo-rgb: 103 92 255;
-  --merch-violet-rgb: 177 102 241;
+  --merch-bg-top: #eef7ff;
+  --merch-bg-mid: #f9faff;
+  --merch-bg-bottom: #f7f1ff;
+  --merch-wave-blue: #7fc7ff;
+  --merch-wave-indigo: #8d8cff;
+  --merch-wave-violet: #c89cff;
+  --merch-wave-white: #ffffff;
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background:
-    radial-gradient(
-      ellipse 78% 26% at -10% 4%,
-      rgb(var(--merch-blue-rgb) / 21%) 0%,
-      rgb(var(--merch-blue-rgb) / 8%) 38%,
-      transparent 72%
-    ),
-    radial-gradient(
-      ellipse 76% 28% at 110% 9%,
-      rgb(var(--merch-indigo-rgb) / 18%) 0%,
-      rgb(var(--merch-violet-rgb) / 7%) 42%,
-      transparent 74%
-    ),
-    radial-gradient(
-      ellipse 82% 32% at -4% 69%,
-      rgb(var(--merch-blue-rgb) / 11%) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 84% 34% at 106% 82%,
-      rgb(var(--merch-violet-rgb) / 12%) 0%,
-      rgb(var(--merch-indigo-rgb) / 4%) 42%,
-      transparent 74%
-    ),
-    linear-gradient(
-      180deg,
-      var(--merch-bg-top) 0%,
-      var(--merch-bg-mid) 44%,
-      var(--merch-bg-bottom) 100%
-    );
+  background: var(--merch-bg-mid);
   box-shadow:
-    inset 0 1px 0 rgb(98 91 255 / 7%),
-    inset 0 -1px 0 rgb(98 91 255 / 5%);
+    inset 0 1px 0 rgb(98 91 255 / 6%),
+    inset 0 -1px 0 rgb(98 91 255 / 4%);
 }
 
-.home-merchandising-canvas::before,
-.home-merchandising-canvas::after {
+.home-merchandising-canvas__backdrop {
   position: absolute;
-  left: -12%;
-  width: 124%;
-  content: "";
-  pointer-events: none;
+  inset: 0;
   z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.home-merchandising-canvas::before {
-  top: 7%;
-  height: clamp(14rem, 24vw, 24rem);
-  border-radius: 48% 52% 54% 46% / 62% 58% 42% 38%;
-  background:
-    linear-gradient(
-      104deg,
-      rgb(var(--merch-blue-rgb) / 11%) 0%,
-      rgb(255 255 255 / 7%) 40%,
-      rgb(var(--merch-indigo-rgb) / 8%) 72%,
-      rgb(var(--merch-violet-rgb) / 9%) 100%
-    );
-  opacity: 0.82;
-  transform: rotate(-4deg);
+.home-merchandising-canvas__scene {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.home-merchandising-canvas::after {
-  bottom: 4%;
-  height: clamp(15rem, 27vw, 28rem);
-  border-radius: 58% 42% 46% 54% / 46% 52% 48% 54%;
-  background:
-    linear-gradient(
-      96deg,
-      rgb(var(--merch-blue-rgb) / 8%) 0%,
-      rgb(255 255 255 / 5%) 38%,
-      rgb(var(--merch-indigo-rgb) / 7%) 68%,
-      rgb(var(--merch-violet-rgb) / 11%) 100%
-    );
-  opacity: 0.76;
-  transform: rotate(3deg);
+.home-merchandising-canvas__waves--top {
+  opacity: 0.88;
+}
+
+.home-merchandising-canvas__mid-glow {
+  opacity: 0.72;
+}
+
+.home-merchandising-canvas__waves--bottom {
+  opacity: 0.92;
+}
+
+.home-merchandising-canvas__highlight {
+  fill: none;
+  stroke: rgb(255 255 255 / 66%);
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+.home-merchandising-canvas__sparkles {
+  fill: rgb(255 255 255 / 72%);
+  opacity: 0.54;
 }
 
 .home-merchandising-canvas > .customer-section,
