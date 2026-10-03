@@ -13,6 +13,10 @@ const homeSource = await readFile(
   new URL("../../frontend/src/pages/customer/CustomerHomePage.tsx", import.meta.url),
   "utf8"
 );
+const shopSource = await readFile(
+  new URL("../../frontend/src/pages/customer/ShopPage.tsx", import.meta.url),
+  "utf8"
+);
 const productCardSource = await readFile(
   new URL("../../frontend/src/components/customer/ProductCard.tsx", import.meta.url),
   "utf8"
@@ -79,6 +83,18 @@ assert.doesNotMatch(entranceSource, /Neighborhood grocery · Pasig City/);
 assert.match(entranceSource, /prefers-reduced-motion: reduce/);
 assert.doesNotMatch(entranceSource, /controls/);
 assert.doesNotMatch(homeSource, /<section className="home-hero">/);
+assert.match(shopSource, /customer-shop-heading__backdrop/);
+assert.match(shopSource, /shopHeroWaveBlue/);
+assert.match(shopSource, /shopHeroWaveViolet/);
+assert.doesNotMatch(shopSource, /customer-shop-heading__backdrop[^\n]*url\(/);
+assert.match(
+  customerCss,
+  /\.customer-shop-heading\s*\{[\s\S]*?radial-gradient\([\s\S]*?127 199 255 \/ 18%[\s\S]*?200 156 255 \/ 18%[\s\S]*?#fbfdff[\s\S]*?#f2f4ff/
+);
+assert.match(
+  customerCss,
+  /\.customer-shop-heading__backdrop\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?pointer-events:\s*none;/
+);
 
 assert.match(footerSource, /customer-footer__transition/);
 assert.match(footerSource, /footerTransitionLight/);
