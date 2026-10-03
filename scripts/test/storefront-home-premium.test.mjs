@@ -225,7 +225,11 @@ assert.match(
 );
 assert.match(
   premiumCss,
-  /\.home-next-step__main\s*\{[\s\S]*?grid-template-columns:[\s\S]*?linear-gradient\(135deg/
+  /\.home-next-step__main\s*\{[\s\S]*?grid-template-columns:[\s\S]*?border:\s*0;[\s\S]*?border-radius:\s*0;[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;/
+);
+assert.match(
+  premiumCss,
+  /\.home-next-step__visual::before[\s\S]*?radial-gradient\([\s\S]*?filter:\s*blur\(20px\)/
 );
 assert.doesNotMatch(homeSource, /className="home-next-step__story"/);
 assert.doesNotMatch(homeSource, /Start shopping\s*<ArrowRight/);
