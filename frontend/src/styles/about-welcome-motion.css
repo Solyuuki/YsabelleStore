@@ -4,9 +4,9 @@
   min-height: max(740px, calc(100svh - 76px));
   overflow: hidden;
   background:
-    radial-gradient(circle at 18% 20%, rgb(98 91 255 / 24%), transparent 35%),
-    radial-gradient(circle at 82% 70%, rgb(244 63 140 / 18%), transparent 34%),
-    linear-gradient(135deg, #090d20 0%, #111633 50%, #17122e 100%);
+    radial-gradient(circle at 18% 20%, rgb(98 91 255 / 13%), transparent 35%),
+    radial-gradient(circle at 82% 70%, rgb(244 63 140 / 10%), transparent 34%),
+    linear-gradient(135deg, #f7f9ff 0%, #eef3ff 50%, #faf1ff 100%);
   isolation: isolate;
 }
 
@@ -27,9 +27,9 @@
   inset: 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 22% 18%, rgb(98 91 255 / 26%), transparent 36%),
-    radial-gradient(circle at 82% 72%, rgb(244 63 140 / 18%), transparent 34%),
-    #090d20;
+    radial-gradient(circle at 22% 18%, rgb(98 91 255 / 14%), transparent 36%),
+    radial-gradient(circle at 82% 72%, rgb(244 63 140 / 11%), transparent 34%),
+    #f3f5ff;
   pointer-events: none;
 }
 
@@ -173,7 +173,7 @@
   inset: 0;
   object-fit: cover;
   object-position: center;
-  filter: saturate(0.94) contrast(1.04) brightness(0.78);
+  filter: saturate(0.99) contrast(1.015) brightness(0.98);
   opacity: 0;
   transform: scale(1.018);
   transform-origin: center;
@@ -194,20 +194,20 @@
   background:
     linear-gradient(
       180deg,
-      rgb(7 11 29 / 38%) 0%,
-      rgb(7 11 29 / 14%) 28%,
-      rgb(7 11 29 / 20%) 64%,
-      rgb(7 11 29 / 54%) 100%
+      rgb(248 250 255 / 20%) 0%,
+      rgb(248 250 255 / 6%) 30%,
+      rgb(247 245 255 / 9%) 66%,
+      rgb(246 244 255 / 24%) 100%
     ),
-    radial-gradient(circle at 50% 44%, transparent 0 26%, rgb(7 11 29 / 15%) 58%, rgb(7 11 29 / 38%) 100%);
+    radial-gradient(circle at 50% 48%, rgb(255 255 255 / 18%) 0 22%, transparent 58%);
 }
 
 .about-welcome-motion__edge-light {
   background:
-    linear-gradient(90deg, rgb(0 140 255 / 10%), transparent 18% 82%, rgb(244 63 140 / 10%)),
-    linear-gradient(to bottom, rgb(255 255 255 / 3%), transparent 22% 78%, rgb(98 91 255 / 10%));
-  mix-blend-mode: screen;
-  opacity: 0.72;
+    linear-gradient(90deg, rgb(0 140 255 / 7%), transparent 18% 82%, rgb(244 63 140 / 7%)),
+    linear-gradient(to bottom, rgb(255 255 255 / 16%), transparent 24% 76%, rgb(98 91 255 / 5%));
+  mix-blend-mode: soft-light;
+  opacity: 0.56;
 }
 
 .about-experience .discover-story--about .story-welcome__stage {
@@ -222,32 +222,32 @@
   width: clamp(4.25rem, 5.5vw, 5.5rem);
   height: clamp(4.25rem, 5.5vw, 5.5rem);
   margin-bottom: clamp(1rem, 2vh, 1.45rem);
-  border: 1px solid rgb(255 255 255 / 18%);
+  border: 1px solid rgb(98 91 255 / 16%);
   border-radius: 50%;
-  background: rgb(255 255 255 / 7%);
+  background: rgb(255 255 255 / 34%);
   box-shadow:
-    0 24px 60px rgb(0 0 0 / 26%),
-    0 0 40px rgb(98 91 255 / 19%);
-  backdrop-filter: blur(14px);
+    0 22px 52px rgb(63 72 138 / 14%),
+    0 0 34px rgb(98 91 255 / 10%);
+  backdrop-filter: blur(12px);
 }
 
 .about-experience .discover-story--about .story-welcome__title {
   width: min(100%, 11ch);
   max-width: 11ch;
   margin-top: 0 !important;
-  color: #f8f9ff;
+  color: #101426;
   font-size: clamp(4rem, min(9.6vw, 14vh), 9rem);
   letter-spacing: -0.055em;
   line-height: 0.88;
   text-wrap: balance;
-  text-shadow: 0 20px 54px rgb(0 0 0 / 30%);
+  text-shadow: 0 16px 44px rgb(77 84 145 / 10%);
 }
 
 .about-experience
   .discover-story--about
   .story-welcome__title
   .story-mask__line--accent {
-  background: linear-gradient(110deg, #f7f8ff 0%, #c2a1ff 38%, #e875d2 72%, #8fd7ff 100%);
+  background: linear-gradient(110deg, #625bff 0%, #8a58f5 38%, #e05bb8 72%, #008cff 100%);
   background-clip: text;
   color: transparent;
   font-style: italic;
@@ -263,19 +263,21 @@
 .about-experience .discover-story--about .story-welcome__support strong {
   order: 1;
   padding: 0.58rem 0.92rem;
-  border: 1px solid rgb(189 177 255 / 26%);
-  background: rgb(14 20 48 / 48%);
-  color: #d9d4ff;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+  border: 1px solid rgb(98 91 255 / 18%);
+  background: rgb(255 255 255 / 48%);
+  color: #5149d9;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 72%),
+    0 8px 24px rgb(73 84 145 / 7%);
   backdrop-filter: blur(12px);
 }
 
 .about-experience .discover-story--about .story-welcome__support p {
   order: 2;
   margin: 0.9rem 0 0;
-  color: rgb(238 241 255 / 78%);
+  color: rgb(40 47 76 / 76%);
   font-size: clamp(1rem, min(1.55vw, 2.4vh), 1.34rem);
-  text-shadow: 0 8px 28px rgb(0 0 0 / 28%);
+  text-shadow: 0 8px 24px rgb(86 92 145 / 7%);
 }
 
 .about-experience .discover-story--about .story-welcome__scroll-cue {
@@ -284,7 +286,7 @@
   gap: 0.42rem;
   order: 3;
   margin-top: clamp(1.15rem, 2.5vh, 1.6rem);
-  color: rgb(224 228 255 / 62%);
+  color: rgb(59 67 105 / 62%);
   font-size: 0.69rem;
   font-weight: 760;
   letter-spacing: 0.13em;
