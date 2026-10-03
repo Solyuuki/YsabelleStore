@@ -121,6 +121,19 @@ assert.doesNotMatch(
   premiumCss,
   /\.home-categories[\s\S]*?(?:repeating-linear-gradient|url\()/
 );
+assert.match(homeSource, /<CategoryRetailBackdrop \/>/);
+assert.match(
+  homeSource,
+  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?home-categories__backdrop-side--left[\s\S]*?home-categories__backdrop-side--right/
+);
+assert.match(
+  premiumCss,
+  /\.home-categories__backdrop-side[\s\S]*?width:\s*clamp\([\s\S]*?opacity:\s*0\.58/
+);
+assert.match(
+  premiumCss,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__backdrop-side[\s\S]*?opacity:\s*0\.42/
+);
 assert.match(
   premiumCss,
   /\.home-categories \.home-section-heading h2[\s\S]*?color:\s*var\(--customer-dark\)[\s\S]*?-webkit-text-stroke:\s*0/
