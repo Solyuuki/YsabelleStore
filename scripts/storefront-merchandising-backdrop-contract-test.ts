@@ -75,6 +75,24 @@ assert.match(
 );
 
 assert.match(
+  home,
+  /<div aria-hidden="true" className="home-category-merch-handoff" \/>/,
+  "Category and merchandising sections must render an explicit decorative transition bridge."
+);
+
+assert.match(
+  css,
+  /\.home-category-merch-handoff\s*\{[\s\S]*?margin-top:\s*calc\(-1 \* clamp\([\s\S]*?margin-bottom:\s*calc\(-1 \* clamp\([\s\S]*?linear-gradient\([\s\S]*?#eef7ff 100%/,
+  "Category-to-merchandising bridge must overlap both sections and crossfade into the merchandising top color."
+);
+
+assert.match(
+  css,
+  /\.home-category-merch-handoff::after[\s\S]*?#eef7ff 100%/,
+  "Transition bridge must finish with the exact merchandising top color to prevent a visible seam."
+);
+
+assert.match(
   css,
   /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#eef7ff[\s\S]*?--merch-wave-blue:\s*#7fc7ff[\s\S]*?--merch-wave-violet:\s*#c89cff[\s\S]*?background:\s*var\(--merch-bg-mid\)/,
   "Trending through Everyday Essentials must share the cold vertical merchandising canvas."
