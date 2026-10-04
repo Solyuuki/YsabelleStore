@@ -55,11 +55,23 @@ test("About welcome uses branded premium typography without a CTA", () => {
   assert.doesNotMatch(discover, /story-welcome__support[\s\S]{0,900}>Get Started</);
   assert.match(
     welcomeCss,
-    /story-welcome__title[\s\S]*?#18204f[\s\S]*?#5149d9/
+    /story-welcome__title[\s\S]*?width:\s*fit-content[\s\S]*?overflow:\s*visible/
   );
   assert.match(
     welcomeCss,
-    /story-mask__line--accent[\s\S]*?#625bff[\s\S]*?#a83cf0[\s\S]*?#f43f8c/
+    /story-welcome__title \.story-mask[\s\S]*?width:\s*max-content[\s\S]*?overflow:\s*visible[\s\S]*?padding:\s*0\.13em 0\.22em 0\.21em/
+  );
+  assert.match(
+    welcomeCss,
+    /story-mask:first-child[\s\S]*?background-blend-mode:\s*screen, normal[\s\S]*?-webkit-text-stroke:\s*0\.55px/
+  );
+  assert.match(
+    welcomeCss,
+    /story-mask__line--accent[\s\S]*?#5f58ff[\s\S]*?#a83cf0[\s\S]*?#f43f8c[\s\S]*?-webkit-text-stroke:\s*0\.5px/
+  );
+  assert.doesNotMatch(
+    welcomeCss,
+    /story-welcome__title[\s\S]{0,2600}?filter:\s*drop-shadow/
   );
   assert.match(
     welcomeCss,
