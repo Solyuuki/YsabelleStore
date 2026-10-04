@@ -92,10 +92,12 @@ export function AboutForecastMotion() {
               <path
                 className="about-forecast-demo__actual-line"
                 d="M82 310 C145 292 190 270 238 255 C290 238 336 198 392 192 C438 188 470 207 500 218"
+                pathLength="1"
               />
               <path
                 className="about-forecast-demo__forecast-line"
                 d="M500 218 C566 196 610 171 650 158 C705 140 751 136 792 128 C827 121 850 111 872 100"
+                pathLength="1"
                 stroke="url(#aboutForecastLine)"
               />
 

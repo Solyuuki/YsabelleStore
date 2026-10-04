@@ -923,6 +923,48 @@ export function DiscoverPage({
               const locationHandoff = location.querySelector<HTMLElement>(
                 ".story-location__handoff"
               );
+              const forecastDemoTopbar = location.querySelector<HTMLElement>(
+                ".about-forecast-demo__topbar"
+              );
+              const forecastDemoMetrics = Array.from(
+                location.querySelectorAll<HTMLElement>(".about-forecast-demo__metrics article")
+              );
+              const forecastDemoChart = location.querySelector<HTMLElement>(
+                ".about-forecast-demo__chart-panel"
+              );
+              const forecastActualLine = location.querySelector<SVGPathElement>(
+                ".about-forecast-demo__actual-line"
+              );
+              const forecastProjectedLine = location.querySelector<SVGPathElement>(
+                ".about-forecast-demo__forecast-line"
+              );
+              const forecastConfidence = location.querySelector<SVGPathElement>(
+                ".about-forecast-demo__confidence"
+              );
+              const forecastDivider = location.querySelector<SVGLineElement>(
+                ".about-forecast-demo__forecast-divider"
+              );
+              const forecastDividerLabel = location.querySelector<SVGTextElement>(
+                ".about-forecast-demo__forecast-label"
+              );
+              const forecastObservedPoints = Array.from(
+                location.querySelectorAll<SVGCircleElement>(
+                  ".about-forecast-demo__points circle:not(.is-forecast)"
+                )
+              );
+              const forecastProjectedPoints = Array.from(
+                location.querySelectorAll<SVGCircleElement>(
+                  ".about-forecast-demo__points circle.is-forecast"
+                )
+              );
+              const forecastRecommendation = location.querySelector<HTMLElement>(
+                ".about-forecast-demo__recommendation"
+              );
+              const forecastRecommendationItems = Array.from(
+                location.querySelectorAll<HTMLElement>(
+                  ".about-forecast-demo__product, .about-forecast-demo__restock-value, .about-forecast-demo__recommendation-grid > div, .about-forecast-demo__recommendation > p"
+                )
+              );
 
               if (
                 forecastKicker &&
@@ -931,7 +973,19 @@ export function DiscoverPage({
                 forecastVisual &&
                 forecastModel &&
                 forecastTakeaway &&
-                locationHandoff
+                locationHandoff &&
+                forecastDemoTopbar &&
+                forecastDemoMetrics.length &&
+                forecastDemoChart &&
+                forecastActualLine &&
+                forecastProjectedLine &&
+                forecastConfidence &&
+                forecastDivider &&
+                forecastDividerLabel &&
+                forecastObservedPoints.length &&
+                forecastProjectedPoints.length &&
+                forecastRecommendation &&
+                forecastRecommendationItems.length
               ) {
                 gsap.set(forecastKicker, { autoAlpha: 0, y: 12 });
                 gsap.set(forecastHeadline, { autoAlpha: 0, y: 22 });
@@ -940,6 +994,22 @@ export function DiscoverPage({
                 gsap.set(forecastModel, { autoAlpha: 0, x: -14 });
                 gsap.set(forecastTakeaway, { autoAlpha: 0, x: 14 });
                 gsap.set(locationHandoff, { autoAlpha: 0 });
+                gsap.set(forecastDemoTopbar, { autoAlpha: 0, y: 8 });
+                gsap.set(forecastDemoMetrics, { autoAlpha: 0, y: 12 });
+                gsap.set(forecastDemoChart, { autoAlpha: 0, y: 12 });
+                gsap.set([forecastActualLine, forecastProjectedLine], {
+                  strokeDasharray: 1,
+                  strokeDashoffset: 1
+                });
+                gsap.set(forecastConfidence, { autoAlpha: 0 });
+                gsap.set([forecastDivider, forecastDividerLabel], { autoAlpha: 0 });
+                gsap.set([...forecastObservedPoints, ...forecastProjectedPoints], {
+                  autoAlpha: 0,
+                  scale: 0.72,
+                  transformOrigin: "center center"
+                });
+                gsap.set(forecastRecommendation, { autoAlpha: 0, x: 18 });
+                gsap.set(forecastRecommendationItems, { autoAlpha: 0, y: 8 });
 
                 const forecastTimeline = gsap.timeline({
                   scrollTrigger: {
@@ -977,26 +1047,105 @@ export function DiscoverPage({
                     forecastVisual,
                     {
                       autoAlpha: 1,
-                      duration: 0.18,
+                      duration: 0.12,
                       ease: "power2.out",
                       scale: 1,
                       y: 0
                     },
-                    0.26
+                    0.24
                   )
                   .to(
-                    forecastModel,
-                    { autoAlpha: 1, duration: 0.1, ease: "power2.out", x: 0 },
+                    forecastDemoTopbar,
+                    { autoAlpha: 1, duration: 0.06, ease: "power2.out", y: 0 },
+                    0.29
+                  )
+                  .to(
+                    forecastDemoMetrics,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.07,
+                      ease: "power2.out",
+                      stagger: 0.018,
+                      y: 0
+                    },
+                    0.32
+                  )
+                  .to(
+                    forecastDemoChart,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", y: 0 },
+                    0.36
+                  )
+                  .to(
+                    forecastActualLine,
+                    { duration: 0.1, ease: "none", strokeDashoffset: 0 },
+                    0.4
+                  )
+                  .to(
+                    forecastObservedPoints,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.055,
+                      ease: "back.out(1.5)",
+                      scale: 1,
+                      stagger: 0.014
+                    },
+                    0.46
+                  )
+                  .to(
+                    [forecastDivider, forecastDividerLabel],
+                    { autoAlpha: 1, duration: 0.05, ease: "power1.out" },
+                    0.49
+                  )
+                  .to(
+                    forecastConfidence,
+                    { autoAlpha: 1, duration: 0.065, ease: "power1.out" },
+                    0.51
+                  )
+                  .to(
+                    forecastProjectedLine,
+                    { duration: 0.1, ease: "none", strokeDashoffset: 0 },
+                    0.53
+                  )
+                  .to(
+                    forecastProjectedPoints,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.055,
+                      ease: "back.out(1.5)",
+                      scale: 1,
+                      stagger: 0.012
+                    },
+                    0.58
+                  )
+                  .to(
+                    forecastRecommendation,
+                    { autoAlpha: 1, duration: 0.09, ease: "power2.out", x: 0 },
+                    0.43
+                  )
+                  .to(
+                    forecastRecommendationItems,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.07,
+                      ease: "power2.out",
+                      stagger: 0.014,
+                      y: 0
+                    },
                     0.5
                   )
                   .to(
-                    forecastTakeaway,
-                    { autoAlpha: 1, duration: 0.1, ease: "power2.out", x: 0 },
-                    0.56
+                    forecastModel,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
+                    0.68
                   )
-                  .to(locationHandoff, { autoAlpha: 1, duration: 0.08, ease: "none" }, 0.78);
+                  .to(
+                    forecastTakeaway,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
+                    0.71
+                  )
+                  .to(locationHandoff, { autoAlpha: 1, duration: 0.06, ease: "none" }, 0.82);
 
-                settle(forecastTimeline, 0.86);
+                settle(forecastTimeline, 0.9);
               }
             } else {
               const realMap = location.querySelector<HTMLElement>(".story-real-map");
