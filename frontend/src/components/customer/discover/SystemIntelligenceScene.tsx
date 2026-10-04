@@ -540,7 +540,11 @@ function StageVisual({ index }: { index: number }) {
   return <RestockVisual />;
 }
 
-export function SystemIntelligenceScene() {
+export function SystemIntelligenceScene({
+  hideSectionNumber = false
+}: {
+  hideSectionNumber?: boolean;
+}) {
   const sceneRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -551,7 +555,9 @@ export function SystemIntelligenceScene() {
     <section className="story-scene story-intelligence" id="discover-smarter" ref={sceneRef}>
       <div className="customer-container story-intelligence__stage" data-story-motion>
         <div className="story-intelligence__heading">
-          <span className="story-kicker">05 / System intelligence</span>
+          <span className="story-kicker">
+            {hideSectionNumber ? "System intelligence" : "05 / System intelligence"}
+          </span>
           <div className="story-intelligence__heading-grid">
             <h2 className="story-display-safe">
               <span className="story-mask">
