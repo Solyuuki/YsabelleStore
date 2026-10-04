@@ -958,9 +958,36 @@ export function DiscoverPage({
                     { autoAlpha: 1, duration: 0.07, ease: "power1.out", y: 0 },
                     0.64
                   )
-                  .to(locationHandoff, { autoAlpha: 1, duration: 0.08, ease: "none" }, 0.84);
+                  .to(locationHandoff, { autoAlpha: 0.72, duration: 0.08, ease: "none" }, 0.88);
 
-                settle(forecastTimeline, 0.82);
+                settle(forecastTimeline, 0.8);
+
+                const forecastExitTimeline = gsap.timeline({
+                  scrollTrigger: {
+                    trigger: location,
+                    start: desktop ? "bottom bottom+=42%" : "bottom 34%",
+                    end: desktop ? "bottom bottom" : "bottom 8%",
+                    invalidateOnRefresh: true,
+                    scrub: desktop ? 0.2 : 0.14
+                  }
+                });
+
+                forecastExitTimeline
+                  .to(
+                    ".story-forecast__intro",
+                    { autoAlpha: 0.88, duration: 0.45, ease: "none", y: -8 },
+                    0
+                  )
+                  .to(
+                    ".story-forecast__plot",
+                    { autoAlpha: 0.9, duration: 0.45, ease: "none", y: -6 },
+                    0
+                  )
+                  .to(
+                    locationHandoff,
+                    { autoAlpha: 1, duration: 0.55, ease: "none" },
+                    0.08
+                  );
               }
             } else {
               const realMap = location.querySelector<HTMLElement>(".story-real-map");
