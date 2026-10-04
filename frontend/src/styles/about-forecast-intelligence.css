@@ -45,24 +45,31 @@
   right: 0;
   left: 0;
   z-index: 1;
-  height: clamp(7.5rem, 16vh, 11rem);
+  width: auto;
+  height: clamp(6rem, 12vh, 8.5rem);
+  aspect-ratio: auto;
+  border-radius: 0;
   background: var(--about-sales-forecast-seam);
   content: "";
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / 78%) 20%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / 78%) 20%, transparent 100%);
 }
 
 .about-forecast-motion {
   position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
   z-index: 0;
-  inset: 0;
+  width: 100vw;
   overflow: hidden;
   background:
     radial-gradient(circle at 18% 30%, rgb(0 140 255 / 12%), transparent 34%),
     radial-gradient(circle at 84% 68%, rgb(168 60 240 / 13%), transparent 34%),
     linear-gradient(135deg, #edf6ff, #f2f3ff 50%, #fff1fa);
   pointer-events: none;
+  transform: translateX(-50%);
 }
 
 .about-forecast-motion__fallback,
@@ -91,15 +98,15 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  filter: saturate(1.08) contrast(1.02) brightness(1.14);
+  filter: saturate(1.06) contrast(1.025) brightness(1.06);
   opacity: 0;
-  transform: scale(1.025);
+  transform: scale(1.01);
   transition: opacity 680ms linear;
 }
 
 .about-forecast-motion__video.is-active,
 .about-forecast-motion__video.is-incoming {
-  opacity: 0.46;
+  opacity: 0.34;
 }
 
 .about-forecast-motion__video.is-incoming {
@@ -111,10 +118,10 @@
   background:
     linear-gradient(
       180deg,
-      rgb(247 250 255 / 78%) 0%,
-      rgb(247 249 255 / 66%) 22%,
-      rgb(248 247 255 / 58%) 54%,
-      rgb(255 247 252 / 72%) 100%
+      rgb(247 250 255 / 68%) 0%,
+      rgb(247 249 255 / 58%) 22%,
+      rgb(248 247 255 / 54%) 54%,
+      rgb(255 247 252 / 64%) 100%
     ),
     radial-gradient(circle at 50% 48%, rgb(255 255 255 / 18%), rgb(255 255 255 / 62%) 78%);
 }
@@ -125,13 +132,17 @@
   z-index: 2;
   display: flex;
   width: min(calc(100% - 5rem), 1380px);
-  min-height: calc(100svh - 76px);
+  height: calc(100svh - 76px);
+  min-height: 0;
   flex-direction: column;
   justify-content: center;
-  padding-block: clamp(2.5rem, 5vh, 4.5rem);
+  padding-block: clamp(2rem, 4vh, 3.25rem);
+  isolation: isolate;
 }
 
 .about-experience .discover-story .story-forecast__intro {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
   align-items: end;
@@ -175,7 +186,8 @@
 
 .story-forecast__plot {
   position: relative;
-  min-height: clamp(300px, 38vh, 440px);
+  z-index: 2;
+  min-height: clamp(280px, 34vh, 400px);
   margin-top: clamp(2.2rem, 4vh, 3.6rem);
   overflow: visible;
 }
@@ -190,15 +202,15 @@
 
 .story-forecast__zone {
   position: relative;
-  border-radius: 2rem;
+  border-radius: 0;
 }
 
 .story-forecast__zone--history {
-  background: linear-gradient(90deg, rgb(0 140 255 / 6%), transparent 86%);
+  background: linear-gradient(90deg, rgb(0 140 255 / 4.5%), transparent 88%);
 }
 
 .story-forecast__zone--future {
-  background: linear-gradient(90deg, transparent 5%, rgb(168 60 240 / 7%) 62%, rgb(244 63 140 / 5%));
+  background: linear-gradient(90deg, transparent 5%, rgb(168 60 240 / 5.5%) 62%, rgb(244 63 140 / 4%));
 }
 
 .story-forecast__svg {
@@ -345,6 +357,7 @@
     position: relative;
     top: auto;
     width: min(100% - 2rem, 900px);
+    height: auto;
     min-height: auto;
     padding-block: 6rem;
   }
