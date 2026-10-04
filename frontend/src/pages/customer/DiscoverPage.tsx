@@ -901,7 +901,7 @@ export function DiscoverPage({
                 gsap.set(forecastKicker, { autoAlpha: 0, x: -18 });
                 gsap.set(forecastHeadline, { autoAlpha: 0, y: 24 });
                 gsap.set(forecastLead, { autoAlpha: 0, x: 18 });
-                gsap.set(forecastPlot, { autoAlpha: 0, y: 18 });
+                gsap.set(forecastPlot, { autoAlpha: 1, y: 0 });
                 gsap.set([historyPath, futurePath], {
                   strokeDasharray: 1,
                   strokeDashoffset: 1
@@ -940,28 +940,23 @@ export function DiscoverPage({
                     { autoAlpha: 1, duration: 0.08, ease: "power1.out", x: 0 },
                     0.13
                   )
-                  .to(
-                    forecastPlot,
-                    { autoAlpha: 1, duration: 0.08, ease: "power1.out", y: 0 },
-                    0.18
-                  )
-                  .to(historyPath, { duration: 0.16, ease: "none", strokeDashoffset: 0 }, 0.25)
+                  .to(historyPath, { duration: 0.16, ease: "none", strokeDashoffset: 0 }, 0.2)
                   .to(
                     [presentLine, presentDot],
                     { autoAlpha: 1, duration: 0.06, ease: "power1.out" },
-                    0.39
+                    0.34
                   )
-                  .to(presentLine, { duration: 0.06, ease: "none", scaleY: 1 }, 0.39)
-                  .to(futurePath, { duration: 0.16, ease: "none", strokeDashoffset: 0 }, 0.46)
+                  .to(presentLine, { duration: 0.06, ease: "none", scaleY: 1 }, 0.34)
+                  .to(futurePath, { duration: 0.16, ease: "none", strokeDashoffset: 0 }, 0.42)
                   .to(
                     forecastLabels,
                     { autoAlpha: 1, duration: 0.07, ease: "power2.out", stagger: 0.02, y: 0 },
-                    0.6
+                    0.56
                   )
                   .to(
                     forecastTakeaway,
                     { autoAlpha: 1, duration: 0.07, ease: "power1.out", y: 0 },
-                    0.68
+                    0.64
                   )
                   .to(locationHandoff, { autoAlpha: 1, duration: 0.08, ease: "none" }, 0.84);
 
