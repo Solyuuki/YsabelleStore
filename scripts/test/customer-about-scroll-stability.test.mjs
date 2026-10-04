@@ -44,7 +44,7 @@ test("About chapter 02 uses the product and catalog intelligence story", () => {
   assert.match(discover, /label: "Normalize"/);
   assert.match(discover, /label: "Catalog ready"/);
   assert.doesNotMatch(discover, /story-catalog__index/);
-  assert.match(discover, /isAboutExperience \? "Everyday essentials" : "03 \/ Everyday essentials"/);
+  assert.match(discover, /Sales &amp; Inventory/);
   assert.match(discover, /isAboutExperience \? "Our location" : "04 \/ Our location"/);
   assert.match(discover, /hideSectionNumber=\{isAboutExperience\}/);
   assert.match(discover, /isAboutExperience \? "Shop with Ysabelle" : "06 \/ Shop with Ysabelle"/);
@@ -168,4 +168,27 @@ test("About welcome-to-catalog handoff uses a vertical scrubbed fade without a v
     catalogCss,
     /story-catalog::after[\s\S]*?background:\s*var\(--about-welcome-catalog-seam\)[\s\S]*?mask-image:\s*linear-gradient\(to bottom, #000 0%, #000 18%, transparent 100%\)/
   );
+});
+
+
+test("About chapter 03 uses the approved sales and inventory motion story", () => {
+  const aboutPage = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const motion = read("frontend/src/components/customer/about/AboutSalesInventoryMotion.tsx");
+  const css = read("frontend/src/styles/about-sales-inventory.css");
+
+  assert.match(aboutPage, /about-sales-inventory\.css/);
+  assert.match(discover, /Sales &amp; Inventory/);
+  assert.match(discover, /Every Sale/);
+  assert.match(discover, /Updates the Store\./);
+  assert.match(discover, /label: "Sale recorded"/);
+  assert.match(discover, /label: "Stock deducted"/);
+  assert.match(discover, /label: "Inventory updated"/);
+  assert.match(discover, /label: "History saved"/);
+  assert.match(discover, /Sales history becomes the foundation for forecasting\./);
+  assert.match(motion, /gemini_generated_video_2e78399f\.mp4/);
+  assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
+  assert.match(css, /story-sales__steps[\s\S]*?grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(css, /--about-catalog-sales-seam/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
