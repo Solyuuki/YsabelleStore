@@ -1098,7 +1098,8 @@ export function DiscoverPage({
           <YsabelleBrandMark
             className="story-welcome__mark story-welcome__mark--branded"
             eager
-            sizes={isAboutExperience ? "168px" : undefined}
+            sizes={isAboutExperience ? "208px" : undefined}
+            source={isAboutExperience ? "official" : "default"}
             variant="display"
           />
           {!isAboutExperience ? <span className="story-kicker">01 / Welcome</span> : null}
