@@ -45,7 +45,7 @@ test("About chapter 02 uses the product and catalog intelligence story", () => {
   assert.match(discover, /label: "Catalog ready"/);
   assert.doesNotMatch(discover, /story-catalog__index/);
   assert.match(discover, /Sales &amp; Inventory/);
-  assert.match(discover, /isAboutExperience \? "Our location" : "04 \/ Our location"/);
+  assert.match(discover, /Forecast Intelligence/);
   assert.match(discover, /hideSectionNumber=\{isAboutExperience\}/);
   assert.match(discover, /isAboutExperience \? "Shop with Ysabelle" : "06 \/ Shop with Ysabelle"/);
   assert.match(discover, /discover-progress__dot/);
@@ -190,5 +190,32 @@ test("About chapter 03 uses the approved sales and inventory motion story", () =
   assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
   assert.match(css, /story-sales__steps[\s\S]*?grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
   assert.match(css, /--about-catalog-sales-seam/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+});
+
+
+test("About chapter 04 uses a full-width forecast canvas instead of the chapter 02/03 card pattern", () => {
+  const aboutPage = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
+  const css = read("frontend/src/styles/about-forecast-intelligence.css");
+
+  assert.match(aboutPage, /about-forecast-intelligence\.css/);
+  assert.match(discover, /Forecast Intelligence/);
+  assert.match(discover, /Past Sales Shape/);
+  assert.match(discover, /What Comes Next\./);
+  assert.match(discover, /SARIMA can estimate future demand/);
+  assert.match(discover, /Historical sales/);
+  assert.match(discover, /Forecast horizon/);
+  assert.match(discover, /data-forecast-history/);
+  assert.match(discover, /data-forecast-future/);
+  assert.match(discover, /Forecasts help prepare the next inventory decision\./);
+  assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
+  assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
+  assert.match(css, /story-forecast__stage[\s\S]*?position:\s*sticky/);
+  assert.match(css, /about-forecast-motion[\s\S]*?position:\s*absolute/);
+  assert.match(css, /story-forecast__plot/);
+  assert.doesNotMatch(css, /story-forecast__system/);
+  assert.match(css, /--about-sales-forecast-seam/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
