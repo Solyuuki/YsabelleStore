@@ -113,64 +113,441 @@
   isolation: isolate;
 }
 
-.about-forecast-motion {
+
+/* Frontend-only SARIMA capability preview. No video or live operational data. */
+.about-experience .discover-story .story-forecast__visual {
+  width: min(100%, 1240px);
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.about-forecast-demo {
+  --forecast-ink: #14213d;
+  --forecast-blue: #2563eb;
+  --forecast-violet: #7c3aed;
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 18% 30%, rgb(0 140 255 / 12%), transparent 34%),
-    radial-gradient(circle at 84% 68%, rgb(168 60 240 / 13%), transparent 34%),
-    linear-gradient(135deg, #071225 0%, #101a36 48%, #17183d 76%, #0e142d 100%);
+  border: 1px solid rgb(219 226 239 / 94%);
+  border-radius: clamp(1.15rem, 1.8vw, 1.65rem);
+  background: linear-gradient(180deg, #fff 0%, #f8faff 100%);
+  color: var(--forecast-ink);
+  box-shadow: 0 34px 80px rgb(3 10 32 / 30%), 0 8px 28px rgb(18 38 82 / 16%);
 }
 
-.about-forecast-motion__fallback,
-.about-forecast-motion__video,
-.about-forecast-motion__wash {
+.about-forecast-demo::after {
   position: absolute;
-  inset: 0;
-}
-
-.about-forecast-motion__fallback {
-  background:
-    radial-gradient(ellipse at 18% 42%, rgb(0 140 255 / 16%), transparent 38%),
-    radial-gradient(ellipse at 80% 58%, rgb(168 60 240 / 16%), transparent 36%),
-    linear-gradient(135deg, #071225 0%, #101a36 52%, #17183d 100%);
-  opacity: 1;
-  transition: opacity 220ms ease;
-}
-
-.about-forecast-motion.is-video-ready .about-forecast-motion__fallback {
-  opacity: 0;
-}
-
-.about-forecast-motion__video {
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  filter: saturate(1.035) contrast(1.02) brightness(1.005);
-  opacity: 0;
-  transition: opacity 680ms linear;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  will-change: opacity;
-}
-
-.about-forecast-motion__video.is-active,
-.about-forecast-motion__video.is-incoming {
-  opacity: 1;
-}
-
-.about-forecast-motion__video.is-incoming {
-  z-index: 2;
-}
-
-.about-forecast-motion__wash {
-  z-index: 3;
-  background: none;
+  top: -7rem;
+  right: -5rem;
+  width: 20rem;
+  height: 20rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgb(124 58 237 / 10%), transparent 68%);
+  content: "";
   pointer-events: none;
+}
+
+.about-forecast-demo__topbar,
+.about-forecast-demo__metrics,
+.about-forecast-demo__workspace {
+  position: relative;
+  z-index: 1;
+}
+
+.about-forecast-demo__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.05rem, 2vw, 1.5rem) clamp(1.05rem, 2.25vw, 1.75rem);
+  border-bottom: 1px solid #e7ebf3;
+}
+
+.about-forecast-demo__topbar > div:first-child,
+.about-forecast-demo__product > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.about-forecast-demo__eyebrow {
+  color: #6b7280;
+  font-size: clamp(0.62rem, 0.75vw, 0.72rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.about-forecast-demo__topbar strong {
+  font-size: clamp(1rem, 1.35vw, 1.24rem);
+  letter-spacing: -0.025em;
+}
+
+.about-forecast-demo__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.52rem;
+  padding: 0.5rem 0.72rem;
+  border: 1px solid #dfe6f2;
+  border-radius: 999px;
+  background: #f7f9fd;
+  color: #4b5870;
+  font-size: clamp(0.67rem, 0.76vw, 0.76rem);
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.about-forecast-demo__status > span {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgb(34 197 94 / 12%);
+}
+
+.about-forecast-demo__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.6rem, 1vw, 0.85rem);
+  padding: clamp(0.8rem, 1.5vw, 1.05rem) clamp(1.05rem, 2.25vw, 1.75rem) 0;
+}
+
+.about-forecast-demo__metrics article {
+  display: grid;
+  min-width: 0;
+  gap: 0.24rem;
+  padding: clamp(0.8rem, 1.35vw, 1.05rem);
+  border: 1px solid #e0e6f0;
+  border-radius: 0.9rem;
+  background: #f8faff;
+}
+
+.about-forecast-demo__metrics span,
+.about-forecast-demo__restock-value > span,
+.about-forecast-demo__recommendation-grid span {
+  color: #68748a;
+  font-size: clamp(0.62rem, 0.73vw, 0.72rem);
+  font-weight: 780;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.about-forecast-demo__metrics strong {
+  color: #17213b;
+  font-size: clamp(1rem, 1.4vw, 1.28rem);
+  letter-spacing: -0.03em;
+}
+
+.about-forecast-demo__metrics article:nth-child(2) strong { color: var(--forecast-blue); }
+.about-forecast-demo__metrics article:nth-child(3) strong { color: #6d28d9; }
+
+.about-forecast-demo__metrics small {
+  overflow: hidden;
+  color: #7c879b;
+  font-size: clamp(0.68rem, 0.78vw, 0.76rem);
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.about-forecast-demo__workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(17rem, 0.72fr);
+  gap: clamp(0.85rem, 1.5vw, 1.15rem);
+  padding: clamp(0.8rem, 1.5vw, 1.05rem) clamp(1.05rem, 2.25vw, 1.75rem)
+    clamp(1.05rem, 2.25vw, 1.6rem);
+}
+
+.about-forecast-demo__chart-panel,
+.about-forecast-demo__recommendation {
+  min-width: 0;
+  border: 1px solid #e0e6f0;
+  border-radius: 1rem;
+}
+
+.about-forecast-demo__chart-panel {
+  overflow: hidden;
+  background: #fff;
+}
+
+.about-forecast-demo__chart-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(0.9rem, 1.4vw, 1.15rem) clamp(0.9rem, 1.5vw, 1.2rem) 0;
+}
+
+.about-forecast-demo__chart-heading > div:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.about-forecast-demo__chart-heading span {
+  color: #708096;
+  font-size: clamp(0.62rem, 0.72vw, 0.7rem);
+  font-weight: 760;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.about-forecast-demo__chart-heading strong {
+  font-size: clamp(0.93rem, 1.16vw, 1.08rem);
+  letter-spacing: -0.025em;
+}
+
+.about-forecast-demo__legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.about-forecast-demo__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.about-forecast-demo__legend i {
+  width: 1.1rem;
+  height: 2px;
+  border-radius: 999px;
+  background: #0f766e;
+}
+
+.about-forecast-demo__legend i.is-forecast {
+  background: linear-gradient(90deg, var(--forecast-blue), var(--forecast-violet));
+}
+
+.about-forecast-demo__chart-wrap {
+  padding: 0.2rem clamp(0.65rem, 1.25vw, 1rem) clamp(0.85rem, 1.4vw, 1.1rem);
+}
+
+.about-forecast-demo__chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 18rem;
+}
+
+.about-forecast-demo__grid line {
+  stroke: #dfe5ef;
+  stroke-dasharray: 4 5;
+  stroke-width: 1;
+}
+
+.about-forecast-demo__y-labels text,
+.about-forecast-demo__forecast-label {
+  fill: #8a95a8;
+  font-family: inherit;
+  font-size: 19px;
+}
+
+.about-forecast-demo__forecast-label {
+  fill: #59677e;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.about-forecast-demo__forecast-divider {
+  stroke: #aab4c6;
+  stroke-dasharray: 5 7;
+  stroke-width: 1.4;
+}
+
+.about-forecast-demo__actual-line,
+.about-forecast-demo__forecast-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.about-forecast-demo__actual-line { stroke: #0f766e; }
+.about-forecast-demo__forecast-line { stroke-dasharray: 10 9; }
+
+.about-forecast-demo__points circle {
+  fill: #fff;
+  stroke: #0f766e;
+  stroke-width: 4;
+}
+
+.about-forecast-demo__points circle.is-forecast { stroke: var(--forecast-blue); }
+
+.about-forecast-demo__years {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.35rem;
+  padding-inline: clamp(2.6rem, 5vw, 4.3rem) clamp(0.35rem, 1.2vw, 0.8rem);
+  transform: translateY(-0.28rem);
+}
+
+.about-forecast-demo__years > div {
+  display: grid;
+  justify-items: center;
+  gap: 0.14rem;
+  color: #6e798d;
+}
+
+.about-forecast-demo__years strong {
+  color: #25314a;
+  font-size: clamp(0.7rem, 0.84vw, 0.82rem);
+}
+
+.about-forecast-demo__years span { font-size: clamp(0.66rem, 0.78vw, 0.75rem); }
+.about-forecast-demo__years .is-forecast strong { color: var(--forecast-blue); }
+
+.about-forecast-demo__recommendation {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: clamp(1rem, 1.6vw, 1.3rem);
+  background: radial-gradient(circle at 100% 0%, rgb(124 58 237 / 10%), transparent 38%),
+    linear-gradient(160deg, #101936 0%, #152044 54%, #1b1b49 100%);
+  color: #f8faff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 7%);
+}
+
+.about-forecast-demo__recommendation-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.about-forecast-demo__recommendation-head > span {
+  max-width: 13rem;
+  color: #a8d9ff;
+  font-size: clamp(0.66rem, 0.76vw, 0.74rem);
+  font-weight: 820;
+  letter-spacing: 0.075em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.about-forecast-demo__recommendation-head small {
+  padding: 0.28rem 0.45rem;
+  border: 1px solid rgb(167 180 255 / 24%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 5%);
+  color: #aeb9d4;
+  font-size: 0.61rem;
+  font-weight: 740;
+  white-space: nowrap;
+}
+
+.about-forecast-demo__product {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: clamp(1rem, 1.5vw, 1.3rem);
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgb(181 193 235 / 14%);
+}
+
+.about-forecast-demo__product-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgb(126 176 255 / 26%);
+  border-radius: 0.72rem;
+  background: linear-gradient(145deg, rgb(37 99 235 / 24%), rgb(124 58 237 / 20%));
+  color: #d9edff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.about-forecast-demo__product small {
+  color: #909dbb;
+  font-size: 0.66rem;
+}
+
+.about-forecast-demo__product strong {
+  font-size: clamp(1rem, 1.28vw, 1.18rem);
+  letter-spacing: -0.025em;
+}
+
+.about-forecast-demo__restock-value {
+  display: grid;
+  gap: 0.34rem;
+  padding-block: clamp(1rem, 1.55vw, 1.25rem);
+}
+
+.about-forecast-demo__restock-value > span,
+.about-forecast-demo__recommendation-grid span { color: #91a1c0; }
+
+.about-forecast-demo__restock-value > strong {
+  color: #fff;
+  font-size: clamp(2.35rem, 3.4vw, 3.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.about-forecast-demo__restock-value > strong small {
+  color: #aebbd5;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.about-forecast-demo__recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.about-forecast-demo__recommendation-grid > div {
+  display: grid;
+  gap: 0.22rem;
+  padding: 0.7rem;
+  border: 1px solid rgb(184 195 236 / 13%);
+  border-radius: 0.72rem;
+  background: rgb(255 255 255 / 4%);
+}
+
+.about-forecast-demo__recommendation-grid strong {
+  color: #f5f7ff;
+  font-size: clamp(0.76rem, 0.9vw, 0.86rem);
+}
+
+.about-forecast-demo__recommendation > p {
+  margin: auto 0 0;
+  padding-top: 1rem;
+  color: #9ba8c3;
+  font-size: clamp(0.67rem, 0.76vw, 0.74rem);
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .about-forecast-demo__workspace { grid-template-columns: 1fr; }
+  .about-forecast-demo__recommendation { min-height: auto; }
+  .about-forecast-demo__recommendation > p { margin-top: 1rem; }
+}
+
+@media (max-width: 640px) {
+  .about-forecast-demo__topbar { align-items: flex-start; }
+  .about-forecast-demo__status { padding-inline: 0.55rem; font-size: 0.63rem; }
+  .about-forecast-demo__metrics { grid-template-columns: 1fr; }
+  .about-forecast-demo__metrics small { white-space: normal; }
+  .about-forecast-demo__chart-heading { flex-direction: column; }
+  .about-forecast-demo__legend { justify-content: flex-start; }
+  .about-forecast-demo__chart-wrap { overflow-x: auto; overscroll-behavior-inline: contain; }
+  .about-forecast-demo__chart { min-width: 39rem; min-height: 17.5rem; }
+  .about-forecast-demo__years { width: 39rem; padding-right: 1rem; }
+}
+
+@media (max-width: 420px) {
+  .about-forecast-demo__topbar { flex-direction: column; }
+  .about-forecast-demo__recommendation-grid { grid-template-columns: 1fr; }
 }
 
 .about-experience .discover-story .story-forecast__footer {
@@ -296,11 +673,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .about-forecast-motion__video {
-    display: none;
-  }
-
-  .about-forecast-motion__fallback {
-    opacity: 1;
-  }
+  .about-forecast-demo * { animation: none !important; transition: none !important; }
 }

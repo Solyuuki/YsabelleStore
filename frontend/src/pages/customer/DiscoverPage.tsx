@@ -1685,13 +1685,14 @@ export function DiscoverPage({
                 </span>
               </h2>
               <p className="story-forecast__lead">
-                SARIMA reads recurring sales patterns to estimate upcoming demand and support
-                better inventory planning.
+                SARIMA turns recurring sales patterns into a forward demand signal, then translates
+                that signal into a practical restock recommendation. This preview uses illustrative
+                data only.
               </p>
             </header>
 
             <div
-              aria-label="Animated SARIMA forecasting chart showing historical sales patterns and projected demand"
+              aria-label="Illustrative SARIMA demand forecast with next-restock recommendation"
               className="story-forecast__visual"
               role="img"
             >
@@ -1702,11 +1703,11 @@ export function DiscoverPage({
               <div aria-label="Forecast model" className="story-forecast__model">
                 <span>Forecast model</span>
                 <strong>SARIMA</strong>
-                <small>Seasonal forecasting</small>
+                <small>Illustrative demo</small>
               </div>
 
               <p className="story-forecast__takeaway">
-                Plan stock with a clearer view of what comes next.
+                Capability preview only — no live owner or staff data is exposed.
               </p>
             </footer>
           </div>
