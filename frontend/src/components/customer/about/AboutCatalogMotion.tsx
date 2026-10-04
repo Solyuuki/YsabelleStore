@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-const CATALOG_VIDEO_FILE = "gemini_generated_video_00ca849a.mp4";
+const CATALOG_VIDEO_FILE = "gemini_generated_video_a80f6413.mp4";
 const CROSSFADE_LEAD_SECONDS = 0.85;
 const CROSSFADE_DURATION_MS = 680;
 
