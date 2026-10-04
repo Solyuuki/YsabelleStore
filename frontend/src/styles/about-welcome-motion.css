@@ -41,7 +41,7 @@
     radial-gradient(circle at 76% 72%, rgb(244 63 140 / 8%), transparent 40%),
     linear-gradient(135deg, #f7f9ff 0%, #eef3ff 52%, #faf2ff 100%);
   opacity: 1;
-  transition: opacity 300ms ease;
+  transition: opacity 220ms ease;
 }
 
 .about-welcome-motion.is-video-ready .about-welcome-motion__fallback {
@@ -63,7 +63,7 @@
   opacity: 0;
   transform: scale(1.018);
   transform-origin: center;
-  transition: opacity 300ms ease;
+  transition: opacity 220ms ease;
 }
 
 .about-welcome-motion.is-video-ready .about-welcome-motion__video {
