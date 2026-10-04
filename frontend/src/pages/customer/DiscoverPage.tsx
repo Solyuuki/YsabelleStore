@@ -1639,9 +1639,8 @@ export function DiscoverPage({
           className="story-scene story-location story-forecast"
           id="discover-location"
         >
-          <AboutForecastMotion />
-
           <div className="customer-container story-forecast__stage" data-story-motion>
+            <AboutForecastMotion />
             <div className="story-forecast__intro">
               <div className="story-forecast__copy">
                 <span className="story-kicker">Forecast Intelligence</span>
