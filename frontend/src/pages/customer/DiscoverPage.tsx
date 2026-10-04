@@ -50,10 +50,10 @@ const storyScenes = [
 const aboutStoryScenes = [
   { id: "discover-welcome", label: "Brand opening" },
   { id: "discover-beginning", label: "Product & catalog intelligence" },
-  { id: "discover-essentials", label: "Sales & inventory" },
-  { id: "discover-location", label: "Forecast intelligence" },
-  { id: "discover-smarter", label: "Replenishment & delivery" },
-  { id: "discover-shop", label: "Connected retail" }
+  { id: "discover-essentials", label: "Everyday essentials" },
+  { id: "discover-location", label: "Our location" },
+  { id: "discover-smarter", label: "System intelligence" },
+  { id: "discover-shop", label: "Shop with Ysabelle" }
 ];
 
 const storeAddress = "110 A. Mabini Street, Pasig City, Metro Manila";
