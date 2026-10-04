@@ -50,9 +50,7 @@ test("About chapter 02 uses the product and catalog intelligence story", () => {
   assert.match(discover, /isAboutExperience \? "Shop with Ysabelle" : "06 \/ Shop with Ysabelle"/);
   assert.match(discover, /discover-progress__dot/);
   assert.match(motion, /gemini_generated_video_a80f6413\.mp4/);
-  assert.match(motion, /data-forecast-video/);
-  assert.doesNotMatch(motion, /autoPlay/);
-  assert.doesNotMatch(motion, /CROSSFADE_LEAD_SECONDS/);
+  assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
   assert.match(css, /story-catalog__steps[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
   assert.match(css, /story-catalog__step[\s\S]*?background:\s*transparent/);
   assert.doesNotMatch(css, /story-catalog__step[\s\S]{0,500}?border-radius:\s*1rem/);
@@ -213,7 +211,9 @@ test("About chapter 04 uses a full-width forecast canvas instead of the chapter 
   assert.match(discover, /data-forecast-future/);
   assert.match(discover, /Forecasts help prepare the next inventory decision\./);
   assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
-  assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
+  assert.match(motion, /data-forecast-video/);
+  assert.doesNotMatch(motion, /autoPlay/);
+  assert.doesNotMatch(motion, /CROSSFADE_LEAD_SECONDS/);
   assert.match(css, /story-forecast__stage[\s\S]*?position:\s*relative/);
   assert.match(
     css,
