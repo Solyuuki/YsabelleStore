@@ -30,7 +30,7 @@ import { ProductImage } from "@/components/customer/ProductImage";
 import { useCart } from "@/context/CartContext";
 import { fetchStorefrontProduct } from "@/services/storefrontService";
 import type { StorefrontProduct } from "@/types/storefront";
-import { getEssentialShelfItems } from "@/utils/storefrontCategoryPresentation";
+import { getEssentialShelfItems } from "@/utils/storefrontCategoryTodayation";
 import {
   ABOUT_STORE_ESSENTIAL_PRODUCT_IDS,
   resolveAboutStoreEssentials
@@ -917,7 +917,6 @@ export function DiscoverPage({
               );
               const forecastLead = location.querySelector<HTMLElement>(".story-forecast__lead");
               const forecastPlot = location.querySelector<HTMLElement>(".story-forecast__plot");
-              const forecastVideo = location.querySelector<HTMLVideoElement>("[data-forecast-video]");
               const historyPath = location.querySelector<SVGGeometryElement>(
                 "[data-forecast-history]"
               );
@@ -946,7 +945,6 @@ export function DiscoverPage({
                 forecastHeadline.length &&
                 forecastLead &&
                 forecastPlot &&
-                forecastVideo &&
                 historyPath &&
                 futurePath &&
                 presentLine &&
@@ -969,26 +967,6 @@ export function DiscoverPage({
                 gsap.set(forecastTakeaway, { autoAlpha: 0, y: 10 });
                 gsap.set(locationHandoff, { autoAlpha: 0 });
 
-                forecastVideo.pause();
-
-                const syncForecastVideo = (progress: number) => {
-                  if (
-                    !Number.isFinite(forecastVideo.duration) ||
-                    forecastVideo.duration <= 0 ||
-                    forecastVideo.readyState < 1
-                  ) {
-                    return;
-                  }
-
-                  const videoProgress = Math.min(1, Math.max(0, progress / 0.68));
-                  const finalFrame = Math.max(0, forecastVideo.duration - 0.04);
-                  const nextTime = Math.min(finalFrame, finalFrame * videoProgress);
-
-                  if (Math.abs(forecastVideo.currentTime - nextTime) > 0.025) {
-                    forecastVideo.currentTime = nextTime;
-                  }
-                };
-
                 const forecastTimeline = gsap.timeline({
                   scrollTrigger: {
                     trigger: location,
@@ -1000,10 +978,7 @@ export function DiscoverPage({
                     pin: desktop ? forecastStage : false,
                     pinSpacing: desktop,
                     anticipatePin: desktop ? 1 : 0,
-                    scrub: desktop ? 0.12 : tablet ? 0.12 : 0.09,
-                    onUpdate: (self) => syncForecastVideo(self.progress),
-                    onLeave: () => syncForecastVideo(1),
-                    onLeaveBack: () => syncForecastVideo(0)
+                    scrub: desktop ? 0.18 : tablet ? 0.14 : 0.1
                   }
                 });
 
@@ -1727,18 +1702,22 @@ export function DiscoverPage({
                 <span className="story-kicker">Forecast Intelligence</span>
                 <h2 className="story-display-safe" id="about-forecast-title">
                   <span className="story-mask">
-                    <span className="story-mask__line">Past Sales Shape</span>
+                    <span className="story-mask__line">Demand Has a Rhythm.</span>
                   </span>
                   <span className="story-mask">
-                    <span className="story-mask__line">What Comes Next.</span>
+                    <span className="story-mask__line">Forecast the Next Move.</span>
                   </span>
                 </h2>
               </div>
 
-              <p className="story-forecast__lead">
-                Historical sales are organized across time so SARIMA can estimate future demand
-                and support inventory planning.
-              </p>
+              <div className="story-forecast__method">
+                <span className="story-forecast__method-label">Seasonal demand model</span>
+                <strong>SARIMA</strong>
+                <p className="story-forecast__lead">
+                  Observed sales reveal recurring patterns. SARIMA extends those patterns into
+                  a forward demand estimate for inventory planning.
+                </p>
+              </div>
             </div>
 
             <div
@@ -1807,12 +1786,12 @@ export function DiscoverPage({
                   Present
                 </span>
                 <span className="story-forecast__label story-forecast__label--future">
-                  Forecast horizon
+                  Projected demand
                 </span>
               </div>
 
               <p className="story-forecast__takeaway">
-                Forecasts help prepare the next inventory decision.
+                A forward view for better stock decisions.
               </p>
             </div>
           </div>
