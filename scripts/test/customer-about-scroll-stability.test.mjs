@@ -141,3 +141,27 @@ test("About welcome video keeps balanced contrast without a milky white shader",
     /\.about-welcome-motion__edge-light\s*\{[\s\S]*?opacity:\s*0\.34/
   );
 });
+
+
+test("About welcome-to-catalog handoff uses a vertical scrubbed fade without a visible edge bar", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const welcomeCss = read("frontend/src/styles/about-welcome-motion.css");
+  const catalogCss = read("frontend/src/styles/about-catalog-intelligence.css");
+
+  assert.match(
+    discover,
+    /if \(isAboutExperience\)[\s\S]*?\.about-welcome-motion[\s\S]*?opacity:\s*0\.5[\s\S]*?story-welcome__handoff[\s\S]*?autoAlpha:\s*0[\s\S]*?yPercent:\s*28[\s\S]*?autoAlpha:\s*1/
+  );
+  assert.match(
+    welcomeCss,
+    /story-welcome__handoff[\s\S]*?height:\s*clamp\(6\.5rem, 14vh, 10rem\)[\s\S]*?linear-gradient\(\s*180deg[\s\S]*?var\(--story-seam-12\) 100%/
+  );
+  assert.doesNotMatch(
+    welcomeCss,
+    /story-welcome__handoff[\s\S]{0,700}?linear-gradient\(90deg, var\(--story-blue\)/
+  );
+  assert.match(
+    catalogCss,
+    /story-catalog[\s\S]*?margin-top:\s*-1px[\s\S]*?var\(--story-seam-12\) 0%[\s\S]*?transparent 17%/
+  );
+});
