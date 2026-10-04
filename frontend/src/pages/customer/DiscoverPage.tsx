@@ -508,13 +508,34 @@ export function DiscoverPage({
                 0
               )
               .to(".story-brand-path--one", { duration: 0.72, xPercent: 9, yPercent: -8 }, 0)
-              .to(".story-brand-path--two", { duration: 0.72, xPercent: -8, yPercent: 9 }, 0)
-              .fromTo(
+              .to(".story-brand-path--two", { duration: 0.72, xPercent: -8, yPercent: 9 }, 0);
+
+            if (isAboutExperience) {
+              welcomeTimeline
+                .to(
+                  ".about-welcome-motion",
+                  { duration: 0.38, ease: "none", opacity: 0.5 },
+                  0.6
+                )
+                .to(
+                  ".story-welcome__stage",
+                  { autoAlpha: 0.82, duration: 0.3, ease: "none", yPercent: -2 },
+                  0.66
+                )
+                .fromTo(
+                  ".story-welcome__handoff",
+                  { autoAlpha: 0, yPercent: 28 },
+                  { autoAlpha: 1, duration: 0.34, ease: "none", yPercent: 0 },
+                  0.62
+                );
+            } else {
+              welcomeTimeline.fromTo(
                 ".story-welcome__handoff",
                 { scaleX: 0 },
                 { duration: 0.1, ease: "none", scaleX: 1 },
                 0.82
               );
+            }
             settle(welcomeTimeline);
           }
 
