@@ -50,6 +50,7 @@
 
 .about-welcome-motion__video {
   position: absolute;
+  z-index: 0;
   width: 100%;
   height: 100%;
   inset: 0;
@@ -59,14 +60,16 @@
   opacity: 0;
   transform: scale(1.018);
   transform-origin: center;
-  transition: opacity 800ms linear;
+  transition: opacity 720ms linear;
 }
 
 .about-welcome-motion.is-video-ready .about-welcome-motion__video.is-active {
+  z-index: 1;
   opacity: 1;
 }
 
 .about-welcome-motion.is-video-ready .about-welcome-motion__video.is-incoming {
+  z-index: 2;
   opacity: 1;
 }
 
@@ -105,9 +108,9 @@
 }
 
 .about-experience .discover-story--about .story-welcome__mark--branded {
-  width: clamp(8.5rem, 10vw, 10.25rem);
-  height: clamp(8.5rem, 10vw, 10.25rem);
-  margin-bottom: clamp(1.15rem, 2.4vh, 1.65rem);
+  width: clamp(10rem, 11.5vw, 12rem);
+  height: clamp(10rem, 11.5vw, 12rem);
+  margin-bottom: clamp(1.25rem, 2.6vh, 1.8rem);
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -119,7 +122,8 @@
   .discover-story--about
   .story-welcome__mark--branded
   .ysabelle-brand-mark__image {
-  filter: drop-shadow(0 14px 24px rgb(63 72 138 / 14%));
+  transform: scale(1.24);
+  transform-origin: center;
 }
 
 .about-experience .discover-story--about .story-welcome__title {
@@ -213,9 +217,9 @@
   }
 
   .about-experience .discover-story--about .story-welcome__mark--branded {
-    width: clamp(6.5rem, 20vw, 7.5rem);
-    height: clamp(6.5rem, 20vw, 7.5rem);
-    margin-bottom: clamp(1rem, 2vh, 1.35rem);
+    width: clamp(7.5rem, 23vw, 9rem);
+    height: clamp(7.5rem, 23vw, 9rem);
+    margin-bottom: clamp(1.05rem, 2.2vh, 1.45rem);
   }
 
   .about-experience .discover-story--about .story-welcome__title {
@@ -234,8 +238,8 @@
 
 @media (max-width: 420px) {
   .about-experience .discover-story--about .story-welcome__mark--branded {
-    width: 6rem;
-    height: 6rem;
+    width: 7rem;
+    height: 7rem;
     margin-bottom: 1rem;
   }
 
