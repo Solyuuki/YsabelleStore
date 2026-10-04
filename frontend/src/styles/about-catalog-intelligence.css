@@ -40,33 +40,13 @@
   padding-block: clamp(2rem, 4vh, 3.5rem) clamp(4rem, 7vh, 5.5rem);
 }
 
-.about-experience .discover-story .story-catalog__index {
-  position: absolute;
-  top: clamp(2.1rem, 5vh, 4rem);
-  left: 0;
-  z-index: 0;
-  grid-column: auto;
-  padding: 0;
-  background: linear-gradient(145deg, rgb(0 140 255 / 22%), rgb(98 91 255 / 32%), rgb(168 60 240 / 24%));
-  background-clip: text;
-  color: transparent;
-  font-family: var(--customer-font-display);
-  font-size: clamp(4.6rem, 7.5vw, 7.4rem);
-  font-weight: 600;
-  letter-spacing: -0.08em;
-  line-height: 1;
-  opacity: 0.58;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
 .about-experience .discover-story .story-catalog__copy {
   position: relative;
   z-index: 2;
   grid-column: 1 / 6;
   align-self: center;
   max-width: 31rem;
-  padding-top: clamp(4.7rem, 10vh, 7.5rem);
+  padding-top: 0;
 }
 
 .about-experience .discover-story .story-catalog__copy .story-kicker {
@@ -335,13 +315,6 @@
     grid-template-columns: 1fr;
     gap: 2rem;
     padding-block: 5.5rem 6.5rem;
-  }
-
-  .about-experience .discover-story .story-catalog__index {
-    position: static;
-    grid-column: 1;
-    grid-row: auto;
-    font-size: clamp(4rem, 12vw, 6rem);
   }
 
   .about-experience .discover-story .story-catalog__copy {
