@@ -1,0 +1,343 @@
+/* About Scene 03: Sales + Inventory.
+   Motion is decorative; operational meaning stays in responsive HTML. */
+
+.about-experience .discover-story--about {
+  --about-catalog-sales-seam: linear-gradient(
+    90deg,
+    #242b61 0%,
+    #29245d 38%,
+    #30235f 68%,
+    #38245f 100%
+  );
+}
+
+.about-experience .discover-story .story-sales {
+  display: grid;
+  min-height: max(780px, 100svh);
+  padding: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0 86%,
+      var(--story-seam-34) 98% 100%
+    ),
+    radial-gradient(circle at 12% 22%, rgb(0 140 255 / 18%), transparent 31%),
+    radial-gradient(circle at 88% 70%, rgb(168 60 240 / 17%), transparent 32%),
+    linear-gradient(135deg, #11172f 0%, #171943 46%, #211749 72%, #161b3d 100%);
+  color: #fff;
+}
+
+.about-experience .discover-story .story-sales::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(rgb(142 157 255 / 4.5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(142 157 255 / 4.5%) 1px, transparent 1px);
+  background-size: 78px 78px;
+  content: "";
+  mask-image: linear-gradient(to bottom, transparent 0 5%, #000 18%, #000 82%, transparent 97%);
+  pointer-events: none;
+}
+
+.about-experience .discover-story .story-sales::after {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  z-index: 0;
+  height: clamp(7.5rem, 16vh, 11rem);
+  background: var(--about-catalog-sales-seam);
+  content: "";
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 100%);
+}
+
+.about-experience .discover-story .story-sales__stage {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(calc(100% - 5rem), 1320px);
+  min-height: calc(100svh - 76px);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: center;
+  gap: clamp(1rem, 2vw, 2rem);
+  padding-block: clamp(5rem, 8vh, 7rem);
+}
+
+.about-experience .discover-story .story-sales__copy {
+  grid-column: 1 / 5;
+  max-width: 31rem;
+}
+
+.about-experience .discover-story .story-sales__copy .story-kicker {
+  color: #9fdcff;
+}
+
+.about-experience .discover-story .story-sales__copy h2 {
+  margin-top: 1rem;
+  color: #fff;
+  font-size: clamp(3rem, min(4.8vw, 7vh), 5.3rem);
+  line-height: 0.94;
+}
+
+.about-experience
+  .discover-story
+  .story-sales__copy
+  .story-mask:last-child
+  .story-mask__line {
+  background: linear-gradient(108deg, #8ad6ff 0%, #7e75ff 34%, #b75af0 66%, #f067b0 100%);
+  background-clip: text;
+  color: transparent;
+  font-style: italic;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-experience .discover-story .story-sales__copy p {
+  max-width: 29rem;
+  margin: 1.3rem 0 0;
+  color: #c7cee9;
+  font-size: clamp(0.92rem, 1.05vw, 1.02rem);
+  line-height: 1.72;
+}
+
+.about-experience .discover-story .story-sales__system {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  grid-column: 5 / 13;
+  overflow: hidden;
+  border: 1px solid rgb(154 167 255 / 18%);
+  border-radius: 1.85rem;
+  background: rgb(15 21 49 / 74%);
+  box-shadow:
+    0 34px 82px rgb(4 7 24 / 34%),
+    inset 0 1px 0 rgb(255 255 255 / 7%);
+  backdrop-filter: blur(16px);
+}
+
+.about-sales-motion {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 44%, rgb(98 91 255 / 18%), transparent 34%),
+    linear-gradient(135deg, #0f1835 0%, #1b2152 52%, #2a1d58 100%);
+  isolation: isolate;
+}
+
+.about-sales-motion__fallback,
+.about-sales-motion__video,
+.about-sales-motion__glass {
+  position: absolute;
+  inset: 0;
+}
+
+.about-sales-motion__fallback {
+  background:
+    radial-gradient(circle at 18% 24%, rgb(0 140 255 / 18%), transparent 28%),
+    radial-gradient(circle at 82% 72%, rgb(168 60 240 / 20%), transparent 30%),
+    linear-gradient(135deg, #101a39 0%, #1d2352 50%, #2c1d59 100%);
+  opacity: 1;
+  transition: opacity 220ms ease;
+}
+
+.about-sales-motion.is-video-ready .about-sales-motion__fallback {
+  opacity: 0;
+}
+
+.about-sales-motion__video {
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  filter: saturate(1.035) contrast(1.025) brightness(1.005);
+  opacity: 0;
+  transition: opacity 680ms linear;
+}
+
+.about-sales-motion__video.is-active,
+.about-sales-motion__video.is-incoming {
+  opacity: 1;
+}
+
+.about-sales-motion__video.is-incoming {
+  z-index: 2;
+}
+
+.about-sales-motion__glass {
+  z-index: 3;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 4%), transparent 28% 76%, rgb(98 91 255 / 5%)),
+    radial-gradient(circle at 50% 48%, transparent 58%, rgb(4 8 26 / 8%) 120%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 7%);
+  pointer-events: none;
+}
+
+.about-experience .discover-story .story-sales__steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 1rem 1.1rem 0.45rem;
+  list-style: none;
+}
+
+.about-experience .discover-story .story-sales__steps::before {
+  position: absolute;
+  top: 1.95rem;
+  right: 10%;
+  left: 10%;
+  z-index: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgb(0 140 255 / 50%),
+    rgb(98 91 255 / 62%) 45%,
+    rgb(168 60 240 / 58%) 72%,
+    rgb(244 63 140 / 38%)
+  );
+  content: "";
+}
+
+.about-experience .discover-story .story-sales__step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #9fdcff;
+  text-align: center;
+}
+
+.about-experience .discover-story .story-sales__step:nth-child(2) {
+  color: #8c82ff;
+}
+
+.about-experience .discover-story .story-sales__step:nth-child(3) {
+  color: #bd64ed;
+}
+
+.about-experience .discover-story .story-sales__step:nth-child(4) {
+  color: #ee67ac;
+}
+
+.about-experience .discover-story .story-sales__step svg {
+  width: 2.05rem;
+  height: 2.05rem;
+  box-sizing: border-box;
+  padding: 0.43rem;
+  border: 1px solid rgb(157 171 255 / 20%);
+  border-radius: 999px;
+  background: #171d43;
+  box-shadow:
+    0 8px 18px rgb(4 8 28 / 28%),
+    inset 0 1px 0 rgb(255 255 255 / 8%);
+}
+
+.about-experience .discover-story .story-sales__step small {
+  color: #d5daf0;
+  font-size: clamp(0.55rem, 0.66vw, 0.64rem);
+  font-weight: 850;
+  letter-spacing: 0.075em;
+  line-height: 1.18;
+  text-transform: uppercase;
+}
+
+.about-experience .discover-story .story-sales__summary {
+  display: block;
+  padding: 0.1rem 1rem 1rem;
+  color: #9da7cc;
+  font-size: 0.63rem;
+  font-weight: 720;
+  letter-spacing: 0.035em;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.about-experience .discover-story .story-sales .story-products__handoff {
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  width: auto;
+  height: clamp(6.5rem, 13vh, 9rem);
+  border-radius: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgb(38 60 119 / 28%) 42%,
+    var(--story-seam-34) 100%
+  );
+  box-shadow: none;
+  opacity: 0.82;
+  transform: none;
+}
+
+@media (max-width: 1120px) {
+  .about-experience .discover-story .story-sales__stage {
+    width: min(calc(100% - 3rem), 1180px);
+  }
+}
+
+@media (max-width: 1023px) {
+  .about-experience .discover-story .story-sales {
+    min-height: auto;
+  }
+
+  .about-experience .discover-story .story-sales__stage {
+    width: min(100% - 2rem, 900px);
+    min-height: auto;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-block: 6rem;
+  }
+
+  .about-experience .discover-story .story-sales__copy,
+  .about-experience .discover-story .story-sales__system {
+    grid-column: 1;
+  }
+
+  .about-experience .discover-story .story-sales__copy {
+    max-width: 40rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .about-experience .discover-story .story-sales__stage {
+    width: min(100% - 1.25rem, 720px);
+    gap: 1.5rem;
+    padding-block: 5rem;
+  }
+
+  .about-experience .discover-story .story-sales__copy h2 {
+    font-size: clamp(2.55rem, 12vw, 4rem);
+  }
+
+  .about-experience .discover-story .story-sales__steps {
+    padding-inline: 0.5rem;
+  }
+
+  .about-experience .discover-story .story-sales__step small {
+    font-size: 0.5rem;
+    letter-spacing: 0.04em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-sales-motion__video {
+    display: none;
+  }
+
+  .about-sales-motion__fallback {
+    opacity: 1;
+  }
+}
