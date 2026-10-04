@@ -462,7 +462,15 @@ export function DiscoverPage({
               }
             });
             welcomeTimeline
-              .to(".story-welcome__title", { duration: 0.62, scale: 0.92, yPercent: -14 }, 0)
+              .to(
+                ".story-welcome__title",
+                {
+                  duration: 0.62,
+                  scale: isAboutExperience ? 0.95 : 0.92,
+                  yPercent: isAboutExperience ? -6 : -14
+                },
+                0
+              )
               .to(
                 ".story-grocery-drift--left",
                 { duration: 0.72, rotate: -7, xPercent: -12, yPercent: -20 },
@@ -1098,8 +1106,7 @@ export function DiscoverPage({
           <YsabelleBrandMark
             className="story-welcome__mark story-welcome__mark--branded"
             eager
-            sizes={isAboutExperience ? "208px" : undefined}
-            source={isAboutExperience ? "official" : "default"}
+            sizes={isAboutExperience ? "192px" : undefined}
             variant="display"
           />
           {!isAboutExperience ? <span className="story-kicker">01 / Welcome</span> : null}
