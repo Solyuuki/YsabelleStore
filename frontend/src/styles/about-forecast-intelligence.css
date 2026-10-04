@@ -22,8 +22,10 @@
       transparent 0 86%,
       var(--story-seam-45) 98% 100%
     ),
-    linear-gradient(135deg, #eef6ff 0%, #f5f5ff 46%, #fff2fb 100%);
-  color: var(--story-navy);
+    radial-gradient(circle at 16% 24%, rgb(0 140 255 / 10%), transparent 34%),
+    radial-gradient(circle at 84% 68%, rgb(168 60 240 / 11%), transparent 36%),
+    linear-gradient(135deg, #10182f 0%, #182141 46%, #21194a 76%, #171a37 100%);
+  color: #f7f9ff;
 }
 
 .about-experience .discover-story .story-forecast::before {
@@ -31,8 +33,8 @@
   inset: 0;
   z-index: 0;
   background:
-    linear-gradient(rgb(98 91 255 / 3.2%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(98 91 255 / 3.2%) 1px, transparent 1px);
+    linear-gradient(rgb(185 204 255 / 4.5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(185 204 255 / 4.5%) 1px, transparent 1px);
   background-size: 76px 76px;
   content: "";
   mask-image: linear-gradient(to bottom, transparent 3%, #000 16%, #000 84%, transparent 97%);
@@ -67,7 +69,7 @@
   background:
     radial-gradient(circle at 18% 30%, rgb(0 140 255 / 12%), transparent 34%),
     radial-gradient(circle at 84% 68%, rgb(168 60 240 / 13%), transparent 34%),
-    linear-gradient(135deg, #edf6ff, #f2f3ff 50%, #fff1fa);
+    linear-gradient(135deg, #10182f 0%, #182141 52%, #24194d 100%);
   pointer-events: none;
   transform: translateX(-50%);
 }
@@ -83,7 +85,7 @@
   background:
     radial-gradient(ellipse at 18% 42%, rgb(0 140 255 / 16%), transparent 38%),
     radial-gradient(ellipse at 80% 58%, rgb(168 60 240 / 16%), transparent 36%),
-    linear-gradient(135deg, #eaf5ff 0%, #f2f2ff 52%, #fff0fa 100%);
+    linear-gradient(135deg, #10182f 0%, #192143 52%, #251a4c 100%);
   opacity: 1;
   transition: opacity 220ms ease;
 }
@@ -106,7 +108,7 @@
 
 .about-forecast-motion__video.is-active,
 .about-forecast-motion__video.is-incoming {
-  opacity: 0.84;
+  opacity: 1;
 }
 
 .about-forecast-motion__video.is-incoming {
@@ -115,20 +117,7 @@
 
 .about-forecast-motion__wash {
   z-index: 3;
-  background:
-    linear-gradient(
-      90deg,
-      rgb(242 248 255 / 30%) 0%,
-      rgb(245 248 255 / 16%) 24%,
-      transparent 44% 72%,
-      rgb(255 246 252 / 12%) 100%
-    ),
-    linear-gradient(
-      180deg,
-      rgb(247 250 255 / 10%) 0%,
-      transparent 18% 78%,
-      rgb(248 243 255 / 14%) 100%
-    );
+  background: none;
   pointer-events: none;
 }
 
