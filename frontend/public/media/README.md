@@ -43,7 +43,7 @@ The first About story scene uses the approved Gemini MP4 as a decorative motion 
 
 Canonical runtime video:
 
-- `frontend/public/media/about-origin-motion.mp4`
+- `frontend/public/media/about-origin-motion-6738635d.mp4`
 
 Approved source:
 
