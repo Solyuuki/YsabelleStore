@@ -208,57 +208,6 @@ test("About chapter labels diverge from legacy Discover only where chapters are 
 });
 
 
-test("About forecast keeps the approved Gemini plate unshaded and dark through sticky release", () => {
-  const css = read("frontend/src/styles/about-forecast-intelligence.css");
-
-  assert.match(
-    css,
-    /story-forecast\s*\{[\s\S]*?linear-gradient\(135deg, #071225 0%, #101a36 48%, #17183d 76%, #0e142d 100%\)/
-  );
-  assert.match(
-    css,
-    /about-forecast-motion__video\.is-active,[\s\S]*?opacity:\s*1/
-  );
-  assert.match(
-    css,
-    /about-forecast-motion__wash\s*\{[\s\S]*?background:\s*none/
-  );
-  assert.doesNotMatch(
-    css,
-    /about-forecast-motion__fallback[\s\S]{0,650}?#eaf5ff/
-  );
-  assert.doesNotMatch(
-    css,
-    /story-forecast\s*\{[\s\S]{0,650}?#eef6ff/
-  );
-});
-
-
-
-
-test("About forecast uses one pinned viewport scene and releases directly into system intelligence", () => {
-  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
-  const css = read("frontend/src/styles/about-forecast-intelligence.css");
-
-  assert.match(discover, /const forecastStage = location\.querySelector<HTMLElement>\("\.story-forecast__stage"\)/);
-  assert.match(
-    discover,
-    /pin:\s*desktop \? forecastStage : false[\s\S]*?pinSpacing:\s*desktop[\s\S]*?anticipatePin:\s*desktop \? 1 : 0/
-  );
-  assert.match(
-    discover,
-    /Math\.max\(520, Math\.round\(window\.innerHeight \* 0\.65\)\)/
-  );
-  assert.doesNotMatch(discover, /const forecastExitTimeline = gsap\.timeline/);
-  assert.match(discover, /settle\(forecastTimeline, 0\.76\)/);
-  assert.match(
-    css,
-    /story-forecast__stage[\s\S]*?position:\s*relative[\s\S]*?height:\s*calc\(100svh - 76px\)/
-  );
-  assert.match(css, /story-forecast::before[\s\S]*?display:\s*none/);
-});
-
-
 test("About chapter 03 matches chapter 02 desktop scroll pacing", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
@@ -294,48 +243,6 @@ test("About chapter 03 pre-reveals before pinning so the catalog-to-sales handof
 });
 
 
-test("About chapter 04 uses a continuously moving forecast atmosphere with an editorial data overlay", () => {
-  const aboutPage = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
-  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
-  const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
-  const css = read("frontend/src/styles/about-forecast-intelligence.css");
-
-  assert.match(aboutPage, /about-forecast-intelligence\.css/);
-  assert.match(discover, /From Sales History/);
-  assert.match(discover, /to Future Demand\\./);
-  assert.match(discover, /Forecast model/);
-  assert.match(discover, />SARIMA<\/strong>/);
-  assert.match(discover, /Sales history/);
-  assert.match(discover, /Forecast/);
-  assert.match(discover, /Plan stock with a clearer view of what comes next\\./);
-  assert.doesNotMatch(discover, /syncForecastVideo/);
-  assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
-  assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
-  assert.match(motion, /autoPlay=\{index === 0\}/);
-  assert.match(motion, /onTimeUpdate=\{\(event\) => maybeCrossfade/);
-  assert.match(css, /story-forecast__intro::before[\s\S]*?display:\s*none/);
-  assert.match(css, /story-forecast__zones,[\s\S]*?background:\s*none/);
-  assert.match(css, /story-forecast__label[\s\S]*?background:\s*transparent[\s\S]*?backdrop-filter:\s*none/);
-  assert.match(css, /story-forecast__model[\s\S]*?border-left:\s*1px solid/);
-});
-
-test("About forecast keeps the compact pinned scroll story independent from video playback", () => {
-  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
-
-  assert.match(
-    discover,
-    /Math\.max\(520, Math\.round\(window\.innerHeight \* 0\.65\)\)/
-  );
-  assert.match(
-    discover,
-    /pin:\s*desktop \? forecastStage : false[\s\S]*?scrub:\s*desktop \? 0\.18 : tablet \? 0\.14 : 0\.1/
-  );
-  assert.match(discover, /settle\(forecastTimeline, 0\.76\)/);
-  assert.doesNotMatch(discover, /forecastVideo\.pause\(\)/);
-  assert.doesNotMatch(discover, /currentTime = nextTime/);
-});
-
-
 test("Discover imports the canonical storefront category presentation utility", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
@@ -347,16 +254,51 @@ test("Discover imports the canonical storefront category presentation utility", 
 });
 
 
-test("About forecast uses one concise narrative hierarchy", () => {
+
+
+test("About chapter 04 treats the Gemini MP4 as the forecast chart, not as a background", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
+  const css = read("frontend/src/styles/about-forecast-intelligence.css");
+
+  assert.match(discover, /className="story-forecast__visual"/);
+  assert.match(discover, /<AboutForecastMotion \/>/);
+  assert.doesNotMatch(discover, /story-forecast__svg/);
+  assert.doesNotMatch(discover, /data-forecast-history/);
+  assert.doesNotMatch(discover, /data-forecast-future/);
+  assert.match(discover, /From Sales History/);
+  assert.match(discover, /to Future Demand\./);
+  assert.match(discover, /Forecast model/);
+  assert.match(discover, />SARIMA<\/strong>/);
+  assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
+  assert.match(css, /story-forecast__visual[\s\S]*?width:\s*min\(100%, 1180px\)/);
+  assert.match(css, /about-forecast-motion__video[\s\S]*?object-fit:\s*contain/);
+  assert.doesNotMatch(css, /story-forecast__plot/);
+  assert.doesNotMatch(css, /story-forecast__label/);
+});
+
+test("About chapter 04 uses a stacked cinematic layout distinct from chapters 02 and 03", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
   const css = read("frontend/src/styles/about-forecast-intelligence.css");
 
-  assert.match(discover, /From Sales History/);
-  assert.match(discover, /to Future Demand\./);
-  assert.match(discover, /SARIMA reads recurring sales patterns/);
-  assert.match(discover, /className="story-forecast__model"/);
-  assert.doesNotMatch(discover, /story-forecast__method/);
-  assert.match(css, /story-forecast__copy[\s\S]*?max-width:\s*760px/);
-  assert.match(css, /story-forecast__intro[\s\S]*?display:\s*block/);
-  assert.match(css, /story-forecast__plot[\s\S]*?min-height:\s*clamp\(285px, 34vh, 395px\)/);
+  assert.match(discover, /<header className="story-forecast__header">/);
+  assert.match(discover, /<footer className="story-forecast__footer">/);
+  assert.doesNotMatch(discover, /className="story-forecast__system"/);
+  assert.match(css, /story-forecast__stage[\s\S]*?grid-template-rows:\s*auto auto auto/);
+  assert.match(css, /story-forecast__footer[\s\S]*?justify-content:\s*space-between/);
+  assert.doesNotMatch(css, /grid-template-columns:\s*minmax\(0, 1\.15fr\)/);
+});
+
+test("About chapter 04 reveals naturally without a long pinned scroll runway", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+
+  assert.match(
+    discover,
+    /const forecastTimeline = gsap\.timeline\([\s\S]*?start:\s*desktop \? "top 78%"[\s\S]*?end:\s*desktop \? "bottom 22%"/
+  );
+  assert.doesNotMatch(
+    discover,
+    /const forecastTimeline = gsap\.timeline\([\s\S]*?pin:\s*desktop \? forecastStage/
+  );
+  assert.match(discover, /settle\(forecastTimeline, 0\.86\)/);
 });
