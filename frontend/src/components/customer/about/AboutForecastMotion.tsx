@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const FORECAST_VIDEO_FILE = "gemini_generated_video_9d3956f0.mp4";
-const CROSSFADE_LEAD_SECONDS = 0.85;
-const CROSSFADE_DURATION_MS = 680;
 
 function resolveForecastVideo() {
   if (window.location.protocol === "file:") {
@@ -14,18 +12,11 @@ function resolveForecastVideo() {
 }
 
 export function AboutForecastMotion() {
-  const videoRefs = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)] as const;
-  const activeIndexRef = useRef<0 | 1>(0);
-  const transitioningRef = useRef(false);
-  const transitionTimerRef = useRef<number | null>(null);
-  const resetFrameRef = useRef<number | null>(null);
-
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [reduceMotion, setReduceMotion] = useState(() =>
     window.matchMedia(REDUCED_MOTION_QUERY).matches
   );
   const [videoReady, setVideoReady] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<0 | 1>(0);
-  const [incomingIndex, setIncomingIndex] = useState<0 | 1 | null>(null);
 
   useEffect(() => {
     const media = window.matchMedia(REDUCED_MOTION_QUERY);
@@ -38,65 +29,22 @@ export function AboutForecastMotion() {
 
   useEffect(() => {
     return () => {
-      if (transitionTimerRef.current !== null) window.clearTimeout(transitionTimerRef.current);
-      if (resetFrameRef.current !== null) window.cancelAnimationFrame(resetFrameRef.current);
-      videoRefs.forEach((ref) => ref.current?.pause());
+      videoRef.current?.pause();
     };
   }, []);
 
   function markReady(video: HTMLVideoElement) {
-    setVideoReady(true);
-    void video.play().catch(() => undefined);
-  }
+    video.pause();
 
-  function beginCrossfade(fromIndex: 0 | 1) {
-    if (transitioningRef.current || fromIndex !== activeIndexRef.current) return;
-
-    const toIndex: 0 | 1 = fromIndex === 0 ? 1 : 0;
-    const outgoingVideo = videoRefs[fromIndex].current;
-    const incomingVideo = videoRefs[toIndex].current;
-    if (!outgoingVideo || !incomingVideo) return;
-
-    transitioningRef.current = true;
-    incomingVideo.currentTime = 0;
-
-    void incomingVideo
-      .play()
-      .then(() => {
-        setIncomingIndex(toIndex);
-
-        transitionTimerRef.current = window.setTimeout(() => {
-          activeIndexRef.current = toIndex;
-          setActiveIndex(toIndex);
-          setIncomingIndex(null);
-          transitionTimerRef.current = null;
-
-          resetFrameRef.current = window.requestAnimationFrame(() => {
-            outgoingVideo.pause();
-            outgoingVideo.currentTime = 0;
-            transitioningRef.current = false;
-            resetFrameRef.current = null;
-          });
-        }, CROSSFADE_DURATION_MS);
-      })
-      .catch(() => {
-        transitioningRef.current = false;
-        setIncomingIndex(null);
-      });
-  }
-
-  function maybeCrossfade(video: HTMLVideoElement, index: 0 | 1) {
-    if (
-      index !== activeIndexRef.current ||
-      transitioningRef.current ||
-      !Number.isFinite(video.duration) ||
-      video.duration <= 0 ||
-      video.duration - video.currentTime > CROSSFADE_LEAD_SECONDS
-    ) {
-      return;
+    if (Number.isFinite(video.duration) && video.duration > 0) {
+      try {
+        video.currentTime = 0;
+      } catch {
+        // Some browsers reject an early seek until enough metadata is buffered.
+      }
     }
 
-    beginCrossfade(index);
+    setVideoReady(true);
   }
 
   const source = resolveForecastVideo();
@@ -109,31 +57,19 @@ export function AboutForecastMotion() {
       <div className="about-forecast-motion__fallback" />
 
       {!reduceMotion ? (
-        <>
-          {[0, 1].map((rawIndex) => {
-            const index = rawIndex as 0 | 1;
-            return (
-              <video
-                autoPlay={index === 0}
-                className={`about-forecast-motion__video${
-                  index === activeIndex ? " is-active" : ""
-                }${index === incomingIndex ? " is-incoming" : ""}`}
-                key={index}
-                muted
-                onCanPlay={index === 0 ? (event) => markReady(event.currentTarget) : undefined}
-                onEnded={() => beginCrossfade(index)}
-                onLoadedData={index === 0 ? (event) => markReady(event.currentTarget) : undefined}
-                onPlaying={index === 0 ? (event) => markReady(event.currentTarget) : undefined}
-                onTimeUpdate={(event) => maybeCrossfade(event.currentTarget, index)}
-                playsInline
-                preload="auto"
-                ref={videoRefs[index]}
-                src={source}
-                tabIndex={-1}
-              />
-            );
-          })}
-        </>
+        <video
+          className="about-forecast-motion__video is-active"
+          data-forecast-video
+          muted
+          onCanPlay={(event) => markReady(event.currentTarget)}
+          onLoadedData={(event) => markReady(event.currentTarget)}
+          onLoadedMetadata={(event) => markReady(event.currentTarget)}
+          playsInline
+          preload="auto"
+          ref={videoRef}
+          src={source}
+          tabIndex={-1}
+        />
       ) : null}
 
       <span className="about-forecast-motion__wash" />
