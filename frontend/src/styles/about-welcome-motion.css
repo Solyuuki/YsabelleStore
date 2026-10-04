@@ -116,7 +116,7 @@
   margin-top: 0 !important;
   font-size: clamp(4.15rem, min(9.8vw, 13.8vh), 9.25rem);
   letter-spacing: -0.058em;
-  line-height: 0.84;
+  line-height: 0.9;
   overflow: visible;
   text-wrap: balance;
 }
@@ -125,12 +125,12 @@
   width: max-content;
   max-width: 100%;
   overflow: visible;
-  padding: 0.13em 0.22em 0.21em;
+  padding: 0.24em 0.28em 0.3em;
 }
 
 .about-experience .discover-story--about .story-welcome__title .story-mask__line {
   display: inline-block;
-  padding-inline: 0.045em;
+  padding: 0.035em 0.065em 0.055em;
   overflow: visible;
 }
 
@@ -317,12 +317,12 @@
     width: fit-content;
     max-width: 100%;
     font-size: clamp(3.45rem, min(19vw, 13vh), 5.8rem);
-    line-height: 0.9;
+    line-height: 0.94;
   }
 
   .about-experience .discover-story--about .story-welcome__title .story-mask {
     max-width: calc(100vw - 1.5rem);
-    padding-inline: 0.2em;
+    padding: 0.24em 0.24em 0.3em;
   }
 
   .about-experience .discover-story--about .story-welcome__support p {
