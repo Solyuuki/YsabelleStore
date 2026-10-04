@@ -213,7 +213,13 @@ test("About chapter 04 uses a full-width forecast canvas instead of the chapter 
   assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
   assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
   assert.match(css, /story-forecast__stage[\s\S]*?position:\s*sticky/);
-  assert.match(css, /about-forecast-motion[\s\S]*?position:\s*absolute/);
+  assert.match(
+    css,
+    /about-forecast-motion[\s\S]*?position:\s*absolute[\s\S]*?left:\s*50%[\s\S]*?width:\s*100vw[\s\S]*?translateX\(-50%\)/
+  );
+  assert.match(css, /story-forecast__stage[\s\S]*?height:\s*calc\(100svh - 76px\)[\s\S]*?isolation:\s*isolate/);
+  assert.match(css, /story-forecast::after[\s\S]*?width:\s*auto[\s\S]*?border-radius:\s*0/);
+  assert.match(css, /story-forecast__zone[\s\S]*?border-radius:\s*0/);
   assert.match(css, /story-forecast__plot/);
   assert.doesNotMatch(css, /story-forecast__system/);
   assert.match(css, /--about-sales-forecast-seam/);
