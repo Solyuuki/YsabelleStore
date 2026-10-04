@@ -27,13 +27,27 @@ test("About ScrollTrigger setup avoids aggressive catch-up during native wheel s
   assert.match(discover, /ScrollTrigger\.refresh\(true\)/);
 });
 
-test("About beginning shader stays premium and less foggy", () => {
-  const css = read("frontend/src/styles/customer-about-premium.css");
+test("About chapter 02 uses the product and catalog intelligence story", () => {
+  const aboutPage = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const motion = read("frontend/src/components/customer/about/AboutCatalogMotion.tsx");
+  const css = read("frontend/src/styles/about-catalog-intelligence.css");
 
-  assert.match(css, /\.discover-story \.story-beginning/);
-  assert.match(css, /#fcfdff/i);
-  assert.match(css, /rgb\(0 140 255 \/ 9%\)/);
-  assert.match(css, /rgb\(168 60 240 \/ 8%\)/);
+  assert.match(aboutPage, /about-catalog-intelligence\.css/);
+  assert.doesNotMatch(aboutPage, /about-origin-timeline\.css/);
+  assert.match(discover, /02 \/ Product &amp; Catalog Intelligence/);
+  assert.match(discover, /From Product/);
+  assert.match(discover, /to Catalog Ready\./);
+  assert.match(discover, /Product catalog workflow from source item to catalog-ready product/);
+  assert.match(discover, /label: "Barcode"/);
+  assert.match(discover, /label: "Image quality"/);
+  assert.match(discover, /label: "Normalize"/);
+  assert.match(discover, /label: "Catalog ready"/);
+  assert.doesNotMatch(discover, />Section 02</i);
+  assert.match(motion, /gemini_generated_video_00ca849a\.mp4/);
+  assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
+  assert.match(css, /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
 test("About progress navigator stays hidden through the welcome scene", () => {
