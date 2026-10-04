@@ -219,7 +219,7 @@ test("About chapter 04 uses a full-width forecast canvas instead of the chapter 
   );
   assert.match(css, /story-forecast[\s\S]*?min-height:\s*170svh/);
   assert.match(css, /story-forecast__stage[\s\S]*?height:\s*calc\(100svh - 76px\)[\s\S]*?isolation:\s*isolate/);
-  assert.match(css, /about-forecast-motion__video\.is-active,[\s\S]*?opacity:\s*0\.84/);
+  assert.match(css, /about-forecast-motion__video\.is-active,[\s\S]*?opacity:\s*1/);
   assert.doesNotMatch(css, /about-forecast-motion__wash[\s\S]{0,700}?rgb\(255 255 255 \/ 62%\)/);
   assert.match(css, /story-forecast::after[\s\S]*?width:\s*auto[\s\S]*?border-radius:\s*0/);
   assert.match(css, /story-forecast__zone[\s\S]*?border-radius:\s*0/);
@@ -280,4 +280,30 @@ test("About forecast uses dark-video typography and keeps the chart framework vi
   assert.match(css, /story-forecast__lead[\s\S]*?color:\s*#d8def4/);
   assert.match(css, /story-forecast__intro::before[\s\S]*?rgb\(7 13 34 \/ 54%\)/);
   assert.match(css, /story-forecast__baseline,[\s\S]*?rgb\(219 229 255 \/ 21%\)/);
+});
+
+
+test("About forecast keeps the approved Gemini plate unshaded and dark through sticky release", () => {
+  const css = read("frontend/src/styles/about-forecast-intelligence.css");
+
+  assert.match(
+    css,
+    /story-forecast\s*\{[\s\S]*?linear-gradient\(135deg, #10182f 0%, #182141 46%, #21194a 76%, #171a37 100%\)/
+  );
+  assert.match(
+    css,
+    /about-forecast-motion__video\.is-active,[\s\S]*?opacity:\s*1/
+  );
+  assert.match(
+    css,
+    /about-forecast-motion__wash\s*\{[\s\S]*?background:\s*none/
+  );
+  assert.doesNotMatch(
+    css,
+    /about-forecast-motion__fallback[\s\S]{0,650}?#eaf5ff/
+  );
+  assert.doesNotMatch(
+    css,
+    /story-forecast\s*\{[\s\S]{0,650}?#eef6ff/
+  );
 });
