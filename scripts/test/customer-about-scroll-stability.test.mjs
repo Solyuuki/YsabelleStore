@@ -63,11 +63,11 @@ test("About welcome uses branded premium typography without a CTA", () => {
   );
   assert.match(
     welcomeCss,
-    /story-mask:first-child[\s\S]*?#11183f[\s\S]*?#625bff[\s\S]*?-webkit-text-stroke:\s*0\.45px/
+    /story-mask:first-child[\s\S]*?#101426[\s\S]*?#4d63ff[\s\S]*?#a83cf0[\s\S]*?-webkit-text-stroke:\s*0\.5px/
   );
   assert.match(
     welcomeCss,
-    /story-mask__line--accent[\s\S]*?#625bff[\s\S]*?#a83cf0[\s\S]*?#ff3f91[\s\S]*?-webkit-text-stroke:\s*0\.42px/
+    /story-mask__line--accent[\s\S]*?#625bff[\s\S]*?#a83cf0[\s\S]*?#f43f8c[\s\S]*?#ff4e9a[\s\S]*?-webkit-text-stroke:\s*0\.46px/
   );
   assert.doesNotMatch(
     welcomeCss,
