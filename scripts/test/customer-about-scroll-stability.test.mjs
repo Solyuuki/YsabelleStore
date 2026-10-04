@@ -301,13 +301,13 @@ test("About chapter 04 uses a continuously moving forecast atmosphere with an ed
   const css = read("frontend/src/styles/about-forecast-intelligence.css");
 
   assert.match(aboutPage, /about-forecast-intelligence\.css/);
-  assert.match(discover, /Demand Has a Rhythm\./);
-  assert.match(discover, /Forecast the Next Move\./);
-  assert.match(discover, /Seasonal demand model/);
+  assert.match(discover, /From Sales History/);
+  assert.match(discover, /to Future Demand\\./);
+  assert.match(discover, /Forecast model/);
   assert.match(discover, />SARIMA<\/strong>/);
-  assert.match(discover, /Observed sales/);
-  assert.match(discover, /Projected demand/);
-  assert.match(discover, /A forward view for better stock decisions\./);
+  assert.match(discover, /Sales history/);
+  assert.match(discover, /Forecast/);
+  assert.match(discover, /Plan stock with a clearer view of what comes next\\./);
   assert.doesNotMatch(discover, /syncForecastVideo/);
   assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
   assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
@@ -316,7 +316,7 @@ test("About chapter 04 uses a continuously moving forecast atmosphere with an ed
   assert.match(css, /story-forecast__intro::before[\s\S]*?display:\s*none/);
   assert.match(css, /story-forecast__zones,[\s\S]*?background:\s*none/);
   assert.match(css, /story-forecast__label[\s\S]*?background:\s*transparent[\s\S]*?backdrop-filter:\s*none/);
-  assert.match(css, /story-forecast__method[\s\S]*?border-left:\s*1px solid/);
+  assert.match(css, /story-forecast__model[\s\S]*?border-left:\s*1px solid/);
 });
 
 test("About forecast keeps the compact pinned scroll story independent from video playback", () => {
@@ -344,4 +344,19 @@ test("Discover imports the canonical storefront category presentation utility", 
     /getEssentialShelfItems \} from "@\/utils\/storefrontCategoryPresentation"/
   );
   assert.doesNotMatch(discover, /storefrontCategoryTodayation/);
+});
+
+
+test("About forecast uses one concise narrative hierarchy", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const css = read("frontend/src/styles/about-forecast-intelligence.css");
+
+  assert.match(discover, /From Sales History/);
+  assert.match(discover, /to Future Demand\./);
+  assert.match(discover, /SARIMA reads recurring sales patterns/);
+  assert.match(discover, /className="story-forecast__model"/);
+  assert.doesNotMatch(discover, /story-forecast__method/);
+  assert.match(css, /story-forecast__copy[\s\S]*?max-width:\s*760px/);
+  assert.match(css, /story-forecast__intro[\s\S]*?display:\s*block/);
+  assert.match(css, /story-forecast__plot[\s\S]*?min-height:\s*clamp\(285px, 34vh, 395px\)/);
 });
