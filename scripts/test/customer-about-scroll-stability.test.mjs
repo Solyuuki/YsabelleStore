@@ -51,7 +51,7 @@ test("About welcome uses branded premium typography without a CTA", () => {
 
   assert.match(discover, /Established 2019 · Pasig City/);
   assert.doesNotMatch(discover, /story-welcome__divider/);
-  assert.match(discover, /Scroll to continue <ChevronsDown/);
+  assert.match(discover, /story-welcome__scroll-label">Scroll to continue<\/span>[\s\S]*?<ChevronDown/);
   assert.doesNotMatch(discover, /story-welcome__support[\s\S]{0,900}>Get Started</);
   assert.match(
     welcomeCss,
@@ -89,7 +89,14 @@ test("About welcome uses branded premium typography without a CTA", () => {
     welcomeCss,
     /story-welcome__support p[\s\S]*?white-space:\s*nowrap/
   );
-  assert.match(welcomeCss, /@keyframes about-welcome-scroll-cue/);
+  assert.match(
+    welcomeCss,
+    /story-welcome__scroll-cue[\s\S]*?flex-direction:\s*column[\s\S]*?story-welcome__scroll-label/
+  );
+  assert.match(
+    welcomeCss,
+    /@keyframes about-welcome-scroll-cue[\s\S]*?translateY\(5px\)/
+  );
 });
 
 
