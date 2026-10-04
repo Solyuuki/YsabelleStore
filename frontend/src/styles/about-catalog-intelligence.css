@@ -2,12 +2,15 @@
    Important text remains HTML; Gemini motion is decorative only. */
 
 .about-experience .discover-story .story-catalog {
+  margin-top: -1px;
   overflow: hidden;
   background:
     linear-gradient(
       to bottom,
-      var(--story-seam-12) 0 3%,
-      transparent 15%,
+      var(--story-seam-12) 0%,
+      rgb(247 239 255 / 86%) 4%,
+      rgb(247 239 255 / 42%) 9%,
+      transparent 17%,
       transparent 86%,
       var(--story-seam-23) 97% 100%
     ),
