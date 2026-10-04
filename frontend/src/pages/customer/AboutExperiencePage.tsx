@@ -5,6 +5,7 @@ import { DiscoverPage } from "@/pages/customer/DiscoverPage";
 import "@/styles/about-welcome-motion.css";
 import "@/styles/about-catalog-intelligence.css";
 import "@/styles/about-sales-inventory.css";
+import "@/styles/about-forecast-intelligence.css";
 import "@/styles/about-storefront-handoff.css";
 import "@/styles/about-storefront-handoff-layout.css";
 
