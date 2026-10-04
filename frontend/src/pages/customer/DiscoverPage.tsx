@@ -444,8 +444,20 @@ export function DiscoverPage({
           const welcome = first<HTMLElement>(".story-welcome");
           if (welcome) {
             gsap
-              .timeline({ defaults: { duration: 0.78, ease: "power3.out" } })
-              .from(".story-welcome__mark", { autoAlpha: 0, rotate: -8, scale: 0.55 })
+              .timeline({
+                defaults: { duration: 0.78, ease: "power3.out" },
+                onComplete: () => {
+                  if (isAboutExperience) {
+                    gsap.set(".story-welcome__mark", { clearProps: "transform" });
+                  }
+                }
+              })
+              .from(
+                ".story-welcome__mark",
+                isAboutExperience
+                  ? { autoAlpha: 0, y: 12 }
+                  : { autoAlpha: 0, rotate: -8, scale: 0.55 }
+              )
               .from(
                 ".story-welcome__title .story-mask__line",
                 { autoAlpha: 0, stagger: 0.08, y: 30 },
