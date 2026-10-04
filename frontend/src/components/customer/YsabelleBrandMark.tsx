@@ -10,12 +10,14 @@ const WEB_BRAND_MARK_SRC_SET = [
 type YsabelleBrandMarkProps = {
   className?: string;
   eager?: boolean;
+  sizes?: string;
   variant?: "compact" | "display" | "mini";
 };
 
 export function YsabelleBrandMark({
   className = "",
   eager = false,
+  sizes,
   variant = "compact"
 }: YsabelleBrandMarkProps) {
   const isFileProtocol = window.location.protocol === "file:";
@@ -34,15 +36,7 @@ export function YsabelleBrandMark({
         decoding="async"
         height={256}
         loading={eager ? "eager" : "lazy"}
-        sizes={
-          className.includes("story-welcome__mark--branded")
-            ? "168px"
-            : variant === "display"
-              ? "112px"
-              : variant === "mini"
-                ? "36px"
-                : "48px"
-        }
+        sizes={sizes ?? (variant === "display" ? "112px" : variant === "mini" ? "36px" : "48px")}
         src={source}
         srcSet={sourceSet}
         width={256}
