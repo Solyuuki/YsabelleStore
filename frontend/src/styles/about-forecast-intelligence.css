@@ -443,3 +443,210 @@
     stroke-dashoffset: 0;
   }
 }
+
+
+/* Section 04 refinement: keep the ambient Gemini motion alive and make the data story editorial. */
+.about-experience .discover-story .story-forecast__stage {
+  width: min(calc(100% - 6rem), 1420px);
+  justify-content: space-between;
+  padding-block: clamp(2.4rem, 5vh, 4.25rem);
+}
+
+.about-experience .discover-story .story-forecast__intro {
+  grid-template-columns: minmax(0, 1.25fr) minmax(19rem, 0.62fr);
+  align-items: center;
+  gap: clamp(2.5rem, 7vw, 7rem);
+  padding: 0;
+  border-radius: 0;
+}
+
+.about-experience .discover-story .story-forecast__intro::before {
+  display: none;
+}
+
+.about-experience .discover-story .story-forecast__copy h2 {
+  max-width: 18ch;
+  margin-top: 0.8rem;
+  font-size: clamp(2.9rem, min(4.65vw, 6.5vh), 5.1rem);
+  line-height: 0.96;
+}
+
+.about-experience
+  .discover-story
+  .story-forecast__copy
+  .story-mask:last-child
+  .story-mask__line {
+  background: linear-gradient(105deg, #45b9ff 0%, #6f75ff 38%, #bc5bea 70%, #ff5da2 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.about-experience .discover-story .story-forecast__method {
+  align-self: center;
+  max-width: 28rem;
+  padding: 0.15rem 0 0.15rem 1.35rem;
+  border-left: 1px solid rgb(151 173 255 / 52%);
+}
+
+.about-experience .discover-story .story-forecast__method-label {
+  display: block;
+  margin-bottom: 0.42rem;
+  color: #92d7ff;
+  font-size: clamp(0.56rem, 0.66vw, 0.66rem);
+  font-weight: 850;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.about-experience .discover-story .story-forecast__method strong {
+  display: block;
+  margin-bottom: 0.62rem;
+  color: #f7f9ff;
+  font-family: var(--story-display-font);
+  font-size: clamp(1.55rem, 2.2vw, 2.25rem);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.about-experience .discover-story .story-forecast__lead {
+  max-width: 28rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #cbd5ef;
+  font-size: clamp(0.86rem, 0.98vw, 0.98rem);
+  line-height: 1.68;
+}
+
+.story-forecast__plot {
+  min-height: clamp(300px, 37vh, 430px);
+  margin-top: clamp(1.15rem, 2.2vh, 2rem);
+}
+
+.story-forecast__zones,
+.story-forecast__zone--history,
+.story-forecast__zone--future {
+  background: none;
+}
+
+.story-forecast__baseline,
+.story-forecast__guide {
+  stroke: rgb(203 217 255 / 17%);
+}
+
+.story-forecast__guide {
+  stroke-dasharray: 3 14;
+}
+
+.story-forecast__history,
+.story-forecast__future {
+  stroke-width: 4.5;
+}
+
+.story-forecast__labels {
+  inset: 0;
+}
+
+.story-forecast__label {
+  gap: 0.45rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #dce7ff;
+  font-size: clamp(0.54rem, 0.64vw, 0.63rem);
+  letter-spacing: 0.13em;
+  text-shadow: 0 3px 14px rgb(3 9 30 / 58%);
+  backdrop-filter: none;
+}
+
+.story-forecast__label::before {
+  width: 1.55rem;
+  height: 1px;
+  border-radius: 0;
+  background: currentColor;
+  opacity: 0.82;
+}
+
+.story-forecast__label--history {
+  top: 4%;
+  left: 3%;
+  color: #79cfff;
+}
+
+.story-forecast__label--present {
+  top: 3%;
+  left: 50%;
+  color: #a69aff;
+}
+
+.story-forecast__label--future {
+  top: 4%;
+  right: 3%;
+  color: #ef82cf;
+}
+
+.story-forecast__takeaway {
+  right: 3%;
+  bottom: 0;
+  max-width: 22rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgb(214 222 255 / 24%);
+  color: #e3e8f8;
+  font-size: clamp(0.7rem, 0.82vw, 0.82rem);
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.about-forecast-motion__video {
+  backface-visibility: hidden;
+  transform: scale(1.008) translateZ(0);
+  will-change: opacity;
+}
+
+@media (max-width: 1023px) {
+  .about-experience .discover-story .story-forecast__stage {
+    width: min(100% - 2rem, 900px);
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  .about-experience .discover-story .story-forecast__intro {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+
+  .about-experience .discover-story .story-forecast__method {
+    max-width: 38rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .about-experience .discover-story .story-forecast__stage {
+    width: min(100% - 1.25rem, 720px);
+  }
+
+  .about-experience .discover-story .story-forecast__copy h2 {
+    max-width: 15ch;
+    font-size: clamp(2.45rem, 11vw, 3.8rem);
+  }
+
+  .about-experience .discover-story .story-forecast__method {
+    padding-left: 1rem;
+  }
+
+  .story-forecast__plot {
+    min-height: 280px;
+    margin-top: 0.75rem;
+  }
+
+  .story-forecast__label {
+    font-size: 0.46rem;
+    letter-spacing: 0.08em;
+  }
+
+  .story-forecast__label::before {
+    width: 0.9rem;
+  }
+}
