@@ -959,7 +959,7 @@ export function DiscoverPage({
               );
               const forecastRecommendationItems = Array.from(
                 location.querySelectorAll<HTMLElement>(
-                  ".about-forecast-demo__product, .about-forecast-demo__restock-value, .about-forecast-demo__recommendation-grid > div, .about-forecast-demo__recommendation > p"
+                  ".about-forecast-demo__product, .about-forecast-demo__restock-value, .about-forecast-demo__recommendation-grid > div"
                 )
               );
 
@@ -1006,24 +1006,72 @@ export function DiscoverPage({
                 gsap.set(forecastRecommendation, { autoAlpha: 0, x: 18 });
                 gsap.set(forecastRecommendationItems, { autoAlpha: 0, y: 8 });
 
+                if (desktop) {
+                  const forecastPrelude = gsap.timeline({
+                    scrollTrigger: {
+                      trigger: location,
+                      start: "top 94%",
+                      end: "top top-=240",
+                      invalidateOnRefresh: true,
+                      scrub: 0.22
+                    }
+                  });
+
+                  forecastPrelude
+                    .to(
+                      forecastKicker,
+                      { autoAlpha: 0.72, duration: 1, ease: "none", y: 3 },
+                      0
+                    )
+                    .to(
+                      forecastHeadline,
+                      { autoAlpha: 0.66, duration: 1, ease: "none", y: 7 },
+                      0
+                    )
+                    .to(
+                      forecastLead,
+                      { autoAlpha: 0.58, duration: 1, ease: "none", y: 5 },
+                      0
+                    )
+                    .to(
+                      forecastVisual,
+                      { autoAlpha: 0.7, duration: 1, ease: "none", scale: 0.994, y: 8 },
+                      0
+                    );
+                }
+
                 const forecastTimeline = gsap.timeline({
-                  scrollTrigger: {
-                    trigger: location,
-                    start: desktop ? "top 78%" : mobile ? "top 90%" : "top 84%",
-                    end: desktop ? "bottom 22%" : "bottom 14%",
-                    invalidateOnRefresh: true,
-                    scrub: desktop ? 0.2 : tablet ? 0.14 : 0.1
-                  }
+                  scrollTrigger: desktop
+                    ? {
+                        trigger: location,
+                        start: "top top-=240",
+                        end: () =>
+                          `+=${Math.max(850, Math.round(window.innerHeight * 1.05))}`,
+                        pin: location,
+                        pinSpacing: true,
+                        anticipatePin: 1,
+                        invalidateOnRefresh: true,
+                        scrub: 0.45
+                      }
+                    : {
+                        trigger: location,
+                        start: mobile ? "top 90%" : "top 84%",
+                        end: "bottom 14%",
+                        invalidateOnRefresh: true,
+                        scrub: tablet ? 0.22 : 0.16
+                      }
                 });
 
                 forecastTimeline
-                  .to(
+                  .fromTo(
                     forecastKicker,
+                    { autoAlpha: desktop ? 0.72 : 0, y: desktop ? 3 : 12 },
                     { autoAlpha: 1, duration: 0.08, ease: "power2.out", y: 0 },
                     0.02
                   )
-                  .to(
+                  .fromTo(
                     forecastHeadline,
+                    { autoAlpha: desktop ? 0.66 : 0, y: desktop ? 7 : 22 },
                     {
                       autoAlpha: 1,
                       duration: 0.12,
@@ -1033,13 +1081,19 @@ export function DiscoverPage({
                     },
                     0.08
                   )
-                  .to(
+                  .fromTo(
                     forecastLead,
+                    { autoAlpha: desktop ? 0.58 : 0, y: desktop ? 5 : 14 },
                     { autoAlpha: 1, duration: 0.1, ease: "power1.out", y: 0 },
                     0.18
                   )
-                  .to(
+                  .fromTo(
                     forecastVisual,
+                    {
+                      autoAlpha: desktop ? 0.7 : 0,
+                      scale: desktop ? 0.994 : 0.985,
+                      y: desktop ? 8 : 26
+                    },
                     {
                       autoAlpha: 1,
                       duration: 0.12,
@@ -1133,9 +1187,9 @@ export function DiscoverPage({
                     { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
                     0.68
                   )
-                  .to(locationHandoff, { autoAlpha: 1, duration: 0.06, ease: "none" }, 0.82);
+                  .to(locationHandoff, { autoAlpha: 1, duration: 0.06, ease: "none" }, 0.86);
 
-                settle(forecastTimeline, 0.9);
+                settle(forecastTimeline, desktop ? 0.98 : 0.92);
               }
             } else {
               const realMap = location.querySelector<HTMLElement>(".story-real-map");
