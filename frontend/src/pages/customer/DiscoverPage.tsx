@@ -2,11 +2,15 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   ArrowRight,
+  BadgeCheck,
+  Barcode,
   Boxes,
   ChevronDown,
+  Crop,
   ExternalLink,
   MapPin,
   Package,
+  ScanLine,
   Search,
   ShoppingBasket,
   ShoppingCart,
@@ -14,6 +18,7 @@ import {
 } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
+import { AboutCatalogMotion } from "@/components/customer/about/AboutCatalogMotion";
 import { AboutWelcomeMotion } from "@/components/customer/about/AboutWelcomeMotion";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
@@ -40,6 +45,15 @@ const storyScenes = [
   { id: "discover-location", label: "Our location" },
   { id: "discover-smarter", label: "System intelligence" },
   { id: "discover-shop", label: "Shop with Ysabelle" }
+];
+
+const aboutStoryScenes = [
+  { id: "discover-welcome", label: "Brand opening" },
+  { id: "discover-beginning", label: "Product & catalog intelligence" },
+  { id: "discover-essentials", label: "Sales & inventory" },
+  { id: "discover-location", label: "Forecast intelligence" },
+  { id: "discover-smarter", label: "Replenishment & delivery" },
+  { id: "discover-shop", label: "Connected retail" }
 ];
 
 const storeAddress = "110 A. Mabini Street, Pasig City, Metro Manila";
@@ -326,6 +340,7 @@ export function DiscoverPage({
   variant?: DiscoverPageVariant;
 }) {
   const isAboutExperience = variant === "about";
+  const navigationScenes = isAboutExperience ? aboutStoryScenes : storyScenes;
   const rootRef = useRef<HTMLDivElement>(null);
   const [activeScene, setActiveScene] = useState(0);
   const [catalogProducts, setCatalogProducts] = useState<StorefrontProduct[]>([]);
@@ -1080,7 +1095,7 @@ export function DiscoverPage({
           <span className="discover-progress__fill" />
         </span>
         <ol>
-          {storyScenes.map((scene, index) => (
+          {navigationScenes.map((scene, index) => (
             <li className={activeScene === index ? "is-active" : undefined} key={scene.id}>
               <a
                 aria-current={activeScene === index ? "step" : undefined}
@@ -1156,51 +1171,123 @@ export function DiscoverPage({
         <span aria-hidden="true" className="story-welcome__handoff" />
       </section>
 
-      <section className="story-scene story-beginning" id="discover-beginning">
-        <div aria-hidden="true" className="story-beginning__atmosphere">
-          <span className="story-beginning__glow story-beginning__glow--one" />
-          <span className="story-beginning__glow story-beginning__glow--two" />
-          <span className="story-beginning__orbit" />
-        </div>
-        <div className="customer-container story-beginning__stage" data-story-motion>
-          <div className="story-beginning__year" aria-label="Established in 2019">
-            2019
-          </div>
-          <div className="story-beginning__copy">
-            <span className="story-kicker">02 / Our beginning</span>
-            <h2 className="story-display-safe">
-              <span className="story-mask">
-                <span className="story-mask__line">Where Our Story</span>
-              </span>
-              <span className="story-mask">
-                <span className="story-mask__line">Begins.</span>
-              </span>
-            </h2>
-            <p>
-              Ysabelle&apos;s Store is a local grocery retail store serving everyday consumer needs.
-            </p>
+      {isAboutExperience ? (
+        <section
+          aria-labelledby="about-catalog-title"
+          className="story-scene story-beginning story-catalog"
+          id="discover-beginning"
+        >
+          <div aria-hidden="true" className="story-beginning__atmosphere">
+            <span className="story-beginning__glow story-beginning__glow--one" />
+            <span className="story-beginning__glow story-beginning__glow--two" />
           </div>
 
           <div
-            aria-label="Abstract shelf filling with everyday essentials"
-            className="story-origin-shelf"
-            role="img"
+            className="customer-container story-beginning__stage story-catalog__stage"
+            data-story-motion
           >
-            <span aria-hidden="true" className="story-origin-shelf__line" />
-            <div aria-hidden="true" className="story-origin-shelf__items">
-              {[ShoppingBasket, Package, Boxes, Store].map((Icon, index) => (
-                <span className="story-origin-shelf__item" key={`origin-item-${index}`}>
-                  <Icon />
-                </span>
-              ))}
+            <div aria-hidden="true" className="story-beginning__year story-catalog__index">
+              02
             </div>
-            <strong className="story-origin-shelf__sign">
-              Everyday essentials take their place.
-            </strong>
+
+            <div className="story-beginning__copy story-catalog__copy">
+              <span className="story-kicker">02 / Product &amp; Catalog Intelligence</span>
+              <h2 className="story-display-safe" id="about-catalog-title">
+                <span className="story-mask">
+                  <span className="story-mask__line">From Product</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line">to Catalog Ready.</span>
+                </span>
+              </h2>
+              <p>
+                Products enter through controlled identity and image-quality checks before they
+                reach the live catalog.
+              </p>
+            </div>
+
+            <div
+              aria-label="Product catalog workflow from source item to catalog-ready product"
+              className="story-origin-shelf story-catalog__system story-catalog__pipeline"
+              role="group"
+            >
+              <AboutCatalogMotion />
+              <span aria-hidden="true" className="story-origin-shelf__line" />
+
+              <div className="story-origin-shelf__items" role="list">
+                {[
+                  { detail: "Source item", Icon: Package, label: "Product" },
+                  { detail: "Identity match", Icon: Barcode, label: "Barcode" },
+                  { detail: "Quality checks", Icon: ScanLine, label: "Image quality" },
+                  { detail: "Center & frame", Icon: Crop, label: "Normalize" },
+                  { detail: "Approved state", Icon: BadgeCheck, label: "Catalog ready" }
+                ].map(({ detail, Icon, label }) => (
+                  <span className="story-origin-shelf__item" key={label} role="listitem">
+                    <Icon aria-hidden="true" />
+                    <span>
+                      <small>{label}</small>
+                      <strong>{detail}</strong>
+                    </span>
+                  </span>
+                ))}
+              </div>
+
+              <strong className="story-origin-shelf__sign">
+                Identity first. Quality checked. Catalog ready.
+              </strong>
+            </div>
           </div>
-        </div>
-        <span aria-hidden="true" className="story-beginning__handoff" />
-      </section>
+
+          <span aria-hidden="true" className="story-beginning__handoff" />
+        </section>
+      ) : (
+        <section className="story-scene story-beginning" id="discover-beginning">
+          <div aria-hidden="true" className="story-beginning__atmosphere">
+            <span className="story-beginning__glow story-beginning__glow--one" />
+            <span className="story-beginning__glow story-beginning__glow--two" />
+            <span className="story-beginning__orbit" />
+          </div>
+          <div className="customer-container story-beginning__stage" data-story-motion>
+            <div className="story-beginning__year" aria-label="Established in 2019">
+              2019
+            </div>
+            <div className="story-beginning__copy">
+              <span className="story-kicker">02 / Our beginning</span>
+              <h2 className="story-display-safe">
+                <span className="story-mask">
+                  <span className="story-mask__line">Where Our Story</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line">Begins.</span>
+                </span>
+              </h2>
+              <p>
+                Ysabelle&apos;s Store is a local grocery retail store serving everyday consumer
+                needs.
+              </p>
+            </div>
+
+            <div
+              aria-label="Abstract shelf filling with everyday essentials"
+              className="story-origin-shelf"
+              role="img"
+            >
+              <span aria-hidden="true" className="story-origin-shelf__line" />
+              <div aria-hidden="true" className="story-origin-shelf__items">
+                {[ShoppingBasket, Package, Boxes, Store].map((Icon, index) => (
+                  <span className="story-origin-shelf__item" key={`origin-item-${index}`}>
+                    <Icon />
+                  </span>
+                ))}
+              </div>
+              <strong className="story-origin-shelf__sign">
+                Everyday essentials take their place.
+              </strong>
+            </div>
+          </div>
+          <span aria-hidden="true" className="story-beginning__handoff" />
+        </section>
+      )}
 
       <section className="story-scene story-products" id="discover-essentials" ref={shelfSceneRef}>
         <div className="customer-container story-products__stage" data-story-motion>
