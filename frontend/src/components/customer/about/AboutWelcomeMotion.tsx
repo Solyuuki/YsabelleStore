@@ -2,8 +2,19 @@ import { useEffect, useRef, useState } from "react";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const ABOUT_ORIGIN_VIDEO_FILE = "about-origin-motion-6738635d.mp4";
-const CROSSFADE_LEAD_SECONDS = 0.8;
-const CROSSFADE_DURATION_MS = 800;
+const CROSSFADE_LEAD_SECONDS = 0.95;
+const CROSSFADE_DURATION_MS = 720;
+
+type VideoFrameMetadata = {
+  mediaTime: number;
+};
+
+type FrameAwareVideo = HTMLVideoElement & {
+  requestVideoFrameCallback?: (
+    callback: (now: number, metadata: VideoFrameMetadata) => void
+  ) => number;
+  cancelVideoFrameCallback?: (handle: number) => void;
+};
 
 function resolveAboutOriginVideo() {
   if (window.location.protocol === "file:") {
@@ -19,6 +30,7 @@ export function AboutWelcomeMotion() {
     useRef<HTMLVideoElement>(null)
   ] as const;
   const transitionTimerRef = useRef<number | null>(null);
+  const resetFrameRef = useRef<number | null>(null);
   const transitioningRef = useRef(false);
   const activeIndexRef = useRef<0 | 1>(0);
 
@@ -39,9 +51,41 @@ export function AboutWelcomeMotion() {
   }, []);
 
   useEffect(() => {
+    if (reduceMotion || !videoReady || transitioningRef.current) return;
+
+    const video = videoRefs[activeIndex].current as FrameAwareVideo | null;
+    if (!video?.requestVideoFrameCallback) return;
+
+    let cancelled = false;
+    let callbackHandle: number | null = null;
+
+    const inspectFrame = (_now: number, metadata: VideoFrameMetadata) => {
+      if (cancelled || transitioningRef.current) return;
+
+      maybeCrossfade(video, activeIndex, metadata.mediaTime);
+
+      if (!transitioningRef.current && video.requestVideoFrameCallback) {
+        callbackHandle = video.requestVideoFrameCallback(inspectFrame);
+      }
+    };
+
+    callbackHandle = video.requestVideoFrameCallback(inspectFrame);
+
+    return () => {
+      cancelled = true;
+      if (callbackHandle !== null && video.cancelVideoFrameCallback) {
+        video.cancelVideoFrameCallback(callbackHandle);
+      }
+    };
+  }, [activeIndex, reduceMotion, videoReady]);
+
+  useEffect(() => {
     return () => {
       if (transitionTimerRef.current !== null) {
         window.clearTimeout(transitionTimerRef.current);
+      }
+      if (resetFrameRef.current !== null) {
+        window.cancelAnimationFrame(resetFrameRef.current);
       }
 
       videoRefs.forEach((videoRef) => videoRef.current?.pause());
@@ -53,13 +97,17 @@ export function AboutWelcomeMotion() {
     void video.play().catch(() => undefined);
   }
 
-  function maybeCrossfade(video: HTMLVideoElement, index: 0 | 1) {
+  function maybeCrossfade(
+    video: HTMLVideoElement,
+    index: 0 | 1,
+    mediaTime = video.currentTime
+  ) {
     if (
       transitioningRef.current ||
       index !== activeIndexRef.current ||
       !Number.isFinite(video.duration) ||
       video.duration <= 0 ||
-      video.duration - video.currentTime > CROSSFADE_LEAD_SECONDS
+      video.duration - mediaTime > CROSSFADE_LEAD_SECONDS
     ) {
       return;
     }
@@ -72,28 +120,49 @@ export function AboutWelcomeMotion() {
 
     const toIndex: 0 | 1 = fromIndex === 0 ? 1 : 0;
     const outgoingVideo = videoRefs[fromIndex].current;
-    const incomingVideo = videoRefs[toIndex].current;
+    const incomingVideo = videoRefs[toIndex].current as FrameAwareVideo | null;
 
     if (!outgoingVideo || !incomingVideo) return;
 
     transitioningRef.current = true;
     incomingVideo.currentTime = 0;
 
+    const revealIncoming = () => {
+      setIncomingIndex(toIndex);
+
+      transitionTimerRef.current = window.setTimeout(() => {
+        activeIndexRef.current = toIndex;
+        setActiveIndex(toIndex);
+        setIncomingIndex(null);
+        transitionTimerRef.current = null;
+
+        // The outgoing layer is now underneath a fully opaque incoming layer.
+        // Wait for React/CSS to commit that hidden state before seeking it.
+        resetFrameRef.current = window.requestAnimationFrame(() => {
+          resetFrameRef.current = window.requestAnimationFrame(() => {
+            outgoingVideo.pause();
+            outgoingVideo.currentTime = 0;
+            transitioningRef.current = false;
+            resetFrameRef.current = null;
+          });
+        });
+      }, CROSSFADE_DURATION_MS);
+    };
+
     void incomingVideo
       .play()
       .then(() => {
-        setIncomingIndex(toIndex);
+        if (incomingVideo.requestVideoFrameCallback) {
+          incomingVideo.requestVideoFrameCallback(() => revealIncoming());
+          return;
+        }
 
-        transitionTimerRef.current = window.setTimeout(() => {
-          outgoingVideo.pause();
-          outgoingVideo.currentTime = 0;
+        if (incomingVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+          revealIncoming();
+          return;
+        }
 
-          activeIndexRef.current = toIndex;
-          setActiveIndex(toIndex);
-          setIncomingIndex(null);
-          transitioningRef.current = false;
-          transitionTimerRef.current = null;
-        }, CROSSFADE_DURATION_MS);
+        incomingVideo.addEventListener("loadeddata", revealIncoming, { once: true });
       })
       .catch(() => {
         transitioningRef.current = false;
@@ -141,7 +210,9 @@ export function AboutWelcomeMotion() {
                     ? (event) => markPrimaryReady(event.currentTarget)
                     : undefined
                 }
-                onTimeUpdate={(event) => maybeCrossfade(event.currentTarget, index)}
+                onTimeUpdate={(event) =>
+                  maybeCrossfade(event.currentTarget, index)
+                }
                 playsInline
                 preload="auto"
                 ref={videoRefs[index]}
