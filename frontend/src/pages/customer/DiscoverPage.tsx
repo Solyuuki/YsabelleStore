@@ -44,7 +44,7 @@ const storyScenes = [
   { id: "discover-welcome", label: "Welcome" },
   { id: "discover-beginning", label: "Our beginning" },
   { id: "discover-essentials", label: "Everyday essentials" },
-  { id: "discover-location", label: "Forecast intelligence" },
+  { id: "discover-location", label: "Our location" },
   { id: "discover-smarter", label: "System intelligence" },
   { id: "discover-shop", label: "Shop with Ysabelle" }
 ];
@@ -53,7 +53,7 @@ const aboutStoryScenes = [
   { id: "discover-welcome", label: "Brand opening" },
   { id: "discover-beginning", label: "Product & catalog intelligence" },
   { id: "discover-essentials", label: "Sales & inventory" },
-  { id: "discover-location", label: "Our location" },
+  { id: "discover-location", label: "Forecast intelligence" },
   { id: "discover-smarter", label: "System intelligence" },
   { id: "discover-shop", label: "Shop with Ysabelle" }
 ];
