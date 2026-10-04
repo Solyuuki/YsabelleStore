@@ -107,30 +107,6 @@
   padding-block: clamp(3.5rem, 8vh, 7rem);
 }
 
-.about-experience .discover-story--about .story-welcome__mark--branded {
-  width: clamp(9.5rem, 10.5vw, 11rem);
-  height: clamp(9.5rem, 10.5vw, 11rem);
-  margin-bottom: clamp(2rem, 3.6vh, 2.75rem);
-  overflow: hidden;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-}
-
-.about-experience
-  .discover-story--about
-  .story-welcome__mark--branded
-  .ysabelle-brand-mark__image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transform: none;
-}
-
 .about-experience .discover-story--about .story-welcome__title {
   width: min(100%, 11ch);
   max-width: 11ch;
@@ -221,12 +197,6 @@
     transform: scale(1.06);
   }
 
-  .about-experience .discover-story--about .story-welcome__mark--branded {
-    width: clamp(8rem, 24vw, 9rem);
-    height: clamp(8rem, 24vw, 9rem);
-    margin-bottom: clamp(1.6rem, 3vh, 2.1rem);
-  }
-
   .about-experience .discover-story--about .story-welcome__title {
     width: min(100%, 9.5ch);
     max-width: 9.5ch;
@@ -242,12 +212,6 @@
 }
 
 @media (max-width: 420px) {
-  .about-experience .discover-story--about .story-welcome__mark--branded {
-    width: 7.5rem;
-    height: 7.5rem;
-    margin-bottom: 1.5rem;
-  }
-
   .about-experience .discover-story--about .story-welcome__title {
     font-size: clamp(3.15rem, 18vw, 4.65rem);
   }
