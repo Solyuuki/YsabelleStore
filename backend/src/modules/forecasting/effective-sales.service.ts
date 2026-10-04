@@ -246,44 +246,57 @@ export function mergeDatabaseProductsWithWorkbookFallback(
   workbookProducts: ProductHistoricalSeries[],
   reconstructedComparison = new Map<string, HistoricalSalesPoint[]>()
 ) {
-  if (databaseProducts.length === 0) return databaseProducts;
-
-  const usableIds = new Set(databaseProducts.map((product) => product.productId));
+  const databaseById = new Map(databaseProducts.map((product) => [product.productId, product]));
   const workbookById = new Map(workbookProducts.map((product) => [product.productId, product]));
   const workbookByIdentity = new Map(
     workbookProducts.map((product) => [identityKey(product.productName, product.category), product])
   );
-  const merged = [...databaseProducts];
+  const merged: ProductHistoricalSeries[] = [];
 
   for (const target of series) {
-    if (usableIds.has(target.productId)) continue;
+    const databaseProduct = databaseById.get(target.productId);
 
+    // A complete canonical database history remains authoritative.
+    if (target.eligibility.status === "ELIGIBLE" && databaseProduct) {
+      merged.push(databaseProduct);
+      continue;
+    }
+
+    // Short/limited canonical histories should not degrade into flat moving-average forecasts
+    // when the approved 24-month workbook history exists for the same canonical product.
     const fallback = fallbackCandidateFor(target, workbookById, workbookByIdentity);
-    if (!fallback) continue;
+    if (fallback) {
+      const fallbackEligibility = assessSarimaEligibility(
+        fallback.productId,
+        fallback.productName,
+        fallback.historical.map((point) => ({
+          period: point.period,
+          quantitySold: point.quantitySold,
+          source: "IMPORTED_HISTORICAL" as const
+        }))
+      );
 
-    const fallbackEligibility = assessSarimaEligibility(
-      fallback.productId,
-      fallback.productName,
-      fallback.historical.map((point) => ({
-        period: point.period,
-        quantitySold: point.quantitySold,
-        source: "IMPORTED_HISTORICAL" as const
-      }))
-    );
-    if (fallbackEligibility.status !== "ELIGIBLE") continue;
+      if (fallbackEligibility.status === "ELIGIBLE") {
+        const comparison = reconstructedComparison.get(fallback.productId);
+        merged.push({
+          category: target.category,
+          comparisonHistorical: comparison?.length
+            ? remapHistoricalPoints(comparison, target)
+            : undefined,
+          historical: remapHistoricalPoints(fallback.historical, target),
+          productId: target.productId,
+          productName: target.productName,
+          sellingPrice: target.sellingPrice
+        });
+        continue;
+      }
+    }
 
-    const comparison = reconstructedComparison.get(fallback.productId);
-    merged.push({
-      category: target.category,
-      comparisonHistorical: comparison?.length
-        ? remapHistoricalPoints(comparison, target)
-        : undefined,
-      historical: remapHistoricalPoints(fallback.historical, target),
-      productId: target.productId,
-      productName: target.productName,
-      sellingPrice: target.sellingPrice
-    });
-    usableIds.add(target.productId);
+    // If no approved workbook match exists, retain a clean short database series so the
+    // deterministic fallback model is still available instead of dropping the product.
+    if (databaseProduct) {
+      merged.push(databaseProduct);
+    }
   }
 
   return merged;
@@ -401,13 +414,14 @@ export async function loadEligibleEffectiveSales(productIds?: string[]) {
       sellingPrice: product.sellingPrice
     }));
 
-  if (databaseProducts.length === 0 || databaseProducts.length === series.length) {
+  if (series.length === 0 || series.every((product) => product.eligibility.status === "ELIGIBLE")) {
     return { products: databaseProducts, series };
   }
 
-  // Once at least one canonical database product is forecastable, preserve canonical identities
-  // for the whole batch. Products that still lack usable database history may borrow the approved
-  // workbook series per product instead of forcing the entire batch into WORKBOOK_FALLBACK.
+  // Preserve canonical identities while preferring approved 24-month history for products whose
+  // current database history is still too short for SARIMA. This prevents one- or two-month POS
+  // histories from silently collapsing into flat moving-average forecasts when verified history
+  // is already available in the approved workbooks.
   const [workbookFallback, reconstructed] = await Promise.all([
     loadHistoricalSalesFallbackData(),
     loadReconstructedComparisonSales()
