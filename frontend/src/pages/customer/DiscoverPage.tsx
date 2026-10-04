@@ -1040,6 +1040,14 @@ export function DiscoverPage({
                     );
                 }
 
+                // Unlike a pure scrub, this dwell gate prevents a high-velocity
+                // wheel/trackpad gesture from carrying Scene 04 straight into Scene 05.
+                // The chart reaches its completed state first, holds briefly, then releases.
+                let forecastDwellUntil = 0;
+                let forecastDwellReleased = !desktop;
+                const forecastDwellProgress = 0.72;
+                const forecastDwellMs = 750;
+
                 const forecastTimeline = gsap.timeline({
                   scrollTrigger: desktop
                     ? {
@@ -1050,9 +1058,41 @@ export function DiscoverPage({
                         pin: location,
                         pinSpacing: true,
                         anticipatePin: 1,
-                        fastScrollEnd: true,
                         invalidateOnRefresh: true,
-                        scrub: 0.45
+                        scrub: 0.45,
+                        onUpdate: (self) => {
+                          if (
+                            forecastDwellReleased ||
+                            self.direction <= 0 ||
+                            self.progress < forecastDwellProgress
+                          ) {
+                            return;
+                          }
+
+                          const now = performance.now();
+                          if (forecastDwellUntil === 0) {
+                            forecastDwellUntil = now + forecastDwellMs;
+                          }
+
+                          if (now < forecastDwellUntil) {
+                            const holdScroll =
+                              self.start + (self.end - self.start) * forecastDwellProgress;
+                            if (Math.abs(self.scroll() - holdScroll) > 1) self.scroll(holdScroll);
+                            return;
+                          }
+
+                          forecastDwellReleased = true;
+                        },
+                        onLeave: (self) => {
+                          if (forecastDwellReleased) return;
+                          const holdScroll =
+                            self.start + (self.end - self.start) * forecastDwellProgress;
+                          self.scroll(holdScroll);
+                        },
+                        onLeaveBack: () => {
+                          forecastDwellUntil = 0;
+                          forecastDwellReleased = false;
+                        }
                       }
                     : {
                         trigger: location,
