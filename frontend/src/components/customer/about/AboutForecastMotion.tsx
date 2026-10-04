@@ -37,12 +37,38 @@ export function AboutForecastMotion() {
   }, []);
 
   useEffect(() => {
+    const resumeActiveVideo = () => {
+      if (reduceMotion || document.visibilityState === "hidden") return;
+
+      const activeVideo = videoRefs[activeIndexRef.current].current;
+      if (!activeVideo) return;
+
+      void activeVideo.play().catch(() => undefined);
+    };
+
+    resumeActiveVideo();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") resumeActiveVideo();
+    };
+
+    const handleWindowFocus = () => {
+      resumeActiveVideo();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleWindowFocus);
+
     return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleWindowFocus);
+
       if (transitionTimerRef.current !== null) window.clearTimeout(transitionTimerRef.current);
       if (resetFrameRef.current !== null) window.cancelAnimationFrame(resetFrameRef.current);
+
       videoRefs.forEach((ref) => ref.current?.pause());
     };
-  }, []);
+  }, [reduceMotion]);
 
   function markReady(video: HTMLVideoElement) {
     setVideoReady(true);
