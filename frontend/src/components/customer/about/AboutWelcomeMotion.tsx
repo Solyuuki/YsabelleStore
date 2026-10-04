@@ -51,6 +51,39 @@ export function AboutWelcomeMotion() {
   }, []);
 
   useEffect(() => {
+    if (reduceMotion) return;
+
+    const primaryVideo = videoRefs[0].current;
+    if (!primaryVideo) return;
+
+    const revealDecodedVideo = () => {
+      if (primaryVideo.readyState >= 2) {
+        setVideoReady(true);
+      }
+    };
+
+    revealDecodedVideo();
+    primaryVideo.addEventListener("loadeddata", revealDecodedVideo);
+    primaryVideo.addEventListener("canplay", revealDecodedVideo);
+    primaryVideo.addEventListener("playing", revealDecodedVideo);
+
+    const recoveryTimer = window.setTimeout(() => {
+      if (primaryVideo.readyState < 2) {
+        primaryVideo.load();
+      }
+      void primaryVideo.play().catch(() => undefined);
+      revealDecodedVideo();
+    }, 180);
+
+    return () => {
+      window.clearTimeout(recoveryTimer);
+      primaryVideo.removeEventListener("loadeddata", revealDecodedVideo);
+      primaryVideo.removeEventListener("canplay", revealDecodedVideo);
+      primaryVideo.removeEventListener("playing", revealDecodedVideo);
+    };
+  }, [reduceMotion]);
+
+  useEffect(() => {
     if (reduceMotion || !videoReady || transitioningRef.current) return;
 
     const video = videoRefs[activeIndex].current as FrameAwareVideo | null;
@@ -206,6 +239,11 @@ export function AboutWelcomeMotion() {
                 }
                 onEnded={() => handleEnded(index)}
                 onLoadedData={
+                  index === 0
+                    ? (event) => markPrimaryReady(event.currentTarget)
+                    : undefined
+                }
+                onPlaying={
                   index === 0
                     ? (event) => markPrimaryReady(event.currentTarget)
                     : undefined
