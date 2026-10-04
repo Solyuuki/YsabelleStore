@@ -71,28 +71,27 @@
 }
 
 .about-experience .discover-story .story-forecast__header h2 {
-  max-width: 15ch;
+  width: 100%;
+  max-width: none;
   margin: 0.75rem auto 0;
   color: #f7f9ff;
-  font-size: clamp(2.75rem, min(4.4vw, 6.2vh), 4.9rem);
-  line-height: 0.97;
+  font-size: clamp(2.2rem, min(3.7vw, 5.6vh), 4.1rem);
+  line-height: 1;
   text-align: center;
   text-shadow: 0 6px 28px rgb(3 8 28 / 34%);
 }
 
 .about-experience .discover-story .story-forecast__header h2 .story-mask__line {
   display: inline;
-  text-wrap: balance;
+  color: #f7f9ff;
+  white-space: nowrap;
 }
 
 .about-experience .discover-story .story-forecast__emphasis {
-  background: linear-gradient(105deg, #45b9ff 0%, #6f75ff 40%, #ba5bea 72%, #ff5da2 100%);
-  background-clip: text;
-  color: transparent;
+  color: #f7f9ff;
   font-style: italic;
   font-weight: inherit;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: #f7f9ff;
 }
 
 .about-experience .discover-story .story-forecast__lead {
@@ -530,6 +529,10 @@
 }
 
 @media (max-width: 640px) {
+  .about-experience .discover-story .story-forecast__header h2 .story-mask__line {
+    white-space: normal;
+  }
+
   .about-forecast-demo__topbar { align-items: flex-start; }
   .about-forecast-demo__status { padding-inline: 0.55rem; font-size: 0.63rem; }
   .about-forecast-demo__metrics { grid-template-columns: 1fr; }
