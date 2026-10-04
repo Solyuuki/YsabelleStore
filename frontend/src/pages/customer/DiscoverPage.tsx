@@ -591,7 +591,11 @@ export function DiscoverPage({
               gsap.set(originShelfSign, { autoAlpha: 0, y: 12 });
               gsap.set(originShelfLine, { scaleX: 0 });
               gsap.set(originShelfItems, { autoAlpha: 0, scale: 0.68, y: 54 });
-              gsap.set(beginningHandoff, { scaleX: 0 });
+              if (isAboutExperience) {
+                gsap.set(beginningHandoff, { autoAlpha: 0, scaleX: 1, yPercent: 28 });
+              } else {
+                gsap.set(beginningHandoff, { scaleX: 0 });
+              }
 
               const beginningTimeline = gsap.timeline({
                 scrollTrigger: desktop
@@ -656,8 +660,21 @@ export function DiscoverPage({
                   },
                   0.64
                 )
-                .addLabel("complete", 0.81)
-                .to(beginningHandoff, { duration: 0.06, ease: "none", scaleX: 1 }, 0.93);
+                .addLabel("complete", 0.81);
+
+              if (isAboutExperience) {
+                beginningTimeline.to(
+                  beginningHandoff,
+                  { autoAlpha: 1, duration: 0.08, ease: "none", yPercent: 0 },
+                  0.9
+                );
+              } else {
+                beginningTimeline.to(
+                  beginningHandoff,
+                  { duration: 0.06, ease: "none", scaleX: 1 },
+                  0.93
+                );
+              }
               settle(beginningTimeline, 0.99);
             }
           }
