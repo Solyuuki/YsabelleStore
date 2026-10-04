@@ -157,7 +157,7 @@ export function AboutWelcomeMotion() {
           return;
         }
 
-        if (incomingVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        if (incomingVideo.readyState >= 2) {
           revealIncoming();
           return;
         }
