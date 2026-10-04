@@ -91,3 +91,25 @@ test("About welcome uses branded premium typography without a CTA", () => {
   );
   assert.match(welcomeCss, /@keyframes about-welcome-scroll-cue/);
 });
+
+
+test("About welcome video keeps balanced contrast without a milky white shader", () => {
+  const css = read("frontend/src/styles/about-welcome-motion.css");
+
+  assert.match(
+    css,
+    /filter:\s*saturate\(1\.045\) contrast\(1\.035\) brightness\(1\.005\)/
+  );
+  assert.match(
+    css,
+    /\.about-welcome-motion__scrim\s*\{[\s\S]*?rgb\(10 16 38 \/ 5%\)[\s\S]*?rgb\(8 13 32 \/ 10%\)/
+  );
+  assert.doesNotMatch(
+    css,
+    /\.about-welcome-motion__scrim\s*\{[\s\S]{0,600}?rgb\(255 255 255 \/ 18%\)/
+  );
+  assert.match(
+    css,
+    /\.about-welcome-motion__edge-light\s*\{[\s\S]*?opacity:\s*0\.34/
+  );
+});
