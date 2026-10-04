@@ -1,4 +1,14 @@
 /* About Scene 01: branded Gemini motion plate with responsive HTML typography. */
+.about-experience .discover-story--about {
+  --about-welcome-catalog-seam: linear-gradient(
+    90deg,
+    #b9ccef 0%,
+    #c3c9ef 34%,
+    #cbc3ec 66%,
+    #d3b9e8 100%
+  );
+}
+
 .about-experience .discover-story--about .story-welcome {
   position: relative;
   min-height: max(740px, calc(100svh - 76px));
@@ -310,20 +320,15 @@
   left: 0;
   z-index: 3;
   width: auto;
-  height: clamp(6.5rem, 14vh, 10rem);
+  height: clamp(7.5rem, 16vh, 11rem);
   border-radius: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgb(247 239 255 / 8%) 18%,
-    rgb(247 239 255 / 34%) 44%,
-    rgb(247 239 255 / 76%) 72%,
-    var(--story-seam-12) 100%
-  );
+  background: var(--about-welcome-catalog-seam);
   box-shadow: none;
   opacity: 0;
   pointer-events: none;
   transform-origin: center bottom;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 54%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 54%, #000 100%);
 }
 
 @media (max-width: 699px) {
