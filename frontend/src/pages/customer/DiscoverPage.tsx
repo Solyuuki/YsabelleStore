@@ -443,21 +443,19 @@ export function DiscoverPage({
 
           const welcome = first<HTMLElement>(".story-welcome");
           if (welcome) {
-            gsap
-              .timeline({
-                defaults: { duration: 0.78, ease: "power3.out" },
-                onComplete: () => {
-                  if (isAboutExperience) {
-                    gsap.set(".story-welcome__mark", { clearProps: "transform" });
-                  }
-                }
-              })
-              .from(
-                ".story-welcome__mark",
-                isAboutExperience
-                  ? { autoAlpha: 0, y: 12 }
-                  : { autoAlpha: 0, rotate: -8, scale: 0.55 }
-              )
+            const welcomeIntro = gsap.timeline({
+              defaults: { duration: 0.78, ease: "power3.out" }
+            });
+
+            if (!isAboutExperience) {
+              welcomeIntro.from(".story-welcome__mark", {
+                autoAlpha: 0,
+                rotate: -8,
+                scale: 0.55
+              });
+            }
+
+            welcomeIntro
               .from(
                 ".story-welcome__title .story-mask__line",
                 { autoAlpha: 0, stagger: 0.08, y: 30 },
@@ -1115,13 +1113,16 @@ export function DiscoverPage({
         </div>
 
         <div className="customer-container story-welcome__stage" data-story-motion>
-          <YsabelleBrandMark
-            className="story-welcome__mark story-welcome__mark--branded"
-            eager
-            sizes={isAboutExperience ? "192px" : undefined}
-            variant="display"
-          />
-          {!isAboutExperience ? <span className="story-kicker">01 / Welcome</span> : null}
+          {!isAboutExperience ? (
+            <>
+              <YsabelleBrandMark
+                className="story-welcome__mark story-welcome__mark--branded"
+                eager
+                variant="display"
+              />
+              <span className="story-kicker">01 / Welcome</span>
+            </>
+          ) : null}
           <h1 className="story-display-safe story-welcome__title">
             <span className="story-mask">
               <span className="story-mask__line">Ysabelle&apos;s</span>
