@@ -43,3 +43,27 @@ test("About progress navigator stays hidden through the welcome scene", () => {
   assert.match(discover, /scrollTop >= progressVisibilityStart/);
   assert.doesNotMatch(discover, /scrollTop >= rootTop - viewportHeight \* 0\.75/);
 });
+
+
+test("About welcome uses branded premium typography without a CTA", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const welcomeCss = read("frontend/src/styles/about-welcome-motion.css");
+
+  assert.match(discover, /Established 2019 · Pasig City/);
+  assert.match(discover, /story-welcome__divider/);
+  assert.match(discover, /Scroll to continue <ChevronsDown/);
+  assert.doesNotMatch(discover, /story-welcome__support[\s\S]{0,900}>Get Started</);
+  assert.match(
+    welcomeCss,
+    /story-welcome__title[\s\S]*?#20285f[\s\S]*?#625bff/
+  );
+  assert.match(
+    welcomeCss,
+    /story-mask__line--accent[\s\S]*?#625bff[\s\S]*?#a83cf0[\s\S]*?#f43f8c/
+  );
+  assert.match(
+    welcomeCss,
+    /story-welcome__support strong[\s\S]*?rgb\(0 140 255 \/ 34%\)[\s\S]*?rgb\(98 91 255 \/ 48%\)[\s\S]*?rgb\(244 63 140 \/ 28%\)/
+  );
+  assert.match(welcomeCss, /@keyframes about-welcome-scroll-cue/);
+});
