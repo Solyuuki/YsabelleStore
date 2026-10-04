@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-const ABOUT_ORIGIN_VIDEO = "/media/about-origin-motion.mp4";
+const ABOUT_ORIGIN_VIDEO = "/media/about-origin-motion.mp4?v=6738635d";
 const LOOP_FADE_LEAD_SECONDS = 0.55;
 const LOOP_REVEAL_DELAY_MS = 70;
+const MAX_VIDEO_RETRIES = 1;
 
 export function AboutWelcomeMotion() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -12,6 +13,7 @@ export function AboutWelcomeMotion() {
   const [reduceMotion, setReduceMotion] = useState(() =>
     window.matchMedia(REDUCED_MOTION_QUERY).matches
   );
+  const [videoAttempt, setVideoAttempt] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const [isLoopFading, setIsLoopFading] = useState(false);
@@ -46,9 +48,7 @@ export function AboutWelcomeMotion() {
         return;
       }
 
-      void video.play().catch(() => {
-        // Keep the lightweight static fallback visible if autoplay is unavailable.
-      });
+      void video.play().catch(() => undefined);
     };
 
     const handleVisibility = () => syncPlayback();
@@ -79,7 +79,12 @@ export function AboutWelcomeMotion() {
       document.removeEventListener("visibilitychange", handleVisibility);
       video.pause();
     };
-  }, [reduceMotion, videoFailed]);
+  }, [reduceMotion, videoAttempt, videoFailed]);
+
+  function markVideoReady() {
+    setVideoReady(true);
+    setVideoFailed(false);
+  }
 
   function maybeFadeForLoop(video: HTMLVideoElement) {
     if (
@@ -116,16 +121,25 @@ export function AboutWelcomeMotion() {
 
   function handleVideoError() {
     setVideoReady(false);
-    setVideoFailed(true);
     setIsLoopFading(false);
     loopResetPendingRef.current = false;
 
+    if (videoAttempt < MAX_VIDEO_RETRIES) {
+      setVideoAttempt((attempt) => attempt + 1);
+      return;
+    }
+
+    setVideoFailed(true);
+
     if (import.meta.env.DEV) {
       console.error(
-        `About origin motion asset failed to load from ${ABOUT_ORIGIN_VIDEO}. Run: npm run storefront:about-origin:install`
+        `About origin motion failed after retry: ${ABOUT_ORIGIN_VIDEO}. Run npm run storefront:about-origin:verify.`
       );
     }
   }
+
+  const videoSrc =
+    videoAttempt === 0 ? ABOUT_ORIGIN_VIDEO : `${ABOUT_ORIGIN_VIDEO}&retry=${videoAttempt}`;
 
   return (
     <div
@@ -138,22 +152,20 @@ export function AboutWelcomeMotion() {
 
       {!reduceMotion ? (
         <video
+          autoPlay
           className="about-welcome-motion__video"
           muted
-          onCanPlay={() => {
-            setVideoReady(true);
-            setVideoFailed(false);
-          }}
+          onCanPlay={markVideoReady}
           onEnded={(event) => restartLoop(event.currentTarget)}
           onError={handleVideoError}
+          onLoadedData={markVideoReady}
           onTimeUpdate={(event) => maybeFadeForLoop(event.currentTarget)}
           playsInline
           preload="auto"
           ref={videoRef}
+          src={videoSrc}
           tabIndex={-1}
-        >
-          <source src={ABOUT_ORIGIN_VIDEO} type="video/mp4" />
-        </video>
+        />
       ) : null}
 
       <span className="about-welcome-motion__scrim" />
