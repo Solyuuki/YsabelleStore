@@ -285,12 +285,17 @@
 
 .about-experience .discover-story .story-catalog .story-beginning__handoff {
   right: 0;
+  bottom: -1px;
   left: 0;
   width: auto;
-  height: 0.3rem;
-  background: linear-gradient(90deg, var(--story-blue), var(--story-indigo), var(--story-violet));
-  opacity: 0.72;
-  transform-origin: left;
+  height: clamp(7.5rem, 16vh, 11rem);
+  border-radius: 0;
+  background: var(--about-catalog-sales-seam);
+  box-shadow: none;
+  opacity: 0;
+  transform-origin: center bottom;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 54%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 54%, #000 100%);
 }
 
 @media (max-width: 1120px) {
