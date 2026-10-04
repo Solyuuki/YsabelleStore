@@ -2,14 +2,19 @@ import { useEffect, useRef, useState } from "react";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const ABOUT_ORIGIN_VIDEO = "/media/about-origin-motion.mp4";
+const LOOP_FADE_LEAD_SECONDS = 0.55;
+const LOOP_REVEAL_DELAY_MS = 70;
 
 export function AboutWelcomeMotion() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const loopResetPendingRef = useRef(false);
+  const loopRevealTimerRef = useRef<number | null>(null);
   const [reduceMotion, setReduceMotion] = useState(() =>
     window.matchMedia(REDUCED_MOTION_QUERY).matches
   );
   const [videoReady, setVideoReady] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [isLoopFading, setIsLoopFading] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia(REDUCED_MOTION_QUERY);
@@ -19,6 +24,14 @@ export function AboutWelcomeMotion() {
     media.addEventListener("change", handleMotionPreference);
 
     return () => media.removeEventListener("change", handleMotionPreference);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (loopRevealTimerRef.current !== null) {
+        window.clearTimeout(loopRevealTimerRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -34,7 +47,7 @@ export function AboutWelcomeMotion() {
       }
 
       void video.play().catch(() => {
-        // Keep the animated CSS fallback visible if browser autoplay is unavailable.
+        // Keep the lightweight static fallback visible if autoplay is unavailable.
       });
     };
 
@@ -68,9 +81,44 @@ export function AboutWelcomeMotion() {
     };
   }, [reduceMotion, videoFailed]);
 
+  function maybeFadeForLoop(video: HTMLVideoElement) {
+    if (
+      loopResetPendingRef.current ||
+      !Number.isFinite(video.duration) ||
+      video.duration <= 0
+    ) {
+      return;
+    }
+
+    if (video.duration - video.currentTime <= LOOP_FADE_LEAD_SECONDS) {
+      loopResetPendingRef.current = true;
+      setIsLoopFading(true);
+    }
+  }
+
+  function restartLoop(video: HTMLVideoElement) {
+    video.currentTime = 0;
+
+    void video
+      .play()
+      .then(() => {
+        loopRevealTimerRef.current = window.setTimeout(() => {
+          setIsLoopFading(false);
+          loopResetPendingRef.current = false;
+          loopRevealTimerRef.current = null;
+        }, LOOP_REVEAL_DELAY_MS);
+      })
+      .catch(() => {
+        setIsLoopFading(false);
+        loopResetPendingRef.current = false;
+      });
+  }
+
   function handleVideoError() {
     setVideoReady(false);
     setVideoFailed(true);
+    setIsLoopFading(false);
+    loopResetPendingRef.current = false;
 
     if (import.meta.env.DEV) {
       console.error(
@@ -83,24 +131,22 @@ export function AboutWelcomeMotion() {
     <div
       aria-hidden="true"
       className={`about-welcome-motion${videoReady ? " is-video-ready" : ""}${
-        videoFailed ? " has-video-error" : ""
-      }`}
+        isLoopFading ? " is-loop-fading" : ""
+      }${videoFailed ? " has-video-error" : ""}`}
     >
-      <div className="about-welcome-motion__fallback">
-        <span className="about-welcome-motion__orbit about-welcome-motion__orbit--one" />
-        <span className="about-welcome-motion__orbit about-welcome-motion__orbit--two" />
-        <span className="about-welcome-motion__float about-welcome-motion__float--one" />
-        <span className="about-welcome-motion__float about-welcome-motion__float--two" />
-        <span className="about-welcome-motion__float about-welcome-motion__float--three" />
-      </div>
+      <div className="about-welcome-motion__fallback" />
 
       {!reduceMotion ? (
         <video
           className="about-welcome-motion__video"
-          loop
           muted
-          onCanPlay={() => setVideoReady(true)}
+          onCanPlay={() => {
+            setVideoReady(true);
+            setVideoFailed(false);
+          }}
+          onEnded={(event) => restartLoop(event.currentTarget)}
           onError={handleVideoError}
+          onTimeUpdate={(event) => maybeFadeForLoop(event.currentTarget)}
           playsInline
           preload="auto"
           ref={videoRef}
