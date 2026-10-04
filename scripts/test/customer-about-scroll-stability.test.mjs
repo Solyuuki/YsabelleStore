@@ -154,7 +154,11 @@ test("About welcome-to-catalog handoff uses a vertical scrubbed fade without a v
   );
   assert.match(
     welcomeCss,
-    /story-welcome__handoff[\s\S]*?height:\s*clamp\(6\.5rem, 14vh, 10rem\)[\s\S]*?linear-gradient\(\s*180deg[\s\S]*?var\(--story-seam-12\) 100%/
+    /--about-welcome-catalog-seam:\s*linear-gradient\([\s\S]*?#b9ccef[\s\S]*?#d3b9e8/
+  );
+  assert.match(
+    welcomeCss,
+    /story-welcome__handoff[\s\S]*?height:\s*clamp\(7\.5rem, 16vh, 11rem\)[\s\S]*?background:\s*var\(--about-welcome-catalog-seam\)[\s\S]*?mask-image:\s*linear-gradient\(to bottom, transparent 0%, #000 54%, #000 100%\)/
   );
   assert.doesNotMatch(
     welcomeCss,
@@ -162,6 +166,6 @@ test("About welcome-to-catalog handoff uses a vertical scrubbed fade without a v
   );
   assert.match(
     catalogCss,
-    /story-catalog[\s\S]*?margin-top:\s*-1px[\s\S]*?var\(--story-seam-12\) 0%[\s\S]*?transparent 17%/
+    /story-catalog::after[\s\S]*?background:\s*var\(--about-welcome-catalog-seam\)[\s\S]*?mask-image:\s*linear-gradient\(to bottom, #000 0%, #000 18%, transparent 100%\)/
   );
 });
