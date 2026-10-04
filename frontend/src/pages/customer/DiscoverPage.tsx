@@ -1854,10 +1854,6 @@ export function DiscoverPage({
                 <strong>SARIMA</strong>
                 <small>Illustrative demo</small>
               </div>
-
-              <p className="story-forecast__takeaway">
-                Capability preview only — no live owner or staff data is exposed.
-              </p>
             </footer>
           </div>
 
