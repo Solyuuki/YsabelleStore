@@ -927,7 +927,7 @@ export function DiscoverPage({
                     return;
                   }
 
-                  const videoProgress = Math.min(1, Math.max(0, progress / 0.82));
+                  const videoProgress = Math.min(1, Math.max(0, progress / 0.68));
                   const finalFrame = Math.max(0, forecastVideo.duration - 0.04);
                   const nextTime = Math.min(finalFrame, finalFrame * videoProgress);
 
@@ -941,7 +941,7 @@ export function DiscoverPage({
                     trigger: location,
                     start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
                     end: desktop
-                      ? () => `+=${Math.max(1200, Math.round(window.innerHeight * 1.45))}`
+                      ? () => `+=${Math.max(520, Math.round(window.innerHeight * 0.65))}`
                       : "bottom 12%",
                     invalidateOnRefresh: true,
                     pin: desktop ? forecastStage : false,
@@ -988,9 +988,9 @@ export function DiscoverPage({
                     { autoAlpha: 1, duration: 0.07, ease: "power1.out", y: 0 },
                     0.64
                   )
-                  .to(locationHandoff, { autoAlpha: 1, duration: 0.06, ease: "none" }, 0.76);
+                  .to(locationHandoff, { autoAlpha: 1, duration: 0.06, ease: "none" }, 0.7);
 
-                settle(forecastTimeline, 0.82);
+                settle(forecastTimeline, 0.76);
 
               }
             } else {
