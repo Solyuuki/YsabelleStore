@@ -302,3 +302,17 @@ test("About chapter 04 reveals naturally without a long pinned scroll runway", (
   );
   assert.match(discover, /settle\(forecastTimeline, 0\.86\)/);
 });
+
+
+test("Forecast MP4 resumes after React StrictMode effect cleanup", () => {
+  const main = read("frontend/src/main.tsx");
+  const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
+
+  assert.match(main, /<React\.StrictMode>/);
+  assert.match(motion, /const resumeActiveVideo = \(\) =>/);
+  assert.match(motion, /videoRefs\[activeIndexRef\.current\]\.current/);
+  assert.match(motion, /void activeVideo\.play\(\)\.catch\(\(\) => undefined\)/);
+  assert.match(motion, /document\.addEventListener\("visibilitychange", handleVisibilityChange\)/);
+  assert.match(motion, /window\.addEventListener\("focus", handleWindowFocus\)/);
+  assert.match(motion, /\}, \[reduceMotion\]\);/);
+});
