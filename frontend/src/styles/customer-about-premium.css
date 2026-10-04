@@ -156,3 +156,27 @@ html:has(.customer-discover)::-webkit-scrollbar {
     max-width: none;
   }
 }
+
+
+/* About chapter navigation is intentionally non-numeric: sections read as one continuous story. */
+.about-experience .discover-progress a {
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: 0;
+}
+
+.about-experience .discover-progress__dot {
+  display: block;
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 0.2rem rgb(98 91 255 / 6%);
+}
+
+.about-experience .discover-progress li.is-active .discover-progress__dot {
+  width: 0.48rem;
+  height: 0.48rem;
+  background: #fff;
+  box-shadow: 0 0 0 0.22rem rgb(255 255 255 / 14%);
+}
