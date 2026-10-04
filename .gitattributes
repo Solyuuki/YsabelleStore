@@ -15,3 +15,6 @@ database/canonical/product-images/**/*.png binary
 database/canonical/product-images/**/*.webp binary
 database/canonical/product-images/**/*.avif binary
 database/canonical/product-images/**/*.gz binary
+
+# Storefront video assets are binary runtime media.
+frontend/public/media/**/*.mp4 binary
