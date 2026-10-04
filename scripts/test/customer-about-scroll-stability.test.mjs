@@ -350,3 +350,17 @@ test("About forecast keeps a compact scroll runway proportional to its content d
     /Math\.max\(1200, Math\.round\(window\.innerHeight \* 1\.45\)\)/
   );
 });
+
+
+test("About chapter 03 matches chapter 02 desktop scroll pacing", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+
+  assert.match(
+    discover,
+    /const salesTimeline = gsap\.timeline\([\s\S]*?trigger:\s*essentials[\s\S]*?start:\s*"top top\+=76"[\s\S]*?Math\.max\(1100, Math\.round\(window\.innerHeight \* 1\.4\)\)[\s\S]*?pin:\s*essentials[\s\S]*?pinSpacing:\s*true[\s\S]*?anticipatePin:\s*1[\s\S]*?scrub:\s*0\.45/
+  );
+  assert.match(
+    discover,
+    /salesHandoff[\s\S]*?autoAlpha:\s*0\.82[\s\S]*?0\.9[\s\S]*?settle\(salesTimeline, 0\.99\)/
+  );
+});
