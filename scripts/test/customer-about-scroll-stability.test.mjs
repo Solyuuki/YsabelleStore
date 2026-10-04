@@ -302,10 +302,10 @@ test("About forecast uses one pinned viewport scene and releases directly into s
   );
   assert.match(
     discover,
-    /Math\.max\(1200, Math\.round\(window\.innerHeight \* 1\.45\)\)/
+    /Math\.max\(520, Math\.round\(window\.innerHeight \* 0\.65\)\)/
   );
   assert.doesNotMatch(discover, /const forecastExitTimeline = gsap\.timeline/);
-  assert.match(discover, /settle\(forecastTimeline, 0\.82\)/);
+  assert.match(discover, /settle\(forecastTimeline, 0\.76\)/);
   assert.match(
     css,
     /story-forecast__stage[\s\S]*?position:\s*relative[\s\S]*?height:\s*calc\(100svh - 76px\)/
@@ -321,7 +321,7 @@ test("About forecast scrubs the Gemini motion with section progress and holds th
   assert.match(motion, /data-forecast-video/);
   assert.doesNotMatch(motion, /autoPlay/);
   assert.match(discover, /const syncForecastVideo = \(progress: number\) =>/);
-  assert.match(discover, /progress \/ 0\.82/);
+  assert.match(discover, /progress \/ 0\.68/);
   assert.match(discover, /forecastVideo\.duration - 0\.04/);
   assert.match(
     discover,
@@ -332,4 +332,21 @@ test("About forecast scrubs the Gemini motion with section progress and holds th
     /Math\.max\(1200, Math\.round\(window\.innerHeight \* 1\.45\)\)/
   );
   assert.match(discover, /settle\(forecastTimeline, 0\.82\)/);
+});
+
+
+test("About forecast keeps a compact scroll runway proportional to its content density", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+
+  assert.match(
+    discover,
+    /Math\.max\(520, Math\.round\(window\.innerHeight \* 0\.65\)\)/
+  );
+  assert.match(discover, /progress \/ 0\.68/);
+  assert.match(discover, /locationHandoff[\s\S]*?0\.7/);
+  assert.match(discover, /settle\(forecastTimeline, 0\.76\)/);
+  assert.doesNotMatch(
+    discover,
+    /Math\.max\(1200, Math\.round\(window\.innerHeight \* 1\.45\)\)/
+  );
 });
