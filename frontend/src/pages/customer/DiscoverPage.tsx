@@ -1011,9 +1011,9 @@ export function DiscoverPage({
                     scrollTrigger: {
                       trigger: location,
                       start: "top 94%",
-                      end: "top top-=240",
+                      end: "top top+=76",
                       invalidateOnRefresh: true,
-                      scrub: 0.22
+                      scrub: 0.2
                     }
                   });
 
@@ -1044,9 +1044,9 @@ export function DiscoverPage({
                   scrollTrigger: desktop
                     ? {
                         trigger: location,
-                        start: "top top-=240",
+                        start: "top top+=76",
                         end: () =>
-                          `+=${Math.max(850, Math.round(window.innerHeight * 1.05))}`,
+                          `+=${Math.max(1100, Math.round(window.innerHeight * 1.4))}`,
                         pin: location,
                         pinSpacing: true,
                         anticipatePin: 1,
@@ -1187,9 +1187,9 @@ export function DiscoverPage({
                     { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
                     0.68
                   )
-                  .to(locationHandoff, { autoAlpha: 1, duration: 0.06, ease: "none" }, 0.86);
+                  .to(locationHandoff, { autoAlpha: 0.82, duration: 0.08, ease: "none" }, 0.9);
 
-                settle(forecastTimeline, desktop ? 0.98 : 0.92);
+                settle(forecastTimeline, desktop ? 0.99 : 0.92);
               }
             } else {
               const realMap = location.querySelector<HTMLElement>(".story-real-map");
