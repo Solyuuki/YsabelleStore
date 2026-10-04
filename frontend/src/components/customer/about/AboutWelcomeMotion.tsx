@@ -1,19 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-const ABOUT_ORIGIN_VIDEO = "/media/about-origin-motion-6738635d.mp4";
+const ABOUT_ORIGIN_VIDEO_FILE = "about-origin-motion-6738635d.mp4";
 const LOOP_FADE_LEAD_SECONDS = 0.35;
 const MAX_VIDEO_RETRIES = 1;
 
+function resolveAboutOriginVideo() {
+  if (window.location.protocol === "file:") {
+    return new URL(`./media/${ABOUT_ORIGIN_VIDEO_FILE}`, document.baseURI).href;
+  }
+
+  return `/media/${ABOUT_ORIGIN_VIDEO_FILE}`;
+}
+
 export function AboutWelcomeMotion() {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const loopResetPendingRef = useRef(false);
   const [reduceMotion, setReduceMotion] = useState(() =>
     window.matchMedia(REDUCED_MOTION_QUERY).matches
   );
   const [videoAttempt, setVideoAttempt] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
   const [isLoopFading, setIsLoopFading] = useState(false);
 
   useEffect(() => {
@@ -27,7 +33,6 @@ export function AboutWelcomeMotion() {
 
   function markVideoReady(video: HTMLVideoElement) {
     setVideoReady(true);
-    setVideoFailed(false);
     void video.play().catch(() => undefined);
   }
 
@@ -50,11 +55,11 @@ export function AboutWelcomeMotion() {
     const revealFirstFrame = () => {
       setIsLoopFading(false);
       loopResetPendingRef.current = false;
-      video.removeEventListener("seeked", revealFirstFrame);
     };
 
     video.addEventListener("seeked", revealFirstFrame, { once: true });
     video.currentTime = 0;
+
     void video.play().catch(() => {
       video.removeEventListener("seeked", revealFirstFrame);
       setIsLoopFading(false);
@@ -72,24 +77,22 @@ export function AboutWelcomeMotion() {
       return;
     }
 
-    setVideoFailed(true);
-
     if (import.meta.env.DEV) {
       console.error(
-        `About origin motion failed to decode or load: ${ABOUT_ORIGIN_VIDEO}. Run npm run storefront:about-origin:verify.`
+        `About origin motion failed to decode or load: ${resolveAboutOriginVideo()}. Run npm run storefront:about-origin:verify.`
       );
     }
   }
 
-  const videoSrc =
-    videoAttempt === 0 ? ABOUT_ORIGIN_VIDEO : `${ABOUT_ORIGIN_VIDEO}?retry=${videoAttempt}`;
+  const source = resolveAboutOriginVideo();
+  const videoSrc = videoAttempt === 0 ? source : `${source}?retry=${videoAttempt}`;
 
   return (
     <div
       aria-hidden="true"
       className={`about-welcome-motion${videoReady ? " is-video-ready" : ""}${
         isLoopFading ? " is-loop-fading" : ""
-      }${videoFailed ? " has-video-error" : ""}`}
+      }`}
     >
       <div className="about-welcome-motion__fallback" />
 
@@ -106,7 +109,6 @@ export function AboutWelcomeMotion() {
           onTimeUpdate={(event) => maybeFadeForLoop(event.currentTarget)}
           playsInline
           preload="auto"
-          ref={videoRef}
           src={videoSrc}
           tabIndex={-1}
         />
