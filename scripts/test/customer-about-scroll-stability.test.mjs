@@ -217,7 +217,7 @@ test("About chapter 04 uses a full-width forecast canvas instead of the chapter 
     css,
     /about-forecast-motion[\s\S]*?position:\s*absolute[\s\S]*?left:\s*50%[\s\S]*?width:\s*100vw[\s\S]*?translateX\(-50%\)/
   );
-  assert.match(css, /story-forecast[\s\S]*?min-height:\s*170svh/);
+  assert.match(css, /story-forecast[\s\S]*?min-height:\s*198svh/);
   assert.match(css, /story-forecast__stage[\s\S]*?height:\s*calc\(100svh - 76px\)[\s\S]*?isolation:\s*isolate/);
   assert.match(css, /about-forecast-motion__video\.is-active,[\s\S]*?opacity:\s*1/);
   assert.doesNotMatch(css, /about-forecast-motion__wash[\s\S]{0,700}?rgb\(255 255 255 \/ 62%\)/);
@@ -305,5 +305,24 @@ test("About forecast keeps the approved Gemini plate unshaded and dark through s
   assert.doesNotMatch(
     css,
     /story-forecast\s*\{[\s\S]{0,650}?#eef6ff/
+  );
+});
+
+
+test("About forecast holds its completed frame and eases into system intelligence", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const css = read("frontend/src/styles/about-forecast-intelligence.css");
+
+  assert.match(
+    discover,
+    /const forecastExitTimeline = gsap\.timeline\([\s\S]*?start:\s*desktop \? "bottom bottom\+=42%"[\s\S]*?end:\s*desktop \? "bottom bottom"/
+  );
+  assert.match(
+    discover,
+    /forecastExitTimeline[\s\S]*?story-forecast__intro[\s\S]*?story-forecast__plot[\s\S]*?locationHandoff/
+  );
+  assert.match(
+    css,
+    /story-forecast \.story-location__handoff[\s\S]*?height:\s*clamp\(9rem, 20vh, 13rem\)[\s\S]*?var\(--story-seam-45\) 100%/
   );
 });
