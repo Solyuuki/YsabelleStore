@@ -925,45 +925,45 @@ export function DiscoverPage({
                 forecastTimeline
                   .to(
                     forecastKicker,
-                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                    0.02
+                    { autoAlpha: 1, duration: 0.06, ease: "power2.out", x: 0 },
+                    0.01
                   )
                   .to(
                     forecastHeadline,
-                    { autoAlpha: 1, duration: 0.11, ease: "power2.out", stagger: 0.025, y: 0 },
-                    0.1
+                    { autoAlpha: 1, duration: 0.09, ease: "power2.out", stagger: 0.02, y: 0 },
+                    0.06
                   )
                   .to(
                     forecastLead,
-                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", x: 0 },
-                    0.2
+                    { autoAlpha: 1, duration: 0.08, ease: "power1.out", x: 0 },
+                    0.13
                   )
                   .to(
                     forecastPlot,
-                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", y: 0 },
-                    0.27
+                    { autoAlpha: 1, duration: 0.08, ease: "power1.out", y: 0 },
+                    0.18
                   )
-                  .to(historyPath, { duration: 0.2, ease: "none", strokeDashoffset: 0 }, 0.36)
+                  .to(historyPath, { duration: 0.16, ease: "none", strokeDashoffset: 0 }, 0.25)
                   .to(
                     [presentLine, presentDot],
-                    { autoAlpha: 1, duration: 0.07, ease: "power1.out" },
-                    0.54
+                    { autoAlpha: 1, duration: 0.06, ease: "power1.out" },
+                    0.39
                   )
-                  .to(presentLine, { duration: 0.08, ease: "none", scaleY: 1 }, 0.54)
-                  .to(futurePath, { duration: 0.2, ease: "none", strokeDashoffset: 0 }, 0.62)
+                  .to(presentLine, { duration: 0.06, ease: "none", scaleY: 1 }, 0.39)
+                  .to(futurePath, { duration: 0.16, ease: "none", strokeDashoffset: 0 }, 0.46)
                   .to(
                     forecastLabels,
-                    { autoAlpha: 1, duration: 0.08, ease: "power2.out", stagger: 0.025, y: 0 },
-                    0.75
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", stagger: 0.02, y: 0 },
+                    0.6
                   )
                   .to(
                     forecastTakeaway,
-                    { autoAlpha: 1, duration: 0.08, ease: "power1.out", y: 0 },
-                    0.84
+                    { autoAlpha: 1, duration: 0.07, ease: "power1.out", y: 0 },
+                    0.68
                   )
-                  .to(locationHandoff, { autoAlpha: 1, duration: 0.09, ease: "none" }, 0.92);
+                  .to(locationHandoff, { autoAlpha: 1, duration: 0.08, ease: "none" }, 0.84);
 
-                settle(forecastTimeline, 0.98);
+                settle(forecastTimeline, 0.88);
               }
             } else {
               const realMap = location.querySelector<HTMLElement>(".story-real-map");
