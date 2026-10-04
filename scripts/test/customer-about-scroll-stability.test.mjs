@@ -242,9 +242,17 @@ test("About chapter labels diverge from legacy Discover only where chapters are 
   );
 });
 
-test("About forecast story finishes early enough to hold the completed visualization", () => {
+test("About forecast story finishes before the sticky scene releases", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
+  assert.match(
+    discover,
+    /end:\s*desktop[\s\S]*?Math\.max\(380, Math\.round\(window\.innerHeight \* 0\.46\)\)[\s\S]*?"bottom 28%"/
+  );
+  assert.match(
+    discover,
+    /scrub:\s*desktop \? 0\.18 : tablet \? 0\.14 : 0\.1/
+  );
   assert.match(
     discover,
     /futurePath[\s\S]*?strokeDashoffset:\s*0[\s\S]*?0\.46/
@@ -253,5 +261,5 @@ test("About forecast story finishes early enough to hold the completed visualiza
     discover,
     /forecastTakeaway[\s\S]*?0\.68[\s\S]*?locationHandoff[\s\S]*?0\.84/
   );
-  assert.match(discover, /settle\(forecastTimeline, 0\.88\)/);
+  assert.match(discover, /settle\(forecastTimeline, 0\.82\)/);
 });
