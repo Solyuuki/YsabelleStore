@@ -271,12 +271,9 @@
   width: auto;
   height: clamp(6.5rem, 13vh, 9rem);
   border-radius: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgb(38 60 119 / 28%) 42%,
-    var(--story-seam-34) 100%
-  );
+  background: var(--about-sales-forecast-seam);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 54%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 54%, #000 100%);
   box-shadow: none;
   opacity: 0.82;
   transform: none;
