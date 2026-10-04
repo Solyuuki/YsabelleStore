@@ -148,11 +148,6 @@ export function AboutForecastMotion() {
             <div><span>Seasonality</span><strong>Detected</strong></div>
             <div><span>Confidence</span><strong>Stable</strong></div>
           </div>
-
-          <p>
-            The public About page demonstrates the workflow only. No live owner or staff forecast
-            data is exposed here.
-          </p>
         </aside>
       </div>
     </div>

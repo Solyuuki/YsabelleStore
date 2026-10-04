@@ -519,14 +519,6 @@
   font-size: clamp(0.76rem, 0.9vw, 0.86rem);
 }
 
-.about-forecast-demo__recommendation > p {
-  margin: auto 0 0;
-  padding-top: 1rem;
-  color: #9ba8c3;
-  font-size: clamp(0.67rem, 0.76vw, 0.74rem);
-  line-height: 1.55;
-}
-
 @media (max-width: 900px) {
   .about-forecast-demo__workspace { grid-template-columns: 1fr; }
   .about-forecast-demo__recommendation { min-height: auto; }
