@@ -142,29 +142,31 @@
   background:
     linear-gradient(
       180deg,
-      rgb(255 255 255 / 20%) 0%,
-      rgb(255 255 255 / 9%) 10%,
+      rgb(255 255 255 / 48%) 0%,
+      rgb(255 255 255 / 14%) 8%,
       transparent 19%,
-      transparent 45%,
-      rgb(143 181 255 / 12%) 49%,
+      transparent 43%,
+      rgb(171 208 255 / 16%) 48%,
       transparent 57%
     ),
     linear-gradient(
-      132deg,
-      #11183f 0%,
-      #202b68 28%,
-      #34459a 50%,
-      #625bff 72%,
-      #2a3476 100%
+      118deg,
+      #101426 0%,
+      #182a83 22%,
+      #2754dd 43%,
+      #4d63ff 61%,
+      #7252ff 78%,
+      #a83cf0 100%
     );
   background-clip: text;
   color: transparent;
   text-shadow:
-    0 1px 0 rgb(255 255 255 / 18%),
-    0 8px 18px rgb(23 30 78 / 16%);
+    0 1px 0 rgb(255 255 255 / 22%),
+    0 8px 20px rgb(40 57 170 / 22%),
+    0 0 14px rgb(98 91 255 / 10%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 0.45px rgb(82 91 210 / 34%);
+  -webkit-text-stroke: 0.5px rgb(76 92 226 / 42%);
 }
 
 .about-experience
@@ -174,30 +176,32 @@
   background:
     linear-gradient(
       180deg,
-      rgb(255 255 255 / 18%) 0%,
-      rgb(255 255 255 / 8%) 12%,
-      transparent 22%,
-      transparent 48%,
-      rgb(255 193 238 / 12%) 52%,
-      transparent 61%
+      rgb(255 255 255 / 42%) 0%,
+      rgb(255 255 255 / 12%) 9%,
+      transparent 20%,
+      transparent 44%,
+      rgb(255 210 244 / 16%) 50%,
+      transparent 60%
     ),
     linear-gradient(
       108deg,
       #625bff 0%,
-      #7a50f4 24%,
-      #a83cf0 48%,
-      #d742c7 70%,
-      #ff3f91 100%
+      #7b4dff 22%,
+      #a83cf0 46%,
+      #d83fc8 68%,
+      #f43f8c 86%,
+      #ff4e9a 100%
     );
   background-clip: text;
   color: transparent;
   font-style: italic;
   text-shadow:
-    0 1px 0 rgb(255 255 255 / 16%),
-    0 8px 18px rgb(128 54 192 / 15%);
+    0 1px 0 rgb(255 255 255 / 20%),
+    0 8px 20px rgb(150 49 198 / 20%),
+    0 0 14px rgb(244 63 140 / 10%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 0.42px rgb(181 74 223 / 30%);
+  -webkit-text-stroke: 0.46px rgb(191 69 221 / 36%);
 }
 
 .about-experience .discover-story--about .story-welcome__support {
