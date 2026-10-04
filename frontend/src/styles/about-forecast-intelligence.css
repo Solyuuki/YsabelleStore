@@ -1,5 +1,5 @@
 /* About Scene 04: Forecast Intelligence.
-   The Gemini plate is ambient only; the chart and labels are responsive SVG/HTML. */
+   The Gemini MP4 is the forecasting chart itself — never a page background. */
 
 .about-experience .discover-story--about {
   --about-sales-forecast-seam: linear-gradient(
@@ -12,27 +12,27 @@
 }
 
 .about-experience .discover-story .story-forecast {
-  display: block;
-  min-height: max(720px, calc(100svh - 76px));
+  min-height: max(760px, calc(100svh - 76px));
   padding: 0;
   overflow: hidden;
   background:
-    linear-gradient(
-      to bottom,
-      transparent 0 72%,
-      rgb(16 20 38 / 18%) 82%,
-      rgb(16 20 38 / 62%) 92%,
-      var(--story-seam-45) 100%
-    ),
-    radial-gradient(circle at 16% 24%, rgb(0 140 255 / 10%), transparent 34%),
-    radial-gradient(circle at 84% 68%, rgb(168 60 240 / 11%), transparent 36%),
-    linear-gradient(135deg, #071225 0%, #101a36 48%, #17183d 76%, #0e142d 100%);
+    radial-gradient(circle at 12% 18%, rgb(0 140 255 / 10%), transparent 34%),
+    radial-gradient(circle at 88% 76%, rgb(168 60 240 / 11%), transparent 36%),
+    linear-gradient(145deg, #0b1329 0%, #101934 46%, #18173d 74%, #11162f 100%);
   color: #f7f9ff;
 }
 
 .about-experience .discover-story .story-forecast::before {
-  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(rgb(177 196 255 / 3.2%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(177 196 255 / 3.2%) 1px, transparent 1px);
+  background-size: 80px 80px;
   content: "";
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 80%, transparent 100%);
+  pointer-events: none;
 }
 
 .about-experience .discover-story .story-forecast::after {
@@ -41,31 +41,87 @@
   right: 0;
   left: 0;
   z-index: 1;
-  width: auto;
   height: clamp(4rem, 7vh, 5.25rem);
-  aspect-ratio: auto;
-  border-radius: 0;
   background: var(--about-sales-forecast-seam);
   content: "";
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 72%) 0%, rgb(0 0 0 / 34%) 28%, transparent 100%);
-  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 72%) 0%, rgb(0 0 0 / 34%) 28%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 72%) 0%, rgb(0 0 0 / 30%) 34%, transparent 100%);
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 72%) 0%, rgb(0 0 0 / 30%) 34%, transparent 100%);
+}
+
+.about-experience .discover-story .story-forecast__stage {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: min(calc(100% - 5rem), 1320px);
+  min-height: calc(100svh - 76px);
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  gap: clamp(1.35rem, 2.7vh, 2.2rem);
+  padding-block: clamp(4.6rem, 7vh, 6.4rem);
+}
+
+.about-experience .discover-story .story-forecast__header {
+  width: min(100%, 780px);
+}
+
+.about-experience .discover-story .story-forecast__header .story-kicker {
+  color: #94d8ff;
+  text-shadow: 0 2px 16px rgb(0 34 90 / 34%);
+}
+
+.about-experience .discover-story .story-forecast__header h2 {
+  max-width: 15ch;
+  margin-top: 0.75rem;
+  color: #f7f9ff;
+  font-size: clamp(2.75rem, min(4.4vw, 6.2vh), 4.9rem);
+  line-height: 0.97;
+  text-shadow: 0 6px 28px rgb(3 8 28 / 34%);
+}
+
+.about-experience
+  .discover-story
+  .story-forecast__header
+  .story-mask:last-child
+  .story-mask__line {
+  background: linear-gradient(105deg, #45b9ff 0%, #6f75ff 40%, #ba5bea 72%, #ff5da2 100%);
+  background-clip: text;
+  color: transparent;
+  font-style: italic;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-experience .discover-story .story-forecast__lead {
+  max-width: 42rem;
+  margin: 1rem 0 0;
+  color: #d4ddf2;
+  font-size: clamp(0.9rem, 1vw, 1rem);
+  line-height: 1.68;
+}
+
+.about-experience .discover-story .story-forecast__visual {
+  position: relative;
+  width: min(100%, 1180px);
+  margin-inline: auto;
+  overflow: hidden;
+  border-block: 1px solid rgb(149 165 255 / 18%);
+  background: #071225;
+  box-shadow:
+    0 26px 70px rgb(2 7 24 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 4%);
+  isolation: isolate;
 }
 
 .about-forecast-motion {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  z-index: 0;
-  width: 100vw;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background:
     radial-gradient(circle at 18% 30%, rgb(0 140 255 / 12%), transparent 34%),
     radial-gradient(circle at 84% 68%, rgb(168 60 240 / 13%), transparent 34%),
-    linear-gradient(135deg, #10182f 0%, #182141 52%, #24194d 100%);
-  pointer-events: none;
-  transform: translateX(-50%);
+    linear-gradient(135deg, #071225 0%, #101a36 48%, #17183d 76%, #0e142d 100%);
 }
 
 .about-forecast-motion__fallback,
@@ -79,7 +135,7 @@
   background:
     radial-gradient(ellipse at 18% 42%, rgb(0 140 255 / 16%), transparent 38%),
     radial-gradient(ellipse at 80% 58%, rgb(168 60 240 / 16%), transparent 36%),
-    linear-gradient(135deg, #10182f 0%, #192143 52%, #251a4c 100%);
+    linear-gradient(135deg, #071225 0%, #101a36 52%, #17183d 100%);
   opacity: 1;
   transition: opacity 220ms ease;
 }
@@ -92,12 +148,14 @@
   z-index: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
-  filter: saturate(1.075) contrast(1.035) brightness(1.015);
+  filter: saturate(1.035) contrast(1.02) brightness(1.005);
   opacity: 0;
-  transform: scale(1.008);
   transition: opacity 680ms linear;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: opacity;
 }
 
 .about-forecast-motion__video.is-active,
@@ -115,390 +173,20 @@
   pointer-events: none;
 }
 
-.about-experience .discover-story .story-forecast__stage {
-  position: relative;
-  top: auto;
-  z-index: 2;
+.about-experience .discover-story .story-forecast__footer {
   display: flex;
-  width: min(calc(100% - 5rem), 1380px);
-  height: calc(100svh - 76px);
-  min-height: 0;
-  flex-direction: column;
-  justify-content: center;
-  padding-block: clamp(2rem, 4vh, 3.25rem);
-  isolation: isolate;
-}
-
-.about-experience .discover-story .story-forecast__intro {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
-  align-items: end;
-  gap: clamp(2rem, 5vw, 5rem);
-  padding: clamp(1.1rem, 2vw, 1.6rem) clamp(1rem, 2vw, 1.5rem);
-  border-radius: 1.4rem;
-  isolation: isolate;
-}
-
-.about-experience .discover-story .story-forecast__intro::before {
-  position: absolute;
-  z-index: -1;
-  inset: -0.35rem -1.25rem -0.45rem -1.25rem;
-  border-radius: 1.8rem;
-  background:
-    linear-gradient(
-      90deg,
-      rgb(7 13 34 / 54%) 0%,
-      rgb(10 17 43 / 36%) 42%,
-      rgb(16 18 47 / 18%) 72%,
-      transparent 100%
-    );
-  content: "";
-  pointer-events: none;
-  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 72%, transparent 100%);
-  mask-image: linear-gradient(90deg, #000 0%, #000 72%, transparent 100%);
-}
-
-.about-experience .discover-story .story-forecast__copy .story-kicker {
-  color: #9ad8ff;
-  text-shadow: 0 2px 16px rgb(0 34 90 / 34%);
-}
-
-.about-experience .discover-story .story-forecast__copy h2 {
-  max-width: 16ch;
-  margin-top: 0.9rem;
-  color: #f7f9ff;
-  font-size: clamp(3rem, min(5vw, 7vh), 5.5rem);
-  line-height: 0.93;
-  text-shadow: 0 6px 28px rgb(3 8 28 / 34%);
-}
-
-.about-experience
-  .discover-story
-  .story-forecast__copy
-  .story-mask:last-child
-  .story-mask__line {
-  background: linear-gradient(105deg, #008cff 0%, #625bff 40%, #a83cf0 72%, #f43f8c 100%);
-  background-clip: text;
-  color: transparent;
-  font-style: italic;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.about-experience .discover-story .story-forecast__lead {
-  max-width: 35rem;
-  margin: 0 0 0.4rem;
-  padding: 0.8rem 0 0.8rem 1.2rem;
-  border-left: 2px solid rgb(135 149 255 / 58%);
-  color: #d8def4;
-  font-size: clamp(0.92rem, 1.05vw, 1.04rem);
-  line-height: 1.72;
-  text-shadow: 0 3px 18px rgb(2 7 28 / 32%);
-}
-
-.story-forecast__plot {
-  position: relative;
-  z-index: 2;
-  min-height: clamp(280px, 34vh, 400px);
-  margin-top: clamp(2.2rem, 4vh, 3.6rem);
-  overflow: visible;
-}
-
-.story-forecast__zones {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  pointer-events: none;
-}
-
-.story-forecast__zone {
-  position: relative;
-  border-radius: 0;
-}
-
-.story-forecast__zone--history {
-  background: linear-gradient(90deg, rgb(0 140 255 / 7%), transparent 88%);
-}
-
-.story-forecast__zone--future {
-  background: linear-gradient(
-    90deg,
-    transparent 5%,
-    rgb(168 60 240 / 7%) 62%,
-    rgb(244 63 140 / 5%)
-  );
-}
-
-.story-forecast__svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.story-forecast__baseline,
-.story-forecast__guide {
-  fill: none;
-  stroke: rgb(219 229 255 / 21%);
-  stroke-width: 1.5;
-}
-
-.story-forecast__guide {
-  stroke-dasharray: 4 11;
-}
-
-.story-forecast__history,
-.story-forecast__future {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 5;
-  vector-effect: non-scaling-stroke;
-}
-
-.story-forecast__history {
-  stroke: #168fe8;
-  filter: drop-shadow(0 7px 14px rgb(0 140 255 / 18%));
-}
-
-.story-forecast__future {
-  stroke: url(#forecast-gradient);
-  filter: drop-shadow(0 8px 16px rgb(168 60 240 / 18%));
-}
-
-.story-forecast__present-line {
-  stroke: #625bff;
-  stroke-dasharray: 5 9;
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-}
-
-.story-forecast__present-dot {
-  fill: #fff;
-  stroke: #625bff;
-  stroke-width: 4;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 7px 14px rgb(98 91 255 / 24%));
-}
-
-.story-forecast__labels {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.story-forecast__label {
-  position: absolute;
-  display: inline-flex;
+  width: min(100%, 1180px);
+  margin-inline: auto;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.42rem 0.7rem;
-  border: 1px solid rgb(98 91 255 / 12%);
-  border-radius: 999px;
-  background: rgb(12 19 48 / 58%);
-  color: #eef3ff;
-  box-shadow: 0 10px 28px rgb(3 8 30 / 20%);
-  font-size: clamp(0.56rem, 0.7vw, 0.68rem);
-  font-weight: 850;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  backdrop-filter: blur(12px);
-}
-
-.story-forecast__label::before {
-  width: 0.42rem;
-  height: 0.42rem;
-  border-radius: 50%;
-  background: currentColor;
-  content: "";
-}
-
-.story-forecast__label--history {
-  top: 8%;
-  left: 4%;
-  color: #117fce;
-}
-
-.story-forecast__label--present {
-  top: 5%;
-  left: 50%;
-  color: #625bff;
-  transform: translateX(-50%);
-}
-
-.story-forecast__label--future {
-  top: 8%;
-  right: 4%;
-  color: #a33ed4;
-}
-
-.story-forecast__takeaway {
-  position: absolute;
-  right: 4%;
-  bottom: 2%;
-  max-width: 24rem;
-  margin: 0;
-  color: #d7def4;
-  font-size: clamp(0.74rem, 0.9vw, 0.88rem);
-  font-weight: 720;
-  line-height: 1.55;
-  text-align: right;
-}
-
-.about-experience .discover-story .story-forecast .story-location__handoff {
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  width: auto;
-  height: clamp(9rem, 20vh, 13rem);
-  border-radius: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgb(16 20 38 / 18%) 28%,
-    rgb(16 20 38 / 58%) 68%,
-    var(--story-seam-45) 100%
-  );
-  box-shadow: none;
-  opacity: 0;
-  transform: none;
-}
-
-@media (max-width: 1023px) {
-  .about-experience .discover-story .story-forecast {
-    min-height: auto;
-  }
-
-  .about-experience .discover-story .story-forecast__stage {
-    position: relative;
-    top: auto;
-    width: min(100% - 2rem, 900px);
-    height: auto;
-    min-height: auto;
-    padding-block: 6rem;
-  }
-
-  .about-experience .discover-story .story-forecast__intro {
-    grid-template-columns: 1fr;
-    gap: 1.4rem;
-  }
-
-  .about-experience .discover-story .story-forecast__copy h2 {
-    max-width: 16ch;
-  }
-
-  .about-experience .discover-story .story-forecast__lead {
-    max-width: 40rem;
-  }
-
-  .story-forecast__plot {
-    min-height: 330px;
-  }
-}
-
-@media (max-width: 640px) {
-  .about-experience .discover-story .story-forecast__stage {
-    width: min(100% - 1.25rem, 720px);
-    padding-block: 5rem;
-  }
-
-  .about-experience .discover-story .story-forecast__copy h2 {
-    font-size: clamp(2.55rem, 12vw, 4rem);
-  }
-
-  .story-forecast__plot {
-    min-height: 300px;
-    margin-top: 1.8rem;
-  }
-
-  .story-forecast__label {
-    padding: 0.35rem 0.55rem;
-    font-size: 0.5rem;
-    letter-spacing: 0.07em;
-  }
-
-  .story-forecast__takeaway {
-    right: 0;
-    max-width: 18rem;
-    font-size: 0.7rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .about-forecast-motion__video {
-    display: none;
-  }
-
-  .about-forecast-motion__fallback {
-    opacity: 1;
-  }
-
-  .story-forecast__history,
-  .story-forecast__future {
-    stroke-dasharray: none;
-    stroke-dashoffset: 0;
-  }
-}
-
-
-/* Section 04 refinement: one clear story over the ambient forecast motion. */
-.about-experience .discover-story .story-forecast__stage {
-  width: min(calc(100% - 6rem), 1420px);
-  justify-content: center;
-  gap: clamp(1.35rem, 2.4vh, 2rem);
-  padding-block: clamp(2.2rem, 4vh, 3.4rem);
-}
-
-.about-experience .discover-story .story-forecast__intro {
-  display: block;
-  padding: 0;
-  border-radius: 0;
-}
-
-.about-experience .discover-story .story-forecast__intro::before {
-  display: none;
-}
-
-.about-experience .discover-story .story-forecast__copy {
-  max-width: 760px;
-}
-
-.about-experience .discover-story .story-forecast__copy h2 {
-  max-width: 15ch;
-  margin-top: 0.72rem;
-  font-size: clamp(2.8rem, min(4.35vw, 6.1vh), 4.8rem);
-  line-height: 0.97;
-}
-
-.about-experience
-  .discover-story
-  .story-forecast__copy
-  .story-mask:last-child
-  .story-mask__line {
-  background: linear-gradient(105deg, #45b9ff 0%, #6f75ff 40%, #ba5bea 72%, #ff5da2 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-}
-
-.about-experience .discover-story .story-forecast__lead {
-  max-width: 42rem;
-  margin: 0.95rem 0 0;
-  padding: 0;
-  border: 0;
-  color: #d5def2;
-  font-size: clamp(0.9rem, 1vw, 1rem);
-  line-height: 1.68;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 0.1rem;
 }
 
 .about-experience .discover-story .story-forecast__model {
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
-  margin-top: 0.95rem;
   color: #b8c5df;
   font-size: 0.66rem;
   letter-spacing: 0.08em;
@@ -527,114 +215,73 @@
   letter-spacing: 0.08em;
 }
 
-.story-forecast__plot {
-  min-height: clamp(285px, 34vh, 395px);
-  margin-top: 0.15rem;
-}
-
-.story-forecast__zones,
-.story-forecast__zone--history,
-.story-forecast__zone--future {
-  background: none;
-}
-
-.story-forecast__baseline,
-.story-forecast__guide {
-  stroke: rgb(203 217 255 / 15%);
-}
-
-.story-forecast__guide {
-  stroke-dasharray: 3 14;
-}
-
-.story-forecast__history,
-.story-forecast__future {
-  stroke-width: 4.2;
-}
-
-.story-forecast__label {
-  gap: 0.4rem;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  color: #dce7ff;
-  font-size: clamp(0.5rem, 0.6vw, 0.59rem);
-  letter-spacing: 0.12em;
-  text-shadow: 0 3px 14px rgb(3 9 30 / 58%);
-  backdrop-filter: none;
-}
-
-.story-forecast__label::before {
-  width: 1.25rem;
-  height: 1px;
-  border-radius: 0;
-  background: currentColor;
-  opacity: 0.76;
-}
-
-.story-forecast__label--history {
-  top: 4%;
-  left: 3%;
-  color: #79cfff;
-}
-
-.story-forecast__label--present {
-  top: 4%;
-  left: 50%;
-  color: #a69aff;
-}
-
-.story-forecast__label--future {
-  top: 4%;
-  right: 3%;
-  color: #ef82cf;
-}
-
-.story-forecast__takeaway {
-  right: 3%;
-  bottom: 0;
-  max-width: 23rem;
+.about-experience .discover-story .story-forecast__takeaway {
+  max-width: 24rem;
   margin: 0;
-  padding-top: 0.42rem;
-  border-top: 1px solid rgb(214 222 255 / 18%);
-  color: #dce3f4;
-  font-size: clamp(0.66rem, 0.76vw, 0.76rem);
+  color: #d8e0f2;
+  font-size: clamp(0.72rem, 0.82vw, 0.82rem);
   font-weight: 650;
-  line-height: 1.42;
+  line-height: 1.45;
   text-align: right;
 }
 
-.about-forecast-motion__video {
-  backface-visibility: hidden;
-  transform: scale(1.008) translateZ(0);
-  will-change: opacity;
+.about-experience .discover-story .story-forecast .story-location__handoff {
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  width: auto;
+  height: clamp(7rem, 14vh, 9rem);
+  border-radius: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgb(16 20 38 / 24%) 42%,
+    var(--story-seam-45) 100%
+  );
+  box-shadow: none;
+  opacity: 0;
+  transform: none;
 }
 
 @media (max-width: 1023px) {
+  .about-experience .discover-story .story-forecast {
+    min-height: auto;
+  }
+
   .about-experience .discover-story .story-forecast__stage {
     width: min(100% - 2rem, 900px);
+    min-height: auto;
     gap: 1.4rem;
+    padding-block: 5.5rem;
   }
 
-  .about-experience .discover-story .story-forecast__copy {
-    max-width: 42rem;
+  .about-experience .discover-story .story-forecast__header {
+    width: min(100%, 680px);
   }
 
-  .about-experience .discover-story .story-forecast__copy h2 {
-    max-width: 14ch;
+  .about-experience .discover-story .story-forecast__footer {
+    align-items: flex-start;
   }
 }
 
 @media (max-width: 640px) {
   .about-experience .discover-story .story-forecast__stage {
     width: min(100% - 1.25rem, 720px);
+    padding-block: 4.5rem;
   }
 
-  .about-experience .discover-story .story-forecast__copy h2 {
+  .about-experience .discover-story .story-forecast__header h2 {
     max-width: 13ch;
     font-size: clamp(2.3rem, 10.6vw, 3.55rem);
+  }
+
+  .about-experience .discover-story .story-forecast__lead {
+    font-size: 0.88rem;
+  }
+
+  .about-experience .discover-story .story-forecast__footer {
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   .about-experience .discover-story .story-forecast__model {
@@ -642,22 +289,9 @@
     row-gap: 0.42rem;
   }
 
-  .story-forecast__plot {
-    min-height: 265px;
-  }
-
-  .story-forecast__label {
-    font-size: 0.43rem;
-    letter-spacing: 0.07em;
-  }
-
-  .story-forecast__label::before {
-    width: 0.78rem;
-  }
-
-  .story-forecast__takeaway {
-    max-width: 17rem;
-    font-size: 0.64rem;
+  .about-experience .discover-story .story-forecast__takeaway {
+    max-width: 19rem;
+    text-align: left;
   }
 }
 
@@ -668,11 +302,5 @@
 
   .about-forecast-motion__fallback {
     opacity: 1;
-  }
-
-  .story-forecast__history,
-  .story-forecast__future {
-    stroke-dasharray: none;
-    stroke-dashoffset: 0;
   }
 }
