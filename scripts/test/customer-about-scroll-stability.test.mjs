@@ -50,7 +50,9 @@ test("About chapter 02 uses the product and catalog intelligence story", () => {
   assert.match(discover, /isAboutExperience \? "Shop with Ysabelle" : "06 \/ Shop with Ysabelle"/);
   assert.match(discover, /discover-progress__dot/);
   assert.match(motion, /gemini_generated_video_a80f6413\.mp4/);
-  assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
+  assert.match(motion, /data-forecast-video/);
+  assert.doesNotMatch(motion, /autoPlay/);
+  assert.doesNotMatch(motion, /CROSSFADE_LEAD_SECONDS/);
   assert.match(css, /story-catalog__steps[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
   assert.match(css, /story-catalog__step[\s\S]*?background:\s*transparent/);
   assert.doesNotMatch(css, /story-catalog__step[\s\S]{0,500}?border-radius:\s*1rem/);
@@ -300,13 +302,34 @@ test("About forecast uses one pinned viewport scene and releases directly into s
   );
   assert.match(
     discover,
-    /Math\.max\(680, Math\.round\(window\.innerHeight \* 0\.82\)\)/
+    /Math\.max\(1200, Math\.round\(window\.innerHeight \* 1\.45\)\)/
   );
   assert.doesNotMatch(discover, /const forecastExitTimeline = gsap\.timeline/);
-  assert.match(discover, /settle\(forecastTimeline, 0\.94\)/);
+  assert.match(discover, /settle\(forecastTimeline, 0\.82\)/);
   assert.match(
     css,
     /story-forecast__stage[\s\S]*?position:\s*relative[\s\S]*?height:\s*calc\(100svh - 76px\)/
   );
   assert.match(css, /story-forecast::before[\s\S]*?display:\s*none/);
+});
+
+
+test("About forecast scrubs the Gemini motion with section progress and holds the completed frame", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
+
+  assert.match(motion, /data-forecast-video/);
+  assert.doesNotMatch(motion, /autoPlay/);
+  assert.match(discover, /const syncForecastVideo = \(progress: number\) =>/);
+  assert.match(discover, /progress \/ 0\.82/);
+  assert.match(discover, /forecastVideo\.duration - 0\.04/);
+  assert.match(
+    discover,
+    /onUpdate:\s*\(self\) => syncForecastVideo\(self\.progress\)[\s\S]*?onLeave:\s*\(\) => syncForecastVideo\(1\)/
+  );
+  assert.match(
+    discover,
+    /Math\.max\(1200, Math\.round\(window\.innerHeight \* 1\.45\)\)/
+  );
+  assert.match(discover, /settle\(forecastTimeline, 0\.82\)/);
 });
