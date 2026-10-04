@@ -36,134 +36,20 @@
 .about-welcome-motion__fallback {
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  background:
+    radial-gradient(circle at 28% 22%, rgb(98 91 255 / 10%), transparent 42%),
+    radial-gradient(circle at 76% 72%, rgb(244 63 140 / 8%), transparent 40%),
+    linear-gradient(135deg, #f7f9ff 0%, #eef3ff 52%, #faf2ff 100%);
   opacity: 1;
-  transition: opacity 420ms ease;
+  transition: opacity 300ms ease;
 }
 
 .about-welcome-motion.is-video-ready .about-welcome-motion__fallback {
   opacity: 0;
 }
 
-.about-welcome-motion__orbit,
-.about-welcome-motion__float {
-  position: absolute;
-  display: block;
-  pointer-events: none;
-}
-
-.about-welcome-motion__orbit {
-  border-radius: 50%;
-  box-shadow:
-    0 0 70px rgb(98 91 255 / 16%),
-    inset 0 0 42px rgb(255 255 255 / 4%);
-}
-
-.about-welcome-motion__orbit--one {
-  top: -18%;
-  left: -8%;
-  width: clamp(22rem, 38vw, 42rem);
-  aspect-ratio: 1;
-  border: clamp(2rem, 4vw, 4.4rem) solid rgb(98 91 255 / 13%);
-  animation: about-origin-orbit-one 15s ease-in-out infinite alternate;
-}
-
-.about-welcome-motion__orbit--two {
-  right: -11%;
-  bottom: -26%;
-  width: clamp(28rem, 46vw, 54rem);
-  aspect-ratio: 1;
-  border: clamp(2.4rem, 5vw, 5rem) solid rgb(244 63 140 / 10%);
-  animation: about-origin-orbit-two 18s ease-in-out infinite alternate;
-}
-
-.about-welcome-motion__float {
-  border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 30%;
-  background:
-    linear-gradient(145deg, rgb(98 91 255 / 25%), rgb(168 60 240 / 18%));
-  box-shadow:
-    0 18px 58px rgb(0 0 0 / 20%),
-    inset 0 1px 0 rgb(255 255 255 / 8%);
-  backdrop-filter: blur(8px);
-}
-
-.about-welcome-motion__float--one {
-  top: 18%;
-  right: 16%;
-  width: clamp(4.5rem, 7vw, 7.5rem);
-  aspect-ratio: 1;
-  transform: rotate(14deg);
-  animation: about-origin-float-one 8s ease-in-out infinite alternate;
-}
-
-.about-welcome-motion__float--two {
-  bottom: 15%;
-  left: 12%;
-  width: clamp(3.8rem, 6vw, 6.3rem);
-  aspect-ratio: 1.1;
-  border-radius: 38%;
-  background:
-    linear-gradient(145deg, rgb(0 140 255 / 22%), rgb(98 91 255 / 16%));
-  transform: rotate(-18deg);
-  animation: about-origin-float-two 10s ease-in-out infinite alternate;
-}
-
-.about-welcome-motion__float--three {
-  right: 31%;
-  bottom: 10%;
-  width: clamp(2rem, 3.2vw, 3.8rem);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 30%, rgb(255 255 255 / 26%), transparent 24%),
-    linear-gradient(145deg, rgb(244 63 140 / 24%), rgb(168 60 240 / 18%));
-  animation: about-origin-float-three 7s ease-in-out infinite alternate;
-}
-
-@keyframes about-origin-orbit-one {
-  from {
-    transform: translate3d(-1.5%, -1%, 0) rotate(-4deg) scale(0.98);
-  }
-  to {
-    transform: translate3d(4%, 3%, 0) rotate(3deg) scale(1.035);
-  }
-}
-
-@keyframes about-origin-orbit-two {
-  from {
-    transform: translate3d(1%, 2%, 0) rotate(3deg) scale(1);
-  }
-  to {
-    transform: translate3d(-4%, -3%, 0) rotate(-4deg) scale(1.045);
-  }
-}
-
-@keyframes about-origin-float-one {
-  from {
-    transform: translate3d(0, -6px, 0) rotate(12deg);
-  }
-  to {
-    transform: translate3d(-18px, 18px, 0) rotate(19deg);
-  }
-}
-
-@keyframes about-origin-float-two {
-  from {
-    transform: translate3d(0, 8px, 0) rotate(-20deg);
-  }
-  to {
-    transform: translate3d(20px, -14px, 0) rotate(-12deg);
-  }
-}
-
-@keyframes about-origin-float-three {
-  from {
-    transform: translate3d(0, 0, 0) scale(0.96);
-  }
-  to {
-    transform: translate3d(10px, -16px, 0) scale(1.06);
-  }
+.about-welcome-motion.is-video-ready.is-loop-fading .about-welcome-motion__fallback {
+  opacity: 1;
 }
 
 .about-welcome-motion__video {
@@ -177,11 +63,16 @@
   opacity: 0;
   transform: scale(1.018);
   transform-origin: center;
-  transition: opacity 420ms ease;
+  transition: opacity 300ms ease;
+  will-change: opacity;
 }
 
 .about-welcome-motion.is-video-ready .about-welcome-motion__video {
   opacity: 1;
+}
+
+.about-welcome-motion.is-video-ready.is-loop-fading .about-welcome-motion__video {
+  opacity: 0;
 }
 
 .about-welcome-motion__scrim,
@@ -219,9 +110,9 @@
 }
 
 .about-experience .discover-story--about .story-welcome__mark--branded {
-  width: clamp(4.25rem, 5.5vw, 5.5rem);
-  height: clamp(4.25rem, 5.5vw, 5.5rem);
-  margin-bottom: clamp(1rem, 2vh, 1.45rem);
+  width: clamp(8.5rem, 10vw, 10.25rem);
+  height: clamp(8.5rem, 10vw, 10.25rem);
+  margin-bottom: clamp(1.15rem, 2.4vh, 1.65rem);
   border: 1px solid rgb(98 91 255 / 16%);
   border-radius: 50%;
   background: rgb(255 255 255 / 34%);
@@ -337,8 +228,9 @@
 
 @media (max-width: 420px) {
   .about-experience .discover-story--about .story-welcome__mark--branded {
-    width: 4rem;
-    height: 4rem;
+    width: 6rem;
+    height: 6rem;
+    margin-bottom: 1rem;
   }
 
   .about-experience .discover-story--about .story-welcome__title {
@@ -349,10 +241,5 @@
 @media (prefers-reduced-motion: reduce) {
   .about-welcome-motion__video {
     display: none;
-  }
-
-  .about-welcome-motion__orbit,
-  .about-welcome-motion__float {
-    animation: none;
   }
 }
