@@ -8,6 +8,8 @@ const HTTP_READY_TIMEOUT_MS = 120_000;
 const ELECTRON_READY_TIMEOUT_MS = 60_000;
 const PORT_RELEASE_TIMEOUT_MS = 10_000;
 const POLL_INTERVAL_MS = 200;
+const ABOUT_ORIGIN_VIDEO_PATH = "/media/about-origin-motion-6738635d.mp4";
+const ABOUT_ORIGIN_VIDEO_SIZE = 2_554_527;
 const webOnly = process.argv.includes("--web-only");
 const runtime = resolveDevelopmentRuntime();
 const npmCliPath = process.env.npm_execpath;
@@ -207,6 +209,44 @@ async function waitForFrontend(child) {
     const html = await response.text();
     return html.includes('id="root"');
   });
+
+  await waitForFrontendMedia(child);
+}
+
+async function waitForFrontendMedia(child) {
+  const mediaUrl = new URL(ABOUT_ORIGIN_VIDEO_PATH, `${runtime.frontendUrl}/`);
+  const deadline = Date.now() + HTTP_READY_TIMEOUT_MS;
+
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw new Error(`The web frontend exited before ${mediaUrl} became ready.`);
+    }
+
+    try {
+      const response = await fetch(mediaUrl, {
+        method: "HEAD",
+        signal: AbortSignal.timeout(1_500)
+      });
+      const contentLength = Number(response.headers.get("content-length"));
+      const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+
+      if (
+        response.ok &&
+        contentLength === ABOUT_ORIGIN_VIDEO_SIZE &&
+        contentType.startsWith("video/mp4")
+      ) {
+        return;
+      }
+    } catch {
+      // Vite may still be materializing its public directory. Poll again.
+    }
+
+    await delay(POLL_INTERVAL_MS);
+  }
+
+  throw new Error(
+    `The About hero video was not served correctly at ${mediaUrl}. Expected a ${ABOUT_ORIGIN_VIDEO_SIZE}-byte video/mp4 response.`
+  );
 }
 
 async function waitForHttp(url, child, label, isReady) {
