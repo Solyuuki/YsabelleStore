@@ -64,6 +64,7 @@
 
 @media (max-width: 480px) {
   .ysabelle-brand-mark.story-welcome__mark--branded,
+  .ysabelle-brand-mark--display {
     width: 5.5rem;
     height: 5.5rem;
   }
