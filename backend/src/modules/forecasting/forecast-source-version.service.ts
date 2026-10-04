@@ -6,7 +6,7 @@ import type { ForecastInputSource } from "./forecast.types.js";
 import { getActiveForecastMonth, monthStartIso } from "./forecast-window.js";
 import { resolveRepositoryPath } from "./repository-paths.js";
 
-const FORECAST_INPUT_CONTRACT_VERSION = "forecast-input-v5";
+const FORECAST_INPUT_CONTRACT_VERSION = "forecast-input-v6";
 const TRAINING_WORKBOOK_PATHS = [
   "data/forecasting/historical-sales-2024.xlsx",
   "data/forecasting/historical-sales-2025.xlsx"
