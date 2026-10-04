@@ -13,7 +13,7 @@
 
 .about-experience .discover-story .story-forecast {
   display: block;
-  min-height: 198svh;
+  min-height: max(720px, calc(100svh - 76px));
   padding: 0;
   overflow: hidden;
   background:
@@ -26,21 +26,13 @@
     ),
     radial-gradient(circle at 16% 24%, rgb(0 140 255 / 10%), transparent 34%),
     radial-gradient(circle at 84% 68%, rgb(168 60 240 / 11%), transparent 36%),
-    linear-gradient(135deg, #10182f 0%, #182141 46%, #21194a 76%, #171a37 100%);
+    linear-gradient(135deg, #071225 0%, #101a36 48%, #17183d 76%, #0e142d 100%);
   color: #f7f9ff;
 }
 
 .about-experience .discover-story .story-forecast::before {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background:
-    linear-gradient(rgb(185 204 255 / 4.5%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(185 204 255 / 4.5%) 1px, transparent 1px);
-  background-size: 76px 76px;
+  display: none;
   content: "";
-  mask-image: linear-gradient(to bottom, transparent 3%, #000 16%, #000 84%, transparent 97%);
-  pointer-events: none;
 }
 
 .about-experience .discover-story .story-forecast::after {
@@ -124,8 +116,8 @@
 }
 
 .about-experience .discover-story .story-forecast__stage {
-  position: sticky;
-  top: 76px;
+  position: relative;
+  top: auto;
   z-index: 2;
   display: flex;
   width: min(calc(100% - 5rem), 1380px);
