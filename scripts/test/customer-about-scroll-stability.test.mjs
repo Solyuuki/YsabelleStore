@@ -334,3 +334,14 @@ test("About forecast keeps the compact pinned scroll story independent from vide
   assert.doesNotMatch(discover, /forecastVideo\.pause\(\)/);
   assert.doesNotMatch(discover, /currentTime = nextTime/);
 });
+
+
+test("Discover imports the canonical storefront category presentation utility", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+
+  assert.match(
+    discover,
+    /getEssentialShelfItems \} from "@\/utils\/storefrontCategoryPresentation"/
+  );
+  assert.doesNotMatch(discover, /storefrontCategoryTodayation/);
+});
