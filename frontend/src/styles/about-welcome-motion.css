@@ -305,9 +305,25 @@
 }
 
 .about-experience .discover-story--about .story-welcome__handoff {
+  right: 0;
+  bottom: -1px;
+  left: 0;
   z-index: 3;
-  background: linear-gradient(90deg, var(--story-blue), var(--story-indigo), var(--story-violet));
-  box-shadow: 0 0 22px rgb(98 91 255 / 32%);
+  width: auto;
+  height: clamp(6.5rem, 14vh, 10rem);
+  border-radius: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(247 239 255 / 8%) 18%,
+    rgb(247 239 255 / 34%) 44%,
+    rgb(247 239 255 / 76%) 72%,
+    var(--story-seam-12) 100%
+  );
+  box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: center bottom;
 }
 
 @media (max-width: 699px) {
@@ -356,5 +372,10 @@
 @media (prefers-reduced-motion: reduce) {
   .about-welcome-motion__video {
     display: none;
+  }
+
+  .about-experience .discover-story--about .story-welcome__handoff {
+    opacity: 1;
+    transform: none;
   }
 }
