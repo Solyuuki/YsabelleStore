@@ -112,11 +112,12 @@
   overflow: hidden;
   border: 1px solid rgb(154 167 255 / 18%);
   border-radius: 1.85rem;
-  background: rgb(15 21 49 / 74%);
+  background: rgb(15 21 49 / 91%);
   box-shadow:
     0 34px 82px rgb(4 7 24 / 34%),
     inset 0 1px 0 rgb(255 255 255 / 7%);
-  backdrop-filter: blur(16px);
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .about-sales-motion {
@@ -160,6 +161,9 @@
   filter: saturate(1.035) contrast(1.025) brightness(1.005);
   opacity: 0;
   transition: opacity 680ms linear;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: opacity;
 }
 
 .about-sales-motion__video.is-active,
