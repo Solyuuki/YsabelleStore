@@ -35,7 +35,7 @@ test("About chapter 02 uses the product and catalog intelligence story", () => {
 
   assert.match(aboutPage, /about-catalog-intelligence\.css/);
   assert.doesNotMatch(aboutPage, /about-origin-timeline\.css/);
-  assert.match(discover, /02 \/ Product &amp; Catalog Intelligence/);
+  assert.match(discover, />Product &amp; Catalog Intelligence<\/span>/);
   assert.match(discover, /From Product/);
   assert.match(discover, /to Catalog Ready\./);
   assert.match(discover, /Product catalog workflow from source item to catalog-ready product/);
@@ -43,7 +43,12 @@ test("About chapter 02 uses the product and catalog intelligence story", () => {
   assert.match(discover, /label: "Image quality"/);
   assert.match(discover, /label: "Normalize"/);
   assert.match(discover, /label: "Catalog ready"/);
-  assert.doesNotMatch(discover, />Section 02</i);
+  assert.doesNotMatch(discover, /story-catalog__index/);
+  assert.match(discover, /isAboutExperience \? "Everyday essentials" : "03 \/ Everyday essentials"/);
+  assert.match(discover, /isAboutExperience \? "Our location" : "04 \/ Our location"/);
+  assert.match(discover, /hideSectionNumber=\{isAboutExperience\}/);
+  assert.match(discover, /isAboutExperience \? "Shop with Ysabelle" : "06 \/ Shop with Ysabelle"/);
+  assert.match(discover, /discover-progress__dot/);
   assert.match(motion, /gemini_generated_video_00ca849a\.mp4/);
   assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
   assert.match(css, /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
