@@ -62,7 +62,7 @@
 }
 
 .about-experience .discover-story .story-forecast__header {
-  width: min(100%, 780px);
+  width: 100%;
 }
 
 .about-experience .discover-story .story-forecast__header .story-kicker {
@@ -72,10 +72,11 @@
 
 .about-experience .discover-story .story-forecast__header h2 {
   max-width: 15ch;
-  margin-top: 0.75rem;
+  margin: 0.75rem auto 0;
   color: #f7f9ff;
   font-size: clamp(2.75rem, min(4.4vw, 6.2vh), 4.9rem);
   line-height: 0.97;
+  text-align: center;
   text-shadow: 0 6px 28px rgb(3 8 28 / 34%);
 }
 
@@ -94,10 +95,11 @@
 
 .about-experience .discover-story .story-forecast__lead {
   max-width: 42rem;
-  margin: 1rem 0 0;
+  margin: 1rem auto 0;
   color: #d4ddf2;
   font-size: clamp(0.9rem, 1vw, 1rem);
   line-height: 1.68;
+  text-align: center;
 }
 
 .about-experience .discover-story .story-forecast__visual {

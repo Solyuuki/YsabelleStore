@@ -917,9 +917,6 @@ export function DiscoverPage({
               const forecastLead = location.querySelector<HTMLElement>(".story-forecast__lead");
               const forecastVisual = location.querySelector<HTMLElement>(".story-forecast__visual");
               const forecastModel = location.querySelector<HTMLElement>(".story-forecast__model");
-              const forecastTakeaway = location.querySelector<HTMLElement>(
-                ".story-forecast__takeaway"
-              );
               const locationHandoff = location.querySelector<HTMLElement>(
                 ".story-location__handoff"
               );
@@ -972,7 +969,6 @@ export function DiscoverPage({
                 forecastLead &&
                 forecastVisual &&
                 forecastModel &&
-                forecastTakeaway &&
                 locationHandoff &&
                 forecastDemoTopbar &&
                 forecastDemoMetrics.length &&
@@ -992,7 +988,6 @@ export function DiscoverPage({
                 gsap.set(forecastLead, { autoAlpha: 0, y: 14 });
                 gsap.set(forecastVisual, { autoAlpha: 0, scale: 0.985, y: 26 });
                 gsap.set(forecastModel, { autoAlpha: 0, x: -14 });
-                gsap.set(forecastTakeaway, { autoAlpha: 0, x: 14 });
                 gsap.set(locationHandoff, { autoAlpha: 0 });
                 gsap.set(forecastDemoTopbar, { autoAlpha: 0, y: 8 });
                 gsap.set(forecastDemoMetrics, { autoAlpha: 0, y: 12 });
@@ -1137,11 +1132,6 @@ export function DiscoverPage({
                     forecastModel,
                     { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
                     0.68
-                  )
-                  .to(
-                    forecastTakeaway,
-                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                    0.71
                   )
                   .to(locationHandoff, { autoAlpha: 1, duration: 0.06, ease: "none" }, 0.82);
 
