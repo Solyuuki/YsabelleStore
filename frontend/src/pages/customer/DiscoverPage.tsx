@@ -916,9 +916,11 @@ export function DiscoverPage({
                   scrollTrigger: {
                     trigger: location,
                     start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
-                    end: desktop ? "bottom bottom" : "bottom 14%",
+                    end: desktop
+                      ? () => `+=${Math.max(380, Math.round(window.innerHeight * 0.46))}`
+                      : "bottom 28%",
                     invalidateOnRefresh: true,
-                    scrub
+                    scrub: desktop ? 0.18 : tablet ? 0.14 : 0.1
                   }
                 });
 
@@ -963,7 +965,7 @@ export function DiscoverPage({
                   )
                   .to(locationHandoff, { autoAlpha: 1, duration: 0.08, ease: "none" }, 0.84);
 
-                settle(forecastTimeline, 0.88);
+                settle(forecastTimeline, 0.82);
               }
             } else {
               const realMap = location.querySelector<HTMLElement>(".story-real-map");
