@@ -150,21 +150,45 @@
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
   align-items: end;
-  gap: clamp(2rem, 6vw, 6rem);
+  gap: clamp(2rem, 5vw, 5rem);
+  padding: clamp(1.1rem, 2vw, 1.6rem) clamp(1rem, 2vw, 1.5rem);
+  border-radius: 1.4rem;
+  isolation: isolate;
+}
+
+.about-experience .discover-story .story-forecast__intro::before {
+  position: absolute;
+  z-index: -1;
+  inset: -0.35rem -1.25rem -0.45rem -1.25rem;
+  border-radius: 1.8rem;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(7 13 34 / 54%) 0%,
+      rgb(10 17 43 / 36%) 42%,
+      rgb(16 18 47 / 18%) 72%,
+      transparent 100%
+    );
+  content: "";
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 72%, transparent 100%);
 }
 
 .about-experience .discover-story .story-forecast__copy .story-kicker {
-  color: #5149d9;
+  color: #9ad8ff;
+  text-shadow: 0 2px 16px rgb(0 34 90 / 34%);
 }
 
 .about-experience .discover-story .story-forecast__copy h2 {
-  max-width: 12ch;
+  max-width: 16ch;
   margin-top: 0.9rem;
-  color: var(--story-navy);
+  color: #f7f9ff;
   font-size: clamp(3rem, min(5vw, 7vh), 5.5rem);
   line-height: 0.93;
+  text-shadow: 0 6px 28px rgb(3 8 28 / 34%);
 }
 
 .about-experience
@@ -181,13 +205,14 @@
 }
 
 .about-experience .discover-story .story-forecast__lead {
-  max-width: 34rem;
+  max-width: 35rem;
   margin: 0 0 0.4rem;
-  padding-left: 1.2rem;
-  border-left: 2px solid rgb(98 91 255 / 38%);
-  color: #56617c;
+  padding: 0.8rem 0 0.8rem 1.2rem;
+  border-left: 2px solid rgb(135 149 255 / 58%);
+  color: #d8def4;
   font-size: clamp(0.92rem, 1.05vw, 1.04rem);
   line-height: 1.72;
+  text-shadow: 0 3px 18px rgb(2 7 28 / 32%);
 }
 
 .story-forecast__plot {
@@ -212,11 +237,16 @@
 }
 
 .story-forecast__zone--history {
-  background: linear-gradient(90deg, rgb(0 140 255 / 4.5%), transparent 88%);
+  background: linear-gradient(90deg, rgb(0 140 255 / 7%), transparent 88%);
 }
 
 .story-forecast__zone--future {
-  background: linear-gradient(90deg, transparent 5%, rgb(168 60 240 / 5.5%) 62%, rgb(244 63 140 / 4%));
+  background: linear-gradient(
+    90deg,
+    transparent 5%,
+    rgb(168 60 240 / 7%) 62%,
+    rgb(244 63 140 / 5%)
+  );
 }
 
 .story-forecast__svg {
@@ -230,7 +260,7 @@
 .story-forecast__baseline,
 .story-forecast__guide {
   fill: none;
-  stroke: rgb(98 91 255 / 13%);
+  stroke: rgb(219 229 255 / 21%);
   stroke-width: 1.5;
 }
 
@@ -286,9 +316,9 @@
   padding: 0.42rem 0.7rem;
   border: 1px solid rgb(98 91 255 / 12%);
   border-radius: 999px;
-  background: rgb(255 255 255 / 72%);
-  color: #4e5876;
-  box-shadow: 0 10px 28px rgb(43 52 110 / 8%);
+  background: rgb(12 19 48 / 58%);
+  color: #eef3ff;
+  box-shadow: 0 10px 28px rgb(3 8 30 / 20%);
   font-size: clamp(0.56rem, 0.7vw, 0.68rem);
   font-weight: 850;
   letter-spacing: 0.11em;
@@ -329,7 +359,7 @@
   bottom: 2%;
   max-width: 24rem;
   margin: 0;
-  color: #626b84;
+  color: #d7def4;
   font-size: clamp(0.74rem, 0.9vw, 0.88rem);
   font-weight: 720;
   line-height: 1.55;
@@ -374,7 +404,7 @@
   }
 
   .about-experience .discover-story .story-forecast__copy h2 {
-    max-width: 14ch;
+    max-width: 16ch;
   }
 
   .about-experience .discover-story .story-forecast__lead {
