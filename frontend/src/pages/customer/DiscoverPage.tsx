@@ -30,7 +30,7 @@ import { ProductImage } from "@/components/customer/ProductImage";
 import { useCart } from "@/context/CartContext";
 import { fetchStorefrontProduct } from "@/services/storefrontService";
 import type { StorefrontProduct } from "@/types/storefront";
-import { getEssentialShelfItems } from "@/utils/storefrontCategoryTodayation";
+import { getEssentialShelfItems } from "@/utils/storefrontCategoryPresentation";
 import {
   ABOUT_STORE_ESSENTIAL_PRODUCT_IDS,
   resolveAboutStoreEssentials
