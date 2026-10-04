@@ -19,6 +19,7 @@ import {
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
 import { AboutCatalogMotion } from "@/components/customer/about/AboutCatalogMotion";
+import { AboutForecastMotion } from "@/components/customer/about/AboutForecastMotion";
 import { AboutSalesInventoryMotion } from "@/components/customer/about/AboutSalesInventoryMotion";
 import { AboutWelcomeMotion } from "@/components/customer/about/AboutWelcomeMotion";
 import { CustomerLink } from "@/components/customer/CustomerLink";
@@ -43,7 +44,7 @@ const storyScenes = [
   { id: "discover-welcome", label: "Welcome" },
   { id: "discover-beginning", label: "Our beginning" },
   { id: "discover-essentials", label: "Everyday essentials" },
-  { id: "discover-location", label: "Our location" },
+  { id: "discover-location", label: "Forecast intelligence" },
   { id: "discover-smarter", label: "System intelligence" },
   { id: "discover-shop", label: "Shop with Ysabelle" }
 ];
@@ -855,110 +856,221 @@ export function DiscoverPage({
 
           const location = first<HTMLElement>(".story-location");
           if (location) {
-            const realMap = location.querySelector<HTMLElement>(".story-real-map");
-            const locationCopy = location.querySelector<HTMLElement>(".story-location__copy");
-            const locationKicker = location.querySelector<HTMLElement>(".story-kicker");
-            const locationHeadline = Array.from(
-              location.querySelectorAll<HTMLElement>(".story-mask__line")
-            );
-            const mapBadge = location.querySelector<HTMLElement>(".story-real-map__badge");
-            const mapTrace = location.querySelector<HTMLElement>(".story-real-map__trace");
-            const mapRoute = location.querySelector<SVGGeometryElement>(
-              ".story-real-map__route path"
-            );
-            const mapMarkers = Array.from(
-              location.querySelectorAll<SVGCircleElement>(".story-real-map__route circle")
-            );
-            const locationLead = location.querySelector<HTMLElement>(".story-location__lead");
-            const locationAddress = location.querySelector<HTMLElement>(".story-location__address");
-            const locationAction = location.querySelector<HTMLElement>(".story-location__action");
-            const locationHandoff = location.querySelector<HTMLElement>(".story-location__handoff");
+            if (isAboutExperience) {
+              const forecastKicker = location.querySelector<HTMLElement>(".story-kicker");
+              const forecastHeadline = Array.from(
+                location.querySelectorAll<HTMLElement>(".story-forecast__copy .story-mask__line")
+              );
+              const forecastLead = location.querySelector<HTMLElement>(".story-forecast__lead");
+              const forecastPlot = location.querySelector<HTMLElement>(".story-forecast__plot");
+              const historyPath = location.querySelector<SVGGeometryElement>(
+                "[data-forecast-history]"
+              );
+              const futurePath = location.querySelector<SVGGeometryElement>(
+                "[data-forecast-future]"
+              );
+              const presentLine = location.querySelector<SVGGeometryElement>(
+                "[data-forecast-present-line]"
+              );
+              const presentDot = location.querySelector<SVGGeometryElement>(
+                "[data-forecast-present-dot]"
+              );
+              const forecastLabels = Array.from(
+                location.querySelectorAll<HTMLElement>(".story-forecast__label")
+              );
+              const forecastTakeaway = location.querySelector<HTMLElement>(
+                ".story-forecast__takeaway"
+              );
+              const locationHandoff = location.querySelector<HTMLElement>(
+                ".story-location__handoff"
+              );
 
-            if (
-              realMap &&
-              locationCopy &&
-              locationKicker &&
-              locationHeadline.length &&
-              mapBadge &&
-              mapTrace &&
-              mapRoute &&
-              mapMarkers.length &&
-              locationLead &&
-              locationAddress &&
-              locationAction &&
-              locationHandoff
-            ) {
-              gsap.set(realMap, { autoAlpha: 0, scale: 0.98, y: 18 });
-              gsap.set(locationCopy, { autoAlpha: 0, scale: 0.98, y: 18 });
-              gsap.set(locationKicker, { autoAlpha: 0, x: -18 });
-              gsap.set(locationHeadline, { autoAlpha: 0, y: 24 });
-              gsap.set(mapBadge, { autoAlpha: 0, scale: 0.78, y: 14 });
-              gsap.set(mapMarkers, { autoAlpha: 0, scale: 0.72, transformOrigin: "center" });
-              gsap.set(mapTrace, { scaleX: 0 });
-              gsap.set(mapRoute, { strokeDashoffset: 1 });
-              gsap.set([locationLead, locationAddress], { autoAlpha: 0, x: 20 });
-              gsap.set(locationAction, { autoAlpha: 0, x: 16 });
-              gsap.set(locationHandoff, { scaleX: 0 });
+              if (
+                forecastKicker &&
+                forecastHeadline.length &&
+                forecastLead &&
+                forecastPlot &&
+                historyPath &&
+                futurePath &&
+                presentLine &&
+                presentDot &&
+                forecastLabels.length &&
+                forecastTakeaway &&
+                locationHandoff
+              ) {
+                gsap.set(forecastKicker, { autoAlpha: 0, x: -18 });
+                gsap.set(forecastHeadline, { autoAlpha: 0, y: 24 });
+                gsap.set(forecastLead, { autoAlpha: 0, x: 18 });
+                gsap.set(forecastPlot, { autoAlpha: 0, y: 18 });
+                gsap.set([historyPath, futurePath], {
+                  strokeDasharray: 1,
+                  strokeDashoffset: 1
+                });
+                gsap.set([presentLine, presentDot], { autoAlpha: 0 });
+                gsap.set(presentLine, { scaleY: 0, transformOrigin: "center center" });
+                gsap.set(forecastLabels, { autoAlpha: 0, y: 10 });
+                gsap.set(forecastTakeaway, { autoAlpha: 0, y: 10 });
+                gsap.set(locationHandoff, { autoAlpha: 0 });
 
-              const locationTimeline = gsap.timeline({
-                scrollTrigger: {
-                  trigger: location,
-                  start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
-                  end: desktop ? "bottom bottom" : "bottom 14%",
-                  invalidateOnRefresh: true,
-                  scrub
-                }
-              });
-              locationTimeline
-                .addLabel("map", 0)
-                .to(
-                  realMap,
-                  { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
-                  "map+=0.02"
-                )
-                .addLabel("copy", 0.12)
-                .to(
-                  locationCopy,
-                  { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
-                  "copy"
-                )
-                .to(
-                  locationKicker,
-                  { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                  "copy"
-                )
-                .addLabel("headline", 0.2)
-                .to(
-                  locationHeadline,
-                  { autoAlpha: 1, duration: 0.1, ease: "power2.out", stagger: 0.025, y: 0 },
-                  "headline"
-                )
-                .addLabel("marker", 0.35)
-                .to(
-                  [mapBadge, ...mapMarkers],
-                  {
-                    autoAlpha: 1,
-                    duration: 0.08,
-                    ease: "power2.out",
-                    scale: 1,
-                    stagger: 0.02,
-                    y: 0
-                  },
-                  "marker"
-                )
-                .addLabel("route", 0.44)
-                .to(mapTrace, { duration: 0.11, ease: "none", scaleX: 1 }, "route")
-                .to(mapRoute, { duration: 0.13, ease: "none", strokeDashoffset: 0 }, "route")
-                .addLabel("address", 0.58)
-                .to(
-                  [locationLead, locationAddress],
-                  { autoAlpha: 1, duration: 0.09, ease: "power1.out", stagger: 0.02, x: 0 },
-                  "address"
-                )
-                .to(locationAction, { autoAlpha: 1, duration: 0.08, ease: "power1.out", x: 0 }, 0.7)
-                .addLabel("complete", 0.8)
-                .to(locationHandoff, { duration: 0.04, ease: "none", scaleX: 1 }, 0.94);
-              settle(locationTimeline, 0.98);
+                const forecastTimeline = gsap.timeline({
+                  scrollTrigger: {
+                    trigger: location,
+                    start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
+                    end: desktop ? "bottom bottom" : "bottom 14%",
+                    invalidateOnRefresh: true,
+                    scrub
+                  }
+                });
+
+                forecastTimeline
+                  .to(
+                    forecastKicker,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
+                    0.02
+                  )
+                  .to(
+                    forecastHeadline,
+                    { autoAlpha: 1, duration: 0.11, ease: "power2.out", stagger: 0.025, y: 0 },
+                    0.1
+                  )
+                  .to(
+                    forecastLead,
+                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", x: 0 },
+                    0.2
+                  )
+                  .to(
+                    forecastPlot,
+                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", y: 0 },
+                    0.27
+                  )
+                  .to(historyPath, { duration: 0.2, ease: "none", strokeDashoffset: 0 }, 0.36)
+                  .to(
+                    [presentLine, presentDot],
+                    { autoAlpha: 1, duration: 0.07, ease: "power1.out" },
+                    0.54
+                  )
+                  .to(presentLine, { duration: 0.08, ease: "none", scaleY: 1 }, 0.54)
+                  .to(futurePath, { duration: 0.2, ease: "none", strokeDashoffset: 0 }, 0.62)
+                  .to(
+                    forecastLabels,
+                    { autoAlpha: 1, duration: 0.08, ease: "power2.out", stagger: 0.025, y: 0 },
+                    0.75
+                  )
+                  .to(
+                    forecastTakeaway,
+                    { autoAlpha: 1, duration: 0.08, ease: "power1.out", y: 0 },
+                    0.84
+                  )
+                  .to(locationHandoff, { autoAlpha: 1, duration: 0.09, ease: "none" }, 0.92);
+
+                settle(forecastTimeline, 0.98);
+              }
+            } else {
+              const realMap = location.querySelector<HTMLElement>(".story-real-map");
+              const locationCopy = location.querySelector<HTMLElement>(".story-location__copy");
+              const locationKicker = location.querySelector<HTMLElement>(".story-kicker");
+              const locationHeadline = Array.from(
+                location.querySelectorAll<HTMLElement>(".story-mask__line")
+              );
+              const mapBadge = location.querySelector<HTMLElement>(".story-real-map__badge");
+              const mapTrace = location.querySelector<HTMLElement>(".story-real-map__trace");
+              const mapRoute = location.querySelector<SVGGeometryElement>(
+                ".story-real-map__route path"
+              );
+              const mapMarkers = Array.from(
+                location.querySelectorAll<SVGCircleElement>(".story-real-map__route circle")
+              );
+              const locationLead = location.querySelector<HTMLElement>(".story-location__lead");
+              const locationAddress = location.querySelector<HTMLElement>(".story-location__address");
+              const locationAction = location.querySelector<HTMLElement>(".story-location__action");
+              const locationHandoff = location.querySelector<HTMLElement>(".story-location__handoff");
+  
+              if (
+                realMap &&
+                locationCopy &&
+                locationKicker &&
+                locationHeadline.length &&
+                mapBadge &&
+                mapTrace &&
+                mapRoute &&
+                mapMarkers.length &&
+                locationLead &&
+                locationAddress &&
+                locationAction &&
+                locationHandoff
+              ) {
+                gsap.set(realMap, { autoAlpha: 0, scale: 0.98, y: 18 });
+                gsap.set(locationCopy, { autoAlpha: 0, scale: 0.98, y: 18 });
+                gsap.set(locationKicker, { autoAlpha: 0, x: -18 });
+                gsap.set(locationHeadline, { autoAlpha: 0, y: 24 });
+                gsap.set(mapBadge, { autoAlpha: 0, scale: 0.78, y: 14 });
+                gsap.set(mapMarkers, { autoAlpha: 0, scale: 0.72, transformOrigin: "center" });
+                gsap.set(mapTrace, { scaleX: 0 });
+                gsap.set(mapRoute, { strokeDashoffset: 1 });
+                gsap.set([locationLead, locationAddress], { autoAlpha: 0, x: 20 });
+                gsap.set(locationAction, { autoAlpha: 0, x: 16 });
+                gsap.set(locationHandoff, { scaleX: 0 });
+  
+                const locationTimeline = gsap.timeline({
+                  scrollTrigger: {
+                    trigger: location,
+                    start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
+                    end: desktop ? "bottom bottom" : "bottom 14%",
+                    invalidateOnRefresh: true,
+                    scrub
+                  }
+                });
+                locationTimeline
+                  .addLabel("map", 0)
+                  .to(
+                    realMap,
+                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
+                    "map+=0.02"
+                  )
+                  .addLabel("copy", 0.12)
+                  .to(
+                    locationCopy,
+                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
+                    "copy"
+                  )
+                  .to(
+                    locationKicker,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
+                    "copy"
+                  )
+                  .addLabel("headline", 0.2)
+                  .to(
+                    locationHeadline,
+                    { autoAlpha: 1, duration: 0.1, ease: "power2.out", stagger: 0.025, y: 0 },
+                    "headline"
+                  )
+                  .addLabel("marker", 0.35)
+                  .to(
+                    [mapBadge, ...mapMarkers],
+                    {
+                      autoAlpha: 1,
+                      duration: 0.08,
+                      ease: "power2.out",
+                      scale: 1,
+                      stagger: 0.02,
+                      y: 0
+                    },
+                    "marker"
+                  )
+                  .addLabel("route", 0.44)
+                  .to(mapTrace, { duration: 0.11, ease: "none", scaleX: 1 }, "route")
+                  .to(mapRoute, { duration: 0.13, ease: "none", strokeDashoffset: 0 }, "route")
+                  .addLabel("address", 0.58)
+                  .to(
+                    [locationLead, locationAddress],
+                    { autoAlpha: 1, duration: 0.09, ease: "power1.out", stagger: 0.02, x: 0 },
+                    "address"
+                  )
+                  .to(locationAction, { autoAlpha: 1, duration: 0.08, ease: "power1.out", x: 0 }, 0.7)
+                  .addLabel("complete", 0.8)
+                  .to(locationHandoff, { duration: 0.04, ease: "none", scaleX: 1 }, 0.94);
+                settle(locationTimeline, 0.98);
+              }
             }
           }
 
@@ -1521,60 +1633,168 @@ export function DiscoverPage({
         </section>
       )}
 
-      <section className="story-scene story-location" id="discover-location">
-        <div className="customer-container story-location__stage" data-story-motion>
-          <figure className="story-real-map">
-            <iframe
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-              src={openStreetMapEmbedUrl}
-              title="OpenStreetMap showing 110 A. Mabini Street in Pasig City"
-            />
-            <span aria-hidden="true" className="story-real-map__trace" />
-            <svg aria-hidden="true" className="story-real-map__route" viewBox="0 0 640 440">
-              <path d="M320 24 V150 M320 250 V416 M24 200 H270 M370 200 H616" pathLength="1" />
-              <circle cx="320" cy="200" r="25" />
-              <circle cx="320" cy="200" r="7" />
-            </svg>
-            <figcaption className="story-real-map__badge">
-              <MapPin aria-hidden="true" />
-              <span>
-                <strong>Store location</strong>
-                <small>Pasig City</small>
-              </span>
-            </figcaption>
-          </figure>
+      {isAboutExperience ? (
+        <section
+          aria-labelledby="about-forecast-title"
+          className="story-scene story-location story-forecast"
+          id="discover-location"
+        >
+          <AboutForecastMotion />
 
-          <div className="story-location__copy">
-            <span className="story-kicker">
-              {isAboutExperience ? "Our location" : "04 / Our location"}
-            </span>
-            <h2 className="story-display-safe">
-              <span className="story-mask">
-                <span className="story-mask__line">Local By</span>
-              </span>
-              <span className="story-mask">
-                <span className="story-mask__line story-mask__line--accent">Design.</span>
-              </span>
-            </h2>
-            <p className="story-location__lead">Serving everyday grocery needs in Pasig City.</p>
-            <address className="story-location__address">
-              <span>110 A. Mabini Street</span>
-              <strong>Pasig City, Metro Manila</strong>
-            </address>
-            <a
-              className="story-location__action"
-              href={googleMapsUrl}
-              rel="noreferrer"
-              target="_blank"
+          <div className="customer-container story-forecast__stage" data-story-motion>
+            <div className="story-forecast__intro">
+              <div className="story-forecast__copy">
+                <span className="story-kicker">Forecast Intelligence</span>
+                <h2 className="story-display-safe" id="about-forecast-title">
+                  <span className="story-mask">
+                    <span className="story-mask__line">Past Sales Shape</span>
+                  </span>
+                  <span className="story-mask">
+                    <span className="story-mask__line">What Comes Next.</span>
+                  </span>
+                </h2>
+              </div>
+
+              <p className="story-forecast__lead">
+                Historical sales are organized across time so SARIMA can estimate future demand
+                and support inventory planning.
+              </p>
+            </div>
+
+            <div
+              aria-label="Forecast timeline from historical sales through the present into a forecast horizon"
+              className="story-forecast__plot"
+              role="img"
             >
-              Open in Google Maps <ExternalLink aria-hidden="true" />
-            </a>
+              <div aria-hidden="true" className="story-forecast__zones">
+                <span className="story-forecast__zone story-forecast__zone--history" />
+                <span className="story-forecast__zone story-forecast__zone--future" />
+              </div>
+
+              <svg
+                aria-hidden="true"
+                className="story-forecast__svg"
+                preserveAspectRatio="none"
+                viewBox="0 0 1200 420"
+              >
+                <defs>
+                  <linearGradient id="forecast-gradient" x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0%" stopColor="#625bff" />
+                    <stop offset="58%" stopColor="#a83cf0" />
+                    <stop offset="100%" stopColor="#f43f8c" />
+                  </linearGradient>
+                </defs>
+
+                <path className="story-forecast__guide" d="M50 112 H1150" />
+                <path className="story-forecast__guide" d="M50 210 H1150" />
+                <path className="story-forecast__baseline" d="M50 310 H1150" />
+
+                <path
+                  className="story-forecast__history"
+                  d="M60 278 C110 245 145 180 200 208 C255 235 285 292 340 258 C395 224 425 150 480 190 C535 230 565 248 610 208"
+                  data-forecast-history
+                  pathLength="1"
+                />
+                <path
+                  className="story-forecast__future"
+                  d="M610 208 C660 164 700 142 748 176 C800 212 838 264 890 226 C946 184 992 132 1044 166 C1088 194 1118 212 1140 188"
+                  data-forecast-future
+                  pathLength="1"
+                />
+
+                <line
+                  className="story-forecast__present-line"
+                  data-forecast-present-line
+                  x1="610"
+                  x2="610"
+                  y1="74"
+                  y2="332"
+                />
+                <circle
+                  className="story-forecast__present-dot"
+                  cx="610"
+                  cy="208"
+                  data-forecast-present-dot
+                  r="9"
+                />
+              </svg>
+
+              <div aria-hidden="true" className="story-forecast__labels">
+                <span className="story-forecast__label story-forecast__label--history">
+                  Historical sales
+                </span>
+                <span className="story-forecast__label story-forecast__label--present">
+                  Present
+                </span>
+                <span className="story-forecast__label story-forecast__label--future">
+                  Forecast horizon
+                </span>
+              </div>
+
+              <p className="story-forecast__takeaway">
+                Forecasts help prepare the next inventory decision.
+              </p>
+            </div>
           </div>
-        </div>
-        <span aria-hidden="true" className="story-location__handoff" />
-      </section>
+
+          <span aria-hidden="true" className="story-location__handoff" />
+        </section>
+      ) : (
+        <section className="story-scene story-location" id="discover-location">
+          <div className="customer-container story-location__stage" data-story-motion>
+            <figure className="story-real-map">
+              <iframe
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                src={openStreetMapEmbedUrl}
+                title="OpenStreetMap showing 110 A. Mabini Street in Pasig City"
+              />
+              <span aria-hidden="true" className="story-real-map__trace" />
+              <svg aria-hidden="true" className="story-real-map__route" viewBox="0 0 640 440">
+                <path d="M320 24 V150 M320 250 V416 M24 200 H270 M370 200 H616" pathLength="1" />
+                <circle cx="320" cy="200" r="25" />
+                <circle cx="320" cy="200" r="7" />
+              </svg>
+              <figcaption className="story-real-map__badge">
+                <MapPin aria-hidden="true" />
+                <span>
+                  <strong>Store location</strong>
+                  <small>Pasig City</small>
+                </span>
+              </figcaption>
+            </figure>
+  
+            <div className="story-location__copy">
+              <span className="story-kicker">
+                {isAboutExperience ? "Our location" : "04 / Our location"}
+              </span>
+              <h2 className="story-display-safe">
+                <span className="story-mask">
+                  <span className="story-mask__line">Local By</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line story-mask__line--accent">Design.</span>
+                </span>
+              </h2>
+              <p className="story-location__lead">Serving everyday grocery needs in Pasig City.</p>
+              <address className="story-location__address">
+                <span>110 A. Mabini Street</span>
+                <strong>Pasig City, Metro Manila</strong>
+              </address>
+              <a
+                className="story-location__action"
+                href={googleMapsUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Open in Google Maps <ExternalLink aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+          <span aria-hidden="true" className="story-location__handoff" />
+        </section>
+      )}
 
       <DeferredIntelligenceScene hideSectionNumber={isAboutExperience} />
 
