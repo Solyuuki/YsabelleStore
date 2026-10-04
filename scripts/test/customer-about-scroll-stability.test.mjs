@@ -49,9 +49,11 @@ test("About chapter 02 uses the product and catalog intelligence story", () => {
   assert.match(discover, /hideSectionNumber=\{isAboutExperience\}/);
   assert.match(discover, /isAboutExperience \? "Shop with Ysabelle" : "06 \/ Shop with Ysabelle"/);
   assert.match(discover, /discover-progress__dot/);
-  assert.match(motion, /gemini_generated_video_00ca849a\.mp4/);
+  assert.match(motion, /gemini_generated_video_a80f6413\.mp4/);
   assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
-  assert.match(css, /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(css, /story-catalog__steps[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(css, /story-catalog__step[\s\S]*?background:\s*transparent/);
+  assert.doesNotMatch(css, /story-catalog__step[\s\S]{0,500}?border-radius:\s*1rem/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
