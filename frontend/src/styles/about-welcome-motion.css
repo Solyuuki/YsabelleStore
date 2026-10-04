@@ -110,13 +110,13 @@
 
 .about-experience .discover-story--about .story-welcome__title {
   display: grid;
-  width: min(100%, 11.5ch);
-  max-width: 11.5ch;
+  width: min(100%, 11.8ch);
+  max-width: 11.8ch;
   justify-items: center;
   margin-top: 0 !important;
-  font-size: clamp(4rem, min(9.4vw, 13.5vh), 8.8rem);
-  letter-spacing: -0.058em;
-  line-height: 0.84;
+  font-size: clamp(4.15rem, min(9.8vw, 13.8vh), 9.25rem);
+  letter-spacing: -0.06em;
+  line-height: 0.83;
   text-wrap: balance;
 }
 
@@ -125,12 +125,17 @@
   .story-welcome__title
   .story-mask:first-child
   .story-mask__line {
-  background: linear-gradient(180deg, #0a1233 0%, #111a4d 58%, #273b82 100%);
+  background: linear-gradient(
+    180deg,
+    #20285f 0%,
+    #313b83 44%,
+    #4c54ad 76%,
+    #625bff 100%
+  );
   background-clip: text;
   color: transparent;
-  text-shadow:
-    0 1px 0 rgb(255 255 255 / 48%),
-    0 14px 34px rgb(41 51 119 / 18%);
+  filter: drop-shadow(0 12px 24px rgb(50 57 132 / 13%));
+  text-shadow: 0 1px 0 rgb(255 255 255 / 56%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -139,68 +144,158 @@
   .discover-story--about
   .story-welcome__title
   .story-mask__line--accent {
-  background: linear-gradient(112deg, #625bff 0%, #8958f5 35%, #c34fd8 65%, #f252a8 100%);
+  background: linear-gradient(
+    110deg,
+    #625bff 0%,
+    #8358f5 30%,
+    #a83cf0 52%,
+    #d84fc5 74%,
+    #f43f8c 100%
+  );
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 12px 26px rgb(168 60 240 / 14%));
   font-style: italic;
-  text-shadow:
-    0 1px 0 rgb(255 255 255 / 36%),
-    0 14px 34px rgb(147 78 222 / 18%);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 44%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .about-experience .discover-story--about .story-welcome__support {
   gap: 0;
-  margin-top: clamp(1.2rem, 2.8vh, 1.9rem);
+  width: min(100%, 36rem);
+  margin-top: clamp(1.15rem, 2.6vh, 1.8rem);
 }
 
 .about-experience .discover-story--about .story-welcome__support strong {
+  position: relative;
   order: 1;
-  padding: 0.6rem 1.05rem;
-  border: 1px solid rgb(111 91 255 / 26%);
-  background: linear-gradient(180deg, rgb(255 255 255 / 70%), rgb(245 242 255 / 52%));
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.68rem;
+  padding: 0.55rem 1.05rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 78%), rgb(245 244 255 / 62%)) padding-box,
+    linear-gradient(
+        105deg,
+        rgb(0 140 255 / 34%),
+        rgb(98 91 255 / 48%) 48%,
+        rgb(168 60 240 / 36%) 74%,
+        rgb(244 63 140 / 28%)
+      )
+      border-box;
   color: #5149d9;
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 82%),
-    0 10px 28px rgb(89 78 177 / 10%);
-  font-size: clamp(0.64rem, 0.72vw, 0.75rem);
-  font-weight: 850;
-  letter-spacing: 0.16em;
-  text-shadow: 0 1px 0 rgb(255 255 255 / 72%);
-  backdrop-filter: blur(10px);
+    inset 0 1px 0 rgb(255 255 255 / 90%),
+    0 10px 26px rgb(74 70 160 / 9%);
+  font-size: clamp(0.64rem, 0.72vw, 0.76rem);
+  font-weight: 900;
+  letter-spacing: 0.17em;
+  line-height: 1.2;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 76%);
+  text-transform: uppercase;
+  backdrop-filter: blur(12px) saturate(108%);
+}
+
+.about-experience .discover-story--about .story-welcome__support strong::before,
+.about-experience .discover-story--about .story-welcome__support strong::after {
+  color: #7b66ee;
+  content: "✦";
+  font-size: 0.72rem;
+  line-height: 1;
+  opacity: 0.72;
+}
+
+.about-experience .discover-story--about .story-welcome__support strong::after {
+  color: #c457df;
 }
 
 .about-experience .discover-story--about .story-welcome__support p {
   order: 2;
-  margin: 1rem 0 0;
-  color: rgb(32 42 82 / 80%);
-  font-size: clamp(1.04rem, min(1.6vw, 2.45vh), 1.38rem);
-  font-weight: 520;
-  letter-spacing: -0.012em;
-  text-shadow: 0 8px 22px rgb(86 92 145 / 8%);
+  max-width: 28ch;
+  margin: clamp(1.05rem, 2.25vh, 1.4rem) auto 0;
+  color: #34417b;
+  font-size: clamp(1.05rem, min(1.75vw, 2.55vh), 1.42rem);
+  font-weight: 540;
+  letter-spacing: -0.018em;
+  line-height: 1.38;
+  text-shadow:
+    0 1px 0 rgb(255 255 255 / 52%),
+    0 8px 20px rgb(65 72 145 / 7%);
+}
+
+.about-experience .discover-story--about .story-welcome__divider {
+  position: relative;
+  order: 3;
+  width: clamp(6.5rem, 10vw, 8.5rem);
+  height: 1px;
+  margin-top: clamp(1.05rem, 2.3vh, 1.45rem);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(98 91 255 / 30%) 22%,
+    rgb(168 60 240 / 38%) 50%,
+    rgb(244 63 140 / 22%) 78%,
+    transparent
+  );
+}
+
+.about-experience .discover-story--about .story-welcome__divider::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding-inline: 0.45rem;
+  background: rgb(246 247 255 / 84%);
+  color: #a83cf0;
+  content: "✦";
+  font-size: 0.72rem;
+  line-height: 1;
+  transform: translate(-50%, -50%);
 }
 
 .about-experience .discover-story--about .story-welcome__scroll-cue {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  order: 3;
-  margin-top: clamp(1.3rem, 2.8vh, 1.8rem);
-  color: rgb(58 70 128 / 68%);
-  font-size: clamp(0.62rem, 0.66vw, 0.69rem);
-  font-weight: 820;
-  letter-spacing: 0.18em;
+  gap: 0.48rem;
+  order: 4;
+  margin-top: clamp(1rem, 2.1vh, 1.35rem);
+  color: #59649a;
+  font-size: clamp(0.61rem, 0.66vw, 0.7rem);
+  font-weight: 850;
+  letter-spacing: 0.2em;
+  line-height: 1.2;
   text-transform: uppercase;
-  text-shadow: 0 1px 0 rgb(255 255 255 / 62%);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 68%);
 }
 
 .about-experience .discover-story--about .story-welcome__scroll-cue svg {
-  width: 0.95rem;
-  height: 0.95rem;
+  width: 1rem;
+  height: 1rem;
   color: #625bff;
-  filter: drop-shadow(0 5px 10px rgb(98 91 255 / 18%));
-  transform: rotate(90deg);
+  filter: drop-shadow(0 5px 10px rgb(98 91 255 / 16%));
+  stroke-width: 2.1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .about-experience .discover-story--about .story-welcome__scroll-cue svg {
+    animation: about-welcome-scroll-cue 2.2s ease-in-out infinite;
+  }
+}
+
+@keyframes about-welcome-scroll-cue {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(3px);
+  }
 }
 
 .about-experience .discover-story--about .story-welcome__handoff {
