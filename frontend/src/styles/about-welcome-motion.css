@@ -104,7 +104,8 @@
   z-index: 2;
   min-height: max(740px, calc(100svh - 76px));
   justify-content: center;
-  padding-block: clamp(3.5rem, 8vh, 7rem);
+  padding-top: clamp(1.75rem, 4vh, 3.5rem);
+  padding-bottom: clamp(7rem, 14vh, 11rem);
 }
 
 .about-experience .discover-story--about .story-welcome__title {
@@ -189,7 +190,8 @@
 
   .about-experience .discover-story--about .story-welcome__stage {
     min-height: max(660px, calc(100svh - 118px));
-    padding-block: clamp(3rem, 7vh, 4.75rem);
+    padding-top: clamp(1.75rem, 4.5vh, 3rem);
+    padding-bottom: clamp(5.5rem, 11vh, 7.5rem);
   }
 
   .about-welcome-motion__video {
