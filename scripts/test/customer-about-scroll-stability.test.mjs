@@ -219,3 +219,16 @@ test("About chapter 04 uses a full-width forecast canvas instead of the chapter 
   assert.match(css, /--about-sales-forecast-seam/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
+
+test("About chapter labels diverge from legacy Discover only where chapters are rebuilt", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+
+  assert.match(
+    discover,
+    /const storyScenes = \[[\s\S]*?discover-location", label: "Our location"/
+  );
+  assert.match(
+    discover,
+    /const aboutStoryScenes = \[[\s\S]*?discover-location", label: "Forecast intelligence"/
+  );
+});
