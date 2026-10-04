@@ -1221,26 +1221,31 @@ export function DiscoverPage({
               <AboutCatalogMotion />
               <span aria-hidden="true" className="story-origin-shelf__line" />
 
-              <div className="story-origin-shelf__items" role="list">
+              <div
+                aria-label="Catalog workflow stages"
+                className="story-origin-shelf__items story-catalog__steps"
+                role="list"
+              >
                 {[
-                  { detail: "Source item", Icon: Package, label: "Product" },
-                  { detail: "Identity match", Icon: Barcode, label: "Barcode" },
-                  { detail: "Quality checks", Icon: ScanLine, label: "Image quality" },
-                  { detail: "Center & frame", Icon: Crop, label: "Normalize" },
-                  { detail: "Approved state", Icon: BadgeCheck, label: "Catalog ready" }
-                ].map(({ detail, Icon, label }) => (
-                  <span className="story-origin-shelf__item" key={label} role="listitem">
+                  { Icon: Package, label: "Product" },
+                  { Icon: Barcode, label: "Barcode" },
+                  { Icon: ScanLine, label: "Quality check" },
+                  { Icon: Crop, label: "Normalize" },
+                  { Icon: BadgeCheck, label: "Catalog ready" }
+                ].map(({ Icon, label }) => (
+                  <span
+                    className="story-origin-shelf__item story-catalog__step"
+                    key={label}
+                    role="listitem"
+                  >
                     <Icon aria-hidden="true" />
-                    <span>
-                      <small>{label}</small>
-                      <strong>{detail}</strong>
-                    </span>
+                    <small>{label}</small>
                   </span>
                 ))}
               </div>
 
-              <strong className="story-origin-shelf__sign">
-                Identity first. Quality checked. Catalog ready.
+              <strong className="story-origin-shelf__sign story-catalog__summary">
+                Identity first · quality checked · catalog ready
               </strong>
             </div>
           </div>
