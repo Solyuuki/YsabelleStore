@@ -1702,21 +1702,23 @@ export function DiscoverPage({
                 <span className="story-kicker">Forecast Intelligence</span>
                 <h2 className="story-display-safe" id="about-forecast-title">
                   <span className="story-mask">
-                    <span className="story-mask__line">Demand Has a Rhythm.</span>
+                    <span className="story-mask__line">From Sales History</span>
                   </span>
                   <span className="story-mask">
-                    <span className="story-mask__line">Forecast the Next Move.</span>
+                    <span className="story-mask__line">to Future Demand.</span>
                   </span>
                 </h2>
-              </div>
 
-              <div className="story-forecast__method">
-                <span className="story-forecast__method-label">Seasonal demand model</span>
-                <strong>SARIMA</strong>
                 <p className="story-forecast__lead">
-                  Observed sales reveal recurring patterns. SARIMA extends those patterns into
-                  a forward demand estimate for inventory planning.
+                  SARIMA reads recurring sales patterns to estimate upcoming demand and support
+                  better inventory planning.
                 </p>
+
+                <div aria-label="Forecast model" className="story-forecast__model">
+                  <span>Model</span>
+                  <strong>SARIMA</strong>
+                  <small>Seasonal forecasting</small>
+                </div>
               </div>
             </div>
 
@@ -1780,18 +1782,18 @@ export function DiscoverPage({
 
               <div aria-hidden="true" className="story-forecast__labels">
                 <span className="story-forecast__label story-forecast__label--history">
-                  Historical sales
+                  Sales history
                 </span>
                 <span className="story-forecast__label story-forecast__label--present">
                   Present
                 </span>
                 <span className="story-forecast__label story-forecast__label--future">
-                  Projected demand
+                  Forecast
                 </span>
               </div>
 
               <p className="story-forecast__takeaway">
-                A forward view for better stock decisions.
+                Plan stock with a clearer view of what comes next.
               </p>
             </div>
           </div>
