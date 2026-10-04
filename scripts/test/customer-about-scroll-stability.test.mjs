@@ -364,3 +364,24 @@ test("About chapter 03 matches chapter 02 desktop scroll pacing", () => {
     /salesHandoff[\s\S]*?autoAlpha:\s*0\.82[\s\S]*?0\.9[\s\S]*?settle\(salesTimeline, 0\.99\)/
   );
 });
+
+
+test("About chapter 03 pre-reveals before pinning so the catalog-to-sales handoff does not pop", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const css = read("frontend/src/styles/about-sales-inventory.css");
+
+  assert.match(
+    discover,
+    /const salesPrelude = gsap\.timeline\([\s\S]*?start:\s*"top 94%"[\s\S]*?end:\s*"top top\+=76"[\s\S]*?scrub:\s*0\.2/
+  );
+  assert.match(
+    discover,
+    /salesPrelude[\s\S]*?salesKicker[\s\S]*?autoAlpha:\s*0\.68[\s\S]*?salesSystem[\s\S]*?autoAlpha:\s*0\.68/
+  );
+  assert.match(
+    discover,
+    /fromTo\(\s*salesKicker[\s\S]*?desktop \? 0\.68 : 0[\s\S]*?fromTo\(\s*salesSystem[\s\S]*?desktop \? 0\.994 : 0\.985/
+  );
+  assert.doesNotMatch(css, /story-sales__system[\s\S]{0,900}?backdrop-filter:\s*blur\(/);
+  assert.match(css, /story-sales__system[\s\S]*?background:\s*rgb\(15 21 49 \/ 91%\)[\s\S]*?translateZ\(0\)/);
+});
