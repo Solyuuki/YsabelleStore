@@ -712,13 +712,24 @@ export function DiscoverPage({
                 gsap.set(salesHandoff, { autoAlpha: 0 });
 
                 const salesTimeline = gsap.timeline({
-                  scrollTrigger: {
-                    trigger: essentials,
-                    start: desktop ? "top top+=76" : "top 84%",
-                    end: desktop ? "bottom bottom" : "bottom 16%",
-                    invalidateOnRefresh: true,
-                    scrub
-                  }
+                  scrollTrigger: desktop
+                    ? {
+                        trigger: essentials,
+                        start: "top top+=76",
+                        end: () => `+=${Math.max(1100, Math.round(window.innerHeight * 1.4))}`,
+                        pin: essentials,
+                        pinSpacing: true,
+                        anticipatePin: 1,
+                        invalidateOnRefresh: true,
+                        scrub: 0.45
+                      }
+                    : {
+                        trigger: essentials,
+                        start: "top 84%",
+                        end: "bottom 16%",
+                        invalidateOnRefresh: true,
+                        scrub
+                      }
                 });
 
                 salesTimeline
@@ -754,9 +765,9 @@ export function DiscoverPage({
                     },
                     0.53
                   )
-                  .to(salesHandoff, { autoAlpha: 0.82, duration: 0.1, ease: "none" }, 0.86);
+                  .to(salesHandoff, { autoAlpha: 0.82, duration: 0.08, ease: "none" }, 0.9);
 
-                settle(salesTimeline, 0.94);
+                settle(salesTimeline, 0.99);
               }
             } else {
               const essentialsKicker = essentials.querySelector<HTMLElement>(".story-kicker");
