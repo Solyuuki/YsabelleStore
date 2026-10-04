@@ -269,7 +269,7 @@
   bottom: -1px;
   left: 0;
   width: auto;
-  height: clamp(6.5rem, 13vh, 9rem);
+  height: clamp(5.5rem, 10vh, 7rem);
   border-radius: 0;
   background: var(--about-sales-forecast-seam);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 54%, #000 100%);
