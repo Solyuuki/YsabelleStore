@@ -114,7 +114,7 @@ function useDeferredStoryScene(sceneId: string, rootMargin: string) {
   return { isActivated, sceneRef };
 }
 
-function DeferredIntelligenceScene() {
+function DeferredIntelligenceScene({ hideSectionNumber = false }: { hideSectionNumber?: boolean }) {
   const { isActivated, sceneRef } = useDeferredStoryScene("discover-smarter", "0px 0px 220% 0px");
 
   if (!isActivated) {
@@ -134,7 +134,7 @@ function DeferredIntelligenceScene() {
         />
       }
     >
-      <DeferredSystemIntelligenceScene />
+      <DeferredSystemIntelligenceScene hideSectionNumber={hideSectionNumber} />
     </Suspense>
   );
 }
@@ -541,7 +541,7 @@ export function DiscoverPage({
             );
 
             if (
-              beginningYear &&
+              (isAboutExperience || beginningYear) &&
               beginningKicker &&
               beginningHeadline.length &&
               beginningCopy &&
@@ -555,11 +555,13 @@ export function DiscoverPage({
                 beginning.classList.toggle("is-story-active", isActive);
               };
 
-              gsap.set(beginningYear, {
-                autoAlpha: 0,
-                scale: desktop ? 1.07 : 1.03,
-                y: desktop ? 18 : 8
-              });
+              if (beginningYear) {
+                gsap.set(beginningYear, {
+                  autoAlpha: 0,
+                  scale: desktop ? 1.07 : 1.03,
+                  y: desktop ? 18 : 8
+                });
+              }
               gsap.set(beginningKicker, { autoAlpha: 0, x: -18 });
               gsap.set(beginningHeadline, { autoAlpha: 0, y: 24 });
               gsap.set(beginningCopy, { autoAlpha: 0, y: 16 });
@@ -591,14 +593,15 @@ export function DiscoverPage({
                     }
               });
 
-              beginningTimeline
-                .addLabel("year", 0)
-                .to(
+              beginningTimeline.addLabel("year", 0);
+              if (beginningYear) {
+                beginningTimeline.to(
                   beginningYear,
                   { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 },
                   "year+=0.02"
-                )
-                .addLabel("eyebrow", 0.13)
+                );
+              }
+              beginningTimeline.addLabel("eyebrow", 0.13)
                 .to(
                   beginningKicker,
                   { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
@@ -1099,10 +1102,18 @@ export function DiscoverPage({
             <li className={activeScene === index ? "is-active" : undefined} key={scene.id}>
               <a
                 aria-current={activeScene === index ? "step" : undefined}
-                aria-label={`${String(index + 1).padStart(2, "0")}: ${scene.label}`}
+                aria-label={
+                  isAboutExperience
+                    ? scene.label
+                    : `${String(index + 1).padStart(2, "0")}: ${scene.label}`
+                }
                 href={`#${scene.id}`}
               >
-                {String(index + 1).padStart(2, "0")}
+                {isAboutExperience ? (
+                  <span aria-hidden="true" className="discover-progress__dot" />
+                ) : (
+                  String(index + 1).padStart(2, "0")
+                )}
               </a>
             </li>
           ))}
@@ -1186,12 +1197,8 @@ export function DiscoverPage({
             className="customer-container story-beginning__stage story-catalog__stage"
             data-story-motion
           >
-            <div aria-hidden="true" className="story-beginning__year story-catalog__index">
-              02
-            </div>
-
             <div className="story-beginning__copy story-catalog__copy">
-              <span className="story-kicker">02 / Product &amp; Catalog Intelligence</span>
+              <span className="story-kicker">Product &amp; Catalog Intelligence</span>
               <h2 className="story-display-safe" id="about-catalog-title">
                 <span className="story-mask">
                   <span className="story-mask__line">From Product</span>
@@ -1292,7 +1299,9 @@ export function DiscoverPage({
       <section className="story-scene story-products" id="discover-essentials" ref={shelfSceneRef}>
         <div className="customer-container story-products__stage" data-story-motion>
           <div className="story-products__heading">
-            <span className="story-kicker">03 / Everyday essentials</span>
+            <span className="story-kicker">
+              {isAboutExperience ? "Everyday essentials" : "03 / Everyday essentials"}
+            </span>
             <h2 className="story-display-safe">
               <span className="story-number-mask">
                 <span className="story-products__count">300+</span>
@@ -1361,7 +1370,9 @@ export function DiscoverPage({
           </figure>
 
           <div className="story-location__copy">
-            <span className="story-kicker">04 / Our location</span>
+            <span className="story-kicker">
+              {isAboutExperience ? "Our location" : "04 / Our location"}
+            </span>
             <h2 className="story-display-safe">
               <span className="story-mask">
                 <span className="story-mask__line">Local By</span>
@@ -1388,12 +1399,14 @@ export function DiscoverPage({
         <span aria-hidden="true" className="story-location__handoff" />
       </section>
 
-      <DeferredIntelligenceScene />
+      <DeferredIntelligenceScene hideSectionNumber={isAboutExperience} />
 
       <section className="story-scene story-shop" id="discover-shop" ref={shopSceneRef}>
         <div className="customer-container story-shop__stage" data-story-motion>
           <div className="story-shop__copy">
-            <span className="story-kicker">06 / Shop with Ysabelle</span>
+            <span className="story-kicker">
+              {isAboutExperience ? "Shop with Ysabelle" : "06 / Shop with Ysabelle"}
+            </span>
             <h2 className="story-display-safe">
               <span className="story-mask">
                 <span className="story-mask__line">The Story Opens</span>
