@@ -1817,10 +1817,9 @@ export function DiscoverPage({
               <span className="story-kicker">Forecast Intelligence</span>
               <h2 className="story-display-safe" id="about-forecast-title">
                 <span className="story-mask">
-                  <span className="story-mask__line">From Sales History</span>
-                </span>
-                <span className="story-mask">
-                  <span className="story-mask__line">to Future Demand.</span>
+                  <span className="story-mask__line">
+                    From Sales History <em className="story-forecast__emphasis">To Future Demand.</em>
+                  </span>
                 </span>
               </h2>
               <p className="story-forecast__lead">

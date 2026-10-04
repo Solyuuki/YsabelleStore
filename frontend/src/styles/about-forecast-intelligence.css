@@ -80,15 +80,17 @@
   text-shadow: 0 6px 28px rgb(3 8 28 / 34%);
 }
 
-.about-experience
-  .discover-story
-  .story-forecast__header
-  .story-mask:last-child
-  .story-mask__line {
+.about-experience .discover-story .story-forecast__header h2 .story-mask__line {
+  display: inline;
+  text-wrap: balance;
+}
+
+.about-experience .discover-story .story-forecast__emphasis {
   background: linear-gradient(105deg, #45b9ff 0%, #6f75ff 40%, #ba5bea 72%, #ff5da2 100%);
   background-clip: text;
   color: transparent;
   font-style: italic;
+  font-weight: inherit;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
