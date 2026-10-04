@@ -910,28 +910,13 @@ export function DiscoverPage({
           const location = first<HTMLElement>(".story-location");
           if (location) {
             if (isAboutExperience) {
-              const forecastStage = location.querySelector<HTMLElement>(".story-forecast__stage");
               const forecastKicker = location.querySelector<HTMLElement>(".story-kicker");
               const forecastHeadline = Array.from(
-                location.querySelectorAll<HTMLElement>(".story-forecast__copy .story-mask__line")
+                location.querySelectorAll<HTMLElement>(".story-forecast__header .story-mask__line")
               );
               const forecastLead = location.querySelector<HTMLElement>(".story-forecast__lead");
-              const forecastPlot = location.querySelector<HTMLElement>(".story-forecast__plot");
-              const historyPath = location.querySelector<SVGGeometryElement>(
-                "[data-forecast-history]"
-              );
-              const futurePath = location.querySelector<SVGGeometryElement>(
-                "[data-forecast-future]"
-              );
-              const presentLine = location.querySelector<SVGGeometryElement>(
-                "[data-forecast-present-line]"
-              );
-              const presentDot = location.querySelector<SVGGeometryElement>(
-                "[data-forecast-present-dot]"
-              );
-              const forecastLabels = Array.from(
-                location.querySelectorAll<HTMLElement>(".story-forecast__label")
-              );
+              const forecastVisual = location.querySelector<HTMLElement>(".story-forecast__visual");
+              const forecastModel = location.querySelector<HTMLElement>(".story-forecast__model");
               const forecastTakeaway = location.querySelector<HTMLElement>(
                 ".story-forecast__takeaway"
               );
@@ -940,86 +925,78 @@ export function DiscoverPage({
               );
 
               if (
-                forecastStage &&
                 forecastKicker &&
                 forecastHeadline.length &&
                 forecastLead &&
-                forecastPlot &&
-                historyPath &&
-                futurePath &&
-                presentLine &&
-                presentDot &&
-                forecastLabels.length &&
+                forecastVisual &&
+                forecastModel &&
                 forecastTakeaway &&
                 locationHandoff
               ) {
-                gsap.set(forecastKicker, { autoAlpha: 0, x: -18 });
-                gsap.set(forecastHeadline, { autoAlpha: 0, y: 24 });
-                gsap.set(forecastLead, { autoAlpha: 0, x: 18 });
-                gsap.set(forecastPlot, { autoAlpha: 1, y: 0 });
-                gsap.set([historyPath, futurePath], {
-                  strokeDasharray: 1,
-                  strokeDashoffset: 1
-                });
-                gsap.set([presentLine, presentDot], { autoAlpha: 0 });
-                gsap.set(presentLine, { scaleY: 0, transformOrigin: "center center" });
-                gsap.set(forecastLabels, { autoAlpha: 0, y: 10 });
-                gsap.set(forecastTakeaway, { autoAlpha: 0, y: 10 });
+                gsap.set(forecastKicker, { autoAlpha: 0, y: 12 });
+                gsap.set(forecastHeadline, { autoAlpha: 0, y: 22 });
+                gsap.set(forecastLead, { autoAlpha: 0, y: 14 });
+                gsap.set(forecastVisual, { autoAlpha: 0, scale: 0.985, y: 26 });
+                gsap.set(forecastModel, { autoAlpha: 0, x: -14 });
+                gsap.set(forecastTakeaway, { autoAlpha: 0, x: 14 });
                 gsap.set(locationHandoff, { autoAlpha: 0 });
 
                 const forecastTimeline = gsap.timeline({
                   scrollTrigger: {
                     trigger: location,
-                    start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
-                    end: desktop
-                      ? () => `+=${Math.max(520, Math.round(window.innerHeight * 0.65))}`
-                      : "bottom 12%",
+                    start: desktop ? "top 78%" : mobile ? "top 90%" : "top 84%",
+                    end: desktop ? "bottom 22%" : "bottom 14%",
                     invalidateOnRefresh: true,
-                    pin: desktop ? forecastStage : false,
-                    pinSpacing: desktop,
-                    anticipatePin: desktop ? 1 : 0,
-                    scrub: desktop ? 0.18 : tablet ? 0.14 : 0.1
+                    scrub: desktop ? 0.2 : tablet ? 0.14 : 0.1
                   }
                 });
 
                 forecastTimeline
                   .to(
                     forecastKicker,
-                    { autoAlpha: 1, duration: 0.06, ease: "power2.out", x: 0 },
-                    0.01
+                    { autoAlpha: 1, duration: 0.08, ease: "power2.out", y: 0 },
+                    0.02
                   )
                   .to(
                     forecastHeadline,
-                    { autoAlpha: 1, duration: 0.09, ease: "power2.out", stagger: 0.02, y: 0 },
-                    0.06
+                    {
+                      autoAlpha: 1,
+                      duration: 0.12,
+                      ease: "power2.out",
+                      stagger: 0.025,
+                      y: 0
+                    },
+                    0.08
                   )
                   .to(
                     forecastLead,
-                    { autoAlpha: 1, duration: 0.08, ease: "power1.out", x: 0 },
-                    0.13
+                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", y: 0 },
+                    0.18
                   )
-                  .to(historyPath, { duration: 0.16, ease: "none", strokeDashoffset: 0 }, 0.2)
                   .to(
-                    [presentLine, presentDot],
-                    { autoAlpha: 1, duration: 0.06, ease: "power1.out" },
-                    0.34
+                    forecastVisual,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.18,
+                      ease: "power2.out",
+                      scale: 1,
+                      y: 0
+                    },
+                    0.26
                   )
-                  .to(presentLine, { duration: 0.06, ease: "none", scaleY: 1 }, 0.34)
-                  .to(futurePath, { duration: 0.16, ease: "none", strokeDashoffset: 0 }, 0.42)
                   .to(
-                    forecastLabels,
-                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", stagger: 0.02, y: 0 },
-                    0.56
+                    forecastModel,
+                    { autoAlpha: 1, duration: 0.1, ease: "power2.out", x: 0 },
+                    0.5
                   )
                   .to(
                     forecastTakeaway,
-                    { autoAlpha: 1, duration: 0.07, ease: "power1.out", y: 0 },
-                    0.64
+                    { autoAlpha: 1, duration: 0.1, ease: "power2.out", x: 0 },
+                    0.56
                   )
-                  .to(locationHandoff, { autoAlpha: 1, duration: 0.06, ease: "none" }, 0.7);
+                  .to(locationHandoff, { autoAlpha: 1, duration: 0.08, ease: "none" }, 0.78);
 
-                settle(forecastTimeline, 0.76);
-
+                settle(forecastTimeline, 0.86);
               }
             } else {
               const realMap = location.querySelector<HTMLElement>(".story-real-map");
@@ -1129,6 +1106,7 @@ export function DiscoverPage({
               }
             }
           }
+
 
           let cleanupIntelligenceTimeline: (() => void) | undefined;
           const initializeIntelligence = (
@@ -1696,106 +1674,41 @@ export function DiscoverPage({
           id="discover-location"
         >
           <div className="customer-container story-forecast__stage" data-story-motion>
-            <AboutForecastMotion />
-            <div className="story-forecast__intro">
-              <div className="story-forecast__copy">
-                <span className="story-kicker">Forecast Intelligence</span>
-                <h2 className="story-display-safe" id="about-forecast-title">
-                  <span className="story-mask">
-                    <span className="story-mask__line">From Sales History</span>
-                  </span>
-                  <span className="story-mask">
-                    <span className="story-mask__line">to Future Demand.</span>
-                  </span>
-                </h2>
-
-                <p className="story-forecast__lead">
-                  SARIMA reads recurring sales patterns to estimate upcoming demand and support
-                  better inventory planning.
-                </p>
-
-                <div aria-label="Forecast model" className="story-forecast__model">
-                  <span>Model</span>
-                  <strong>SARIMA</strong>
-                  <small>Seasonal forecasting</small>
-                </div>
-              </div>
-            </div>
+            <header className="story-forecast__header">
+              <span className="story-kicker">Forecast Intelligence</span>
+              <h2 className="story-display-safe" id="about-forecast-title">
+                <span className="story-mask">
+                  <span className="story-mask__line">From Sales History</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line">to Future Demand.</span>
+                </span>
+              </h2>
+              <p className="story-forecast__lead">
+                SARIMA reads recurring sales patterns to estimate upcoming demand and support
+                better inventory planning.
+              </p>
+            </header>
 
             <div
-              aria-label="Forecast timeline from historical sales through the present into a forecast horizon"
-              className="story-forecast__plot"
+              aria-label="Animated SARIMA forecasting chart showing historical sales patterns and projected demand"
+              className="story-forecast__visual"
               role="img"
             >
-              <div aria-hidden="true" className="story-forecast__zones">
-                <span className="story-forecast__zone story-forecast__zone--history" />
-                <span className="story-forecast__zone story-forecast__zone--future" />
-              </div>
+              <AboutForecastMotion />
+            </div>
 
-              <svg
-                aria-hidden="true"
-                className="story-forecast__svg"
-                preserveAspectRatio="none"
-                viewBox="0 0 1200 420"
-              >
-                <defs>
-                  <linearGradient id="forecast-gradient" x1="0" x2="1" y1="0" y2="0">
-                    <stop offset="0%" stopColor="#625bff" />
-                    <stop offset="58%" stopColor="#a83cf0" />
-                    <stop offset="100%" stopColor="#f43f8c" />
-                  </linearGradient>
-                </defs>
-
-                <path className="story-forecast__guide" d="M50 112 H1150" />
-                <path className="story-forecast__guide" d="M50 210 H1150" />
-                <path className="story-forecast__baseline" d="M50 310 H1150" />
-
-                <path
-                  className="story-forecast__history"
-                  d="M60 278 C110 245 145 180 200 208 C255 235 285 292 340 258 C395 224 425 150 480 190 C535 230 565 248 610 208"
-                  data-forecast-history
-                  pathLength="1"
-                />
-                <path
-                  className="story-forecast__future"
-                  d="M610 208 C660 164 700 142 748 176 C800 212 838 264 890 226 C946 184 992 132 1044 166 C1088 194 1118 212 1140 188"
-                  data-forecast-future
-                  pathLength="1"
-                />
-
-                <line
-                  className="story-forecast__present-line"
-                  data-forecast-present-line
-                  x1="610"
-                  x2="610"
-                  y1="74"
-                  y2="332"
-                />
-                <circle
-                  className="story-forecast__present-dot"
-                  cx="610"
-                  cy="208"
-                  data-forecast-present-dot
-                  r="9"
-                />
-              </svg>
-
-              <div aria-hidden="true" className="story-forecast__labels">
-                <span className="story-forecast__label story-forecast__label--history">
-                  Sales history
-                </span>
-                <span className="story-forecast__label story-forecast__label--present">
-                  Present
-                </span>
-                <span className="story-forecast__label story-forecast__label--future">
-                  Forecast
-                </span>
+            <footer className="story-forecast__footer">
+              <div aria-label="Forecast model" className="story-forecast__model">
+                <span>Forecast model</span>
+                <strong>SARIMA</strong>
+                <small>Seasonal forecasting</small>
               </div>
 
               <p className="story-forecast__takeaway">
                 Plan stock with a clearer view of what comes next.
               </p>
-            </div>
+            </footer>
           </div>
 
           <span aria-hidden="true" className="story-location__handoff" />
