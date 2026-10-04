@@ -64,7 +64,6 @@
   transform: scale(1.018);
   transform-origin: center;
   transition: opacity 300ms ease;
-  will-change: opacity;
 }
 
 .about-welcome-motion.is-video-ready .about-welcome-motion__video {
@@ -210,6 +209,12 @@
   .about-welcome-motion__video {
     object-position: 50% center;
     transform: scale(1.06);
+  }
+
+  .about-experience .discover-story--about .story-welcome__mark--branded {
+    width: clamp(6.5rem, 20vw, 7.5rem);
+    height: clamp(6.5rem, 20vw, 7.5rem);
+    margin-bottom: clamp(1rem, 2vh, 1.35rem);
   }
 
   .about-experience .discover-story--about .story-welcome__title {
