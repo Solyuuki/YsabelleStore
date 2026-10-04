@@ -1046,10 +1046,11 @@ export function DiscoverPage({
                         trigger: location,
                         start: "top top+=76",
                         end: () =>
-                          `+=${Math.max(1100, Math.round(window.innerHeight * 1.4))}`,
+                          `+=${Math.max(1300, Math.round(window.innerHeight * 1.6))}`,
                         pin: location,
                         pinSpacing: true,
                         anticipatePin: 1,
+                        fastScrollEnd: true,
                         invalidateOnRefresh: true,
                         scrub: 0.45
                       }
@@ -1106,7 +1107,7 @@ export function DiscoverPage({
                   .to(
                     forecastDemoTopbar,
                     { autoAlpha: 1, duration: 0.06, ease: "power2.out", y: 0 },
-                    0.29
+                    0.27
                   )
                   .to(
                     forecastDemoMetrics,
@@ -1117,17 +1118,17 @@ export function DiscoverPage({
                       stagger: 0.018,
                       y: 0
                     },
-                    0.32
+                    0.3
                   )
                   .to(
                     forecastDemoChart,
                     { autoAlpha: 1, duration: 0.07, ease: "power2.out", y: 0 },
-                    0.36
+                    0.34
                   )
                   .to(
                     forecastActualLine,
                     { duration: 0.1, ease: "none", strokeDashoffset: 0 },
-                    0.4
+                    0.37
                   )
                   .to(
                     forecastObservedPoints,
@@ -1138,22 +1139,22 @@ export function DiscoverPage({
                       scale: 1,
                       stagger: 0.014
                     },
-                    0.46
+                    0.42
                   )
                   .to(
                     [forecastDivider, forecastDividerLabel],
                     { autoAlpha: 1, duration: 0.05, ease: "power1.out" },
-                    0.49
+                    0.45
                   )
                   .to(
                     forecastConfidence,
                     { autoAlpha: 1, duration: 0.065, ease: "power1.out" },
-                    0.51
+                    0.47
                   )
                   .to(
                     forecastProjectedLine,
                     { duration: 0.1, ease: "none", strokeDashoffset: 0 },
-                    0.53
+                    0.49
                   )
                   .to(
                     forecastProjectedPoints,
@@ -1164,12 +1165,12 @@ export function DiscoverPage({
                       scale: 1,
                       stagger: 0.012
                     },
-                    0.58
+                    0.54
                   )
                   .to(
                     forecastRecommendation,
                     { autoAlpha: 1, duration: 0.09, ease: "power2.out", x: 0 },
-                    0.43
+                    0.36
                   )
                   .to(
                     forecastRecommendationItems,
@@ -1180,14 +1181,16 @@ export function DiscoverPage({
                       stagger: 0.014,
                       y: 0
                     },
-                    0.5
+                    0.43
                   )
                   .to(
                     forecastModel,
                     { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                    0.68
+                    0.6
                   )
-                  .to(locationHandoff, { autoAlpha: 0.82, duration: 0.08, ease: "none" }, 0.9);
+                  .addLabel("forecast-complete", 0.66)
+                  .to({ hold: 0 }, { duration: 0.24, ease: "none", hold: 1 }, 0.66)
+                  .to(locationHandoff, { autoAlpha: 0.82, duration: 0.07, ease: "none" }, 0.91);
 
                 settle(forecastTimeline, desktop ? 0.99 : 0.92);
               }
