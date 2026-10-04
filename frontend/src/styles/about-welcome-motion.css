@@ -48,10 +48,6 @@
   opacity: 0;
 }
 
-.about-welcome-motion.is-video-ready.is-loop-fading .about-welcome-motion__fallback {
-  opacity: 1;
-}
-
 .about-welcome-motion__video {
   position: absolute;
   width: 100%;
@@ -63,15 +59,15 @@
   opacity: 0;
   transform: scale(1.018);
   transform-origin: center;
-  transition: opacity 220ms ease;
+  transition: opacity 800ms linear;
 }
 
-.about-welcome-motion.is-video-ready .about-welcome-motion__video {
+.about-welcome-motion.is-video-ready .about-welcome-motion__video.is-active {
   opacity: 1;
 }
 
-.about-welcome-motion.is-video-ready.is-loop-fading .about-welcome-motion__video {
-  opacity: 0;
+.about-welcome-motion.is-video-ready .about-welcome-motion__video.is-incoming {
+  opacity: 1;
 }
 
 .about-welcome-motion__scrim,
@@ -112,13 +108,18 @@
   width: clamp(8.5rem, 10vw, 10.25rem);
   height: clamp(8.5rem, 10vw, 10.25rem);
   margin-bottom: clamp(1.15rem, 2.4vh, 1.65rem);
-  border: 1px solid rgb(98 91 255 / 16%);
+  border: 0;
   border-radius: 50%;
-  background: rgb(255 255 255 / 34%);
-  box-shadow:
-    0 22px 52px rgb(63 72 138 / 14%),
-    0 0 34px rgb(98 91 255 / 10%);
-  backdrop-filter: blur(12px);
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.about-experience
+  .discover-story--about
+  .story-welcome__mark--branded
+  .ysabelle-brand-mark__image {
+  filter: drop-shadow(0 14px 24px rgb(63 72 138 / 14%));
 }
 
 .about-experience .discover-story--about .story-welcome__title {
