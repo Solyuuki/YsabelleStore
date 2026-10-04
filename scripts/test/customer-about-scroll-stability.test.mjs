@@ -194,43 +194,6 @@ test("About chapter 03 uses the approved sales and inventory motion story", () =
 });
 
 
-test("About chapter 04 uses a full-width forecast canvas instead of the chapter 02/03 card pattern", () => {
-  const aboutPage = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
-  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
-  const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
-  const css = read("frontend/src/styles/about-forecast-intelligence.css");
-
-  assert.match(aboutPage, /about-forecast-intelligence\.css/);
-  assert.match(discover, /Forecast Intelligence/);
-  assert.match(discover, /Past Sales Shape/);
-  assert.match(discover, /What Comes Next\./);
-  assert.match(discover, /SARIMA can estimate future demand/);
-  assert.match(discover, /Historical sales/);
-  assert.match(discover, /Forecast horizon/);
-  assert.match(discover, /data-forecast-history/);
-  assert.match(discover, /data-forecast-future/);
-  assert.match(discover, /Forecasts help prepare the next inventory decision\./);
-  assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
-  assert.match(motion, /data-forecast-video/);
-  assert.doesNotMatch(motion, /autoPlay/);
-  assert.doesNotMatch(motion, /CROSSFADE_LEAD_SECONDS/);
-  assert.match(css, /story-forecast__stage[\s\S]*?position:\s*relative/);
-  assert.match(
-    css,
-    /about-forecast-motion[\s\S]*?position:\s*absolute[\s\S]*?left:\s*50%[\s\S]*?width:\s*100vw[\s\S]*?translateX\(-50%\)/
-  );
-  assert.match(css, /story-forecast[\s\S]*?min-height:\s*max\(720px, calc\(100svh - 76px\)\)/);
-  assert.match(css, /story-forecast__stage[\s\S]*?height:\s*calc\(100svh - 76px\)[\s\S]*?isolation:\s*isolate/);
-  assert.match(css, /about-forecast-motion__video\.is-active,[\s\S]*?opacity:\s*1/);
-  assert.doesNotMatch(css, /about-forecast-motion__wash[\s\S]{0,700}?rgb\(255 255 255 \/ 62%\)/);
-  assert.match(css, /story-forecast::after[\s\S]*?width:\s*auto[\s\S]*?border-radius:\s*0/);
-  assert.match(css, /story-forecast__zone[\s\S]*?border-radius:\s*0/);
-  assert.match(css, /story-forecast__plot/);
-  assert.doesNotMatch(css, /story-forecast__system/);
-  assert.match(css, /--about-sales-forecast-seam/);
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
-});
-
 test("About chapter labels diverge from legacy Discover only where chapters are rebuilt", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
@@ -242,24 +205,6 @@ test("About chapter labels diverge from legacy Discover only where chapters are 
     discover,
     /const aboutStoryScenes = \[[\s\S]*?discover-location", label: "Forecast intelligence"/
   );
-});
-
-
-test("About forecast uses dark-video typography and keeps the chart framework visible on entry", () => {
-  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
-  const css = read("frontend/src/styles/about-forecast-intelligence.css");
-
-  assert.match(discover, /gsap\.set\(forecastPlot, \{ autoAlpha: 1, y: 0 \}\)/);
-  assert.doesNotMatch(
-    discover,
-    /forecastPlot,[\s\S]{0,180}?autoAlpha:\s*1[\s\S]{0,120}?0\.18/
-  );
-  assert.match(discover, /historyPath[\s\S]*?strokeDashoffset:\s*0[\s\S]*?0\.2/);
-  assert.match(discover, /futurePath[\s\S]*?strokeDashoffset:\s*0[\s\S]*?0\.42/);
-  assert.match(css, /story-forecast__copy h2[\s\S]*?max-width:\s*16ch[\s\S]*?color:\s*#f7f9ff/);
-  assert.match(css, /story-forecast__lead[\s\S]*?color:\s*#d8def4/);
-  assert.match(css, /story-forecast__intro::before[\s\S]*?rgb\(7 13 34 \/ 54%\)/);
-  assert.match(css, /story-forecast__baseline,[\s\S]*?rgb\(219 229 255 \/ 21%\)/);
 });
 
 
@@ -314,44 +259,6 @@ test("About forecast uses one pinned viewport scene and releases directly into s
 });
 
 
-test("About forecast scrubs the Gemini motion with section progress and holds the completed frame", () => {
-  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
-  const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
-
-  assert.match(motion, /data-forecast-video/);
-  assert.doesNotMatch(motion, /autoPlay/);
-  assert.match(discover, /const syncForecastVideo = \(progress: number\) =>/);
-  assert.match(discover, /progress \/ 0\.68/);
-  assert.match(discover, /forecastVideo\.duration - 0\.04/);
-  assert.match(
-    discover,
-    /onUpdate:\s*\(self\) => syncForecastVideo\(self\.progress\)[\s\S]*?onLeave:\s*\(\) => syncForecastVideo\(1\)/
-  );
-  assert.match(
-    discover,
-    /Math\.max\(1200, Math\.round\(window\.innerHeight \* 1\.45\)\)/
-  );
-  assert.match(discover, /settle\(forecastTimeline, 0\.82\)/);
-});
-
-
-test("About forecast keeps a compact scroll runway proportional to its content density", () => {
-  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
-
-  assert.match(
-    discover,
-    /Math\.max\(520, Math\.round\(window\.innerHeight \* 0\.65\)\)/
-  );
-  assert.match(discover, /progress \/ 0\.68/);
-  assert.match(discover, /locationHandoff[\s\S]*?0\.7/);
-  assert.match(discover, /settle\(forecastTimeline, 0\.76\)/);
-  assert.doesNotMatch(
-    discover,
-    /Math\.max\(1200, Math\.round\(window\.innerHeight \* 1\.45\)\)/
-  );
-});
-
-
 test("About chapter 03 matches chapter 02 desktop scroll pacing", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
@@ -384,4 +291,46 @@ test("About chapter 03 pre-reveals before pinning so the catalog-to-sales handof
   );
   assert.doesNotMatch(css, /story-sales__system[\s\S]{0,900}?backdrop-filter:\s*blur\(/);
   assert.match(css, /story-sales__system[\s\S]*?background:\s*rgb\(15 21 49 \/ 91%\)[\s\S]*?translateZ\(0\)/);
+});
+
+
+test("About chapter 04 uses a continuously moving forecast atmosphere with an editorial data overlay", () => {
+  const aboutPage = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
+  const css = read("frontend/src/styles/about-forecast-intelligence.css");
+
+  assert.match(aboutPage, /about-forecast-intelligence\.css/);
+  assert.match(discover, /Demand Has a Rhythm\./);
+  assert.match(discover, /Forecast the Next Move\./);
+  assert.match(discover, /Seasonal demand model/);
+  assert.match(discover, />SARIMA<\/strong>/);
+  assert.match(discover, /Observed sales/);
+  assert.match(discover, /Projected demand/);
+  assert.match(discover, /A forward view for better stock decisions\./);
+  assert.doesNotMatch(discover, /syncForecastVideo/);
+  assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
+  assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
+  assert.match(motion, /autoPlay=\{index === 0\}/);
+  assert.match(motion, /onTimeUpdate=\{\(event\) => maybeCrossfade/);
+  assert.match(css, /story-forecast__intro::before[\s\S]*?display:\s*none/);
+  assert.match(css, /story-forecast__zones,[\s\S]*?background:\s*none/);
+  assert.match(css, /story-forecast__label[\s\S]*?background:\s*transparent[\s\S]*?backdrop-filter:\s*none/);
+  assert.match(css, /story-forecast__method[\s\S]*?border-left:\s*1px solid/);
+});
+
+test("About forecast keeps the compact pinned scroll story independent from video playback", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+
+  assert.match(
+    discover,
+    /Math\.max\(520, Math\.round\(window\.innerHeight \* 0\.65\)\)/
+  );
+  assert.match(
+    discover,
+    /pin:\s*desktop \? forecastStage : false[\s\S]*?scrub:\s*desktop \? 0\.18 : tablet \? 0\.14 : 0\.1/
+  );
+  assert.match(discover, /settle\(forecastTimeline, 0\.76\)/);
+  assert.doesNotMatch(discover, /forecastVideo\.pause\(\)/);
+  assert.doesNotMatch(discover, /currentTime = nextTime/);
 });
