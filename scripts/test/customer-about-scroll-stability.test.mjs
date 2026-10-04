@@ -263,3 +263,21 @@ test("About forecast story finishes before the sticky scene releases", () => {
   );
   assert.match(discover, /settle\(forecastTimeline, 0\.82\)/);
 });
+
+
+test("About forecast uses dark-video typography and keeps the chart framework visible on entry", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+  const css = read("frontend/src/styles/about-forecast-intelligence.css");
+
+  assert.match(discover, /gsap\.set\(forecastPlot, \{ autoAlpha: 1, y: 0 \}\)/);
+  assert.doesNotMatch(
+    discover,
+    /forecastPlot,[\s\S]{0,180}?autoAlpha:\s*1[\s\S]{0,120}?0\.18/
+  );
+  assert.match(discover, /historyPath[\s\S]*?strokeDashoffset:\s*0[\s\S]*?0\.2/);
+  assert.match(discover, /futurePath[\s\S]*?strokeDashoffset:\s*0[\s\S]*?0\.42/);
+  assert.match(css, /story-forecast__copy h2[\s\S]*?max-width:\s*16ch[\s\S]*?color:\s*#f7f9ff/);
+  assert.match(css, /story-forecast__lead[\s\S]*?color:\s*#d8def4/);
+  assert.match(css, /story-forecast__intro::before[\s\S]*?rgb\(7 13 34 \/ 54%\)/);
+  assert.match(css, /story-forecast__baseline,[\s\S]*?rgb\(219 229 255 \/ 21%\)/);
+});
