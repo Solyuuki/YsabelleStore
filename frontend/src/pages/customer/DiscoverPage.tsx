@@ -19,6 +19,7 @@ import {
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
 import { AboutCatalogMotion } from "@/components/customer/about/AboutCatalogMotion";
+import { AboutSalesInventoryMotion } from "@/components/customer/about/AboutSalesInventoryMotion";
 import { AboutWelcomeMotion } from "@/components/customer/about/AboutWelcomeMotion";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
@@ -50,7 +51,7 @@ const storyScenes = [
 const aboutStoryScenes = [
   { id: "discover-welcome", label: "Brand opening" },
   { id: "discover-beginning", label: "Product & catalog intelligence" },
-  { id: "discover-essentials", label: "Everyday essentials" },
+  { id: "discover-essentials", label: "Sales & inventory" },
   { id: "discover-location", label: "Our location" },
   { id: "discover-smarter", label: "System intelligence" },
   { id: "discover-shop", label: "Shop with Ysabelle" }
@@ -663,97 +664,175 @@ export function DiscoverPage({
 
           const essentials = first<HTMLElement>(".story-products");
           if (essentials && !mobile) {
-            const essentialsKicker = essentials.querySelector<HTMLElement>(".story-kicker");
-            const essentialsCount = essentials.querySelector<HTMLElement>(".story-products__count");
-            const essentialsHeadline = essentials.querySelector<HTMLElement>(
-              ".story-products__heading .story-mask__line"
-            );
-            const essentialsCopy = essentials.querySelector<HTMLElement>(
-              ".story-products__heading p"
-            );
-            const shelfRail = essentials.querySelector<HTMLElement>(".story-shelf__rail");
-            const shelfItems = Array.from(
-              essentials.querySelectorAll<HTMLElement>(".story-shelf__item")
-            );
-            const productsHandoff = essentials.querySelector<HTMLElement>(
-              ".story-products__handoff"
-            );
+            if (isAboutExperience) {
+              const salesKicker = essentials.querySelector<HTMLElement>(".story-kicker");
+              const salesHeadline = Array.from(
+                essentials.querySelectorAll<HTMLElement>(".story-sales__copy .story-mask__line")
+              );
+              const salesCopy = essentials.querySelector<HTMLElement>(".story-sales__copy p");
+              const salesSystem = essentials.querySelector<HTMLElement>(".story-sales__system");
+              const salesSteps = Array.from(
+                essentials.querySelectorAll<HTMLElement>(".story-sales__step")
+              );
+              const salesHandoff = essentials.querySelector<HTMLElement>(
+                ".story-products__handoff"
+              );
 
-            if (
-              essentialsKicker &&
-              essentialsCount &&
-              essentialsHeadline &&
-              essentialsCopy &&
-              shelfRail &&
-              shelfItems.length &&
-              productsHandoff
-            ) {
-              gsap.set(essentialsKicker, { autoAlpha: 0, x: -24 });
-              gsap.set(essentialsCount, { autoAlpha: 0, scale: 0.92, y: 44 });
-              gsap.set(essentialsHeadline, { autoAlpha: 0, y: 26 });
-              gsap.set(essentialsCopy, { autoAlpha: 0, y: 18 });
-              gsap.set(shelfRail, { scaleX: 0 });
-              gsap.set(shelfItems, {
-                autoAlpha: 0,
-                rotate: (index) => (index % 2 === 0 ? -2 : 2),
-                scale: 0.94,
-                x: (index) => (index % 2 === 0 ? -14 : 14),
-                y: 60
-              });
-              gsap.set(productsHandoff, { scaleX: 0 });
+              if (
+                salesKicker &&
+                salesHeadline.length &&
+                salesCopy &&
+                salesSystem &&
+                salesSteps.length &&
+                salesHandoff
+              ) {
+                gsap.set(salesKicker, { autoAlpha: 0, x: -22 });
+                gsap.set(salesHeadline, { autoAlpha: 0, y: 24 });
+                gsap.set(salesCopy, { autoAlpha: 0, y: 16 });
+                gsap.set(salesSystem, { autoAlpha: 0, scale: 0.985, y: 24 });
+                gsap.set(salesSteps, { autoAlpha: 0, y: 14 });
+                gsap.set(salesHandoff, { autoAlpha: 0 });
 
-              const productsTimeline = gsap.timeline({
-                scrollTrigger: {
-                  trigger: essentials,
-                  start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 84%",
-                  end: desktop ? "bottom bottom" : "bottom 16%",
-                  invalidateOnRefresh: true,
-                  scrub
-                }
-              });
-              productsTimeline
-                .addLabel("entry", 0)
-                .to(
-                  essentialsKicker,
-                  { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                  "entry+=0.02"
-                )
-                .addLabel("headline", 0.1)
-                .to(
-                  essentialsCount,
-                  { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 },
-                  "headline"
-                )
-                .to(
-                  essentialsHeadline,
-                  { autoAlpha: 1, duration: 0.12, ease: "power2.out", y: 0 },
-                  0.23
-                )
-                .to(
-                  essentialsCopy,
-                  { autoAlpha: 1, duration: 0.09, ease: "power1.out", y: 0 },
-                  0.36
-                )
-                .addLabel("shelf", 0.47)
-                .to(shelfRail, { duration: 0.1, ease: "none", scaleX: 1 }, "shelf")
-                .addLabel("products", 0.59)
-                .to(
-                  shelfItems,
-                  {
-                    autoAlpha: 1,
-                    duration: 0.07,
-                    ease: "power2.out",
-                    rotate: 0,
-                    scale: 1,
-                    stagger: 0.023,
-                    x: 0,
-                    y: 0
-                  },
-                  "products"
-                )
-                .to(productsHandoff, { duration: 0.04, ease: "none", scaleX: 1 }, 0.83)
-                .addLabel("settled", 0.87);
-              settle(productsTimeline, 0.87);
+                const salesTimeline = gsap.timeline({
+                  scrollTrigger: {
+                    trigger: essentials,
+                    start: desktop ? "top top+=76" : "top 84%",
+                    end: desktop ? "bottom bottom" : "bottom 16%",
+                    invalidateOnRefresh: true,
+                    scrub
+                  }
+                });
+
+                salesTimeline
+                  .addLabel("entry", 0)
+                  .to(
+                    salesKicker,
+                    { autoAlpha: 1, duration: 0.08, ease: "power2.out", x: 0 },
+                    "entry+=0.02"
+                  )
+                  .to(
+                    salesHeadline,
+                    { autoAlpha: 1, duration: 0.11, ease: "power2.out", stagger: 0.025, y: 0 },
+                    0.12
+                  )
+                  .to(
+                    salesCopy,
+                    { autoAlpha: 1, duration: 0.09, ease: "power1.out", y: 0 },
+                    0.26
+                  )
+                  .to(
+                    salesSystem,
+                    { autoAlpha: 1, duration: 0.13, ease: "power2.out", scale: 1, y: 0 },
+                    0.34
+                  )
+                  .to(
+                    salesSteps,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.08,
+                      ease: "power2.out",
+                      stagger: 0.035,
+                      y: 0
+                    },
+                    0.53
+                  )
+                  .to(salesHandoff, { autoAlpha: 0.82, duration: 0.1, ease: "none" }, 0.86);
+
+                settle(salesTimeline, 0.94);
+              }
+            } else {
+              const essentialsKicker = essentials.querySelector<HTMLElement>(".story-kicker");
+              const essentialsCount = essentials.querySelector<HTMLElement>(".story-products__count");
+              const essentialsHeadline = essentials.querySelector<HTMLElement>(
+                ".story-products__heading .story-mask__line"
+              );
+              const essentialsCopy = essentials.querySelector<HTMLElement>(
+                ".story-products__heading p"
+              );
+              const shelfRail = essentials.querySelector<HTMLElement>(".story-shelf__rail");
+              const shelfItems = Array.from(
+                essentials.querySelectorAll<HTMLElement>(".story-shelf__item")
+              );
+              const productsHandoff = essentials.querySelector<HTMLElement>(
+                ".story-products__handoff"
+              );
+  
+              if (
+                essentialsKicker &&
+                essentialsCount &&
+                essentialsHeadline &&
+                essentialsCopy &&
+                shelfRail &&
+                shelfItems.length &&
+                productsHandoff
+              ) {
+                gsap.set(essentialsKicker, { autoAlpha: 0, x: -24 });
+                gsap.set(essentialsCount, { autoAlpha: 0, scale: 0.92, y: 44 });
+                gsap.set(essentialsHeadline, { autoAlpha: 0, y: 26 });
+                gsap.set(essentialsCopy, { autoAlpha: 0, y: 18 });
+                gsap.set(shelfRail, { scaleX: 0 });
+                gsap.set(shelfItems, {
+                  autoAlpha: 0,
+                  rotate: (index) => (index % 2 === 0 ? -2 : 2),
+                  scale: 0.94,
+                  x: (index) => (index % 2 === 0 ? -14 : 14),
+                  y: 60
+                });
+                gsap.set(productsHandoff, { scaleX: 0 });
+  
+                const productsTimeline = gsap.timeline({
+                  scrollTrigger: {
+                    trigger: essentials,
+                    start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 84%",
+                    end: desktop ? "bottom bottom" : "bottom 16%",
+                    invalidateOnRefresh: true,
+                    scrub
+                  }
+                });
+                productsTimeline
+                  .addLabel("entry", 0)
+                  .to(
+                    essentialsKicker,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
+                    "entry+=0.02"
+                  )
+                  .addLabel("headline", 0.1)
+                  .to(
+                    essentialsCount,
+                    { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 },
+                    "headline"
+                  )
+                  .to(
+                    essentialsHeadline,
+                    { autoAlpha: 1, duration: 0.12, ease: "power2.out", y: 0 },
+                    0.23
+                  )
+                  .to(
+                    essentialsCopy,
+                    { autoAlpha: 1, duration: 0.09, ease: "power1.out", y: 0 },
+                    0.36
+                  )
+                  .addLabel("shelf", 0.47)
+                  .to(shelfRail, { duration: 0.1, ease: "none", scaleX: 1 }, "shelf")
+                  .addLabel("products", 0.59)
+                  .to(
+                    shelfItems,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.07,
+                      ease: "power2.out",
+                      rotate: 0,
+                      scale: 1,
+                      stagger: 0.023,
+                      x: 0,
+                      y: 0
+                    },
+                    "products"
+                  )
+                  .to(productsHandoff, { duration: 0.04, ease: "none", scaleX: 1 }, 0.83)
+                  .addLabel("settled", 0.87);
+                settle(productsTimeline, 0.87);
+              }
             }
           }
 
@@ -1322,53 +1401,108 @@ export function DiscoverPage({
         </section>
       )}
 
-      <section className="story-scene story-products" id="discover-essentials" ref={shelfSceneRef}>
-        <div className="customer-container story-products__stage" data-story-motion>
-          <div className="story-products__heading">
-            <span className="story-kicker">
-              {isAboutExperience ? "Everyday essentials" : "03 / Everyday essentials"}
-            </span>
-            <h2 className="story-display-safe">
-              <span className="story-number-mask">
-                <span className="story-products__count">300+</span>
-              </span>
-              <span className="story-mask">
-                <span className="story-mask__line">Products Across the Store</span>
-              </span>
-            </h2>
-            <p>The shelf fills category by category, from daily groceries to household needs.</p>
+      {isAboutExperience ? (
+        <section
+          aria-labelledby="about-sales-title"
+          className="story-scene story-products story-sales"
+          id="discover-essentials"
+          ref={shelfSceneRef}
+        >
+          <div className="customer-container story-sales__stage" data-story-motion>
+            <div className="story-sales__copy">
+              <span className="story-kicker">Sales &amp; Inventory</span>
+              <h2 className="story-display-safe" id="about-sales-title">
+                <span className="story-mask">
+                  <span className="story-mask__line">Every Sale</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line">Updates the Store.</span>
+                </span>
+              </h2>
+              <p>
+                Completed sales reduce available stock and become part of the store&apos;s
+                transaction history for the next operational decision.
+              </p>
+            </div>
+
+            <div
+              aria-label="Sales and inventory workflow from sale to saved transaction history"
+              className="story-sales__system"
+              role="group"
+            >
+              <AboutSalesInventoryMotion />
+
+              <div aria-label="Sales and inventory workflow stages" className="story-sales__steps" role="list">
+                {[
+                  { Icon: ShoppingCart, label: "Sale recorded" },
+                  { Icon: Package, label: "Stock deducted" },
+                  { Icon: Boxes, label: "Inventory updated" },
+                  { Icon: BadgeCheck, label: "History saved" }
+                ].map(({ Icon, label }) => (
+                  <span className="story-sales__step" key={label} role="listitem">
+                    <Icon aria-hidden="true" />
+                    <small>{label}</small>
+                  </span>
+                ))}
+              </div>
+
+              <strong className="story-sales__summary">
+                Sales history becomes the foundation for forecasting.
+              </strong>
+            </div>
           </div>
 
-          <div className="story-shelf">
-            <ul aria-label="Store product and category shelf">
-              {essentialShelfItems.map((item, index) => (
-                <li
-                  className={`story-shelf__item story-shelf__item--${(index % 4) + 1}`}
-                  key={`shelf-slot-${index}`}
-                >
-                  <div className="story-shelf__visual">
-                    <ProductImage
-                      alt={item.alt}
-                      fallbackLabel="Image temporarily unavailable"
-                      fetchPriority={index < 2 ? "high" : "auto"}
-                      imageUrl={shouldPreloadShelfAssets ? item.imageUrl : null}
-                      loading={shouldPreloadShelfAssets ? "eager" : "lazy"}
-                    />
-                    <span aria-hidden="true" className="story-shelf__shine" />
-                  </div>
-                  <span className="story-shelf__label">
-                    <small>Store category</small>
-                    <strong>{item.category}</strong>
-                  </span>
-                  <b aria-hidden="true">{String(index + 1).padStart(2, "0")}</b>
-                </li>
-              ))}
-            </ul>
-            <span aria-hidden="true" className="story-shelf__rail" />
+          <span aria-hidden="true" className="story-products__handoff" />
+        </section>
+      ) : (
+        <section className="story-scene story-products" id="discover-essentials" ref={shelfSceneRef}>
+          <div className="customer-container story-products__stage" data-story-motion>
+            <div className="story-products__heading">
+              <span className="story-kicker">
+                {isAboutExperience ? "Everyday essentials" : "03 / Everyday essentials"}
+              </span>
+              <h2 className="story-display-safe">
+                <span className="story-number-mask">
+                  <span className="story-products__count">300+</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line">Products Across the Store</span>
+                </span>
+              </h2>
+              <p>The shelf fills category by category, from daily groceries to household needs.</p>
+            </div>
+  
+            <div className="story-shelf">
+              <ul aria-label="Store product and category shelf">
+                {essentialShelfItems.map((item, index) => (
+                  <li
+                    className={`story-shelf__item story-shelf__item--${(index % 4) + 1}`}
+                    key={`shelf-slot-${index}`}
+                  >
+                    <div className="story-shelf__visual">
+                      <ProductImage
+                        alt={item.alt}
+                        fallbackLabel="Image temporarily unavailable"
+                        fetchPriority={index < 2 ? "high" : "auto"}
+                        imageUrl={shouldPreloadShelfAssets ? item.imageUrl : null}
+                        loading={shouldPreloadShelfAssets ? "eager" : "lazy"}
+                      />
+                      <span aria-hidden="true" className="story-shelf__shine" />
+                    </div>
+                    <span className="story-shelf__label">
+                      <small>Store category</small>
+                      <strong>{item.category}</strong>
+                    </span>
+                    <b aria-hidden="true">{String(index + 1).padStart(2, "0")}</b>
+                  </li>
+                ))}
+              </ul>
+              <span aria-hidden="true" className="story-shelf__rail" />
+            </div>
           </div>
-        </div>
-        <span aria-hidden="true" className="story-products__handoff" />
-      </section>
+          <span aria-hidden="true" className="story-products__handoff" />
+        </section>
+      )}
 
       <section className="story-scene story-location" id="discover-location">
         <div className="customer-container story-location__stage" data-story-motion>
