@@ -5,8 +5,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
-  statSync,
-  unlinkSync
+  statSync
 } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
@@ -110,11 +109,9 @@ try {
   });
 
   if (!source) {
-    if (existsSync(DESTINATION)) unlinkSync(DESTINATION);
-
     if (ifPresent) {
       console.warn(
-        `Approved About origin video not found. Expected ${SOURCE_NAME} in the repository, Downloads, or Desktop. Removed the stale runtime copy and continuing with the animated CSS fallback.`
+        `Approved About origin video source not found. Leaving the tracked runtime asset untouched.`
       );
       process.exit(0);
     }
