@@ -864,6 +864,7 @@ export function DiscoverPage({
               );
               const forecastLead = location.querySelector<HTMLElement>(".story-forecast__lead");
               const forecastPlot = location.querySelector<HTMLElement>(".story-forecast__plot");
+              const forecastVideo = location.querySelector<HTMLVideoElement>("[data-forecast-video]");
               const historyPath = location.querySelector<SVGGeometryElement>(
                 "[data-forecast-history]"
               );
@@ -892,6 +893,7 @@ export function DiscoverPage({
                 forecastHeadline.length &&
                 forecastLead &&
                 forecastPlot &&
+                forecastVideo &&
                 historyPath &&
                 futurePath &&
                 presentLine &&
@@ -914,18 +916,41 @@ export function DiscoverPage({
                 gsap.set(forecastTakeaway, { autoAlpha: 0, y: 10 });
                 gsap.set(locationHandoff, { autoAlpha: 0 });
 
+                forecastVideo.pause();
+
+                const syncForecastVideo = (progress: number) => {
+                  if (
+                    !Number.isFinite(forecastVideo.duration) ||
+                    forecastVideo.duration <= 0 ||
+                    forecastVideo.readyState < 1
+                  ) {
+                    return;
+                  }
+
+                  const videoProgress = Math.min(1, Math.max(0, progress / 0.82));
+                  const finalFrame = Math.max(0, forecastVideo.duration - 0.04);
+                  const nextTime = Math.min(finalFrame, finalFrame * videoProgress);
+
+                  if (Math.abs(forecastVideo.currentTime - nextTime) > 0.025) {
+                    forecastVideo.currentTime = nextTime;
+                  }
+                };
+
                 const forecastTimeline = gsap.timeline({
                   scrollTrigger: {
                     trigger: location,
                     start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
                     end: desktop
-                      ? () => `+=${Math.max(680, Math.round(window.innerHeight * 0.82))}`
-                      : "bottom 18%",
+                      ? () => `+=${Math.max(1200, Math.round(window.innerHeight * 1.45))}`
+                      : "bottom 12%",
                     invalidateOnRefresh: true,
                     pin: desktop ? forecastStage : false,
                     pinSpacing: desktop,
                     anticipatePin: desktop ? 1 : 0,
-                    scrub: desktop ? 0.16 : tablet ? 0.14 : 0.1
+                    scrub: desktop ? 0.12 : tablet ? 0.12 : 0.09,
+                    onUpdate: (self) => syncForecastVideo(self.progress),
+                    onLeave: () => syncForecastVideo(1),
+                    onLeaveBack: () => syncForecastVideo(0)
                   }
                 });
 
@@ -963,9 +988,9 @@ export function DiscoverPage({
                     { autoAlpha: 1, duration: 0.07, ease: "power1.out", y: 0 },
                     0.64
                   )
-                  .to(locationHandoff, { autoAlpha: 1, duration: 0.08, ease: "none" }, 0.84);
+                  .to(locationHandoff, { autoAlpha: 1, duration: 0.06, ease: "none" }, 0.76);
 
-                settle(forecastTimeline, 0.94);
+                settle(forecastTimeline, 0.82);
 
               }
             } else {
