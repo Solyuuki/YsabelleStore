@@ -11,7 +11,6 @@ type YsabelleBrandMarkProps = {
   className?: string;
   eager?: boolean;
   sizes?: string;
-  source?: "default" | "official";
   variant?: "compact" | "display" | "mini";
 };
 
@@ -19,13 +18,11 @@ export function YsabelleBrandMark({
   className = "",
   eager = false,
   sizes,
-  source = "default",
   variant = "compact"
 }: YsabelleBrandMarkProps) {
   const isFileProtocol = window.location.protocol === "file:";
-  const useOfficialAsset = source === "official" || isFileProtocol;
-  const imageSource = useOfficialAsset ? officialLogoUrl : WEB_BRAND_MARK_SRC;
-  const sourceSet = useOfficialAsset ? undefined : WEB_BRAND_MARK_SRC_SET;
+  const source = isFileProtocol ? officialLogoUrl : WEB_BRAND_MARK_SRC;
+  const sourceSet = isFileProtocol ? undefined : WEB_BRAND_MARK_SRC_SET;
 
   return (
     <span
@@ -40,7 +37,7 @@ export function YsabelleBrandMark({
         height={256}
         loading={eager ? "eager" : "lazy"}
         sizes={sizes ?? (variant === "display" ? "112px" : variant === "mini" ? "36px" : "48px")}
-        src={imageSource}
+        src={source}
         srcSet={sourceSet}
         width={256}
       />
