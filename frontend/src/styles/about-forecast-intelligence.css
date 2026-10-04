@@ -13,7 +13,7 @@
 
 .about-experience .discover-story .story-forecast {
   display: block;
-  min-height: 215svh;
+  min-height: 170svh;
   padding: 0;
   overflow: hidden;
   background:
@@ -46,14 +46,14 @@
   left: 0;
   z-index: 1;
   width: auto;
-  height: clamp(6rem, 12vh, 8.5rem);
+  height: clamp(4rem, 7vh, 5.25rem);
   aspect-ratio: auto;
   border-radius: 0;
   background: var(--about-sales-forecast-seam);
   content: "";
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / 78%) 20%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / 78%) 20%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 72%) 0%, rgb(0 0 0 / 34%) 28%, transparent 100%);
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 72%) 0%, rgb(0 0 0 / 34%) 28%, transparent 100%);
 }
 
 .about-forecast-motion {
@@ -98,15 +98,15 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  filter: saturate(1.06) contrast(1.025) brightness(1.06);
+  filter: saturate(1.075) contrast(1.035) brightness(1.015);
   opacity: 0;
-  transform: scale(1.01);
+  transform: scale(1.008);
   transition: opacity 680ms linear;
 }
 
 .about-forecast-motion__video.is-active,
 .about-forecast-motion__video.is-incoming {
-  opacity: 0.34;
+  opacity: 0.84;
 }
 
 .about-forecast-motion__video.is-incoming {
@@ -117,13 +117,19 @@
   z-index: 3;
   background:
     linear-gradient(
-      180deg,
-      rgb(247 250 255 / 68%) 0%,
-      rgb(247 249 255 / 58%) 22%,
-      rgb(248 247 255 / 54%) 54%,
-      rgb(255 247 252 / 64%) 100%
+      90deg,
+      rgb(242 248 255 / 30%) 0%,
+      rgb(245 248 255 / 16%) 24%,
+      transparent 44% 72%,
+      rgb(255 246 252 / 12%) 100%
     ),
-    radial-gradient(circle at 50% 48%, rgb(255 255 255 / 18%), rgb(255 255 255 / 62%) 78%);
+    linear-gradient(
+      180deg,
+      rgb(247 250 255 / 10%) 0%,
+      transparent 18% 78%,
+      rgb(248 243 255 / 14%) 100%
+    );
+  pointer-events: none;
 }
 
 .about-experience .discover-story .story-forecast__stage {
