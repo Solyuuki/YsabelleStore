@@ -16,7 +16,7 @@ const EXPECTED_SIZE = 2_554_527;
 const SOURCE_NAME = "gemini_generated_video_4013f49c.mp4";
 const DESTINATION = resolve(
   process.cwd(),
-  "frontend/public/media/about-origin-motion.mp4"
+  "frontend/public/media/about-origin-motion-6738635d.mp4"
 );
 
 function sha256(path) {
