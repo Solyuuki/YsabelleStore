@@ -38,9 +38,8 @@
 }
 
 .ysabelle-brand-mark.story-welcome__mark--branded {
-  width: clamp(8.75rem, 10vw, 10.5rem);
-  height: clamp(8.75rem, 10vw, 10.5rem);
-  margin-bottom: 0.7rem;
+  width: clamp(6rem, 7vw, 7rem);
+  height: clamp(6rem, 7vw, 7rem);
   overflow: hidden;
   border-radius: 50%;
   background: transparent;
@@ -64,13 +63,7 @@
 }
 
 @media (max-width: 480px) {
-  .ysabelle-brand-mark.story-welcome__mark--branded {
-    width: 7rem;
-    height: 7rem;
-    margin-bottom: 0.55rem;
-  }
-
-  .ysabelle-brand-mark--display {
+  .ysabelle-brand-mark.story-welcome__mark--branded,
     width: 5.5rem;
     height: 5.5rem;
   }
