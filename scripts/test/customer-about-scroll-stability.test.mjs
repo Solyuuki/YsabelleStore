@@ -59,7 +59,11 @@ test("About welcome uses branded premium typography without a CTA", () => {
   );
   assert.match(
     welcomeCss,
-    /story-welcome__title \.story-mask[\s\S]*?width:\s*max-content[\s\S]*?overflow:\s*visible[\s\S]*?padding:\s*0\.13em 0\.22em 0\.21em/
+    /story-welcome__title \.story-mask[\s\S]*?width:\s*max-content[\s\S]*?overflow:\s*visible[\s\S]*?padding:\s*0\.24em 0\.28em 0\.3em/
+  );
+  assert.match(
+    welcomeCss,
+    /story-welcome__title[\s\S]*?line-height:\s*0\.9[\s\S]*?overflow:\s*visible/
   );
   assert.match(
     welcomeCss,
