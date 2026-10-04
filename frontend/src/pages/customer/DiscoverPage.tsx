@@ -711,6 +711,40 @@ export function DiscoverPage({
                 gsap.set(salesSteps, { autoAlpha: 0, y: 14 });
                 gsap.set(salesHandoff, { autoAlpha: 0 });
 
+                if (desktop) {
+                  const salesPrelude = gsap.timeline({
+                    scrollTrigger: {
+                      trigger: essentials,
+                      start: "top 94%",
+                      end: "top top+=76",
+                      invalidateOnRefresh: true,
+                      scrub: 0.2
+                    }
+                  });
+
+                  salesPrelude
+                    .to(
+                      salesKicker,
+                      { autoAlpha: 0.68, duration: 1, ease: "none", x: -6 },
+                      0
+                    )
+                    .to(
+                      salesHeadline,
+                      { autoAlpha: 0.62, duration: 1, ease: "none", y: 8 },
+                      0
+                    )
+                    .to(
+                      salesCopy,
+                      { autoAlpha: 0.52, duration: 1, ease: "none", y: 6 },
+                      0
+                    )
+                    .to(
+                      salesSystem,
+                      { autoAlpha: 0.68, duration: 1, ease: "none", scale: 0.994, y: 8 },
+                      0
+                    );
+                }
+
                 const salesTimeline = gsap.timeline({
                   scrollTrigger: desktop
                     ? {
@@ -734,23 +768,31 @@ export function DiscoverPage({
 
                 salesTimeline
                   .addLabel("entry", 0)
-                  .to(
+                  .fromTo(
                     salesKicker,
+                    { autoAlpha: desktop ? 0.68 : 0, x: desktop ? -6 : -22 },
                     { autoAlpha: 1, duration: 0.08, ease: "power2.out", x: 0 },
                     "entry+=0.02"
                   )
-                  .to(
+                  .fromTo(
                     salesHeadline,
+                    { autoAlpha: desktop ? 0.62 : 0, y: desktop ? 8 : 24 },
                     { autoAlpha: 1, duration: 0.11, ease: "power2.out", stagger: 0.025, y: 0 },
                     0.12
                   )
-                  .to(
+                  .fromTo(
                     salesCopy,
+                    { autoAlpha: desktop ? 0.52 : 0, y: desktop ? 6 : 16 },
                     { autoAlpha: 1, duration: 0.09, ease: "power1.out", y: 0 },
                     0.26
                   )
-                  .to(
+                  .fromTo(
                     salesSystem,
+                    {
+                      autoAlpha: desktop ? 0.68 : 0,
+                      scale: desktop ? 0.994 : 0.985,
+                      y: desktop ? 8 : 24
+                    },
                     { autoAlpha: 1, duration: 0.13, ease: "power2.out", scale: 1, y: 0 },
                     0.34
                   )
