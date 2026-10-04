@@ -1137,7 +1137,6 @@ export function DiscoverPage({
               <>
                 <strong>Established 2019 · Pasig City</strong>
                 <p>Everyday essentials, closer to home.</p>
-                <span aria-hidden="true" className="story-welcome__divider" />
                 <span className="story-welcome__scroll-cue">
                   Scroll to continue <ChevronsDown aria-hidden="true" />
                 </span>
