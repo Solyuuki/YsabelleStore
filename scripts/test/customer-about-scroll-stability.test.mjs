@@ -217,7 +217,10 @@ test("About chapter 04 uses a full-width forecast canvas instead of the chapter 
     css,
     /about-forecast-motion[\s\S]*?position:\s*absolute[\s\S]*?left:\s*50%[\s\S]*?width:\s*100vw[\s\S]*?translateX\(-50%\)/
   );
+  assert.match(css, /story-forecast[\s\S]*?min-height:\s*170svh/);
   assert.match(css, /story-forecast__stage[\s\S]*?height:\s*calc\(100svh - 76px\)[\s\S]*?isolation:\s*isolate/);
+  assert.match(css, /about-forecast-motion__video\.is-active,[\s\S]*?opacity:\s*0\.84/);
+  assert.doesNotMatch(css, /about-forecast-motion__wash[\s\S]{0,700}?rgb\(255 255 255 \/ 62%\)/);
   assert.match(css, /story-forecast::after[\s\S]*?width:\s*auto[\s\S]*?border-radius:\s*0/);
   assert.match(css, /story-forecast__zone[\s\S]*?border-radius:\s*0/);
   assert.match(css, /story-forecast__plot/);
@@ -237,4 +240,18 @@ test("About chapter labels diverge from legacy Discover only where chapters are 
     discover,
     /const aboutStoryScenes = \[[\s\S]*?discover-location", label: "Forecast intelligence"/
   );
+});
+
+test("About forecast story finishes early enough to hold the completed visualization", () => {
+  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
+
+  assert.match(
+    discover,
+    /futurePath[\s\S]*?strokeDashoffset:\s*0[\s\S]*?0\.46/
+  );
+  assert.match(
+    discover,
+    /forecastTakeaway[\s\S]*?0\.68[\s\S]*?locationHandoff[\s\S]*?0\.84/
+  );
+  assert.match(discover, /settle\(forecastTimeline, 0\.88\)/);
 });
