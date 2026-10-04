@@ -34,7 +34,15 @@ export function YsabelleBrandMark({
         decoding="async"
         height={256}
         loading={eager ? "eager" : "lazy"}
-        sizes={variant === "display" ? "112px" : variant === "mini" ? "36px" : "48px"}
+        sizes={
+          variant === "display"
+            ? "112px"
+            : variant === "mini"
+              ? "36px"
+              : className.includes("story-welcome__mark--branded")
+                ? "168px"
+                : "48px"
+        }
         src={source}
         srcSet={sourceSet}
         width={256}
