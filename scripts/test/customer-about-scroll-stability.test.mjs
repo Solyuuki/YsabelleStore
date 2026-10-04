@@ -213,7 +213,7 @@ test("About forecast keeps the approved Gemini plate unshaded and dark through s
 
   assert.match(
     css,
-    /story-forecast\s*\{[\s\S]*?linear-gradient\(135deg, #10182f 0%, #182141 46%, #21194a 76%, #171a37 100%\)/
+    /story-forecast\s*\{[\s\S]*?linear-gradient\(135deg, #071225 0%, #101a36 48%, #17183d 76%, #0e142d 100%\)/
   );
   assert.match(
     css,
