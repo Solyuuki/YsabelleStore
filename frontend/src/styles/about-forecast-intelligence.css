@@ -1,0 +1,412 @@
+/* About Scene 04: Forecast Intelligence.
+   The Gemini plate is ambient only; the chart and labels are responsive SVG/HTML. */
+
+.about-experience .discover-story--about {
+  --about-sales-forecast-seam: linear-gradient(
+    90deg,
+    #263c77 0%,
+    #35417f 32%,
+    #4a3c82 66%,
+    #5a3a82 100%
+  );
+}
+
+.about-experience .discover-story .story-forecast {
+  display: block;
+  min-height: 215svh;
+  padding: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0 86%,
+      var(--story-seam-45) 98% 100%
+    ),
+    linear-gradient(135deg, #eef6ff 0%, #f5f5ff 46%, #fff2fb 100%);
+  color: var(--story-navy);
+}
+
+.about-experience .discover-story .story-forecast::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(rgb(98 91 255 / 3.2%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(98 91 255 / 3.2%) 1px, transparent 1px);
+  background-size: 76px 76px;
+  content: "";
+  mask-image: linear-gradient(to bottom, transparent 3%, #000 16%, #000 84%, transparent 97%);
+  pointer-events: none;
+}
+
+.about-experience .discover-story .story-forecast::after {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: clamp(7.5rem, 16vh, 11rem);
+  background: var(--about-sales-forecast-seam);
+  content: "";
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 100%);
+}
+
+.about-forecast-motion {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 30%, rgb(0 140 255 / 12%), transparent 34%),
+    radial-gradient(circle at 84% 68%, rgb(168 60 240 / 13%), transparent 34%),
+    linear-gradient(135deg, #edf6ff, #f2f3ff 50%, #fff1fa);
+  pointer-events: none;
+}
+
+.about-forecast-motion__fallback,
+.about-forecast-motion__video,
+.about-forecast-motion__wash {
+  position: absolute;
+  inset: 0;
+}
+
+.about-forecast-motion__fallback {
+  background:
+    radial-gradient(ellipse at 18% 42%, rgb(0 140 255 / 16%), transparent 38%),
+    radial-gradient(ellipse at 80% 58%, rgb(168 60 240 / 16%), transparent 36%),
+    linear-gradient(135deg, #eaf5ff 0%, #f2f2ff 52%, #fff0fa 100%);
+  opacity: 1;
+  transition: opacity 220ms ease;
+}
+
+.about-forecast-motion.is-video-ready .about-forecast-motion__fallback {
+  opacity: 0;
+}
+
+.about-forecast-motion__video {
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(1.08) contrast(1.02) brightness(1.14);
+  opacity: 0;
+  transform: scale(1.025);
+  transition: opacity 680ms linear;
+}
+
+.about-forecast-motion__video.is-active,
+.about-forecast-motion__video.is-incoming {
+  opacity: 0.46;
+}
+
+.about-forecast-motion__video.is-incoming {
+  z-index: 2;
+}
+
+.about-forecast-motion__wash {
+  z-index: 3;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(247 250 255 / 78%) 0%,
+      rgb(247 249 255 / 66%) 22%,
+      rgb(248 247 255 / 58%) 54%,
+      rgb(255 247 252 / 72%) 100%
+    ),
+    radial-gradient(circle at 50% 48%, rgb(255 255 255 / 18%), rgb(255 255 255 / 62%) 78%);
+}
+
+.about-experience .discover-story .story-forecast__stage {
+  position: sticky;
+  top: 76px;
+  z-index: 2;
+  display: flex;
+  width: min(calc(100% - 5rem), 1380px);
+  min-height: calc(100svh - 76px);
+  flex-direction: column;
+  justify-content: center;
+  padding-block: clamp(2.5rem, 5vh, 4.5rem);
+}
+
+.about-experience .discover-story .story-forecast__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+  align-items: end;
+  gap: clamp(2rem, 6vw, 6rem);
+}
+
+.about-experience .discover-story .story-forecast__copy .story-kicker {
+  color: #5149d9;
+}
+
+.about-experience .discover-story .story-forecast__copy h2 {
+  max-width: 12ch;
+  margin-top: 0.9rem;
+  color: var(--story-navy);
+  font-size: clamp(3rem, min(5vw, 7vh), 5.5rem);
+  line-height: 0.93;
+}
+
+.about-experience
+  .discover-story
+  .story-forecast__copy
+  .story-mask:last-child
+  .story-mask__line {
+  background: linear-gradient(105deg, #008cff 0%, #625bff 40%, #a83cf0 72%, #f43f8c 100%);
+  background-clip: text;
+  color: transparent;
+  font-style: italic;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-experience .discover-story .story-forecast__lead {
+  max-width: 34rem;
+  margin: 0 0 0.4rem;
+  padding-left: 1.2rem;
+  border-left: 2px solid rgb(98 91 255 / 38%);
+  color: #56617c;
+  font-size: clamp(0.92rem, 1.05vw, 1.04rem);
+  line-height: 1.72;
+}
+
+.story-forecast__plot {
+  position: relative;
+  min-height: clamp(300px, 38vh, 440px);
+  margin-top: clamp(2.2rem, 4vh, 3.6rem);
+  overflow: visible;
+}
+
+.story-forecast__zones {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  pointer-events: none;
+}
+
+.story-forecast__zone {
+  position: relative;
+  border-radius: 2rem;
+}
+
+.story-forecast__zone--history {
+  background: linear-gradient(90deg, rgb(0 140 255 / 6%), transparent 86%);
+}
+
+.story-forecast__zone--future {
+  background: linear-gradient(90deg, transparent 5%, rgb(168 60 240 / 7%) 62%, rgb(244 63 140 / 5%));
+}
+
+.story-forecast__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.story-forecast__baseline,
+.story-forecast__guide {
+  fill: none;
+  stroke: rgb(98 91 255 / 13%);
+  stroke-width: 1.5;
+}
+
+.story-forecast__guide {
+  stroke-dasharray: 4 11;
+}
+
+.story-forecast__history,
+.story-forecast__future {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.story-forecast__history {
+  stroke: #168fe8;
+  filter: drop-shadow(0 7px 14px rgb(0 140 255 / 18%));
+}
+
+.story-forecast__future {
+  stroke: url(#forecast-gradient);
+  filter: drop-shadow(0 8px 16px rgb(168 60 240 / 18%));
+}
+
+.story-forecast__present-line {
+  stroke: #625bff;
+  stroke-dasharray: 5 9;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.story-forecast__present-dot {
+  fill: #fff;
+  stroke: #625bff;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 7px 14px rgb(98 91 255 / 24%));
+}
+
+.story-forecast__labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.story-forecast__label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgb(98 91 255 / 12%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 72%);
+  color: #4e5876;
+  box-shadow: 0 10px 28px rgb(43 52 110 / 8%);
+  font-size: clamp(0.56rem, 0.7vw, 0.68rem);
+  font-weight: 850;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+}
+
+.story-forecast__label::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+.story-forecast__label--history {
+  top: 8%;
+  left: 4%;
+  color: #117fce;
+}
+
+.story-forecast__label--present {
+  top: 5%;
+  left: 50%;
+  color: #625bff;
+  transform: translateX(-50%);
+}
+
+.story-forecast__label--future {
+  top: 8%;
+  right: 4%;
+  color: #a33ed4;
+}
+
+.story-forecast__takeaway {
+  position: absolute;
+  right: 4%;
+  bottom: 2%;
+  max-width: 24rem;
+  margin: 0;
+  color: #626b84;
+  font-size: clamp(0.74rem, 0.9vw, 0.88rem);
+  font-weight: 720;
+  line-height: 1.55;
+  text-align: right;
+}
+
+.about-experience .discover-story .story-forecast .story-location__handoff {
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  width: auto;
+  height: clamp(7rem, 15vh, 10rem);
+  border-radius: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgb(16 20 38 / 24%) 46%,
+    var(--story-seam-45) 100%
+  );
+  box-shadow: none;
+  opacity: 0;
+  transform: none;
+}
+
+@media (max-width: 1023px) {
+  .about-experience .discover-story .story-forecast {
+    min-height: auto;
+  }
+
+  .about-experience .discover-story .story-forecast__stage {
+    position: relative;
+    top: auto;
+    width: min(100% - 2rem, 900px);
+    min-height: auto;
+    padding-block: 6rem;
+  }
+
+  .about-experience .discover-story .story-forecast__intro {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+
+  .about-experience .discover-story .story-forecast__copy h2 {
+    max-width: 14ch;
+  }
+
+  .about-experience .discover-story .story-forecast__lead {
+    max-width: 40rem;
+  }
+
+  .story-forecast__plot {
+    min-height: 330px;
+  }
+}
+
+@media (max-width: 640px) {
+  .about-experience .discover-story .story-forecast__stage {
+    width: min(100% - 1.25rem, 720px);
+    padding-block: 5rem;
+  }
+
+  .about-experience .discover-story .story-forecast__copy h2 {
+    font-size: clamp(2.55rem, 12vw, 4rem);
+  }
+
+  .story-forecast__plot {
+    min-height: 300px;
+    margin-top: 1.8rem;
+  }
+
+  .story-forecast__label {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.5rem;
+    letter-spacing: 0.07em;
+  }
+
+  .story-forecast__takeaway {
+    right: 0;
+    max-width: 18rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-forecast-motion__video {
+    display: none;
+  }
+
+  .about-forecast-motion__fallback {
+    opacity: 1;
+  }
+
+  .story-forecast__history,
+  .story-forecast__future {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}
