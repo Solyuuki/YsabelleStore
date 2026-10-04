@@ -212,12 +212,12 @@ test("About chapter 04 uses a full-width forecast canvas instead of the chapter 
   assert.match(discover, /Forecasts help prepare the next inventory decision\./);
   assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
   assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
-  assert.match(css, /story-forecast__stage[\s\S]*?position:\s*sticky/);
+  assert.match(css, /story-forecast__stage[\s\S]*?position:\s*relative/);
   assert.match(
     css,
     /about-forecast-motion[\s\S]*?position:\s*absolute[\s\S]*?left:\s*50%[\s\S]*?width:\s*100vw[\s\S]*?translateX\(-50%\)/
   );
-  assert.match(css, /story-forecast[\s\S]*?min-height:\s*198svh/);
+  assert.match(css, /story-forecast[\s\S]*?min-height:\s*max\(720px, calc\(100svh - 76px\)\)/);
   assert.match(css, /story-forecast__stage[\s\S]*?height:\s*calc\(100svh - 76px\)[\s\S]*?isolation:\s*isolate/);
   assert.match(css, /about-forecast-motion__video\.is-active,[\s\S]*?opacity:\s*1/);
   assert.doesNotMatch(css, /about-forecast-motion__wash[\s\S]{0,700}?rgb\(255 255 255 \/ 62%\)/);
@@ -240,28 +240,6 @@ test("About chapter labels diverge from legacy Discover only where chapters are 
     discover,
     /const aboutStoryScenes = \[[\s\S]*?discover-location", label: "Forecast intelligence"/
   );
-});
-
-test("About forecast story finishes before the sticky scene releases", () => {
-  const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
-
-  assert.match(
-    discover,
-    /end:\s*desktop[\s\S]*?Math\.max\(380, Math\.round\(window\.innerHeight \* 0\.46\)\)[\s\S]*?"bottom 28%"/
-  );
-  assert.match(
-    discover,
-    /scrub:\s*desktop \? 0\.18 : tablet \? 0\.14 : 0\.1/
-  );
-  assert.match(
-    discover,
-    /futurePath[\s\S]*?strokeDashoffset:\s*0[\s\S]*?0\.46/
-  );
-  assert.match(
-    discover,
-    /forecastTakeaway[\s\S]*?0\.68[\s\S]*?locationHandoff[\s\S]*?0\.84/
-  );
-  assert.match(discover, /settle\(forecastTimeline, 0\.82\)/);
 });
 
 
@@ -309,20 +287,26 @@ test("About forecast keeps the approved Gemini plate unshaded and dark through s
 });
 
 
-test("About forecast holds its completed frame and eases into system intelligence", () => {
+
+
+test("About forecast uses one pinned viewport scene and releases directly into system intelligence", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
   const css = read("frontend/src/styles/about-forecast-intelligence.css");
 
+  assert.match(discover, /const forecastStage = location\.querySelector<HTMLElement>\("\.story-forecast__stage"\)/);
   assert.match(
     discover,
-    /const forecastExitTimeline = gsap\.timeline\([\s\S]*?start:\s*desktop \? "bottom bottom\+=42%"[\s\S]*?end:\s*desktop \? "bottom bottom"/
+    /pin:\s*desktop \? forecastStage : false[\s\S]*?pinSpacing:\s*desktop[\s\S]*?anticipatePin:\s*desktop \? 1 : 0/
   );
   assert.match(
     discover,
-    /forecastExitTimeline[\s\S]*?story-forecast__intro[\s\S]*?story-forecast__plot[\s\S]*?locationHandoff/
+    /Math\.max\(680, Math\.round\(window\.innerHeight \* 0\.82\)\)/
   );
+  assert.doesNotMatch(discover, /const forecastExitTimeline = gsap\.timeline/);
+  assert.match(discover, /settle\(forecastTimeline, 0\.94\)/);
   assert.match(
     css,
-    /story-forecast \.story-location__handoff[\s\S]*?height:\s*clamp\(9rem, 20vh, 13rem\)[\s\S]*?var\(--story-seam-45\) 100%/
+    /story-forecast__stage[\s\S]*?position:\s*relative[\s\S]*?height:\s*calc\(100svh - 76px\)/
   );
+  assert.match(css, /story-forecast::before[\s\S]*?display:\s*none/);
 });
