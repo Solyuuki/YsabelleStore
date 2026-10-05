@@ -133,7 +133,9 @@
     "storefront:entrance:install": "node scripts/install-storefront-entrance-video.mjs",
     "storefront:entrance:verify": "node scripts/install-storefront-entrance-video.mjs --verify",
     "storefront:about-origin:install": "node scripts/install-about-origin-video.mjs",
-    "storefront:about-origin:verify": "node scripts/install-about-origin-video.mjs --verify",\n    "storefront:about-delivery:install": "node scripts/install-about-delivery-video.mjs",\n    "storefront:about-delivery:verify": "node scripts/install-about-delivery-video.mjs --verify"
+    "storefront:about-origin:verify": "node scripts/install-about-origin-video.mjs --verify",
+    "storefront:about-delivery:install": "node scripts/install-about-delivery-video.mjs",
+    "storefront:about-delivery:verify": "node scripts/install-about-delivery-video.mjs --verify"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"
