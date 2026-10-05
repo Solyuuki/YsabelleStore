@@ -144,191 +144,47 @@ function DeferredIntelligenceScene({ hideSectionNumber = false }: { hideSectionN
 function initializeIntelligenceTimeline(
   intelligence: HTMLElement,
   desktop: boolean,
-  settle: (timeline: gsap.core.Timeline, start?: number) => void
+  _settle: (timeline: gsap.core.Timeline, start?: number) => void
 ) {
-  if (desktop === false || intelligence.dataset.storyMotionInitialized === "true") return;
+  if (intelligence.dataset.storyMotionInitialized === "true") return;
 
-  const panels = Array.from(
-    intelligence.querySelectorAll<HTMLElement>("[data-intelligence-panel]")
-  );
-  const markers = Array.from(
-    intelligence.querySelectorAll<HTMLElement>("[data-intelligence-step]")
-  );
-  const markerIcons = markers
-    .map((marker) => marker.querySelector<HTMLElement>(":scope > span"))
-    .filter((icon): icon is HTMLElement => icon !== null);
-  const firstPanel = panels[0];
-  const firstMarker = markers[0];
-  const intelligenceKicker = intelligence.querySelector<HTMLElement>(".story-kicker");
-  const intelligenceHeadline = Array.from(
+  const kicker = intelligence.querySelector<HTMLElement>(".story-kicker");
+  const headline = Array.from(
     intelligence.querySelectorAll<HTMLElement>(".story-intelligence__heading .story-mask__line")
   );
-  const intelligenceCopy = intelligence.querySelector<HTMLElement>(
-    ".story-intelligence__heading p"
-  );
-  const intelligenceSystem = intelligence.querySelector<HTMLElement>(".story-intelligence__system");
-  const intelligenceProgress = intelligence.querySelector<HTMLElement>(
-    ".story-intelligence__progress"
-  );
-  const intelligenceHandoff = intelligence.querySelector<HTMLElement>(
-    ".story-intelligence__handoff"
-  );
+  const copy = intelligence.querySelector<HTMLElement>(".story-intelligence__heading p");
+  const preview = intelligence.querySelector<HTMLElement>(".system-preview");
 
-  if (
-    !firstPanel ||
-    !firstMarker ||
-    markerIcons.length !== markers.length ||
-    !intelligenceKicker ||
-    !intelligenceHeadline.length ||
-    !intelligenceCopy ||
-    !intelligenceSystem ||
-    !intelligenceProgress ||
-    !intelligenceHandoff
-  ) {
-    return;
-  }
+  if (!kicker || !headline.length || !copy || !preview) return;
 
   intelligence.dataset.storyMotionInitialized = "true";
-  panels.forEach((panel) => {
-    gsap.set(Array.from(panel.querySelectorAll<HTMLElement>("[data-intelligence-build]")), {
-      autoAlpha: 0,
-      y: 12
-    });
 
-    Array.from(
-      panel.querySelectorAll<SVGGeometryElement>("[data-intelligence-chart-path]")
-    ).forEach((path) => {
-      const length = path.getTotalLength();
-      gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
-    });
+  gsap.set(kicker, { autoAlpha: 0, x: -14 });
+  gsap.set(headline, { autoAlpha: 0, y: 18 });
+  gsap.set(copy, { autoAlpha: 0, y: 10 });
+  gsap.set(preview, { autoAlpha: 0, y: desktop ? 18 : 10, scale: desktop ? 0.992 : 1 });
 
-    gsap.set(panel.querySelectorAll("[data-intelligence-line]"), {
-      scaleX: 0,
-      transformOrigin: "left center"
-    });
-  });
-
-  gsap.set(panels, {
-    autoAlpha: 0,
-    display: "none",
-    inset: 0,
-    marginTop: 0,
-    position: "absolute",
-    scale: 1,
-    y: 18
-  });
-  gsap.set(markers, { opacity: 0.42 });
-  gsap.set(firstMarker, { opacity: 1 });
-  gsap.set(markerIcons, { backgroundColor: "#202653", color: "#9ca3d9" });
-  if (markerIcons[0]) {
-    gsap.set(markerIcons[0], { backgroundColor: "#f7f9ff", color: "#625bff" });
-  }
-  gsap.set(intelligenceKicker, { autoAlpha: 0, x: -18 });
-  gsap.set(intelligenceHeadline, { autoAlpha: 0, y: 22 });
-  gsap.set(intelligenceCopy, { autoAlpha: 0, x: -16 });
-  gsap.set(intelligenceSystem, { autoAlpha: 0, scale: 0.985, y: 16 });
-  gsap.set(intelligenceProgress, { scaleY: 0.035 });
-  gsap.set(intelligenceHandoff, { scaleX: 0 });
-
-  const intelligenceTimeline = gsap.timeline({
+  const timeline = gsap.timeline({
     scrollTrigger: {
       trigger: intelligence,
-      start: "top top+=76",
-      end: () => `+=${Math.max(2900, Math.round(window.innerHeight * 3.3))}`,
-      pin: intelligence,
-      pinSpacing: true,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-      scrub: 0.32
+      start: desktop ? "top 78%" : "top 88%",
+      once: true
     }
   });
 
-  intelligenceTimeline
-    .to(intelligenceKicker, { autoAlpha: 1, duration: 0.1, ease: "power2.out", x: 0 }, 0.02)
-    .to(intelligenceHeadline, { autoAlpha: 1, duration: 0.16, stagger: 0.035, y: 0 }, 0.1)
-    .to(intelligenceCopy, { autoAlpha: 1, duration: 0.12, x: -0 }, 0.2)
+  timeline
+    .to(kicker, { autoAlpha: 1, duration: 0.18, ease: "power2.out", x: 0 }, 0)
+    .to(headline, { autoAlpha: 1, duration: 0.24, ease: "power2.out", stagger: 0.035, y: 0 }, 0.06)
+    .to(copy, { autoAlpha: 1, duration: 0.2, ease: "power2.out", y: 0 }, 0.14)
     .to(
-      intelligenceSystem,
-      { autoAlpha: 1, duration: 0.18, ease: "power1.out", scale: 1, y: 0 },
-      0.34
+      preview,
+      { autoAlpha: 1, duration: 0.28, ease: "power2.out", scale: 1, y: 0 },
+      0.18
     );
-
-  const stageStarts = [0.42, 0.72, 1.08, 1.52, 2.0, 2.3, 2.65] as const;
-
-  panels.forEach((panel, index) => {
-    const stageStart = stageStarts[index]!;
-    const buildElements = Array.from(
-      panel.querySelectorAll<HTMLElement>("[data-intelligence-build]")
-    );
-    const chartPaths = Array.from(
-      panel.querySelectorAll<SVGGeometryElement>("[data-intelligence-chart-path]")
-    );
-    const lineElements = Array.from(
-      panel.querySelectorAll<HTMLElement>("[data-intelligence-line]")
-    );
-
-    intelligenceTimeline.addLabel(`intelligence-stage-${index + 1}`, stageStart);
-
-    if (index === 0) {
-      intelligenceTimeline
-        .set(panel, { display: "block" }, stageStart - 0.06)
-        .to(panel, { autoAlpha: 1, duration: 0.09, ease: "power2.out", y: 0 }, stageStart);
-    } else {
-      const handoffStart = stageStart - 0.06;
-      const progress = index / (panels.length - 1);
-
-      intelligenceTimeline
-        .set(panel, { display: "block" }, handoffStart)
-        .to(
-          panels[index - 1]!,
-          { autoAlpha: 0, duration: 0.065, ease: "power1.in", y: -8 },
-          handoffStart
-        )
-        .to(intelligenceProgress, { duration: 0.075, ease: "none", scaleY: progress }, handoffStart)
-        .to(markers[index - 1]!, { duration: 0.06, opacity: 0.68 }, handoffStart)
-        .to(markers[index]!, { duration: 0.06, opacity: 1 }, handoffStart)
-        .set(
-          markerIcons[index - 1]!,
-          { backgroundColor: "#242a62", color: "#9c96ff" },
-          handoffStart
-        )
-        .set(markerIcons[index]!, { backgroundColor: "#f7f9ff", color: "#625bff" }, handoffStart)
-        .set(panels[index - 1]!, { display: "none" }, handoffStart + 0.07)
-        .to(panel, { autoAlpha: 1, duration: 0.14, ease: "power2.out", y: 0 }, stageStart);
-    }
-
-    if (buildElements.length) {
-      intelligenceTimeline.to(
-        buildElements,
-        { autoAlpha: 1, duration: 0.11, ease: "power2.out", stagger: 0.016, y: 0 },
-        stageStart + 0.1
-      );
-    }
-
-    if (lineElements.length) {
-      intelligenceTimeline.to(
-        lineElements,
-        { duration: 0.13, ease: "none", scaleX: 1 },
-        stageStart + 0.22
-      );
-    }
-
-    if (chartPaths.length) {
-      intelligenceTimeline.to(
-        chartPaths,
-        { duration: index === 3 ? 0.2 : 0.15, ease: "none", stagger: 0.025, strokeDashoffset: 0 },
-        stageStart + 0.2
-      );
-    }
-  });
-
-  intelligenceTimeline
-    .to(intelligenceProgress, { duration: 0.08, ease: "none", scaleY: 1 }, 2.92)
-    .addLabel("intelligence-complete", 3.02)
-    .to(intelligenceHandoff, { duration: 0.08, ease: "none", scaleX: 1 }, 3.08);
-  settle(intelligenceTimeline, 0.88);
 
   return () => {
+    timeline.scrollTrigger?.kill();
+    timeline.kill();
     delete intelligence.dataset.storyMotionInitialized;
   };
 }

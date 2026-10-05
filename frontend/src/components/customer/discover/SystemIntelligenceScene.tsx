@@ -1,543 +1,355 @@
 import {
-  ArrowDown,
-  ArrowRight,
   BarChart3,
   Boxes,
-  Check,
   ClipboardCheck,
   Database,
   LineChart,
   PackageCheck,
-  ScanBarcode,
   ShoppingBasket,
-  SlidersHorizontal,
-  TrendingUp,
   Warehouse,
   type LucideIcon
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-type IntelligenceStage = {
-  capability: "Implemented now" | "Target workflow";
+type PreviewStage = {
   description: string;
-  eyebrow: string;
   icon: LucideIcon;
-  shortTitle: string;
+  id: string;
+  label: string;
+  status: string;
   title: string;
-  tone: "foundation" | "forecast" | "target";
 };
 
-const stages: IntelligenceStage[] = [
+const previewStages: PreviewStage[] = [
   {
-    capability: "Implemented now",
-    eyebrow: "01 / Completed sale",
-    shortTitle: "Sale",
-    title: "A completed sale starts the signal.",
-    description:
-      "A barcode match and completed POS checkout preserve the product, quantity, and sale record.",
+    id: "sale",
+    label: "Sale",
+    title: "Completed sale",
+    description: "A finished POS transaction becomes a traceable sales record.",
     icon: ShoppingBasket,
-    tone: "foundation"
+    status: "Live module"
   },
   {
-    capability: "Implemented now",
-    eyebrow: "02 / Inventory update",
-    shortTitle: "Stock",
-    title: "The same event updates usable stock.",
-    description:
-      "The completed sale creates a traceable inventory movement and reduces sellable quantity.",
+    id: "stock",
+    label: "Stock",
+    title: "Inventory movement",
+    description: "The same sale updates usable inventory and stock visibility.",
     icon: Boxes,
-    tone: "foundation"
+    status: "Live module"
   },
   {
-    capability: "Implemented now",
-    eyebrow: "03 / Historical monthly sales",
-    shortTitle: "History",
-    title: "Transactions become monthly demand.",
-    description:
-      "Completed POS and approved historical records resolve into complete product-month observations.",
+    id: "history",
+    label: "History",
+    title: "Monthly sales history",
+    description: "Completed transactions resolve into clean product-month observations.",
     icon: Database,
-    tone: "foundation"
+    status: "Live module"
   },
   {
-    capability: "Implemented now",
-    eyebrow: "04 / SARIMA forecast",
-    shortTitle: "Forecast",
-    title: "Seasonality becomes a forward view.",
-    description:
-      "Eligible series use SARIMA; limited histories use validated fallbacks instead of forcing one model.",
+    id: "forecast",
+    label: "Forecast",
+    title: "Forecast intelligence",
+    description: "Historical demand extends into a seasonal forward-looking view.",
     icon: LineChart,
-    tone: "forecast"
+    status: "Live module"
   },
   {
-    capability: "Target workflow",
-    eyebrow: "05 / Inventory-aware decision",
-    shortTitle: "Decision",
-    title: "Demand meets inventory context.",
-    description:
-      "A planned decision layer can translate forecast demand and stock context into a base replenishment need.",
+    id: "decision",
+    label: "Decision",
+    title: "Restock decision support",
+    description: "Forecast and inventory context are summarized into a reviewable replenishment signal.",
     icon: BarChart3,
-    tone: "target"
+    status: "Decision support"
   },
   {
-    capability: "Target workflow",
-    eyebrow: "06 / Owner review and approval",
-    shortTitle: "Review",
-    title: "The owner remains in control.",
-    description:
-      "A planned review step keeps every recommendation visible, adjustable, and explicitly approved.",
+    id: "review",
+    label: "Review",
+    title: "Owner review",
+    description: "Recommendations remain visible and reviewable before operational action.",
     icon: ClipboardCheck,
-    tone: "target"
+    status: "Owner controlled"
   },
   {
-    capability: "Target workflow",
-    eyebrow: "07 / Restock and supply action",
-    shortTitle: "Restock",
-    title: "An approved decision returns to operations.",
-    description:
-      "A planned supply workflow can track the handoff without implying supplier automation exists today.",
+    id: "restock",
+    label: "Restock",
+    title: "Restock pipeline",
+    description: "Approved replenishment can be followed through receiving and inventory updates.",
     icon: Warehouse,
-    tone: "target"
+    status: "Live module"
   }
 ];
 
-const monthSeries = [42, 38, 46, 53, 49, 61, 58, 67, 72, 64, 78, 84];
-const monthLabels = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec"
-];
-const monthPoints = monthSeries
-  .map((value, index) => `${44 + index * 50},${158 - (value - 34) * 2.05}`)
+const historySeries = [42, 38, 46, 53, 49, 61, 58, 67, 72, 64, 78, 84];
+const historyPoints = historySeries
+  .map((value, index) => `${36 + index * 48},${152 - (value - 34) * 1.95}`)
   .join(" ");
 
-const historyDots = [
-  [44, 155],
-  [82, 134],
-  [120, 94],
-  [158, 116],
-  [196, 151],
-  [234, 126],
-  [272, 77],
-  [310, 98],
-  [348, 137],
-  [386, 107]
-] as const;
-
-const forecastDiamonds = [
-  [386, 107],
-  [428, 67],
-  [470, 84],
-  [512, 127],
-  [554, 99],
-  [596, 50],
-  [638, 70]
-] as const;
-
-function CapabilityBadge({ stage }: { stage: IntelligenceStage }) {
+function Metric({
+  label,
+  value,
+  note
+}: {
+  label: string;
+  value: string;
+  note?: string;
+}) {
   return (
-    <span
-      className="story-intelligence__capability"
-      data-kind={stage.tone === "target" ? "target" : "live"}
-    >
-      <i aria-hidden="true" />
-      {stage.capability}
-    </span>
+    <div className="system-preview__metric">
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {note ? <small>{note}</small> : null}
+    </div>
   );
 }
 
-function SaleVisual() {
+function SalePanel() {
   return (
-    <div
-      className="intelligence-sale intelligence-visual"
-      role="group"
-      aria-label="Illustrative completed POS transaction"
-    >
-      <div className="intelligence-sale__scan" data-intelligence-build>
-        <span className="intelligence-artifact-label">Illustrative transaction</span>
-        <ScanBarcode aria-hidden="true" />
-        <strong>4800 1328 1502</strong>
-        <small>Barcode scanned</small>
-        <div className="intelligence-sale__scanline" aria-hidden="true" data-intelligence-line />
+    <div className="system-preview__body">
+      <div className="system-preview__metrics">
+        <Metric label="Today's sales" value="₱2,993.00" note="Demo value" />
+        <Metric label="Transactions" value="3" />
+        <Metric label="Units sold" value="50" />
       </div>
 
-      <div
-        className="intelligence-sale__route"
-        aria-label="Barcode scan, product match, then sale recorded"
-        data-intelligence-build
-      >
-        <span>Scan</span>
-        <ArrowRight aria-hidden="true" />
-        <span>Match</span>
-        <ArrowRight aria-hidden="true" />
-        <span>Recorded</span>
+      <div className="system-preview__table-card">
+        <div className="system-preview__card-head">
+          <div>
+            <span>Recent POS activity</span>
+            <strong>Completed transaction</strong>
+          </div>
+          <span className="system-preview__badge system-preview__badge--live">Completed</span>
+        </div>
+        <div className="system-preview__table system-preview__table--sale">
+          <span>Product</span><span>Qty</span><span>Unit price</span><span>Total</span><span>Status</span>
+          <strong>Classic Cola 1.5L</strong><strong>2</strong><strong>₱28.00</strong><strong>₱56.00</strong><strong>Recorded</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StockPanel() {
+  return (
+    <div className="system-preview__body">
+      <div className="system-preview__metrics">
+        <Metric label="Available items" value="53" />
+        <Metric label="Low stock" value="0" note="No immediate alerts" />
+        <Metric label="Near expiry" value="0" />
       </div>
 
-      <div className="intelligence-sale__receipt" data-intelligence-build>
-        <header>
-          <span>YSABELLE POS</span>
-          <span className="intelligence-status intelligence-status--live">
-            <Check aria-hidden="true" /> Completed
-          </span>
-        </header>
-        <div>
-          <span>
+      <div className="system-preview__table-card">
+        <div className="system-preview__card-head">
+          <div>
+            <span>Inventory movement</span>
             <strong>Classic Cola 1.5L</strong>
-            <small>Qty 2 x {"\u20b1"}28.00</small>
-          </span>
-          <b>{"\u20b1"}56.00</b>
+          </div>
+          <span className="system-preview__badge">Sale posted</span>
         </div>
-        <footer>
-          <span>Sale recorded</span>
-          <strong>Total {"\u20b1"}56.00</strong>
-        </footer>
+        <div className="system-preview__inventory-row">
+          <div><span>Before</span><strong>24</strong></div>
+          <div><span>Sold</span><strong>−2</strong></div>
+          <div><span>Usable stock</span><strong>22</strong></div>
+          <div className="system-preview__stock-bar"><i style={{ width: "91.6%" }} /></div>
+        </div>
       </div>
     </div>
   );
 }
 
-function StockVisual() {
+function HistoryPanel() {
   return (
-    <div
-      className="intelligence-stock intelligence-visual"
-      role="group"
-      aria-label="Illustrative stock update from 24 units to 22 units"
-    >
-      <div className="intelligence-stock__summary" data-intelligence-build>
-        <span className="intelligence-artifact-label">Illustrative stock movement</span>
-        <div className="intelligence-stock__equation" aria-label="24 minus 2 equals 22">
-          <span>
-            <small>Before</small>
-            <strong>24</strong>
-          </span>
-          <b>-</b>
-          <span className="is-sale">
-            <small>Sold</small>
-            <strong>2</strong>
-          </span>
-          <b>=</b>
-          <span className="is-result">
-            <small>Usable</small>
-            <strong>22</strong>
-          </span>
-        </div>
+    <div className="system-preview__body">
+      <div className="system-preview__metrics">
+        <Metric label="Complete months" value="12" />
+        <Metric label="Latest month" value="84 units" />
+        <Metric label="Year trend" value="+8.3%" />
       </div>
-      <div
-        className="intelligence-stock__units"
-        aria-label="Twenty-four stock units with two sold units highlighted"
-        data-intelligence-build
-      >
-        {Array.from({ length: 24 }, (_, index) => (
-          <i className={index > 21 ? "is-sold" : ""} key={index} />
-        ))}
-      </div>
-      <div className="intelligence-stock__movement" data-intelligence-build>
-        <span>
-          <Boxes aria-hidden="true" /> Inventory movement
-        </span>
-        <strong>-2 units</strong>
-        <small>Completed POS sale</small>
-      </div>
-    </div>
-  );
-}
 
-function HistoryVisual() {
-  return (
-    <div className="intelligence-history intelligence-visual">
-      <div className="intelligence-history__event" data-intelligence-build>
-        <ShoppingBasket aria-hidden="true" />
-        <span>
-          <small>Completed transactions</small>
-          <strong>Grouped by product and month</strong>
-        </span>
-        <ArrowDown aria-hidden="true" />
-      </div>
-      <figure data-intelligence-build>
+      <figure className="system-preview__chart-card">
         <figcaption>
-          <span>
-            <strong>Jan-Dec demand</strong>
-            <small>Illustrative monthly units sold</small>
-          </span>
-          <span className="intelligence-status intelligence-status--live">Complete months</span>
+          <div>
+            <span>Monthly sales history</span>
+            <strong>Classic Cola 1.5L</strong>
+          </div>
+          <span className="system-preview__badge">Product-month view</span>
         </figcaption>
-        <svg
-          role="img"
-          aria-label="Illustrative January through December monthly demand line chart"
-          viewBox="0 0 640 190"
-        >
-          {[50, 90, 130, 170].map((y) => (
-            <line className="chart-grid" key={y} x1="40" x2="608" y1={y} y2={y} />
+        <svg viewBox="0 0 590 190" role="img" aria-label="Illustrative monthly sales history">
+          {[48, 88, 128, 168].map((y) => (
+            <line className="system-preview__gridline" key={y} x1="34" x2="566" y1={y} y2={y} />
           ))}
-          <polyline
-            className="intelligence-history__area"
-            points={`44,170 ${monthPoints} 594,170`}
-          />
-          <polyline
-            className="intelligence-history__line"
-            data-intelligence-chart-path
-            points={monthPoints}
-          />
-          {monthSeries.map((value, index) => (
+          <polyline className="system-preview__history-line" points={historyPoints} />
+          {historySeries.map((value, index) => (
             <circle
-              className="intelligence-chart-dot"
-              cx={44 + index * 50}
-              cy={158 - (value - 34) * 2.05}
-              key={monthLabels[index]}
-              r="4"
+              className="system-preview__history-dot"
+              cx={36 + index * 48}
+              cy={152 - (value - 34) * 1.95}
+              key={index}
+              r="3.5"
             />
           ))}
-          {monthLabels.map((month, index) => (
-            <text key={month} x={44 + index * 50} y="184">
-              {month}
-            </text>
-          ))}
         </svg>
+        <div className="system-preview__chart-labels">
+          <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span><span>Dec</span>
+        </div>
       </figure>
     </div>
   );
 }
 
-function ForecastVisual() {
+function ForecastPanel() {
   return (
-    <div className="intelligence-sarima intelligence-visual">
-      <div className="intelligence-sarima__facts" data-intelligence-build>
-        <span>
-          <strong>24+</strong>
-          <small>complete months</small>
-        </span>
-        <span>
-          <strong>12</strong>
-          <small>month seasonality</small>
-        </span>
-        <span>
-          <strong>Chronological</strong>
-          <small>validation</small>
-        </span>
-        <span>
-          <strong>MAE / MAPE / RMSE</strong>
-          <small>accuracy report</small>
-        </span>
+    <div className="system-preview__body">
+      <div className="system-preview__metrics">
+        <Metric label="Forecast horizon" value="12 months" />
+        <Metric label="Forecast units" value="3,226" />
+        <Metric label="Seasonality" value="Detected" />
       </div>
-      <figure data-intelligence-build>
+
+      <figure className="system-preview__chart-card">
         <figcaption>
-          <span>
-            <i className="is-history" /> Historical, solid with circles
-          </span>
-          <span>
-            <i className="is-forecast" /> Forecast, dashed with diamonds
-          </span>
+          <div>
+            <span>Demand outlook</span>
+            <strong>Observed history → forecast</strong>
+          </div>
+          <div className="system-preview__legend">
+            <span><i className="is-history" />History</span>
+            <span><i className="is-forecast" />Forecast</span>
+          </div>
         </figcaption>
-        <svg
-          role="img"
-          aria-label="Historical sales shown as a solid line with circles and forecast demand shown as a dashed line with diamonds"
-          viewBox="0 0 680 190"
-        >
-          {[45, 85, 125, 165].map((y) => (
-            <line className="chart-grid" key={y} x1="36" x2="648" y1={y} y2={y} />
+        <svg viewBox="0 0 590 190" role="img" aria-label="Illustrative historical demand and SARIMA forecast">
+          <defs>
+            <linearGradient id="systemForecastBand" x1="0" x2="1">
+              <stop offset="0%" stopColor="#2563eb" stopOpacity="0.16" />
+              <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.05" />
+            </linearGradient>
+          </defs>
+          {[48, 88, 128, 168].map((y) => (
+            <line className="system-preview__gridline" key={y} x1="34" x2="566" y1={y} y2={y} />
           ))}
           <path
-            className="intelligence-sarima__history"
-            data-intelligence-chart-path
-            d="M44 155 C78 136 88 118 120 94 S170 125 196 151 S244 122 272 77 S326 112 348 137 S372 121 386 107"
+            className="system-preview__forecast-band"
+            d="M342 104 C394 78 445 65 500 60 C529 57 548 51 566 43 L566 105 C538 111 512 114 488 116 C440 120 390 133 342 151 Z"
+            fill="url(#systemForecastBand)"
           />
-          <path
-            className="intelligence-sarima__forecast"
-            data-intelligence-chart-path
-            d="M386 107 C414 82 420 65 428 67 S460 76 470 84 S502 119 512 127 S544 107 554 99 S582 57 596 50 S624 63 638 70"
-          />
-          <line className="intelligence-sarima__divider" x1="386" x2="386" y1="30" y2="166" />
-          <text className="is-period-label" x="48" y="24">
-            Observed history
-          </text>
-          <text className="is-period-label" x="408" y="24">
-            12-month horizon
-          </text>
-          {historyDots.map(([x, y]) => (
-            <circle
-              className="intelligence-sarima__history-dot"
-              cx={x}
-              cy={y}
-              key={`${x}-${y}`}
-              r="3.7"
-            />
-          ))}
-          {forecastDiamonds.map(([x, y]) => (
-            <rect
-              className="intelligence-sarima__forecast-dot"
-              height="7"
-              key={`${x}-${y}`}
-              transform={`rotate(45 ${x} ${y})`}
-              width="7"
-              x={x - 3.5}
-              y={y - 3.5}
-            />
-          ))}
+          <path className="system-preview__history-path" d="M36 144 C86 131 130 114 176 119 S250 84 296 94 S323 108 342 111" />
+          <path className="system-preview__forecast-path" d="M342 111 C388 94 420 77 456 72 S518 67 566 51" />
+          <line className="system-preview__divider" x1="342" x2="342" y1="36" y2="164" />
         </svg>
+        <div className="system-preview__chart-labels">
+          <span>Observed</span><span>Forecast starts</span><span>+3 mo</span><span>+6 mo</span><span>+9 mo</span><span>+12 mo</span>
+        </div>
       </figure>
-      <p data-intelligence-build>SARIMA is a seasonal statistical model, not a generic AI label.</p>
     </div>
   );
 }
 
-function DecisionVisual() {
-  const inputs = [
+function DecisionPanel() {
+  const rows = [
     ["Forecast demand", "48"],
-    ["Safety stock", "+ 8"],
-    ["Usable stock", "- 22"],
-    ["Confirmed incoming", "- 6"]
+    ["Usable inventory", "22"],
+    ["Confirmed incoming", "6"],
+    ["Safety buffer", "8"]
   ];
 
   return (
-    <div
-      className="intelligence-decision intelligence-visual"
-      role="group"
-      aria-label="Illustrative planned inventory-aware calculation"
-    >
-      <span className="intelligence-artifact-label" data-intelligence-build>
-        Illustrative planning example / not implemented
-      </span>
-      <div className="intelligence-decision__engine">
-        <div className="intelligence-decision__inputs">
-          {inputs.map(([label, value]) => (
-            <div data-intelligence-build key={label}>
-              <span>{label}</span>
-              <strong>{value}</strong>
+    <div className="system-preview__body system-preview__body--decision">
+      <div className="system-preview__recommendation">
+        <div className="system-preview__card-head">
+          <div>
+            <span>Restock recommendation</span>
+            <strong>Classic Cola 1.5L</strong>
+          </div>
+          <span className="system-preview__badge">Decision support</span>
+        </div>
+        <div className="system-preview__decision-grid">
+          <div className="system-preview__decision-inputs">
+            {rows.map(([label, value]) => (
+              <div key={label}><span>{label}</span><strong>{value}</strong></div>
+            ))}
+          </div>
+          <div className="system-preview__decision-result">
+            <span>Recommended restock</span>
+            <strong>28 <small>units</small></strong>
+            <p>Projected demand exceeds available inventory during the next replenishment window.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReviewPanel() {
+  return (
+    <div className="system-preview__body">
+      <div className="system-preview__review-card">
+        <div className="system-preview__card-head">
+          <div>
+            <span>Owner review</span>
+            <strong>Restock recommendation</strong>
+          </div>
+          <span className="system-preview__badge system-preview__badge--review">Review required</span>
+        </div>
+        <div className="system-preview__review-summary">
+          <div><span>Product</span><strong>Classic Cola 1.5L</strong></div>
+          <div><span>Suggested quantity</span><strong>28 units</strong></div>
+          <div><span>Owner adjustment</span><strong>30 units</strong></div>
+          <div><span>Decision</span><strong>Ready for approval</strong></div>
+        </div>
+        <div className="system-preview__actions" aria-label="Illustrative review actions">
+          <button type="button">Adjust</button>
+          <button className="is-primary" type="button">Approve 30</button>
+          <button type="button">Hold</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RestockPanel() {
+  const steps = ["Draft", "Approved", "Sent", "Incoming", "Received"];
+
+  return (
+    <div className="system-preview__body">
+      <div className="system-preview__metrics">
+        <Metric label="Ready" value="1" />
+        <Metric label="Drafts" value="1" />
+        <Metric label="Open" value="2" />
+      </div>
+
+      <div className="system-preview__table-card">
+        <div className="system-preview__card-head">
+          <div>
+            <span>Restock order</span>
+            <strong>RO-OCT-2026</strong>
+          </div>
+          <span className="system-preview__badge">Demo order</span>
+        </div>
+        <div className="system-preview__order-meta">
+          <div><span>Requested units</span><strong>30</strong></div>
+          <div><span>Received</span><strong>0%</strong></div>
+          <div><span>Source</span><strong>Forecast-driven plan</strong></div>
+        </div>
+        <div className="system-preview__status-track">
+          {steps.map((step, index) => (
+            <div className={index < 2 ? "is-done" : index === 2 ? "is-current" : ""} key={step}>
+              <i />
+              <span>{step}</span>
             </div>
           ))}
         </div>
-        <div className="intelligence-decision__lines" aria-hidden="true" data-intelligence-build>
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
-        <div className="intelligence-decision__result" data-intelligence-build>
-          <TrendingUp aria-hidden="true" />
-          <span>
-            <small>Base need</small>
-            <strong>28</strong>
-            <em>units</em>
-          </span>
-        </div>
       </div>
-      <p data-intelligence-build>
-        <strong>Planned computation:</strong> forecast + safety stock - usable stock - incoming =
-        base need.
-      </p>
     </div>
   );
 }
 
-function OwnerVisual() {
-  return (
-    <div className="intelligence-owner intelligence-visual">
-      <span className="intelligence-artifact-label" data-intelligence-build>
-        Illustrative review / target workflow
-      </span>
-      <div className="intelligence-owner__review" data-intelligence-build>
-        <header>
-          <span>
-            <TrendingUp aria-hidden="true" />
-            <span>
-              <small>Recommendation</small>
-              <strong>Classic Cola 1.5L</strong>
-            </span>
-          </span>
-          <span className="intelligence-status intelligence-status--target">Awaiting owner</span>
-        </header>
-        <div className="intelligence-owner__row">
-          <span>
-            <small>Suggested quantity</small>
-            <strong>28 units</strong>
-          </span>
-          <span>
-            <small>Owner adjustment</small>
-            <span className="intelligence-owner__stepper">
-              <i>-</i>
-              <b>28</b>
-              <i>+</i>
-            </span>
-          </span>
-          <span>
-            <small>Decision</small>
-            <strong>Review required</strong>
-          </span>
-        </div>
-        <footer aria-label="Illustrative owner controls">
-          <span>
-            <SlidersHorizontal aria-hidden="true" /> Adjust
-          </span>
-          <span className="is-approved">
-            <Check aria-hidden="true" /> Approve 28
-          </span>
-        </footer>
-      </div>
-      <p data-intelligence-build>
-        Decision support stays reviewable. No replenishment action is automatic.
-      </p>
-    </div>
-  );
-}
-
-function RestockVisual() {
-  const statuses = [
-    ["Draft", ClipboardCheck],
-    ["Approved", Check],
-    ["Sent", ArrowRight],
-    ["Incoming", Warehouse],
-    ["Received", PackageCheck]
-  ] as const;
-
-  return (
-    <div className="intelligence-restock intelligence-visual">
-      <span className="intelligence-artifact-label" data-intelligence-build>
-        Planned supply workflow concept
-      </span>
-      <div className="intelligence-restock__flow" data-intelligence-build>
-        {statuses.map(([label, Icon], index) => (
-          <div className={index < 2 ? "is-ready" : ""} key={label}>
-            <span>
-              <Icon aria-hidden="true" />
-            </span>
-            <strong>{label}</strong>
-            <small>{String(index + 1).padStart(2, "0")}</small>
-          </div>
-        ))}
-      </div>
-      <div className="intelligence-restock__return" data-intelligence-build>
-        <PackageCheck aria-hidden="true" />
-        <span>
-          <small>Once received</small>
-          <strong>Return to inventory visibility</strong>
-        </span>
-        <ArrowRight aria-hidden="true" />
-        <Boxes aria-hidden="true" />
-      </div>
-      <p data-intelligence-build>
-        Supplier integrations are not implemented; this shows the intended owner-controlled status
-        path.
-      </p>
-    </div>
-  );
-}
-
-function StageVisual({ index }: { index: number }) {
-  if (index === 0) return <SaleVisual />;
-  if (index === 1) return <StockVisual />;
-  if (index === 2) return <HistoryVisual />;
-  if (index === 3) return <ForecastVisual />;
-  if (index === 4) return <DecisionVisual />;
-  if (index === 5) return <OwnerVisual />;
-  return <RestockVisual />;
+function StageContent({ stageIndex }: { stageIndex: number }) {
+  if (stageIndex === 0) return <SalePanel />;
+  if (stageIndex === 1) return <StockPanel />;
+  if (stageIndex === 2) return <HistoryPanel />;
+  if (stageIndex === 3) return <ForecastPanel />;
+  if (stageIndex === 4) return <DecisionPanel />;
+  if (stageIndex === 5) return <ReviewPanel />;
+  return <RestockPanel />;
 }
 
 export function SystemIntelligenceScene({
@@ -546,13 +358,25 @@ export function SystemIntelligenceScene({
   hideSectionNumber?: boolean;
 }) {
   const sceneRef = useRef<HTMLElement>(null);
+  const [activeStage, setActiveStage] = useState(0);
+  const stage = previewStages[activeStage]!;
+  const StageIcon = stage.icon;
+
+  const activeLabel = useMemo(
+    () => `${String(activeStage + 1).padStart(2, "0")} / ${stage.label}`,
+    [activeStage, stage.label]
+  );
 
   useEffect(() => {
     sceneRef.current?.dispatchEvent(new CustomEvent("story:intelligence-ready", { bubbles: true }));
   }, []);
 
   return (
-    <section className="story-scene story-intelligence" id="discover-smarter" ref={sceneRef}>
+    <section
+      className="story-scene story-intelligence story-intelligence--interactive"
+      id="discover-smarter"
+      ref={sceneRef}
+    >
       <div className="customer-container story-intelligence__stage" data-story-motion>
         <div className="story-intelligence__heading">
           <span className="story-kicker">
@@ -565,95 +389,76 @@ export function SystemIntelligenceScene({
               </span>
               <span className="story-mask">
                 <span className="story-mask__line story-mask__line--mint">
-                  SARIMA Finds the Season.
+                  One System, Clearer Decisions.
                 </span>
               </span>
             </h2>
             <p>
-              Validated seasonal forecasting transforms historical grocery demand into
-              decision-support for inventory planning.
+              Explore how commerce, inventory, forecasting, and replenishment connect inside one
+              retail operating system.
             </p>
           </div>
         </div>
 
-        <div className="story-intelligence__system">
-          <aside className="story-intelligence__index" aria-label="Retail intelligence stages">
+        <div className="system-preview">
+          <aside className="system-preview__nav" aria-label="System intelligence preview">
             <header>
-              <span>Signal path</span>
-              <strong>01-07</strong>
+              <span>System flow</span>
+              <strong>{String(activeStage + 1).padStart(2, "0")} / 07</strong>
             </header>
-            <div className="story-intelligence__rail">
-              <span aria-hidden="true" className="story-intelligence__track" />
-              <span aria-hidden="true" className="story-intelligence__progress" />
-              <ol>
-                {stages.map(({ icon: Icon, shortTitle, title }, index) => (
-                  <li className="story-intelligence__step" data-intelligence-step key={title}>
-                    <span>
+
+            <ol>
+              {previewStages.map(({ icon: Icon, label, title }, index) => (
+                <li key={title}>
+                  <button
+                    aria-current={index === activeStage ? "step" : undefined}
+                    className={index === activeStage ? "is-active" : ""}
+                    onClick={() => setActiveStage(index)}
+                    type="button"
+                  >
+                    <span className="system-preview__nav-icon">
                       <Icon aria-hidden="true" />
                     </span>
                     <small>{String(index + 1).padStart(2, "0")}</small>
-                    <strong>{shortTitle}</strong>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <footer>
-              <i aria-hidden="true" /> Implemented <i aria-hidden="true" /> Target
-            </footer>
+                    <strong>{label}</strong>
+                  </button>
+                </li>
+              ))}
+            </ol>
+
+            <p>Choose any stage to inspect the system without interrupting your scroll.</p>
           </aside>
 
-          <div className="story-intelligence__console">
-            <header className="story-intelligence__console-bar">
-              <span>
-                <i />
-                <i />
-                <i />
-              </span>
-              <strong>YS / RETAIL SIGNAL SYSTEM</strong>
-              <small>Product-level monthly demand</small>
+          <div className="system-preview__workspace">
+            <header className="system-preview__workspace-bar">
+              <div>
+                <span className="system-preview__workspace-icon">
+                  <StageIcon aria-hidden="true" />
+                </span>
+                <span>
+                  <small>{activeLabel}</small>
+                  <strong>{stage.title}</strong>
+                </span>
+              </div>
+              <span className="system-preview__status">{stage.status}</span>
             </header>
 
-            <div className="story-intelligence__panels">
-              {stages.map((stage, index) => {
-                const Icon = stage.icon;
-                return (
-                  <article
-                    className={`story-intelligence__panel story-intelligence__panel--${index + 1}`}
-                    data-intelligence-panel
-                    data-tone={stage.tone}
-                    key={stage.title}
-                  >
-                    <header>
-                      <span className="story-intelligence__panel-icon">
-                        <Icon aria-hidden="true" />
-                      </span>
-                      <div>
-                        <small>{stage.eyebrow}</small>
-                        <h3>{stage.title}</h3>
-                      </div>
-                      <CapabilityBadge stage={stage} />
-                    </header>
-                    <p>{stage.description}</p>
-                    <StageVisual index={index} />
-                  </article>
-                );
-              })}
+            <div className="system-preview__workspace-copy">
+              <p>{stage.description}</p>
+              <span>Illustrative public preview</span>
             </div>
 
-            <footer className="story-intelligence__boundary">
-              <span>
-                <i /> Live system
-              </span>
-              <strong>Forecasting and inventory events are implemented.</strong>
-              <span>
-                <i /> Target layer
-              </span>
-              <strong>Recommendations, approval, and supply workflow are planned.</strong>
+            <div className="system-preview__content" key={stage.id}>
+              <StageContent stageIndex={activeStage} />
+            </div>
+
+            <footer className="system-preview__workspace-footer">
+              <span>Ysabelle Store · System intelligence preview</span>
+              <span>Demo values only</span>
             </footer>
           </div>
         </div>
       </div>
-      <span aria-hidden="true" className="story-intelligence__handoff" />
     </section>
   );
 }
