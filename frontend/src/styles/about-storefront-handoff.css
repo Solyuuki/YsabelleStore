@@ -117,7 +117,7 @@
   max-width: none;
   margin: 1rem 0 0;
   color: #fff;
-  font-size: clamp(2.85rem, 4.15vw, 4.85rem);
+  font-size: clamp(2.55rem, 3.65vw, 4.25rem);
   line-height: 0.98;
   letter-spacing: -0.05em;
   white-space: nowrap;
