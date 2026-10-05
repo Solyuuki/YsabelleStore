@@ -11359,15 +11359,78 @@
   border-radius: 0.6rem;
   background: #fff;
   color: #4d5870;
+  cursor: pointer;
   font: inherit;
   font-size: 0.65rem;
   font-weight: 750;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 120ms ease,
+    box-shadow 140ms ease;
+}
+
+.system-preview__actions button:hover {
+  border-color: #bfc8d8;
+  background: #f8faff;
+  color: #202a43;
+  box-shadow: 0 5px 14px rgb(21 27 50 / 8%);
+}
+
+.system-preview__actions button:active {
+  transform: translateY(1px);
+}
+
+.system-preview__actions button:focus-visible {
+  outline: 2px solid #79cfff;
+  outline-offset: 2px;
 }
 
 .system-preview__actions button.is-primary {
   border-color: #5c57ff;
   background: #5c57ff;
   color: #fff;
+}
+
+.system-preview__actions button.is-primary:hover {
+  border-color: #504bf0;
+  background: #504bf0;
+  color: #fff;
+}
+
+.system-preview__actions button.is-selected {
+  border-color: #8b88ff;
+  background: #f1f0ff;
+  color: #403bb0;
+  box-shadow: inset 0 0 0 1px rgb(92 87 255 / 10%);
+}
+
+.system-preview__actions button.is-primary.is-selected {
+  border-color: #4540d6;
+  background: #4f49e8;
+  color: #fff;
+}
+
+.system-preview__badge--review.is-approved {
+  border-color: #b7ead0;
+  background: #f0fbf6;
+  color: #147a4b;
+}
+
+.system-preview__badge--review.is-held {
+  border-color: #ead9ac;
+  background: #fffaf0;
+  color: #8a6418;
+}
+
+.system-preview__action-feedback {
+  margin: 0.72rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 1px solid #e7ebf2;
+  color: #7a869d;
+  font-size: 0.6rem;
+  line-height: 1.45;
 }
 
 .system-preview__status-track {

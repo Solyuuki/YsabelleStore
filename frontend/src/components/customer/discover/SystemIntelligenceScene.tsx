@@ -279,6 +279,32 @@ function DecisionPanel() {
 }
 
 function ReviewPanel() {
+  const [decision, setDecision] = useState<"adjusted" | "approved" | "hold" | "ready">("ready");
+  const [adjustedQuantity, setAdjustedQuantity] = useState(30);
+
+  const statusLabel =
+    decision === "approved"
+      ? "Approved"
+      : decision === "hold"
+        ? "On hold"
+        : decision === "adjusted"
+          ? "Adjusted"
+          : "Review required";
+
+  const decisionLabel =
+    decision === "approved"
+      ? `Approved · ${adjustedQuantity} units`
+      : decision === "hold"
+        ? "Held for review"
+        : decision === "adjusted"
+          ? `Adjusted to ${adjustedQuantity} units`
+          : "Ready for approval";
+
+  const handleAdjust = () => {
+    setAdjustedQuantity((current) => (current === 30 ? 28 : 30));
+    setDecision("adjusted");
+  };
+
   return (
     <div className="system-preview__body">
       <div className="system-preview__review-card">
@@ -287,19 +313,60 @@ function ReviewPanel() {
             <span>Owner review</span>
             <strong>Restock recommendation</strong>
           </div>
-          <span className="system-preview__badge system-preview__badge--review">Review required</span>
+          <span
+            className={[
+              "system-preview__badge",
+              "system-preview__badge--review",
+              decision === "approved" ? "is-approved" : "",
+              decision === "hold" ? "is-held" : ""
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {statusLabel}
+          </span>
         </div>
         <div className="system-preview__review-summary">
           <div><span>Product</span><strong>Classic Cola 1.5L</strong></div>
           <div><span>Suggested quantity</span><strong>28 units</strong></div>
-          <div><span>Owner adjustment</span><strong>30 units</strong></div>
-          <div><span>Decision</span><strong>Ready for approval</strong></div>
+          <div><span>Owner adjustment</span><strong>{adjustedQuantity} units</strong></div>
+          <div><span>Decision</span><strong>{decisionLabel}</strong></div>
         </div>
-        <div className="system-preview__actions" aria-label="Illustrative review actions">
-          <button type="button">Adjust</button>
-          <button className="is-primary" type="button">Approve 30</button>
-          <button type="button">Hold</button>
+        <div className="system-preview__actions" aria-label="Interactive demo review actions">
+          <button
+            aria-pressed={decision === "adjusted"}
+            className={decision === "adjusted" ? "is-selected" : ""}
+            onClick={handleAdjust}
+            type="button"
+          >
+            Adjust
+          </button>
+          <button
+            aria-pressed={decision === "approved"}
+            className={decision === "approved" ? "is-primary is-selected" : "is-primary"}
+            onClick={() => setDecision("approved")}
+            type="button"
+          >
+            Approve {adjustedQuantity}
+          </button>
+          <button
+            aria-pressed={decision === "hold"}
+            className={decision === "hold" ? "is-selected" : ""}
+            onClick={() => setDecision("hold")}
+            type="button"
+          >
+            Hold
+          </button>
         </div>
+        <p className="system-preview__action-feedback" role="status">
+          {decision === "approved"
+            ? "Demo approved. No live restock order was created."
+            : decision === "hold"
+              ? "Demo recommendation placed on hold."
+              : decision === "adjusted"
+                ? "Quantity adjusted for this preview only."
+                : "Try the controls — this is an interactive public demo."}
+        </p>
       </div>
     </div>
   );
