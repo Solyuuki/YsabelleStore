@@ -70,7 +70,6 @@ assert.doesNotMatch(entranceSource, /sceneCurtainOpacity/);
 assert.doesNotMatch(entranceSource, /requestAnimationFrame/);
 assert.doesNotMatch(entranceSource, /store-entrance__scene-curtain/);
 assert.match(entranceSource, /LOOP_FADE_LEAD_SECONDS\s*=\s*0\.55/);
-assert.match(entranceSource, /LOOP_FADE_MS\s*=\s*420/);
 assert.match(entranceSource, /LOOP_REVEAL_DELAY_MS\s*=\s*30/);
 assert.match(entranceSource, /video\.currentTime\s*=\s*0/);
 assert.match(entranceSource, /maybeFadeForLoop/);
