@@ -33,6 +33,8 @@ export function AboutWelcomeMotion() {
   const resetFrameRef = useRef<number | null>(null);
   const transitioningRef = useRef(false);
   const activeIndexRef = useRef<0 | 1>(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const welcomeVisibleRef = useRef(true);
 
   const [reduceMotion, setReduceMotion] = useState(() =>
     window.matchMedia(REDUCED_MOTION_QUERY).matches
@@ -49,6 +51,33 @@ export function AboutWelcomeMotion() {
     media.addEventListener("change", handleMotionPreference);
     return () => media.removeEventListener("change", handleMotionPreference);
   }, []);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || reduceMotion) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+
+        welcomeVisibleRef.current = entry.isIntersecting;
+
+        if (entry.isIntersecting) {
+          const activeVideo = videoRefs[activeIndexRef.current].current;
+          if (activeVideo) void activeVideo.play().catch(() => undefined);
+        } else {
+          videoRefs.forEach((ref) => ref.current?.pause());
+        }
+      },
+      {
+        rootMargin: "12% 0px 12% 0px",
+        threshold: 0.01
+      }
+    );
+
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [reduceMotion]);
 
   useEffect(() => {
     if (reduceMotion) return;
@@ -127,7 +156,7 @@ export function AboutWelcomeMotion() {
 
   function markPrimaryReady(video: HTMLVideoElement) {
     setVideoReady(true);
-    void video.play().catch(() => undefined);
+    if (welcomeVisibleRef.current) void video.play().catch(() => undefined);
   }
 
   function maybeCrossfade(
@@ -138,6 +167,7 @@ export function AboutWelcomeMotion() {
     if (
       transitioningRef.current ||
       index !== activeIndexRef.current ||
+      !welcomeVisibleRef.current ||
       !Number.isFinite(video.duration) ||
       video.duration <= 0 ||
       video.duration - mediaTime > CROSSFADE_LEAD_SECONDS
@@ -149,7 +179,13 @@ export function AboutWelcomeMotion() {
   }
 
   function beginCrossfade(fromIndex: 0 | 1) {
-    if (transitioningRef.current || fromIndex !== activeIndexRef.current) return;
+    if (
+      transitioningRef.current ||
+      fromIndex !== activeIndexRef.current ||
+      !welcomeVisibleRef.current
+    ) {
+      return;
+    }
 
     const toIndex: 0 | 1 = fromIndex === 0 ? 1 : 0;
     const outgoingVideo = videoRefs[fromIndex].current;
@@ -214,6 +250,7 @@ export function AboutWelcomeMotion() {
     <div
       aria-hidden="true"
       className={`about-welcome-motion${videoReady ? " is-video-ready" : ""}`}
+      ref={rootRef}
     >
       <div className="about-welcome-motion__fallback" />
 

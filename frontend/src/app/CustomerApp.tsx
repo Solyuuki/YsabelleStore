@@ -23,6 +23,10 @@ import {
   isCustomerProtectedRoute,
   resolveCustomerAuthRedirect
 } from "@/utils/customerRoutes";
+import {
+  loadAboutExperienceModule,
+  scheduleAboutExperiencePreload
+} from "@/utils/aboutExperiencePreload";
 
 const STORE_ENTRANCE_SESSION_KEY = "ysabelle-store-entrance-entered";
 
@@ -51,7 +55,7 @@ const OrderSuccessPage = lazy(() =>
   }))
 );
 const AboutExperiencePage = lazy(() =>
-  import("@/pages/customer/AboutExperiencePage").then(({ AboutExperiencePage }) => ({
+  loadAboutExperienceModule().then(({ AboutExperiencePage }) => ({
     default: AboutExperiencePage
   }))
 );
@@ -126,6 +130,11 @@ function CustomerAppRoutes({
   useEffect(() => {
     if (redirect) navigate(redirect);
   }, [navigate, redirect]);
+
+  useEffect(() => {
+    if (pathname === "/about") return;
+    return scheduleAboutExperiencePreload();
+  }, [pathname]);
 
   if (redirect || ((authPageKind || protectedRoute) && status === "loading")) {
     return (

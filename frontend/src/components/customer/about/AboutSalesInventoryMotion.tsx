@@ -19,6 +19,9 @@ export function AboutSalesInventoryMotion() {
   const transitioningRef = useRef(false);
   const transitionTimerRef = useRef<number | null>(null);
   const resetFrameRef = useRef<number | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const salesVisibleRef = useRef(false);
+  const salesWarmRef = useRef(false);
 
   const [reduceMotion, setReduceMotion] = useState(() =>
     window.matchMedia(REDUCED_MOTION_QUERY).matches
@@ -37,6 +40,43 @@ export function AboutSalesInventoryMotion() {
   }, []);
 
   useEffect(() => {
+    const root = rootRef.current;
+    if (!root || reduceMotion) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+
+        salesVisibleRef.current = entry.isIntersecting;
+
+        if (entry.isIntersecting) {
+          if (!salesWarmRef.current) {
+            salesWarmRef.current = true;
+            videoRefs.forEach((ref) => {
+              const video = ref.current;
+              if (!video) return;
+              video.preload = "auto";
+              if (video.readyState < 2) video.load();
+            });
+          }
+
+          const activeVideo = videoRefs[activeIndexRef.current].current;
+          if (activeVideo) void activeVideo.play().catch(() => undefined);
+        } else {
+          videoRefs.forEach((ref) => ref.current?.pause());
+        }
+      },
+      {
+        rootMargin: "24% 0px 24% 0px",
+        threshold: 0.01
+      }
+    );
+
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [reduceMotion]);
+
+  useEffect(() => {
     return () => {
       if (transitionTimerRef.current !== null) window.clearTimeout(transitionTimerRef.current);
       if (resetFrameRef.current !== null) window.cancelAnimationFrame(resetFrameRef.current);
@@ -46,11 +86,17 @@ export function AboutSalesInventoryMotion() {
 
   function markReady(video: HTMLVideoElement) {
     setVideoReady(true);
-    void video.play().catch(() => undefined);
+    if (salesVisibleRef.current) void video.play().catch(() => undefined);
   }
 
   function beginCrossfade(fromIndex: 0 | 1) {
-    if (transitioningRef.current || fromIndex !== activeIndexRef.current) return;
+    if (
+      transitioningRef.current ||
+      fromIndex !== activeIndexRef.current ||
+      !salesVisibleRef.current
+    ) {
+      return;
+    }
 
     const toIndex: 0 | 1 = fromIndex === 0 ? 1 : 0;
     const outgoingVideo = videoRefs[fromIndex].current;
@@ -89,6 +135,7 @@ export function AboutSalesInventoryMotion() {
     if (
       index !== activeIndexRef.current ||
       transitioningRef.current ||
+      !salesVisibleRef.current ||
       !Number.isFinite(video.duration) ||
       video.duration <= 0 ||
       video.duration - video.currentTime > CROSSFADE_LEAD_SECONDS
@@ -105,6 +152,7 @@ export function AboutSalesInventoryMotion() {
     <div
       aria-hidden="true"
       className={`about-sales-motion${videoReady ? " is-video-ready" : ""}`}
+      ref={rootRef}
     >
       <div className="about-sales-motion__fallback" />
 
@@ -114,7 +162,6 @@ export function AboutSalesInventoryMotion() {
             const index = rawIndex as 0 | 1;
             return (
               <video
-                autoPlay={index === 0}
                 className={`about-sales-motion__video${
                   index === activeIndex ? " is-active" : ""
                 }${index === incomingIndex ? " is-incoming" : ""}`}
@@ -126,7 +173,7 @@ export function AboutSalesInventoryMotion() {
                 onPlaying={index === 0 ? (event) => markReady(event.currentTarget) : undefined}
                 onTimeUpdate={(event) => maybeCrossfade(event.currentTarget, index)}
                 playsInline
-                preload="auto"
+                preload="metadata"
                 ref={videoRefs[index]}
                 src={source}
                 tabIndex={-1}

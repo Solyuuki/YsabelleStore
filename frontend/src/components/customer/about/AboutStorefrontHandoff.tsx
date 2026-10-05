@@ -25,6 +25,7 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
   const deliveryTransitionTimerRef = useRef<number | null>(null);
   const deliveryResetFrameRef = useRef<number | null>(null);
   const deliveryVisibleRef = useRef(false);
+  const deliveryWarmRef = useRef(false);
   const [activeVideoIndex, setActiveVideoIndex] = useState<0 | 1>(0);
   const [incomingVideoIndex, setIncomingVideoIndex] = useState<0 | 1 | null>(null);
   const [deliveryVideoReady, setDeliveryVideoReady] = useState(false);
@@ -108,6 +109,16 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
         deliveryVisibleRef.current = entry.isIntersecting;
 
         if (entry.isIntersecting) {
+          if (!deliveryWarmRef.current) {
+            deliveryWarmRef.current = true;
+            videoRefs.forEach((ref) => {
+              const video = ref.current;
+              if (!video) return;
+              video.preload = "auto";
+              if (video.readyState < 2) video.load();
+            });
+          }
+
           const activeVideo = videoRefs[activeVideoIndexRef.current].current;
           if (activeVideo) void activeVideo.play().catch(() => undefined);
         } else {
@@ -280,7 +291,6 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
                   aria-label={
                     index === 0 ? "Illustrative Ysabelle Store delivery network" : undefined
                   }
-                  autoPlay={index === 0}
                   className={`story-delivery__video${index === activeVideoIndex ? " is-active" : ""}${
                     index === incomingVideoIndex ? " is-incoming" : ""
                   }`}
@@ -297,7 +307,7 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
                   }
                   onTimeUpdate={(event) => maybeCrossfadeDelivery(event.currentTarget, index)}
                   playsInline
-                  preload="auto"
+                  preload="metadata"
                   ref={videoRefs[index]}
                   src={DELIVERY_VIDEO_SRC}
                   tabIndex={-1}
