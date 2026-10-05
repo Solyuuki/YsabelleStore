@@ -10,9 +10,9 @@
   ],
   "scripts": {
     "install:all": "npm install",
-    "predev": "node scripts/install-about-origin-video.mjs --verify && node --env-file=.env scripts/customer-order-fixture-quarantine.mjs --apply",
+    "predev": "node scripts/install-about-origin-video.mjs --verify && node scripts/install-about-delivery-video.mjs --if-present && node --env-file=.env scripts/customer-order-fixture-quarantine.mjs --apply",
     "dev": "node --env-file=.env scripts/dev.mjs",
-    "predev:web": "node scripts/install-about-origin-video.mjs --verify && node --env-file=.env scripts/customer-order-fixture-quarantine.mjs --apply",
+    "predev:web": "node scripts/install-about-origin-video.mjs --verify && node scripts/install-about-delivery-video.mjs --if-present && node --env-file=.env scripts/customer-order-fixture-quarantine.mjs --apply",
     "dev:web": "node --env-file=.env scripts/dev.mjs --web-only",
     "dev:lifecycle-test": "node --env-file=.env scripts/dev-lifecycle-smoke.mjs",
     "build": "npm run storefront:about-origin:verify && npm run build --workspaces && npm run prisma:validate",
@@ -133,7 +133,7 @@
     "storefront:entrance:install": "node scripts/install-storefront-entrance-video.mjs",
     "storefront:entrance:verify": "node scripts/install-storefront-entrance-video.mjs --verify",
     "storefront:about-origin:install": "node scripts/install-about-origin-video.mjs",
-    "storefront:about-origin:verify": "node scripts/install-about-origin-video.mjs --verify"
+    "storefront:about-origin:verify": "node scripts/install-about-origin-video.mjs --verify",\n    "storefront:about-delivery:install": "node scripts/install-about-delivery-video.mjs",\n    "storefront:about-delivery:verify": "node scripts/install-about-delivery-video.mjs --verify"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1"

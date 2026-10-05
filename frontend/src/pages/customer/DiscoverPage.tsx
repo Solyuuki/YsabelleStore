@@ -46,7 +46,7 @@ const storyScenes = [
   { id: "discover-essentials", label: "Everyday essentials" },
   { id: "discover-location", label: "Our location" },
   { id: "discover-smarter", label: "System intelligence" },
-  { id: "discover-shop", label: "Shop with Ysabelle" }
+  { id: "discover-shop", label: "Delivery operations" }
 ];
 
 const aboutStoryScenes = [

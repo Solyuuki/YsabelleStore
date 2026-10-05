@@ -1,89 +1,52 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowRight, Check, Package, Search, ShoppingBasket, ShoppingCart } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowRight, MapPin, Route, Truck } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
-import { formatCurrency } from "@/components/customer/ProductCard";
-import { ProductVisual } from "@/components/customer/ProductVisual";
-import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
-import { useCart } from "@/context/CartContext";
-import { fetchStorefrontProducts } from "@/services/storefrontService";
-import type { StorefrontProduct } from "@/types/storefront";
 
 gsap.registerPlugin(ScrollTrigger);
 
-type CatalogStatus = "error" | "loading" | "ready";
+const deliverySignals = [
+  { icon: Route, label: "Multi-point routes" },
+  { icon: Truck, label: "Courier handoff" },
+  { icon: MapPin, label: "Delivery progress" }
+] as const;
 
-const handoffSignals = ["Live catalog", "Current stock", "Pickup ready"] as const;
+const DELIVERY_VIDEO_SRC = "/media/about-delivery-operations-83b7547e.mp4";
 
 export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) => void }) {
   const rootRef = useRef<HTMLElement>(null);
-  const [products, setProducts] = useState<StorefrontProduct[]>([]);
-  const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>("loading");
-  const [catalogError, setCatalogError] = useState("");
-  const [catalogReloadKey, setCatalogReloadKey] = useState(0);
-  const [shouldLoadCatalog, setShouldLoadCatalog] = useState(false);
-  const { addItem } = useCart();
 
   useEffect(() => {
-    if (shouldLoadCatalog) return;
-
     const root = rootRef.current;
-    if (!root || !("IntersectionObserver" in window)) {
-      setShouldLoadCatalog(true);
+    if (!root) return;
+
+    const video = root.querySelector<HTMLVideoElement>("[data-delivery-video]");
+    if (!video) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      video.pause();
       return;
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setShouldLoadCatalog(true);
-        observer.disconnect();
+        if (!entry) return;
+
+        if (entry.isIntersecting) {
+          void video.play().catch(() => undefined);
+        } else {
+          video.pause();
+        }
       },
-      { rootMargin: "0px 0px 120% 0px" }
+      { threshold: 0.2 }
     );
 
-    observer.observe(root);
+    observer.observe(video);
     return () => observer.disconnect();
-  }, [shouldLoadCatalog]);
-
-  useEffect(() => {
-    if (!shouldLoadCatalog) return;
-
-    const controller = new AbortController();
-
-    setProducts([]);
-    setCatalogError("");
-    setCatalogStatus("loading");
-
-    fetchStorefrontProducts(
-      {
-        availability: "in-stock",
-        page: 1,
-        pageSize: 3
-      },
-      controller.signal
-    )
-      .then(({ items }) => {
-        if (controller.signal.aborted) return;
-
-        const availableProducts = items.filter((product) => product.availableStock > 0).slice(0, 3);
-
-        setProducts(availableProducts);
-        setCatalogStatus("ready");
-      })
-      .catch((reason: unknown) => {
-        if (controller.signal.aborted) return;
-
-        setCatalogError(
-          reason instanceof Error ? reason.message : "The live catalog could not be reached."
-        );
-        setCatalogStatus("error");
-      });
-
-    return () => controller.abort();
-  }, [catalogReloadKey, shouldLoadCatalog]);
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -93,25 +56,25 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
 
     media.add("(prefers-reduced-motion: no-preference)", () => {
       const context = gsap.context(() => {
-        const copy = Array.from(root.querySelectorAll<HTMLElement>("[data-handoff-copy]"));
-        const proofs = Array.from(root.querySelectorAll<HTMLElement>("[data-handoff-proof]"));
-        const store = root.querySelector<HTMLElement>("[data-handoff-store]");
-        const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-handoff-card]"));
+        const copy = Array.from(root.querySelectorAll<HTMLElement>("[data-delivery-copy]"));
+        const proofs = Array.from(root.querySelectorAll<HTMLElement>("[data-delivery-proof]"));
+        const visual = root.querySelector<HTMLElement>("[data-delivery-visual]");
+        const frame = root.querySelector<HTMLElement>("[data-delivery-frame]");
 
-        if (!copy.length || !proofs.length || !store) return;
+        if (!copy.length || !proofs.length || !visual || !frame) return;
 
-        gsap.set(copy, { autoAlpha: 0, x: -28, y: 12 });
-        gsap.set(proofs, { autoAlpha: 0, scale: 0.92, y: 10 });
-        gsap.set(store, { autoAlpha: 0, rotateY: -4, scale: 0.965, x: 34, y: 28 });
-        if (cards.length) gsap.set(cards, { autoAlpha: 0, scale: 0.96, y: 18 });
+        gsap.set(copy, { autoAlpha: 0, x: -26, y: 12 });
+        gsap.set(proofs, { autoAlpha: 0, scale: 0.94, y: 9 });
+        gsap.set(visual, { autoAlpha: 0, scale: 0.975, x: 34, y: 22 });
+        gsap.set(frame, { clipPath: "inset(0 10% 0 10% round 1.8rem)" });
 
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: root,
-            start: "top top+=76",
-            end: () => `+=${Math.max(520, Math.round(window.innerHeight * 0.72))}`,
+            start: "top 84%",
+            end: "top 14%",
             invalidateOnRefresh: true,
-            scrub: 0.55
+            scrub: 0.42
           }
         });
 
@@ -128,206 +91,123 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
             proofs,
             {
               autoAlpha: 1,
-              duration: 0.2,
+              duration: 0.18,
               ease: "power2.out",
               scale: 1,
-              stagger: 0.04,
+              stagger: 0.045,
               y: 0
             },
-            0.18
+            0.2
           )
           .to(
-            store,
+            visual,
             {
               autoAlpha: 1,
-              duration: 0.42,
+              duration: 0.4,
               ease: "power2.out",
-              rotateY: 0,
               scale: 1,
               x: 0,
               y: 0
             },
-            0.16
-          );
-
-        if (cards.length) {
-          timeline.to(
-            cards,
+            0.15
+          )
+          .to(
+            frame,
             {
-              autoAlpha: 1,
-              duration: 0.24,
-              ease: "power2.out",
-              scale: 1,
-              stagger: 0.05,
-              y: 0
+              clipPath: "inset(0 0% 0 0% round 1.8rem)",
+              duration: 0.34,
+              ease: "power2.out"
             },
-            0.48
+            0.22
           );
-        }
       }, root);
 
       return () => context.revert();
     });
 
     return () => media.revert();
-  }, [products.length]);
+  }, []);
 
   useEffect(() => {
-    const refreshFrame = window.requestAnimationFrame(() => ScrollTrigger.refresh());
-    return () => window.cancelAnimationFrame(refreshFrame);
-  }, [catalogStatus, products.length]);
+    const frame = window.requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   return (
-    <section
-      className="story-scene story-shop story-shop--refined"
-      id="discover-shop"
-      ref={rootRef}
-    >
-      <div aria-hidden="true" className="story-shop__atmosphere">
-        <span className="story-shop__glow story-shop__glow--blue" />
-        <span className="story-shop__glow story-shop__glow--violet" />
-        <span className="story-shop__grid" />
+    <section className="story-scene story-delivery" id="discover-shop" ref={rootRef}>
+      <div aria-hidden="true" className="story-delivery__atmosphere">
+        <span className="story-delivery__glow story-delivery__glow--blue" />
+        <span className="story-delivery__glow story-delivery__glow--violet" />
+        <span className="story-delivery__network" />
       </div>
 
-      <div className="customer-container story-shop__stage">
-        <div className="story-shop__copy">
-          <span className="story-kicker" data-handoff-copy>
-            06 / Shop with Ysabelle
+      <div className="customer-container story-delivery__stage">
+        <div className="story-delivery__copy">
+          <span className="story-kicker" data-delivery-copy>
+            06 / Delivery operations
           </span>
-          <h2 className="story-display-safe" data-handoff-copy>
+
+          <h2 className="story-display-safe" data-delivery-copy>
             <span className="story-mask">
-              <span className="story-mask__line">From Local</span>
+              <span className="story-mask__line">From Store</span>
             </span>
             <span className="story-mask">
-              <span className="story-mask__line story-mask__line--sky">to Smart Retail</span>
+              <span className="story-mask__line story-mask__line--delivery">to Door.</span>
             </span>
           </h2>
-          <p data-handoff-copy>
-            The same neighborhood essentials are now easier to discover, verify, and prepare for
-            pickup through the live YsabelleStore catalog.
+
+          <p className="story-delivery__tagline" data-delivery-copy>
+            Every delivery stays in view.
           </p>
 
-          <ul aria-label="Storefront capabilities" className="story-shop__proofs">
-            {handoffSignals.map((signal) => (
-              <li data-handoff-proof key={signal}>
-                <Check aria-hidden="true" />
-                {signal}
+          <p className="story-delivery__lead" data-delivery-copy>
+            Coordinate outgoing orders, courier handoff, and destination progress through a clear
+            delivery view designed for modern neighborhood retail.
+          </p>
+
+          <ul aria-label="Delivery capabilities" className="story-delivery__proofs">
+            {deliverySignals.map(({ icon: Icon, label }) => (
+              <li data-delivery-proof key={label}>
+                <Icon aria-hidden="true" />
+                {label}
               </li>
             ))}
           </ul>
 
           <CustomerLink
-            className="customer-button customer-button--light story-shop__primary-action"
-            data-handoff-copy
-            href="/shop"
+            aria-label="Explore the Ysabelle Store home"
+            className="customer-button customer-button--light story-delivery__primary-action"
+            data-delivery-copy
+            href="/"
             navigate={navigate}
           >
-            Shop the live catalog <ArrowRight aria-hidden="true" size={18} />
+            Explore now <ArrowRight aria-hidden="true" size={18} />
           </CustomerLink>
         </div>
 
-        <div className="story-live-store story-live-store--refined" data-handoff-store>
-          <div className="story-live-store__bar">
-            <span>
-              <YsabelleBrandMark variant="mini" />
-              <span className="story-live-store__identity">
-                <strong>Ysabelle&apos;s Store</strong>
-                <small>Live catalog</small>
-              </span>
-            </span>
-            <CustomerLink
-              aria-label="Open cart"
-              className="story-live-store__cart"
-              href="/cart"
-              navigate={navigate}
+        <div className="story-delivery__visual" data-delivery-visual>
+          <div className="story-delivery__frame" data-delivery-frame>
+            <div aria-hidden="true" className="story-delivery__fallback">
+              <Route />
+              <span>Delivery network preview</span>
+            </div>
+            <video
+              aria-label="Illustrative Ysabelle Store delivery network"
+              autoPlay
+              data-delivery-video
+              loop
+              muted
+              onCanPlay={(event) => {
+                event.currentTarget.parentElement?.classList.add("is-video-ready");
+              }}
+              playsInline
+              preload="metadata"
             >
-              <ShoppingCart aria-hidden="true" />
-            </CustomerLink>
+              <source src={DELIVERY_VIDEO_SRC} type="video/mp4" />
+            </video>
           </div>
-
-          <CustomerLink className="story-live-store__search" href="/shop" navigate={navigate}>
-            <Search aria-hidden="true" />
-            Search products and categories
-            <ArrowRight aria-hidden="true" />
-          </CustomerLink>
-
-          <div className="story-live-store__signals" aria-label="Live storefront status">
-            <span>
-              <i aria-hidden="true" /> Current stock
-            </span>
-            <span>Pickup ready</span>
-          </div>
-
-          {catalogStatus === "ready" && products.length ? (
-            <div className="story-live-store__products">
-              {products.map((product) => (
-                <article className="story-live-product" data-handoff-card key={product.id}>
-                  <CustomerLink
-                    aria-label={`View ${product.name}`}
-                    href={`/product/${product.id}`}
-                    navigate={navigate}
-                  >
-                    <ProductVisual
-                      category={product.category.name}
-                      imageUrl={product.imageUrl}
-                      name={product.name}
-                      showCategory={false}
-                    />
-                  </CustomerLink>
-                  <div className="story-live-product__body">
-                    <small>{product.category.name}</small>
-                    <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
-                      <h3>{product.name}</h3>
-                    </CustomerLink>
-                    <strong>{formatCurrency(product.sellingPrice)}</strong>
-                    <span
-                      className={`story-live-product__stock story-live-product__stock--${product.stockStatus.toLowerCase()}`}
-                    >
-                      {product.stockStatus === "LOW_STOCK"
-                        ? `Only ${product.availableStock} left`
-                        : "In stock"}
-                    </span>
-                    <button onClick={() => addItem(product, 1)} type="button">
-                      <ShoppingBasket aria-hidden="true" />
-                      Quick add
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="story-live-store__unavailable" role="status">
-              <Package aria-hidden="true" />
-              <div>
-                <strong>
-                  {catalogStatus === "loading"
-                    ? "Preparing the live shelf"
-                    : catalogStatus === "error"
-                      ? "Live catalog preview unavailable"
-                      : "The live shelf is being restocked"}
-                </strong>
-                <p>
-                  {catalogStatus === "loading"
-                    ? "Checking current stock before products appear here."
-                    : catalogStatus === "error"
-                      ? catalogError
-                      : "No in-stock items are available for this preview right now."}
-                </p>
-                {catalogStatus === "error" ? (
-                  <button
-                    onClick={() => setCatalogReloadKey((current) => current + 1)}
-                    type="button"
-                  >
-                    Retry connection
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          )}
         </div>
       </div>
-
-      <span aria-hidden="true" className="story-shop__handoff" />
     </section>
   );
 }

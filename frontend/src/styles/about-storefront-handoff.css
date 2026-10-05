@@ -7,525 +7,340 @@
   min-height: 0 !important;
 }
 
-.about-experience .story-shop.story-shop--refined {
+.about-experience .story-delivery {
   position: relative;
-  min-height: 185svh;
+  min-height: 132svh;
   padding: 0;
   overflow: clip;
   isolation: isolate;
   background:
-    radial-gradient(circle at 12% 22%, rgb(0 140 255 / 26%), transparent 34%),
-    radial-gradient(circle at 88% 72%, rgb(244 63 140 / 22%), transparent 34%),
-    linear-gradient(118deg, #182b78 0%, #4f47e8 46%, #9c30c8 100%);
+    radial-gradient(circle at 76% 18%, rgb(102 91 255 / 24%), transparent 34%),
+    radial-gradient(circle at 12% 78%, rgb(0 140 255 / 17%), transparent 36%),
+    radial-gradient(circle at 88% 84%, rgb(168 60 240 / 14%), transparent 30%),
+    linear-gradient(135deg, #071225 0%, #0a1730 45%, #17153d 100%);
+  color: #fff;
 }
 
-.about-experience .story-shop__atmosphere,
-.about-experience .story-shop__atmosphere::before,
-.about-experience .story-shop__atmosphere::after {
+.about-experience .story-delivery__atmosphere,
+.about-experience .story-delivery__atmosphere::before,
+.about-experience .story-delivery__atmosphere::after {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.about-experience .story-shop__atmosphere {
+.about-experience .story-delivery__atmosphere {
   z-index: 0;
   overflow: hidden;
 }
 
-.about-experience .story-shop__atmosphere::before {
+.about-experience .story-delivery__atmosphere::before {
+  background-image:
+    linear-gradient(rgb(151 180 255 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(151 180 255 / 5%) 1px, transparent 1px);
+  background-size: 54px 54px;
+  content: "";
+  opacity: 0.55;
+  mask-image: radial-gradient(circle at 64% 48%, #000 0 45%, transparent 82%);
+}
+
+.about-experience .story-delivery__atmosphere::after {
   background:
-    linear-gradient(110deg, transparent 0 43%, rgb(255 255 255 / 7%) 43.1% 57%, transparent 57.1%),
-    linear-gradient(180deg, rgb(7 12 42 / 16%), transparent 28% 76%, rgb(7 12 42 / 22%));
+    linear-gradient(25deg, transparent 0 34%, rgb(77 149 255 / 7%) 34.2% 34.5%, transparent 34.7%),
+    linear-gradient(151deg, transparent 0 60%, rgb(142 102 255 / 7%) 60.2% 60.5%, transparent 60.7%);
   content: "";
+  opacity: 0.5;
 }
 
-.about-experience .story-shop__atmosphere::after {
-  background-image: radial-gradient(rgb(255 255 255 / 12%) 1px, transparent 1px);
-  background-size: 28px 28px;
-  content: "";
-  opacity: 0.26;
-  mask-image: linear-gradient(to bottom, transparent, #000 18% 78%, transparent);
-}
-
-.about-experience .story-shop__glow {
+.about-experience .story-delivery__glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(2px);
+  filter: blur(4px);
 }
 
-.about-experience .story-shop__glow--blue {
-  top: 5%;
-  left: -10%;
-  width: clamp(22rem, 44vw, 50rem);
+.about-experience .story-delivery__glow--blue {
+  top: 2%;
+  right: 22%;
+  width: clamp(24rem, 38vw, 44rem);
   aspect-ratio: 1;
-  background: radial-gradient(circle, rgb(51 154 255 / 30%), transparent 68%);
+  background: radial-gradient(circle, rgb(0 140 255 / 18%), transparent 70%);
 }
 
-.about-experience .story-shop__glow--violet {
-  right: -12%;
-  bottom: 3%;
-  width: clamp(26rem, 50vw, 56rem);
+.about-experience .story-delivery__glow--violet {
+  right: -8%;
+  bottom: -10%;
+  width: clamp(28rem, 46vw, 52rem);
   aspect-ratio: 1;
-  background: radial-gradient(circle, rgb(247 83 194 / 22%), transparent 69%);
+  background: radial-gradient(circle, rgb(168 60 240 / 16%), transparent 70%);
 }
 
-.about-experience .story-shop__grid {
+.about-experience .story-delivery__network {
   position: absolute;
-  inset: 8% 5%;
-  border: 1px solid rgb(255 255 255 / 7%);
-  border-radius: 4rem;
-  transform: perspective(900px) rotateX(64deg) translateY(36%);
-  transform-origin: center bottom;
+  right: -10%;
+  bottom: -34%;
+  width: min(70vw, 70rem);
+  aspect-ratio: 1.7;
+  border: 1px solid rgb(125 161 255 / 8%);
+  border-radius: 50%;
+  box-shadow:
+    0 -5rem 0 -4.95rem rgb(125 161 255 / 8%),
+    0 -10rem 0 -9.95rem rgb(125 161 255 / 7%),
+    0 -15rem 0 -14.95rem rgb(125 161 255 / 6%);
+  transform: rotate(-8deg);
 }
 
-.about-experience .story-shop.story-shop--refined .story-shop__stage {
+.about-experience .story-delivery__stage {
   position: sticky;
   top: 76px;
   z-index: 2;
   display: grid;
   min-height: calc(100svh - 76px);
   align-items: center;
-  width: min(calc(100% - 4rem), 1320px);
-  grid-template-columns: minmax(0, 0.96fr) minmax(560px, 1.04fr);
-  gap: clamp(3rem, 6vw, 6.5rem);
-  padding-block: clamp(3rem, 6vh, 5.5rem);
-  perspective: 1600px;
+  width: min(calc(100% - 4rem), 1360px);
+  grid-template-columns: minmax(0, 0.78fr) minmax(36rem, 1.22fr);
+  gap: clamp(3rem, 5.4vw, 6rem);
+  padding-block: clamp(2.8rem, 5.5vh, 5rem);
 }
 
-.about-experience .story-shop--refined .story-shop__copy {
+.about-experience .story-delivery__copy {
   position: relative;
-  z-index: 2;
-  max-width: 37rem;
+  z-index: 3;
+  min-width: 0;
+  max-width: 35rem;
 }
 
-.about-experience .story-shop--refined .story-kicker {
-  color: rgb(255 255 255 / 84%);
+.about-experience .story-delivery .story-kicker {
+  color: #9fd8ff;
 }
 
-.about-experience .story-shop--refined .story-shop__copy h2 {
-  max-width: 10ch;
-  margin: 1.1rem 0 1.35rem;
+.about-experience .story-delivery__copy h2 {
+  max-width: 8.5ch;
+  margin: 1rem 0 0;
   color: #fff;
-  font-size: clamp(3.7rem, 6.2vw, 7rem);
-  line-height: 0.9;
+  font-size: clamp(3.8rem, 5.8vw, 6.6rem);
+  line-height: 0.91;
   letter-spacing: -0.06em;
 }
 
-.about-experience .story-shop--refined .story-mask__line--sky {
-  background: linear-gradient(100deg, #d9eaff 0%, #ffd5ee 72%);
-  background-clip: text;
-  color: transparent;
+.about-experience .story-delivery .story-mask__line--delivery {
+  color: #dce7ff;
   font-style: italic;
 }
 
-.about-experience .story-shop--refined .story-shop__copy > p {
-  max-width: 34rem;
-  margin: 0;
-  color: rgb(248 248 255 / 86%);
-  font-size: clamp(1rem, 1.4vw, 1.18rem);
-  line-height: 1.72;
+.about-experience .story-delivery__tagline {
+  margin: 1.25rem 0 0;
+  color: #b8c9ff;
+  font-family: var(--customer-font-display);
+  font-size: clamp(1.3rem, 2.2vw, 2rem);
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
 }
 
-.about-experience .story-shop__proofs {
+.about-experience .story-delivery__lead {
+  max-width: 32rem;
+  margin: 1rem 0 0;
+  color: rgb(229 235 255 / 82%);
+  font-size: clamp(0.94rem, 1.15vw, 1.08rem);
+  line-height: 1.66;
+}
+
+.about-experience .story-delivery__proofs {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  margin: 1.6rem 0 1.9rem;
+  gap: 0.55rem;
+  margin: 1.4rem 0 1.7rem;
   padding: 0;
   list-style: none;
 }
 
-.about-experience .story-shop__proofs li {
+.about-experience .story-delivery__proofs li {
   display: inline-flex;
+  min-height: 2.15rem;
   align-items: center;
   gap: 0.42rem;
-  min-height: 2.2rem;
-  padding: 0.52rem 0.76rem;
-  border: 1px solid rgb(255 255 255 / 22%);
+  padding: 0.48rem 0.7rem;
+  border: 1px solid rgb(134 168 255 / 20%);
   border-radius: 999px;
-  background: rgb(255 255 255 / 10%);
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.025em;
+  background: rgb(12 27 57 / 62%);
+  color: #eef3ff;
+  font-size: 0.68rem;
+  font-weight: 780;
+  letter-spacing: 0.015em;
   backdrop-filter: blur(12px);
 }
 
-.about-experience .story-shop__proofs svg {
+.about-experience .story-delivery__proofs svg {
   width: 0.9rem;
   height: 0.9rem;
-  padding: 0.14rem;
-  border-radius: 50%;
-  background: #fff;
-  color: #4f47e8;
+  color: #7bd0ff;
 }
 
-.about-experience .story-shop--refined .story-shop__primary-action {
-  min-height: 3.25rem;
+.about-experience .story-delivery__primary-action {
+  min-height: 3.2rem;
   padding-inline: 1.25rem;
-  box-shadow: 0 18px 40px rgb(17 20 71 / 24%);
+  border-color: rgb(255 255 255 / 68%);
+  background: #fff;
+  color: #22254d;
+  box-shadow: 0 18px 44px rgb(0 7 35 / 30%);
 }
 
-.about-experience .story-shop--refined .story-live-store {
+.about-experience .story-delivery__primary-action:hover {
+  background: #f5f8ff;
+  color: #3f43b8;
+}
+
+.about-experience .story-delivery__visual {
   position: relative;
   z-index: 2;
   min-width: 0;
-  padding: clamp(1.15rem, 2vw, 1.65rem);
-  border: 1px solid rgb(255 255 255 / 54%);
-  border-radius: 2.3rem 2.3rem 2.3rem 0.75rem;
-  background: linear-gradient(145deg, rgb(255 255 255 / 98%), rgb(243 246 255 / 96%)), #f7f9ff;
-  color: var(--story-navy);
-  box-shadow:
-    0 45px 100px rgb(15 18 64 / 32%),
-    inset 0 1px rgb(255 255 255 / 82%);
-  transform-style: preserve-3d;
 }
 
-.about-experience .story-shop--refined .story-live-store::before {
-  position: absolute;
-  inset: -0.75rem 1.2rem auto;
-  z-index: -1;
-  height: 2rem;
-  border-radius: 999px;
-  background: rgb(15 18 64 / 24%);
-  content: "";
-  filter: blur(22px);
-}
-
-.about-experience .story-shop--refined .story-live-store__bar {
-  padding-bottom: 0.95rem;
-  border-bottom: 1px solid rgb(98 91 255 / 12%);
-}
-
-.about-experience .story-live-store__identity {
-  display: grid;
-  gap: 0.12rem;
-}
-
-.about-experience .story-live-store__identity strong {
-  font-family: var(--customer-font-display);
-  font-size: 1.04rem;
-  line-height: 1.1;
-}
-
-.about-experience .story-live-store__identity small {
-  color: #68718a;
-  font-size: 0.63rem;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
-.about-experience .story-shop--refined .story-live-store__cart {
-  transition:
-    background-color 160ms ease,
-    transform 160ms ease;
-}
-
-.about-experience .story-shop--refined .story-live-store__cart:hover {
-  background: #dcd9ff;
-  transform: translateY(-2px);
-}
-
-.about-experience .story-shop--refined .story-live-store__search {
-  min-height: 3.1rem;
-  margin-top: 0.95rem;
-  padding-inline: 0.95rem;
-  border: 1px solid #dfe3f4;
-  border-radius: 999px;
-  box-shadow: 0 6px 18px rgb(16 20 38 / 5%);
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
-}
-
-.about-experience .story-shop--refined .story-live-store__search:hover {
-  border-color: rgb(98 91 255 / 42%);
-  box-shadow: 0 10px 24px rgb(16 20 38 / 8%);
-  transform: translateY(-1px);
-}
-
-.about-experience .story-live-store__signals {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 0.85rem;
-  color: #66708a;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.035em;
-  text-transform: uppercase;
-}
-
-.about-experience .story-live-store__signals span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.42rem;
-}
-
-.about-experience .story-live-store__signals i {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: #1f9c76;
-  box-shadow: 0 0 0 4px rgb(31 156 118 / 12%);
-}
-
-.about-experience .story-shop--refined .story-live-store__products {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.78rem;
-  margin-top: 0.9rem;
-}
-
-.about-experience .story-shop--refined .story-live-product {
-  min-width: 0;
-  border: 1px solid #dfe3f4;
-  border-radius: 1.35rem 1.35rem 1.35rem 0.45rem;
-  background: #fff;
-  box-shadow: 0 10px 28px rgb(16 20 38 / 6%);
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
-}
-
-.about-experience .story-shop--refined .story-live-product:hover {
-  border-color: rgb(98 91 255 / 34%);
-  box-shadow: 0 18px 38px rgb(16 20 38 / 10%);
-  transform: translateY(-3px);
-}
-
-.about-experience .story-shop--refined .story-live-product > a {
-  display: block;
-  padding: 0.5rem;
-}
-
-.about-experience .story-shop--refined .story-live-product .customer-product-visual {
-  min-height: 9rem;
-  border: 1px solid #eceef7;
-  border-radius: 1rem 1rem 1rem 0.35rem;
-  background: #fbfbfd;
-}
-
-.about-experience .story-shop--refined .story-live-product__body {
-  display: grid;
-  min-height: 11.4rem;
-  align-content: start;
-  padding: 0.25rem 0.75rem 0.75rem;
-}
-
-.about-experience .story-shop--refined .story-live-product__body > small {
-  color: #625bff;
-  font-size: 0.58rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.about-experience .story-shop--refined .story-live-product h3 {
-  display: -webkit-box;
-  min-height: 2.5rem;
-  margin: 0.34rem 0 0.42rem;
-  overflow: hidden;
-  color: #20243a;
-  font-family: var(--customer-font-body);
-  font-size: 0.78rem;
-  font-weight: 800;
-  line-height: 1.35;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.about-experience .story-shop--refined .story-live-product__body > strong {
-  color: #232a55;
-  font-size: 0.86rem;
-}
-
-.about-experience .story-shop--refined .story-live-product__stock {
-  margin-top: 0.28rem;
-  color: #17765f;
-  font-size: 0.62rem;
-  font-weight: 750;
-}
-
-.about-experience .story-shop--refined .story-live-product__stock--low_stock {
-  color: #a76408;
-}
-
-.about-experience .story-shop--refined .story-live-product button {
-  display: inline-flex;
+.about-experience .story-delivery__frame {
+  position: relative;
   width: 100%;
-  min-height: 2.35rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  margin-top: auto;
-  padding: 0.55rem 0.65rem;
-  border: 0;
-  border-radius: 0.78rem 0.78rem 0.78rem 0.28rem;
-  background: linear-gradient(120deg, #625bff, #7a50e8);
-  color: #fff;
-  cursor: pointer;
-  font-size: 0.68rem;
-  font-weight: 850;
-  box-shadow: 0 8px 20px rgb(98 91 255 / 18%);
-  transition:
-    box-shadow 160ms ease,
-    transform 160ms ease;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid rgb(134 168 255 / 24%);
+  border-radius: 1.8rem;
+  background:
+    radial-gradient(circle at 25% 42%, rgb(0 140 255 / 16%), transparent 26%),
+    linear-gradient(145deg, #07101f, #101633);
+  box-shadow:
+    0 42px 110px rgb(0 4 26 / 44%),
+    0 0 0 1px rgb(255 255 255 / 3%) inset,
+    0 0 70px rgb(82 95 255 / 14%);
 }
 
-.about-experience .story-shop--refined .story-live-product button:hover {
-  box-shadow: 0 12px 25px rgb(98 91 255 / 28%);
-  transform: translateY(-1px);
-}
-
-.about-experience .story-shop--refined .story-live-store__unavailable {
-  min-height: 20rem;
-  margin-top: 0.9rem;
-  border-color: rgb(98 91 255 / 24%);
-  background: linear-gradient(145deg, #fff, #f5f5ff);
-}
-
-.about-experience .story-shop--refined .story-live-store__unavailable a,
-.about-experience .story-shop--refined .story-live-store__unavailable button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.7rem;
-  color: #5149d9;
-  font-size: 0.7rem;
-  font-weight: 850;
-}
-
-.about-experience .story-shop--refined .story-live-store__unavailable a svg {
-  width: 0.85rem;
-}
-
-.about-experience .story-shop.story-shop--refined .story-shop__handoff {
+.about-experience .story-delivery__frame::after {
+  position: absolute;
+  inset: 0;
   z-index: 3;
-  height: 0.45rem;
-  background: linear-gradient(90deg, #17b5ff, #7b5cff 52%, #f43f8c);
+  border-radius: inherit;
+  background: linear-gradient(145deg, rgb(255 255 255 / 5%), transparent 32% 72%, rgb(111 74 255 / 5%));
+  content: "";
+  pointer-events: none;
 }
 
-@media (max-width: 1120px) {
-  .about-experience .story-shop.story-shop--refined .story-shop__stage {
-    width: min(calc(100% - 3rem), 1120px);
-    grid-template-columns: minmax(300px, 0.78fr) minmax(500px, 1.22fr);
-    gap: 2.5rem;
+.about-experience .story-delivery__frame video {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.about-experience .story-delivery__frame.is-video-ready video {
+  opacity: 1;
+}
+
+.about-experience .story-delivery__fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.7rem;
+  color: #9db6e7;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.about-experience .story-delivery__fallback svg {
+  width: 2rem;
+  height: 2rem;
+  color: #58c8ff;
+}
+
+.about-experience .story-delivery__frame.is-video-ready .story-delivery__fallback {
+  opacity: 0;
+}
+
+@media (max-width: 1180px) {
+  .about-experience .story-delivery__stage {
+    width: min(calc(100% - 3rem), 1160px);
+    grid-template-columns: minmax(0, 0.82fr) minmax(31rem, 1.18fr);
+    gap: 2.8rem;
   }
 
-  .about-experience .story-shop--refined .story-shop__copy h2 {
-    font-size: clamp(3.2rem, 5.7vw, 5.5rem);
+  .about-experience .story-delivery__copy h2 {
+    font-size: clamp(3.4rem, 5.3vw, 5.3rem);
   }
 }
 
-@media (max-width: 840px) {
-  .about-experience .story-shop.story-shop--refined {
+@media (max-width: 1023px) {
+  .about-experience .story-delivery {
     min-height: auto;
   }
 
-  .about-experience .story-shop.story-shop--refined .story-shop__stage {
+  .about-experience .story-delivery__stage {
     position: relative;
     top: auto;
     min-height: auto;
-    width: min(calc(100% - 2.5rem), 780px);
+    width: min(calc(100% - 2.5rem), 820px);
     grid-template-columns: 1fr;
-    gap: 3rem;
-    padding-block: 6rem;
+    gap: 2.5rem;
+    padding-block: 5.5rem;
   }
 
-  .about-experience .story-shop--refined .story-shop__copy {
+  .about-experience .story-delivery__copy {
     max-width: 42rem;
   }
 
-  .about-experience .story-shop--refined .story-shop__copy h2 {
-    max-width: 11ch;
+  .about-experience .story-delivery__copy h2 {
+    max-width: 10ch;
   }
 
-  .about-experience .story-shop--refined .story-live-store {
-    transform: none;
+  .about-experience .story-delivery__visual {
+    width: 100%;
   }
 }
 
 @media (max-width: 640px) {
-  .about-experience .story-shop.story-shop--refined .story-shop__stage {
-    width: min(calc(100% - 1.5rem), 38rem);
-    padding-block: 4.75rem;
+  .about-experience .story-delivery__stage {
+    width: min(calc(100% - 1.5rem), 40rem);
+    padding-block: 4.25rem;
   }
 
-  .about-experience .story-shop--refined .story-shop__copy h2 {
-    font-size: clamp(3rem, 15vw, 4.7rem);
+  .about-experience .story-delivery__copy h2 {
+    font-size: clamp(3rem, 15vw, 4.5rem);
   }
 
-  .about-experience .story-shop__proofs {
-    gap: 0.45rem;
+  .about-experience .story-delivery__tagline {
+    font-size: clamp(1.2rem, 6vw, 1.6rem);
   }
 
-  .about-experience .story-shop__proofs li {
-    font-size: 0.66rem;
+  .about-experience .story-delivery__proofs {
+    gap: 0.42rem;
   }
 
-  .about-experience .story-shop--refined .story-live-store {
-    padding: 0.85rem;
-    border-radius: 1.65rem 1.65rem 1.65rem 0.55rem;
+  .about-experience .story-delivery__proofs li {
+    font-size: 0.63rem;
   }
 
-  .about-experience .story-shop--refined .story-live-store__products {
-    grid-template-columns: 1fr;
-  }
-
-  .about-experience .story-shop--refined .story-live-product {
-    display: grid;
-    grid-template-columns: minmax(7.5rem, 0.8fr) minmax(0, 1.2fr);
-  }
-
-  .about-experience .story-shop--refined .story-live-product > a {
-    align-self: stretch;
-  }
-
-  .about-experience .story-shop--refined .story-live-product .customer-product-visual {
-    height: 100%;
-    min-height: 11rem;
-  }
-
-  .about-experience .story-shop--refined .story-live-product__body {
-    min-height: 11rem;
-    padding: 0.8rem 0.8rem 0.8rem 0.3rem;
-  }
-}
-
-@media (max-width: 430px) {
-  .about-experience .story-live-store__signals {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.45rem;
-  }
-
-  .about-experience .story-shop--refined .story-live-product {
-    grid-template-columns: 1fr;
-  }
-
-  .about-experience .story-shop--refined .story-live-product__body {
-    padding: 0.2rem 0.75rem 0.75rem;
+  .about-experience .story-delivery__frame {
+    border-radius: 1.25rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .about-experience .story-shop--refined [data-handoff-copy],
-  .about-experience .story-shop--refined [data-handoff-proof],
-  .about-experience .story-shop--refined [data-handoff-store],
-  .about-experience .story-shop--refined [data-handoff-card] {
+  .about-experience .story-delivery [data-delivery-copy],
+  .about-experience .story-delivery [data-delivery-proof],
+  .about-experience .story-delivery [data-delivery-visual],
+  .about-experience .story-delivery [data-delivery-frame] {
     opacity: 1 !important;
+    clip-path: none !important;
     transform: none !important;
   }
 
-  .about-experience .story-shop--refined .story-live-product,
-  .about-experience .story-shop--refined .story-live-product button,
-  .about-experience .story-shop--refined .story-live-store__search,
-  .about-experience .story-shop--refined .story-live-store__cart {
+  .about-experience .story-delivery__frame video {
     transition: none;
   }
 }
