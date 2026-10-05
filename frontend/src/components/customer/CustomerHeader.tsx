@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { isCustomerShopRoute } from "@/utils/customerRoutes";
-import { preloadAboutExperience } from "@/utils/aboutExperiencePreload";
 import { CustomerLink } from "./CustomerLink";
 import { GlobalStorefrontSearch } from "./GlobalStorefrontSearch";
 import { YsabelleBrandMark } from "./YsabelleBrandMark";
@@ -57,9 +56,6 @@ export function CustomerHeader({
               href={link.href}
               key={link.href}
               navigate={navigate}
-              onFocus={link.href === "/about" ? () => preloadAboutExperience() : undefined}
-              onPointerDown={link.href === "/about" ? () => preloadAboutExperience() : undefined}
-              onPointerEnter={link.href === "/about" ? () => preloadAboutExperience() : undefined}
             >
               {link.label}
             </CustomerLink>
@@ -128,8 +124,6 @@ export function CustomerHeader({
               key={link.href}
               navigate={navigate}
               onClick={() => setMenuOpen(false)}
-              onFocus={link.href === "/about" ? () => preloadAboutExperience() : undefined}
-              onPointerDown={link.href === "/about" ? () => preloadAboutExperience() : undefined}
             >
               {link.label}
             </CustomerLink>

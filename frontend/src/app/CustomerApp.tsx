@@ -195,8 +195,23 @@ function CustomerAppRoutes({
 
   return (
     <CustomerLayout location={location} navigate={navigate} pathname={pathname}>
-      <Suspense fallback={<CustomerRouteFallback />}>{page}</Suspense>
+      <Suspense fallback={pathname === "/about" ? <AboutRouteFallback /> : <CustomerRouteFallback />}>
+        {page}
+      </Suspense>
     </CustomerLayout>
+  );
+}
+
+function AboutRouteFallback() {
+  return (
+    <section
+      aria-label="Opening About"
+      aria-live="polite"
+      className="about-experience-boot"
+      role="status"
+    >
+      <span className="sr-only">Opening Ysabelle Store About experience...</span>
+    </section>
   );
 }
 
