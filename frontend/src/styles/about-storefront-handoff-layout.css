@@ -31,3 +31,12 @@
     justify-self: center;
   }
 }
+
+
+.about-experience .story-delivery--loading {
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 24% 44%, rgb(0 140 255 / 12%), transparent 34%),
+    radial-gradient(circle at 82% 48%, rgb(168 60 240 / 16%), transparent 38%),
+    linear-gradient(135deg, #07192f 0%, #111735 52%, #241644 100%);
+}

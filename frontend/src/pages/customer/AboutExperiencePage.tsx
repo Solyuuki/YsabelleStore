@@ -1,13 +1,10 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { lazy, Suspense, useEffect, useState, type CSSProperties } from "react";
 
-import { AboutStorefrontHandoff } from "@/components/customer/about/AboutStorefrontHandoff";
 import { DiscoverPage } from "@/pages/customer/DiscoverPage";
 import "@/styles/about-welcome-motion.css";
 import "@/styles/about-catalog-intelligence.css";
 import "@/styles/about-sales-inventory.css";
 import "@/styles/about-forecast-intelligence.css";
-import "@/styles/about-storefront-handoff.css";
-import "@/styles/about-storefront-handoff-layout.css";
 
 const storyTheme = {
   "--story-blue": "#008cff",
@@ -16,6 +13,12 @@ const storyTheme = {
   "--story-navy": "#101426",
   "--story-violet": "#a83cf0"
 } as CSSProperties;
+
+const DeferredAboutStorefrontHandoff = lazy(() =>
+  import("@/components/customer/about/AboutStorefrontHandoff").then(
+    ({ AboutStorefrontHandoff }) => ({ default: AboutStorefrontHandoff })
+  )
+);
 
 export function AboutExperiencePage({ navigate }: { navigate: (path: string) => void }) {
   const [storyReady, setStoryReady] = useState(false);
@@ -43,7 +46,17 @@ export function AboutExperiencePage({ navigate }: { navigate: (path: string) => 
   return (
     <div className="about-experience" style={storyTheme}>
       <DiscoverPage navigate={navigate} variant="about" />
-      <AboutStorefrontHandoff navigate={navigate} />
+      <Suspense
+        fallback={
+          <section
+            aria-hidden="true"
+            className="story-scene story-delivery story-delivery--loading"
+            id="discover-shop"
+          />
+        }
+      >
+        <DeferredAboutStorefrontHandoff navigate={navigate} />
+      </Suspense>
     </div>
   );
 }

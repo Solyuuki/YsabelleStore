@@ -27,7 +27,7 @@ export function scheduleAboutExperiencePreload() {
       () => {
         preloadAboutExperience();
       },
-      { timeout: 900 }
+      { timeout: 400 }
     );
 
     return () => idleWindow.cancelIdleCallback?.(idleId);
@@ -35,7 +35,7 @@ export function scheduleAboutExperiencePreload() {
 
   const timeoutId = window.setTimeout(() => {
     preloadAboutExperience();
-  }, 160);
+  }, 80);
 
   return () => window.clearTimeout(timeoutId);
 }

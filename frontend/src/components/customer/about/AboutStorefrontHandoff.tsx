@@ -4,6 +4,8 @@ import { ArrowRight, MapPin, Route, Truck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
+import "@/styles/about-storefront-handoff.css";
+import "@/styles/about-storefront-handoff-layout.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
