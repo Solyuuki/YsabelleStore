@@ -370,13 +370,17 @@ export function SystemIntelligenceScene({
   );
 
   useEffect(() => {
-    sceneRef.current?.dispatchEvent(new CustomEvent("story:intelligence-ready", { bubbles: true }));
+    const scene = sceneRef.current;
+    if (!scene) return;
 
-    const hintTimer = window.setTimeout(() => {
+    const handleStageHint = () => {
       if (!hasStageInteractionRef.current) setShowStageHint(true);
-    }, 650);
+    };
 
-    return () => window.clearTimeout(hintTimer);
+    scene.addEventListener("story:intelligence-hint", handleStageHint);
+    scene.dispatchEvent(new CustomEvent("story:intelligence-ready", { bubbles: true }));
+
+    return () => scene.removeEventListener("story:intelligence-hint", handleStageHint);
   }, []);
 
   const selectStage = (index: number) => {

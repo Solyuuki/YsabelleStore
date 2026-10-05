@@ -144,7 +144,7 @@ function DeferredIntelligenceScene({ hideSectionNumber = false }: { hideSectionN
 function initializeIntelligenceTimeline(
   intelligence: HTMLElement,
   desktop: boolean,
-  _settle: (timeline: gsap.core.Timeline, start?: number) => void
+  settle: (timeline: gsap.core.Timeline, start?: number) => void
 ) {
   if (intelligence.dataset.storyMotionInitialized === "true") return;
 
@@ -154,37 +154,128 @@ function initializeIntelligenceTimeline(
   );
   const copy = intelligence.querySelector<HTMLElement>(".story-intelligence__heading p");
   const preview = intelligence.querySelector<HTMLElement>(".system-preview");
+  const previewNav = intelligence.querySelector<HTMLElement>(".system-preview__nav");
+  const previewWorkspace = intelligence.querySelector<HTMLElement>(".system-preview__workspace");
+  const previewButtons = Array.from(
+    intelligence.querySelectorAll<HTMLElement>(".system-preview__nav button")
+  );
+  const previewWorkspaceBar = intelligence.querySelector<HTMLElement>(
+    ".system-preview__workspace-bar"
+  );
+  const previewWorkspaceCopy = intelligence.querySelector<HTMLElement>(
+    ".system-preview__workspace-copy"
+  );
+  const previewContent = intelligence.querySelector<HTMLElement>(".system-preview__content");
 
-  if (!kicker || !headline.length || !copy || !preview) return;
+  if (
+    !kicker ||
+    !headline.length ||
+    !copy ||
+    !preview ||
+    !previewNav ||
+    !previewWorkspace ||
+    !previewButtons.length ||
+    !previewWorkspaceBar ||
+    !previewWorkspaceCopy ||
+    !previewContent
+  ) {
+    return;
+  }
 
   intelligence.dataset.storyMotionInitialized = "true";
+  delete intelligence.dataset.storyHintDispatched;
 
   gsap.set(kicker, { autoAlpha: 0, x: -14 });
   gsap.set(headline, { autoAlpha: 0, y: 18 });
   gsap.set(copy, { autoAlpha: 0, y: 10 });
-  gsap.set(preview, { autoAlpha: 0, y: desktop ? 18 : 10, scale: desktop ? 0.992 : 1 });
+  gsap.set(preview, {
+    autoAlpha: 0,
+    scale: desktop ? 0.992 : 1,
+    y: desktop ? 18 : 10
+  });
+  gsap.set(previewNav, { autoAlpha: 0, x: -10 });
+  gsap.set(previewWorkspace, { autoAlpha: 0, x: 10 });
+  gsap.set(previewButtons, { autoAlpha: 0, x: -6 });
+  gsap.set([previewWorkspaceBar, previewWorkspaceCopy], { autoAlpha: 0, y: 6 });
+  gsap.set(previewContent, { autoAlpha: 0, y: 8 });
+
+  const dispatchHint = () => {
+    if (intelligence.dataset.storyHintDispatched === "true") return;
+    intelligence.dataset.storyHintDispatched = "true";
+    intelligence.dispatchEvent(new CustomEvent("story:intelligence-hint"));
+  };
 
   const timeline = gsap.timeline({
-    scrollTrigger: {
-      trigger: intelligence,
-      start: desktop ? "top 78%" : "top 88%",
-      once: true
-    }
+    scrollTrigger: desktop
+      ? {
+          trigger: intelligence,
+          start: "top top+=76",
+          end: () => `+=${Math.max(920, Math.round(window.innerHeight * 1.08))}`,
+          pin: intelligence,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          scrub: 0.38,
+          onUpdate: (self) => {
+            if (self.progress >= 0.5) dispatchHint();
+          }
+        }
+      : {
+          trigger: intelligence,
+          start: "top 88%",
+          end: "bottom 28%",
+          invalidateOnRefresh: true,
+          scrub: 0.22,
+          onUpdate: (self) => {
+            if (self.progress >= 0.46) dispatchHint();
+          }
+        }
   });
 
   timeline
-    .to(kicker, { autoAlpha: 1, duration: 0.18, ease: "power2.out", x: 0 }, 0)
-    .to(headline, { autoAlpha: 1, duration: 0.24, ease: "power2.out", stagger: 0.035, y: 0 }, 0.06)
-    .to(copy, { autoAlpha: 1, duration: 0.2, ease: "power2.out", y: 0 }, 0.14)
+    .to(kicker, { autoAlpha: 1, duration: 0.08, ease: "power2.out", x: 0 }, 0.02)
+    .to(
+      headline,
+      { autoAlpha: 1, duration: 0.12, ease: "power2.out", stagger: 0.025, y: 0 },
+      0.08
+    )
+    .to(copy, { autoAlpha: 1, duration: 0.09, ease: "power2.out", y: 0 }, 0.16)
     .to(
       preview,
-      { autoAlpha: 1, duration: 0.28, ease: "power2.out", scale: 1, y: 0 },
-      0.18
-    );
+      { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 },
+      0.22
+    )
+    .to(previewNav, { autoAlpha: 1, duration: 0.08, ease: "power2.out", x: 0 }, 0.28)
+    .to(
+      previewButtons,
+      {
+        autoAlpha: 1,
+        duration: 0.07,
+        ease: "power2.out",
+        stagger: 0.012,
+        x: 0
+      },
+      0.31
+    )
+    .to(
+      previewWorkspace,
+      { autoAlpha: 1, duration: 0.09, ease: "power2.out", x: 0 },
+      0.29
+    )
+    .to(
+      [previewWorkspaceBar, previewWorkspaceCopy],
+      { autoAlpha: 1, duration: 0.07, ease: "power2.out", stagger: 0.02, y: 0 },
+      0.36
+    )
+    .to(previewContent, { autoAlpha: 1, duration: 0.1, ease: "power2.out", y: 0 }, 0.43);
+
+  // The visible build finishes early; the remaining pinned distance is the short hold.
+  settle(timeline, desktop ? 0.68 : 0.9);
 
   return () => {
     timeline.scrollTrigger?.kill();
     timeline.kill();
+    delete intelligence.dataset.storyHintDispatched;
     delete intelligence.dataset.storyMotionInitialized;
   };
 }
