@@ -114,17 +114,27 @@
 }
 
 .about-experience .story-delivery__copy h2 {
-  max-width: 8.5ch;
+  max-width: none;
   margin: 1rem 0 0;
   color: #fff;
-  font-size: clamp(3.8rem, 5.8vw, 6.6rem);
-  line-height: 0.91;
-  letter-spacing: -0.06em;
+  font-size: clamp(2.85rem, 4.15vw, 4.85rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+}
+
+.about-experience .story-delivery .story-mask {
+  overflow: visible;
+}
+
+.about-experience .story-delivery .story-mask__line {
+  white-space: nowrap;
 }
 
 .about-experience .story-delivery .story-mask__line--delivery {
   color: #dce7ff;
   font-style: italic;
+  font-weight: inherit;
 }
 
 .about-experience .story-delivery__tagline {
@@ -278,6 +288,11 @@
 @media (max-width: 1023px) {
   .about-experience .story-delivery {
     min-height: auto;
+  }
+
+  .about-experience .story-delivery__copy h2,
+  .about-experience .story-delivery .story-mask__line {
+    white-space: normal;
   }
 
   .about-experience .story-delivery__stage {

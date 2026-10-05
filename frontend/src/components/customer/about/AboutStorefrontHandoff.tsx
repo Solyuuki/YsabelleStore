@@ -149,10 +149,9 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
 
           <h2 className="story-display-safe" data-delivery-copy>
             <span className="story-mask">
-              <span className="story-mask__line">From Store</span>
-            </span>
-            <span className="story-mask">
-              <span className="story-mask__line story-mask__line--delivery">to Door.</span>
+              <span className="story-mask__line">
+                From Store <em className="story-mask__line--delivery">to Door.</em>
+              </span>
             </span>
           </h2>
 
