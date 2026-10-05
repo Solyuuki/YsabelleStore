@@ -358,7 +358,9 @@ export function SystemIntelligenceScene({
   hideSectionNumber?: boolean;
 }) {
   const sceneRef = useRef<HTMLElement>(null);
+  const hasStageInteractionRef = useRef(false);
   const [activeStage, setActiveStage] = useState(0);
+  const [showStageHint, setShowStageHint] = useState(false);
   const stage = previewStages[activeStage]!;
   const StageIcon = stage.icon;
 
@@ -369,7 +371,19 @@ export function SystemIntelligenceScene({
 
   useEffect(() => {
     sceneRef.current?.dispatchEvent(new CustomEvent("story:intelligence-ready", { bubbles: true }));
+
+    const hintTimer = window.setTimeout(() => {
+      if (!hasStageInteractionRef.current) setShowStageHint(true);
+    }, 650);
+
+    return () => window.clearTimeout(hintTimer);
   }, []);
+
+  const selectStage = (index: number) => {
+    hasStageInteractionRef.current = true;
+    setShowStageHint(false);
+    setActiveStage(index);
+  };
 
   return (
     <section
@@ -407,18 +421,19 @@ export function SystemIntelligenceScene({
               <strong>{String(activeStage + 1).padStart(2, "0")} / 07</strong>
             </header>
 
-            <div className="system-preview__click-hint" aria-hidden="true">
-              <MousePointerClick />
-              <span>Click a stage to preview</span>
-            </div>
-
             <ol>
               {previewStages.map(({ icon: Icon, label, title }, index) => (
-                <li key={title}>
+                <li className={index === 0 ? "system-preview__first-stage" : undefined} key={title}>
                   <button
                     aria-current={index === activeStage ? "step" : undefined}
-                    className={index === activeStage ? "is-active" : ""}
-                    onClick={() => setActiveStage(index)}
+                    aria-describedby={index === 0 && showStageHint ? "system-preview-stage-hint" : undefined}
+                    className={[
+                      index === activeStage ? "is-active" : "",
+                      index === 0 && showStageHint ? "is-hint-target" : ""
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={() => selectStage(index)}
                     type="button"
                   >
                     <span className="system-preview__nav-icon">
@@ -427,6 +442,20 @@ export function SystemIntelligenceScene({
                     <small>{String(index + 1).padStart(2, "0")}</small>
                     <strong>{label}</strong>
                   </button>
+
+                  {index === 0 && showStageHint ? (
+                    <div
+                      className="system-preview__coachmark"
+                      id="system-preview-stage-hint"
+                      role="status"
+                    >
+                      <MousePointerClick aria-hidden="true" />
+                      <span>
+                        <strong>Click a stage</strong>
+                        <small>Preview it on the right</small>
+                      </span>
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ol>
