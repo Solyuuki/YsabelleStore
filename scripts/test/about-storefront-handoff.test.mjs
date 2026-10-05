@@ -8,7 +8,7 @@ test("About and Discover keep distinct storefront-story endings", () => {
   const source = read("frontend/src/app/CustomerApp.tsx");
 
   assert.match(source, /const AboutExperiencePage = lazy\(\(\) =>/);
-  assert.match(source, /import\("@\/pages\/customer\/AboutExperiencePage"\)/);
+  assert.match(source, /loadAboutExperienceModule\(\)/);
   assert.match(
     source,
     /pathname === "\/about"\) page = <AboutExperiencePage navigate=\{navigate\} \/>/
@@ -19,104 +19,96 @@ test("About and Discover keep distinct storefront-story endings", () => {
   );
 });
 
-test("About storefront handoff uses real in-stock catalog products", () => {
+test("About delivery chapter uses the approved delivery video with viewport-aware playback", () => {
   const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
 
-  assert.match(source, /fetchStorefrontProducts/);
-  assert.match(source, /availability:\s*"in-stock"/);
-  assert.match(source, /pageSize:\s*3/);
+  assert.match(source, /about-delivery-operations-83b7547e\.mp4/);
   assert.match(source, /IntersectionObserver/);
-  assert.match(source, /Quick add/);
-  assert.doesNotMatch(source, /ABOUT_STORE_ESSENTIAL_PRODUCT_IDS/);
-  assert.doesNotMatch(source, /disabled=\{/);
-  assert.doesNotMatch(source, />Unavailable</);
+  assert.match(source, /deliveryVisibleRef\.current = entry\.isIntersecting/);
+  assert.match(source, /video\.preload = "auto"/);
+  assert.match(source, /preload="metadata"/);
+  assert.match(source, /videoRefs\.forEach\(\(ref\) => ref\.current\?\.pause\(\)\)/);
 });
 
-test("About storefront handoff uses the approved compact smart-retail headline", () => {
+test("About delivery chapter uses the approved store-to-door narrative", () => {
   const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
 
-  assert.match(source, />From Local</);
-  assert.match(source, />\s*to Smart Retail\s*</);
-  assert.doesNotMatch(source, /From Local Roots/);
-  assert.doesNotMatch(source, /to Smarter Retail\./);
-  assert.match(source, /Live catalog/);
-  assert.match(source, /Current stock/);
-  assert.match(source, /Pickup ready/);
+  assert.match(source, /06 \/ Delivery operations/);
+  assert.match(source, /From Store/);
+  assert.match(source, /to Door\./);
+  assert.match(source, /Every delivery stays in view\./);
+  assert.match(source, /Multi-point routes/);
+  assert.match(source, /Courier handoff/);
+  assert.match(source, /Delivery progress/);
 });
 
-test("About storefront handoff keeps one primary catalog CTA", () => {
+test("About delivery chapter keeps one primary Explore now CTA back to the storefront", () => {
   const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
 
-  assert.equal(source.match(/story-shop__primary-action/g)?.length, 1);
-  assert.equal(source.match(/Shop the live catalog/g)?.length, 1);
-  assert.doesNotMatch(source, /Open catalog/);
-  assert.match(source, /Retry connection/);
+  assert.equal(source.match(/story-delivery__primary-action/g)?.length, 1);
+  assert.equal(source.match(/Explore now/g)?.length, 1);
+  assert.match(source, /href="\/"[\s\S]*?navigate=\{navigate\}/);
+  assert.doesNotMatch(source, /Shop the live catalog|Quick add|Pickup ready/);
 });
 
-test("About visible live-catalog identity renders the canonical Ysabelle brand mark", () => {
+test("About delivery video crossfades instead of hard-looping", () => {
   const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
+  const styles = read("frontend/src/styles/about-storefront-handoff.css");
 
-  assert.match(
-    source,
-    /import \{ YsabelleBrandMark \} from "@\/components\/customer\/YsabelleBrandMark";/
-  );
-  assert.match(
-    source,
-    /story-live-store__bar[\s\S]*?<YsabelleBrandMark[^>]*variant="mini"/,
-    "The visible About live-catalog bar must render the shared canonical mark directly."
-  );
-  assert.doesNotMatch(
-    source,
-    /story-live-store__bar[\s\S]*?<Store aria-hidden="true" \/>/,
-    "The visible About live-catalog identity must not depend on a generic Store glyph."
-  );
+  assert.match(source, /DELIVERY_CROSSFADE_LEAD_SECONDS = 0\.85/);
+  assert.match(source, /DELIVERY_CROSSFADE_DURATION_MS = 720/);
+  assert.match(source, /beginDeliveryCrossfade/);
+  assert.match(source, /incomingVideo\.currentTime = 0/);
+  assert.match(source, /is-incoming/);
+  assert.doesNotMatch(source, /\sloop(?:\s|=|>)/);
+  assert.match(styles, /story-delivery__video[\s\S]*?transition:\s*opacity 720ms linear/);
 });
 
-test("About wrapper replaces only the legacy About ending", () => {
+test("About wrapper defers only the external delivery chapter without legacy DOM mutation", () => {
   const source = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
 
-  assert.match(source, /useLayoutEffect/);
-  assert.match(source, /discover-shop-legacy/);
-  assert.match(source, /story-shop--legacy-hidden/);
-  assert.match(source, /<DiscoverPage navigate=\{navigate\} \/>/);
-  assert.match(source, /<AboutStorefrontHandoff navigate=\{navigate\} \/>/);
+  assert.match(source, /const DeferredAboutStorefrontHandoff = lazy/);
+  assert.match(source, /import\("@\/components\/customer\/about\/AboutStorefrontHandoff"\)/);
+  assert.match(source, /<DiscoverPage navigate=\{navigate\} variant="about" \/>/);
+  assert.match(source, /story-delivery--loading/);
+  assert.match(source, /<DeferredAboutStorefrontHandoff navigate=\{navigate\} \/>/);
+  assert.doesNotMatch(source, /useLayoutEffect|discover-shop-legacy|story-shop--legacy-hidden/);
 });
 
-test("About storefront handoff has isolated responsive styling", () => {
-  const page = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
+test("About delivery chapter has isolated responsive styling", () => {
+  const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
   const styles = read("frontend/src/styles/about-storefront-handoff.css");
   const layoutStyles = read("frontend/src/styles/about-storefront-handoff-layout.css");
 
-  assert.match(page, /about-storefront-handoff\.css/);
-  assert.match(page, /about-storefront-handoff-layout\.css/);
-  assert.match(styles, /\.story-shop\.story-shop--refined/);
-  assert.match(styles, /@media \(max-width: 840px\)/);
-  assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(source, /about-storefront-handoff\.css/);
+  assert.match(source, /about-storefront-handoff-layout\.css/);
+  assert.match(styles, /\.about-experience \.story-delivery\s*\{/);
+  assert.match(styles, /position:\s*sticky;[\s\S]*?top:\s*76px/);
   assert.match(
     layoutStyles,
-    /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(28rem,\s*34rem\)/
+    /grid-template-columns:\s*minmax\(0, 0\.8fr\) minmax\(35rem, 1\.2fr\)/
   );
-  assert.match(layoutStyles, /\.story-shop__copy\s*\{[\s\S]*?min-width:\s*0;/);
-  assert.match(layoutStyles, /\.story-mask__line\s*\{[\s\S]*?white-space:\s*normal;/);
-  assert.match(layoutStyles, /\.story-mask__line--sky\s*\{[\s\S]*?font-style:\s*normal;/);
-});
-
-test("About storefront handoff keeps the narrow headline compact", () => {
-  const layoutStyles = read("frontend/src/styles/about-storefront-handoff-layout.css");
-
   assert.match(
     layoutStyles,
-    /@media \(max-width: 840px\)\s*\{[\s\S]*?\.story-shop__copy h2\s*\{[\s\S]*?max-width:\s*100%;[\s\S]*?font-size:\s*clamp\(2\.75rem,\s*8vw,\s*3\.4rem\);/
+    /@media \(max-width: 1023px\)[\s\S]*?grid-template-columns:\s*1fr/
   );
 });
 
-test("About storefront handoff waits until scene 06 owns the viewport before revealing", () => {
+test("About delivery headline stays compact on desktop", () => {
+  const styles = read("frontend/src/styles/about-storefront-handoff.css");
+
+  assert.match(
+    styles,
+    /story-delivery__copy h2[\s\S]*?font-size:\s*clamp\(2\.55rem, 3\.65vw, 4\.25rem\)[\s\S]*?white-space:\s*nowrap/
+  );
+  assert.match(styles, /story-mask__line--delivery[\s\S]*?font-style:\s*italic/);
+});
+
+test("About delivery reveal follows native scroll smoothly without pinning another timeline", () => {
   const source = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
 
-  assert.match(source, /start:\s*"top top\+=76"/);
-  assert.doesNotMatch(source, /start:\s*"top 78%"/);
-  assert.match(
-    source,
-    /end:\s*\(\)\s*=>\s*`\+=\$\{Math\.max\(520,\s*Math\.round\(window\.innerHeight\s*\*\s*0\.72\)\)\}`/
-  );
+  assert.match(source, /start:\s*"top 84%"/);
+  assert.match(source, /end:\s*"top 14%"/);
+  assert.match(source, /scrub:\s*0\.42/);
+  assert.doesNotMatch(source, /pin:\s*root|fastScrollEnd/);
 });
