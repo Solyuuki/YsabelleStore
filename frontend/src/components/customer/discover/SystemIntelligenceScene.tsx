@@ -4,7 +4,6 @@ import {
   ClipboardCheck,
   Database,
   LineChart,
-  PackageCheck,
   ShoppingBasket,
   Warehouse,
   type LucideIcon
