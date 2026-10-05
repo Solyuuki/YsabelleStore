@@ -57,8 +57,8 @@
   min-height: calc(100svh - 76px);
   grid-template-rows: auto auto auto;
   align-content: center;
-  gap: clamp(1.35rem, 2.7vh, 2.2rem);
-  padding-block: clamp(4.6rem, 7vh, 6.4rem);
+  gap: clamp(0.8rem, 1.5vh, 1.2rem);
+  padding-block: clamp(1.4rem, 2.6vh, 2.2rem);
 }
 
 .about-experience .discover-story .story-forecast__header {
@@ -73,9 +73,9 @@
 .about-experience .discover-story .story-forecast__header h2 {
   width: 100%;
   max-width: none;
-  margin: 0.75rem auto 0;
+  margin: 0.5rem auto 0;
   color: #f7f9ff;
-  font-size: clamp(2.2rem, min(3.7vw, 5.6vh), 4.1rem);
+  font-size: clamp(2.05rem, min(3.55vw, 5vh), 3.9rem);
   line-height: 1;
   text-align: center;
   text-shadow: 0 6px 28px rgb(3 8 28 / 34%);
@@ -96,10 +96,10 @@
 
 .about-experience .discover-story .story-forecast__lead {
   max-width: 42rem;
-  margin: 1rem auto 0;
+  margin: 0.65rem auto 0;
   color: #d4ddf2;
-  font-size: clamp(0.9rem, 1vw, 1rem);
-  line-height: 1.68;
+  font-size: clamp(0.86rem, 0.95vw, 0.96rem);
+  line-height: 1.5;
   text-align: center;
 }
 
@@ -520,6 +520,61 @@
 .about-forecast-demo__recommendation-grid strong {
   color: #f5f7ff;
   font-size: clamp(0.76rem, 0.9vw, 0.86rem);
+}
+
+
+@media (min-width: 1024px) {
+  .about-experience .discover-story .story-forecast__visual {
+    width: min(100%, 1200px);
+  }
+
+  .about-forecast-demo__topbar {
+    padding: clamp(0.72rem, 1.35vh, 1rem) clamp(1rem, 1.9vw, 1.5rem);
+  }
+
+  .about-forecast-demo__metrics {
+    gap: clamp(0.5rem, 0.8vw, 0.72rem);
+    padding: clamp(0.58rem, 1vh, 0.78rem) clamp(1rem, 1.9vw, 1.5rem) 0;
+  }
+
+  .about-forecast-demo__metrics article {
+    padding: clamp(0.62rem, 1.05vh, 0.82rem);
+  }
+
+  .about-forecast-demo__workspace {
+    gap: clamp(0.68rem, 1vw, 0.9rem);
+    padding: clamp(0.58rem, 1vh, 0.78rem) clamp(1rem, 1.9vw, 1.5rem)
+      clamp(0.7rem, 1.3vh, 0.95rem);
+  }
+
+  .about-forecast-demo__chart-heading {
+    padding: clamp(0.65rem, 1.05vh, 0.85rem) clamp(0.72rem, 1.1vw, 0.95rem) 0;
+  }
+
+  .about-forecast-demo__chart-wrap {
+    padding: 0 clamp(0.55rem, 0.9vw, 0.8rem) clamp(0.58rem, 1vh, 0.78rem);
+  }
+
+  .about-forecast-demo__chart {
+    min-height: 14.25rem;
+  }
+
+  .about-forecast-demo__recommendation {
+    padding: clamp(0.82rem, 1.2vh, 1rem);
+  }
+
+  .about-forecast-demo__product {
+    margin-top: clamp(0.72rem, 1.1vh, 0.9rem);
+    padding-bottom: 0.72rem;
+  }
+
+  .about-forecast-demo__restock-value {
+    padding-block: clamp(0.72rem, 1.15vh, 0.9rem);
+  }
+
+  .about-experience .discover-story .story-forecast__footer {
+    padding-top: 0;
+  }
 }
 
 @media (max-width: 900px) {

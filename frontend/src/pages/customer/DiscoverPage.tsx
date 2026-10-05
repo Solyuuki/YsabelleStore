@@ -716,7 +716,7 @@ export function DiscoverPage({
                     scrollTrigger: {
                       trigger: essentials,
                       start: "top 94%",
-                      end: "top top+=76",
+                      end: "top top-=72",
                       invalidateOnRefresh: true,
                       scrub: 0.2
                     }
@@ -1040,59 +1040,18 @@ export function DiscoverPage({
                     );
                 }
 
-                // Unlike a pure scrub, this dwell gate prevents a high-velocity
-                // wheel/trackpad gesture from carrying Scene 04 straight into Scene 05.
-                // The chart reaches its completed state first, holds briefly, then releases.
-                let forecastDwellUntil = 0;
-                let forecastDwellReleased = !desktop;
-                const forecastDwellProgress = 0.72;
-                const forecastDwellMs = 750;
-
                 const forecastTimeline = gsap.timeline({
                   scrollTrigger: desktop
                     ? {
                         trigger: location,
-                        start: "top top+=76",
+                        start: "top top-=72",
                         end: () =>
-                          `+=${Math.max(1300, Math.round(window.innerHeight * 1.6))}`,
+                          `+=${Math.max(1500, Math.round(window.innerHeight * 1.85))}`,
                         pin: location,
                         pinSpacing: true,
                         anticipatePin: 1,
                         invalidateOnRefresh: true,
-                        scrub: 0.45,
-                        onUpdate: (self) => {
-                          if (
-                            forecastDwellReleased ||
-                            self.direction <= 0 ||
-                            self.progress < forecastDwellProgress
-                          ) {
-                            return;
-                          }
-
-                          const now = performance.now();
-                          if (forecastDwellUntil === 0) {
-                            forecastDwellUntil = now + forecastDwellMs;
-                          }
-
-                          if (now < forecastDwellUntil) {
-                            const holdScroll =
-                              self.start + (self.end - self.start) * forecastDwellProgress;
-                            if (Math.abs(self.scroll() - holdScroll) > 1) self.scroll(holdScroll);
-                            return;
-                          }
-
-                          forecastDwellReleased = true;
-                        },
-                        onLeave: (self) => {
-                          if (forecastDwellReleased) return;
-                          const holdScroll =
-                            self.start + (self.end - self.start) * forecastDwellProgress;
-                          self.scroll(holdScroll);
-                        },
-                        onLeaveBack: () => {
-                          forecastDwellUntil = 0;
-                          forecastDwellReleased = false;
-                        }
+                        scrub: 0.32
                       }
                     : {
                         trigger: location,
@@ -1142,12 +1101,12 @@ export function DiscoverPage({
                       scale: 1,
                       y: 0
                     },
-                    0.24
+                    0.2
                   )
                   .to(
                     forecastDemoTopbar,
                     { autoAlpha: 1, duration: 0.06, ease: "power2.out", y: 0 },
-                    0.27
+                    0.23
                   )
                   .to(
                     forecastDemoMetrics,
@@ -1158,17 +1117,17 @@ export function DiscoverPage({
                       stagger: 0.018,
                       y: 0
                     },
-                    0.3
+                    0.26
                   )
                   .to(
                     forecastDemoChart,
                     { autoAlpha: 1, duration: 0.07, ease: "power2.out", y: 0 },
-                    0.34
+                    0.29
                   )
                   .to(
                     forecastActualLine,
                     { duration: 0.1, ease: "none", strokeDashoffset: 0 },
-                    0.37
+                    0.32
                   )
                   .to(
                     forecastObservedPoints,
@@ -1179,22 +1138,22 @@ export function DiscoverPage({
                       scale: 1,
                       stagger: 0.014
                     },
-                    0.42
+                    0.31
                   )
                   .to(
                     [forecastDivider, forecastDividerLabel],
                     { autoAlpha: 1, duration: 0.05, ease: "power1.out" },
-                    0.45
+                    0.39
                   )
                   .to(
                     forecastConfidence,
                     { autoAlpha: 1, duration: 0.065, ease: "power1.out" },
-                    0.47
+                    0.41
                   )
                   .to(
                     forecastProjectedLine,
                     { duration: 0.1, ease: "none", strokeDashoffset: 0 },
-                    0.49
+                    0.38
                   )
                   .to(
                     forecastProjectedPoints,
@@ -1205,7 +1164,7 @@ export function DiscoverPage({
                       scale: 1,
                       stagger: 0.012
                     },
-                    0.54
+                    0.48
                   )
                   .to(
                     forecastRecommendation,
@@ -1226,13 +1185,12 @@ export function DiscoverPage({
                   .to(
                     forecastModel,
                     { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                    0.6
+                    0.55
                   )
-                  .addLabel("forecast-complete", 0.66)
-                  .to({ hold: 0 }, { duration: 0.24, ease: "none", hold: 1 }, 0.66)
-                  .to(locationHandoff, { autoAlpha: 0.82, duration: 0.07, ease: "none" }, 0.91);
+                  .addLabel("forecast-complete", 0.62)
+                  .to(locationHandoff, { autoAlpha: 0.82, duration: 0.06, ease: "none" }, 0.9);
 
-                settle(forecastTimeline, desktop ? 0.99 : 0.92);
+                settle(forecastTimeline, desktop ? 0.64 : 0.92);
               }
             } else {
               const realMap = location.querySelector<HTMLElement>(".story-real-map");
