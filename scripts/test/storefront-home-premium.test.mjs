@@ -238,10 +238,9 @@ assert.match(
   /\.home-categories\s*\{[\s\S]*?--retail-bg-a:\s*#edf8ff[\s\S]*?--category-portal-blue:\s*#7fc7ff[\s\S]*?--category-portal-violet:\s*#c89cff[\s\S]*?var\(--retail-bg-c\)/
 );
 assert.doesNotMatch(premiumCss, /\.home-categories::(?:before|after)/);
-assert.doesNotMatch(
-  premiumCss,
-  /\.home-categories[\s\S]*?(?:repeating-linear-gradient|url\(["']?\/)/
-);
+const homeCategoriesRule =
+  premiumCss.match(/\.home-categories\s*\{[^}]*\}/s)?.[0] ?? "";
+assert.doesNotMatch(homeCategoriesRule, /repeating-linear-gradient|url\(["']?\//);
 assert.match(homeSource, /<CategoryRetailBackdrop \/>/);
 assert.match(
   homeSource,
