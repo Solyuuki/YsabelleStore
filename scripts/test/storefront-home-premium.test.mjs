@@ -340,7 +340,11 @@ assert.match(
 );
 assert.match(
   premiumCss,
-  /\.home-next-step__visual::before[\s\S]*?radial-gradient\([\s\S]*?filter:\s*blur\(20px\)/
+  /\.home-next-step__visual\s*\{[\s\S]*?position:\s*relative;[\s\S]*?min-height:\s*25rem/
+);
+assert.match(
+  premiumCss,
+  /\.home-next-step__visual-svg\s*\{[\s\S]*?width:\s*100%;[\s\S]*?height:\s*100%;[\s\S]*?overflow:\s*visible/
 );
 assert.doesNotMatch(homeSource, /className="home-next-step__story"/);
 assert.doesNotMatch(homeSource, /Start shopping\s*<ArrowRight/);
