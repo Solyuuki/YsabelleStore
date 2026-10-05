@@ -90,10 +90,15 @@ assert.match(homeSource, /const managedCover = category\.storefrontCover/);
 assert.doesNotMatch(homeSource, /getCategoryRepresentativeProducts/);
 assert.doesNotMatch(homeSource, /home-category-card__assortment/);
 assert.match(homeSource, /fallbackLabel="Category image pending"/);
-assert.match(homeSource, /const categoryPresentation = getCategoryPresentation\(category\.slug\)/);
-assert.match(homeSource, /const managedCover = category\.storefrontCover/);
+assert.match(
+  homeSource,
+  /const categoryPresentation = getCategoryPresentation\(category\.slug\)/
+);
 assert.match(homeSource, /managedCover \? \([\s\S]*?: categoryPresentation \? \(/);
-assert.match(homeSource, /objectPosition=\{categoryCoverObjectPosition\(managedCover\.position\)\}/);
+assert.match(
+  homeSource,
+  /objectPosition=\{categoryCoverObjectPosition\(managedCover\.position\)\}/
+);
 assert.match(homeSource, /categoryCoverObjectPosition/);
 assert.doesNotMatch(homeSource, /managedCover\.position === "LEFT"/);
 assert.match(homeSource, /categoryCoverObjectPosition\(managedCover\.position\)/);
