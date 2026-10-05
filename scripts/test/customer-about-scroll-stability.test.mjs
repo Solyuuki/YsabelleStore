@@ -42,7 +42,7 @@ test("About chapter 02 uses the product and catalog intelligence story", () => {
   assert.match(discover, /to Catalog Ready\./);
   assert.match(discover, /Product catalog workflow from source item to catalog-ready product/);
   assert.match(discover, /label: "Barcode"/);
-  assert.match(discover, /label: "Image quality"/);
+  assert.match(discover, /label: "Quality check"/);
   assert.match(discover, /label: "Normalize"/);
   assert.match(discover, /label: "Catalog ready"/);
   assert.doesNotMatch(discover, /story-catalog__index/);
