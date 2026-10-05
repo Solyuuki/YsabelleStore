@@ -88,10 +88,7 @@ test("About delivery chapter has isolated responsive styling", () => {
     layoutStyles,
     /grid-template-columns:\s*minmax\(0, 0\.8fr\) minmax\(35rem, 1\.2fr\)/
   );
-  assert.match(
-    layoutStyles,
-    /@media \(max-width: 1023px\)[\s\S]*?grid-template-columns:\s*1fr/
-  );
+  assert.match(layoutStyles, /@media \(max-width: 1023px\)[\s\S]*?grid-template-columns:\s*1fr/);
 });
 
 test("About delivery headline stays compact on desktop", () => {

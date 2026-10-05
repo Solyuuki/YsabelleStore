@@ -16,7 +16,10 @@ test("About chapter 02 is owned by the isolated catalog-intelligence stylesheet"
 test("About catalog headline preserves italic descenders without clipping", () => {
   const css = read("frontend/src/styles/about-catalog-intelligence.css");
 
-  assert.match(css, /story-catalog__copy h2[\s\S]*?overflow:\s*visible[\s\S]*?line-height:\s*1\.02/);
+  assert.match(
+    css,
+    /story-catalog__copy h2[\s\S]*?overflow:\s*visible[\s\S]*?line-height:\s*1\.02/
+  );
   assert.match(
     css,
     /story-mask:last-child[\s\S]*?overflow:\s*visible[\s\S]*?padding:\s*0\.08em 0\.14em 0\.42em 0\.08em/
@@ -30,7 +33,10 @@ test("About catalog headline preserves italic descenders without clipping", () =
 test("About catalog pipeline keeps five lightweight stages", () => {
   const css = read("frontend/src/styles/about-catalog-intelligence.css");
 
-  assert.match(css, /story-catalog__steps[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(
+    css,
+    /story-catalog__steps[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/
+  );
   assert.match(
     css,
     /story-catalog__step,[\s\S]*?border:\s*0;[\s\S]*?border-radius:\s*0;[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none/
