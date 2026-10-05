@@ -68,6 +68,9 @@ export function CustomerFooter({
           <button onClick={onStartGuide} type="button">
             Shopping Guide
           </button>
+          <CustomerLink href="/support" navigate={navigate}>
+            Customer Support
+          </CustomerLink>
         </div>
         <div className="customer-footer__visit-column">
           <h2>Visit us</h2>

@@ -41,19 +41,22 @@
 
 ## Historical Validation Detail
 
-| Date       | Command                                  | Result | Notes                                               |
-| ---------- | ---------------------------------------- | ------ | --------------------------------------------------- |
-| 2026-07-10 | `npm run format`                         | Passed | Completed successfully.                             |
-| 2026-07-10 | `npm run format:check`                   | Passed | Completed successfully.                             |
-| 2026-07-10 | `npm run lint`                           | Passed | Passed with existing Node module-type warning only. |
-| 2026-07-10 | `npm run typecheck --workspace frontend` | Passed | Completed successfully.                             |
-| 2026-07-10 | `npm run typecheck --workspace backend`  | Passed | Completed successfully.                             |
-| 2026-07-10 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                             |
-| 2026-07-10 | `npm run build`                          | Passed | Build completed successfully.                       |
-| 2026-07-10 | `npm audit --audit-level=high`           | Passed | Completed successfully.                             |
+| Date       | Command                                  | Result | Notes                                                             |
+| ---------- | ---------------------------------------- | ------ | ----------------------------------------------------------------- |
+| 2026-07-10 | `npm run format`                         | Passed | Completed successfully.                                           |
+| 2026-07-10 | `npm run format:check`                   | Passed | Completed successfully.                                           |
+| 2026-07-10 | `npm run lint`                           | Passed | Passed with existing Node module-type warning only.               |
+| 2026-07-10 | `npm run typecheck --workspace frontend` | Passed | Completed successfully.                                           |
+| 2026-07-10 | `npm run typecheck --workspace backend`  | Passed | Completed successfully.                                           |
+| 2026-07-10 | `npm run typecheck --workspace electron` | Passed | Completed successfully.                                           |
+| 2026-07-10 | `npm run build`                          | Passed | Build completed successfully.                                     |
+| 2026-07-10 | `npm audit --audit-level=high`           | Passed | Completed successfully.                                           |
+| 2026-09-30 | `npm run verify:code`                    | Passed | The aggregate read-only code verification completed successfully. |
 
 ## Manual Review Evidence
 
-| Date       | Area                                                                   | Result                    | Notes                                                                                                                                                               |
-| ---------- | ---------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-07-10 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+| Date       | Area                                                                   | Result                        | Notes                                                                                                                                                               |
+| ---------- | ---------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-10 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+| 2026-09-30 | Changed files                                                          | Not required by changed files | No changed user-facing flow was detected by the artifact update.                                                                                                    |
+| 2026-09-30 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |

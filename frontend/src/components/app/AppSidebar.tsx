@@ -29,7 +29,8 @@ const mainRoutes: readonly AppRoutePath[] = [
   "/inventory",
   "/receiving",
   "/sales",
-  "/deliveries"
+  "/deliveries",
+  "/customer-support"
 ];
 
 const ownerRoutesWithUsers: readonly AppRoutePath[] = [

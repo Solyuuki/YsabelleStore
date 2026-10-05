@@ -2,6 +2,7 @@ import {
   Boxes,
   ChartNoAxesCombined,
   FileBarChart,
+  Headphones,
   History,
   LayoutDashboard,
   LineChart,
@@ -28,6 +29,7 @@ export type AppRoutePath =
   | "/receiving"
   | "/sales"
   | "/deliveries"
+  | "/customer-support"
   | "/forecast"
   | "/historical-sales"
   | "/reports"
@@ -99,6 +101,13 @@ export const appRoutes: readonly AppRoute[] = [
     label: "Deliveries",
     description: "Customer delivery tickets, courier handoff, and COD settlement",
     icon: PackageCheck,
+    allowedRoles: ["OWNER", "STAFF"]
+  },
+  {
+    path: "/customer-support",
+    label: "Support",
+    description: "Customer support inbox and conversation workspace",
+    icon: Headphones,
     allowedRoles: ["OWNER", "STAFF"]
   },
   {
