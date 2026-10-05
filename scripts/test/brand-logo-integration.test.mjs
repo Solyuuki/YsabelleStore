@@ -45,7 +45,6 @@ test("customer and staff brand marks use shared bundled logo components", () => 
 test("About story branding keeps the real Ysabelle mark without synthetic fallbacks", () => {
   const brandMark = read("frontend/src/components/customer/YsabelleBrandMark.tsx");
   const discoverIdentity = read("frontend/src/components/customer/DiscoverBrandIdentity.tsx");
-  const handoff = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
   const styles = read("frontend/src/styles/brand.css");
 
   assert.match(brandMark, /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/);
@@ -53,7 +52,7 @@ test("About story branding keeps the real Ysabelle mark without synthetic fallba
   assert.match(brandMark, /\/brand\/ysabelle-store-mark-256\.png/);
   assert.doesNotMatch(brandMark, /ysabelle-brand-mark__fallback|\bStore\b|<BrandLogo/);
   assert.match(discoverIdentity, /YsabelleBrandMark/);
-  assert.match(handoff, /<YsabelleBrandMark variant="mini" \/>/);
+  assert.doesNotMatch(discoverIdentity, /<BrandLogo|ysabelle-brand-mark__fallback/);
   assert.match(styles, /background:\s*transparent/);
   assert.doesNotMatch(styles, /ysabelle-brand-mark__fallback/);
 });
