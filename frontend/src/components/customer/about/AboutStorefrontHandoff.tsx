@@ -1,7 +1,7 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, MapPin, Route, Truck } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 
@@ -14,20 +14,90 @@ const deliverySignals = [
 ] as const;
 
 const DELIVERY_VIDEO_SRC = "/media/about-delivery-operations-83b7547e.mp4";
+const DELIVERY_CROSSFADE_LEAD_SECONDS = 0.85;
+const DELIVERY_CROSSFADE_DURATION_MS = 720;
 
 export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) => void }) {
   const rootRef = useRef<HTMLElement>(null);
+  const videoRefs = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)] as const;
+  const activeVideoIndexRef = useRef<0 | 1>(0);
+  const deliveryTransitioningRef = useRef(false);
+  const deliveryTransitionTimerRef = useRef<number | null>(null);
+  const deliveryResetFrameRef = useRef<number | null>(null);
+  const deliveryVisibleRef = useRef(false);
+  const [activeVideoIndex, setActiveVideoIndex] = useState<0 | 1>(0);
+  const [incomingVideoIndex, setIncomingVideoIndex] = useState<0 | 1 | null>(null);
+  const [deliveryVideoReady, setDeliveryVideoReady] = useState(false);
+
+  const markDeliveryReady = (video: HTMLVideoElement) => {
+    setDeliveryVideoReady(true);
+    if (deliveryVisibleRef.current) void video.play().catch(() => undefined);
+  };
+
+  const beginDeliveryCrossfade = (fromIndex: 0 | 1) => {
+    if (
+      deliveryTransitioningRef.current ||
+      fromIndex !== activeVideoIndexRef.current ||
+      !deliveryVisibleRef.current
+    ) {
+      return;
+    }
+
+    const toIndex: 0 | 1 = fromIndex === 0 ? 1 : 0;
+    const outgoingVideo = videoRefs[fromIndex].current;
+    const incomingVideo = videoRefs[toIndex].current;
+    if (!outgoingVideo || !incomingVideo) return;
+
+    deliveryTransitioningRef.current = true;
+    incomingVideo.currentTime = 0;
+
+    void incomingVideo
+      .play()
+      .then(() => {
+        setIncomingVideoIndex(toIndex);
+
+        deliveryTransitionTimerRef.current = window.setTimeout(() => {
+          activeVideoIndexRef.current = toIndex;
+          setActiveVideoIndex(toIndex);
+          setIncomingVideoIndex(null);
+          deliveryTransitionTimerRef.current = null;
+
+          deliveryResetFrameRef.current = window.requestAnimationFrame(() => {
+            outgoingVideo.pause();
+            outgoingVideo.currentTime = 0;
+            deliveryTransitioningRef.current = false;
+            deliveryResetFrameRef.current = null;
+          });
+        }, DELIVERY_CROSSFADE_DURATION_MS);
+      })
+      .catch(() => {
+        deliveryTransitioningRef.current = false;
+        setIncomingVideoIndex(null);
+      });
+  };
+
+  const maybeCrossfadeDelivery = (video: HTMLVideoElement, index: 0 | 1) => {
+    if (
+      index !== activeVideoIndexRef.current ||
+      deliveryTransitioningRef.current ||
+      !deliveryVisibleRef.current ||
+      !Number.isFinite(video.duration) ||
+      video.duration <= 0 ||
+      video.duration - video.currentTime > DELIVERY_CROSSFADE_LEAD_SECONDS
+    ) {
+      return;
+    }
+
+    beginDeliveryCrossfade(index);
+  };
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
 
-    const video = root.querySelector<HTMLVideoElement>("[data-delivery-video]");
-    if (!video) return;
-
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduceMotion) {
-      video.pause();
+      videoRefs.forEach((ref) => ref.current?.pause());
       return;
     }
 
@@ -35,17 +105,30 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
       ([entry]) => {
         if (!entry) return;
 
+        deliveryVisibleRef.current = entry.isIntersecting;
+
         if (entry.isIntersecting) {
-          void video.play().catch(() => undefined);
+          const activeVideo = videoRefs[activeVideoIndexRef.current].current;
+          if (activeVideo) void activeVideo.play().catch(() => undefined);
         } else {
-          video.pause();
+          videoRefs.forEach((ref) => ref.current?.pause());
         }
       },
       { threshold: 0.2 }
     );
 
-    observer.observe(video);
-    return () => observer.disconnect();
+    observer.observe(root);
+
+    return () => {
+      observer.disconnect();
+      if (deliveryTransitionTimerRef.current !== null) {
+        window.clearTimeout(deliveryTransitionTimerRef.current);
+      }
+      if (deliveryResetFrameRef.current !== null) {
+        window.cancelAnimationFrame(deliveryResetFrameRef.current);
+      }
+      videoRefs.forEach((ref) => ref.current?.pause());
+    };
   }, []);
 
   useEffect(() => {
@@ -185,25 +268,42 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
         </div>
 
         <div className="story-delivery__visual" data-delivery-visual>
-          <div className="story-delivery__frame" data-delivery-frame>
+          <div className={`story-delivery__frame${deliveryVideoReady ? " is-video-ready" : ""}`} data-delivery-frame>
             <div aria-hidden="true" className="story-delivery__fallback">
               <Route />
               <span>Delivery network preview</span>
             </div>
-            <video
-              aria-label="Illustrative Ysabelle Store delivery network"
-              autoPlay
-              data-delivery-video
-              loop
-              muted
-              onCanPlay={(event) => {
-                event.currentTarget.parentElement?.classList.add("is-video-ready");
-              }}
-              playsInline
-              preload="metadata"
-            >
-              <source src={DELIVERY_VIDEO_SRC} type="video/mp4" />
-            </video>
+            {[0, 1].map((rawIndex) => {
+              const index = rawIndex as 0 | 1;
+              return (
+                <video
+                  aria-label={
+                    index === 0 ? "Illustrative Ysabelle Store delivery network" : undefined
+                  }
+                  autoPlay={index === 0}
+                  className={`story-delivery__video${index === activeVideoIndex ? " is-active" : ""}${
+                    index === incomingVideoIndex ? " is-incoming" : ""
+                  }`}
+                  data-delivery-video
+                  key={index}
+                  muted
+                  onCanPlay={index === 0 ? (event) => markDeliveryReady(event.currentTarget) : undefined}
+                  onEnded={() => beginDeliveryCrossfade(index)}
+                  onLoadedData={
+                    index === 0 ? (event) => markDeliveryReady(event.currentTarget) : undefined
+                  }
+                  onPlaying={
+                    index === 0 ? (event) => markDeliveryReady(event.currentTarget) : undefined
+                  }
+                  onTimeUpdate={(event) => maybeCrossfadeDelivery(event.currentTarget, index)}
+                  playsInline
+                  preload="auto"
+                  ref={videoRefs[index]}
+                  src={DELIVERY_VIDEO_SRC}
+                  tabIndex={-1}
+                />
+              );
+            })}
           </div>
         </div>
       </div>

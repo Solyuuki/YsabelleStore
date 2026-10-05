@@ -282,19 +282,26 @@
   pointer-events: none;
 }
 
-.about-experience .story-delivery__frame video {
-  position: relative;
+.about-experience .story-delivery__video {
+  position: absolute;
+  inset: 0;
   z-index: 2;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 320ms ease;
+  transition: opacity 720ms linear;
+  will-change: opacity;
 }
 
-.about-experience .story-delivery__frame.is-video-ready video {
+.about-experience .story-delivery__video.is-active,
+.about-experience .story-delivery__video.is-incoming {
   opacity: 1;
+}
+
+.about-experience .story-delivery__video.is-incoming {
+  z-index: 3;
 }
 
 .about-experience .story-delivery__fallback {
@@ -316,6 +323,10 @@
   width: 2rem;
   height: 2rem;
   color: #58c8ff;
+}
+
+.about-experience .story-delivery__fallback {
+  transition: opacity 360ms ease;
 }
 
 .about-experience .story-delivery__frame.is-video-ready .story-delivery__fallback {
@@ -452,7 +463,7 @@
     transform: none !important;
   }
 
-  .about-experience .story-delivery__frame video {
+  .about-experience .story-delivery__video {
     transition: none;
   }
 
