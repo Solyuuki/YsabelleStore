@@ -1461,8 +1461,8 @@ export function DiscoverPage({
 
             if (isAboutExperience && progressNav) {
               const secondSceneStart = sceneOwnershipStarts[1] ?? rootTop;
-              const entranceStart = secondSceneStart - viewportHeight * 0.2;
-              const entranceEnd = secondSceneStart + viewportHeight * 0.12;
+              const entranceStart = secondSceneStart - viewportHeight * 0.34;
+              const entranceEnd = secondSceneStart + viewportHeight * 0.08;
               const entranceProgress = gsap.utils.clamp(
                 0,
                 1,
@@ -1481,7 +1481,7 @@ export function DiscoverPage({
               const exitProgress = gsap.utils.clamp(
                 0,
                 1,
-                (finalSectionProgress - 0.7) / 0.28
+                (finalSectionProgress - 0.76) / 0.22
               );
               const visibility = entranceProgress * (1 - exitProgress);
               const shift = (1 - visibility) * 12;
