@@ -10720,11 +10720,35 @@
   color: #a6a2ff;
 }
 
+.system-preview__click-hint {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.38rem;
+  margin: 0.72rem 0.35rem 0;
+  padding: 0.38rem 0.5rem;
+  border: 1px solid rgb(125 131 255 / 24%);
+  border-radius: 0.55rem;
+  background: rgb(92 87 255 / 10%);
+  color: #c9ccff;
+  font-size: 0.59rem;
+  font-weight: 780;
+  letter-spacing: 0.01em;
+}
+
+.system-preview__click-hint svg {
+  width: 0.82rem;
+  height: 0.82rem;
+  flex: none;
+  color: #8fd2ff;
+}
+
 .system-preview__nav ol {
   display: grid;
   gap: 0.3rem;
   margin: 0;
-  padding: 0.85rem 0 0;
+  padding: 0.58rem 0 0;
   list-style: none;
 }
 
@@ -11396,6 +11420,10 @@
     justify-items: center;
     gap: 0.3rem;
     text-align: center;
+  }
+
+  .system-preview__click-hint {
+    margin: 0.65rem 0 0;
   }
 
   .system-preview__nav > p {

@@ -4,6 +4,7 @@ import {
   ClipboardCheck,
   Database,
   LineChart,
+  MousePointerClick,
   ShoppingBasket,
   Warehouse,
   type LucideIcon
@@ -406,6 +407,11 @@ export function SystemIntelligenceScene({
               <strong>{String(activeStage + 1).padStart(2, "0")} / 07</strong>
             </header>
 
+            <div className="system-preview__click-hint" aria-hidden="true">
+              <MousePointerClick />
+              <span>Click a stage to preview</span>
+            </div>
+
             <ol>
               {previewStages.map(({ icon: Icon, label, title }, index) => (
                 <li key={title}>
@@ -425,7 +431,7 @@ export function SystemIntelligenceScene({
               ))}
             </ol>
 
-            <p>Choose any stage to inspect the system without interrupting your scroll.</p>
+            <p>Each stage updates the workspace on the right.</p>
           </aside>
 
           <div className="system-preview__workspace">
