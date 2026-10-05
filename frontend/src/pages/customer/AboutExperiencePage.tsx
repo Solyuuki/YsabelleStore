@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 
 import { AboutStorefrontHandoff } from "@/components/customer/about/AboutStorefrontHandoff";
 import { DiscoverPage } from "@/pages/customer/DiscoverPage";
@@ -18,27 +18,30 @@ const storyTheme = {
 } as CSSProperties;
 
 export function AboutExperiencePage({ navigate }: { navigate: (path: string) => void }) {
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [storyReady, setStoryReady] = useState(false);
 
-  useLayoutEffect(() => {
-    const legacyShop = rootRef.current?.querySelector<HTMLElement>(
-      ".discover-story #discover-shop"
-    );
-    if (!legacyShop) return;
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setStoryReady(true);
+    });
 
-    legacyShop.id = "discover-shop-legacy";
-    legacyShop.classList.add("story-shop--legacy-hidden");
-    legacyShop.setAttribute("aria-hidden", "true");
-
-    return () => {
-      legacyShop.id = "discover-shop";
-      legacyShop.classList.remove("story-shop--legacy-hidden");
-      legacyShop.removeAttribute("aria-hidden");
-    };
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
+  if (!storyReady) {
+    return (
+      <section
+        aria-label="Opening About"
+        className="about-experience about-experience--boot about-experience-boot"
+        style={storyTheme}
+      >
+        <span className="sr-only">Opening Ysabelle Store About experience...</span>
+      </section>
+    );
+  }
+
   return (
-    <div className="about-experience" ref={rootRef} style={storyTheme}>
+    <div className="about-experience" style={storyTheme}>
       <DiscoverPage navigate={navigate} variant="about" />
       <AboutStorefrontHandoff navigate={navigate} />
     </div>

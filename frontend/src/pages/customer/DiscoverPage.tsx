@@ -2030,124 +2030,126 @@ export function DiscoverPage({
 
       <DeferredIntelligenceScene hideSectionNumber={isAboutExperience} />
 
-      <section className="story-scene story-shop" id="discover-shop" ref={shopSceneRef}>
-        <div className="customer-container story-shop__stage" data-story-motion>
-          <div className="story-shop__copy">
-            <span className="story-kicker">
-              {isAboutExperience ? "Shop with Ysabelle" : "06 / Shop with Ysabelle"}
-            </span>
-            <h2 className="story-display-safe">
-              <span className="story-mask">
-                <span className="story-mask__line">The Story Opens</span>
+      {!isAboutExperience ? (
+        <section className="story-scene story-shop" id="discover-shop" ref={shopSceneRef}>
+          <div className="customer-container story-shop__stage" data-story-motion>
+            <div className="story-shop__copy">
+              <span className="story-kicker">
+                {isAboutExperience ? "Shop with Ysabelle" : "06 / Shop with Ysabelle"}
               </span>
-              <span className="story-mask">
-                <span className="story-mask__line story-mask__line--sky">Into the Store.</span>
-              </span>
-            </h2>
-            <p>Search the live catalog, check real availability, and build your pickup order.</p>
-            <CustomerLink
-              className="customer-button customer-button--light"
-              href="/shop"
-              navigate={navigate}
-            >
-              Start shopping <ArrowRight aria-hidden="true" size={18} />
-            </CustomerLink>
-          </div>
-
-          <div className="story-live-store">
-            <div className="story-live-store__bar">
-              <span>
-                <Store aria-hidden="true" />
-                <strong>Everyday store essentials</strong>
-              </span>
+              <h2 className="story-display-safe">
+                <span className="story-mask">
+                  <span className="story-mask__line">The Story Opens</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line story-mask__line--sky">Into the Store.</span>
+                </span>
+              </h2>
+              <p>Search the live catalog, check real availability, and build your pickup order.</p>
               <CustomerLink
-                aria-label="Open cart"
-                className="story-live-store__cart"
-                href="/cart"
+                className="customer-button customer-button--light"
+                href="/shop"
                 navigate={navigate}
               >
-                <ShoppingCart aria-hidden="true" />
+                Start shopping <ArrowRight aria-hidden="true" size={18} />
               </CustomerLink>
             </div>
-            <CustomerLink className="story-live-store__search" href="/shop" navigate={navigate}>
-              <Search aria-hidden="true" />
-              Search the real catalog
-              <ArrowRight aria-hidden="true" />
-            </CustomerLink>
-
-            {catalogStatus === "ready" && showcaseProducts.length ? (
-              <div className="story-live-store__products">
-                {showcaseProducts.map((product, slotIndex) => {
-                  const outOfStock = product.availableStock <= 0;
-
-                  return (
-                    <article className="story-live-product" key={`${product.id}-${slotIndex}`}>
-                      <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
-                        <ProductVisual
-                          category={product.category.name}
-                          imageUrl={product.imageUrl}
-                          name={product.name}
-                        />
-                      </CustomerLink>
-                      <div className="story-live-product__body">
-                        <small>{product.category.name}</small>
+  
+            <div className="story-live-store">
+              <div className="story-live-store__bar">
+                <span>
+                  <Store aria-hidden="true" />
+                  <strong>Everyday store essentials</strong>
+                </span>
+                <CustomerLink
+                  aria-label="Open cart"
+                  className="story-live-store__cart"
+                  href="/cart"
+                  navigate={navigate}
+                >
+                  <ShoppingCart aria-hidden="true" />
+                </CustomerLink>
+              </div>
+              <CustomerLink className="story-live-store__search" href="/shop" navigate={navigate}>
+                <Search aria-hidden="true" />
+                Search the real catalog
+                <ArrowRight aria-hidden="true" />
+              </CustomerLink>
+  
+              {catalogStatus === "ready" && showcaseProducts.length ? (
+                <div className="story-live-store__products">
+                  {showcaseProducts.map((product, slotIndex) => {
+                    const outOfStock = product.availableStock <= 0;
+  
+                    return (
+                      <article className="story-live-product" key={`${product.id}-${slotIndex}`}>
                         <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
-                          <h3>{product.name}</h3>
+                          <ProductVisual
+                            category={product.category.name}
+                            imageUrl={product.imageUrl}
+                            name={product.name}
+                          />
                         </CustomerLink>
-                        <strong>{formatCurrency(product.sellingPrice)}</strong>
-                        <span
-                          className={`story-live-product__stock story-live-product__stock--${product.stockStatus.toLowerCase()}`}
-                        >
-                          {outOfStock
-                            ? "Out of stock"
-                            : product.stockStatus === "LOW_STOCK"
-                              ? `Only ${product.availableStock} left`
-                              : "In stock"}
-                        </span>
-                        <button
-                          disabled={outOfStock}
-                          onClick={() => addItem(product, 1)}
-                          type="button"
-                        >
-                          <ShoppingBasket aria-hidden="true" />
-                          {outOfStock ? "Unavailable" : "Quick add"}
-                        </button>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="story-live-store__unavailable" role="status">
-                <Package aria-hidden="true" />
-                <div>
-                  <strong>
-                    {catalogStatus === "loading"
-                      ? "Preparing available products"
-                      : "Live catalog preview unavailable"}
-                  </strong>
-                  <p>
-                    {catalogStatus === "loading"
-                      ? "Connecting to the store catalog and current stock."
-                      : catalogStatus === "error"
-                        ? catalogError
-                        : "No in-stock catalog products are available right now."}
-                  </p>
-                  {catalogStatus === "error" ? (
-                    <button
-                      onClick={() => setCatalogReloadKey((current) => current + 1)}
-                      type="button"
-                    >
-                      Retry connection
-                    </button>
-                  ) : null}
+                        <div className="story-live-product__body">
+                          <small>{product.category.name}</small>
+                          <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
+                            <h3>{product.name}</h3>
+                          </CustomerLink>
+                          <strong>{formatCurrency(product.sellingPrice)}</strong>
+                          <span
+                            className={`story-live-product__stock story-live-product__stock--${product.stockStatus.toLowerCase()}`}
+                          >
+                            {outOfStock
+                              ? "Out of stock"
+                              : product.stockStatus === "LOW_STOCK"
+                                ? `Only ${product.availableStock} left`
+                                : "In stock"}
+                          </span>
+                          <button
+                            disabled={outOfStock}
+                            onClick={() => addItem(product, 1)}
+                            type="button"
+                          >
+                            <ShoppingBasket aria-hidden="true" />
+                            {outOfStock ? "Unavailable" : "Quick add"}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="story-live-store__unavailable" role="status">
+                  <Package aria-hidden="true" />
+                  <div>
+                    <strong>
+                      {catalogStatus === "loading"
+                        ? "Preparing available products"
+                        : "Live catalog preview unavailable"}
+                    </strong>
+                    <p>
+                      {catalogStatus === "loading"
+                        ? "Connecting to the store catalog and current stock."
+                        : catalogStatus === "error"
+                          ? catalogError
+                          : "No in-stock catalog products are available right now."}
+                    </p>
+                    {catalogStatus === "error" ? (
+                      <button
+                        onClick={() => setCatalogReloadKey((current) => current + 1)}
+                        type="button"
+                      >
+                        Retry connection
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        <span aria-hidden="true" className="story-shop__handoff" />
-      </section>
+          <span aria-hidden="true" className="story-shop__handoff" />
+        </section>
+      ) : null}
     </div>
   );
 }
