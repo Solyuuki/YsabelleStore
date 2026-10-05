@@ -25,10 +25,7 @@ function resolveAboutOriginVideo() {
 }
 
 export function AboutWelcomeMotion() {
-  const videoRefs = [
-    useRef<HTMLVideoElement>(null),
-    useRef<HTMLVideoElement>(null)
-  ] as const;
+  const videoRefs = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)] as const;
   const transitionTimerRef = useRef<number | null>(null);
   const resetFrameRef = useRef<number | null>(null);
   const transitioningRef = useRef(false);
@@ -36,8 +33,8 @@ export function AboutWelcomeMotion() {
   const rootRef = useRef<HTMLDivElement>(null);
   const welcomeVisibleRef = useRef(true);
 
-  const [reduceMotion, setReduceMotion] = useState(() =>
-    window.matchMedia(REDUCED_MOTION_QUERY).matches
+  const [reduceMotion, setReduceMotion] = useState(
+    () => window.matchMedia(REDUCED_MOTION_QUERY).matches
   );
   const [videoReady, setVideoReady] = useState(false);
   const [activeIndex, setActiveIndex] = useState<0 | 1>(0);
@@ -159,11 +156,7 @@ export function AboutWelcomeMotion() {
     if (welcomeVisibleRef.current) void video.play().catch(() => undefined);
   }
 
-  function maybeCrossfade(
-    video: HTMLVideoElement,
-    index: 0 | 1,
-    mediaTime = video.currentTime
-  ) {
+  function maybeCrossfade(video: HTMLVideoElement, index: 0 | 1, mediaTime = video.currentTime) {
     if (
       transitioningRef.current ||
       index !== activeIndexRef.current ||
@@ -270,24 +263,16 @@ export function AboutWelcomeMotion() {
                 key={index}
                 muted
                 onCanPlay={
-                  index === 0
-                    ? (event) => markPrimaryReady(event.currentTarget)
-                    : undefined
+                  index === 0 ? (event) => markPrimaryReady(event.currentTarget) : undefined
                 }
                 onEnded={() => handleEnded(index)}
                 onLoadedData={
-                  index === 0
-                    ? (event) => markPrimaryReady(event.currentTarget)
-                    : undefined
+                  index === 0 ? (event) => markPrimaryReady(event.currentTarget) : undefined
                 }
                 onPlaying={
-                  index === 0
-                    ? (event) => markPrimaryReady(event.currentTarget)
-                    : undefined
+                  index === 0 ? (event) => markPrimaryReady(event.currentTarget) : undefined
                 }
-                onTimeUpdate={(event) =>
-                  maybeCrossfade(event.currentTarget, index)
-                }
+                onTimeUpdate={(event) => maybeCrossfade(event.currentTarget, index)}
                 playsInline
                 preload="auto"
                 ref={videoRefs[index]}

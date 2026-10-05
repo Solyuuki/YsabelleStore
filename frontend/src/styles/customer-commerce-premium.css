@@ -666,7 +666,6 @@
   }
 }
 
-
 /* Checkout validation evidence: explicit field, focus, and recovery states. */
 .customer-checkout-page input[aria-invalid="true"] {
   border-color: var(--customer-danger) !important;

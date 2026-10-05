@@ -1,17 +1,9 @@
 import { createHash } from "node:crypto";
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  statSync
-} from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 
-const EXPECTED_SHA256 =
-  "83b7547e99884795c14c5590400e09205c084eeca201c9c227da56b012745c6c";
+const EXPECTED_SHA256 = "83b7547e99884795c14c5590400e09205c084eeca201c9c227da56b012745c6c";
 const EXPECTED_SIZE = 3_374_456;
 const SOURCE_NAME = "gemini_generated_video_ac2b4173.mp4";
 const DESTINATION = resolve(
@@ -93,7 +85,9 @@ try {
       console.log(`SHA256: ${result.hash}`);
       process.exit(0);
     } catch {
-      console.warn("Existing About delivery video is stale and will be replaced if the approved source is available.");
+      console.warn(
+        "Existing About delivery video is stale and will be replaced if the approved source is available."
+      );
     }
   }
 
@@ -110,7 +104,9 @@ try {
 
   if (!source) {
     if (ifPresent) {
-      console.warn("Approved About delivery video source not found. Delivery preview will use its fallback visual.");
+      console.warn(
+        "Approved About delivery video source not found. Delivery preview will use its fallback visual."
+      );
       process.exit(0);
     }
 

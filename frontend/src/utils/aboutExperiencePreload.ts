@@ -1,10 +1,7 @@
 type AboutExperienceModule = typeof import("@/pages/customer/AboutExperiencePage");
 
 type IdleWindow = Window & {
-  requestIdleCallback?: (
-    callback: () => void,
-    options?: { timeout?: number }
-  ) => number;
+  requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
   cancelIdleCallback?: (handle: number) => void;
 };
 

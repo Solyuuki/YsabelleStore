@@ -23,8 +23,8 @@ export function AboutCatalogMotion() {
   const catalogVisibleRef = useRef(false);
   const catalogWarmRef = useRef(false);
 
-  const [reduceMotion, setReduceMotion] = useState(() =>
-    window.matchMedia(REDUCED_MOTION_QUERY).matches
+  const [reduceMotion, setReduceMotion] = useState(
+    () => window.matchMedia(REDUCED_MOTION_QUERY).matches
   );
   const [videoReady, setVideoReady] = useState(false);
   const [activeIndex, setActiveIndex] = useState<0 | 1>(0);

@@ -17,11 +17,7 @@
   padding: 0;
   overflow: hidden;
   background:
-    linear-gradient(
-      to bottom,
-      transparent 0 86%,
-      var(--story-seam-34) 98% 100%
-    ),
+    linear-gradient(to bottom, transparent 0 86%, var(--story-seam-34) 98% 100%),
     radial-gradient(circle at 12% 22%, rgb(0 140 255 / 18%), transparent 31%),
     radial-gradient(circle at 88% 70%, rgb(168 60 240 / 17%), transparent 32%),
     linear-gradient(135deg, #11172f 0%, #171943 46%, #211749 72%, #161b3d 100%);
@@ -83,11 +79,7 @@
   line-height: 0.94;
 }
 
-.about-experience
-  .discover-story
-  .story-sales__copy
-  .story-mask:last-child
-  .story-mask__line {
+.about-experience .discover-story .story-sales__copy .story-mask:last-child .story-mask__line {
   background: linear-gradient(108deg, #8ad6ff 0%, #7e75ff 34%, #b75af0 66%, #f067b0 100%);
   background-clip: text;
   color: transparent;

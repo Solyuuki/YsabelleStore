@@ -38,8 +38,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 22% 18%, rgb(98 91 255 / 14%), transparent 36%),
-    radial-gradient(circle at 82% 72%, rgb(244 63 140 / 11%), transparent 34%),
-    #f3f5ff;
+    radial-gradient(circle at 82% 72%, rgb(244 63 140 / 11%), transparent 34%), #f3f5ff;
   pointer-events: none;
 }
 
@@ -184,10 +183,7 @@
   -webkit-text-stroke: 0.5px rgb(76 92 226 / 42%);
 }
 
-.about-experience
-  .discover-story--about
-  .story-welcome__title
-  .story-mask__line--accent {
+.about-experience .discover-story--about .story-welcome__title .story-mask__line--accent {
   background:
     linear-gradient(
       180deg,
@@ -288,9 +284,7 @@
   width: 1.08rem;
   height: 1.08rem;
   color: #625bff;
-  filter:
-    drop-shadow(0 4px 8px rgb(98 91 255 / 18%))
-    drop-shadow(0 0 8px rgb(168 60 240 / 10%));
+  filter: drop-shadow(0 4px 8px rgb(98 91 255 / 18%)) drop-shadow(0 0 8px rgb(168 60 240 / 10%));
   stroke-width: 2.15;
   transform: translateY(0);
 }

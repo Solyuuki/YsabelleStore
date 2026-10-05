@@ -3,8 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { YsabelleBrandMark } from "./YsabelleBrandMark";
 
 const STORE_ENTRANCE_VIDEO = "/media/store-entrance.mp4?v=53360d48";
-const STORE_ENTRANCE_POSTER =
-  "/images/discover/essentials/canned-goods-retail-display.webp";
+const STORE_ENTRANCE_POSTER = "/images/discover/essentials/canned-goods-retail-display.webp";
 
 const EXIT_DURATION_MS = 620;
 const LOOP_FADE_LEAD_SECONDS = 0.55;
@@ -19,8 +18,7 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
   const [videoFailed, setVideoFailed] = useState(false);
 
   const prefersReducedMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
     return () => {
@@ -31,11 +29,7 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
   }, []);
 
   function maybeFadeForLoop(video: HTMLVideoElement) {
-    if (
-      loopResetPendingRef.current ||
-      !Number.isFinite(video.duration) ||
-      video.duration <= 0
-    ) {
+    if (loopResetPendingRef.current || !Number.isFinite(video.duration) || video.duration <= 0) {
       return;
     }
 
@@ -115,11 +109,7 @@ export function StoreEntrance({ onEnter }: { onEnter: () => void }) {
       <div aria-hidden="true" className="store-entrance__exit-curtain" />
 
       <div className="store-entrance__content">
-        <YsabelleBrandMark
-          className="store-entrance__brand-mark"
-          eager
-          variant="display"
-        />
+        <YsabelleBrandMark className="store-entrance__brand-mark" eager variant="display" />
 
         <div className="store-entrance__copy">
           <h1>

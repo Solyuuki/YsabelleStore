@@ -202,7 +202,9 @@ function CustomerAppRoutes({
 
   return (
     <CustomerLayout location={location} navigate={navigate} pathname={pathname}>
-      <Suspense fallback={pathname === "/about" ? <AboutRouteFallback /> : <CustomerRouteFallback />}>
+      <Suspense
+        fallback={pathname === "/about" ? <AboutRouteFallback /> : <CustomerRouteFallback />}
+      >
         {page}
       </Suspense>
     </CustomerLayout>
@@ -232,7 +234,6 @@ function CustomerRouteFallback() {
     </div>
   );
 }
-
 
 function readStoreEntranceState() {
   try {

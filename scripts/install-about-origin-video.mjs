@@ -1,17 +1,9 @@
 import { createHash } from "node:crypto";
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  statSync
-} from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 
-const EXPECTED_SHA256 =
-  "6738635db4cf22b744aba5ced30bc4a9533245e0f02352df406381d21487dad9";
+const EXPECTED_SHA256 = "6738635db4cf22b744aba5ced30bc4a9533245e0f02352df406381d21487dad9";
 const EXPECTED_SIZE = 2_554_527;
 const SOURCE_NAME = "gemini_generated_video_4013f49c.mp4";
 const DESTINATION = resolve(
@@ -93,7 +85,9 @@ try {
       console.log(`SHA256: ${result.hash}`);
       process.exit(0);
     } catch {
-      console.warn("Existing About origin video is stale and will be replaced if the approved source is available.");
+      console.warn(
+        "Existing About origin video is stale and will be replaced if the approved source is available."
+      );
     }
   }
 

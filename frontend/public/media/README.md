@@ -76,4 +76,3 @@ Runtime behavior:
 - Playback pauses when the hero leaves the viewport or the document becomes hidden.
 - A lightweight animated CSS plate remains behind the video and is used if the media is missing, still loading, autoplay is unavailable, or reduced motion is requested.
 - Shader/scrim, responsive typography, and scroll transitions remain separate CSS/GSAP layers.
-

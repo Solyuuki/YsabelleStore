@@ -1,22 +1,12 @@
 import { createHash } from "node:crypto";
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  statSync
-} from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 
-const EXPECTED_SHA256 =
-  "53360d489f4303761658cc62cc5984f4ea43116b470ae7e63d263c48497e4df3";
+const EXPECTED_SHA256 = "53360d489f4303761658cc62cc5984f4ea43116b470ae7e63d263c48497e4df3";
 const EXPECTED_SIZE = 5_417_920;
 const SOURCE_NAME = "gemini_generated_video_9a2cd402.mp4";
-const DESTINATION = resolve(
-  process.cwd(),
-  "frontend/public/media/store-entrance.mp4"
-);
+const DESTINATION = resolve(process.cwd(), "frontend/public/media/store-entrance.mp4");
 
 function sha256(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");

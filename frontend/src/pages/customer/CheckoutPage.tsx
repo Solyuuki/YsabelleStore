@@ -191,13 +191,12 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         nextValidationErrors.customerName = "Enter your full name.";
       }
       if (effectivePhone.length < 7) {
-        nextValidationErrors.customerPhone = "Enter a valid mobile number for delivery coordination.";
+        nextValidationErrors.customerPhone =
+          "Enter a valid mobile number for delivery coordination.";
       }
-      if (
-        customerEmail &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)
-      ) {
-        nextValidationErrors.customerEmail = "Enter a valid email address or leave this field blank.";
+      if (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+        nextValidationErrors.customerEmail =
+          "Enter a valid email address or leave this field blank.";
       }
       if (!checkoutAddressIsComplete(effectiveAddress)) {
         nextValidationErrors.address = "Complete all required delivery address fields.";
@@ -340,7 +339,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <label>
                   <span>Full name</span>
                   <input
-                    aria-describedby={validationErrors.customerName ? "checkout-name-error" : undefined}
+                    aria-describedby={
+                      validationErrors.customerName ? "checkout-name-error" : undefined
+                    }
                     aria-invalid={Boolean(validationErrors.customerName)}
                     autoComplete="name"
                     maxLength={120}
@@ -380,7 +381,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   ) : (
                     <div className="customer-checkout-alternate-field">
                       <input
-                        aria-describedby={validationErrors.customerPhone ? "checkout-phone-error" : undefined}
+                        aria-describedby={
+                          validationErrors.customerPhone ? "checkout-phone-error" : undefined
+                        }
                         aria-invalid={Boolean(validationErrors.customerPhone)}
                         autoComplete="tel"
                         maxLength={40}
@@ -406,7 +409,10 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                             }));
                             setEditingContactPhone(false);
                             setSaveContactPhoneToAccount(false);
-                            setValidationErrors((current) => ({ ...current, customerPhone: undefined }));
+                            setValidationErrors((current) => ({
+                              ...current,
+                              customerPhone: undefined
+                            }));
                           }}
                           type="button"
                         >
@@ -436,7 +442,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     Email <small>(optional)</small>
                   </span>
                   <input
-                    aria-describedby={validationErrors.customerEmail ? "checkout-email-error" : undefined}
+                    aria-describedby={
+                      validationErrors.customerEmail ? "checkout-email-error" : undefined
+                    }
                     aria-invalid={Boolean(validationErrors.customerEmail)}
                     autoComplete="email"
                     maxLength={191}
@@ -510,7 +518,11 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     </button>
                   ) : null}
                   {validationErrors.address ? (
-                    <div className="customer-address-validation" id="checkout-address-error" role="alert">
+                    <div
+                      className="customer-address-validation"
+                      id="checkout-address-error"
+                      role="alert"
+                    >
                       {validationErrors.address}
                     </div>
                   ) : null}
@@ -521,7 +533,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         autoComplete="address-line1"
                         maxLength={180}
                         minLength={3}
-                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
                         aria-invalid={Boolean(validationErrors.address)}
                         name="addressLine1"
                         onChange={updateAddress}
@@ -548,7 +562,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                       <input
                         maxLength={120}
                         minLength={2}
-                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
                         aria-invalid={Boolean(validationErrors.address)}
                         name="barangay"
                         onChange={updateAddress}
@@ -562,7 +578,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         autoComplete="address-level2"
                         maxLength={120}
                         minLength={2}
-                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
                         aria-invalid={Boolean(validationErrors.address)}
                         name="cityMunicipality"
                         onChange={updateAddress}
@@ -576,7 +594,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         autoComplete="address-level1"
                         maxLength={120}
                         minLength={2}
-                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
                         aria-invalid={Boolean(validationErrors.address)}
                         name="provinceRegion"
                         onChange={updateAddress}
@@ -591,7 +611,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         inputMode="numeric"
                         maxLength={20}
                         minLength={3}
-                        aria-describedby={validationErrors.address ? "checkout-address-error" : undefined}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
                         aria-invalid={Boolean(validationErrors.address)}
                         name="postalCode"
                         onChange={updateAddress}

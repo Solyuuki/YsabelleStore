@@ -88,14 +88,8 @@ export function ProductCard({
             >
               {resolvedBadge.tone === "trending" ? (
                 <span aria-hidden="true" className="customer-product-badge__fire">
-                  <Flame
-                    className="customer-product-badge__fire-outer"
-                    fill="currentColor"
-                  />
-                  <Flame
-                    className="customer-product-badge__fire-inner"
-                    fill="currentColor"
-                  />
+                  <Flame className="customer-product-badge__fire-outer" fill="currentColor" />
+                  <Flame className="customer-product-badge__fire-inner" fill="currentColor" />
                 </span>
               ) : resolvedBadge.tone === "best-seller" ? (
                 <span aria-hidden="true" className="customer-product-badge__medal">
