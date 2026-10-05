@@ -234,12 +234,12 @@ function initializeIntelligenceTimeline(
     scrollTrigger: {
       trigger: intelligence,
       start: "top top+=76",
-      end: () => `+=${Math.max(5600, Math.round(window.innerHeight * 7.2))}`,
+      end: () => `+=${Math.max(2900, Math.round(window.innerHeight * 3.3))}`,
       pin: intelligence,
       pinSpacing: true,
       anticipatePin: 1,
       invalidateOnRefresh: true,
-      scrub: 0.35
+      scrub: 0.32
     }
   });
 
@@ -253,8 +253,10 @@ function initializeIntelligenceTimeline(
       0.34
     );
 
+  const stageStarts = [0.42, 0.72, 1.08, 1.52, 2.0, 2.3, 2.65] as const;
+
   panels.forEach((panel, index) => {
-    const stageStart = 0.55 + index * 0.82;
+    const stageStart = stageStarts[index]!;
     const buildElements = Array.from(
       panel.querySelectorAll<HTMLElement>("[data-intelligence-build]")
     );
@@ -270,62 +272,61 @@ function initializeIntelligenceTimeline(
     if (index === 0) {
       intelligenceTimeline
         .set(panel, { display: "block" }, stageStart - 0.06)
-        .to(panel, { autoAlpha: 1, duration: 0.14, ease: "power2.out", y: 0 }, stageStart);
+        .to(panel, { autoAlpha: 1, duration: 0.09, ease: "power2.out", y: 0 }, stageStart);
     } else {
-      const handoffStart = stageStart - 0.14;
+      const handoffStart = stageStart - 0.06;
       const progress = index / (panels.length - 1);
 
       intelligenceTimeline
         .set(panel, { display: "block" }, handoffStart)
         .to(
           panels[index - 1]!,
-          { autoAlpha: 0, duration: 0.1, ease: "power1.in", y: -10 },
+          { autoAlpha: 0, duration: 0.065, ease: "power1.in", y: -8 },
           handoffStart
         )
-        .to(intelligenceProgress, { duration: 0.12, ease: "none", scaleY: progress }, handoffStart)
-        .to(markers[index - 1]!, { duration: 0.1, opacity: 0.68 }, handoffStart)
-        .to(markers[index]!, { duration: 0.1, opacity: 1 }, handoffStart)
+        .to(intelligenceProgress, { duration: 0.075, ease: "none", scaleY: progress }, handoffStart)
+        .to(markers[index - 1]!, { duration: 0.06, opacity: 0.68 }, handoffStart)
+        .to(markers[index]!, { duration: 0.06, opacity: 1 }, handoffStart)
         .set(
           markerIcons[index - 1]!,
           { backgroundColor: "#242a62", color: "#9c96ff" },
           handoffStart
         )
         .set(markerIcons[index]!, { backgroundColor: "#f7f9ff", color: "#625bff" }, handoffStart)
-        .set(panels[index - 1]!, { display: "none" }, handoffStart + 0.11)
+        .set(panels[index - 1]!, { display: "none" }, handoffStart + 0.07)
         .to(panel, { autoAlpha: 1, duration: 0.14, ease: "power2.out", y: 0 }, stageStart);
     }
 
     if (buildElements.length) {
       intelligenceTimeline.to(
         buildElements,
-        { autoAlpha: 1, duration: 0.16, ease: "power2.out", stagger: 0.025, y: 0 },
-        stageStart + 0.14
+        { autoAlpha: 1, duration: 0.11, ease: "power2.out", stagger: 0.016, y: 0 },
+        stageStart + 0.1
       );
     }
 
     if (lineElements.length) {
       intelligenceTimeline.to(
         lineElements,
-        { duration: 0.2, ease: "none", scaleX: 1 },
-        stageStart + 0.34
+        { duration: 0.13, ease: "none", scaleX: 1 },
+        stageStart + 0.22
       );
     }
 
     if (chartPaths.length) {
       intelligenceTimeline.to(
         chartPaths,
-        { duration: 0.24, ease: "none", stagger: 0.04, strokeDashoffset: 0 },
-        stageStart + 0.32
+        { duration: index === 3 ? 0.2 : 0.15, ease: "none", stagger: 0.025, strokeDashoffset: 0 },
+        stageStart + 0.2
       );
     }
   });
 
   intelligenceTimeline
-    .addLabel("intelligence-complete", 6.15)
-    .to({ hold: 0 }, { duration: 1, ease: "none", hold: 1 }, 6.15)
-    .to(intelligenceHandoff, { duration: 0.18, ease: "none", scaleX: 1 }, 7.15)
-    .to({ hold: 0 }, { duration: 0.05, ease: "none", hold: 1 }, 7.35);
-  settle(intelligenceTimeline, 0.99);
+    .to(intelligenceProgress, { duration: 0.08, ease: "none", scaleY: 1 }, 2.92)
+    .addLabel("intelligence-complete", 3.02)
+    .to(intelligenceHandoff, { duration: 0.08, ease: "none", scaleX: 1 }, 3.08);
+  settle(intelligenceTimeline, 0.88);
 
   return () => {
     delete intelligence.dataset.storyMotionInitialized;
