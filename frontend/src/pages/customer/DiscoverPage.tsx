@@ -1469,15 +1469,19 @@ export function DiscoverPage({
                 (scrollTop - entranceStart) / Math.max(1, entranceEnd - entranceStart)
               );
 
-              const finalViewportProgress = gsap.utils.clamp(
+              const finalScrollSpan = Math.max(
+                viewportHeight * 0.24,
+                finalSceneHeight - viewportHeight
+              );
+              const finalSectionProgress = gsap.utils.clamp(
                 0,
                 1,
-                (scrollTop + viewportHeight * 0.5 - finalSceneTop) / finalSceneHeight
+                (scrollTop - finalSceneTop) / finalScrollSpan
               );
               const exitProgress = gsap.utils.clamp(
                 0,
                 1,
-                (finalViewportProgress - 0.78) / 0.18
+                (finalSectionProgress - 0.7) / 0.28
               );
               const visibility = entranceProgress * (1 - exitProgress);
               const shift = (1 - visibility) * 12;
