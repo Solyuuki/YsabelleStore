@@ -1481,7 +1481,7 @@ export function DiscoverPage({
               const exitProgress = gsap.utils.clamp(
                 0,
                 1,
-                (finalSectionProgress - 0.76) / 0.22
+                (finalSectionProgress - 0.7) / 0.28
               );
               const visibility = entranceProgress * (1 - exitProgress);
               const shift = (1 - visibility) * 12;
@@ -1523,20 +1523,54 @@ export function DiscoverPage({
             }
           };
 
-          ScrollTrigger.create({
+          let storyUiFrame = 0;
+
+          const flushStoryUi = () => {
+            if (storyUiFrame) {
+              window.cancelAnimationFrame(storyUiFrame);
+              storyUiFrame = 0;
+            }
+            updateStoryUi();
+          };
+
+          const requestStoryUiUpdate = () => {
+            if (storyUiFrame) return;
+
+            storyUiFrame = window.requestAnimationFrame(() => {
+              storyUiFrame = 0;
+              updateStoryUi();
+            });
+          };
+
+          window.addEventListener("scroll", requestStoryUiUpdate, { passive: true });
+          window.addEventListener("resize", requestStoryUiUpdate, { passive: true });
+
+          const progressTrigger = ScrollTrigger.create({
             trigger: storyBoundsRoot,
             start: "top bottom",
             end: "bottom top",
-            onEnter: updateStoryUi,
-            onEnterBack: updateStoryUi,
+            onEnter: requestStoryUiUpdate,
+            onEnterBack: requestStoryUiUpdate,
+            onLeave: flushStoryUi,
+            onLeaveBack: flushStoryUi,
             onRefresh: () => {
               cacheStoryLayout();
-              updateStoryUi();
+              flushStoryUi();
             },
-            onUpdate: updateStoryUi
+            onUpdate: requestStoryUiUpdate
           });
 
+          cacheStoryLayout();
+          requestStoryUiUpdate();
+
           return () => {
+            progressTrigger.kill();
+            window.removeEventListener("scroll", requestStoryUiUpdate);
+            window.removeEventListener("resize", requestStoryUiUpdate);
+            if (storyUiFrame) {
+              window.cancelAnimationFrame(storyUiFrame);
+              storyUiFrame = 0;
+            }
             root.removeEventListener("story:intelligence-ready", handleIntelligenceReady);
             cleanupIntelligenceTimeline?.();
             beginning?.classList.remove("is-story-active");
