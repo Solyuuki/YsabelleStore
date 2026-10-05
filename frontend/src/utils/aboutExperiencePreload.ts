@@ -1,14 +1,16 @@
-type AboutExperienceModule = typeof import("@/pages/customer/AboutExperiencePage");
-
 type IdleWindow = Window & {
   requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
   cancelIdleCallback?: (handle: number) => void;
 };
 
-let aboutModulePromise: Promise<AboutExperienceModule> | null = null;
+function importAboutExperienceModule() {
+  return import("@/pages/customer/AboutExperiencePage");
+}
+
+let aboutModulePromise: ReturnType<typeof importAboutExperienceModule> | null = null;
 
 export function loadAboutExperienceModule() {
-  aboutModulePromise ??= import("@/pages/customer/AboutExperiencePage");
+  aboutModulePromise ??= importAboutExperienceModule();
   return aboutModulePromise;
 }
 
