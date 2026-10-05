@@ -716,7 +716,7 @@ export function DiscoverPage({
                     scrollTrigger: {
                       trigger: essentials,
                       start: "top 94%",
-                      end: "top top-=72",
+                      end: "top top+=76",
                       invalidateOnRefresh: true,
                       scrub: 0.2
                     }
@@ -1044,7 +1044,7 @@ export function DiscoverPage({
                   scrollTrigger: desktop
                     ? {
                         trigger: location,
-                        start: "top top-=72",
+                        start: "top top+=76",
                         end: () =>
                           `+=${Math.max(1500, Math.round(window.innerHeight * 1.85))}`,
                         pin: location,

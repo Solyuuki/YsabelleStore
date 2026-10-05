@@ -19,7 +19,7 @@
     radial-gradient(circle at 12% 18%, rgb(0 140 255 / 10%), transparent 34%),
     radial-gradient(circle at 88% 76%, rgb(168 60 240 / 11%), transparent 36%),
     linear-gradient(145deg, #0b1329 0%, #101934 46%, #18173d 74%, #11162f 100%);
-  color: #f7f9ff;
+  color: #ffffff;
 }
 
 .about-experience .discover-story .story-forecast::before {
@@ -78,20 +78,20 @@
   font-size: clamp(2.05rem, min(3.55vw, 5vh), 3.9rem);
   line-height: 1;
   text-align: center;
-  text-shadow: 0 6px 28px rgb(3 8 28 / 34%);
+  text-shadow: 0 5px 22px rgb(3 8 28 / 28%);
 }
 
 .about-experience .discover-story .story-forecast__header h2 .story-mask__line {
   display: inline;
-  color: #f7f9ff;
+  color: #ffffff;
   white-space: nowrap;
 }
 
 .about-experience .discover-story .story-forecast__emphasis {
-  color: #f7f9ff;
+  color: #ffffff;
   font-style: italic;
   font-weight: inherit;
-  -webkit-text-fill-color: #f7f9ff;
+  -webkit-text-fill-color: #ffffff;
 }
 
 .about-experience .discover-story .story-forecast__lead {
