@@ -71,7 +71,15 @@
   margin-top: 1rem;
   color: var(--story-navy);
   font-size: clamp(3rem, min(4.8vw, 7vh), 5.3rem);
-  line-height: 0.94;
+  line-height: 0.98;
+}
+
+.about-experience
+  .discover-story
+  .story-catalog__copy
+  .story-mask:last-child {
+  overflow: visible;
+  padding-bottom: 0.28em;
 }
 
 .about-experience
@@ -79,10 +87,12 @@
   .story-catalog__copy
   .story-mask:last-child
   .story-mask__line {
+  padding: 0.02em 0.08em 0.12em 0.02em;
   background: linear-gradient(105deg, var(--story-indigo), var(--story-violet), var(--story-magenta));
   background-clip: text;
   color: transparent;
   font-style: italic;
+  line-height: 1.02;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
