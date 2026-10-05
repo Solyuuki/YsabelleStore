@@ -55,7 +55,7 @@ const aboutStoryScenes = [
   { id: "discover-essentials", label: "Sales & inventory" },
   { id: "discover-location", label: "Forecast intelligence" },
   { id: "discover-smarter", label: "System intelligence" },
-  { id: "discover-shop", label: "Shop with Ysabelle" }
+  { id: "discover-shop", label: "Delivery operations" }
 ];
 
 const storeAddress = "110 A. Mabini Street, Pasig City, Metro Manila";
@@ -400,11 +400,18 @@ export function DiscoverPage({
           }
 
           const scrub = desktop ? 0.45 : tablet ? 0.32 : 0.22;
+          const progressNav = first<HTMLElement>(".discover-progress");
           const progressFill = first<HTMLElement>(".discover-progress__fill");
 
           if (progressFill) {
             progressFill.style.transform = "scaleY(0)";
             progressFill.style.transformOrigin = "top";
+          }
+
+          if (isAboutExperience && progressNav) {
+            progressNav.style.setProperty("--about-progress-opacity", "0");
+            progressNav.style.setProperty("--about-progress-shift", "12px");
+            progressNav.style.setProperty("--about-progress-scale", "0.965");
           }
 
           const welcome = first<HTMLElement>(".story-welcome");
@@ -1396,18 +1403,47 @@ export function DiscoverPage({
           let rootTop = 0;
           let rootBottom = 0;
           let sceneOwnershipStarts: number[] = [];
+          let trackedScenes: HTMLElement[] = [];
+          let finalSceneTop = 0;
+          let finalSceneHeight = 1;
+          const storyBoundsRoot =
+            isAboutExperience && root.closest<HTMLElement>(".about-experience")
+              ? root.closest<HTMLElement>(".about-experience")!
+              : root;
+
+          const resolveTrackedScenes = () => {
+            if (!isAboutExperience) return scenes;
+
+            return navigationScenes.flatMap((scene) => {
+              const target = document.getElementById(scene.id);
+              return target ? [target] : [];
+            });
+          };
 
           const cacheStoryLayout = () => {
-            const rootBounds = root.getBoundingClientRect();
+            trackedScenes = resolveTrackedScenes();
+
+            const rootBounds = storyBoundsRoot.getBoundingClientRect();
             const ownershipOffset = desktop ? 76 : window.innerHeight * 0.5;
             rootTop = rootBounds.top + window.scrollY;
             rootBottom = rootBounds.bottom + window.scrollY;
-            sceneOwnershipStarts = scenes.map((scene) => {
+
+            sceneOwnershipStarts = trackedScenes.map((scene) => {
               const anchor = scene.parentElement?.classList.contains("pin-spacer")
                 ? scene.parentElement
                 : scene;
               return anchor.getBoundingClientRect().top + window.scrollY - ownershipOffset;
             });
+
+            const finalScene = isAboutExperience
+              ? document.getElementById("discover-shop")
+              : trackedScenes.at(-1) ?? null;
+
+            if (finalScene) {
+              const finalBounds = finalScene.getBoundingClientRect();
+              finalSceneTop = finalBounds.top + window.scrollY;
+              finalSceneHeight = Math.max(1, finalBounds.height);
+            }
           };
 
           const updateStoryUi = () => {
@@ -1423,13 +1459,52 @@ export function DiscoverPage({
 
             if (progressFill) progressFill.style.transform = `scaleY(${progress})`;
 
-            const progressVisibilityStart = sceneOwnershipStarts[1] ?? rootTop;
-            const nextProgressActive =
-              scrollTop >= progressVisibilityStart &&
-              scrollTop <= rootBottom - viewportHeight * 0.25;
-            if (nextProgressActive !== progressActive) {
-              progressActive = nextProgressActive;
-              root.classList.toggle("story-progress-active", progressActive);
+            if (isAboutExperience && progressNav) {
+              const secondSceneStart = sceneOwnershipStarts[1] ?? rootTop;
+              const entranceStart = secondSceneStart - viewportHeight * 0.2;
+              const entranceEnd = secondSceneStart + viewportHeight * 0.12;
+              const entranceProgress = gsap.utils.clamp(
+                0,
+                1,
+                (scrollTop - entranceStart) / Math.max(1, entranceEnd - entranceStart)
+              );
+
+              const finalViewportProgress = gsap.utils.clamp(
+                0,
+                1,
+                (scrollTop + viewportHeight * 0.5 - finalSceneTop) / finalSceneHeight
+              );
+              const exitProgress = gsap.utils.clamp(
+                0,
+                1,
+                (finalViewportProgress - 0.78) / 0.18
+              );
+              const visibility = entranceProgress * (1 - exitProgress);
+              const shift = (1 - visibility) * 12;
+              const scale = 0.965 + visibility * 0.035;
+
+              progressNav.style.setProperty(
+                "--about-progress-opacity",
+                visibility.toFixed(3)
+              );
+              progressNav.style.setProperty(
+                "--about-progress-shift",
+                `${shift.toFixed(2)}px`
+              );
+              progressNav.style.setProperty(
+                "--about-progress-scale",
+                scale.toFixed(4)
+              );
+              progressNav.classList.toggle("is-interactive", visibility >= 0.92);
+            } else {
+              const progressVisibilityStart = sceneOwnershipStarts[1] ?? rootTop;
+              const nextProgressActive =
+                scrollTop >= progressVisibilityStart &&
+                scrollTop <= rootBottom - viewportHeight * 0.25;
+              if (nextProgressActive !== progressActive) {
+                progressActive = nextProgressActive;
+                root.classList.toggle("story-progress-active", progressActive);
+              }
             }
 
             let nextScene = 0;
@@ -1437,14 +1512,15 @@ export function DiscoverPage({
               if (sceneOwnershipStarts[index]! <= scrollTop) nextScene = index;
               else break;
             }
-            if (nextScene !== currentScene) {
+
+            if (nextScene !== currentScene && nextScene < navigationScenes.length) {
               currentScene = nextScene;
               setActiveScene(nextScene);
             }
           };
 
           ScrollTrigger.create({
-            trigger: root,
+            trigger: storyBoundsRoot,
             start: "top bottom",
             end: "bottom top",
             onEnter: updateStoryUi,
@@ -1462,6 +1538,12 @@ export function DiscoverPage({
             beginning?.classList.remove("is-story-active");
             shop?.classList.remove("story-shop-motion-ready");
             root.classList.remove("story-motion-ready", "story-progress-active");
+            if (progressNav) {
+              progressNav.classList.remove("is-interactive");
+              progressNav.style.removeProperty("--about-progress-opacity");
+              progressNav.style.removeProperty("--about-progress-shift");
+              progressNav.style.removeProperty("--about-progress-scale");
+            }
             if (progressFill) {
               progressFill.style.removeProperty("transform");
               progressFill.style.removeProperty("transform-origin");
