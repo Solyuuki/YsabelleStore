@@ -323,7 +323,7 @@ export function DiscoverPage({
   }, [shouldPreloadShelfAssets]);
 
   useEffect(() => {
-    if (!shouldLoadCatalog) return;
+    if (!shouldLoadCatalog || isAboutExperience) return;
 
     const controller = new AbortController();
     setCatalogProducts([]);
@@ -359,7 +359,7 @@ export function DiscoverPage({
       });
 
     return () => controller.abort();
-  }, [catalogReloadKey, shouldLoadCatalog]);
+  }, [catalogReloadKey, isAboutExperience, shouldLoadCatalog]);
 
   useEffect(() => {
     const root = rootRef.current;
