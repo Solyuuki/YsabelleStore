@@ -10675,10 +10675,11 @@
 }
 
 .system-preview {
+  position: relative;
   display: grid;
   min-height: clamp(34rem, 58vh, 40rem);
   grid-template-columns: minmax(13rem, 0.23fr) minmax(0, 1fr);
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgb(139 148 255 / 20%);
   border-radius: 1.25rem;
   background: #f7f9ff;
@@ -10686,11 +10687,14 @@
 }
 
 .system-preview__nav {
+  position: relative;
+  z-index: 3;
   display: flex;
   min-width: 0;
   flex-direction: column;
   padding: 1.05rem 0.9rem;
   border-right: 1px solid rgb(142 150 222 / 18%);
+  border-radius: 1.2rem 0 0 1.2rem;
   background: #161b3a;
   color: #eef2ff;
 }
@@ -10735,8 +10739,8 @@
 .system-preview__coachmark {
   position: absolute;
   top: 50%;
-  left: calc(100% + 0.72rem);
-  z-index: 12;
+  left: calc(100% + 0.9rem);
+  z-index: 30;
   display: flex;
   width: max-content;
   max-width: 12.5rem;
@@ -10885,9 +10889,13 @@
 }
 
 .system-preview__workspace {
+  position: relative;
+  z-index: 1;
   display: grid;
   min-width: 0;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border-radius: 0 1.2rem 1.2rem 0;
   background:
     radial-gradient(circle at 100% 0%, rgb(111 117 255 / 8%), transparent 28%),
     #f7f9ff;
@@ -11491,6 +11499,11 @@
     padding: 0.8rem;
     border-right: 0;
     border-bottom: 1px solid rgb(142 150 222 / 18%);
+    border-radius: 1.2rem 1.2rem 0 0;
+  }
+
+  .system-preview__workspace {
+    border-radius: 0 0 1.2rem 1.2rem;
   }
 
   .system-preview__nav ol {
