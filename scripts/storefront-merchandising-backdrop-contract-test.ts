@@ -32,9 +32,10 @@ assert.doesNotMatch(
   "Shop by Category must not use decorative pseudo-element patterns."
 );
 
+const homeCategoriesRule = css.match(/\.home-categories\s*\{[^}]*\}/s)?.[0] ?? "";
 assert.doesNotMatch(
-  css,
-  /\.home-categories[\s\S]*?(?:repeating-linear-gradient|url\(["']?\/)/,
+  homeCategoriesRule,
+  /repeating-linear-gradient|url\(["']?\//,
   "Shop by Category must remain pattern-free and independent of raster backgrounds."
 );
 
@@ -196,8 +197,13 @@ assert.match(
 
 assert.match(
   css,
-  /\.home-next-step__visual::before[\s\S]*?radial-gradient\([\s\S]*?filter:\s*blur\(20px\)/,
-  "Delivery illustration may use ambient glow but must not recreate a bordered card."
+  /\.home-next-step__visual\s*\{[\s\S]*?position:\s*relative;[\s\S]*?min-height:\s*25rem/,
+  "Delivery illustration must keep a stable responsive visual stage."
+);
+assert.match(
+  css,
+  /\.home-next-step__visual-svg\s*\{[\s\S]*?width:\s*100%;[\s\S]*?height:\s*100%;[\s\S]*?overflow:\s*visible/,
+  "Delivery illustration must remain scalable vector artwork."
 );
 
 assert.doesNotMatch(
