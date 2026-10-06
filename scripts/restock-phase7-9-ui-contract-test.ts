@@ -36,10 +36,7 @@ assert.doesNotMatch(reportsSource, /New product restock/);
 assert.doesNotMatch(reportsSource, /Add new product/);
 assert.match(forecastSource, /inventory recommendation report/);
 assert.doesNotMatch(reportsSource, /Review recommendations/);
-assert.match(
-  forecastSource,
-  /Complete current-month view across all products/
-);
+assert.match(forecastSource, /Complete current-month view across all products/);
 assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(forecastSource, /Monthly product report/);
 const forecastWatchlistBodyStart = forecastSource.indexOf("<TableBody>");
