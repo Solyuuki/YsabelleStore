@@ -28,7 +28,7 @@ test("customer login page submits a generic username, email, or mobile identifie
 
   assert.match(loginPage, /const\s*\[identifier\s*,\s*setIdentifier\]\s*=\s*useState\(["']{2}\)/);
   assert.match(loginPage, /Username, email or mobile number/);
-  assert.match(loginPage, /autoComplete=["']username["']/);
+  assert.match(loginPage, /autoComplete=["']section-customer username["']/);
   assert.match(loginPage, /validateCustomerLoginForm\(\{\s*identifier\s*,\s*password\s*\}\)/);
   assert.match(
     loginPage,
@@ -41,7 +41,7 @@ test("customer registration page adds username and confirm password without tran
   const registerPage = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
 
   assert.match(registerPage, />\s*Username\s*</);
-  assert.match(registerPage, /autoComplete=["']username["']/);
+  assert.match(registerPage, /autoComplete=["']section-customer username["']/);
   assert.match(registerPage, />\s*Confirm password\s*</i);
   assert.match(registerPage, /confirmPassword/);
 
