@@ -12,6 +12,7 @@
     "0006_paymongo_billing": "be72ae159d9671a212827f7fc7920b554e2a4956bff69947029133a121a1c47a",
     "0007_delivery_fulfillment": "609c83f14ac4ff5c2d24ef5cf2db63a3c6b9c88b1cca410d47350c4de9fd0eaa",
     "0008_customer_profile_defaults": "870be95ea1fd2855eaa0052aa16adef21bcc07deb5d2f1734e68f78f2b462edb",
-    "0009_customer_support_foundation": "3922422bfef02be80977e6ba0122ccac7b801e357adfee73bb5da51b9ad9e45a"
+    "0009_customer_support_foundation": "3922422bfef02be80977e6ba0122ccac7b801e357adfee73bb5da51b9ad9e45a",
+    "0010_customer_admin_scalability": "2e628ff33b31bcbe03b46df369459f2d9275fee306f2b45e523a37699e363c03"
   }
 }
