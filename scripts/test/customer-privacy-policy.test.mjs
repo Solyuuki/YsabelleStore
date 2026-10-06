@@ -29,7 +29,10 @@ test("privacy notice is informational and does not manufacture a general agreeme
   assert.match(notice, /Service and security storage keeps requested store features working/);
   assert.match(notice, /Storage details/);
   assert.match(notice, /Dismiss privacy notice/);
-  assert.doesNotMatch(`${notice}\n${policy}`, /I agree|Agreement|Accept all|Accept cookies|Agree and continue/i);
+  assert.doesNotMatch(
+    `${notice}\n${policy}`,
+    /I agree|Agreement|Accept all|Accept cookies|Agree and continue/i
+  );
   assert.match(notice, /PRIVACY_NOTICE_VERSION/);
 });
 
