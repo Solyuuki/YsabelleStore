@@ -26,8 +26,6 @@ import {
   fetchDashboardSummary,
   type DashboardOperations,
   type DashboardRestockOrderStatus,
-  type DashboardRestockRecommendationSource,
-  type DashboardRestockRisk,
   type DashboardSummary
 } from "@/services/dashboardApi";
 import { getWorkstationPreferences } from "@/services/workstationPreferences";
