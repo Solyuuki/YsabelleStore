@@ -93,5 +93,9 @@ test("verification recovery actions keep resend separate from simple navigation 
 
   assert.match(recoveryCss, /\.customer-recovery-resend\s*\{/);
   assert.match(recoveryCss, /\.customer-recovery-actions--verify\s*\{/);
-  assert.match(recoveryCss, /justify-content:\s*space-between/);
+  assert.match(recoveryCss, /\.customer-recovery-resend\s*\{[\s\S]*justify-content:\s*center/);
+  assert.match(
+    recoveryCss,
+    /\.customer-recovery-actions--verify\s*\{[\s\S]*justify-content:\s*center/
+  );
 });

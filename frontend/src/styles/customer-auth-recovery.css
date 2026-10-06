@@ -438,8 +438,8 @@
 .customer-recovery-resend {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.85rem;
+  justify-content: center;
+  gap: 0.75rem;
   margin-top: 0.85rem;
   padding: 0.1rem 0.05rem 0;
   color: rgb(71 70 96 / 76%);
@@ -461,8 +461,9 @@
 }
 
 .customer-recovery-actions--verify {
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
+  gap: 1.6rem;
   padding-top: 0.2rem;
 }
 
@@ -603,7 +604,8 @@
 
   .customer-recovery-actions--verify {
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 1.1rem;
   }
 
   .customer-recovery-resend {
