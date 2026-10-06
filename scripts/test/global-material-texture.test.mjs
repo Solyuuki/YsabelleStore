@@ -24,12 +24,13 @@ const recoveryCss = read("frontend/src/styles/customer-auth-recovery.css");
 test("global Ysabelle material texture is loaded once and shared across app shells", () => {
   assert.match(main, /ysabelle-material\.css/);
   assert.match(materialCss, /--ys-material-noise:/);
-  assert.match(materialCss, /--ys-material-fiber:/);
+  assert.match(materialCss, /--ys-material-facets:/);
   assert.match(materialCss, /feTurbulence/);
   assert.match(materialCss, /\.ys-material-canvas::after/);
   assert.match(materialCss, /\.ys-material-surface::before/);
-  assert.match(materialCss, /\.ys-material-surface::before[\s\S]*opacity:\s*0\.22/);
-  assert.match(materialCss, /\.ys-material-accent::before[\s\S]*opacity:\s*0\.5/);
+  assert.match(materialCss, /\.ys-material-surface::before[\s\S]*var\(--ys-material-facets\)/);
+  assert.match(materialCss, /\.ys-material-accent::before[\s\S]*var\(--ys-material-facets\)/);
+  assert.match(materialCss, /\.ys-material-accent::before[\s\S]*opacity:\s*0\.82/);
   assert.match(appLayout, /app-shell-ambient ys-material-canvas/);
   assert.match(customerLayout, /customer-app ys-material-canvas/);
 });
@@ -53,4 +54,14 @@ test("auth surfaces avoid double-texturing recovery while sharing the global tok
   assert.match(authFrame, /mode === "recovery" \? "" : " ys-material-surface"/);
   assert.match(recoveryCss, /var\(--ys-material-noise\)/);
   assert.doesNotMatch(recoveryCss, /data:image\/svg\+xml/);
+});
+
+
+test("crystal facets cover shared brand-gradient controls", () => {
+  assert.match(materialCss, /customer-auth-card__icon/);
+  assert.match(materialCss, /customer-email-quick-sign__icon/);
+  assert.match(materialCss, /customer-auth-submit/);
+  assert.match(materialCss, /customer-account-nav button\[aria-selected="true"\]/);
+  assert.match(materialCss, /customer-recovery-progress__step--active/);
+  assert.match(recoveryCss, /var\(--ys-material-facets\)/);
 });
