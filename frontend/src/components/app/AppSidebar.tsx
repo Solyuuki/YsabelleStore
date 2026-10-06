@@ -115,8 +115,15 @@ export function AppSidebar({
         />
       </Button>
 
-      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-violet-200/45 px-4">
-        <YsabelleBrandMark className="shrink-0" eager variant="mini" />
+      <div
+        className={cn(
+          "flex h-16 shrink-0 items-center border-b border-violet-200/45 px-4",
+          collapsed ? "gap-0" : "gap-3"
+        )}
+      >
+        <div className="flex w-12 shrink-0 items-center justify-center">
+          <YsabelleBrandMark className="shrink-0" eager variant="mini" />
+        </div>
         <div
           className={cn(
             "min-w-0 overflow-hidden transition-all duration-300 ease-out",
