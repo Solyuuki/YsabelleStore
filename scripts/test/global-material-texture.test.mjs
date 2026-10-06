@@ -24,10 +24,12 @@ const recoveryCss = read("frontend/src/styles/customer-auth-recovery.css");
 test("global Ysabelle material texture is loaded once and shared across app shells", () => {
   assert.match(main, /ysabelle-material\.css/);
   assert.match(materialCss, /--ys-material-noise:/);
+  assert.match(materialCss, /--ys-material-fiber:/);
   assert.match(materialCss, /feTurbulence/);
   assert.match(materialCss, /\.ys-material-canvas::after/);
   assert.match(materialCss, /\.ys-material-surface::before/);
-  assert.match(materialCss, /\.ys-material-accent::before/);
+  assert.match(materialCss, /\.ys-material-surface::before[\s\S]*opacity:\s*0\.22/);
+  assert.match(materialCss, /\.ys-material-accent::before[\s\S]*opacity:\s*0\.5/);
   assert.match(appLayout, /app-shell-ambient ys-material-canvas/);
   assert.match(customerLayout, /customer-app ys-material-canvas/);
 });
