@@ -26,7 +26,7 @@ test("storefront exposes a dedicated privacy route and persistent footer access"
 });
 
 test("privacy notice is informational and does not manufacture a general agreement", () => {
-  assert.match(notice, /Essential storage keeps shopping and account security working/);
+  assert.match(notice, /Service and security storage keeps requested store features working/);
   assert.match(notice, /Storage details/);
   assert.match(notice, /Dismiss privacy notice/);
   assert.doesNotMatch(notice, /I agree|Accept all|Accept cookies|Agree and continue/i);
@@ -43,6 +43,7 @@ test("privacy content reflects current security and device-storage implementatio
   assert.match(privacyContent, /ysabelle:storefront:recent-searches/);
   assert.match(privacyContent, /ysabelle:pending-favorite/);
   assert.match(privacyContent, /ysabelle-store-entrance-entered/);
+  assert.match(privacyContent, /ysabelle:privacy-notice-version/);
 });
 
 test("privacy policy documents Philippine law, processors, rights, and no current ad tracker", () => {
