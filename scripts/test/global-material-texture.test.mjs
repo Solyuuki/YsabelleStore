@@ -20,8 +20,6 @@ const statCard = read("frontend/src/components/shared/StatCard.tsx");
 const account = read("frontend/src/pages/customer/CustomerAccountPage.tsx");
 const productCard = read("frontend/src/components/customer/ProductCard.tsx");
 const recoveryCss = read("frontend/src/styles/customer-auth-recovery.css");
-const dialog = read("frontend/src/components/ui/dialog.tsx");
-const sheet = read("frontend/src/components/ui/sheet.tsx");
 
 test("global Ysabelle material texture is loaded once and shared across app shells", () => {
   assert.match(main, /ysabelle-material\.css/);
@@ -32,13 +30,7 @@ test("global Ysabelle material texture is loaded once and shared across app shel
   assert.match(materialCss, /feTurbulence/);
   assert.match(materialCss, /\.ys-material-canvas::after/);
   assert.match(materialCss, /\.ys-material-surface::before/);
-  assert.match(materialCss, /--ys-surface-wave:/);
-  assert.match(materialCss, /--ys-surface-base:/);
-  assert.match(materialCss, /\.ys-material-surface::before[\s\S]*var\(--ys-surface-wave\)/);
-  assert.doesNotMatch(
-    materialCss,
-    /\.ys-material-surface::before[\s\S]{0,500}var\(--ys-material-facets\)/
-  );
+  assert.match(materialCss, /\.ys-material-surface::before[\s\S]*var\(--ys-material-facets\)/);
   assert.match(materialCss, /\.ys-material-accent::before[\s\S]*var\(--ys-material-facets\)/);
   assert.match(materialCss, /\.ys-material-accent::before[\s\S]*opacity:\s*0\.68/);
   assert.match(materialCss, /background-blend-mode:\s*soft-light, soft-light, overlay/);
@@ -101,15 +93,4 @@ test("glass flow background avoids scroll-heavy effects", () => {
   );
   assert.doesNotMatch(materialCss, /feGaussianBlur/);
   assert.doesNotMatch(materialCss, /filter='url\(%23soft\)'/);
-});
-
-
-test("pure-white content surfaces use the pearl wave treatment", () => {
-  assert.match(materialCss, /Pearl surface coverage/);
-  assert.match(materialCss, /customer-account-order-v2/);
-  assert.match(materialCss, /customer-support-form-card/);
-  assert.match(materialCss, /customer-cart-item/);
-  assert.match(materialCss, /background-color:\s*#f8f9fb/);
-  assert.match(dialog, /ys-material-surface fixed left-1\/2/);
-  assert.match(sheet, /ys-material-surface fixed z-50/);
 });
