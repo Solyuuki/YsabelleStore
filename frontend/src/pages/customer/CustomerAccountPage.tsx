@@ -1136,6 +1136,15 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 className="customer-account-security-card"
                 onSubmit={(event) => void handlePasswordChange(event)}
               >
+                <input
+                  autoComplete="username"
+                  className="customer-account-password-identity"
+                  name="username"
+                  readOnly
+                  tabIndex={-1}
+                  type="email"
+                  value={customer.email}
+                />
                 <div className="customer-account-card-title">
                   <KeyRound size={19} />
                   <div>
@@ -1149,6 +1158,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 <PasswordField
                   autoComplete="current-password"
                   label="Current password"
+                  name="currentPassword"
                   maxLength={128}
                   onChange={setCurrentPassword}
                   value={currentPassword}
@@ -1156,6 +1166,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 <PasswordField
                   autoComplete="new-password"
                   label="New password"
+                  name="newPassword"
                   maxLength={128}
                   minLength={8}
                   onChange={setNewPassword}
@@ -1164,6 +1175,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 <PasswordField
                   autoComplete="new-password"
                   label="Confirm new password"
+                  name="newPasswordConfirmation"
                   maxLength={128}
                   minLength={8}
                   onChange={setConfirmPassword}
@@ -1237,9 +1249,19 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   className="customer-account-inline-form"
                   onSubmit={(event) => void handleRevokeSessions(event)}
                 >
+                  <input
+                    autoComplete="username"
+                    className="customer-account-password-identity"
+                    name="username"
+                    readOnly
+                    tabIndex={-1}
+                    type="email"
+                    value={customer.email}
+                  />
                   <PasswordField
                     autoComplete="current-password"
                     label="Current password"
+                    name="currentPassword"
                     maxLength={128}
                     onChange={setRevokePassword}
                     value={revokePassword}
@@ -1271,6 +1293,7 @@ type PasswordFieldProps = {
   label: string;
   maxLength: number;
   minLength?: number;
+  name: string;
   onChange: (value: string) => void;
   value: string;
 };
@@ -1280,6 +1303,7 @@ function PasswordField({
   label,
   maxLength,
   minLength,
+  name,
   onChange,
   value
 }: PasswordFieldProps) {
@@ -1293,6 +1317,7 @@ function PasswordField({
           autoComplete={autoComplete}
           maxLength={maxLength}
           minLength={minLength}
+          name={name}
           onChange={(event) => onChange(event.target.value)}
           type={visible ? "text" : "password"}
           value={value}

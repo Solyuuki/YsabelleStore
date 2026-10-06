@@ -15,6 +15,10 @@ test("customer account security fields expose password visibility toggles", () =
   assert.match(accountPage, /aria-pressed=\{visible\}/);
   assert.equal((accountPage.match(/<PasswordField/g) ?? []).length, 4);
   assert.match(accountPage, /onChange=\{setRevokePassword\}/);
+  assert.equal((accountPage.match(/autoComplete="username"/g) ?? []).length, 2);
+  assert.equal((accountPage.match(/value=\{customer\.email\}/g) ?? []).length, 2);
+  assert.match(accountPage, /name="newPassword"/);
+  assert.match(accountPage, /name="newPasswordConfirmation"/);
 });
 
 test("password visibility buttons keep input layout and button styling isolated", () => {
@@ -22,4 +26,6 @@ test("password visibility buttons keep input layout and button styling isolated"
   assert.match(accountCss, /padding-right:\s*3rem/);
   assert.match(accountCss, /\.customer-account-security-card \.customer-account-password-toggle/);
   assert.match(accountCss, /transform:\s*translateY\(-50%\)/);
+  assert.match(accountCss, /\.customer-account-password-identity\s*\{/);
+  assert.match(accountCss, /clip:\s*rect\(0 0 0 0\)/);
 });
