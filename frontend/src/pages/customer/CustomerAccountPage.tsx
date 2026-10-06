@@ -761,7 +761,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     passwordSetupResendAt === null || passwordSetupResendInMs === 0;
 
   return (
-    <section className="customer-account-page-v2">
+    <section className="customer-account-page-v2 ys-bokeh-background">
       <div className="customer-account-layout-v2">
         <aside className="customer-account-rail ys-material-surface" aria-label="Account sections">
           <div className="customer-account-identity-card">
