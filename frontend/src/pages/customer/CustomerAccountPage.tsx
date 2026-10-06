@@ -182,6 +182,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   const [passwordSetupBusy, setPasswordSetupBusy] = useState(false);
 
   const [revokePassword, setRevokePassword] = useState("");
+  const [revokeConfirmationOpen, setRevokeConfirmationOpen] = useState(false);
   const [revokingSessions, setRevokingSessions] = useState(false);
   const [sessionActionMessage, setSessionActionMessage] = useState<string | null>(null);
 
@@ -628,6 +629,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       const refreshedSessions = await fetchCustomerSessions();
       setSessions(refreshedSessions);
       setRevokePassword("");
+      setRevokeConfirmationOpen(false);
       setSessionActionMessage(
         result.revokedCount > 0
           ? `${result.revokedCount} other session${result.revokedCount === 1 ? "" : "s"} signed out.`
@@ -1521,75 +1523,136 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                     {sessionsError}
                   </p>
                 ) : (
-                  <div className="customer-account-session-list">
-                    {sessions.map((session) => (
-                      <article key={session.id} className={session.current ? "is-current" : ""}>
+                  <>
+                    <div className="customer-account-session-list">
+                      {sessions.map((session) => (
+                        <article key={session.id} className={session.current ? "is-current" : ""}>
+                          <div>
+                            <strong>{session.current ? "This session" : "Other session"}</strong>
+                            {session.current ? <span>Current</span> : null}
+                          </div>
+                          <dl>
+                            <div>
+                              <dt>Created</dt>
+                              <dd>{sessionDateFormatter.format(new Date(session.createdAt))}</dd>
+                            </div>
+                            <div>
+                              <dt>Last used</dt>
+                              <dd>
+                                {session.lastUsedAt
+                                  ? sessionDateFormatter.format(new Date(session.lastUsedAt))
+                                  : "Not recorded yet"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Expires</dt>
+                              <dd>{sessionDateFormatter.format(new Date(session.expiresAt))}</dd>
+                            </div>
+                          </dl>
+                        </article>
+                      ))}
+                    </div>
+
+                    {otherSessionCount === 0 ? (
+                      <div className="customer-account-session-empty">
+                        <CheckCircle2 aria-hidden="true" size={17} />
                         <div>
-                          <strong>{session.current ? "This session" : "Other session"}</strong>
-                          {session.current ? <span>Current</span> : null}
+                          <strong>No other active sessions</strong>
+                          <span>You’re only signed in on this session.</span>
                         </div>
-                        <dl>
-                          <div>
-                            <dt>Created</dt>
-                            <dd>{sessionDateFormatter.format(new Date(session.createdAt))}</dd>
+                      </div>
+                    ) : (
+                      <div className="customer-account-session-actions">
+                        {!revokeConfirmationOpen ? (
+                          <button
+                            className="customer-account-secondary-button customer-account-session-signout"
+                            onClick={() => {
+                              setSessionsError(null);
+                              setSessionActionMessage(null);
+                              setRevokeConfirmationOpen(true);
+                            }}
+                            type="button"
+                          >
+                            Sign out {otherSessionCount} other session
+                            {otherSessionCount === 1 ? "" : "s"}
+                          </button>
+                        ) : securitySummary?.hasPassword ? (
+                          <form
+                            className="customer-account-session-confirm"
+                            onSubmit={(event) => void handleRevokeSessions(event)}
+                          >
+                            <div className="customer-account-session-confirm-copy">
+                              <strong>Confirm it’s you</strong>
+                              <p>
+                                Enter your current password to sign out the other active sessions.
+                                This session will stay signed in.
+                              </p>
+                            </div>
+                            <input
+                              autoComplete="username"
+                              className="customer-account-password-identity"
+                              name="username"
+                              readOnly
+                              tabIndex={-1}
+                              type="email"
+                              value={customer.email}
+                            />
+                            <PasswordField
+                              autoComplete="current-password"
+                              label="Current password"
+                              name="currentPassword"
+                              maxLength={128}
+                              onChange={setRevokePassword}
+                              value={revokePassword}
+                            />
+                            <div className="customer-account-session-confirm-actions">
+                              <button
+                                className="customer-account-secondary-button"
+                                disabled={revokingSessions}
+                                onClick={() => {
+                                  setRevokePassword("");
+                                  setSessionsError(null);
+                                  setRevokeConfirmationOpen(false);
+                                }}
+                                type="button"
+                              >
+                                Cancel
+                              </button>
+                              <button disabled={revokingSessions || !revokePassword} type="submit">
+                                {revokingSessions ? "Signing out..." : "Confirm sign out"}
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="customer-account-session-confirm">
+                            <div className="customer-account-session-confirm-copy">
+                              <strong>Security verification required</strong>
+                              <p>
+                                This Quick Sign account needs email verification before other
+                                sessions can be signed out.
+                              </p>
+                            </div>
+                            <div className="customer-account-session-confirm-actions">
+                              <button
+                                className="customer-account-secondary-button"
+                                onClick={() => setRevokeConfirmationOpen(false)}
+                                type="button"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </div>
-                          <div>
-                            <dt>Last used</dt>
-                            <dd>
-                              {session.lastUsedAt
-                                ? sessionDateFormatter.format(new Date(session.lastUsedAt))
-                                : "Not recorded yet"}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt>Expires</dt>
-                            <dd>{sessionDateFormatter.format(new Date(session.expiresAt))}</dd>
-                          </div>
-                        </dl>
-                      </article>
-                    ))}
-                  </div>
-                )}
-                {securitySummary?.hasPassword ? (
-                  <form
-                    className="customer-account-inline-form"
-                    onSubmit={(event) => void handleRevokeSessions(event)}
-                  >
-                    <input
-                      autoComplete="username"
-                      className="customer-account-password-identity"
-                      name="username"
-                      readOnly
-                      tabIndex={-1}
-                      type="email"
-                      value={customer.email}
-                    />
-                    <PasswordField
-                      autoComplete="current-password"
-                      label="Current password"
-                      name="currentPassword"
-                      maxLength={128}
-                      onChange={setRevokePassword}
-                      value={revokePassword}
-                    />
+                        )}
+                      </div>
+                    )}
+
                     {sessionActionMessage ? (
                       <p className="customer-account-form-success" role="status">
                         {sessionActionMessage}
                       </p>
                     ) : null}
-                    <button disabled={revokingSessions || otherSessionCount === 0} type="submit">
-                      {revokingSessions
-                        ? "Signing out..."
-                        : otherSessionCount > 0
-                          ? `Sign out ${otherSessionCount} other session${otherSessionCount === 1 ? "" : "s"}`
-                          : "No other active sessions"}
-                    </button>
-                  </form>
-                ) : securitySummary && otherSessionCount > 0 ? (
-                  <p className="customer-account-muted">
-                    Add a password first to sign out other sessions from this panel.
-                  </p>
-                ) : null}
+                  </>
+                )}
               </div>
             </div>
           </section>
