@@ -29,10 +29,12 @@ import {
   fetchCustomerSecuritySummary,
   fetchCustomerSessions,
   requestCustomerPasswordSetup,
+  requestCustomerSessionRevokeVerification,
   revokeOtherCustomerSessions,
   setupCustomerPassword,
   updateCustomerProfile,
-  verifyCustomerPasswordSetup
+  verifyCustomerPasswordSetup,
+  verifyCustomerSessionRevokeVerification
 } from "@/services/customerAccountService";
 import { fetchCustomerAddress, updateCustomerAddress } from "@/services/customerAddressService";
 import {
@@ -183,6 +185,14 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
   const [revokePassword, setRevokePassword] = useState("");
   const [revokeConfirmationOpen, setRevokeConfirmationOpen] = useState(false);
+  const [sessionRevokeVerificationStage, setSessionRevokeVerificationStage] = useState<
+    "idle" | "verify"
+  >("idle");
+  const [sessionRevokeVerificationCode, setSessionRevokeVerificationCode] = useState("");
+  const [sessionRevokeExpiresAt, setSessionRevokeExpiresAt] = useState<number | null>(null);
+  const [sessionRevokeResendAt, setSessionRevokeResendAt] = useState<number | null>(null);
+  const [sessionRevokeClock, setSessionRevokeClock] = useState(() => Date.now());
+  const [sessionRevokeVerificationBusy, setSessionRevokeVerificationBusy] = useState(false);
   const [revokingSessions, setRevokingSessions] = useState(false);
   const [sessionActionMessage, setSessionActionMessage] = useState<string | null>(null);
 
@@ -201,6 +211,16 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
     return () => window.clearInterval(interval);
   }, [passwordSetupStage]);
+
+  useEffect(() => {
+    if (sessionRevokeVerificationStage !== "verify") return;
+
+    const updateClock = () => setSessionRevokeClock(Date.now());
+    updateClock();
+    const interval = window.setInterval(updateClock, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [sessionRevokeVerificationStage]);
 
   useEffect(() => {
     if (!customer) return;
@@ -613,6 +633,85 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     }
   }
 
+  function resetSessionRevokeVerification() {
+    setSessionRevokeVerificationStage("idle");
+    setSessionRevokeVerificationCode("");
+    setSessionRevokeExpiresAt(null);
+    setSessionRevokeResendAt(null);
+    setSessionRevokeVerificationBusy(false);
+  }
+
+  function closeRevokeConfirmation() {
+    setRevokePassword("");
+    setSessionsError(null);
+    setRevokeConfirmationOpen(false);
+    resetSessionRevokeVerification();
+  }
+
+  async function handleSessionRevokeVerificationRequest() {
+    if (sessionRevokeVerificationBusy) return;
+    if (
+      sessionRevokeVerificationStage === "verify" &&
+      sessionRevokeResendAt !== null &&
+      Date.now() < sessionRevokeResendAt
+    ) {
+      return;
+    }
+
+    setSessionsError(null);
+    setSessionActionMessage(null);
+    setSessionRevokeVerificationBusy(true);
+    try {
+      await requestCustomerSessionRevokeVerification();
+      const sentAt = Date.now();
+      setSessionRevokeVerificationCode("");
+      setSessionRevokeClock(sentAt);
+      setSessionRevokeExpiresAt(sentAt + PASSWORD_SETUP_CODE_LIFETIME_MS);
+      setSessionRevokeResendAt(sentAt + PASSWORD_SETUP_RESEND_COOLDOWN_MS);
+      setSessionRevokeVerificationStage("verify");
+    } catch (reason) {
+      setSessionsError(
+        errorMessage(reason, "A security verification code could not be sent.")
+      );
+    } finally {
+      setSessionRevokeVerificationBusy(false);
+    }
+  }
+
+  async function handleSessionRevokeOtpSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSessionsError(null);
+    setSessionActionMessage(null);
+
+    if (sessionRevokeExpiresAt !== null && Date.now() >= sessionRevokeExpiresAt) {
+      setSessionsError("This verification code has expired. Resend a new code to continue.");
+      return;
+    }
+    if (!/^\d{6}$/.test(sessionRevokeVerificationCode.trim())) {
+      setSessionsError("Enter the 6-digit verification code from your email.");
+      return;
+    }
+
+    setSessionRevokeVerificationBusy(true);
+    try {
+      await verifyCustomerSessionRevokeVerification(sessionRevokeVerificationCode.trim());
+      const result = await revokeOtherCustomerSessions();
+      const refreshedSessions = await fetchCustomerSessions();
+      setSessions(refreshedSessions);
+      setRevokeConfirmationOpen(false);
+      resetSessionRevokeVerification();
+      setSessionActionMessage(
+        result.revokedCount > 0
+          ? `${result.revokedCount} other session${result.revokedCount === 1 ? "" : "s"} signed out.`
+          : "No other active sessions needed to be signed out."
+      );
+    } catch (reason) {
+      setSessionsError(errorMessage(reason, "Other sessions could not be signed out."));
+    } finally {
+      setSessionRevokeVerificationBusy(false);
+    }
+  }
+
   async function handleRevokeSessions(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSessionsError(null);
@@ -630,6 +729,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       setSessions(refreshedSessions);
       setRevokePassword("");
       setRevokeConfirmationOpen(false);
+      resetSessionRevokeVerification();
       setSessionActionMessage(
         result.revokedCount > 0
           ? `${result.revokedCount} other session${result.revokedCount === 1 ? "" : "s"} signed out.`
@@ -641,6 +741,15 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       setRevokingSessions(false);
     }
   }
+
+  const sessionRevokeExpiresInMs =
+    sessionRevokeExpiresAt === null ? 0 : Math.max(0, sessionRevokeExpiresAt - sessionRevokeClock);
+  const sessionRevokeResendInMs =
+    sessionRevokeResendAt === null ? 0 : Math.max(0, sessionRevokeResendAt - sessionRevokeClock);
+  const sessionRevokeCodeExpired =
+    sessionRevokeExpiresAt !== null && sessionRevokeExpiresInMs === 0;
+  const sessionRevokeResendReady =
+    sessionRevokeResendAt === null || sessionRevokeResendInMs === 0;
 
   const passwordSetupExpiresInMs =
     passwordSetupExpiresAt === null ? 0 : Math.max(0, passwordSetupExpiresAt - passwordSetupClock);
@@ -1623,25 +1732,111 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                               </button>
                             </div>
                           </form>
-                        ) : (
+                        ) : sessionRevokeVerificationStage === "idle" ? (
                           <div className="customer-account-session-confirm">
                             <div className="customer-account-session-confirm-copy">
-                              <strong>Security verification required</strong>
+                              <strong>Confirm it’s you</strong>
                               <p>
-                                This Quick Sign account needs email verification before other
-                                sessions can be signed out.
+                                We’ll send a 6-digit code to your account email before signing out
+                                the other active sessions. This session will stay signed in.
                               </p>
                             </div>
                             <div className="customer-account-session-confirm-actions">
                               <button
                                 className="customer-account-secondary-button"
-                                onClick={() => setRevokeConfirmationOpen(false)}
+                                disabled={sessionRevokeVerificationBusy}
+                                onClick={closeRevokeConfirmation}
                                 type="button"
                               >
                                 Cancel
                               </button>
+                              <button
+                                disabled={sessionRevokeVerificationBusy}
+                                onClick={() => void handleSessionRevokeVerificationRequest()}
+                                type="button"
+                              >
+                                {sessionRevokeVerificationBusy
+                                  ? "Sending code..."
+                                  : "Send verification code"}
+                              </button>
                             </div>
                           </div>
+                        ) : (
+                          <form
+                            className="customer-account-session-confirm"
+                            onSubmit={(event) => void handleSessionRevokeOtpSubmit(event)}
+                          >
+                            <div className="customer-account-session-confirm-copy">
+                              <strong>Verification code</strong>
+                              <p>Enter the 6-digit code sent to your email.</p>
+                            </div>
+                            <input
+                              aria-label="Session security verification code"
+                              autoComplete="one-time-code"
+                              className="customer-account-otp-input"
+                              inputMode="numeric"
+                              maxLength={6}
+                              onChange={(event) =>
+                                setSessionRevokeVerificationCode(
+                                  event.target.value.replace(/\D/g, "").slice(0, 6)
+                                )
+                              }
+                              pattern="[0-9]{6}"
+                              value={sessionRevokeVerificationCode}
+                            />
+                            <div className="customer-account-otp-timers" aria-live="polite">
+                              <span>
+                                Code expires in{" "}
+                                <strong>
+                                  {formatPasswordSetupCountdown(sessionRevokeExpiresInMs)}
+                                </strong>
+                              </span>
+                              <span>
+                                {sessionRevokeResendReady ? (
+                                  "You can request a new code now"
+                                ) : (
+                                  <>
+                                    You can request a new code in{" "}
+                                    <strong>
+                                      {formatPasswordSetupCountdown(sessionRevokeResendInMs)}
+                                    </strong>
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                            <div className="customer-account-session-otp-actions">
+                              <button
+                                className="customer-account-secondary-button"
+                                disabled={sessionRevokeVerificationBusy}
+                                onClick={closeRevokeConfirmation}
+                                type="button"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="customer-account-secondary-button"
+                                disabled={
+                                  sessionRevokeVerificationBusy || !sessionRevokeResendReady
+                                }
+                                onClick={() => void handleSessionRevokeVerificationRequest()}
+                                type="button"
+                              >
+                                Resend code
+                              </button>
+                              <button
+                                disabled={
+                                  sessionRevokeVerificationBusy ||
+                                  sessionRevokeVerificationCode.length !== 6 ||
+                                  sessionRevokeCodeExpired
+                                }
+                                type="submit"
+                              >
+                                {sessionRevokeVerificationBusy
+                                  ? "Verifying..."
+                                  : "Verify & sign out"}
+                              </button>
+                            </div>
+                          </form>
                         )}
                       </div>
                     )}

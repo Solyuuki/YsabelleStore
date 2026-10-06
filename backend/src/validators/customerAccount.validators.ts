@@ -54,9 +54,15 @@ export const customerPasswordSetupCompleteSchema = z
   })
   .strict();
 
+export const customerSessionRevokeVerifySchema = z
+  .object({
+    verificationCode: z.string().trim().regex(/^\d{6}$/)
+  })
+  .strict();
+
 export const customerSessionRevokeOthersSchema = z
   .object({
-    currentPassword: currentPasswordSchema
+    currentPassword: currentPasswordSchema.optional()
   })
   .strict();
 
@@ -67,4 +73,5 @@ export type CustomerPasswordSetupVerifyInput = z.infer<typeof customerPasswordSe
 export type CustomerPasswordSetupCompleteInput = z.infer<
   typeof customerPasswordSetupCompleteSchema
 >;
+export type CustomerSessionRevokeVerifyInput = z.infer<typeof customerSessionRevokeVerifySchema>;
 export type CustomerSessionRevokeOthersInput = z.infer<typeof customerSessionRevokeOthersSchema>;

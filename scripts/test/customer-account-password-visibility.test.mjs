@@ -23,6 +23,10 @@ test("customer account security fields expose password visibility toggles", () =
   assert.match(accountPage, /You’re only signed in on this session/);
   assert.match(accountPage, /Confirm it’s you/);
   assert.match(accountPage, /Confirm sign out/);
+  assert.match(accountPage, /requestCustomerSessionRevokeVerification/);
+  assert.match(accountPage, /verifyCustomerSessionRevokeVerification/);
+  assert.match(accountPage, /Send verification code/);
+  assert.match(accountPage, /Verify & sign out/);
   assert.equal((accountPage.match(/autoComplete="username"/g) ?? []).length, 3);
   assert.equal((accountPage.match(/value=\{customer\.email\}/g) ?? []).length, 3);
   assert.match(accountPage, /name="newPassword"/);
@@ -59,4 +63,5 @@ test("password visibility buttons keep input layout and button styling isolated"
   assert.match(accountCss, /\.customer-account-session-empty\s*\{/);
   assert.match(accountCss, /\.customer-account-session-confirm\s*\{/);
   assert.match(accountCss, /\.customer-account-session-confirm-actions\s*\{/);
+  assert.match(accountCss, /\.customer-account-session-otp-actions\s*\{/);
 });

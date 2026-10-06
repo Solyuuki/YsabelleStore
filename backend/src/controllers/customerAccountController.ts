@@ -7,10 +7,12 @@ import {
   getCustomerSecuritySummary,
   listCustomerSessions,
   requestCustomerPasswordSetup,
+  requestCustomerSessionRevokeVerification,
   revokeOtherCustomerSessions,
   setupCustomerPassword,
   updateCustomerProfile,
-  verifyCustomerPasswordSetupCode
+  verifyCustomerPasswordSetupCode,
+  verifyCustomerSessionRevokeCode
 } from "../services/customerAccountService.js";
 import { confirmCustomerDeliveryReceived } from "../services/deliveryService.js";
 import {
@@ -32,6 +34,11 @@ import {
   readCustomerPasswordSetupGrantCookie,
   setCustomerPasswordSetupGrantCookie
 } from "../utils/customerPasswordSetupCookie.js";
+import {
+  clearCustomerSessionRevokeGrantCookie,
+  readCustomerSessionRevokeGrantCookie,
+  setCustomerSessionRevokeGrantCookie
+} from "../utils/customerSessionRevokeCookie.js";
 import { HttpError } from "../utils/httpError.js";
 import { customerDeliveryParamsSchema } from "../validators/delivery.validators.js";
 import {
@@ -40,6 +47,7 @@ import {
   customerPasswordSetupVerifySchema,
   customerProfileUpdateSchema,
   customerSessionRevokeOthersSchema,
+  customerSessionRevokeVerifySchema,
   customerUsernameClaimSchema
 } from "../validators/customerAccount.validators.js";
 
@@ -294,6 +302,62 @@ export const listCustomerSessionsController: RequestHandler = async (request, re
   }
 };
 
+export const requestCustomerSessionRevokeVerificationController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = requireCustomer(request);
+    clearCustomerSessionRevokeGrantCookie(response);
+
+    await requestCustomerSessionRevokeVerification(customer.id, {
+      async sendSessionRevokeEmail({ to, verificationCode }) {
+        await sendCustomerIdentityVerificationEmail({
+          to,
+          verificationCode,
+          purpose: "session_security"
+        });
+      }
+    });
+
+    response
+      .status(200)
+      .json(createSuccessResponse("A security verification code was sent to your account email."));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyCustomerSessionRevokeVerificationController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = requireCustomer(request);
+    const parsedBody = customerSessionRevokeVerifySchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer session security verification request is invalid.", {
+        code: "INVALID_CUSTOMER_SESSION_REVOKE_VERIFICATION_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    const grant = await verifyCustomerSessionRevokeCode(
+      customer.id,
+      parsedBody.data.verificationCode
+    );
+    setCustomerSessionRevokeGrantCookie(response, grant.sessionRevokeGrant);
+    response
+      .status(200)
+      .json(createSuccessResponse("Security verification successful."));
+  } catch (error) {
+    clearCustomerSessionRevokeGrantCookie(response);
+    next(error);
+  }
+};
+
 export const revokeOtherCustomerSessionsController: RequestHandler = async (
   request,
   response,
@@ -313,14 +377,17 @@ export const revokeOtherCustomerSessionsController: RequestHandler = async (
     const revokedCount = await revokeOtherCustomerSessions(
       customer.id,
       sessionToken,
-      parsedBody.data
+      parsedBody.data,
+      readCustomerSessionRevokeGrantCookie(request) ?? ""
     );
+    clearCustomerSessionRevokeGrantCookie(response);
     response.status(200).json(
       createSuccessResponse("Other customer sessions signed out.", {
         revokedCount
       })
     );
   } catch (error) {
+    clearCustomerSessionRevokeGrantCookie(response);
     next(error);
   }
 };

@@ -132,12 +132,43 @@ export async function fetchCustomerSessions(signal?: AbortSignal) {
   return data.sessions;
 }
 
-export async function revokeOtherCustomerSessions(currentPassword: string) {
+export async function requestCustomerSessionRevokeVerification(): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-account/sessions/revoke-others/request",
+    requestOptions({ method: "POST" })
+  );
+  if (!response.success) {
+    throw new CustomerAccountRequestError(
+      response.message || "A security verification code could not be requested.",
+      response.error?.code
+    );
+  }
+}
+
+export async function verifyCustomerSessionRevokeVerification(
+  verificationCode: string
+): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-account/sessions/revoke-others/verify",
+    requestOptions({
+      method: "POST",
+      json: { verificationCode }
+    })
+  );
+  if (!response.success) {
+    throw new CustomerAccountRequestError(
+      response.message || "The security verification code could not be verified.",
+      response.error?.code
+    );
+  }
+}
+
+export async function revokeOtherCustomerSessions(currentPassword?: string) {
   return request<CustomerSessionRevocationResponse>(
     "/api/customer-account/sessions/revoke-others",
     {
       method: "POST",
-      json: { currentPassword }
+      json: currentPassword ? { currentPassword } : {}
     }
   );
 }

@@ -15,10 +15,12 @@ import {
   removeCustomerFavoriteController,
   listCustomerSessionsController,
   requestCustomerPasswordSetupController,
+  requestCustomerSessionRevokeVerificationController,
   revokeOtherCustomerSessionsController,
   setupCustomerPasswordController,
   updateCustomerProfileController,
-  verifyCustomerPasswordSetupController
+  verifyCustomerPasswordSetupController,
+  verifyCustomerSessionRevokeVerificationController
 } from "../controllers/customerAccountController.js";
 import {
   clearCustomerCartController,
@@ -169,6 +171,16 @@ customerAccountRouter.post(
   setupCustomerPasswordController
 );
 customerAccountRouter.get("/sessions", requireCustomerAuth, listCustomerSessionsController);
+customerAccountRouter.post(
+  "/sessions/revoke-others/request",
+  ...sensitiveMutationMiddleware,
+  requestCustomerSessionRevokeVerificationController
+);
+customerAccountRouter.post(
+  "/sessions/revoke-others/verify",
+  ...sensitiveMutationMiddleware,
+  verifyCustomerSessionRevokeVerificationController
+);
 customerAccountRouter.post(
   "/sessions/revoke-others",
   ...sensitiveMutationMiddleware,

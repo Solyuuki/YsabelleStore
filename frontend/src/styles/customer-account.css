@@ -646,6 +646,18 @@
   min-width: 118px;
 }
 
+.customer-account-session-otp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.customer-account-session-otp-actions button {
+  width: auto;
+  min-width: 118px;
+}
+
 .customer-account-session-list dl {
   margin: 10px 0 0;
   display: grid;
