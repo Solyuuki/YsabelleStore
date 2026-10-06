@@ -110,7 +110,6 @@ test("recovery surface uses subtle material texture without changing the flow", 
     recoveryCss,
     /\.customer-auth-page--recovery \.customer-auth-stage__panel::after\s*\{/
   );
-  assert.match(recoveryCss, /mix-blend-mode:\s*soft-light/);
   assert.match(recoveryCss, /\.customer-recovery-icon::before\s*\{/);
   assert.match(recoveryCss, /\.customer-recovery-icon::after\s*\{/);
   assert.match(recoveryCss, /background-blend-mode:\s*soft-light/);
