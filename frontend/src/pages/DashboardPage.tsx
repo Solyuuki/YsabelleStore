@@ -463,7 +463,9 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                     <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
                       {topPriority.riskLevel} priority
                     </p>
-                    <p className="mt-0.5 text-sm font-semibold text-slate-950">{monthlyActionLabel(topPriority)}</p>
+                    <p className="mt-0.5 text-sm font-semibold text-slate-950">
+                      {monthlyActionLabel(topPriority)}
+                    </p>
                   </div>
                 </div>
               </div>
