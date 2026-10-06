@@ -53,6 +53,11 @@ const FAQS = [
     question: "Can I report product or account issues here?",
     answer:
       "Yes. Choose the closest category and describe what happened, what you expected, and any safe details that can help reproduce or verify the issue."
+  },
+  {
+    question: "How do I make a privacy request?",
+    answer:
+      "Choose Account or Other, use “Privacy Request” in the subject, and describe whether you want access, correction, objection, deletion or blocking, portability, or another privacy review. We may verify your identity before acting on a request."
   }
 ] as const;
 

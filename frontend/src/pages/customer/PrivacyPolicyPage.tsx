@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
   Clock3,
@@ -355,8 +357,8 @@ function PolicySection({
   id,
   title
 }: {
-  children: React.ReactNode;
-  icon: typeof ShieldCheck;
+  children: ReactNode;
+  icon: LucideIcon;
   id: string;
   title: string;
 }) {

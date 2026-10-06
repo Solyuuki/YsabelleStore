@@ -89,6 +89,15 @@ export function CustomerFooter({
       </div>
       <div className="customer-container customer-footer__bottom">
         <span>Ysabelle&apos;s Store</span>
+        <div className="customer-footer__legal">
+          <CustomerLink href="/privacy" navigate={navigate}>
+            Privacy &amp; cookies
+          </CustomerLink>
+          <span aria-hidden="true">·</span>
+          <CustomerLink href="/support" navigate={navigate}>
+            Privacy requests
+          </CustomerLink>
+        </div>
         <span>Established 2019</span>
       </div>
     </footer>
