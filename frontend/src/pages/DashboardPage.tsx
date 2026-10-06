@@ -431,7 +431,10 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                 value={operations.restock.suggestedUnits}
               />
               <MonthlyReportStat label="High / critical" value={highPriorityCount} />
-              <MonthlyReportStat label="Open restock orders" value={operations.restock.queue.totalOpen} />
+              <MonthlyReportStat
+                label="Open restock orders"
+                value={operations.restock.queue.totalOpen}
+              />
             </div>
 
             {topPriority ? (
@@ -460,7 +463,9 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
               <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
                 <BrandIcon icon={Sparkles} />
                 <div>
-                  <p className="font-semibold text-emerald-950">No monthly inventory action required</p>
+                  <p className="font-semibold text-emerald-950">
+                    No monthly inventory action required
+                  </p>
                   <p className="mt-1 text-sm leading-6 text-emerald-800">
                     Current stock and incoming supply cover the active replenishment policy.
                   </p>
