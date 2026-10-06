@@ -129,7 +129,7 @@ export function AppSidebar({
       </div>
 
       <nav
-        className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3"
+        className="min-h-0 flex-1 space-y-5 overflow-x-hidden overflow-y-auto overscroll-contain p-3"
         aria-label="Application modules"
       >
         <SidebarSection
