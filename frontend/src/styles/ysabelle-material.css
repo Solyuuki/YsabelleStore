@@ -356,46 +356,59 @@
 /*
  * KPI card selected surface
  * -------------------------
- * Summary cards use the approved frosted-ribbon artwork with a very light
- * card-specific tint. The icon/badge stays the strongest color; the card tint
- * is only ambient support so both elements feel like one dashboard system.
+ * Dashboard and Reports summary cards share the same frosted-ribbon material.
+ * The body tint is intentionally visible, but still softer than the icon badge
+ * and top rail so the color system reads as one blended dashboard surface.
  */
 .app-shell-ambient .ys-kpi-card-surface {
-  --ys-kpi-tint-a: rgb(98 91 255 / 4%);
-  --ys-kpi-tint-b: rgb(244 63 140 / 2.5%);
+  --ys-kpi-base: rgb(98 91 255 / 8%);
+  --ys-kpi-tint-a: rgb(98 91 255 / 14%);
+  --ys-kpi-tint-b: rgb(244 63 140 / 8%);
   background-color: #fbfcff !important;
   background-image:
-    radial-gradient(circle at 8% 8%, var(--ys-kpi-tint-a), transparent 38%),
-    linear-gradient(145deg, rgb(255 255 255 / 12%), transparent 46% 74%, var(--ys-kpi-tint-b)),
+    linear-gradient(
+      135deg,
+      var(--ys-kpi-base) 0%,
+      rgb(255 255 255 / 74%) 48%,
+      rgb(255 255 255 / 62%) 68%,
+      var(--ys-kpi-tint-b) 100%
+    ),
+    radial-gradient(circle at 10% 12%, var(--ys-kpi-tint-a), transparent 46%),
     url("/textures/kpi-card-frosted-ribbon.webp") !important;
   background-repeat: no-repeat, no-repeat, no-repeat !important;
   background-position: center, center, center !important;
   background-size: auto, auto, cover !important;
+  background-blend-mode: normal, normal, soft-light !important;
 }
 
 .app-shell-ambient .ys-kpi-card-surface--blue {
-  --ys-kpi-tint-a: rgb(56 189 248 / 8%);
-  --ys-kpi-tint-b: rgb(99 102 241 / 4%);
+  --ys-kpi-base: rgb(56 189 248 / 14%);
+  --ys-kpi-tint-a: rgb(59 130 246 / 20%);
+  --ys-kpi-tint-b: rgb(99 102 241 / 10%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface--emerald {
-  --ys-kpi-tint-a: rgb(52 211 153 / 8%);
-  --ys-kpi-tint-b: rgb(20 184 166 / 4%);
+  --ys-kpi-base: rgb(52 211 153 / 13%);
+  --ys-kpi-tint-a: rgb(16 185 129 / 19%);
+  --ys-kpi-tint-b: rgb(20 184 166 / 9%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface--amber {
-  --ys-kpi-tint-a: rgb(251 191 36 / 8%);
-  --ys-kpi-tint-b: rgb(249 115 22 / 4%);
+  --ys-kpi-base: rgb(251 191 36 / 14%);
+  --ys-kpi-tint-a: rgb(245 158 11 / 19%);
+  --ys-kpi-tint-b: rgb(249 115 22 / 10%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface--violet {
-  --ys-kpi-tint-a: rgb(139 92 246 / 8%);
-  --ys-kpi-tint-b: rgb(236 72 153 / 4%);
+  --ys-kpi-base: rgb(139 92 246 / 14%);
+  --ys-kpi-tint-a: rgb(168 85 247 / 20%);
+  --ys-kpi-tint-b: rgb(236 72 153 / 10%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface--rose {
-  --ys-kpi-tint-a: rgb(251 113 133 / 8%);
-  --ys-kpi-tint-b: rgb(244 63 94 / 4%);
+  --ys-kpi-base: rgb(251 113 133 / 13%);
+  --ys-kpi-tint-a: rgb(244 63 94 / 19%);
+  --ys-kpi-tint-b: rgb(236 72 153 / 9%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface::before {
