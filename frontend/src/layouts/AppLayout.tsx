@@ -24,7 +24,7 @@ export function AppLayout({
   user
 }: AppLayoutProps) {
   return (
-    <div className="app-shell-ambient ys-material-canvas relative flex h-dvh min-h-0 overflow-hidden text-foreground">
+    <div className="app-shell-ambient ys-material-canvas ys-bokeh-background relative flex h-dvh min-h-0 overflow-hidden text-foreground">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div className="app-shell-orb left-[8%] top-[8%] h-[clamp(18rem,26vw,28rem)] w-[clamp(18rem,26vw,28rem)] bg-blue-200/35" />
         <div className="app-shell-orb right-[6%] top-[12%] h-[clamp(16rem,24vw,26rem)] w-[clamp(16rem,24vw,26rem)] bg-violet-200/35 animation-delay-7000" />
