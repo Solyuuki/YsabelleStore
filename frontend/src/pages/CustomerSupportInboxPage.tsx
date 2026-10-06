@@ -21,7 +21,6 @@ import {
   fetchSupportGmailStatus,
   replyToStaffSupportTicket,
   retryStaffSupportMessageEmail,
-  syncSupportGmail,
   updateStaffSupportTicketStatus
 } from "@/services/supportApi";
 import {
@@ -100,7 +99,6 @@ export function CustomerSupportInboxPage() {
   const [statusDraft, setStatusDraft] = useState<StaffSupportStatus>("NEW");
   const [statusSaving, setStatusSaving] = useState(false);
   const [gmailStatus, setGmailStatus] = useState<SupportGmailStatus | null>(null);
-  const [gmailSyncing, setGmailSyncing] = useState(false);
   const [retryingMessageId, setRetryingMessageId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -206,20 +204,6 @@ export function CustomerSupportInboxPage() {
     }
   }
 
-  async function syncMailbox() {
-    if (!gmailStatus?.configured || gmailSyncing) return;
-    setGmailSyncing(true);
-    setError(null);
-    try {
-      await syncSupportGmail();
-      setReloadKey((value) => value + 1);
-    } catch (reason) {
-      setError(supportError(reason, "Gmail inbox could not be synchronized."));
-    } finally {
-      setGmailSyncing(false);
-    }
-  }
-
   async function retryEmail(messageId: string) {
     if (!detail || retryingMessageId) return;
     setRetryingMessageId(messageId);
@@ -280,16 +264,6 @@ export function CustomerSupportInboxPage() {
             <StatusBadge variant={gmailStatus?.configured ? "success" : "warning"}>
               {gmailStatus?.configured ? "Gmail connected" : "Gmail setup required"}
             </StatusBadge>
-            <Button
-              disabled={!gmailStatus?.configured || gmailSyncing}
-              onClick={() => void syncMailbox()}
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              <Mail className="h-4 w-4" aria-hidden="true" />
-              {gmailSyncing ? "Syncing..." : "Sync Gmail"}
-            </Button>
             <Button
               onClick={() => setReloadKey((value) => value + 1)}
               size="sm"
