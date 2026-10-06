@@ -300,9 +300,7 @@ type MetricCardProps = {
 };
 
 function BrandAccent() {
-  return (
-    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#008cff] via-[#625bff] to-[#f43f8c]" />
-  );
+  return <div className="ys-material-accent-strip" aria-hidden="true" />;
 }
 
 function BrandIcon({ icon: Icon }: { icon: LucideIcon }) {
