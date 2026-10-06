@@ -1889,7 +1889,11 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 }
 
 type PasswordFieldProps = {
-  autoComplete: "current-password" | "new-password";
+  autoComplete:
+    | "current-password"
+    | "new-password"
+    | "section-customer current-password"
+    | "section-customer new-password";
   label: string;
   maxLength: number;
   minLength?: number;
