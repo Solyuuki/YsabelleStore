@@ -141,6 +141,7 @@ export function ReportsPage() {
           value: currency(summary.sales.todayAmount),
           detail: `${summary.sales.completedSales} completed receipt${summary.sales.completedSales === 1 ? "" : "s"}`,
           tone: "info" as const,
+          accent: "blue" as const,
           icon: ReceiptText
         },
         {
@@ -148,6 +149,7 @@ export function ReportsPage() {
           value: currency(recentGrossSales),
           detail: `Across ${completedSales.length} completed receipt${completedSales.length === 1 ? "" : "s"} in the latest 50 records`,
           tone: "success" as const,
+          accent: "violet" as const,
           icon: CalendarClock
         },
         {
@@ -155,6 +157,7 @@ export function ReportsPage() {
           value: summary.inventory.trackedItems.toLocaleString(),
           detail: `${summary.inventory.inStockItems} in stock • ${summary.inventory.outOfStockItems} out of stock`,
           tone: summary.inventory.outOfStockItems > 0 ? ("warning" as const) : ("success" as const),
+          accent: "emerald" as const,
           icon: Boxes
         },
         {
@@ -165,6 +168,7 @@ export function ReportsPage() {
               ? "Needs replenishment attention"
               : "No items flagged",
           tone: "warning" as const,
+          accent: "amber" as const,
           icon: PackageOpen
         },
         {
@@ -172,6 +176,8 @@ export function ReportsPage() {
           value: summary.expiry.nearExpiryBatches.toLocaleString(),
           detail: `${summary.expiry.expiredBatches} expired batch${summary.expiry.expiredBatches === 1 ? "" : "es"}`,
           tone: "warning" as const,
+          accent: "rose" as const,
+          badgeClassName: "border-rose-200 bg-rose-50 text-rose-700",
           icon: TriangleAlert
         }
       ]
