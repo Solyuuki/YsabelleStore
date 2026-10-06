@@ -65,6 +65,14 @@ export const PRIVACY_STORAGE_ITEMS: PrivacyStorageItem[] = [
       "Prevents the storefront entrance experience from repeating within the same tab session.",
     duration: "For the current browser tab/session.",
     technology: "Session storage"
+  },
+  {
+    name: "ysabelle:privacy-notice-version",
+    category: "Device convenience",
+    purpose:
+      "Remembers that the informational privacy notice for the current published version was dismissed on this device.",
+    duration: "Until the notice version changes or browser storage is removed.",
+    technology: "Local storage"
   }
 ];
 
