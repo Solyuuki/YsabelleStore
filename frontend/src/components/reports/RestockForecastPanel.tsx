@@ -216,10 +216,6 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const selectedActiveRestock = selected
     ? (activeRestockByProduct.get(selected.product.id) ?? null)
     : null;
-  const actionableItems = useMemo(
-    () => items.filter((item) => monthlyRecommendationAction(item) !== "NO_ACTION"),
-    [items]
-  );
   const productDemandChart = useMemo(() => buildDemandChart(selected), [selected]);
   const nextMonthPreview = useMemo(
     () => buildNextMonthRestockPreview(selected, selectedActiveRestock),
