@@ -22,3 +22,12 @@ CREATE INDEX `idx_product_reviews_status_created_id`
 
 CREATE INDEX `idx_product_reviews_reviewer_id`
   ON `product_reviews`(`reviewer_display_name`, `id`);
+
+-- Advance the database schema marker with this additive schema release.
+UPDATE `system_canonical_state`
+SET
+  `schema_version` = 11,
+  `release_id` = 'g2-s11-c5-a2',
+  `updated_at` = CURRENT_TIMESTAMP(3)
+WHERE `id` = 1
+  AND `migration_epoch` = 2;
