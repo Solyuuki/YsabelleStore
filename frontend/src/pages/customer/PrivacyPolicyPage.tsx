@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
   Clock3,
@@ -15,7 +14,8 @@ import {
   ShieldCheck,
   ShoppingBag,
   Sparkles,
-  UserRoundCheck
+  UserRoundCheck,
+  type LucideIcon
 } from "lucide-react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
