@@ -9,16 +9,20 @@ import type {
 } from "../validators/customerModeration.validators.js";
 
 export async function listCustomerAccountsForModeration(query: CustomerAdminListQuery) {
-  const where = query.search
-    ? {
-        OR: [
-          { name: { contains: query.search } },
-          { email: { contains: query.search } },
-          { username: { contains: query.search } },
-          { phone: { contains: query.search } }
-        ]
-      }
-    : {};
+  const search = query.search?.trim();
+  const where = {
+    ...(query.status ? { status: query.status } : {}),
+    ...(search
+      ? {
+          OR: [
+            { name: { startsWith: search } },
+            { email: { startsWith: search } },
+            { username: { startsWith: search } },
+            { phone: { startsWith: search } }
+          ]
+        }
+      : {})
+  };
 
   const [totalItems, customers] = await Promise.all([
     prisma.customerAccount.count({ where }),
@@ -67,6 +71,33 @@ export async function listCustomerAccountsForModeration(query: CustomerAdminList
       page: query.page,
       pageSize: query.pageSize
     })
+  };
+}
+
+export async function getCustomerModerationAccountSummary() {
+  const grouped = await prisma.customerAccount.groupBy({
+    by: ["status"],
+    _count: { _all: true }
+  });
+
+  const counts = {
+    ACTIVE: 0,
+    INACTIVE: 0,
+    SUSPENDED: 0,
+    BANNED: 0
+  };
+
+  for (const row of grouped) {
+    counts[row.status] = row._count._all;
+  }
+
+  return {
+    total: counts.ACTIVE + counts.INACTIVE + counts.SUSPENDED + counts.BANNED,
+    active: counts.ACTIVE,
+    inactive: counts.INACTIVE,
+    suspended: counts.SUSPENDED,
+    banned: counts.BANNED,
+    restricted: counts.SUSPENDED + counts.BANNED
   };
 }
 
