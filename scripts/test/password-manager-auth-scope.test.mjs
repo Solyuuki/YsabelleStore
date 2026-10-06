@@ -55,12 +55,15 @@ test("staff credentials stay in a separate password-manager section", () => {
 });
 
 test("customer password update exposes the signed-in customer identity to password managers", () => {
-  assert.match(customerAccount, /aria-label="Customer account email"/);
-  assert.match(customerAccount, /name="username"/);
-  assert.match(customerAccount, /value=\{customer\.email\}/);
-  assert.match(customerAccount, /onChange=\{\(\) => undefined\}/);
-  assert.doesNotMatch(
-    customerAccount,
-    /autoComplete="section-customer username"[\s\S]{0,220}readOnly/
-  );
+  const passwordChangeForm = customerAccount.match(
+    /customer-account-password-change-form[\s\S]*?<\/form>/
+  )?.[0];
+
+  assert.ok(passwordChangeForm, "password change form must remain present");
+  assert.match(passwordChangeForm, /aria-label="Customer account email"/);
+  assert.match(passwordChangeForm, /autoComplete="section-customer username"/);
+  assert.match(passwordChangeForm, /name="username"/);
+  assert.match(passwordChangeForm, /value=\{customer\.email\}/);
+  assert.match(passwordChangeForm, /onChange=\{\(\) => undefined\}/);
+  assert.doesNotMatch(passwordChangeForm, /readOnly/);
 });
