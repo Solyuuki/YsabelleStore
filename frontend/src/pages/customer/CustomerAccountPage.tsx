@@ -53,6 +53,16 @@ const sessionDateFormatter = new Intl.DateTimeFormat("en-PH", {
   timeStyle: "short"
 });
 
+const PASSWORD_SETUP_CODE_LIFETIME_MS = 10 * 60 * 1000;
+const PASSWORD_SETUP_RESEND_COOLDOWN_MS = 45 * 1000;
+
+function formatPasswordSetupCountdown(remainingMs: number) {
+  const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
 const DELIVERY_PROGRESS_STEPS: Array<{
   status: StorefrontOrder["deliveryStatus"];
   label: string;
@@ -164,6 +174,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     "idle" | "verify" | "password"
   >("idle");
   const [passwordSetupCode, setPasswordSetupCode] = useState("");
+  const [passwordSetupExpiresAt, setPasswordSetupExpiresAt] = useState<number | null>(null);
+  const [passwordSetupResendAt, setPasswordSetupResendAt] = useState<number | null>(null);
+  const [passwordSetupClock, setPasswordSetupClock] = useState(() => Date.now());
   const [setupPassword, setSetupPassword] = useState("");
   const [setupConfirmPassword, setSetupConfirmPassword] = useState("");
   const [passwordSetupBusy, setPasswordSetupBusy] = useState(false);
@@ -177,6 +190,16 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     setName(customer.name);
     setContactPhone(customer.defaultContactPhone ?? customer.phone ?? "");
   }, [customer]);
+
+  useEffect(() => {
+    if (passwordSetupStage !== "verify") return;
+
+    const updateClock = () => setPasswordSetupClock(Date.now());
+    updateClock();
+    const interval = window.setInterval(updateClock, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [passwordSetupStage]);
 
   useEffect(() => {
     if (!customer) return;
@@ -498,14 +521,25 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
   async function handlePasswordSetupRequest() {
     if (!customer || passwordSetupBusy) return;
+    if (
+      passwordSetupStage === "verify" &&
+      passwordSetupResendAt !== null &&
+      Date.now() < passwordSetupResendAt
+    ) {
+      return;
+    }
+
     setPasswordError(null);
     setPasswordMessage(null);
     setPasswordSetupBusy(true);
     try {
       await requestCustomerPasswordSetup();
+      const sentAt = Date.now();
       setPasswordSetupCode("");
+      setPasswordSetupClock(sentAt);
+      setPasswordSetupExpiresAt(sentAt + PASSWORD_SETUP_CODE_LIFETIME_MS);
+      setPasswordSetupResendAt(sentAt + PASSWORD_SETUP_RESEND_COOLDOWN_MS);
       setPasswordSetupStage("verify");
-      setPasswordMessage(`We sent a 6-digit verification code to ${customer.email}.`);
     } catch (reason) {
       setPasswordError(errorMessage(reason, "A password setup code could not be sent."));
     } finally {
@@ -518,6 +552,10 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     setPasswordError(null);
     setPasswordMessage(null);
 
+    if (passwordSetupExpiresAt !== null && Date.now() >= passwordSetupExpiresAt) {
+      setPasswordError("This verification code has expired. Resend a new code to continue.");
+      return;
+    }
     if (!/^\d{6}$/.test(passwordSetupCode.trim())) {
       setPasswordError("Enter the 6-digit verification code from your email.");
       return;
@@ -527,6 +565,8 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     try {
       await verifyCustomerPasswordSetup(passwordSetupCode.trim());
       setPasswordSetupCode("");
+      setPasswordSetupExpiresAt(null);
+      setPasswordSetupResendAt(null);
       setPasswordSetupStage("password");
       setPasswordMessage("Identity verified. Create your Ysabelle Store password.");
     } catch (reason) {
@@ -559,6 +599,8 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       setSessions(refreshedSessions);
       setSetupPassword("");
       setSetupConfirmPassword("");
+      setPasswordSetupExpiresAt(null);
+      setPasswordSetupResendAt(null);
       setPasswordSetupStage("idle");
       setPasswordMessage(
         "Password added. You can now sign in with either Quick Sign or your email and password."
@@ -597,6 +639,15 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       setRevokingSessions(false);
     }
   }
+
+  const passwordSetupExpiresInMs =
+    passwordSetupExpiresAt === null ? 0 : Math.max(0, passwordSetupExpiresAt - passwordSetupClock);
+  const passwordSetupResendInMs =
+    passwordSetupResendAt === null ? 0 : Math.max(0, passwordSetupResendAt - passwordSetupClock);
+  const passwordSetupCodeExpired =
+    passwordSetupExpiresAt !== null && passwordSetupExpiresInMs === 0;
+  const passwordSetupResendReady =
+    passwordSetupResendAt === null || passwordSetupResendInMs === 0;
 
   return (
     <section className="customer-account-page-v2">
@@ -1342,33 +1393,63 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   </button>
                 ) : passwordSetupStage === "verify" ? (
                   <form
-                    className="customer-account-security-form"
+                    className="customer-account-security-form customer-account-otp-form"
                     onSubmit={(event) => void handlePasswordSetupVerification(event)}
                   >
-                    <label>
-                      <span>Verification code</span>
-                      <input
-                        autoComplete="one-time-code"
-                        inputMode="numeric"
-                        maxLength={6}
-                        onChange={(event) =>
-                          setPasswordSetupCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                    <div className="customer-account-otp-heading">
+                      <strong>Verification code</strong>
+                      <p>Enter the 6-digit code sent to your email.</p>
+                    </div>
+                    <input
+                      aria-label="Verification code"
+                      autoComplete="one-time-code"
+                      className="customer-account-otp-input"
+                      inputMode="numeric"
+                      maxLength={6}
+                      onChange={(event) =>
+                        setPasswordSetupCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                      }
+                      pattern="[0-9]{6}"
+                      value={passwordSetupCode}
+                    />
+                    <div className="customer-account-otp-timers" aria-live="polite">
+                      <span>
+                        Code expires in{" "}
+                        <strong>{formatPasswordSetupCountdown(passwordSetupExpiresInMs)}</strong>
+                      </span>
+                      <span>
+                        {passwordSetupResendReady ? (
+                          "You can request a new code now"
+                        ) : (
+                          <>
+                            You can request a new code in{" "}
+                            <strong>
+                              {formatPasswordSetupCountdown(passwordSetupResendInMs)}
+                            </strong>
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <div className="customer-account-otp-actions">
+                      <button
+                        disabled={
+                          passwordSetupBusy ||
+                          passwordSetupCode.length !== 6 ||
+                          passwordSetupCodeExpired
                         }
-                        pattern="[0-9]{6}"
-                        value={passwordSetupCode}
-                      />
-                    </label>
-                    <button disabled={passwordSetupBusy} type="submit">
-                      {passwordSetupBusy ? "Verifying..." : "Verify code"}
-                    </button>
-                    <button
-                      className="customer-account-secondary-button"
-                      disabled={passwordSetupBusy}
-                      onClick={() => void handlePasswordSetupRequest()}
-                      type="button"
-                    >
-                      Send a new code
-                    </button>
+                        type="submit"
+                      >
+                        {passwordSetupBusy ? "Verifying..." : "Verify code"}
+                      </button>
+                      <button
+                        className="customer-account-secondary-button"
+                        disabled={passwordSetupBusy || !passwordSetupResendReady}
+                        onClick={() => void handlePasswordSetupRequest()}
+                        type="button"
+                      >
+                        Resend code
+                      </button>
+                    </div>
                   </form>
                 ) : (
                   <form

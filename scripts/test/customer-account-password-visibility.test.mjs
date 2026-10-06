@@ -32,6 +32,11 @@ test("passwordless Quick Sign accounts get a verified set-password flow", () => 
   assert.match(accountPage, /securitySummary\?\.hasPassword/);
   assert.match(accountPage, /Set a password/);
   assert.match(accountPage, /Verification code/);
+  assert.match(accountPage, /Enter the 6-digit code sent to your email/);
+  assert.match(accountPage, /Code expires in/);
+  assert.match(accountPage, /You can request a new code in/);
+  assert.match(accountPage, /Resend code/);
+  assert.match(accountPage, /PASSWORD_SETUP_RESEND_COOLDOWN_MS = 45 \* 1000/);
   assert.match(accountPage, /Quick Sign or your email and password/);
 });
 
@@ -43,4 +48,7 @@ test("password visibility buttons keep input layout and button styling isolated"
   assert.match(accountCss, /\.customer-account-password-identity\s*\{/);
   assert.match(accountCss, /clip:\s*rect\(0 0 0 0\)/);
   assert.match(accountCss, /\.customer-account-auth-methods\s*\{/);
+  assert.match(accountCss, /\.customer-account-otp-input\s*\{/);
+  assert.match(accountCss, /\.customer-account-otp-timers\s*\{/);
+  assert.match(accountCss, /\.customer-account-otp-actions\s*\{/);
 });
