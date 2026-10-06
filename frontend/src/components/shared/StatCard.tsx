@@ -30,6 +30,14 @@ const iconAccentClass: Record<StatCardAccent, string> = {
     "bg-gradient-to-br from-rose-400 via-pink-500 to-rose-500 shadow-rose-200/70"
 };
 
+const surfaceAccentClass: Record<StatCardAccent, string> = {
+  blue: "ys-kpi-card-surface--blue",
+  violet: "ys-kpi-card-surface--violet",
+  emerald: "ys-kpi-card-surface--emerald",
+  amber: "ys-kpi-card-surface--amber",
+  rose: "ys-kpi-card-surface--rose"
+};
+
 export function StatCard({
   accent = "blue",
   badgeClassName,
@@ -40,7 +48,7 @@ export function StatCard({
   value
 }: StatCardProps) {
   return (
-    <Card className="ys-kpi-card-surface min-h-36">
+    <Card className={cn("ys-kpi-card-surface min-h-36", surfaceAccentClass[accent])}>
       <CardHeader className="flex flex-row items-center justify-between gap-4">
         <CardTitle>{title}</CardTitle>
         <span
