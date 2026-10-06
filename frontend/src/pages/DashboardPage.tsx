@@ -307,7 +307,7 @@ function BrandAccent() {
 
 function BrandIcon({ icon: Icon }: { icon: LucideIcon }) {
   return (
-    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#008cff] via-[#625bff] to-[#f43f8c] text-white shadow-sm shadow-[#625bff]/20">
+    <span className="ys-material-accent flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#008cff] via-[#625bff] to-[#f43f8c] text-white shadow-sm shadow-[#625bff]/20">
       <Icon className="h-4 w-4" aria-hidden="true" />
     </span>
   );

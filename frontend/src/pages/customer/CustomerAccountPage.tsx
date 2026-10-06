@@ -763,9 +763,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   return (
     <section className="customer-account-page-v2">
       <div className="customer-account-layout-v2">
-        <aside className="customer-account-rail" aria-label="Account sections">
+        <aside className="customer-account-rail ys-material-surface" aria-label="Account sections">
           <div className="customer-account-identity-card">
-            <div className="customer-account-avatar" aria-hidden="true">
+            <div className="customer-account-avatar ys-material-accent" aria-hidden="true">
               {initials(customer.name)}
             </div>
             <div>
@@ -829,14 +829,14 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
         </aside>
 
         <main className="customer-account-content-v2">
-          <header className={`customer-account-hero customer-account-hero--${activeTab}`}>
+          <header className={`customer-account-hero ys-material-surface customer-account-hero--${activeTab}`}>
             <div className="customer-account-hero__content" key={activeTab}>
               <div>
                 <p className="customer-eyebrow">{heroContent.eyebrow}</p>
                 <h2>{heroContent.title}</h2>
                 <p>{heroContent.description}</p>
               </div>
-              <span className="customer-account-hero__icon" aria-hidden="true">
+              <span className="customer-account-hero__icon ys-material-accent" aria-hidden="true">
                 {activeTab === "orders" ? (
                   <History size={28} />
                 ) : activeTab === "favorites" ? (
@@ -858,7 +858,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
           <section
             aria-labelledby="customer-order-history-title"
-            className="customer-account-section"
+            className="customer-account-section ys-material-surface"
             hidden={activeTab !== "orders"}
             id="orders-panel"
             role="tabpanel"
@@ -1097,7 +1097,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
           <section
             aria-labelledby="favorites-title"
-            className="customer-account-section"
+            className="customer-account-section ys-material-surface"
             hidden={activeTab !== "favorites"}
             id="favorites-panel"
             role="tabpanel"
@@ -1140,7 +1140,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
           <section
             aria-labelledby="profile-title"
-            className="customer-account-section"
+            className="customer-account-section ys-material-surface"
             hidden={activeTab !== "profile"}
             id="profile-panel"
             role="tabpanel"
@@ -1398,7 +1398,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
           <section
             aria-labelledby="security-title"
-            className="customer-account-section"
+            className="customer-account-section ys-material-surface"
             hidden={activeTab !== "security"}
             id="security-panel"
             role="tabpanel"

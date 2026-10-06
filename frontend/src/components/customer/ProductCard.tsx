@@ -65,7 +65,7 @@ export function ProductCard({
 
   return (
     <article
-      className={`customer-product-card customer-product-card--${presentation}`}
+      className={`customer-product-card ys-material-surface customer-product-card--${presentation}`}
       data-stock={product.stockStatus.toLowerCase()}
       data-tour={tourTarget ? "product" : undefined}
     >

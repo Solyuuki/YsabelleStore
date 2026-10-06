@@ -427,7 +427,7 @@ export function WelcomePage({
   }
 
   return (
-    <main className="welcome-ambient auth-page-enter relative flex min-h-screen flex-col overflow-hidden text-slate-950">
+    <main className="welcome-ambient ys-material-canvas auth-page-enter relative flex min-h-screen flex-col overflow-hidden text-slate-950">
       <div className="welcome-ambient-blob left-[8%] top-[12%] h-[clamp(15rem,24vw,28rem)] w-[clamp(15rem,24vw,28rem)] bg-emerald-200" />
       <div className="welcome-ambient-blob right-[7%] top-[8%] h-[clamp(16rem,26vw,32rem)] w-[clamp(16rem,26vw,32rem)] bg-blue-200 animation-delay-7000" />
       <div className="welcome-ambient-blob bottom-[2%] left-[38%] h-[clamp(14rem,22vw,26rem)] w-[clamp(14rem,22vw,26rem)] bg-violet-200 animation-delay-14000" />

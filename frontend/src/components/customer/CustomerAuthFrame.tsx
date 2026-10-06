@@ -18,7 +18,7 @@ export function CustomerAuthFrame({ children, mode }: CustomerAuthFrameProps) {
       className={`customer-auth-page customer-auth-page--phase3 customer-auth-page--${mode}`}
     >
       <div className="customer-auth-stage">
-        <div className="customer-auth-stage__panel">{children}</div>
+        <div className={`customer-auth-stage__panel${mode === "recovery" ? "" : " ys-material-surface"}`}>{children}</div>
       </div>
     </section>
   );

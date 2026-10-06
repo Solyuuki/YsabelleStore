@@ -21,7 +21,7 @@ export function CustomerLayout({
   const { startGuide } = useShoppingGuide(pathname, navigate);
 
   return (
-    <div className="customer-app">
+    <div className="customer-app ys-material-canvas">
       <a className="customer-skip-link" href="#customer-main">
         Skip to main content
       </a>
