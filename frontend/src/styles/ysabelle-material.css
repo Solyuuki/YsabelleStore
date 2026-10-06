@@ -356,62 +356,74 @@
 /*
  * KPI card selected surface
  * -------------------------
- * Dashboard and Reports summary cards share the same frosted-ribbon material.
- * The body tint is intentionally visible, but still softer than the icon badge
- * and top rail so the color system reads as one blended dashboard surface.
+ * Dashboard and Reports summary cards share the same colored frosted-ribbon
+ * material. The body tint stays visible, while the frost overlay remains
+ * distinct enough to avoid flat pastel panels.
  */
 .app-shell-ambient .ys-kpi-card-surface {
   --ys-kpi-base: rgb(98 91 255 / 8%);
-  --ys-kpi-tint-a: rgb(98 91 255 / 14%);
+  --ys-kpi-tint-a: rgb(98 91 255 / 16%);
   --ys-kpi-tint-b: rgb(244 63 140 / 8%);
   background-color: #fbfcff !important;
   background-image:
     linear-gradient(
       135deg,
       var(--ys-kpi-base) 0%,
-      rgb(255 255 255 / 74%) 48%,
-      rgb(255 255 255 / 62%) 68%,
+      rgb(255 255 255 / 78%) 44%,
+      rgb(255 255 255 / 66%) 68%,
       var(--ys-kpi-tint-b) 100%
     ),
-    radial-gradient(circle at 10% 12%, var(--ys-kpi-tint-a), transparent 46%),
-    url("/textures/kpi-card-frosted-ribbon.webp") !important;
-  background-repeat: no-repeat, no-repeat, no-repeat !important;
-  background-position: center, center, center !important;
-  background-size: auto, auto, cover !important;
-  background-blend-mode: normal, normal, soft-light !important;
+    radial-gradient(circle at 10% 12%, var(--ys-kpi-tint-a), transparent 48%) !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-position: center, center !important;
+  background-size: auto, auto !important;
+  background-blend-mode: normal, normal !important;
 }
 
 .app-shell-ambient .ys-kpi-card-surface--blue {
   --ys-kpi-base: rgb(56 189 248 / 14%);
-  --ys-kpi-tint-a: rgb(59 130 246 / 20%);
+  --ys-kpi-tint-a: rgb(59 130 246 / 22%);
   --ys-kpi-tint-b: rgb(99 102 241 / 10%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface--emerald {
   --ys-kpi-base: rgb(52 211 153 / 13%);
-  --ys-kpi-tint-a: rgb(16 185 129 / 19%);
+  --ys-kpi-tint-a: rgb(16 185 129 / 20%);
   --ys-kpi-tint-b: rgb(20 184 166 / 9%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface--amber {
   --ys-kpi-base: rgb(251 191 36 / 14%);
-  --ys-kpi-tint-a: rgb(245 158 11 / 19%);
+  --ys-kpi-tint-a: rgb(245 158 11 / 20%);
   --ys-kpi-tint-b: rgb(249 115 22 / 10%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface--violet {
   --ys-kpi-base: rgb(139 92 246 / 14%);
-  --ys-kpi-tint-a: rgb(168 85 247 / 20%);
+  --ys-kpi-tint-a: rgb(168 85 247 / 22%);
   --ys-kpi-tint-b: rgb(236 72 153 / 10%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface--rose {
   --ys-kpi-base: rgb(251 113 133 / 13%);
-  --ys-kpi-tint-a: rgb(244 63 94 / 19%);
+  --ys-kpi-tint-a: rgb(244 63 94 / 20%);
   --ys-kpi-tint-b: rgb(236 72 153 / 9%);
 }
 
 .app-shell-ambient .ys-kpi-card-surface::before {
-  background-image: none !important;
-  opacity: 0 !important;
+  background-image:
+    url("/textures/kpi-card-frosted-ribbon.webp"),
+    var(--ys-material-facets),
+    var(--ys-material-noise),
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 34%),
+      transparent 38% 72%,
+      rgb(255 255 255 / 10%)
+    ) !important;
+  background-repeat: no-repeat, no-repeat, repeat, no-repeat !important;
+  background-position: center, center, center, center !important;
+  background-size: cover, 185% 185%, 150px 150px, auto !important;
+  background-blend-mode: soft-light, screen, multiply, normal !important;
+  opacity: 0.58 !important;
 }
