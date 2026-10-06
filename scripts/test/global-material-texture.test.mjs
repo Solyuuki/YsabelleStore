@@ -97,10 +97,10 @@ test("approved KPI card texture is scoped to Dashboard and Reports summary cards
   assert.match(statCard, /ys-kpi-card-surface/);
   assert.match(materialCss, /\.app-shell-ambient \.ys-kpi-card-surface\s*\{/);
   assert.match(materialCss, /kpi-card-frosted-ribbon\.webp/);
-  assert.match(materialCss, /background-size:\s*cover\s*!important/);
+  assert.match(materialCss, /background-size:\s*cover,\s*auto\s*!important/);
   assert.match(
     materialCss,
-    /\.app-shell-ambient \.ys-kpi-card-surface::before[\s\S]*opacity:\s*0\s*!important/
+    /\.app-shell-ambient \.ys-kpi-card-surface::before[\s\S]*opacity:\s*0\.9\s*!important/
   );
   assert.ok(
     fs.existsSync(path.join(REPO_ROOT, "frontend/public/textures/kpi-card-frosted-ribbon.webp"))
