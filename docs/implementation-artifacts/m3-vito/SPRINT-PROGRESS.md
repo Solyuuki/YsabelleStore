@@ -35,6 +35,12 @@
 | 2026-09-30 | Updated the implementation evidence and validation notes for the current branch.                                                                                | m3/v0.11/feat/customer-service; .env.example<br>backend/src/types/customerSupport.ts<br>backend/src/validators/customerSupport.validators.ts<br>database/canonical/product-identities.json<br>database/canonical/product-images/candidate-reconciliation.json<br>database/canonical/product-images/runtime-distribution.manifest.json<br>database/canonical/releases/g2-s7-c5-a2.json<br>database/prisma/migrations/0006_customer_support_foundation/migration.sql; validation: Passed |
 | 2026-09-30 | Updated artifact and sprint automation so it preserves existing markdown templates, updates table rows idempotently, and removes duplicated automated sections. | m3/v0.11/feat/customer-service; backend/test/support-gmail.test.ts<br>frontend/src/pages/CustomerSupportInboxPage.tsx<br>scripts/test/staff-support-contract.test.mjs; validation: Passed                                                                                                                                                                                                                                                                                              |
 
+## Sprint 11 Customer Support Integration
+
+| Date | Branch | Progress | Evidence |
+| --- | --- | --- | --- |
+| 2026-10-06 | m3/v0.11/fix/customer-support-integration | M3 customer support and Gmail integration converged onto the current Sprint 11 tree without replacing newer PayMongo, delivery, customer-profile, storefront, or About work. | Draft PR #51; current integration branch; original M3 history retained as merge ancestry. |
+
 ## Scope Boundary
 
 | Included in Sprint 1 and Sprint 3 planning                                                                                        | Excluded from Sprint 1 and Sprint 3 planning                                                                                                           |
