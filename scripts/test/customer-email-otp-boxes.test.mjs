@@ -30,7 +30,7 @@ test("shared email OTP delegates paste and keyboard behavior to input-otp", () =
   assert.doesNotMatch(emailPanel, /useRef/);
   assert.doesNotMatch(emailPanel, /handleOtpPaste/);
   assert.doesNotMatch(emailPanel, /handleOtpKeyDown/);
-  assert.match(shared, /autoComplete="one-time-code"/);
+  assert.match(shared, /autoComplete="section-customer one-time-code"/);
   assert.match(shared, /inputMode="numeric"/);
 });
 
