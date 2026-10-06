@@ -240,12 +240,14 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
             className={`grid gap-4 md:grid-cols-2 ${preferences.showForecastSummary ? "xl:grid-cols-4" : "xl:grid-cols-3"}`}
           >
             <MetricCard
+              accent="blue"
               detail={formatCount(summary.sales.completedSales, "completed sale")}
               icon={ReceiptText}
               label="Today's sales"
               value={formatCurrency(summary.sales.todayAmount)}
             />
             <MetricCard
+              accent="emerald"
               detail={`${summary.inventory.availableItems} available • ${summary.inventory.unavailableItems} unavailable`}
               icon={Boxes}
               label="Inventory"
@@ -254,6 +256,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
             <AlertMetricCard summary={summary} />
             {preferences.showForecastSummary ? (
               <MetricCard
+                accent="violet"
                 detail={forecastStat?.detail ?? "Forecast is not ready"}
                 icon={LineChart}
                 label="Forecast"
@@ -292,33 +295,65 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
   );
 }
 
+type MetricAccent = "blue" | "emerald" | "amber" | "violet";
+
 type MetricCardProps = {
+  accent: MetricAccent;
   detail: string;
   icon: LucideIcon;
   label: string;
   value: string;
 };
 
-function BrandAccent() {
-  return <div className="ys-material-accent-strip" aria-hidden="true" />;
+const stripAccentClass: Record<MetricAccent, string> = {
+  blue: "ys-material-accent-strip--blue",
+  emerald: "ys-material-accent-strip--emerald",
+  amber: "ys-material-accent-strip--amber",
+  violet: "ys-material-accent-strip--violet"
+};
+
+const iconAccentClass: Record<MetricAccent, string> = {
+  blue:
+    "bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-500 shadow-blue-200/70",
+  emerald:
+    "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-500 shadow-emerald-200/70",
+  amber:
+    "bg-gradient-to-br from-amber-300 via-amber-500 to-orange-500 shadow-amber-200/70",
+  violet:
+    "bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 shadow-violet-200/70"
+};
+
+function BrandAccent({ accent }: { accent?: MetricAccent }) {
+  return (
+    <div
+      className={\`ys-material-accent-strip \${accent ? stripAccentClass[accent] : ""}\`}
+      aria-hidden="true"
+    />
+  );
 }
 
-function BrandIcon({ icon: Icon }: { icon: LucideIcon }) {
+function BrandIcon({ accent, icon: Icon }: { accent?: MetricAccent; icon: LucideIcon }) {
   return (
-    <span className="ys-material-accent flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#008cff] via-[#625bff] to-[#f43f8c] text-white shadow-sm shadow-[#625bff]/20">
+    <span
+      className={\`ys-material-accent flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-white/70 \${
+        accent
+          ? iconAccentClass[accent]
+          : "bg-gradient-to-br from-[#008cff] via-[#625bff] to-[#f43f8c] shadow-[#625bff]/20"
+      }\`}
+    >
       <Icon className="h-4 w-4" aria-hidden="true" />
     </span>
   );
 }
 
-function MetricCard({ detail, icon, label, value }: MetricCardProps) {
+function MetricCard({ accent, detail, icon, label, value }: MetricCardProps) {
   return (
-    <Card className={`${brandCardClass} ys-kpi-card-surface`}>
-      <BrandAccent />
+    <Card className={\`\${brandCardClass} ys-kpi-card-surface\`}>
+      <BrandAccent accent={accent} />
       <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-slate-700">{label}</p>
-          <BrandIcon icon={icon} />
+          <BrandIcon accent={accent} icon={icon} />
         </div>
         <div className="mt-7">
           <p className="text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
@@ -338,16 +373,14 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
 
   return (
     <Card className={`${brandCardClass} ys-kpi-card-surface`}>
-      <BrandAccent />
+      <BrandAccent accent="amber" />
       <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-slate-700">Stock alerts</p>
           {alertCount > 0 ? (
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-700">
-              <TriangleAlert className="h-4 w-4" aria-hidden="true" />
-            </span>
+            <BrandIcon accent="amber" icon={TriangleAlert} />
           ) : (
-            <BrandIcon icon={CheckCircle2} />
+            <BrandIcon accent="amber" icon={CheckCircle2} />
           )}
         </div>
         <div className="mt-5 grid grid-cols-2 divide-x divide-slate-100">
