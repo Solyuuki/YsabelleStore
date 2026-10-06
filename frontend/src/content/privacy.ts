@@ -54,15 +54,15 @@ export const PRIVACY_STORAGE_ITEMS: PrivacyStorageItem[] = [
   {
     name: "ysabelle:pending-favorite",
     category: "Device convenience",
-    purpose:
-      "Temporarily remembers a product the customer tried to favorite before signing in.",
+    purpose: "Temporarily remembers a product the customer tried to favorite before signing in.",
     duration: "Until the favorite is completed after sign-in or browser storage is removed.",
     technology: "Local storage"
   },
   {
     name: "ysabelle-store-entrance-entered",
     category: "Device convenience",
-    purpose: "Prevents the storefront entrance experience from repeating within the same tab session.",
+    purpose:
+      "Prevents the storefront entrance experience from repeating within the same tab session.",
     duration: "For the current browser tab/session.",
     technology: "Session storage"
   }
@@ -109,13 +109,11 @@ export const PRIVACY_DATA_GROUPS = [
 export const PRIVACY_SERVICE_PROVIDERS = [
   {
     name: "PayMongo",
-    use:
-      "Payment checkout when enabled. The integration sends billing name/email, order line items, an order reference, and internal order/customer references needed to create or reconcile checkout."
+    use: "Payment checkout when enabled. The integration sends billing name/email, order line items, an order reference, and internal order/customer references needed to create or reconcile checkout."
   },
   {
     name: "Google",
-    use:
-      "Google customer sign-in when enabled, and Gmail-based customer-support mailbox synchronization when configured."
+    use: "Google customer sign-in when enabled, and Gmail-based customer-support mailbox synchronization when configured."
   },
   {
     name: "Facebook",
@@ -123,8 +121,7 @@ export const PRIVACY_SERVICE_PROVIDERS = [
   },
   {
     name: "Resend",
-    use:
-      "Production delivery of customer verification, sign-in, password setup/recovery, and session-security emails when configured."
+    use: "Production delivery of customer verification, sign-in, password setup/recovery, and session-security emails when configured."
   }
 ] as const;
 
