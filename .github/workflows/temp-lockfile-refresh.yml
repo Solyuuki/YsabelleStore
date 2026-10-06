@@ -24,7 +24,7 @@ jobs:
           cache: npm
 
       - name: Refresh lockfile for proxy-addr override
-        run: npm install --package-lock-only --ignore-scripts
+        run: npm update proxy-addr --package-lock-only --ignore-scripts
 
       - name: Verify patched proxy-addr resolution
         run: |
