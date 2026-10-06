@@ -34,14 +34,14 @@ const apiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.t
 assert.doesNotMatch(reportsSource, /RestockNewProductCard/);
 assert.doesNotMatch(reportsSource, /New product restock/);
 assert.doesNotMatch(reportsSource, /Add new product/);
-assert.match(forecastSource, /Restock forecast/);
+assert.match(forecastSource, /inventory recommendation report/);
 assert.doesNotMatch(reportsSource, /Review recommendations/);
 assert.match(
   forecastSource,
-  /See which products need restocking, when to order, and how many units to buy\./
+  /Complete current-month view across all products/
 );
 assert.match(reportsSource, /RestockForecastPanel/);
-assert.match(forecastSource, /Forecast watchlist/);
+assert.match(forecastSource, /Monthly product report/);
 const forecastWatchlistBodyStart = forecastSource.indexOf("<TableBody>");
 const forecastWatchlistBodyEnd = forecastSource.indexOf("</TableBody>", forecastWatchlistBodyStart);
 assert.ok(forecastWatchlistBodyStart >= 0);
