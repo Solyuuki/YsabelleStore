@@ -257,7 +257,7 @@ export function CustomerAccountRecoveryPage({
               <span>Username, email or mobile number</span>
               <input
                 aria-invalid={Boolean(error)}
-                autoComplete="username"
+                autoComplete="section-customer username"
                 id="customer-recovery-identifier"
                 onChange={(event) => setIdentifier(event.target.value)}
                 placeholder="Username, email, or 09XXXXXXXXX"
@@ -303,7 +303,7 @@ export function CustomerAccountRecoveryPage({
                   <input
                     aria-invalid={Boolean(error)}
                     aria-label="6-digit verification code"
-                    autoComplete="one-time-code"
+                    autoComplete="section-customer one-time-code"
                     className="customer-recovery-code-input"
                     id="customer-recovery-code"
                     inputMode="numeric"
@@ -348,7 +348,7 @@ export function CustomerAccountRecoveryPage({
               <span className="customer-auth-password">
                 <input
                   aria-invalid={Boolean(error)}
-                  autoComplete="new-password"
+                  autoComplete="section-customer new-password"
                   id="customer-recovery-new-password"
                   maxLength={128}
                   minLength={8}
@@ -373,7 +373,7 @@ export function CustomerAccountRecoveryPage({
               <span className="customer-auth-password">
                 <input
                   aria-invalid={Boolean(error)}
-                  autoComplete="new-password"
+                  autoComplete="section-customer new-password"
                   id="customer-recovery-confirm-password"
                   maxLength={128}
                   minLength={8}

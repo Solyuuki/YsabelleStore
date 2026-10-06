@@ -1456,10 +1456,11 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                     onSubmit={(event) => void handlePasswordChange(event)}
                   >
                     <input
-                      autoComplete="username"
+                      autoComplete="section-customer username"
                       className="customer-account-password-identity"
+                      aria-label="Customer account email"
                       name="username"
-                      readOnly
+                      onChange={() => undefined}
                       tabIndex={-1}
                       type="email"
                       value={customer.email}
@@ -1467,7 +1468,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
                     <div className="customer-account-password-change-current">
                       <PasswordField
-                        autoComplete="current-password"
+                        autoComplete="section-customer current-password"
                         label="Current password"
                         name="currentPassword"
                         maxLength={128}
@@ -1487,7 +1488,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
                     <div className="customer-account-password-change-new">
                       <PasswordField
-                        autoComplete="new-password"
+                        autoComplete="section-customer new-password"
                         label="New password"
                         name="newPassword"
                         maxLength={128}
@@ -1496,7 +1497,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                         value={newPassword}
                       />
                       <PasswordField
-                        autoComplete="new-password"
+                        autoComplete="section-customer new-password"
                         label="Confirm new password"
                         name="newPasswordConfirmation"
                         maxLength={128}
@@ -1542,7 +1543,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                     </div>
                     <input
                       aria-label="Verification code"
-                      autoComplete="one-time-code"
+                      autoComplete="section-customer one-time-code"
                       className="customer-account-otp-input"
                       inputMode="numeric"
                       maxLength={6}
@@ -1597,16 +1598,17 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                     onSubmit={(event) => void handleFirstPasswordSubmit(event)}
                   >
                     <input
-                      autoComplete="username"
+                      autoComplete="section-customer username"
                       className="customer-account-password-identity"
+                      aria-label="Customer account email"
                       name="username"
-                      readOnly
+                      onChange={() => undefined}
                       tabIndex={-1}
                       type="email"
                       value={customer.email}
                     />
                     <PasswordField
-                      autoComplete="new-password"
+                      autoComplete="section-customer new-password"
                       label="New password"
                       name="newPassword"
                       maxLength={128}
@@ -1615,7 +1617,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                       value={setupPassword}
                     />
                     <PasswordField
-                      autoComplete="new-password"
+                      autoComplete="section-customer new-password"
                       label="Confirm new password"
                       name="newPasswordConfirmation"
                       maxLength={128}
@@ -1727,7 +1729,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                               </p>
                             </div>
                             <input
-                              autoComplete="username"
+                              autoComplete="section-customer username"
                               className="customer-account-password-identity"
                               name="username"
                               readOnly
@@ -1736,7 +1738,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                               value={customer.email}
                             />
                             <PasswordField
-                              autoComplete="current-password"
+                              autoComplete="section-customer current-password"
                               label="Current password"
                               name="currentPassword"
                               maxLength={128}
@@ -1801,7 +1803,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                             </div>
                             <input
                               aria-label="Session security verification code"
-                              autoComplete="one-time-code"
+                              autoComplete="section-customer one-time-code"
                               className="customer-account-otp-input"
                               inputMode="numeric"
                               maxLength={6}

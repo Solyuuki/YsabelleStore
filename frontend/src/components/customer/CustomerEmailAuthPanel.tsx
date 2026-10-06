@@ -128,7 +128,7 @@ export function CustomerEmailAuthPanel({
           <label className="customer-auth-field" htmlFor="customer-email-auth-email">
             <span>Email address</span>
             <input
-              autoComplete="email"
+              autoComplete="section-customer email"
               id="customer-email-auth-email"
               inputMode="email"
               onChange={(event) => setEmail(event.target.value)}

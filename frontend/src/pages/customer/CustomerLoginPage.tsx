@@ -146,7 +146,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
                     fieldErrors.identifier ? "customer-login-identifier-error" : undefined
                   }
                   aria-invalid={Boolean(fieldErrors.identifier)}
-                  autoComplete="username"
+                  autoComplete="section-customer username"
                   id="customer-login-identifier"
                   onChange={(event) => setIdentifier(event.target.value)}
                   placeholder="Username, email, or 09XXXXXXXXX"
@@ -166,7 +166,7 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
                       fieldErrors.password ? "customer-login-password-error" : undefined
                     }
                     aria-invalid={Boolean(fieldErrors.password)}
-                    autoComplete="current-password"
+                    autoComplete="section-customer current-password"
                     id="customer-login-password"
                     onChange={(event) => setPassword(event.target.value)}
                     placeholder="Enter your password"

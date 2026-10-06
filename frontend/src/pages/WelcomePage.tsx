@@ -567,7 +567,7 @@ export function WelcomePage({
                     <span>Email</span>
                     <input
                       aria-invalid={emailHasError}
-                      autoComplete="username"
+                      autoComplete="section-staff username"
                       className={cn(
                         "h-11 w-full rounded-md border bg-white px-3 text-sm text-slate-950 outline-none transition-[border-color,box-shadow,transform,background-color] duration-200 ease-out placeholder:text-slate-400 focus-visible:shadow-sm",
                         emailHasError
@@ -588,7 +588,7 @@ export function WelcomePage({
                     <div className="relative">
                       <input
                         aria-invalid={passwordHasError}
-                        autoComplete="current-password"
+                        autoComplete="section-staff current-password"
                         className={cn(
                           "h-11 w-full rounded-md border bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-[border-color,box-shadow,transform,background-color] duration-200 ease-out placeholder:text-slate-400 focus-visible:shadow-sm",
                           passwordHasError

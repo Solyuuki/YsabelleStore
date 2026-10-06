@@ -27,7 +27,7 @@ export function CustomerVerificationCode({
         <InputOTP
           aria-invalid={invalid}
           aria-label={label}
-          autoComplete="one-time-code"
+          autoComplete="section-customer one-time-code"
           autoFocus={autoFocus}
           className="customer-verification-code__control"
           containerClassName="customer-verification-code__container"

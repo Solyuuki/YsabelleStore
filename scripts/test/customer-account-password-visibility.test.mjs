@@ -27,7 +27,8 @@ test("customer account security fields expose password visibility toggles", () =
   assert.match(accountPage, /verifyCustomerSessionRevokeVerification/);
   assert.match(accountPage, /Send verification code/);
   assert.match(accountPage, /Verify & sign out/);
-  assert.equal((accountPage.match(/autoComplete="username"/g) ?? []).length, 3);
+  assert.equal((accountPage.match(/autoComplete="section-customer username"/g) ?? []).length, 3);
+  assert.doesNotMatch(accountPage, /autoComplete="section-staff/);
   assert.equal((accountPage.match(/value=\{customer\.email\}/g) ?? []).length, 3);
   assert.match(accountPage, /name="newPassword"/);
   assert.match(accountPage, /name="newPasswordConfirmation"/);

@@ -1,5 +1,6 @@
 const STAFF_LOGIN_PATH = "/staff-login";
-const GUARDED_PASSWORD_SELECTOR = 'input[type="password"][autocomplete="current-password"]';
+const GUARDED_PASSWORD_SELECTOR =
+  'input[type="password"][autocomplete~="section-staff"][autocomplete~="current-password"]';
 
 function clearControlledInputValue(input: HTMLInputElement) {
   if (!input.value) {
@@ -50,7 +51,7 @@ export function installDevelopmentStaffLoginAutofillGuard() {
 
       guardedInputs.add(input);
       input.form?.setAttribute("autocomplete", "off");
-      input.setAttribute("autocomplete", "new-password");
+      input.setAttribute("autocomplete", "section-staff new-password");
       input.setAttribute("data-lpignore", "true");
       input.setAttribute("data-1p-ignore", "true");
       input.readOnly = true;
@@ -61,7 +62,7 @@ export function installDevelopmentStaffLoginAutofillGuard() {
 
       const unlockForIntentionalEntry = () => {
         input.readOnly = false;
-        input.setAttribute("autocomplete", "off");
+        input.setAttribute("autocomplete", "section-staff current-password");
       };
 
       input.addEventListener("pointerdown", unlockForIntentionalEntry, {

@@ -22,7 +22,8 @@ test("customer recovery UI uses a verification-code stage without URL reset toke
     recoveryPage,
     /type RecoveryStage = "identify" \| "verify" \| "reset" \| "complete"/
   );
-  assert.match(recoveryPage, /autoComplete="one-time-code"/);
+  assert.match(recoveryPage, /autoComplete="section-customer one-time-code"/);
+  assert.doesNotMatch(recoveryPage, /autoComplete="section-staff/);
   assert.match(recoveryPage, /Enter verification code/);
   assert.match(recoveryPage, /Resend code/);
   assert.match(recoveryPage, /Didn’t get the code\?/);
