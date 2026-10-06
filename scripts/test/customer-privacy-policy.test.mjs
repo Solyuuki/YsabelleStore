@@ -38,7 +38,7 @@ test("privacy content reflects current security and device-storage implementatio
   assert.match(privacyContent, /Up to 7 days/);
   assert.match(privacyContent, /ysabelle_customer_remembered_browser/);
   assert.match(privacyContent, /up to 365 days/i);
-  assert.match(privacyContent, /trusted.*30 days/i);
+  assert.match(privacyContent, /trust.*30 days/i);
   assert.match(privacyContent, /ysabelle:guest-cart:v1/);
   assert.match(privacyContent, /ysabelle:storefront:recent-searches/);
   assert.match(privacyContent, /ysabelle:pending-favorite/);
