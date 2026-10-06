@@ -473,6 +473,10 @@ model CustomerAccount {
   supportTickets      SupportTicket[]
 
   @@index([status], map: "idx_customer_accounts_status")
+  @@index([createdAt, id], map: "idx_customer_accounts_created_id")
+  @@index([status, createdAt, id], map: "idx_customer_accounts_status_created_id")
+  @@index([name, id], map: "idx_customer_accounts_name_id")
+  @@index([phone, id], map: "idx_customer_accounts_phone_id")
   @@map("customer_accounts")
 }
 
@@ -847,6 +851,9 @@ model ProductReview {
   @@index([productId, status, createdAt], map: "idx_product_reviews_product_status_created")
   @@index([productId, status, rating, createdAt], map: "idx_product_reviews_product_status_rating_created")
   @@index([customerAccountId, createdAt], map: "idx_product_reviews_customer_created")
+  @@index([createdAt, id], map: "idx_product_reviews_created_id")
+  @@index([status, createdAt, id], map: "idx_product_reviews_status_created_id")
+  @@index([reviewerDisplayName, id], map: "idx_product_reviews_reviewer_id")
   @@index([verifiedOrderId], map: "idx_product_reviews_verified_order")
   @@index([moderatedById], map: "idx_product_reviews_moderated_by")
   @@map("product_reviews")
