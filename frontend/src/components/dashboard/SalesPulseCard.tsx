@@ -156,7 +156,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
 
   return (
     <Card className={brandCardClass}>
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#008cff] via-[#625bff] to-[#f43f8c]" />
+      <div className="ys-material-accent-strip" aria-hidden="true" />
       <CardHeader className="border-b border-slate-100 pb-4 pt-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
