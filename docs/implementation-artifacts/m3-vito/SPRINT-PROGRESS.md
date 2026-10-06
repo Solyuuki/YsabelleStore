@@ -37,8 +37,8 @@
 
 ## Sprint 11 Customer Support Integration
 
-| Date | Branch | Progress | Evidence |
-| --- | --- | --- | --- |
+| Date       | Branch                                    | Progress                                                                                                                                                                     | Evidence                                                                                  |
+| ---------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | 2026-10-06 | m3/v0.11/fix/customer-support-integration | M3 customer support and Gmail integration converged onto the current Sprint 11 tree without replacing newer PayMongo, delivery, customer-profile, storefront, or About work. | Draft PR #51; current integration branch; original M3 history retained as merge ancestry. |
 
 ## Scope Boundary
