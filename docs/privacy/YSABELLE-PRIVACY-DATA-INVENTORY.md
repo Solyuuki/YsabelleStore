@@ -34,15 +34,15 @@ Purpose in the current system:
 
 Verified cookie behavior:
 
-| Mechanism | Current purpose | Current duration / behavior |
-| --- | --- | --- |
-| `ysabelle_customer_session` | authenticated customer session | cookie max age 7 days; revocable |
-| registration email grant | registration verification | 10-minute OTP/grant lifetime |
-| password setup grant | password setup verification | 10-minute grant lifetime |
-| recovery grant | password recovery verification | 10-minute grant lifetime |
-| session-revoke grant | verification before revoking other sessions | 10-minute grant lifetime |
-| OAuth binding/link state | safe social-auth callback binding | 10 minutes |
-| `ysabelle_customer_remembered_browser` | remembered-account browser credential | cookie max age 365 days; database trust window 30 days |
+| Mechanism                              | Current purpose                             | Current duration / behavior                            |
+| -------------------------------------- | ------------------------------------------- | ------------------------------------------------------ |
+| `ysabelle_customer_session`            | authenticated customer session              | cookie max age 7 days; revocable                       |
+| registration email grant               | registration verification                   | 10-minute OTP/grant lifetime                           |
+| password setup grant                   | password setup verification                 | 10-minute grant lifetime                               |
+| recovery grant                         | password recovery verification              | 10-minute grant lifetime                               |
+| session-revoke grant                   | verification before revoking other sessions | 10-minute grant lifetime                               |
+| OAuth binding/link state               | safe social-auth callback binding           | 10 minutes                                             |
+| `ysabelle_customer_remembered_browser` | remembered-account browser credential       | cookie max age 365 days; database trust window 30 days |
 
 Customer cookies are configured HttpOnly and SameSite=Lax, with Secure enabled in production where implemented.
 
@@ -58,13 +58,13 @@ Database security records include:
 
 Current customer storefront storage:
 
-| Key | Technology | Data / purpose |
-| --- | --- | --- |
-| `ysabelle:guest-cart:v1` | localStorage | guest cart products and quantities; cleared after merge/sign-in or manual cart clear |
-| `ysabelle:storefront:recent-searches` | localStorage | up to five recent search terms; customer can clear them |
-| `ysabelle:pending-favorite` | localStorage | pending product favorite intent before sign-in |
-| `ysabelle-store-entrance-entered` | sessionStorage | prevents the entrance experience repeating in the same tab session |
-| `ysabelle:privacy-notice-version` | localStorage | records that the informational privacy notice for the current version was dismissed |
+| Key                                   | Technology     | Data / purpose                                                                       |
+| ------------------------------------- | -------------- | ------------------------------------------------------------------------------------ |
+| `ysabelle:guest-cart:v1`              | localStorage   | guest cart products and quantities; cleared after merge/sign-in or manual cart clear |
+| `ysabelle:storefront:recent-searches` | localStorage   | up to five recent search terms; customer can clear them                              |
+| `ysabelle:pending-favorite`           | localStorage   | pending product favorite intent before sign-in                                       |
+| `ysabelle-store-entrance-entered`     | sessionStorage | prevents the entrance experience repeating in the same tab session                   |
+| `ysabelle:privacy-notice-version`     | localStorage   | records that the informational privacy notice for the current version was dismissed  |
 
 The storefront code audited for this baseline does not initialize Google Analytics, gtag, Meta Pixel, or another advertising / behavioral analytics tracker.
 
