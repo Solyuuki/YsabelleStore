@@ -25,7 +25,6 @@ import {
   fetchDashboardOperations,
   fetchDashboardSummary,
   type DashboardOperations,
-  type DashboardRestockAction,
   type DashboardRestockOrderStatus,
   type DashboardRestockRecommendationSource,
   type DashboardRestockRisk,
@@ -57,12 +56,6 @@ function formatCount(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
-function riskVariant(risk: DashboardRestockRisk) {
-  if (risk === "CRITICAL") return "error" as const;
-  if (risk === "HIGH" || risk === "MEDIUM") return "warning" as const;
-  return "success" as const;
-}
-
 function orderStatusVariant(status: DashboardRestockOrderStatus) {
   if (status === "PARTIALLY_RECEIVED" || status === "AWAITING_DELIVERY") {
     return "warning" as const;
@@ -88,21 +81,6 @@ function orderStatusLabel(status: DashboardRestockOrderStatus) {
       return "Cancelled";
     default:
       return status;
-  }
-}
-
-function sourceLabel(source: DashboardRestockRecommendationSource) {
-  switch (source) {
-    case "LOW_STOCK":
-      return "Low stock";
-    case "TARGET_STOCK":
-      return "Target stock";
-    case "SARIMA":
-      return "SARIMA";
-    case "MANUAL":
-      return "Manual";
-    default:
-      return source;
   }
 }
 
@@ -388,6 +366,25 @@ type OwnerOperationsProps = {
 };
 
 function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOperationsProps) {
+  const reportMonth = operations
+    ? new Intl.DateTimeFormat("en-PH", {
+        month: "long",
+        timeZone: "Asia/Manila",
+        year: "numeric"
+      }).format(new Date(operations.generatedAt))
+    : "Current month";
+  const highPriorityCount = operations
+    ? operations.restock.risk.CRITICAL + operations.restock.risk.HIGH
+    : 0;
+  const topPriority = operations?.restock.actions[0] ?? null;
+  const topActionLabel = topPriority
+    ? topPriority.actionType === "RESTOCK"
+      ? `Restock ${topPriority.recommendedQuantity.toLocaleString()} units`
+      : topPriority.actionType === "EXPIRY_REVIEW"
+        ? "Review expiry"
+        : "Reduce replenishment"
+    : null;
+
   return (
     <Card className={brandCardClass}>
       <BrandAccent />
@@ -395,12 +392,12 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#625bff]">
-              Inventory recommender
+              Monthly inventory recommendation
             </p>
-            <CardTitle className="mt-1">Recommended actions</CardTitle>
+            <CardTitle className="mt-1">{reportMonth} report</CardTitle>
             <p className="mt-1 text-xs text-slate-500">
-              Forecast-driven inventory actions ranked from SARIMA demand, stock coverage, incoming
-              supply, and expiry risk.
+              Live monthly summary of forecast demand, stock coverage, incoming supply, and expiry
+              exposure. Product-level detail stays in Reports.
             </p>
           </div>
           {operations ? (
@@ -408,7 +405,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
               className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                 operations.restock.actionableProducts > 0
                   ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                  : "bg-violet-50 text-[#625bff] ring-1 ring-violet-200"
+                  : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
               }`}
             >
               {operations.restock.actionableProducts > 0
@@ -418,114 +415,90 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
           ) : null}
         </div>
       </CardHeader>
-      <CardContent className="pt-5">
-        {operations ? (
-          <div className="mb-4 rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/70 to-white p-4">
-            <div className="flex items-start gap-3">
-              <BrandIcon icon={Sparkles} />
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#625bff]">
-                  Decision assistant · {operations.assistant.provider.toLowerCase()}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-700">
-                  {operations.assistant.summary}
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : null}
+
+      <CardContent className="space-y-4 pt-5">
         {loading && !operations ? (
-          <DashboardPanelLoading label="Loading replenishment actions..." />
+          <DashboardPanelLoading label="Preparing monthly inventory summary..." />
         ) : error && !operations ? (
           <DashboardPanelError message={error} />
-        ) : operations && operations.restock.actions.length > 0 ? (
-          <div className="space-y-3">
-            {operations.restock.actions.map((action) => (
-              <RestockActionCard action={action} key={action.product.id} />
-            ))}
+        ) : operations ? (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <MonthlyReportStat
+                label="Products requiring action"
+                value={operations.restock.actionableProducts}
+              />
+              <MonthlyReportStat
+                label="Suggested units"
+                value={operations.restock.suggestedUnits}
+              />
+              <MonthlyReportStat label="High / critical" value={highPriorityCount} />
+              <MonthlyReportStat label="Open restock orders" value={operations.restock.queue.totalOpen} />
+            </div>
+
+            {topPriority ? (
+              <div className="rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/65 to-white p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#625bff]">
+                      Highest priority this month
+                    </p>
+                    <p className="mt-1 truncate text-sm font-semibold text-slate-950">
+                      {topPriority.product.name}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">
+                      {topPriority.rationale}
+                    </p>
+                  </div>
+                  <div className="shrink-0 rounded-lg bg-white px-3 py-2 text-right ring-1 ring-violet-100">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
+                      {topPriority.riskLevel} priority
+                    </p>
+                    <p className="mt-0.5 text-sm font-semibold text-slate-950">{topActionLabel}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+                <BrandIcon icon={Sparkles} />
+                <div>
+                  <p className="font-semibold text-emerald-950">No monthly inventory action required</p>
+                  <p className="mt-1 text-sm leading-6 text-emerald-800">
+                    Current stock and incoming supply cover the active replenishment policy.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
               <p className="text-xs text-slate-500">
-                {operations.restock.suggestedUnits.toLocaleString()} suggested replenishment units ·{" "}
-                {operations.restock.actionableProducts.toLocaleString()} total inventory actions.
+                Updated {dateTimeFormatter.format(new Date(operations.generatedAt))} · live current
+                month
               </p>
               <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
                 <ClipboardList className="h-4 w-4" />
-                Review recommended plan
+                View {reportMonth} report
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
-          </div>
-        ) : (
-          <div className="flex min-h-36 flex-col justify-between gap-5 rounded-xl border border-dashed border-violet-200 bg-gradient-to-br from-[#008cff]/[0.06] via-[#625bff]/[0.06] to-[#f43f8c]/[0.05] p-5 sm:flex-row sm:items-center">
-            <div className="flex items-start gap-3">
-              <BrandIcon icon={Sparkles} />
-              <div>
-                <p className="font-semibold text-slate-950">Inventory coverage looks healthy</p>
-                <p className="mt-1 max-w-xl text-sm leading-6 text-slate-600">
-                  Current sellable and incoming stock cover the active replenishment policy. No
-                  owner intervention is required right now.
-                </p>
-              </div>
-            </div>
-            <Button
-              onClick={() => onNavigate("/reports")}
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              Review planner
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+          </>
+        ) : null}
+
         {error && operations ? (
-          <p className="mt-3 text-xs text-amber-700">Latest refresh warning: {error}</p>
+          <p className="text-xs text-amber-700">Latest refresh warning: {error}</p>
         ) : null}
       </CardContent>
     </Card>
   );
 }
 
-function RestockActionCard({ action }: { action: DashboardRestockAction }) {
+function MonthlyReportStat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 transition-colors hover:border-violet-200 hover:bg-violet-50/30">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="font-semibold text-slate-950">{action.product.name}</p>
-            <StatusBadge variant={riskVariant(action.riskLevel)}>{action.riskLevel}</StatusBadge>
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            {action.product.sku} • {sourceLabel(action.recommendationSource)}
-          </p>
-        </div>
-        <div className="rounded-lg bg-white px-3 py-2 text-right ring-1 ring-violet-100">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
-            {action.actionType === "RESTOCK" ? "Suggested" : "Action"}
-          </p>
-          <p className="mt-0.5 text-sm font-semibold text-slate-950">
-            {action.actionType === "RESTOCK"
-              ? `${action.recommendedQuantity.toLocaleString()} units`
-              : action.actionType === "EXPIRY_REVIEW"
-                ? "Review expiry"
-                : "Reduce replenishment"}
-          </p>
-        </div>
-      </div>
-      <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
-        <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-slate-200">
-          {action.sellableStock.toLocaleString()} sellable
-        </span>
-        <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-slate-200">
-          {action.incomingStock.toLocaleString()} incoming
-        </span>
-        {action.expiryRiskQuantity > 0 ? (
-          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-amber-700 ring-1 ring-amber-200">
-            {action.expiryRiskQuantity.toLocaleString()} expiry-risk
-          </span>
-        ) : null}
-      </div>
-      <p className="mt-3 text-xs leading-5 text-slate-600">{action.rationale}</p>
+    <div className="rounded-xl border border-violet-100 bg-violet-50/35 px-4 py-3">
+      <p className="text-[11px] font-medium text-slate-500">{label}</p>
+      <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
+        {value.toLocaleString()}
+      </p>
     </div>
   );
 }
