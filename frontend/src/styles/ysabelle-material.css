@@ -1,29 +1,27 @@
 :root {
-  --ys-material-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.28'/%3E%3C/svg%3E");
-  --ys-material-fiber: repeating-linear-gradient(
-    118deg,
-    rgb(76 68 135 / 2.2%) 0 1px,
-    transparent 1px 7px
-  );
+  --ys-material-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.18'/%3E%3C/svg%3E");
+  --ys-material-facets: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 34,0 15,32' fill='white' fill-opacity='.28'/%3E%3Cpolygon points='34,0 72,0 54,22 15,32' fill='white' fill-opacity='.11'/%3E%3Cpolygon points='72,0 100,0 100,34 73,28' fill='white' fill-opacity='.20'/%3E%3Cpolygon points='0,0 15,32 0,57' fill='%2305238f' fill-opacity='.10'/%3E%3Cpolygon points='15,32 54,22 45,62 0,57' fill='%2313238a' fill-opacity='.15'/%3E%3Cpolygon points='54,22 73,28 45,62' fill='white' fill-opacity='.10'/%3E%3Cpolygon points='73,28 100,34 100,70 68,61 45,62' fill='white' fill-opacity='.18'/%3E%3Cpolygon points='0,57 45,62 29,100 0,100' fill='%23421aa2' fill-opacity='.15'/%3E%3Cpolygon points='45,62 68,61 53,100 29,100' fill='white' fill-opacity='.10'/%3E%3Cpolygon points='68,61 100,70 100,100 53,100' fill='%23ffd7ef' fill-opacity='.18'/%3E%3Cpath d='M34 0L15 32L0 57M72 0L54 22L15 32M100 34L73 28L54 22L45 62L0 57M100 70L68 61L45 62L29 100M68 61L53 100' fill='none' stroke='white' stroke-opacity='.24' stroke-width='.65'/%3E%3C/svg%3E");
   --ys-material-surface-highlight: linear-gradient(
     145deg,
-    rgb(255 255 255 / 38%),
-    transparent 36% 70%,
-    rgb(98 91 255 / 7%)
+    rgb(255 255 255 / 34%),
+    transparent 38% 72%,
+    rgb(98 91 255 / 5%)
   );
   --ys-material-accent-highlight: linear-gradient(
     145deg,
-    rgb(255 255 255 / 42%),
-    transparent 36% 68%,
+    rgb(255 255 255 / 38%),
+    transparent 34% 68%,
     rgb(16 20 38 / 10%)
   );
 }
 
 /*
- * Ysabelle material system
- * ------------------------
- * Fine grain + faint paper fiber + directional light. The texture is deliberately
- * visible enough to break flat vector surfaces while staying behind content.
+ * Ysabelle crystal material system
+ * --------------------------------
+ * The selected brand texture is a faceted crystal overlay: large angular planes,
+ * restrained edge highlights, and just enough fine grain to keep gradients from
+ * looking flat. White surfaces get a faint echo; brand-gradient accents get the
+ * full crystal treatment.
  */
 .ys-material-canvas {
   position: relative;
@@ -34,15 +32,10 @@
   position: fixed;
   inset: 0;
   z-index: 999;
-  background-image:
-    var(--ys-material-noise),
-    var(--ys-material-fiber);
-  background-size:
-    150px 150px,
-    auto;
-  background-blend-mode: multiply, normal;
+  background-image: var(--ys-material-noise);
+  background-size: 150px 150px;
   mix-blend-mode: multiply;
-  opacity: 0.075;
+  opacity: 0.025;
   content: "";
   pointer-events: none;
 }
@@ -59,15 +52,19 @@
   z-index: 0;
   border-radius: inherit;
   background-image:
+    var(--ys-material-facets),
     var(--ys-material-noise),
-    var(--ys-material-fiber),
     var(--ys-material-surface-highlight);
   background-size:
-    132px 132px,
-    auto,
+    185% 185%,
+    150px 150px,
     auto;
-  background-blend-mode: multiply, normal, normal;
-  opacity: 0.22;
+  background-position:
+    58% 48%,
+    center,
+    center;
+  background-blend-mode: soft-light, multiply, normal;
+  opacity: 0.085;
   content: "";
   pointer-events: none;
 }
@@ -77,54 +74,95 @@
   z-index: 1;
 }
 
-.ys-material-accent {
+.ys-material-accent,
+:is(
+  .customer-auth-card__icon,
+  .customer-email-quick-sign__icon,
+  .customer-auth-submit,
+  .customer-account-nav button[aria-selected="true"],
+  .customer-recovery-progress__step--active .customer-recovery-progress__dot,
+  .customer-recovery-progress__step--complete .customer-recovery-progress__dot
+) {
   position: relative;
   isolation: isolate;
   overflow: hidden;
 }
 
-.ys-material-accent::before {
+.ys-material-accent::before,
+:is(
+    .customer-auth-card__icon,
+    .customer-email-quick-sign__icon,
+    .customer-auth-submit,
+    .customer-account-nav button[aria-selected="true"],
+    .customer-recovery-progress__step--active .customer-recovery-progress__dot,
+    .customer-recovery-progress__step--complete .customer-recovery-progress__dot
+  )::before {
   position: absolute;
   inset: 0;
   z-index: 0;
   border-radius: inherit;
   background-image:
+    var(--ys-material-facets),
     var(--ys-material-noise),
-    var(--ys-material-fiber),
     var(--ys-material-accent-highlight);
   background-size:
-    72px 72px,
-    auto,
+    100% 100%,
+    86px 86px,
     auto;
-  background-blend-mode: overlay, soft-light, overlay;
-  opacity: 0.5;
+  background-position: center;
+  background-blend-mode: screen, soft-light, overlay;
+  opacity: 0.82;
   content: "";
   pointer-events: none;
 }
 
-.ys-material-accent > * {
+.ys-material-accent > *,
+:is(
+    .customer-auth-card__icon,
+    .customer-email-quick-sign__icon,
+    .customer-auth-submit,
+    .customer-account-nav button[aria-selected="true"],
+    .customer-recovery-progress__step--active .customer-recovery-progress__dot,
+    .customer-recovery-progress__step--complete .customer-recovery-progress__dot
+  ) > * {
   position: relative;
   z-index: 1;
 }
 
 @media (prefers-contrast: more) {
   .ys-material-canvas::after {
-    opacity: 0.035;
+    opacity: 0.012;
   }
 
   .ys-material-surface::before {
-    opacity: 0.11;
+    opacity: 0.045;
   }
 
-  .ys-material-accent::before {
-    opacity: 0.24;
+  .ys-material-accent::before,
+  :is(
+      .customer-auth-card__icon,
+      .customer-email-quick-sign__icon,
+      .customer-auth-submit,
+      .customer-account-nav button[aria-selected="true"],
+      .customer-recovery-progress__step--active .customer-recovery-progress__dot,
+      .customer-recovery-progress__step--complete .customer-recovery-progress__dot
+    )::before {
+    opacity: 0.48;
   }
 }
 
 @media print {
   .ys-material-canvas::after,
   .ys-material-surface::before,
-  .ys-material-accent::before {
+  .ys-material-accent::before,
+  :is(
+      .customer-auth-card__icon,
+      .customer-email-quick-sign__icon,
+      .customer-auth-submit,
+      .customer-account-nav button[aria-selected="true"],
+      .customer-recovery-progress__step--active .customer-recovery-progress__dot,
+      .customer-recovery-progress__step--complete .customer-recovery-progress__dot
+    )::before {
     display: none;
   }
 }
