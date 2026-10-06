@@ -4,6 +4,8 @@ import {
   CreditCard,
   Heart,
   History,
+  Eye,
+  EyeOff,
   KeyRound,
   LogOut,
   Mail,
@@ -1144,38 +1146,29 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                     </p>
                   </div>
                 </div>
-                <label>
-                  <span>Current password</span>
-                  <input
-                    autoComplete="current-password"
-                    maxLength={128}
-                    onChange={(event) => setCurrentPassword(event.target.value)}
-                    type="password"
-                    value={currentPassword}
-                  />
-                </label>
-                <label>
-                  <span>New password</span>
-                  <input
-                    autoComplete="new-password"
-                    maxLength={128}
-                    minLength={8}
-                    onChange={(event) => setNewPassword(event.target.value)}
-                    type="password"
-                    value={newPassword}
-                  />
-                </label>
-                <label>
-                  <span>Confirm new password</span>
-                  <input
-                    autoComplete="new-password"
-                    maxLength={128}
-                    minLength={8}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
-                    type="password"
-                    value={confirmPassword}
-                  />
-                </label>
+                <PasswordField
+                  autoComplete="current-password"
+                  label="Current password"
+                  maxLength={128}
+                  onChange={setCurrentPassword}
+                  value={currentPassword}
+                />
+                <PasswordField
+                  autoComplete="new-password"
+                  label="New password"
+                  maxLength={128}
+                  minLength={8}
+                  onChange={setNewPassword}
+                  value={newPassword}
+                />
+                <PasswordField
+                  autoComplete="new-password"
+                  label="Confirm new password"
+                  maxLength={128}
+                  minLength={8}
+                  onChange={setConfirmPassword}
+                  value={confirmPassword}
+                />
                 {passwordError ? (
                   <p className="customer-account-form-error" role="alert">
                     {passwordError}
@@ -1244,16 +1237,13 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   className="customer-account-inline-form"
                   onSubmit={(event) => void handleRevokeSessions(event)}
                 >
-                  <label>
-                    <span>Current password</span>
-                    <input
-                      autoComplete="current-password"
-                      maxLength={128}
-                      onChange={(event) => setRevokePassword(event.target.value)}
-                      type="password"
-                      value={revokePassword}
-                    />
-                  </label>
+                  <PasswordField
+                    autoComplete="current-password"
+                    label="Current password"
+                    maxLength={128}
+                    onChange={setRevokePassword}
+                    value={revokePassword}
+                  />
                   {sessionActionMessage ? (
                     <p className="customer-account-form-success" role="status">
                       {sessionActionMessage}
@@ -1273,6 +1263,52 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
         </main>
       </div>
     </section>
+  );
+}
+
+type PasswordFieldProps = {
+  autoComplete: "current-password" | "new-password";
+  label: string;
+  maxLength: number;
+  minLength?: number;
+  onChange: (value: string) => void;
+  value: string;
+};
+
+function PasswordField({
+  autoComplete,
+  label,
+  maxLength,
+  minLength,
+  onChange,
+  value
+}: PasswordFieldProps) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <label>
+      <span>{label}</span>
+      <div className="customer-account-password-field">
+        <input
+          autoComplete={autoComplete}
+          maxLength={maxLength}
+          minLength={minLength}
+          onChange={(event) => onChange(event.target.value)}
+          type={visible ? "text" : "password"}
+          value={value}
+        />
+        <button
+          aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+          aria-pressed={visible}
+          className="customer-account-password-toggle"
+          onClick={() => setVisible((current) => !current)}
+          title={visible ? "Hide password" : "Show password"}
+          type="button"
+        >
+          {visible ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
+        </button>
+      </div>
+    </label>
   );
 }
 

@@ -272,6 +272,48 @@
   width: fit-content;
 }
 
+.customer-account-password-field {
+  position: relative;
+}
+
+.customer-account-password-field input {
+  padding-right: 3rem;
+}
+
+.customer-account-security-card .customer-account-password-toggle,
+.customer-account-inline-form .customer-account-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  color: #69748d;
+  background: transparent;
+  box-shadow: none;
+  transform: translateY(-50%);
+}
+
+.customer-account-security-card .customer-account-password-toggle:hover,
+.customer-account-inline-form .customer-account-password-toggle:hover {
+  color: var(--ys-indigo);
+  background: #f3f1ff;
+  box-shadow: none;
+  transform: translateY(-50%);
+}
+
+.customer-account-security-card .customer-account-password-toggle:focus-visible,
+.customer-account-inline-form .customer-account-password-toggle:focus-visible {
+  outline: 3px solid rgba(98, 91, 255, 0.18);
+  outline-offset: 1px;
+}
+
+
 .customer-account-form-error,
 .customer-account-form-success,
 .customer-account-alert {
