@@ -13,6 +13,41 @@
     transparent 34% 68%,
     rgb(16 20 38 / 10%)
   );
+  --ys-bokeh-background:
+    radial-gradient(
+      circle at 7% 10%,
+      rgb(255 255 255 / 82%) 0 2.6rem,
+      rgb(255 255 255 / 28%) 4.8rem,
+      transparent 8.8rem
+    ),
+    radial-gradient(
+      circle at 88% 12%,
+      rgb(255 249 240 / 76%) 0 3.2rem,
+      rgb(255 255 255 / 20%) 5.8rem,
+      transparent 9.4rem
+    ),
+    radial-gradient(
+      circle at 76% 44%,
+      rgb(255 247 251 / 58%) 0 2.4rem,
+      rgb(244 139 194 / 10%) 5rem,
+      transparent 8.4rem
+    ),
+    radial-gradient(
+      circle at 23% 27%,
+      rgb(236 248 255 / 62%) 0 3.1rem,
+      rgb(108 184 255 / 11%) 6rem,
+      transparent 9.8rem
+    ),
+    radial-gradient(
+      circle at 91% 72%,
+      rgb(255 255 255 / 55%) 0 2.2rem,
+      rgb(255 221 240 / 10%) 4.7rem,
+      transparent 8rem
+    ),
+    radial-gradient(ellipse at 16% 18%, rgb(83 171 255 / 24%), transparent 31rem),
+    radial-gradient(ellipse at 82% 18%, rgb(152 102 255 / 18%), transparent 31rem),
+    radial-gradient(ellipse at 74% 84%, rgb(244 95 176 / 15%), transparent 30rem),
+    linear-gradient(135deg, #edf6ff 0%, #f1efff 49%, #fff2f8 100%);
 }
 
 /*
@@ -166,5 +201,33 @@
       .customer-recovery-progress__step--complete .customer-recovery-progress__dot
     )::before {
     display: none;
+  }
+}
+
+
+/*
+ * Ambient background material
+ * ---------------------------
+ * The global page background uses soft, defocused bokeh rather than facets.
+ * Crystal facets stay reserved for compact brand accents so page chrome remains calm.
+ */
+.ys-bokeh-background {
+  background-color: #f1efff !important;
+  background-image: var(--ys-bokeh-background) !important;
+  background-repeat: no-repeat !important;
+  background-position: center top !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
+}
+
+.ys-bokeh-background .app-shell-orb,
+.ys-bokeh-background .welcome-ambient-blob {
+  opacity: 0.14;
+  filter: blur(104px) saturate(118%);
+}
+
+@media (max-width: 760px) {
+  .ys-bokeh-background {
+    background-attachment: scroll !important;
   }
 }
