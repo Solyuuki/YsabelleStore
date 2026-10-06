@@ -25,6 +25,14 @@ test("customer recovery UI uses a verification-code stage without URL reset toke
   assert.match(recoveryPage, /autoComplete="one-time-code"/);
   assert.match(recoveryPage, /Enter verification code/);
   assert.match(recoveryPage, /Resend code/);
+  assert.match(recoveryPage, /Didn’t get the code\?/);
+  assert.match(recoveryPage, /Change account/);
+  assert.doesNotMatch(recoveryPage, /Try another identifier/);
+  assert.doesNotMatch(recoveryPage, /Verification code requested/);
+  assert.doesNotMatch(
+    recoveryPage,
+    /For privacy, this confirmation is the same whether or not an account matches your entry/
+  );
   assert.doesNotMatch(recoveryPage, /searchParams\.get\("token"\)/);
   assert.doesNotMatch(recoveryPage, /Send recovery link/);
 });
@@ -74,4 +82,16 @@ test("premium OTP slots keep empty cells visually quiet and emphasize the active
   assert.match(recoveryCss, /\.customer-recovery-code-slot--empty::after/);
   assert.match(recoveryCss, /\.customer-recovery-code-slot--active/);
   assert.match(recoveryCss, /linear-gradient\(135deg,\s*#168cff/);
+});
+
+
+test("verification recovery actions keep resend separate from simple navigation choices", () => {
+  assert.match(recoveryPage, /customer-recovery-resend/);
+  assert.match(recoveryPage, /customer-recovery-actions--verify/);
+  assert.match(recoveryPage, /Back to sign in/);
+  assert.match(recoveryPage, /Change account/);
+
+  assert.match(recoveryCss, /\.customer-recovery-resend\s*\{/);
+  assert.match(recoveryCss, /\.customer-recovery-actions--verify\s*\{/);
+  assert.match(recoveryCss, /justify-content:\s*space-between/);
 });

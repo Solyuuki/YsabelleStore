@@ -322,17 +322,16 @@ export function CustomerAccountRecoveryPage({
               </button>
             </form>
 
-            <div className="customer-recovery-status" role="status">
-              <span className="customer-recovery-status__icon" aria-hidden="true">
-                <MailCheck size={19} />
-              </span>
-              <div>
-                <strong>Verification code requested</strong>
-                <span>
-                  For privacy, this confirmation is the same whether or not an account matches your
-                  entry.
-                </span>
-              </div>
+            <div className="customer-recovery-resend">
+              <span>Didn’t get the code?</span>
+              <button
+                className="customer-recovery-secondary"
+                disabled={submitting || resendCooldown > 0}
+                onClick={() => void handleResendCode()}
+                type="button"
+              >
+                {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend code"}
+              </button>
             </div>
           </>
         ) : null}
@@ -412,28 +411,19 @@ export function CustomerAccountRecoveryPage({
           </div>
         ) : null}
 
-        <div className="customer-recovery-actions">
-          {stage === "verify" ? (
-            <button
-              className="customer-recovery-secondary"
-              disabled={submitting || resendCooldown > 0}
-              onClick={() => void handleResendCode()}
-              type="button"
-            >
-              {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend code"}
-            </button>
-          ) : null}
-
-          {stage === "verify" || stage === "reset" ? (
-            <button className="customer-recovery-tertiary" onClick={startOver} type="button">
-              Try another identifier
-            </button>
-          ) : null}
-
+        <div
+          className={`customer-recovery-actions${stage === "verify" ? " customer-recovery-actions--verify" : ""}`}
+        >
           <CustomerLink className="customer-recovery-back" href="/login" navigate={navigate}>
             <ArrowLeft size={16} aria-hidden="true" />
             {stage === "complete" ? "Sign in with new password" : "Back to sign in"}
           </CustomerLink>
+
+          {stage === "verify" || stage === "reset" ? (
+            <button className="customer-recovery-tertiary" onClick={startOver} type="button">
+              Change account
+            </button>
+          ) : null}
         </div>
       </div>
     </CustomerAuthFrame>
