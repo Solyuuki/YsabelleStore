@@ -66,7 +66,9 @@ const reportMonthFormatter = new Intl.DateTimeFormat("en-PH", {
   year: "numeric"
 });
 
-function monthlyRecommendationAction(candidate: RestockPlanningCandidate): MonthlyRecommendationAction {
+function monthlyRecommendationAction(
+  candidate: RestockPlanningCandidate
+): MonthlyRecommendationAction {
   if (candidate.recommendedQuantity > 0) return "RESTOCK";
   if (candidate.expiryRiskQuantity > 0) return "EXPIRY_REVIEW";
   if (candidate.stockHealth.status === "OVERSTOCK") return "REDUCE_REPLENISHMENT";
