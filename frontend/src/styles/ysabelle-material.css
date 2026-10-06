@@ -138,6 +138,52 @@
   z-index: 1;
 }
 
+
+/*
+ * Dashboard accent rail
+ * Reuses the exact faceted/noise/highlight texture from ys-material-accent,
+ * adapted to a thin horizontal strip so the rail reads textured rather than flat.
+ */
+.ys-material-accent-strip {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 2;
+  height: 0.25rem;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(90deg, #008cff 0%, #625bff 52%, #f43f8c 100%);
+  pointer-events: none;
+}
+
+.ys-material-accent-strip::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    var(--ys-material-facets),
+    var(--ys-material-noise),
+    var(--ys-material-accent-highlight);
+  background-size:
+    24rem 100%,
+    86px 86px,
+    auto;
+  background-position:
+    left center,
+    center,
+    center;
+  background-repeat:
+    repeat-x,
+    repeat,
+    no-repeat;
+  background-blend-mode: soft-light, soft-light, overlay;
+  opacity: 0.68;
+  filter: blur(0.22px);
+  transform: scale(1.01);
+  content: "";
+  pointer-events: none;
+}
+
 @media (prefers-contrast: more) {
   .ys-material-canvas::after {
     opacity: 0.012;
@@ -148,6 +194,7 @@
   }
 
   .ys-material-accent::before,
+  .ys-material-accent-strip::before,
   :is(
       .customer-auth-card__icon,
       .customer-email-quick-sign__icon,
