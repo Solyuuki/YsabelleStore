@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 
 import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
 import {
+  getCustomerModerationAccountSummary,
   listCustomerAccountsForModeration,
   listCustomerModerationAudit,
   listProductReviewsForModeration,
@@ -41,6 +42,20 @@ export const listCustomerAccountsForModerationController: RequestHandler = async
     });
     const result = await listCustomerAccountsForModeration(query);
     response.json(createSuccessResponse("Customer accounts loaded.", result.items, result.meta));
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const getCustomerModerationAccountSummaryController: RequestHandler = async (
+  _request,
+  response,
+  next
+) => {
+  try {
+    const result = await getCustomerModerationAccountSummary();
+    response.json(createSuccessResponse("Customer account moderation summary loaded.", result));
   } catch (error) {
     next(error);
   }
