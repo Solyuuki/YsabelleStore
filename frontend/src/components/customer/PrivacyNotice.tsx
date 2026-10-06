@@ -60,10 +60,10 @@ export function PrivacyNotice({
           </div>
           <div className="customer-privacy-notice__copy">
             <p className="customer-privacy-notice__eyebrow">Privacy at Ysabelle Store</p>
-            <strong>Essential storage keeps shopping and account security working.</strong>
+            <strong>Service and security storage keeps requested store features working.</strong>
             <p>
-              We use essential cookies and device storage for sign-in, verification, cart
-              continuity, account security, and similar requested store functions. The current
+              We use cookies and device storage for sign-in, verification, cart continuity,
+              account security, recent searches, and similar requested store functions. The current
               storefront does not initialize advertising or behavioral analytics trackers.
             </p>
             <div className="customer-privacy-notice__links">
