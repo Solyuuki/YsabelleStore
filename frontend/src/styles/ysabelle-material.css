@@ -222,3 +222,23 @@
       center !important;
   }
 }
+
+
+/*
+ * KPI card selected surface
+ * -------------------------
+ * Dashboard and Reports summary cards use the approved frosted-ribbon artwork.
+ * cover preserves the artwork aspect ratio (crop only; never stretch).
+ */
+.app-shell-ambient .ys-kpi-card-surface {
+  background-color: #fbfcff !important;
+  background-image: url("/textures/kpi-card-frosted-ribbon.webp") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: cover !important;
+}
+
+.app-shell-ambient .ys-kpi-card-surface::before {
+  background-image: none !important;
+  opacity: 0 !important;
+}

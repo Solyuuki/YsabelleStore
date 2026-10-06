@@ -315,7 +315,7 @@ function BrandIcon({ icon: Icon }: { icon: LucideIcon }) {
 
 function MetricCard({ detail, icon, label, value }: MetricCardProps) {
   return (
-    <Card className={brandCardClass}>
+    <Card className={`${brandCardClass} ys-kpi-card-surface`}>
       <BrandAccent />
       <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
@@ -339,7 +339,7 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
     summary.expiry.expiredBatches;
 
   return (
-    <Card className={brandCardClass}>
+    <Card className={`${brandCardClass} ys-kpi-card-surface`}>
       <BrandAccent />
       <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">

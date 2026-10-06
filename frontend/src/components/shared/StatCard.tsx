@@ -15,7 +15,7 @@ type StatCardProps = {
 
 export function StatCard({ detail, icon: Icon, title, tone, value }: StatCardProps) {
   return (
-    <Card className="min-h-36">
+    <Card className="ys-kpi-card-surface min-h-36">
       <CardHeader className="flex flex-row items-center justify-between gap-4">
         <CardTitle>{title}</CardTitle>
         <span className="ys-material-accent flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-blue-500 via-violet-500 to-pink-500 text-white shadow-sm shadow-violet-200/70 ring-1 ring-white/70">

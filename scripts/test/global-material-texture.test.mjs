@@ -94,3 +94,19 @@ test("glass flow background avoids scroll-heavy effects", () => {
   assert.doesNotMatch(materialCss, /feGaussianBlur/);
   assert.doesNotMatch(materialCss, /filter='url\(%23soft\)'/);
 });
+
+
+test("approved KPI card texture is scoped to Dashboard and Reports summary cards", () => {
+  assert.match(dashboard, /ys-kpi-card-surface/);
+  assert.match(statCard, /ys-kpi-card-surface/);
+  assert.match(materialCss, /\.app-shell-ambient \.ys-kpi-card-surface\s*\{/);
+  assert.match(materialCss, /kpi-card-frosted-ribbon\.webp/);
+  assert.match(materialCss, /background-size:\s*cover\s*!important/);
+  assert.match(
+    materialCss,
+    /\.app-shell-ambient \.ys-kpi-card-surface::before[\s\S]*opacity:\s*0\s*!important/
+  );
+  assert.ok(
+    fs.existsSync(path.join(REPO_ROOT, "frontend/public/textures/kpi-card-frosted-ribbon.webp"))
+  );
+});
