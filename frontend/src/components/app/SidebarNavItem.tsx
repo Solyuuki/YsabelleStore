@@ -27,16 +27,17 @@ export function SidebarNavItem({
   const badgeLabel = hasBadge ? (badgeCount > 99 ? "99+" : badgeCount.toString()) : null;
 
   return (
-    <div className="group/nav relative">
+    <div className="group/nav relative min-w-0">
       <Button
         aria-label={hasBadge ? `${label}, ${badgeCount} items need attention` : label}
         className={cn(
-          "relative h-11 w-full justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-[background-color,color,box-shadow,transform] duration-200 ease-out hover:bg-indigo-50/90 hover:text-slate-950 hover:shadow-sm",
+          "relative h-11 min-w-0 w-full overflow-hidden justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-[background-color,color,box-shadow,transform] duration-200 ease-out hover:bg-indigo-50/90 hover:text-slate-950 hover:shadow-sm",
           collapsed && "justify-center px-0",
           active &&
             "ys-material-accent bg-gradient-to-br from-[#168cff] via-[#645cff] to-[#c94fa6] text-white shadow-sm shadow-indigo-950/10 hover:from-[#168cff] hover:via-[#645cff] hover:to-[#c94fa6] hover:text-white hover:shadow-sm"
         )}
         onClick={onClick}
+        title={collapsed ? label : undefined}
         type="button"
         variant="ghost"
       >
@@ -54,7 +55,7 @@ export function SidebarNavItem({
             className={cn(
               "inline-flex shrink-0 items-center justify-center rounded-full font-semibold tabular-nums ring-1 transition-[background-color,color,box-shadow] duration-200",
               collapsed
-                ? "absolute right-1.5 top-1 h-4 min-w-4 px-1 text-[9px] leading-none"
+                ? "absolute right-1 top-1 h-4 min-w-4 max-w-5 px-1 text-[9px] leading-none"
                 : "ml-auto h-5 min-w-5 px-1.5 text-[10px] leading-none",
               active
                 ? "bg-white/20 text-white ring-white/25"
@@ -69,21 +70,6 @@ export function SidebarNavItem({
         ) : null}
       </Button>
 
-      {collapsed ? <SidebarTooltip label={label} /> : null}
-    </div>
-  );
-}
-
-function SidebarTooltip({ label }: { label: string }) {
-  return (
-    <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-x-1 -translate-y-1/2 opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover/nav:translate-x-0 group-hover/nav:opacity-100 group-focus-within/nav:translate-x-0 group-focus-within/nav:opacity-100">
-      <div className="relative rounded-lg border border-slate-800/80 bg-slate-950 px-3 py-1.5 text-xs font-medium text-white shadow-[0_18px_36px_rgba(15,23,42,0.28)]">
-        {label}
-        <span
-          className="absolute left-0 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[1px] border-l border-t border-slate-800/80 bg-slate-950"
-          aria-hidden="true"
-        />
-      </div>
     </div>
   );
 }
