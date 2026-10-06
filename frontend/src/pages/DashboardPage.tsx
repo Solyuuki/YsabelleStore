@@ -455,9 +455,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                     <p className="mt-1 truncate text-sm font-semibold text-slate-950">
                       {topPriority.product.name}
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-slate-600">
-                      {topPriority.rationale}
-                    </p>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">{topPriority.rationale}</p>
                   </div>
                   <div className="shrink-0 rounded-lg bg-white px-3 py-2 text-right ring-1 ring-violet-100">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
