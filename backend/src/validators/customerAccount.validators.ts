@@ -44,7 +44,10 @@ export const customerPasswordChangeSchema = z
 
 export const customerPasswordSetupVerifySchema = z
   .object({
-    verificationCode: z.string().trim().regex(/^\d{6}$/)
+    verificationCode: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/)
   })
   .strict();
 
@@ -56,7 +59,10 @@ export const customerPasswordSetupCompleteSchema = z
 
 export const customerSessionRevokeVerifySchema = z
   .object({
-    verificationCode: z.string().trim().regex(/^\d{6}$/)
+    verificationCode: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/)
   })
   .strict();
 

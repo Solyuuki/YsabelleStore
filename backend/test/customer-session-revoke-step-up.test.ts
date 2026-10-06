@@ -49,10 +49,7 @@ test("passwordless customer can verify by email and revoke only other sessions",
   assert.equal(deliveries[0]?.to, email);
   assert.match(deliveries[0]?.verificationCode ?? "", /^\d{6}$/);
 
-  const grant = await verifyCustomerSessionRevokeCode(
-    customer.id,
-    deliveries[0]!.verificationCode
-  );
+  const grant = await verifyCustomerSessionRevokeCode(customer.id, deliveries[0]!.verificationCode);
   assert.ok(grant.sessionRevokeGrant.length >= 32);
 
   const revokedCount = await revokeOtherCustomerSessions(

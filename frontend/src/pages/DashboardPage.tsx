@@ -313,14 +313,10 @@ const stripAccentClass: Record<MetricAccent, string> = {
 };
 
 const iconAccentClass: Record<MetricAccent, string> = {
-  blue:
-    "bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-500 shadow-blue-200/70",
-  emerald:
-    "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-500 shadow-emerald-200/70",
-  amber:
-    "bg-gradient-to-br from-amber-300 via-amber-500 to-orange-500 shadow-amber-200/70",
-  violet:
-    "bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 shadow-violet-200/70"
+  blue: "bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-500 shadow-blue-200/70",
+  emerald: "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-500 shadow-emerald-200/70",
+  amber: "bg-gradient-to-br from-amber-300 via-amber-500 to-orange-500 shadow-amber-200/70",
+  violet: "bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 shadow-violet-200/70"
 };
 
 function BrandAccent({ accent }: { accent?: MetricAccent }) {
@@ -348,9 +344,7 @@ function BrandIcon({ accent, icon: Icon }: { accent?: MetricAccent; icon: Lucide
 
 function MetricCard({ accent, detail, icon, label, value }: MetricCardProps) {
   return (
-    <Card
-      className={`${brandCardClass} ys-kpi-card-surface ys-kpi-card-surface--${accent}`}
-    >
+    <Card className={`${brandCardClass} ys-kpi-card-surface ys-kpi-card-surface--${accent}`}>
       <BrandAccent accent={accent} />
       <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
@@ -374,9 +368,7 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
     summary.expiry.expiredBatches;
 
   return (
-    <Card
-      className={`${brandCardClass} ys-kpi-card-surface ys-kpi-card-surface--amber`}
-    >
+    <Card className={`${brandCardClass} ys-kpi-card-surface ys-kpi-card-surface--amber`}>
       <BrandAccent accent="amber" />
       <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">

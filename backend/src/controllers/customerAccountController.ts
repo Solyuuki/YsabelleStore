@@ -15,9 +15,7 @@ import {
   verifyCustomerSessionRevokeCode
 } from "../services/customerAccountService.js";
 import { confirmCustomerDeliveryReceived } from "../services/deliveryService.js";
-import {
-  sendCustomerIdentityVerificationEmail
-} from "../services/customerIdentityEmailDeliveryService.js";
+import { sendCustomerIdentityVerificationEmail } from "../services/customerIdentityEmailDeliveryService.js";
 import {
   addCustomerFavorite,
   listCustomerFavoriteProducts,
@@ -200,9 +198,9 @@ export const requestCustomerPasswordSetupController: RequestHandler = async (
       }
     });
 
-    response.status(200).json(
-      createSuccessResponse("A verification code was sent to your account email.")
-    );
+    response
+      .status(200)
+      .json(createSuccessResponse("A verification code was sent to your account email."));
   } catch (error) {
     next(error);
   }
@@ -228,9 +226,9 @@ export const verifyCustomerPasswordSetupController: RequestHandler = async (
       parsedBody.data.verificationCode
     );
     setCustomerPasswordSetupGrantCookie(response, grant.setupGrant);
-    response.status(200).json(
-      createSuccessResponse("Verification successful. You can now set a password.")
-    );
+    response
+      .status(200)
+      .json(createSuccessResponse("Verification successful. You can now set a password."));
   } catch (error) {
     clearCustomerPasswordSetupGrantCookie(response);
     next(error);
@@ -349,9 +347,7 @@ export const verifyCustomerSessionRevokeVerificationController: RequestHandler =
       parsedBody.data.verificationCode
     );
     setCustomerSessionRevokeGrantCookie(response, grant.sessionRevokeGrant);
-    response
-      .status(200)
-      .json(createSuccessResponse("Security verification successful."));
+    response.status(200).json(createSuccessResponse("Security verification successful."));
   } catch (error) {
     clearCustomerSessionRevokeGrantCookie(response);
     next(error);

@@ -60,7 +60,6 @@ test("auth surfaces avoid double-texturing recovery while sharing the global tok
   assert.doesNotMatch(recoveryCss, /data:image\/svg\+xml/);
 });
 
-
 test("crystal facets cover shared brand-gradient controls", () => {
   assert.match(materialCss, /customer-auth-card__icon/);
   assert.match(materialCss, /customer-email-quick-sign__icon/);
@@ -70,7 +69,6 @@ test("crystal facets cover shared brand-gradient controls", () => {
   assert.match(recoveryCss, /var\(--ys-material-facets\)/);
 });
 
-
 test("global glass flow background is applied to primary app and customer shells", () => {
   assert.match(materialCss, /\.ys-glass-flow-background\s*\{/);
   assert.match(materialCss, /background-image:\s*var\(--ys-glass-flow-background\)/);
@@ -79,7 +77,6 @@ test("global glass flow background is applied to primary app and customer shells
   assert.match(customerLayout, /ys-glass-flow-background/);
   assert.match(account, /customer-account-page-v2 ys-glass-flow-background/);
 });
-
 
 test("glass flow background avoids scroll-heavy effects", () => {
   assert.match(materialCss, /background-attachment:\s*scroll\s*!important/);
@@ -94,7 +91,6 @@ test("glass flow background avoids scroll-heavy effects", () => {
   assert.doesNotMatch(materialCss, /feGaussianBlur/);
   assert.doesNotMatch(materialCss, /filter='url\(%23soft\)'/);
 });
-
 
 test("approved KPI card texture is scoped to Dashboard and Reports summary cards", () => {
   assert.match(dashboard, /ys-kpi-card-surface/);

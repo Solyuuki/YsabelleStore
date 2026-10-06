@@ -18,16 +18,11 @@ type StatCardProps = {
 };
 
 const iconAccentClass: Record<StatCardAccent, string> = {
-  blue:
-    "bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 shadow-blue-200/70",
-  violet:
-    "bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 shadow-violet-200/70",
-  emerald:
-    "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-500 shadow-emerald-200/70",
-  amber:
-    "bg-gradient-to-br from-amber-400 via-orange-400 to-orange-500 shadow-amber-200/70",
-  rose:
-    "bg-gradient-to-br from-rose-400 via-pink-500 to-rose-500 shadow-rose-200/70"
+  blue: "bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 shadow-blue-200/70",
+  violet: "bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 shadow-violet-200/70",
+  emerald: "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-500 shadow-emerald-200/70",
+  amber: "bg-gradient-to-br from-amber-400 via-orange-400 to-orange-500 shadow-amber-200/70",
+  rose: "bg-gradient-to-br from-rose-400 via-pink-500 to-rose-500 shadow-rose-200/70"
 };
 
 const surfaceAccentClass: Record<StatCardAccent, string> = {

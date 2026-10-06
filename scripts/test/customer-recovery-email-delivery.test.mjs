@@ -14,15 +14,9 @@ const identityEmailService = fs.readFileSync(
 );
 
 test("password recovery reuses the shared customer identity delivery path", () => {
-  assert.match(
-    recoveryEmailService,
-    /sendCustomerIdentityVerificationEmail/
-  );
+  assert.match(recoveryEmailService, /sendCustomerIdentityVerificationEmail/);
   assert.match(recoveryEmailService, /purpose: "password_recovery"/);
-  assert.match(
-    recoveryEmailService,
-    /error instanceof CustomerIdentityEmailDeliveryError/
-  );
+  assert.match(recoveryEmailService, /error instanceof CustomerIdentityEmailDeliveryError/);
 });
 
 test("shared identity delivery supports development Gmail SMTP for recovery", () => {
@@ -30,10 +24,7 @@ test("shared identity delivery supports development Gmail SMTP for recovery", ()
   assert.match(identityEmailService, /CUSTOMER_DEV_GMAIL_SMTP_USER/);
   assert.match(identityEmailService, /CUSTOMER_DEV_GMAIL_SMTP_APP_PASSWORD/);
   assert.match(identityEmailService, /sendGmailSmtpMessage/);
-  assert.match(
-    identityEmailService,
-    /Your Ysabelle Store password recovery code/
-  );
+  assert.match(identityEmailService, /Your Ysabelle Store password recovery code/);
 });
 
 test("recovery delivery preserves a generic public error boundary", () => {

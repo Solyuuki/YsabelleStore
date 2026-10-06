@@ -85,7 +85,6 @@ test("premium OTP slots keep empty cells visually quiet and emphasize the active
   assert.match(recoveryCss, /linear-gradient\(135deg,\s*#168cff/);
 });
 
-
 test("verification recovery actions keep resend separate from simple navigation choices", () => {
   assert.match(recoveryPage, /customer-recovery-resend/);
   assert.match(recoveryPage, /customer-recovery-actions--verify/);
@@ -100,7 +99,6 @@ test("verification recovery actions keep resend separate from simple navigation 
     /\.customer-recovery-actions--verify\s*\{[\s\S]*justify-content:\s*center/
   );
 });
-
 
 test("recovery surface uses subtle material texture without changing the flow", () => {
   assert.match(recoveryCss, /feTurbulence/);

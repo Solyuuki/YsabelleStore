@@ -83,7 +83,6 @@ export function SidebarNavItem({
           </span>
         ) : null}
       </Button>
-
     </div>
   );
 }

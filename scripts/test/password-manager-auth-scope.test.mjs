@@ -18,9 +18,7 @@ const customerVerificationCode = read(
   "frontend/src/components/customer/CustomerVerificationCode.tsx"
 );
 const staffLogin = read("frontend/src/pages/WelcomePage.tsx");
-const staffAutofillGuard = read(
-  "frontend/src/utils/developmentStaffLoginAutofillGuard.ts"
-);
+const staffAutofillGuard = read("frontend/src/utils/developmentStaffLoginAutofillGuard.ts");
 
 test("customer credential forms use an isolated password-manager section", () => {
   for (const source of [

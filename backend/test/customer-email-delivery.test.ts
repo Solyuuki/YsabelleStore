@@ -197,7 +197,6 @@ test("Resend delivery does not expose provider responses, API keys, or OTP value
   );
 });
 
-
 test("development Gmail SMTP sends password recovery codes through the shared identity delivery path", async () => {
   const module = await loadDeliveryModule();
   assert.ok(module.createCustomerIdentityEmailDelivery);

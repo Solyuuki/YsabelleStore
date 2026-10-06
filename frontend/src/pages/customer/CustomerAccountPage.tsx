@@ -172,9 +172,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [securitySummary, setSecuritySummary] = useState<CustomerSecuritySummary | null>(null);
   const [securitySummaryLoading, setSecuritySummaryLoading] = useState(true);
-  const [passwordSetupStage, setPasswordSetupStage] = useState<
-    "idle" | "verify" | "password"
-  >("idle");
+  const [passwordSetupStage, setPasswordSetupStage] = useState<"idle" | "verify" | "password">(
+    "idle"
+  );
   const [passwordSetupCode, setPasswordSetupCode] = useState("");
   const [passwordSetupExpiresAt, setPasswordSetupExpiresAt] = useState<number | null>(null);
   const [passwordSetupResendAt, setPasswordSetupResendAt] = useState<number | null>(null);
@@ -670,9 +670,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       setSessionRevokeResendAt(sentAt + PASSWORD_SETUP_RESEND_COOLDOWN_MS);
       setSessionRevokeVerificationStage("verify");
     } catch (reason) {
-      setSessionsError(
-        errorMessage(reason, "A security verification code could not be sent.")
-      );
+      setSessionsError(errorMessage(reason, "A security verification code could not be sent."));
     } finally {
       setSessionRevokeVerificationBusy(false);
     }
@@ -748,8 +746,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     sessionRevokeResendAt === null ? 0 : Math.max(0, sessionRevokeResendAt - sessionRevokeClock);
   const sessionRevokeCodeExpired =
     sessionRevokeExpiresAt !== null && sessionRevokeExpiresInMs === 0;
-  const sessionRevokeResendReady =
-    sessionRevokeResendAt === null || sessionRevokeResendInMs === 0;
+  const sessionRevokeResendReady = sessionRevokeResendAt === null || sessionRevokeResendInMs === 0;
 
   const passwordSetupExpiresInMs =
     passwordSetupExpiresAt === null ? 0 : Math.max(0, passwordSetupExpiresAt - passwordSetupClock);
@@ -757,8 +754,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     passwordSetupResendAt === null ? 0 : Math.max(0, passwordSetupResendAt - passwordSetupClock);
   const passwordSetupCodeExpired =
     passwordSetupExpiresAt !== null && passwordSetupExpiresInMs === 0;
-  const passwordSetupResendReady =
-    passwordSetupResendAt === null || passwordSetupResendInMs === 0;
+  const passwordSetupResendReady = passwordSetupResendAt === null || passwordSetupResendInMs === 0;
 
   return (
     <section className="customer-account-page-v2 ys-glass-flow-background">
@@ -829,7 +825,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
         </aside>
 
         <main className="customer-account-content-v2">
-          <header className={`customer-account-hero ys-material-surface customer-account-hero--${activeTab}`}>
+          <header
+            className={`customer-account-hero ys-material-surface customer-account-hero--${activeTab}`}
+          >
             <div className="customer-account-hero__content" key={activeTab}>
               <div>
                 <p className="customer-eyebrow">{heroContent.eyebrow}</p>
@@ -1564,9 +1562,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                         ) : (
                           <>
                             You can request a new code in{" "}
-                            <strong>
-                              {formatPasswordSetupCountdown(passwordSetupResendInMs)}
-                            </strong>
+                            <strong>{formatPasswordSetupCountdown(passwordSetupResendInMs)}</strong>
                           </>
                         )}
                       </span>

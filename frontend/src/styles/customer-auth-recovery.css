@@ -96,9 +96,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-image:
-    var(--ys-material-facets),
-    var(--ys-material-noise);
+  background-image: var(--ys-material-facets), var(--ys-material-noise);
   background-size:
     180% 180%,
     160px 160px;
@@ -239,8 +237,7 @@
   inset: -0.72rem;
   z-index: -1;
   border-radius: 1.4rem;
-  background:
-    radial-gradient(circle, rgb(98 91 255 / 18%), transparent 68%);
+  background: radial-gradient(circle, rgb(98 91 255 / 18%), transparent 68%);
   filter: blur(8px);
   content: "";
   pointer-events: none;
@@ -251,8 +248,7 @@
   inset: 1px;
   border-radius: calc(1rem - 1px);
   background-image:
-    var(--ys-material-facets),
-    var(--ys-material-noise),
+    var(--ys-material-facets), var(--ys-material-noise),
     linear-gradient(145deg, rgb(255 255 255 / 34%), transparent 42%);
   background-size:
     100% 100%,

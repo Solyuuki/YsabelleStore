@@ -61,10 +61,7 @@ test("passwordless Quick Sign customer can add a password after OTP verification
   assert.equal(deliveries[0]?.to, email);
   assert.match(deliveries[0]?.verificationCode ?? "", /^\d{6}$/);
 
-  const grant = await verifyCustomerPasswordSetupCode(
-    customer.id,
-    deliveries[0]!.verificationCode
-  );
+  const grant = await verifyCustomerPasswordSetupCode(customer.id, deliveries[0]!.verificationCode);
   assert.ok(grant.setupGrant.length >= 32);
 
   const newPassword = "AddedPassword456!";
