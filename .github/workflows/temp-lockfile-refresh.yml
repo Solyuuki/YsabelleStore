@@ -1,0 +1,43 @@
+name: Temporary Lockfile Refresh
+
+on:
+  push:
+    branches:
+      - "m3/v0.11/fix/customer-support-integration"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lockfile:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: m3/v0.11/fix/customer-support-integration
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Refresh lockfile for proxy-addr override
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Verify patched proxy-addr resolution
+        run: |
+          node -e "const l=require('./package-lock.json'); const p=l.packages['node_modules/proxy-addr']; if (!p || p.version !== '2.0.8') { console.error(p); process.exit(1) } console.log('proxy-addr', p.version)"
+
+      - name: Commit lockfile
+        run: |
+          if git diff --quiet package-lock.json; then
+            echo "Lockfile already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit --no-verify -m "fix(security): refresh proxy-addr lockfile"
+          git push --no-verify origin HEAD:m3/v0.11/fix/customer-support-integration
