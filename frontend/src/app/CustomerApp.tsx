@@ -13,6 +13,7 @@ import "@/styles/customer-account.css";
 import "@/styles/customer-account-premium.css";
 import "@/styles/customer-commerce-premium.css";
 import "@/styles/customer-support.css";
+import "@/styles/customer-privacy.css";
 import "@/styles/customer-home-premium.css";
 import "@/styles/auth-brand.css";
 import "@/styles/customer-header-actions.css";
@@ -88,6 +89,11 @@ const CustomerAccountPage = lazy(() =>
 const CustomerSupportPage = lazy(() =>
   import("@/pages/customer/CustomerSupportPage").then(({ CustomerSupportPage }) => ({
     default: CustomerSupportPage
+  }))
+);
+const PrivacyPolicyPage = lazy(() =>
+  import("@/pages/customer/PrivacyPolicyPage").then(({ PrivacyPolicyPage }) => ({
+    default: PrivacyPolicyPage
   }))
 );
 const CustomerNotFoundPage = lazy(() =>
@@ -198,6 +204,7 @@ function CustomerAppRoutes({
     page = <CustomerAccountRecoveryPage location={location} navigate={navigate} />;
   else if (pathname === "/account") page = <CustomerAccountPage navigate={navigate} />;
   else if (pathname === "/support") page = <CustomerSupportPage navigate={navigate} />;
+  else if (pathname === "/privacy") page = <PrivacyPolicyPage navigate={navigate} />;
   else page = <CustomerNotFoundPage navigate={navigate} />;
 
   return (
