@@ -63,6 +63,6 @@
 
 ## Current Integration Validation Evidence
 
-| Date | Command | Result | Evidence / Notes |
-| --- | --- | --- | --- |
+| Date       | Command             | Result | Evidence / Notes                                                                                                                                                                                                                   |
+| ---------- | ------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-10-06 | npm run verify:code | Passed | CI aggregate read-only verification passed on m3/v0.11/fix/customer-support-integration; guardrails reported 273 passed / 0 failed and backend workspace tests reported 333 passed / 0 failed before artifact-status verification. |
