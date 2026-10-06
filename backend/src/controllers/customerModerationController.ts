@@ -47,7 +47,6 @@ export const listCustomerAccountsForModerationController: RequestHandler = async
   }
 };
 
-
 export const getCustomerModerationAccountSummaryController: RequestHandler = async (
   _request,
   response,
