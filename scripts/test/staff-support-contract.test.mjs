@@ -11,7 +11,9 @@ const [
   internalAuth,
   inboxPage,
   gmailService,
-  staffService
+  staffService,
+  navigationBadges,
+  dashboardApi
 ] = await Promise.all([
   readFile(new URL("../../backend/src/routes/staffSupport.routes.ts", import.meta.url), "utf8"),
   readFile(new URL("../../backend/src/routes/index.ts", import.meta.url), "utf8"),
@@ -24,7 +26,9 @@ const [
     "utf8"
   ),
   readFile(new URL("../../backend/src/services/supportGmailService.ts", import.meta.url), "utf8"),
-  readFile(new URL("../../backend/src/services/staffSupportService.ts", import.meta.url), "utf8")
+  readFile(new URL("../../backend/src/services/staffSupportService.ts", import.meta.url), "utf8"),
+  readFile(new URL("../../backend/src/services/navigationBadgeService.ts", import.meta.url), "utf8"),
+  readFile(new URL("../../frontend/src/services/dashboardApi.ts", import.meta.url), "utf8")
 ]);
 
 test("staff support API is bearer protected for both OWNER and STAFF", () => {
@@ -46,6 +50,16 @@ test("staff application exposes a split customer support workspace", () => {
   assert.match(inboxPage, /overflow-y-auto overscroll-contain/);
   assert.match(inboxPage, /Staff reply/);
   assert.match(inboxPage, /Ticket status/);
+});
+
+test("support navigation badge counts tickets that need staff attention", () => {
+  assert.match(navigationBadges, /support: number/);
+  assert.match(navigationBadges, /SupportTicketStatus\.NEW/);
+  assert.match(navigationBadges, /SupportTicketStatus\.OPEN/);
+  assert.match(navigationBadges, /prisma\.supportTicket\.count/);
+  assert.match(dashboardApi, /support: number/);
+  assert.match(sidebar, /case "\/customer-support":/);
+  assert.match(sidebar, /return badges\.support/);
 });
 
 test("customer support API never receives the internal bearer token", () => {
