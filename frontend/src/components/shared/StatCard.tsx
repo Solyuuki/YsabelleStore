@@ -48,7 +48,12 @@ export function StatCard({
   value
 }: StatCardProps) {
   return (
-    <Card className={cn("ys-kpi-card-surface min-h-36", surfaceAccentClass[accent])}>
+    <Card
+      className={cn(
+        "ys-kpi-card-surface flex h-full min-h-36 flex-col",
+        surfaceAccentClass[accent]
+      )}
+    >
       <CardHeader className="flex flex-row items-center justify-between gap-4">
         <CardTitle>{title}</CardTitle>
         <span
@@ -60,11 +65,11 @@ export function StatCard({
           <Icon className="h-4 w-4" aria-hidden="true" />
         </span>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-1 flex-col">
         <p className="type-metric text-slate-950">{value}</p>
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <p className="type-body-sm text-slate-500">{detail}</p>
-          <StatusBadge className={badgeClassName} variant={tone}>
+        <div className="mt-auto flex min-h-14 items-end justify-between gap-3 pt-4">
+          <p className="type-body-sm min-w-0 flex-1 text-slate-500">{detail}</p>
+          <StatusBadge className={cn("shrink-0", badgeClassName)} variant={tone}>
             {tone}
           </StatusBadge>
         </div>
