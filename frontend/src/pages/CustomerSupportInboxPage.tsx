@@ -315,7 +315,7 @@ export function CustomerSupportInboxPage() {
         </div>
       ) : null}
 
-      <section className="grid min-h-[680px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[390px_minmax(0,1fr)]">
+      <section className="grid h-[clamp(740px,calc(100dvh-13.5rem),880px)] min-h-[680px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[390px_minmax(0,1fr)]">
         <aside className="flex min-h-0 flex-col border-b border-slate-200 xl:border-b-0 xl:border-r">
           <div className="space-y-3 border-b border-slate-200 p-4">
             <div className="relative">
@@ -414,7 +414,7 @@ export function CustomerSupportInboxPage() {
           </div>
         </aside>
 
-        <div className="min-w-0">
+        <div className="min-h-0 min-w-0">
           {!selectedTicketId ? (
             <EmptyConversation />
           ) : detailLoading && !detail ? (
@@ -547,7 +547,7 @@ function SupportConversation({
   const statusChanged = statusDraft !== detail.status;
 
   return (
-    <div className="flex min-h-[680px] flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <header className="border-b border-slate-200 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
@@ -606,7 +606,7 @@ function SupportConversation({
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/70 p-5">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-slate-50/70 p-5">
         <div className="mx-auto max-w-4xl space-y-3">
           {detail.messages.map((message) => (
             <ConversationMessage
