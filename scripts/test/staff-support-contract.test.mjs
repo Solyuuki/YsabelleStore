@@ -42,7 +42,7 @@ test("staff application exposes a split customer support workspace", () => {
   assert.match(appRoutes, /path: "\/customer-support"/);
   assert.match(appShell, /CustomerSupportInboxPage/);
   assert.match(sidebar, /"\/customer-support"/);
-  assert.match(inboxPage, /h-\\[clamp\\(740px,calc\\(100dvh-13\\.5rem\\),880px\\)\\]/);
+  assert.match(inboxPage, /h-\[clamp\(740px,calc\(100dvh-13\.5rem\),880px\)\]/);
   assert.match(inboxPage, /overflow-y-auto overscroll-contain/);
   assert.match(inboxPage, /Staff reply/);
   assert.match(inboxPage, /Ticket status/);
