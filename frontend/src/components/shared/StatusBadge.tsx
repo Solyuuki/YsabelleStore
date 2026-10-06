@@ -7,6 +7,7 @@ type StatusBadgeVariant = "success" | "error" | "warning" | "info" | "protected"
 
 type StatusBadgeProps = {
   children: string;
+  className?: string;
   variant: StatusBadgeVariant;
 };
 
@@ -26,11 +27,11 @@ const badgeVariantByStatus = {
   protected: "warning"
 } as const;
 
-export function StatusBadge({ children, variant }: StatusBadgeProps) {
+export function StatusBadge({ children, className, variant }: StatusBadgeProps) {
   const Icon = iconByVariant[variant];
 
   return (
-    <Badge variant={badgeVariantByStatus[variant]}>
+    <Badge className={className} variant={badgeVariantByStatus[variant]}>
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       {children}
     </Badge>
