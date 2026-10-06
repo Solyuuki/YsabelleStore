@@ -50,7 +50,7 @@ const reportMonthFormatter = new Intl.DateTimeFormat("en-PH", {
 });
 
 const brandCardClass =
-  "relative overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(98,91,255,0.4)] backdrop-blur";
+  "ys-dashboard-panel-surface relative overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(98,91,255,0.4)] backdrop-blur";
 
 function formatCurrency(value: string | number) {
   return currencyFormatter.format(Number(value));
@@ -348,7 +348,9 @@ function BrandIcon({ accent, icon: Icon }: { accent?: MetricAccent; icon: Lucide
 
 function MetricCard({ accent, detail, icon, label, value }: MetricCardProps) {
   return (
-    <Card className={`${brandCardClass} ys-kpi-card-surface`}>
+    <Card
+      className={`${brandCardClass} ys-kpi-card-surface ys-kpi-card-surface--${accent}`}
+    >
       <BrandAccent accent={accent} />
       <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
@@ -372,7 +374,9 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
     summary.expiry.expiredBatches;
 
   return (
-    <Card className={`${brandCardClass} ys-kpi-card-surface`}>
+    <Card
+      className={`${brandCardClass} ys-kpi-card-surface ys-kpi-card-surface--amber`}
+    >
       <BrandAccent accent="amber" />
       <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
