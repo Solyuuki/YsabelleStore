@@ -71,4 +71,7 @@ test("password visibility buttons keep input layout and button styling isolated"
   assert.match(accountCss, /\.customer-account-password-change-form\s*\{/);
   assert.match(accountCss, /\.customer-account-password-recovery-link\s*\{/);
   assert.match(accountCss, /\.customer-account-password-change-divider\s*\{/);
+  assert.match(accountCss, /\.customer-account-password-change-actions button\s*\{/);
+  assert.match(accountCss, /min-height:\s*38px/);
+  assert.match(accountCss, /\.customer-account-password-change-form \.customer-account-password-field input\s*\{/);
 });

@@ -290,7 +290,7 @@
 }
 
 .customer-account-password-change-form {
-  gap: 16px;
+  gap: 13px;
 }
 
 .customer-account-password-change-current,
@@ -300,14 +300,14 @@
 }
 
 .customer-account-password-change-current {
-  padding: 14px;
+  padding: 11px 12px;
   border: 1px solid #e4e7f2;
-  border-radius: 16px;
+  border-radius: 14px;
   background: #fff;
 }
 
 .customer-account-password-change-new {
-  gap: 13px;
+  gap: 11px;
 }
 
 .customer-account-password-change-divider {
@@ -356,6 +356,10 @@
   line-height: 1.45;
 }
 
+.customer-account-password-change-form .customer-account-password-field input {
+  min-height: 42px;
+}
+
 .customer-account-password-change-actions {
   display: flex;
   align-items: center;
@@ -363,7 +367,11 @@
 }
 
 .customer-account-password-change-actions button {
-  min-width: 154px;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 10px;
+  font-size: 0.84rem;
 }
 
 .customer-account-otp-form {
