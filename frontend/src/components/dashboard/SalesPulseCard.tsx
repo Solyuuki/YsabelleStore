@@ -27,7 +27,7 @@ import {
 const SALES_CALENDAR_MIN_MONTH = "2019-01";
 
 const brandCardClass =
-  "relative overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(98,91,255,0.4)] backdrop-blur";
+  "ys-dashboard-panel-surface relative overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(98,91,255,0.4)] backdrop-blur";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
