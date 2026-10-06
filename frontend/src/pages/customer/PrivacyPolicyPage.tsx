@@ -181,9 +181,9 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
               />
             </div>
             <p>
-              We do not treat this privacy notice itself as an agreement. Where consent is actually
-              required for a separate optional activity, it must be requested specifically for that
-              activity rather than being bundled into general store access.
+              This privacy notice does not impose a blanket consent requirement. Where consent is
+              actually required for a separate optional activity, it must be requested specifically
+              for that activity rather than being bundled into general store access.
             </p>
           </PolicySection>
 
