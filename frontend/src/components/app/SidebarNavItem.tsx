@@ -55,7 +55,7 @@ export function SidebarNavItem({
             className={cn(
               "inline-flex shrink-0 items-center justify-center rounded-full font-semibold tabular-nums ring-1 transition-[background-color,color,box-shadow] duration-200",
               collapsed
-                ? "absolute right-1 top-1 h-4 min-w-4 max-w-5 px-1 text-[9px] leading-none"
+                ? "absolute left-1/2 top-1 ml-2 h-4 min-w-4 max-w-5 px-1 text-[9px] leading-none"
                 : "ml-auto h-5 min-w-5 px-1.5 text-[10px] leading-none",
               active
                 ? "bg-white/20 text-white ring-white/25"
