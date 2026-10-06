@@ -1,12 +1,16 @@
 import { z } from "zod";
 
-export const customerAdminListQuerySchema = z.object({
+const customerAdminPaginationQuerySchema = z.object({
   search: z.string().trim().max(120).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(25)
 });
 
-export const customerAdminReviewQuerySchema = customerAdminListQuerySchema.extend({
+export const customerAdminListQuerySchema = customerAdminPaginationQuerySchema.extend({
+  status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED", "BANNED"]).optional()
+});
+
+export const customerAdminReviewQuerySchema = customerAdminPaginationQuerySchema.extend({
   status: z.enum(["VISIBLE", "HIDDEN", "REMOVED"]).optional()
 });
 
