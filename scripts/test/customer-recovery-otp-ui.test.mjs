@@ -100,3 +100,20 @@ test("verification recovery actions keep resend separate from simple navigation 
     /\.customer-recovery-actions--verify\s*\{[\s\S]*justify-content:\s*center/
   );
 });
+
+
+test("recovery surface uses subtle material texture without changing the flow", () => {
+  assert.match(recoveryCss, /feTurbulence/);
+  assert.match(
+    recoveryCss,
+    /\.customer-auth-page--recovery \.customer-auth-stage__panel::before\s*\{/
+  );
+  assert.match(
+    recoveryCss,
+    /\.customer-auth-page--recovery \.customer-auth-stage__panel::after\s*\{/
+  );
+  assert.match(recoveryCss, /mix-blend-mode:\s*soft-light/);
+  assert.match(recoveryCss, /\.customer-recovery-icon::before\s*\{/);
+  assert.match(recoveryCss, /\.customer-recovery-icon::after\s*\{/);
+  assert.match(recoveryCss, /background-blend-mode:\s*soft-light/);
+});

@@ -1,11 +1,20 @@
 .customer-auth-page--recovery {
   min-height: calc(100vh - 76px);
   padding: clamp(1.5rem, 4vw, 4rem) 1.25rem;
-  background:
+  background-color: #f0edff;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.16'/%3E%3C/svg%3E"),
     radial-gradient(circle at 14% 14%, rgb(39 145 255 / 22%), transparent 25rem),
     radial-gradient(circle at 88% 20%, rgb(140 80 255 / 22%), transparent 28rem),
     radial-gradient(circle at 72% 86%, rgb(244 63 140 / 18%), transparent 27rem),
     linear-gradient(135deg, #eaf4ff 0%, #f0edff 48%, #fff0f7 100%);
+  background-size:
+    180px 180px,
+    auto,
+    auto,
+    auto,
+    auto;
+  background-blend-mode: soft-light, normal, normal, normal, normal;
 }
 
 .customer-auth-page--recovery::before,
@@ -65,8 +74,11 @@
 }
 
 .customer-auth-page--recovery .customer-auth-stage__panel {
+  position: relative;
   width: 100%;
   min-width: 0;
+  overflow: hidden;
+  isolation: isolate;
   padding: clamp(1.6rem, 3.5vw, 2.8rem);
   border: 1px solid rgb(255 255 255 / 76%);
   border-radius: 2rem;
@@ -80,7 +92,33 @@
   backdrop-filter: blur(30px) saturate(155%);
 }
 
+.customer-auth-page--recovery .customer-auth-stage__panel::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.16'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  mix-blend-mode: soft-light;
+  opacity: 0.24;
+  content: "";
+  pointer-events: none;
+}
+
+.customer-auth-page--recovery .customer-auth-stage__panel::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 18% 5%, rgb(255 255 255 / 58%), transparent 28%),
+    radial-gradient(circle at 88% 84%, rgb(203 78 170 / 7%), transparent 34%),
+    linear-gradient(118deg, rgb(255 255 255 / 24%), transparent 32% 72%, rgb(98 91 255 / 5%));
+  content: "";
+  pointer-events: none;
+}
+
 .customer-recovery-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: none;
 }
@@ -173,7 +211,9 @@
 }
 
 .customer-recovery-icon {
+  position: relative;
   display: inline-grid;
+  isolation: isolate;
   width: 3.2rem;
   height: 3.2rem;
   place-items: center;
@@ -185,6 +225,39 @@
   box-shadow:
     0 14px 30px rgb(98 91 255 / 25%),
     inset 0 1px 0 rgb(255 255 255 / 35%);
+}
+
+.customer-recovery-icon::before {
+  position: absolute;
+  inset: -0.72rem;
+  z-index: -1;
+  border-radius: 1.4rem;
+  background:
+    radial-gradient(circle, rgb(98 91 255 / 18%), transparent 68%);
+  filter: blur(8px);
+  content: "";
+  pointer-events: none;
+}
+
+.customer-recovery-icon::after {
+  position: absolute;
+  inset: 1px;
+  border-radius: calc(1rem - 1px);
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 30%), transparent 42%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.16'/%3E%3C/svg%3E");
+  background-size:
+    auto,
+    84px 84px;
+  mix-blend-mode: soft-light;
+  opacity: 0.42;
+  content: "";
+  pointer-events: none;
+}
+
+.customer-recovery-icon > svg {
+  position: relative;
+  z-index: 1;
 }
 
 .customer-recovery-form {
