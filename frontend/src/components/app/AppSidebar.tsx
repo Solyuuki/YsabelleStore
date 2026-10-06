@@ -223,6 +223,8 @@ function getBadgeCount(path: AppRoutePath, badges: NavigationBadgeSummary | null
       return badges.reports;
     case "/deliveries":
       return badges.deliveries;
+    case "/customer-support":
+      return badges.support;
     default:
       return undefined;
   }
