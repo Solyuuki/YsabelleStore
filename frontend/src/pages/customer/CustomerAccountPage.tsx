@@ -500,7 +500,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   }
 
   async function handlePasswordSetupRequest() {
-    if (passwordSetupBusy) return;
+    if (!customer || passwordSetupBusy) return;
     setPasswordError(null);
     setPasswordMessage(null);
     setPasswordSetupBusy(true);
