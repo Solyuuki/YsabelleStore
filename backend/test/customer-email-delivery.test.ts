@@ -23,7 +23,12 @@ type DeliveryModule = {
   }) => (input: {
     to: string;
     verificationCode: string;
-    purpose: "registration" | "authentication";
+    purpose:
+      | "registration"
+      | "authentication"
+      | "password_setup"
+      | "password_recovery"
+      | "session_security";
   }) => Promise<void>;
   CustomerIdentityEmailDeliveryError: new () => Error;
 };
@@ -190,4 +195,35 @@ test("Resend delivery does not expose provider responses, API keys, or OTP value
       return true;
     }
   );
+});
+
+
+test("development Gmail SMTP sends password recovery codes through the shared identity delivery path", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+
+  const smtpMessages: DevelopmentSmtpMessage[] = [];
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "development",
+    developmentSmtpUser: "qa.sender@gmail.com",
+    developmentSmtpAppPassword: "app-password",
+    smtpSendImpl: async (message) => {
+      smtpMessages.push(message);
+    },
+    fetchImpl: async () => {
+      throw new Error("Resend should not be called when development Gmail SMTP is configured.");
+    }
+  });
+
+  await send({
+    to: "recovering.customer@gmail.com",
+    verificationCode: "246810",
+    purpose: "password_recovery"
+  });
+
+  assert.equal(smtpMessages.length, 1);
+  assert.equal(smtpMessages[0]?.to, "recovering.customer@gmail.com");
+  assert.equal(smtpMessages[0]?.subject, "Your Ysabelle Store password recovery code");
+  assert.match(smtpMessages[0]?.text ?? "", /246810/);
+  assert.match(smtpMessages[0]?.html ?? "", /246810/);
 });

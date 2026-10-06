@@ -14,6 +14,7 @@ export type CustomerIdentityEmailPurpose =
   | "registration"
   | "authentication"
   | "password_setup"
+  | "password_recovery"
   | "session_security";
 
 export class CustomerIdentityEmailDeliveryError extends Error {
@@ -65,25 +66,31 @@ function emailCopy(purpose: CustomerIdentityEmailPurpose, verificationCode: stri
       ? "Verify your email address"
       : purpose === "password_setup"
         ? "Set your Ysabelle Store password"
-        : purpose === "session_security"
-          ? "Verify your account security action"
-          : "Sign in to Ysabelle Store";
+        : purpose === "password_recovery"
+          ? "Recover your Ysabelle Store account"
+          : purpose === "session_security"
+            ? "Verify your account security action"
+            : "Sign in to Ysabelle Store";
   const description =
     purpose === "registration"
       ? "Use this one-time code to verify the email address for your new customer account."
       : purpose === "password_setup"
         ? "Use this one-time code to verify your identity before adding a password to your customer account."
-        : purpose === "session_security"
-          ? "Use this one-time code to verify your identity before signing out other active sessions."
-          : "Use this one-time code to sign in to your customer account.";
+        : purpose === "password_recovery"
+          ? "Use this one-time code to verify your identity before resetting your customer account password."
+          : purpose === "session_security"
+            ? "Use this one-time code to verify your identity before signing out other active sessions."
+            : "Use this one-time code to sign in to your customer account.";
   const subject =
     purpose === "registration"
       ? "Verify your Ysabelle Store email"
       : purpose === "password_setup"
         ? "Your Ysabelle Store password setup code"
-        : purpose === "session_security"
-          ? "Your Ysabelle Store security verification code"
-          : "Your Ysabelle Store sign-in code";
+        : purpose === "password_recovery"
+          ? "Your Ysabelle Store password recovery code"
+          : purpose === "session_security"
+            ? "Your Ysabelle Store security verification code"
+            : "Your Ysabelle Store sign-in code";
 
   const text = [
     `Ysabelle Store - ${title}`,

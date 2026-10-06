@@ -8,32 +8,38 @@ const recoveryEmailService = fs.readFileSync(
   path.join(REPO_ROOT, "backend", "src", "services", "customerRecoveryEmailService.ts"),
   "utf8"
 );
+const identityEmailService = fs.readFileSync(
+  path.join(REPO_ROOT, "backend", "src", "services", "customerIdentityEmailDeliveryService.ts"),
+  "utf8"
+);
 
-test("development recovery email retries a rejected custom sender with the Resend test sender", () => {
+test("password recovery reuses the shared customer identity delivery path", () => {
   assert.match(
     recoveryEmailService,
-    /const DEVELOPMENT_RESEND_FROM_EMAIL = "onboarding@resend\.dev"/
+    /sendCustomerIdentityVerificationEmail/
   );
-  assert.match(recoveryEmailService, /sendRecoveryEmailRequest/);
+  assert.match(recoveryEmailService, /purpose: "password_recovery"/);
   assert.match(
     recoveryEmailService,
-    /response\.status !== 403 \|\| env\.NODE_ENV === "production"/
-  );
-  assert.match(recoveryEmailService, /from !== DEVELOPMENT_RESEND_FROM_EMAIL/);
-  assert.match(recoveryEmailService, /domain.*not verified|verify a domain|testing emails/i);
-  assert.match(recoveryEmailService, /"user-agent": "YsabelleStore\/customer-recovery"/);
-});
-
-test("recovery email keeps production strict instead of always replacing the configured sender", () => {
-  assert.doesNotMatch(
-    recoveryEmailService,
-    /const from = env\.NODE_ENV === "production"\s*\?[^:]+:\s*DEVELOPMENT_RESEND_FROM_EMAIL/s
+    /error instanceof CustomerIdentityEmailDeliveryError/
   );
 });
 
-test("recovery email presents Ysabelle Store as the sender name for configured and fallback addresses", () => {
-  assert.match(recoveryEmailService, /const CUSTOMER_RECOVERY_FROM_NAME = "Ysabelle Store"/);
-  assert.match(recoveryEmailService, /function formatRecoveryFromAddress\(email: string\)/);
-  assert.match(recoveryEmailService, /return `\$\{CUSTOMER_RECOVERY_FROM_NAME\} <\$\{email\}>`/);
-  assert.match(recoveryEmailService, /from: formatRecoveryFromAddress\(input\.from\)/);
+test("shared identity delivery supports development Gmail SMTP for recovery", () => {
+  assert.match(identityEmailService, /"password_recovery"/);
+  assert.match(identityEmailService, /CUSTOMER_DEV_GMAIL_SMTP_USER/);
+  assert.match(identityEmailService, /CUSTOMER_DEV_GMAIL_SMTP_APP_PASSWORD/);
+  assert.match(identityEmailService, /sendGmailSmtpMessage/);
+  assert.match(
+    identityEmailService,
+    /Your Ysabelle Store password recovery code/
+  );
+});
+
+test("recovery delivery preserves a generic public error boundary", () => {
+  assert.match(
+    recoveryEmailService,
+    /export class CustomerRecoveryEmailDeliveryError extends Error/
+  );
+  assert.doesNotMatch(recoveryEmailService, /verificationCode.*console/i);
 });
