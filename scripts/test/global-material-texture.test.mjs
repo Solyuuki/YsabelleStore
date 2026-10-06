@@ -25,6 +25,7 @@ test("global Ysabelle material texture is loaded once and shared across app shel
   assert.match(main, /ysabelle-material\.css/);
   assert.match(materialCss, /--ys-material-noise:/);
   assert.match(materialCss, /--ys-material-facets:/);
+  assert.match(materialCss, /--ys-bokeh-background:/);
   assert.match(materialCss, /feTurbulence/);
   assert.match(materialCss, /\.ys-material-canvas::after/);
   assert.match(materialCss, /\.ys-material-surface::before/);
@@ -66,4 +67,13 @@ test("crystal facets cover shared brand-gradient controls", () => {
   assert.match(materialCss, /customer-account-nav button\[aria-selected="true"\]/);
   assert.match(materialCss, /customer-recovery-progress__step--active/);
   assert.match(recoveryCss, /var\(--ys-material-facets\)/);
+});
+
+
+test("global soft bokeh background is applied to primary app and customer shells", () => {
+  assert.match(materialCss, /\.ys-bokeh-background\s*\{/);
+  assert.match(materialCss, /background-image:\s*var\(--ys-bokeh-background\)/);
+  assert.match(appLayout, /ys-bokeh-background/);
+  assert.match(customerLayout, /ys-bokeh-background/);
+  assert.match(account, /customer-account-page-v2 ys-bokeh-background/);
 });
