@@ -326,7 +326,7 @@ const iconAccentClass: Record<MetricAccent, string> = {
 function BrandAccent({ accent }: { accent?: MetricAccent }) {
   return (
     <div
-      className={\`ys-material-accent-strip \${accent ? stripAccentClass[accent] : ""}\`}
+      className={`ys-material-accent-strip ${accent ? stripAccentClass[accent] : ""}`}
       aria-hidden="true"
     />
   );
@@ -335,11 +335,11 @@ function BrandAccent({ accent }: { accent?: MetricAccent }) {
 function BrandIcon({ accent, icon: Icon }: { accent?: MetricAccent; icon: LucideIcon }) {
   return (
     <span
-      className={\`ys-material-accent flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-white/70 \${
+      className={`ys-material-accent flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-white/70 ${
         accent
           ? iconAccentClass[accent]
           : "bg-gradient-to-br from-[#008cff] via-[#625bff] to-[#f43f8c] shadow-[#625bff]/20"
-      }\`}
+      }`}
     >
       <Icon className="h-4 w-4" aria-hidden="true" />
     </span>
@@ -348,7 +348,7 @@ function BrandIcon({ accent, icon: Icon }: { accent?: MetricAccent; icon: Lucide
 
 function MetricCard({ accent, detail, icon, label, value }: MetricCardProps) {
   return (
-    <Card className={\`\${brandCardClass} ys-kpi-card-surface\`}>
+    <Card className={`${brandCardClass} ys-kpi-card-surface`}>
       <BrandAccent accent={accent} />
       <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
