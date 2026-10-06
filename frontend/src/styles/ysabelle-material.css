@@ -141,18 +141,27 @@
 
 /*
  * Dashboard accent rail
- * Reuses the exact faceted/noise/highlight texture from ys-material-accent,
- * adapted to a thin horizontal strip so the rail reads textured rather than flat.
+ * Uses the same faceted crystal material as compact icon accents, but tuned for
+ * a thin horizontal rail with stronger texture visibility and per-card hues.
  */
 .ys-material-accent-strip {
+  --ys-strip-from: #008cff;
+  --ys-strip-via: #625bff;
+  --ys-strip-to: #f43f8c;
   position: absolute;
   inset-inline: 0;
   top: 0;
   z-index: 2;
-  height: 0.25rem;
+  height: 0.34rem;
   isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(90deg, #008cff 0%, #625bff 52%, #f43f8c 100%);
+  background: linear-gradient(
+    90deg,
+    var(--ys-strip-from) 0%,
+    var(--ys-strip-via) 52%,
+    var(--ys-strip-to) 100%
+  );
+  box-shadow: inset 0 -1px 0 rgb(255 255 255 / 18%);
   pointer-events: none;
 }
 
@@ -165,8 +174,8 @@
     var(--ys-material-noise),
     var(--ys-material-accent-highlight);
   background-size:
-    24rem 100%,
-    86px 86px,
+    18rem 100%,
+    72px 72px,
     auto;
   background-position:
     left center,
@@ -177,11 +186,54 @@
     repeat,
     no-repeat;
   background-blend-mode: soft-light, soft-light, overlay;
-  opacity: 0.68;
-  filter: blur(0.22px);
+  opacity: 0.92;
+  filter: blur(0.1px);
   transform: scale(1.01);
   content: "";
   pointer-events: none;
+}
+
+.ys-material-accent-strip::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      100deg,
+      transparent 0%,
+      rgb(255 255 255 / 34%) 14%,
+      rgb(255 255 255 / 10%) 31%,
+      transparent 52%
+    ),
+    linear-gradient(180deg, rgb(255 255 255 / 18%), transparent 58%);
+  mix-blend-mode: screen;
+  opacity: 0.78;
+  content: "";
+  pointer-events: none;
+}
+
+.ys-material-accent-strip--blue {
+  --ys-strip-from: #38bdf8;
+  --ys-strip-via: #3b82f6;
+  --ys-strip-to: #6366f1;
+}
+
+.ys-material-accent-strip--emerald {
+  --ys-strip-from: #6ee7b7;
+  --ys-strip-via: #10b981;
+  --ys-strip-to: #14b8a6;
+}
+
+.ys-material-accent-strip--amber {
+  --ys-strip-from: #fcd34d;
+  --ys-strip-via: #f59e0b;
+  --ys-strip-to: #f97316;
+}
+
+.ys-material-accent-strip--violet {
+  --ys-strip-from: #8b5cf6;
+  --ys-strip-via: #a855f7;
+  --ys-strip-to: #ec4899;
 }
 
 @media (prefers-contrast: more) {
@@ -195,6 +247,7 @@
 
   .ys-material-accent::before,
   .ys-material-accent-strip::before,
+  .ys-material-accent-strip::after,
   :is(
       .customer-auth-card__icon,
       .customer-email-quick-sign__icon,
@@ -211,6 +264,8 @@
   .ys-material-canvas::after,
   .ys-material-surface::before,
   .ys-material-accent::before,
+  .ys-material-accent-strip::before,
+  .ys-material-accent-strip::after,
   :is(
       .customer-auth-card__icon,
       .customer-email-quick-sign__icon,
