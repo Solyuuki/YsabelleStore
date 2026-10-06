@@ -76,8 +76,12 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
             <strong>We collect data to run the store, fulfill orders, and protect accounts.</strong>
             <ul>
               <li>Full card numbers and CVVs are not collected by Ysabelle Store forms.</li>
-              <li>The current storefront does not initialize advertising or behavioral analytics.</li>
-              <li>Inventory forecasting is not customer profiling in the current implementation.</li>
+              <li>
+                The current storefront does not initialize advertising or behavioral analytics.
+              </li>
+              <li>
+                Inventory forecasting is not customer profiling in the current implementation.
+              </li>
             </ul>
           </aside>
         </div>
@@ -206,10 +210,10 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
               <div>
                 <strong>PayMongo checkout</strong>
                 <p>
-                  When PayMongo checkout is enabled, Ysabelle Store sends billing name/email,
-                  order line items, an order reference, and internal order/customer references
-                  needed for checkout and payment reconciliation. Card or e-wallet credentials are
-                  entered with the payment provider rather than into a Ysabelle Store card form.
+                  When PayMongo checkout is enabled, Ysabelle Store sends billing name/email, order
+                  line items, an order reference, and internal order/customer references needed for
+                  checkout and payment reconciliation. Card or e-wallet credentials are entered with
+                  the payment provider rather than into a Ysabelle Store card form.
                 </p>
               </div>
             </div>
@@ -224,12 +228,15 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
           <PolicySection icon={Cookie} id="cookies-storage" title="5. Cookies and device storage">
             <p>
               The current storefront uses service, security, and convenience storage. It does not
-              initialize an advertising pixel or behavioral analytics tracker. Because these
-              current mechanisms support requested store features rather than advertising, the
-              storefront presents an informational privacy notice instead of a fake advertising
-              consent choice.
+              initialize an advertising pixel or behavioral analytics tracker. Because these current
+              mechanisms support requested store features rather than advertising, the storefront
+              presents an informational privacy notice instead of a fake advertising consent choice.
             </p>
-            <div className="customer-privacy-storage-table" role="table" aria-label="Storage details">
+            <div
+              className="customer-privacy-storage-table"
+              role="table"
+              aria-label="Storage details"
+            >
               {PRIVACY_STORAGE_ITEMS.map((item) => (
                 <article key={item.name} role="row">
                   <div>
@@ -286,15 +293,15 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
             <p>
               Short-lived verification/security grants generally expire within 10 minutes. Customer
               session cookies are configured for up to 7 days. Remembered-browser credentials can
-              remain on the browser for up to 365 days, while remembered trust is valid for up to
-              30 days and can be revoked.
+              remain on the browser for up to 365 days, while remembered trust is valid for up to 30
+              days and can be revoked.
             </p>
             <p>
               The system uses measures including HttpOnly cookies for customer authentication
-              credentials, SameSite restrictions, Secure cookies in production, hashed passwords
-              or tokens where applicable, expiration/revocation checks, role/access controls, and
-              audit records for moderation actions. No internet service can promise absolute
-              security, so access should remain limited to what is operationally necessary.
+              credentials, SameSite restrictions, Secure cookies in production, hashed passwords or
+              tokens where applicable, expiration/revocation checks, role/access controls, and audit
+              records for moderation actions. No internet service can promise absolute security, so
+              access should remain limited to what is operationally necessary.
             </p>
           </PolicySection>
 
