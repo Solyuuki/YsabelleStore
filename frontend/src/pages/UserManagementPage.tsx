@@ -8,8 +8,9 @@ import {
   UserPlus,
   UsersRound
 } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
+import { AppPagination } from "@/components/shared/AppPagination";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -29,13 +30,17 @@ import {
   fetchCustomerModerationAccounts,
   fetchCustomerModerationAudit,
   fetchCustomerModerationReviews,
+  fetchCustomerModerationSummary,
   updateCustomerModerationAccount,
   updateCustomerModerationReview,
   type CustomerModerationAccount,
+  type CustomerModerationAccountStatus,
   type CustomerModerationAuditEntry,
-  type CustomerModerationReview
+  type CustomerModerationReview,
+  type CustomerModerationSummary
 } from "@/services/customerModerationApi";
 import type { AuthUser } from "@/types/auth";
+import type { StorefrontPagination } from "@/types/storefront";
 
 type UserManagementPageProps = {
   error: string | null;
@@ -45,6 +50,28 @@ type UserManagementPageProps = {
 
 type ManagementTab = "store" | "customers";
 type CustomerView = "accounts" | "reviews";
+type AccountStatusFilter = "ALL" | CustomerModerationAccountStatus;
+type ReviewStatusFilter = "ALL" | CustomerModerationReview["status"];
+
+const DEFAULT_MODERATION_PAGE_SIZE = 25;
+
+function emptyPagination(pageSize = DEFAULT_MODERATION_PAGE_SIZE): StorefrontPagination {
+  return {
+    page: 1,
+    pageSize,
+    totalItems: 0,
+    totalPages: 0
+  };
+}
+
+const EMPTY_CUSTOMER_SUMMARY: CustomerModerationSummary = {
+  total: 0,
+  active: 0,
+  inactive: 0,
+  suspended: 0,
+  banned: 0,
+  restricted: 0
+};
 type ModerationTarget =
   | {
       kind: "account";
@@ -73,6 +100,16 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
   const [customerSearch, setCustomerSearch] = useState("");
   const [accounts, setAccounts] = useState<CustomerModerationAccount[]>([]);
   const [reviews, setReviews] = useState<CustomerModerationReview[]>([]);
+  const [accountPage, setAccountPage] = useState(1);
+  const [accountPageSize, setAccountPageSize] = useState(DEFAULT_MODERATION_PAGE_SIZE);
+  const [accountStatus, setAccountStatus] = useState<AccountStatusFilter>("ALL");
+  const [accountMeta, setAccountMeta] = useState<StorefrontPagination>(() => emptyPagination());
+  const [accountSummary, setAccountSummary] =
+    useState<CustomerModerationSummary>(EMPTY_CUSTOMER_SUMMARY);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [reviewPageSize, setReviewPageSize] = useState(DEFAULT_MODERATION_PAGE_SIZE);
+  const [reviewStatus, setReviewStatus] = useState<ReviewStatusFilter>("ALL");
+  const [reviewMeta, setReviewMeta] = useState<StorefrontPagination>(() => emptyPagination());
   const [moderationLoading, setModerationLoading] = useState(false);
   const [moderationError, setModerationError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -85,27 +122,46 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
 
   useEffect(() => {
     if (activeTab !== "customers") return;
+
+    let active = true;
+    void fetchCustomerModerationSummary()
+      .then((summary) => {
+        if (active) setAccountSummary(summary);
+      })
+      .catch((reason: unknown) => {
+        if (active) {
+          setModerationError(
+            reason instanceof Error ? reason.message : "Customer summary could not be loaded."
+          );
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, reloadKey]);
+
+  useEffect(() => {
+    if (activeTab !== "customers" || customerView !== "accounts") return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       setModerationLoading(true);
       setModerationError(null);
       const search = customerSearch.trim() || undefined;
-      const request =
-        customerView === "accounts"
-          ? fetchCustomerModerationAccounts({ search, pageSize: 100 })
-          : fetchCustomerModerationReviews({ search, pageSize: 100 });
 
-      void request
+      void fetchCustomerModerationAccounts({
+        search,
+        status: accountStatus === "ALL" ? undefined : accountStatus,
+        page: accountPage,
+        pageSize: accountPageSize
+      })
         .then((result) => {
           if (controller.signal.aborted) return;
-          if (customerView === "accounts") {
-            setAccounts(
-              (result as Awaited<ReturnType<typeof fetchCustomerModerationAccounts>>).items
-            );
-          } else {
-            setReviews(
-              (result as Awaited<ReturnType<typeof fetchCustomerModerationReviews>>).items
-            );
+          setAccounts(result.items);
+          setAccountMeta(result.meta);
+
+          if (result.meta.totalPages > 0 && accountPage > result.meta.totalPages) {
+            setAccountPage(result.meta.totalPages);
           }
         })
         .catch((reason: unknown) => {
@@ -126,17 +182,66 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [activeTab, customerSearch, customerView, reloadKey]);
+  }, [
+    accountPage,
+    accountPageSize,
+    accountStatus,
+    activeTab,
+    customerSearch,
+    customerView,
+    reloadKey
+  ]);
 
-  const accountSummary = useMemo(
-    () => ({
-      active: accounts.filter((account) => account.status === "ACTIVE").length,
-      restricted: accounts.filter(
-        (account) => account.status === "SUSPENDED" || account.status === "BANNED"
-      ).length
-    }),
-    [accounts]
-  );
+  useEffect(() => {
+    if (activeTab !== "customers" || customerView !== "reviews") return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setModerationLoading(true);
+      setModerationError(null);
+      const search = customerSearch.trim() || undefined;
+
+      void fetchCustomerModerationReviews({
+        search,
+        status: reviewStatus === "ALL" ? undefined : reviewStatus,
+        page: reviewPage,
+        pageSize: reviewPageSize
+      })
+        .then((result) => {
+          if (controller.signal.aborted) return;
+          setReviews(result.items);
+          setReviewMeta(result.meta);
+
+          if (result.meta.totalPages > 0 && reviewPage > result.meta.totalPages) {
+            setReviewPage(result.meta.totalPages);
+          }
+        })
+        .catch((reason: unknown) => {
+          if (!controller.signal.aborted) {
+            setModerationError(
+              reason instanceof Error
+                ? reason.message
+                : "Review moderation data could not be loaded."
+            );
+          }
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setModerationLoading(false);
+        });
+    }, 220);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [
+    activeTab,
+    customerSearch,
+    customerView,
+    reloadKey,
+    reviewPage,
+    reviewPageSize,
+    reviewStatus
+  ]);
 
   function resetForm() {
     setName("");
