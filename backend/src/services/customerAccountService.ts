@@ -61,7 +61,6 @@ export type CustomerPasswordSetupDelivery = {
   }): Promise<void>;
 };
 
-
 function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
   return {
     id: customer.id,
@@ -324,7 +323,12 @@ export async function setupCustomerPassword(
   const currentSession = await requireActiveSession(customerAccountId, sessionToken, now);
   const customer = await requireActiveCustomer(customerAccountId);
   if (customer.passwordHash) throw passwordAlreadySet();
-  if (!setupGrant || setupGrant.length < 32 || newPassword.length < 8 || newPassword.length > 128) {
+  if (
+    !setupGrant ||
+    setupGrant.length < 32 ||
+    newPassword.length < 8 ||
+    newPassword.length > 128
+  ) {
     throw invalidPasswordSetupGrant();
   }
 

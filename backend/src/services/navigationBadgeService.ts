@@ -1,8 +1,4 @@
-import {
-  CustomerDeliveryStatus,
-  SupportTicketStatus,
-  type UserRole
-} from "@prisma/client";
+import { CustomerDeliveryStatus, SupportTicketStatus, type UserRole } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { getDashboardOperations, getDashboardSummary } from "./dashboardService.js";

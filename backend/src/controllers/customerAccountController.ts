@@ -13,7 +13,9 @@ import {
   verifyCustomerPasswordSetupCode
 } from "../services/customerAccountService.js";
 import { confirmCustomerDeliveryReceived } from "../services/deliveryService.js";
-import { sendCustomerIdentityVerificationEmail } from "../services/customerIdentityEmailDeliveryService.js";
+import {
+  sendCustomerIdentityVerificationEmail
+} from "../services/customerIdentityEmailDeliveryService.js";
 import {
   addCustomerFavorite,
   listCustomerFavoriteProducts,

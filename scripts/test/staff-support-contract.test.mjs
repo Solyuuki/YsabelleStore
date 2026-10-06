@@ -27,7 +27,10 @@ const [
   ),
   readFile(new URL("../../backend/src/services/supportGmailService.ts", import.meta.url), "utf8"),
   readFile(new URL("../../backend/src/services/staffSupportService.ts", import.meta.url), "utf8"),
-  readFile(new URL("../../backend/src/services/navigationBadgeService.ts", import.meta.url), "utf8"),
+  readFile(
+    new URL("../../backend/src/services/navigationBadgeService.ts", import.meta.url),
+    "utf8"
+  ),
   readFile(new URL("../../frontend/src/services/dashboardApi.ts", import.meta.url), "utf8")
 ]);
 

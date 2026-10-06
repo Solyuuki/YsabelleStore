@@ -152,11 +152,7 @@ customerAccountRouter.post(
   ...sensitiveMutationMiddleware,
   changeCustomerPasswordController
 );
-customerAccountRouter.get(
-  "/security",
-  requireCustomerAuth,
-  getCustomerSecuritySummaryController
-);
+customerAccountRouter.get("/security", requireCustomerAuth, getCustomerSecuritySummaryController);
 customerAccountRouter.post(
   "/password/setup/request",
   ...sensitiveMutationMiddleware,

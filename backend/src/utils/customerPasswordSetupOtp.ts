@@ -64,10 +64,7 @@ export function hashCustomerPasswordSetupGrant(grant: string): string {
   return createHash("sha256").update(grant).digest("hex");
 }
 
-export function customerPasswordSetupAttemptMarkerId(
-  challengeId: string,
-  attempt: number
-): string {
+export function customerPasswordSetupAttemptMarkerId(challengeId: string, attempt: number): string {
   return `setup-attempt:${challengeId}:${attempt}`;
 }
 

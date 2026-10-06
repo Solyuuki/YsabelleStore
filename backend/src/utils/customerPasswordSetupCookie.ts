@@ -36,10 +36,7 @@ export function readCustomerPasswordSetupGrantCookie(request: Request): string |
   return undefined;
 }
 
-export function setCustomerPasswordSetupGrantCookie(
-  response: Response,
-  setupGrant: string
-): void {
+export function setCustomerPasswordSetupGrantCookie(response: Response, setupGrant: string): void {
   response.cookie(CUSTOMER_PASSWORD_SETUP_GRANT_COOKIE_NAME, setupGrant, {
     ...passwordSetupCookieOptions,
     maxAge: CUSTOMER_PASSWORD_SETUP_GRANT_LIFETIME_MS
