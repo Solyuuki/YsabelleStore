@@ -47,6 +47,10 @@ test("passwordless Quick Sign accounts get a verified set-password flow", () => 
   assert.match(accountPage, /Resend code/);
   assert.match(accountPage, /PASSWORD_SETUP_RESEND_COOLDOWN_MS = 45 \* 1000/);
   assert.match(accountPage, /Quick Sign or your email and password/);
+  assert.match(accountPage, /Forgot current password\?/);
+  assert.match(accountPage, /navigate\("\/account-recovery"\)/);
+  assert.match(accountPage, /Update password/);
+  assert.match(accountPage, /Changing your password signs out your other sessions/);
 });
 
 test("password visibility buttons keep input layout and button styling isolated", () => {
@@ -64,4 +68,7 @@ test("password visibility buttons keep input layout and button styling isolated"
   assert.match(accountCss, /\.customer-account-session-confirm\s*\{/);
   assert.match(accountCss, /\.customer-account-session-confirm-actions\s*\{/);
   assert.match(accountCss, /\.customer-account-session-otp-actions\s*\{/);
+  assert.match(accountCss, /\.customer-account-password-change-form\s*\{/);
+  assert.match(accountCss, /\.customer-account-password-recovery-link\s*\{/);
+  assert.match(accountCss, /\.customer-account-password-change-divider\s*\{/);
 });

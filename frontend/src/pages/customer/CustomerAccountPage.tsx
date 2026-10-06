@@ -1452,7 +1452,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                   </p>
                 ) : securitySummary?.hasPassword ? (
                   <form
-                    className="customer-account-security-form"
+                    className="customer-account-security-form customer-account-password-change-form"
                     onSubmit={(event) => void handlePasswordChange(event)}
                   >
                     <input
@@ -1464,35 +1464,64 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                       type="email"
                       value={customer.email}
                     />
-                    <PasswordField
-                      autoComplete="current-password"
-                      label="Current password"
-                      name="currentPassword"
-                      maxLength={128}
-                      onChange={setCurrentPassword}
-                      value={currentPassword}
-                    />
-                    <PasswordField
-                      autoComplete="new-password"
-                      label="New password"
-                      name="newPassword"
-                      maxLength={128}
-                      minLength={8}
-                      onChange={setNewPassword}
-                      value={newPassword}
-                    />
-                    <PasswordField
-                      autoComplete="new-password"
-                      label="Confirm new password"
-                      name="newPasswordConfirmation"
-                      maxLength={128}
-                      minLength={8}
-                      onChange={setConfirmPassword}
-                      value={confirmPassword}
-                    />
-                    <button disabled={changingPassword} type="submit">
-                      {changingPassword ? "Changing..." : "Change password"}
-                    </button>
+
+                    <div className="customer-account-password-change-current">
+                      <PasswordField
+                        autoComplete="current-password"
+                        label="Current password"
+                        name="currentPassword"
+                        maxLength={128}
+                        onChange={setCurrentPassword}
+                        value={currentPassword}
+                      />
+                      <button
+                        className="customer-account-password-recovery-link"
+                        onClick={() => navigate("/account-recovery")}
+                        type="button"
+                      >
+                        Forgot current password?
+                      </button>
+                    </div>
+
+                    <div className="customer-account-password-change-divider" aria-hidden="true" />
+
+                    <div className="customer-account-password-change-new">
+                      <PasswordField
+                        autoComplete="new-password"
+                        label="New password"
+                        name="newPassword"
+                        maxLength={128}
+                        minLength={8}
+                        onChange={setNewPassword}
+                        value={newPassword}
+                      />
+                      <PasswordField
+                        autoComplete="new-password"
+                        label="Confirm new password"
+                        name="newPasswordConfirmation"
+                        maxLength={128}
+                        minLength={8}
+                        onChange={setConfirmPassword}
+                        value={confirmPassword}
+                      />
+                      <p className="customer-account-password-requirement">
+                        Use 8–128 characters. Changing your password signs out your other sessions.
+                      </p>
+                    </div>
+
+                    <div className="customer-account-password-change-actions">
+                      <button
+                        disabled={
+                          changingPassword ||
+                          !currentPassword ||
+                          newPassword.length < 8 ||
+                          newPassword !== confirmPassword
+                        }
+                        type="submit"
+                      >
+                        {changingPassword ? "Updating..." : "Update password"}
+                      </button>
+                    </div>
                   </form>
                 ) : passwordSetupStage === "idle" ? (
                   <button

@@ -289,6 +289,83 @@
   gap: 14px;
 }
 
+.customer-account-password-change-form {
+  gap: 16px;
+}
+
+.customer-account-password-change-current,
+.customer-account-password-change-new {
+  display: grid;
+  gap: 10px;
+}
+
+.customer-account-password-change-current {
+  padding: 14px;
+  border: 1px solid #e4e7f2;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.customer-account-password-change-new {
+  gap: 13px;
+}
+
+.customer-account-password-change-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(98, 91, 255, 0.18) 18%,
+    rgba(98, 91, 255, 0.18) 82%,
+    transparent
+  );
+}
+
+.customer-account-security-card .customer-account-password-recovery-link {
+  width: fit-content;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  color: #5b55d8;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.customer-account-security-card .customer-account-password-recovery-link:hover {
+  color: #4038bf;
+  background: transparent;
+  box-shadow: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transform: none;
+}
+
+.customer-account-security-card .customer-account-password-recovery-link:focus-visible {
+  border-radius: 6px;
+  outline: 3px solid rgba(98, 91, 255, 0.16);
+  outline-offset: 3px;
+}
+
+.customer-account-password-requirement {
+  margin: -2px 0 0;
+  color: #778197;
+  font-size: 0.77rem;
+  line-height: 1.45;
+}
+
+.customer-account-password-change-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.customer-account-password-change-actions button {
+  min-width: 154px;
+}
+
 .customer-account-otp-form {
   gap: 16px;
 }
