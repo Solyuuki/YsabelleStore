@@ -60,3 +60,9 @@
 | 2026-07-10 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
 | 2026-09-30 | Changed files                                                          | Not required by changed files | No changed user-facing flow was detected by the artifact update.                                                                                                    |
 | 2026-09-30 | Auth UI, trusted-device flow, logout confirmation, and session restore | Not yet manually verified     | Manual QA remains recommended for trusted-device Continue, logout confirmation, dynamic health states, wrong-login validation animation, and session restore toast. |
+
+## Current Integration Validation Evidence
+
+| Date | Command | Result | Evidence / Notes |
+| --- | --- | --- | --- |
+| 2026-10-06 | npm run verify:code | Passed | CI aggregate read-only verification passed on m3/v0.11/fix/customer-support-integration; guardrails reported 273 passed / 0 failed and backend workspace tests reported 333 passed / 0 failed before artifact-status verification. |
