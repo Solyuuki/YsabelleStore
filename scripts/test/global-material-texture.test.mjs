@@ -30,7 +30,9 @@ test("global Ysabelle material texture is loaded once and shared across app shel
   assert.match(materialCss, /\.ys-material-surface::before/);
   assert.match(materialCss, /\.ys-material-surface::before[\s\S]*var\(--ys-material-facets\)/);
   assert.match(materialCss, /\.ys-material-accent::before[\s\S]*var\(--ys-material-facets\)/);
-  assert.match(materialCss, /\.ys-material-accent::before[\s\S]*opacity:\s*0\.82/);
+  assert.match(materialCss, /\.ys-material-accent::before[\s\S]*opacity:\s*0\.68/);
+  assert.match(materialCss, /background-blend-mode:\s*soft-light, soft-light, overlay/);
+  assert.match(materialCss, /filter:\s*blur\(0\.22px\)/);
   assert.match(appLayout, /app-shell-ambient ys-material-canvas/);
   assert.match(customerLayout, /customer-app ys-material-canvas/);
 });
