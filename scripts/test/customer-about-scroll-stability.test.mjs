@@ -17,13 +17,15 @@ test("About keeps native scrolling while hiding only the visual scrollbar", () =
   assert.doesNotMatch(documentScrollbarRule, /overflow(?:-y)?:\s*hidden/);
 });
 
-test("About ScrollTrigger setup avoids aggressive catch-up during native wheel scrolling", () => {
+test("About scroll UI stays synchronized during fast native wheel scrolling", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
   assert.match(discover, /discover-smarter", "0px 0px 220% 0px"/);
   assert.doesNotMatch(discover, /fastScrollEnd:\s*true/);
   assert.match(discover, /const scrub = desktop \? 0\.45 : tablet \? 0\.32 : 0\.22/);
-  assert.match(discover, /scrub:\s*0\.35/);
+  assert.match(discover, /window\.addEventListener\("scroll", requestStoryUiUpdate/);
+  assert.match(discover, /window\.requestAnimationFrame/);
+  assert.match(discover, /onLeave:\s*flushStoryUi/);
   assert.match(discover, /ScrollTrigger\.refresh\(true\)/);
 });
 
@@ -40,18 +42,21 @@ test("About chapter 02 uses the product and catalog intelligence story", () => {
   assert.match(discover, /to Catalog Ready\./);
   assert.match(discover, /Product catalog workflow from source item to catalog-ready product/);
   assert.match(discover, /label: "Barcode"/);
-  assert.match(discover, /label: "Image quality"/);
+  assert.match(discover, /label: "Quality check"/);
   assert.match(discover, /label: "Normalize"/);
   assert.match(discover, /label: "Catalog ready"/);
   assert.doesNotMatch(discover, /story-catalog__index/);
   assert.match(discover, /Sales &amp; Inventory/);
   assert.match(discover, /Forecast Intelligence/);
   assert.match(discover, /hideSectionNumber=\{isAboutExperience\}/);
-  assert.match(discover, /isAboutExperience \? "Shop with Ysabelle" : "06 \/ Shop with Ysabelle"/);
+  assert.match(discover, /discover-shop", label: "Delivery operations"/);
   assert.match(discover, /discover-progress__dot/);
   assert.match(motion, /gemini_generated_video_a80f6413\.mp4/);
   assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
-  assert.match(css, /story-catalog__steps[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(
+    css,
+    /story-catalog__steps[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/
+  );
   assert.match(css, /story-catalog__step[\s\S]*?background:\s*transparent/);
   assert.doesNotMatch(css, /story-catalog__step[\s\S]{0,500}?border-radius:\s*1rem/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
@@ -65,14 +70,16 @@ test("About progress navigator stays hidden through the welcome scene", () => {
   assert.doesNotMatch(discover, /scrollTop >= rootTop - viewportHeight \* 0\.75/);
 });
 
-
 test("About welcome uses branded premium typography without a CTA", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
   const welcomeCss = read("frontend/src/styles/about-welcome-motion.css");
 
   assert.match(discover, /Established 2019 · Pasig City/);
   assert.doesNotMatch(discover, /story-welcome__divider/);
-  assert.match(discover, /story-welcome__scroll-label">Scroll to continue<\/span>[\s\S]*?<ChevronDown/);
+  assert.match(
+    discover,
+    /story-welcome__scroll-label">Scroll to continue<\/span>[\s\S]*?<ChevronDown/
+  );
   assert.doesNotMatch(discover, /story-welcome__support[\s\S]{0,900}>Get Started</);
   assert.match(
     welcomeCss,
@@ -94,10 +101,7 @@ test("About welcome uses branded premium typography without a CTA", () => {
     welcomeCss,
     /story-mask__line--accent[\s\S]*?#625bff[\s\S]*?#a83cf0[\s\S]*?#f43f8c[\s\S]*?#ff4e9a[\s\S]*?-webkit-text-stroke:\s*0\.46px/
   );
-  assert.doesNotMatch(
-    welcomeCss,
-    /story-welcome__title[\s\S]{0,2600}?filter:\s*drop-shadow/
-  );
+  assert.doesNotMatch(welcomeCss, /story-welcome__title[\s\S]{0,2600}?filter:\s*drop-shadow/);
   assert.doesNotMatch(
     welcomeCss,
     /story-welcome__title[\s\S]{0,2600}?background-blend-mode:\s*screen/
@@ -106,28 +110,18 @@ test("About welcome uses branded premium typography without a CTA", () => {
     welcomeCss,
     /story-welcome__support strong[\s\S]*?rgb\(98 91 255 \/ 22%\)[\s\S]*?rgb\(248 249 255 \/ 78%\)/
   );
-  assert.match(
-    welcomeCss,
-    /story-welcome__support p[\s\S]*?white-space:\s*nowrap/
-  );
+  assert.match(welcomeCss, /story-welcome__support p[\s\S]*?white-space:\s*nowrap/);
   assert.match(
     welcomeCss,
     /story-welcome__scroll-cue[\s\S]*?flex-direction:\s*column[\s\S]*?story-welcome__scroll-label/
   );
-  assert.match(
-    welcomeCss,
-    /@keyframes about-welcome-scroll-cue[\s\S]*?translateY\(5px\)/
-  );
+  assert.match(welcomeCss, /@keyframes about-welcome-scroll-cue[\s\S]*?translateY\(5px\)/);
 });
-
 
 test("About welcome video keeps balanced contrast without a milky white shader", () => {
   const css = read("frontend/src/styles/about-welcome-motion.css");
 
-  assert.match(
-    css,
-    /filter:\s*saturate\(1\.045\) contrast\(1\.035\) brightness\(1\.005\)/
-  );
+  assert.match(css, /filter:\s*saturate\(1\.045\) contrast\(1\.035\) brightness\(1\.005\)/);
   assert.match(
     css,
     /\.about-welcome-motion__scrim\s*\{[\s\S]*?rgb\(10 16 38 \/ 5%\)[\s\S]*?rgb\(8 13 32 \/ 10%\)/
@@ -136,12 +130,8 @@ test("About welcome video keeps balanced contrast without a milky white shader",
     css,
     /\.about-welcome-motion__scrim\s*\{[\s\S]{0,600}?rgb\(255 255 255 \/ 18%\)/
   );
-  assert.match(
-    css,
-    /\.about-welcome-motion__edge-light\s*\{[\s\S]*?opacity:\s*0\.34/
-  );
+  assert.match(css, /\.about-welcome-motion__edge-light\s*\{[\s\S]*?opacity:\s*0\.34/);
 });
-
 
 test("About welcome-to-catalog handoff uses a vertical scrubbed fade without a visible edge bar", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
@@ -170,7 +160,6 @@ test("About welcome-to-catalog handoff uses a vertical scrubbed fade without a v
   );
 });
 
-
 test("About chapter 03 uses the approved sales and inventory motion story", () => {
   const aboutPage = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
@@ -188,25 +177,23 @@ test("About chapter 03 uses the approved sales and inventory motion story", () =
   assert.match(discover, /Sales history becomes the foundation for forecasting\./);
   assert.match(motion, /gemini_generated_video_2e78399f\.mp4/);
   assert.match(motion, /CROSSFADE_LEAD_SECONDS = 0\.85/);
-  assert.match(css, /story-sales__steps[\s\S]*?grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(
+    css,
+    /story-sales__steps[\s\S]*?grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/
+  );
   assert.match(css, /--about-catalog-sales-seam/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
-
 test("About chapter labels diverge from legacy Discover only where chapters are rebuilt", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
-  assert.match(
-    discover,
-    /const storyScenes = \[[\s\S]*?discover-location", label: "Our location"/
-  );
+  assert.match(discover, /const storyScenes = \[[\s\S]*?discover-location", label: "Our location"/);
   assert.match(
     discover,
     /const aboutStoryScenes = \[[\s\S]*?discover-location", label: "Forecast intelligence"/
   );
 });
-
 
 test("About chapter 03 matches chapter 02 desktop scroll pacing", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
@@ -220,7 +207,6 @@ test("About chapter 03 matches chapter 02 desktop scroll pacing", () => {
     /salesHandoff[\s\S]*?autoAlpha:\s*0\.82[\s\S]*?0\.9[\s\S]*?settle\(salesTimeline, 0\.99\)/
   );
 });
-
 
 test("About chapter 03 pre-reveals before pinning so the catalog-to-sales handoff does not pop", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
@@ -239,9 +225,11 @@ test("About chapter 03 pre-reveals before pinning so the catalog-to-sales handof
     /fromTo\(\s*salesKicker[\s\S]*?desktop \? 0\.68 : 0[\s\S]*?fromTo\(\s*salesSystem[\s\S]*?desktop \? 0\.994 : 0\.985/
   );
   assert.doesNotMatch(css, /story-sales__system[\s\S]{0,900}?backdrop-filter:\s*blur\(/);
-  assert.match(css, /story-sales__system[\s\S]*?background:\s*rgb\(15 21 49 \/ 91%\)[\s\S]*?translateZ\(0\)/);
+  assert.match(
+    css,
+    /story-sales__system[\s\S]*?background:\s*rgb\(15 21 49 \/ 91%\)[\s\S]*?translateZ\(0\)/
+  );
 });
-
 
 test("Discover imports the canonical storefront category presentation utility", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
@@ -253,28 +241,23 @@ test("Discover imports the canonical storefront category presentation utility", 
   assert.doesNotMatch(discover, /storefrontCategoryTodayation/);
 });
 
-
-
-
-test("About chapter 04 treats the Gemini MP4 as the forecast chart, not as a background", () => {
+test("About chapter 04 renders the approved live SARIMA preview instead of a background video", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
   const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
   const css = read("frontend/src/styles/about-forecast-intelligence.css");
 
   assert.match(discover, /className="story-forecast__visual"/);
   assert.match(discover, /<AboutForecastMotion \/>/);
-  assert.doesNotMatch(discover, /story-forecast__svg/);
-  assert.doesNotMatch(discover, /data-forecast-history/);
-  assert.doesNotMatch(discover, /data-forecast-future/);
   assert.match(discover, /From Sales History/);
-  assert.match(discover, /to Future Demand\./);
+  assert.match(discover, /To Future Demand\./);
   assert.match(discover, /Forecast model/);
   assert.match(discover, />SARIMA<\/strong>/);
-  assert.match(motion, /gemini_generated_video_9d3956f0\.mp4/);
+  assert.match(motion, /about-forecast-demo/);
+  assert.match(motion, /Annual demand forecast/);
+  assert.match(motion, /Next restock recommendation/);
+  assert.match(motion, /Canned goods/);
+  assert.doesNotMatch(motion, /<video|\.mp4/);
   assert.match(css, /story-forecast__visual[\s\S]*?width:\s*min\(100%, 1180px\)/);
-  assert.match(css, /about-forecast-motion__video[\s\S]*?object-fit:\s*contain/);
-  assert.doesNotMatch(css, /story-forecast__plot/);
-  assert.doesNotMatch(css, /story-forecast__label/);
 });
 
 test("About chapter 04 uses a stacked cinematic layout distinct from chapters 02 and 03", () => {
@@ -289,30 +272,23 @@ test("About chapter 04 uses a stacked cinematic layout distinct from chapters 02
   assert.doesNotMatch(css, /grid-template-columns:\s*minmax\(0, 1\.15fr\)/);
 });
 
-test("About chapter 04 reveals naturally without a long pinned scroll runway", () => {
+test("About chapter 04 holds on desktop until the forecast animation completes", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
 
   assert.match(
     discover,
-    /const forecastTimeline = gsap\.timeline\([\s\S]*?start:\s*desktop \? "top 78%"[\s\S]*?end:\s*desktop \? "bottom 22%"/
+    /const forecastTimeline = gsap\.timeline\([\s\S]*?start:\s*"top top\+=76"[\s\S]*?Math\.max\(1500, Math\.round\(window\.innerHeight \* 1\.85\)\)[\s\S]*?pin:\s*location[\s\S]*?pinSpacing:\s*true[\s\S]*?scrub:\s*0\.32/
   );
-  assert.doesNotMatch(
-    discover,
-    /const forecastTimeline = gsap\.timeline\([\s\S]*?pin:\s*desktop \? forecastStage/
-  );
-  assert.match(discover, /settle\(forecastTimeline, 0\.86\)/);
+  assert.match(discover, /settle\(forecastTimeline, desktop \? 0\.64 : 0\.92\)/);
 });
 
-
-test("Forecast MP4 resumes after React StrictMode effect cleanup", () => {
+test("Forecast preview is StrictMode-safe because it is a declarative DOM chart", () => {
   const main = read("frontend/src/main.tsx");
   const motion = read("frontend/src/components/customer/about/AboutForecastMotion.tsx");
 
   assert.match(main, /<React\.StrictMode>/);
-  assert.match(motion, /const resumeActiveVideo = \(\) =>/);
-  assert.match(motion, /videoRefs\[activeIndexRef\.current\]\.current/);
-  assert.match(motion, /void activeVideo\.play\(\)\.catch\(\(\) => undefined\)/);
-  assert.match(motion, /document\.addEventListener\("visibilitychange", handleVisibilityChange\)/);
-  assert.match(motion, /window\.addEventListener\("focus", handleWindowFocus\)/);
-  assert.match(motion, /\}, \[reduceMotion\]\);/);
+  assert.match(motion, /const annualForecast = \[/);
+  assert.match(motion, /<svg className="about-forecast-demo__chart"/);
+  assert.match(motion, /about-forecast-demo__recommendation/);
+  assert.doesNotMatch(motion, /useEffect|requestAnimationFrame|<video/);
 });

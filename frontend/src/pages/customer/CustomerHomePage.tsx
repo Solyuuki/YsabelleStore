@@ -1,10 +1,4 @@
-import {
-  ArrowRight,
-  MapPin,
-  ShieldCheck,
-  ShoppingBasket,
-  Truck
-} from "lucide-react";
+import { ArrowRight, MapPin, ShieldCheck, ShoppingBasket, Truck } from "lucide-react";
 import { useEffect, useState, type CSSProperties } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
@@ -183,45 +177,45 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
 
           <section className="customer-section home-essentials">
             <div className="customer-container">
-            <SectionHeading
-              action="Shop all products"
-              actionHref="/shop"
-              eyebrow="Everyday picks"
-              motion="essentials"
-              navigate={navigate}
-              title="Everyday Essentials"
-            >
-              A curated selection of everyday products from Ysabelle&apos;s catalog.
-            </SectionHeading>
+              <SectionHeading
+                action="Shop all products"
+                actionHref="/shop"
+                eyebrow="Everyday picks"
+                motion="essentials"
+                navigate={navigate}
+                title="Everyday Essentials"
+              >
+                A curated selection of everyday products from Ysabelle&apos;s catalog.
+              </SectionHeading>
 
-            {products.status === "loading" ? <ProductSkeletons /> : null}
-            {products.status === "error" ? (
-              <CompactSectionState
-                message={products.error}
-                onRetry={retry}
-                title="The Essentials Shelf Could Not Be Loaded"
-              />
-            ) : null}
-            {products.status === "success" && everydayProducts.length ? (
-              <HomeProductRail label="Everyday Essentials products">
-                {everydayProducts.map((product, index) => (
-                  <HomeProductCard
-                    key={product.id}
-                    motion="essentials"
-                    navigate={navigate}
-                    product={product}
-                    tourTarget={index === 0}
-                    revealIndex={index}
-                  />
-                ))}
-              </HomeProductRail>
-            ) : null}
-            {products.status === "success" && !everydayProducts.length ? (
-              <CompactSectionState
-                message="Verified product imagery is still being added. Browse again as the catalog expands."
-                title="More Everyday Picks Are Coming"
-              />
-            ) : null}
+              {products.status === "loading" ? <ProductSkeletons /> : null}
+              {products.status === "error" ? (
+                <CompactSectionState
+                  message={products.error}
+                  onRetry={retry}
+                  title="The Essentials Shelf Could Not Be Loaded"
+                />
+              ) : null}
+              {products.status === "success" && everydayProducts.length ? (
+                <HomeProductRail label="Everyday Essentials products">
+                  {everydayProducts.map((product, index) => (
+                    <HomeProductCard
+                      key={product.id}
+                      motion="essentials"
+                      navigate={navigate}
+                      product={product}
+                      tourTarget={index === 0}
+                      revealIndex={index}
+                    />
+                  ))}
+                </HomeProductRail>
+              ) : null}
+              {products.status === "success" && !everydayProducts.length ? (
+                <CompactSectionState
+                  message="Verified product imagery is still being added. Browse again as the catalog expands."
+                  title="More Everyday Picks Are Coming"
+                />
+              ) : null}
             </div>
           </section>
         </div>
@@ -391,20 +385,40 @@ function CategoryRetailBackdrop() {
 
         <g className="home-categories__portal-ceiling">
           <path d="M-120 122C258 -26 554 -10 798 86C1046 -10 1346 -22 1720 126" />
-          <path className="home-categories__portal-line--soft" d="M-108 168C272 34 548 38 800 122C1056 34 1338 28 1706 170" />
-          <path className="home-categories__portal-line--inner" d="M92 96C330 20 568 24 800 104C1034 24 1268 20 1508 98" />
+          <path
+            className="home-categories__portal-line--soft"
+            d="M-108 168C272 34 548 38 800 122C1056 34 1338 28 1706 170"
+          />
+          <path
+            className="home-categories__portal-line--inner"
+            d="M92 96C330 20 568 24 800 104C1034 24 1268 20 1508 98"
+          />
         </g>
 
         <g className="home-categories__portal-side home-categories__portal-side--left">
           <path d="M-54 80C112 116 214 230 232 378C242 486 214 592 150 690" />
-          <path className="home-categories__portal-line--soft" d="M-14 108C126 142 198 246 206 380C214 478 190 568 134 654" />
-          <path className="home-categories__portal-fill" d="M-80 58C106 94 248 224 262 382C274 520 230 650 124 760L0 804H-80Z" fill="url(#categoryPortalBlue)" />
+          <path
+            className="home-categories__portal-line--soft"
+            d="M-14 108C126 142 198 246 206 380C214 478 190 568 134 654"
+          />
+          <path
+            className="home-categories__portal-fill"
+            d="M-80 58C106 94 248 224 262 382C274 520 230 650 124 760L0 804H-80Z"
+            fill="url(#categoryPortalBlue)"
+          />
         </g>
 
         <g className="home-categories__portal-side home-categories__portal-side--right">
           <path d="M1654 82C1486 116 1382 232 1366 380C1354 490 1384 594 1448 692" />
-          <path className="home-categories__portal-line--soft" d="M1614 110C1472 144 1400 250 1392 382C1386 482 1410 570 1466 658" />
-          <path className="home-categories__portal-fill" d="M1680 60C1494 96 1350 226 1338 384C1326 522 1370 654 1478 762L1600 806H1680Z" fill="url(#categoryPortalViolet)" />
+          <path
+            className="home-categories__portal-line--soft"
+            d="M1614 110C1472 144 1400 250 1392 382C1386 482 1410 570 1466 658"
+          />
+          <path
+            className="home-categories__portal-fill"
+            d="M1680 60C1494 96 1350 226 1338 384C1326 522 1370 654 1478 762L1600 806H1680Z"
+            fill="url(#categoryPortalViolet)"
+          />
         </g>
 
         <g className="home-categories__portal-sparkles">
@@ -756,8 +770,8 @@ function HomeNextStep({ navigate }: { navigate: (path: string) => void }) {
               <span>Pay when it&apos;s delivered.</span>
             </h2>
             <p className="home-next-step__lede">
-              Order everyday essentials online and pay cash when your order arrives.
-              Simple, familiar, and convenient.
+              Order everyday essentials online and pay cash when your order arrives. Simple,
+              familiar, and convenient.
             </p>
 
             <div className="home-next-step__meta" aria-label="Ordering highlights">
@@ -791,7 +805,6 @@ function HomeNextStep({ navigate }: { navigate: (path: string) => void }) {
 
           <HomeNextStepVisual />
         </div>
-
       </div>
     </section>
   );
@@ -825,7 +838,13 @@ function HomeNextStepVisual() {
             <stop offset="100%" stopColor="#7658ef" />
           </linearGradient>
           <filter id="nextStepShadow" x="-35%" y="-35%" width="170%" height="190%">
-            <feDropShadow dx="0" dy="18" floodColor="#6657d8" floodOpacity="0.18" stdDeviation="16" />
+            <feDropShadow
+              dx="0"
+              dy="18"
+              floodColor="#6657d8"
+              floodOpacity="0.18"
+              stdDeviation="16"
+            />
           </filter>
         </defs>
 
@@ -838,35 +857,71 @@ function HomeNextStepVisual() {
           d="M118 104C264 18 536 48 668 170"
         />
 
-        <g className="home-next-step__floating-bag home-next-step__floating-bag--pink" transform="translate(458 42) rotate(8)">
+        <g
+          className="home-next-step__floating-bag home-next-step__floating-bag--pink"
+          transform="translate(458 42) rotate(8)"
+        >
           <path d="M16 30H104L96 118H24Z" fill="url(#nextStepBagPink)" />
-          <path d="M40 34C40 6 80 6 80 34" fill="none" stroke="#e766b1" strokeLinecap="round" strokeWidth="10" />
+          <path
+            d="M40 34C40 6 80 6 80 34"
+            fill="none"
+            stroke="#e766b1"
+            strokeLinecap="round"
+            strokeWidth="10"
+          />
         </g>
 
-        <g className="home-next-step__floating-bag home-next-step__floating-bag--violet" transform="translate(596 80) rotate(12)">
+        <g
+          className="home-next-step__floating-bag home-next-step__floating-bag--violet"
+          transform="translate(596 80) rotate(12)"
+        >
           <path d="M12 28H88L82 104H18Z" fill="url(#nextStepBagViolet)" />
-          <path d="M34 30C34 8 68 8 68 30" fill="none" stroke="#6547d7" strokeLinecap="round" strokeWidth="9" />
+          <path
+            d="M34 30C34 8 68 8 68 30"
+            fill="none"
+            stroke="#6547d7"
+            strokeLinecap="round"
+            strokeWidth="9"
+          />
         </g>
 
-        <g className="home-next-step__cart" filter="url(#nextStepShadow)" transform="translate(236 128)">
+        <g
+          className="home-next-step__cart"
+          filter="url(#nextStepShadow)"
+          transform="translate(236 128)"
+        >
           <g transform="translate(84 18)">
             <path d="M18 46H104L96 154H28Z" fill="url(#nextStepBagPink)" />
-            <path d="M42 48C42 14 82 14 82 48" fill="none" stroke="#e466b4" strokeLinecap="round" strokeWidth="11" />
+            <path
+              d="M42 48C42 14 82 14 82 48"
+              fill="none"
+              stroke="#e466b4"
+              strokeLinecap="round"
+              strokeWidth="11"
+            />
           </g>
           <g transform="translate(166 0)">
             <path d="M18 46H114L104 164H30Z" fill="url(#nextStepBagBlue)" />
-            <path d="M48 48C48 10 88 10 88 48" fill="none" stroke="#5b62d9" strokeLinecap="round" strokeWidth="11" />
+            <path
+              d="M48 48C48 10 88 10 88 48"
+              fill="none"
+              stroke="#5b62d9"
+              strokeLinecap="round"
+              strokeWidth="11"
+            />
           </g>
           <g transform="translate(252 40)">
             <path d="M18 42H92L86 136H26Z" fill="url(#nextStepBagViolet)" />
-            <path d="M40 44C40 16 72 16 72 44" fill="none" stroke="#6547d7" strokeLinecap="round" strokeWidth="9" />
+            <path
+              d="M40 44C40 16 72 16 72 44"
+              fill="none"
+              stroke="#6547d7"
+              strokeLinecap="round"
+              strokeWidth="9"
+            />
           </g>
 
-          <path
-            d="M54 126H382L352 326H104Z"
-            fill="url(#nextStepBasket)"
-            opacity="0.95"
-          />
+          <path d="M54 126H382L352 326H104Z" fill="url(#nextStepBasket)" opacity="0.95" />
           <path
             d="M52 126H382"
             fill="none"

@@ -108,12 +108,7 @@
 .home-product-rail__control:not(:disabled):hover,
 .home-product-rail__control:not(:disabled):focus-visible {
   border-color: rgb(255 255 255 / 82%);
-  background: linear-gradient(
-    135deg,
-    #8f84f7 0%,
-    #9f83f4 48%,
-    #c48ff0 100%
-  );
+  background: linear-gradient(135deg, #8f84f7 0%, #9f83f4 48%, #c48ff0 100%);
   box-shadow:
     0 12px 28px rgb(122 92 235 / 24%),
     0 0 0 2px rgb(255 255 255 / 72%),
@@ -129,12 +124,7 @@
 
 .home-product-rail__control:not(:disabled):active {
   border-color: rgb(255 255 255 / 72%);
-  background: linear-gradient(
-    135deg,
-    #8173ef 0%,
-    #9274ee 48%,
-    #b67ee8 100%
-  );
+  background: linear-gradient(135deg, #8173ef 0%, #9274ee 48%, #b67ee8 100%);
   box-shadow:
     0 8px 18px rgb(122 92 235 / 20%),
     0 0 0 2px rgb(255 255 255 / 58%);

@@ -47,8 +47,14 @@ export function AboutForecastMotion() {
               <strong>Illustrative annual unit demand</strong>
             </div>
             <div className="about-forecast-demo__legend">
-              <span><i className="is-actual" />Observed</span>
-              <span><i className="is-forecast" />Forecast</span>
+              <span>
+                <i className="is-actual" />
+                Observed
+              </span>
+              <span>
+                <i className="is-forecast" />
+                Forecast
+              </span>
             </div>
           </div>
 
@@ -74,11 +80,21 @@ export function AboutForecastMotion() {
               </g>
 
               <g className="about-forecast-demo__y-labels">
-                <text x="16" y="75">36k</text>
-                <text x="16" y="150">30k</text>
-                <text x="16" y="225">24k</text>
-                <text x="16" y="300">18k</text>
-                <text x="16" y="375">12k</text>
+                <text x="16" y="75">
+                  36k
+                </text>
+                <text x="16" y="150">
+                  30k
+                </text>
+                <text x="16" y="225">
+                  24k
+                </text>
+                <text x="16" y="300">
+                  18k
+                </text>
+                <text x="16" y="375">
+                  12k
+                </text>
               </g>
 
               <path
@@ -86,8 +102,16 @@ export function AboutForecastMotion() {
                 d="M500 172 C604 132 696 112 780 105 C823 100 850 91 872 78 L872 158 C850 165 823 168 780 172 C695 180 603 202 500 246 Z"
                 fill="url(#aboutForecastBand)"
               />
-              <line className="about-forecast-demo__forecast-divider" x1="500" y1="64" x2="500" y2="370" />
-              <text className="about-forecast-demo__forecast-label" x="516" y="88">FORECAST STARTS</text>
+              <line
+                className="about-forecast-demo__forecast-divider"
+                x1="500"
+                y1="64"
+                x2="500"
+                y2="370"
+              />
+              <text className="about-forecast-demo__forecast-label" x="516" y="88">
+                FORECAST STARTS
+              </text>
 
               <path
                 className="about-forecast-demo__actual-line"
@@ -114,7 +138,10 @@ export function AboutForecastMotion() {
 
             <div className="about-forecast-demo__years">
               {annualForecast.map((item) => (
-                <div className={item.state === "forecast" ? "is-forecast" : undefined} key={item.year}>
+                <div
+                  className={item.state === "forecast" ? "is-forecast" : undefined}
+                  key={item.year}
+                >
                   <strong>{item.value}</strong>
                   <span>{item.year}</span>
                 </div>
@@ -139,14 +166,28 @@ export function AboutForecastMotion() {
 
           <div className="about-forecast-demo__restock-value">
             <span>Recommended quantity</span>
-            <strong>42 <small>units</small></strong>
+            <strong>
+              42 <small>units</small>
+            </strong>
           </div>
 
           <div className="about-forecast-demo__recommendation-grid">
-            <div><span>Demand signal</span><strong>High</strong></div>
-            <div><span>Restock window</span><strong>11–14 days</strong></div>
-            <div><span>Seasonality</span><strong>Detected</strong></div>
-            <div><span>Confidence</span><strong>Stable</strong></div>
+            <div>
+              <span>Demand signal</span>
+              <strong>High</strong>
+            </div>
+            <div>
+              <span>Restock window</span>
+              <strong>11–14 days</strong>
+            </div>
+            <div>
+              <span>Seasonality</span>
+              <strong>Detected</strong>
+            </div>
+            <div>
+              <span>Confidence</span>
+              <strong>Stable</strong>
+            </div>
           </div>
         </aside>
       </div>

@@ -5,11 +5,7 @@
   margin-top: -1px;
   overflow: hidden;
   background:
-    linear-gradient(
-      to bottom,
-      transparent 0 86%,
-      var(--story-seam-23) 97% 100%
-    ),
+    linear-gradient(to bottom, transparent 0 86%, var(--story-seam-23) 97% 100%),
     radial-gradient(circle at 12% 18%, rgb(0 140 255 / 10%), transparent 30%),
     radial-gradient(circle at 88% 72%, rgb(168 60 240 / 9%), transparent 34%),
     linear-gradient(135deg, #f5f9ff 0%, #f8f7ff 48%, #fff7fd 100%);
@@ -75,25 +71,23 @@
   line-height: 1.02;
 }
 
-.about-experience
-  .discover-story
-  .story-catalog__copy
-  .story-mask:last-child {
+.about-experience .discover-story .story-catalog__copy .story-mask:last-child {
   overflow: visible;
   padding: 0.08em 0.14em 0.42em 0.08em;
 }
 
-.about-experience
-  .discover-story
-  .story-catalog__copy
-  .story-mask:last-child
-  .story-mask__line {
+.about-experience .discover-story .story-catalog__copy .story-mask:last-child .story-mask__line {
   display: inline-block;
   width: max-content;
   max-width: 100%;
   overflow: visible;
   padding: 0.04em 0.16em 0.26em 0.04em;
-  background: linear-gradient(105deg, var(--story-indigo), var(--story-violet), var(--story-magenta));
+  background: linear-gradient(
+    105deg,
+    var(--story-indigo),
+    var(--story-violet),
+    var(--story-magenta)
+  );
   background-clip: text;
   color: transparent;
   font-style: italic;

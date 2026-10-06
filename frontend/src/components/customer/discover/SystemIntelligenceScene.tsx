@@ -57,7 +57,8 @@ const previewStages: PreviewStage[] = [
     id: "decision",
     label: "Decision",
     title: "Restock decision support",
-    description: "Forecast and inventory context are summarized into a reviewable replenishment signal.",
+    description:
+      "Forecast and inventory context are summarized into a reviewable replenishment signal.",
     icon: BarChart3,
     status: "Decision support"
   },
@@ -84,15 +85,7 @@ const historyPoints = historySeries
   .map((value, index) => `${36 + index * 48},${152 - (value - 34) * 1.95}`)
   .join(" ");
 
-function Metric({
-  label,
-  value,
-  note
-}: {
-  label: string;
-  value: string;
-  note?: string;
-}) {
+function Metric({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="system-preview__metric">
       <span>{label}</span>
@@ -120,8 +113,16 @@ function SalePanel() {
           <span className="system-preview__badge system-preview__badge--live">Completed</span>
         </div>
         <div className="system-preview__table system-preview__table--sale">
-          <span>Product</span><span>Qty</span><span>Unit price</span><span>Total</span><span>Status</span>
-          <strong>Classic Cola 1.5L</strong><strong>2</strong><strong>₱28.00</strong><strong>₱56.00</strong><strong>Recorded</strong>
+          <span>Product</span>
+          <span>Qty</span>
+          <span>Unit price</span>
+          <span>Total</span>
+          <span>Status</span>
+          <strong>Classic Cola 1.5L</strong>
+          <strong>2</strong>
+          <strong>₱28.00</strong>
+          <strong>₱56.00</strong>
+          <strong>Recorded</strong>
         </div>
       </div>
     </div>
@@ -146,10 +147,21 @@ function StockPanel() {
           <span className="system-preview__badge">Sale posted</span>
         </div>
         <div className="system-preview__inventory-row">
-          <div><span>Before</span><strong>24</strong></div>
-          <div><span>Sold</span><strong>−2</strong></div>
-          <div><span>Usable stock</span><strong>22</strong></div>
-          <div className="system-preview__stock-bar"><i style={{ width: "91.6%" }} /></div>
+          <div>
+            <span>Before</span>
+            <strong>24</strong>
+          </div>
+          <div>
+            <span>Sold</span>
+            <strong>−2</strong>
+          </div>
+          <div>
+            <span>Usable stock</span>
+            <strong>22</strong>
+          </div>
+          <div className="system-preview__stock-bar">
+            <i style={{ width: "91.6%" }} />
+          </div>
         </div>
       </div>
     </div>
@@ -189,7 +201,13 @@ function HistoryPanel() {
           ))}
         </svg>
         <div className="system-preview__chart-labels">
-          <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span><span>Dec</span>
+          <span>Jan</span>
+          <span>Mar</span>
+          <span>May</span>
+          <span>Jul</span>
+          <span>Sep</span>
+          <span>Nov</span>
+          <span>Dec</span>
         </div>
       </figure>
     </div>
@@ -212,11 +230,21 @@ function ForecastPanel() {
             <strong>Observed history → forecast</strong>
           </div>
           <div className="system-preview__legend">
-            <span><i className="is-history" />History</span>
-            <span><i className="is-forecast" />Forecast</span>
+            <span>
+              <i className="is-history" />
+              History
+            </span>
+            <span>
+              <i className="is-forecast" />
+              Forecast
+            </span>
           </div>
         </figcaption>
-        <svg viewBox="0 0 590 190" role="img" aria-label="Illustrative historical demand and SARIMA forecast">
+        <svg
+          viewBox="0 0 590 190"
+          role="img"
+          aria-label="Illustrative historical demand and SARIMA forecast"
+        >
           <defs>
             <linearGradient id="systemForecastBand" x1="0" x2="1">
               <stop offset="0%" stopColor="#2563eb" stopOpacity="0.16" />
@@ -231,12 +259,23 @@ function ForecastPanel() {
             d="M342 104 C394 78 445 65 500 60 C529 57 548 51 566 43 L566 105 C538 111 512 114 488 116 C440 120 390 133 342 151 Z"
             fill="url(#systemForecastBand)"
           />
-          <path className="system-preview__history-path" d="M36 144 C86 131 130 114 176 119 S250 84 296 94 S323 108 342 111" />
-          <path className="system-preview__forecast-path" d="M342 111 C388 94 420 77 456 72 S518 67 566 51" />
+          <path
+            className="system-preview__history-path"
+            d="M36 144 C86 131 130 114 176 119 S250 84 296 94 S323 108 342 111"
+          />
+          <path
+            className="system-preview__forecast-path"
+            d="M342 111 C388 94 420 77 456 72 S518 67 566 51"
+          />
           <line className="system-preview__divider" x1="342" x2="342" y1="36" y2="164" />
         </svg>
         <div className="system-preview__chart-labels">
-          <span>Observed</span><span>Forecast starts</span><span>+3 mo</span><span>+6 mo</span><span>+9 mo</span><span>+12 mo</span>
+          <span>Observed</span>
+          <span>Forecast starts</span>
+          <span>+3 mo</span>
+          <span>+6 mo</span>
+          <span>+9 mo</span>
+          <span>+12 mo</span>
         </div>
       </figure>
     </div>
@@ -264,13 +303,20 @@ function DecisionPanel() {
         <div className="system-preview__decision-grid">
           <div className="system-preview__decision-inputs">
             {rows.map(([label, value]) => (
-              <div key={label}><span>{label}</span><strong>{value}</strong></div>
+              <div key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
             ))}
           </div>
           <div className="system-preview__decision-result">
             <span>Recommended restock</span>
-            <strong>28 <small>units</small></strong>
-            <p>Projected demand exceeds available inventory during the next replenishment window.</p>
+            <strong>
+              28 <small>units</small>
+            </strong>
+            <p>
+              Projected demand exceeds available inventory during the next replenishment window.
+            </p>
           </div>
         </div>
       </div>
@@ -327,10 +373,22 @@ function ReviewPanel() {
           </span>
         </div>
         <div className="system-preview__review-summary">
-          <div><span>Product</span><strong>Classic Cola 1.5L</strong></div>
-          <div><span>Suggested quantity</span><strong>28 units</strong></div>
-          <div><span>Owner adjustment</span><strong>{adjustedQuantity} units</strong></div>
-          <div><span>Decision</span><strong>{decisionLabel}</strong></div>
+          <div>
+            <span>Product</span>
+            <strong>Classic Cola 1.5L</strong>
+          </div>
+          <div>
+            <span>Suggested quantity</span>
+            <strong>28 units</strong>
+          </div>
+          <div>
+            <span>Owner adjustment</span>
+            <strong>{adjustedQuantity} units</strong>
+          </div>
+          <div>
+            <span>Decision</span>
+            <strong>{decisionLabel}</strong>
+          </div>
         </div>
         <div className="system-preview__actions" aria-label="Interactive demo review actions">
           <button
@@ -392,9 +450,18 @@ function RestockPanel() {
           <span className="system-preview__badge">Demo order</span>
         </div>
         <div className="system-preview__order-meta">
-          <div><span>Requested units</span><strong>30</strong></div>
-          <div><span>Received</span><strong>0%</strong></div>
-          <div><span>Source</span><strong>Forecast-driven plan</strong></div>
+          <div>
+            <span>Requested units</span>
+            <strong>30</strong>
+          </div>
+          <div>
+            <span>Received</span>
+            <strong>0%</strong>
+          </div>
+          <div>
+            <span>Source</span>
+            <strong>Forecast-driven plan</strong>
+          </div>
         </div>
         <div className="system-preview__status-track">
           {steps.map((step, index) => (
@@ -497,7 +564,9 @@ export function SystemIntelligenceScene({
                 <li className={index === 0 ? "system-preview__first-stage" : undefined} key={title}>
                   <button
                     aria-current={index === activeStage ? "step" : undefined}
-                    aria-describedby={index === 0 && showStageHint ? "system-preview-stage-hint" : undefined}
+                    aria-describedby={
+                      index === 0 && showStageHint ? "system-preview-stage-hint" : undefined
+                    }
                     className={[
                       index === activeStage ? "is-active" : "",
                       index === 0 && showStageHint ? "is-hint-target" : ""

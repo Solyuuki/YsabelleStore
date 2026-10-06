@@ -281,7 +281,10 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
         </div>
 
         <div className="story-delivery__visual" data-delivery-visual>
-          <div className={`story-delivery__frame${deliveryVideoReady ? " is-video-ready" : ""}`} data-delivery-frame>
+          <div
+            className={`story-delivery__frame${deliveryVideoReady ? " is-video-ready" : ""}`}
+            data-delivery-frame
+          >
             <div aria-hidden="true" className="story-delivery__fallback">
               <Route />
               <span>Delivery network preview</span>
@@ -299,7 +302,9 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
                   data-delivery-video
                   key={index}
                   muted
-                  onCanPlay={index === 0 ? (event) => markDeliveryReady(event.currentTarget) : undefined}
+                  onCanPlay={
+                    index === 0 ? (event) => markDeliveryReady(event.currentTarget) : undefined
+                  }
                   onEnded={() => beginDeliveryCrossfade(index)}
                   onLoadedData={
                     index === 0 ? (event) => markDeliveryReady(event.currentTarget) : undefined

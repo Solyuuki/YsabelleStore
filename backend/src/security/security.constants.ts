@@ -128,6 +128,11 @@ export const AUTH_RATE_LIMITS = {
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     maxAttempts: 3,
     scope: "customer-username-claim-target"
+  },
+  customerSupportTicketCreate: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 8,
+    scope: "customer-support-ticket-create"
   }
 } as const;
 

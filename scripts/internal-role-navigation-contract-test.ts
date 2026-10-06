@@ -21,7 +21,7 @@ for (const path of ownerOnlyPaths) {
   assert.equal(canRoleAccessRoute(route, "STAFF"), false, `${path} must be denied to STAFF`);
 }
 
-for (const path of ["/dashboard", "/pos", "/inventory", "/sales"] as const) {
+for (const path of ["/dashboard", "/pos", "/inventory", "/sales", "/customer-support"] as const) {
   const route = appRoutes.find((item) => item.path === path);
   assert.ok(route, `${path} must be registered`);
   assert.equal(canRoleAccessRoute(route, "OWNER"), true, `${path} must be available to OWNER`);
@@ -56,7 +56,8 @@ for (const pageName of [
   "HistoricalSalesPage",
   "ReportsPage",
   "SettingsPage",
-  "UserManagementPage"
+  "UserManagementPage",
+  "CustomerSupportInboxPage"
 ]) {
   assert.match(appShellSource, new RegExp(`const ${pageName} = lazy\\(\\(\\) =>`));
 }
@@ -76,6 +77,7 @@ for (const pageName of [
   "CustomerRegisterPage",
   "CustomerAccountRecoveryPage",
   "CustomerAccountPage",
+  "CustomerSupportPage",
   "CustomerNotFoundPage"
 ]) {
   assert.match(customerAppSource, new RegExp(`const ${pageName} = lazy\\(\\(\\) =>`));
@@ -84,6 +86,11 @@ assert.doesNotMatch(
   customerAppSource,
   /import \{ AboutExperiencePage \} from "@\/pages\/customer\/AboutExperiencePage"/
 );
-assert.match(customerAppSource, /<Suspense fallback=\{<CustomerRouteFallback \/>\}>/);
+assert.match(
+  customerAppSource,
+  /fallback=\{pathname === "\/about" \? <AboutRouteFallback \/> : <CustomerRouteFallback \/>\}/
+);
+assert.match(customerAppSource, /function AboutRouteFallback\(\)/);
+assert.match(customerAppSource, /function CustomerRouteFallback\(\)/);
 
 console.log("Internal role navigation and route loading contract passed.");

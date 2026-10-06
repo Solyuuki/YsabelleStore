@@ -234,17 +234,9 @@ function initializeIntelligenceTimeline(
 
   timeline
     .to(kicker, { autoAlpha: 1, duration: 0.08, ease: "power2.out", x: 0 }, 0.02)
-    .to(
-      headline,
-      { autoAlpha: 1, duration: 0.12, ease: "power2.out", stagger: 0.025, y: 0 },
-      0.08
-    )
+    .to(headline, { autoAlpha: 1, duration: 0.12, ease: "power2.out", stagger: 0.025, y: 0 }, 0.08)
     .to(copy, { autoAlpha: 1, duration: 0.09, ease: "power2.out", y: 0 }, 0.16)
-    .to(
-      preview,
-      { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 },
-      0.22
-    )
+    .to(preview, { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 }, 0.22)
     .to(previewNav, { autoAlpha: 1, duration: 0.08, ease: "power2.out", x: 0 }, 0.28)
     .to(
       previewButtons,
@@ -257,11 +249,7 @@ function initializeIntelligenceTimeline(
       },
       0.31
     )
-    .to(
-      previewWorkspace,
-      { autoAlpha: 1, duration: 0.09, ease: "power2.out", x: 0 },
-      0.29
-    )
+    .to(previewWorkspace, { autoAlpha: 1, duration: 0.09, ease: "power2.out", x: 0 }, 0.29)
     .to(
       [previewWorkspaceBar, previewWorkspaceCopy],
       { autoAlpha: 1, duration: 0.07, ease: "power2.out", stagger: 0.02, y: 0 },
@@ -469,11 +457,7 @@ export function DiscoverPage({
 
             if (isAboutExperience) {
               welcomeTimeline
-                .to(
-                  ".about-welcome-motion",
-                  { duration: 0.38, ease: "none", opacity: 0.5 },
-                  0.6
-                )
+                .to(".about-welcome-motion", { duration: 0.38, ease: "none", opacity: 0.5 }, 0.6)
                 .to(
                   ".story-welcome__stage",
                   { autoAlpha: 0.82, duration: 0.3, ease: "none", yPercent: -2 },
@@ -583,7 +567,8 @@ export function DiscoverPage({
                   "year+=0.02"
                 );
               }
-              beginningTimeline.addLabel("eyebrow", 0.13)
+              beginningTimeline
+                .addLabel("eyebrow", 0.13)
                 .to(
                   beginningKicker,
                   { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
@@ -678,21 +663,9 @@ export function DiscoverPage({
                   });
 
                   salesPrelude
-                    .to(
-                      salesKicker,
-                      { autoAlpha: 0.68, duration: 1, ease: "none", x: -6 },
-                      0
-                    )
-                    .to(
-                      salesHeadline,
-                      { autoAlpha: 0.62, duration: 1, ease: "none", y: 8 },
-                      0
-                    )
-                    .to(
-                      salesCopy,
-                      { autoAlpha: 0.52, duration: 1, ease: "none", y: 6 },
-                      0
-                    )
+                    .to(salesKicker, { autoAlpha: 0.68, duration: 1, ease: "none", x: -6 }, 0)
+                    .to(salesHeadline, { autoAlpha: 0.62, duration: 1, ease: "none", y: 8 }, 0)
+                    .to(salesCopy, { autoAlpha: 0.52, duration: 1, ease: "none", y: 6 }, 0)
                     .to(
                       salesSystem,
                       { autoAlpha: 0.68, duration: 1, ease: "none", scale: 0.994, y: 8 },
@@ -768,7 +741,8 @@ export function DiscoverPage({
               }
             } else {
               const essentialsKicker = essentials.querySelector<HTMLElement>(".story-kicker");
-              const essentialsCount = essentials.querySelector<HTMLElement>(".story-products__count");
+              const essentialsCount =
+                essentials.querySelector<HTMLElement>(".story-products__count");
               const essentialsHeadline = essentials.querySelector<HTMLElement>(
                 ".story-products__heading .story-mask__line"
               );
@@ -782,7 +756,7 @@ export function DiscoverPage({
               const productsHandoff = essentials.querySelector<HTMLElement>(
                 ".story-products__handoff"
               );
-  
+
               if (
                 essentialsKicker &&
                 essentialsCount &&
@@ -805,7 +779,7 @@ export function DiscoverPage({
                   y: 60
                 });
                 gsap.set(productsHandoff, { scaleX: 0 });
-  
+
                 const productsTimeline = gsap.timeline({
                   scrollTrigger: {
                     trigger: essentials,
@@ -973,21 +947,9 @@ export function DiscoverPage({
                   });
 
                   forecastPrelude
-                    .to(
-                      forecastKicker,
-                      { autoAlpha: 0.72, duration: 1, ease: "none", y: 3 },
-                      0
-                    )
-                    .to(
-                      forecastHeadline,
-                      { autoAlpha: 0.66, duration: 1, ease: "none", y: 7 },
-                      0
-                    )
-                    .to(
-                      forecastLead,
-                      { autoAlpha: 0.58, duration: 1, ease: "none", y: 5 },
-                      0
-                    )
+                    .to(forecastKicker, { autoAlpha: 0.72, duration: 1, ease: "none", y: 3 }, 0)
+                    .to(forecastHeadline, { autoAlpha: 0.66, duration: 1, ease: "none", y: 7 }, 0)
+                    .to(forecastLead, { autoAlpha: 0.58, duration: 1, ease: "none", y: 5 }, 0)
                     .to(
                       forecastVisual,
                       { autoAlpha: 0.7, duration: 1, ease: "none", scale: 0.994, y: 8 },
@@ -1000,8 +962,7 @@ export function DiscoverPage({
                     ? {
                         trigger: location,
                         start: "top top+=76",
-                        end: () =>
-                          `+=${Math.max(1500, Math.round(window.innerHeight * 1.85))}`,
+                        end: () => `+=${Math.max(1500, Math.round(window.innerHeight * 1.85))}`,
                         pin: location,
                         pinSpacing: true,
                         anticipatePin: 1,
@@ -1163,10 +1124,14 @@ export function DiscoverPage({
                 location.querySelectorAll<SVGCircleElement>(".story-real-map__route circle")
               );
               const locationLead = location.querySelector<HTMLElement>(".story-location__lead");
-              const locationAddress = location.querySelector<HTMLElement>(".story-location__address");
+              const locationAddress = location.querySelector<HTMLElement>(
+                ".story-location__address"
+              );
               const locationAction = location.querySelector<HTMLElement>(".story-location__action");
-              const locationHandoff = location.querySelector<HTMLElement>(".story-location__handoff");
-  
+              const locationHandoff = location.querySelector<HTMLElement>(
+                ".story-location__handoff"
+              );
+
               if (
                 realMap &&
                 locationCopy &&
@@ -1192,7 +1157,7 @@ export function DiscoverPage({
                 gsap.set([locationLead, locationAddress], { autoAlpha: 0, x: 20 });
                 gsap.set(locationAction, { autoAlpha: 0, x: 16 });
                 gsap.set(locationHandoff, { scaleX: 0 });
-  
+
                 const locationTimeline = gsap.timeline({
                   scrollTrigger: {
                     trigger: location,
@@ -1248,14 +1213,17 @@ export function DiscoverPage({
                     { autoAlpha: 1, duration: 0.09, ease: "power1.out", stagger: 0.02, x: 0 },
                     "address"
                   )
-                  .to(locationAction, { autoAlpha: 1, duration: 0.08, ease: "power1.out", x: 0 }, 0.7)
+                  .to(
+                    locationAction,
+                    { autoAlpha: 1, duration: 0.08, ease: "power1.out", x: 0 },
+                    0.7
+                  )
                   .addLabel("complete", 0.8)
                   .to(locationHandoff, { duration: 0.04, ease: "none", scaleX: 1 }, 0.94);
                 settle(locationTimeline, 0.98);
               }
             }
           }
-
 
           let cleanupIntelligenceTimeline: (() => void) | undefined;
           const initializeIntelligence = (
@@ -1437,7 +1405,7 @@ export function DiscoverPage({
 
             const finalScene = isAboutExperience
               ? document.getElementById("discover-shop")
-              : trackedScenes.at(-1) ?? null;
+              : (trackedScenes.at(-1) ?? null);
 
             if (finalScene) {
               const finalBounds = finalScene.getBoundingClientRect();
@@ -1478,27 +1446,14 @@ export function DiscoverPage({
                 1,
                 (scrollTop - finalSceneTop) / finalScrollSpan
               );
-              const exitProgress = gsap.utils.clamp(
-                0,
-                1,
-                (finalSectionProgress - 0.7) / 0.28
-              );
+              const exitProgress = gsap.utils.clamp(0, 1, (finalSectionProgress - 0.7) / 0.28);
               const visibility = entranceProgress * (1 - exitProgress);
               const shift = (1 - visibility) * 12;
               const scale = 0.965 + visibility * 0.035;
 
-              progressNav.style.setProperty(
-                "--about-progress-opacity",
-                visibility.toFixed(3)
-              );
-              progressNav.style.setProperty(
-                "--about-progress-shift",
-                `${shift.toFixed(2)}px`
-              );
-              progressNav.style.setProperty(
-                "--about-progress-scale",
-                scale.toFixed(4)
-              );
+              progressNav.style.setProperty("--about-progress-opacity", visibility.toFixed(3));
+              progressNav.style.setProperty("--about-progress-shift", `${shift.toFixed(2)}px`);
+              progressNav.style.setProperty("--about-progress-scale", scale.toFixed(4));
               progressNav.classList.toggle("is-interactive", visibility >= 0.92);
             } else {
               const progressVisibilityStart = sceneOwnershipStarts[1] ?? rootTop;
@@ -1857,7 +1812,11 @@ export function DiscoverPage({
             >
               <AboutSalesInventoryMotion />
 
-              <div aria-label="Sales and inventory workflow stages" className="story-sales__steps" role="list">
+              <div
+                aria-label="Sales and inventory workflow stages"
+                className="story-sales__steps"
+                role="list"
+              >
                 {[
                   { Icon: ShoppingCart, label: "Sale recorded" },
                   { Icon: Package, label: "Stock deducted" },
@@ -1880,7 +1839,11 @@ export function DiscoverPage({
           <span aria-hidden="true" className="story-products__handoff" />
         </section>
       ) : (
-        <section className="story-scene story-products" id="discover-essentials" ref={shelfSceneRef}>
+        <section
+          className="story-scene story-products"
+          id="discover-essentials"
+          ref={shelfSceneRef}
+        >
           <div className="customer-container story-products__stage" data-story-motion>
             <div className="story-products__heading">
               <span className="story-kicker">
@@ -1896,7 +1859,7 @@ export function DiscoverPage({
               </h2>
               <p>The shelf fills category by category, from daily groceries to household needs.</p>
             </div>
-  
+
             <div className="story-shelf">
               <ul aria-label="Store product and category shelf">
                 {essentialShelfItems.map((item, index) => (
@@ -1941,7 +1904,8 @@ export function DiscoverPage({
               <h2 className="story-display-safe" id="about-forecast-title">
                 <span className="story-mask">
                   <span className="story-mask__line">
-                    From Sales History <em className="story-forecast__emphasis">To Future Demand.</em>
+                    From Sales History{" "}
+                    <em className="story-forecast__emphasis">To Future Demand.</em>
                   </span>
                 </span>
               </h2>
@@ -1996,7 +1960,7 @@ export function DiscoverPage({
                 </span>
               </figcaption>
             </figure>
-  
+
             <div className="story-location__copy">
               <span className="story-kicker">
                 {isAboutExperience ? "Our location" : "04 / Our location"}
@@ -2054,7 +2018,7 @@ export function DiscoverPage({
                 Start shopping <ArrowRight aria-hidden="true" size={18} />
               </CustomerLink>
             </div>
-  
+
             <div className="story-live-store">
               <div className="story-live-store__bar">
                 <span>
@@ -2075,12 +2039,12 @@ export function DiscoverPage({
                 Search the real catalog
                 <ArrowRight aria-hidden="true" />
               </CustomerLink>
-  
+
               {catalogStatus === "ready" && showcaseProducts.length ? (
                 <div className="story-live-store__products">
                   {showcaseProducts.map((product, slotIndex) => {
                     const outOfStock = product.availableStock <= 0;
-  
+
                     return (
                       <article className="story-live-product" key={`${product.id}-${slotIndex}`}>
                         <CustomerLink href={`/product/${product.id}`} navigate={navigate}>

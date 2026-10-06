@@ -36,6 +36,11 @@ const SalesPage = lazy(() =>
 const DeliveriesPage = lazy(() =>
   import("@/pages/DeliveriesPage").then(({ DeliveriesPage }) => ({ default: DeliveriesPage }))
 );
+const CustomerSupportInboxPage = lazy(() =>
+  import("@/pages/CustomerSupportInboxPage").then(({ CustomerSupportInboxPage }) => ({
+    default: CustomerSupportInboxPage
+  }))
+);
 const ForecastPage = lazy(() =>
   import("@/pages/ForecastPage").then(({ ForecastPage }) => ({ default: ForecastPage }))
 );
@@ -68,6 +73,7 @@ const validRoutePaths = new Set<string>([
   "/receiving",
   "/sales",
   "/deliveries",
+  "/customer-support",
   "/forecast",
   "/historical-sales",
   "/reports",
@@ -340,6 +346,8 @@ function renderRoute(
       return <SalesPage />;
     case "/deliveries":
       return <DeliveriesPage />;
+    case "/customer-support":
+      return <CustomerSupportInboxPage />;
     case "/forecast":
       return <ForecastPage />;
     case "/historical-sales":
