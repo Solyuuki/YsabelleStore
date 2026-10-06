@@ -469,9 +469,11 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
             <Card>
               <CardContent className="p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  Loaded customers
+                  Total customers
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-slate-950">{accounts.length}</p>
+                <p className="mt-1 text-2xl font-semibold text-slate-950">
+                  {accountSummary.total.toLocaleString("en-PH")}
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -480,7 +482,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                   Active
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-emerald-700">
-                  {accountSummary.active}
+                  {accountSummary.active.toLocaleString("en-PH")}
                 </p>
               </CardContent>
             </Card>
@@ -490,7 +492,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                   Restricted
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-amber-700">
-                  {accountSummary.restricted}
+                  {accountSummary.restricted.toLocaleString("en-PH")}
                 </p>
               </CardContent>
             </Card>
@@ -524,22 +526,61 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
               </div>
             </CardHeader>
             <CardContent>
-              <label className="relative mb-4 block">
-                <Search
-                  aria-hidden="true"
-                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                />
-                <Input
-                  className="pl-9"
-                  onChange={(event) => setCustomerSearch(event.target.value)}
-                  placeholder={
-                    customerView === "accounts"
-                      ? "Search name, email, username or phone"
-                      : "Search reviewer, product, comment or email"
-                  }
-                  value={customerSearch}
-                />
-              </label>
+              <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px]">
+                <label className="relative block">
+                  <Search
+                    aria-hidden="true"
+                    className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                  />
+                  <Input
+                    className="pl-9"
+                    onChange={(event) => {
+                      setCustomerSearch(event.target.value);
+                      setAccountPage(1);
+                      setReviewPage(1);
+                    }}
+                    placeholder={
+                      customerView === "accounts"
+                        ? "Search name, email, username or phone"
+                        : "Search reviewer, product, comment or email"
+                    }
+                    value={customerSearch}
+                  />
+                </label>
+
+                {customerView === "accounts" ? (
+                  <select
+                    aria-label="Customer status filter"
+                    className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(event) => {
+                      setAccountStatus(event.target.value as AccountStatusFilter);
+                      setAccountPage(1);
+                    }}
+                    value={accountStatus}
+                  >
+                    <option value="ALL">All customer statuses</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="SUSPENDED">Suspended</option>
+                    <option value="BANNED">Banned</option>
+                  </select>
+                ) : (
+                  <select
+                    aria-label="Review status filter"
+                    className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(event) => {
+                      setReviewStatus(event.target.value as ReviewStatusFilter);
+                      setReviewPage(1);
+                    }}
+                    value={reviewStatus}
+                  >
+                    <option value="ALL">All review statuses</option>
+                    <option value="VISIBLE">Visible</option>
+                    <option value="HIDDEN">Hidden</option>
+                    <option value="REMOVED">Removed</option>
+                  </select>
+                )}
+              </div>
 
               {moderationError ? (
                 <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -547,18 +588,58 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                 </div>
               ) : null}
 
-              {moderationLoading ? (
+              {moderationLoading &&
+              (customerView === "accounts" ? accounts.length === 0 : reviews.length === 0) ? (
                 <div className="py-12 text-center text-sm text-slate-500">
                   Loading moderation data...
                 </div>
               ) : customerView === "accounts" ? (
-                <CustomerAccountModerationList
-                  accounts={accounts}
-                  onAudit={(account) => void openAudit(account)}
-                  onModerate={setModerationTarget}
-                />
+                <div className="space-y-4">
+                  <div className={moderationLoading ? "opacity-60 transition-opacity" : ""}>
+                    <CustomerAccountModerationList
+                      accounts={accounts}
+                      onAudit={(account) => void openAudit(account)}
+                      onModerate={setModerationTarget}
+                    />
+                  </div>
+                  <AppPagination
+                    isLoading={moderationLoading}
+                    itemLabel="customers"
+                    onPageChange={setAccountPage}
+                    onPageSizeChange={(pageSize) => {
+                      setAccountPageSize(pageSize);
+                      setAccountPage(1);
+                    }}
+                    page={accountMeta.page}
+                    pageSize={accountMeta.pageSize}
+                    pageSizeOptions={[10, 25, 50, 100]}
+                    totalItems={accountMeta.totalItems}
+                    totalPages={accountMeta.totalPages}
+                  />
+                </div>
               ) : (
-                <CustomerReviewModerationList reviews={reviews} onModerate={setModerationTarget} />
+                <div className="space-y-4">
+                  <div className={moderationLoading ? "opacity-60 transition-opacity" : ""}>
+                    <CustomerReviewModerationList
+                      reviews={reviews}
+                      onModerate={setModerationTarget}
+                    />
+                  </div>
+                  <AppPagination
+                    isLoading={moderationLoading}
+                    itemLabel="reviews"
+                    onPageChange={setReviewPage}
+                    onPageSizeChange={(pageSize) => {
+                      setReviewPageSize(pageSize);
+                      setReviewPage(1);
+                    }}
+                    page={reviewMeta.page}
+                    pageSize={reviewMeta.pageSize}
+                    pageSizeOptions={[10, 25, 50, 100]}
+                    totalItems={reviewMeta.totalItems}
+                    totalPages={reviewMeta.totalPages}
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
