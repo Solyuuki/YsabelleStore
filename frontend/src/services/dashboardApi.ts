@@ -157,6 +157,7 @@ export type NavigationBadgeSummary = {
   inventory: number;
   receiving: number;
   reports: number;
+  support: number;
 };
 
 export async function fetchDashboardSummary() {
