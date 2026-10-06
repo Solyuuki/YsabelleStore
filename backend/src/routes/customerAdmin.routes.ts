@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  getCustomerModerationAccountSummaryController,
   listCustomerAccountsForModerationController,
   listCustomerModerationAuditController,
   listProductReviewsForModerationController,
@@ -13,6 +14,7 @@ import { requireRole } from "../middleware/roleMiddleware.js";
 export const customerAdminRouter = Router();
 
 customerAdminRouter.use(requireAuth, requireRole("OWNER"));
+customerAdminRouter.get("/accounts/summary", getCustomerModerationAccountSummaryController);
 customerAdminRouter.get("/accounts", listCustomerAccountsForModerationController);
 customerAdminRouter.patch("/accounts/:id/status", updateCustomerModerationStatusController);
 customerAdminRouter.get("/accounts/:id/audit", listCustomerModerationAuditController);
