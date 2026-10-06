@@ -110,8 +110,10 @@
     86px 86px,
     auto;
   background-position: center;
-  background-blend-mode: screen, soft-light, overlay;
-  opacity: 0.82;
+  background-blend-mode: soft-light, soft-light, overlay;
+  opacity: 0.68;
+  filter: blur(0.22px);
+  transform: scale(1.01);
   content: "";
   pointer-events: none;
 }
@@ -147,7 +149,7 @@
       .customer-recovery-progress__step--active .customer-recovery-progress__dot,
       .customer-recovery-progress__step--complete .customer-recovery-progress__dot
     )::before {
-    opacity: 0.48;
+    opacity: 0.4;
   }
 }
 
