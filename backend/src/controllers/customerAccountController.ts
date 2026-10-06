@@ -4,11 +4,16 @@ import { getAuthenticatedCustomer } from "../middleware/customerAuthMiddleware.j
 import {
   changeCustomerPassword,
   claimCustomerUsername,
+  getCustomerSecuritySummary,
   listCustomerSessions,
+  requestCustomerPasswordSetup,
   revokeOtherCustomerSessions,
-  updateCustomerProfile
+  setupCustomerPassword,
+  updateCustomerProfile,
+  verifyCustomerPasswordSetupCode
 } from "../services/customerAccountService.js";
 import { confirmCustomerDeliveryReceived } from "../services/deliveryService.js";
+import { sendCustomerIdentityVerificationEmail } from "../services/customerIdentityEmailDeliveryService.js";
 import {
   addCustomerFavorite,
   listCustomerFavoriteProducts,
@@ -20,10 +25,17 @@ import {
   readCustomerSessionCookie,
   setCustomerSessionCookie
 } from "../utils/customerAuthCookie.js";
+import {
+  clearCustomerPasswordSetupGrantCookie,
+  readCustomerPasswordSetupGrantCookie,
+  setCustomerPasswordSetupGrantCookie
+} from "../utils/customerPasswordSetupCookie.js";
 import { HttpError } from "../utils/httpError.js";
 import { customerDeliveryParamsSchema } from "../validators/delivery.validators.js";
 import {
   customerPasswordChangeSchema,
+  customerPasswordSetupCompleteSchema,
+  customerPasswordSetupVerifySchema,
   customerProfileUpdateSchema,
   customerSessionRevokeOthersSchema,
   customerUsernameClaimSchema
@@ -141,6 +153,110 @@ export const claimCustomerUsernameController: RequestHandler = async (request, r
       })
     );
   } catch (error) {
+    next(error);
+  }
+};
+
+export const getCustomerSecuritySummaryController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = requireCustomer(request);
+    const security = await getCustomerSecuritySummary(customer.id);
+    response.status(200).json(createSuccessResponse("Customer security summary loaded.", security));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const requestCustomerPasswordSetupController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = requireCustomer(request);
+    clearCustomerPasswordSetupGrantCookie(response);
+
+    await requestCustomerPasswordSetup(customer.id, {
+      async sendPasswordSetupEmail({ to, verificationCode }) {
+        await sendCustomerIdentityVerificationEmail({
+          to,
+          verificationCode,
+          purpose: "password_setup"
+        });
+      }
+    });
+
+    response.status(200).json(
+      createSuccessResponse("A verification code was sent to your account email.")
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyCustomerPasswordSetupController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = requireCustomer(request);
+    const parsedBody = customerPasswordSetupVerifySchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer password setup verification request is invalid.", {
+        code: "INVALID_CUSTOMER_PASSWORD_SETUP_VERIFICATION_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    const grant = await verifyCustomerPasswordSetupCode(
+      customer.id,
+      parsedBody.data.verificationCode
+    );
+    setCustomerPasswordSetupGrantCookie(response, grant.setupGrant);
+    response.status(200).json(
+      createSuccessResponse("Verification successful. You can now set a password.")
+    );
+  } catch (error) {
+    clearCustomerPasswordSetupGrantCookie(response);
+    next(error);
+  }
+};
+
+export const setupCustomerPasswordController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = requireCustomer(request);
+    const sessionToken = requireSessionToken(request);
+    const parsedBody = customerPasswordSetupCompleteSchema.safeParse(request.body);
+    if (!parsedBody.success) {
+      throw new HttpError(400, "Customer password setup request is invalid.", {
+        code: "INVALID_CUSTOMER_PASSWORD_SETUP_REQUEST",
+        details: parsedBody.error.flatten()
+      });
+    }
+
+    const updatedCustomer = await setupCustomerPassword(
+      customer.id,
+      sessionToken,
+      readCustomerPasswordSetupGrantCookie(request) ?? "",
+      parsedBody.data.newPassword
+    );
+    clearCustomerPasswordSetupGrantCookie(response);
+    response.status(200).json(
+      createSuccessResponse("Password added to your customer account.", {
+        customer: updatedCustomer
+      })
+    );
+  } catch (error) {
+    clearCustomerPasswordSetupGrantCookie(response);
     next(error);
   }
 };

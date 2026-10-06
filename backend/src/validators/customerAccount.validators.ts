@@ -42,6 +42,18 @@ export const customerPasswordChangeSchema = z
   })
   .strict();
 
+export const customerPasswordSetupVerifySchema = z
+  .object({
+    verificationCode: z.string().trim().regex(/^\d{6}$/)
+  })
+  .strict();
+
+export const customerPasswordSetupCompleteSchema = z
+  .object({
+    newPassword: z.string().min(8).max(128)
+  })
+  .strict();
+
 export const customerSessionRevokeOthersSchema = z
   .object({
     currentPassword: currentPasswordSchema
@@ -51,4 +63,10 @@ export const customerSessionRevokeOthersSchema = z
 export type CustomerProfileUpdateInput = z.infer<typeof customerProfileUpdateSchema>;
 export type CustomerUsernameClaimInput = z.infer<typeof customerUsernameClaimSchema>;
 export type CustomerPasswordChangeInput = z.infer<typeof customerPasswordChangeSchema>;
+export type CustomerPasswordSetupVerifyInput = z.infer<
+  typeof customerPasswordSetupVerifySchema
+>;
+export type CustomerPasswordSetupCompleteInput = z.infer<
+  typeof customerPasswordSetupCompleteSchema
+>;
 export type CustomerSessionRevokeOthersInput = z.infer<typeof customerSessionRevokeOthersSchema>;

@@ -5,6 +5,7 @@ import type {
   CustomerAccountCustomerResponse,
   CustomerPasswordChangeInput,
   CustomerProfileUpdateInput,
+  CustomerSecuritySummary,
   CustomerSessionRevocationResponse,
   CustomerSessionsResponse,
   CustomerUsernameClaimInput
@@ -60,6 +61,53 @@ export async function claimCustomerUsername(input: CustomerUsernameClaimInput) {
     {
       method: "POST",
       json: input
+    }
+  );
+  return data.customer;
+}
+
+export async function fetchCustomerSecuritySummary(signal?: AbortSignal) {
+  return request<CustomerSecuritySummary>("/api/customer-account/security", {
+    method: "GET",
+    signal
+  });
+}
+
+export async function requestCustomerPasswordSetup(): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-account/password/setup/request",
+    requestOptions({ method: "POST" })
+  );
+  if (!response.success) {
+    throw new CustomerAccountRequestError(
+      response.message || "A password setup code could not be requested.",
+      response.error?.code
+    );
+  }
+}
+
+export async function verifyCustomerPasswordSetup(verificationCode: string): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-account/password/setup/verify",
+    requestOptions({
+      method: "POST",
+      json: { verificationCode }
+    })
+  );
+  if (!response.success) {
+    throw new CustomerAccountRequestError(
+      response.message || "The password setup code could not be verified.",
+      response.error?.code
+    );
+  }
+}
+
+export async function setupCustomerPassword(newPassword: string) {
+  const data = await request<CustomerAccountCustomerResponse>(
+    "/api/customer-account/password/setup",
+    {
+      method: "POST",
+      json: { newPassword }
     }
   );
   return data.customer;

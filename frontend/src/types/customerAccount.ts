@@ -1,5 +1,11 @@
 import type { Customer } from "@/types/customerAuth";
 
+export type CustomerSecuritySummary = {
+  hasPassword: boolean;
+  linkedProviders: Array<"GOOGLE" | "FACEBOOK">;
+  emailQuickSignAvailable: boolean;
+};
+
 export type CustomerSessionSummary = {
   id: string;
   current: boolean;

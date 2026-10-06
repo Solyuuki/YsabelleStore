@@ -9,12 +9,16 @@ import {
   changeCustomerPasswordController,
   claimCustomerUsernameController,
   confirmCustomerDeliveryReceivedController,
+  getCustomerSecuritySummaryController,
   listCustomerFavoritesController,
   listCustomerOrdersController,
   removeCustomerFavoriteController,
   listCustomerSessionsController,
+  requestCustomerPasswordSetupController,
   revokeOtherCustomerSessionsController,
-  updateCustomerProfileController
+  setupCustomerPasswordController,
+  updateCustomerProfileController,
+  verifyCustomerPasswordSetupController
 } from "../controllers/customerAccountController.js";
 import {
   clearCustomerCartController,
@@ -147,6 +151,26 @@ customerAccountRouter.post(
   "/password/change",
   ...sensitiveMutationMiddleware,
   changeCustomerPasswordController
+);
+customerAccountRouter.get(
+  "/security",
+  requireCustomerAuth,
+  getCustomerSecuritySummaryController
+);
+customerAccountRouter.post(
+  "/password/setup/request",
+  ...sensitiveMutationMiddleware,
+  requestCustomerPasswordSetupController
+);
+customerAccountRouter.post(
+  "/password/setup/verify",
+  ...sensitiveMutationMiddleware,
+  verifyCustomerPasswordSetupController
+);
+customerAccountRouter.post(
+  "/password/setup",
+  ...sensitiveMutationMiddleware,
+  setupCustomerPasswordController
 );
 customerAccountRouter.get("/sessions", requireCustomerAuth, listCustomerSessionsController);
 customerAccountRouter.post(

@@ -10,7 +10,7 @@ const GMAIL_SMTP_HOST = "smtp.gmail.com";
 const GMAIL_SMTP_PORT = 465;
 const SMTP_TIMEOUT_MS = 15_000;
 
-export type CustomerIdentityEmailPurpose = "registration" | "authentication";
+export type CustomerIdentityEmailPurpose = "registration" | "authentication" | "password_setup";
 
 export class CustomerIdentityEmailDeliveryError extends Error {
   public constructor() {
@@ -57,15 +57,23 @@ function formatFromAddress(email: string) {
 
 function emailCopy(purpose: CustomerIdentityEmailPurpose, verificationCode: string) {
   const title =
-    purpose === "registration" ? "Verify your email address" : "Sign in to Ysabelle Store";
+    purpose === "registration"
+      ? "Verify your email address"
+      : purpose === "password_setup"
+        ? "Set your Ysabelle Store password"
+        : "Sign in to Ysabelle Store";
   const description =
     purpose === "registration"
       ? "Use this one-time code to verify the email address for your new customer account."
-      : "Use this one-time code to sign in to your customer account.";
+      : purpose === "password_setup"
+        ? "Use this one-time code to verify your identity before adding a password to your customer account."
+        : "Use this one-time code to sign in to your customer account.";
   const subject =
     purpose === "registration"
       ? "Verify your Ysabelle Store email"
-      : "Your Ysabelle Store sign-in code";
+      : purpose === "password_setup"
+        ? "Your Ysabelle Store password setup code"
+        : "Your Ysabelle Store sign-in code";
 
   const text = [
     `Ysabelle Store - ${title}`,

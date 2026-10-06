@@ -284,6 +284,48 @@
   border: 0;
 }
 
+.customer-account-security-form {
+  display: grid;
+  gap: 14px;
+}
+
+.customer-account-auth-methods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.customer-account-auth-methods > span {
+  display: grid;
+  gap: 4px;
+  padding: 12px 13px;
+  border: 1px solid #e4e7f2;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.customer-account-auth-methods strong {
+  color: #29334a;
+  font-size: 0.86rem;
+}
+
+.customer-account-auth-methods small {
+  color: #707a91;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.customer-account-security-card .customer-account-secondary-button {
+  color: #5149dd;
+  background: #f1f0ff;
+  box-shadow: none;
+}
+
+.customer-account-security-card .customer-account-secondary-button:hover {
+  background: #e9e7ff;
+  box-shadow: none;
+}
+
 .customer-account-password-field {
   position: relative;
 }
@@ -324,7 +366,6 @@
   outline: 3px solid rgba(98, 91, 255, 0.18);
   outline-offset: 1px;
 }
-
 
 .customer-account-form-error,
 .customer-account-form-success,

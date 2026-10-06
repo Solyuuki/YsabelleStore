@@ -26,9 +26,13 @@ import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import {
   CustomerAccountRequestError,
   changeCustomerPassword,
+  fetchCustomerSecuritySummary,
   fetchCustomerSessions,
+  requestCustomerPasswordSetup,
   revokeOtherCustomerSessions,
-  updateCustomerProfile
+  setupCustomerPassword,
+  updateCustomerProfile,
+  verifyCustomerPasswordSetup
 } from "@/services/customerAccountService";
 import { fetchCustomerAddress, updateCustomerAddress } from "@/services/customerAddressService";
 import {
@@ -36,7 +40,10 @@ import {
   fetchCustomerOrders,
   startPaymongoCheckout
 } from "@/services/storefrontService";
-import type { CustomerSessionSummary } from "@/types/customerAccount";
+import type {
+  CustomerSecuritySummary,
+  CustomerSessionSummary
+} from "@/types/customerAccount";
 import { EMPTY_CUSTOMER_ADDRESS, type CustomerAddress } from "@/types/customerAddress";
 import type { StorefrontOrder } from "@/types/storefront";
 
@@ -154,6 +161,15 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [securitySummary, setSecuritySummary] = useState<CustomerSecuritySummary | null>(null);
+  const [securitySummaryLoading, setSecuritySummaryLoading] = useState(true);
+  const [passwordSetupStage, setPasswordSetupStage] = useState<
+    "idle" | "verify" | "password"
+  >("idle");
+  const [passwordSetupCode, setPasswordSetupCode] = useState("");
+  const [setupPassword, setSetupPassword] = useState("");
+  const [setupConfirmPassword, setSetupConfirmPassword] = useState("");
+  const [passwordSetupBusy, setPasswordSetupBusy] = useState(false);
 
   const [revokePassword, setRevokePassword] = useState("");
   const [revokingSessions, setRevokingSessions] = useState(false);
@@ -163,6 +179,34 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     if (!customer) return;
     setName(customer.name);
     setContactPhone(customer.defaultContactPhone ?? customer.phone ?? "");
+  }, [customer]);
+
+  useEffect(() => {
+    if (!customer) return;
+
+    const controller = new AbortController();
+    let active = true;
+    setSecuritySummaryLoading(true);
+
+    void fetchCustomerSecuritySummary(controller.signal)
+      .then((summary) => {
+        if (!active) return;
+        setSecuritySummary(summary);
+      })
+      .catch((reason) => {
+        if (!active) return;
+        if (reason instanceof DOMException && reason.name === "AbortError") return;
+        setSecuritySummary(null);
+        setPasswordError(errorMessage(reason, "Account security details could not be loaded."));
+      })
+      .finally(() => {
+        if (active) setSecuritySummaryLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [customer]);
 
   useEffect(() => {
@@ -446,6 +490,86 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
       setPasswordError(errorMessage(reason, "Your password could not be changed."));
     } finally {
       setChangingPassword(false);
+    }
+  }
+
+  async function refreshSecuritySummary() {
+    const summary = await fetchCustomerSecuritySummary();
+    setSecuritySummary(summary);
+    return summary;
+  }
+
+  async function handlePasswordSetupRequest() {
+    if (passwordSetupBusy) return;
+    setPasswordError(null);
+    setPasswordMessage(null);
+    setPasswordSetupBusy(true);
+    try {
+      await requestCustomerPasswordSetup();
+      setPasswordSetupCode("");
+      setPasswordSetupStage("verify");
+      setPasswordMessage(`We sent a 6-digit verification code to ${customer.email}.`);
+    } catch (reason) {
+      setPasswordError(errorMessage(reason, "A password setup code could not be sent."));
+    } finally {
+      setPasswordSetupBusy(false);
+    }
+  }
+
+  async function handlePasswordSetupVerification(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPasswordError(null);
+    setPasswordMessage(null);
+
+    if (!/^\d{6}$/.test(passwordSetupCode.trim())) {
+      setPasswordError("Enter the 6-digit verification code from your email.");
+      return;
+    }
+
+    setPasswordSetupBusy(true);
+    try {
+      await verifyCustomerPasswordSetup(passwordSetupCode.trim());
+      setPasswordSetupCode("");
+      setPasswordSetupStage("password");
+      setPasswordMessage("Identity verified. Create your Ysabelle Store password.");
+    } catch (reason) {
+      setPasswordError(errorMessage(reason, "The verification code could not be verified."));
+    } finally {
+      setPasswordSetupBusy(false);
+    }
+  }
+
+  async function handleFirstPasswordSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPasswordError(null);
+    setPasswordMessage(null);
+
+    if (setupPassword.length < 8 || setupPassword.length > 128) {
+      setPasswordError("Password must be between 8 and 128 characters.");
+      return;
+    }
+    if (setupPassword !== setupConfirmPassword) {
+      setPasswordError("Password and confirmation do not match.");
+      return;
+    }
+
+    setPasswordSetupBusy(true);
+    try {
+      await setupCustomerPassword(setupPassword);
+      await refreshSession();
+      await refreshSecuritySummary();
+      const refreshedSessions = await fetchCustomerSessions();
+      setSessions(refreshedSessions);
+      setSetupPassword("");
+      setSetupConfirmPassword("");
+      setPasswordSetupStage("idle");
+      setPasswordMessage(
+        "Password added. You can now sign in with either Quick Sign or your email and password."
+      );
+    } catch (reason) {
+      setPasswordError(errorMessage(reason, "Your password could not be added."));
+    } finally {
+      setPasswordSetupBusy(false);
     }
   }
 
@@ -1125,62 +1249,170 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 <p className="customer-eyebrow">Account security</p>
                 <h2 id="security-title">Password and active sessions</h2>
                 <p>
-                  Sensitive actions require your current password and never expose session secrets.
+                  Use Quick Sign or a password on the same customer account, and manage active
+                  sessions without exposing session secrets.
                 </p>
               </div>
               <ShieldCheck aria-hidden="true" size={22} />
             </div>
 
             <div className="customer-account-security-grid">
-              <form
-                className="customer-account-security-card"
-                onSubmit={(event) => void handlePasswordChange(event)}
-              >
-                <input
-                  autoComplete="username"
-                  className="customer-account-password-identity"
-                  name="username"
-                  readOnly
-                  tabIndex={-1}
-                  type="email"
-                  value={customer.email}
-                />
+              <div className="customer-account-security-card">
                 <div className="customer-account-card-title">
                   <KeyRound size={19} />
                   <div>
-                    <strong>Change password</strong>
+                    <strong>
+                      {securitySummary?.hasPassword ? "Change password" : "Password"}
+                    </strong>
                     <p>
-                      Changing it signs out every older session and keeps this browser signed in
-                      with a fresh session.
+                      {securitySummary?.hasPassword
+                        ? "Change your local password without affecting Quick Sign access."
+                        : "Quick Sign created this account without a local password. Add one after verifying your email."}
                     </p>
                   </div>
                 </div>
-                <PasswordField
-                  autoComplete="current-password"
-                  label="Current password"
-                  name="currentPassword"
-                  maxLength={128}
-                  onChange={setCurrentPassword}
-                  value={currentPassword}
-                />
-                <PasswordField
-                  autoComplete="new-password"
-                  label="New password"
-                  name="newPassword"
-                  maxLength={128}
-                  minLength={8}
-                  onChange={setNewPassword}
-                  value={newPassword}
-                />
-                <PasswordField
-                  autoComplete="new-password"
-                  label="Confirm new password"
-                  name="newPasswordConfirmation"
-                  maxLength={128}
-                  minLength={8}
-                  onChange={setConfirmPassword}
-                  value={confirmPassword}
-                />
+
+                {securitySummary ? (
+                  <div className="customer-account-auth-methods" aria-label="Sign-in methods">
+                    <span>
+                      <strong>Quick Sign</strong>
+                      <small>
+                        {securitySummary.linkedProviders.includes("GOOGLE")
+                          ? "Google connected"
+                          : "Email verification available"}
+                      </small>
+                    </span>
+                    <span>
+                      <strong>Password</strong>
+                      <small>{securitySummary.hasPassword ? "Enabled" : "Not set"}</small>
+                    </span>
+                  </div>
+                ) : null}
+
+                {securitySummaryLoading ? (
+                  <p className="customer-account-muted" role="status">
+                    Loading sign-in methods...
+                  </p>
+                ) : securitySummary?.hasPassword ? (
+                  <form
+                    className="customer-account-security-form"
+                    onSubmit={(event) => void handlePasswordChange(event)}
+                  >
+                    <input
+                      autoComplete="username"
+                      className="customer-account-password-identity"
+                      name="username"
+                      readOnly
+                      tabIndex={-1}
+                      type="email"
+                      value={customer.email}
+                    />
+                    <PasswordField
+                      autoComplete="current-password"
+                      label="Current password"
+                      name="currentPassword"
+                      maxLength={128}
+                      onChange={setCurrentPassword}
+                      value={currentPassword}
+                    />
+                    <PasswordField
+                      autoComplete="new-password"
+                      label="New password"
+                      name="newPassword"
+                      maxLength={128}
+                      minLength={8}
+                      onChange={setNewPassword}
+                      value={newPassword}
+                    />
+                    <PasswordField
+                      autoComplete="new-password"
+                      label="Confirm new password"
+                      name="newPasswordConfirmation"
+                      maxLength={128}
+                      minLength={8}
+                      onChange={setConfirmPassword}
+                      value={confirmPassword}
+                    />
+                    <button disabled={changingPassword} type="submit">
+                      {changingPassword ? "Changing..." : "Change password"}
+                    </button>
+                  </form>
+                ) : passwordSetupStage === "idle" ? (
+                  <button
+                    disabled={passwordSetupBusy}
+                    onClick={() => void handlePasswordSetupRequest()}
+                    type="button"
+                  >
+                    {passwordSetupBusy ? "Sending code..." : "Set a password"}
+                  </button>
+                ) : passwordSetupStage === "verify" ? (
+                  <form
+                    className="customer-account-security-form"
+                    onSubmit={(event) => void handlePasswordSetupVerification(event)}
+                  >
+                    <label>
+                      <span>Verification code</span>
+                      <input
+                        autoComplete="one-time-code"
+                        inputMode="numeric"
+                        maxLength={6}
+                        onChange={(event) =>
+                          setPasswordSetupCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                        }
+                        pattern="[0-9]{6}"
+                        value={passwordSetupCode}
+                      />
+                    </label>
+                    <button disabled={passwordSetupBusy} type="submit">
+                      {passwordSetupBusy ? "Verifying..." : "Verify code"}
+                    </button>
+                    <button
+                      className="customer-account-secondary-button"
+                      disabled={passwordSetupBusy}
+                      onClick={() => void handlePasswordSetupRequest()}
+                      type="button"
+                    >
+                      Send a new code
+                    </button>
+                  </form>
+                ) : (
+                  <form
+                    className="customer-account-security-form"
+                    onSubmit={(event) => void handleFirstPasswordSubmit(event)}
+                  >
+                    <input
+                      autoComplete="username"
+                      className="customer-account-password-identity"
+                      name="username"
+                      readOnly
+                      tabIndex={-1}
+                      type="email"
+                      value={customer.email}
+                    />
+                    <PasswordField
+                      autoComplete="new-password"
+                      label="New password"
+                      name="newPassword"
+                      maxLength={128}
+                      minLength={8}
+                      onChange={setSetupPassword}
+                      value={setupPassword}
+                    />
+                    <PasswordField
+                      autoComplete="new-password"
+                      label="Confirm new password"
+                      name="newPasswordConfirmation"
+                      maxLength={128}
+                      minLength={8}
+                      onChange={setSetupConfirmPassword}
+                      value={setupConfirmPassword}
+                    />
+                    <button disabled={passwordSetupBusy} type="submit">
+                      {passwordSetupBusy ? "Adding password..." : "Add password"}
+                    </button>
+                  </form>
+                )}
+
                 {passwordError ? (
                   <p className="customer-account-form-error" role="alert">
                     {passwordError}
@@ -1191,10 +1423,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                     {passwordMessage}
                   </p>
                 ) : null}
-                <button disabled={changingPassword} type="submit">
-                  {changingPassword ? "Changing..." : "Change password"}
-                </button>
-              </form>
+              </div>
 
               <div className="customer-account-security-card">
                 <div className="customer-account-card-title">
@@ -1245,40 +1474,46 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                     ))}
                   </div>
                 )}
-                <form
-                  className="customer-account-inline-form"
-                  onSubmit={(event) => void handleRevokeSessions(event)}
-                >
-                  <input
-                    autoComplete="username"
-                    className="customer-account-password-identity"
-                    name="username"
-                    readOnly
-                    tabIndex={-1}
-                    type="email"
-                    value={customer.email}
-                  />
-                  <PasswordField
-                    autoComplete="current-password"
-                    label="Current password"
-                    name="currentPassword"
-                    maxLength={128}
-                    onChange={setRevokePassword}
-                    value={revokePassword}
-                  />
-                  {sessionActionMessage ? (
-                    <p className="customer-account-form-success" role="status">
-                      {sessionActionMessage}
-                    </p>
-                  ) : null}
-                  <button disabled={revokingSessions || otherSessionCount === 0} type="submit">
-                    {revokingSessions
-                      ? "Signing out..."
-                      : otherSessionCount > 0
-                        ? `Sign out ${otherSessionCount} other session${otherSessionCount === 1 ? "" : "s"}`
-                        : "No other active sessions"}
-                  </button>
-                </form>
+                {securitySummary?.hasPassword ? (
+                  <form
+                    className="customer-account-inline-form"
+                    onSubmit={(event) => void handleRevokeSessions(event)}
+                  >
+                    <input
+                      autoComplete="username"
+                      className="customer-account-password-identity"
+                      name="username"
+                      readOnly
+                      tabIndex={-1}
+                      type="email"
+                      value={customer.email}
+                    />
+                    <PasswordField
+                      autoComplete="current-password"
+                      label="Current password"
+                      name="currentPassword"
+                      maxLength={128}
+                      onChange={setRevokePassword}
+                      value={revokePassword}
+                    />
+                    {sessionActionMessage ? (
+                      <p className="customer-account-form-success" role="status">
+                        {sessionActionMessage}
+                      </p>
+                    ) : null}
+                    <button disabled={revokingSessions || otherSessionCount === 0} type="submit">
+                      {revokingSessions
+                        ? "Signing out..."
+                        : otherSessionCount > 0
+                          ? `Sign out ${otherSessionCount} other session${otherSessionCount === 1 ? "" : "s"}`
+                          : "No other active sessions"}
+                    </button>
+                  </form>
+                ) : securitySummary && otherSessionCount > 0 ? (
+                  <p className="customer-account-muted">
+                    Add a password first to sign out other sessions from this panel.
+                  </p>
+                ) : null}
               </div>
             </div>
           </section>
