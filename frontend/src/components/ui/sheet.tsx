@@ -39,7 +39,7 @@ export const SheetContent = forwardRef<
       <SheetOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed z-50 flex h-full w-[calc(100vw-24px)] max-w-[640px] flex-col overflow-hidden border border-slate-200 bg-white text-slate-950 shadow-[0_30px_80px_rgba(15,23,42,0.24)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-right-8 data-[state=closed]:slide-out-to-right-8",
+          "ys-material-surface fixed z-50 flex h-full w-[calc(100vw-24px)] max-w-[640px] flex-col overflow-hidden border border-slate-200 bg-white text-slate-950 shadow-[0_30px_80px_rgba(15,23,42,0.24)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-right-8 data-[state=closed]:slide-out-to-right-8",
           side === "right"
             ? "right-3 top-3 h-[calc(100vh-1.5rem)] rounded-2xl"
             : "left-3 top-3 h-[calc(100vh-1.5rem)] rounded-2xl",
