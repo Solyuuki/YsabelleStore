@@ -43,6 +43,12 @@ const dateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
   timeZone: "Asia/Manila"
 });
 
+const reportMonthFormatter = new Intl.DateTimeFormat("en-PH", {
+  month: "long",
+  timeZone: "Asia/Manila",
+  year: "numeric"
+});
+
 const brandCardClass =
   "relative overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_18px_40px_-30px_rgba(98,91,255,0.4)] backdrop-blur";
 
@@ -79,6 +85,20 @@ function orderStatusLabel(status: DashboardRestockOrderStatus) {
       return "Cancelled";
     default:
       return status;
+  }
+}
+
+type DashboardMonthlyAction = DashboardOperations["restock"]["actions"][number];
+
+function monthlyActionLabel(action: DashboardMonthlyAction) {
+  switch (action.actionType) {
+    case "RESTOCK":
+      return `Restock ${action.recommendedQuantity.toLocaleString()} units`;
+    case "EXPIRY_REVIEW":
+      return "Review expiry";
+    case "REDUCE_REPLENISHMENT":
+    default:
+      return "Reduce replenishment";
   }
 }
 
@@ -365,23 +385,12 @@ type OwnerOperationsProps = {
 
 function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOperationsProps) {
   const reportMonth = operations
-    ? new Intl.DateTimeFormat("en-PH", {
-        month: "long",
-        timeZone: "Asia/Manila",
-        year: "numeric"
-      }).format(new Date(operations.generatedAt))
+    ? reportMonthFormatter.format(new Date(operations.generatedAt))
     : "Current month";
   const highPriorityCount = operations
     ? operations.restock.risk.CRITICAL + operations.restock.risk.HIGH
     : 0;
   const topPriority = operations?.restock.actions[0] ?? null;
-  const topActionLabel = topPriority
-    ? topPriority.actionType === "RESTOCK"
-      ? `Restock ${topPriority.recommendedQuantity.toLocaleString()} units`
-      : topPriority.actionType === "EXPIRY_REVIEW"
-        ? "Review expiry"
-        : "Reduce replenishment"
-    : null;
 
   return (
     <Card className={brandCardClass}>
@@ -413,7 +422,6 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
           ) : null}
         </div>
       </CardHeader>
-
       <CardContent className="space-y-4 pt-5">
         {loading && !operations ? (
           <DashboardPanelLoading label="Preparing monthly inventory summary..." />
@@ -455,7 +463,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                     <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
                       {topPriority.riskLevel} priority
                     </p>
-                    <p className="mt-0.5 text-sm font-semibold text-slate-950">{topActionLabel}</p>
+                    <p className="mt-0.5 text-sm font-semibold text-slate-950">{monthlyActionLabel(topPriority)}</p>
                   </div>
                 </div>
               </div>
@@ -486,7 +494,6 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
             </div>
           </>
         ) : null}
-
         {error && operations ? (
           <p className="text-xs text-amber-700">Latest refresh warning: {error}</p>
         ) : null}
