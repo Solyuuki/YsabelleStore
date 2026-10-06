@@ -40,10 +40,7 @@ import {
   fetchCustomerOrders,
   startPaymongoCheckout
 } from "@/services/storefrontService";
-import type {
-  CustomerSecuritySummary,
-  CustomerSessionSummary
-} from "@/types/customerAccount";
+import type { CustomerSecuritySummary, CustomerSessionSummary } from "@/types/customerAccount";
 import { EMPTY_CUSTOMER_ADDRESS, type CustomerAddress } from "@/types/customerAddress";
 import type { StorefrontOrder } from "@/types/storefront";
 
@@ -1261,9 +1258,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 <div className="customer-account-card-title">
                   <KeyRound size={19} />
                   <div>
-                    <strong>
-                      {securitySummary?.hasPassword ? "Change password" : "Password"}
-                    </strong>
+                    <strong>{securitySummary?.hasPassword ? "Change password" : "Password"}</strong>
                     <p>
                       {securitySummary?.hasPassword
                         ? "Change your local password without affecting Quick Sign access."

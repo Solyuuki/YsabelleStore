@@ -229,11 +229,7 @@ export const verifyCustomerPasswordSetupController: RequestHandler = async (
   }
 };
 
-export const setupCustomerPasswordController: RequestHandler = async (
-  request,
-  response,
-  next
-) => {
+export const setupCustomerPasswordController: RequestHandler = async (request, response, next) => {
   try {
     const customer = requireCustomer(request);
     const sessionToken = requireSessionToken(request);
