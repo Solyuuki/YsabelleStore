@@ -61,7 +61,8 @@ test("Phase 4 Gmail integration preserves ticket threading and delivery state", 
   assert.match(gmailService, /deliveryStatus: "FAILED"/);
   assert.match(gmailService, /senderType: "CUSTOMER"/);
   assert.match(gmailService, /channel: "EMAIL"/);
-  assert.match(inboxPage, /Sync Gmail/);
+  assert.match(inboxPage, /Gmail connected/);
+  assert.doesNotMatch(inboxPage, /Sync Gmail/);
   assert.match(inboxPage, /Retry email/);
 });
 
