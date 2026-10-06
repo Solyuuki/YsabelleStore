@@ -1,6 +1,13 @@
 :root {
   --ys-material-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.18'/%3E%3C/svg%3E");
   --ys-material-facets: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 34,0 15,32' fill='white' fill-opacity='.28'/%3E%3Cpolygon points='34,0 72,0 54,22 15,32' fill='white' fill-opacity='.11'/%3E%3Cpolygon points='72,0 100,0 100,34 73,28' fill='white' fill-opacity='.20'/%3E%3Cpolygon points='0,0 15,32 0,57' fill='%2305238f' fill-opacity='.10'/%3E%3Cpolygon points='15,32 54,22 45,62 0,57' fill='%2313238a' fill-opacity='.15'/%3E%3Cpolygon points='54,22 73,28 45,62' fill='white' fill-opacity='.10'/%3E%3Cpolygon points='73,28 100,34 100,70 68,61 45,62' fill='white' fill-opacity='.18'/%3E%3Cpolygon points='0,57 45,62 29,100 0,100' fill='%23421aa2' fill-opacity='.15'/%3E%3Cpolygon points='45,62 68,61 53,100 29,100' fill='white' fill-opacity='.10'/%3E%3Cpolygon points='68,61 100,70 100,100 53,100' fill='%23ffd7ef' fill-opacity='.18'/%3E%3Cpath d='M34 0L15 32L0 57M72 0L54 22L15 32M100 34L73 28L54 22L45 62L0 57M100 70L68 61L45 62L29 100M68 61L53 100' fill='none' stroke='white' stroke-opacity='.24' stroke-width='.65'/%3E%3C/svg%3E");
+  --ys-surface-wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800' preserveAspectRatio='none'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M0 118 C190 40 390 218 600 138 S1000 56 1200 138' stroke='%23c8cdd6' stroke-opacity='.22' stroke-width='34'/%3E%3Cpath d='M0 156 C205 78 405 256 610 176 S1004 94 1200 176' stroke='%23ffffff' stroke-opacity='.74' stroke-width='17'/%3E%3Cpath d='M0 376 C220 284 396 470 602 390 S988 298 1200 390' stroke='%23cdd2da' stroke-opacity='.18' stroke-width='46'/%3E%3Cpath d='M0 420 C230 328 414 512 618 432 S1000 342 1200 432' stroke='%23ffffff' stroke-opacity='.76' stroke-width='19'/%3E%3Cpath d='M0 642 C208 556 402 730 606 652 S1002 572 1200 652' stroke='%23c5cad3' stroke-opacity='.16' stroke-width='40'/%3E%3Cpath d='M0 684 C214 602 410 766 616 692 S1008 616 1200 692' stroke='%23ffffff' stroke-opacity='.7' stroke-width='16'/%3E%3C/g%3E%3C/svg%3E");
+  --ys-surface-base: linear-gradient(
+    145deg,
+    #fbfbfc 0%,
+    #f7f8fa 54%,
+    #fafafb 100%
+  );
   --ys-material-surface-highlight: linear-gradient(
     145deg,
     rgb(255 255 255 / 34%),
@@ -25,10 +32,9 @@
 /*
  * Ysabelle crystal material system
  * --------------------------------
- * The selected brand texture is a faceted crystal overlay: large angular planes,
- * restrained edge highlights, and just enough fine grain to keep gradients from
- * looking flat. White surfaces get a faint echo; brand-gradient accents get the
- * full crystal treatment.
+ * Compact brand accents keep the crystal facets. Large white surfaces use a
+ * low-contrast layered wave texture on an off-white pearl base so they do not
+ * read as flat flashbang slabs. Both treatments stay static and GPU-light.
  */
 .ys-material-canvas {
   position: relative;
@@ -51,6 +57,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  background: var(--ys-surface-base) !important;
 }
 
 .ys-material-surface::before {
@@ -59,19 +66,23 @@
   z-index: 0;
   border-radius: inherit;
   background-image:
-    var(--ys-material-facets),
+    var(--ys-surface-wave),
     var(--ys-material-noise),
     var(--ys-material-surface-highlight);
   background-size:
-    185% 185%,
+    920px 620px,
     150px 150px,
     auto;
   background-position:
-    58% 48%,
+    center top,
     center,
     center;
-  background-blend-mode: soft-light, multiply, normal;
-  opacity: 0.085;
+  background-repeat:
+    repeat,
+    repeat,
+    no-repeat;
+  background-blend-mode: normal, multiply, normal;
+  opacity: 0.32;
   content: "";
   pointer-events: none;
 }
@@ -144,7 +155,7 @@
   }
 
   .ys-material-surface::before {
-    opacity: 0.045;
+    opacity: 0.18;
   }
 
   .ys-material-accent::before,
@@ -221,4 +232,48 @@
       center,
       center !important;
   }
+}
+
+
+/*
+ * Pearl surface coverage
+ * ----------------------
+ * Large content surfaces that still declare pure white directly are softened
+ * without touching form controls, product media, or small interactive buttons.
+ */
+.app-shell-ambient :where(div, section, article)[class~="bg-white"][class*="rounded-"],
+.app-shell-ambient :where(div, section, article)[class*="bg-white/"][class*="rounded-"],
+:is(
+  .customer-account-order-v2,
+  .customer-account-session-list article,
+  .customer-account-auth-methods > span,
+  .customer-support-form-card,
+  .customer-support-info-card,
+  .customer-support-faq details,
+  .customer-cart-item,
+  .customer-checkout-form section,
+  .customer-payment-option,
+  .customer-success-card,
+  .customer-filter-panel,
+  .customer-shop-toolbar,
+  .customer-empty-state,
+  .customer-product-section-state,
+  .customer-review-overview,
+  .customer-review,
+  .home-category-card,
+  .home-compact-state
+) {
+  background-color: #f8f9fb !important;
+  background-image:
+    var(--ys-surface-wave),
+    var(--ys-surface-base) !important;
+  background-size:
+    920px 620px,
+    auto !important;
+  background-position:
+    center top,
+    center !important;
+  background-repeat:
+    repeat,
+    no-repeat !important;
 }
