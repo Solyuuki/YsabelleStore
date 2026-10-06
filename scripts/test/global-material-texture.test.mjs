@@ -79,3 +79,18 @@ test("global glass flow background is applied to primary app and customer shells
   assert.match(customerLayout, /ys-glass-flow-background/);
   assert.match(account, /customer-account-page-v2 ys-glass-flow-background/);
 });
+
+
+test("glass flow background avoids scroll-heavy effects", () => {
+  assert.match(materialCss, /background-attachment:\s*scroll\s*!important/);
+  assert.match(
+    materialCss,
+    /\.ys-glass-flow-background\.ys-material-canvas::after[\s\S]*display:\s*none/
+  );
+  assert.match(
+    materialCss,
+    /\.ys-glass-flow-background \.app-shell-orb,[\s\S]*\.welcome-ambient-blob[\s\S]*display:\s*none/
+  );
+  assert.doesNotMatch(materialCss, /feGaussianBlur/);
+  assert.doesNotMatch(materialCss, /filter='url\(%23soft\)'/);
+});
