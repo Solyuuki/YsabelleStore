@@ -101,7 +101,7 @@ test("verification recovery actions keep resend separate from simple navigation 
 });
 
 test("recovery surface uses subtle material texture without changing the flow", () => {
-  assert.match(recoveryCss, /feTurbulence/);
+  assert.match(recoveryCss, /var\(--ys-material-noise\)/);
   assert.match(
     recoveryCss,
     /\.customer-auth-page--recovery \.customer-auth-stage__panel::before\s*\{/
