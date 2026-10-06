@@ -13,41 +13,13 @@
     transparent 34% 68%,
     rgb(16 20 38 / 10%)
   );
-  --ys-bokeh-background:
-    radial-gradient(
-      circle at 7% 10%,
-      rgb(255 255 255 / 82%) 0 2.6rem,
-      rgb(255 255 255 / 28%) 4.8rem,
-      transparent 8.8rem
-    ),
-    radial-gradient(
-      circle at 88% 12%,
-      rgb(255 249 240 / 76%) 0 3.2rem,
-      rgb(255 255 255 / 20%) 5.8rem,
-      transparent 9.4rem
-    ),
-    radial-gradient(
-      circle at 76% 44%,
-      rgb(255 247 251 / 58%) 0 2.4rem,
-      rgb(244 139 194 / 10%) 5rem,
-      transparent 8.4rem
-    ),
-    radial-gradient(
-      circle at 23% 27%,
-      rgb(236 248 255 / 62%) 0 3.1rem,
-      rgb(108 184 255 / 11%) 6rem,
-      transparent 9.8rem
-    ),
-    radial-gradient(
-      circle at 91% 72%,
-      rgb(255 255 255 / 55%) 0 2.2rem,
-      rgb(255 221 240 / 10%) 4.7rem,
-      transparent 8rem
-    ),
-    radial-gradient(ellipse at 16% 18%, rgb(83 171 255 / 24%), transparent 31rem),
-    radial-gradient(ellipse at 82% 18%, rgb(152 102 255 / 18%), transparent 31rem),
-    radial-gradient(ellipse at 74% 84%, rgb(244 95 176 / 15%), transparent 30rem),
-    linear-gradient(135deg, #edf6ff 0%, #f1efff 49%, #fff2f8 100%);
+  --ys-glass-flow-overlay: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='soft' x='-10%25' y='-10%25' width='120%25' height='120%25'%3E%3CfeGaussianBlur stdDeviation='2.4'/%3E%3C/filter%3E%3ClinearGradient id='ribbonA' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff' stop-opacity='.38'/%3E%3Cstop offset='.52' stop-color='%23dfe7ff' stop-opacity='.20'/%3E%3Cstop offset='1' stop-color='%23f8dcf2' stop-opacity='.24'/%3E%3C/linearGradient%3E%3ClinearGradient id='ribbonB' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%239ed8ff' stop-opacity='.18'/%3E%3Cstop offset='.55' stop-color='%23c9bcff' stop-opacity='.13'/%3E%3Cstop offset='1' stop-color='%23ffbde0' stop-opacity='.16'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M-120 170 C260 25 440 380 810 318 C1110 268 1240 42 1720 90 L1720 286 C1310 214 1172 420 840 430 C486 444 286 134 -120 350 Z' fill='url(%23ribbonA)' filter='url(%23soft)'/%3E%3Cpath d='M-120 330 C300 140 490 525 860 460 C1180 404 1365 214 1720 270 L1720 440 C1378 392 1200 566 870 574 C500 584 292 292 -120 502 Z' fill='url(%23ribbonB)' filter='url(%23soft)'/%3E%3Cpath d='M-110 270 C300 88 478 462 850 392 C1162 334 1354 138 1710 198' fill='none' stroke='%23ffffff' stroke-opacity='.52' stroke-width='3.2' filter='url(%23soft)'/%3E%3Cpath d='M-80 436 C330 248 502 602 884 532 C1190 476 1372 302 1680 342' fill='none' stroke='%23ffffff' stroke-opacity='.32' stroke-width='2.1' filter='url(%23soft)'/%3E%3C/svg%3E");
+  --ys-glass-flow-background:
+    var(--ys-glass-flow-overlay),
+    radial-gradient(ellipse at 12% 12%, rgb(99 178 255 / 22%), transparent 30rem),
+    radial-gradient(ellipse at 86% 18%, rgb(176 122 255 / 16%), transparent 31rem),
+    radial-gradient(ellipse at 76% 82%, rgb(244 112 184 / 13%), transparent 30rem),
+    linear-gradient(135deg, #edf6ff 0%, #f2efff 50%, #fff2f8 100%);
 }
 
 /*
@@ -208,26 +180,43 @@
 /*
  * Ambient background material
  * ---------------------------
- * The global page background uses soft, defocused bokeh rather than facets.
- * Crystal facets stay reserved for compact brand accents so page chrome remains calm.
+ * Full-page shells use translucent glass-flow ribbons with broad pastel light.
+ * Crystal facets stay reserved for compact brand accents and controls.
  */
-.ys-bokeh-background {
-  background-color: #f1efff !important;
-  background-image: var(--ys-bokeh-background) !important;
+.ys-glass-flow-background {
+  background-color: #f2efff !important;
+  background-image: var(--ys-glass-flow-background) !important;
   background-repeat: no-repeat !important;
   background-position: center top !important;
-  background-size: cover !important;
+  background-size:
+    100% 100%,
+    auto,
+    auto,
+    auto,
+    auto !important;
   background-attachment: fixed !important;
 }
 
-.ys-bokeh-background .app-shell-orb,
-.ys-bokeh-background .welcome-ambient-blob {
-  opacity: 0.14;
-  filter: blur(104px) saturate(118%);
+.ys-glass-flow-background .app-shell-orb,
+.ys-glass-flow-background .welcome-ambient-blob {
+  opacity: 0.07;
+  filter: blur(112px) saturate(112%);
 }
 
 @media (max-width: 760px) {
-  .ys-bokeh-background {
+  .ys-glass-flow-background {
     background-attachment: scroll !important;
+    background-size:
+      180% 100%,
+      auto,
+      auto,
+      auto,
+      auto !important;
+    background-position:
+      48% top,
+      center,
+      center,
+      center,
+      center !important;
   }
 }
