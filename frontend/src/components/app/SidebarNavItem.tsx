@@ -34,7 +34,7 @@ export function SidebarNavItem({
           "relative h-11 w-full justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-[background-color,color,box-shadow,transform] duration-200 ease-out hover:bg-indigo-50/90 hover:text-slate-950 hover:shadow-sm",
           collapsed && "justify-center px-0",
           active &&
-            "bg-indigo-500 text-white shadow-sm shadow-indigo-950/10 hover:bg-indigo-500 hover:text-white hover:shadow-sm"
+            "ys-material-accent bg-gradient-to-br from-[#168cff] via-[#645cff] to-[#c94fa6] text-white shadow-sm shadow-indigo-950/10 hover:from-[#168cff] hover:via-[#645cff] hover:to-[#c94fa6] hover:text-white hover:shadow-sm"
         )}
         onClick={onClick}
         type="button"
