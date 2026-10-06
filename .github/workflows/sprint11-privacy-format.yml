@@ -1,0 +1,27 @@
+name: Sprint 11 Privacy Format Preview
+
+on:
+  push:
+    branches:
+      - "sprint/v0.11/sprint-11"
+    paths:
+      - ".github/workflows/sprint11-privacy-format.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  format-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Preview privacy formatting
+        run: |
+          npx prettier --write             docs/privacy/YSABELLE-PRIVACY-DATA-INVENTORY.md             frontend/src/components/customer/PrivacyNotice.tsx             frontend/src/content/privacy.ts             frontend/src/pages/customer/PrivacyPolicyPage.tsx             frontend/src/styles/customer-privacy.css
+          git diff --             docs/privacy/YSABELLE-PRIVACY-DATA-INVENTORY.md             frontend/src/components/customer/PrivacyNotice.tsx             frontend/src/content/privacy.ts             frontend/src/pages/customer/PrivacyPolicyPage.tsx             frontend/src/styles/customer-privacy.css
