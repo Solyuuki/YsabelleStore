@@ -1,13 +1,24 @@
 import { apiClient } from "@/services/apiClient";
 import type { StorefrontPagination } from "@/types/storefront";
 
+export type CustomerModerationAccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "BANNED";
+
+export type CustomerModerationSummary = {
+  total: number;
+  active: number;
+  inactive: number;
+  suspended: number;
+  banned: number;
+  restricted: number;
+};
+
 export type CustomerModerationAccount = {
   id: string;
   name: string;
   username: string | null;
   email: string;
   phone: string | null;
-  status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "BANNED";
+  status: CustomerModerationAccountStatus;
   createdAt: string;
   updatedAt: string;
   counts: {
@@ -69,7 +80,12 @@ function queryString(values: Record<string, string | number | undefined>) {
 }
 
 export async function fetchCustomerModerationAccounts(
-  query: { search?: string; page?: number; pageSize?: number } = {}
+  query: {
+    search?: string;
+    status?: CustomerModerationAccountStatus;
+    page?: number;
+    pageSize?: number;
+  } = {}
 ) {
   const search = queryString(query);
   const response = await apiClient.request<
@@ -87,6 +103,14 @@ export async function fetchCustomerModerationAccounts(
       totalPages: 1
     }
   };
+}
+
+export async function fetchCustomerModerationSummary() {
+  const response = await apiClient.request<CustomerModerationSummary>(
+    "/api/customer-admin/accounts/summary"
+  );
+  if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
 }
 
 export async function updateCustomerModerationAccount(
