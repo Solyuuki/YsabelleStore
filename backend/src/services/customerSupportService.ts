@@ -72,7 +72,9 @@ export async function createCustomerSupportTicket(
   const customer = context.customer;
   const customerName = customer?.name ?? input.customerName.trim();
   const customerEmail = (customer?.email ?? input.customerEmail).trim().toLowerCase();
-  const customerPhone = customer ? customer.phone : normalizeOptional(input.customerPhone);
+  const customerPhone = customer
+    ? (customer.defaultContactPhone ?? customer.phone)
+    : normalizeOptional(input.customerPhone);
   const orderNumber = normalizeOptional(input.orderNumber);
 
   for (let attempt = 0; attempt < SUPPORT_TICKET_NUMBER_ATTEMPTS; attempt += 1) {
