@@ -1,4 +1,4 @@
-import { CircleAlert, Flame, Heart, Medal, ShoppingCart, Star } from "lucide-react";
+import { CircleAlert, Flame, Heart, ShoppingCart, Star } from "lucide-react";
 
 import { useState } from "react";
 
@@ -13,6 +13,35 @@ import {
 import { CustomerLink } from "./CustomerLink";
 import { ProductVisual } from "./ProductVisual";
 import { QuantityControl } from "./QuantityControl";
+
+function BestSellerMedalIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="customer-product-badge__medal-icon"
+      viewBox="0 0 24 24"
+    >
+      <path d="M6.8 2.5h4.4l2.2 7.1-4.2 1.5L6.8 2.5Z" fill="#365BD9" />
+      <path d="M12.8 2.5h4.4l-2.4 8.6-4.2-1.5 2.2-7.1Z" fill="#D94A4A" />
+      <path d="M8.2 2.5h2.1l1.7 5.8-2 1.1-1.8-6.9Z" fill="#6F8BFF" opacity="0.9" />
+      <path d="M15.8 2.5h-2.1L12 8.3l2 1.1 1.8-6.9Z" fill="#FF7770" opacity="0.9" />
+      <circle cx="12" cy="14.5" r="6.1" fill="#C88717" />
+      <circle cx="12" cy="14.5" r="5.15" fill="#FFD45E" />
+      <circle cx="12" cy="14.5" r="3.95" fill="#F6B82F" />
+      <path
+        d="m12 10.95 1.02 2.07 2.28.33-1.65 1.61.39 2.27L12 16.16l-2.04 1.07.39-2.27-1.65-1.61 2.28-.33L12 10.95Z"
+        fill="#FFF4B8"
+      />
+      <path
+        d="M8.2 13.05a4.15 4.15 0 0 1 7.6 0"
+        fill="none"
+        stroke="#FFE998"
+        strokeLinecap="round"
+        strokeWidth="0.75"
+      />
+    </svg>
+  );
+}
 
 export function ProductCard({
   product,
@@ -92,7 +121,7 @@ export function ProductCard({
                   <Flame className="customer-product-badge__fire-inner" fill="currentColor" />
                 </span>
               ) : resolvedBadge.tone === "best-seller" ? (
-                <Medal aria-hidden="true" className="customer-product-badge__medal-icon" />
+                <BestSellerMedalIcon />
               ) : (
                 <CircleAlert aria-hidden="true" className="customer-product-badge__icon" />
               )}
