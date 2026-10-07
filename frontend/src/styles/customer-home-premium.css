@@ -1248,68 +1248,77 @@
   stroke-width: 1.4;
 }
 
-.customer-product-badge__medal {
-  position: relative;
-  display: inline-block;
-  width: 15px;
-  height: 17px;
+.customer-product-badge__award {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
   flex: none;
-  color: #17120a;
-  filter: drop-shadow(0 1px 1px rgb(90 55 0 / 18%));
+  place-items: center;
+  border: 1px solid rgb(255 224 134 / 34%);
+  border-radius: 999px;
+  background: linear-gradient(145deg, #4b2d06 0%, #6f4308 58%, #8a570e 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 16%),
+    0 2px 5px rgb(91 55 3 / 18%);
+  color: #ffd66d;
 }
 
-.customer-product-badge__medal::before,
-.customer-product-badge__medal::after {
-  position: absolute;
-  bottom: 0;
-  width: 5px;
-  height: 7px;
-  background: currentColor;
-  content: "";
+.customer-product-badge__award svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.15;
 }
 
-.customer-product-badge__medal::before {
-  left: 2px;
-  clip-path: polygon(0 0, 100% 0, 82% 100%, 48% 72%, 15% 100%);
-  transform: rotate(7deg);
+.customer-product-badge__copy {
+  display: inline-flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.28rem;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-.customer-product-badge__medal::after {
-  right: 2px;
-  clip-path: polygon(0 0, 100% 0, 85% 100%, 52% 72%, 18% 100%);
-  transform: rotate(-7deg);
+.customer-product-badge__copy strong {
+  color: #2d1a00;
+  font-size: 0.64rem;
+  font-weight: 950;
+  letter-spacing: 0.025em;
 }
 
-.customer-product-badge__medal-center {
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  left: 50%;
-  width: 11px;
-  height: 11px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  background: #ffbf47;
-  box-shadow: inset 0 0 0 2px #ffbf47;
-  transform: translateX(-50%);
-}
-
-.customer-product-badge__medal-center::after {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  content: "";
-  transform: translate(-50%, -50%);
+.customer-product-badge__copy span {
+  color: #583500;
+  font-weight: 860;
+  letter-spacing: 0.025em;
 }
 
 .customer-product-badge--best-seller {
-  background: linear-gradient(110deg, #ffcf5a 0%, #ffb43f 100%);
-  color: #231700;
+  min-height: 32px;
+  gap: 0.45rem;
+  padding: 0.3rem 0.78rem 0.3rem 0.34rem;
+  overflow: hidden;
+  border: 1px solid rgb(181 122 22 / 30%);
+  border-radius: 999px;
+  clip-path: none;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 30%), transparent 48%),
+    linear-gradient(118deg, #ffd86a 0%, #f8bd43 48%, #efa128 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 48%),
+    0 5px 13px rgb(184 118 17 / 15%);
+  color: #3f2600;
+  letter-spacing: 0.02em;
 }
+
+.customer-product-badge--best-seller::after {
+  top: -50%;
+  bottom: -50%;
+  left: -34%;
+  width: 18%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 42%), transparent);
+  opacity: 0.72;
+  transform: skewX(-18deg);
+}
+
 
 .customer-product-badge--low-stock {
   background: linear-gradient(110deg, #fff0cf 0%, #ffd68b 100%);
