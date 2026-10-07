@@ -62,20 +62,19 @@ export function PrivacyNotice({
             <p className="customer-privacy-notice__eyebrow">Privacy at Ysabelle Store</p>
             <strong>Service and security storage keeps requested store features working.</strong>
             <p>
-              We use cookies and device storage for sign-in, verification, cart continuity, account
-              security, recent searches, and similar requested store functions. The current
-              storefront does not initialize advertising or behavioral analytics trackers.
+              We use essential storage for sign-in, verification, cart continuity, and account
+              security. No advertising trackers are currently enabled.
             </p>
-            <div className="customer-privacy-notice__links">
-              <CustomerLink href="/privacy" navigate={navigate}>
-                Privacy policy
-                <ExternalLink aria-hidden="true" size={14} />
-              </CustomerLink>
-              <button onClick={() => setDetailsOpen(true)} type="button">
-                Storage details
-                <Cookie aria-hidden="true" size={14} />
-              </button>
-            </div>
+          </div>
+          <div className="customer-privacy-notice__links">
+            <CustomerLink href="/privacy" navigate={navigate}>
+              Privacy policy
+              <ExternalLink aria-hidden="true" size={14} />
+            </CustomerLink>
+            <button onClick={() => setDetailsOpen(true)} type="button">
+              Storage details
+              <Cookie aria-hidden="true" size={14} />
+            </button>
           </div>
           <button
             aria-label="Dismiss privacy notice"
