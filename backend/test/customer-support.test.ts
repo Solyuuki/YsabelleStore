@@ -100,6 +100,12 @@ test("signed-in support request uses account identity and links an owned order",
       phone: `0917${Number.parseInt(suffix, 16).toString().slice(-7).padStart(7, "0")}`,
       password: PASSWORD
     });
+    const preferredContactPhone = "09981234567";
+    await prisma.customerAccount.update({
+      data: { defaultContactPhone: preferredContactPhone },
+      where: { id: registered.customer.id }
+    });
+
     const orderNumber = `YS-SUPPORT-${suffix.toUpperCase()}`;
     const order = await prisma.customerOrder.create({
       data: {
@@ -147,7 +153,7 @@ test("signed-in support request uses account identity and links an owned order",
       assert.equal(ticket.customerOrderId, order.id);
       assert.equal(ticket.customerName, registered.customer.name);
       assert.equal(ticket.customerEmail, registered.customer.email);
-      assert.equal(ticket.customerPhone, registered.customer.phone);
+      assert.equal(ticket.customerPhone, preferredContactPhone);
       assert.equal(ticket.messages[0]?.senderType, "CUSTOMER");
       assert.equal(ticket.messages[1]?.senderType, "SYSTEM");
       assert.match(ticket.messages[1]?.body ?? "", new RegExp(orderNumber));
