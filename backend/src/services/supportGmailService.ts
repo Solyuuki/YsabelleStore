@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 import { Prisma } from "@prisma/client";
 
 import { env } from "../config/env.js";
@@ -16,6 +19,27 @@ const SUPPORT_EMAIL_BODY_MAX_LENGTH = 5_000;
 const DELIVERY_ERROR_MESSAGE = "Gmail delivery failed. Retry is available.";
 const TICKET_REFERENCE_PATTERN = /\bYS-CS-\d{6}\b/i;
 
+const SUPPORT_LOGO_CONTENT_ID = "ysabelle-support-logo";
+const SUPPORT_LOGO_FILENAME = "ysabelle-support-logo.gif";
+export const SUPPORT_AUTOMATION_SENDER_NAME = "Ysabelle Store Auto Acknowledgement";
+
+function loadSupportLogoBytes() {
+  const candidates = [
+    path.resolve(process.cwd(), "backend", "assets", "email", SUPPORT_LOGO_FILENAME),
+    path.resolve(process.cwd(), "assets", "email", SUPPORT_LOGO_FILENAME)
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      return readFileSync(candidate);
+    } catch {
+      // Try the next supported runtime location.
+    }
+  }
+
+  return undefined;
+}
+
 let syncInFlight: Promise<SupportGmailSyncResult> | null = null;
 let syncWorkerTimer: NodeJS.Timeout | null = null;
 
@@ -26,6 +50,7 @@ export type SupportGmailConfiguration = {
   supportEmail: string;
   fromName: string;
   fetchImpl?: typeof fetch;
+  logoBytes?: Buffer;
 };
 
 export type GmailMessageHeader = {
@@ -63,6 +88,7 @@ export type SupportGmailSendInput = {
   body: string;
   threadId?: string | null;
   replyToGmailMessageId?: string | null;
+  kind?: "ACKNOWLEDGEMENT" | "STAFF_REPLY";
 };
 
 export type SupportGmailSendResult = {
@@ -97,7 +123,8 @@ function runtimeConfiguration(): SupportGmailConfiguration | null {
     clientSecret,
     refreshToken,
     supportEmail,
-    fromName
+    fromName,
+    logoBytes: loadSupportLogoBytes()
   };
 }
 
@@ -147,8 +174,10 @@ function decodeBase64Url(value: string) {
   return Buffer.from(value, "base64url").toString("utf8");
 }
 
-function wrapBase64(value: string) {
-  const encoded = Buffer.from(value, "utf8").toString("base64");
+function wrapBase64(value: string | Buffer) {
+  const encoded = Buffer.isBuffer(value)
+    ? value.toString("base64")
+    : Buffer.from(value, "utf8").toString("base64");
   return encoded.match(/.{1,76}/g)?.join("\r\n") ?? "";
 }
 
@@ -243,12 +272,43 @@ function normalizeInboundMessageBody(value: string) {
   return `${normalized.slice(0, SUPPORT_EMAIL_BODY_MAX_LENGTH - 1).trimEnd()}…`;
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function supportSignatureHtml(configuration: SupportGmailConfiguration) {
+  const logo = configuration.logoBytes
+    ? `<td style="width:112px;padding:0 18px 0 0;vertical-align:middle">
+        <img src="cid:${SUPPORT_LOGO_CONTENT_ID}" width="96" height="96" alt="Ysabelle Store" style="display:block;width:96px;height:96px;border:0;border-radius:18px" />
+      </td>`
+    : "";
+
+  return `<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:24px;border-top:1px solid #e8e4ff;padding-top:18px">
+    <tr>
+      ${logo}
+      <td style="vertical-align:middle;font-family:Arial,sans-serif">
+        <div style="font-size:13px;line-height:1.5;color:#77728c">Best regards,</div>
+        <div style="margin-top:3px;font-size:16px;line-height:1.4;font-weight:700;color:#201b46">Ysabelle Store Customer Support</div>
+        <div style="margin-top:4px;font-size:12px;line-height:1.5;color:#6d6785">${escapeHtml(configuration.supportEmail)}</div>
+      </td>
+    </tr>
+  </table>`;
+}
+
 function buildRawSupportEmail(
   configuration: SupportGmailConfiguration,
   input: SupportGmailSendInput,
   replyMessageId: string | null
 ) {
-  const subject = `[${sanitizeHeaderValue(input.ticketNumber)}] ${sanitizeHeaderValue(input.subject)}`;
+  const subject =
+    input.kind === "ACKNOWLEDGEMENT"
+      ? `[${sanitizeHeaderValue(input.ticketNumber)}] We received your support request`
+      : `[${sanitizeHeaderValue(input.ticketNumber)}] ${sanitizeHeaderValue(input.subject)}`;
   const domain = configuration.supportEmail.split("@")[1] ?? "ysabellestore.local";
   const generatedMessageId = `<ys-support-${Date.now()}-${Math.random().toString(36).slice(2)}@${domain}>`;
   const headers = [
@@ -260,6 +320,10 @@ function buildRawSupportEmail(
     `Message-ID: ${generatedMessageId}`
   ];
 
+  if (input.kind === "ACKNOWLEDGEMENT") {
+    headers.push("Auto-Submitted: auto-replied");
+  }
+
   if (replyMessageId) {
     headers.push(`In-Reply-To: ${sanitizeHeaderValue(replyMessageId)}`);
     headers.push(`References: ${sanitizeHeaderValue(replyMessageId)}`);
@@ -268,18 +332,90 @@ function buildRawSupportEmail(
   const text = [
     input.body.trim(),
     "",
-    "— Ysabelle Store Customer Support",
+    "Best regards,",
+    "Ysabelle Store Customer Support",
+    configuration.supportEmail,
     `Ticket: ${input.ticketNumber}`
   ].join("\n");
 
-  return [
-    ...headers,
-    "MIME-Version: 1.0",
+  const paragraphs = input.body
+    .trim()
+    .split(/\n{2,}/)
+    .map(
+      (paragraph) =>
+        `<p style="margin:0 0 14px;font-size:14px;line-height:1.7;color:#49445f">${escapeHtml(paragraph).replaceAll(
+          "\n",
+          "<br />"
+        )}</p>`
+    )
+    .join("");
+
+  const html = `<!doctype html>
+<html>
+  <body style="margin:0;background:#f7f7ff;font-family:Arial,sans-serif;color:#17162b">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;padding:28px 14px;background:#f7f7ff">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border:1px solid #e8e4ff;border-radius:22px">
+            <tr>
+              <td style="padding:30px">
+                <div style="font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#6757d9">Ysabelle Store</div>
+                <h1 style="margin:10px 0 18px;font-size:22px;line-height:1.3;color:#18152f">${input.kind === "ACKNOWLEDGEMENT" ? "Support request received" : "Customer support reply"}</h1>
+                ${paragraphs}
+                <div style="margin-top:18px;padding:12px 14px;border:1px solid #e8e4ff;border-radius:12px;background:#faf9ff;font-size:12px;line-height:1.6;color:#6d6785">
+                  Ticket reference: <strong style="color:#332b72">${escapeHtml(input.ticketNumber)}</strong>
+                </div>
+                ${supportSignatureHtml(configuration)}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+  const alternativeBoundary = `ys-alt-${Date.now().toString(36)}`;
+  const relatedBoundary = `ys-related-${Math.random().toString(36).slice(2)}`;
+  const alternative = [
+    `--${relatedBoundary}`,
+    `Content-Type: multipart/alternative; boundary="${alternativeBoundary}"`,
+    "",
+    `--${alternativeBoundary}`,
     'Content-Type: text/plain; charset="UTF-8"',
     "Content-Transfer-Encoding: base64",
     "",
     wrapBase64(text),
+    `--${alternativeBoundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    "Content-Transfer-Encoding: base64",
+    "",
+    wrapBase64(html),
+    `--${alternativeBoundary}--`,
     ""
+  ];
+
+  const related = configuration.logoBytes
+    ? [
+        ...alternative,
+        `--${relatedBoundary}`,
+        `Content-Type: image/gif; name="${SUPPORT_LOGO_FILENAME}"`,
+        "Content-Transfer-Encoding: base64",
+        `Content-ID: <${SUPPORT_LOGO_CONTENT_ID}>`,
+        `Content-Disposition: inline; filename="${SUPPORT_LOGO_FILENAME}"`,
+        "",
+        wrapBase64(configuration.logoBytes),
+        `--${relatedBoundary}--`,
+        ""
+      ]
+    : [...alternative, `--${relatedBoundary}--`, ""];
+
+  return [
+    ...headers,
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/related; boundary="${relatedBoundary}"`,
+    "",
+    ...related
   ].join("\r\n");
 }
 
@@ -471,14 +607,21 @@ function runtimeClient() {
   return runtimeGmailClient;
 }
 
-export async function deliverStaffSupportMessageEmail(
+type SupportEmailDeliveryOptions = {
+  kind: "ACKNOWLEDGEMENT" | "STAFF_REPLY";
+  transitionTicketStatus: boolean;
+};
+
+async function deliverSupportMessageEmail(
   messageId: string,
+  options: SupportEmailDeliveryOptions,
   client: SupportGmailClient = runtimeClient()
 ) {
   const message = await prisma.supportMessage.findUnique({
     select: {
       id: true,
       senderType: true,
+      senderName: true,
       body: true,
       ticketId: true,
       deliveryStatus: true,
@@ -496,7 +639,11 @@ export async function deliverStaffSupportMessageEmail(
     where: { id: messageId }
   });
 
-  if (!message || message.senderType !== "STAFF") {
+  const expectedSender =
+    options.kind === "ACKNOWLEDGEMENT"
+      ? message?.senderType === "SYSTEM" && message.senderName === SUPPORT_AUTOMATION_SENDER_NAME
+      : message?.senderType === "STAFF";
+  if (!message || !expectedSender) {
     throw new HttpError(404, "Support message was not found.", {
       code: "SUPPORT_MESSAGE_NOT_FOUND"
     });
@@ -516,15 +663,18 @@ export async function deliverStaffSupportMessageEmail(
     });
   }
 
-  const previousGmailMessage = await prisma.supportMessage.findFirst({
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    select: { gmailMessageId: true },
-    where: {
-      ticketId: message.ticketId,
-      id: { not: message.id },
-      gmailMessageId: { not: null }
-    }
-  });
+  const previousGmailMessage =
+    options.kind === "STAFF_REPLY"
+      ? await prisma.supportMessage.findFirst({
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          select: { gmailMessageId: true },
+          where: {
+            ticketId: message.ticketId,
+            id: { not: message.id },
+            gmailMessageId: { not: null }
+          }
+        })
+      : null;
 
   let sent: SupportGmailSendResult;
   try {
@@ -534,10 +684,11 @@ export async function deliverStaffSupportMessageEmail(
       subject: message.ticket.subject,
       body: message.body,
       threadId: message.ticket.gmailThreadId,
-      replyToGmailMessageId: previousGmailMessage?.gmailMessageId ?? null
+      replyToGmailMessageId: previousGmailMessage?.gmailMessageId ?? null,
+      kind: options.kind
     });
   } catch {
-    await prisma.$transaction([
+    const operations: Prisma.PrismaPromise<unknown>[] = [
       prisma.supportMessage.update({
         data: {
           channel: "EMAIL",
@@ -546,25 +697,31 @@ export async function deliverStaffSupportMessageEmail(
           emailSentAt: null
         },
         where: { id: message.id }
-      }),
-      prisma.supportTicket.updateMany({
-        data: {
-          status: "OPEN",
-          resolvedAt: null,
-          closedAt: null
-        },
-        where: {
-          id: message.ticketId,
-          status: { not: "CLOSED" }
-        }
       })
-    ]);
+    ];
 
+    if (options.transitionTicketStatus) {
+      operations.push(
+        prisma.supportTicket.updateMany({
+          data: {
+            status: "OPEN",
+            resolvedAt: null,
+            closedAt: null
+          },
+          where: {
+            id: message.ticketId,
+            status: { not: "CLOSED" }
+          }
+        })
+      );
+    }
+
+    await prisma.$transaction(operations);
     return { status: "FAILED" as const, gmailMessageId: null, gmailThreadId: null };
   }
 
   const sentAt = new Date();
-  await prisma.$transaction([
+  const operations: Prisma.PrismaPromise<unknown>[] = [
     prisma.supportMessage.update({
       data: {
         channel: "EMAIL",
@@ -582,21 +739,49 @@ export async function deliverStaffSupportMessageEmail(
     prisma.supportTicket.update({
       data: { gmailThreadId: sent.threadId },
       where: { id: message.ticketId }
-    }),
-    prisma.supportTicket.updateMany({
-      data: {
-        status: "WAITING_FOR_CUSTOMER",
-        resolvedAt: null,
-        closedAt: null
-      },
-      where: {
-        id: message.ticketId,
-        status: { not: "CLOSED" }
-      }
     })
-  ]);
+  ];
 
+  if (options.transitionTicketStatus) {
+    operations.push(
+      prisma.supportTicket.updateMany({
+        data: {
+          status: "WAITING_FOR_CUSTOMER",
+          resolvedAt: null,
+          closedAt: null
+        },
+        where: {
+          id: message.ticketId,
+          status: { not: "CLOSED" }
+        }
+      })
+    );
+  }
+
+  await prisma.$transaction(operations);
   return { status: "SENT" as const, gmailMessageId: sent.id, gmailThreadId: sent.threadId };
+}
+
+export async function deliverStaffSupportMessageEmail(
+  messageId: string,
+  client: SupportGmailClient = runtimeClient()
+) {
+  return deliverSupportMessageEmail(
+    messageId,
+    { kind: "STAFF_REPLY", transitionTicketStatus: true },
+    client
+  );
+}
+
+export async function deliverAutomatedSupportAcknowledgementEmail(
+  messageId: string,
+  client: SupportGmailClient = runtimeClient()
+) {
+  return deliverSupportMessageEmail(
+    messageId,
+    { kind: "ACKNOWLEDGEMENT", transitionTicketStatus: false },
+    client
+  );
 }
 
 export async function syncSupportGmailInboxWithClient(
