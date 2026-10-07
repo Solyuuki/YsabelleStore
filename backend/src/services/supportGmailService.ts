@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { Prisma } from "@prisma/client";
@@ -24,14 +24,30 @@ const SUPPORT_LOGO_FILENAME = "ysabelle-support-logo.gif";
 export const SUPPORT_AUTOMATION_SENDER_NAME = "Ysabelle Store Auto Acknowledgement";
 
 function loadSupportLogoBytes() {
-  const candidates = [
-    path.resolve(process.cwd(), "backend", "assets", "email", SUPPORT_LOGO_FILENAME),
-    path.resolve(process.cwd(), "assets", "email", SUPPORT_LOGO_FILENAME)
+  const directories = [
+    path.resolve(process.cwd(), "backend", "assets", "email"),
+    path.resolve(process.cwd(), "assets", "email")
   ];
 
-  for (const candidate of candidates) {
+  for (const directory of directories) {
     try {
-      return readFileSync(candidate);
+      return readFileSync(path.join(directory, SUPPORT_LOGO_FILENAME));
+    } catch {
+      // The repository stores the optimized GIF as base64 text parts so GitHub text tooling can
+      // carry the binary asset without changing its bytes at runtime.
+    }
+
+    try {
+      const parts = readdirSync(directory)
+        .filter((name) => /^ysabelle-support-logo\.gif\.b64\.part\d+$/.test(name))
+        .sort((left, right) => left.localeCompare(right));
+      if (parts.length > 0) {
+        const encoded = parts
+          .map((name) => readFileSync(path.join(directory, name), "utf8").trim())
+          .join("");
+        const decoded = Buffer.from(encoded, "base64");
+        if (decoded.length > 0) return decoded;
+      }
     } catch {
       // Try the next supported runtime location.
     }
