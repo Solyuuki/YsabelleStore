@@ -274,8 +274,8 @@
   z-index: 45;
   bottom: calc(100% + 0.6rem);
   left: 0.55rem;
-  width: min(22rem, calc(100vw - 3rem));
-  padding: 0.72rem 0.82rem;
+  width: min(16.5rem, calc(100vw - 3rem));
+  padding: 0.62rem 0.72rem;
   border: 1px solid rgb(98 91 255 / 14%);
   border-radius: 0.82rem;
   background: rgb(31 35 54 / 96%);
