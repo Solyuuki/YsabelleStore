@@ -1,4 +1,4 @@
-import { CircleAlert, Flame, Heart, ShoppingCart, Star } from "lucide-react";
+import { Award, CircleAlert, Flame, Heart, ShoppingCart, Star } from "lucide-react";
 
 import { useState } from "react";
 
@@ -92,13 +92,28 @@ export function ProductCard({
                   <Flame className="customer-product-badge__fire-inner" fill="currentColor" />
                 </span>
               ) : resolvedBadge.tone === "best-seller" ? (
-                <span aria-hidden="true" className="customer-product-badge__medal">
-                  <span className="customer-product-badge__medal-center" />
-                </span>
+                <>
+                  <span aria-hidden="true" className="customer-product-badge__award">
+                    <Award />
+                  </span>
+                  <span className="customer-product-badge__copy">
+                    {resolvedBadge.label === "No. 1 best seller" ? (
+                      <>
+                        <strong>No. 1</strong>
+                        <span>Best seller</span>
+                      </>
+                    ) : (
+                      <span>Best seller</span>
+                    )}
+                  </span>
+                </>
               ) : (
-                <CircleAlert aria-hidden="true" className="customer-product-badge__icon" />
+                <>
+                  <CircleAlert aria-hidden="true" className="customer-product-badge__icon" />
+                  <span>{resolvedBadge.label}</span>
+                </>
               )}
-              <span>{resolvedBadge.label}</span>
+              {resolvedBadge.tone === "trending" ? <span>{resolvedBadge.label}</span> : null}
             </span>
           ) : null}
         </CustomerLink>
