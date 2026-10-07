@@ -1040,3 +1040,243 @@
     width: 100%;
   }
 }
+
+
+/* Shopping profile polish: quieter material, stronger hierarchy, less white-on-white. */
+#profile-panel.customer-account-section {
+  border-color: rgba(102, 92, 210, 0.14);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(78, 157, 255, 0.12), transparent 25rem),
+    radial-gradient(circle at 92% 8%, rgba(162, 96, 232, 0.11), transparent 27rem),
+    radial-gradient(circle at 76% 100%, rgba(236, 93, 164, 0.07), transparent 24rem),
+    linear-gradient(135deg, rgba(239, 246, 255, 0.96), rgba(246, 243, 255, 0.95) 52%, rgba(255, 245, 251, 0.94));
+  box-shadow:
+    0 24px 58px rgba(58, 52, 112, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+#profile-panel.ys-material-surface::before {
+  background-size:
+    145% 145%,
+    132px 132px,
+    auto;
+  background-position:
+    62% 44%,
+    center,
+    center;
+  opacity: 0.14;
+}
+
+#profile-panel .customer-account-section-heading {
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom-color: rgba(103, 96, 185, 0.11);
+}
+
+#profile-panel .customer-account-section-heading > svg {
+  box-sizing: content-box;
+  width: 20px;
+  height: 20px;
+  padding: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.14);
+  border-radius: 13px;
+  background: linear-gradient(145deg, rgba(235, 245, 255, 0.88), rgba(242, 237, 255, 0.9));
+  color: #6658de;
+  box-shadow: 0 8px 22px rgba(93, 79, 185, 0.08);
+}
+
+#profile-panel .customer-account-section-heading h2 {
+  letter-spacing: -0.03em;
+}
+
+#profile-panel .customer-account-section-heading p:last-child {
+  max-width: 46rem;
+  color: #66718a;
+}
+
+#profile-panel .customer-account-profile-stack {
+  gap: 18px;
+}
+
+#profile-panel .customer-account-inline-action-form {
+  max-width: none;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(103, 96, 185, 0.12);
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(245, 249, 255, 0.78), rgba(246, 244, 255, 0.74)),
+    rgba(246, 248, 255, 0.72);
+  box-shadow:
+    0 10px 28px rgba(53, 50, 101, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68);
+}
+
+#profile-panel .customer-account-inline-action-form label > span,
+#profile-panel .customer-account-contact-card label > span,
+#profile-panel .customer-account-address-form label > span {
+  color: #3f4962;
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+}
+
+#profile-panel .customer-account-inline-action-form input,
+#profile-panel .customer-account-contact-card input,
+#profile-panel .customer-account-address-form input {
+  min-height: 50px;
+  border-color: rgba(112, 119, 158, 0.2);
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+#profile-panel .customer-account-inline-action-form input:hover,
+#profile-panel .customer-account-contact-card input:hover,
+#profile-panel .customer-account-address-form input:hover {
+  border-color: rgba(99, 102, 241, 0.27);
+}
+
+#profile-panel .customer-account-profile-grid {
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  gap: 14px;
+}
+
+#profile-panel .customer-account-info-card,
+#profile-panel .customer-account-contact-card,
+#profile-panel .customer-account-address-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(103, 96, 185, 0.13);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(115, 103, 235, 0.065), transparent 18rem),
+    linear-gradient(155deg, rgba(245, 249, 255, 0.8), rgba(248, 245, 255, 0.76) 54%, rgba(255, 247, 251, 0.72));
+  box-shadow:
+    0 10px 28px rgba(53, 50, 101, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+#profile-panel .customer-account-info-card::before,
+#profile-panel .customer-account-contact-card::before,
+#profile-panel .customer-account-address-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, #4a9bff, #715cff 58%, #c65aa6);
+  opacity: 0.78;
+  content: "";
+  pointer-events: none;
+}
+
+#profile-panel .customer-account-info-card,
+#profile-panel .customer-account-contact-card {
+  min-height: 166px;
+  padding: 20px 22px;
+}
+
+#profile-panel .customer-account-info-card {
+  align-content: center;
+  gap: 10px;
+}
+
+#profile-panel .customer-account-info-card > span,
+#profile-panel .customer-account-address-heading span,
+#profile-panel .customer-account-contact-card label > span {
+  color: #5f6981;
+}
+
+#profile-panel .customer-account-info-card > span svg,
+#profile-panel .customer-account-address-heading span svg,
+#profile-panel .customer-account-contact-card label > span svg {
+  color: #6558d9;
+}
+
+#profile-panel .customer-account-info-card strong {
+  color: #1e2940;
+  font-size: 1rem;
+}
+
+#profile-panel .customer-account-info-card small,
+#profile-panel .customer-account-contact-card > small,
+#profile-panel .customer-account-address-heading p {
+  color: #6f7990;
+}
+
+#profile-panel .customer-account-contact-card {
+  gap: 10px;
+}
+
+#profile-panel .customer-account-inline-action-form > button,
+#profile-panel .customer-account-contact-card > button,
+#profile-panel .customer-account-address-card button {
+  min-height: 44px;
+  border-radius: 11px;
+  padding-inline: 17px;
+  background: linear-gradient(135deg, #3c86f5, #685ce6 58%, #9a56df);
+  box-shadow: 0 9px 20px rgba(94, 77, 194, 0.15);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    filter 150ms ease;
+}
+
+#profile-panel .customer-account-inline-action-form > button:hover:not(:disabled),
+#profile-panel .customer-account-contact-card > button:hover:not(:disabled),
+#profile-panel .customer-account-address-card button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(94, 77, 194, 0.18);
+  filter: saturate(1.04);
+}
+
+#profile-panel .customer-account-inline-action-form > button:disabled,
+#profile-panel .customer-account-contact-card > button:disabled,
+#profile-panel .customer-account-address-card button:disabled {
+  background: linear-gradient(135deg, #8caee5, #9a91dd);
+  opacity: 0.52;
+}
+
+#profile-panel .customer-account-address-card {
+  gap: 16px;
+  padding: 20px 22px;
+}
+
+#profile-panel .customer-account-address-heading {
+  align-items: center;
+}
+
+#profile-panel .customer-account-address-summary {
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid rgba(104, 111, 157, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.48);
+  color: #556078;
+}
+
+#profile-panel .customer-account-address-summary strong {
+  color: #1f2a41;
+}
+
+@media (max-width: 760px) {
+  #profile-panel .customer-account-inline-action-form,
+  #profile-panel .customer-account-profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #profile-panel .customer-account-info-card,
+  #profile-panel .customer-account-contact-card {
+    min-height: 0;
+  }
+
+  #profile-panel .customer-account-info-card {
+    align-content: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #profile-panel .customer-account-inline-action-form > button,
+  #profile-panel .customer-account-contact-card > button,
+  #profile-panel .customer-account-address-card button {
+    transition: none;
+  }
+}
