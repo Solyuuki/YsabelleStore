@@ -1044,27 +1044,29 @@
 
 /* Shopping profile polish: quieter material, stronger hierarchy, less white-on-white. */
 #profile-panel.customer-account-section {
-  border-color: rgba(102, 92, 210, 0.14);
-  background:
-    radial-gradient(circle at 8% 0%, rgba(78, 157, 255, 0.12), transparent 25rem),
-    radial-gradient(circle at 92% 8%, rgba(162, 96, 232, 0.11), transparent 27rem),
-    radial-gradient(circle at 76% 100%, rgba(236, 93, 164, 0.07), transparent 24rem),
-    linear-gradient(135deg, rgba(239, 246, 255, 0.96), rgba(246, 243, 255, 0.95) 52%, rgba(255, 245, 251, 0.94));
+  border-color: rgba(111, 105, 166, 0.16);
+  background-color: rgba(247, 248, 252, 0.94);
+  background-image: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.74) 0%,
+    rgba(245, 247, 252, 0.9) 48%,
+    rgba(241, 242, 249, 0.92) 100%
+  );
   box-shadow:
-    0 24px 58px rgba(58, 52, 112, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    0 24px 58px rgba(45, 48, 84, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(18px) saturate(118%);
 }
 
 #profile-panel.ys-material-surface::before {
-  background-size:
-    145% 145%,
-    132px 132px,
-    auto;
-  background-position:
-    62% 44%,
-    center,
-    center;
-  opacity: 0.14;
+  background-image:
+    url("/textures/kpi-card-frosted-ribbon.webp"),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.24), transparent 44% 72%, rgba(98, 91, 255, 0.05)) !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-position: center, center !important;
+  background-size: cover, auto !important;
+  background-blend-mode: soft-light, normal !important;
+  opacity: 0.52 !important;
 }
 
 #profile-panel .customer-account-section-heading {
