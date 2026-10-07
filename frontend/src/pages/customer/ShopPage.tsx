@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Search, SlidersHorizontal } from "lucide-react";
-import { useCallback, useEffect, useState, type CSSProperties, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard } from "@/components/customer/ProductCard";
@@ -13,9 +13,11 @@ import type {
 } from "@/types/storefront";
 
 const SEARCH_DEBOUNCE_MS = 350;
+const CATALOG_EXIT_DURATION_MS = 120;
 const CATALOG_REFRESH_LOADER_DELAY_MS = 180;
 const CATALOG_ENTER_DURATION_MS = 260;
 type AvailabilityFilter = "all" | "in-stock" | "out-of-stock";
+type CatalogTransitionPhase = "idle" | "exiting" | "entering";
 
 export function ShopPage({
   categorySlug,
@@ -47,7 +49,8 @@ export function ShopPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showRefreshLoader, setShowRefreshLoader] = useState(false);
-  const [gridEntering, setGridEntering] = useState(false);
+  const [catalogTransition, setCatalogTransition] = useState<CatalogTransitionPhase>("idle");
+  const displayedProductsRef = useRef<StorefrontProduct[]>([]);
   const introReveal = useRevealOnView<HTMLElement>({
     rootMargin: "0px 0px -12% 0px",
     threshold: 0.2
@@ -70,36 +73,24 @@ export function ShopPage({
   }, [searchParam]);
 
   useEffect(() => {
-    if (!loading || !products.length) {
-      setShowRefreshLoader(false);
-      return;
-    }
-
-    const timeout = window.setTimeout(
-      () => setShowRefreshLoader(true),
-      CATALOG_REFRESH_LOADER_DELAY_MS
-    );
-
-    return () => window.clearTimeout(timeout);
-  }, [loading, products.length]);
-
-  useEffect(() => {
-    if (loading || !products.length) return;
-
-    setShowRefreshLoader(false);
-    setGridEntering(true);
-    const timeout = window.setTimeout(
-      () => setGridEntering(false),
-      CATALOG_ENTER_DURATION_MS
-    );
-
-    return () => window.clearTimeout(timeout);
-  }, [loading, products]);
-
-  useEffect(() => {
     const controller = new AbortController();
+    const hasDisplayedProducts = displayedProductsRef.current.length > 0;
+    const transitionStartedAt = performance.now();
+    let loaderTimer: number | null = null;
+    let swapTimer: number | null = null;
+    let enterTimer: number | null = null;
+
     setLoading(true);
     setError("");
+    setShowRefreshLoader(false);
+    setCatalogTransition(hasDisplayedProducts ? "exiting" : "idle");
+
+    if (hasDisplayedProducts) {
+      loaderTimer = window.setTimeout(() => {
+        if (!controller.signal.aborted) setShowRefreshLoader(true);
+      }, CATALOG_REFRESH_LOADER_DELAY_MS);
+    }
+
     Promise.all([
       fetchStorefrontCategories(controller.signal),
       fetchStorefrontProducts(
@@ -114,18 +105,57 @@ export function ShopPage({
       )
     ])
       .then(([nextCategories, result]) => {
+        if (controller.signal.aborted) return;
+
         setCategories(nextCategories);
-        setProducts(result.items);
-        setMeta(result.meta);
+
+        const elapsed = performance.now() - transitionStartedAt;
+        const swapDelay = hasDisplayedProducts
+          ? Math.max(0, CATALOG_EXIT_DURATION_MS - elapsed)
+          : 0;
+
+        swapTimer = window.setTimeout(() => {
+          if (controller.signal.aborted) return;
+          if (loaderTimer !== null) {
+            window.clearTimeout(loaderTimer);
+            loaderTimer = null;
+          }
+
+          displayedProductsRef.current = result.items;
+          setProducts(result.items);
+          setMeta(result.meta);
+          setShowRefreshLoader(false);
+          setLoading(false);
+
+          if (result.items.length) {
+            setCatalogTransition("entering");
+            enterTimer = window.setTimeout(
+              () => setCatalogTransition("idle"),
+              CATALOG_ENTER_DURATION_MS
+            );
+          } else {
+            setCatalogTransition("idle");
+          }
+        }, swapDelay);
       })
       .catch((reason: unknown) => {
-        if (!controller.signal.aborted)
-          setError(reason instanceof Error ? reason.message : "Products could not be loaded.");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
+        if (controller.signal.aborted) return;
+        if (loaderTimer !== null) {
+          window.clearTimeout(loaderTimer);
+          loaderTimer = null;
+        }
+        setShowRefreshLoader(false);
+        setCatalogTransition("idle");
+        setLoading(false);
+        setError(reason instanceof Error ? reason.message : "Products could not be loaded.");
       });
-    return () => controller.abort();
+
+    return () => {
+      controller.abort();
+      if (loaderTimer !== null) window.clearTimeout(loaderTimer);
+      if (swapTimer !== null) window.clearTimeout(swapTimer);
+      if (enterTimer !== null) window.clearTimeout(enterTimer);
+    };
   }, [availabilityParam, categorySlug, pageParam, searchParam]);
 
   const activeCategory = categories.find((category) => category.slug === categorySlug);
@@ -350,8 +380,8 @@ export function ShopPage({
           {!error && products.length ? (
             <div className="shop-product-grid-shell">
               <ShopProductGrid
-                isEntering={gridEntering}
-                isRefreshing={loading}
+                isEntering={catalogTransition === "entering"}
+                isRefreshing={catalogTransition === "exiting"}
                 navigate={navigate}
                 products={products}
               />
