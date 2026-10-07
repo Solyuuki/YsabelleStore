@@ -88,6 +88,18 @@ function getCurrentLocation() {
   return `${window.location.pathname || "/"}${window.location.search}${window.location.hash}`;
 }
 
+function shouldPreserveShopCategoryScroll(currentLocation: string, nextPath: string) {
+  const currentUrl = new URL(currentLocation, window.location.origin);
+  const nextUrl = new URL(nextPath, window.location.origin);
+  const shopBrowsePath = /^\/shop(?:\/category\/[^/]+)?$/;
+
+  return (
+    shopBrowsePath.test(currentUrl.pathname) &&
+    shopBrowsePath.test(nextUrl.pathname) &&
+    currentUrl.pathname !== nextUrl.pathname
+  );
+}
+
 function getReceiptPrintRequest() {
   const url = new URL(window.location.href);
 
@@ -135,7 +147,10 @@ export function AppShell() {
   }, []);
 
   const navigate = useCallback((nextPath: string) => {
-    if (getCurrentLocation() !== nextPath) {
+    const currentLocation = getCurrentLocation();
+    const preserveShopCategoryScroll = shouldPreserveShopCategoryScroll(currentLocation, nextPath);
+
+    if (currentLocation !== nextPath) {
       window.history.pushState({}, "", nextPath);
     }
 
@@ -143,7 +158,7 @@ export function AppShell() {
     const hash = new URL(nextPath, window.location.origin).hash;
     if (hash) {
       window.requestAnimationFrame(() => document.querySelector(hash)?.scrollIntoView());
-    } else {
+    } else if (!preserveShopCategoryScroll) {
       window.scrollTo({ top: 0, behavior: "auto" });
     }
   }, []);
