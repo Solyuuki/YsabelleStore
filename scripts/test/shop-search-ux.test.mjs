@@ -48,3 +48,12 @@ test("shop category navigation preserves the current scroll position", () => {
   assert.match(appShellSource, /currentUrl\.pathname !== nextUrl\.pathname/);
   assert.match(appShellSource, /else if \(!preserveShopCategoryScroll\)/);
 });
+
+
+test("category refresh keeps the current product grid mounted for a smooth swap", () => {
+  assert.match(source, /loading && !products\.length/);
+  assert.match(source, /products\.length \? \(/);
+  assert.match(source, /isRefreshing=\{loading\}/);
+  assert.match(source, /isRefreshing \? " is-refreshing" : ""/);
+  assert.match(source, /aria-busy=\{loading\}/);
+});
