@@ -55,35 +55,37 @@ export function PrivacyNotice({
       {visible && pathname !== "/privacy" ? (
         <aside aria-label="Privacy notice" className="customer-privacy-notice" role="region">
           <div className="customer-privacy-notice__texture" aria-hidden="true" />
-          <div className="customer-privacy-notice__icon" aria-hidden="true">
-            <ShieldCheck size={20} />
-          </div>
-          <div className="customer-privacy-notice__copy">
-            <p className="customer-privacy-notice__eyebrow">Privacy at Ysabelle Store</p>
-            <strong>Service and security storage keeps requested store features working.</strong>
-            <p>
-              We use essential storage for sign-in, verification, cart continuity, and account
-              security. No advertising trackers are currently enabled.
-            </p>
-          </div>
-          <div className="customer-privacy-notice__links">
-            <CustomerLink href="/privacy" navigate={navigate}>
-              Privacy policy
-              <ExternalLink aria-hidden="true" size={14} />
-            </CustomerLink>
-            <button onClick={() => setDetailsOpen(true)} type="button">
-              Storage details
-              <Cookie aria-hidden="true" size={14} />
+          <div className="customer-privacy-notice__inner">
+            <div className="customer-privacy-notice__icon" aria-hidden="true">
+              <ShieldCheck size={20} />
+            </div>
+            <div className="customer-privacy-notice__copy">
+              <p className="customer-privacy-notice__eyebrow">Privacy at Ysabelle Store</p>
+              <strong>Service and security storage keeps requested store features working.</strong>
+              <p>
+                We use essential storage for sign-in, verification, cart continuity, and account
+                security. No advertising trackers are currently enabled.
+              </p>
+            </div>
+            <div className="customer-privacy-notice__links">
+              <CustomerLink href="/privacy" navigate={navigate}>
+                Privacy policy
+                <ExternalLink aria-hidden="true" size={14} />
+              </CustomerLink>
+              <button onClick={() => setDetailsOpen(true)} type="button">
+                Storage details
+                <Cookie aria-hidden="true" size={14} />
+              </button>
+            </div>
+            <button
+              aria-label="Dismiss privacy notice"
+              className="customer-privacy-notice__dismiss"
+              onClick={dismiss}
+              type="button"
+            >
+              <X aria-hidden="true" size={18} />
             </button>
           </div>
-          <button
-            aria-label="Dismiss privacy notice"
-            className="customer-privacy-notice__dismiss"
-            onClick={dismiss}
-            type="button"
-          >
-            <X aria-hidden="true" size={18} />
-          </button>
         </aside>
       ) : null}
 
