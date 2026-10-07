@@ -237,26 +237,82 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                 <div className="customer-support-form__two-column">
                   <label>
                     <span>Name</span>
-                    <input
-                      autoComplete="name"
-                      disabled={signedIn}
-                      maxLength={120}
-                      onChange={(event) => setCustomerName(event.target.value)}
-                      required
-                      value={customerName}
-                    />
+                    <div
+                      aria-describedby={signedIn ? "support-name-locked-help" : undefined}
+                      className={
+                        signedIn
+                          ? "customer-support-input-shell customer-support-input-shell--locked"
+                          : "customer-support-input-shell"
+                      }
+                      tabIndex={signedIn ? 0 : undefined}
+                    >
+                      <input
+                        autoComplete="name"
+                        disabled={signedIn}
+                        maxLength={120}
+                        onChange={(event) => setCustomerName(event.target.value)}
+                        required
+                        value={customerName}
+                      />
+                      {signedIn ? (
+                        <>
+                          <LockKeyhole
+                            aria-hidden="true"
+                            className="customer-support-input-lock"
+                            size={15}
+                          />
+                          <span
+                            className="customer-support-field-tooltip"
+                            id="support-name-locked-help"
+                            role="tooltip"
+                          >
+                            This field is locked while you are signed in. Support uses the name from
+                            your account so the ticket stays linked to the correct customer. Update
+                            your profile in My Account if you need to change it.
+                          </span>
+                        </>
+                      ) : null}
+                    </div>
                   </label>
                   <label>
                     <span>Email</span>
-                    <input
-                      autoComplete="email"
-                      disabled={signedIn}
-                      maxLength={191}
-                      onChange={(event) => setCustomerEmail(event.target.value)}
-                      required
-                      type="email"
-                      value={customerEmail}
-                    />
+                    <div
+                      aria-describedby={signedIn ? "support-email-locked-help" : undefined}
+                      className={
+                        signedIn
+                          ? "customer-support-input-shell customer-support-input-shell--locked"
+                          : "customer-support-input-shell"
+                      }
+                      tabIndex={signedIn ? 0 : undefined}
+                    >
+                      <input
+                        autoComplete="email"
+                        disabled={signedIn}
+                        maxLength={191}
+                        onChange={(event) => setCustomerEmail(event.target.value)}
+                        required
+                        type="email"
+                        value={customerEmail}
+                      />
+                      {signedIn ? (
+                        <>
+                          <LockKeyhole
+                            aria-hidden="true"
+                            className="customer-support-input-lock"
+                            size={15}
+                          />
+                          <span
+                            className="customer-support-field-tooltip"
+                            id="support-email-locked-help"
+                            role="tooltip"
+                          >
+                            Your verified account email is used to identify this support request and
+                            for follow-up. It cannot be changed from the support form while you are
+                            signed in.
+                          </span>
+                        </>
+                      ) : null}
+                    </div>
                   </label>
                 </div>
 
@@ -265,14 +321,42 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                     <span>
                       Phone <small>optional</small>
                     </span>
-                    <input
-                      autoComplete="tel"
-                      disabled={signedIn}
-                      maxLength={40}
-                      onChange={(event) => setCustomerPhone(event.target.value)}
-                      type="tel"
-                      value={customerPhone}
-                    />
+                    <div
+                      aria-describedby={signedIn ? "support-phone-locked-help" : undefined}
+                      className={
+                        signedIn
+                          ? "customer-support-input-shell customer-support-input-shell--locked"
+                          : "customer-support-input-shell"
+                      }
+                      tabIndex={signedIn ? 0 : undefined}
+                    >
+                      <input
+                        autoComplete="tel"
+                        disabled={signedIn}
+                        maxLength={40}
+                        onChange={(event) => setCustomerPhone(event.target.value)}
+                        type="tel"
+                        value={customerPhone}
+                      />
+                      {signedIn ? (
+                        <>
+                          <LockKeyhole
+                            aria-hidden="true"
+                            className="customer-support-input-lock"
+                            size={15}
+                          />
+                          <span
+                            className="customer-support-field-tooltip"
+                            id="support-phone-locked-help"
+                            role="tooltip"
+                          >
+                            This form uses the phone currently attached to your signed-in account.
+                            Account contact fields are locked here so a support ticket cannot
+                            override your account identity. Manage contact details from My Account.
+                          </span>
+                        </>
+                      ) : null}
+                    </div>
                   </label>
                   <label>
                     <span>Concern type</span>
