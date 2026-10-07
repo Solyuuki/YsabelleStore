@@ -266,9 +266,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                             id="support-name-locked-help"
                             role="tooltip"
                           >
-                            This field is locked while you are signed in. Support uses the name from
-                            your account so the ticket stays linked to the correct customer. Update
-                            your profile in My Account if you need to change it.
+                            Locked while signed in. Change your name in My Account.
                           </span>
                         </>
                       ) : null}
@@ -306,9 +304,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                             id="support-email-locked-help"
                             role="tooltip"
                           >
-                            Your verified account email is used to identify this support request and
-                            for follow-up. It cannot be changed from the support form while you are
-                            signed in.
+                            Verified account email. It identifies your ticket and cannot be changed here.
                           </span>
                         </>
                       ) : null}
@@ -350,9 +346,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                             id="support-phone-locked-help"
                             role="tooltip"
                           >
-                            This form uses the phone currently attached to your signed-in account.
-                            Account contact fields are locked here so a support ticket cannot
-                            override your account identity. Manage contact details from My Account.
+                            Uses your account phone. Update contact details in My Account.
                           </span>
                         </>
                       ) : null}
