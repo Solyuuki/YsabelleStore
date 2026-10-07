@@ -811,3 +811,80 @@
   border-color: rgb(98 91 255 / 26%);
   background: linear-gradient(135deg, rgb(98 91 255 / 14%), rgb(98 91 255 / 8%));
 }
+
+
+/* Adaptive shop canvas: fixed-size ambient tiles avoid vertical stretching when category result counts vary. */
+.customer-shop-page .customer-shop-layout {
+  min-height: calc(100svh - 11rem);
+}
+
+.customer-shop-page .customer-shop-catalog-backdrop {
+  background-color: #edf2fa;
+  background-image:
+    radial-gradient(
+      44rem 30rem at 6rem 15rem,
+      rgb(110 180 236 / 16%) 0%,
+      rgb(110 180 236 / 7%) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      46rem 32rem at calc(100% - 4rem) 24rem,
+      rgb(170 128 224 / 14%) 0%,
+      rgb(170 128 224 / 6%) 44%,
+      transparent 74%
+    ),
+    linear-gradient(
+      90deg,
+      #edf4fb 0%,
+      #f3f5fb 48%,
+      #f6f0f8 100%
+    );
+  background-repeat: repeat-y, repeat-y, no-repeat;
+  background-position:
+    left -19rem top -8rem,
+    right -21rem top 18rem,
+    center;
+  background-size:
+    72rem 56rem,
+    76rem 60rem,
+    100% 100%;
+}
+
+.customer-shop-page .customer-shop-catalog-backdrop::before {
+  position: absolute;
+  inset: 0;
+  background-image: url("/textures/kpi-card-frosted-ribbon.webp");
+  background-repeat: repeat-y;
+  background-position: center top;
+  background-size: max(100vw, 92rem) 54rem;
+  content: "";
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+.customer-shop-page .customer-shop-catalog-backdrop::after {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgb(255 255 255 / 0%) 0 8rem,
+      rgb(255 255 255 / 16%) 8rem 8.12rem,
+      rgb(255 255 255 / 0%) 8.12rem 16rem
+    );
+  content: "";
+  mix-blend-mode: soft-light;
+  opacity: 0.24;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .customer-shop-page .customer-shop-layout {
+    min-height: calc(100svh - 8rem);
+  }
+
+  .customer-shop-page .customer-shop-catalog-backdrop::before {
+    background-size: 76rem 46rem;
+    opacity: 0.11;
+  }
+}
