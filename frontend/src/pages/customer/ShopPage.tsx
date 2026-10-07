@@ -238,7 +238,11 @@ export function ShopPage({
           ))}
         </aside>
 
-        <section className="customer-shop-results" aria-labelledby="shop-results-title">
+        <section
+          aria-busy={loading}
+          aria-labelledby="shop-results-title"
+          className="customer-shop-results"
+        >
           <form
             className={`customer-shop-toolbar shop-motion-controls ${controlsReveal.isVisible ? "is-visible" : ""}`}
             onSubmit={submit}
@@ -305,15 +309,15 @@ export function ShopPage({
               </button>
             </div>
           ) : null}
-          {!error && loading ? (
+          {!error && loading && !products.length ? (
             <div className="customer-product-grid customer-product-grid--loading">
               {Array.from({ length: 8 }, (_, index) => (
                 <div className="customer-product-skeleton" key={index} />
               ))}
             </div>
           ) : null}
-          {!error && !loading && products.length ? (
-            <ShopProductGrid navigate={navigate} products={products} />
+          {!error && products.length ? (
+            <ShopProductGrid isRefreshing={loading} navigate={navigate} products={products} />
           ) : null}
           {!error && !loading && !products.length ? (
             <div className="customer-empty-state">
@@ -354,14 +358,18 @@ export function ShopPage({
 }
 
 function ShopProductGrid({
+  isRefreshing,
   navigate,
   products
 }: {
+  isRefreshing: boolean;
   navigate: (path: string) => void;
   products: StorefrontProduct[];
 }) {
   return (
-    <div className="customer-product-grid shop-product-grid is-visible">
+    <div
+      className={`customer-product-grid shop-product-grid is-visible${isRefreshing ? " is-refreshing" : ""}`}
+    >
       {products.map((product, index) => (
         <div
           className="shop-product-reveal"
