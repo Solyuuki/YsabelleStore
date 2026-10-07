@@ -51,18 +51,20 @@ test("shop category navigation preserves the current scroll position", () => {
 });
 
 
-test("category refresh stages a delayed loader and keeps the current grid mounted", () => {
+test("category refresh stages data so new cards enter on their first painted frame", () => {
+  assert.match(source, /const CATALOG_EXIT_DURATION_MS = 120/);
   assert.match(source, /const CATALOG_REFRESH_LOADER_DELAY_MS = 180/);
   assert.match(source, /const CATALOG_ENTER_DURATION_MS = 260/);
-  assert.match(source, /setShowRefreshLoader\(true\)/);
-  assert.match(source, /CATALOG_REFRESH_LOADER_DELAY_MS/);
-  assert.match(source, /setGridEntering\(true\)/);
-  assert.match(source, /CATALOG_ENTER_DURATION_MS/);
-  assert.match(source, /loading && !products\.length/);
-  assert.match(source, /products\.length \? \(/);
-  assert.match(source, /isRefreshing=\{loading\}/);
-  assert.match(source, /isEntering=\{gridEntering\}/);
+  assert.match(source, /displayedProductsRef = useRef<StorefrontProduct\[\]>\(\[\]\)/);
+  assert.match(source, /setCatalogTransition\(hasDisplayedProducts \? "exiting" : "idle"\)/);
+  assert.match(source, /Math\.max\(0, CATALOG_EXIT_DURATION_MS - elapsed\)/);
+  assert.match(source, /displayedProductsRef\.current = result\.items/);
+  assert.match(source, /setProducts\(result\.items\)/);
+  assert.match(source, /setCatalogTransition\("entering"\)/);
+  assert.match(source, /setCatalogTransition\("idle"\)/);
   assert.match(source, /ShopCatalogRefreshLoader visible=\{showRefreshLoader\}/);
+  assert.match(source, /isRefreshing=\{catalogTransition === "exiting"\}/);
+  assert.match(source, /isEntering=\{catalogTransition === "entering"\}/);
   assert.match(source, /Updating aisle…/);
   assert.match(source, /aria-busy=\{loading\}/);
 });
