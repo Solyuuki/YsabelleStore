@@ -1282,3 +1282,38 @@
     transition: none;
   }
 }
+
+
+/* Favorites and orders use the same approved frosted-ribbon surface as the profile panel. */
+#favorites-panel.customer-account-section,
+#orders-panel.customer-account-section {
+  border-color: rgba(111, 105, 166, 0.16);
+  background-color: rgba(247, 248, 252, 0.94);
+  background-image: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.74) 0%,
+    rgba(245, 247, 252, 0.9) 48%,
+    rgba(241, 242, 249, 0.92) 100%
+  );
+  box-shadow:
+    0 24px 58px rgba(45, 48, 84, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(18px) saturate(118%);
+}
+
+#favorites-panel.ys-material-surface::before,
+#orders-panel.ys-material-surface::before {
+  background-image:
+    url("/textures/kpi-card-frosted-ribbon.webp"),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.24),
+      transparent 44% 72%,
+      rgba(98, 91, 255, 0.05)
+    ) !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-position: center, center !important;
+  background-size: cover, auto !important;
+  background-blend-mode: soft-light, normal !important;
+  opacity: 0.52 !important;
+}
