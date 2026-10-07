@@ -42,7 +42,9 @@ test("loaded products stay visible without animation gating while sidebar keeps 
 
 test("shop category navigation preserves the current scroll position", () => {
   assert.match(appShellSource, /function shouldPreserveShopCategoryScroll/);
-  assert.match(appShellSource, /\/\^\\\/shop\(\?:\\\/category\\\/\[\^\/\]\+\)\?\$\//);
+  assert.ok(
+    appShellSource.includes('const shopBrowsePath = /^\\/shop(?:\\/category\\/[^/]+)?$/;')
+  );
   assert.match(appShellSource, /currentUrl\.pathname !== nextUrl\.pathname/);
   assert.match(appShellSource, /else if \(!preserveShopCategoryScroll\)/);
 });
