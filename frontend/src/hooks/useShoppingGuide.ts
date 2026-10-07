@@ -112,8 +112,6 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
       const wrapper = guide.getState().popover?.wrapper;
       isTransitioning = true;
 
-      if (!prefersReducedMotion) wrapper?.classList.add("is-transitioning");
-
       const revealNextPopover = () => {
         window.requestAnimationFrame(() => {
           window.requestAnimationFrame(() => {
@@ -151,6 +149,7 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
           return;
         }
 
+        wrapper?.classList.add("is-transitioning");
         window.setTimeout(() => beginMove(target), GUIDE_STEP_EXIT_MS);
       });
     }
