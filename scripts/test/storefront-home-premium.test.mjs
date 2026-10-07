@@ -412,7 +412,7 @@ assert.match(
 assert.match(premiumCss, /\.customer-product-badge__fire-outer[\s\S]*?color:\s*#ff343f/);
 assert.match(premiumCss, /\.customer-product-badge__fire-inner[\s\S]*?color:\s*#ffb020/);
 assert.match(premiumCss, /\.customer-product-badge--best-seller[\s\S]*?#ffcf5a[\s\S]*?#ffb43f/);
-assert.match(premiumCss, /\.customer-product-badge__medal-icon[\s\S]*?width:\s*17px/);
+assert.match(premiumCss, /\.customer-product-badge__medal-icon[\s\S]*?width:\s*20px/);
 assert.match(premiumCss, /\.customer-product-badge__medal-icon[\s\S]*?overflow:\s*visible/);
 assert.match(
   premiumCss,
