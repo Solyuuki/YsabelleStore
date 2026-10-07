@@ -86,7 +86,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
     if (!customer) return;
     setCustomerName(customer.name);
     setCustomerEmail(customer.email);
-    setCustomerPhone(customer.phone ?? "");
+    setCustomerPhone(customer.defaultContactPhone ?? customer.phone ?? "");
   }, [customer]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -224,7 +224,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                 <div className="customer-support-account-note">
                   <ShieldCheck aria-hidden="true" size={18} />
                   <span>
-                    Signed in as <strong>{customer?.email}</strong>. Your verified account contact
+                    Signed in as <strong>{customer?.email}</strong>. Your saved account contact
                     details will be used for this ticket.
                   </span>
                 </div>
@@ -346,7 +346,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                             id="support-phone-locked-help"
                             role="tooltip"
                           >
-                            Uses your account phone. Update contact details in My Account.
+                            Uses your saved contact mobile. Update it in My Account.
                           </span>
                         </>
                       ) : null}
