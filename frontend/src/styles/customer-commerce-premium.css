@@ -712,3 +712,102 @@
     min-height: 44px;
   }
 }
+
+
+/* Shop catalog card material: match the approved storefront frost + outline treatment. */
+.customer-shop-page .customer-product-card {
+  border-color: rgb(95 90 154 / 28%);
+  outline: 1px solid rgb(255 255 255 / 62%);
+  outline-offset: -2px;
+  background: rgb(248 249 252 / 96%);
+  box-shadow: none;
+}
+
+.customer-shop-page .customer-product-card.ys-material-surface::before {
+  display: none;
+}
+
+.customer-shop-page .customer-product-card__media,
+.customer-shop-page .customer-product-card__body {
+  position: relative;
+  z-index: 1;
+}
+
+.customer-shop-page .customer-product-card__media {
+  background: #fff;
+}
+
+.customer-shop-page .customer-product-card__body {
+  isolation: isolate;
+  overflow: hidden;
+  background: rgb(247 248 252 / 96%);
+}
+
+.customer-shop-page .customer-product-card__body::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/textures/kpi-card-frosted-ribbon.webp");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  content: "";
+  opacity: 0.62;
+  pointer-events: none;
+}
+
+.customer-shop-page .customer-product-card__body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.customer-shop-page .customer-product-card:hover {
+  border-color: rgb(98 91 255 / 38%);
+  outline-color: rgb(255 255 255 / 76%);
+  box-shadow: none;
+}
+
+.customer-shop-page .customer-product-card:focus-within {
+  border-color: var(--customer-info);
+  outline-color: rgb(255 255 255 / 82%);
+  box-shadow: 0 0 0 3px var(--customer-focus);
+}
+
+/* Browse/category rail gets a distinct frosted surface without a floating shadow. */
+.customer-shop-page .customer-filter-panel.shop-category-navigation {
+  isolation: isolate;
+  overflow-x: hidden;
+  border-color: rgb(95 90 154 / 28%);
+  outline: 1px solid rgb(255 255 255 / 62%);
+  outline-offset: -2px;
+  background: rgb(248 249 252 / 96%);
+  box-shadow: none;
+}
+
+.customer-shop-page .customer-filter-panel.shop-category-navigation::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background-image: url("/textures/kpi-card-frosted-ribbon.webp");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  content: "";
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.customer-shop-page .customer-filter-panel.shop-category-navigation > * {
+  position: relative;
+  z-index: 1;
+}
+
+.customer-shop-page .customer-filter-panel.shop-category-navigation > a {
+  backdrop-filter: blur(4px);
+}
+
+.customer-shop-page .customer-filter-panel.shop-category-navigation > a.is-active {
+  border-color: rgb(98 91 255 / 26%);
+  background: linear-gradient(135deg, rgb(98 91 255 / 14%), rgb(98 91 255 / 8%));
+}
