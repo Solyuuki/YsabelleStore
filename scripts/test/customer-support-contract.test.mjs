@@ -42,6 +42,8 @@ test("customer storefront exposes the support page, form, FAQ and footer entry",
   assert.match(supportPage, /customer-support-field-tooltip/);
   assert.match(supportPage, /Locked while signed in\. Change your name in My Account\./);
   assert.match(supportPage, /Verified account email\. It identifies your ticket/);
+  assert.match(supportPage, /customer\.defaultContactPhone \?\? customer\.phone \?\? ""/);
+  assert.match(supportPage, /Uses your saved contact mobile/);
   assert.match(supportPage, /createdTicket\.ticketNumber/);
   assert.match(footer, /href="\/support"/);
   assert.match(footer, /Customer Support/);
