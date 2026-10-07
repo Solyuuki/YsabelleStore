@@ -5,6 +5,11 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../database/prismaClient.js";
 import type { SafeCustomer } from "./customerAuthService.js";
 import type { CustomerSupportTicketCreateInput } from "../validators/customerSupport.validators.js";
+import {
+  deliverAutomatedSupportAcknowledgementEmail,
+  isSupportGmailDeliveryEnabled,
+  SUPPORT_AUTOMATION_SENDER_NAME
+} from "./supportGmailService.js";
 
 const SUPPORT_TICKET_NUMBER_ATTEMPTS = 8;
 
@@ -61,6 +66,77 @@ async function resolveOrderReference(
   };
 }
 
+const SUPPORT_CATEGORY_LABELS = {
+  ORDER: "Order",
+  PAYMENT: "Payment",
+  PRODUCT: "Product",
+  PICKUP_DELIVERY: "Pickup or delivery",
+  ACCOUNT: "Account",
+  RETURN_REFUND: "Return or refund",
+  FEEDBACK: "Feedback",
+  OTHER: "Other"
+} as const;
+
+function supportAcknowledgementBody(ticket: {
+  customerName: string;
+  ticketNumber: string;
+  category: keyof typeof SUPPORT_CATEGORY_LABELS;
+  subject: string;
+}) {
+  return [
+    `Hi ${ticket.customerName},`,
+    "",
+    `We’ve received your support request and created ticket ${ticket.ticketNumber}.`,
+    "Our team will review your concern and respond through this email thread.",
+    "",
+    `Concern: ${SUPPORT_CATEGORY_LABELS[ticket.category]}`,
+    `Subject: ${ticket.subject}`,
+    "",
+    "You may reply directly to this email if you need to add more information.",
+    "",
+    "For your security, never send your password, one-time password (OTP), CVV, or full card details by email."
+  ].join("\n");
+}
+
+async function queueSupportAcknowledgement(ticket: {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  ticketNumber: string;
+  category: keyof typeof SUPPORT_CATEGORY_LABELS;
+  subject: string;
+}) {
+  if (!isSupportGmailDeliveryEnabled()) return null;
+
+  return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM support_tickets WHERE id = ${ticket.id} FOR UPDATE`;
+
+    const existing = await tx.supportMessage.findFirst({
+      select: { id: true, deliveryStatus: true },
+      where: {
+        ticketId: ticket.id,
+        senderType: "SYSTEM",
+        channel: "EMAIL",
+        senderName: SUPPORT_AUTOMATION_SENDER_NAME
+      }
+    });
+    if (existing) return existing;
+
+    return tx.supportMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderType: "SYSTEM",
+        channel: "EMAIL",
+        senderName: SUPPORT_AUTOMATION_SENDER_NAME,
+        senderEmail: null,
+        body: supportAcknowledgementBody(ticket),
+        deliveryStatus: "PENDING"
+      },
+      select: { id: true, deliveryStatus: true }
+    });
+  });
+}
+
 function isUniqueConstraintError(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
@@ -82,7 +158,7 @@ export async function createCustomerSupportTicket(
     const now = new Date();
 
     try {
-      return await prisma.$transaction(async (tx) => {
+      const ticket = await prisma.$transaction(async (tx) => {
         const orderReference = await resolveOrderReference(
           tx,
           orderNumber,
@@ -133,10 +209,23 @@ export async function createCustomerSupportTicket(
             category: true,
             status: true,
             subject: true,
-            createdAt: true
+            createdAt: true,
+            customerName: true,
+            customerEmail: true
           }
         });
       });
+
+      try {
+        const acknowledgement = await queueSupportAcknowledgement(ticket);
+        if (acknowledgement?.deliveryStatus === "PENDING") {
+          void deliverAutomatedSupportAcknowledgementEmail(acknowledgement.id).catch(() => undefined);
+        }
+      } catch {
+        // Ticket creation must remain successful even if acknowledgement queuing fails.
+      }
+
+      return ticket;
     } catch (error) {
       if (isUniqueConstraintError(error) && attempt < SUPPORT_TICKET_NUMBER_ATTEMPTS - 1) {
         continue;
