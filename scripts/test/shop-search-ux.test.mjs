@@ -6,6 +6,10 @@ const source = readFileSync(
   new URL("../../frontend/src/pages/customer/ShopPage.tsx", import.meta.url),
   "utf8"
 );
+const appShellSource = readFileSync(
+  new URL("../../frontend/src/app/AppShell.tsx", import.meta.url),
+  "utf8"
+);
 
 test("shop search auto-applies without an Apply button", () => {
   assert.match(source, /const SEARCH_DEBOUNCE_MS = 350/);
@@ -33,4 +37,12 @@ test("loaded products stay visible without animation gating while sidebar keeps 
 
   assert.match(source, /const categoryNavigationReveal = useRevealOnView<HTMLElement>/);
   assert.match(source, /ref=\{categoryNavigationReveal\.ref\}/);
+});
+
+
+test("shop category navigation preserves the current scroll position", () => {
+  assert.match(appShellSource, /function shouldPreserveShopCategoryScroll/);
+  assert.match(appShellSource, /\/\^\\\/shop\(\?:\\\/category\\\/\[\^\/\]\+\)\?\$\//);
+  assert.match(appShellSource, /currentUrl\.pathname !== nextUrl\.pathname/);
+  assert.match(appShellSource, /else if \(!preserveShopCategoryScroll\)/);
 });
