@@ -1723,7 +1723,9 @@
  * Product/category images stay clean; outer-card shadows are intentionally removed.
  */
 .customer-home .customer-product-card {
-  border-color: rgb(111 105 166 / 18%);
+  border-color: rgb(95 90 154 / 28%);
+  outline: 1px solid rgb(255 255 255 / 62%);
+  outline-offset: -2px;
   background: rgb(248 249 252 / 96%);
   box-shadow: none;
 }
@@ -1767,14 +1769,17 @@
 }
 
 .customer-home .customer-product-card:hover {
-  border-color: rgb(98 91 255 / 24%);
+  border-color: rgb(98 91 255 / 38%);
+  outline-color: rgb(255 255 255 / 76%);
   box-shadow: none;
 }
 
 .home-categories .home-category-card {
   position: relative;
   isolation: isolate;
-  border-color: rgb(111 105 166 / 18%);
+  border-color: rgb(95 90 154 / 28%);
+  outline: 1px solid rgb(255 255 255 / 62%);
+  outline-offset: -2px;
   background: rgb(248 249 252 / 96%);
   box-shadow: none;
 }
@@ -1815,7 +1820,8 @@
 
 .home-categories .home-category-card:hover,
 .home-categories .home-category-card:focus-visible {
-  border-color: rgb(98 91 255 / 24%);
+  border-color: rgb(98 91 255 / 38%);
+  outline-color: rgb(255 255 255 / 76%);
   box-shadow: none;
 }
 
