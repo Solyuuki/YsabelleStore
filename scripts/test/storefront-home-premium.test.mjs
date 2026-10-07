@@ -147,9 +147,8 @@ assert.match(
 );
 assert.match(productCardSource, /customer-product-card__cart-button/);
 assert.match(productCardSource, /customer-product-badge__fire/);
-assert.match(productCardSource, /customer-product-badge__award/);
-assert.match(productCardSource, /<Award \/>/);
-assert.match(productCardSource, /<strong>No\. 1<\/strong>/);
+assert.match(productCardSource, /customer-product-badge__medal-icon/);
+assert.match(productCardSource, /<Medal aria-hidden="true" className="customer-product-badge__medal-icon" \/>/);
 assert.match(
   productCardSource,
   /customer-product-card__rating \$\{hasReviews \? "" : "is-empty"\}/
@@ -409,10 +408,9 @@ assert.match(
 );
 assert.match(premiumCss, /\.customer-product-badge__fire-outer[\s\S]*?color:\s*#ff343f/);
 assert.match(premiumCss, /\.customer-product-badge__fire-inner[\s\S]*?color:\s*#ffb020/);
-assert.match(premiumCss, /\.customer-product-badge--best-seller[\s\S]*?#ffd86a[\s\S]*?#f8bd43[\s\S]*?#efa128/);
-assert.match(premiumCss, /\.customer-product-badge__award[\s\S]*?background:\s*linear-gradient\(145deg, #4b2d06/);
-assert.match(premiumCss, /\.customer-product-badge__award svg[\s\S]*?width:\s*13px/);
-assert.match(premiumCss, /\.customer-product-badge__copy strong[\s\S]*?font-weight:\s*950/);
+assert.match(premiumCss, /\.customer-product-badge--best-seller[\s\S]*?#ffcf5a[\s\S]*?#ffb43f/);
+assert.match(premiumCss, /\.customer-product-badge__medal-icon[\s\S]*?color:\s*#7a4300/);
+assert.match(premiumCss, /\.customer-product-badge__medal-icon[\s\S]*?fill:\s*#ffd66d/);
 assert.match(
   premiumCss,
   /\.customer-product-card__cart-button[\s\S]*?linear-gradient\(110deg, #4f46e5 0%, #7c3aed 56%, #b832d0 100%\)/
