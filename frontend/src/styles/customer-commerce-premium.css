@@ -888,3 +888,36 @@
     opacity: 0.11;
   }
 }
+
+
+/* Category changes keep the current catalog mounted, then cross-fade the refreshed cards.
+ * Only opacity/transform animate so the interaction stays compositor-friendly.
+ */
+.customer-shop-page .shop-product-grid {
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.customer-shop-page .shop-product-grid.is-refreshing {
+  opacity: 0.46;
+  pointer-events: none;
+  transform: translate3d(0, 4px, 0);
+  will-change: opacity, transform;
+}
+
+.customer-shop-page .shop-product-grid:not(.is-refreshing) {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-shop-page .shop-product-grid {
+    transition: none;
+  }
+
+  .customer-shop-page .shop-product-grid.is-refreshing {
+    opacity: 0.72;
+    transform: none;
+  }
+}
