@@ -51,10 +51,18 @@ test("shop category navigation preserves the current scroll position", () => {
 });
 
 
-test("category refresh keeps the current product grid mounted for a smooth swap", () => {
+test("category refresh stages a delayed loader and keeps the current grid mounted", () => {
+  assert.match(source, /const CATALOG_REFRESH_LOADER_DELAY_MS = 180/);
+  assert.match(source, /const CATALOG_ENTER_DURATION_MS = 260/);
+  assert.match(source, /setShowRefreshLoader\(true\)/);
+  assert.match(source, /CATALOG_REFRESH_LOADER_DELAY_MS/);
+  assert.match(source, /setGridEntering\(true\)/);
+  assert.match(source, /CATALOG_ENTER_DURATION_MS/);
   assert.match(source, /loading && !products\.length/);
   assert.match(source, /products\.length \? \(/);
   assert.match(source, /isRefreshing=\{loading\}/);
-  assert.match(source, /isRefreshing \? " is-refreshing" : ""/);
+  assert.match(source, /isEntering=\{gridEntering\}/);
+  assert.match(source, /ShopCatalogRefreshLoader visible=\{showRefreshLoader\}/);
+  assert.match(source, /Updating aisle…/);
   assert.match(source, /aria-busy=\{loading\}/);
 });
