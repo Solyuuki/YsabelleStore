@@ -1249,13 +1249,11 @@
 }
 
 .customer-product-badge__medal-icon {
-  width: 16px;
-  height: 16px;
+  width: 17px;
+  height: 17px;
   flex: none;
-  color: #7a4300;
-  fill: #ffd66d;
-  filter: drop-shadow(0 1px 1px rgb(106 65 4 / 18%));
-  stroke-width: 2.15;
+  overflow: visible;
+  filter: drop-shadow(0 1px 1px rgb(106 65 4 / 20%));
 }
 
 .customer-product-badge--best-seller {
