@@ -13,6 +13,8 @@ import type {
 } from "@/types/storefront";
 
 const SEARCH_DEBOUNCE_MS = 350;
+const CATALOG_REFRESH_LOADER_DELAY_MS = 180;
+const CATALOG_ENTER_DURATION_MS = 260;
 type AvailabilityFilter = "all" | "in-stock" | "out-of-stock";
 
 export function ShopPage({
@@ -44,6 +46,8 @@ export function ShopPage({
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showRefreshLoader, setShowRefreshLoader] = useState(false);
+  const [gridEntering, setGridEntering] = useState(false);
   const introReveal = useRevealOnView<HTMLElement>({
     rootMargin: "0px 0px -12% 0px",
     threshold: 0.2
@@ -64,6 +68,33 @@ export function ShopPage({
   useEffect(() => {
     setSearch(searchParam);
   }, [searchParam]);
+
+  useEffect(() => {
+    if (!loading || !products.length) {
+      setShowRefreshLoader(false);
+      return;
+    }
+
+    const timeout = window.setTimeout(
+      () => setShowRefreshLoader(true),
+      CATALOG_REFRESH_LOADER_DELAY_MS
+    );
+
+    return () => window.clearTimeout(timeout);
+  }, [loading, products.length]);
+
+  useEffect(() => {
+    if (loading || !products.length) return;
+
+    setShowRefreshLoader(false);
+    setGridEntering(true);
+    const timeout = window.setTimeout(
+      () => setGridEntering(false),
+      CATALOG_ENTER_DURATION_MS
+    );
+
+    return () => window.clearTimeout(timeout);
+  }, [loading, products]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -317,7 +348,15 @@ export function ShopPage({
             </div>
           ) : null}
           {!error && products.length ? (
-            <ShopProductGrid isRefreshing={loading} navigate={navigate} products={products} />
+            <div className="shop-product-grid-shell">
+              <ShopProductGrid
+                isEntering={gridEntering}
+                isRefreshing={loading}
+                navigate={navigate}
+                products={products}
+              />
+              <ShopCatalogRefreshLoader visible={showRefreshLoader} />
+            </div>
           ) : null}
           {!error && !loading && !products.length ? (
             <div className="customer-empty-state">
@@ -358,17 +397,19 @@ export function ShopPage({
 }
 
 function ShopProductGrid({
+  isEntering,
   isRefreshing,
   navigate,
   products
 }: {
+  isEntering: boolean;
   isRefreshing: boolean;
   navigate: (path: string) => void;
   products: StorefrontProduct[];
 }) {
   return (
     <div
-      className={`customer-product-grid shop-product-grid is-visible${isRefreshing ? " is-refreshing" : ""}`}
+      className={`customer-product-grid shop-product-grid is-visible${isRefreshing ? " is-refreshing" : ""}${isEntering ? " is-entering" : ""}`}
     >
       {products.map((product, index) => (
         <div
@@ -382,3 +423,32 @@ function ShopProductGrid({
     </div>
   );
 }
+
+function ShopCatalogRefreshLoader({ visible }: { visible: boolean }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`shop-catalog-refresh${visible ? " is-visible" : ""}`}
+    >
+      <span className="shop-catalog-refresh__label">Updating aisle…</span>
+      <div className="customer-product-grid shop-catalog-refresh__grid">
+        {Array.from({ length: 6 }, (_, index) => (
+          <div className="shop-catalog-refresh__card" key={index}>
+            <div className="shop-catalog-refresh__media" />
+            <div className="shop-catalog-refresh__body">
+              <span className="shop-catalog-refresh__line shop-catalog-refresh__line--eyebrow" />
+              <span className="shop-catalog-refresh__line shop-catalog-refresh__line--title" />
+              <span className="shop-catalog-refresh__line shop-catalog-refresh__line--meta" />
+              <span className="shop-catalog-refresh__line shop-catalog-refresh__line--price" />
+              <div className="shop-catalog-refresh__actions">
+                <span />
+                <span />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
