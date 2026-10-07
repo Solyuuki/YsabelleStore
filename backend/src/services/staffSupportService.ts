@@ -11,10 +11,12 @@ import type {
 } from "../validators/customerSupport.validators.js";
 import type { SafeUser } from "./authService.js";
 import {
+  deliverAutomatedSupportAcknowledgementEmail,
   deliverStaffSupportMessageEmail,
   isSupportGmailConfigured,
   isSupportGmailDeliveryEnabled,
-  isSupportLocalReplyFallbackAllowed
+  isSupportLocalReplyFallbackAllowed,
+  SUPPORT_AUTOMATION_SENDER_NAME
 } from "./supportGmailService.js";
 
 const staffSupportTicketDetailSelect = {
@@ -247,6 +249,8 @@ export async function retryStaffSupportEmail(ticketId: string, messageId: string
     select: {
       id: true,
       senderType: true,
+      senderName: true,
+      channel: true,
       deliveryStatus: true,
       ticket: {
         select: {
@@ -260,7 +264,12 @@ export async function retryStaffSupportEmail(ticketId: string, messageId: string
     }
   });
 
-  if (!message || message.senderType !== "STAFF") {
+  const automatedAcknowledgement =
+    message?.senderType === "SYSTEM" &&
+    message.channel === "EMAIL" &&
+    message.senderName === SUPPORT_AUTOMATION_SENDER_NAME;
+
+  if (!message || (message.senderType !== "STAFF" && !automatedAcknowledgement)) {
     throw new HttpError(404, "Support message was not found.", {
       code: "SUPPORT_MESSAGE_NOT_FOUND"
     });
@@ -297,7 +306,7 @@ export async function retryStaffSupportEmail(ticketId: string, messageId: string
     where: {
       id: message.id,
       ticketId,
-      senderType: "STAFF",
+      channel: "EMAIL",
       deliveryStatus: "FAILED"
     }
   });
@@ -308,7 +317,11 @@ export async function retryStaffSupportEmail(ticketId: string, messageId: string
     });
   }
 
-  await deliverStaffSupportMessageEmail(message.id);
+  if (automatedAcknowledgement) {
+    await deliverAutomatedSupportAcknowledgementEmail(message.id);
+  } else {
+    await deliverStaffSupportMessageEmail(message.id);
+  }
   return getStaffSupportTicket(ticketId);
 }
 
