@@ -3,15 +3,16 @@ import { useEffect } from "react";
 
 const GUIDE_PENDING_KEY = "ysabelle:shopping-guide:pending";
 const GUIDE_COMPLETE_KEY = "ysabelle:shopping-guide:complete";
-const GUIDE_SCROLL_TIMEOUT_MS = 900;
+const GUIDE_SCROLL_TIMEOUT_MS = 720;
 const GUIDE_TARGET_WAIT_MS = 4_000;
 const GUIDE_ROUTE_TRANSITION_CLASS = "ysabelle-guide-route-transition";
 const GUIDE_ROUTE_EXIT_MS = 120;
 const GUIDE_ROUTE_ENTER_MS = 180;
 const GUIDE_SCROLLING_CLASS = "ysabelle-guide-scrolling";
 const GUIDE_FINISHING_CLASS = "ysabelle-guide-finishing";
-const GUIDE_FINISH_DURATION_MS = 180;
-const GUIDE_SCROLL_IDLE_MS = 140;
+const GUIDE_FINISH_DURATION_MS = 160;
+const GUIDE_SCROLL_IDLE_MS = 110;
+const GUIDE_STEP_EXIT_MS = 90;
 const GUIDE_TARGETS = [
   '[data-tour="search"]',
   ".home-categories .home-section-heading",
@@ -108,33 +109,49 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
       if (isTransitioning) return;
 
       const nextIndex = Math.max(0, (currentIndex ?? 0) + (direction === "next" ? 1 : -1));
-      isTransitioning = true;
-      document.documentElement.classList.add(GUIDE_SCROLLING_CLASS);
-
       const wrapper = guide.getState().popover?.wrapper;
-      if (wrapper) wrapper.classList.add("is-transitioning");
+      isTransitioning = true;
 
-      const completeMove = () => {
-        document.documentElement.classList.remove(GUIDE_SCROLLING_CLASS);
-        requestAnimationFrame(() => {
-          if (direction === "next") guide.moveNext();
-          else guide.movePrevious();
-          isTransitioning = false;
+      if (!prefersReducedMotion) wrapper?.classList.add("is-transitioning");
+
+      const revealNextPopover = () => {
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            guide.getState().popover?.wrapper.classList.remove("is-transitioning");
+            isTransitioning = false;
+          });
         });
       };
 
-      waitForGuideTarget(nextIndex, (target) => {
+      const completeMove = () => {
+        document.documentElement.classList.remove(GUIDE_SCROLLING_CLASS);
+        if (direction === "next") guide.moveNext();
+        else guide.movePrevious();
+        revealNextPopover();
+      };
+
+      const beginMove = (target: HTMLElement | null) => {
         if (!target || prefersReducedMotion || targetIsComfortablyVisible(target)) {
           completeMove();
           return;
         }
 
+        document.documentElement.classList.add(GUIDE_SCROLLING_CLASS);
         target.scrollIntoView({
-          behavior: prefersReducedMotion ? "auto" : "smooth",
+          behavior: "smooth",
           block: "center",
           inline: "nearest"
         });
         waitForScrollSettle(completeMove);
+      };
+
+      waitForGuideTarget(nextIndex, (target) => {
+        if (prefersReducedMotion) {
+          beginMove(target);
+          return;
+        }
+
+        window.setTimeout(() => beginMove(target), GUIDE_STEP_EXIT_MS);
       });
     }
 
@@ -145,18 +162,21 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
       allowKeyboardControl: true,
       allowScroll: true,
       animate: !prefersReducedMotion,
-      duration: prefersReducedMotion ? 0 : 520,
-      doneBtnText: "Finish",
+      duration: prefersReducedMotion ? 0 : 340,
+      doneBtnText: "Start shopping",
       nextBtnText: "Next",
       prevBtnText: "Back",
-      progressText: "Step {{current}} of {{total}}",
+      progressText: "{{current}} of {{total}}",
       showProgress: true,
       showButtons: ["previous", "next", "close"],
       skipMissingElement: true,
       smoothScroll: false,
+      stagePadding: 10,
+      stageRadius: 16,
+      popoverOffset: 14,
       waitForElement: 4_000,
       overlayColor: "#101426",
-      overlayOpacity: 0.52,
+      overlayOpacity: 0.46,
       popoverClass: "ysabelle-guide",
       onNextClick: (_element, _step, options) => moveGuide("next", options.index),
       onPrevClick: (_element, _step, options) => moveGuide("previous", options.index),
@@ -185,6 +205,7 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
         finishTimer = window.setTimeout(finish, GUIDE_FINISH_DURATION_MS);
       },
       onPopoverRender: (popover) => {
+        popover.wrapper.classList.remove("is-transitioning");
         popover.closeButton.textContent = "Skip";
         popover.closeButton.setAttribute("aria-label", "Skip shopping guide");
       },
@@ -192,8 +213,9 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
         {
           element: GUIDE_TARGETS[0],
           popover: {
-            title: "Search groceries",
-            description: "Search by product or category from anywhere in the shop.",
+            title: "Search the catalog",
+            description:
+              "Find products or categories from the header. Suggestions and recent searches help you move faster.",
             side: "bottom",
             align: "center"
           }
@@ -201,8 +223,8 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
         {
           element: GUIDE_TARGETS[1],
           popover: {
-            title: "Browse categories",
-            description: "Jump straight to the section that matches your shopping list.",
+            title: "Browse by aisle",
+            description: "Choose a category to narrow the live catalog without losing your place.",
             side: "bottom",
             align: "start"
           }
@@ -210,8 +232,9 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
         {
           element: GUIDE_TARGETS[2],
           popover: {
-            title: "View a product",
-            description: "Open a product to check its price, unit, and current availability.",
+            title: "Check product details",
+            description:
+              "See the current price, unit, rating, availability, and save favorites for later.",
             side: "right",
             align: "center"
           }
@@ -219,8 +242,8 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
         {
           element: GUIDE_TARGETS[3],
           popover: {
-            title: "Add what you need",
-            description: "Choose a quantity, then add the item to your grocery cart.",
+            title: "Build your basket",
+            description: "Choose a quantity, then add the item to your cart.",
             side: "right",
             align: "center"
           }
@@ -229,7 +252,7 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
           element: GUIDE_TARGETS[4],
           popover: {
             title: "Review your cart",
-            description: "Your cart stays within reach and keeps your item count visible.",
+            description: "Adjust quantities and review your running total before checkout.",
             side: "bottom",
             align: "end"
           }
@@ -237,17 +260,17 @@ export function useShoppingGuide(pathname: string, navigate: (path: string) => v
         {
           element: GUIDE_TARGETS[5],
           popover: {
-            title: "Checkout clearly",
-            description: "Review totals, provide pickup details, and pay cash when you collect.",
+            title: "Checkout & delivery",
+            description:
+              "Confirm your delivery details, then choose secure online payment or Cash on Delivery.",
             side: "top",
             align: "start"
           }
         },
         {
           popover: {
-            title: "You are ready",
-            description:
-              "Start shopping whenever you are ready. You can restart this guide from Help."
+            title: "Ready to shop",
+            description: "You can reopen this guide anytime from Guide in the header."
           }
         }
       ]
