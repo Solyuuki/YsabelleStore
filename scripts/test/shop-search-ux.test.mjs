@@ -33,7 +33,8 @@ test("loaded products stay visible without animation gating while sidebar keeps 
   assert.doesNotMatch(productGridSource, /useRevealOnView/);
   assert.doesNotMatch(productGridSource, /requestAnimationFrame/);
   assert.doesNotMatch(productGridSource, /hasEntered/);
-  assert.match(productGridSource, /className="customer-product-grid shop-product-grid is-visible"/);
+  assert.match(productGridSource, /customer-product-grid shop-product-grid is-visible/);
+  assert.match(productGridSource, /isRefreshing \? " is-refreshing" : ""/);
 
   assert.match(source, /const categoryNavigationReveal = useRevealOnView<HTMLElement>/);
   assert.match(source, /ref=\{categoryNavigationReveal\.ref\}/);
