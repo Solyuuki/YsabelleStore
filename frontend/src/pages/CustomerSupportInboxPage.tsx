@@ -649,12 +649,50 @@ function ConversationMessage({
   onRetryEmail: (messageId: string) => void;
   retrying: boolean;
 }) {
-  if (message.senderType === "SYSTEM") {
+  const automatedEmail = message.senderType === "SYSTEM" && message.channel === "EMAIL";
+
+  if (message.senderType === "SYSTEM" && !automatedEmail) {
     return (
       <div className="flex justify-center py-1">
         <div className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 shadow-sm">
           {message.body}
         </div>
+      </div>
+    );
+  }
+
+  if (automatedEmail) {
+    return (
+      <div className="flex justify-center py-1">
+        <article className="max-w-[82%] rounded-2xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-slate-800 shadow-sm">
+          <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-indigo-700">
+            <strong>Automated acknowledgement</strong>
+            <span>·</span>
+            <span>{formatDateTime(message.createdAt)}</span>
+            <span>·</span>
+            <span>EMAIL</span>
+          </div>
+          <p className="whitespace-pre-wrap text-sm leading-6">{message.body}</p>
+          <div className="mt-2 flex flex-wrap items-center justify-end gap-2 text-[11px] text-indigo-700">
+            <span>
+              {message.deliveryStatus === "SENT"
+                ? "Email sent"
+                : message.deliveryStatus === "FAILED"
+                  ? "Email failed"
+                  : "Email pending"}
+            </span>
+            {message.deliveryStatus === "FAILED" ? (
+              <button
+                className="rounded-md border border-indigo-300 px-2 py-1 font-semibold hover:bg-indigo-100 disabled:opacity-60"
+                disabled={retrying}
+                onClick={() => onRetryEmail(message.id)}
+                type="button"
+              >
+                {retrying ? "Retrying..." : "Retry email"}
+              </button>
+            ) : null}
+          </div>
+        </article>
       </div>
     );
   }
