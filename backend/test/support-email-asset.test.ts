@@ -1,59 +1,41 @@
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
-function emailAssetDirectory() {
-  const candidates = [
+function supportLogoBytes() {
+  const directories = [
     path.resolve(process.cwd(), "assets", "email"),
     path.resolve(process.cwd(), "backend", "assets", "email")
   ];
 
-  for (const candidate of candidates) {
+  for (const directory of directories) {
     try {
-      readdirSync(candidate);
-      return candidate;
+      return Buffer.from(
+        readFileSync(path.join(directory, "ysabelle-support-logo.png.b64"), "utf8").trim(),
+        "base64"
+      );
     } catch {
-      // Try the next supported test working directory.
+      // Check the other supported test working directory.
     }
   }
 
-  throw new Error("Support email asset directory was not found.");
+  throw new Error("Static support logo asset was not found.");
 }
 
-test("animated support signature asset reconstructs into a complete looping GIF", () => {
-  const directory = emailAssetDirectory();
-  const parts = readdirSync(directory)
-    .filter((name) => /^ysabelle-support-logo\.gif\.b64\.part\d+$/.test(name))
-    .sort((left, right) => left.localeCompare(right));
-
-  assert.deepEqual(parts, [
-    "ysabelle-support-logo.gif.b64.part00",
-    "ysabelle-support-logo.gif.b64.part01",
-    "ysabelle-support-logo.gif.b64.part02",
-    "ysabelle-support-logo.gif.b64.part03",
-    "ysabelle-support-logo.gif.b64.part04",
-    "ysabelle-support-logo.gif.b64.part05",
-    "ysabelle-support-logo.gif.b64.part06"
-  ]);
-
-  const encoded = parts
-    .map((name) => readFileSync(path.join(directory, name), "utf8").trim())
-    .join("");
-  const bytes = Buffer.from(encoded, "base64");
-
-  assert.equal(encoded.length, 24_232);
-  assert.equal(bytes.length, 18_173);
-  assert.equal(bytes.subarray(0, 6).toString("ascii"), "GIF89a");
-  assert.equal(bytes[bytes.length - 1], 0x3b);
-  assert.notEqual(bytes.indexOf(Buffer.from("NETSCAPE2.0", "ascii")), -1);
-
-  let graphicControlExtensions = 0;
-  for (let index = 0; index < bytes.length - 2; index += 1) {
-    if (bytes[index] === 0x21 && bytes[index + 1] === 0xf9 && bytes[index + 2] === 0x04) {
-      graphicControlExtensions += 1;
-    }
-  }
-
-  assert.ok(graphicControlExtensions >= 2, "Expected more than one animated GIF frame.");
+test("static support signature logo reconstructs as a lightweight transparent PNG", () => {
+  const bytes = supportLogoBytes();
+  assert.deepEqual(
+    bytes.subarray(0, 8),
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])
+  );
+  assert.ok(bytes.length > 500, "Expected a non-empty optimized PNG.");
+  assert.ok(bytes.length < 20_000, "Email signature must remain lightweight.");
+  assert.equal(bytes.readUInt32BE(16), 72);
+  assert.equal(bytes.readUInt32BE(20), 72);
+  const colorType = bytes[25];
+  assert.ok(colorType === 3 || colorType === 4 || colorType === 6,
+    "Expected a transparency-capable PNG color mode.");
+  assert.notEqual(bytes.indexOf(Buffer.from("tRNS", "ascii")), -1,
+    "Expected transparent palette entries.");
 });
