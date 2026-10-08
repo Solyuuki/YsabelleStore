@@ -7,8 +7,7 @@ import {
   replyToStaffSupportTicketController,
   retryStaffSupportEmailController,
   syncSupportGmailController,
-  updateStaffSupportTicketStatusController,
-  requestSupportResolutionController
+  updateStaffSupportTicketStatusController
 } from "../controllers/staffSupportController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
@@ -26,4 +25,3 @@ staffSupportRouter.post(
   retryStaffSupportEmailController
 );
 staffSupportRouter.patch("/tickets/:ticketId/status", updateStaffSupportTicketStatusController);
-staffSupportRouter.post("/tickets/:ticketId/request-resolution", requestSupportResolutionController);
