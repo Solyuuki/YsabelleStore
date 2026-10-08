@@ -189,7 +189,7 @@ export function CustomerSupportInboxPage() {
 
   async function saveStatus() {
     if (!detail || statusDraft === detail.status || statusSaving) return;
-    if (statusDraft === "RESOLVED" && !window.confirm("Ask the customer if their concern has been resolved? The ticket will remain pending until they respond Yes or No.")) {
+    if (statusDraft === "RESOLVED" && !window.confirm("Send a resolution confirmation email? The ticket stays pending until the customer replies YES or NO in Gmail.")) {
       setStatusDraft(detail.status);
       return;
     }
@@ -707,9 +707,9 @@ function ConversationMessage({
   }
 
   const staff = message.senderType === "STAFF";
-  const resolutionRequest = message.body.startsWith("YS_SUPPORT_RESOLUTION_REQUEST:");
+  const resolutionRequest = message.body.startsWith("YS_SUPPORT_RESOLUTION_EMAIL_REPLY:");
   const displayBody = resolutionRequest
-    ? "Resolution confirmation requested. The customer can select Yes, resolved or No, need more help from their email. The link expires after 72 hours."
+    ? "Resolution confirmation requested. Customer should reply YES or NO directly to the same email thread within 72 hours."
     : message.body;
 
   return (
