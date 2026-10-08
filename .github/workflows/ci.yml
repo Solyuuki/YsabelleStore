@@ -21,6 +21,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  appearance-contract:
+    name: Dark mode asset and contrast contracts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run Dark Mode contracts
+        run: node --test scripts/test/appearance-theme.test.mjs scripts/test/appearance-contrast.test.mjs
+
   repository-checks:
     name: Repository quality gates
     runs-on: ubuntu-latest
