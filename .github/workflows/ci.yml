@@ -21,6 +21,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  format-preview-temporary:
+    name: Temporary formatting preview
+    if: github.ref == 'refs/heads/sprint/v0.11/sprint-11'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate formatting preview
+        run: npx prettier --write . > /dev/null
+
+      - name: Emit deterministic UTF-8 preview
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const cp = require('node:child_process');
+          const names = cp.execFileSync('git', ['diff', '--name-only'], {encoding:'utf8'}).trim().split('\n').filter(Boolean);
+          console.log('FORMAT_COUNT=' + names.length);
+          for (const path of names) {
+            const content = fs.readFileSync(path).toString('base64');
+            console.log('FORMAT_START=' + path);
+            for (let i = 0; i < content.length; i += 3500) console.log('FORMAT_DATA=' + content.slice(i, i + 3500));
+            console.log('FORMAT_END=' + path);
+          }
+          NODE
+
   appearance-contract:
     name: Dark mode asset and contrast contracts
     runs-on: ubuntu-latest
