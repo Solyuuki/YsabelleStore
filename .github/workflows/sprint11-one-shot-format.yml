@@ -13,6 +13,9 @@ permissions:
 jobs:
   format-only:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
+      JWT_SECRET: ci-only-theme-format-validation-key-32-bytes
     steps:
       - uses: actions/checkout@v4
         with:
