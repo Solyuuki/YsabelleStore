@@ -189,7 +189,7 @@ export function CustomerSupportInboxPage() {
 
   async function saveStatus() {
     if (!detail || statusDraft === detail.status || statusSaving) return;
-    if (statusDraft === "RESOLVED" && !window.confirm("Mark this support ticket as Resolved? A final resolution email will be sent to the customer.")) {
+    if (statusDraft === "RESOLVED" && !window.confirm("Ask the customer if their concern has been resolved? The ticket will remain pending until they respond Yes or No.")) {
       setStatusDraft(detail.status);
       return;
     }
