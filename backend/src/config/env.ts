@@ -46,7 +46,10 @@ const envSchema = z.object({
   GOOGLE_OAUTH_CLIENT_ID: optionalNonEmptyString,
   GOOGLE_OAUTH_CLIENT_SECRET: optionalNonEmptyString,
   CUSTOMER_SUPPORT_EMAIL: optionalEmail,
-  SUPPORT_PUBLIC_BACKEND_URL: z.string().url().optional(),
+  SUPPORT_PUBLIC_BACKEND_URL: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().url().optional()
+  ),
   CUSTOMER_SUPPORT_FROM_NAME: z
     .string()
     .trim()
