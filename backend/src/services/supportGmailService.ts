@@ -365,6 +365,9 @@ function buildRawSupportEmail(
   const visibleBody = isResolutionRequest
     ? input.body.slice("YS_SUPPORT_RESOLUTION_REQUEST:".length).trim()
     : input.body.trim();
+  const resolutionBody = isResolutionRequest
+    ? visibleBody.replace(/^Yes, resolved:.*$/gm, "").replace(/^No, I need more help:.*$/gm, "").replace(/\n{3,}/g, "\n\n").trim()
+    : visibleBody;
   const resolutionLinks = isResolutionRequest
     ? (visibleBody.match(/https?:\/\/[^\s]+/g) ?? []).slice(0, 2)
     : [];
@@ -375,7 +378,7 @@ function buildRawSupportEmail(
       </div>`
     : "";
   const text = [
-    visibleBody,
+    resolutionBody,
     "",
     "Best regards,",
     "Ysabelle Store Customer Support",
@@ -383,7 +386,7 @@ function buildRawSupportEmail(
     `Ticket: ${input.ticketNumber}`
   ].join("\n");
 
-  const paragraphs = visibleBody
+  const paragraphs = resolutionBody
     .trim()
     .split(/\n{2,}/)
     .map(
