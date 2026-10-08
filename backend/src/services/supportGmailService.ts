@@ -22,6 +22,7 @@ const TICKET_REFERENCE_PATTERN = /\bYS-CS-\d{6}\b/i;
 const SUPPORT_LOGO_CONTENT_ID = "ysabelle-support-logo";
 const SUPPORT_LOGO_FILENAME = "ysabelle-support-logo.png";
 export const SUPPORT_AUTOMATION_SENDER_NAME = "Ysabelle Store Auto Acknowledgement";
+export const SUPPORT_LIFECYCLE_SENDER_NAME = "Ysabelle Store Support Lifecycle";
 
 function isValidPngBytes(bytes: Buffer) {
   const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -645,7 +646,7 @@ function runtimeClient() {
 }
 
 type SupportEmailDeliveryOptions = {
-  kind: "ACKNOWLEDGEMENT" | "STAFF_REPLY";
+  kind: "ACKNOWLEDGEMENT" | "STAFF_REPLY" | "LIFECYCLE";
   transitionTicketStatus: boolean;
 };
 
@@ -679,7 +680,9 @@ async function deliverSupportMessageEmail(
   const expectedSender =
     options.kind === "ACKNOWLEDGEMENT"
       ? message?.senderType === "SYSTEM" && message.senderName === SUPPORT_AUTOMATION_SENDER_NAME
-      : message?.senderType === "STAFF";
+      : options.kind === "LIFECYCLE"
+        ? message?.senderType === "SYSTEM" && message.senderName === SUPPORT_LIFECYCLE_SENDER_NAME
+        : message?.senderType === "STAFF";
   if (!message || !expectedSender) {
     throw new HttpError(404, "Support message was not found.", {
       code: "SUPPORT_MESSAGE_NOT_FOUND"
@@ -701,7 +704,7 @@ async function deliverSupportMessageEmail(
   }
 
   const previousGmailMessage =
-    options.kind === "STAFF_REPLY"
+    options.kind !== "ACKNOWLEDGEMENT"
       ? await prisma.supportMessage.findFirst({
           orderBy: [{ createdAt: "desc" }, { id: "desc" }],
           select: { gmailMessageId: true },
@@ -722,7 +725,7 @@ async function deliverSupportMessageEmail(
       body: message.body,
       threadId: message.ticket.gmailThreadId,
       replyToGmailMessageId: previousGmailMessage?.gmailMessageId ?? null,
-      kind: options.kind
+      kind: options.kind === "ACKNOWLEDGEMENT" ? "ACKNOWLEDGEMENT" : "STAFF_REPLY"
     });
   } catch {
     const operations: Prisma.PrismaPromise<unknown>[] = [
@@ -817,6 +820,17 @@ export async function deliverAutomatedSupportAcknowledgementEmail(
   return deliverSupportMessageEmail(
     messageId,
     { kind: "ACKNOWLEDGEMENT", transitionTicketStatus: false },
+    client
+  );
+}
+
+export async function deliverSupportLifecycleMessageEmail(
+  messageId: string,
+  client: SupportGmailClient = runtimeClient()
+) {
+  return deliverSupportMessageEmail(
+    messageId,
+    { kind: "LIFECYCLE", transitionTicketStatus: false },
     client
   );
 }
