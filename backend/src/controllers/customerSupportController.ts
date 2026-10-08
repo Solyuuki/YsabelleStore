@@ -26,13 +26,18 @@ export const createCustomerSupportTicketController: RequestHandler = async (
   }
 };
 
-function resolutionHtml(title: string, body: string, token?: string) {
+function resolutionHtml(title: string, body: string, token?: string, selected?: "YES" | "NO") {
   const tokenField = token ? `<input type="hidden" name="token" value="${token}" />` : "";
+  const yesAction = selected !== "NO"
+    ? '<button name="answer" value="YES" type="submit">Confirm: Yes, resolved</button>'
+    : "";
+  const noAction = selected !== "YES"
+    ? '<button name="answer" value="NO" type="submit">Confirm: No, I need more help</button>'
+    : "";
   const actions = token
     ? `<form action="/api/customer-support/resolution" method="post">
         ${tokenField}
-        <button name="answer" value="YES" type="submit">Yes, resolved</button>
-        <button name="answer" value="NO" type="submit">No, I need more help</button>
+        ${yesAction}${noAction}
       </form>`
     : "";
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} | Ysabelle Store</title><style>body{margin:0;background:#f7f7ff;color:#201b46;font:16px Arial,sans-serif;padding:40px 18px}main{max-width:480px;margin:10vh auto;background:#fff;border:1px solid #e8e4ff;border-radius:20px;padding:28px}h1{font-size:24px}p{line-height:1.6}button{padding:13px 18px;border:0;border-radius:10px;background:#6254df;color:#fff;cursor:pointer;margin:6px 8px 6px 0;font-weight:700}button[value="NO"]{background:#f1efff;color:#332b72}</style></head><body><main><h1>${title}</h1><p>${body}</p>${actions}</main></body></html>`;
@@ -50,7 +55,19 @@ export const viewSupportResolutionController: RequestHandler = async (request, r
       return;
     }
     const safeToken = token.replace(/[^A-Za-z0-9._-]/g, "");
-    response.type("html").send(resolutionHtml("Resolution confirmation", "Has your Ysabelle Store support concern been resolved?", safeToken));
+    const selected = request.query.answer === "YES" || request.query.answer === "NO"
+      ? request.query.answer
+      : undefined;
+    response.type("html").send(resolutionHtml(
+      selected === "YES" ? "Confirm resolution" : selected === "NO" ? "Request more help" : "Resolution confirmation",
+      selected === "YES"
+        ? "Please confirm that your support concern has been resolved."
+        : selected === "NO"
+          ? "Please confirm that you still need assistance. Your support ticket will reopen."
+          : "Has your Ysabelle Store support concern been resolved?",
+      safeToken,
+      selected
+    ));
   } catch (error) { next(error); }
 };
 
