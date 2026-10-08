@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { extractLatestCustomerEmailReply, parseSupportResolutionEmailReply } from "../src/services/supportGmailService.js";
+import {
+  extractLatestCustomerEmailReply,
+  parseSupportResolutionEmailReply
+} from "../src/services/supportGmailService.js";
 
 test("resolution replies require an explicit standalone YES or NO", () => {
   assert.equal(parseSupportResolutionEmailReply("YES"), "YES");
@@ -13,7 +16,6 @@ test("resolution replies require an explicit standalone YES or NO", () => {
   assert.equal(parseSupportResolutionEmailReply("Not yet"), null);
   assert.equal(parseSupportResolutionEmailReply(""), null);
 });
-
 
 test("quoted Gmail history is excluded from customer reply text", () => {
   const reply = [
@@ -49,7 +51,9 @@ test("other email formats are cleaned without truncating genuine customer text",
     "Can you send a replacement?"
   );
   assert.equal(
-    extractLatestCustomerEmailReply("I still need help with the delivery.\nPlease call me tomorrow."),
+    extractLatestCustomerEmailReply(
+      "I still need help with the delivery.\nPlease call me tomorrow."
+    ),
     "I still need help with the delivery.\nPlease call me tomorrow."
   );
 });

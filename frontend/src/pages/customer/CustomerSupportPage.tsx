@@ -304,7 +304,8 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                             id="support-email-locked-help"
                             role="tooltip"
                           >
-                            Verified account email. It identifies your ticket and cannot be changed here.
+                            Verified account email. It identifies your ticket and cannot be changed
+                            here.
                           </span>
                         </>
                       ) : null}

@@ -16,11 +16,7 @@ import { QuantityControl } from "./QuantityControl";
 
 function BestSellerMedalIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      className="customer-product-badge__medal-icon"
-      viewBox="0 0 24 24"
-    >
+    <svg aria-hidden="true" className="customer-product-badge__medal-icon" viewBox="0 0 24 24">
       <path d="M6.8 2.5h4.4l2.2 7.1-4.2 1.5L6.8 2.5Z" fill="#365BD9" />
       <path d="M12.8 2.5h4.4l-2.4 8.6-4.2-1.5 2.2-7.1Z" fill="#D94A4A" />
       <path d="M8.2 2.5h2.1l1.7 5.8-2 1.1-1.8-6.9Z" fill="#6F8BFF" opacity="0.9" />

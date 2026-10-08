@@ -47,7 +47,6 @@ test("both appearance controls and theme styles are loaded without changing Ligh
   assert.ok(customer.includes("@/styles/theme-storefront-contrast.css"));
 });
 
-
 test("dark home category portal and SVG merchandising canvas never reuse light fills", () => {
   const dark = read("frontend/src/styles/theme-storefront.css");
   const home = read("frontend/src/styles/customer-home-premium.css");
@@ -64,7 +63,6 @@ test("dark home category portal and SVG merchandising canvas never reuse light f
   assert.doesNotMatch(dark, /\.about-experience|\.discover-story|\.story-welcome/);
   assert.match(about, /const storyTheme/);
 });
-
 
 test("dedicated dark asset files exist and are referenced by scoped theme styles", () => {
   const storefront = read("frontend/src/styles/theme-storefront.css");

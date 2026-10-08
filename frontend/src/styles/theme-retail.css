@@ -19,7 +19,10 @@
   color: #1d2942;
   cursor: pointer;
   text-align: left;
-  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
 }
 .ys-appearance-choice[data-selected="true"] {
   border-color: #8177e9;
@@ -52,10 +55,24 @@
   min-width: 0;
   gap: 0.12rem;
 }
-.ys-appearance-choice__copy strong { font-size: 0.9rem; }
-.ys-appearance-choice__copy small { color: #667189; font-size: 0.76rem; }
-.ys-appearance-choice__check { margin-left: auto; color: #5149d9; font-size: 0.7rem; font-weight: 750; }
-@media (max-width: 600px) { .ys-appearance-options { grid-template-columns: 1fr; } }
+.ys-appearance-choice__copy strong {
+  font-size: 0.9rem;
+}
+.ys-appearance-choice__copy small {
+  color: #667189;
+  font-size: 0.76rem;
+}
+.ys-appearance-choice__check {
+  margin-left: auto;
+  color: #5149d9;
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+@media (max-width: 600px) {
+  .ys-appearance-options {
+    grid-template-columns: 1fr;
+  }
+}
 
 :root.dark {
   --background: 221 47% 8%;
@@ -66,10 +83,12 @@
   --muted-foreground: 220 24% 77%;
   --border: 222 27% 29%;
 }
-:root.dark body { background: #101827; color: #b8c6d8; }
+:root.dark body {
+  background: #101827;
+  color: #b8c6d8;
+}
 :root.dark .app-shell-ambient.ys-glass-flow-background {
-  --ys-glass-flow-background:
-    url("/textures/ys-dark-midnight-velvet.svg");
+  --ys-glass-flow-background: url("/textures/ys-dark-midnight-velvet.svg");
   background-color: #101827 !important;
   background-image: var(--ys-glass-flow-background) !important;
   background-size: min(1600px, 100%) auto !important;
@@ -86,27 +105,48 @@
 :root.dark .app-shell-ambient [class~="bg-[rgba(248,247,255,0.92)]"] {
   background-color: #19263d !important;
 }
-:root.dark .app-shell-ambient :is(
-  [class~="bg-red-50"],[class~="bg-rose-50"],[class~="bg-red-100"]
-) { background-color: #422738 !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="bg-amber-50"],[class~="bg-yellow-50"],[class~="bg-amber-100"]
-) { background-color: #433520 !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="bg-emerald-50"],[class~="bg-green-50"],
-  [class~="bg-blue-50"],[class~="bg-indigo-50"]
-) { background-color: #293654 !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="text-red-700"],[class~="text-red-800"],[class~="text-rose-700"]
-) { color: #ffb9c5 !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="text-amber-700"],[class~="text-amber-800"],[class~="text-yellow-700"]
-) { color: #f8d49b !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="text-indigo-600"],[class~="text-indigo-700"],
-  [class~="text-blue-600"],[class~="text-blue-700"],
-  [class~="text-violet-700"],[class~="text-violet-800"]
-) { color: #c3baff !important; }
+:root.dark
+  .app-shell-ambient
+  :is([class~="bg-red-50"], [class~="bg-rose-50"], [class~="bg-red-100"]) {
+  background-color: #422738 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is([class~="bg-amber-50"], [class~="bg-yellow-50"], [class~="bg-amber-100"]) {
+  background-color: #433520 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="bg-emerald-50"],
+    [class~="bg-green-50"],
+    [class~="bg-blue-50"],
+    [class~="bg-indigo-50"]
+  ) {
+  background-color: #293654 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is([class~="text-red-700"], [class~="text-red-800"], [class~="text-rose-700"]) {
+  color: #ffb9c5 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is([class~="text-amber-700"], [class~="text-amber-800"], [class~="text-yellow-700"]) {
+  color: #f8d49b !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-indigo-600"],
+    [class~="text-indigo-700"],
+    [class~="text-blue-600"],
+    [class~="text-blue-700"],
+    [class~="text-violet-700"],
+    [class~="text-violet-800"]
+  ) {
+  color: #c3baff !important;
+}
 
 :root.dark .app-shell-ambient .ys-dashboard-panel-surface {
   background-color: #1c2940 !important;
@@ -134,42 +174,80 @@
   opacity: 0.19 !important;
 }
 /* Convert the existing light utility vocabulary without changing Light Mode. */
-:root.dark .app-shell-ambient :is(
-  [class~="bg-white"],[class~="bg-white/90"],[class~="bg-white/95"],[class~="bg-white/80"],
-  [class~="bg-white/85"],[class~="bg-white/70"],[class~="bg-white/75"],[class~="bg-white/60"],
-  [class~="bg-white/98"],[class~="bg-slate-50"],[class~="bg-slate-50/80"],
-  [class~="bg-slate-100"],[class~="bg-slate-50/90"]
-) {
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/90"],
+    [class~="bg-white/95"],
+    [class~="bg-white/80"],
+    [class~="bg-white/85"],
+    [class~="bg-white/70"],
+    [class~="bg-white/75"],
+    [class~="bg-white/60"],
+    [class~="bg-white/98"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-slate-50/90"]
+  ) {
   background-color: #202c43 !important;
 }
-:root.dark .app-shell-ambient :is(
-  [class~="text-slate-950"],[class~="text-slate-900"],[class~="text-slate-800"],
-  [class~="text-slate-700"]
-) { color: #f0f3ff !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="text-slate-600"],[class~="text-slate-500"],[class~="text-slate-400"],
-  [class~="text-gray-500"],[class~="text-gray-600"]
-) { color: #c3cde1 !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="border-slate-100"],[class~="border-slate-200"],[class~="border-slate-300"],
-  [class~="border-violet-200/55"]
-) { border-color: #43516b !important; }
-:root.dark .app-shell-ambient :is(
-  input:not([type="checkbox"]):not([type="radio"]), select, textarea
-) {
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
+  color: #f0f3ff !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-slate-600"],
+    [class~="text-slate-500"],
+    [class~="text-slate-400"],
+    [class~="text-gray-500"],
+    [class~="text-gray-600"]
+  ) {
+  color: #c3cde1 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="border-slate-100"],
+    [class~="border-slate-200"],
+    [class~="border-slate-300"],
+    [class~="border-violet-200/55"]
+  ) {
+  border-color: #43516b !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   background-color: #18243a;
   color: #f0f3ff;
   border-color: #485776;
   color-scheme: dark;
 }
-:root.dark .app-shell-ambient :is(input,textarea)::placeholder { color: #a8b5ce; }
-:root.dark .app-shell-ambient :is(input,select,textarea):focus-visible {
+:root.dark .app-shell-ambient :is(input, textarea)::placeholder {
+  color: #a8b5ce;
+}
+:root.dark .app-shell-ambient :is(input, select, textarea):focus-visible {
   outline-color: #a29aff;
   border-color: #a29aff;
 }
-:root.dark .app-shell-ambient :is([role="table"],table) { color: #e9eeff; }
-:root.dark .app-shell-ambient :is(th,td) { border-color: #39465e; }
-:root.dark .app-shell-ambient :is(tr:hover,[role="row"]:hover) { background-color: rgb(131 139 204 / 8%); }
+:root.dark .app-shell-ambient :is([role="table"], table) {
+  color: #e9eeff;
+}
+:root.dark .app-shell-ambient :is(th, td) {
+  border-color: #39465e;
+}
+:root.dark .app-shell-ambient :is(tr:hover, [role="row"]:hover) {
+  background-color: rgb(131 139 204 / 8%);
+}
 :root.dark .app-shell-ambient .ys-appearance-card {
   border-color: #465575 !important;
   background: linear-gradient(145deg, #202c44, #1b273b) !important;
@@ -184,8 +262,12 @@
   border-color: #b0a0ff;
   box-shadow: 0 0 0 2px rgb(165 152 255 / 16%);
 }
-:root.dark .ys-appearance-choice__copy small { color: #bac7dc; }
-:root.dark .ys-appearance-choice__check { color: #c5bdff; }
+:root.dark .ys-appearance-choice__copy small {
+  color: #bac7dc;
+}
+:root.dark .ys-appearance-choice__check {
+  color: #c5bdff;
+}
 /* Dialogs and sheets are portaled outside .app-shell-ambient. */
 :root.dark [role="dialog"],
 :root.dark [data-radix-popper-content-wrapper] [role="listbox"] {
@@ -193,25 +275,42 @@
   border-color: #465675;
   color: #f0f3ff;
 }
-:root.dark [role="dialog"] :is([class~="text-slate-950"],[class~="text-slate-900"],[class~="text-slate-800"]) { color: #f2f4ff; }
-:root.dark [role="dialog"] :is([class~="text-slate-600"],[class~="text-slate-500"]) { color: #c3cde1; }
-:root.dark [role="dialog"] :is([class~="bg-white"],[class~="bg-slate-50"]) { background-color: #25334d; }
-:root.dark [role="dialog"] :is(input,select,textarea) {
+:root.dark
+  [role="dialog"]
+  :is([class~="text-slate-950"], [class~="text-slate-900"], [class~="text-slate-800"]) {
+  color: #f2f4ff;
+}
+:root.dark [role="dialog"] :is([class~="text-slate-600"], [class~="text-slate-500"]) {
+  color: #c3cde1;
+}
+:root.dark [role="dialog"] :is([class~="bg-white"], [class~="bg-slate-50"]) {
+  background-color: #25334d;
+}
+:root.dark [role="dialog"] :is(input, select, textarea) {
   background-color: #121e32;
   color: #f2f4ff;
   border-color: #526181;
 }
-:root.dark :is(.recharts-default-tooltip,.recharts-tooltip-wrapper > div) {
+:root.dark :is(.recharts-default-tooltip, .recharts-tooltip-wrapper > div) {
   background-color: #18253b !important;
   border-color: #475775 !important;
   color: #f4f6ff !important;
 }
-:root.dark .recharts-cartesian-axis-tick-value { fill: #c2cde1; }
-:root.dark .recharts-cartesian-grid line { stroke: rgb(180 192 225 / 15%); }
+:root.dark .recharts-cartesian-axis-tick-value {
+  fill: #c2cde1;
+}
+:root.dark .recharts-cartesian-grid line {
+  stroke: rgb(180 192 225 / 15%);
+}
 @media print {
   :root.dark .receipt-print-page,
-  :root.dark .receipt-paper { background: #fff !important; color: #020617 !important; }
-  :root.dark .receipt-print-page * { color-scheme: light; }
+  :root.dark .receipt-paper {
+    background: #fff !important;
+    color: #020617 !important;
+  }
+  :root.dark .receipt-print-page * {
+    color-scheme: light;
+  }
 }
 
 /* Workstation text and controls: muted primary ink, crisp boundaries. */
@@ -221,18 +320,26 @@
   --retail-surface-card: #1b2638;
   --retail-outline-strong: #687995;
 }
-:root.dark .app-shell-ambient :is(
-  .ys-dashboard-panel-surface, .ys-kpi-card-surface,
-  .ys-appearance-card
-) { border-color: var(--retail-outline-strong) !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="text-slate-900"], [class~="text-slate-800"],
-  [class~="text-slate-700"], [class~="text-slate-950"]
-) { color: var(--retail-text-primary) !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="text-slate-600"], [class~="text-slate-500"],
-  [class~="text-slate-400"]
-) { color: var(--retail-text-body) !important; }
+:root.dark
+  .app-shell-ambient
+  :is(.ys-dashboard-panel-surface, .ys-kpi-card-surface, .ys-appearance-card) {
+  border-color: var(--retail-outline-strong) !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"],
+    [class~="text-slate-950"]
+  ) {
+  color: var(--retail-text-primary) !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
+  color: var(--retail-text-body) !important;
+}
 :root.dark .app-shell-ambient :is(input, textarea, select) {
   border-color: var(--retail-outline-strong);
   color: var(--retail-text-primary);
@@ -248,10 +355,16 @@
   border-right-color: #687995 !important;
   box-shadow: 7px 0 30px rgb(0 0 0 / 15%);
 }
-:root.dark .app-shell-ambient > aside :is(
-  [class~="border-violet-200/45"], [class~="border-violet-200/55"],
-  [class~="border-violet-200/70"]
-) { border-color: #536580 !important; }
+:root.dark
+  .app-shell-ambient
+  > aside
+  :is(
+    [class~="border-violet-200/45"],
+    [class~="border-violet-200/55"],
+    [class~="border-violet-200/70"]
+  ) {
+  border-color: #536580 !important;
+}
 :root.dark .app-shell-ambient > aside .group\/nav button:not(.ys-material-accent) {
   color: #b8c6d8 !important;
 }
@@ -259,18 +372,22 @@
   background: #293a55 !important;
   color: #d4deec !important;
 }
-:root.dark .app-shell-ambient > aside :is(
-  [class~="bg-violet-50"], [class~="bg-amber-50"],
-  [class~="hover:bg-violet-50"]
-) { background-color: #2a3751 !important; }
-:root.dark .app-shell-ambient > aside :is(
-  [class~="text-[#625bff]"], [class~="text-amber-700"]
-) { color: #dac9fc !important; }
+:root.dark
+  .app-shell-ambient
+  > aside
+  :is([class~="bg-violet-50"], [class~="bg-amber-50"], [class~="hover:bg-violet-50"]) {
+  background-color: #2a3751 !important;
+}
+:root.dark .app-shell-ambient > aside :is([class~="text-[#625bff]"], [class~="text-amber-700"]) {
+  color: #dac9fc !important;
+}
 :root.dark .app-shell-ambient > aside [class~="bg-white/80"] {
   background: #24334a !important;
   border-color: #687995 !important;
 }
-:root.dark .app-shell-ambient .app-shell-orb { opacity: 0.13; }
+:root.dark .app-shell-ambient .app-shell-orb {
+  opacity: 0.13;
+}
 :root.dark .app-shell-ambient .ys-kpi-card-surface::before {
   background-image: url("/textures/ys-dark-graphite-glass.svg") !important;
   background-size: cover !important;
@@ -278,12 +395,12 @@
   background-blend-mode: normal !important;
 }
 /* Keep positive, warning and destructive operational states distinct. */
-:root.dark .app-shell-ambient :is(
-  [class~="text-emerald-700"], [class~="text-green-700"]
-) { color: #aedbc7 !important; }
-:root.dark .app-shell-ambient :is(
-  [class~="text-rose-700"], [class~="text-red-700"]
-) { color: #f6b9c7 !important; }
+:root.dark .app-shell-ambient :is([class~="text-emerald-700"], [class~="text-green-700"]) {
+  color: #aedbc7 !important;
+}
+:root.dark .app-shell-ambient :is([class~="text-rose-700"], [class~="text-red-700"]) {
+  color: #f6b9c7 !important;
+}
 
 /* Limit decorative SVG panel scale: it is a material, not a stretched image. */
 :root.dark .app-shell-ambient .ys-dashboard-panel-surface::before,

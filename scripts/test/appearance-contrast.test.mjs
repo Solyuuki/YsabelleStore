@@ -50,8 +50,14 @@ test("storefront and retail themes use new dark assets rather than light texture
   assert.ok(retail.includes("ys-dark-graphite-glass.svg"));
   assert.ok(app.includes("@/styles/theme-storefront-contrast.css"));
   for (const contents of [store, component, retail]) {
-    assert.ok(!contents.includes("kpi-card-frosted-ribbon.webp"), "Old Light Mode texture referenced in Dark Mode theme");
-    assert.ok(!contents.includes(".about-experience"), "Protected About CSS selector present in a dark theme");
+    assert.ok(
+      !contents.includes("kpi-card-frosted-ribbon.webp"),
+      "Old Light Mode texture referenced in Dark Mode theme"
+    );
+    assert.ok(
+      !contents.includes(".about-experience"),
+      "Protected About CSS selector present in a dark theme"
+    );
   }
 });
 

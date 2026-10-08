@@ -219,7 +219,9 @@ export async function createCustomerSupportTicket(
       try {
         const acknowledgement = await queueSupportAcknowledgement(ticket);
         if (acknowledgement?.deliveryStatus === "PENDING") {
-          void deliverAutomatedSupportAcknowledgementEmail(acknowledgement.id).catch(() => undefined);
+          void deliverAutomatedSupportAcknowledgementEmail(acknowledgement.id).catch(
+            () => undefined
+          );
         }
       } catch {
         // Ticket creation must remain successful even if acknowledgement queuing fails.

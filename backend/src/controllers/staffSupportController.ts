@@ -135,7 +135,11 @@ export const retryStaffSupportEmailController: RequestHandler = async (request, 
   }
 };
 
-export const requestSupportResolutionController: RequestHandler = async (request, response, next) => {
+export const requestSupportResolutionController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
   try {
     const actor = requireInternalUser(request);
     const { ticketId } = parseOrThrow(supportTicketIdParamsSchema, request.params, {

@@ -11,19 +11,19 @@ import { SystemReliabilityProvider } from "@/context/SystemReliabilityContext";
 export function App() {
   return (
     <AppearanceProvider>
-    <SystemReliabilityProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <div data-reliability-content>
-            <AppShell />
-            <NotificationStack />
-          </div>
-          <GlobalHttpStatusNotifier />
-          <GlobalAuthenticationStatusScreen />
-          <GlobalReliabilityUI />
-        </AuthProvider>
-      </ToastProvider>
-    </SystemReliabilityProvider>
+      <SystemReliabilityProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <div data-reliability-content>
+              <AppShell />
+              <NotificationStack />
+            </div>
+            <GlobalHttpStatusNotifier />
+            <GlobalAuthenticationStatusScreen />
+            <GlobalReliabilityUI />
+          </AuthProvider>
+        </ToastProvider>
+      </SystemReliabilityProvider>
     </AppearanceProvider>
   );
 }

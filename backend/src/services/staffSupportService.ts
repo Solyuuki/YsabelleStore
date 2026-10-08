@@ -276,7 +276,10 @@ export async function retryStaffSupportEmail(ticketId: string, messageId: string
     message.channel === "EMAIL" &&
     message.senderName === SUPPORT_LIFECYCLE_SENDER_NAME;
 
-  if (!message || (message.senderType !== "STAFF" && !automatedAcknowledgement && !lifecycleNotice)) {
+  if (
+    !message ||
+    (message.senderType !== "STAFF" && !automatedAcknowledgement && !lifecycleNotice)
+  ) {
     throw new HttpError(404, "Support message was not found.", {
       code: "SUPPORT_MESSAGE_NOT_FOUND"
     });

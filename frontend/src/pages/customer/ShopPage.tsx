@@ -1,5 +1,12 @@
 import { ArrowLeft, ArrowRight, Search, SlidersHorizontal } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent
+} from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard } from "@/components/customer/ProductCard";
@@ -456,10 +463,7 @@ function ShopProductGrid({
 
 function ShopCatalogRefreshLoader({ visible }: { visible: boolean }) {
   return (
-    <div
-      aria-hidden="true"
-      className={`shop-catalog-refresh${visible ? " is-visible" : ""}`}
-    >
+    <div aria-hidden="true" className={`shop-catalog-refresh${visible ? " is-visible" : ""}`}>
       <span className="shop-catalog-refresh__label">Updating aisle…</span>
       <div className="customer-product-grid shop-catalog-refresh__grid">
         {Array.from({ length: 6 }, (_, index) => (
@@ -481,4 +485,3 @@ function ShopCatalogRefreshLoader({ visible }: { visible: boolean }) {
     </div>
   );
 }
-

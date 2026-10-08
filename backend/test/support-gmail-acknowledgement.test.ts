@@ -43,10 +43,10 @@ test("automated acknowledgement sends branded multipart email with inline PNG an
     }
 
     if (url.includes("/messages/send")) {
-      return new Response(
-        JSON.stringify({ id: "gmail-ack-1", threadId: "gmail-ack-thread-1" }),
-        { status: 200, headers: { "content-type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ id: "gmail-ack-1", threadId: "gmail-ack-thread-1" }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
     }
 
     throw new Error(`Unexpected Gmail test request: ${url}`);
@@ -88,7 +88,10 @@ test("automated acknowledgement sends branded multipart email with inline PNG an
   assert.match(rawEmail, /Auto-Submitted: auto-replied/);
   const subjectValue = rawEmail.match(/^Subject: =\?UTF-8\?B\?(.+)\?=$/m)?.[1];
   assert.ok(subjectValue);
-  assert.equal(Buffer.from(subjectValue, "base64").toString("utf8"), "[YS-CS-000125] Order concern");
+  assert.equal(
+    Buffer.from(subjectValue, "base64").toString("utf8"),
+    "[YS-CS-000125] Order concern"
+  );
   assert.match(rawEmail, /Content-Type: multipart\/related/);
   assert.match(rawEmail, /Content-Type: image\/png/);
   assert.match(rawEmail, /Content-ID: <ysabelle-support-logo>/);

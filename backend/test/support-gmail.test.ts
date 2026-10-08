@@ -117,7 +117,10 @@ test("Gmail client caches the access token and sends a threaded canonical ticket
   assert.match(rawEmail, /Subject: =\?UTF-8\?B\?/);
   const encodedSubject = rawEmail.match(/^Subject: =\?UTF-8\?B\?(.+)\?=$/m)?.[1];
   assert.ok(encodedSubject);
-  assert.equal(Buffer.from(encodedSubject, "base64").toString("utf8"), "[YS-CS-000124] We received your support request");
+  assert.equal(
+    Buffer.from(encodedSubject, "base64").toString("utf8"),
+    "[YS-CS-000124] We received your support request"
+  );
   assert.match(rawEmail, /Content-Type: multipart\/related/);
   assert.match(rawEmail, /Content-Type: multipart\/alternative/);
   assert.doesNotMatch(rawEmail, /Auto-Submitted: auto-replied/);
@@ -624,7 +627,9 @@ test("Gmail resolution reply resolves once within the original ticket thread", a
     let inboundId = `resolution-yes-${randomUUID()}`;
     let finalSendCount = 0;
     const client: SupportGmailClient = {
-      async listInboxMessages() { return [{ id: inboundId, threadId }]; },
+      async listInboxMessages() {
+        return [{ id: inboundId, threadId }];
+      },
       async getMessage() {
         return {
           id: inboundId,
@@ -636,7 +641,12 @@ test("Gmail resolution reply resolves once within the original ticket thread", a
               { name: "From", value: "Confirmation Customer <confirmation-customer@example.com>" },
               { name: "Subject", value: `Re: [${ticket.ticketNumber}] Resolution confirmation QA` }
             ],
-            body: { data: Buffer.from("Yes\n\nOn Thu, Oct 8, 2026 at 11:27 AM Ysabelle Store Customer Support <\nysabellestore.support@gmail.com> wrote:\n\n> Ysabelle Store\n> Please confirm your resolution", "utf8").toString("base64url") }
+            body: {
+              data: Buffer.from(
+                "Yes\n\nOn Thu, Oct 8, 2026 at 11:27 AM Ysabelle Store Customer Support <\nysabellestore.support@gmail.com> wrote:\n\n> Ysabelle Store\n> Please confirm your resolution",
+                "utf8"
+              ).toString("base64url")
+            }
           }
         };
       },
@@ -648,7 +658,10 @@ test("Gmail resolution reply resolves once within the original ticket thread", a
     };
 
     assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 1, skipped: 0 });
-    assert.equal((await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status, "RESOLVED");
+    assert.equal(
+      (await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status,
+      "RESOLVED"
+    );
     assert.equal(finalSendCount, 1);
     const customerMessage = await prisma.supportMessage.findUniqueOrThrow({
       where: { gmailMessageId: inboundId }
@@ -658,7 +671,10 @@ test("Gmail resolution reply resolves once within the original ticket thread", a
     assert.equal(finalSendCount, 1);
     inboundId = `resolution-yes-followup-${randomUUID()}`;
     assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 1, skipped: 0 });
-    assert.equal((await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status, "RESOLVED");
+    assert.equal(
+      (await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status,
+      "RESOLVED"
+    );
     assert.equal(finalSendCount, 1);
   } finally {
     await scope.cleanup();
@@ -695,10 +711,14 @@ test("Gmail resolution NO reopens ticket without a final resolved email", async 
     });
     const inboundId = `resolution-no-${randomUUID()}`;
     const client: SupportGmailClient = {
-      async listInboxMessages() { return [{ id: inboundId, threadId }]; },
+      async listInboxMessages() {
+        return [{ id: inboundId, threadId }];
+      },
       async getMessage() {
         return {
-          id: inboundId, threadId, internalDate: String(Date.now()),
+          id: inboundId,
+          threadId,
+          internalDate: String(Date.now()),
           payload: {
             mimeType: "text/plain",
             headers: [
@@ -709,10 +729,15 @@ test("Gmail resolution NO reopens ticket without a final resolved email", async 
           }
         };
       },
-      async sendSupportReply() { throw new Error("A NO reply must never send the final resolved notice."); }
+      async sendSupportReply() {
+        throw new Error("A NO reply must never send the final resolved notice.");
+      }
     };
     assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 1, skipped: 0 });
-    assert.equal((await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status, "OPEN");
+    assert.equal(
+      (await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status,
+      "OPEN"
+    );
   } finally {
     await scope.cleanup();
   }

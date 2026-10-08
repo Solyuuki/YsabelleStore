@@ -174,4 +174,3 @@ CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51
 Branch: `sprint/v0.11/sprint-11`. CI evidence: https://github.com/Solyuuki/YsabelleStore/actions/runs/37739767192
 
 Result: independent Dark Mode asset/contrast contract suite PASSED; frontend, backend, Electron workspace validations PASSED. Repository `npm run format:check` FAILED, so root lint, code verification, canonical Phase 6 rehearsals and artifact gates beyond that step are NOT confirmed. Manual Light/Dark visual regression and accessibility QA remain PENDING. About Experience source files unchanged. Release decision: NOT YET APPROVED.
-

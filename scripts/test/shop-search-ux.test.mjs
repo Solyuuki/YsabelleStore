@@ -40,16 +40,12 @@ test("loaded products stay visible without animation gating while sidebar keeps 
   assert.match(source, /ref=\{categoryNavigationReveal\.ref\}/);
 });
 
-
 test("shop category navigation preserves the current scroll position", () => {
   assert.match(appShellSource, /function shouldPreserveShopCategoryScroll/);
-  assert.ok(
-    appShellSource.includes('const shopBrowsePath = /^\\/shop(?:\\/category\\/[^/]+)?$/;')
-  );
+  assert.ok(appShellSource.includes("const shopBrowsePath = /^\\/shop(?:\\/category\\/[^/]+)?$/;"));
   assert.match(appShellSource, /currentUrl\.pathname !== nextUrl\.pathname/);
   assert.match(appShellSource, /else if \(!preserveShopCategoryScroll\)/);
 });
-
 
 test("category refresh stages data so new cards enter on their first painted frame", () => {
   assert.match(source, /const CATALOG_EXIT_DURATION_MS = 120/);

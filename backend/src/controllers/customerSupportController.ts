@@ -25,4 +25,3 @@ export const createCustomerSupportTicketController: RequestHandler = async (
     next(error);
   }
 };
-

@@ -77,14 +77,22 @@ export function CustomerHeader({
 
         <div className="customer-header__actions">
           <button
-            aria-label={storefrontTheme === "dark" ? "Switch storefront to light mode" : "Switch storefront to dark mode"}
+            aria-label={
+              storefrontTheme === "dark"
+                ? "Switch storefront to light mode"
+                : "Switch storefront to dark mode"
+            }
             aria-pressed={storefrontTheme === "dark"}
             className="customer-theme-toggle"
             onClick={() => setStorefrontTheme(storefrontTheme === "dark" ? "light" : "dark")}
             title={storefrontTheme === "dark" ? "Light mode" : "Dark mode"}
             type="button"
           >
-            {storefrontTheme === "dark" ? <Sun aria-hidden="true" size={19} /> : <MoonStar aria-hidden="true" size={19} />}
+            {storefrontTheme === "dark" ? (
+              <Sun aria-hidden="true" size={19} />
+            ) : (
+              <MoonStar aria-hidden="true" size={19} />
+            )}
           </button>
           <button
             aria-label="Open shopping guide"

@@ -115,7 +115,9 @@ export function SettingsPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
               <CardTitle>Appearance</CardTitle>
-              <p className="text-sm text-slate-500">Choose a comfortable view for this retail workstation.</p>
+              <p className="text-sm text-slate-500">
+                Choose a comfortable view for this retail workstation.
+              </p>
             </div>
             <StatusBadge variant="info">Saved on this device</StatusBadge>
           </div>
@@ -129,9 +131,16 @@ export function SettingsPage() {
               onClick={() => setRetailTheme("light")}
               type="button"
             >
-              <span className="ys-appearance-swatch ys-appearance-swatch--light" aria-hidden="true"><Sun size={22} /></span>
-              <span className="ys-appearance-choice__copy"><strong>Light mode</strong><small>Soft, airy surfaces</small></span>
-              <span className="ys-appearance-choice__check" aria-hidden="true">{retailTheme === "light" ? "Selected" : "Select"}</span>
+              <span className="ys-appearance-swatch ys-appearance-swatch--light" aria-hidden="true">
+                <Sun size={22} />
+              </span>
+              <span className="ys-appearance-choice__copy">
+                <strong>Light mode</strong>
+                <small>Soft, airy surfaces</small>
+              </span>
+              <span className="ys-appearance-choice__check" aria-hidden="true">
+                {retailTheme === "light" ? "Selected" : "Select"}
+              </span>
             </button>
             <button
               aria-pressed={retailTheme === "dark"}
@@ -140,13 +149,21 @@ export function SettingsPage() {
               onClick={() => setRetailTheme("dark")}
               type="button"
             >
-              <span className="ys-appearance-swatch ys-appearance-swatch--dark" aria-hidden="true"><MoonStar size={22} /></span>
-              <span className="ys-appearance-choice__copy"><strong>Dark mode</strong><small>Midnight navy &amp; violet</small></span>
-              <span className="ys-appearance-choice__check" aria-hidden="true">{retailTheme === "dark" ? "Selected" : "Select"}</span>
+              <span className="ys-appearance-swatch ys-appearance-swatch--dark" aria-hidden="true">
+                <MoonStar size={22} />
+              </span>
+              <span className="ys-appearance-choice__copy">
+                <strong>Dark mode</strong>
+                <small>Midnight navy &amp; violet</small>
+              </span>
+              <span className="ys-appearance-choice__check" aria-hidden="true">
+                {retailTheme === "dark" ? "Selected" : "Select"}
+              </span>
             </button>
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            Appearance changes immediately. Customer storefront and printed receipts keep independent presentation.
+            Appearance changes immediately. Customer storefront and printed receipts keep
+            independent presentation.
           </p>
         </CardContent>
       </Card>

@@ -713,7 +713,6 @@
   }
 }
 
-
 /* Shop catalog card material: match the approved storefront frost + outline treatment. */
 .customer-shop-page .customer-product-card {
   border: 1px solid rgb(95 90 154 / 30%);
@@ -809,7 +808,6 @@
   background: linear-gradient(135deg, rgb(98 91 255 / 14%), rgb(98 91 255 / 8%));
 }
 
-
 /* Adaptive shop canvas: fixed-size ambient tiles avoid vertical stretching when category result counts vary. */
 .customer-shop-page .customer-shop-layout {
   min-height: calc(100svh - 11rem);
@@ -830,12 +828,7 @@
       rgb(170 128 224 / 6%) 44%,
       transparent 74%
     ),
-    linear-gradient(
-      90deg,
-      #edf4fb 0%,
-      #f3f5fb 48%,
-      #f6f0f8 100%
-    );
+    linear-gradient(90deg, #edf4fb 0%, #f3f5fb 48%, #f6f0f8 100%);
   background-repeat: repeat-y, repeat-y, no-repeat;
   background-position:
     left -19rem top -8rem,
@@ -862,13 +855,12 @@
 .customer-shop-page .customer-shop-catalog-backdrop::after {
   position: absolute;
   inset: 0;
-  background:
-    repeating-linear-gradient(
-      135deg,
-      rgb(255 255 255 / 0%) 0 8rem,
-      rgb(255 255 255 / 16%) 8rem 8.12rem,
-      rgb(255 255 255 / 0%) 8.12rem 16rem
-    );
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0%) 0 8rem,
+    rgb(255 255 255 / 16%) 8rem 8.12rem,
+    rgb(255 255 255 / 0%) 8.12rem 16rem
+  );
   content: "";
   mix-blend-mode: soft-light;
   opacity: 0.24;
@@ -885,7 +877,6 @@
     opacity: 0.11;
   }
 }
-
 
 /* Network-aware catalog transition.
  * Fast responses cross-fade directly; slower responses reveal a lightweight frosted loader.
@@ -1012,8 +1003,7 @@
 .customer-shop-page .shop-catalog-refresh__media {
   min-height: 16.5rem;
   background:
-    radial-gradient(circle at 50% 44%, rgb(255 255 255 / 92%), rgb(244 246 251 / 82%) 62%),
-    #f5f7fb;
+    radial-gradient(circle at 50% 44%, rgb(255 255 255 / 92%), rgb(244 246 251 / 82%) 62%), #f5f7fb;
 }
 
 .customer-shop-page .shop-catalog-refresh__body {

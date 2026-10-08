@@ -1,4 +1,11 @@
-import { createContext, useCallback, useContext, useLayoutEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useState,
+  type ReactNode
+} from "react";
 
 import { getRouteByPath } from "@/app/routes";
 
@@ -37,12 +44,17 @@ export function applyAppearanceForPath(
   // About's approved video/scene palette is intentionally identical in both preferences.
   const preserveAbout = pathname === "/about" || pathname === "/discover";
   const isReceiptPrint = new URLSearchParams(window.location.search).get("print") === "receipt";
-  const dark = !preserveAbout && !isReceiptPrint && (scope === "storefront" ? storefrontTheme : retailTheme) === "dark";
+  const dark =
+    !preserveAbout &&
+    !isReceiptPrint &&
+    (scope === "storefront" ? storefrontTheme : retailTheme) === "dark";
   const root = document.documentElement;
   root.classList.toggle("dark", dark);
   root.dataset.appearanceScope = scope;
   root.style.colorScheme = dark ? "dark" : "light";
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#0d1425" : "#625bff");
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", dark ? "#0d1425" : "#625bff");
 }
 
 type AppearanceContextValue = {
@@ -56,8 +68,12 @@ type AppearanceContextValue = {
 const AppearanceContext = createContext<AppearanceContextValue | null>(null);
 
 export function AppearanceProvider({ children }: { children: ReactNode }) {
-  const [storefrontTheme, setStorefrontPreference] = useState<AppearanceMode>(() => readTheme(STOREFRONT_THEME_KEY));
-  const [retailTheme, setRetailPreference] = useState<AppearanceMode>(() => readTheme(RETAIL_THEME_KEY));
+  const [storefrontTheme, setStorefrontPreference] = useState<AppearanceMode>(() =>
+    readTheme(STOREFRONT_THEME_KEY)
+  );
+  const [retailTheme, setRetailPreference] = useState<AppearanceMode>(() =>
+    readTheme(RETAIL_THEME_KEY)
+  );
 
   const setStorefrontTheme = useCallback((value: AppearanceMode) => {
     setStorefrontPreference(value);
@@ -79,7 +95,9 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   }, [syncForPath]);
 
   return (
-    <AppearanceContext.Provider value={{ storefrontTheme, retailTheme, setStorefrontTheme, setRetailTheme, syncForPath }}>
+    <AppearanceContext.Provider
+      value={{ storefrontTheme, retailTheme, setStorefrontTheme, setRetailTheme, syncForPath }}
+    >
       {children}
     </AppearanceContext.Provider>
   );

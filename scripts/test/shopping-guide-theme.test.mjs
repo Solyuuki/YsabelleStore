@@ -41,7 +41,10 @@ test("shopping guide transitions between distant targets without making the popo
   assert.match(source, /block:\s*"center"/);
   assert.match(source, /waitForScrollSettle\(completeMove\)/);
   assert.match(source, /requestAnimationFrame/);
-  assert.match(source, /guide\.getState\(\)\.popover\?\.wrapper\.classList\.remove\("is-transitioning"\)/);
+  assert.match(
+    source,
+    /guide\.getState\(\)\.popover\?\.wrapper\.classList\.remove\("is-transitioning"\)/
+  );
   assert.match(source, /\.home-categories \.home-section-heading/);
   assert.doesNotMatch(source, /element:\s*'\[data-tour="start-shopping"\]'/);
 });
@@ -106,11 +109,17 @@ test("shopping guide popover is spacious, frosted, and has responsive button fee
   assert.match(styles, /width:\s*min\(24\.5rem, calc\(100vw - 2rem\)\)/);
   assert.match(styles, /kpi-card-frosted-ribbon\.webp/);
   assert.match(styles, /driver-popover-title[\s\S]*?max-width:\s*18rem/);
-  assert.match(styles, /driver-popover-footer[\s\S]*?grid-template-columns:\s*auto minmax\(0, 1fr\)/);
+  assert.match(
+    styles,
+    /driver-popover-footer[\s\S]*?grid-template-columns:\s*auto minmax\(0, 1fr\)/
+  );
   assert.match(styles, /driver-popover-progress-text[\s\S]*?border-radius:\s*999px/);
   assert.match(styles, /driver-popover-footer button:active:not\(:disabled\)/);
   assert.match(styles, /driver-popover-close-btn:active/);
-  assert.match(styles, /driver-popover-next-btn[\s\S]*?linear-gradient\(135deg, #625bff, #704fe9\)/);
+  assert.match(
+    styles,
+    /driver-popover-next-btn[\s\S]*?linear-gradient\(135deg, #625bff, #704fe9\)/
+  );
   assert.doesNotMatch(styles, /var\(--customer-/);
   assert.match(
     styles,

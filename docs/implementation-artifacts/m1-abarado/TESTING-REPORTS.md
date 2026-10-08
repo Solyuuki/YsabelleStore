@@ -224,4 +224,3 @@ Automated coverage verifies the canonical 50 identity manifest against the relea
 - Same run: frontend, backend, and Electron workspace build validations PASSED.
 - Same run: repository quality gate FAILED at `npm run format:check` (the gate existed before this Dark Mode rollout and now includes changed files). Downstream repository checks did not run; do not report `npm run verify:code` as passed.
 - Rendered route-by-route screenshots, actual image blending, mobile breakpoints, and WCAG contrast across real content have NOT been verified. Contrast contract tests evaluate selected solid color pairs, not every composed layer.
-

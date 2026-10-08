@@ -150,7 +150,6 @@ test("staff can filter tickets, open a conversation, reply, and resolve it", asy
         where: { id: ticket.id }
       });
       assert.equal(unchanged.status, "WAITING_FOR_CUSTOMER");
-
     });
   } finally {
     await scope.cleanup();

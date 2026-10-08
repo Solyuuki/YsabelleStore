@@ -316,8 +316,12 @@ assert.doesNotMatch(
 );
 assert.ok(!premiumCss.includes(".home-merchandising-canvas::before"));
 assert.ok(!premiumCss.includes(".home-merchandising-canvas::after"));
-const merchandisingCanvasRule = premiumCss.split(".home-merchandising-canvas {")[1]?.split("}")[0] ?? "";
-assert.ok(merchandisingCanvasRule, "Home merchandising canvas must retain a defined Light Mode style");
+const merchandisingCanvasRule =
+  premiumCss.split(".home-merchandising-canvas {")[1]?.split("}")[0] ?? "";
+assert.ok(
+  merchandisingCanvasRule,
+  "Home merchandising canvas must retain a defined Light Mode style"
+);
 assert.ok(!merchandisingCanvasRule.includes("repeating-linear-gradient"));
 assert.ok(!merchandisingCanvasRule.includes("background-image: url("));
 assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::before/);

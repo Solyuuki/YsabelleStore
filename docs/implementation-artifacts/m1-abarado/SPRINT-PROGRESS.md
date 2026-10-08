@@ -114,4 +114,3 @@ Built a separate Dark Mode presentation system for Storefront and Retail. Custom
 About Experience scene files, motion assets, and original Light Mode textures were not modified. Existing Light Mode CSS is preserved by selectors scoped under `:root.dark`.
 
 Validation: CI run 37739767192 — frontend/backend/Electron workspace validations and independent appearance contract job passed; repository quality gates failed at `npm run format:check`, blocking subsequent root tests and verification. Manual visual and screen-reader/keyboard QA pending. Status: implemented, not release-approved.
-

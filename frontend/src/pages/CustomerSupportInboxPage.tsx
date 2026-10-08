@@ -79,17 +79,18 @@ function customerReplyText(raw: string) {
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = (lines[index] ?? "").trim();
-    const preview = lines.slice(index, index + 3).map((part) => part.trim()).join(" ");
+    const preview = lines
+      .slice(index, index + 3)
+      .map((part) => part.trim())
+      .join(" ");
     const gmailQuote =
-      /^On\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b/i.test(line) &&
-      /\bwrote\s*:/i.test(preview);
+      /^On\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b/i.test(line) && /\bwrote\s*:/i.test(preview);
     const outlookQuote =
       /^From:\s*.+/i.test(line) &&
-      lines.slice(index + 1, index + 5).some((part) =>
-        /^(?:Sent|To|Subject):\s*/i.test(part.trim())
-      );
-    const quotedLine =
-      index > 0 && line.startsWith(">") && !(lines[index - 1] ?? "").trim();
+      lines
+        .slice(index + 1, index + 5)
+        .some((part) => /^(?:Sent|To|Subject):\s*/i.test(part.trim()));
+    const quotedLine = index > 0 && line.startsWith(">") && !(lines[index - 1] ?? "").trim();
 
     if (
       gmailQuote ||
@@ -243,7 +244,12 @@ export function CustomerSupportInboxPage() {
 
   async function saveStatus() {
     if (!detail || statusDraft === detail.status || statusSaving) return;
-    if (statusDraft === "RESOLVED" && !window.confirm("Send a resolution confirmation email? The ticket stays pending until the customer replies YES or NO in Gmail.")) {
+    if (
+      statusDraft === "RESOLVED" &&
+      !window.confirm(
+        "Send a resolution confirmation email? The ticket stays pending until the customer replies YES or NO in Gmail."
+      )
+    ) {
       setStatusDraft(detail.status);
       return;
     }
@@ -598,7 +604,7 @@ function SupportConversation({
             </p>
           </div>
 
-            <div className="flex min-w-[250px] items-end gap-2">
+          <div className="flex min-w-[250px] items-end gap-2">
             <label className="grid flex-1 gap-1 text-xs font-medium text-slate-500">
               <span>Ticket status</span>
               <select
@@ -706,7 +712,9 @@ function SupportConversation({
               />
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-slate-500">
-                  {"Successful delivery moves the ticket to Waiting for customer. Failed delivery keeps the ticket Open for follow-up."}
+                  {
+                    "Successful delivery moves the ticket to Waiting for customer. Failed delivery keeps the ticket Open for follow-up."
+                  }
                 </p>
                 <Button
                   disabled={
@@ -727,7 +735,10 @@ function SupportConversation({
               onClick={() => setReplyComposerExpanded(true)}
               type="button"
             >
-              <MessageSquareText className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-indigo-600" aria-hidden="true" />
+              <MessageSquareText
+                className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-indigo-600"
+                aria-hidden="true"
+              />
               <span className="min-w-0 flex-1 truncate text-sm text-slate-500">
                 {reply.trim()
                   ? reply.trim().replace(/\s+/g, " ")
@@ -779,13 +790,19 @@ function ConversationMessage({
       <div className="flex justify-center py-1">
         <article className="min-w-0 max-w-[82%] rounded-2xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-slate-800 shadow-sm">
           <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-indigo-700">
-            <strong>{message.senderName === "Ysabelle Store Support Lifecycle" ? "Automated status update" : "Automated acknowledgement"}</strong>
+            <strong>
+              {message.senderName === "Ysabelle Store Support Lifecycle"
+                ? "Automated status update"
+                : "Automated acknowledgement"}
+            </strong>
             <span>·</span>
             <span>{formatDateTime(message.createdAt)}</span>
             <span>·</span>
             <span>EMAIL</span>
           </div>
-          <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-sm leading-6">{message.body}</p>
+          <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-sm leading-6">
+            {message.body}
+          </p>
           <div className="mt-2 flex flex-wrap items-center justify-end gap-2 text-[11px] text-indigo-700">
             <span>
               {message.deliveryStatus === "SENT"
@@ -840,7 +857,9 @@ function ConversationMessage({
           <span>·</span>
           <span>{message.channel}</span>
         </div>
-        <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-sm leading-6">{displayBody}</p>
+        <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-sm leading-6">
+          {displayBody}
+        </p>
         {staff && message.channel === "EMAIL" ? (
           <div className="mt-2 flex flex-wrap items-center justify-end gap-2 text-[11px]">
             <span>

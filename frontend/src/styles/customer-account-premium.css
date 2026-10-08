@@ -1041,7 +1041,6 @@
   }
 }
 
-
 /* Shopping profile polish: quieter material, stronger hierarchy, less white-on-white. */
 #profile-panel.customer-account-section {
   border-color: rgba(111, 105, 166, 0.16);
@@ -1152,7 +1151,12 @@
   border-color: rgba(103, 96, 185, 0.13);
   background:
     radial-gradient(circle at 100% 0%, rgba(115, 103, 235, 0.065), transparent 18rem),
-    linear-gradient(155deg, rgba(245, 249, 255, 0.8), rgba(248, 245, 255, 0.76) 54%, rgba(255, 247, 251, 0.72));
+    linear-gradient(
+      155deg,
+      rgba(245, 249, 255, 0.8),
+      rgba(248, 245, 255, 0.76) 54%,
+      rgba(255, 247, 251, 0.72)
+    );
   box-shadow:
     0 10px 28px rgba(53, 50, 101, 0.045),
     inset 0 1px 0 rgba(255, 255, 255, 0.62);
@@ -1283,7 +1287,6 @@
   }
 }
 
-
 /* Favorites and orders use the same approved frosted-ribbon surface as the profile panel. */
 #favorites-panel.customer-account-section,
 #orders-panel.customer-account-section {
@@ -1305,12 +1308,7 @@
 #orders-panel.ys-material-surface::before {
   background-image:
     url("/textures/kpi-card-frosted-ribbon.webp"),
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.24),
-      transparent 44% 72%,
-      rgba(98, 91, 255, 0.05)
-    ) !important;
+    linear-gradient(145deg, rgba(255, 255, 255, 0.24), transparent 44% 72%, rgba(98, 91, 255, 0.05)) !important;
   background-repeat: no-repeat, no-repeat !important;
   background-position: center, center !important;
   background-size: cover, auto !important;

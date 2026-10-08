@@ -13,12 +13,27 @@
       (() => {
         const path = location.pathname;
         const retailPaths = new Set([
-          "/staff-login", "/dashboard", "/pos", "/products", "/categories", "/inventory",
-          "/receiving", "/sales", "/deliveries", "/customer-support", "/forecast",
-          "/historical-sales", "/reports", "/users", "/settings", "/not-found"
+          "/staff-login",
+          "/dashboard",
+          "/pos",
+          "/products",
+          "/categories",
+          "/inventory",
+          "/receiving",
+          "/sales",
+          "/deliveries",
+          "/customer-support",
+          "/forecast",
+          "/historical-sales",
+          "/reports",
+          "/users",
+          "/settings",
+          "/not-found"
         ]);
         const scope = retailPaths.has(path) ? "retail" : "storefront";
-        const safeRoute = path === "/about" || path === "/discover" ||
+        const safeRoute =
+          path === "/about" ||
+          path === "/discover" ||
           new URLSearchParams(location.search).get("print") === "receipt";
         try {
           const key = "ysabellestore.appearance." + scope + ".v1";

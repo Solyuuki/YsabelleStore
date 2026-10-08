@@ -312,17 +312,18 @@ export function extractLatestCustomerEmailReply(raw: string): string {
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = (lines[index] ?? "").trim();
-    const preview = lines.slice(index, index + 3).map((part) => part.trim()).join(" ");
+    const preview = lines
+      .slice(index, index + 3)
+      .map((part) => part.trim())
+      .join(" ");
     const gmailQuote =
-      /^On\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b/i.test(line) &&
-      /\bwrote\s*:/i.test(preview);
+      /^On\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b/i.test(line) && /\bwrote\s*:/i.test(preview);
     const outlookQuote =
       /^From:\s*.+/i.test(line) &&
-      lines.slice(index + 1, index + 5).some((part) =>
-        /^(?:Sent|To|Subject):\s*/i.test(part.trim())
-      );
-    const quotedLine =
-      index > 0 && line.startsWith(">") && !(lines[index - 1] ?? "").trim();
+      lines
+        .slice(index + 1, index + 5)
+        .some((part) => /^(?:Sent|To|Subject):\s*/i.test(part.trim()));
+    const quotedLine = index > 0 && line.startsWith(">") && !(lines[index - 1] ?? "").trim();
 
     if (
       gmailQuote ||
@@ -379,7 +380,9 @@ function buildRawSupportEmail(
   input: SupportGmailSendInput,
   replyMessageId: string | null
 ) {
-  const subject = sanitizeHeaderValue(input.threadSubject ?? `[${input.ticketNumber}] ${input.subject}`);
+  const subject = sanitizeHeaderValue(
+    input.threadSubject ?? `[${input.ticketNumber}] ${input.subject}`
+  );
   const domain = configuration.supportEmail.split("@")[1] ?? "ysabellestore.local";
   const generatedMessageId = `<ys-support-${Date.now()}-${Math.random().toString(36).slice(2)}@${domain}>`;
   const headers = [
@@ -419,10 +422,9 @@ function buildRawSupportEmail(
     .split(/\n{2,}/)
     .map(
       (paragraph) =>
-        `<p style="margin:0 0 14px;font-size:14px;line-height:1.7;color:#49445f">${escapeHtml(paragraph).replaceAll(
-          "\n",
-          "<br />"
-        )}</p>`
+        `<p style="margin:0 0 14px;font-size:14px;line-height:1.7;color:#49445f">${escapeHtml(
+          paragraph
+        ).replaceAll("\n", "<br />")}</p>`
     )
     .join("");
 
@@ -667,11 +669,7 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
       throw new Error("Cannot send a threaded support reply without its parent Message-ID.");
     }
 
-    const raw = buildRawSupportEmail(
-      configuration,
-      { ...input, threadSubject },
-      replyMessageId
-    );
+    const raw = buildRawSupportEmail(configuration, { ...input, threadSubject }, replyMessageId);
     const payload = await gmailRequest<{ id?: string; threadId?: string }>("/messages/send", {
       method: "POST",
       body: JSON.stringify({
@@ -958,17 +956,18 @@ export async function syncSupportGmailInboxWithClient(
       continue;
     }
 
-    const pendingResolution = matchedTicket.status === "WAITING_FOR_CUSTOMER"
-      ? await prisma.supportMessage.findFirst({
-          where: {
-            ticketId: matchedTicket.id,
-            body: { startsWith: "YS_SUPPORT_RESOLUTION_EMAIL_REPLY:" },
-            deliveryStatus: "SENT"
-          },
-          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-          select: { id: true, emailSentAt: true, createdAt: true }
-        })
-      : null;
+    const pendingResolution =
+      matchedTicket.status === "WAITING_FOR_CUSTOMER"
+        ? await prisma.supportMessage.findFirst({
+            where: {
+              ticketId: matchedTicket.id,
+              body: { startsWith: "YS_SUPPORT_RESOLUTION_EMAIL_REPLY:" },
+              deliveryStatus: "SENT"
+            },
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            select: { id: true, emailSentAt: true, createdAt: true }
+          })
+        : null;
     const resolutionAnswer = parseSupportResolutionEmailReply(body);
 
     const activityAt = messageActivityAt(message, now);
@@ -993,7 +992,8 @@ export async function syncSupportGmailInboxWithClient(
       pendingResolution.emailSentAt &&
       activityAt >= pendingResolution.emailSentAt &&
       activityAt.getTime() - pendingResolution.emailSentAt.getTime() <= 72 * 60 * 60 * 1000 &&
-      gmailThreadId && gmailThreadId === matchedTicket.gmailThreadId
+      gmailThreadId &&
+      gmailThreadId === matchedTicket.gmailThreadId
     );
     let finalNoticeId: string | null = null;
     try {
@@ -1024,7 +1024,11 @@ export async function syncSupportGmailInboxWithClient(
             status: isYes || alreadyResolvedConfirmation ? "RESOLVED" : "OPEN",
             lastMessageAt,
             lastCustomerMessageAt,
-            resolvedAt: isYes ? activityAt : alreadyResolvedConfirmation ? matchedTicket.resolvedAt : null,
+            resolvedAt: isYes
+              ? activityAt
+              : alreadyResolvedConfirmation
+                ? matchedTicket.resolvedAt
+                : null,
             closedAt: null
           },
           where: {
