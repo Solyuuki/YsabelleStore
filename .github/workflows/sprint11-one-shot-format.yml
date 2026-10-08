@@ -1,4 +1,4 @@
-name: Sprint 11 formatter with isolated MySQL test database
+name: Sprint 11 guarded formatter with complete test environment
 
 on:
   push:
@@ -31,6 +31,8 @@ jobs:
     env:
       DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ysabellestore_ci
       JWT_SECRET: ci-only-theme-format-validation-key-32-bytes
+      NODE_ENV: test
+      CUSTOMER_OAUTH_TRANSACTION_KEY: ci-only-transaction-encryption-material-not-for-production
     steps:
       - uses: actions/checkout@v4
         with:
