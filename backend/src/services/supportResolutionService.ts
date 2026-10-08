@@ -154,7 +154,12 @@ export async function inspectResolutionToken(token: string, now = new Date()) {
   return answered ? null : { ticketNumber: ticket.ticketNumber, subject: ticket.subject, requestId: request.id, ticketId: ticket.id };
 }
 
-export async function submitResolutionResponse(token: string, answer: "YES" | "NO", now = new Date()) {
+export async function submitResolutionResponse(
+  token: string,
+  answer: "YES" | "NO",
+  now = new Date(),
+  deliverNotice: (messageId: string) => Promise<unknown> = deliverSupportLifecycleMessageEmail
+) {
   const inspected = await inspectResolutionToken(token, now);
   if (!inspected) {
     throw new HttpError(410, "This confirmation link has expired or was already used.", {
@@ -207,7 +212,7 @@ export async function submitResolutionResponse(token: string, answer: "YES" | "N
   });
   if (result.noticeId) {
     // Delivery failures stay on the message as FAILED for a safe staff retry.
-    await deliverSupportLifecycleMessageEmail(result.noticeId);
+    await deliverNotice(result.noticeId);
   }
   return { ticketNumber: result.ticketNumber, answer };
 }
