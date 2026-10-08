@@ -23,6 +23,15 @@ const SUPPORT_LOGO_CONTENT_ID = "ysabelle-support-logo";
 const SUPPORT_LOGO_FILENAME = "ysabelle-support-logo.gif";
 export const SUPPORT_AUTOMATION_SENDER_NAME = "Ysabelle Store Auto Acknowledgement";
 
+function isValidGifBytes(bytes: Buffer) {
+  const signature = bytes.subarray(0, 6).toString("ascii");
+  return (
+    (signature === "GIF87a" || signature === "GIF89a") &&
+    bytes.length > 13 &&
+    bytes[bytes.length - 1] === 0x3b
+  );
+}
+
 function loadSupportLogoBytes() {
   const directories = [
     path.resolve(process.cwd(), "backend", "assets", "email"),
@@ -31,7 +40,8 @@ function loadSupportLogoBytes() {
 
   for (const directory of directories) {
     try {
-      return readFileSync(path.join(directory, SUPPORT_LOGO_FILENAME));
+      const direct = readFileSync(path.join(directory, SUPPORT_LOGO_FILENAME));
+      if (isValidGifBytes(direct)) return direct;
     } catch {
       // The repository stores the optimized GIF as base64 text parts so GitHub text tooling can
       // carry the binary asset without changing its bytes at runtime.
@@ -46,7 +56,7 @@ function loadSupportLogoBytes() {
           .map((name) => readFileSync(path.join(directory, name), "utf8").trim())
           .join("");
         const decoded = Buffer.from(encoded, "base64");
-        if (decoded.length > 0) return decoded;
+        if (isValidGifBytes(decoded)) return decoded;
       }
     } catch {
       // Try the next supported runtime location.
