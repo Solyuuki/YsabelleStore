@@ -299,8 +299,8 @@ function escapeHtml(value: string) {
 
 function supportSignatureHtml(configuration: SupportGmailConfiguration) {
   const logo = configuration.logoBytes
-    ? `<td style="width:112px;padding:0 18px 0 0;vertical-align:middle">
-        <img src="cid:${SUPPORT_LOGO_CONTENT_ID}" width="96" height="96" alt="Ysabelle Store" style="display:block;width:96px;height:96px;border:0;border-radius:18px" />
+    ? `<td style="width:84px;padding:0 16px 0 0;vertical-align:middle">
+        <img src="cid:${SUPPORT_LOGO_CONTENT_ID}" width="64" height="64" alt="Ysabelle Store" style="display:block;width:64px;height:64px;border:0;border-radius:14px" />
       </td>`
     : "";
 
