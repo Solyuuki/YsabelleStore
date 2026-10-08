@@ -41,7 +41,8 @@ test("both appearance controls and theme styles are loaded without changing Ligh
   assert.match(main, /@\/styles\/theme-retail\.css/);
   assert.match(retail, /:root\.dark \.app-shell-ambient/);
   assert.match(storefront, /:root\.dark \.customer-app/);
-  assert.match(storefront, /frosted-ribbon\.webp/);
+  assert.match(storefront, /ys-dark-graphite-glass\\.svg/);
+  assert.match(customer, /@\\/styles\\/theme-storefront-contrast\\.css/);
 });
 
 
@@ -60,6 +61,40 @@ test("dark home category portal and SVG merchandising canvas never reuse light f
   assert.match(dark, /\.home-categories \.home-category-card__body small/);
   assert.doesNotMatch(dark, /\.about-experience|\.discover-story|\.story-welcome/);
   assert.match(about, /const storyTheme/);
+});
+
+
+test("dedicated dark asset files exist and are referenced by scoped theme styles", () => {
+  const storefront = read("frontend/src/styles/theme-storefront.css");
+  const retail = read("frontend/src/styles/theme-retail.css");
+  const assets = [
+    ["frontend/public/textures/ys-dark-midnight-velvet.svg", "ys-dark-midnight-velvet.svg"],
+    ["frontend/public/textures/ys-dark-graphite-glass.svg", "ys-dark-graphite-glass.svg"],
+    ["frontend/public/textures/ys-dark-indigo-silk.svg", "ys-dark-indigo-silk.svg"],
+    ["frontend/public/media/ys-dark-delivery-closing.svg", "ys-dark-delivery-closing.svg"]
+  ];
+
+  for (const [path, name] of assets) {
+    const svg = read(path);
+    assert.match(svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+    assert.match(svg, /preserveAspectRatio="xMidYMid slice"/);
+    assert.match(svg, /<\/svg>\s*$/);
+    assert.ok(storefront.includes(name) || retail.includes(name), `Unused dark asset: ${name}`);
+  }
+  assert.doesNotMatch(storefront, /kpi-card-frosted-ribbon\.webp/);
+  assert.doesNotMatch(retail, /kpi-card-frosted-ribbon\.webp/);
+});
+
+test("contrast layer uses semantic dark surfaces and is not applied to About", () => {
+  const contrast = read("frontend/src/styles/theme-storefront-contrast.css");
+  const app = read("frontend/src/app/CustomerApp.tsx");
+  assert.match(app, /@\/styles\/theme-storefront-contrast\.css/);
+  assert.match(contrast, /--store-contrast-ink: #d4deec/);
+  assert.match(contrast, /--store-contrast-stroke: #687995/);
+  assert.match(contrast, /customer-review-overview/);
+  assert.match(contrast, /customer-account-history-card/);
+  assert.match(contrast, /customer-auth-stage__panel/);
+  assert.doesNotMatch(contrast, /\.about-experience|\.discover-story|\.story-welcome/);
 });
 
 test("printed receipts remain explicitly light", () => {
