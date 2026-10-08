@@ -26,10 +26,43 @@
 
 .customer-support-hero {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
-  /* Keep the Account-style wash continuous across the hero and form. */
-  border-bottom: 1px solid rgb(98 91 255 / 7%);
-  background: transparent;
+  border-bottom: 1px solid rgb(98 91 255 / 12%);
+  /* Distinct hero atmosphere over the quieter Account-style page surface. */
+  background:
+    radial-gradient(ellipse 55% 85% at 4% 16%, rgb(65 151 255 / 21%), transparent 78%),
+    radial-gradient(ellipse 60% 95% at 100% 26%, rgb(161 99 246 / 18%), transparent 76%),
+    radial-gradient(ellipse 50% 62% at 70% 100%, rgb(241 157 224 / 9%), transparent 82%),
+    linear-gradient(108deg, #e9f2ff 0%, #f0f1ff 49%, #f8edfc 100%);
+}
+
+/* Quiet curved reflections give the hero depth without image crops or textures. */
+.customer-support-hero::before,
+.customer-support-hero::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.customer-support-hero::before {
+  width: 87%;
+  height: 320px;
+  left: -18%;
+  bottom: -262px;
+  border: 2px solid rgb(255 255 255 / 56%);
+  transform: rotate(-6deg);
+}
+
+.customer-support-hero::after {
+  width: 83%;
+  height: 300px;
+  right: -24%;
+  bottom: -235px;
+  border: 2px solid rgb(255 255 255 / 42%);
+  transform: rotate(7deg);
 }
 
 .customer-support-hero__grid {
