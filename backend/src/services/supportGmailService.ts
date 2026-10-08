@@ -20,15 +20,16 @@ const DELIVERY_ERROR_MESSAGE = "Gmail delivery failed. Retry is available.";
 const TICKET_REFERENCE_PATTERN = /\bYS-CS-\d{6}\b/i;
 
 const SUPPORT_LOGO_CONTENT_ID = "ysabelle-support-logo";
-const SUPPORT_LOGO_FILENAME = "ysabelle-support-logo.gif";
+const SUPPORT_LOGO_FILENAME = "ysabelle-support-logo.png";
 export const SUPPORT_AUTOMATION_SENDER_NAME = "Ysabelle Store Auto Acknowledgement";
 
-function isValidGifBytes(bytes: Buffer) {
-  const signature = bytes.subarray(0, 6).toString("ascii");
+function isValidPngBytes(bytes: Buffer) {
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
   return (
-    (signature === "GIF87a" || signature === "GIF89a") &&
-    bytes.length > 13 &&
-    bytes[bytes.length - 1] === 0x3b
+    bytes.length >= 24 &&
+    bytes.subarray(0, 8).equals(signature) &&
+    bytes.readUInt32BE(16) > 0 &&
+    bytes.readUInt32BE(20) > 0
   );
 }
 
@@ -41,25 +42,20 @@ function loadSupportLogoBytes() {
   for (const directory of directories) {
     try {
       const direct = readFileSync(path.join(directory, SUPPORT_LOGO_FILENAME));
-      if (isValidGifBytes(direct)) return direct;
+      if (isValidPngBytes(direct)) return direct;
     } catch {
-      // The repository stores the optimized GIF as base64 text parts so GitHub text tooling can
-      // carry the binary asset without changing its bytes at runtime.
+      // Fall back to the portable base64 version used by repository text tooling.
     }
 
     try {
-      const parts = readdirSync(directory)
-        .filter((name) => /^ysabelle-support-logo\.gif\.b64\.part\d+$/.test(name))
-        .sort((left, right) => left.localeCompare(right));
-      if (parts.length > 0) {
-        const encoded = parts
-          .map((name) => readFileSync(path.join(directory, name), "utf8").trim())
-          .join("");
-        const decoded = Buffer.from(encoded, "base64");
-        if (isValidGifBytes(decoded)) return decoded;
-      }
+      const encoded = readFileSync(
+        path.join(directory, `${SUPPORT_LOGO_FILENAME}.b64`),
+        "utf8"
+      ).trim();
+      const decoded = Buffer.from(encoded, "base64");
+      if (isValidPngBytes(decoded)) return decoded;
     } catch {
-      // Try the next supported runtime location.
+      // Try the next supported runtime directory.
     }
   }
 
@@ -425,7 +421,7 @@ function buildRawSupportEmail(
     ? [
         ...alternative,
         `--${relatedBoundary}`,
-        `Content-Type: image/gif; name="${SUPPORT_LOGO_FILENAME}"`,
+        `Content-Type: image/png; name="${SUPPORT_LOGO_FILENAME}"`,
         "Content-Transfer-Encoding: base64",
         `Content-ID: <${SUPPORT_LOGO_CONTENT_ID}>`,
         `Content-Disposition: inline; filename="${SUPPORT_LOGO_FILENAME}"`,
