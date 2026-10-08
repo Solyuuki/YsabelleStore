@@ -706,8 +706,7 @@ function SupportConversation({
               />
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-slate-500">
-                  Successful delivery moves the ticket to Waiting for customer. Failed delivery keeps
-                  the ticket Open for follow-up.
+                  {"Successful delivery moves the ticket to Waiting for customer. Failed delivery keeps the ticket Open for follow-up."}
                 </p>
                 <Button
                   disabled={
