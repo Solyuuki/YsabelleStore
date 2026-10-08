@@ -1,4 +1,4 @@
-name: Sprint 11 validated formatter final run
+name: Sprint 11 formatter with Python image-engine dependencies
 
 on:
   push:
@@ -42,6 +42,13 @@ jobs:
         with:
           node-version: "22"
           cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: catalog-image-engine/requirements.txt
+      - name: Install image-engine test requirements
+        run: python -m pip install -r catalog-image-engine/requirements.txt
       - name: Install locked repository tools
         run: npm ci
       - name: Initialize disposable Prisma test schema
