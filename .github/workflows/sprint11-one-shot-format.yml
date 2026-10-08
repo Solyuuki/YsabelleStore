@@ -1,0 +1,42 @@
+name: Sprint 11 one-shot formatting repair
+
+on:
+  push:
+    branches:
+      - sprint/v0.11/sprint-11
+    paths:
+      - .github/workflows/sprint11-one-shot-format.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked repository tools
+        run: npm ci
+      - name: Normalize formatting (do not modify logic)
+        run: npm run format
+      - name: Commit formatted files and remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/sprint11-one-shot-format.yml
+          git config user.name "ysabelle-format-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if git diff --cached --quiet; then
+            echo "Repository is already formatted."
+            exit 0
+          fi
+          git diff --cached --stat
+          git commit -m "style(repo): apply required formatting to Sprint 11 changes"
+          git push origin HEAD:refs/heads/sprint/v0.11/sprint-11
