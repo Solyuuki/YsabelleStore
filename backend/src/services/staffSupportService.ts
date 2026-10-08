@@ -340,12 +340,6 @@ export async function updateStaffSupportTicketStatus(
   actor: SafeUser,
   now = new Date()
 ) {
-  if (input.status === "RESOLVED" && !(await hasCustomerResolutionConfirmation(ticketId))) {
-    throw new HttpError(409, "Customer resolution confirmation is required before resolving.", {
-      code: "SUPPORT_RESOLUTION_CONFIRMATION_REQUIRED"
-    });
-  }
-
   const result = await prisma.$transaction(async (tx) => {
     const ticket = await tx.supportTicket.findUnique({
       select: {
@@ -364,6 +358,12 @@ export async function updateStaffSupportTicketStatus(
       return tx.supportTicket.findUniqueOrThrow({
         select: staffSupportTicketDetailSelect,
         where: { id: ticket.id }
+      });
+    }
+
+    if (input.status === "RESOLVED" && !(await hasCustomerResolutionConfirmation(ticketId))) {
+      throw new HttpError(409, "Customer resolution confirmation is required before resolving.", {
+        code: "SUPPORT_RESOLUTION_CONFIRMATION_REQUIRED"
       });
     }
 
