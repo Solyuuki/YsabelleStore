@@ -387,6 +387,52 @@
   color: #d4deec;
 }
 
+/* Dark mode never displays the Light Mode frosted ribbon via inherited
+   ::before texture layers. Preserve stacking, replace the actual image. */
+:root.dark .customer-app :is(
+  .customer-home .customer-product-card__body,
+  .home-categories .home-category-card__body,
+  .customer-shop-page .customer-product-card__body,
+  .customer-shop-page .customer-filter-panel.shop-category-navigation
+)::before {
+  background-image: url("/textures/ys-dark-graphite-glass.svg") !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-blend-mode: normal !important;
+  opacity: 0.12 !important;
+  mix-blend-mode: normal !important;
+}
+:root.dark .customer-app .customer-shop-page .customer-shop-catalog-backdrop::before {
+  background-image: url("/textures/ys-dark-midnight-velvet.svg") !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  opacity: 0.11 !important;
+  mix-blend-mode: normal !important;
+}
+/* The category/body texture is a dedicated image; no Light Mode overlay. */
+:root.dark .customer-app .customer-shop-page .shop-catalog-refresh__body {
+  background-image: url("/textures/ys-dark-graphite-glass.svg") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-blend-mode: normal !important;
+}
+/* Header, site messages and footers use restrained informational ink. */
+:root.dark .customer-app :is(
+  .customer-nav, .customer-global-search__shell, .customer-mobile-panel,
+  .customer-shop-page, .customer-home, .customer-account-page-v2
+) { color: #b8c6d8; }
+:root.dark .customer-app .customer-theme-toggle {
+  border-color: #687995;
+  color: #c3b6f0;
+}
+/* Border contrast must not depend on textures or shadows. */
+:root.dark .customer-app :is(
+  .customer-shop-toolbar, .customer-filter-panel, .customer-product-card,
+  .home-category-card, .customer-account-section, .customer-review,
+  .customer-order-summary, .customer-support-form-card
+) { border-color: #687995; }
+
 /* Footer is already a good dark surface: adjust ONLY the SVG transition from the page. */
 :root.dark .customer-app .customer-footer {
   --footer-transition-surface: #101827;
