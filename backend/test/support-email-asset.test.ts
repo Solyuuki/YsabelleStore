@@ -11,7 +11,8 @@ function emailAssetDirectory() {
 
   for (const candidate of candidates) {
     try {
-      if (readdirSync(candidate).length >= 0) return candidate;
+      readdirSync(candidate);
+      return candidate;
     } catch {
       // Try the next supported test working directory.
     }
