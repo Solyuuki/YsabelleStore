@@ -445,3 +445,162 @@
 :root.dark .customer-app .customer-support-page :is(p, li) {
   color: #b8c6d8;
 }
+
+/* Checkout surfaces and payment states: never place pale cards under muted ink. */
+:root.dark .customer-app :is(
+  .customer-checkout-form section, .customer-choice-card,
+  .customer-payment-option, .customer-payment-resume, .customer-payment-status,
+  .customer-success-card, .customer-order-reference,
+  .customer-success-pickup, .customer-checkout-use-saved,
+  .customer-checkout-alternate-field > input
+) {
+  background: #1b2638;
+  border-color: #687995;
+  color: #b8c6d8;
+}
+:root.dark .customer-app :is(
+  .customer-checkout-form section, .customer-choice-card,
+  .customer-payment-option, .customer-payment-resume, .customer-payment-status,
+  .customer-success-card, .customer-order-reference
+) :is(h2, h3, strong) { color: #d4deec; }
+:root.dark .customer-app .customer-payment-option:hover:not(.is-selected) {
+  background: #2a3850;
+  border-color: #8893b1;
+}
+:root.dark .customer-app .customer-payment-option.is-selected {
+  background: #353453;
+  border-color: #aaa0db;
+}
+:root.dark .customer-app .customer-payment-status--paid {
+  background: #1c4037;
+  border-color: #608977;
+}
+:root.dark .customer-app .customer-payment-status--paid :is(strong, p, span) {
+  color: #c0e8d5;
+}
+:root.dark .customer-app .customer-form-error {
+  border-color: #9d6274;
+  background: #462d3e;
+  color: #ffd4df !important;
+}
+:root.dark .customer-app .customer-success-card :is(p, small) { color: #b8c6d8; }
+:root.dark .customer-app .customer-order-reference {
+  border-color: #7685a5;
+}
+:root.dark .customer-app .customer-success-card :is(
+  a.customer-success-secondary-action,
+  button.customer-success-secondary-action
+) { background: #293750; color: #d4deec; border-color: #687995; }
+
+/* Product option / filters: opacity and background always match label ink. */
+:root.dark .customer-app :is(
+  .customer-product-size-option, .customer-pagination button,
+  .customer-product-card__favorite
+) {
+  background: #26344c;
+  color: #d4deec;
+  border-color: #687995;
+}
+:root.dark .customer-app .customer-product-size-option[data-selected] {
+  background: #333453;
+  border-color: #aea1e9;
+}
+:root.dark .customer-app .customer-product-size-option__copy strong {
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-product-size-option__copy small,
+:root.dark .customer-app .customer-product-size-option[data-selected] .customer-product-size-option__copy small {
+  color: #b8c6d8;
+}
+:root.dark .customer-app .customer-product-size-option__visual {
+  background: #f4f6fa;
+}
+:root.dark .customer-app .customer-product-card__favorite:is(:hover, :focus-visible) {
+  background: #344461;
+  color: #d6cafa;
+  border-color: #afa1df;
+}
+:root.dark .customer-app .customer-product-card__favorite[aria-pressed="true"] {
+  background: #4b2e57;
+  color: #f0c6e3;
+  border-color: #8d6694;
+}
+:root.dark .customer-app .customer-pagination button:not(:disabled):hover {
+  background: #34445e;
+  color: #e3e9f4;
+}
+:root.dark .customer-app .customer-product-rating-badge {
+  background: #263550;
+  color: #d4deec;
+  border-color: #687995;
+}
+:root.dark .customer-app .customer-product-rating-badge__count {
+  color: #b8c6d8;
+}
+
+/* Remembered-account widgets and OTP recovery are separate, opaque surfaces. */
+:root.dark .customer-app :is(
+  .customer-known-accounts, .customer-known-account,
+  .customer-known-accounts__capacity, .customer-known-accounts__other,
+  .customer-known-accounts__loading, .customer-remember-choice,
+  .customer-recovery-code-slot, .customer-recovery-code-slot--filled,
+  .customer-recovery-code-slot--active, .customer-recovery-secondary
+) {
+  background: #25344d;
+  color: #d4deec;
+  border-color: #687995;
+}
+:root.dark .customer-app :is(
+  .customer-known-account__identity strong,
+  .customer-known-accounts__title-row strong,
+  .customer-remember-choice > span
+) { color: #d4deec; }
+:root.dark .customer-app :is(
+  .customer-known-account__identity > span,
+  .customer-known-account__identity small,
+  .customer-remember-choice small,
+  .customer-known-accounts__loading
+) { color: #b8c6d8; }
+:root.dark .customer-app .customer-known-account__menu-trigger {
+  color: #bbc8dc;
+}
+:root.dark .customer-app .customer-known-account__menu-item {
+  color: #ffbccd;
+}
+:root.dark .customer-app .customer-known-account__select:hover:not(:disabled),
+:root.dark .customer-app .customer-known-accounts__other:hover:not(:disabled) {
+  background: #30415d;
+}
+:root.dark .customer-app .customer-recovery-code-slot::before {
+  background: none;
+}
+:root.dark .customer-app .customer-recovery-code-slot--active {
+  border-color: #aca0e8;
+  box-shadow: 0 0 0 2px rgb(172 160 232 / 30%);
+}
+:root.dark .customer-app .customer-recovery-code-slot--empty::after {
+  background: #8b9ebc;
+}
+:root.dark .customer-app .customer-recovery-tertiary {
+  color: #b8c6d8;
+}
+
+/* Support, privacy and the account session panels must retain readable
+   notices even when legacy CSS declares an opaque light gradient. */
+:root.dark .customer-app :is(
+  .customer-support-safety-note, .customer-support-faq details,
+  .customer-privacy-storage-card, .customer-privacy-sheet__footer,
+  .customer-privacy-notice, .customer-account-session-empty,
+  .customer-account-session-confirm, .customer-account-form-error
+) {
+  background: #24334a;
+  border-color: #687995;
+  color: #b8c6d8;
+}
+:root.dark .customer-app :is(
+  .customer-support-safety-note, .customer-privacy-notice,
+  .customer-account-session-confirm
+) :is(h3, strong) { color: #d4deec; }
+:root.dark .customer-app .customer-support-form :is(
+  input, select, textarea
+) { color: #d4deec; border-color: #687995; background: #17243a; }
