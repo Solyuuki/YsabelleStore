@@ -926,6 +926,20 @@ export async function syncSupportGmailInboxWithClient(
       continue;
     }
 
+    const pendingResolution = matchedTicket.status === "WAITING_FOR_CUSTOMER"
+      ? await prisma.supportMessage.findFirst({
+          where: {
+            ticketId: matchedTicket.id,
+            body: { startsWith: "YS_SUPPORT_RESOLUTION_EMAIL_REPLY:" },
+            deliveryStatus: "SENT"
+          },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          select: { id: true, emailSentAt: true, createdAt: true }
+        })
+      : null;
+    const firstLine = body.split(/\\r?\\n/, 1)[0]?.trim().replace(/[.!]$/, "").toUpperCase();
+    const resolutionAnswer = firstLine === "YES" || firstLine === "NO" ? firstLine : null;
+
     const activityAt = messageActivityAt(message, now);
     const lastMessageAt =
       activityAt > matchedTicket.lastMessageAt ? activityAt : matchedTicket.lastMessageAt;
@@ -934,6 +948,15 @@ export async function syncSupportGmailInboxWithClient(
         ? activityAt
         : matchedTicket.lastCustomerMessageAt;
 
+    const eligibleResolution = Boolean(
+      pendingResolution &&
+      resolutionAnswer &&
+      pendingResolution.emailSentAt &&
+      activityAt >= pendingResolution.emailSentAt &&
+      activityAt.getTime() - pendingResolution.emailSentAt.getTime() <= 72 * 60 * 60 * 1000 &&
+      gmailThreadId && gmailThreadId === matchedTicket.gmailThreadId
+    );
+    let finalNoticeId: string | null = null;
     try {
       await prisma.$transaction(async (tx) => {
         await tx.supportMessage.create({
@@ -951,19 +974,37 @@ export async function syncSupportGmailInboxWithClient(
           }
         });
 
+        const isYes = eligibleResolution && resolutionAnswer === "YES";
         await tx.supportTicket.update({
           data: {
             gmailThreadId: matchedTicket.gmailThreadId ?? gmailThreadId,
-            status: "OPEN",
+            status: isYes ? "RESOLVED" : "OPEN",
             lastMessageAt,
             lastCustomerMessageAt,
-            resolvedAt: null,
+            resolvedAt: isYes ? activityAt : null,
             closedAt: null
           },
           where: { id: matchedTicket.id }
         });
+        if (isYes) {
+          const notice = await tx.supportMessage.create({
+            data: {
+              ticketId: matchedTicket.id,
+              senderType: "SYSTEM",
+              senderName: SUPPORT_LIFECYCLE_SENDER_NAME,
+              channel: "EMAIL",
+              body: "Your support concern has been confirmed as resolved. Thank you for contacting Ysabelle Store.",
+              deliveryStatus: "PENDING"
+            },
+            select: { id: true }
+          });
+          finalNoticeId = notice.id;
+        }
       });
       imported += 1;
+      if (finalNoticeId) {
+        await deliverSupportLifecycleMessageEmail(finalNoticeId, client);
+      }
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         skipped += 1;
