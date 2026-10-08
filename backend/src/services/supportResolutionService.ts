@@ -94,7 +94,7 @@ export async function requestSupportResolutionConfirmation(ticketId: string, act
         senderUserId: actor.id,
         senderName: actor.name,
         senderEmail: actor.email,
-        body: `${REQUEST_PREFIX}\nHello ${ticket.customerName},\n\nHas your support concern been resolved? Please select Yes or No using the secure link below. This link expires in 72 hours.\n\n${confirmationUrl}\n\nIf you still need help, choose No and our team will continue assisting you.`,
+        body: `${REQUEST_PREFIX}\nHello ${ticket.customerName},\n\nHas your support concern been resolved? Choose Yes or No using the links below. Both links expire in 72 hours.\n\nYes, resolved: ${yesUrl}\nNo, I need more help: ${noUrl}\n\nIf you still need help, our team will continue assisting you.`,
         deliveryStatus: "PENDING"
       },
       select: { id: true }
