@@ -74,6 +74,8 @@ export async function requestSupportResolutionConfirmation(ticketId: string, act
   const requestId = randomUUID();
   const token = createResolutionToken(ticketId, requestId, now.getTime());
   const confirmationUrl = `${base}/api/customer-support/resolution?token=${encodeURIComponent(token)}`;
+  const yesUrl = `${confirmationUrl}&answer=YES`;
+  const noUrl = `${confirmationUrl}&answer=NO`;
   const message = await prisma.$transaction(async (tx) => {
     const ticket = await tx.supportTicket.findUnique({
       where: { id: ticketId },
