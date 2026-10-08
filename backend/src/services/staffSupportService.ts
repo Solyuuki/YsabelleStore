@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { hasCustomerResolutionConfirmation } from "./supportResolutionService.js";
 import type { SupportTicketStatus } from "../types/customerSupport.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
@@ -13,6 +14,8 @@ import type { SafeUser } from "./authService.js";
 import {
   deliverAutomatedSupportAcknowledgementEmail,
   deliverStaffSupportMessageEmail,
+  deliverSupportLifecycleMessageEmail,
+  SUPPORT_LIFECYCLE_SENDER_NAME,
   isSupportGmailConfigured,
   isSupportGmailDeliveryEnabled,
   isSupportLocalReplyFallbackAllowed,
@@ -331,7 +334,13 @@ export async function updateStaffSupportTicketStatus(
   actor: SafeUser,
   now = new Date()
 ) {
-  return prisma.$transaction(async (tx) => {
+  if (input.status === "RESOLVED" && !(await hasCustomerResolutionConfirmation(ticketId))) {
+    throw new HttpError(409, "Customer resolution confirmation is required before resolving.", {
+      code: "SUPPORT_RESOLUTION_CONFIRMATION_REQUIRED"
+    });
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
     const ticket = await tx.supportTicket.findUnique({
       select: {
         id: true,
@@ -388,9 +397,40 @@ export async function updateStaffSupportTicketStatus(
       where: { id: ticket.id }
     });
 
-    return tx.supportTicket.findUniqueOrThrow({
+    const lifecycleNotice =
+      input.status === "RESOLVED"
+        ? "Your support concern has been marked as resolved. Thank you for confirming with Ysabelle Store."
+        : input.status === "CLOSED"
+          ? "This support conversation is now closed. Thank you for contacting Ysabelle Store."
+          : null;
+
+    let notificationId: string | null = null;
+    if (lifecycleNotice) {
+      const emailEnabled = isSupportGmailDeliveryEnabled();
+      const notice = await tx.supportMessage.create({
+        data: {
+          ticketId: ticket.id,
+          senderType: "SYSTEM",
+          senderName: SUPPORT_LIFECYCLE_SENDER_NAME,
+          channel: emailEnabled ? "EMAIL" : "SYSTEM",
+          body: lifecycleNotice,
+          deliveryStatus: emailEnabled ? "PENDING" : "NOT_APPLICABLE"
+        },
+        select: { id: true }
+      });
+      notificationId = emailEnabled ? notice.id : null;
+    }
+
+    const detail = await tx.supportTicket.findUniqueOrThrow({
       select: staffSupportTicketDetailSelect,
       where: { id: ticket.id }
     });
+    return { detail, notificationId };
   });
+
+  if ("notificationId" in result && result.notificationId) {
+    await deliverSupportLifecycleMessageEmail(result.notificationId);
+  }
+
+  return "detail" in result ? result.detail : result;
 }
