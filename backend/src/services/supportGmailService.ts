@@ -190,6 +190,17 @@ function encodeHeaderText(value: string) {
   return `=?UTF-8?B?${Buffer.from(sanitizeHeaderValue(value), "utf8").toString("base64")}?=`;
 }
 
+function decodeSubjectHeader(value: string | null) {
+  if (!value) return null;
+  const encoded = /^=\?UTF-8\?B\?([A-Za-z0-9+/=]+)\?=$/i.exec(value.trim());
+  if (!encoded?.[1]) return value.trim();
+  try {
+    return Buffer.from(encoded[1], "base64").toString("utf8");
+  } catch {
+    return value.trim();
+  }
+}
+
 function encodeBase64Url(value: string | Buffer) {
   return Buffer.from(value).toString("base64url");
 }
@@ -567,7 +578,7 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
     );
     return {
       messageId: headerValue(message, "Message-ID"),
-      subject: headerValue(message, "Subject")
+      subject: decodeSubjectHeader(headerValue(message, "Subject"))
     };
   }
 
