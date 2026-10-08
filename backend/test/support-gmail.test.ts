@@ -586,7 +586,7 @@ test("Gmail resolution reply resolves once within the original ticket thread", a
               { name: "From", value: "Confirmation Customer <confirmation-customer@example.com>" },
               { name: "Subject", value: `Re: [${ticket.ticketNumber}] Resolution confirmation QA` }
             ],
-            body: { data: Buffer.from("YES\n\nOriginal message quoted below", "utf8").toString("base64url") }
+            body: { data: Buffer.from("Yes\n\nOn Thu, Oct 8, 2026 at 11:27 AM Ysabelle Store Customer Support <\nysabellestore.support@gmail.com> wrote:\n\n> Ysabelle Store\n> Please confirm your resolution", "utf8").toString("base64url") }
           }
         };
       },
@@ -600,6 +600,10 @@ test("Gmail resolution reply resolves once within the original ticket thread", a
     assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 1, skipped: 0 });
     assert.equal((await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status, "RESOLVED");
     assert.equal(finalSendCount, 1);
+    const customerMessage = await prisma.supportMessage.findUniqueOrThrow({
+      where: { gmailMessageId: inboundId }
+    });
+    assert.equal(customerMessage.body, "Yes");
     assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 0, skipped: 1 });
     assert.equal(finalSendCount, 1);
     inboundId = `resolution-yes-followup-${randomUUID()}`;
