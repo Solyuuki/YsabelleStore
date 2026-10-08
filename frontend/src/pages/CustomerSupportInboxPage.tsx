@@ -21,6 +21,7 @@ import {
   fetchSupportGmailStatus,
   replyToStaffSupportTicket,
   retryStaffSupportMessageEmail,
+  syncSupportGmail,
   updateStaffSupportTicketStatus
 } from "@/services/supportApi";
 import {
@@ -91,6 +92,7 @@ export function CustomerSupportInboxPage() {
   const [categoryFilter, setCategoryFilter] = useState<StaffSupportCategory | "ALL">("ALL");
   const [page, setPage] = useState(1);
   const [reloadKey, setReloadKey] = useState(0);
+  const [syncingInbox, setSyncingInbox] = useState(false);
   const [listLoading, setListLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -187,6 +189,22 @@ export function CustomerSupportInboxPage() {
     setPage(1);
   }
 
+  async function refreshSupportInbox() {
+    if (syncingInbox) return;
+    setSyncingInbox(true);
+    setError(null);
+    try {
+      if (gmailStatus?.configured) {
+        await syncSupportGmail();
+      }
+      setReloadKey((value) => value + 1);
+    } catch (reason) {
+      setError(supportError(reason, "Gmail synchronization failed. Try refreshing again."));
+    } finally {
+      setSyncingInbox(false);
+    }
+  }
+
   async function saveStatus() {
     if (!detail || statusDraft === detail.status || statusSaving) return;
     if (statusDraft === "RESOLVED" && !window.confirm("Send a resolution confirmation email? The ticket stays pending until the customer replies YES or NO in Gmail.")) {
@@ -269,13 +287,14 @@ export function CustomerSupportInboxPage() {
               {gmailStatus?.configured ? "Gmail connected" : "Gmail setup required"}
             </StatusBadge>
             <Button
-              onClick={() => setReloadKey((value) => value + 1)}
+              onClick={() => void refreshSupportInbox()}
+              disabled={syncingInbox}
               size="sm"
               type="button"
               variant="secondary"
             >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              Refresh
+              {syncingInbox ? "Syncing..." : "Refresh"}
             </Button>
           </>
         }
