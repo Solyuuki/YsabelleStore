@@ -271,14 +271,18 @@ export async function retryStaffSupportEmail(ticketId: string, messageId: string
     message?.senderType === "SYSTEM" &&
     message.channel === "EMAIL" &&
     message.senderName === SUPPORT_AUTOMATION_SENDER_NAME;
+  const lifecycleNotice =
+    message?.senderType === "SYSTEM" &&
+    message.channel === "EMAIL" &&
+    message.senderName === SUPPORT_LIFECYCLE_SENDER_NAME;
 
-  if (!message || (message.senderType !== "STAFF" && !automatedAcknowledgement)) {
+  if (!message || (message.senderType !== "STAFF" && !automatedAcknowledgement && !lifecycleNotice)) {
     throw new HttpError(404, "Support message was not found.", {
       code: "SUPPORT_MESSAGE_NOT_FOUND"
     });
   }
 
-  if (message.ticket.status === "CLOSED") {
+  if (message.ticket.status === "CLOSED" && !lifecycleNotice) {
     throw new HttpError(409, "Closed support tickets must be reopened before retrying email.", {
       code: "SUPPORT_TICKET_CLOSED"
     });
@@ -322,6 +326,8 @@ export async function retryStaffSupportEmail(ticketId: string, messageId: string
 
   if (automatedAcknowledgement) {
     await deliverAutomatedSupportAcknowledgementEmail(message.id);
+  } else if (lifecycleNotice) {
+    await deliverSupportLifecycleMessageEmail(message.id);
   } else {
     await deliverStaffSupportMessageEmail(message.id);
   }
