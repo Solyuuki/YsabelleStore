@@ -44,6 +44,24 @@ test("both appearance controls and theme styles are loaded without changing Ligh
   assert.match(storefront, /frosted-ribbon\.webp/);
 });
 
+
+test("dark home category portal and SVG merchandising canvas never reuse light fills", () => {
+  const dark = read("frontend/src/styles/theme-storefront.css");
+  const home = read("frontend/src/styles/customer-home-premium.css");
+  const about = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
+
+  assert.match(home, /\.home-categories__center-light/);
+  assert.match(home, /--merch-bg-top:/);
+  assert.match(dark, /:root\.dark \.customer-app \.home-categories \{/);
+  assert.match(dark, /:root\.dark \.customer-app \.home-categories__center-light/);
+  assert.match(dark, /:root\.dark \.customer-app \.home-categories__handoff > path:nth-child\(2\)/);
+  assert.match(dark, /:root\.dark \.customer-app \.home-category-merch-handoff/);
+  assert.match(dark, /--merch-bg-top: #17243c/);
+  assert.match(dark, /\.home-categories \.home-category-card__body small/);
+  assert.doesNotMatch(dark, /\.about-experience|\.discover-story|\.story-welcome/);
+  assert.match(about, /const storyTheme/);
+});
+
 test("printed receipts remain explicitly light", () => {
   const context = read("frontend/src/context/AppearanceContext.tsx");
   const print = read("frontend/src/styles/receipt.css");
