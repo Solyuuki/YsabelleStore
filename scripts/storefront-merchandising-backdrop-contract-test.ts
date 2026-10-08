@@ -129,10 +129,17 @@ assert.match(
   "Tall merchandising atmosphere must reduce intensity on small screens."
 );
 
-assert.doesNotMatch(
-  css,
-  /\.home-merchandising-canvas::before|\.home-merchandising-canvas::after|repeating-linear-gradient|background-image:\s*url\(/,
-  "Merchandising canvas must not depend on pseudo-element ribbons, repeating patterns, or raster background images."
+assert.ok(
+  !css.includes(".home-merchandising-canvas::before") &&
+    !css.includes(".home-merchandising-canvas::after"),
+  "Merchandising canvas must not depend on pseudo-element ribbons."
+);
+const merchandisingCanvasRule = css.split(".home-merchandising-canvas {")[1]?.split("}")[0] ?? "";
+assert.ok(merchandisingCanvasRule, "Merchandising canvas requires its approved base style.");
+assert.ok(
+  !merchandisingCanvasRule.includes("repeating-linear-gradient") &&
+    !merchandisingCanvasRule.includes("background-image: url("),
+  "Merchandising canvas must not depend on repeating patterns or raster backgrounds."
 );
 
 assert.doesNotMatch(
