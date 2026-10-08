@@ -257,7 +257,13 @@ function decodeMessageBody(part: GmailMessagePart | undefined): string | null {
 
   if (part.mimeType?.toLowerCase() === "text/html" && part.body?.data) {
     const html = decodeBase64Url(part.body.data);
-    const text = html
+    // Gmail's HTML-only replies can put the previous conversation inside
+    // a gmail_quote container, even when there is no text/plain part.
+    const gmailQuoteIndex = html.search(
+      /<(?:div|blockquote)\b[^>]*class=["'][^"']*\bgmail_quote\b[^"']*["'][^>]*>/i
+    );
+    const replyHtml = gmailQuoteIndex >= 0 ? html.slice(0, gmailQuoteIndex) : html;
+    const text = replyHtml
       .replace(/<style[\s\S]*?<\/style>/gi, " ")
       .replace(/<script[\s\S]*?<\/script>/gi, " ")
       .replace(/<br\s*\/?>/gi, "\n")
