@@ -589,7 +589,7 @@ function SupportConversation({
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={resolutionRequestSaving}
                 onClick={onRequestResolution}
               >
