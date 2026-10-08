@@ -97,5 +97,5 @@ test("Phase 5 hardening keeps failed delivery actionable and prevents silent loc
   assert.match(staffService, /SUPPORT_EMAIL_DELIVERY_PENDING/);
   assert.match(staffService, /deliveryStatus: "FAILED"/);
   assert.match(inboxPage, /Gmail must be connected before a customer reply can be sent/);
-  assert.match(inboxPage, /Failed delivery keeps/);
+  assert.match(inboxPage, /Failed delivery keeps\s+the ticket Open for follow-up/);
 });

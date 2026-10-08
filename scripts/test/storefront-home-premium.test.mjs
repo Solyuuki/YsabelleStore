@@ -314,14 +314,12 @@ assert.doesNotMatch(
   premiumCss,
   /shop-category-background\.webp|storefront-merchandising-background\.webp|home-next-step-background\.(?:avif|webp)/
 );
-assert.doesNotMatch(premiumCss, /\\.home-merchandising-canvas::before|\\.home-merchandising-canvas::after/);
-const merchandisingCanvasRule = premiumCss.match(/\\.home-merchandising-canvas\\s*\\{[^}]*\\}/s)?.[0] ?? "";
+assert.ok(!premiumCss.includes(".home-merchandising-canvas::before"));
+assert.ok(!premiumCss.includes(".home-merchandising-canvas::after"));
+const merchandisingCanvasRule = premiumCss.split(".home-merchandising-canvas {")[1]?.split("}")[0] ?? "";
 assert.ok(merchandisingCanvasRule, "Home merchandising canvas must retain a defined Light Mode style");
-assert.doesNotMatch(
-  merchandisingCanvasRule,
-  /repeating-linear-gradient|background-image:\\s*url\\(/,
-  "Merchandising canvas must not stretch a background image"
-);
+assert.ok(!merchandisingCanvasRule.includes("repeating-linear-gradient"));
+assert.ok(!merchandisingCanvasRule.includes("background-image: url("));
 assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::before/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::after/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising--trending::before/);
