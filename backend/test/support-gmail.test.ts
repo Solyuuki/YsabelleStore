@@ -586,7 +586,7 @@ test("Gmail resolution reply resolves once within the original ticket thread", a
               { name: "From", value: "Confirmation Customer <confirmation-customer@example.com>" },
               { name: "Subject", value: `Re: [${ticket.ticketNumber}] Resolution confirmation QA` }
             ],
-            body: { data: Buffer.from("YES\\n\\nOriginal message quoted below", "utf8").toString("base64url") }
+            body: { data: Buffer.from("YES\n\nOriginal message quoted below", "utf8").toString("base64url") }
           }
         };
       },
