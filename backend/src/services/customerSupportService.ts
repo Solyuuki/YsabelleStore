@@ -225,7 +225,14 @@ export async function createCustomerSupportTicket(
         // Ticket creation must remain successful even if acknowledgement queuing fails.
       }
 
-      return ticket;
+      return {
+        id: ticket.id,
+        ticketNumber: ticket.ticketNumber,
+        category: ticket.category,
+        status: ticket.status,
+        subject: ticket.subject,
+        createdAt: ticket.createdAt
+      };
     } catch (error) {
       if (isUniqueConstraintError(error) && attempt < SUPPORT_TICKET_NUMBER_ATTEMPTS - 1) {
         continue;
