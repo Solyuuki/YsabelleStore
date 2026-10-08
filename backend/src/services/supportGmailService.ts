@@ -111,7 +111,7 @@ export type SupportGmailSendInput = {
   body: string;
   threadId?: string | null;
   replyToGmailMessageId?: string | null;
-  kind?: "ACKNOWLEDGEMENT" | "STAFF_REPLY";
+  kind?: "ACKNOWLEDGEMENT" | "STAFF_REPLY" | "LIFECYCLE";
   threadSubject?: string;
 };
 
@@ -394,7 +394,7 @@ function buildRawSupportEmail(
             <tr>
               <td style="padding:30px">
                 <div style="font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#6757d9">Ysabelle Store</div>
-                <h1 style="margin:10px 0 18px;font-size:22px;line-height:1.3;color:#18152f">${input.kind === "ACKNOWLEDGEMENT" ? "Support request received" : "Customer support reply"}</h1>
+                <h1 style="margin:10px 0 18px;font-size:22px;line-height:1.3;color:#18152f">${input.kind === "ACKNOWLEDGEMENT" ? "Support request received" : input.kind === "LIFECYCLE" && input.body.startsWith("This support conversation") ? "Support conversation closed" : input.kind === "LIFECYCLE" ? "Support concern resolved" : isResolutionRequest ? "Resolution confirmation requested" : "Customer support reply"}</h1>
                 ${paragraphs}
                 ${resolutionActions}
                 <div style="margin-top:18px;padding:12px 14px;border:1px solid #e8e4ff;border-radius:12px;background:#faf9ff;font-size:12px;line-height:1.6;color:#6d6785">
@@ -739,7 +739,7 @@ async function deliverSupportMessageEmail(
       body: message.body,
       threadId: message.ticket.gmailThreadId,
       replyToGmailMessageId: previousGmailMessage?.gmailMessageId ?? null,
-      kind: options.kind === "ACKNOWLEDGEMENT" ? "ACKNOWLEDGEMENT" : "STAFF_REPLY"
+      kind: options.kind
     });
   } catch {
     const operations: Prisma.PrismaPromise<unknown>[] = [
