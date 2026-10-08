@@ -105,12 +105,3 @@ export async function retryStaffSupportMessageEmail(ticketId: string, messageId:
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;
 }
-
-export async function requestStaffSupportResolution(ticketId: string) {
-  const response = await apiClient.request<StaffSupportTicketDetail>(
-    `/api/support/tickets/${encodeURIComponent(ticketId)}/request-resolution`,
-    { method: "POST" }
-  );
-  if (!response.success || !response.data) throw new Error(response.message);
-  return response.data;
-}
