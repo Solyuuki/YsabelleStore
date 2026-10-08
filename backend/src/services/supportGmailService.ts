@@ -305,18 +305,18 @@ function escapeHtml(value: string) {
 
 function supportSignatureHtml(configuration: SupportGmailConfiguration) {
   const logo = configuration.logoBytes
-    ? `<td style="width:84px;padding:0 16px 0 0;vertical-align:middle">
-        <img src="cid:${SUPPORT_LOGO_CONTENT_ID}" width="64" height="64" alt="Ysabelle Store" style="display:block;width:64px;height:64px;border:0;border-radius:14px" />
+    ? `<td width="44" style="width:44px;padding:0 10px 0 0;vertical-align:middle">
+        <img src="cid:${SUPPORT_LOGO_CONTENT_ID}" width="40" height="40" alt="Ysabelle Store" style="display:block;width:40px;height:40px;border:0;border-radius:50%" />
       </td>`
     : "";
 
-  return `<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:24px;border-top:1px solid #e8e4ff;padding-top:18px">
+  return `<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:10px;border-collapse:collapse">
     <tr>
       ${logo}
-      <td style="vertical-align:middle;font-family:Arial,sans-serif">
-        <div style="font-size:13px;line-height:1.5;color:#77728c">Best regards,</div>
-        <div style="margin-top:3px;font-size:16px;line-height:1.4;font-weight:700;color:#201b46">Ysabelle Store Customer Support</div>
-        <div style="margin-top:4px;font-size:12px;line-height:1.5;color:#6d6785">${escapeHtml(configuration.supportEmail)}</div>
+      <td style="padding:0;vertical-align:middle;font-family:Arial,sans-serif">
+        <div style="font-size:12px;line-height:1.4;color:#77728c">Best regards,</div>
+        <div style="margin-top:2px;font-size:14px;line-height:1.35;font-weight:700;color:#201b46">Ysabelle Store Customer Support</div>
+        <div style="margin-top:2px;font-size:12px;line-height:1.4;color:#6d6785">${escapeHtml(configuration.supportEmail)}</div>
       </td>
     </tr>
   </table>`;
