@@ -370,8 +370,8 @@ function buildRawSupportEmail(
     : [];
   const resolutionActions = resolutionLinks.length === 2
     ? `<div style="margin:16px 0">
-        <a href="${escapeHtml(resolutionLinks[0])}" style="display:inline-block;padding:12px 16px;margin:0 8px 8px 0;background:#6254df;color:#fff;text-decoration:none;border-radius:8px;font-weight:700">Yes, resolved</a>
-        <a href="${escapeHtml(resolutionLinks[1])}" style="display:inline-block;padding:12px 16px;margin:0 8px 8px 0;background:#f1efff;color:#332b72;text-decoration:none;border-radius:8px;font-weight:700">No, need more help</a>
+        <a href="${escapeHtml(resolutionLinks[0] ?? "")}" style="display:inline-block;padding:12px 16px;margin:0 8px 8px 0;background:#6254df;color:#fff;text-decoration:none;border-radius:8px;font-weight:700">Yes, resolved</a>
+        <a href="${escapeHtml(resolutionLinks[1] ?? "")}" style="display:inline-block;padding:12px 16px;margin:0 8px 8px 0;background:#f1efff;color:#332b72;text-decoration:none;border-radius:8px;font-weight:700">No, need more help</a>
       </div>`
     : "";
   const text = [
