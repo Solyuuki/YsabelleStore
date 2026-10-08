@@ -17,9 +17,15 @@ const customerSupportTicketCreateRateLimit = createAuthRateLimit({
   message: "Too many support requests. Please try again later."
 });
 
+const customerSupportResolutionRateLimit = createAuthRateLimit({
+  ...AUTH_RATE_LIMITS.customerSupportTicketCreate,
+  code: "SUPPORT_RESOLUTION_RATE_LIMITED",
+  message: "Too many confirmation attempts. Please try again later."
+});
+
 customerSupportRouter.use(disableSensitiveResponseCaching);
 customerSupportRouter.get("/resolution", viewSupportResolutionController);
-customerSupportRouter.post("/resolution", urlencoded({ extended: false, limit: "4kb" }), submitSupportResolutionController);
+customerSupportRouter.post("/resolution", customerSupportResolutionRateLimit, urlencoded({ extended: false, limit: "4kb" }), submitSupportResolutionController);
 customerSupportRouter.post(
   "/tickets",
   requireAllowedCustomerAuthOrigin,
