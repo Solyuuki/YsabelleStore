@@ -24,7 +24,7 @@ jobs:
           cache: npm
       - name: Install locked repository tools
         run: npm ci
-      - name: Normalize formatting (do not modify logic)
+      - name: Normalize repository formatting (preserve logic)
         run: npm run format
       - name: Commit formatted files and remove temporary workflow
         shell: bash
