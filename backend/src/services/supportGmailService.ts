@@ -937,7 +937,7 @@ export async function syncSupportGmailInboxWithClient(
           select: { id: true, emailSentAt: true, createdAt: true }
         })
       : null;
-    const firstLine = body.split(/\\r?\\n/, 1)[0]?.trim().replace(/[.!]$/, "").toUpperCase();
+    const firstLine = body.split(/\r?\n/, 1)[0]?.trim().replace(/[.!]$/, "").toUpperCase();
     const resolutionAnswer = firstLine === "YES" || firstLine === "NO" ? firstLine : null;
 
     const activityAt = messageActivityAt(message, now);
@@ -948,8 +948,16 @@ export async function syncSupportGmailInboxWithClient(
         ? activityAt
         : matchedTicket.lastCustomerMessageAt;
 
+    const newestStaffReply = pendingResolution
+      ? await prisma.supportMessage.findFirst({
+          where: { ticketId: matchedTicket.id, senderType: "STAFF" },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          select: { id: true }
+        })
+      : null;
     const eligibleResolution = Boolean(
       pendingResolution &&
+      newestStaffReply?.id === pendingResolution.id &&
       resolutionAnswer &&
       pendingResolution.emailSentAt &&
       activityAt >= pendingResolution.emailSentAt &&
@@ -975,7 +983,7 @@ export async function syncSupportGmailInboxWithClient(
         });
 
         const isYes = eligibleResolution && resolutionAnswer === "YES";
-        await tx.supportTicket.update({
+        const updated = await tx.supportTicket.updateMany({
           data: {
             gmailThreadId: matchedTicket.gmailThreadId ?? gmailThreadId,
             status: isYes ? "RESOLVED" : "OPEN",
@@ -984,9 +992,12 @@ export async function syncSupportGmailInboxWithClient(
             resolvedAt: isYes ? activityAt : null,
             closedAt: null
           },
-          where: { id: matchedTicket.id }
+          where: {
+            id: matchedTicket.id,
+            ...(eligibleResolution ? { status: "WAITING_FOR_CUSTOMER" as const } : {})
+          }
         });
-        if (isYes) {
+        if (isYes && updated.count === 1) {
           const notice = await tx.supportMessage.create({
             data: {
               ticketId: matchedTicket.id,
