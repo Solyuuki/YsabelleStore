@@ -690,12 +690,17 @@ function ConversationMessage({
   retrying: boolean;
 }) {
   const automatedEmail = message.senderType === "SYSTEM" && message.channel === "EMAIL";
+  const systemText = message.body.startsWith("YS_SUPPORT_RESOLUTION_CONFIRMED:")
+    ? "Customer confirmed that the concern is resolved. Staff may now mark this ticket Resolved."
+    : message.body.startsWith("YS_SUPPORT_RESOLUTION_NEEDS_HELP:")
+      ? "Customer needs more help. Ticket reopened."
+      : message.body;
 
   if (message.senderType === "SYSTEM" && !automatedEmail) {
     return (
       <div className="flex justify-center py-1">
         <div className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 shadow-sm">
-          {message.body}
+          {systemText}
         </div>
       </div>
     );
@@ -706,7 +711,7 @@ function ConversationMessage({
       <div className="flex justify-center py-1">
         <article className="max-w-[82%] rounded-2xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-slate-800 shadow-sm">
           <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-indigo-700">
-            <strong>Automated acknowledgement</strong>
+            <strong>{message.senderName === "Ysabelle Store Support Lifecycle" ? "Automated status update" : "Automated acknowledgement"}</strong>
             <span>·</span>
             <span>{formatDateTime(message.createdAt)}</span>
             <span>·</span>
@@ -761,7 +766,7 @@ function ConversationMessage({
           <span>·</span>
           <span>{message.channel}</span>
         </div>
-        <p className="whitespace-pre-wrap text-sm leading-6">{message.body}</p>
+        <p className="whitespace-pre-wrap text-sm leading-6">{message.body.startsWith("YS_SUPPORT_RESOLUTION_REQUEST:") ? message.body.slice("YS_SUPPORT_RESOLUTION_REQUEST:".length).trim() : message.body}</p>
         {staff && message.channel === "EMAIL" ? (
           <div className="mt-2 flex flex-wrap items-center justify-end gap-2 text-[11px]">
             <span>
