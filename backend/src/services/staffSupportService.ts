@@ -339,6 +339,17 @@ export async function updateStaffSupportTicketStatus(
   actor: SafeUser,
   now = new Date()
 ) {
+  if (input.status === "RESOLVED") {
+    const current = await prisma.supportTicket.findUnique({
+      where: { id: ticketId },
+      select: { status: true }
+    });
+    if (!current) throw staffSupportNotFound();
+    if (current.status === "RESOLVED") return getStaffSupportTicket(ticketId);
+    await requestSupportResolutionConfirmation(ticketId, actor, now);
+    return getStaffSupportTicket(ticketId);
+  }
+
   const result = await prisma.$transaction(async (tx) => {
     const ticket = await tx.supportTicket.findUnique({
       select: {
