@@ -763,6 +763,10 @@ function ConversationMessage({
   }
 
   const staff = message.senderType === "STAFF";
+  const resolutionRequest = message.body.startsWith("YS_SUPPORT_RESOLUTION_REQUEST:");
+  const displayBody = resolutionRequest
+    ? "Resolution confirmation requested. The customer can select Yes, resolved or No, need more help from their email. The link expires after 72 hours."
+    : message.body;
 
   return (
     <div className={staff ? "flex justify-end" : "flex justify-start"}>
@@ -786,7 +790,7 @@ function ConversationMessage({
           <span>·</span>
           <span>{message.channel}</span>
         </div>
-        <p className="whitespace-pre-wrap text-sm leading-6">{message.body.startsWith("YS_SUPPORT_RESOLUTION_REQUEST:") ? message.body.slice("YS_SUPPORT_RESOLUTION_REQUEST:".length).trim() : message.body}</p>
+        <p className="whitespace-pre-wrap text-sm leading-6">{displayBody}</p>
         {staff && message.channel === "EMAIL" ? (
           <div className="mt-2 flex flex-wrap items-center justify-end gap-2 text-[11px]">
             <span>
