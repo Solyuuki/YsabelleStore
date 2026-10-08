@@ -975,13 +975,17 @@ export async function syncSupportGmailInboxWithClient(
         });
 
         const isYes = eligibleResolution && resolutionAnswer === "YES";
+        const alreadyResolvedConfirmation =
+          matchedTicket.status === "RESOLVED" &&
+          resolutionAnswer === "YES" &&
+          gmailThreadId === matchedTicket.gmailThreadId;
         const updated = await tx.supportTicket.updateMany({
           data: {
             gmailThreadId: matchedTicket.gmailThreadId ?? gmailThreadId,
-            status: isYes ? "RESOLVED" : "OPEN",
+            status: isYes || alreadyResolvedConfirmation ? "RESOLVED" : "OPEN",
             lastMessageAt,
             lastCustomerMessageAt,
-            resolvedAt: isYes ? activityAt : null,
+            resolvedAt: isYes ? activityAt : alreadyResolvedConfirmation ? matchedTicket.resolvedAt : null,
             closedAt: null
           },
           where: {
