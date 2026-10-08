@@ -1,4 +1,6 @@
 import {
+  ChevronDown,
+  ChevronUp,
   Clock3,
   Inbox,
   Mail,
@@ -577,6 +579,7 @@ function SupportConversation({
   statusSaving: boolean;
 }) {
   const statusChanged = statusDraft !== detail.status;
+  const [replyComposerExpanded, setReplyComposerExpanded] = useState(false);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -651,47 +654,82 @@ function SupportConversation({
         </div>
       </div>
 
-      <form className="border-t border-slate-200 bg-white p-4" onSubmit={onReplySubmit}>
+      <form
+        className="shrink-0 border-t border-slate-200 bg-white px-4 py-3"
+        onSubmit={onReplySubmit}
+      >
         <div className="mx-auto max-w-4xl">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <div>
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-semibold text-slate-900">Staff reply</p>
-              <p className="text-xs text-slate-500">
-                Staff replies are delivered through the connected Gmail mailbox and kept in the
-                ticket thread. Gmail must be connected before a customer reply can be sent.
-              </p>
+              {!replyComposerExpanded ? (
+                <p className="text-xs text-slate-500">
+                  {reply.trim()
+                    ? `Unsent draft · ${reply.length} / 5,000 characters`
+                    : detail.status === "CLOSED"
+                      ? "Reopen this ticket to reply."
+                      : !gmailConfigured
+                        ? "Connect Gmail to reply."
+                        : "Expand to write a response."}
+                </p>
+              ) : null}
             </div>
-            <span className="text-xs text-slate-400">{reply.length} / 5,000</span>
-          </div>
-          <Textarea
-            disabled={replySaving || detail.status === "CLOSED" || !gmailConfigured}
-            maxLength={5000}
-            onChange={(event) => onReplyChange(event.target.value)}
-            placeholder={
-              detail.status === "CLOSED"
-                ? "Reopen this ticket before replying."
-                : !gmailConfigured
-                  ? "Connect Gmail before sending customer replies."
-                  : "Write a clear response for this customer..."
-            }
-            rows={4}
-            value={reply}
-          />
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">
-              Successful delivery moves the ticket to Waiting for customer. Failed delivery keeps
-              the ticket Open for follow-up.
-            </p>
             <Button
-              disabled={
-                replySaving || detail.status === "CLOSED" || !gmailConfigured || !reply.trim()
-              }
-              type="submit"
+              aria-controls={`staff-reply-editor-${detail.id}`}
+              aria-expanded={replyComposerExpanded}
+              disabled={replySaving}
+              onClick={() => setReplyComposerExpanded((expanded) => !expanded)}
+              size="sm"
+              type="button"
+              variant="secondary"
             >
-              <MessageSquareText className="h-4 w-4" aria-hidden="true" />
-              {replySaving ? "Saving reply..." : "Save reply"}
+              {replyComposerExpanded ? (
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <ChevronUp className="h-4 w-4" aria-hidden="true" />
+              )}
+              {replyComposerExpanded ? "Collapse" : "Expand"}
             </Button>
           </div>
+          {replyComposerExpanded ? (
+            <div className="mt-3 space-y-3" id={`staff-reply-editor-${detail.id}`}>
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-xs text-slate-500">
+                  Staff replies are delivered through Gmail in the existing ticket thread.
+                </p>
+                <span className="shrink-0 text-xs text-slate-400">{reply.length} / 5,000</span>
+              </div>
+              <Textarea
+                disabled={replySaving || detail.status === "CLOSED" || !gmailConfigured}
+                maxLength={5000}
+                onChange={(event) => onReplyChange(event.target.value)}
+                placeholder={
+                  detail.status === "CLOSED"
+                    ? "Reopen this ticket before replying."
+                    : !gmailConfigured
+                      ? "Connect Gmail before sending customer replies."
+                      : "Write a clear response for this customer..."
+                }
+                rows={4}
+                value={reply}
+              />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-slate-500">
+                  Successful delivery moves the ticket to Waiting for customer. Failed delivery keeps
+                  the ticket Open for follow-up.
+                </p>
+                <Button
+                  disabled={
+                    replySaving || detail.status === "CLOSED" || !gmailConfigured || !reply.trim()
+                  }
+                  type="submit"
+                >
+                  <MessageSquareText className="h-4 w-4" aria-hidden="true" />
+                  {replySaving ? "Saving reply..." : "Save reply"}
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </div>
       </form>
     </div>
