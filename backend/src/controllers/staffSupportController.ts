@@ -134,3 +134,18 @@ export const retryStaffSupportEmailController: RequestHandler = async (request, 
     next(error);
   }
 };
+
+export const requestSupportResolutionController: RequestHandler = async (request, response, next) => {
+  try {
+    const actor = requireInternalUser(request);
+    const { ticketId } = parseOrThrow(supportTicketIdParamsSchema, request.params, {
+      message: "Support ticket id is invalid.",
+      code: "INVALID_SUPPORT_TICKET_ID"
+    });
+    await requestSupportResolutionConfirmation(ticketId, actor);
+    const ticket = await getStaffSupportTicket(ticketId);
+    response.json(createSuccessResponse("Resolution confirmation requested.", ticket));
+  } catch (error) {
+    next(error);
+  }
+};
