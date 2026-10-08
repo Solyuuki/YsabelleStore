@@ -135,6 +135,39 @@ test("staff can filter tickets, open a conversation, reply, and resolve it", asy
         true
       );
 
+      const prematureResolve = await fetch(`${baseUrl}/api/support/tickets/${ticket.id}/status`, {
+        method: "PATCH",
+        headers: { ...authHeader(session.token), "content-type": "application/json" },
+        body: JSON.stringify({ status: "RESOLVED" })
+      });
+      assert.equal(prematureResolve.status, 409);
+      const prematureBody = (await prematureResolve.json()) as { error?: { code?: string } };
+      assert.equal(prematureBody.error?.code, "SUPPORT_RESOLUTION_CONFIRMATION_REQUIRED");
+
+      // Seed a confirmed request to verify staff can finalize only after customer confirmation.
+      const requestId = randomUUID();
+      await prisma.supportMessage.create({
+        data: {
+          id: requestId,
+          ticketId: ticket.id,
+          senderType: "STAFF",
+          channel: "EMAIL",
+          senderName: user.name,
+          body: "YS_SUPPORT_RESOLUTION_REQUEST: test customer confirmation",
+          deliveryStatus: "SENT"
+        }
+      });
+      await prisma.supportMessage.create({
+        data: {
+          ticketId: ticket.id,
+          senderType: "SYSTEM",
+          channel: "SYSTEM",
+          senderName: "Ysabelle Store Customer Confirmation",
+          body: `YS_SUPPORT_RESOLUTION_CONFIRMED:${requestId}`,
+          deliveryStatus: "NOT_APPLICABLE"
+        }
+      });
+
       const resolveResponse = await fetch(`${baseUrl}/api/support/tickets/${ticket.id}/status`, {
         method: "PATCH",
         headers: {
