@@ -604,3 +604,275 @@
 :root.dark .customer-app .customer-support-form :is(
   input, select, textarea
 ) { color: #d4deec; border-color: #687995; background: #17243a; }
+
+/* Sprint 11 visual QA: structured, non-glaring outlines and never dirty-white
+   storefront panels. All changes are scoped to active storefront dark mode.
+   Product photography stays neutral and About is not themed. */
+:root.dark[data-appearance-scope="storefront"] .customer-app {
+  --store-outline-hairline: #44556e;
+  --store-outline-panel: #64758f;
+  --store-outline-focus: #a99af1;
+  --store-ink-high: #d4deec;
+  --store-ink-body: #b8c6d8;
+  --store-ink-muted: #9fafc6;
+  --store-panel-opaque: #1b293e;
+  --store-panel-raised: #25354e;
+}
+/* Bounded page artwork: cap texture width and tile naturally down long pages,
+   never rescale a 1600x900 SVG to fit a 4000px-tall page. */
+:root.dark[data-appearance-scope="storefront"] .customer-app.ys-glass-flow-background {
+  background-color: #101827 !important;
+  background-size: min(1600px, 100%) auto !important;
+  background-position: center top !important;
+  background-repeat: repeat-y !important;
+}
+:root.dark .customer-app :is(
+  .customer-home, .customer-shop-page, .customer-cart-page,
+  .customer-checkout-page, .customer-account-page-v2, .customer-privacy-page
+) {
+  background-size: min(1600px, 100%) auto;
+  background-position: center top;
+  background-repeat: repeat-y;
+}
+/* Panel materials are cropped from fixed-size artwork, not stretched to fit. */
+:root.dark .customer-app :is(
+  .customer-product-card__body, .home-category-card__body,
+  .shop-catalog-refresh__body, .customer-account-section
+) {
+  background-size: 900px auto !important;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+:root.dark .customer-app :is(.customer-shop-heading, .customer-support-hero,
+  .customer-privacy-hero, .home-categories, .home-next-step) {
+  background-size: min(1600px, 100%) auto;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Clear section boundaries, readable bodies and tidy focal outlines. */
+:root.dark .customer-app :is(
+  .customer-product-card, .home-category-card, .customer-review,
+  .customer-review-overview, .customer-review-composer, .customer-filter-panel,
+  .customer-account-section, .customer-account-history-card,
+  .customer-account-hero, .customer-account-rail,
+  .customer-auth-stage__panel, .customer-support-form-card,
+  .customer-support-info-card, .customer-privacy-document,
+  .customer-cart-item, .customer-order-summary, .customer-empty-state
+) {
+  border-color: var(--store-outline-panel);
+  box-shadow: 0 12px 28px rgb(2 8 23 / 14%), inset 0 1px 0 rgb(171 190 239 / 4%);
+}
+:root.dark .customer-app :is(
+  .customer-quantity, .customer-select, .customer-review-filters button,
+  .customer-review-composer textarea, .customer-product-detail__favorite,
+  .customer-account-page-v2 input, .customer-account-page-v2 select,
+  .customer-account-page-v2 textarea, .customer-auth-page input,
+  .customer-support-page input, .customer-support-page textarea,
+  .customer-support-page select
+) {
+  border-color: var(--store-outline-panel);
+}
+:root.dark .customer-app :is(
+  .customer-account-page-v2, .customer-support-page, .customer-privacy-page,
+  .customer-cart-page, .customer-auth-page
+) :is(p,small) {
+  color: var(--store-ink-body);
+}
+:root.dark .customer-app :is(
+  .customer-account-page-v2, .customer-auth-page, .customer-support-page
+) :is(h1,h2,h3) {
+  color: var(--store-ink-high);
+}
+
+/* Home closing CTA: the heading/description was dark on dark; light-theme
+   badges were visually detached from the new midnight texture. */
+:root.dark .customer-app .home-next-step h2 {
+  color: #d4deec;
+}
+:root.dark .customer-app .home-next-step h2 span {
+  background-image: linear-gradient(100deg, #a9c0f5, #b4a5f1 55%, #cca0dc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+:root.dark .customer-app .home-next-step__lede {
+  color: #b8c6d8;
+}
+:root.dark .customer-app .home-next-step__meta > span {
+  background: #25354c;
+  border: 1px solid #697b97;
+  color: #d4deec;
+  box-shadow: 0 4px 14px rgb(2 8 23 / 12%);
+}
+:root.dark .customer-app .home-next-step__meta > span :is(strong,svg) {
+  color: #bec0f7;
+}
+:root.dark .customer-app .home-next-step__actions .home-secondary-link {
+  color: #bfb4f1;
+  text-decoration-color: #bfb4f1;
+}
+:root.dark .customer-app .home-next-step__actions .customer-button {
+  border: 1px solid #8d84dc;
+  color: #f0eefb;
+}
+:root.dark .customer-app .home-next-step__visual :is(svg, img) {
+  max-width: 100%;
+}
+
+/* Search is portaled: scope by root rather than assuming a .customer-app
+   ancestor. Both suggestions and recent searches inherit a dark canvas. */
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__popup {
+  background: #1c2b41;
+  border: 1px solid #697b98;
+  color: #d4deec;
+  box-shadow: 0 20px 48px rgb(2 8 23 / 34%);
+}
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__popup-header {
+  background: #25354e;
+  border-bottom: 1px solid #536781;
+  color: #b8c6d8;
+}
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__popup-header button,
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__recent-query,
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__recent-action,
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__item {
+  color: #d4deec;
+}
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__product-copy span,
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__empty {
+  color: #b8c6d8;
+}
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__item:is(:hover,[data-highlighted]),
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__recent-action:is(:hover,:focus-visible) {
+  background: #34455e;
+}
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__popup :is(button,a):focus-visible {
+  outline: 2px solid #b5a6f1;
+  outline-offset: 2px;
+}
+
+/* Security: nested password form / identity method cards were still white. */
+:root.dark .customer-app .customer-account-page-v2 :is(
+  .customer-account-password-change-current,
+  .customer-account-auth-methods > span,
+  .customer-account-otp-actions,
+  .customer-account-session-confirm
+) {
+  background: #1b293f;
+  border: 1px solid #64758f;
+  color: #d4deec;
+  box-shadow: inset 0 1px 0 rgb(164 179 220 / 4%);
+}
+:root.dark .customer-app .customer-account-auth-methods :is(strong,small),
+:root.dark .customer-app .customer-account-password-change-current :is(label,span,small) {
+  color: #c3d0e1;
+}
+:root.dark .customer-app .customer-account-page-v2 .customer-account-security-card :is(
+  .customer-account-password-recovery-link,
+  .customer-account-secondary-button
+) {
+  color: #c2b7f3;
+}
+:root.dark .customer-app .customer-account-page-v2 .customer-account-security-card
+  .customer-account-password-recovery-link:hover {
+  color: #d8cffc;
+}
+:root.dark .customer-app .customer-account-page-v2 .customer-account-security-card
+  .customer-account-secondary-button {
+  background: #273854;
+  border: 1px solid #687995;
+}
+:root.dark .customer-app .customer-account-page-v2 .customer-account-security-card
+  .customer-account-password-change-current input {
+  background: #152239;
+  border-color: #64758f;
+  color: #d4deec;
+}
+/* Favorites empty state and archived order panels must not revert to white. */
+:root.dark .customer-app .customer-account-page-v2 :is(
+  .customer-account-empty, .customer-account-state,
+  .customer-account-order-v2, .customer-account-history-card
+) {
+  background: #223149;
+  border-color: #64758f;
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-account-page-v2 .customer-account-empty :is(
+  p, small, span, svg
+) { color: #b8c6d8; }
+:root.dark .customer-app .customer-account-page-v2 .customer-account-empty strong {
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-account-page-v2 .customer-account-order-v2 :is(
+  .customer-account-order-meta, li, small, p
+) { color: #b8c6d8; }
+
+/* Recovery and login/register: dark-specific silk artwork, never pale lavender
+   behind a dark card. Scoping ensures the approved Light Mode is untouched. */
+:root.dark .customer-app .customer-auth-page--recovery,
+:root.dark .customer-app .customer-auth-page--login,
+:root.dark .customer-app .customer-auth-page--register {
+  background-color: #101827;
+  background-image:
+    linear-gradient(145deg, rgb(11 21 36 / 25%), rgb(24 24 45 / 20%)),
+    url("/textures/ys-dark-indigo-silk.svg");
+  background-size: auto, min(1600px, 100%) auto;
+  background-position: center, center top;
+  background-repeat: no-repeat, no-repeat;
+}
+:root.dark .customer-app .customer-auth-page--recovery::before,
+:root.dark .customer-app .customer-auth-page--login::before,
+:root.dark .customer-app .customer-auth-page--register::before {
+  opacity: 0.12;
+}
+:root.dark .customer-app .customer-auth-page--recovery::after,
+:root.dark .customer-app .customer-auth-page--login::after,
+:root.dark .customer-app .customer-auth-page--register::after {
+  opacity: 0.1;
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-auth-stage__panel,
+:root.dark .customer-app .customer-auth-page--login .customer-auth-stage__panel,
+:root.dark .customer-app .customer-auth-page--register .customer-auth-stage__panel {
+  background: #24334a;
+  border: 1px solid #697b98;
+  box-shadow: 0 26px 68px rgb(2 8 23 / 20%), inset 0 1px 0 rgb(185 199 235 / 5%);
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-auth-stage__panel::after {
+  background: none;
+}
+:root.dark .customer-app .customer-recovery-progress {
+  background: #293955;
+  border-color: #72819c;
+  box-shadow: inset 0 1px 0 rgb(186 199 242 / 4%);
+}
+:root.dark .customer-app .customer-recovery-progress__step {
+  color: #b8c6d8;
+}
+:root.dark .customer-app .customer-recovery-progress__step--active,
+:root.dark .customer-app .customer-recovery-progress__step--complete {
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-recovery-progress__dot {
+  background: #35445d;
+  border-color: #8492aa;
+  color: #c9d4e6;
+}
+:root.dark .customer-app .customer-recovery-progress__step--active .customer-recovery-progress__dot,
+:root.dark .customer-app .customer-recovery-progress__step--complete .customer-recovery-progress__dot {
+  background: #625bb3;
+  color: #f0efff;
+  border-color: #a99ae6;
+}
+:root.dark .customer-app .customer-recovery-progress__line { background: #64738b; }
+/* Avoid global control styling overriding intentional product photo backgrounds. */
+:root.dark .customer-app .customer-product-card__media,
+:root.dark .customer-app .customer-product-detail__media {
+  color-scheme: light;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root.dark .customer-app .customer-auth-page--recovery::before,
+  :root.dark .customer-app .customer-auth-page--recovery::after,
+  :root.dark .customer-app .customer-auth-page--login::before,
+  :root.dark .customer-app .customer-auth-page--login::after { animation: none; }
+}
