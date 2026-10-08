@@ -1,0 +1,401 @@
+/*
+ * Storefront Dark Mode — component-level legibility contract.
+ * Every light-first content surface is paired with an explicit dark ink/surface.
+ * Product photography and branded sign-in controls are intentional exceptions.
+ * All selectors are dark-only; approved Light Mode and About scene CSS stay intact.
+ */
+:root.dark .customer-app {
+  --store-contrast-card: #223049;
+  --store-contrast-card-raised: #293750;
+  --store-contrast-input: #15233a;
+  --store-contrast-stroke: #4b5e7d;
+  --store-contrast-ink: #f0f4ff;
+  --store-contrast-body: #c9d5e9;
+  --store-contrast-muted: #b2c2dc;
+  --store-contrast-link: #c9bdff;
+}
+
+/* Product catalogue: the image is intentionally light for color fidelity,
+   but metadata, controls and navigation must use dark-surface contrast. */
+:root.dark .customer-app .customer-product-card__body :is(h3, h3 a, strong),
+:root.dark .customer-app .shop-catalog-refresh__body :is(h3, strong) {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-product-card__body :is(
+  .customer-eyebrow, .customer-product-card__rating, .customer-product-card__rating span,
+  .customer-product-card__price-row span, small
+) {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-product-card__price-row strong {
+  color: #e1d7ff;
+}
+:root.dark .customer-app .customer-product-card__body :is(
+  .customer-product-card__actions, .customer-product-card__price-row
+) { border-color: var(--store-contrast-stroke); }
+:root.dark .customer-app .customer-quantity {
+  background: #24324e;
+  border: 1px solid #536581;
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-quantity :is(button, output, input, span, strong) {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-quantity button:hover:not(:disabled) {
+  background: #364569;
+}
+:root.dark .customer-app .customer-quantity button:disabled {
+  color: #a8b9d5;
+}
+:root.dark .customer-app .customer-product-detail__favorite {
+  background: #263551;
+  border-color: #526381;
+  color: #dce5fb;
+}
+:root.dark .customer-app .customer-product-detail__favorite[aria-pressed="true"] {
+  background: #442943;
+  border-color: #875a8b;
+  color: #ffc5e1;
+}
+:root.dark .customer-app :is(.customer-related-products__arrow, .customer-product-size-selector__arrow) {
+  background: #273753;
+  color: #e0d9ff;
+  border-color: #536682;
+}
+:root.dark .customer-app .customer-product-section-state,
+:root.dark .customer-app .customer-related-products__skeleton-grid i {
+  background: #223049;
+  border-color: #52627f;
+  color: var(--store-contrast-body);
+}
+
+/* Reviews: review overview, composer, published reviews, filters, and
+   text inputs previously retained #fff and disappeared in Dark Mode. */
+:root.dark .customer-app :is(
+  .customer-review-overview, .customer-review-composer, .customer-review,
+  .customer-review-empty
+) {
+  background: linear-gradient(145deg, #24324c, #202d45);
+  color: var(--store-contrast-ink);
+  border-color: var(--store-contrast-stroke);
+  box-shadow: 0 16px 34px rgb(0 0 0 / 10%);
+}
+:root.dark .customer-app :is(
+  .customer-review-overview, .customer-review-composer, .customer-review
+) :is(h3, strong, label) { color: var(--store-contrast-ink); }
+:root.dark .customer-app .customer-review-score > strong {
+  color: #c9bdff;
+}
+:root.dark .customer-app .customer-review-distribution__row > span {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-review-distribution__row progress,
+:root.dark .customer-app .customer-review-distribution__row progress::-webkit-progress-bar {
+  background: #46536c;
+}
+:root.dark .customer-app .customer-review-composer__header p:last-child,
+:root.dark .customer-app .customer-review-composer__footer > span,
+:root.dark .customer-app .customer-review > p,
+:root.dark .customer-app .customer-review header time,
+:root.dark .customer-app .customer-review__meta :is(span, small) {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-review-composer textarea {
+  background: var(--store-contrast-input);
+  border-color: #596b89;
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-review-composer textarea::placeholder {
+  color: #adbedb;
+}
+:root.dark .customer-app :is(
+  .customer-review-filters button, .customer-review-pagination button
+) {
+  background: #263551;
+  border-color: #536480;
+  color: #e8edff;
+}
+:root.dark .customer-app .customer-review-filters button.is-active {
+  background: #4f478f;
+  border-color: #b5aaff;
+  color: #fff;
+}
+:root.dark .customer-app .customer-review-filters button > span {
+  background: rgb(255 255 255 / 11%);
+  color: #ebeeff;
+}
+:root.dark .customer-app .customer-review-composer__error {
+  background: #44293b;
+  border-color: #895772;
+  color: #ffd0dc;
+}
+:root.dark .customer-app .customer-review-composer__success {
+  background: #1d3f38;
+  border-color: #407d6b;
+  color: #b8f6dd;
+}
+
+/* Shop: remove white wash from hero, and restore readable filter labels. */
+:root.dark .customer-app .customer-shop-heading {
+  background:
+    radial-gradient(ellipse at 8% 38%, rgb(61 119 196 / 17%), transparent 45%),
+    radial-gradient(ellipse at 90% 34%, rgb(146 89 202 / 13%), transparent 47%),
+    linear-gradient(180deg, #17263d, #1d2741 64%, #20233d);
+}
+:root.dark .customer-app .customer-shop-heading__backdrop::before {
+  background: linear-gradient(180deg, rgb(10 22 41 / 44%), transparent 64%);
+}
+:root.dark .customer-app .customer-shop-heading__backdrop svg {
+  opacity: 0.32;
+}
+:root.dark .customer-app .customer-shop-heading :is(h1, .shop-motion-intro__title) {
+  color: #f3f5ff;
+}
+:root.dark .customer-app .customer-shop-heading :is(
+  .shop-motion-intro__description, p:last-child
+) { color: var(--store-contrast-body); }
+:root.dark .customer-app .customer-filter-panel :is(h2, .customer-filter-panel__title) {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-filter-panel > a {
+  color: #d0daec;
+}
+:root.dark .customer-app .customer-filter-panel > a:hover:not(.is-active) {
+  background: #34425e;
+  border-color: #5d6c8b;
+  color: #fff;
+}
+:root.dark .customer-app .customer-filter-panel > a.is-active {
+  background: #3c3767;
+  color: #e2dcff;
+  border-color: #8578bd;
+}
+:root.dark .customer-app .customer-filter-panel small,
+:root.dark .customer-app .customer-filter-panel > a.is-active small {
+  color: #bcc9e1;
+}
+:root.dark .customer-app .customer-select {
+  background-color: #263550;
+  color: #e6edff;
+  border-color: #576988;
+}
+:root.dark .customer-app .customer-select option {
+  color: #e6edff;
+  background: #263550;
+}
+
+/* Cart: empty states and transactional summaries were still solid white. */
+:root.dark .customer-app :is(
+  .customer-empty-state, .customer-cart-item, .customer-order-summary,
+  .customer-cart-pagination
+) {
+  background: linear-gradient(145deg, #24324c, #202c44);
+  border-color: var(--store-contrast-stroke);
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-empty-state :is(h2, h3, strong) {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-empty-state p,
+:root.dark .customer-app .customer-cart-item__info > p:not(.customer-eyebrow) {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-cart-item__info button {
+  color: #ffb9c9;
+}
+:root.dark .customer-app .customer-order-summary > div {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-order-summary__total {
+  border-color: #566480;
+  color: var(--store-contrast-ink) !important;
+}
+
+/* Account: no frosted material should be an opaque light panel with light text. */
+:root.dark .customer-app .customer-account-page-v2 :is(
+  .customer-account-history-card, .customer-account-history-pagination,
+  .customer-account-info-card, .customer-account-contact-card,
+  .customer-account-address-card, .customer-account-security-card,
+  .customer-account-password-identity, .customer-account-auth-methods
+) {
+  background: linear-gradient(148deg, #2b3a54, #24314a);
+  border-color: #52617f;
+  color: var(--store-contrast-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
+}
+:root.dark .customer-app #profile-panel .customer-account-inline-action-form,
+:root.dark .customer-app #profile-panel :is(
+  .customer-account-info-card, .customer-account-contact-card, .customer-account-address-card
+) {
+  background: linear-gradient(145deg, #2b3a54, #25334b);
+  border-color: #536380;
+  box-shadow: 0 10px 26px rgb(0 0 0 / 10%);
+}
+:root.dark .customer-app #profile-panel .customer-account-address-summary {
+  background: #1c2a43;
+  border-color: #50617d;
+  color: #d0dbec;
+}
+:root.dark .customer-app #profile-panel :is(
+  .customer-account-address-summary strong,
+  .customer-account-info-card strong
+), 
+:root.dark .customer-app .customer-account-history-card :is(
+  .customer-account-history-card__identity strong,
+  .customer-account-history-card__summary > strong,
+  .customer-account-history-card__payment strong,
+  .customer-account-history-card__details li strong
+) {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app #profile-panel :is(
+  .customer-account-section-heading p:last-child,
+  .customer-account-info-card > span,
+  .customer-account-address-heading span,
+  .customer-account-contact-card label > span,
+  .customer-account-info-card small,
+  .customer-account-contact-card > small,
+  .customer-account-address-heading p,
+  .customer-account-address-summary
+),
+:root.dark .customer-app .customer-account-history-card :is(
+  .customer-account-history-card__identity > span,
+  .customer-account-history-card__identity > small,
+  .customer-account-history-card__summary > span:first-child,
+  .customer-account-history-card__details li,
+  .customer-account-history-card__payment
+) { color: var(--store-contrast-body); }
+:root.dark .customer-app .customer-account-history-card__details {
+  border-color: #4d5c78;
+}
+:root.dark .customer-app #profile-panel :is(
+  .customer-account-inline-action-form input,
+  .customer-account-contact-card input,
+  .customer-account-address-form input
+), 
+:root.dark .customer-app .customer-account-page-v2 :is(
+  .customer-account-security-form input,
+  .customer-account-password-change-form input,
+  .customer-account-otp-input
+) {
+  background: #18263f;
+  border-color: #586b89;
+  color: var(--store-contrast-ink);
+  box-shadow: none;
+}
+:root.dark .customer-app .customer-account-page-v2 :is(
+  input, textarea
+)::placeholder { color: #abbad5; }
+:root.dark .customer-app .customer-account-page-v2 :is(
+  .customer-account-security-card p, .customer-account-security-card small,
+  .customer-account-session-list time, .customer-account-session-list small,
+  .customer-account-session-list dt, .customer-account-session-list dd
+) { color: var(--store-contrast-body); }
+:root.dark .customer-app .customer-account-page-v2 .customer-account-session-list article {
+  background: #1f2d47;
+  border-color: #536482;
+}
+:root.dark .customer-app .customer-account-payment-gate {
+  background: #403322;
+  border-color: #95703a;
+  color: #f3d7a8;
+}
+:root.dark .customer-app .customer-account-payment-gate :is(p, strong) {
+  color: #f8e0b7;
+}
+:root.dark .customer-app .customer-account-page-v2 .customer-account-status {
+  color: #185f43;
+}
+
+/* Authentication: dark outer panel and inner fields together. No pale shell. */
+:root.dark .customer-app :is(
+  .customer-auth-page--login, .customer-auth-page--register,
+  .customer-auth-page--recovery
+) .customer-auth-stage__panel {
+  background: linear-gradient(155deg, #273751, #202c45);
+  border-color: #596884;
+  box-shadow: 0 28px 70px rgb(0 0 0 / 22%), inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-auth-stage__panel::after {
+  background: radial-gradient(circle at 88% 12%, rgb(144 106 225 / 9%), transparent 37%);
+}
+:root.dark .customer-app .customer-recovery-progress {
+  background: #34415f;
+  border-color: #687391;
+}
+:root.dark .customer-app .customer-auth-card {
+  background: transparent;
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-auth-card :is(
+  .customer-auth-card__intro h1, .customer-auth-field, .customer-auth-field > span,
+  .customer-auth-switch, .customer-recovery-progress__item
+) { color: var(--store-contrast-ink); }
+:root.dark .customer-app .customer-auth-card :is(
+  .customer-auth-card__intro p, .customer-auth-switch p,
+  .customer-recovery-progress__item small
+) { color: var(--store-contrast-body); }
+:root.dark .customer-app .customer-auth-page :is(
+  .customer-auth-field input, .customer-recovery-code-input
+) {
+  background: #142139;
+  color: #eff3ff;
+  border-color: #5a6c89;
+  box-shadow: none;
+}
+:root.dark .customer-app .customer-auth-page :is(input, textarea)::placeholder {
+  color: #b1c0d9;
+}
+:root.dark .customer-app :is(
+  .customer-auth-page--login, .customer-auth-page--register
+) .customer-auth-stage__panel .customer-auth-field input {
+  background: #142139;
+}
+:root.dark .customer-app .customer-auth-page :is(
+  .customer-auth-submit, .customer-recovery-secondary
+) {
+  color: #10192d;
+  font-weight: 800;
+}
+:root.dark .customer-app .customer-auth-page :is(
+  .customer-auth-quick-divider, .customer-recovery-back
+) { color: #c7d2e9; }
+/* Google / email identity providers intentionally retain light branded buttons. */
+:root.dark .customer-app .customer-auth-page :is(
+  .customer-auth-google, .customer-email-quick-sign, .customer-auth-quick-sign
+) { color: #19233b; }
+
+/* Support and privacy: labels, hero chips, callouts, and notices. */
+:root.dark .customer-app .customer-support-hero__signals span {
+  background: #293852;
+  border-color: #526282;
+  color: #e2eafd;
+}
+:root.dark .customer-app .customer-support-page :is(
+  .customer-support-form label,
+  .customer-support-form label > span,
+  .customer-support-character-count,
+  .customer-support-section-heading p,
+  .customer-support-hero__card p
+) { color: var(--store-contrast-body); }
+:root.dark .customer-app .customer-support-page :is(
+  .customer-support-form__two-column label, .customer-support-form-card label,
+  .customer-support-form .customer-support-field-label
+) { color: #e4ebf9; }
+:root.dark .customer-app :is(
+  .customer-support-account-note, .customer-support-field-tooltip,
+  .customer-support-safety-note
+) { color: #e5edff; }
+:root.dark .customer-app .customer-support-account-note {
+  background: #373257;
+  border-color: #625b8c;
+}
+:root.dark .customer-app .customer-privacy-hero__summary li,
+:root.dark .customer-app .customer-privacy-hero__summary p {
+  color: #cbd7ea;
+}
+
+/* Focus remains evident without changing product photography or the story. */
+:root.dark .customer-app :is(
+  button, a, input, textarea, select
+):focus-visible { outline: 2px solid #bdb1ff; outline-offset: 2px; }
