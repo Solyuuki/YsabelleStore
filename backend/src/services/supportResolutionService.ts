@@ -144,7 +144,7 @@ export async function submitResolutionResponse(token: string, answer: "YES" | "N
     const updated = await tx.supportTicket.updateMany({
       where: { id: inspected.ticketId, status: "WAITING_FOR_CUSTOMER" },
       data: {
-        status: answer === "NO" ? "OPEN" : "WAITING_FOR_CUSTOMER",
+        status: "OPEN",
         lastCustomerMessageAt: now,
         lastMessageAt: now
       }
