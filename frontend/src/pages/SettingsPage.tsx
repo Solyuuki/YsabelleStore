@@ -1,7 +1,8 @@
-import { RotateCcw, Save, ServerCog } from "lucide-react";
+import { MoonStar, RotateCcw, Save, ServerCog, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/shared/PageHeader";
+import { useAppearance } from "@/context/AppearanceContext";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,7 @@ const refreshOptions: readonly { label: string; value: DashboardRefreshSeconds }
 ];
 
 export function SettingsPage() {
+  const { retailTheme, setRetailTheme } = useAppearance();
   const [preferences, setPreferences] = useState<WorkstationPreferences>(getWorkstationPreferences);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [health, setHealth] = useState<BackendHealth | null>(null);
@@ -107,6 +109,47 @@ export function SettingsPage() {
         title="Settings"
         description="Configure workstation behavior and review the current backend readiness state."
       />
+
+      <Card className="ys-appearance-card">
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-1">
+              <CardTitle>Appearance</CardTitle>
+              <p className="text-sm text-slate-500">Choose a comfortable view for this retail workstation.</p>
+            </div>
+            <StatusBadge variant="info">Saved on this device</StatusBadge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div aria-label="Retail appearance" className="ys-appearance-options" role="group">
+            <button
+              aria-pressed={retailTheme === "light"}
+              className="ys-appearance-choice"
+              data-selected={retailTheme === "light"}
+              onClick={() => setRetailTheme("light")}
+              type="button"
+            >
+              <span className="ys-appearance-swatch ys-appearance-swatch--light" aria-hidden="true"><Sun size={22} /></span>
+              <span className="ys-appearance-choice__copy"><strong>Light mode</strong><small>Soft, airy surfaces</small></span>
+              <span className="ys-appearance-choice__check" aria-hidden="true">{retailTheme === "light" ? "Selected" : "Select"}</span>
+            </button>
+            <button
+              aria-pressed={retailTheme === "dark"}
+              className="ys-appearance-choice"
+              data-selected={retailTheme === "dark"}
+              onClick={() => setRetailTheme("dark")}
+              type="button"
+            >
+              <span className="ys-appearance-swatch ys-appearance-swatch--dark" aria-hidden="true"><MoonStar size={22} /></span>
+              <span className="ys-appearance-choice__copy"><strong>Dark mode</strong><small>Midnight navy &amp; violet</small></span>
+              <span className="ys-appearance-choice__check" aria-hidden="true">{retailTheme === "dark" ? "Selected" : "Select"}</span>
+            </button>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            Appearance changes immediately. Customer storefront and printed receipts keep independent presentation.
+          </p>
+        </CardContent>
+      </Card>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
