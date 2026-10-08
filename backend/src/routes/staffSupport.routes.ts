@@ -26,3 +26,4 @@ staffSupportRouter.post(
   retryStaffSupportEmailController
 );
 staffSupportRouter.patch("/tickets/:ticketId/status", updateStaffSupportTicketStatusController);
+staffSupportRouter.post("/tickets/:ticketId/request-resolution", requestSupportResolutionController);
