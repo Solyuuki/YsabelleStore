@@ -22,11 +22,16 @@ function signingKey() {
 }
 
 function publicBaseUrl() {
-  const base = env.SUPPORT_PUBLIC_BACKEND_URL
-    ?? (env.NODE_ENV === "production" ? null : "http://localhost:3001");
+  const base = env.SUPPORT_PUBLIC_BACKEND_URL;
   if (!base) {
     throw new HttpError(503, "Support public backend URL is not configured.", {
       code: "SUPPORT_CONFIRMATION_NOT_CONFIGURED"
+    });
+  }
+  const url = new URL(base);
+  if (url.protocol !== "https:" || ["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
+    throw new HttpError(503, "Configure a public HTTPS support backend URL before sending customer confirmations.", {
+      code: "SUPPORT_PUBLIC_URL_REQUIRED"
     });
   }
   return base.replace(/\/$/, "");
