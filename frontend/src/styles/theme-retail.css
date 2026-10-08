@@ -240,3 +240,46 @@
   outline: 2px solid #aca0ef;
   outline-offset: 2px;
 }
+
+/* Sidebar belongs to the workstation layer, not the light storefront. */
+:root.dark .app-shell-ambient > aside {
+  background: linear-gradient(180deg, #18243a, #1b2638) !important;
+  border-right-color: #687995 !important;
+  box-shadow: 7px 0 30px rgb(0 0 0 / 15%);
+}
+:root.dark .app-shell-ambient > aside :is(
+  [class~="border-violet-200/45"], [class~="border-violet-200/55"],
+  [class~="border-violet-200/70"]
+) { border-color: #536580 !important; }
+:root.dark .app-shell-ambient > aside .group\/nav button:not(.ys-material-accent) {
+  color: #b8c6d8 !important;
+}
+:root.dark .app-shell-ambient > aside .group\/nav button:not(.ys-material-accent):hover {
+  background: #293a55 !important;
+  color: #d4deec !important;
+}
+:root.dark .app-shell-ambient > aside :is(
+  [class~="bg-violet-50"], [class~="bg-amber-50"],
+  [class~="hover:bg-violet-50"]
+) { background-color: #2a3751 !important; }
+:root.dark .app-shell-ambient > aside :is(
+  [class~="text-[#625bff]"], [class~="text-amber-700"]
+) { color: #dac9fc !important; }
+:root.dark .app-shell-ambient > aside [class~="bg-white/80"] {
+  background: #24334a !important;
+  border-color: #687995 !important;
+}
+:root.dark .app-shell-ambient .app-shell-orb { opacity: 0.13; }
+:root.dark .app-shell-ambient .ys-kpi-card-surface::before {
+  background-image: url("/textures/ys-dark-graphite-glass.svg") !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-blend-mode: normal !important;
+}
+/* Keep positive, warning and destructive operational states distinct. */
+:root.dark .app-shell-ambient :is(
+  [class~="text-emerald-700"], [class~="text-green-700"]
+) { color: #aedbc7 !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="text-rose-700"], [class~="text-red-700"]
+) { color: #f6b9c7 !important; }
