@@ -656,16 +656,18 @@ function SupportConversation({
 
       <form
         className="shrink-0 border-t border-slate-200 bg-white px-4 py-3"
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-            setReplyComposerExpanded(false);
-          }
-        }}
         onSubmit={onReplySubmit}
       >
         <div className="mx-auto max-w-4xl">
           {replyComposerExpanded ? (
-            <div id={`staff-reply-editor-${detail.id}`}>
+            <div
+              id={`staff-reply-editor-${detail.id}`}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                  setReplyComposerExpanded(false);
+                }
+              }}
+            >
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-slate-900">Staff reply</p>
