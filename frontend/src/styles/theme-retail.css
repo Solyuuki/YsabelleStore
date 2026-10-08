@@ -76,7 +76,38 @@
   background-color: #0d1425 !important;
   background-image: var(--ys-glass-flow-background) !important;
 }
-:root.dark .app-shell-ambient { color: #eaf0ff; }
+:root.dark .app-shell-ambient {
+  --retailer-positive: #a79cff;
+  --retailer-positive-strong: #c9c0ff;
+  --retailer-positive-soft: rgb(133 116 232 / 15%);
+  --retailer-positive-border: rgb(167 155 255 / 34%);
+  color: #eaf0ff;
+}
+:root.dark .app-shell-ambient [class~="bg-[rgba(248,247,255,0.92)]"] {
+  background-color: #19263d !important;
+}
+:root.dark .app-shell-ambient :is(
+  [class~="bg-red-50"],[class~="bg-rose-50"],[class~="bg-red-100"]
+) { background-color: #422738 !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="bg-amber-50"],[class~="bg-yellow-50"],[class~="bg-amber-100"]
+) { background-color: #433520 !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="bg-emerald-50"],[class~="bg-green-50"],
+  [class~="bg-blue-50"],[class~="bg-indigo-50"]
+) { background-color: #293654 !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="text-red-700"],[class~="text-red-800"],[class~="text-rose-700"]
+) { color: #ffb9c5 !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="text-amber-700"],[class~="text-amber-800"],[class~="text-yellow-700"]
+) { color: #f8d49b !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="text-indigo-600"],[class~="text-indigo-700"],
+  [class~="text-blue-600"],[class~="text-blue-700"],
+  [class~="text-violet-700"],[class~="text-violet-800"]
+) { color: #c3baff !important; }
+
 :root.dark .app-shell-ambient .ys-dashboard-panel-surface {
   background-color: #1c2940 !important;
   border-color: rgb(158 173 221 / 24%) !important;
