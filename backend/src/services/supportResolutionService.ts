@@ -4,7 +4,7 @@ import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import type { SafeUser } from "./authService.js";
-import { deliverStaffSupportMessageEmail, isSupportGmailDeliveryEnabled } from "./supportGmailService.js";
+import { deliverStaffSupportMessageEmail, deliverSupportLifecycleMessageEmail, isSupportGmailDeliveryEnabled, SUPPORT_LIFECYCLE_SENDER_NAME } from "./supportGmailService.js";
 
 const CONFIRMATION_TTL_MS = 72 * 60 * 60 * 1000;
 const REQUEST_PREFIX = "YS_SUPPORT_RESOLUTION_REQUEST:";
@@ -161,19 +161,23 @@ export async function submitResolutionResponse(token: string, answer: "YES" | "N
       code: "SUPPORT_CONFIRMATION_EXPIRED"
     });
   }
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
+    // Conditional update prevents stale links from changing a subsequently modified ticket.
     const updated = await tx.supportTicket.updateMany({
       where: { id: inspected.ticketId, status: "WAITING_FOR_CUSTOMER" },
       data: {
-        status: "OPEN",
+        status: answer === "YES" ? "RESOLVED" : "OPEN",
+        resolvedAt: answer === "YES" ? now : null,
+        closedAt: null,
         lastCustomerMessageAt: now,
         lastMessageAt: now
       }
     });
     if (updated.count !== 1) {
-      throw new HttpError(409, "Support ticket status changed before confirmation.", { code: "SUPPORT_CONFIRMATION_STALE" });
+      throw new HttpError(409, "Support ticket status changed before confirmation.", {
+        code: "SUPPORT_CONFIRMATION_STALE"
+      });
     }
-    // The transition to OPEN consumes the token; staff can finalize only after a YES audit entry.
     await tx.supportMessage.create({
       data: {
         ticketId: inspected.ticketId,
@@ -184,8 +188,28 @@ export async function submitResolutionResponse(token: string, answer: "YES" | "N
         deliveryStatus: "NOT_APPLICABLE"
       }
     });
-    return { ticketNumber: inspected.ticketNumber, answer };
+    let noticeId: string | null = null;
+    if (answer === "YES") {
+      const notification = await tx.supportMessage.create({
+        data: {
+          ticketId: inspected.ticketId,
+          senderType: "SYSTEM",
+          senderName: SUPPORT_LIFECYCLE_SENDER_NAME,
+          channel: "EMAIL",
+          body: "Your support concern has been confirmed as resolved. Thank you for contacting Ysabelle Store.",
+          deliveryStatus: "PENDING"
+        },
+        select: { id: true }
+      });
+      noticeId = notification.id;
+    }
+    return { ticketNumber: inspected.ticketNumber, answer, noticeId };
   });
+  if (result.noticeId) {
+    // Delivery failures stay on the message as FAILED for a safe staff retry.
+    await deliverSupportLifecycleMessageEmail(result.noticeId);
+  }
+  return { ticketNumber: result.ticketNumber, answer };
 }
 
 export async function hasCustomerResolutionConfirmation(ticketId: string) {
