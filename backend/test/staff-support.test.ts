@@ -135,6 +135,8 @@ test("staff can filter tickets, open a conversation, reply, and resolve it", asy
         true
       );
 
+      // Staff selection must not resolve a ticket directly. Without an
+      // externally reachable confirmation URL, the request is rejected safely.
       const resolveResponse = await fetch(`${baseUrl}/api/support/tickets/${ticket.id}/status`, {
         method: "PATCH",
         headers: {
@@ -143,24 +145,12 @@ test("staff can filter tickets, open a conversation, reply, and resolve it", asy
         },
         body: JSON.stringify({ status: "RESOLVED" })
       });
-      assert.equal(resolveResponse.status, 200);
-      const resolveBody = (await resolveResponse.json()) as {
-        data?: {
-          status?: string;
-          resolvedAt?: string | null;
-          messages?: Array<{ senderType?: string; body?: string }>;
-        };
-      };
-      assert.equal(resolveBody.data?.status, "RESOLVED");
-      assert.ok(resolveBody.data?.resolvedAt);
-      assert.equal(
-        resolveBody.data?.messages?.some(
-          (message) =>
-            message.senderType === "SYSTEM" &&
-            message.body?.includes("WAITING_FOR_CUSTOMER to RESOLVED")
-        ),
-        true
-      );
+      assert.equal(resolveResponse.status, 503);
+      const unchanged = await prisma.supportTicket.findUniqueOrThrow({
+        where: { id: ticket.id }
+      });
+      assert.equal(unchanged.status, "WAITING_FOR_CUSTOMER");
+
     });
   } finally {
     await scope.cleanup();
