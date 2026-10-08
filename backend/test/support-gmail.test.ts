@@ -571,7 +571,7 @@ test("Gmail resolution reply resolves once within the original ticket thread", a
       data: { status: "WAITING_FOR_CUSTOMER", gmailThreadId: threadId, lastStaffMessageAt: sentAt }
     });
 
-    const inboundId = `resolution-yes-${randomUUID()}`;
+    let inboundId = `resolution-yes-${randomUUID()}`;
     let finalSendCount = 0;
     const client: SupportGmailClient = {
       async listInboxMessages() { return [{ id: inboundId, threadId }]; },
@@ -601,6 +601,10 @@ test("Gmail resolution reply resolves once within the original ticket thread", a
     assert.equal((await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status, "RESOLVED");
     assert.equal(finalSendCount, 1);
     assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 0, skipped: 1 });
+    assert.equal(finalSendCount, 1);
+    inboundId = `resolution-yes-followup-${randomUUID()}`;
+    assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 1, skipped: 0 });
+    assert.equal((await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status, "RESOLVED");
     assert.equal(finalSendCount, 1);
   } finally {
     await scope.cleanup();
