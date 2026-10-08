@@ -455,6 +455,7 @@ export function CustomerSupportInboxPage() {
             <EmptyConversation label="Loading conversation..." />
           ) : detail ? (
             <SupportConversation
+              key={detail.id}
               detail={detail}
               gmailConfigured={gmailStatus?.configured === true}
               onReplyChange={setReply}
@@ -684,9 +685,9 @@ function SupportConversation({
               variant="secondary"
             >
               {replyComposerExpanded ? (
-                <ChevronDown className="h-4 w-4" aria-hidden="true" />
-              ) : (
                 <ChevronUp className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
               )}
               {replyComposerExpanded ? "Collapse" : "Expand"}
             </Button>
