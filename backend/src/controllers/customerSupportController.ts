@@ -61,7 +61,7 @@ export const viewSupportResolutionController: RequestHandler = async (request, r
     const { inspectResolutionToken } = await import("../services/supportResolutionService.js");
     const result = await inspectResolutionToken(token);
     response.set("Cache-Control", "no-store");
-    response.set("Content-Security-Policy", "default-src none; style-src unsafe-inline; form-action self; base-uri none; frame-ancestors none");
+    response.set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
     response.set("Referrer-Policy", "no-referrer");
     if (!result) {
       response.status(410).type("html").send(resolutionHtml("Link unavailable", "This confirmation link has expired or has already been used."));
@@ -95,7 +95,7 @@ export const submitSupportResolutionController: RequestHandler = async (request,
     const { submitResolutionResponse } = await import("../services/supportResolutionService.js");
     const result = await submitResolutionResponse(token, answer);
     response.set("Cache-Control", "no-store");
-    response.set("Content-Security-Policy", "default-src none; style-src unsafe-inline; form-action self; base-uri none; frame-ancestors none");
+    response.set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
     response.set("Referrer-Policy", "no-referrer");
     response.type("html").send(resolutionHtml(
       "Response received",
