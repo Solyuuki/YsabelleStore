@@ -1,4 +1,4 @@
-name: Sprint 11 guarded formatter with complete test environment
+name: Sprint 11 validated formatter final run
 
 on:
   push:
