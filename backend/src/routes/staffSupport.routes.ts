@@ -7,7 +7,8 @@ import {
   replyToStaffSupportTicketController,
   retryStaffSupportEmailController,
   syncSupportGmailController,
-  updateStaffSupportTicketStatusController
+  updateStaffSupportTicketStatusController,
+  requestSupportResolutionController
 } from "../controllers/staffSupportController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
