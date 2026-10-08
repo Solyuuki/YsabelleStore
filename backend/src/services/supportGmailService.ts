@@ -300,8 +300,41 @@ function supportTicketNumberFromSubject(subject: string | null) {
   return subject?.match(TICKET_REFERENCE_PATTERN)?.[0]?.toUpperCase() ?? null;
 }
 
+export function extractLatestCustomerEmailReply(raw: string): string {
+  const lines = raw.replace(/\r\n?/g, "\n").split("\n");
+  let cutoff = lines.length;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = (lines[index] ?? "").trim();
+    const preview = lines.slice(index, index + 3).map((part) => part.trim()).join(" ");
+    const gmailQuote =
+      /^On\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b/i.test(line) &&
+      /\bwrote\s*:/i.test(preview);
+    const outlookQuote =
+      /^From:\s*.+/i.test(line) &&
+      lines.slice(index + 1, index + 5).some((part) =>
+        /^(?:Sent|To|Subject):\s*/i.test(part.trim())
+      );
+    const quotedLine =
+      index > 0 && line.startsWith(">") && !(lines[index - 1] ?? "").trim();
+
+    if (
+      gmailQuote ||
+      outlookQuote ||
+      /^-{2,}\s*Original Message\s*-{2,}$/i.test(line) ||
+      /^Begin forwarded message:\s*$/i.test(line) ||
+      quotedLine
+    ) {
+      cutoff = index;
+      break;
+    }
+  }
+
+  return lines.slice(0, cutoff).join("\n").trim();
+}
+
 function normalizeInboundMessageBody(value: string) {
-  const normalized = value.trim();
+  const normalized = extractLatestCustomerEmailReply(value);
   if (normalized.length <= SUPPORT_EMAIL_BODY_MAX_LENGTH) return normalized;
 
   return `${normalized.slice(0, SUPPORT_EMAIL_BODY_MAX_LENGTH - 1).trimEnd()}…`;
