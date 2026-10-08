@@ -539,3 +539,123 @@ test("Gmail delivery failure never reopens a ticket that staff closed concurrent
     await scope.cleanup();
   }
 });
+
+test("Gmail resolution reply resolves once within the original ticket thread", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  try {
+    const ticket = await createCustomerSupportTicket({
+      customerName: "Confirmation Customer",
+      customerEmail: "confirmation-customer@example.com",
+      category: "OTHER",
+      subject: "Resolution confirmation QA",
+      message: "I would like confirmation about my support concern."
+    });
+    const threadId = `thread-resolution-${randomUUID()}`;
+    const sentAt = new Date(Date.now() - 60_000);
+    await prisma.supportMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderType: "STAFF",
+        channel: "EMAIL",
+        senderName: "Store Staff",
+        body: "YS_SUPPORT_RESOLUTION_EMAIL_REPLY:\\nReply YES or NO.",
+        deliveryStatus: "SENT",
+        emailSentAt: sentAt,
+        gmailMessageId: `request-${randomUUID()}`,
+        gmailThreadId: threadId,
+        createdAt: sentAt
+      }
+    });
+    await prisma.supportTicket.update({
+      where: { id: ticket.id },
+      data: { status: "WAITING_FOR_CUSTOMER", gmailThreadId: threadId, lastStaffMessageAt: sentAt }
+    });
+
+    const inboundId = `resolution-yes-${randomUUID()}`;
+    let finalSendCount = 0;
+    const client: SupportGmailClient = {
+      async listInboxMessages() { return [{ id: inboundId, threadId }]; },
+      async getMessage() {
+        return {
+          id: inboundId,
+          threadId,
+          internalDate: String(Date.now()),
+          payload: {
+            mimeType: "text/plain",
+            headers: [
+              { name: "From", value: "Confirmation Customer <confirmation-customer@example.com>" },
+              { name: "Subject", value: `Re: [${ticket.ticketNumber}] Resolution confirmation QA` }
+            ],
+            body: { data: Buffer.from("YES\\n\\nOriginal message quoted below", "utf8").toString("base64url") }
+          }
+        };
+      },
+      async sendSupportReply(input) {
+        assert.equal(input.threadId, threadId);
+        finalSendCount += 1;
+        return { id: `final-${randomUUID()}`, threadId };
+      }
+    };
+
+    assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 1, skipped: 0 });
+    assert.equal((await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status, "RESOLVED");
+    assert.equal(finalSendCount, 1);
+    assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 0, skipped: 1 });
+    assert.equal(finalSendCount, 1);
+  } finally {
+    await scope.cleanup();
+  }
+});
+
+test("Gmail resolution NO reopens ticket without a final resolved email", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  try {
+    const ticket = await createCustomerSupportTicket({
+      customerName: "More Help Customer",
+      customerEmail: "more-help@example.com",
+      category: "OTHER",
+      subject: "More support needed",
+      message: "I still need help with an issue at the store."
+    });
+    const threadId = `thread-more-help-${randomUUID()}`;
+    const sentAt = new Date(Date.now() - 60_000);
+    await prisma.supportMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderType: "STAFF",
+        channel: "EMAIL",
+        senderName: "Store Staff",
+        body: "YS_SUPPORT_RESOLUTION_EMAIL_REPLY:\\nReply YES or NO.",
+        deliveryStatus: "SENT",
+        emailSentAt: sentAt,
+        gmailThreadId: threadId
+      }
+    });
+    await prisma.supportTicket.update({
+      where: { id: ticket.id },
+      data: { status: "WAITING_FOR_CUSTOMER", gmailThreadId: threadId, lastStaffMessageAt: sentAt }
+    });
+    const inboundId = `resolution-no-${randomUUID()}`;
+    const client: SupportGmailClient = {
+      async listInboxMessages() { return [{ id: inboundId, threadId }]; },
+      async getMessage() {
+        return {
+          id: inboundId, threadId, internalDate: String(Date.now()),
+          payload: {
+            mimeType: "text/plain",
+            headers: [
+              { name: "From", value: "More Help Customer <more-help@example.com>" },
+              { name: "Subject", value: `Re: [${ticket.ticketNumber}] More support needed` }
+            ],
+            body: { data: Buffer.from("NO", "utf8").toString("base64url") }
+          }
+        };
+      },
+      async sendSupportReply() { throw new Error("A NO reply must never send the final resolved notice."); }
+    };
+    assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 1, skipped: 0 });
+    assert.equal((await prisma.supportTicket.findUniqueOrThrow({ where: { id: ticket.id } })).status, "OPEN");
+  } finally {
+    await scope.cleanup();
+  }
+});
