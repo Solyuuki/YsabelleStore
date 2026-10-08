@@ -584,7 +584,7 @@ function SupportConversation({
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-slate-50/70 p-5">
+      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-slate-50/70 p-5">
         <div className="mx-auto max-w-4xl space-y-3">
           {detail.messages.map((message) => (
             <ConversationMessage
@@ -673,7 +673,7 @@ function ConversationMessage({
   if (automatedEmail) {
     return (
       <div className="flex justify-center py-1">
-        <article className="max-w-[82%] rounded-2xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-slate-800 shadow-sm">
+        <article className="min-w-0 max-w-[82%] rounded-2xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-slate-800 shadow-sm">
           <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-indigo-700">
             <strong>{message.senderName === "Ysabelle Store Support Lifecycle" ? "Automated status update" : "Automated acknowledgement"}</strong>
             <span>·</span>
@@ -681,7 +681,7 @@ function ConversationMessage({
             <span>·</span>
             <span>EMAIL</span>
           </div>
-          <p className="whitespace-pre-wrap text-sm leading-6">{message.body}</p>
+          <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-sm leading-6">{message.body}</p>
           <div className="mt-2 flex flex-wrap items-center justify-end gap-2 text-[11px] text-indigo-700">
             <span>
               {message.deliveryStatus === "SENT"
@@ -716,7 +716,7 @@ function ConversationMessage({
     <div className={staff ? "flex justify-end" : "flex justify-start"}>
       <article
         className={[
-          "max-w-[82%] rounded-2xl px-4 py-3 shadow-sm",
+          "min-w-0 max-w-[82%] rounded-2xl px-4 py-3 shadow-sm",
           staff
             ? "rounded-br-md bg-indigo-600 text-white"
             : "rounded-bl-md border border-slate-200 bg-white text-slate-800"
@@ -734,7 +734,7 @@ function ConversationMessage({
           <span>·</span>
           <span>{message.channel}</span>
         </div>
-        <p className="whitespace-pre-wrap text-sm leading-6">{displayBody}</p>
+        <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-sm leading-6">{displayBody}</p>
         {staff && message.channel === "EMAIL" ? (
           <div className="mt-2 flex flex-wrap items-center justify-end gap-2 text-[11px]">
             <span>
