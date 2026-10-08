@@ -12,7 +12,8 @@
     "start": "node dist/src/server.js",
     "lint": "eslint src test",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:support-email": "tsx --test --test-concurrency=1 test/customer-support.test.ts test/staff-support.test.ts test/support-gmail.test.ts test/support-gmail-acknowledgement.test.ts test/support-email-asset.test.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
