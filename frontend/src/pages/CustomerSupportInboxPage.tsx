@@ -21,6 +21,7 @@ import {
   fetchSupportGmailStatus,
   replyToStaffSupportTicket,
   retryStaffSupportMessageEmail,
+  requestStaffSupportResolution,
   updateStaffSupportTicketStatus
 } from "@/services/supportApi";
 import {
@@ -98,6 +99,7 @@ export function CustomerSupportInboxPage() {
   const [replySaving, setReplySaving] = useState(false);
   const [statusDraft, setStatusDraft] = useState<StaffSupportStatus>("NEW");
   const [statusSaving, setStatusSaving] = useState(false);
+  const [resolutionRequestSaving, setResolutionRequestSaving] = useState(false);
   const [gmailStatus, setGmailStatus] = useState<SupportGmailStatus | null>(null);
   const [retryingMessageId, setRetryingMessageId] = useState<string | null>(null);
 
@@ -201,6 +203,25 @@ export function CustomerSupportInboxPage() {
       setError(supportError(reason, "Ticket status could not be updated."));
     } finally {
       setStatusSaving(false);
+    }
+  }
+
+  async function requestResolution() {
+    if (!detail || resolutionRequestSaving) return;
+    setResolutionRequestSaving(true);
+    setError(null);
+    try {
+      const updated = await requestStaffSupportResolution(detail.id);
+      setDetail(updated);
+      setStatusDraft(updated.status);
+      setReloadKey((value) => value + 1);
+      if (updated.messages.some((message) => message.body.startsWith("YS_SUPPORT_RESOLUTION_REQUEST:") && message.deliveryStatus === "FAILED")) {
+        setError("The confirmation request was saved, but Gmail delivery failed. Retry the failed email.");
+      }
+    } catch (reason) {
+      setError(supportError(reason, "Could not request customer confirmation."));
+    } finally {
+      setResolutionRequestSaving(false);
     }
   }
 
@@ -402,6 +423,8 @@ export function CustomerSupportInboxPage() {
               onRetryEmail={(messageId) => void retryEmail(messageId)}
               onStatusChange={(status) => setStatusDraft(status)}
               onStatusSave={() => void saveStatus()}
+              onRequestResolution={() => void requestResolution()}
+              resolutionRequestSaving={resolutionRequestSaving}
               reply={reply}
               replySaving={replySaving}
               retryingMessageId={retryingMessageId}
@@ -497,6 +520,8 @@ function SupportConversation({
   onRetryEmail,
   onStatusChange,
   onStatusSave,
+  onRequestResolution,
+  resolutionRequestSaving,
   reply,
   replySaving,
   retryingMessageId,
@@ -511,6 +536,8 @@ function SupportConversation({
   onRetryEmail: (messageId: string) => void;
   onStatusChange: (status: StaffSupportStatus) => void;
   onStatusSave: () => void;
+  onRequestResolution: () => void;
+  resolutionRequestSaving: boolean;
   reply: string;
   replySaving: boolean;
   retryingMessageId: string | null;
@@ -537,7 +564,19 @@ function SupportConversation({
             </p>
           </div>
 
-          <div className="flex min-w-[250px] items-end gap-2">
+          <div className="flex flex-col items-end gap-2">
+            {gmailConfigured && ["NEW", "OPEN", "WAITING_FOR_CUSTOMER"].includes(detail.status) && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={resolutionRequestSaving}
+                onClick={onRequestResolution}
+              >
+                {resolutionRequestSaving ? "Sending request..." : "Ask customer to confirm resolution"}
+              </Button>
+            )}
+            <div className="flex min-w-[250px] items-end gap-2">
             <label className="grid flex-1 gap-1 text-xs font-medium text-slate-500">
               <span>Ticket status</span>
               <select
@@ -561,6 +600,7 @@ function SupportConversation({
             >
               {statusSaving ? "Saving..." : "Update"}
             </Button>
+            </div>
           </div>
         </div>
 
