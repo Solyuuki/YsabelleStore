@@ -28,7 +28,7 @@ function decodeMimePart(rawEmail: string, mimeType: string) {
   ).toString("utf8");
 }
 
-test("automated acknowledgement sends branded multipart email with inline GIF", async () => {
+test("automated acknowledgement sends branded multipart email with inline PNG and canonical ticket subject", async () => {
   const calls: Array<{ url: string; init?: RequestInit }> = [];
   const logoBytes = Buffer.from("static-ysabelle-png-test-logo", "ascii");
   const fetchImpl: typeof fetch = async (input, init) => {
@@ -86,6 +86,9 @@ test("automated acknowledgement sends branded multipart email with inline GIF", 
 
   const rawEmail = Buffer.from(sendBody.raw, "base64url").toString("utf8");
   assert.match(rawEmail, /Auto-Submitted: auto-replied/);
+  const subjectValue = rawEmail.match(/^Subject: =\?UTF-8\?B\?(.+)\?=$/m)?.[1];
+  assert.ok(subjectValue);
+  assert.equal(Buffer.from(subjectValue, "base64").toString("utf8"), "[YS-CS-000125] Order concern");
   assert.match(rawEmail, /Content-Type: multipart\/related/);
   assert.match(rawEmail, /Content-Type: image\/png/);
   assert.match(rawEmail, /Content-ID: <ysabelle-support-logo>/);
