@@ -41,8 +41,8 @@ test("both appearance controls and theme styles are loaded without changing Ligh
   assert.match(main, /@\/styles\/theme-retail\.css/);
   assert.match(retail, /:root\.dark \.app-shell-ambient/);
   assert.match(storefront, /:root\.dark \.customer-app/);
-  assert.match(storefront, /ys-dark-graphite-glass\\.svg/);
-  assert.match(customer, /@\\/styles\\/theme-storefront-contrast\\.css/);
+  assert.ok(storefront.includes("ys-dark-graphite-glass.svg"));
+  assert.ok(customer.includes("@/styles/theme-storefront-contrast.css"));
 });
 
 
