@@ -9,6 +9,7 @@ import {
   updateStaffSupportTicketStatus
 } from "../services/staffSupportService.js";
 import { getSupportGmailStatus, syncSupportGmailInbox } from "../services/supportGmailService.js";
+import { requestSupportResolutionConfirmation } from "../services/supportResolutionService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
