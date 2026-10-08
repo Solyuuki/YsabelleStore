@@ -1,4 +1,4 @@
-name: Sprint 11 one-shot formatting repair (verified)
+name: Sprint 11 final guarded formatting repair
 
 on:
   push:
