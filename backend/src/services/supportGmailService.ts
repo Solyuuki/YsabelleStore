@@ -863,6 +863,11 @@ export async function deliverSupportLifecycleMessageEmail(
   );
 }
 
+export function parseSupportResolutionEmailReply(body: string): "YES" | "NO" | null {
+  const firstLine = body.split(/\r?\n/, 1)[0]?.trim().replace(/[.!]$/, "").toUpperCase();
+  return firstLine === "YES" || firstLine === "NO" ? firstLine : null;
+}
+
 export async function syncSupportGmailInboxWithClient(
   client: SupportGmailClient,
   now = new Date()
@@ -937,8 +942,7 @@ export async function syncSupportGmailInboxWithClient(
           select: { id: true, emailSentAt: true, createdAt: true }
         })
       : null;
-    const firstLine = body.split(/\r?\n/, 1)[0]?.trim().replace(/[.!]$/, "").toUpperCase();
-    const resolutionAnswer = firstLine === "YES" || firstLine === "NO" ? firstLine : null;
+    const resolutionAnswer = parseSupportResolutionEmailReply(body);
 
     const activityAt = messageActivityAt(message, now);
     const lastMessageAt =
