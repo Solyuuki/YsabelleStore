@@ -217,3 +217,11 @@ Automated coverage guards the product error state against raw service-error rend
 ## Sprint 11 Catalog Identity Validation
 
 Automated coverage verifies the canonical 50 identity manifest against the release and seed SQL, structured CSV/XLSX and package-import identity support, Owner catalog readiness visibility, brand/variant completeness, package-size pair integrity, and compatibility with the canonical release security chain. CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51`, including Phase 6 release hardening.
+
+## Sprint 11 Dark Mode Automated Validation — October 8, 2026
+
+- CI run 37739767192: `Dark mode asset and contrast contracts` PASSED. Validates independent appearance preferences, About exclusion, print handling, actual dark SVG asset paths, asset isolation from light frosted ribbon, and sample semantic color contrast ratios.
+- Same run: frontend, backend, and Electron workspace build validations PASSED.
+- Same run: repository quality gate FAILED at `npm run format:check` (the gate existed before this Dark Mode rollout and now includes changed files). Downstream repository checks did not run; do not report `npm run verify:code` as passed.
+- Rendered route-by-route screenshots, actual image blending, mobile breakpoints, and WCAG contrast across real content have NOT been verified. Contrast contract tests evaluate selected solid color pairs, not every composed layer.
+

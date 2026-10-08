@@ -126,3 +126,12 @@ Required acceptance criteria:
 - Clean recovery and repeated pull-sync remain idempotent.
 
 Status: Tracked / implementation not started.
+
+## Sprint 11 Dark Mode System Upgrade (YSB-M1-THEME-008)
+
+Scope: independent Storefront top-bar and Retail Settings preferences; semantic midnight text and border tokens; new dark-only Midnight Velvet, Graphite Glass, Indigo Silk, and closing-section SVG textures; component contrast coverage for Storefront Home, Shop, Product Detail, Reviews, Cart, Checkout, Account, Login/Register/Recovery, Support, Privacy, and retail sidebar/panels.
+
+Evidence: `frontend/src/context/AppearanceContext.tsx`, `frontend/src/styles/theme-storefront.css`, `frontend/src/styles/theme-storefront-contrast.css`, `frontend/src/styles/theme-retail.css`, `frontend/public/textures/ys-dark-*.svg`, `frontend/public/media/ys-dark-delivery-closing.svg`, `scripts/test/appearance-theme.test.mjs`, `scripts/test/appearance-contrast.test.mjs`, `.github/workflows/ci.yml`.
+
+Status: code implemented on `sprint/v0.11/sprint-11`; automated theme contracts and three workspace builds passed in CI run 37739767192; root formatting gate failed. Real rendered Light/Dark screenshot comparison, accessibility testing of every interactive state, and full repository verification remain pending. Do not mark release-ready. The approved About scenes and original Light Mode images remain unchanged.
+

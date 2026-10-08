@@ -168,3 +168,10 @@ CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19
 ## Sprint 11 Catalog Identity Validation
 
 CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51` for catalog release `g2-s2-c4-a2`. Formatting, lint, typecheck, workspace tests/builds, product-identity guardrails, canonical state/release security, candidate/image distribution compatibility, aggregate verification, pull convergence, and Phase 6 release hardening completed successfully.
+
+## Sprint 11 Theme Validation — October 8, 2026
+
+Branch: `sprint/v0.11/sprint-11`. CI evidence: https://github.com/Solyuuki/YsabelleStore/actions/runs/37739767192
+
+Result: independent Dark Mode asset/contrast contract suite PASSED; frontend, backend, Electron workspace validations PASSED. Repository `npm run format:check` FAILED, so root lint, code verification, canonical Phase 6 rehearsals and artifact gates beyond that step are NOT confirmed. Manual Light/Dark visual regression and accessibility QA remain PENDING. About Experience source files unchanged. Release decision: NOT YET APPROVED.
+

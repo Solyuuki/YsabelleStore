@@ -106,3 +106,12 @@ Validation: CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e
 On 2026-09-27, manual QA of a freshly recovered GEN2 database exposed an upstream reconstruction gap: `g2-s2-c4-a2` holds 50/50 reviewed descriptions and 50/50 manufacturer barcodes, while the canonical seed/materialized product rows currently retain only 3 descriptions and 1 legacy barcode. This explains the Owner Products UI showing `No description` and `-` for barcode even though the authoritative release is complete.
 
 The issue is tracked as YSB-M1-CANONICAL-MATERIALIZE-007. No implementation has started yet; the repair must restore canonical release product metadata and barcode-domain records during convergence rather than re-entering or guessing product data.
+
+## Sprint 11 Premium Appearance Upgrade — October 8, 2026
+
+Built a separate Dark Mode presentation system for Storefront and Retail. Customer top bar and Retail Settings preserve independent device preferences. Four new SVG artwork assets are served only by dark styling. Dark contrast rules address reviews, product cards, checkout/payment states, cart, remembered accounts, recovery OTP, account history/security/profile, support, privacy, navigation, and retail KPI/sidebar components.
+
+About Experience scene files, motion assets, and original Light Mode textures were not modified. Existing Light Mode CSS is preserved by selectors scoped under `:root.dark`.
+
+Validation: CI run 37739767192 — frontend/backend/Electron workspace validations and independent appearance contract job passed; repository quality gates failed at `npm run format:check`, blocking subsequent root tests and verification. Manual visual and screen-reader/keyboard QA pending. Status: implemented, not release-approved.
+
