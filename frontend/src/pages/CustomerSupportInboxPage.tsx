@@ -698,7 +698,7 @@ function SupportConversation({
                   detail.status === "CLOSED"
                     ? "Reopen this ticket before replying."
                     : !gmailConfigured
-                      ? "Connect Gmail before sending customer replies."
+                      ? "Gmail must be connected before a customer reply can be sent."
                       : "Write a clear response for this customer..."
                 }
                 rows={4}

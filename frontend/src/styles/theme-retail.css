@@ -72,7 +72,8 @@
     url("/textures/ys-dark-midnight-velvet.svg");
   background-color: #101827 !important;
   background-image: var(--ys-glass-flow-background) !important;
-  background-size: cover !important;
+  background-size: min(1600px, 100%) auto !important;
+  background-repeat: repeat-y !important;
   background-position: center top !important;
 }
 :root.dark .app-shell-ambient {
@@ -283,3 +284,11 @@
 :root.dark .app-shell-ambient :is(
   [class~="text-rose-700"], [class~="text-red-700"]
 ) { color: #f6b9c7 !important; }
+
+/* Limit decorative SVG panel scale: it is a material, not a stretched image. */
+:root.dark .app-shell-ambient .ys-dashboard-panel-surface::before,
+:root.dark .app-shell-ambient .ys-kpi-card-surface::before {
+  background-size: 900px auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}

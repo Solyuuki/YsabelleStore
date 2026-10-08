@@ -79,3 +79,23 @@ test("About is excluded before theme is applied and original media stays in plac
   assert.ok(entry.includes('path === "/about"'));
   assert.ok(about.includes("storyTheme"));
 });
+
+test("dark storefront outlines and remaining light panels are explicitly addressed", () => {
+  const contrast = read("frontend/src/styles/theme-storefront-contrast.css");
+  const retail = read("frontend/src/styles/theme-retail.css");
+
+  for (const selector of [
+    ".customer-global-search__popup",
+    ".customer-account-empty",
+    ".customer-account-auth-methods > span",
+    ".customer-account-password-change-current",
+    ".customer-auth-page--recovery",
+    ".home-next-step h2"
+  ]) {
+    assert.ok(contrast.includes(selector), `Dark styling missing: ${selector}`);
+  }
+  assert.match(contrast, /--store-outline-panel:\s*#64758f/);
+  assert.match(contrast, /background-size:\s*min\(1600px, 100%\) auto/);
+  assert.match(retail, /background-size:\s*min\(1600px, 100%\) auto !important/);
+  assert.doesNotMatch(contrast, /\.about-experience|\.discover-story|\.story-welcome/);
+});

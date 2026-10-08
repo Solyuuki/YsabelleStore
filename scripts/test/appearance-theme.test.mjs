@@ -21,7 +21,8 @@ test("the About scenes and receipt print routes are excluded from dark rendering
 
   assert.match(context, /pathname === "\/about" \|\| pathname === "\/discover"/);
   assert.match(context, /get\("print"\) === "receipt"/);
-  assert.match(bootstrap, /path === "\/about" \|\| path === "\/discover"/);
+  assert.match(bootstrap, /const safeRoute\s*=/);
+  assert.match(bootstrap, /path\s*===\s*"\\/about"[\\s\\S]{0,160}path\s*===\s*"\\/discover"/);
   assert.doesNotMatch(storefrontStyles, /\.about-experience|\.discover-story|\.story-welcome/);
 });
 

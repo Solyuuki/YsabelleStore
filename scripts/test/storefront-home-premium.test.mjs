@@ -314,9 +314,13 @@ assert.doesNotMatch(
   premiumCss,
   /shop-category-background\.webp|storefront-merchandising-background\.webp|home-next-step-background\.(?:avif|webp)/
 );
+assert.doesNotMatch(premiumCss, /\\.home-merchandising-canvas::before|\\.home-merchandising-canvas::after/);
+const merchandisingCanvasRule = premiumCss.match(/\\.home-merchandising-canvas\\s*\\{[^}]*\\}/s)?.[0] ?? "";
+assert.ok(merchandisingCanvasRule, "Home merchandising canvas must retain a defined Light Mode style");
 assert.doesNotMatch(
-  premiumCss,
-  /\.home-merchandising-canvas::before|\.home-merchandising-canvas::after|repeating-linear-gradient|background-image:\s*url\(/
+  merchandisingCanvasRule,
+  /repeating-linear-gradient|background-image:\\s*url\\(/,
+  "Merchandising canvas must not stretch a background image"
 );
 assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::before/);
 assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::after/);
