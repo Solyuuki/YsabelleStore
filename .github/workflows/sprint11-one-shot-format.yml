@@ -1,4 +1,4 @@
-name: Sprint 11 final guarded formatting repair
+name: Sprint 11 formatter after whitespace-safe tests
 
 on:
   push:
