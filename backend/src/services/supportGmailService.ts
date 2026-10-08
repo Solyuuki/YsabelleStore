@@ -111,6 +111,7 @@ export type SupportGmailSendInput = {
   threadId?: string | null;
   replyToGmailMessageId?: string | null;
   kind?: "ACKNOWLEDGEMENT" | "STAFF_REPLY";
+  threadSubject?: string;
 };
 
 export type SupportGmailSendResult = {
@@ -327,10 +328,7 @@ function buildRawSupportEmail(
   input: SupportGmailSendInput,
   replyMessageId: string | null
 ) {
-  const subject =
-    input.kind === "ACKNOWLEDGEMENT"
-      ? `[${sanitizeHeaderValue(input.ticketNumber)}] We received your support request`
-      : `[${sanitizeHeaderValue(input.ticketNumber)}] ${sanitizeHeaderValue(input.subject)}`;
+  const subject = sanitizeHeaderValue(input.threadSubject ?? `[${input.ticketNumber}] ${input.subject}`);
   const domain = configuration.supportEmail.split("@")[1] ?? "ysabellestore.local";
   const generatedMessageId = `<ys-support-${Date.now()}-${Math.random().toString(36).slice(2)}@${domain}>`;
   const headers = [
@@ -548,11 +546,14 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
     return gmailRequest<GmailApiMessage>(`/messages/${encodeURIComponent(messageId)}?format=full`);
   }
 
-  async function getRfcMessageId(messageId: string) {
+  async function getReplyMetadata(messageId: string) {
     const message = await gmailRequest<GmailApiMessage>(
-      `/messages/${encodeURIComponent(messageId)}?format=metadata&metadataHeaders=Message-ID`
+      `/messages/${encodeURIComponent(messageId)}?format=metadata&metadataHeaders=Message-ID&metadataHeaders=Subject`
     );
-    return headerValue(message, "Message-ID");
+    return {
+      messageId: headerValue(message, "Message-ID"),
+      subject: headerValue(message, "Subject")
+    };
   }
 
   async function listInboxMessages() {
@@ -592,15 +593,29 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
 
   async function sendSupportReply(input: SupportGmailSendInput) {
     let replyMessageId: string | null = null;
+    let threadSubject: string | undefined;
     if (input.replyToGmailMessageId) {
       try {
-        replyMessageId = await getRfcMessageId(input.replyToGmailMessageId);
+        const metadata = await getReplyMetadata(input.replyToGmailMessageId);
+        replyMessageId = metadata.messageId;
+        // Existing tickets may use the legacy acknowledgement subject.
+        // Preserve that subject rather than splitting the customer's Gmail conversation.
+        if (metadata.subject?.includes(`[${input.ticketNumber}]`)) {
+          threadSubject = metadata.subject;
+        }
       } catch {
-        replyMessageId = null;
+        // Gmail thread history may have been deleted or become inaccessible.
       }
     }
+    if (input.threadId && !replyMessageId) {
+      throw new Error("Cannot send a threaded support reply without its parent Message-ID.");
+    }
 
-    const raw = buildRawSupportEmail(configuration, input, replyMessageId);
+    const raw = buildRawSupportEmail(
+      configuration,
+      { ...input, threadSubject },
+      replyMessageId
+    );
     const payload = await gmailRequest<{ id?: string; threadId?: string }>("/messages/send", {
       method: "POST",
       body: JSON.stringify({
