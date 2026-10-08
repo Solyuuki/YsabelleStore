@@ -5,14 +5,14 @@
  * All selectors are dark-only; approved Light Mode and About scene CSS stay intact.
  */
 :root.dark .customer-app {
-  --store-contrast-card: #223049;
-  --store-contrast-card-raised: #293750;
-  --store-contrast-input: #15233a;
-  --store-contrast-stroke: #4b5e7d;
-  --store-contrast-ink: #f0f4ff;
-  --store-contrast-body: #c9d5e9;
-  --store-contrast-muted: #b2c2dc;
-  --store-contrast-link: #c9bdff;
+  --store-contrast-card: #1b2638;
+  --store-contrast-card-raised: #24334a;
+  --store-contrast-input: #17243a;
+  --store-contrast-stroke: #687995;
+  --store-contrast-ink: #d4deec;
+  --store-contrast-body: #b8c6d8;
+  --store-contrast-muted: #9fafc6;
+  --store-contrast-link: #c3b6f0;
 }
 
 /* Product catalogue: the image is intentionally light for color fidelity,
@@ -75,7 +75,7 @@
   .customer-review-overview, .customer-review-composer, .customer-review,
   .customer-review-empty
 ) {
-  background: linear-gradient(145deg, #24324c, #202d45);
+  background: linear-gradient(145deg, #233149, #1b2638);
   color: var(--store-contrast-ink);
   border-color: var(--store-contrast-stroke);
   box-shadow: 0 16px 34px rgb(0 0 0 / 10%);
@@ -113,7 +113,7 @@
 ) {
   background: #263551;
   border-color: #536480;
-  color: #e8edff;
+  color: #d4deec;
 }
 :root.dark .customer-app .customer-review-filters button.is-active {
   background: #4f478f;
@@ -137,10 +137,7 @@
 
 /* Shop: remove white wash from hero, and restore readable filter labels. */
 :root.dark .customer-app .customer-shop-heading {
-  background:
-    radial-gradient(ellipse at 8% 38%, rgb(61 119 196 / 17%), transparent 45%),
-    radial-gradient(ellipse at 90% 34%, rgb(146 89 202 / 13%), transparent 47%),
-    linear-gradient(180deg, #17263d, #1d2741 64%, #20233d);
+  background: url("/textures/ys-dark-indigo-silk.svg") center / cover no-repeat, #1b2638;
 }
 :root.dark .customer-app .customer-shop-heading__backdrop::before {
   background: linear-gradient(180deg, rgb(10 22 41 / 44%), transparent 64%);
@@ -149,7 +146,7 @@
   opacity: 0.32;
 }
 :root.dark .customer-app .customer-shop-heading :is(h1, .shop-motion-intro__title) {
-  color: #f3f5ff;
+  color: #d4deec;
 }
 :root.dark .customer-app .customer-shop-heading :is(
   .shop-motion-intro__description, p:last-child
@@ -227,7 +224,7 @@
 :root.dark .customer-app #profile-panel :is(
   .customer-account-info-card, .customer-account-contact-card, .customer-account-address-card
 ) {
-  background: linear-gradient(145deg, #2b3a54, #25334b);
+  background: url("/textures/ys-dark-graphite-glass.svg") center / cover no-repeat, #24334a;
   border-color: #536380;
   box-shadow: 0 10px 26px rgb(0 0 0 / 10%);
 }
@@ -303,8 +300,11 @@
 :root.dark .customer-app .customer-account-payment-gate :is(p, strong) {
   color: #f8e0b7;
 }
+/* Status chips retain accessible foregrounds according to their semantic surface. */
 :root.dark .customer-app .customer-account-page-v2 .customer-account-status {
-  color: #185f43;
+  border-color: #668574;
+  background: #1f3e36;
+  color: #b6ddc6;
 }
 
 /* Authentication: dark outer panel and inner fields together. No pale shell. */
@@ -338,7 +338,7 @@
 :root.dark .customer-app .customer-auth-page :is(
   .customer-auth-field input, .customer-recovery-code-input
 ) {
-  background: #142139;
+  background: #17243a;
   color: #eff3ff;
   border-color: #5a6c89;
   box-shadow: none;
@@ -399,3 +399,49 @@
 :root.dark .customer-app :is(
   button, a, input, textarea, select
 ):focus-visible { outline: 2px solid #bdb1ff; outline-offset: 2px; }
+
+/* Explicit text hierarchy and predictable outlines for all remaining
+   storefront form and card surfaces; intentionally excludes photo canvases. */
+:root.dark .customer-app .customer-page :is(h1, h2, h3),
+:root.dark .customer-app .customer-auth-page :is(h1, h2, h3),
+:root.dark .customer-app .customer-account-page-v2 :is(h1, h2, h3) {
+  color: #d4deec;
+}
+:root.dark .customer-app :is(
+  .customer-review, .customer-review-overview, .customer-review-composer,
+  .customer-order-summary, .customer-cart-item, .customer-empty-state,
+  .customer-account-security-card, .customer-account-info-card,
+  .customer-account-address-card, .customer-account-contact-card,
+  .customer-account-history-card, .customer-auth-stage__panel,
+  .customer-support-form-card, .customer-support-info-card
+) { border-color: #687995; }
+:root.dark .customer-app :is(
+  .customer-cart-page, .customer-checkout-page, .customer-shop-page,
+  .customer-support-page, .customer-privacy-page, .customer-account-page-v2
+) :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background-color: #17243a;
+  color: #d4deec;
+  border-color: #687995;
+}
+:root.dark .customer-app :is(input, textarea)::placeholder {
+  color: #9fafc6;
+}
+:root.dark .customer-app :is(.customer-button, .customer-auth-submit):focus-visible,
+:root.dark .customer-app :is(input, select, textarea):focus-visible {
+  outline: 2px solid #aca0ef;
+  outline-offset: 3px;
+}
+/* Respect deliberate, branded light canvases: text contrast is local. */
+:root.dark .customer-app :is(
+  .customer-product-card__media, .customer-product-detail__media,
+  .customer-product-visual, .home-category-card__visual
+) { color: #253046; }
+/* Dark interactive controls keep dark ink over saturated brand fills. */
+:root.dark .customer-app :is(
+  .customer-button--primary, .customer-auth-submit, .customer-account-action--primary
+) { color: #111827; }
+/* Neither default black nor blinding white for long-form reading. */
+:root.dark .customer-app .customer-privacy-document :is(p, li),
+:root.dark .customer-app .customer-support-page :is(p, li) {
+  color: #b8c6d8;
+}

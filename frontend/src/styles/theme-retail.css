@@ -66,15 +66,14 @@
   --muted-foreground: 220 24% 77%;
   --border: 222 27% 29%;
 }
-:root.dark body { background: #0d1425; color: #eaf0ff; }
+:root.dark body { background: #101827; color: #b8c6d8; }
 :root.dark .app-shell-ambient.ys-glass-flow-background {
   --ys-glass-flow-background:
-    radial-gradient(ellipse at 12% 10%, rgb(47 108 209 / 15%), transparent 37%),
-    radial-gradient(ellipse at 90% 12%, rgb(130 73 202 / 17%), transparent 39%),
-    radial-gradient(ellipse at 72% 92%, rgb(158 68 136 / 8%), transparent 46%),
-    linear-gradient(145deg, #0d172c, #11182d 54%, #1b142c);
-  background-color: #0d1425 !important;
+    url("/textures/ys-dark-midnight-velvet.svg");
+  background-color: #101827 !important;
   background-image: var(--ys-glass-flow-background) !important;
+  background-size: cover !important;
+  background-position: center top !important;
 }
 :root.dark .app-shell-ambient {
   --retailer-positive: #a79cff;
@@ -115,9 +114,9 @@
 :root.dark .app-shell-ambient .ys-dashboard-panel-surface::before {
   background-image:
     linear-gradient(145deg, rgb(134 144 214 / 8%), transparent 48%),
-    url("/textures/kpi-card-frosted-ribbon.webp") !important;
-  background-blend-mode: normal, soft-light !important;
-  opacity: 0.16 !important;
+    url("/textures/ys-dark-graphite-glass.svg") !important;
+  background-blend-mode: normal, normal !important;
+  opacity: 0.22 !important;
 }
 :root.dark .app-shell-ambient .ys-kpi-card-surface {
   --ys-kpi-surface-base: #26324c;
@@ -129,8 +128,9 @@
     linear-gradient(135deg, rgb(255 255 255 / 2%), transparent 63%, var(--ys-kpi-tint-b)) !important;
 }
 :root.dark .app-shell-ambient .ys-kpi-card-surface::before {
-  background-blend-mode: soft-light, normal !important;
-  opacity: 0.16 !important;
+  background-image: url("/textures/ys-dark-graphite-glass.svg") !important;
+  background-blend-mode: normal !important;
+  opacity: 0.19 !important;
 }
 /* Convert the existing light utility vocabulary without changing Light Mode. */
 :root.dark .app-shell-ambient :is(
@@ -211,4 +211,32 @@
   :root.dark .receipt-print-page,
   :root.dark .receipt-paper { background: #fff !important; color: #020617 !important; }
   :root.dark .receipt-print-page * { color-scheme: light; }
+}
+
+/* Workstation text and controls: muted primary ink, crisp boundaries. */
+:root.dark .app-shell-ambient {
+  --retail-text-primary: #d4deec;
+  --retail-text-body: #b8c6d8;
+  --retail-surface-card: #1b2638;
+  --retail-outline-strong: #687995;
+}
+:root.dark .app-shell-ambient :is(
+  .ys-dashboard-panel-surface, .ys-kpi-card-surface,
+  .ys-appearance-card
+) { border-color: var(--retail-outline-strong) !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="text-slate-900"], [class~="text-slate-800"],
+  [class~="text-slate-700"], [class~="text-slate-950"]
+) { color: var(--retail-text-primary) !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="text-slate-600"], [class~="text-slate-500"],
+  [class~="text-slate-400"]
+) { color: var(--retail-text-body) !important; }
+:root.dark .app-shell-ambient :is(input, textarea, select) {
+  border-color: var(--retail-outline-strong);
+  color: var(--retail-text-primary);
+}
+:root.dark .app-shell-ambient :is(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid #aca0ef;
+  outline-offset: 2px;
 }

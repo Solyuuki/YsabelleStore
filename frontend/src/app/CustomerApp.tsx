@@ -21,6 +21,7 @@ import "@/styles/customer-guide-route-transition.css";
 import "@/styles/brand.css";
 import "@/styles/shopping-guide.css";
 import "@/styles/theme-storefront.css";
+import "@/styles/theme-storefront-contrast.css";
 import {
   getCustomerAuthPageKind,
   isCustomerProtectedRoute,
