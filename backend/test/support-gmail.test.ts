@@ -13,6 +13,22 @@ import {
 } from "../src/services/supportGmailService.js";
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
 
+function decodeMimePart(rawEmail: string, mimeType: string) {
+  const contentTypeIndex = rawEmail.indexOf(`Content-Type: ${mimeType}`);
+  assert.notEqual(contentTypeIndex, -1);
+  const transferIndex = rawEmail.indexOf("Content-Transfer-Encoding: base64", contentTypeIndex);
+  assert.notEqual(transferIndex, -1);
+  const bodyStart = rawEmail.indexOf("\r\n\r\n", transferIndex);
+  assert.notEqual(bodyStart, -1);
+  const payloadStart = bodyStart + 4;
+  const payloadEnd = rawEmail.indexOf("\r\n--", payloadStart);
+  assert.notEqual(payloadEnd, -1);
+  return Buffer.from(
+    rawEmail.slice(payloadStart, payloadEnd).replace(/\r\n/g, ""),
+    "base64"
+  ).toString("utf8");
+}
+
 test("Gmail client caches the access token and sends a threaded canonical ticket reply", async () => {
   const calls: Array<{ url: string; init?: RequestInit }> = [];
   const fetchImpl: typeof fetch = async (input, init) => {
