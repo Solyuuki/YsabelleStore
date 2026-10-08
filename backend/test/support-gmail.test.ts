@@ -110,15 +110,17 @@ test("Gmail client caches the access token and sends a threaded canonical ticket
   assert.match(rawEmail, /To: customer@example\.com/);
   assert.match(rawEmail, /Subject: =\?UTF-8\?B\?/);
   assert.match(rawEmail, /In-Reply-To: <prior-message@example\.com>/);
-  assert.match(
-    Buffer.from(
-      rawEmail
-        .match(/Content-Transfer-Encoding: base64\r\n\r\n([\s\S]+?)\r\n$/)?.[1]
-        ?.replace(/\r\n/g, "") ?? "",
-      "base64"
-    ).toString("utf8"),
-    /YS-CS-000124/
-  );
+  assert.match(rawEmail, /Content-Type: multipart\/related/);
+  assert.match(rawEmail, /Content-Type: multipart\/alternative/);
+  assert.doesNotMatch(rawEmail, /Auto-Submitted: auto-replied/);
+
+  const plainText = decodeMimePart(rawEmail, 'text/plain; charset="UTF-8"');
+  const html = decodeMimePart(rawEmail, 'text/html; charset="UTF-8"');
+  assert.match(plainText, /YS-CS-000124/);
+  assert.match(plainText, /Ysabelle Store Customer Support/);
+  assert.match(html, /Customer support reply/);
+  assert.match(html, /Ticket reference:/);
+  assert.match(html, /YS-CS-000124/);
 });
 
 test("Gmail inbox listing paginates, deduplicates, and reuses one access token", async () => {
