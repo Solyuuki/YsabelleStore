@@ -173,6 +173,130 @@
   color: #f4f6ff;
 }
 
+/* Home category portal and merchandising SVG use Light Mode-specific pastel
+   gradient stops. Retheme their actual backing layers, not merely the text. */
+:root.dark .customer-app .home-categories {
+  --retail-bg-a: #10213a;
+  --retail-bg-b: #141f37;
+  --retail-bg-c: #201a33;
+  --category-portal-blue: #4176b3;
+  --category-portal-indigo: #7774c2;
+  --category-portal-violet: #9270b9;
+  --category-portal-line: #a8b8e8;
+  border-top-color: rgb(156 169 221 / 13%);
+  background:
+    radial-gradient(ellipse at 5% 12%, rgb(56 119 200 / 16%), transparent 43%),
+    radial-gradient(ellipse at 95% 18%, rgb(138 88 210 / 13%), transparent 47%),
+    linear-gradient(180deg, var(--retail-bg-a), var(--retail-bg-b) 52%, var(--retail-bg-c));
+  color: #f0f3ff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+}
+:root.dark .customer-app .home-categories__center-light {
+  background:
+    radial-gradient(ellipse at 50% 35%, rgb(81 113 178 / 11%), transparent 63%);
+}
+:root.dark .customer-app .home-categories__portal-glows { opacity: 0.55; }
+:root.dark .customer-app .home-categories__portal-ceiling,
+:root.dark .customer-app .home-categories__portal-side {
+  opacity: 0.21;
+}
+:root.dark .customer-app .home-categories__portal-line--soft {
+  opacity: 0.37;
+}
+:root.dark .customer-app .home-categories__portal-line--inner {
+  opacity: 0.28;
+}
+:root.dark .customer-app .home-categories__portal-fill {
+  opacity: 0.38;
+}
+:root.dark .customer-app .home-categories__portal-sparkles {
+  fill: #93a6de;
+  opacity: 0.28;
+}
+:root.dark .customer-app .home-categories__handoff {
+  opacity: 0.45;
+}
+:root.dark .customer-app .home-categories__handoff > path:nth-child(2) {
+  /* The SVG's Light Mode fill is hardcoded as #eef7ff. */
+  fill: #202840;
+  opacity: 0.38;
+}
+:root.dark .customer-app .home-categories__handoff-highlight {
+  stroke: rgb(151 165 231 / 27%);
+}
+:root.dark .customer-app .home-categories .customer-kicker {
+  color: #bcb4ff;
+}
+:root.dark .customer-app .home-categories .home-section-heading h2 {
+  color: #f2f5ff;
+}
+:root.dark .customer-app .home-categories .home-section-heading p:last-child {
+  color: #c6d1e5;
+}
+:root.dark .customer-app .home-categories .home-section-heading > a {
+  color: #c8beff;
+  border-bottom-color: rgb(181 166 255 / 33%);
+}
+:root.dark .customer-app .home-categories .home-section-heading > a:hover,
+:root.dark .customer-app .home-categories .home-section-heading > a:focus-visible {
+  color: #eeeaff;
+  border-bottom-color: #c8beff;
+}
+:root.dark .customer-app .home-categories .home-category-card {
+  background: #202c44;
+  border-color: #4a5a7a;
+  box-shadow: 0 12px 36px rgb(0 0 0 / 13%);
+}
+:root.dark .customer-app .home-categories .home-category-card:hover,
+:root.dark .customer-app .home-categories .home-category-card:focus-visible {
+  border-color: #9994e8;
+  box-shadow: 0 16px 42px rgb(0 0 0 / 19%);
+}
+:root.dark .customer-app .home-categories .home-category-card__body {
+  background: #26334e !important;
+}
+:root.dark .customer-app .home-categories .home-category-card__body strong {
+  color: #f2f5ff;
+}
+:root.dark .customer-app .home-categories .home-category-card__body small {
+  color: #c5d0e4;
+}
+
+/* Match the handoff and embedded merchandising SVG to the same dark palette.
+   These variables also drive the Trending, Best Seller and Essentials canvas. */
+:root.dark .customer-app .home-category-merch-handoff {
+  background:
+    radial-gradient(ellipse 62% 90% at 8% 50%, rgb(65 116 190 / 11%), transparent 72%),
+    radial-gradient(ellipse 62% 90% at 92% 50%, rgb(136 89 195 / 11%), transparent 72%),
+    linear-gradient(180deg, rgb(32 26 51 / 0%), #1b2038 48%, #17243c 100%);
+}
+:root.dark .customer-app .home-category-merch-handoff::after {
+  background: linear-gradient(180deg, transparent, #17243c);
+}
+:root.dark .customer-app .home-merchandising-canvas {
+  --merch-bg-top: #17243c;
+  --merch-bg-mid: #15223a;
+  --merch-bg-bottom: #201b37;
+  --merch-wave-blue: #467db9;
+  --merch-wave-indigo: #7773c1;
+  --merch-wave-violet: #9476c5;
+  --merch-wave-white: #283b62;
+  background: #15223a;
+  box-shadow: inset 0 1px 0 rgb(142 156 220 / 9%);
+}
+:root.dark .customer-app .home-merchandising-canvas__waves--top,
+:root.dark .customer-app .home-merchandising-canvas__waves--bottom {
+  opacity: 0.45;
+}
+:root.dark .customer-app .home-merchandising-canvas__mid-glow { opacity: 0.36; }
+:root.dark .customer-app .home-merchandising-canvas__highlight {
+  stroke: rgb(169 173 236 / 27%);
+}
+:root.dark .customer-app .home-merchandising-canvas__sparkles {
+  fill: #a2aeeb;
+  opacity: 0.22;
+}
+
 /* Support, privacy and shopping-guide reading surfaces. */
 :root.dark .customer-app .customer-support-page { background: #111a2e; }
 :root.dark .customer-app .customer-support-hero {
