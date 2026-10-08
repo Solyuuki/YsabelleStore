@@ -1,0 +1,183 @@
+/*
+ * Ysabelle Store appearance system - internal workspace.
+ * Light mode is intentionally untouched. Never invert media or printable output.
+ */
+.ys-appearance-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+.ys-appearance-choice {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.95rem;
+  border: 1px solid #dbe0f0;
+  border-radius: 1rem;
+  background: #fafbff;
+  color: #1d2942;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+.ys-appearance-choice[data-selected="true"] {
+  border-color: #8177e9;
+  background: #f2f0ff;
+  box-shadow: 0 0 0 2px rgb(98 91 255 / 13%);
+}
+.ys-appearance-choice:focus-visible {
+  outline: 3px solid #827dff;
+  outline-offset: 3px;
+}
+.ys-appearance-swatch {
+  display: grid;
+  width: 3.1rem;
+  height: 3.1rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid rgb(111 116 177 / 20%);
+  border-radius: 0.8rem;
+}
+.ys-appearance-swatch--light {
+  background: linear-gradient(135deg, #f8fbff, #e7ecff 65%, #eee4ff);
+  color: #564ddb;
+}
+.ys-appearance-swatch--dark {
+  background: linear-gradient(135deg, #111d32, #282351 85%);
+  color: #cbc1ff;
+}
+.ys-appearance-choice__copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+}
+.ys-appearance-choice__copy strong { font-size: 0.9rem; }
+.ys-appearance-choice__copy small { color: #667189; font-size: 0.76rem; }
+.ys-appearance-choice__check { margin-left: auto; color: #5149d9; font-size: 0.7rem; font-weight: 750; }
+@media (max-width: 600px) { .ys-appearance-options { grid-template-columns: 1fr; } }
+
+:root.dark {
+  --background: 221 47% 8%;
+  --foreground: 221 42% 95%;
+  --primary: 246 85% 74%;
+  --primary-foreground: 223 48% 10%;
+  --muted: 222 32% 17%;
+  --muted-foreground: 220 24% 77%;
+  --border: 222 27% 29%;
+}
+:root.dark body { background: #0d1425; color: #eaf0ff; }
+:root.dark .app-shell-ambient.ys-glass-flow-background {
+  --ys-glass-flow-background:
+    radial-gradient(ellipse at 12% 10%, rgb(47 108 209 / 15%), transparent 37%),
+    radial-gradient(ellipse at 90% 12%, rgb(130 73 202 / 17%), transparent 39%),
+    radial-gradient(ellipse at 72% 92%, rgb(158 68 136 / 8%), transparent 46%),
+    linear-gradient(145deg, #0d172c, #11182d 54%, #1b142c);
+  background-color: #0d1425 !important;
+  background-image: var(--ys-glass-flow-background) !important;
+}
+:root.dark .app-shell-ambient { color: #eaf0ff; }
+:root.dark .app-shell-ambient .ys-dashboard-panel-surface {
+  background-color: #1c2940 !important;
+  border-color: rgb(158 173 221 / 24%) !important;
+}
+:root.dark .app-shell-ambient .ys-dashboard-panel-surface::before {
+  background-image:
+    linear-gradient(145deg, rgb(134 144 214 / 8%), transparent 48%),
+    url("/textures/kpi-card-frosted-ribbon.webp") !important;
+  background-blend-mode: normal, soft-light !important;
+  opacity: 0.16 !important;
+}
+:root.dark .app-shell-ambient .ys-kpi-card-surface {
+  --ys-kpi-surface-base: #26324c;
+  --ys-kpi-tint-a: rgb(109 124 247 / 12%);
+  --ys-kpi-tint-b: rgb(195 110 214 / 8%);
+  background-color: var(--ys-kpi-surface-base) !important;
+  background-image:
+    radial-gradient(circle at 12% 14%, var(--ys-kpi-tint-a), transparent 46%),
+    linear-gradient(135deg, rgb(255 255 255 / 2%), transparent 63%, var(--ys-kpi-tint-b)) !important;
+}
+:root.dark .app-shell-ambient .ys-kpi-card-surface::before {
+  background-blend-mode: soft-light, normal !important;
+  opacity: 0.16 !important;
+}
+/* Convert the existing light utility vocabulary without changing Light Mode. */
+:root.dark .app-shell-ambient :is(
+  [class~="bg-white"],[class~="bg-white/90"],[class~="bg-white/95"],[class~="bg-white/80"],
+  [class~="bg-white/85"],[class~="bg-white/70"],[class~="bg-white/75"],[class~="bg-white/60"],
+  [class~="bg-white/98"],[class~="bg-slate-50"],[class~="bg-slate-50/80"],
+  [class~="bg-slate-100"],[class~="bg-slate-50/90"]
+) {
+  background-color: #202c43 !important;
+}
+:root.dark .app-shell-ambient :is(
+  [class~="text-slate-950"],[class~="text-slate-900"],[class~="text-slate-800"],
+  [class~="text-slate-700"]
+) { color: #f0f3ff !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="text-slate-600"],[class~="text-slate-500"],[class~="text-slate-400"],
+  [class~="text-gray-500"],[class~="text-gray-600"]
+) { color: #c3cde1 !important; }
+:root.dark .app-shell-ambient :is(
+  [class~="border-slate-100"],[class~="border-slate-200"],[class~="border-slate-300"],
+  [class~="border-violet-200/55"]
+) { border-color: #43516b !important; }
+:root.dark .app-shell-ambient :is(
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea
+) {
+  background-color: #18243a;
+  color: #f0f3ff;
+  border-color: #485776;
+  color-scheme: dark;
+}
+:root.dark .app-shell-ambient :is(input,textarea)::placeholder { color: #a8b5ce; }
+:root.dark .app-shell-ambient :is(input,select,textarea):focus-visible {
+  outline-color: #a29aff;
+  border-color: #a29aff;
+}
+:root.dark .app-shell-ambient :is([role="table"],table) { color: #e9eeff; }
+:root.dark .app-shell-ambient :is(th,td) { border-color: #39465e; }
+:root.dark .app-shell-ambient :is(tr:hover,[role="row"]:hover) { background-color: rgb(131 139 204 / 8%); }
+:root.dark .app-shell-ambient .ys-appearance-card {
+  border-color: #465575 !important;
+  background: linear-gradient(145deg, #202c44, #1b273b) !important;
+}
+:root.dark .ys-appearance-choice {
+  background: #1b2840;
+  border-color: #465573;
+  color: #eef1ff;
+}
+:root.dark .ys-appearance-choice[data-selected="true"] {
+  background: #302d55;
+  border-color: #b0a0ff;
+  box-shadow: 0 0 0 2px rgb(165 152 255 / 16%);
+}
+:root.dark .ys-appearance-choice__copy small { color: #bac7dc; }
+:root.dark .ys-appearance-choice__check { color: #c5bdff; }
+/* Dialogs and sheets are portaled outside .app-shell-ambient. */
+:root.dark [role="dialog"],
+:root.dark [data-radix-popper-content-wrapper] [role="listbox"] {
+  background: #1b283e;
+  border-color: #465675;
+  color: #f0f3ff;
+}
+:root.dark [role="dialog"] :is([class~="text-slate-950"],[class~="text-slate-900"],[class~="text-slate-800"]) { color: #f2f4ff; }
+:root.dark [role="dialog"] :is([class~="text-slate-600"],[class~="text-slate-500"]) { color: #c3cde1; }
+:root.dark [role="dialog"] :is([class~="bg-white"],[class~="bg-slate-50"]) { background-color: #25334d; }
+:root.dark [role="dialog"] :is(input,select,textarea) {
+  background-color: #121e32;
+  color: #f2f4ff;
+  border-color: #526181;
+}
+:root.dark :is(.recharts-default-tooltip,.recharts-tooltip-wrapper > div) {
+  background-color: #18253b !important;
+  border-color: #475775 !important;
+  color: #f4f6ff !important;
+}
+:root.dark .recharts-cartesian-axis-tick-value { fill: #c2cde1; }
+:root.dark .recharts-cartesian-grid line { stroke: rgb(180 192 225 / 15%); }
+@media print {
+  :root.dark .receipt-print-page,
+  :root.dark .receipt-paper { background: #fff !important; color: #020617 !important; }
+  :root.dark .receipt-print-page * { color-scheme: light; }
+}
