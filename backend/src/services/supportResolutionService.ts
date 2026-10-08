@@ -7,7 +7,7 @@ import type { SafeUser } from "./authService.js";
 import { deliverStaffSupportMessageEmail, deliverSupportLifecycleMessageEmail, isSupportGmailDeliveryEnabled, SUPPORT_LIFECYCLE_SENDER_NAME } from "./supportGmailService.js";
 
 const CONFIRMATION_TTL_MS = 72 * 60 * 60 * 1000;
-const REQUEST_PREFIX = "YS_SUPPORT_RESOLUTION_REQUEST:";
+export const REQUEST_PREFIX = "YS_SUPPORT_RESOLUTION_EMAIL_REPLY:";
 const CONFIRMED_PREFIX = "YS_SUPPORT_RESOLUTION_CONFIRMED:";
 const NEEDS_HELP_PREFIX = "YS_SUPPORT_RESOLUTION_NEEDS_HELP:";
 
@@ -71,20 +71,12 @@ function readResolutionToken(token: string, now = Date.now()) {
 }
 
 export async function requestSupportResolutionConfirmation(ticketId: string, actor: SafeUser, now = new Date()) {
-  // Fail before writing a request that would contain unusable links.
-  signingKey();
-  const base = publicBaseUrl();
   if (!isSupportGmailDeliveryEnabled()) {
     throw new HttpError(503, "Support Gmail delivery is required for confirmation.", {
       code: "SUPPORT_GMAIL_NOT_CONFIGURED"
     });
   }
-
   const requestId = randomUUID();
-  const token = createResolutionToken(ticketId, requestId, now.getTime());
-  const confirmationUrl = `${base}/api/customer-support/resolution?token=${encodeURIComponent(token)}`;
-  const yesUrl = `${confirmationUrl}&answer=YES`;
-  const noUrl = `${confirmationUrl}&answer=NO`;
   const message = await prisma.$transaction(async (tx) => {
     const ticket = await tx.supportTicket.findUnique({
       where: { id: ticketId },
@@ -117,7 +109,7 @@ export async function requestSupportResolutionConfirmation(ticketId: string, act
         senderUserId: actor.id,
         senderName: actor.name,
         senderEmail: actor.email,
-        body: `${REQUEST_PREFIX}\nHello ${ticket.customerName},\n\nHas your support concern been resolved? Choose Yes or No using the links below. Both links expire in 72 hours.\n\nYes, resolved: ${yesUrl}\nNo, I need more help: ${noUrl}\n\nIf you still need help, our team will continue assisting you.`,
+        body: `${REQUEST_PREFIX}\nHello ${ticket.customerName},\n\nHas your concern been resolved? Reply to this email with exactly YES or NO on the first line.\n\nYES — confirm resolved.\nNO — I still need help.\n\nWe will process your reply in this same email conversation within 72 hours.`,
         deliveryStatus: "PENDING"
       },
       select: { id: true }
