@@ -1,7 +1,8 @@
-import { CircleHelp, Menu, ShoppingBasket, UserRound, X } from "lucide-react";
+import { CircleHelp, Menu, MoonStar, ShoppingBasket, Sun, UserRound, X } from "lucide-react";
 import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
+import { useAppearance } from "@/context/AppearanceContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { isCustomerShopRoute } from "@/utils/customerRoutes";
 import { preloadAboutExperience } from "@/utils/aboutExperiencePreload";
@@ -21,6 +22,7 @@ export function CustomerHeader({
   pathname: string;
 }) {
   const { itemCount } = useCart();
+  const { storefrontTheme, setStorefrontTheme } = useAppearance();
   const { customer, status } = useCustomerAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const isShopRoute = isCustomerShopRoute(pathname);
@@ -74,6 +76,16 @@ export function CustomerHeader({
         </div>
 
         <div className="customer-header__actions">
+          <button
+            aria-label={storefrontTheme === "dark" ? "Switch storefront to light mode" : "Switch storefront to dark mode"}
+            aria-pressed={storefrontTheme === "dark"}
+            className="customer-theme-toggle"
+            onClick={() => setStorefrontTheme(storefrontTheme === "dark" ? "light" : "dark")}
+            title={storefrontTheme === "dark" ? "Light mode" : "Dark mode"}
+            type="button"
+          >
+            {storefrontTheme === "dark" ? <Sun aria-hidden="true" size={19} /> : <MoonStar aria-hidden="true" size={19} />}
+          </button>
           <button
             aria-label="Open shopping guide"
             className="customer-icon-button customer-help-button"
