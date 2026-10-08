@@ -180,10 +180,24 @@ export function CustomerSupportInboxPage() {
     return () => controller.abort();
   }, [selectedTicketId, reloadKey]);
 
+  const customerConfirmedResolution = useMemo(() => {
+    if (!detail) return false;
+    const latestRequest = [...detail.messages].reverse().find((message) =>
+      message.body.startsWith("YS_SUPPORT_RESOLUTION_REQUEST:")
+    );
+    if (!latestRequest) return false;
+    return detail.messages.some((message) =>
+      message.body.startsWith(`YS_SUPPORT_RESOLUTION_CONFIRMED:${latestRequest.id}`) &&
+      (!detail.lastStaffMessageAt || Date.parse(message.createdAt) >= Date.parse(detail.lastStaffMessageAt))
+    );
+  }, [detail]);
+
   const statusOptions = useMemo(() => {
     if (!detail) return STAFF_SUPPORT_STATUSES;
-    return [detail.status, ...STATUS_TRANSITIONS[detail.status]];
-  }, [detail]);
+    return [detail.status, ...STATUS_TRANSITIONS[detail.status]].filter((status) =>
+      status !== "RESOLVED" || detail.status === "RESOLVED" || customerConfirmedResolution
+    );
+  }, [detail, customerConfirmedResolution]);
 
   function resetToFirstPage() {
     setPage(1);
@@ -425,6 +439,7 @@ export function CustomerSupportInboxPage() {
               onStatusSave={() => void saveStatus()}
               onRequestResolution={() => void requestResolution()}
               resolutionRequestSaving={resolutionRequestSaving}
+              customerConfirmedResolution={customerConfirmedResolution}
               reply={reply}
               replySaving={replySaving}
               retryingMessageId={retryingMessageId}
@@ -522,6 +537,7 @@ function SupportConversation({
   onStatusSave,
   onRequestResolution,
   resolutionRequestSaving,
+  customerConfirmedResolution,
   reply,
   replySaving,
   retryingMessageId,
@@ -538,6 +554,7 @@ function SupportConversation({
   onStatusSave: () => void;
   onRequestResolution: () => void;
   resolutionRequestSaving: boolean;
+  customerConfirmedResolution: boolean;
   reply: string;
   replySaving: boolean;
   retryingMessageId: string | null;
@@ -557,6 +574,9 @@ function SupportConversation({
                 {detail.ticketNumber}
               </p>
               <SupportStatusBadge status={detail.status} />
+              {customerConfirmedResolution && detail.status !== "RESOLVED" && detail.status !== "CLOSED" && (
+                <StatusBadge variant="success">Customer confirmed resolution</StatusBadge>
+              )}
             </div>
             <h2 className="mt-2 text-xl font-semibold text-slate-950">{detail.subject}</h2>
             <p className="mt-1 text-sm text-slate-500">
