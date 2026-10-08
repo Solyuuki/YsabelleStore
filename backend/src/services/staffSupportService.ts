@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { requestSupportResolutionConfirmation } from "./supportResolutionService.js";
 import type { SupportTicketStatus } from "../types/customerSupport.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
