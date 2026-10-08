@@ -1,6 +1,6 @@
 import { Router, urlencoded } from "express";
 
-import { createCustomerSupportTicketController } from "../controllers/customerSupportController.js";
+import { createCustomerSupportTicketController, viewSupportResolutionController, submitSupportResolutionController } from "../controllers/customerSupportController.js";
 import { createAuthRateLimit } from "../middleware/authRateLimit.js";
 import { optionalCustomerAuth } from "../middleware/customerAuthMiddleware.js";
 import {
