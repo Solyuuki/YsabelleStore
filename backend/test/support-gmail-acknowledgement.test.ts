@@ -30,7 +30,7 @@ function decodeMimePart(rawEmail: string, mimeType: string) {
 
 test("automated acknowledgement sends branded multipart email with inline GIF", async () => {
   const calls: Array<{ url: string; init?: RequestInit }> = [];
-  const logoBytes = Buffer.from("GIF89a-ysabelle-test-logo", "ascii");
+  const logoBytes = Buffer.from("static-ysabelle-png-test-logo", "ascii");
   const fetchImpl: typeof fetch = async (input, init) => {
     const url = String(input);
     calls.push({ url, init });
@@ -87,7 +87,7 @@ test("automated acknowledgement sends branded multipart email with inline GIF", 
   const rawEmail = Buffer.from(sendBody.raw, "base64url").toString("utf8");
   assert.match(rawEmail, /Auto-Submitted: auto-replied/);
   assert.match(rawEmail, /Content-Type: multipart\/related/);
-  assert.match(rawEmail, /Content-Type: image\/gif/);
+  assert.match(rawEmail, /Content-Type: image\/png/);
   assert.match(rawEmail, /Content-ID: <ysabelle-support-logo>/);
 
   const plainText = decodeMimePart(rawEmail, 'text/plain; charset="UTF-8"');
