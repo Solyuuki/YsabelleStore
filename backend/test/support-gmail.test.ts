@@ -337,6 +337,56 @@ test("Gmail inbox sync imports only the matching customer reply and is idempoten
   }
 });
 
+test("Gmail HTML-only reply excludes previous message quote containers", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  try {
+    const ticket = await createCustomerSupportTicket({
+      customerName: "HTML Quote Customer",
+      customerEmail: "html-quote@example.com",
+      category: "OTHER",
+      subject: "HTML reply test",
+      message: "I would like help."
+    });
+    const messageId = "html-quote-" + randomUUID();
+    const threadId = "html-quote-thread-" + randomUUID();
+    const client: SupportGmailClient = {
+      async listInboxMessages() {
+        return [{ id: messageId, threadId }];
+      },
+      async getMessage() {
+        return {
+          id: messageId,
+          threadId,
+          payload: {
+            mimeType: "text/html",
+            headers: [
+              { name: "From", value: "HTML Quote Customer <html-quote@example.com>" },
+              { name: "Subject", value: "Re: [" + ticket.ticketNumber + "] HTML reply test" }
+            ],
+            body: {
+              data: Buffer.from(
+                '<div>Thank you.</div><div class="gmail_quote"><div>Old support email</div></div>',
+                "utf8"
+              ).toString("base64url")
+            }
+          }
+        };
+      },
+      async sendSupportReply() {
+        throw new Error("No outgoing email expected.");
+      }
+    };
+
+    assert.deepEqual(await syncSupportGmailInboxWithClient(client), { imported: 1, skipped: 0 });
+    const stored = await prisma.supportMessage.findUniqueOrThrow({
+      where: { gmailMessageId: messageId }
+    });
+    assert.equal(stored.body, "Thank you.");
+  } finally {
+    await scope.cleanup();
+  }
+});
+
 test("Gmail inbox sync rejects a sender that does not match the ticket customer", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
 
