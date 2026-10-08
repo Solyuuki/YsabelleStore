@@ -1,7 +1,6 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
-import { hasCustomerResolutionConfirmation } from "./supportResolutionService.js";
 import type { SupportTicketStatus } from "../types/customerSupport.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
@@ -361,12 +360,6 @@ export async function updateStaffSupportTicketStatus(
       });
     }
 
-    if (input.status === "RESOLVED" && !(await hasCustomerResolutionConfirmation(ticketId))) {
-      throw new HttpError(409, "Customer resolution confirmation is required before resolving.", {
-        code: "SUPPORT_RESOLUTION_CONFIRMATION_REQUIRED"
-      });
-    }
-
     if (!SUPPORT_STATUS_TRANSITIONS[ticket.status].includes(input.status)) {
       throw new HttpError(409, "Support ticket status transition is not allowed.", {
         code: "INVALID_SUPPORT_STATUS_TRANSITION",
@@ -405,7 +398,7 @@ export async function updateStaffSupportTicketStatus(
 
     const lifecycleNotice =
       input.status === "RESOLVED"
-        ? "Your support concern has been marked as resolved. Thank you for confirming with Ysabelle Store."
+        ? "Your support concern has been marked as resolved by our support team. Thank you for contacting Ysabelle Store."
         : input.status === "CLOSED"
           ? "This support conversation is now closed. Thank you for contacting Ysabelle Store."
           : null;
