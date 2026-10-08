@@ -1,6 +1,5 @@
 import {
   ChevronDown,
-  ChevronUp,
   Clock3,
   Inbox,
   Mail,
@@ -657,50 +656,39 @@ function SupportConversation({
 
       <form
         className="shrink-0 border-t border-slate-200 bg-white px-4 py-3"
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setReplyComposerExpanded(false);
+          }
+        }}
         onSubmit={onReplySubmit}
       >
         <div className="mx-auto max-w-4xl">
-          <div className="flex min-w-0 items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-900">Staff reply</p>
-              {!replyComposerExpanded ? (
-                <p className="text-xs text-slate-500">
-                  {reply.trim()
-                    ? `Unsent draft · ${reply.length} / 5,000 characters`
-                    : detail.status === "CLOSED"
-                      ? "Reopen this ticket to reply."
-                      : !gmailConfigured
-                        ? "Connect Gmail to reply."
-                        : "Expand to write a response."}
-                </p>
-              ) : null}
-            </div>
-            <Button
-              aria-controls={`staff-reply-editor-${detail.id}`}
-              aria-expanded={replyComposerExpanded}
-              disabled={replySaving}
-              onClick={() => setReplyComposerExpanded((expanded) => !expanded)}
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              {replyComposerExpanded ? (
-                <ChevronUp className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <ChevronDown className="h-4 w-4" aria-hidden="true" />
-              )}
-              {replyComposerExpanded ? "Collapse" : "Expand"}
-            </Button>
-          </div>
           {replyComposerExpanded ? (
-            <div className="mt-3 space-y-3" id={`staff-reply-editor-${detail.id}`}>
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-xs text-slate-500">
-                  Staff replies are delivered through Gmail in the existing ticket thread.
-                </p>
-                <span className="shrink-0 text-xs text-slate-400">{reply.length} / 5,000</span>
+            <div id={`staff-reply-editor-${detail.id}`}>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">Staff reply</p>
+                  <p className="text-xs text-slate-500">
+                    Send a reply in the existing Gmail conversation.
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="text-xs text-slate-400">{reply.length} / 5,000</span>
+                  <button
+                    aria-label="Minimize reply editor"
+                    className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    disabled={replySaving}
+                    onClick={() => setReplyComposerExpanded(false)}
+                    title="Minimize reply editor"
+                    type="button"
+                  >
+                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
               <Textarea
+                autoFocus
                 disabled={replySaving || detail.status === "CLOSED" || !gmailConfigured}
                 maxLength={5000}
                 onChange={(event) => onReplyChange(event.target.value)}
@@ -714,7 +702,7 @@ function SupportConversation({
                 rows={4}
                 value={reply}
               />
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-slate-500">
                   Successful delivery moves the ticket to Waiting for customer. Failed delivery keeps
                   the ticket Open for follow-up.
@@ -730,7 +718,29 @@ function SupportConversation({
                 </Button>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <button
+              aria-expanded={false}
+              aria-label="Open staff reply editor"
+              className="group flex min-h-11 w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:border-indigo-300 hover:bg-indigo-50/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              onClick={() => setReplyComposerExpanded(true)}
+              type="button"
+            >
+              <MessageSquareText className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-indigo-600" aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate text-sm text-slate-500">
+                {reply.trim()
+                  ? reply.trim().replace(/\s+/g, " ")
+                  : detail.status === "CLOSED"
+                    ? "Reopen this ticket to reply."
+                    : !gmailConfigured
+                      ? "Connect Gmail before replying."
+                      : "Write a reply to this customer..."}
+              </span>
+              {reply.trim() ? (
+                <span className="shrink-0 text-xs font-medium text-indigo-600">Draft</span>
+              ) : null}
+            </button>
+          )}
         </div>
       </form>
     </div>
