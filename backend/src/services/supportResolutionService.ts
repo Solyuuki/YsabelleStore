@@ -85,6 +85,20 @@ export async function requestSupportResolutionConfirmation(ticketId: string, act
     if (!["OPEN", "WAITING_FOR_CUSTOMER", "NEW"].includes(ticket.status)) {
       throw new HttpError(409, "Only active support tickets can request resolution confirmation.");
     }
+    const previousRequest = await tx.supportMessage.findFirst({
+      where: { ticketId, body: { startsWith: REQUEST_PREFIX } },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: { deliveryStatus: true, createdAt: true }
+    });
+    if (
+      ticket.status === "WAITING_FOR_CUSTOMER" &&
+      previousRequest?.deliveryStatus === "SENT" &&
+      now.getTime() - previousRequest.createdAt.getTime() < CONFIRMATION_TTL_MS
+    ) {
+      throw new HttpError(409, "A resolution confirmation is already awaiting the customer.", {
+        code: "SUPPORT_CONFIRMATION_ALREADY_PENDING"
+      });
+    }
     const created = await tx.supportMessage.create({
       data: {
         id: requestId,
@@ -154,8 +168,7 @@ export async function submitResolutionResponse(token: string, answer: "YES" | "N
     if (updated.count !== 1) {
       throw new HttpError(409, "Support ticket status changed before confirmation.");
     }
-    // The audit entry allows staff to finalize resolution. The ticket remains
-    // WAITING_FOR_CUSTOMER after YES until staff explicitly marks it RESOLVED.
+    // The transition to OPEN consumes the token; staff can finalize only after a YES audit entry.
     await tx.supportMessage.create({
       data: {
         ticketId: inspected.ticketId,
@@ -177,9 +190,20 @@ export async function hasCustomerResolutionConfirmation(ticketId: string) {
     select: { id: true }
   });
   if (!request) return false;
-  const confirmation = await prisma.supportMessage.findFirst({
-    where: { ticketId, body: { startsWith: `${CONFIRMED_PREFIX}${request.id}` } },
-    select: { id: true }
-  });
-  return Boolean(confirmation);
+  const [confirmation, ticket] = await Promise.all([
+    prisma.supportMessage.findFirst({
+      where: { ticketId, body: { startsWith: `${CONFIRMED_PREFIX}${request.id}` } },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, createdAt: true }
+    }),
+    prisma.supportTicket.findUnique({
+      where: { id: ticketId },
+      select: { lastStaffMessageAt: true }
+    })
+  ]);
+  return Boolean(
+    confirmation &&
+    ticket &&
+    (!ticket.lastStaffMessageAt || confirmation.createdAt >= ticket.lastStaffMessageAt)
+  );
 }
