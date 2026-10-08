@@ -81,9 +81,9 @@ export async function requestSupportResolutionConfirmation(ticketId: string, act
       where: { id: ticketId },
       select: { id: true, status: true, customerName: true }
     });
-    if (!ticket) throw new HttpError(404, "Support ticket was not found.");
+    if (!ticket) throw new HttpError(404, "Support ticket was not found.", { code: "SUPPORT_TICKET_NOT_FOUND" });
     if (!["OPEN", "WAITING_FOR_CUSTOMER", "NEW"].includes(ticket.status)) {
-      throw new HttpError(409, "Only active support tickets can request resolution confirmation.");
+      throw new HttpError(409, "Only active support tickets can request resolution confirmation.", { code: "INVALID_SUPPORT_RESOLUTION_REQUEST" });
     }
     const previousRequest = await tx.supportMessage.findFirst({
       where: { ticketId, body: { startsWith: REQUEST_PREFIX } },
@@ -166,7 +166,7 @@ export async function submitResolutionResponse(token: string, answer: "YES" | "N
       }
     });
     if (updated.count !== 1) {
-      throw new HttpError(409, "Support ticket status changed before confirmation.");
+      throw new HttpError(409, "Support ticket status changed before confirmation.", { code: "SUPPORT_CONFIRMATION_STALE" });
     }
     // The transition to OPEN consumes the token; staff can finalize only after a YES audit entry.
     await tx.supportMessage.create({
