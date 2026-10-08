@@ -54,11 +54,13 @@ test("resolution links require a valid unexpired signature and are single use", 
       createResolutionToken(ticket.id, requestId, Date.now() - 73 * 60 * 60 * 1000)
     ), null);
 
-    const result = await submitResolutionResponse(token, "YES");
+    const delivered: string[] = [];
+    const result = await submitResolutionResponse(token, "YES", new Date(), async (id) => { delivered.push(id); });
+    assert.equal(delivered.length, 1);
     assert.equal(result.answer, "YES");
     assert.equal((await prisma.supportTicket.findUniqueOrThrow({
       where: { id: ticket.id }
-    })).status, "OPEN");
+    })).status, "RESOLVED");
     assert.equal(await hasCustomerResolutionConfirmation(ticket.id), true);
     assert.equal(await inspectResolutionToken(token), null);
     await assert.rejects(
