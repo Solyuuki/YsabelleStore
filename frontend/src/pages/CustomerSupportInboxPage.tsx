@@ -70,6 +70,41 @@ const EMPTY_META: StorefrontPagination = {
   totalPages: 1
 };
 
+// Display normalization for already-imported emails whose quoted history was stored
+// before the backend began trimming reply content during Gmail sync.
+function customerReplyText(raw: string) {
+  const lines = raw.replace(/\r\n?/g, "\n").split("\n");
+  let cutoff = lines.length;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = (lines[index] ?? "").trim();
+    const preview = lines.slice(index, index + 3).map((part) => part.trim()).join(" ");
+    const gmailQuote =
+      /^On\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b/i.test(line) &&
+      /\bwrote\s*:/i.test(preview);
+    const outlookQuote =
+      /^From:\s*.+/i.test(line) &&
+      lines.slice(index + 1, index + 5).some((part) =>
+        /^(?:Sent|To|Subject):\s*/i.test(part.trim())
+      );
+    const quotedLine =
+      index > 0 && line.startsWith(">") && !(lines[index - 1] ?? "").trim();
+
+    if (
+      gmailQuote ||
+      outlookQuote ||
+      /^-{2,}\s*Original Message\s*-{2,}$/i.test(line) ||
+      /^Begin forwarded message:\s*$/i.test(line) ||
+      quotedLine
+    ) {
+      cutoff = index;
+      break;
+    }
+  }
+
+  return lines.slice(0, cutoff).join("\n").trim();
+}
+
 function formatDateTime(value: string | null) {
   if (!value) return "Not yet";
   return new Intl.DateTimeFormat("en-PH", {
@@ -729,7 +764,9 @@ function ConversationMessage({
   const resolutionRequest = message.body.startsWith("YS_SUPPORT_RESOLUTION_EMAIL_REPLY:");
   const displayBody = resolutionRequest
     ? "Resolution confirmation requested. Customer should reply YES or NO directly to the same email thread within 72 hours."
-    : message.body;
+    : !staff && message.channel === "EMAIL"
+      ? customerReplyText(message.body) || "No new reply text"
+      : message.body;
 
   return (
     <div className={staff ? "flex justify-end" : "flex justify-start"}>
