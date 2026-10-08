@@ -8,6 +8,30 @@
       content="Browse products, manage your cart, and shop online with Ysabelle Store."
     />
     <meta name="theme-color" content="#625bff" />
+    <script>
+      // Apply the saved theme before stylesheet paint. About and receipt printing stay unchanged.
+      (() => {
+        const path = location.pathname;
+        const retailPaths = new Set([
+          "/staff-login", "/dashboard", "/pos", "/products", "/categories", "/inventory",
+          "/receiving", "/sales", "/deliveries", "/customer-support", "/forecast",
+          "/historical-sales", "/reports", "/users", "/settings", "/not-found"
+        ]);
+        const scope = retailPaths.has(path) ? "retail" : "storefront";
+        const safeRoute = path === "/about" || path === "/discover" ||
+          new URLSearchParams(location.search).get("print") === "receipt";
+        try {
+          const key = "ysabellestore.appearance." + scope + ".v1";
+          const dark = !safeRoute && localStorage.getItem(key) === "dark";
+          document.documentElement.classList.toggle("dark", dark);
+          document.documentElement.dataset.appearanceScope = scope;
+          document.documentElement.style.colorScheme = dark ? "dark" : "light";
+          if (dark) document.querySelector('meta[name="theme-color"]').content = "#0d1425";
+        } catch {
+          document.documentElement.dataset.appearanceScope = scope;
+        }
+      })();
+    </script>
     <link rel="icon" href="/brand/favicon.ico?v=fullmark-2e25e00f" sizes="any" />
     <link
       rel="icon"

@@ -5,10 +5,12 @@ import { GlobalReliabilityUI } from "@/components/shared/GlobalReliabilityUI";
 import { NotificationStack } from "@/components/shared/NotificationStack";
 import { ToastProvider } from "@/components/shared/ToastProvider";
 import { AuthProvider } from "@/context/AuthContext";
+import { AppearanceProvider } from "@/context/AppearanceContext";
 import { SystemReliabilityProvider } from "@/context/SystemReliabilityContext";
 
 export function App() {
   return (
+    <AppearanceProvider>
     <SystemReliabilityProvider>
       <ToastProvider>
         <AuthProvider>
@@ -22,5 +24,6 @@ export function App() {
         </AuthProvider>
       </ToastProvider>
     </SystemReliabilityProvider>
+    </AppearanceProvider>
   );
 }

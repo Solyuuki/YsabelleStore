@@ -1,9 +1,10 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
 import { LogoutConfirmationModal } from "@/components/shared/LogoutConfirmationModal";
 import { AppLayout } from "@/layouts/AppLayout";
 import { useAuth } from "@/context/AuthContext";
+import { useAppearance } from "@/context/AppearanceContext";
 import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -114,6 +115,7 @@ function getReceiptPrintRequest() {
 }
 
 export function AppShell() {
+  const { syncForPath } = useAppearance();
   const {
     error,
     continueWithTrustedDevice,
@@ -130,6 +132,9 @@ export function AppShell() {
   const [location, setLocation] = useState(getCurrentLocation);
   const path = new URL(location, window.location.origin).pathname;
   const isCustomerRoute = !internalRoutePaths.has(path);
+  useLayoutEffect(() => {
+    syncForPath(path);
+  }, [path, syncForPath]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.innerWidth < 1280);
   const shouldHoldForAuth = !isCustomerRoute && !isAuthReady;
   const [showLaunchSplash, setShowLaunchSplash] = useState(false);
