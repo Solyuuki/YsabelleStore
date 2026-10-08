@@ -361,9 +361,9 @@ function buildRawSupportEmail(
     headers.push(`References: ${sanitizeHeaderValue(replyMessageId)}`);
   }
 
-  const isResolutionRequest = input.body.startsWith("YS_SUPPORT_RESOLUTION_REQUEST:");
+  const isResolutionRequest = input.body.startsWith("YS_SUPPORT_RESOLUTION_EMAIL_REPLY:");
   const visibleBody = isResolutionRequest
-    ? input.body.slice("YS_SUPPORT_RESOLUTION_REQUEST:".length).trim()
+    ? input.body.slice("YS_SUPPORT_RESOLUTION_EMAIL_REPLY:".length).trim()
     : input.body.trim();
   const resolutionBody = isResolutionRequest
     ? visibleBody.replace(/^Yes, resolved:.*$/gm, "").replace(/^No, I need more help:.*$/gm, "").replace(/\n{3,}/g, "\n\n").trim()
@@ -408,7 +408,7 @@ function buildRawSupportEmail(
             <tr>
               <td style="padding:30px">
                 <div style="font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#6757d9">Ysabelle Store</div>
-                <h1 style="margin:10px 0 18px;font-size:22px;line-height:1.3;color:#18152f">${input.kind === "ACKNOWLEDGEMENT" ? "Support request received" : input.kind === "LIFECYCLE" && input.body.startsWith("This support conversation") ? "Support conversation closed" : input.kind === "LIFECYCLE" ? "Support concern resolved" : isResolutionRequest ? "Resolution confirmation requested" : "Customer support reply"}</h1>
+                <h1 style="margin:10px 0 18px;font-size:22px;line-height:1.3;color:#18152f">${input.kind === "ACKNOWLEDGEMENT" ? "Support request received" : input.kind === "LIFECYCLE" && input.body.startsWith("This support conversation") ? "Support conversation closed" : input.kind === "LIFECYCLE" ? "Support concern resolved" : isResolutionRequest ? "Please confirm your resolution" : "Customer support reply"}</h1>
                 ${paragraphs}
                 ${resolutionActions}
                 <div style="margin-top:18px;padding:12px 14px;border:1px solid #e8e4ff;border-radius:12px;background:#faf9ff;font-size:12px;line-height:1.6;color:#6d6785">
@@ -1003,7 +1003,12 @@ export async function syncSupportGmailInboxWithClient(
       });
       imported += 1;
       if (finalNoticeId) {
-        await deliverSupportLifecycleMessageEmail(finalNoticeId, client);
+        try {
+          await deliverSupportLifecycleMessageEmail(finalNoticeId, client);
+        } catch {
+          // The inbound reply is already persisted. Delivery is independently retryable.
+          console.error("[support-gmail] Final resolution notice could not be delivered.");
+        }
       }
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
