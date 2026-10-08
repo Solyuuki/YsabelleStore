@@ -18,6 +18,8 @@ const customerSupportTicketCreateRateLimit = createAuthRateLimit({
 });
 
 customerSupportRouter.use(disableSensitiveResponseCaching);
+customerSupportRouter.get("/resolution", viewSupportResolutionController);
+customerSupportRouter.post("/resolution", urlencoded({ extended: false, limit: "4kb" }), submitSupportResolutionController);
 customerSupportRouter.post(
   "/tickets",
   requireAllowedCustomerAuthOrigin,
