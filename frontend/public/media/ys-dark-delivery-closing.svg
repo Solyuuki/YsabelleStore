@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="720" viewBox="0 0 1600 720" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#14243B"/><stop offset=".55" stop-color="#1A2740"/><stop offset="1" stop-color="#29223F"/></linearGradient>
+<radialGradient id="gl"><stop stop-color="#678BC0" stop-opacity=".13"/><stop offset="1" stop-color="#678BC0" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="1600" height="720" fill="url(#b)"/>
+<ellipse cx="1320" cy="150" rx="580" ry="470" fill="url(#gl)"/>
+<g fill="none" stroke-linecap="round">
+<path d="M-60 422C320 250 550 345 815 451S1290 557 1670 350" stroke="#A3A8D3" stroke-opacity=".15" stroke-width="2"/>
+<path d="M-60 465C316 302 559 387 807 498S1286 598 1670 408" stroke="#A3A8D3" stroke-opacity=".10" stroke-width="1.4"/>
+<path d="M-60 509C304 352 545 437 805 545S1290 647 1670 463" stroke="#9B8FD1" stroke-opacity=".075" stroke-width="1.2"/>
+</g>
+</svg>

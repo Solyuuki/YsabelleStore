@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="base" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#24344A"/><stop offset=".56" stop-color="#1C293C"/><stop offset="1" stop-color="#282C46"/></linearGradient>
+<linearGradient id="ribbon" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#C3D4FF" stop-opacity=".11"/><stop offset=".42" stop-color="#8E99C0" stop-opacity=".035"/><stop offset="1" stop-color="#8A7CC0" stop-opacity=".07"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#859BC2" stop-opacity=".095"/><stop offset="1" stop-color="#859BC2" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="900" height="600" fill="url(#base)"/>
+<ellipse cx="110" cy="15" rx="530" ry="380" fill="url(#glow)"/>
+<path fill="url(#ribbon)" d="M-95 40C185 68 383 140 566 224C710 290 785 372 1020 405L1020 484C786 466 615 363 480 304C290 220 130 165 -95 145Z"/>
+<path fill="none" stroke="#B0C3E5" stroke-opacity=".12" stroke-width="1.5" d="M-100 92C215 127 393 215 600 298S810 410 1020 432"/>
+<path fill="none" stroke="#9C92C9" stroke-opacity=".075" stroke-width="1" d="M-70 420C200 385 430 419 680 520S905 575 1010 560"/>
+</svg>
