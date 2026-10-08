@@ -541,7 +541,28 @@
 }
 
 .customer-privacy-document {
+  --privacy-paper: linear-gradient(155deg, #fffefa 0%, #fff 54%, #fafbff 100%);
+  --privacy-paper-border: rgb(96 104 168 / 17%);
+  --privacy-heading-ink: #20243a;
+  --privacy-body-ink: #586278;
+  --privacy-muted-ink: #727b90;
+  --privacy-rule: rgb(98 91 255 / 12%);
+  --privacy-inner-card: linear-gradient(145deg, #fff, #f9f9ff);
+  --privacy-inner-border: rgb(98 91 255 / 12%);
+  --privacy-soft-blue: #eff7ff;
+  --privacy-soft-violet: #f4f2ff;
+  --privacy-accent-ink: #5149d9;
+
   min-width: 0;
+  padding: clamp(1.25rem, 3vw, 2.8rem);
+  border: 1px solid var(--privacy-paper-border);
+  border-radius: clamp(1.2rem, 2vw, 1.8rem);
+  background: var(--privacy-paper);
+  color: var(--privacy-heading-ink);
+  box-shadow:
+    0 24px 68px rgb(27 32 72 / 8%),
+    0 3px 12px rgb(27 32 72 / 3%),
+    inset 0 1px 0 rgb(255 255 255 / 95%);
 }
 
 .customer-privacy-section {
@@ -780,6 +801,101 @@
   margin: 1rem 0 1.25rem;
 }
 
+/* A single paper-like reading surface spans all nine legal sections.
+   Keep component contrast local so future dark themes do not inherit
+   arbitrary colors from the page's decorative gradient. */
+.customer-privacy-document .customer-privacy-section + .customer-privacy-section {
+  border-top-color: var(--privacy-rule);
+}
+
+.customer-privacy-document .customer-privacy-section h2,
+.customer-privacy-document .customer-privacy-data-grid h3,
+.customer-privacy-document .customer-privacy-provider-list strong,
+.customer-privacy-document .customer-privacy-purpose-list strong,
+.customer-privacy-document .customer-privacy-storage-table strong,
+.customer-privacy-document .customer-privacy-callout strong {
+  color: var(--privacy-heading-ink);
+}
+
+.customer-privacy-document .customer-privacy-section__body > p,
+.customer-privacy-document .customer-privacy-data-grid p,
+.customer-privacy-document .customer-privacy-provider-list p,
+.customer-privacy-document .customer-privacy-purpose-list p,
+.customer-privacy-document .customer-privacy-callout p,
+.customer-privacy-document .customer-privacy-storage-table p,
+.customer-privacy-document .customer-privacy-rights li {
+  color: var(--privacy-body-ink);
+}
+
+.customer-privacy-document .customer-privacy-data-grid small,
+.customer-privacy-document .customer-privacy-storage-table small {
+  color: var(--privacy-muted-ink);
+}
+
+.customer-privacy-document .customer-privacy-section__heading > span {
+  border-color: var(--privacy-inner-border);
+  background: var(--privacy-soft-violet);
+  color: var(--privacy-accent-ink);
+}
+
+.customer-privacy-document .customer-privacy-data-grid article,
+.customer-privacy-document .customer-privacy-provider-list article,
+.customer-privacy-document .customer-privacy-purpose-list article,
+.customer-privacy-document .customer-privacy-storage-table article,
+.customer-privacy-document .customer-privacy-rights li {
+  border-color: var(--privacy-inner-border);
+  background: var(--privacy-inner-card);
+}
+
+.customer-privacy-document .customer-privacy-data-grid small,
+.customer-privacy-document .customer-privacy-storage-table__duration {
+  border-color: var(--privacy-rule);
+}
+
+.customer-privacy-document .customer-privacy-storage-table__duration {
+  color: var(--privacy-body-ink) !important;
+}
+
+.customer-privacy-document .customer-privacy-callout {
+  border-color: var(--privacy-inner-border);
+  background: var(--privacy-soft-blue);
+}
+
+.customer-privacy-document .customer-privacy-callout--quiet {
+  background: var(--privacy-soft-violet);
+}
+
+.customer-privacy-document .customer-privacy-storage-table span {
+  color: var(--privacy-accent-ink);
+}
+
+/* Opt-in selectors for the storefront's future theme switch.
+   No automatic OS darkening while the rest of the storefront remains light. */
+:is(.dark, [data-theme="dark"], [data-color-scheme="dark"]) .customer-privacy-document,
+.customer-privacy-document:is(.dark, [data-theme="dark"], [data-color-scheme="dark"]) {
+  --privacy-paper: linear-gradient(155deg, #1b2337 0%, #171f32 62%, #1c2439 100%);
+  --privacy-paper-border: rgb(157 171 216 / 28%);
+  --privacy-heading-ink: #f3f5ff;
+  --privacy-body-ink: #c7d0e2;
+  --privacy-muted-ink: #acb9d0;
+  --privacy-rule: rgb(169 181 225 / 20%);
+  --privacy-inner-card: linear-gradient(145deg, #273149, #222c43);
+  --privacy-inner-border: rgb(168 182 230 / 23%);
+  --privacy-soft-blue: #243a51;
+  --privacy-soft-violet: #302b4d;
+  --privacy-accent-ink: #b9b7ff;
+
+  color-scheme: dark;
+  box-shadow:
+    0 24px 68px rgb(0 0 0 / 25%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+
+:is(.dark, [data-theme="dark"], [data-color-scheme="dark"]) .customer-privacy-document .customer-privacy-section__heading > span,
+.customer-privacy-document:is(.dark, [data-theme="dark"], [data-color-scheme="dark"]) .customer-privacy-section__heading > span {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 7%);
+}
+
 @keyframes customer-privacy-notice-enter {
   from {
     opacity: 0;
@@ -865,6 +981,12 @@
 }
 
 @media (max-width: 720px) {
+  .customer-privacy-document {
+    padding: clamp(1rem, 4vw, 1.5rem);
+    border-radius: 1.2rem;
+  }
+
+
   .customer-privacy-notice__inner {
     width: min(calc(100% - 1.6rem), 1240px);
     align-items: start;
