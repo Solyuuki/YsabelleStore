@@ -31,8 +31,8 @@ test("static support signature logo reconstructs as a lightweight transparent PN
   );
   assert.ok(bytes.length > 500, "Expected a non-empty optimized PNG.");
   assert.ok(bytes.length < 20_000, "Email signature must remain lightweight.");
-  assert.equal(bytes.readUInt32BE(16), 72);
-  assert.equal(bytes.readUInt32BE(20), 72);
+  assert.equal(bytes.readUInt32BE(16), 64);
+  assert.equal(bytes.readUInt32BE(20), 64);
   const colorType = bytes[25];
   assert.ok(colorType === 3 || colorType === 4 || colorType === 6,
     "Expected a transparency-capable PNG color mode.");
