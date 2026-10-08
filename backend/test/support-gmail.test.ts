@@ -51,7 +51,10 @@ test("Gmail client caches the access token and sends a threaded canonical ticket
           id: "gmail-prior",
           threadId: "gmail-thread-1",
           payload: {
-            headers: [{ name: "Message-ID", value: "<prior-message@example.com>" }]
+            headers: [
+              { name: "Message-ID", value: "<prior-message@example.com>" },
+              { name: "Subject", value: "[YS-CS-000124] We received your support request" }
+            ]
           }
         }),
         {
@@ -110,6 +113,11 @@ test("Gmail client caches the access token and sends a threaded canonical ticket
   assert.match(rawEmail, /To: customer@example\.com/);
   assert.match(rawEmail, /Subject: =\?UTF-8\?B\?/);
   assert.match(rawEmail, /In-Reply-To: <prior-message@example\.com>/);
+  assert.match(rawEmail, /References: <prior-message@example\.com>/);
+  assert.match(rawEmail, /Subject: =\?UTF-8\?B\?/);
+  const encodedSubject = rawEmail.match(/^Subject: =\?UTF-8\?B\?(.+)\?=$/m)?.[1];
+  assert.ok(encodedSubject);
+  assert.equal(Buffer.from(encodedSubject, "base64").toString("utf8"), "[YS-CS-000124] We received your support request");
   assert.match(rawEmail, /Content-Type: multipart\/related/);
   assert.match(rawEmail, /Content-Type: multipart\/alternative/);
   assert.doesNotMatch(rawEmail, /Auto-Submitted: auto-replied/);
