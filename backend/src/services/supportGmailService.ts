@@ -355,7 +355,7 @@ function buildRawSupportEmail(
     ? input.body.slice("YS_SUPPORT_RESOLUTION_REQUEST:".length).trim()
     : input.body.trim();
   const resolutionLinks = isResolutionRequest
-    ? (visibleBody.match(/https?:\\/\\/[^\\s]+/g) ?? []).slice(0, 2)
+    ? (visibleBody.match(/https?:\/\/[^\s]+/g) ?? []).slice(0, 2)
     : [];
   const resolutionActions = resolutionLinks.length === 2
     ? `<div style="margin:16px 0">
