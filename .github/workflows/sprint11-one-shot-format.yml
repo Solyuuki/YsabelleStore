@@ -1,4 +1,4 @@
-name: Sprint 11 formatter after whitespace-safe tests
+name: Sprint 11 formatter with stable support copy
 
 on:
   push:
