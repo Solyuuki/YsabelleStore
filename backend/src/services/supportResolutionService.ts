@@ -204,6 +204,6 @@ export async function hasCustomerResolutionConfirmation(ticketId: string) {
   return Boolean(
     confirmation &&
     ticket &&
-    (!ticket.lastStaffMessageAt || confirmation.createdAt >= ticket.lastStaffMessageAt)
+    (!ticket.lastStaffMessageAt || confirmation.createdAt.getTime() >= ticket.lastStaffMessageAt.getTime())
   );
 }
