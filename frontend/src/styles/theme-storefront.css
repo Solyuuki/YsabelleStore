@@ -1,0 +1,290 @@
+/*
+ * Premium midnight storefront. Scoped entirely to the chosen customer theme.
+ * About scenes remain unmodified; /about and /discover never receive .dark.
+ */
+:root.dark .customer-app {
+  --customer-primary: #b9afff;
+  --customer-primary-strong: #d0c9ff;
+  --customer-secondary: #bf9af8;
+  --customer-info: #94caff;
+  --customer-accent: #ff96cd;
+  --customer-dark: #eef2ff;
+  --customer-muted: #c0cbdf;
+  --customer-surface: #0d1425;
+  --customer-surface-raised: #202c45;
+  --customer-line: #43516d;
+  --customer-hover: #30365a;
+  --customer-active: #383963;
+  --customer-primary-soft: #34335a;
+  --customer-secondary-soft: #322b4d;
+  --customer-info-soft: #1b354c;
+  --customer-focus: rgb(174 163 255 / 75%);
+  background: #0d1425;
+  color: #eef2ff;
+}
+:root.dark .customer-app.ys-glass-flow-background {
+  --ys-glass-flow-background:
+    radial-gradient(ellipse at 8% 5%, rgb(44 114 204 / 16%), transparent 38%),
+    radial-gradient(ellipse at 92% 9%, rgb(128 75 212 / 16%), transparent 41%),
+    radial-gradient(ellipse at 78% 85%, rgb(191 92 170 / 8%), transparent 44%),
+    linear-gradient(140deg, #0c182b 0%, #14192e 52%, #1d172c 100%);
+  background-color: #0d1425 !important;
+  background-image: var(--ys-glass-flow-background) !important;
+}
+
+/* The user's top bar switch always fits the compact mobile header. */
+.customer-theme-toggle {
+  display: inline-grid;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid rgb(98 91 255 / 16%);
+  border-radius: 0.84rem;
+  background: rgb(255 255 255 / 74%);
+  color: #5149d9;
+  box-shadow: 0 6px 18px rgb(39 40 86 / 5%);
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.customer-theme-toggle:hover { background: #f0edff; border-color: #a79af7; }
+.customer-theme-toggle:focus-visible { outline: 3px solid #625bff; outline-offset: 2px; }
+:root.dark .customer-theme-toggle {
+  background: #263452;
+  border-color: #566490;
+  color: #d6ccff;
+}
+:root.dark .customer-theme-toggle:hover { background: #343d67; }
+:root.dark .customer-theme-toggle:focus-visible { outline-color: #bbb0ff; }
+@media (max-width: 520px) {
+  .customer-theme-toggle { width: 40px; height: 40px; }
+  .customer-header__actions { gap: 0.3rem; }
+}
+:root.dark .customer-app .customer-header {
+  background: linear-gradient(100deg, #141d32, #19233a 48%, #241d3b);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 16%);
+}
+:root.dark .customer-app .customer-header::before { opacity: 0.08; }
+:root.dark .customer-app .customer-nav a,
+:root.dark .customer-app .customer-brand,
+:root.dark .customer-app .customer-account-link,
+:root.dark .customer-app .customer-help-button,
+:root.dark .customer-app .customer-menu-button { color: #eef2ff; }
+:root.dark .customer-app .customer-cart-link,
+:root.dark .customer-app .customer-global-search__shell,
+:root.dark .customer-app .customer-global-search__popup,
+:root.dark .customer-app .customer-mobile-panel {
+  background: #202c45;
+  color: #eaf0ff;
+  border-color: #455579;
+}
+:root.dark .customer-app .customer-global-search__recent-query,
+:root.dark .customer-app .customer-global-search__popup-header,
+:root.dark .customer-app .customer-global-search__product-copy strong { color: #e8edff; }
+:root.dark .customer-app .customer-global-search__product-copy span { color: #bac7dd; }
+:root.dark .customer-app .customer-cart-link:hover,
+:root.dark .customer-app .customer-account-link:hover,
+:root.dark .customer-app .customer-nav a:hover { background: #303957; color: #fff; }
+
+/* Homepage and catalog: quiet midnight blue behind approved product photography. */
+:root.dark .customer-app :is(.customer-home,.customer-shop-page,.customer-account-page-v2,.customer-checkout-page,.customer-cart-page) {
+  background: linear-gradient(145deg, #101b30, #141b30 52%, #1c172b);
+  color: #eaf0ff;
+}
+:root.dark .customer-app :is(.customer-home,.customer-shop-page)::before {
+  filter: none;
+  opacity: 0.35;
+}
+:root.dark .customer-app :is(.customer-home,.customer-shop-page)::after { opacity: 0.16; }
+:root.dark .customer-app .customer-home .home-hero,
+:root.dark .customer-app .customer-shop-heading {
+  background: radial-gradient(ellipse at 14% 14%, rgb(56 130 240 / 15%), transparent 44%),
+              radial-gradient(ellipse at 90% 16%, rgb(172 102 244 / 12%), transparent 42%);
+}
+:root.dark .customer-app :is(
+  .customer-home,.customer-shop-page,.customer-product-detail-page,
+  .customer-cart-page,.customer-checkout-page,.customer-account-page-v2
+) :is(h1,h2,h3,strong) { color: #f2f5ff; }
+:root.dark .customer-app :is(.customer-home,.customer-shop-page,.customer-account-page-v2) :is(
+  .customer-section-heading p,.home-section-heading p,.customer-shop-heading p,
+  .customer-product-card__rating,.customer-product-card__price-row span
+) { color: #c6d0e5; }
+:root.dark .customer-app .customer-product-card,
+:root.dark .customer-app .home-category-card,
+:root.dark .customer-app .customer-filter-panel,
+:root.dark .customer-app .customer-shop-toolbar,
+:root.dark .customer-app .customer-product-detail,
+:root.dark .customer-app .customer-product-skeleton,
+:root.dark .customer-app .customer-account-rail,
+:root.dark .customer-app .customer-account-hero,
+:root.dark .customer-app .customer-account-section,
+:root.dark .customer-app .customer-account-order-v2 {
+  background: #202c44;
+  border-color: #435372;
+  color: #e9efff;
+}
+:root.dark .customer-app .customer-product-card__body,
+:root.dark .customer-app .home-category-card__body,
+:root.dark .customer-app .shop-catalog-refresh__body {
+  background: #26324d !important;
+  color: #e9efff;
+}
+:root.dark .customer-app :is(
+  .customer-product-card__body,.home-category-card__body,.shop-catalog-refresh__body,
+  .customer-filter-panel.shop-category-navigation,.customer-shop-catalog-backdrop
+)::before {
+  opacity: 0.14;
+  mix-blend-mode: soft-light;
+}
+:root.dark .customer-app .customer-product-card__media,
+:root.dark .customer-app .home-category-card__visual {
+  /* Preserve original product-color accuracy on a neutral photography surface. */
+  background: #f4f6fa;
+}
+:root.dark .customer-app .customer-shop-catalog-backdrop {
+  background: linear-gradient(90deg, #111c31, #191d35 52%, #241b36);
+}
+:root.dark .customer-app .customer-shop-catalog-backdrop::after { opacity: 0.08; }
+:root.dark .customer-app .customer-home .home-next-step {
+  background: linear-gradient(145deg, rgb(11 23 43 / 72%), rgb(29 20 47 / 78%)),
+              url("/media/home-delivery-closing-background.svg") center / cover no-repeat,
+              #131a30;
+}
+:root.dark .customer-app :is(.customer-account-rail,.customer-account-section,.customer-account-hero) {
+  box-shadow: 0 20px 56px rgb(0 0 0 / 18%);
+}
+:root.dark .customer-app :is(#profile-panel,#favorites-panel,#orders-panel).customer-account-section {
+  background: linear-gradient(145deg, #253149, #202b43) !important;
+  border-color: #465475;
+}
+:root.dark .customer-app :is(#profile-panel,#favorites-panel,#orders-panel).ys-material-surface::before {
+  opacity: 0.14 !important;
+  background-blend-mode: soft-light, normal !important;
+}
+:root.dark .customer-app :is(
+  .customer-account-nav,.customer-account-address-card,.customer-account-info-card,
+  .customer-account-contact-card,.customer-account-session-list article
+) { background: #27334c; color: #f0f3ff; border-color: #445273; }
+:root.dark .customer-app .customer-account-nav button:not([aria-selected="true"]) { color: #cad5e7; }
+:root.dark .customer-app .customer-account-page-v2 :is(p,small,label) { color: #c2cce0; }
+:root.dark .customer-app .customer-account-page-v2 :is(input,select,textarea) {
+  background: #151f35;
+  border-color: #50607f;
+  color: #f4f6ff;
+}
+
+/* Support, privacy and shopping-guide reading surfaces. */
+:root.dark .customer-app .customer-support-page { background: #111a2e; }
+:root.dark .customer-app .customer-support-hero {
+  background:
+    radial-gradient(ellipse 55% 85% at 4% 16%, rgb(65 151 255 / 15%), transparent 78%),
+    radial-gradient(ellipse 60% 95% at 100% 26%, rgb(161 99 246 / 15%), transparent 76%),
+    linear-gradient(108deg, #152541, #1b2340 49%, #281e3e);
+}
+:root.dark .customer-app .customer-support-hero h1,
+:root.dark .customer-app .customer-privacy-hero h1 { color: #f2f4ff; }
+:root.dark .customer-app .customer-support-hero__lead,
+:root.dark .customer-app .customer-privacy-hero__lead { color: #c7d0e5; }
+:root.dark .customer-app :is(
+  .customer-support-hero__card,.customer-support-form-card,.customer-support-info-card,
+  .customer-support-faq details,.customer-support-success,.customer-support-input-shell,
+  .customer-privacy-hero__summary,.customer-privacy-toc,.customer-privacy-sheet,
+  .customer-privacy-storage-card,.customer-privacy-notice
+) {
+  background: #202c45 !important;
+  border-color: #485777;
+  color: #edf2ff;
+}
+:root.dark .customer-app .customer-support-page :is(p,small,label),
+:root.dark .customer-app .customer-privacy-page :is(p,small,label) { color: #c6d0e3; }
+:root.dark .customer-app .customer-support-page :is(h2,h3,strong),
+:root.dark .customer-app .customer-privacy-page :is(h2,h3,strong) { color: #f1f4ff; }
+:root.dark .customer-app :is(
+  .customer-support-form input,.customer-support-form select,.customer-support-form textarea,
+  .customer-privacy-sheet input
+) {
+  background: #152139;
+  border-color: #50607d;
+  color: #eef3ff;
+}
+:root.dark .customer-app .customer-support-page :is(input,textarea)::placeholder { color: #a9b8d2; }
+:root.dark .customer-app .customer-privacy-page {
+  background: linear-gradient(145deg, #111c32, #1a1930);
+}
+:root.dark .customer-app .customer-privacy-hero {
+  background: radial-gradient(ellipse at 13% 10%, rgb(55 115 226 / 14%), transparent 40%),
+              radial-gradient(ellipse at 90% 18%, rgb(165 95 233 / 12%), transparent 44%),
+              #151e34;
+}
+:root.dark .customer-app .customer-privacy-document { color: #f3f5ff; }
+:root.dark .customer-app .customer-privacy-section__heading > span { color: #d1c7ff; }
+:root.dark .customer-app .customer-privacy-document :is(
+  .customer-privacy-data-grid article,.customer-privacy-provider-list article,
+  .customer-privacy-purpose-list article,.customer-privacy-storage-table article,
+  .customer-privacy-rights li
+) { background: #253148; border-color: #465476; }
+:root.dark .customer-app .customer-privacy-toc a { color: #d1dbef; }
+:root.dark .customer-app .customer-privacy-hero__meta span { color: #c2cce2; }
+:root.dark .ysabelle-guide.driver-popover {
+  --guide-ink: #f2f5ff;
+  --guide-muted: #c6d1e6;
+  --guide-surface: #1a2740;
+  --guide-surface-soft: #283550;
+  background-color: #1a2740;
+  background-image:
+    linear-gradient(145deg, rgb(23 38 62 / 92%), rgb(35 35 66 / 92%)),
+    url("/textures/kpi-card-frosted-ribbon.webp");
+  background-blend-mode: normal, soft-light;
+  color: #f2f5ff;
+}
+:root.dark .ysabelle-guide.driver-popover :is(p,small) { color: #c8d3e6; }
+
+/* Forms and checkout remain opaque and readable above textured backgrounds. */
+:root.dark .customer-app :is(input,select,textarea):not([type="checkbox"]):not([type="radio"]) {
+  color: #eef3ff;
+  border-color: #50607d;
+  color-scheme: dark;
+}
+:root.dark .customer-app :is(input,textarea)::placeholder { color: #a9b7cf; }
+:root.dark .customer-app :is(
+  .customer-auth-card,.customer-account-card,.customer-cart-card,.customer-cart-summary,
+  .customer-checkout-card,.customer-checkout-summary,.customer-checkout-section,
+  .customer-order-success-card
+) {
+  background: #202c44;
+  border-color: #455572;
+  color: #eef3ff;
+}
+:root.dark .customer-app :is(
+  .customer-auth-card,.customer-checkout-page,.customer-cart-page
+) :is(h1,h2,h3,p,label,strong) { color: #eaf0ff; }
+:root.dark .customer-app :is(
+  .customer-auth-field input,.customer-auth-form input,.customer-checkout-page input,
+  .customer-checkout-page select,.customer-checkout-page textarea
+) {
+  background: #131e32;
+  border-color: #52617c;
+  color: #f3f5ff;
+}
+
+/* Footer is already a good dark surface: adjust ONLY the SVG transition from the page. */
+:root.dark .customer-app .customer-footer {
+  --footer-transition-surface: #111a2e;
+  --footer-transition-blue: #1c3559;
+  --footer-transition-center: #24244a;
+  --footer-transition-violet: #37254f;
+  --footer-accent-blue: #315f9d;
+  --footer-accent-indigo: #635ab1;
+  --footer-accent-violet: #8555ad;
+}
+
+/* Focus, contrast and motion safeguards. */
+:root.dark .customer-app :focus-visible { outline-color: #b6acff; }
+:root.dark .customer-app :is(.customer-button--secondary,.customer-auth-secondary) {
+  background: #303758;
+  color: #f2f5ff;
+  border-color: #526388;
+}
+@media (prefers-reduced-motion: reduce) {
+  .customer-theme-toggle { transition: none; }
+}
